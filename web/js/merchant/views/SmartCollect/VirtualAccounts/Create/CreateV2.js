@@ -131,7 +131,7 @@ export default class CreateVirtualAccount extends React.Component {
       document.querySelector('.Modal-container--VirtualAccountV2').style[
         'max-height'
       ] =
-        formEle.offsetHeight + 176 + 'px';
+        formEle.offsetHeight + 156 + 'px';
     });
   };
 
@@ -314,12 +314,10 @@ export default class CreateVirtualAccount extends React.Component {
       },
       () => {
         setTimeout(() => {
-          const additionalOptionsElement = document.querySelector(
-            '.AdditionalOptions'
-          );
+          const scrollEle = document.querySelector('.AdditionalOptions');
 
-          if (additionalOptionsElement) {
-            additionalOptionsElement.scrollIntoView({
+          if (scrollEle) {
+            scrollEle.scrollIntoView({
               behavior: 'smooth',
               block: 'nearest',
             });
@@ -437,10 +435,6 @@ export default class CreateVirtualAccount extends React.Component {
       showVPADescriptor = false;
       showVPAPrefix = false;
     }
-
-    const additionalOptionsText = `${
-      showAdditionalOptions ? 'Hide' : 'View'
-    } Advance Options`;
 
     const content = (
       <div class="VirtualAccount--CreateV2 Wizard">
@@ -601,25 +595,31 @@ export default class CreateVirtualAccount extends React.Component {
                   </div>
 
                   <div
-                    class="additional-options-btn"
+                    class={classList(
+                      'additional-options-btn',
+                      showAdditionalOptions && 'btn-hide'
+                    )}
                     onClick={this.handleAdditionalOptions}
                   >
-                    <button
-                      type="button"
-                      onClick={this.handleAdditionalOptions}
-                    >
-                      {showAdditionalOptions
-                        ? 'Hide Options'
-                        : 'Additional Options'}
-                      <i
-                        class={classList(
-                          'i',
-                          showAdditionalOptions
-                            ? 'i-chevron-up'
-                            : 'i-chevron-down'
-                        )}
-                      />
-                    </button>
+                    {showAdditionalOptions ? (
+                      <div class="heading">Hide Advance Options</div>
+                    ) : (
+                      <div>
+                        <div class="heading">View Advance Options</div>
+                        <div class="description">
+                          {' '}
+                          Third Party Validation, Auto Close, Description, etc.{' '}
+                        </div>
+                      </div>
+                    )}
+                    <i
+                      class={classList(
+                        'i',
+                        showAdditionalOptions
+                          ? 'i-chevron-up'
+                          : 'i-chevron-down'
+                      )}
+                    />
                   </div>
 
                   {showAdditionalOptions && (
@@ -644,6 +644,7 @@ export default class CreateVirtualAccount extends React.Component {
                             </Popover>
                           </span>
                         </div>
+
                         <div class="description">
                           {!!allowedPayers.length
                             ? `Configured with ${

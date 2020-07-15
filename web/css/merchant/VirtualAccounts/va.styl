@@ -98,7 +98,7 @@ $max-width = 640px
 
 .StandAloneContainer
   .VirtualAccount--CreateV2
-    max-height: 568px
+    max-height: 588px
     background: white
     position: relative
     height: 80vh
@@ -158,22 +158,27 @@ $max-width = 640px
     margin-top: 8px
 
   .additional-options-btn
-    margin-top: 24px
+    font-size: 12px
+    display: flex
+    align-items: center
+    justify-content: space-between
+    cursor pointer
+    padding: 12px 0
+    margin-top: 20px
+    border-top: 1px solid #eee
 
-    &:before,
-    &:after
-      content: ""
-      width: 25%
-      vertical-align: super
-      border: 1px dashed #DEE5E7
-      display: inline-block
+    &.btn-hide
+      border-bottom: 1px solid #eee
 
-    button
-      background: #FAFAFA
-      border: 1px solid #DEE5E7
-      border-radius: 2px
-      width: 50%
-      maring-top: 24px
+    .heading
+      color: #586663
+      font-weight: bold
+
+    .description
+      color: #838383
+
+    .i
+      font-size: 24px
 
   .AdditionalOptions,
   .Input--SelectCustomer

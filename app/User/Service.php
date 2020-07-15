@@ -1074,7 +1074,6 @@ class Service extends Base\Service
             'rx_ssl_cert_renew',
             'rx_webhook_migration_april_alert',
             'registered_onboarding_auto_kyc',
-            'virtual_vpa_prefix',
             'pl_batch_reminders',
             'enable_payment_page_receipt',
             'emandate_nonzero_amount',

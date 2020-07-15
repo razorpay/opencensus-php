@@ -572,7 +572,9 @@ export default class User {
   }
 
   get isVirtualVPAPrefixEnabled() {
-    return this.getExpStatus('virtual_vpa_prefix');
+    // Doing 100% rollout since there is issues in razor-x
+    // TODO: Completely remove views/SmartCollect/VirtualAccounts/Create/CreateV1
+    return true;
   }
 
   get isEmandateNonzeroAmountEnabled() {
