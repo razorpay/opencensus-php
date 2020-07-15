@@ -55,11 +55,41 @@ class Curl implements IntegrationInterface
      */
     public static function handleCurlResource($resource)
     {
+        $info = curl_getinfo($resource);
+        $attrs = self::getSpanAttrsFromCurlInfo($info);
+
         return [
-            'attributes' => [
-                'uri' => curl_getinfo($resource, CURLINFO_EFFECTIVE_URL)
-            ],
+            'attributes' => $attrs,
             'kind' => Span::KIND_CLIENT
         ];
+    }
+
+    private static function getSpanAttrsFromCurlInfo($curlInfo)
+    {
+        $tagNameCurlInfoMap = [
+            'network.client.ip'                 => 'local_ip',
+            'network.client.port'               => 'local_port',
+            'network.destination.ip'            => 'primary_ip',
+            'network.destination.port'          => 'primary_port',
+            'network.bytes_read'                => 'size_download',
+            'network.bytes_written'             => 'size_upload',
+            'time_total_in_secs'                => 'total_time',
+            'time_to_connect_in_secs'           => 'connect_time',
+            'time_to_redirect_in_secs'          => 'redirect_time',
+            'time_to_namelookup_in_secs'        => 'namelookup_time',
+            'time_to_pretransfer_in_secs'       => 'pretransfer_time',
+            'time_to_starttransfer_in_secs'     => 'starttransfer_time',
+            'primary_ip'                        => 'primary_ip',
+            'url'                               => 'url'
+        ];
+
+        $attrs = [];
+
+        foreach ($tagNameCurlInfoMap as $tagName => $curlInfoName) {
+            if (isset($curlInfo[$curlInfoName]) && !\trim($curlInfo[$curlInfoName]) !== '') {
+                $attrs[$tagName] = $curlInfo[$curlInfoName];
+            }
+        }
+        return $attrs;
     }
 }
