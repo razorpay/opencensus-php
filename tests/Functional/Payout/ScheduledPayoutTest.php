@@ -70,7 +70,7 @@ class ScheduledPayoutTest extends TestCase
 
         $this->createBankingAccount($bankingAccountParams);
 
-        $this->app['cache']->flush();
+        $this->flushCache();
 
         $this->mockStorkService();
 

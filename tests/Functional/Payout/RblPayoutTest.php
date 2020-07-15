@@ -67,7 +67,7 @@ class RblPayoutTest extends TestCase
 
         $this->createBankingAccount($bankingAccountParams);
 
-        $this->app['cache']->flush();
+        $this->flushCache();
 
         $this->ba->privateAuth();
     }
