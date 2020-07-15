@@ -168,6 +168,16 @@ abstract class Base extends BaseCore
         }
 
         $this->txn->setDebit($this->debit);
+
+        $this->trace->debug(TraceCode::SETTING_TRANSACTION_CREDITS,
+            [
+                'transaction_id'        => $this->txn->getId(),
+                'transaction_credit'    => $this->txn->getCredit(),
+                'transaction_debit'     => $this->txn->getDebit(),
+                'transaction_amount'    => $this->txn->getAmount(),
+                'transaction_fee'       => $this->txn->getFee()
+            ]
+        );
     }
 
     public function fillDetails()
@@ -181,6 +191,17 @@ abstract class Base extends BaseCore
         $amount = $this->source->getBaseAmount();
 
         $this->txn->setAmount($amount);
+
+        $this->trace->debug(TraceCode::FILLED_TRANSACTION_DETAILS,
+            [
+                'transaction_id'            => $this->txn->getId(),
+                'transaction_credit'        => $this->txn->getCredit(),
+                'transaction_debit'         => $this->txn->getDebit(),
+                'transaction_amount'        => $this->txn->getAmount(),
+                'transaction_fee_model'     => $this->txn->getFeeModel(),
+                'transaction_fee_bearer'    => $this->txn->getFeeBearer(),
+            ]
+        );
     }
 
     abstract function updateTransaction();

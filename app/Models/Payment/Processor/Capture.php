@@ -903,6 +903,17 @@ trait Capture
 
         $this->calculateAndSetMdrFeeIfApplicable($payment, $txn);
 
+        $this->trace->debug(TraceCode::TRANSACTION_DETAILS,
+            [
+                'transaction_id'        => $txn->getId(),
+                'payment_id'            => $txn->getEntityId(),
+                'transaction_credit'    => $txn->getCredit(),
+                'transaction_debit'     => $txn->getDebit(),
+                'transaction_amount'    => $txn->getAmount(),
+                'transaction_fee'       => $txn->getFee()
+            ]
+        );
+
         $this->repo->saveOrFail($txn);
 
         $this->repo->saveOrFail($payment);

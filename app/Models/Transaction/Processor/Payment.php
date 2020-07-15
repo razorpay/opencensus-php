@@ -21,7 +21,12 @@ class Payment extends Base
         $this->trace->info(
             TraceCode::PAYMENT_CAPTURE_CREATE_TRANSACTION,
             [
-                'payment_id' => $this->source->getId()
+                'payment_id'            => $this->source->getId(),
+                'transaction_id'        => $this->txn->getId(),
+                'transaction_amount'    => $this->txn->getAmount(),
+                'transaction_credit'    => $this->txn->getCredit(),
+                'transaction_debit'     => $this->txn->getDebit(),
+                'transaction_fees'      => $this->txn->getFee()
             ]);
 
         $this->checkAndSetTxnReconciliation();
@@ -227,11 +232,30 @@ class Payment extends Base
         {
             $this->debit = -1 * $amount;
         }
+
+        $this->trace->debug(TraceCode::CALCULATED_FEES_FOR_PAYMENT,
+            [
+                'credit'            => $this->credit,
+                'debit'             => $this->debit,
+                'amount'            => $amount,
+                'fee'               => $this->fees,
+                'fee_credits'       => $this->feeCredits,
+                'amount_credits'    => $this->amountCredits
+            ]
+        );
+
     }
 
     public function getNetAmount()
     {
         $amount = $this->txn->getAmount();
+
+        $this->trace->debug(TraceCode::IS_DIRECT_SETTLEMENT_PAYMENT,
+            [
+                'is_direct_settlement' => $this->source->isDirectSettlement(),
+            ]
+        );
+
 
         if ($this->source->isDirectSettlement() === true)
         {
@@ -251,6 +275,16 @@ class Payment extends Base
             default:
                 $netAmount = $amount - $this->fees;
         }
+
+        $this->trace->debug(TraceCode::NET_AMOUNT_FOR_TRANSACTION,
+            [
+                'credit'        => $this->credit,
+                'debit'         => $this->debit,
+                'amount'        => $amount,
+                'fee'           => $this->fees,
+                'net_amount'    => $netAmount,
+            ]
+        );
 
         return $netAmount;
     }

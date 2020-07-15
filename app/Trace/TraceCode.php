@@ -3102,6 +3102,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const CREDIT_BALANCE_CREATE_REQUEST = 'CREDIT_BALANCE_CREATE_REQUEST';
 
+    // Adding Logs for debugging issue: https://razorpay.atlassian.net/browse/PCORE-526
+    const SETTING_TRANSACTION_CREDITS   = 'SETTING_TRANSACTION_CREDITS';
+    const CALCULATED_FEES_FOR_PAYMENT   = 'CALCULATED_FEES_FOR_PAYMENT';
+    const FILLED_TRANSACTION_DETAILS    = 'FILLED_TRANSACTION_DETAILS';
+    const TRANSACTION_DETAILS            = 'TRANSACTION_DETAILS';
+    const IS_DIRECT_SETTLEMENT_PAYMENT  = 'IS_DIRECT_SETTLEMENT_PAYMENT';
+    const NET_AMOUNT_FOR_TRANSACTION    = 'NET_AMOUNT_FOR_TRANSACTION';
+    //                                ==========
+    
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
