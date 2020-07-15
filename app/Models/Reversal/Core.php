@@ -375,7 +375,14 @@ class Core extends Base\Core
         }
         else
         {
-            $amount = $payout->getAmount() + $payout->getFees();
+            if ($payout->getFeeType() === Transaction\CreditType::REWARD_FEE)
+            {
+                $amount = $payout->getAmount();
+            }
+            else
+            {
+                $amount = $payout->getAmount() + $payout->getFees();
+            }
         }
 
         $reversalInput = [

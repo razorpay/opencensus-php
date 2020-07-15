@@ -386,6 +386,9 @@ class PayoutTest extends TestCase
         $creditTxnEntity = $this->getLastEntity('credit_transaction', true);
         $this->assertEquals('reversal', $creditTxnEntity['entity_type']);
         $this->assertEquals(-900, $creditTxnEntity['credits_used']);
+
+        $reversal = $this->getLastEntity('reversal', true);
+        $this->assertEquals(2000000, $reversal['amount']);
     }
 
     public function testPayoutReversalWithMultipleRewards()
