@@ -100,7 +100,7 @@ final class PostAuthenticate
         {
             $this->reqCtx->passportAttrsMismatch = true;
             $this->trace->count(Metric::PASSPORT_ATTRS_MISMATCH_TOTAL);
-            $this->trace->error(TraceCode::PASSPORT_ATTRS_MISMATCH, compact('errors'));
+            $this->trace->warning(TraceCode::PASSPORT_ATTRS_MISMATCH, compact('errors'));
         }
     }
 
