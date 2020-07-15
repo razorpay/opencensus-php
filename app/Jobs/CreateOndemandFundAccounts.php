@@ -13,6 +13,8 @@ class CreateOndemandFundAccounts extends Job
 
     public $timeout = 7200;
 
+    protected $queueConfigKey = 'mailing_list_update';
+
     const LIMIT = 400;
 
     public function __construct($mode)
