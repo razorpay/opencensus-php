@@ -76,6 +76,8 @@ class Service extends Base\Service
      */
     public function createForOAuthApp(array $input, string $appId): array
     {
+        $this->traceOperationEntry('create_for_oauth', ['app_id' => $appId ?? '']);
+
         $input = $this->apiToStorkFormat($input);
 
         $this->unsetImplicitFields($input);
@@ -85,6 +87,8 @@ class Service extends Base\Service
 
         $input[self::OWNER_ID]   = $appId;
         $input[self::OWNER_TYPE] = self::APPLICATION;
+
+        $this->traceOperationExit('create_for_oauth', ['app_id' => $appId ?? '']);
 
         return $this->create($input);
     }
@@ -98,6 +102,8 @@ class Service extends Base\Service
      */
     public function createForMerchant(array $input): array
     {
+        $this->traceOperationEntry('create_for_merchant');
+
         $input = $this->apiToStorkFormat($input);
 
         $this->unsetImplicitFields($input);
@@ -106,6 +112,8 @@ class Service extends Base\Service
 
         $input[self::OWNER_ID]   = $this->merchant->getId();
         $input[self::OWNER_TYPE] = self::MERCHANT;
+
+        $this->traceOperationExit('create_for_merchant');
 
         return $this->create($input);
     }
@@ -127,6 +135,8 @@ class Service extends Base\Service
 
         $res = (new Stork($this->product))->create($input);
 
+        $this->traceStorkOperationSuccess('create', ['webhook_id' => $res[self::ID] ?? '', 'webhook' => $this->getStorkWebhookForTracing($res)]);
+
         //TODO: this will be removed once it's all stork
         if ((isset($res[self::ID]) === true) and
             ($this->auth->isProductBanking() === false))
@@ -146,6 +156,8 @@ class Service extends Base\Service
      */
     public function update(string $webhookId, array $input): array
     {
+        $this->traceOperationEntry('update', ['webhook_id' => $webhookId ?? '']);
+
         $input = $this->apiToStorkFormat($input);
 
         $this->unsetImplicitFields($input);
@@ -165,6 +177,8 @@ class Service extends Base\Service
 
         $res = (new Stork($this->product))->edit($input);
 
+        $this->traceStorkOperationSuccess('update', ['webhook_id' => $res[self::ID] ?? '', 'webhook' => $this->getStorkWebhookForTracing($res)]);
+
         //TODO: this will be removed once it's all stork
         if ((isset($res[self::ID]) === true) and
             ($this->auth->isProductBanking() === false))
@@ -172,11 +186,15 @@ class Service extends Base\Service
             (new Merchant\Webhook\Core)->updateWebhookForStork($input, $this->merchant, $res[self::ID], $res[self::CREATED_AT] ?? 0);
         }
 
+        $this->traceOperationExit('update', ['webhook_id' => $res[self::ID] ?? '']);
+
         return $this->storkToApiFormat($res);
     }
 
     public function get(string $webhookId): array
     {
+        $this->traceOperationEntry('get', ['webhook_id' => $webhookId ?? '']);
+
         if (($this->app['basicauth']->isHosted() === true) or
             ($this->app['basicauth']->isExpress() === true))
         {
@@ -187,11 +205,15 @@ class Service extends Base\Service
             $res = (new Stork($this->product))->get($webhookId, $this->merchant->getId());
         }
 
+        $this->traceOperationExit('get', ['webhook_id' => $webhookId ?? '']);
+
         return $this->storkToApiFormat($res);
     }
 
     public function list(array $params): array
     {
+        $this->traceOperationEntry('list');
+
         if (($this->app['basicauth']->isHosted() === true) or
             ($this->app['basicauth']->isExpress() === true))
         {
@@ -204,6 +226,8 @@ class Service extends Base\Service
 
         $res['items'] = array_map(function ($v) { return $this->storkToApiFormat($v); }, $res['items']);
 
+        $this->traceOperationExit('list');
+
         return $res;
     }
 
@@ -213,7 +237,11 @@ class Service extends Base\Service
      */
     public function delete(string $webhookId)
     {
+        $this->traceOperationEntry('delete', ['webhook_id' => $webhookId ?? '']);
+
         (new Stork($this->product))->delete($webhookId, $this->merchant->getId());
+
+        $this->traceStorkOperationSuccess('delete', ['webhook_id' => $webhookId ?? '']);
 
         // since product banking webhooks are only present on stork.
         if ($this->auth->isProductBanking() === false)
@@ -223,6 +251,8 @@ class Service extends Base\Service
                 // soft deleting the webhook enity in API.
                 $webhook = $this->repo->webhook->findByIdAndMerchant($webhookId, $this->merchant);
                 $this->repo->deleteOrFail($webhook);
+
+                $this->traceOperation(TraceCode::WEBHOOK_V2_PATH_API_OPERATION_SUCCESS, 'delete');
             }
             catch (\Throwable $e)
             {
@@ -233,6 +263,8 @@ class Service extends Base\Service
                     ]);
             }
         }
+
+        $this->traceOperationExit('delete', ['webhook_id' => $webhookId ?? '']);
     }
 
     /**
@@ -505,6 +537,43 @@ class Service extends Base\Service
                     'stork_wk_id' => $wkID,
                 ]);
         }
+    }
+
+    protected function traceOperationEntry(string $operation,  array $extraParams = [])
+    {
+        $this->traceOperation(TraceCode::WEBHOOK_V2_PATH_OPERATION_ENTRY, $operation, $extraParams);
+    }
+
+    protected function traceOperationExit(string $operation, array $extraParams = [])
+    {
+        $this->traceOperation(TraceCode::WEBHOOK_V2_PATH_OPERATION_EXIT, $operation, $extraParams);
+    }
+
+    protected function traceStorkOperationSuccess(string $operation, array $extraParams = [])
+    {
+        $this->traceOperation(TraceCode::WEBHOOK_V2_PATH_STORK_OPERATION_SUCCESS, $operation, $extraParams);
+    }
+
+    protected function traceOperation(string $traceCode, string $operation, array $extraParams = [])
+    {
+        $params = $this->getBaseParamsForTracing($operation);
+        $params = array_merge($params, $extraParams);
+        $this->trace->info($traceCode, $params);
+    }
+
+    protected function getBaseParamsForTracing(string $operation): array
+    {
+        return [
+            'operation'        => $operation,
+            'merchant_id'      => $this->auth->getMerchantId() ?? '',
+            'origin_product'   => $this->auth->getRequestOriginProduct(),
+        ];
+    }
+
+    protected function getStorkWebhookForTracing(array $wk): array
+    {
+        unset($wk['secret']);
+        return $wk;
     }
 
 }

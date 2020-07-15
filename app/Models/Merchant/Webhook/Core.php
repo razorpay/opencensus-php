@@ -71,6 +71,8 @@ class Core extends Base\Core
             $webhook->merchant()->associate($merchant);
             $webhook->build($apiInput);
             $this->repo->webhook->save($webhook);
+
+            $this->trace->info(TraceCode::WEBHOOK_V2_PATH_API_OPERATION_SUCCESS, ['operation' => 'create', 'webhook_id' => $webhookId]);
         }
         catch (\Throwable $e)
         {
@@ -109,6 +111,8 @@ class Core extends Base\Core
             }
             $webhook->edit($apiInput);
             $this->repo->webhook->save($webhook);
+
+            $this->trace->info(TraceCode::WEBHOOK_V2_PATH_API_OPERATION_SUCCESS, ['operation' => 'update', 'webhook_id' => $webhookId]);
         }
         catch (\Throwable $e)
         {
