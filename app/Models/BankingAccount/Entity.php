@@ -518,6 +518,11 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('\RZP\Models\BankingAccount\State\Entity');
     }
 
+    public function activationComments()
+    {
+        return $this->hasMany(Comment\Entity::class);
+    }
+
     /**
      * This function is used for getting the activation status change log of a banking account
      * @param Entity $bankingAccount
@@ -530,6 +535,14 @@ class Entity extends Base\PublicEntity
                     ->orderBy(State\Entity::CREATED_AT)
                     ->get();
     }
+
+    public function getActivationComments(): PublicCollection
+    {
+        return $this->activationComments()
+                    ->orderBy(Comment\Entity::ADDED_AT)
+                    ->get();
+    }
+
     public function bankingAccountDetails()
     {
         return $this->hasMany(Detail\Entity::class, Detail\Entity::BANKING_ACCOUNT_ID, self::ID);

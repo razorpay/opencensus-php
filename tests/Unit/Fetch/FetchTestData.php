@@ -119,6 +119,14 @@ return [
         ],
     ],
 
+    E::BANKING_ACCOUNT_COMMENT => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'source_team_type' => 'internal'
+            ],
+        ],
+    ],
+
     E::EXTERNAL => [
         Type::PRIVILEGE_AUTH => [
             [

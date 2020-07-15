@@ -1,0 +1,99 @@
+<?php
+
+
+namespace RZP\Models\BankingAccount\Activation\Comment;
+
+use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Constants\Table;
+use RZP\Models\Admin\Admin;
+use RZP\Models\BankingAccount;
+
+class Entity extends Base\PublicEntity
+{
+    const ADMIN_ID = 'admin_id'; // id of admin who added comment
+
+    const BANKING_ACCOUNT_ID = 'banking_account_id';
+
+    const COMMENT = 'comment';
+
+    const SOURCE_TEAM_TYPE = 'source_team_type'; // internal(RZP) /external(bank)
+
+    const SOURCE_TEAM = 'source_team'; // Sales/Ops/Product/etc
+
+    /*
+    This is needed because we want to capture the exact time at which
+    we received the comment (say from bank). Sometimes we receive updates
+    from bank in an ad-hoc manner via whatsapp/email/phone/etc.
+    Ops team may not immediately add a comment to dashboard.
+    They may do it the next day or so.
+    added_at is to capture when exactly the comment corresponds to so
+    as to gather an accurate timeline, rather than when it was created
+    in our system(which is what created_at would signify)
+     */
+    const ADDED_AT = 'added_at';
+
+    // relations
+    const ADMIN = 'admin';
+
+    protected $entity = 'banking_account_comment';
+
+    protected $table = Table::BANKING_ACCOUNT_COMMENT;
+
+    protected $generateIdOnCreate = true;
+
+    protected static $generators = [
+        self::ID
+    ];
+
+    protected $fillable = [
+        self::ID,
+        self::ADMIN_ID,
+        self::BANKING_ACCOUNT_ID,
+        self::COMMENT,
+        self::SOURCE_TEAM_TYPE,
+        self::SOURCE_TEAM,
+        self::ADDED_AT,
+    ];
+
+    protected $visible = [
+        self::ID,
+        self::ADMIN_ID,
+        self::BANKING_ACCOUNT_ID,
+        self::COMMENT,
+        self::SOURCE_TEAM_TYPE,
+        self::SOURCE_TEAM,
+        self::ADDED_AT,
+        self::CREATED_AT,
+        self::ADMIN
+    ];
+
+    public $public = [
+        self::ID,
+        self::ADMIN_ID,
+        self::BANKING_ACCOUNT_ID,
+        self::COMMENT,
+        self::SOURCE_TEAM_TYPE,
+        self::SOURCE_TEAM,
+        self::ADDED_AT,
+        self::CREATED_AT,
+        self::ADMIN
+    ];
+
+    protected $dates = [
+        self::ADDED_AT,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    ];
+
+    public function bankingAccount()
+    {
+        return $this->belongsTo(BankingAccount\Entity::class);
+    }
+
+    public function admin()
+    {
+        return $this->belongsTo(Admin\Entity::class);
+    }
+
+}

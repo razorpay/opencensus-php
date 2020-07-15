@@ -240,6 +240,7 @@ class Table
     const BANKING_ACCOUNT_STATE           = 'banking_account_state';
     const BANKING_ACCOUNT_DETAIL          = 'banking_account_details';
     const BANKING_ACCOUNT_STATEMENT       = 'banking_account_statement';
+    const BANKING_ACCOUNT_COMMENT         = 'banking_account_comments';
 
     // P2P Service Tables
     const P2P_VPA               = 'p2p_vpa';

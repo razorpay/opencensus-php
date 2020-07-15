@@ -1685,7 +1685,8 @@ class Route
 
         'banking_account_activation_status_'
         . 'change_log'                            => ['get',      'banking_accounts/activation/{id}/status_change_log',        'BankingAccountController@getActivationStatusChangeLog'   ],
-
+        'banking_account_comments_create'         => ['post',     'banking_accounts/activation/{id}/comments',                 'BankingAccountController@createActivationComment'        ],
+        'banking_account_comments_list'           => ['get',      'banking_accounts/activation/{id}/comments',                 'BankingAccountController@getActivationComments'          ],
         'banking_account_statement_process'       => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
         'banking_account_statement_generate'      => ['post',     'banking_account_statement/generate',                        'BankingAccountStatementController@generate'                ],
         'banking_account_statement_process_cron'  => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
@@ -3280,6 +3281,8 @@ class Route
         'banking_account_activate',
         'banking_account_webhook_account_info_internal',
         'banking_account_activation_status_change_log',
+        'banking_account_comments_create',
+        'banking_account_comments_list',
         'banking_account_bulk_assign_reviewer',
 
         'governor_create_namespace_v1',
@@ -4057,6 +4060,8 @@ class Route
         'banking_account_yesb_bulk_create'         => Permission::BANKING_UPDATE_ACCOUNT,
         'banking_account_activation_status_'
         . 'change_log'                             => '*',
+        'banking_account_comments_create'          => '*', //TODO: change to the correct permission
+        'banking_account_comments_list'            => '*',
         'banking_account_bulk_assign_reviewer'     => Permission::ASSIGN_BANKING_ACCOUNT_REVIEWER,
         'set_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
         'get_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,

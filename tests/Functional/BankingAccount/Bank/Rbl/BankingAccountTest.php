@@ -1480,4 +1480,38 @@ class BankingAccountTest extends TestCase
         Mail::assertQueued(XProActivation::class);
 
     }
+
+    public function testCreateBankingAccountActivationComment()
+    {
+        $bankingAccount = $this->createBankingAccount();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/activation/' . $bankingAccount['id'] . '/comments',
+                'method'  => 'POST',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+
+        return $bankingAccount;
+    }
+
+    public function testGetBankingAccountActivationComment()
+    {
+        $bankingAccount =$this->testCreateBankingAccountActivationComment();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/activation/' . $bankingAccount['id'] . '/comments?expand[]=admin',
+                'method'  => 'GET',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+    }
 }

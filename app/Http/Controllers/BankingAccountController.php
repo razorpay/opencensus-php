@@ -4,6 +4,9 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Models\BankingAccount\Service;
+use RZP\Constants\Entity as E;
+use RZP\Models\BankingAccount;
 
 class BankingAccountController extends Controller
 {
@@ -62,6 +65,24 @@ class BankingAccountController extends Controller
     public function bulkAssignReviewer()
     {
         $response = $this->service()->bulkAssignReviewer($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function createActivationComment(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::BANKING_ACCOUNT_COMMENT)->createForBankingAccount($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getActivationComments(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::BANKING_ACCOUNT_COMMENT)->fetchMultiple($id, $input);
 
         return ApiResponse::json($response);
     }

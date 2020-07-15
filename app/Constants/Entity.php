@@ -139,6 +139,7 @@ class Entity
     const CUSTOMER_TRANSACTION       = 'customer_transaction';
     const UPI_TRANSFER_REQUEST       = 'upi_transfer_request';
     const BANKING_ACCOUNT_STATE      = 'banking_account_state';
+    const BANKING_ACCOUNT_COMMENT    = 'banking_account_comment';
     const FUND_TRANSFER_ATTEMPT      = 'fund_transfer_attempt';
     const BANK_TRANSFER_HISTORY      = 'bank_transfer_history';
     const BANK_TRANSFER_REQUEST      = 'bank_transfer_request';
@@ -488,6 +489,7 @@ class Entity
         self::TERMINAL_ACTION           => \RZP\Models\Terminal\Action::class,
         self::BANKING_ACCOUNT           => \RZP\Models\BankingAccount::class,
         self::BANKING_ACCOUNT_STATE     => \RZP\Models\BankingAccount\State::class,
+        self::BANKING_ACCOUNT_COMMENT   => \RZP\Models\BankingAccount\Activation\Comment::class,
         self::MERCHANT_REQUEST          => \RZP\Models\Merchant\Request::class,
         self::CUSTOMER_BALANCE          => \RZP\Models\Customer\Balance::class,
         self::GATEWAY_DOWNTIME          => \RZP\Models\Gateway\Downtime::class,
