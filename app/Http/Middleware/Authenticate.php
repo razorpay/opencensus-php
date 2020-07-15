@@ -107,7 +107,7 @@ class Authenticate
         // Non-null value indicates failure flow
         if ($ret !== null)
         {
-            return $ret;
+            return $this->postHandle($ret);
         }
 
         $ret = $next($request);
