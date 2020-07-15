@@ -25,24 +25,28 @@
                 <center style="text-align:left;max-width:572px;padding-left:16px;padding-right:16px;margin-left:auto;margin-right:auto;line-height:25px;letter-spacing:.2px;color:#515878;font-size:16px;margin-top:20px">
                     <p>Greetings from Razorpay!<br>
                         <br>
-                        We are glad to inform you that you're now eligible for Razorpay Early Settlements. This helps you reduce your settlement period from T+3 days to within a few hours <strong>for a nominal fee, based on your risk profile.</strong>
+                        We are glad to inform you that you're now eligible for Razorpay Early Settlements. Now, you can reduce your <strong>settlement period from T+2 days to within a few seconds</strong> for a nominal fee.
                         <br><br>
-                        <strong>Enable Early Settlements with these 3 simple steps:</strong>
-
+                        Enable <strong>Scheduled Same-day Settlements </strong>to get your customer payments twice a day or use <strong>On-demand Instand Settlements </strong>to get pending settlements any time, even during non-banking hours and holidays.
+                        <br><br>
+                        If you enable Same Day Settlements and trigger On-Demand Settlements, <strong>you can get the settlements in less than 10 seconds.</strong>
+                        <br><br>
+                    <strong>Enable Same-Day Settlements with these 4 simple steps:</strong>
                     <ol>
-                        <li>Login from <a href="https://dashboard.razorpay.com/#/access/signin?utm_source=mailchimp&amp;utm_medium=email&amp;utm_campaign=early-settlements-activation" style="color:#1aace5" target="_blank" data-saferedirecturl="https://www.google.com/url?q=https://dashboard.razorpay.com/%23/access/signin?utm_source%3Dmailchimp%26utm_medium%3Demail%26utm_campaign%3Dearly-settlements-activation&amp;source=gmail&amp;ust=1569584021872000&amp;usg=AFQjCNHPXu8AQBAvSntLZYIISyqEsI7qvg">here</a>.</li>
-                        <li>Click “<strong>Enable Now</strong>” under settlements tab or "<strong>Enable Daily Settlements</strong>" under announcements from the dashboard.</li>
+                        <li>Login to your dashboard from <a href="https://dashboard.razorpay.com/#/access/signin?utm_source=mailchimp&amp;utm_medium=email&amp;utm_campaign=early-settlements-activation" style="color:#1aace5" target="_blank" data-saferedirecturl="https://www.google.com/url?q=https://dashboard.razorpay.com/%23/access/signin?utm_source%3Dmailchimp%26utm_medium%3Demail%26utm_campaign%3Dearly-settlements-activation&amp;source=gmail&amp;ust=1569584021872000&amp;usg=AFQjCNHPXu8AQBAvSntLZYIISyqEsI7qvg">here</a>.</li>
+                        <li>Click “<strong>Enable Now</strong>” under settlements tab. </li>
+                        <li>Check the pricing.</li>
                         <li>Go live with Early Settlements.</li>
                     </ol>
                     <strong>Benefits of Early Settlements for your business:</strong></p>
                     <ol>
-                        <li>Easy and early access to your money for your business.</li>
+                        <li>Almost instant access to your money for your business.</li>
                         <li>Reduce your daily cash crunch and increase cash flows.</li>
                         <li>Manage your inventory and stock in a better way.</li>
                         <li>Pay your creditors / vendors on time without any delays.</li>
                     </ol>
                     <p><br>
-                        Looking forward to hearing from you. For any queries, please reach out to us by responding to this mail or through our support channel at <a href="https://razorpay.com/support/#request" style="color:#1aace5" target="_blank" data-saferedirecturl="https://www.google.com/url?q=https://razorpay.com/support/%23request&amp;source=gmail&amp;ust=1569584021872000&amp;usg=AFQjCNF3e7EeoKNdG_F7USCqRkgRj9q9PA">https://razorpay.com/support/.</a><br>
+                        Looking forward to hearing from you. For any queries, please reach out to us by responding to this mail or through our support channel at <a href="https://razorpay.com/support/#request" style="color:#1aace5" target="_blank" data-saferedirecturl="https://www.google.com/url?q=https://razorpay.com/support/%23request&amp;source=gmail&amp;ust=1569584021872000&amp;usg=AFQjCNF3e7EeoKNdG_F7USCqRkgRj9q9PA">https://razorpay.com/support/</a><br>
                         <br>
                         <br>
                         Thanks &amp; Regards,<br>

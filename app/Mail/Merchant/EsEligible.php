@@ -41,7 +41,7 @@ class EsEligible extends Base\Mailable
 
     protected function addSubject()
     {
-        $subject = 'Get ready cash inflow through Razorpay Early Settlements!';
+        $subject = 'Get settlements in less than 10 seconds!';
 
         $this->subject($subject);
 
