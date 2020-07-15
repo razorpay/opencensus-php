@@ -457,12 +457,12 @@ class Gateway extends Base\Gateway
         $attributes = [
             Base\Entity::RECEIVED        => true,
             Base\Entity::AMOUNT          => $input['refund']['amount'] / 100,
-            Base\Entity::BANK_PAYMENT_ID => $response[RefundFields::TRANSACTION_ID],
-            Base\Entity::STATUS          => $response[RefundFields::STATUS],
+            Base\Entity::BANK_PAYMENT_ID => $response[RefundFields::TRANSACTION_ID] ?? null,
+            Base\Entity::STATUS          => $response[RefundFields::STATUS] ?? null,
             Base\Entity::REFUND_ID       => $input['refund']['id'],
-            Base\Entity::DATE            => $response[RefundFields::TRANSACTION_DATE],
-            Base\Entity::ERROR_MESSAGE   => $response[RefundFields::MESSAGE_TEXT],
-            Base\Entity::MERCHANT_CODE   => $response[RefundFields::CODE],
+            Base\Entity::DATE            => $response[RefundFields::TRANSACTION_DATE] ?? null,
+            Base\Entity::ERROR_MESSAGE   => $response[RefundFields::MESSAGE_TEXT] ?? null,
+            Base\Entity::MERCHANT_CODE   => $response[RefundFields::CODE] ?? null,
         ];
 
         return $attributes;
@@ -646,12 +646,12 @@ class Gateway extends Base\Gateway
     protected function getRefundResponseHashArray($data)
     {
         $hashArray = [
-            $data[RefundFields::MERCHANT_ID],
-            $data[RefundFields::ERROR_CODE],
-            $data[RefundFields::AMOUNT],
-            $data[RefundFields::TRANSACTION_ID],
-            $data[RefundFields::TRANSACTION_DATE],
-            $data[RefundFields::STATUS],
+            $data[RefundFields::MERCHANT_ID] ?? '',
+            $data[RefundFields::ERROR_CODE] ?? '',
+            $data[RefundFields::AMOUNT] ?? '',
+            $data[RefundFields::TRANSACTION_ID] ?? '',
+            $data[RefundFields::TRANSACTION_DATE] ?? '',
+            $data[RefundFields::STATUS] ?? '',
             $this->getSecret()
         ];
 
