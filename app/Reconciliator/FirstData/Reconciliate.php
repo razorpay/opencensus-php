@@ -97,7 +97,7 @@ class Reconciliate extends Base\Reconciliate
 
         foreach ($capsPaymentIds as $key => $value)
         {
-            if (isset($responseFromCps[$value]) === true)
+            if (empty($responseFromCps[$value]) === false)
             {
                 unset($capsPaymentIds[$key]);
             }
@@ -139,7 +139,8 @@ class Reconciliate extends Base\Reconciliate
 
         foreach ($fileContents as &$row)
         {
-            if ($this->getReconTypeForRow($row) === Base\Reconciliate::REFUND)
+            if (($this->getReconTypeForRow($row) === Base\Reconciliate::REFUND) and
+                (Entity::verifyUniqueId($row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID], false) === true))
             {
                 $txnId = $row[RefundReconciliate::GATEWAY_TRANSACTION_ID];
                 $refundsArray[$txnId] = $row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID];
@@ -156,7 +157,8 @@ class Reconciliate extends Base\Reconciliate
 
             foreach ($fileContents as &$row)
             {
-                if ($this->getReconTypeForRow($row) === Base\Reconciliate::REFUND)
+                if (($this->getReconTypeForRow($row) === Base\Reconciliate::REFUND) and
+                    (Entity::verifyUniqueId($row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID], false) === true))
                 {
                     $txnId = ltrim($row[RefundReconciliate::GATEWAY_TRANSACTION_ID], '0');
 
