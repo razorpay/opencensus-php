@@ -566,11 +566,61 @@ class BankingAccountTest extends TestCase
         Mail::assertQueued(get_class($mailableClass));
     }
 
+    public function testUpdateBankingAccountStatusProcessingToProcessed()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            \RZP\Models\BankingAccount\Status::PROCESSING,
+            \RZP\Models\BankingAccount\Status::PROCESSED);
+    }
+
+    public function testUpdateBankingAccountStatusCreatedToProcessed()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            \RZP\Models\BankingAccount\Status::CREATED,
+            \RZP\Models\BankingAccount\Status::PROCESSED);
+    }
+
+    public function testUpdateBankingAccountStatusPickedToProcessed()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            \RZP\Models\BankingAccount\Status::PICKED,
+            \RZP\Models\BankingAccount\Status::PROCESSED);
+    }
+
+    public function testUpdateBankingAccountStatusInitiatedToProcessed()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            \RZP\Models\BankingAccount\Status::INITIATED,
+            \RZP\Models\BankingAccount\Status::PROCESSED);
+    }
+
+    public function testUpdateBankingAccountStatusUnservicableToProcessed()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            \RZP\Models\BankingAccount\Status::UNSERVICEABLE,
+            \RZP\Models\BankingAccount\Status::PROCESSED);
+    }
+
+    public function testUpdateBankingAccountStatusCancelledToProcessed()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            \RZP\Models\BankingAccount\Status::CANCELLED,
+            \RZP\Models\BankingAccount\Status::PROCESSED);
+    }
+
+    public function testUpdateBankingAccountStatusRejectedToProcessed()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            \RZP\Models\BankingAccount\Status::REJECTED,
+            \RZP\Models\BankingAccount\Status::PROCESSED);
+    }
+
     public function testUpdateBankingAccountStatusCancelledToCreated()
     {
         $this->assertUpdateBankingAccountStatusFromTo(
             \RZP\Models\BankingAccount\Status::CANCELLED,
             \RZP\Models\BankingAccount\Status::CREATED);
+
     }
 
     public function testUpdateBankingAccountStatusAsProcessed()

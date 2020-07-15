@@ -51,16 +51,22 @@ class Status
      * This contains a status map that keeps mapping of a status
      * to next possible statuses. This is to ensure the status
      * change on Banking Account Entity happens in an order.
+     *
+     * Processed should be accessible from any previous state
+     * so that we are be able to consume the webhook payload details
+     * and update the status to CA opened, agnostic to the status on admin dashboard.
      */
     protected static $fromToStatusMap = [
         self::CREATED => [
             self::PICKED,
             self::CANCELLED,
+            self::PROCESSED,
         ],
         self::PICKED => [
             self::INITIATED,
             self::UNSERVICEABLE,
             self::CANCELLED,
+            self::PROCESSED,
         ],
         self::INITIATED => [
             self::PROCESSING,
@@ -78,6 +84,7 @@ class Status
         ],
         self::UNSERVICEABLE => [
             self::PICKED,
+            self::PROCESSED,
         ],
 
         self::ACTIVATED => [],
@@ -85,9 +92,12 @@ class Status
             // Sometimes Sales team is able to revive leads who
             // had earlier cancelled their request. This is to
             // restart the process.
-            self::CREATED
+            self::CREATED,
+            self::PROCESSED,
         ],
-        self::REJECTED  => [],
+        self::REJECTED  => [
+            self::PROCESSED,
+        ],
     ];
 
     public static $internallyEditStatuses = [
