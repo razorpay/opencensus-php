@@ -11,7 +11,7 @@ class Status
     const INITIATED         = 'initiated';     // Sent to Bank
     const PROCESSING        = 'processing';    // Bank Processing
     const PROCESSED         = 'processed';     // CA Opened
-    const CANCELLED         = 'cancelled';     // Bank Cancelled
+    const CANCELLED         = 'cancelled';     // Merchant Cancelled
     const ACTIVATED         = 'activated';     // CA Activated
     const UNSERVICEABLE     = 'unserviceable'; // Temp Unserviceable
     const REJECTED          = 'rejected';      // Bank Rejected
@@ -81,11 +81,17 @@ class Status
         ],
 
         self::ACTIVATED => [],
-        self::CANCELLED => [],
+        self::CANCELLED => [
+            // Sometimes Sales team is able to revive leads who
+            // had earlier cancelled their request. This is to
+            // restart the process.
+            self::CREATED
+        ],
         self::REJECTED  => [],
     ];
 
     public static $internallyEditStatuses = [
+        self::CREATED,
         self::PICKED,
         self::INITIATED,
         self::PROCESSED,

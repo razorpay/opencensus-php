@@ -521,6 +521,58 @@ class BankingAccountTest extends TestCase
         $this->assertEquals('initiated', $logs['items'][1]['status']);
     }
 
+    protected function assertUpdateBankingAccountStatusFromTo(string $initialStatus, string $finalStatus)
+    {
+        Mail::fake();
+
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $bankingAccount = $this->createBankingAccount();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/' . $bankingAccount['id'],
+                'method'  => 'PATCH',
+                'content' => [
+                    RZP\Models\BankingAccount\Entity::STATUS => $finalStatus
+                ]
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id' => $merchantDetail->merchant['id'],
+                    RZP\Models\BankingAccount\Entity::STATUS => $finalStatus
+                ],
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->edit('banking_account',
+            $bankingAccount['id'],
+            [
+                'status' => $initialStatus,
+            ]);
+
+        $this->startTest($dataToReplace);
+
+        $updatedBankingAccount = $this->getDbEntityById('banking_account', $bankingAccount['id']);
+
+        $mailableClass = RZP\Mail\BankingAccount\StatusNotifications\Factory::getMailer($updatedBankingAccount);
+
+        Mail::assertQueued(get_class($mailableClass));
+    }
+
+    public function testUpdateBankingAccountStatusCancelledToCreated()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            \RZP\Models\BankingAccount\Status::CANCELLED,
+            \RZP\Models\BankingAccount\Status::CREATED);
+    }
+
     public function testUpdateBankingAccountStatusAsProcessed()
     {
         Mail::fake();
