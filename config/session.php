@@ -71,7 +71,7 @@ return array(
 	|
 	*/
 
-	'connection' => 'default',
+	'connection' => 'query_cache_redis',
 
     /*
     |--------------------------------------------------------------------------

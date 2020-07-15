@@ -89,12 +89,6 @@ return [
 
         'session' => [
             'driver'     => 'redis',
-            'connection' => 'default',
-            'prefix'     => 'session:laravel',
-        ],
-
-        'session_with_ec_cluster'   => [
-            'driver'     => 'redis',
             'connection' => 'query_cache_redis',
             'prefix'     => 'session:laravel',
         ],

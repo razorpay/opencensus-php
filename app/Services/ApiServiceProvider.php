@@ -385,8 +385,6 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerStorkService();
 
-        $this->registerCustomSessionProvider();
-
         $this->registerRazorpayXClient();
 
         $this->registerCustomCacheProvider();
@@ -600,15 +598,6 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new RedisDualWrite($app);
-        });
-    }
-
-    protected function registerCustomSessionProvider()
-    {
-        $manager = $this->app['session'];
-
-        $manager->extend('custom', function($app) {
-            return new CustomSessionHandler($app);
         });
     }
 
