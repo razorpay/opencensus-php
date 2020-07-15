@@ -2677,7 +2677,7 @@ return [
             'url'       => '/invoices/inv_1000000invoice',
             'method'    => 'patch',
             'content'   => [
-                'expire_by' => 1594749600,
+                'expire_by' => 1910268762,
             ],
         ],
         'response' => [
@@ -2685,7 +2685,7 @@ return [
                 'id'                   => 'inv_1000000invoice',
                 'entity'               => 'invoice',
                 'status'               => 'draft',
-                'expire_by'            => 1594749600,
+                'expire_by'            => 1910268762,
                 'notes'                => [],
             ]
         ]
