@@ -290,6 +290,12 @@ class Payout extends Base
 
     public function updateCredits(int $negativeLimit = 0)
     {
+        // If the balance is not sufficient we will not use
+        // credits since the payout will fail. We don't
+        // want a state where we debit the credits but not
+        // the banking balance
+
+        $this->validateMerchantBalance();
         // credits will be applied at the time of payout creation
         // for direct account payouts.
         if ($this->source->balance->isAccountTypeDirect() === true)
@@ -335,6 +341,8 @@ class Payout extends Base
         }
 
         $this->subtractRewardFeeCredits($fee);
+
+        $this->txn->source->setFeeType(CreditType::REWARD_FEE);
     }
 
     /**
@@ -371,8 +379,6 @@ class Payout extends Base
 
         $this->txn->setCredits($rewardFeeCredits);
 
-        $this->txn->source->setFeeType(CreditType::REWARD_FEE);
-
         foreach ($this->feesSplit as $key => $feeSplit)
         {
             if ($feeSplit->getName() === Constants\Entity::TAX)
@@ -385,7 +391,7 @@ class Payout extends Base
     protected function subtractRewardFeeCredits($amount)
     {
         (new Credits\Transaction\Core)->subtractMerchantCreditBalanceAndCreateTransactions(
-                                                    $this->merchant,
+                                                    $this->txn->merchant,
                                                     CreditType::REWARD_FEE,
                                                     Product::BANKING,
                                                     $amount,

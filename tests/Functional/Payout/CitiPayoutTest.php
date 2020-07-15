@@ -447,6 +447,89 @@ class CitiPayoutTest extends TestCase
         $this->app['cache']->flush();
     }
 
+    public function testCreateQueuedPayoutWithModeSetWithCredits()
+    {
+        $this->fixtures->edit('card', '100000000lcard', ['last4' => '1112']);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 500 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 500 ]);
+
+        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $balance = $this->getLastEntity('balance', true);
+
+        $balanceBefore = $balance['balance'];
+
+        $currentBalance = $this->getDbLastEntity('balance');
+
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626998',
+            'balance_id'            =>  $this->bankingBalance->getId(),
+            'account_type'          =>  'nodal',
+        ];
+
+        $bankingAccount = $this->createBankingAccount($bankingAccountAttributes);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $newBalance = $this->getDbLastEntity('balance');
+
+        $this->assertEquals($currentBalance->getBalance(), $newBalance->getBalance());
+
+        $txn = $this->getDbEntity('transaction', ['entity_id' => substr($response['id'], 5)]);
+
+        $this->assertNull($txn);
+
+        $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => substr($response['id'], 5)]);
+
+        $this->assertNull($fta);
+
+        $this->startTest();
+
+        $summary1 = $this->makePayoutSummaryRequest();
+
+        // Assert that there are 2 payouts in queued state.
+        $this->assertEquals(2, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(20000002, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+
+        $balance = $this->getLastEntity('credit_balance', true);
+        $this->assertEquals(500, $balance['balance']);
+        $payouts = $this->getDbEntities('payout');
+        $this->assertNull($payouts[0]['fee_type']);
+        $this->assertNull($payouts[1]['fee_type']);
+
+        $dispatchResponse = $this->dispatchQueuedPayouts();
+        $this->assertEquals($dispatchResponse['balance_id_list'][0], $currentBalance['id']);
+
+        $summary2 = $this->makePayoutSummaryRequest();
+
+        // Assert that there are still 2 payouts in queued state since there wasn't enough balance to process them
+        $this->assertEquals(2, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(20000002, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+
+        // Add enough balance to process only one queued payout
+        $this->fixtures->balance->edit($newBalance['id'], ['balance' => 11000000]);
+
+        $dispatchResponse = $this->dispatchQueuedPayouts();
+        $this->assertEquals($dispatchResponse['balance_id_list'][0], $currentBalance['id']);
+
+        $updatedSummary = $this->makePayoutSummaryRequest();
+
+        // Assert that there is only one payout in queued state. The other one got processed.
+        $this->assertEquals(1, $updatedSummary[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(10000001, $updatedSummary[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+
+        $this->app['cache']->flush();
+    }
+
     public function testCreatePayoutWithModeNotSet()
     {
         $this->startTest();
