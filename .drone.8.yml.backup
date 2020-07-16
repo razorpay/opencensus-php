@@ -12,7 +12,7 @@ pipeline:
       - chmod 777 -R storage
       - git config --global user.name $GIT_USERNAME
       - composer config --global github-oauth.github.com $GIT_TOKEN
-      - composer config -g repos.packagist composer https://packagist.jp
+      - composer config -g repos.packagist composer https://packagist.rzp.io
       - composer global require hirak/prestissimo
       - composer install --no-interaction --optimize-autoloader
       - mkdir -p /opt/razorpay/certs/first_data
