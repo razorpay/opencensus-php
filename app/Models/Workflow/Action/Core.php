@@ -24,6 +24,8 @@ use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Action\Checker;
 
 use RZP\Constants\Entity as E;
+use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
+
 
 class Core extends Base\Core
 {
@@ -679,20 +681,69 @@ class Core extends Base\Core
         string $permissionName,
         string $orgId = null)
     {
-        $orgId = $orgId ?: $this->app['basicauth']->getOrgId();
-
-        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
-
-        $permissionId = $this->repo
-                             ->permission
-                             ->retrieveIdsByNamesAndOrg($permissionName, $orgId)
-                             ->toArray()[0];
+        $permissionId = $this->fetchPermissionId($permissionName, $orgId);
 
         $actions = $this->repo
                         ->workflow_action
                         ->getOpenActionOnEntityOperation($entityId, $entityName, $permissionId);
 
         return $actions;
+    }
+
+    public function fetchActionsOnEntityOperation(
+        string $entityId,
+        string $entityName,
+        string $permissionName,
+        string $orgId = null)
+    {
+        $permissionId = $this->fetchPermissionId($permissionName, $orgId);
+
+        $actions = $this->repo
+            ->workflow_action
+            ->fetchWorkflowAction($entityId, $entityName, $permissionId);
+
+        return $actions;
+    }
+
+    private function fetchPermissionId(string $permissionName, $orgId)
+    {
+        $orgId = $orgId ?: $this->app['basicauth']->getOrgId();
+
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        $permissionIdList = $this->repo
+                            ->permission
+                            ->retrieveIdsByNamesAndOrg($permissionName, $orgId)
+                            ->toArray();
+
+        if(empty($permissionIdList) === true)
+        {
+            throw new
+            Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PERMISSION);
+        }
+        $permissionId = $permissionIdList[0];
+
+        return $permissionId;
+    }
+
+    public function fetchActionStatus(
+        string $entityId,
+        string $entityName,
+        string $permissionName,
+        string $orgId = null)
+    {
+        $actions = $this->fetchActionsOnEntityOperation($entityId, $entityName, $permissionName, $orgId);
+
+        $actions = $actions->toArrayPublic();
+
+        $action = end($actions['items']);
+
+       if ($action === false)
+       {
+           return $action;
+       }
+
+       return $action['state'];
     }
 
     public function executeAction($action, PublicEntity $checkerEntity, Role\Entity $role = null)
@@ -714,6 +765,12 @@ class Core extends Base\Core
 
         $authDetails = $diff[Differ\Entity::AUTH_DETAILS];
 
+        $permissionName = $action->permission->getName();
+
+        $this->trace->info(TraceCode::TYPEFORM_WORKFLOW_TRIGGERED, ["before change payload...." => $payload]);
+
+        $payload = $this->performMultipleWorkflowChanges($payload, $permissionName);
+
         // Replace the current request's payload with the
         // actual maker request payload.
         Request::replace($payload);
@@ -726,8 +783,6 @@ class Core extends Base\Core
         $this->initAuthDetails($authDetails);
 
         $state = State\Name::EXECUTED;
-
-        $permissionName = $action->permission->getName();
 
         //
         // Should the original request be replayed?
@@ -769,4 +824,17 @@ class Core extends Base\Core
 
         return ['success' => true];
     }
+
+    private function performMultipleWorkflowChanges($payload, $permissionName)
+    {
+        if (in_array($permissionName,ProductInternationalMapper::PRODUCT_PERMISSIONS_LIST))
+        {
+            $payload['permission'] = $permissionName;
+
+            $this->trace->info(TraceCode::TYPEFORM_WORKFLOW_TRIGGERED, ["persmission added payload" => $payload]);
+        }
+
+        return $payload;
+    }
 }
+

@@ -305,6 +305,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getProductInternationalStatus()
+    {
+        $response = $this->service(E::MERCHANT)->getProductInternationalStatus();
+
+        return ApiResponse::json($response);
+    }
+
     public function getBankAccount($id)
     {
         $data = $this->service()->getBankAccount($id);
@@ -1673,6 +1680,15 @@ class MerchantController extends Controller
     public function getBatchActions()
     {
         $response = $this->service()->getBatchActions();
+
+        return ApiResponse::json($response);
+    }
+
+    public function requestInternationalProduct()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->requestInternationalProduct($input);
 
         return ApiResponse::json($response);
     }

@@ -261,6 +261,7 @@ class PublicErrorDescription
     const BAD_REQUEST_RECEIPT_EMAILS_ALREADY_DISABLED                           = 'The merchant receipt emails are already disabled';
     const BAD_REQUEST_INTERNATIONAL_ALREADY_ENABLED                             = 'Merchant international is already enabled';
     const BAD_REQUEST_INTERNATIONAL_ALREADY_DISABLED                            = 'Merchant international is already disabled';
+    const BAD_REQUEST_INVALID_WORKFLOW_TYPE                                     = 'Merchant workflow type is not supported';
     const BAD_REQUEST_MERCHANT_INVALID                                          = 'The payment has been rejected by the gateway.';
     const BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED                 = 'Recurring payments are not supported for this merchant.';
     const BAD_REQUEST_UNABLE_TO_AUTHORIZE_PAYMENT                               = 'This payment could not be authorized by the processing bank.';
@@ -1117,6 +1118,16 @@ class PublicErrorDescription
 
     //Invalid Bank Account
     const BAD_REQUEST_INVALID_BANK_ACCOUNT                                          =  'The bank account entered is invalid';
+
+    //Invalid Product Name
+    const BAD_REQUEST_INVALID_PRODUCT_NAME                                          = 'The product requested is invalid';
+    const BAD_REQUEST_INVALID_STATUS_TRANSITION                                     = 'The status transition is invalid';
+    const BAD_REQUEST_PRODUCT_INTERNATIONAL_REQUIRED                                = 'The product international field cant be empty';
+    const BAD_REQUEST_INTERNATIONAL_ENABLEMENT_INVALID_STATUS                       = 'Invalid status for international enablement';
+    const INVALID_DATA_PARSER                                                       = 'Invalid Data Parser Requested';
+    const WORKFLOW_CREATION_FAILURE                                                 = 'Workflow Creation Failed';
+    const BAD_REQUEST_INVALID_PERMISSION                                            = 'The permission for current workflow is invalid.';
+    const BAD_REQUEST_PRODUCT_INTERNATIONAL_CANT_BE_ENABLED                         = 'Cant Enable Product International for the merchant';
 
     const BAD_REQUEST_PAYMENT_CONFIG_MARKED_FOR_REFUND                              = 'The Payment has been marked for refund in payment config';
 

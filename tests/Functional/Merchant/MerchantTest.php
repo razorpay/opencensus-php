@@ -23,22 +23,22 @@ use RZP\Jobs\EsSync;
 use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
+use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
-use RZP\Models\Pricing;
 use RZP\Models\Transaction;
 use RZP\Models\BankingAccount;
 use RZP\Services\RazorXClient;
 use RZP\Mail\User\MappedToAccount;
-use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Models\Settlement\Channel;
 use RZP\Services\SalesForceClient;
 use RZP\Tests\Functional\TestCase;
-use Illuminate\Support\Facades\Queue;
-use RZP\Exception\BadRequestException;
 use RZP\Models\User\Core as UserCore;
+use Illuminate\Support\Facades\Queue;
+use RZP\Mail\Merchant\EsEnabledNotify;
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Document\Source;
 use RZP\Models\User\Entity as UserEntity;
@@ -57,6 +57,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
 use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
+use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 
@@ -74,6 +75,7 @@ class MerchantTest extends TestCase
     use DbEntityFetchTrait;
     use CreatesInvoice;
     use PartnerTrait;
+    use WorkflowTrait;
     use TestsWebhookEvents;
     use EventsTrait;
 
@@ -461,7 +463,7 @@ class MerchantTest extends TestCase
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+        $this->ba->adminAuth('test', $this->authToken, 'org_' . $this->org->id);
 
         $result = $this->startTest();
 
@@ -474,7 +476,7 @@ class MerchantTest extends TestCase
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+        $this->ba->adminAuth('test', $this->authToken, 'org_' . $this->org->id);
 
         $result = $this->startTest();
 
@@ -6152,13 +6154,13 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
-    public function testInternationalEnableForGreyList()
+    public function testInternationalEnableForBlackList()
     {
         $merchantDetailsData = [
             'business_category'             => 'not_for_profit',
             'business_subcategory'          => 'educational',
             'activation_status'             => 'activated',
-            'international_activation_flow' => 'greylist',
+            'international_activation_flow' => 'blacklist',
         ];
 
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $merchantDetailsData);
@@ -6333,11 +6335,13 @@ class MerchantTest extends TestCase
             'international'    => 0,
             'activated'        => 1,
             'convert_currency' => null,
-            'website'          => 'abc@gmail.com'
+            'website'          => 'abc@gmail.com',
+            'pricing_plan_id'  => '1In3Yh5Mluj605',
         ];
 
         $merchant = $this->fixtures->create('merchant', $merchantData);
 
+        $this->merchantAssignPricingPlan('1hDYlICobzOCYt', $merchant['id']);
         //
         // If international activation flow is recalculated from business category and subcategory
         // then it points to blacklist category
@@ -7069,9 +7073,18 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
-    public function testMerchantInternationalEnableAction()
+    public function testMerchantInternationalPGEnableAction()
     {
-        $this->setMerchantMerchantDetailsAndPricing(false, 'blacklist');
+        $this->setMerchantMerchantDetailsAndPricing(false, 'greylist');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantInternationalProdV2EnableAction()
+    {
+        $this->setMerchantMerchantDetailsAndPricing(false, 'whitelist');
 
         $this->ba->adminAuth();
 
@@ -7097,7 +7110,7 @@ class MerchantTest extends TestCase
 
     public function testMerchantInternationalEnableBulkEdit()
     {
-        $this->setMerchantMerchantDetailsAndPricing(false, 'blacklist');
+        $this->setMerchantMerchantDetailsAndPricing(false, 'whitelist');
 
         $this->ba->adminAuth();
 
@@ -7110,6 +7123,46 @@ class MerchantTest extends TestCase
         $this->assertEquals($merchant['international'], true);
 
         $this->assertEquals($merchantDetail['international_activation_flow'], 'whitelist');
+    }
+
+    public function testMerchantInternationalEnableBulkEditBlacklistFailure()
+    {
+        $this->setMerchantMerchantDetailsAndPricing(false, 'blacklist');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantProductInternationalEnableBulkEdit()
+    {
+        $this->setMerchantMerchantDetailsAndPricing(false, 'greylist');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000);
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', 10000000000000);
+
+        $this->assertEquals($merchant['international'], true);
+
+        $this->assertEquals($merchant['product_international'], '1111000000');
+
+        $this->assertEquals($merchantDetail['international_activation_flow'], 'whitelist');
+    }
+
+    public function testMerchantProductInternationalEnableBulkEditFailure()
+    {
+        $this->setMerchantMerchantDetailsAndPricing(true, 'whitelist');
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'product_international'   => '1111000000']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
     }
 
     public function setMerchantMerchantDetailsAndPricing($international, $internationalActivationFlow)
@@ -7235,6 +7288,74 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('checkout_config', $response);
     }
 
+    public function testRequestMerchantProductInternational()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testRequestMerchantProductInternationalFailure()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testGetProductInternationalStatus()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'product_international' => '0000000000']);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $pgPermission = $this->getDbEntity('permission', ['name' => 'edit_merchant_pg_international']);
+
+        $prod2Permission = $this->getDbEntity('permission', ['name' => 'edit_merchant_prod_v2_international']);
+
+        $this->fixtures->create('workflow_action', [
+            'entity_id'     => '10000000000000',
+            'entity_name'   => 'merchant',
+            'state'         => 'rejected',
+            'permission_id' => $pgPermission->getId()
+        ]);
+
+        $this->fixtures->create('workflow_action', [
+            'entity_id'     => '10000000000000',
+            'entity_name'   => 'merchant',
+            'state'         => 'executed',
+            'permission_id' => $prod2Permission->getId()
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testGetProductInternationalStatusOldWorkflow()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'product_international' => '0000000000']);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $oldPermission = $this->getDbEntity('permission', ['name' => 'edit_merchant_international_new']);
+
+        $this->fixtures->create('workflow_action', [
+            'entity_id'     => '10000000000000',
+            'entity_name'   => 'merchant',
+            'state'         => 'rejected',
+            'permission_id' => $oldPermission->getId()
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+    }
 
     public function testUpiOtmFeatureFlag()
     {

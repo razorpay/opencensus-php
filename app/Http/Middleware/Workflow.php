@@ -53,6 +53,8 @@ class Workflow
         Permission::DELETE_TERMINAL,
         Permission::TOGGLE_TERMINAL,
         Permission::EDIT_MERCHANT_INTERNATIONAL,
+        Permission::EDIT_MERCHANT_PG_INTERNATIONAL,
+        Permission::EDIT_MERCHANT_PROD_V2_INTERNATIONAL,
         Permission::COMMISSION_PAYOUT,
         Permission::CREATE_GOVERNOR_RULE,
         Permission::EDIT_GOVERNOR_RULE,

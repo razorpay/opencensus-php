@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant;
 
+use RZP\Models\Admin\Permission\Name as Permission;
+
 /**
  * General constants for Merchant Model.
  */
@@ -109,6 +111,23 @@ final class Constants
     const CUSTOM_REASON_TYPE     = 'custom';
     const PREDEFINED_REASON_TYPE = 'predefined';
     const DOCUMENT               = 'document';
+
+    const  ADDITIONAL_WEBSITE       = 'additional_website';
+    const  ENABLE_INTERNATIONAL     = 'enable_international';
+    const  OLD_ENABLE_INTERNATIONAL = 'old_enable_international';
+    const  BANK_DETAIL_UPDATE       = 'bank_detail_update';
+    const  PERMISSION               = 'permission';
+    const  NO_ACTION_RECEIVED       = 'no_action_received';
+    const  IN_REVIEW                = 'in_review';
+    const  APPROVED                 = 'approved';
+
+    const ENABLE_INTERNATIONAL_PG      = 'enable_international_pg';
+    const ENABLE_INTERNATIONAL_PROD_V2 = 'enable_international_prod_v2';
+
+    const INTERNATIONAL_WORKFLOW_LIST = [
+        self::ENABLE_INTERNATIONAL_PG,
+        self::ENABLE_INTERNATIONAL_PROD_V2,
+    ];
 
     /**
      * Partner types that are allowed to view and manage
@@ -223,5 +242,32 @@ final class Constants
 
     const INSURANCE_CATEGORIES = [
         '6211',
+    ];
+
+    const MERCHANT_WORKFLOWS = [
+        self::ADDITIONAL_WEBSITE   => [
+            self::PERMISSION => Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
+            self::ENTITY     => \RZP\Constants\Entity::MERCHANT_DETAIL,
+        ],
+        self::ENABLE_INTERNATIONAL => [
+            self::PERMISSION => Permission::EDIT_MERCHANT_INTERNATIONAL_NEW,
+            self::ENTITY     => \RZP\Constants\Entity::MERCHANT,
+        ],
+        self::OLD_ENABLE_INTERNATIONAL => [
+            self::PERMISSION => Permission::EDIT_MERCHANT_INTERNATIONAL,
+            self::ENTITY     => \RZP\Constants\Entity::MERCHANT,
+        ],
+        self::ENABLE_INTERNATIONAL_PG => [
+            self::PERMISSION => Permission::EDIT_MERCHANT_PG_INTERNATIONAL,
+            self::ENTITY     => \RZP\Constants\Entity::MERCHANT,
+        ],
+        self::ENABLE_INTERNATIONAL_PROD_V2 => [
+            self::PERMISSION => Permission::EDIT_MERCHANT_PROD_V2_INTERNATIONAL,
+            self::ENTITY     => \RZP\Constants\Entity::MERCHANT,
+        ],
+        self::BANK_DETAIL_UPDATE   => [
+            self::PERMISSION => Permission::EDIT_MERCHANT_BANK_DETAIL,
+            self::ENTITY     => \RZP\Constants\Entity::BANK_ACCOUNT,
+        ]
     ];
 }

@@ -33,6 +33,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\Admin\Action;
 use RZP\Constants\Entity as E;
+use RZP\Constants\Entity as CE;
 use RZP\Jobs\MailingListUpdate;
 use RZP\Models\Admin\AdminLead;
 use RZP\Models\Merchant\Detail;
@@ -51,11 +52,14 @@ use RZP\Mail\Payout\Payout as PayoutMail;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use Razorpay\OAuth\Exception\DBQueryException;
 use RZP\Models\Partner\Config as PartnerConfig;
+use RZP\Models\Workflow\Action as WorkflowAction;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
 use RZP\Models\Merchant\Detail\InternationalActivationFlow;
 use RZP\Mail\Merchant\SecondFactorAuth as SecondFactorAuthMail;
+use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
+use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 
 class Core extends Base\Core
 {
@@ -499,12 +503,13 @@ class Core extends Base\Core
             $id, $relations);
     }
 
+
     /**
-     * Edit merchant entity
+     * @param $merchant
+     * @param $input
      *
-     * @param \RZP\Models\Merchant\Entity $merchant
-     * @param array $input
-     * @return \RZP\Models\Merchant\Entity
+     * @return mixed
+     * @throws \Throwable
      */
     public function edit($merchant, $input)
     {
@@ -517,7 +522,6 @@ class Core extends Base\Core
         $plan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($merchant->getPricingPlanId());
 
         (new Methods\Core)->validateInternationalPricingForMerchant($merchant, $plan);
-
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input)
         {
@@ -550,7 +554,6 @@ class Core extends Base\Core
                 $merchant->getId(),
                 [Entity::GROUPS, Entity::ADMINS]);
         }
-
         return $merchant;
     }
 
@@ -759,12 +762,23 @@ class Core extends Base\Core
 
         $action = $input['action'];
 
+        $internationalProducts = array_key_exists(ProductInternationalMapper::INTERNATIONAL_PRODUCTS, $input) ?
+                                 $input[ProductInternationalMapper::INTERNATIONAL_PRODUCTS] :
+                                 null;
+
         $originalMerchant = clone $merchant;
 
         $function = camel_case($action);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $function, $useWorkflows, $originalMerchant, $action)
-        {
+        $this->repo->transactionOnLiveAndTest(function() use (  $merchant,
+                                                                $function,
+                                                                $useWorkflows,
+                                                                $originalMerchant,
+                                                                $action,
+                                                                $internationalProducts) {
+
+            $this->handleEnableProductInternationalAction($action, $merchant, $internationalProducts);
+
             $merchant->$function();
 
             if ($useWorkflows === true)
@@ -773,12 +787,13 @@ class Core extends Base\Core
             }
 
             $this->repo->saveOrFail($merchant);
-        });
 
-        if (array_key_exists($action, Constants::$internationalActionMapping))
-        {
-            (new Detail\Core())->updateInternationalActivationFlow($merchant, Constants::$internationalActionMapping[$action]);
-        }
+            if (array_key_exists($action, Constants::$internationalActionMapping))
+            {
+                (new Detail\Core())->updateInternationalActivationFlow($merchant,
+                                                                       Constants::$internationalActionMapping[$action]);
+            }
+        });
 
         if($action === Merchant\Action::RELEASE_FUNDS)
         {
@@ -2743,17 +2758,41 @@ class Core extends Base\Core
         }
     }
 
+
+    /**
+     * @param Entity        $merchant
+     * @param Detail\Entity $merchantDetails
+     *
+     * @throws BadRequestException
+     * @throws Exception\LogicException
+     */
     public function updateInternationalTypeform(Entity $merchant, Detail\Entity $merchantDetails)
+    {
+        $this->shouldActivateProductInternational($merchant, $merchantDetails);
+
+        (new Detail\InternationalCore())->activateInternational($merchant);
+
+    }
+
+    /**
+     * @param $merchant
+     * @param $merchantDetails
+     *
+     * @throws BadRequestException
+     * @throws Exception\LogicException
+     */
+    public function shouldActivateProductInternational($merchant, $merchantDetails)
     {
         //
         // $activationFlowImpl will be an instance of the ActivationFlowInterface
         //
         $activationFlowImpl = InternationalActivationFlow\Factory::getActivationFlowImpl($merchant);
 
-        if (($activationFlowImpl->shouldActivateTypeformInternational() === true)
-            and ($this->checkInternationalEnablementPreconditions($merchant, $merchantDetails) === true))
+        if (($activationFlowImpl->shouldActivateTypeformInternational() === false)
+            or ($this->checkInternationalEnablementPreconditions($merchant, $merchantDetails) === false))
         {
-            (new Detail\InternationalCore())->activateInternational($merchant);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PRODUCT_INTERNATIONAL_CANT_BE_ENABLED);
         }
     }
 
@@ -2862,6 +2901,10 @@ class Core extends Base\Core
         {
             return false;
         }
+
+        $plan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($merchant->getPricingPlanId());
+
+        (new Methods\Core)->validateInternationalPricingForMerchant($merchant, $plan);
 
         return true;
     }
@@ -3041,12 +3084,7 @@ class Core extends Base\Core
 
         $merchantDetails = (new Detail\Core)->getMerchantDetails($merchant);
 
-        $shouldActivateInternational = $this->shouldActivateInternational($merchant, $merchantDetails);
-
-        if ($shouldActivateInternational === true)
-        {
-            (new Detail\InternationalCore())->activateInternational($merchant);
-        }
+        $this->updateInternationalTypeform($merchant, $merchantDetails);
 
         $this->repo->saveOrFail($merchant);
     }
@@ -3332,6 +3370,25 @@ class Core extends Base\Core
         return $batchActions;
     }
 
+    public function requestInternationalProduct(array $input)
+    {
+        $productInternationalField = new Merchant\ProductInternational\ProductInternationalField($this->merchant);
+
+        $this->trace->info(
+            TraceCode::PRODUCT_INTERNATIONAL_REQUESTED,
+            ['input' => $input]
+        );
+
+        foreach ($input['products'] as $requestedProduct)
+        {
+            $productInternationalField->requestEnablement($requestedProduct);
+        }
+
+        $this->repo->merchant->saveOrFail($this->merchant);
+
+        return $this->merchant;
+    }
+
     public function isEmailVerificationViaOtpRazorxEnabled(string $merchantId, $mode = null): bool
     {
         $mode = $mode ?? $this->mode;
@@ -3339,5 +3396,222 @@ class Core extends Base\Core
         $status = $this->app['razorx']->getTreatment($merchantId, Merchant\RazorxTreatment::EMAIL_VERIFICATION_USING_OTP, $mode);
 
         return (strtolower($status) === 'on');
+    }
+
+    /**
+     * @param Entity $merchant
+     *
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function getProductInternationalStatus(Entity $merchant): array
+    {
+        $response = [];
+
+        $workflowsNotExistCount = 0;
+
+        $internationalWorkflowList = Constants::INTERNATIONAL_WORKFLOW_LIST;
+
+        $permissionProductCategories =
+            array_flip(Merchant\ProductInternational\ProductInternationalMapper::PRODUCT_PERMISSION);
+
+        foreach ($internationalWorkflowList as $workflowType)
+        {
+            $permission = Constants::MERCHANT_WORKFLOWS[$workflowType][Constants::PERMISSION];
+
+            $productCategory = $permissionProductCategories[$permission];
+
+            $productNames =
+                Merchant\ProductInternational\ProductInternationalMapper::PRODUCT_CATEGORIES[$productCategory];
+
+            $productWiseWorkflowStatus = $this->fetchProductWiseWorkflowStatus($productNames, $workflowType, $merchant);
+
+            if (empty($productWiseWorkflowStatus) === false)
+            {
+                if (array_values($productWiseWorkflowStatus)[0] === Constants::NO_ACTION_RECEIVED)
+                {
+                    $workflowsNotExistCount += 1;
+                }
+                $response = array_merge($response, $productWiseWorkflowStatus);
+            }
+        }
+
+        if ($workflowsNotExistCount === count($permissionProductCategories))
+        {
+            $response = $this->handleOldWorkflows($response, $merchant);
+        }
+
+        return $response;
+    }
+
+    /**
+     * @param $currentResponse
+     * @param $merchant
+     *
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    private function handleOldWorkflows(array $currentResponse, Entity $merchant): array
+    {
+        $oldWorkflowStatus1 = $this->getMerchantWorkflowStatus(Constants::OLD_ENABLE_INTERNATIONAL, $merchant);
+
+        $oldWorkflowStatus2 = $this->getMerchantWorkflowStatus(Constants::ENABLE_INTERNATIONAL, $merchant);
+
+        $actualOldWorkflowStatus = ($oldWorkflowStatus1 === Constants::NO_ACTION_RECEIVED) === false ?
+            $oldWorkflowStatus1:
+            $oldWorkflowStatus2;
+
+        $currentResponse = array_fill_keys(array_keys($currentResponse), $actualOldWorkflowStatus);
+
+        return $currentResponse;
+    }
+
+    /**
+     * @param $productNames
+     * @param $workflowType
+     * @param $merchant
+     *
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function fetchProductWiseWorkflowStatus(array $productNames, string $workflowType, Entity $merchant): array
+    {
+        $productInternationalField = new Merchant\ProductInternational\ProductInternationalField($merchant);
+
+        $productInternational = $merchant->getProductInternational();
+
+        $productWiseWorkflowStatus = [];
+
+        foreach ($productNames as $productName)
+        {
+            $isApproved = ($productInternationalField->getProductStatus($productName, $productInternational)
+                           === Merchant\ProductInternational\ProductInternationalMapper::ENABLED);
+
+            $productWiseWorkflowStatus[$productName] =
+                ($isApproved === true) ? Constants::APPROVED :
+                    $this->getMerchantWorkflowStatus($workflowType, $merchant);
+        }
+
+        return $productWiseWorkflowStatus;
+    }
+
+    /**
+     * @param string $workflowType
+     * @param Entity $merchant
+     *
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function fetchWorkflowData(string $workflowType, Entity $merchant)
+    {
+        (new Validator())->validateMerchantWorkflowType($workflowType);
+
+        [$entityId, $entity] = $this->getWorkflowMetaData
+        (Constants::MERCHANT_WORKFLOWS[$workflowType][Constants::ENTITY], $merchant);
+
+        return [$entityId, $entity];
+    }
+
+    /**
+     * @param string $workflowType
+     * @param Entity $merchant
+     *
+     * @return string
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function getMerchantWorkflowStatus(string $workflowType, Entity $merchant): string
+    {
+        [$entityId, $entity] = $this->fetchWorkflowData($workflowType, $merchant);
+
+        $state = (new WorkflowAction\Core())->fetchActionStatus(
+            $entityId,
+            $entity,
+            Constants::MERCHANT_WORKFLOWS[$workflowType][Constants::PERMISSION]);
+
+        switch ($state)
+        {
+            case false :
+                return Constants::NO_ACTION_RECEIVED;
+
+            case WorkflowAction\State\Entity::EXECUTED :
+                return Constants::APPROVED;
+
+            case WorkflowAction\State\Entity::CLOSED :
+            case WorkflowAction\State\Entity::REJECTED:
+                return WorkflowAction\State\Entity::REJECTED;
+
+            default:
+                return Constants::IN_REVIEW;
+        }
+    }
+
+    /**
+     * @param string $entity
+     * @param Entity $merchant
+     *
+     * @return array
+     */
+    public function getWorkflowMetaData(string $entity, Entity $merchant)
+    {
+        switch ($entity)
+        {
+            case (CE::MERCHANT_DETAIL):
+
+                $merchantDetail = $merchant->merchantDetail;
+
+                return [$merchantDetail->getMerchantId(), $merchantDetail->getEntity()];
+
+            case (CE::BANK_ACCOUNT):
+
+                $merchantDetail = $merchant->merchantDetail;
+
+                return [$merchantDetail->getMerchantId(), $merchantDetail->getEntity()];
+
+            default:
+
+                return [$merchant->getId(), $merchant->getEntity()];
+        }
+    }
+
+
+    /**
+     * @param $action
+     * @param $merchant
+     * @param $internationalProducts
+     *
+     * @throws BadRequestException
+     * @throws Exception\LogicException
+     */
+    private function handleEnableProductInternationalAction($action, $merchant, $internationalProducts)
+    {
+        if ($action === \RZP\Models\Merchant\Action::ENABLE_INTERNATIONAL)
+        {
+            (new Validator)->validateEnableProductInternational($internationalProducts);
+
+            $this->enableProductInternational($internationalProducts, $merchant);
+        }
+    }
+
+    /**
+     * @param array  $internationalProducts
+     * @param Entity $merchant
+     *
+     * @throws BadRequestException
+     * @throws Exception\LogicException
+     */
+    public function enableProductInternational(array $internationalProducts, Entity $merchant)
+    {
+        $internationalProducts =
+            ProductInternationalField::updateProductNamesThroughCategory($internationalProducts);
+
+        $productNameStatus = array_fill_keys($internationalProducts, ProductInternationalMapper::ENABLED);
+
+        $productInternationalField = new ProductInternationalField($merchant);
+
+        $productInternationalField->setMultipleProductStatus($productNameStatus);
+
+        (new Detail\Core())->updateInternationalActivationFlow($merchant, 1);
+
+        $this->repo->saveOrFail($merchant);
     }
 }

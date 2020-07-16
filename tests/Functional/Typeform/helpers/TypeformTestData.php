@@ -40,7 +40,7 @@ return
                         "submitted_at" => "2018-01-18T18:17:02Z",
                         "landed_at"    => "2018-01-18T18:07:02Z",
                         "hidden"       => [
-                            "mid" => "100000Razorpay"
+                            "mid" => "EV7j5qM0qca1U3"
                         ],
                         "calculated"   => [
                             "score" => 9
@@ -289,15 +289,15 @@ return
             ],
         ],
 
-        // for workflow creation testing
-        'testDataParseTypeformWebhookConsumption'   => [
-            'request' => [
+        'testApprovalTypeformWebhookConsumption' => [
+            'request'     => [
                 'server'  => [
                     'HTTP_TYPEFORM_SIGNATURE' => 'sha256=X6+H7ZHluBgqX31COwXi+VJfsmXI2TwGQk5JssE7KwY='
                 ],
                 'method'  => 'POST',
                 'url'     => '/typeform/webhook_consumption',
                 'content' => [
+                    "permission"    => "edit_merchant_pg_international",
                     "event_id"      => "LtWXD3crgy",
                     "event_type"    => "form_response",
                     "form_response" => [
@@ -306,7 +306,7 @@ return
                         "submitted_at" => "2018-01-18T18:17:02Z",
                         "landed_at"    => "2018-01-18T18:07:02Z",
                         "hidden"       => [
-                            "mid" => "100000Razorpay"
+                            "mid" => "EV7j5qM0qca1U3"
                         ],
                         "calculated"   => [
                             "score" => 9
@@ -317,7 +317,7 @@ return
                             "fields" => [
                                 [
                                     "id"                        => "DlXFaesGBpoF",
-                                    "title"                     => "Thanks, {{answer_60906475}}! What's it like where you live? Tell us in a few sentences.",
+                                    "title"                     => "Thanks, User! What's it like where you live? Tell us in a few sentences.",
                                     "type"                      => "long_text",
                                     "ref"                       => "[readable_ref_long_text",
                                     "allow_multiple_selections" => false,
@@ -520,8 +520,311 @@ return
                         ]
                     ]
                 ],
-                #add response here
-            ]
+            ],
+            'response'    => [
+                'content' => [
+                    'success' => true
+                ],
+            ],
+            'status_code' => 200,
         ],
+
+        'testProd2ApprovalTypeformWebhookConsumption' => [
+            'request'     => [
+                'server'  => [
+                    'HTTP_TYPEFORM_SIGNATURE' => 'sha256=X6+H7ZHluBgqX31COwXi+VJfsmXI2TwGQk5JssE7KwY='
+                ],
+                'method'  => 'POST',
+                'url'     => '/typeform/webhook_consumption',
+                'content' => [
+                    "permission"    => "edit_merchant_prod_v2_international",
+                    "event_id"      => "LtWXD3crgy",
+                    "event_type"    => "form_response",
+                    "form_response" => [
+                        "form_id"      => "lT4Z3j",
+                        "token"        => "a3a12ec67a1365927098a606107fac15",
+                        "submitted_at" => "2018-01-18T18:17:02Z",
+                        "landed_at"    => "2018-01-18T18:07:02Z",
+                        "hidden"       => [
+                            "mid" => "EV7j5qM0qca1U3"
+                        ],
+                        "calculated"   => [
+                            "score" => 9
+                        ],
+                        "definition"   => [
+                            "id"     => "lT4Z3j",
+                            "title"  => "Webhooks example",
+                            "fields" => [
+                                [
+                                    "id"                        => "DlXFaesGBpoF",
+                                    "title"                     => "Thanks, User! What's it like where you live? Tell us in a few sentences.",
+                                    "type"                      => "long_text",
+                                    "ref"                       => "[readable_ref_long_text",
+                                    "allow_multiple_selections" => false,
+                                    "allow_other_choice"        => false
+                                ],
+                                [
+                                    "id"                        => "SMEUb7VJz92Q",
+                                    "title"                     => "If you're OK with our city management following up if they have further questions, please give us your email address.",
+                                    "type"                      => "email",
+                                    "ref"                       => "readable_ref_email",
+                                    "allow_multiple_selections" => false,
+                                    "allow_other_choice"        => false
+                                ],
+                            ]
+                        ],
+                        "answers"      => [
+                            [
+                                "type"  => "text",
+                                "text"  => "It's cold right now! I live in an older medium-sized city with a university. Geographically, the area is hilly.",
+                                "field" => [
+                                    "id"   => "DlXFaesGBpoF",
+                                    "type" => "long_text"
+                                ]
+                            ],
+                            [
+                                "type"  => "email",
+                                "email" => "laura@example.com",
+                                "field" => [
+                                    "id"   => "SMEUb7VJz92Q",
+                                    "type" => "email"
+                                ]
+                            ],
+                        ]
+                    ]
+                ],
+            ],
+            'response'    => [
+                'content' => [
+                    'success' => true
+                ],
+            ],
+            'status_code' => 200,
+        ],
+
+        'testApprovalTypeformWebhookConsumptionInvalidWebsite' => [
+            'request'   => [
+                'server'  => [
+                    'HTTP_TYPEFORM_SIGNATURE' => 'sha256=X6+H7ZHluBgqX31COwXi+VJfsmXI2TwGQk5JssE7KwY='
+                ],
+                'method'  => 'POST',
+                'url'     => '/typeform/webhook_consumption',
+                'content' => [
+                    "permission"    => "edit_merchant_prod_v2_international",
+                    "event_id"      => "LtWXD3crgy",
+                    "event_type"    => "form_response",
+                    "form_response" => [
+                        "form_id"      => "lT4Z3j",
+                        "token"        => "a3a12ec67a1365927098a606107fac15",
+                        "submitted_at" => "2018-01-18T18:17:02Z",
+                        "landed_at"    => "2018-01-18T18:07:02Z",
+                        "hidden"       => [
+                            "mid" => "EV7j5qM0qca1U3"
+                        ],
+                        "calculated"   => [
+                            "score" => 9
+                        ],
+                        "definition"   => [
+                            "id"     => "lT4Z3j",
+                            "title"  => "Webhooks example",
+                            "fields" => [
+                                [
+                                    "id"                        => "DlXFaesGBpoF",
+                                    "title"                     => "Thanks, User! What's it like where you live? Tell us in a few sentences.",
+                                    "type"                      => "long_text",
+                                    "ref"                       => "[readable_ref_long_text",
+                                    "allow_multiple_selections" => false,
+                                    "allow_other_choice"        => false
+                                ],
+                                [
+                                    "id"                        => "SMEUb7VJz92Q",
+                                    "title"                     => "If you're OK with our city management following up if they have further questions, please give us your email address.",
+                                    "type"                      => "email",
+                                    "ref"                       => "readable_ref_email",
+                                    "allow_multiple_selections" => false,
+                                    "allow_other_choice"        => false
+                                ],
+                            ]
+                        ],
+                        "answers"      => [
+                            [
+                                "type"  => "text",
+                                "text"  => "It's cold right now! I live in an older medium-sized city with a university. Geographically, the area is hilly.",
+                                "field" => [
+                                    "id"   => "DlXFaesGBpoF",
+                                    "type" => "long_text"
+                                ]
+                            ],
+                            [
+                                "type"  => "email",
+                                "email" => "laura@example.com",
+                                "field" => [
+                                    "id"   => "SMEUb7VJz92Q",
+                                    "type" => "email"
+                                ]
+                            ],
+                        ]
+                    ]
+                ],
+            ],
+            'response'  => [
+                'content'     => [
+                    'error' => [
+                        'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+                'message'             => 'Workflow can\'t be approved as Merchant Website is not Valid',
+            ],
+        ],
+
+        'testWorkflowCreationTypeformWebhook' => [
+            'request'     => [
+                'server'  => [
+                    'HTTP_TYPEFORM_SIGNATURE' => 'sha256=X6+H7ZHluBgqX31COwXi+VJfsmXI2TwGQk5JssE7KwY='
+                ],
+                'method'  => 'POST',
+                'url'     => '/typeform/webhook_consumption',
+                'content' => [
+                    "event_id"      => "LtWXD3crgy",
+                    "event_type"    => "form_response",
+                    "form_response" => [
+                        "form_id"      => "lT4Z3j",
+                        "token"        => "a3a12ec67a1365927098a606107fac15",
+                        "submitted_at" => "2018-01-18T18:17:02Z",
+                        "landed_at"    => "2018-01-18T18:07:02Z",
+                        "hidden"       => [
+                            "mid" => "EV7j5qM0qca1U3"
+                        ],
+                        "calculated"   => [
+                            "score" => 9
+                        ],
+                        "definition"   => [
+                            "id"     => "lT4Z3j",
+                            "title"  => "Webhooks example",
+                            "fields" => [
+                                [
+                                    "id"                        => "DlXFaesGBpoF",
+                                    "title"                     => "Thanks, User! What's it like where you live? Tell us in a few sentences.",
+                                    "type"                      => "long_text",
+                                    "ref"                       => "[readable_ref_long_text",
+                                    "allow_multiple_selections" => false,
+                                    "allow_other_choice"        => false
+                                ],
+                                [
+                                    "id"                        => "SMEUb7VJz92Q",
+                                    "title"                     => "If you're OK with our city management following up if they have further questions, please give us your email address.",
+                                    "type"                      => "email",
+                                    "ref"                       => "readable_ref_email",
+                                    "allow_multiple_selections" => false,
+                                    "allow_other_choice"        => false
+                                ],
+                            ]
+                        ],
+                        "answers"      => [
+                            [
+                                "type"  => "text",
+                                "text"  => "It's cold right now! I live in an older medium-sized city with a university. Geographically, the area is hilly.",
+                                "field" => [
+                                    "id"   => "DlXFaesGBpoF",
+                                    "type" => "long_text"
+                                ]
+                            ],
+                            [
+                                "type"  => "email",
+                                "email" => "laura@example.com",
+                                "field" => [
+                                    "id"   => "SMEUb7VJz92Q",
+                                    "type" => "email"
+                                ]
+                            ],
+                        ]
+                    ]
+                ],
+            ],
+            'response'    => [
+                'content' => [
+                    'success' => true
+                ],
+            ],
+            'status_code' => 200,
+        ],
+
+        'testOldWorkflowsExecution' => [
+            'request'     => [
+                'server'  => [
+                    'HTTP_TYPEFORM_SIGNATURE' => 'sha256=X6+H7ZHluBgqX31COwXi+VJfsmXI2TwGQk5JssE7KwY='
+                ],
+                'method'  => 'POST',
+                'url'     => '/typeform/webhook_consumption',
+                'content' => [
+                    "permission"    => "edit_merchant_international",
+                    "event_id"      => "LtWXD3crgy",
+                    "event_type"    => "form_response",
+                    "form_response" => [
+                        "form_id"      => "lT4Z3j",
+                        "token"        => "a3a12ec67a1365927098a606107fac15",
+                        "submitted_at" => "2018-01-18T18:17:02Z",
+                        "landed_at"    => "2018-01-18T18:07:02Z",
+                        "hidden"       => [
+                            "mid" => "EV7j5qM0qca1U3"
+                        ],
+                        "calculated"   => [
+                            "score" => 9
+                        ],
+                        "definition"   => [
+                            "id"     => "lT4Z3j",
+                            "title"  => "Webhooks example",
+                            "fields" => [
+                                [
+                                    "id"                        => "DlXFaesGBpoF",
+                                    "title"                     => "Thanks, User! What's it like where you live? Tell us in a few sentences.",
+                                    "type"                      => "long_text",
+                                    "ref"                       => "[readable_ref_long_text",
+                                    "allow_multiple_selections" => false,
+                                    "allow_other_choice"        => false
+                                ],
+                                [
+                                    "id"                        => "SMEUb7VJz92Q",
+                                    "title"                     => "If you're OK with our city management following up if they have further questions, please give us your email address.",
+                                    "type"                      => "email",
+                                    "ref"                       => "readable_ref_email",
+                                    "allow_multiple_selections" => false,
+                                    "allow_other_choice"        => false
+                                ],
+                            ]
+                        ],
+                        "answers"      => [
+                            [
+                                "type"  => "text",
+                                "text"  => "It's cold right now! I live in an older medium-sized city with a university. Geographically, the area is hilly.",
+                                "field" => [
+                                    "id"   => "DlXFaesGBpoF",
+                                    "type" => "long_text"
+                                ]
+                            ],
+                            [
+                                "type"  => "email",
+                                "email" => "laura@example.com",
+                                "field" => [
+                                    "id"   => "SMEUb7VJz92Q",
+                                    "type" => "email"
+                                ]
+                            ],
+                        ]
+                    ]
+                ],
+            ],
+            'response'    => [
+                'content' => [
+                    'success' => true
+                ],
+            ],
+            'status_code' => 200,
+        ]
 
     ];

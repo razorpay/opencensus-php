@@ -1075,6 +1075,8 @@ final class FactoryData
             'workflow_id'       => \RZP\Tests\Functional\Fixtures\Entity\Workflow::DEFAULT_WORKFLOW_ID,
             'approved'          => false,
             'current_level'     => 1,
+            'maker_id'          => $faker->uniqueid,
+            'maker_type'        => 'admin',
             'state'             => \RZP\Models\State\Name::OPEN,
             'org_id'            => \RZP\Tests\Functional\Fixtures\Entity\Org::RZP_ORG,
             'permission_id'     => 'factory:RZP\Models\Admin\Permission\Entity',

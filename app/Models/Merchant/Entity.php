@@ -38,6 +38,8 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
+use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
+use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 
 /**
  * @property Org\Entity         $org
@@ -285,7 +287,6 @@ class Entity extends Base\PublicEntity
         self::PARTNER_TYPE,
         self::BRAND_COLOR,
         self::HANDLE,
-        self::INTERNATIONAL,
         self::BILLING_LABEL,
         self::CONVERT_CURRENCY,
         self::AUTO_REFUND_DELAY,
@@ -517,6 +518,14 @@ class Entity extends Base\PublicEntity
         $instance->loadedFeatures = null;
 
         return $instance;
+    }
+
+    public function enablePgInternational()
+    {
+        $productInternationalField = new ProductInternationalField($this);
+
+        $productInternationalField->setProductStatus(ProductInternationalMapper::PAYMENT_GATEWAY,
+                                                      ProductInternationalMapper::ENABLED);
     }
 
     protected function generateTransactionReportEmail($input)
@@ -1665,6 +1674,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFUND_SOURCE);
     }
 
+    public function getProductInternational()
+    {
+        return $this->getAttribute(self::PRODUCT_INTERNATIONAL);
+    }
+
+    public function setProductInternational($productInternational)
+    {
+        $this->setAttribute(self::PRODUCT_INTERNATIONAL, $productInternational);
+    }
+
     public function getContrastOfBrandColor()
     {
         $brandColor = $this->getBrandColorOrDefault();
@@ -1674,16 +1693,6 @@ class Entity extends Base\PublicEntity
         // similar as in checkout (instead of #000000 checkout has rgba(0, 0, 0, 0.85)),
         return $relativeLuminance < 0.5 ? '#FFFFFF' : '#000000';
 
-    }
-
-    public function getProductInternational()
-    {
-        return $this->getAttribute(self::PRODUCT_INTERNATIONAL);
-    }
-
-    public function setProductInternational($productInternational)
-    {
-        $this->setAttribute(self::PRODUCT_INTERNATIONAL, $productInternational);
     }
 
     public function getFullLogoUrlWithSize($size = self::ORIGINAL_SIZE)
@@ -2615,4 +2624,5 @@ class Entity extends Base\PublicEntity
 
         return $merchantAttribute->getValue();
     }
+
 }

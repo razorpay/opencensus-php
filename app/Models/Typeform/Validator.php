@@ -11,4 +11,10 @@ class Validator extends Base\Validator
         'event_type'    => 'required|string|max:20',
         'form_response' => 'required|array',
     ];
+
+    protected static $typeformWorkflowRules = [
+        'parsed_data'    => 'required|array',
+        'permission'     => 'required|string|max:100',
+        'mid'            => 'required|string|max:50',
+    ];
 }

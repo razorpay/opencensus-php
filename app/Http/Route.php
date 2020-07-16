@@ -1812,6 +1812,8 @@ class Route
 
         'update_wait_timeout'                     => ['post',      'db/wait_timeout',                                        'AdminController@setWaitTimeout'                 ],
         'consume_typeform_webhook'                => ['post',      'typeform/webhook_consumption',                                  'TypeformController@webhookConsumption'          ],
+        'fetch_product_status'                    => ['get',       'merchants/product_international/workflow/status/all',       'MerchantController@getProductInternationalStatus'                 ],
+        'merchant_product_international_request'  => ['patch',     'merchant/international/product',                            'MerchantController@requestInternationalProduct'                   ],
 
         //cron job to retry penny testing for initiated case
         'retry_penny_testing_cron'                => ['post',      'merchants/retry_penny_testing',                           'MerchantController@retryPennyTestingCron'                 ],
@@ -2508,6 +2510,7 @@ class Route
     ];
 
     public static $proxy = [
+        'fetch_product_status',
         'settlement_ondemand_create_dashboard',
         'settlement_ondemand_fees_dashboard',
         'merchant_verify_attributes',
@@ -2796,6 +2799,7 @@ class Route
         'fetch_payment_config',
         'create_payment_config',
         'update_payment_config',
+        'merchant_product_international_request',
 
         // Vendor Payment Routes
         'vendor_payment_summary',

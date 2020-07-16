@@ -43,6 +43,7 @@ use RZP\Base\RuntimeManager;
 use RZP\Models\Pricing\Plan;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Workflow\Action;
+
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Admin as MainAdmin;
 use RZP\Models\Admin\Org\Hostname;
@@ -50,6 +51,7 @@ use RZP\Services\SalesForceClient;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Models\Merchant\Webhook\Stork;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Settlement\SettlementTrait;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Mail\Base\Constants as MailConstants;
@@ -58,7 +60,6 @@ use RZP\Mail\Merchant\CreateSubMerchantPartner;
 use RZP\Constants\{Mode, Entity as CE, Product};
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
-use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
@@ -326,13 +327,7 @@ class Service extends Base\Service
             Org\Entity::verifyIdAndStripSign($input[Entity::ORG_ID]);
         }
 
-        $merchant = $this->repo->transactionOnLiveAndTest(function () use ($merchant, $input)
-        {
-            if (isset($input[Entity::INTERNATIONAL]) === true)
-            {
-                (new Detail\Core())->updateInternationalActivationFlow($merchant, $input[Entity::INTERNATIONAL]);
-            }
-
+        $merchant = $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input) {
             $merchant = $this->core()->edit($merchant, $input);
 
             if (isset($input[Entity::FEE_BEARER]) === true)
@@ -1196,27 +1191,39 @@ class Service extends Base\Service
      */
     public function getBankAccountChangeStatus($id)
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
+        $type = Constants::MERCHANT_WORKFLOWS[Constants::BANK_DETAIL_UPDATE];
 
-        $oldBankAccount = $this->repo->bank_account->getBankAccount($merchant);
+        return $this->openWorkflowExists($type);
+    }
 
-        if (empty($oldBankAccount) === true)
-        {
-            return false;
-        }
+    public function getProductInternationalStatus() :array
+    {
+        $merchantCore = new Merchant\Core;
+
+        $merchant = $this->merchant;
+
+        $response['data'] = $merchantCore->getProductInternationalStatus($merchant);
+
+        return $response;
+    }
+
+    public function openWorkflowExists(string $workflowType) : bool
+    {
+        $merchantCore = new Merchant\Core;
+
+        $merchant = $this->merchant;
+
+        [$entityId, $entity] = $merchantCore->fetchWorkflowData($workflowType, $merchant);
 
         $actions = (new Action\Core())->fetchOpenActionOnEntityOperation(
-            $oldBankAccount->getId(), $oldBankAccount->getEntity(), Permission::EDIT_MERCHANT_BANK_DETAIL);
+            $entityId,
+            $entity,
+            Constants::MERCHANT_WORKFLOWS[$workflowType][Constants::PERMISSION]);
 
         $actions = $actions->toArray();
 
         // If there are any action in progress
-        if (empty($actions) === false)
-        {
-            return true;
-        }
-
-        return false;
+        return (empty($actions) === false);
     }
 
     /**
@@ -1224,27 +1231,9 @@ class Service extends Base\Service
      */
     public function getWebsiteStatus()
     {
-        $oldMerchantDetail = $this->merchant->merchantDetail;
+        $type = Constants::ADDITIONAL_WEBSITE;
 
-        if (empty($oldMerchantDetail) === true)
-        {
-            return false;
-        }
-
-        $actions = (new Action\Core())->fetchOpenActionOnEntityOperation(
-            $oldMerchantDetail->getMerchantId(),
-            $oldMerchantDetail->getEntity(),
-            Permission::EDIT_MERCHANT_WEBSITE_DETAIL);
-
-        $actions = $actions->toArray();
-
-        // If there are any action in progress
-        if (empty($actions) === false)
-        {
-            return true;
-        }
-
-        return false;
+        return $this->openWorkflowExists($type);
     }
 
     public function getBankAccount($id)
@@ -4572,6 +4561,19 @@ class Service extends Base\Service
         $batchAction = (new Core())->getBatchActions();
 
         return $batchAction;
+    }
+
+    public function requestInternationalProduct(array $input): array
+    {
+        $validator = (new Validator);
+
+        $validator->validateInput('request_international_product', $input);
+
+        $validator->validateMerchantForProductInternational($this->merchant);
+
+        $merchant = $this->core()->requestInternationalProduct($input);
+
+        return $merchant->toArrayPublic();
     }
 
     /**

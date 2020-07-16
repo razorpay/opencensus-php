@@ -3053,6 +3053,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TYPEFORM_PARSED_DATA                                  = 'TYPEFORM_PARSED_DATA';
     const TYPEFORM_WORKFLOW_TRIGGERED                           = 'TYPEFORM_WORKFLOW_TRIGGERED';
     const TYPEFORM_RAW_DATA                                     = 'TYPEFORM_RAW_DATA';
+    const PRODUCT_INTERNATIONAL_REQUESTED                       = 'PRODUCT_INTERNATIONAL_REQUESTED';
+    const PRODUCT_INTERNATIONAL_TRIGGERED                       = 'PRODUCT_INTERNATIONAL_TRIGGERED';
+    const PRODUCT_INTERNATIONAL_APPROVED                        = 'PRODUCT_INTERNATIONAL_APPROVED';
 
     // VA Migrate - Yesbank -> RBL
     const VA_MIGRATE_REQUEST            = 'VA_MIGRATE_REQUEST';

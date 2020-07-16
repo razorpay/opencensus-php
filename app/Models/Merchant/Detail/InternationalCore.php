@@ -22,6 +22,11 @@ class InternationalCore extends Base\Core
 
         $merchant->enableInternational();
 
+        if($this->getInternationalActivationFlow($merchant) === InternationalActivationFlow::WHITELIST)
+        {
+            $merchant->enablePgInternational();
+        }
+
         $merchant->setCurrencyConversion(false);
 
         $this->trace->info(

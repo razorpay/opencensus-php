@@ -2107,6 +2107,16 @@ class Core extends Base\Core
         Mail::queue($rejectionMail);
     }
 
+
+    /**
+     * @param Merchant\Entity $merchant
+     * @param                 $international
+     *
+     * @throws \RZP\Exception\BadRequestException
+     *
+     * Sets international_activation_flow to blacklist if its being disabled by admin. .
+     * SHOULD BE CALLED ONLY IN CASE OF ADMIN FLOW
+     */
     public function updateInternationalActivationFlow(Merchant\Entity $merchant, $international)
     {
         $merchantDetail = $merchant->merchantDetail;

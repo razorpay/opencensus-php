@@ -375,8 +375,11 @@ class Name
     const MERCHANT_INSTANT_ACTIVATION         = 'merchant_instant_activation';
     const UPDATE_MERCHANT_FEATURE             = 'update_merchant_feature';
     const UPDATE_TEST_MERCHANT_BALANCE        = 'update_test_merchant_balance';
-    const VIEW_VIRTUAL_ACCOUNT                = 'view_virtual_account';
     const EDIT_MERCHANT_INTERNATIONAL         = 'edit_merchant_international';
+    const EDIT_MERCHANT_PG_INTERNATIONAL      = 'edit_merchant_pg_international';
+    const EDIT_MERCHANT_PROD_V2_INTERNATIONAL = 'edit_merchant_prod_v2_international';
+
+    const VIEW_VIRTUAL_ACCOUNT                = 'view_virtual_account';
     const EDIT_MERCHANT_INTERNATIONAL_NEW     = 'edit_merchant_international_new';
     const UPLOAD_MERCHANT_DOCUMENT            = 'upload_merchant_document';
     const DELETE_MERCHANT_DOCUMENT            = 'delete_merchant_document';

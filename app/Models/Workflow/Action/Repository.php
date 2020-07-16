@@ -351,4 +351,17 @@ class Repository extends Base\Repository
                       ->get();
     }
 
+    public function fetchWorkflowAction(
+        string $entityId,
+        string $entityName,
+        string $permissionId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_ID, $entityId)
+                    ->where(Entity::ENTITY_NAME, $entityName)
+                    ->where(Entity::PERMISSION_ID, $permissionId)
+                    ->get();
+    }
+
+
 }

@@ -3,6 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -358,7 +359,6 @@ return [
     'testEditMerchant' => [
         'request' => [
             'raw' => json_encode([
-                'international' => '1',
                 'linked_account_kyc' => '1',
                 'website' => 'http://abc.com',
                 'category' => '1111',
@@ -381,7 +381,6 @@ return [
             'content' => [
                 'id' => '1X4hRFHFx4UiXt',
                 'entity' => 'merchant',
-                'international' => true,
                 'linked_account_kyc' => true,
                 'category' => '1111',
                 'website' => 'http://abc.com',
@@ -397,7 +396,6 @@ return [
     'testEditMerchantWithHighRiskThreshold' => [
         'request' => [
             'raw' => json_encode([
-                'international' => '1',
                 'linked_account_kyc' => '1',
                 'website' => 'http://abc.com',
                 'category' => '1111',
@@ -434,7 +432,6 @@ return [
     'testEditMerchantWithNullFeeCreditsThreshold' => [
         'request' => [
             'raw' => json_encode([
-                'international' => '1',
                 'linked_account_kyc' => '1',
                 'website' => 'https://www.example.com',
                 'category' => 1111,
@@ -456,7 +453,6 @@ return [
             'content' => [
                 'id' => '1X4hRFHFx4UiXt',
                 'entity' => 'merchant',
-                'international' => true,
                 'linked_account_kyc' => true,
                 'category' => '1111',
                 'website' => 'https://www.example.com',
@@ -5208,7 +5204,7 @@ return [
         ],
     ],
 
-    'testInternationalEnableForGreyList' => [
+    'testInternationalEnableForBlackList' => [
         'request'   => [
             'url'     => '/merchant/international',
             'method'  => 'patch',
@@ -5935,19 +5931,42 @@ return [
         ]
     ],
 
-    'testMerchantInternationalEnableAction' => [
+    'testMerchantInternationalPGEnableAction' => [
         'request'  => [
             'content' => [
-                'action' => 'enable_international'
+                'action'                 => 'enable_international',
+                'international_products' => ['payment_gateway']
             ],
             'url'     => '/merchants/10000000000000/action',
             'method'  => 'PUT',
         ],
         'response' => [
             'content' => [
-                'entity'          => 'merchant',
-                'international'   => true,
-                'merchant_detail' => [
+                'entity'                => 'merchant',
+                'international'         => true,
+                'product_international' => '1000000000',
+                'merchant_detail'       => [
+                    'international_activation_flow' => 'whitelist',
+                ]
+            ]
+        ]
+    ],
+
+    'testMerchantInternationalProdV2EnableAction' => [
+        'request'  => [
+            'content' => [
+                'action'                 => 'enable_international',
+                'international_products' => ['invoices']
+            ],
+            'url'     => '/merchants/10000000000000/action',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity'                => 'merchant',
+                'international'         => true,
+                'product_international' => '0111000000',
+                'merchant_detail'       => [
                     'international_activation_flow' => 'whitelist',
                 ]
             ]
@@ -5960,10 +5979,7 @@ return [
                 'merchant_ids' => [
                     '10000000000000',
                 ],
-                'attributes'   => [
-                    'international'    => 0,
-                    'convert_currency' => 0,
-                ],
+                'action'       => 'disable_international',
             ],
             'url'     => '/merchants/bulk',
             'method'  => 'PUT',
@@ -5980,13 +5996,11 @@ return [
     'testMerchantInternationalEnableBulkEdit' => [
         'request'  => [
             'content' => [
-                'merchant_ids' => [
+                'merchant_ids'           => [
                     '10000000000000',
                 ],
-                'attributes'   => [
-                    'international'    => 1,
-                    'convert_currency' => 1,
-                ],
+                'action'                 => 'enable_international',
+                'international_products' => ['payment_gateway', 'payment_gateway', 'payment_pages', 'invoices'],
             ],
             'url'     => '/merchants/bulk',
             'method'  => 'PUT',
@@ -5998,6 +6012,71 @@ return [
                 'failed'  => 0,
             ]
         ]
+    ],
+
+    'testMerchantProductInternationalEnableBulkEdit' => [
+        'request'  => [
+            'content' => [
+                'merchant_ids'           => [
+                    '10000000000000',
+                ],
+                'action'                 => 'enable_international',
+                'international_products' => ['payment_gateway', 'payment_gateway', 'payment_pages', 'invoices']
+            ],
+            'url'     => '/merchants/bulk',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'total'   => 1,
+                'success' => 1,
+                'failed'  => 0,
+            ]
+        ]
+    ],
+
+    'testMerchantProductInternationalEnableBulkEditFailure' => [
+        'request'  => [
+            'content' => [
+                'merchant_ids'           => [
+                    '10000000000000',
+                ],
+                'action'                 => 'enable_international',
+                'international_products' => ['payment_gateway', 'payment_gateway', 'payment_pages', 'invoices']
+            ],
+            'url'     => '/merchants/bulk',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'total'     => 1,
+                'success'   => 0,
+                'failed'    => 1,
+                'failedIds' => ["10000000000000"]
+            ],
+        ],
+    ],
+
+    'testMerchantInternationalEnableBulkEditBlacklistFailure' => [
+        'request'  => [
+            'content' => [
+                'merchant_ids'           => [
+                    '10000000000000',
+                ],
+                'action'                 => 'enable_international',
+                'international_products' => ['payment_gateway', 'payment_gateway', 'payment_pages', 'invoices']
+            ],
+            'url'     => '/merchants/bulk',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'total'     => 1,
+                'success'   => 0,
+                'failed'    => 1,
+                'failedIds' => ["10000000000000"]
+            ],
+        ],
     ],
 
     'testGetCheckoutPreferencesWithOrderMethodForNonTPVEnabledMerchant' => [
@@ -6034,6 +6113,87 @@ return [
             ]
         ]
     ],
+
+    'testRequestMerchantProductInternational' => [
+        'request'  => [
+            'url'     => '/merchant/international/product',
+            'method'  => 'PATCH',
+            'content' => [
+                'products' => [
+                    'payment_gateway',
+                    'payment_pages',
+                    'invoices',
+                ]
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'id'                    => '10000000000000',
+                'entity'                => 'merchant',
+                'product_international' => '2022000000',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testRequestMerchantProductInternationalFailure' => [
+        'request'   => [
+            'url'     => '/merchant/international/product',
+            'method'  => 'PATCH',
+            'content' => [
+                'products' => [],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The products field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+
+    ],
+
+    'testGetProductInternationalStatus' => [
+        'request'  => [
+            'url'    => '/merchants/product_international/workflow/status/all',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'data' => [
+                    'payment_gateway'   => 'rejected',
+                    'payment_links'     => 'approved',
+                    'payment_pages'     => 'approved',
+                    'invoices'          => 'approved',
+                ],
+            ],
+        ],
+    ],
+
+    'testGetProductInternationalStatusOldWorkflow' => [
+        'request'  => [
+            'url'    => '/merchants/product_international/workflow/status/all',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'data' => [
+                    'payment_gateway'   => 'rejected',
+                    'payment_links'     => 'rejected',
+                    'payment_pages'     => 'rejected',
+                    'invoices'          => 'rejected',
+                ],
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithConfigIdInOrder' => [
         'request' => [
             'url' => '/preferences',

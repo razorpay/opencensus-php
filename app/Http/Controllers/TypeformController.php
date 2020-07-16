@@ -40,5 +40,4 @@ class TypeformController extends Controller
      {
          $this->ba->setModeAndDbConnection(Mode::LIVE);
      }
-
 }

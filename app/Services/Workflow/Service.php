@@ -302,7 +302,7 @@ class Service
      *
      * @throws Exception\BadRequestException
      */
-    public function handle($originalData = null, $dirtyData = null)
+    public function handle($originalData = null, $dirtyData = null, $nextWorkflowPresent = false)
     {
         // 0. If workflows need to be skipped for some reason, skip
         if ($this->skipWorkflow === true)
@@ -418,14 +418,19 @@ class Service
 
         $workflowAction = json_encode($workflowAction);
 
+
         // When there's a workflow action throw an exception
         // to abort further flow of code (services, controllers, etc.)
-        throw new EarlyWorkflowResponse(
-            200,
-            $workflowAction,
-            null,
-            ['Content-Type' => 'application/json']
-        );
+
+        if($nextWorkflowPresent === false)
+        {
+            throw new EarlyWorkflowResponse(
+                200,
+                $workflowAction,
+                null,
+                ['Content-Type' => 'application/json']
+            );
+        }
     }
 
     public function saveActionIfTransactionFailed(array $data)

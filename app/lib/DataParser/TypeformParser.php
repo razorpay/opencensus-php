@@ -1,19 +1,12 @@
 <?php
 
-namespace RZP\lib;
+namespace RZP\lib\DataParser;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
-class TypeformParser
+class TypeformParser extends Base implements DataParserInterface
 {
-    protected $input;
-
-    public function __construct(array $input)
-    {
-        $this->input = $input;
-    }
-
     public function parseWebhookData(): array
     {
         if ((array_key_exists('form_response', $this->input)) and
@@ -35,7 +28,6 @@ class TypeformParser
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
         }
-
     }
 
     private function createQuestionIdAnswers(array $questions, array $answers)
@@ -63,6 +55,14 @@ class TypeformParser
 
                 $questionsIdAnswers[$referenceId]['question'] .= $choices;
             }
+
+            //   
+            // Remove all dots from the questions as elastic search (where typeform is saved currently)
+            // accesses the string after dot as objects.
+            //
+            $question = $questionsIdAnswers[$referenceId]['question'];
+
+            $questionsIdAnswers[$referenceId]['question'] = str_replace(".", "", $question);
         }
 
         return $questionsIdAnswers;

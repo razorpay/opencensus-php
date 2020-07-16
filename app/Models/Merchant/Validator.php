@@ -15,6 +15,9 @@ use RZP\Models\Payment\Event;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Merchant\Detail\ActivationFlow as ActivationFlow;
+use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
+use RZP\Models\Merchant\Detail\InternationalActivationFlow\InternationalActivationFlow;
 
 /**
  * Class Validator
@@ -58,7 +61,6 @@ class Validator extends Base\Validator
         Entity::WEBSITE                               => 'sometimes|url|max:255|nullable',
         Entity::CATEGORY                              => 'sometimes|string|digits:4',
         Entity::CATEGORY2                             => 'sometimes|string|max:30|custom',
-        Entity::INTERNATIONAL                         => 'sometimes|boolean',
         Entity::BILLING_LABEL                         => 'sometimes|max:255',
         Entity::TRANSACTION_REPORT_EMAIL              => 'sometimes|array',
         Entity::RECEIPT_EMAIL_ENABLED                 => 'sometimes|boolean',
@@ -90,7 +92,7 @@ class Validator extends Base\Validator
         Entity::DASHBOARD_WHITELISTED_IPS_TEST . '.*' => 'distinct|required_with:' .
                                                          Entity::DASHBOARD_WHITELISTED_IPS_TEST . '|ipv4',
         Entity::FEE_CREDITS_THRESHOLD                 => 'sometimes|integer|nullable',
-        Entity::PARTNERSHIP_URL                       => 'sometimes|max:2000'
+        Entity::PARTNERSHIP_URL                       => 'sometimes|max:2000',
     ];
 
     protected static $uniqueEmailRules = [
@@ -128,7 +130,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $actionRules = [
-        Entity::ACTION                      => 'required|custom'
+        Entity::ACTION                                     => 'required|custom',
+        ProductInternationalMapper::INTERNATIONAL_PRODUCTS => 'sometimes|array'
     ];
 
     protected static $change2faSettingRules = [
@@ -174,9 +177,10 @@ class Validator extends Base\Validator
     ];
 
     protected static $updateMerchantsBulkRules = [
-        'merchant_ids' => 'required|sequential_array',
-        'attributes'   => 'sometimes|associative_array',
-        'action'       => 'sometimes',
+        'merchant_ids'           => 'required|sequential_array',
+        'attributes'             => 'sometimes|associative_array',
+        'action'                 => 'sometimes',
+        'international_products' => 'sometimes',
     ];
 
     protected static $keyAccessRules = [
@@ -326,6 +330,27 @@ class Validator extends Base\Validator
         Constants::IDEMPOTENT_ID => 'required',
         Entity::ID               => 'required|alpha_num|size:14',
     ];
+
+    protected static $requestInternationalProductRules = [
+        'products' => 'required|array|filled',
+    ];
+
+    public function validateMerchantForProductInternational(Entity $merchant)
+    {
+        $merchant = $merchant?: $this->entity;
+
+        $internationalActivationFlow  = $merchant->merchantDetail->getInternationalActivationFlow();
+
+        $activationFlow = $merchant->merchantDetail->getActivationFlow();
+
+        if (($internationalActivationFlow === InternationalActivationFlow::BLACKLIST) or
+            ( $activationFlow ===  ActivationFlow::BLACKLIST ))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Blacklisted flow');
+        }
+    }
+
 
     protected function validateIsTestAccount(array $input)
     {
@@ -981,7 +1006,10 @@ class Validator extends Base\Validator
     {
         $merchant = $this->entity;
 
-        if ($merchant->isInternational() === true)
+        $productInternational = new ProductInternational\ProductInternationalField($merchant);
+
+        if ($merchant->isInternational() === true and
+            $merchant->getProductInternational() === $productInternational->getEnabledValueForLiveProducts())
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INTERNATIONAL_ALREADY_ENABLED);
@@ -993,6 +1021,17 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Pricing not present for international.');
+        }
+    }
+
+    public function validateEnableProductInternational($internationalProducts)
+    {
+        if (empty($internationalProducts) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PRODUCT_INTERNATIONAL_REQUIRED,
+                null,
+                ['products' => $internationalProducts]);
         }
     }
 
@@ -1414,7 +1453,8 @@ class Validator extends Base\Validator
         //
         // @todo We need to remove this check once we implement feature request based international activation process
         //
-        if ($internationalActivationFlow !== Detail\ActivationFlow::WHITELIST)
+        if (($internationalActivationFlow !== Detail\ActivationFlow::WHITELIST)
+            and ($internationalActivationFlow !== Detail\ActivationFlow::GREYLIST))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_INTERNATIONAL_STATUS_CHANGE_REQUEST,
@@ -1444,6 +1484,38 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_NOT_SET);
+        }
+    }
+
+    /**
+     * Validates if the productInternational field has values updated for positions which aren't live
+     * @param $attribute
+     * @param $productInternational
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    protected function validateProductInternational($attribute, $productInternational)
+    {
+        $liveProductPos = array_values(ProductInternationalMapper::PRODUCT_POSITION);
+
+        $maxIndexPopulated = max($liveProductPos);
+
+        for ($i = $maxIndexPopulated + 1; $i < (strlen($productInternational) - 1); $i += 1)
+        {
+            if ($productInternational[$i] !== '0')
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Provided value is not valid');
+            }
+        }
+    }
+
+    public function validateMerchantWorkflowType($type)
+    {
+        if (array_key_exists($type, Constants::MERCHANT_WORKFLOWS) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_INVALID_WORKFLOW_TYPE);
         }
     }
 }

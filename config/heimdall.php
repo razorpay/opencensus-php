@@ -443,10 +443,14 @@ return [
                 'assignable'  => true,
                 'workflow'    => false,
             ],
-            Permission::DOWNLOAD_CREDIT_BUREAU_REPORTS => [
+            Permission::DOWNLOAD_CREDIT_BUREAU_REPORTS      => [
                 'description' => 'Allow downloads of credit bureau reports of merchants',
                 'assignable'  => true,
             ],
+            Permission::EDIT_MERCHANT_INTERNATIONAL         => '',
+            Permission::EDIT_MERCHANT_PG_INTERNATIONAL      => '',
+            Permission::EDIT_MERCHANT_PROD_V2_INTERNATIONAL  => '',
+
             Permission::EDIT_MERCHANT_INTERNATIONAL_NEW  => '',
             Permission::TOGGLE_TRANSACTION_HOLD_STATUS => '',
         ],
