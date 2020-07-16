@@ -1122,19 +1122,7 @@ app
             },
           });
         }
-        if (!$scope.isSignupDisplayEventFired) {
-          window.rzpQ &&
-            window.rzpQ.push(
-              window.rzpQ
-                .now()
-                .onbr()
-                .success('signup.display_signup_page', {
-                  mode: $scope.eventsMode,
-                  version: 1,
-                })
-            );
-          $scope.isSignupDisplayEventFired = true;
-        }
+        displaySignupEvent();
         $scope.goToSignupStep(0); // reset signup step
         $scope.goToLoginStep(1); // reset login step
         $scope.rightLayout = false;
@@ -1764,31 +1752,40 @@ app
         });
       };
 
-      // trigger a hotjar survey on signup if user doesn't types email till 3 sec after page load
-      $window.addEventListener('load', function() {
-        var isSignup = $location.path().includes('access/signup');
-        if (isSignup) {
-          if (!$scope.isSignupDisplayEventFired) {
-            window.rzpQ &&
-              window.rzpQ.push(
-                window.rzpQ
-                  .now()
-                  .onbr()
-                  .success('signup.display_signup_page', {
-                    mode: $scope.eventsMode,
-                    version: 1,
-                  })
-              );
-            $scope.isSignupDisplayEventFired = true;
-          }
-
-          setTimeout(function() {
-            if (document.getElementById('email').value === '') {
-              window.hj && window.hj('trigger', 'signup-no-email-survey');
-            }
-          }, 3000);
+      function displaySignupEvent() {
+        if (!$scope.isSignupDisplayEventFired) {
+          window.rzpQ &&
+            window.rzpQ.push(
+              window.rzpQ
+                .now()
+                .onbr()
+                .success('signup.display_signup_page', {
+                  mode: $scope.eventsMode,
+                  version: 1,
+                })
+            );
+          $scope.isSignupDisplayEventFired = true;
         }
-      });
+      }
+
+      // Fire hotjar trigger for survey
+      function hotjarSurvey() {
+        window.hj =
+          window.hj ||
+          function() {
+            (hj.q = hj.q || []).push(arguments);
+          };
+        setTimeout(function() {
+          if (document.getElementById('email').value === '') {
+            window.hj('trigger', 'signup-no-email-survey');
+          }
+        }, 4500);
+      }
+
+      if ($location.path().includes('access/signup')) {
+        hotjarSurvey();
+        displaySignupEvent();
+      }
 
       $scope.logoutAndGoToLogin = function() {
         var request = $http({
