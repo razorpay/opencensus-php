@@ -362,8 +362,10 @@ class Validator extends Base\Validator
 
         $this->checkIfAmountIsExpectedInInput($input);
 
-        $this->validateMaxAllowedAmount($input[Entity::AMOUNT]);
-
+        /**
+         * Removed max amount check from here since order already does the validations properly
+         */
+        
         $this->validateMinAmount($input);
     }
 

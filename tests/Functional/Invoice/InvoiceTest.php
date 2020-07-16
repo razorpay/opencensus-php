@@ -320,11 +320,6 @@ class InvoiceTest extends TestCase
         $this->assertNull($reminderStatus);
     }
 
-    public function testCreateLinkWithTooLargeAmount()
-    {
-        $this->startTest();
-    }
-
     public function testCreateLinkAndPayAndCheckCustomerDetailsInInvoice()
     {
         $this->createOrder();
