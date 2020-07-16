@@ -151,6 +151,7 @@ class Entity extends Base\PublicEntity
         self::EXPIRY_MONTH,
         self::EXPIRY_YEAR,
         self::FLOWS,
+        self::GLOBAL_FINGERPRINT,
         self::SUBTYPE,
     ];
 
@@ -172,6 +173,7 @@ class Entity extends Base\PublicEntity
         self::IIN,
         self::EXPIRY_YEAR,
         self::EXPIRY_MONTH,
+        self::GLOBAL_FINGERPRINT,
     ];
 
     protected $defaults = [
@@ -605,6 +607,22 @@ class Entity extends Base\PublicEntity
         if ($this->isPublicExpiryAllowed() === false)
         {
             unset($array[self::EXPIRY_YEAR]);
+        }
+    }
+
+    public function setPublicGlobalFingerprintAttribute(array & $array)
+    {
+        $fingerprint = $this->getGlobalFingerPrint();
+        $merchant = $this->merchant;
+
+        if (($merchant !== null) and
+            ($fingerprint !== null))
+        {
+            $array[self::GLOBAL_FINGERPRINT] = md5($fingerprint . $merchant->getId());
+        }
+        else
+        {
+            unset($array[self::GLOBAL_FINGERPRINT]);
         }
     }
 
