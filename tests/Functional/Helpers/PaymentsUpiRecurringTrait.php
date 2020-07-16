@@ -21,8 +21,8 @@ trait PaymentsUpiRecurringTrait
                 'frequency'       => 'monthly',
                 'recurring_type'  => 'before',
                 'recurring_value' => 30,
-                'start_time'      => Carbon::now()->addDay(1)->getTimestamp(),
-                'end_time'        => Carbon::now()->addDay(60)->getTimestamp(),
+                'start_at'        => Carbon::now()->addDay(1)->getTimestamp(),
+                'expire_at'       => Carbon::now()->addDay(60)->getTimestamp(),
             ]
         ];
 

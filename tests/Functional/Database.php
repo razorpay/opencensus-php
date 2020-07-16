@@ -185,11 +185,11 @@ class Database
         $apiLiveDb = env('DB_LIVE_DATABASE', 'api_live');
 
         $this->db->connection('mysql_init')->getPdo()->exec("CREATE DATABASE IF NOT EXISTS `{$apiLiveDb}`");
-        $this->db->connection('mysql_init')->getPdo()->exec("GRANT ALL PRIVILEGES ON `{$apiLiveDb}`.* TO 'root'@'%'");
+       // $this->db->connection('mysql_init')->getPdo()->exec("GRANT ALL PRIVILEGES ON `{$apiLiveDb}`.* TO 'root'@'%'");
 
         $apiTestDb = env('DB_TEST_DATABASE', 'api_test');
         $this->db->connection('mysql_init')->getPdo()->exec("CREATE DATABASE IF NOT EXISTS `{$apiTestDb}`");
-        $this->db->connection('mysql_init')->getPdo()->exec("GRANT ALL PRIVILEGES ON `{$apiTestDb}`.* TO 'root'@'%'");
+        //$this->db->connection('mysql_init')->getPdo()->exec("GRANT ALL PRIVILEGES ON `{$apiTestDb}`.* TO 'root'@'%'");
 
         $authDb = env('DB_AUTH_DATABASE', 'auth');
         $this->db->connection('mysql_init')->getPdo()->exec("CREATE DATABASE IF NOT EXISTS `{$authDb}`");

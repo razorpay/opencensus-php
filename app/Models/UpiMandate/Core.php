@@ -22,6 +22,8 @@ class Core extends Base\Core
             ]
         );
 
+        $this->transformTokenParamsForUpi($input);
+
         if (isset($input['start_time']) === false)
         {
             $input['start_time'] = Carbon::now()->getTimestamp();
@@ -59,10 +61,36 @@ class Core extends Base\Core
 
     public function validateTokenInput($input)
     {
+        $this->transformTokenParamsForUpi($input);
+
         $validator = new Validator();
 
         $validator->setStrictFalse();
 
         $validator->validateInput('create', $input);
+    }
+
+    // We need to support start_at and expire_at fields being passed by merchant for upi recurring. So, adding this
+    // transformer, which will use these params and convert them to the standard start_time and end_time fields.
+    protected function transformTokenParamsForUpi(array &$input)
+    {
+        $endTime = $input['expire_at'] ?? null;
+
+        $startTime = $input['start_at'] ?? null;
+
+        if ($startTime !== null)
+        {
+            $input[Entity::START_TIME] = $startTime;
+        }
+
+        if ($endTime !== null)
+        {
+            $input[Entity::END_TIME] = $endTime;
+        }
+
+        unset($input['start_at']);
+        unset($input['expire_at']);
+
+        return $input;
     }
 }
