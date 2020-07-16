@@ -1947,10 +1947,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::METHOD) === Payment\Method::UPI);
     }
 
-    public function isUpiRecurring()
+    public function isUpiRecurring(): bool
     {
         return (($this->getAttribute(self::METHOD) === Payment\Method::UPI) and
                 ($this->getAttribute(self::RECURRING) === true));
+    }
+
+    public function isUpiAutoRecurring(): bool
+    {
+        return ($this->isUpiRecurring() and
+               ($this->isSecondRecurring()));
     }
 
     public function isUpiOtm(): bool

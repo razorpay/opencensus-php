@@ -14,7 +14,6 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 class UpiRecurringPaymentSharpTest extends TestCase
 {
     use PaymentTrait;
-    use DbEntityFetchTrait;
     use InteractsWithSession;
     use PaymentsUpiRecurringTrait;
 
@@ -39,15 +38,26 @@ class UpiRecurringPaymentSharpTest extends TestCase
 
         $this->doAuthPayment($payment);
 
+        $order = $this->getDbLastEntity('order');
         $upiMandate = $this->getDbLastEntity('upi_mandate');
-
         $token = $this->getDbLastEntity('token');
 
         $this->assertEquals($upiMandate['token_id'], $token['id']);
-
         $this->assertEquals($upiMandate['customer_id'], $token['customer_id']);
-
         $this->assertEquals('confirmed', $upiMandate['status']);
+
+        $this->assertArraySubset([
+            'method'            => 'upi',
+            'recurring_status'  => 'confirmed',
+            'recurring'         => true,
+        ], $token->toArray(), true);
+
+        $this->assertArraySubset([
+            'method'            => 'upi',
+            'status'            => 'paid',
+            'authorized'        => true,
+            'payment_capture'   => true,
+        ], $order->toArray(), true);
 
         $payment = $this->getDbLastPayment();
 
@@ -112,5 +122,26 @@ class UpiRecurringPaymentSharpTest extends TestCase
         $this->assertTrue($payment->isFailed());
         $this->assertNull($payment->getReference16());
         $this->assertEquals('rejected@razorpay', $payment->getVpa());
+    }
+
+    public function testCreateAutoRecurringPaymentSuccess()
+    {
+        $mandate = $this->createFirstUpiRecurringPayment();
+
+        $payment = $this->getDefaultUpiRecurringPaymentArray();
+
+        $payment['token'] = $mandate->token->getPublicId();
+
+        $response = $this->doS2SRecurringPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset([
+            'terminal_id'   => '1000SharpTrmnl',
+            'status'        => 'created',
+            'verify_at'     => null,
+        ], $payment->toArray());
     }
 }

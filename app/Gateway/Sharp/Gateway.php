@@ -34,22 +34,6 @@ class Gateway extends Base\Gateway
 
         $this->failIfRequired($input);
 
-        if ($this->isMandateExecuteRequest($input) === true)
-        {
-            if (isset($input['payment']['vpa']) === false)
-            {
-                throw new Exception\GatewayErrorException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-            }
-
-            if ((isset($input['payment']['vpa']) === true) and
-                ($input['payment']['vpa'] === Vpa::FAILURE))
-            {
-                throw new Exception\GatewayErrorException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-            }
-
-            return;
-        }
-
         if ($this->isSecondRecurringPaymentRequest($input))
         {
             if (($input['payment']['method'] === 'card') and
@@ -70,6 +54,10 @@ class Gateway extends Base\Gateway
                     throw new Exception\GatewayErrorException(
                         ErrorCode::BAD_REQUEST_CARD_STOLEN_OR_LOST );
                 }
+            }
+            else if ($input['payment']['method'] === 'upi')
+            {
+                throw new Exception\LogicException('No gateway call for upi second recurring');
             }
 
             return;
@@ -167,13 +155,6 @@ class Gateway extends Base\Gateway
         return ((isset($input['payment']) === true) and
                 ($input['payment'][Payment\Entity::METHOD] === Payment\Method::UPI) and
                 ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL));
-    }
-
-    protected function isMandateExecuteRequest(array $input): bool
-    {
-        return ((isset($input['payment']) === true) and
-                ($input['payment'][Payment\Entity::METHOD] === Payment\Method::UPI) and
-                ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::AUTO));
     }
 
     protected function getQrData(array $input)

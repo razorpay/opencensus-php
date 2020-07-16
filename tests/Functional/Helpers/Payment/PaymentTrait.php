@@ -1476,6 +1476,7 @@ trait PaymentTrait
         $payment = $this->getDefaultUpiPaymentArray();
 
         $payment['recurring'] = true;
+        $payment['customer_id'] = 'cust_100000customer';
 
         return $payment;
     }

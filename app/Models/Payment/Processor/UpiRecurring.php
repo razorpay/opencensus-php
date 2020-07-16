@@ -8,6 +8,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
+use RZP\Models\Payment\Entity;
 use RZP\Models\Customer\Token;
 use Razorpay\Trace\Logger as Trace;
 
@@ -302,5 +303,45 @@ trait UpiRecurring
                     Token\Entity::EXPIRED_AT => $token->getExpiredAt(),
                 ]);
         }
+    }
+
+    protected function modifyAutoRecurringForUpiIfApplicable(Entity $payment, array $data = null, array $input = [])
+    {
+        // Do nothing for other payments
+        if ($payment->isUpiAutoRecurring() === false)
+        {
+            return;
+        }
+
+        // If payment does not exists, basic check no need to set verifiable
+        if ($payment->exists === false)
+        {
+            $payment->setNonVerifiable();
+        }
+    }
+
+    protected function shouldAutoReccuringAuthorizedForUpi(Entity $payment, array $data): bool
+    {
+        // Any payment which is not UPI Auto Recurring can be authorized
+        if (($payment->isUpiAutoRecurring()) === false)
+        {
+            return true;
+        }
+
+        // Data will be empty when gateway call is not made, or there is some issue with gateway integration
+        // In both cases we can leave the payment in created state, it can be picked again by cron
+        if (empty($data) === true)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function processAutoRecurringCreatedForUpi(Entity $payment, array $data)
+    {
+        // What to process here?
+
+        return ['razorpay_payment_id' => $payment->getPublicId()];
     }
 }

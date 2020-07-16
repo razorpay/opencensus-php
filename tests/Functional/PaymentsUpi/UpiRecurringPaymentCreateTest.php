@@ -12,7 +12,6 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 class UpiRecurringPaymentCreateTest extends TestCase
 {
     use PaymentTrait;
-    use DbEntityFetchTrait;
     use InteractsWithSession;
     use PaymentsUpiRecurringTrait;
 
@@ -61,6 +60,7 @@ class UpiRecurringPaymentCreateTest extends TestCase
         $payment = $this->getDefaultUpiRecurringPaymentArray();
 
         $payment['order_id'] = $orderId;
+        unset($payment['customer_id']);
 
         $this->doAuthPayment($payment);
 

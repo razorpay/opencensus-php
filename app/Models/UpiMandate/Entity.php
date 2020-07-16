@@ -99,4 +99,9 @@ class Entity extends Base\PublicEntity
 
         $this->setAttribute(self::STATUS, $status);
     }
+
+    public function getTokenId()
+    {
+        return $this->getAttribute(self::TOKEN_ID);
+    }
 }

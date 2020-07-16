@@ -2698,7 +2698,7 @@ class Processor
             if (($tpvRequired === true) or
                 ($payment->isEmandate() === true) or
                 ($payment->isNach() === true) or
-                (($payment->isUpiRecurring() === true) and (empty($input[Payment\Entity::TOKEN_ID]) === true)))
+                (($payment->isUpiRecurring() === true) and (empty($input[Payment\Entity::TOKEN]) === true)))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
@@ -3621,6 +3621,13 @@ class Processor
         }
 
         if ($payment->isNach() === true)
+        {
+            return false;
+        }
+
+        // UPI recurring payment when created are supposed to be left in created state
+        // We will set a instantaneous reminder, which will process the payment state
+        if ($payment->isUpi() and $payment->isSecondRecurring())
         {
             return false;
         }

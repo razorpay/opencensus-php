@@ -769,6 +769,11 @@ trait Authorize
             return $this->processNachPaymentCreated($payment);
         }
 
+        if ($this->shouldAutoReccuringAuthorizedForUpi($payment, $data) === false)
+        {
+            return $this->processAutoRecurringCreatedForUpi($payment, $data);
+        }
+
         return $this->processAuth($payment, $data);
     }
 
@@ -3152,6 +3157,9 @@ trait Authorize
         $this->validateForMaxAmount($input, $payment);
 
         $this->setChargeAccountMerchantIfApplicable($input, $gatewayInput);
+
+        // Not doing inside above mentioned UPI condition because Recurring data is set after that logic
+        $this->modifyAutoRecurringForUpiIfApplicable($payment, null, $input);
     }
 
     protected function setChargeAccountMerchantIfApplicable($input, & $gatewayInput)
