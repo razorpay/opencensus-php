@@ -4231,6 +4231,8 @@ trait Authorize
 
         $response = [
             'type'          => 'async',
+            'method'        => $payment->getMethod(),
+            'provider'      => $payment->getWallet(),
             'version'       => 1,
             'payment_id'    => $id,
             'gateway'       => $this->getEncryptedGatewayText($payment->getGateway()),
@@ -4250,6 +4252,8 @@ trait Authorize
 
         $response = [
             'type'          => 'intent',
+            'method'        => $payment->getMethod(),
+            'provider'      => $payment->getWallet(),
             'version'       => 1,
             'payment_id'    => $id,
             'gateway'       => $this->getEncryptedGatewayText($payment->getGateway()),

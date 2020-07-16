@@ -79,7 +79,7 @@ class Validator extends Base\Validator
         'signature'                     => 'sometimes|nullable|string',
         'notes'                         => 'sometimes|notes',
         'notes.merchant_order_id'       => 'required_with:signature',
-        'callback_url'                  => 'sometimes|url',
+        'callback_url'                  => 'sometimes|filled',
         'order_id'                      => 'sometimes|filled',
         'customer_id'                   => 'sometimes|public_id|filled',
         'subscription_id'               => 'sometimes|public_id',
@@ -278,6 +278,7 @@ class Validator extends Base\Validator
         'customer_id',
         'test_success',
         'upi_expiry_time',
+        'callback_url_check',
         // Ideally, we should be using custom. But
         // due to dot notation, we cannot use it.
         'ifsc',
@@ -589,9 +590,69 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateCallbackUrl($attribute, $callbackUrl)
+    protected function validateCallbackUrl($attributes, $callbackUrl)
     {
         if (empty($callbackUrl) === true)
+        {
+            return;
+        }
+
+        $app = App::getFacadeRoot();
+
+        $merchant = $app['basicauth']->getMerchant();
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::CALLBACK_URL_VALIDATION) === true)
+
+        {
+            $merchantUrlArray = explode(".", parse_url($merchant->getWebsite(), PHP_URL_HOST));
+            $callbackUrlArray = explode(".", parse_url($callbackUrl, PHP_URL_HOST));
+
+            // case where https://example.com
+            if (count($merchantUrlArray) === 2)
+            {
+                array_unshift($merchantUrlArray, "");
+            }
+
+            // case where https://example.com
+            if (count($callbackUrlArray) === 2)
+            {
+                array_unshift($callbackUrlArray, "");
+            }
+
+            if ((empty($callbackUrlArray) === true) or
+                ($merchantUrlArray[1] !== $callbackUrlArray[1]) or
+                ($merchantUrlArray[2] !== $callbackUrlArray[2]))
+            {
+                $traceData = [
+                    'merchant_website' => $merchant->getWebsite(),
+                    'callback_url'     => $callbackUrl,
+                ];
+
+                throw new Exception\BadRequestValidationFailureException(
+                    'Invalid callback url',
+                    'callback_url',
+                    $traceData
+                );
+            }
+        }
+
+    }
+
+    protected function validateCallbackUrlCheck(array $input)
+    {
+        $callbackUrl = null;
+        $method = null;
+        if ((isset($input[Entity::CALLBACK_URL])) === true)
+        {
+            $callbackUrl = $input[Entity::CALLBACK_URL];
+        }
+        if ((isset($input[Entity::METHOD])) === true)
+        {
+            $method = $input[Entity::METHOD];
+        }
+
+        if ((empty($callbackUrl) === true) or
+             ($method === Payment\Method::APP))
         {
             return;
         }

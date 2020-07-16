@@ -2075,6 +2075,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::UPI_AIRTEL,
             Payment\Gateway::UPI_SBI,
             Payment\Gateway::NETBANKING_KVB,
+            Payment\Gateway::CRED,
         ];
 
         return in_array($gateway, $formattedAmountGateways, true);

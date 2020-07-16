@@ -1800,4 +1800,14 @@ class ErrorCode
     const BAD_REQUEST_INVALID_TRACKING_ID                                           = 'BAD_REQUEST_INVALID_TRACKING_ID';
 
     const SERVER_ERROR_CREDCASE_REQUEST_FAILED                                      = 'SERVER_ERROR_CREDCASE_REQUEST_FAILED';
+    const BAD_REQUEST_CRED_USER_NOT_REGISTERED                                      = 'BAD_REQUEST_CRED_USER_NOT_REGISTERED';
+    const BAD_REQUEST_CRED_PENDING_USER                                             = 'BAD_REQUEST_CRED_PENDING_USER';
+    const BAD_REQUEST_CRED_CARD_NOT_VERIFIED                                        = 'BAD_REQUEST_CRED_CARD_NOT_VERIFIED';
+    const BAD_REQUEST_CRED_WAITLISTED_USER                                          = 'BAD_REQUEST_CRED_WAITLISTED_USER';
+    const BAD_REQUEST_CRED_UNSUPPORTED_APP_VERSION                                  = 'BAD_REQUEST_CRED_UNSUPPORTED_APP_VERSION';
+    const BAD_REQUEST_CRED_NO_SUPPORTED_APP_VERSION                                 = 'BAD_REQUEST_CRED_NO_SUPPORTED_APP_VERSION';
+    const BAD_REQUEST_CRED_INACTIVE_USER                                            = 'BAD_REQUEST_CRED_INACTIVE_USER';
+    const BAD_REQUEST_CRED_BLOCKED_USER                                             = 'BAD_REQUEST_CRED_BLOCKED_USER';
+    const GATEWAY_ERROR_CRED_RESERVED_ERROR                                         = 'GATEWAY_ERROR_CRED_RESERVED_ERROR';
+    const BAD_REQUEST_CRED_MISSING_FIELDS_MESSAGE                                   = 'BAD_REQUEST_CRED_MISSING_FIELDS_MESSAGE';
 }

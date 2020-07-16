@@ -415,9 +415,9 @@ class PayVerifyData extends Base\Mock\Server
                     [
                         'paymentId' => $entities['payment']['id'],
                         'gatewayTransactionId' => '123ase!234',
-                        'amount'  => $entities['payment']['amount'],
+                        'amount'  => $entities['payment']['amount']/100,
                         'status' => 'BLOCKED',
-                        '_raw' => '{"response": {"tracking_id": "<PARTNER_ORDER_ID\/MERCHANT_ORDER_ID>","reference_id": "<CRED_REF_ID>","state": "<ORDER_STATE>","expiry_time": "<TIME_IN_EPOCH>","amount": {"currency": "INRPAISE","value": 10000},"refunds": [{"tracking_id": "<REFUND_ID>","reference_id": "<CRED_REF_ID>","state": "<REFUND_STATE>","amount": {"value": 10000,"currency": "INRPAISE"}}]},"metadata": {"key": "value"},"status": "200","error_code": "","error_message": "","error_description": ""}',
+                        '_raw' => '{"response": {"tracking_id": "<PARTNER_ORDER_ID\/MERCHANT_ORDER_ID>","reference_id": "<CRED_REF_ID>","state": "<ORDER_STATE>","expiry_time": "<TIME_IN_EPOCH>","amount": {"currency": "INR","value": 1000},"refunds": [{"tracking_id": "<REFUND_ID>","reference_id": "<CRED_REF_ID>","state": "<REFUND_STATE>","amount": {"value": 1000,"currency": "INR"}}]},"metadata": {"key": "value"},"status": "200","error_code": "","error_message": "","error_description": ""}',
                     ],
                 'error' => NULL,
                 'external_trace_id' => 'DUMMY_REQUEST_ID',

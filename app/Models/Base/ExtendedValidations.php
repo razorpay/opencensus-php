@@ -32,7 +32,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
     const INT_PERCENTAGE_MAX            = 10000;
 
     const EPOCH_DEFAULT_MIN             = 946684800;                  // Sat Jan  1 05:30:00 IST 2000
-    const EPOCH_DEFAULT_MAX             = 4765046400;                 // Tuesday, 31 December 05:30:00 IST 2120, as it is bigInt 
+    const EPOCH_DEFAULT_MAX             = 4765046400;                 // Tuesday, 31 December 05:30:00 IST 2120, as it is bigInt
 
     const PAN_NUMBER_REGEX          = '/^[A-Za-z]{5}\d{4}[A-Za-z]{1}$/';
     const PERSONAL_PAN_NUMBER_REGEX = '/^[A-Za-z]{3}[Pp][A-Za-z]{1}\d{4}[A-Za-z]{1}$/';

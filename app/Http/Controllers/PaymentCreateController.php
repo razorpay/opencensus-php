@@ -7,6 +7,7 @@ use Redirect;
 use Response;
 use Request;
 use App;
+use RZP\Models\Payment\Method;
 use View;
 use Crypt;
 
@@ -1013,11 +1014,25 @@ class PaymentCreateController extends Controller
         {
             $callbackInput['callback_url'] = $input['callback_url'];
 
+            if($this->shouldSkipCallbackValidation($input) === true)
+            {
+                return;
+            }
             // This will throw bad request validation error
             (new Payment\Validator)->validateInput('callback_url_validation', $callbackInput);
 
             $this->app['rzp.merchant_callback_url'] = $input['callback_url'];
         }
+    }
+
+    protected function shouldSkipCallbackValidation(array $input)
+    {
+        if((empty($input['method']) === false) and ($input['method'] == Method::APP) and
+            (empty($input['provider']) === false) and ($input['provider'] == Payment\Gateway::CRED))
+        {
+            return true;
+        }
+        return false;
     }
 
     protected function logPaymentRequestEvent(array $input)
