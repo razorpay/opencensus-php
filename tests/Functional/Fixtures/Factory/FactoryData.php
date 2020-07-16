@@ -1427,7 +1427,6 @@ final class FactoryData
             'id'               => $faker->uniqueid,
             'status'           => 'Enabled',
             'channel'          => 'RBL',
-            'mode'             => 'NEFT',
             'created_by'       => 'OPS_A',
             'downtime_message' => 'RBL bank NEFT payments are down',
         ]);

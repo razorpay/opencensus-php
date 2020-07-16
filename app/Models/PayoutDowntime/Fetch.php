@@ -11,7 +11,6 @@ class Fetch extends Base\Fetch
         self::DEFAULTS       => [
             Entity::STATUS                => 'filled|string|max:255',
             Entity::CHANNEL               => 'filled|string|max:255',
-            Entity::MODE                  => 'filled|string|max:255',
             Entity::START_TIME            => 'filled|epoch',
             Entity::END_TIME              => 'filled|epoch',
             Entity::DOWNTIME_MESSAGE      => 'filled|string',
@@ -31,7 +30,6 @@ class Fetch extends Base\Fetch
         AuthType::ADMIN_AUTH => [
             Entity::STATUS,
             Entity::CHANNEL,
-            Entity::MODE,
             Entity::START_TIME,
             Entity::END_TIME,
             Entity::DOWNTIME_MESSAGE,

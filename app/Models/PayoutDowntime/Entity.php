@@ -82,6 +82,8 @@ class Entity extends Base\PublicEntity
         self::ENABLED_EMAIL_STATUS,
         self::DISABLED_EMAIL_STATUS,
         self::CREATED_BY,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $public             = [
@@ -103,6 +105,11 @@ class Entity extends Base\PublicEntity
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
+    }
+
+    public function getChannel()
+    {
+        return $this->getAttribute(self::CHANNEL);
     }
 
     public function setDowntimeMessage(string $downtimeMessage)

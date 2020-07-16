@@ -2873,6 +2873,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const CREATE_MAILING_LIST_INITIATED                         = 'CREATE_MAILING_LIST_INITIATED';
 
+    const PAYOUT_DOWNTIME_MAILING_LIST_INITIATED                = 'PAYOUT_DOWNTIME_MAILING_LIST_INITIATED';
+
     const MAILING_LIST_CHUNK_UPDATE_ERROR                       = 'MAILING_LIST_CHUNK_UPDATE_ERROR';
 
     const UPDATE_MAILING_LIST_CHUNK_INITIATED                   = 'UPDATE_MAILING_LIST_CHUNK_INITIATED';
@@ -3092,7 +3094,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_DOWNTIME_EMAIL_STATUS_UPDATE_ERROR           = 'PAYOUT_DOWNTIME_EMAIL_STATUS_UPDATE_ERROR';
     const PAYOUT_ENABLED_DOWNTIME                             = 'PAYOUT_ENABLED_DOWNTIME';
     const PAYOUT_DOWNTIME_ALL                                 = 'PAYOUT_DOWNTIME_ALL';
-    const PAYOUT_DOWNTIME_MID                                 = 'PAYOUT_DOWNTIME_MID';
     const PAYOUT_DOWNTIME_EMAIL_STATUS                        = 'PAYOUT_DOWNTIME_EMAIL_STATUS';
     const PROCESS_PAYOUT_NOTIFICATION_JOB_DISPATCHED          = 'PROCESS_PAYOUT_NOTIFICATION_JOB_DISPATCHED';
 

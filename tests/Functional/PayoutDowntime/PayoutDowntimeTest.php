@@ -2,22 +2,30 @@
 
 namespace RZP\Tests\Functional\PayoutDowntime;
 
-use RZP\Constants\Table;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\PayoutDowntime\Core;
 use RZP\Models\PayoutDowntime\Entity;
+use RZP\Models\BankingAccount\Channel;
 use RZP\Models\PayoutDowntime\Constants;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use DB;
 use Mail;
 use RZP\Mail\PayoutDowntime\PayoutDowntimeMail;
+use Carbon\Carbon;
 
 class PayoutDowntimeTest extends TestCase
 {
 
     use HeimdallTrait;
     use RequestResponseFlowTrait;
+    use TestsBusinessBanking;
+    use DbEntityFetchTrait;
+
+    /* @var \RZP\Models\Merchant\Balance\Entity */
+    private $balance;
 
     public function setUp()
     {
@@ -52,11 +60,6 @@ class PayoutDowntimeTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateEntityModeException()
-    {
-        $this->startTest();
-    }
-
     public function testCreateEntityChannelException()
     {
         $this->startTest();
@@ -72,7 +75,6 @@ class PayoutDowntimeTest extends TestCase
         $attributes = [
             'status'           => 'Enabled',
             'channel'          => 'RBL',
-            'mode'             => 'NEFT',
             'created_by'       => 'OPS_A',
             'start_time'       => '1590468916',
             'downtime_message' => 'HDFC bank NEFT payments are down',
@@ -94,7 +96,6 @@ class PayoutDowntimeTest extends TestCase
         $attributes = [
             'status'           => 'Enabled',
             'channel'          => 'RBL',
-            'mode'             => 'NEFT',
             'created_by'       => 'OPS_A',
             'start_time'       => '1590468916',
             'end_time'         => '1622065955',
@@ -118,7 +119,6 @@ class PayoutDowntimeTest extends TestCase
         $attributes = [
             'status'           => 'Enabled',
             'channel'          => 'RBL',
-            'mode'             => 'NEFT',
             'created_by'       => 'OPS_A',
             'start_time'       => '1590468916',
             'end_time'         => '1622065955',
@@ -141,7 +141,6 @@ class PayoutDowntimeTest extends TestCase
         $attributes = [
             'status'           => 'Enabled',
             'channel'          => 'RBL',
-            'mode'             => 'NEFT',
             'created_by'       => 'OPS_A',
             'start_time'       => '1590468916',
             'downtime_message' => 'HDFC bank NEFT payments are down',
@@ -163,7 +162,6 @@ class PayoutDowntimeTest extends TestCase
         $attributes = [
             'status'           => 'Enabled',
             'channel'          => 'RBL',
-            'mode'             => 'NEFT',
             'created_by'       => 'OPS_A',
             'start_time'       => '1590468916',
             'downtime_message' => 'HDFC bank NEFT payments are down',
@@ -185,7 +183,6 @@ class PayoutDowntimeTest extends TestCase
         $attributes1 = [
             'status'           => 'Enabled',
             'channel'          => 'RBL',
-            'mode'             => 'NEFT',
             'created_by'       => 'OPS_A',
             'start_time'       => '1590468916',
             'downtime_message' => 'HDFC bank NEFT payments are down',
@@ -196,7 +193,6 @@ class PayoutDowntimeTest extends TestCase
         $attributes2 = [
             'status'           => 'Scheduled',
             'channel'          => 'RBL',
-            'mode'             => 'NEFT',
             'created_by'       => 'OPS_A',
             'start_time'       => '1590468988',
             'downtime_message' => 'HDFC bank NEFT payments are down',
@@ -207,49 +203,114 @@ class PayoutDowntimeTest extends TestCase
         $this->startTest();
     }
 
-    public function testEnabledDowntime()
+    public function testEnabledDowntimeXDashboard()
     {
-        $this->ba->proxyAuth();
+        $this->setUpMerchantForBusinessBanking(
+            false,
+            10000,
+            AccountType::DIRECT,
+            Channel::RBL);
+
+        $this->balance = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'banking']);
+
+        $balanceId = $this->balance->getId();
+
+        $this->fixtures->create('banking_account', [
+            'id'                    => 'xba00000000001',
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'rbl',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+            'balance_id'            => $balanceId,
+            'status'                => 'activated'
+        ]);
 
         $attributes1 = [
             'status'           => 'Enabled',
             'channel'          => 'RBL',
-            'mode'             => 'IMPS',
             'created_by'       => 'OPS_A',
-            'start_time'       => '1590468916',
-            'downtime_message' => 'HDFC bank NEFT payments are down',
+            'start_time'       => Carbon::now()->getTimestamp(),
+            'downtime_message' => 'RBL bank payments are down',
         ];
 
-        $this->fixtures->create('payout_downtimes', $attributes1);
+        $downtime = $this->fixtures->create('payout_downtimes', $attributes1);
 
         $attributes2 = [
-            'status'           => 'Scheduled',
-            'channel'          => 'RBL',
-            'mode'             => 'NEFT',
+            'status'           => 'Enabled',
+            'channel'          => 'Pool Network',
             'created_by'       => 'OPS_A',
-            'start_time'       => '1590468988',
-            'downtime_message' => 'HDFC bank NEFT payments are down',
+            'start_time'       => Carbon::now()->getTimestamp(),
+            'downtime_message' => 'Pool Network payments are down',
         ];
 
-        $this->fixtures->create('payout_downtimes', $attributes2);
+        $downtimePoolNetwork = $this->fixtures->create('payout_downtimes', $attributes2);
 
         $attributes3 = [
             'status'           => 'Enabled',
-            'channel'          => 'RBL',
-            'mode'             => 'NEFT',
+            'channel'          => 'All',
             'created_by'       => 'OPS_A',
-            'start_time'       => '1906062755',
-            'downtime_message' => 'HDFC bank NEFT payments are down',
+            'start_time'       => Carbon::now()->subDays(2)->getTimestamp(),
+            'downtime_message' => 'Razorpay Systems are down',
         ];
 
-        $this->fixtures->create('payout_downtimes', $attributes3);
+        $downtimeAll = $this->fixtures->create('payout_downtimes', $attributes3);
 
-        $this->startTest();
+        $attributes3 = [
+            'status'           => 'Disabled',
+            'channel'          => 'All',
+            'created_by'       => 'OPS_A',
+            'start_time'       => Carbon::now()->subDays(2)->getTimestamp(),
+            'downtime_message' => 'Razorpay Systems are down',
+        ];
+
+        $downtimeDisabled = $this->fixtures->create('payout_downtimes', $attributes3);
+
+        $this->ba->proxyAuth("rzp_test_".'10000000000000');
+
+        $response = $this->startTest();
+
+        $this->assertEquals('pdown_'.$downtime->id, $response[0]['id']);
+
+        $this->assertEquals('pdown_'.$downtimePoolNetwork->id, $response[1]['id']);
+
+        $this->assertEquals('pdown_'.$downtimeAll->id, $response[2]['id']);
+
+        foreach ($response as $key => $val)
+        {
+            $this->assertNotEquals('pdown_'.$downtimeDisabled->id, $val['id']);
+        }
+
     }
 
-    public function testSendEmailEnabledState()
+    public function testSendEmailForCurrentAccount()
     {
         Mail::fake();
+
+        $this->setUpMerchantForBusinessBanking(
+            false,
+            10000,
+            AccountType::DIRECT,
+            Channel::RBL);
+
+        $this->balance = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'banking']);
+
+        $balanceId = $this->balance->getId();
+
+        $this->fixtures->create('banking_account', [
+            'id'                    => 'xba00000000001',
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'rbl',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+            'balance_id'            => $balanceId,
+            'status'                => 'activated'
+        ]);
 
         $userAttributes = [
             'id'       => '20000000000000',
@@ -259,11 +320,9 @@ class PayoutDowntimeTest extends TestCase
 
         $user = $this->fixtures->create('user', $userAttributes);
 
-        $merchant = $this->fixtures->create('merchant', ['id' => '100abc000abc00', 'email' => 'dharmana.sunil@razorpay.com']);
-
         $mappingData = [
             'user_id'     => $user['id'],
-            'merchant_id' => $merchant['id'],
+            'merchant_id' => '10000000000000',
             'role'        => 'owner',
             'product'     => 'banking',
         ];
@@ -278,57 +337,54 @@ class PayoutDowntimeTest extends TestCase
             $this->assertEquals('helloworld@razorpay.com', $mail->bcc[0]['address']);
             $this->assertEquals('Important Update for your RazorpayX account.', $mail->subject);
             $this->assertEquals('emails.payout_downtime.enabled', $mail->view);
-            $this->assertEquals('HDFC bank NEFT payments are down', $mail->viewData['email_message']);
+            $this->assertEquals('RBL bank payments are down', $mail->viewData['email_message']);
             return true;
         });
 
     }
 
-    public function testSendEmailEnabledStateException()
+    public function testSendEmailForPoolAccount()
     {
         Mail::fake();
 
-        $this->startTest();
-
-    }
-
-    public function testSendEmailInvalidMIDException()
-    {
-        Mail::fake();
-
-        $this->startTest();
-
-        Mail::assertNotSent(PayoutDowntimeMail::class);
-    }
-
-    public function testSendEmailInvalidMIDException2()
-    {
-        Mail::fake();
+        $this->setUpMerchantForBusinessBanking(
+            false,
+            10000,
+            AccountType::SHARED,
+            Channel::YESBANK);
 
         $userAttributes = [
             'id'       => '20000000000000',
-            'email'    => 'dharmana.sunil@razorpay.com',
+            'email'    => 'helloworld@razorpay.com',
             'password' => '1234567890'
         ];
 
         $user = $this->fixtures->create('user', $userAttributes);
 
-        $merchant = $this->fixtures->create('merchant', ['id' => '100abc000abc00', 'email' => 'dharmana.sunil@razorpay.com']);
-
         $mappingData = [
             'user_id'     => $user['id'],
-            'merchant_id' => $merchant['id'],
+            'merchant_id' => '10000000000000',
             'role'        => 'owner',
+            'product'     => 'banking',
         ];
 
         $this->fixtures->create('user:user_merchant_mapping', $mappingData);
 
         $this->startTest();
 
-        Mail::assertNotSent(PayoutDowntimeMail::class);
+        Mail::assertQueued(PayoutDowntimeMail::class, function($mail) {
+            $this->assertEquals('x.support@razorpay.com', $mail->from[0]['address']);
+            $this->assertEquals('x.support@razorpay.com', $mail->cc[0]['address']);
+            $this->assertEquals('helloworld@razorpay.com', $mail->bcc[0]['address']);
+            $this->assertEquals('Important Update for your RazorpayX account.', $mail->subject);
+            $this->assertEquals('emails.payout_downtime.enabled', $mail->view);
+            $this->assertEquals('Pool Network payments are down', $mail->viewData['email_message']);
+            return true;
+        });
     }
 
-    public function testSendEmailDisabledState()
+    //Channel All is used when razorpay systems are down.
+    public function testSendEmailForAll()
     {
         Mail::fake();
 
@@ -340,11 +396,93 @@ class PayoutDowntimeTest extends TestCase
 
         $user = $this->fixtures->create('user', $userAttributes);
 
-        $merchant = $this->fixtures->create('merchant', ['id' => '100abc000abc00', 'email' => 'helloworld@razorpay.com']);
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000011',
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->startTest();
+
+        Mail::assertQueued(PayoutDowntimeMail::class, function($mail) {
+            $this->assertEquals('x.support@razorpay.com', $mail->from[0]['address']);
+            $this->assertEquals('x.support@razorpay.com', $mail->cc[0]['address']);
+            $this->assertEquals('helloworld@razorpay.com', $mail->bcc[0]['address']);
+            $this->assertEquals('Important Update for your RazorpayX account.', $mail->subject);
+            $this->assertEquals('emails.payout_downtime.enabled', $mail->view);
+            $this->assertEquals('All payments are down', $mail->viewData['email_message']);
+            return true;
+        });
+    }
+
+    public function testSendEmailForPrimaryMerchant()
+    {
+        Mail::fake();
+
+        $userAttributes = [
+            'id'       => '20000000000000',
+            'email'    => 'helloworld@razorpay.com',
+            'password' => '1234567890'
+        ];
+
+        $user = $this->fixtures->create('user', $userAttributes);
 
         $mappingData = [
             'user_id'     => $user['id'],
-            'merchant_id' => $merchant['id'],
+            'merchant_id' => '10000000000011',
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->startTest();
+
+        Mail::assertNotQueued(PayoutDowntimeMail::class);
+    }
+
+
+    public function testSendEmailDisabledState()
+    {
+        Mail::fake();
+
+        $this->setUpMerchantForBusinessBanking(
+            false,
+            10000,
+            AccountType::DIRECT,
+            Channel::RBL);
+
+        $this->balance = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'banking']);
+
+        $balanceId = $this->balance->getId();
+
+        $this->fixtures->create('banking_account', [
+            'id'                    => 'xba00000000001',
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'rbl',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+            'balance_id'            => $balanceId,
+            'status'                => 'activated'
+        ]);
+
+        $userAttributes = [
+            'id'       => '20000000000000',
+            'email'    => 'helloworld@razorpay.com',
+            'password' => '1234567890'
+        ];
+
+        $user = $this->fixtures->create('user', $userAttributes);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000000',
             'role'        => 'owner',
             'product'     => 'banking',
         ];
@@ -354,12 +492,11 @@ class PayoutDowntimeTest extends TestCase
         $attributes1 = [
             'status'               => 'Enabled',
             'channel'              => 'RBL',
-            'mode'                 => 'NEFT',
             'created_by'           => 'OPS_A',
-            'start_time'           => '1590468916',
-            'end_time'             => '1599468916',
-            'downtime_message'     => 'HDFC bank NEFT payments are down',
-            'uptime_message'       => 'HDFC bank NEFT payments are up',
+            'start_time'           => Carbon::now()->getTimestamp(),
+            'end_time'             => Carbon::now()->addDays(1)->getTimestamp(),
+            'downtime_message'     => 'RBL payments are down',
+            'uptime_message'       => 'RBL payments are up',
             'enabled_email_option' => 'Yes',
         ];
 
@@ -369,9 +506,6 @@ class PayoutDowntimeTest extends TestCase
             'payout_downtime' => [
                 'status'                => 'Disabled',
                 'disabled_email_option' => 'Yes',
-                Constants::MID_LIST     => [
-                    '100abc000abc00'
-                ],
             ],
         ];
 
@@ -398,39 +532,9 @@ class PayoutDowntimeTest extends TestCase
             $this->assertEquals('helloworld@razorpay.com', $mail->bcc[0]['address']);
             $this->assertEquals('Important Update for your RazorpayX account.', $mail->subject);
             $this->assertEquals('emails.payout_downtime.disabled', $mail->view);
-            $this->assertEquals('HDFC bank NEFT payments are up', $mail->viewData['email_message']);
+            $this->assertEquals('RBL payments are up', $mail->viewData['email_message']);
             return true;
         });
 
     }
-
-    public function testSendEmailForPrimaryMerchant()
-    {
-        Mail::fake();
-
-        $userAttributes = [
-            'id'       => '20000000000000',
-            'email'    => 'dharmana.sunil@razorpay.com',
-            'password' => '1234567890'
-        ];
-
-        $user = $this->fixtures->create('user', $userAttributes);
-
-        $merchant = $this->fixtures->create('merchant', ['id' => '100abc000abc00', 'email' => 'dharmana.sunil@razorpay.com']);
-
-        $mappingData = [
-            'user_id'     => $user['id'],
-            'merchant_id' => $merchant['id'],
-            'role'        => 'owner',
-            'product'     => 'product',
-        ];
-
-        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
-
-        $this->startTest();
-
-        Mail::assertNotSent(PayoutDowntimeMail::class);
-
-    }
-
 }

@@ -39,9 +39,7 @@ class Service extends Base\Service
 
     public function fetchPayoutDowntimeEnabled(): array
     {
-        $downtime = $this->core()->fetchAllEnabledDowntimes();
-
-        return $downtime->toArray();
+        return $this->core()->fetchAllEnabledDowntimes($this->merchant);
     }
 
     public function fetchPayoutDowntimes($input): array

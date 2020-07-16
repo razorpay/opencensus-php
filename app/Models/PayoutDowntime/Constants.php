@@ -20,6 +20,10 @@ class Constants
 
     const STATUS                  = 'status';
 
+    const CHANNEL                 = 'channel';
+
+    const CURRENT                 = 'current';
+
     const ENABLED                 = 'Enabled';
 
     const DISABLED                = 'Disabled';
@@ -43,5 +47,10 @@ class Constants
     const DEFAULT_EMAIL_SUBJECT   = 'Important Update for your RazorpayX account.';
 
     const ALLOWED_EMAIL_STATES    = [self::ENABLED, self::DISABLED];
+
+    //pool network is related to nodal accounts. RBL is current account and All means X systems.
+    const POOL_NETWORK            = 'Pool Network';
+    const RBL                     = 'RBL';
+    const ALL                     = 'All';
 
 }

@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Base\Common;
 use RZP\Constants\Table;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Base\PublicCollection as PublicCollection;
 use RZP\Exception;
 
@@ -23,7 +24,8 @@ class Repository extends Base\Repository
         $endTime = $this->dbColumn(Entity::END_TIME);
 
         $query = $this->newQuery()
-                      ->where(Entity::STATUS, $status);
+                      ->where(Entity::STATUS, $status)
+                      ->orderBy(Entity::UPDATED_AT, 'desc');
 
         $query->where(function ($query) use ($endTime, $currentTimestamp)
         {
@@ -37,18 +39,12 @@ class Repository extends Base\Repository
 
     }
 
-    public function fetchMerchantIdsIfExists(array $mids)
-    {
-        return $this->repo->merchant->findManyByPublicIds($mids);
-    }
-
-    public function fetchBankingMerchantIds(array $merchantIds)
-    {
-        return $this->repo->merchant_user->fetchMerchantIdsByProduct('banking', $merchantIds);
-    }
-
     public function findAllUserIdsForMerchantIds(array $merchantIds): array
     {
+        if (empty($merchantIds) === true)
+        {
+            return array();
+        }
         $userIdsCollection = $this->repo->merchant_user->fetchAllBankingUserIdsForMerchantIds($merchantIds);
 
         $userIds = $userIdsCollection->getStringAttributesByKey('user_id');
@@ -102,6 +98,26 @@ class Repository extends Base\Repository
         }
 
         $this->repo->payout_downtimes->saveOrFail($downtime);
+    }
+
+    public function fetchActiveCurrentAccountForMerchantIds(array $merchantId, string $channel, string $accountType): array
+    {
+        return $this->repo->banking_account->fetchActiveCurrentAccountForMerchantIds($merchantId, $channel, $accountType);
+    }
+
+    public function fetchActiveVirtualAccountForMerchantIds(array $merchantIds)
+    {
+        return $this->repo->virtual_account->fetchActiveVirtualAccountForMerchantIds($merchantIds);
+    }
+
+    public function fetchActiveRblAccountForMerchantIds(array $merchantIds)
+    {
+        return $this->repo->banking_account->fetchActiveCurrentAccountForMerchantIds($merchantIds, strtolower(Constants::RBL), Constants::CURRENT);
+    }
+
+    public function fetchMerchantIdsInChunk($skip, $limit)
+    {
+        return $this->repo->merchant->fetchMerchantIdsInChunk($skip, $limit);
     }
 
 }

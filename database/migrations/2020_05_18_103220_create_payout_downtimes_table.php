@@ -27,7 +27,8 @@ class CreatePayoutDowntimesTable extends Migration
 
             $table->string(Entity::CHANNEL, 255);
 
-            $table->string(Entity::MODE, 255);
+            $table->string(Entity::MODE, 255)
+                  ->nullable();
 
             $table->integer(Entity::START_TIME)
                   ->nullable();

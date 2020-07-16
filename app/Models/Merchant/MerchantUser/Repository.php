@@ -49,7 +49,7 @@ class Repository extends Base\Repository
      *
      * @param array $merchantIds
      *
-     * @return array
+     * @return Base\PublicCollection
      */
     public function fetchAllBankingUserIdsForMerchantIds(array $merchantIds): Base\PublicCollection
     {
@@ -61,26 +61,6 @@ class Repository extends Base\Repository
                     ->orderBy(Entity::PRODUCT)
                     ->get();
 
-    }
-
-    /**
-     * select `merchant_id` from `merchant_users`
-     *        where `product` = ?
-     *        and `merchant_id` in (?)
-     *
-     * @param string $product
-     * @param array  $merchantIds
-     *
-     * @return Base\PublicCollection
-     */
-
-    public function fetchMerchantIdsByProduct(string $product, array $merchantIds): Base\PublicCollection
-    {
-        return $this->newQuery()
-                    ->select(Entity::MERCHANT_ID)
-                    ->where(Entity::PRODUCT, $product)
-                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
-                    ->get();
     }
 
 }

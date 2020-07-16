@@ -166,4 +166,27 @@ class Repository extends Base\Repository
 
         return $query;
     }
+
+    /**
+     *
+     * select  distinct `merchant_id` from `virtual_accounts`
+     *         where `status` = ? and
+     *        `merchant_id` in (?)
+     *         order by `merchant_id` asc
+     *
+     * @param array $merchantIds
+     *
+     * @return array
+     */
+    public function fetchActiveVirtualAccountForMerchantIds(array $merchantIds): array
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::ACTIVE)
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                    ->orderBy(Entity::MERCHANT_ID)
+                    ->distinct()
+                    ->pluck(Entity::MERCHANT_ID)
+                    ->toArray();
+
+    }
 }

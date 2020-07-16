@@ -8,6 +8,7 @@ use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
+use RZP\Models\Base\PublicCollection;
 
 class Repository extends Base\Repository
 {
@@ -281,5 +282,34 @@ class Repository extends Base\Repository
         $email = mb_strtolower($params[Entity::MERCHANT_EMAIL]);
 
         $query->where($merchantEmailColumn, '=', $email);
+    }
+
+
+    /**
+     *
+     * select distinct `merchant_id` from `banking_accounts`
+     *         where `channel` = ? and
+     *        `account_type` = ? and
+     *        `status` = ? and
+     *        `merchant_id` in (?)
+     *         order by `merchant_id` asc
+     *
+     * @param array  $merchantIds
+     * @param string $channel
+     * @param string $accountType
+     *
+     * @return array
+     */
+    public function fetchActiveCurrentAccountForMerchantIds(array $merchantIds, string $channel, string $accountType): array
+    {
+        return $this->newQuery()
+                    ->where(Entity::CHANNEL, '=', $channel)
+                    ->where(Entity::ACCOUNT_TYPE, $accountType)
+                    ->where(Entity::STATUS, 'activated')
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                    ->distinct()
+                    ->pluck(Entity::MERCHANT_ID)
+                    ->toArray();
+
     }
 }

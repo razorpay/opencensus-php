@@ -6,7 +6,7 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\ProcessPayoutNotification;
 use RZP\Models\Base\PublicCollection as PublicCollection;
-use RZP\Exception;
+use RZP\Models\Merchant\Entity as Merchant;
 
 class Core extends Base\Core
 {
@@ -23,7 +23,7 @@ class Core extends Base\Core
 
         return [
             'desc'     => $response['desc'],
-            'downtime' => $downtime
+            'downtime' => $downtime->toArrayAdmin(),
         ];
 
     }
@@ -46,7 +46,7 @@ class Core extends Base\Core
 
         return [
             'desc'     => $response['desc'],
-            'downtime' => $downtime
+            'downtime' => $downtime->toArrayAdmin(),
         ];
     }
 
@@ -59,13 +59,49 @@ class Core extends Base\Core
         return $this->repo->payout_downtimes->findOrFailPublic($downtimeId);
     }
 
-    public function fetchAllEnabledDowntimes(): PublicCollection
+    public function fetchAllEnabledDowntimes(Merchant $merchant): array
     {
         $enabled = $this->repo->payout_downtimes->getAllActiveDowntimesByStatus(Constants::ENABLED);
 
         $this->trace->info(TraceCode::PAYOUT_ENABLED_DOWNTIME, (array) $enabled);
 
-        return $enabled;
+        return $this->filterEnabledDowntimesForMerchants($enabled, $merchant);
+    }
+
+    public function filterEnabledDowntimesForMerchants(PublicCollection $enabledDowntimes, Merchant $merchant): array
+    {
+        $downtime = array();
+
+        $channels = $enabledDowntimes->getStringAttributesByKey(Entity::CHANNEL);
+
+        if(empty($channels) === true)
+        {
+            return $downtime;
+        }
+
+        $va = $this->repo->payout_downtimes->fetchActiveVirtualAccountForMerchantIds(array($merchant->getId()));
+
+        $ba = $this->repo->payout_downtimes->fetchActiveCurrentAccountForMerchantIds(array($merchant->getId()), strtolower(Constants::RBL), Constants::CURRENT);
+
+        foreach ($enabledDowntimes as $key => $entity)
+        {
+            if($entity->channel === Constants::POOL_NETWORK and
+               empty($va) === false)
+            {
+                array_push($downtime, $entity->toArrayAdmin());
+            }
+            else if($entity->channel === Constants::RBL and
+               empty($ba) === false)
+            {
+                array_push($downtime, $entity->toArrayAdmin());
+            }
+            else if($entity->channel === Constants::ALL)
+            {
+                array_push($downtime, $entity->toArrayAdmin());
+            }
+        }
+
+        return $downtime;
     }
 
     public function fetchAllDowntimes($input): PublicCollection
@@ -99,13 +135,6 @@ class Core extends Base\Core
             ];
         }
 
-        if (isset($input[Constants::MID_LIST]) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException('Please provide merchant ids');
-        }
-
-        $uniqueMIDs = $this->validateMidsInput($input[Constants::MID_LIST]);
-
         $status = $downtime->getStatus();
 
         $emailMessage = $this->updateEmailDetails($status, $downtime);
@@ -117,9 +146,9 @@ class Core extends Base\Core
         }
 
         $emailData = [
-            Constants::MID_LIST      => $uniqueMIDs,
             Constants::STATUS        => $status,
             Constants::EMAIL_MESSAGE => $emailMessage,
+            Constants::CHANNEL       => $downtime->getChannel(),
             Constants::SUBJECT       => $input[Constants::SUBJECT] ?? Constants::DEFAULT_EMAIL_SUBJECT,
         ];
 
@@ -130,44 +159,6 @@ class Core extends Base\Core
         return [
             'desc' => 'Email step is initiated and will be sent shortly'
         ];
-    }
-
-    public function validateMidsInput(array $mids): array
-    {
-        $unique     = array_unique($mids);
-        $duplicates = $this->findDuplicates($mids);
-
-        if (empty($duplicates) === false)
-        {
-            $this->trace->info(TraceCode::PAYOUT_DOWNTIME_DUPLICATE_MID, $duplicates);
-        }
-
-        $merchantIds = $this->repo->payout_downtimes->fetchMerchantIdsIfExists($unique)->getIds();
-
-        if (count($unique) !== count($merchantIds))
-        {
-            $nonBanking = array_diff($unique, $merchantIds);
-
-            throw new Exception\BadRequestValidationFailureException('Invalid merchant ids provided: ' . implode(',', $nonBanking));
-        }
-
-        //fetching only banking merchantIds
-        $collection = $this->repo->payout_downtimes->fetchBankingMerchantIds($unique)->getStringAttributesByKey('merchant_id');
-
-        $bankingMerchantIds = array_keys($collection);
-
-        // if it's integer like string keys, then array_keys will convert
-        // those to integers. Let's re-map to string
-        $bankingMerchantIds = array_map('strval', $bankingMerchantIds);
-
-        if (count($unique) !== count($bankingMerchantIds))
-        {
-            $nonBanking = array_diff($unique, $bankingMerchantIds);
-
-            throw new Exception\BadRequestValidationFailureException('Non banking merchant ids provided: ' . implode(',', $nonBanking));
-        }
-
-        return $unique;
     }
 
     public function updateEmailDetails(string $status, Entity $downtime): string
@@ -191,20 +182,6 @@ class Core extends Base\Core
         $this->repo->payout_downtimes->saveOrFail($downtime);
 
         return $emailMessage;
-    }
-
-    private function findDuplicates(array $mids): array
-    {
-        $duplicates = array();
-        foreach (array_count_values($mids) as $val => $c)
-        {
-            if ($c > 1)
-            {
-                $duplicates[] = (string) $val;
-            }
-        }
-
-        return $duplicates;
     }
 
 }

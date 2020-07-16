@@ -8,16 +8,6 @@ use RZP\Exception;
 class Validator extends Base\Validator
 {
 
-    const RTGS  = 'RTGS';
-    const IMPS  = 'IMPS';
-    const NEFT  = 'NEFT';
-    const IFT   = 'IFT';
-    const UPI   = 'UPI';
-
-    const YES_BANK  = 'Yes Bank';
-    const RBL       = 'RBL';
-    const ALL       = 'All';
-
     const VALID_STATE_CHANGE = [
         Constants::ENABLED   => [Constants::DISABLED],
         Constants::SCHEDULED => [Constants::ENABLED, Constants::CANCELLED]
@@ -26,7 +16,6 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::STATUS                => 'required|string|in:Enabled,Scheduled',
         Entity::CHANNEL               => 'required|string|custom',
-        Entity::MODE                  => 'required|string|custom',
         Entity::START_TIME            => 'required|epoch',
         Entity::END_TIME              => 'sometimes|required|epoch',
         Entity::DOWNTIME_MESSAGE      => 'required|string',
@@ -40,7 +29,6 @@ class Validator extends Base\Validator
     protected static $editRules = [
         Entity::STATUS                => 'sometimes|required|string|in:Scheduled,Enabled,Disabled,Cancelled',
         Entity::CHANNEL               => 'sometimes|required|string|custom',
-        Entity::MODE                  => 'sometimes|required|string|custom',
         Entity::START_TIME            => 'sometimes|required|epoch',
         Entity::END_TIME              => 'sometimes|required|epoch',
         Entity::DOWNTIME_MESSAGE      => 'sometimes|string',
@@ -51,20 +39,12 @@ class Validator extends Base\Validator
         Constants::MID_LIST           => 'sometimes|required|array',
     ];
 
-    protected static $allSupportedModes = [
-        self::RTGS,
-        self::IMPS,
-        self::NEFT,
-        self::IFT,
-        self::UPI,
-    ];
-
     public function getChannels()
     {
         return [
-            self::YES_BANK,
-            self::RBL,
-            self::ALL,
+            Constants::POOL_NETWORK,
+            Constants::RBL,
+            Constants::ALL,
         ];
     }
 
@@ -73,14 +53,6 @@ class Validator extends Base\Validator
         if (in_array($channel, self::getChannels(), true) === false)
         {
             throw new Exception\BadRequestValidationFailureException('Invalid channel name: ' . $channel);
-        }
-    }
-
-    public static function validateMode(string $attribute, string $mode)
-    {
-        if (in_array($mode, self::$allSupportedModes, true) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException('Invalid mode provided: ' . $mode);
         }
     }
 

@@ -17,7 +17,6 @@ return [
                 'payout_downtime' => [
                     'status'           => 'Enabled',
                     'channel'          => 'RBL',
-                    'mode'             => 'NEFT',
                     'created_by'       => 'OPS_A',
                     'start_time'       => '1590468916',
                     'downtime_message' => 'HDFC bank NEFT payments are down',
@@ -30,10 +29,11 @@ return [
                 'downtime' => [
                     'status'           => 'Enabled',
                     'channel'          => 'RBL',
-                    'mode'             => 'NEFT',
                     'created_by'       => 'OPS_A',
                     'start_time'       => '1590468916',
                     'downtime_message' => 'HDFC bank NEFT payments are down',
+                    "entity"           => "payout_downtimes",
+                    "admin"            => true,
                 ]
             ],
         ],
@@ -47,7 +47,6 @@ return [
                 'payout_downtime' => [
                     'status'           => 'Enabled',
                     'channel'          => 'RBL',
-                    'mode'             => 'NEFT',
                     'created_by'       => 'OPS_A',
                     'start_time'       => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
                     'end_time'         => Carbon::today(Timezone::IST)->getTimestamp(),
@@ -78,7 +77,6 @@ return [
                 'payout_downtime' => [
                     'status'           => 'Enabled',
                     'channel'          => 'RBL',
-                    'mode'             => 'NEFT',
                     'created_by'       => 'OPS_A',
                     'start_time'       => '1590468916',
                     'downtime_message' => '',
@@ -108,7 +106,6 @@ return [
                 'payout_downtime' => [
                     'status'           => 'Disabled',
                     'channel'          => 'RBL',
-                    'mode'             => 'NEFT',
                     'created_by'       => 'OPS_A',
                     'start_time'       => '1590468916',
                     'downtime_message' => 'HDFC bank NEFT payments are down',
@@ -130,36 +127,6 @@ return [
         ],
     ],
 
-    'testCreateEntityModeException' => [
-        'request'   => [
-            'url'     => '/payouts/downtime/',
-            'method'  => 'POST',
-            'content' => [
-                'payout_downtime' => [
-                    'status'           => 'Enabled',
-                    'channel'          => 'RBL',
-                    'mode'             => 'ABCD',
-                    'created_by'       => 'OPS_A',
-                    'start_time'       => '1590468916',
-                    'downtime_message' => 'HDFC bank NEFT payments are down',
-                ],
-            ]
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid mode provided: ABCD',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
     'testCreateEntityChannelException' => [
         'request'   => [
             'url'     => '/payouts/downtime/',
@@ -168,7 +135,6 @@ return [
                 'payout_downtime' => [
                     'status'           => 'Enabled',
                     'channel'          => 'RANDOM',
-                    'mode'             => 'NEFT',
                     'created_by'       => 'OPS_A',
                     'start_time'       => '1590468916',
                     'downtime_message' => 'HDFC bank NEFT payments are down',
@@ -198,7 +164,6 @@ return [
                 'payout_downtime' => [
                     'status'           => 'Enabled',
                     'channel'          => 'RBL',
-                    'mode'             => 'IMPS',
                     'created_by'       => 'OPS_A',
                     'start_time'       => '1590468916',
                     'downtime_message' => 'HDFC bank NEFT payments are down',
@@ -211,10 +176,11 @@ return [
                 'downtime' => [
                     'status'           => 'Enabled',
                     'channel'          => 'RBL',
-                    'mode'             => 'IMPS',
                     'created_by'       => 'OPS_A',
                     'start_time'       => '1590468916',
                     'downtime_message' => 'HDFC bank NEFT payments are down',
+                    "entity"           => "payout_downtimes",
+                    "admin"            => true,
                 ]
             ],
         ],
@@ -236,10 +202,11 @@ return [
                 'downtime' => [
                     'status'           => 'Disabled',
                     'channel'          => 'RBL',
-                    'mode'             => 'NEFT',
                     'created_by'       => 'OPS_A',
                     'downtime_message' => 'HDFC bank NEFT payments are down',
                     'uptime_message'   => 'RBL is up',
+                    "entity"           => "payout_downtimes",
+                    "admin"            => true,
                 ]
             ],
         ],
@@ -278,7 +245,6 @@ return [
                 'payout_downtime' => [
                     'status'           => 'Cancelled',
                     'channel'          => 'RBL',
-                    'mode'             => 'NEFT',
                     'created_by'       => 'OPS_A',
                     'start_time'       => '1590468916',
                     'downtime_message' => 'HDFC bank NEFT payments are down',
@@ -311,7 +277,6 @@ return [
             'content' => [
                 'status'           => 'Enabled',
                 'channel'          => 'RBL',
-                'mode'             => 'NEFT',
                 'created_by'       => 'OPS_A',
                 'downtime_message' => 'HDFC bank NEFT payments are down',
                 'entity'           => 'payout_downtimes',
@@ -336,7 +301,6 @@ return [
                     [
                         'status'           => 'Scheduled',
                         'channel'          => 'RBL',
-                        'mode'             => 'NEFT',
                         'created_by'       => 'OPS_A',
                         'downtime_message' => 'HDFC bank NEFT payments are down',
                         'entity'           => 'payout_downtimes',
@@ -345,7 +309,6 @@ return [
                     [
                         'status'           => 'Enabled',
                         'channel'          => 'RBL',
-                        'mode'             => 'NEFT',
                         'created_by'       => 'OPS_A',
                         'downtime_message' => 'HDFC bank NEFT payments are down',
                         'entity'           => 'payout_downtimes',
@@ -356,7 +319,7 @@ return [
         ],
     ],
 
-    'testEnabledDowntime' => [
+    'testEnabledDowntimeXDashboard' => [
         'request'  => [
             'url'     => '/payouts/downtimes/enabled',
             'method'  => 'GET',
@@ -368,15 +331,14 @@ return [
                 [
                     'status'           => 'Enabled',
                     'channel'          => 'RBL',
-                    'mode'             => 'IMPS',
                     'created_by'       => 'OPS_A',
-                    'downtime_message' => 'HDFC bank NEFT payments are down',
+                    'downtime_message' => 'RBL bank payments are down',
                 ],
             ],
         ],
     ],
 
-    'testSendEmailEnabledState' => [
+    'testSendEmailForCurrentAccount' => [
         'request'  => [
             'url'     => '/payouts/downtime',
             'method'  => 'POST',
@@ -384,14 +346,10 @@ return [
                 'payout_downtime' => [
                     'status'               => 'Enabled',
                     'channel'              => 'RBL',
-                    'mode'                 => 'NEFT',
                     'created_by'           => 'OPS_A',
                     'start_time'           => '1590468916',
-                    'downtime_message'     => 'HDFC bank NEFT payments are down',
+                    'downtime_message'     => 'RBL bank payments are down',
                     'enabled_email_option' => 'Yes',
-                    Constants::MID_LIST    => [
-                        '100abc000abc00'
-                    ]
                 ],
             ]
         ],
@@ -401,10 +359,9 @@ return [
                 'downtime' => [
                     'status'               => 'Enabled',
                     'channel'              => 'RBL',
-                    'mode'                 => 'NEFT',
                     'created_by'           => 'OPS_A',
                     'start_time'           => '1590468916',
-                    'downtime_message'     => 'HDFC bank NEFT payments are down',
+                    'downtime_message'     => 'RBL bank payments are down',
                     'enabled_email_status' => 'Processing'
                 ]
             ],
@@ -412,103 +369,96 @@ return [
         ],
     ],
 
-    'testSendEmailEnabledStateException' => [
+    'testSendEmailForPoolAccount' => [
         'request'  => [
             'url'     => '/payouts/downtime',
             'method'  => 'POST',
             'content' => [
                 'payout_downtime' => [
                     'status'               => 'Enabled',
-                    'channel'              => 'RBL',
-                    'mode'                 => 'NEFT',
+                    'channel'              => 'Pool Network',
                     'created_by'           => 'OPS_A',
                     'start_time'           => '1590468916',
-                    'downtime_message'     => 'HDFC bank NEFT payments are down',
+                    'downtime_message'     => 'Pool Network payments are down',
                     'enabled_email_option' => 'Yes',
                 ],
             ]
         ],
-        'response'  => [
+        'response' => [
             'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Please provide merchant ids',
-                ],
+                'desc'     => 'Email step is initiated and will be sent shortly',
+                'downtime' => [
+                    'status'               => 'Enabled',
+                    'channel'              => 'Pool Network',
+                    'created_by'           => 'OPS_A',
+                    'start_time'           => '1590468916',
+                    'downtime_message'     => 'Pool Network payments are down',
+                    'enabled_email_status' => 'Processing'
+                ]
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'status_code' => 200,
         ],
     ],
 
-    'testSendEmailInvalidMIDException' => [
-        'request'   => [
-            'url'     => '/payouts/downtime/',
+    'testSendEmailForAll' => [
+        'request'  => [
+            'url'     => '/payouts/downtime',
             'method'  => 'POST',
             'content' => [
                 'payout_downtime' => [
                     'status'               => 'Enabled',
-                    'channel'              => 'RBL',
-                    'mode'                 => 'NEFT',
+                    'channel'              => 'All',
                     'created_by'           => 'OPS_A',
                     'start_time'           => '1590468916',
-                    'downtime_message'     => 'HDFC bank NEFT payments are down',
+                    'downtime_message'     => 'All payments are down',
                     'enabled_email_option' => 'Yes',
-                    Constants::MID_LIST    => [
-                        '100abc000abc3'
-                    ]
                 ],
             ]
         ],
-        'response'  => [
+        'response' => [
             'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => '100abc000abc3 is not a valid id',
-                ],
+                'desc'     => 'Email step is initiated and will be sent shortly',
+                'downtime' => [
+                    'status'               => 'Enabled',
+                    'channel'              => 'All',
+                    'created_by'           => 'OPS_A',
+                    'start_time'           => '1590468916',
+                    'downtime_message'     => 'All payments are down',
+                    'enabled_email_status' => 'Processing'
+                ]
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'status_code' => 200,
         ],
     ],
 
-    'testSendEmailInvalidMIDException2' => [
-        'request'   => [
-            'url'     => '/payouts/downtime/',
+    'testSendEmailForPrimaryMerchant' => [
+        'request'  => [
+            'url'     => '/payouts/downtime',
             'method'  => 'POST',
             'content' => [
                 'payout_downtime' => [
                     'status'               => 'Enabled',
-                    'channel'              => 'RBL',
-                    'mode'                 => 'NEFT',
+                    'channel'              => 'All',
                     'created_by'           => 'OPS_A',
                     'start_time'           => '1590468916',
-                    'downtime_message'     => 'HDFC bank NEFT payments are down',
+                    'downtime_message'     => 'All payments are down',
                     'enabled_email_option' => 'Yes',
-                    Constants::MID_LIST    => [
-                        '100abc000abc00',
-                        '100abc000abc35'
-                    ]
                 ],
             ]
         ],
-        'response'  => [
+        'response' => [
             'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid merchant ids provided: 100abc000abc35',
-                ],
+                'desc'     => 'Email step is initiated and will be sent shortly',
+                'downtime' => [
+                    'status'               => 'Enabled',
+                    'channel'              => 'All',
+                    'created_by'           => 'OPS_A',
+                    'start_time'           => '1590468916',
+                    'downtime_message'     => 'All payments are down',
+                    'enabled_email_status' => 'Processing'
+                ]
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'status_code' => 200,
         ],
     ],
 
@@ -524,50 +474,15 @@ return [
                 'desc'     => 'Email step is initiated and will be sent shortly',
                 'downtime' => [
                     'channel'               => 'RBL',
-                    'mode'                  => 'NEFT',
                     'created_by'            => 'OPS_A',
-                    'downtime_message'      => 'HDFC bank NEFT payments are down',
-                    'uptime_message'        => 'HDFC bank NEFT payments are up',
+                    'downtime_message'      => 'RBL payments are down',
+                    'uptime_message'        => 'RBL payments are up',
                     'enabled_email_option'  => 'Yes',
                     'status'                => 'Disabled',
                     'disabled_email_option' => 'Yes',
                 ],
             ],
             'status_code' => 200,
-        ],
-    ],
-
-    'testSendEmailForPrimaryMerchant' => [
-        'request'   => [
-            'url'     => '/payouts/downtime/',
-            'method'  => 'POST',
-            'content' => [
-                'payout_downtime' => [
-                    'status'               => 'Enabled',
-                    'channel'              => 'RBL',
-                    'mode'                 => 'NEFT',
-                    'created_by'           => 'OPS_A',
-                    'start_time'           => '1590468916',
-                    'downtime_message'     => 'HDFC bank NEFT payments are down',
-                    'enabled_email_option' => 'Yes',
-                    Constants::MID_LIST    => [
-                        '100abc000abc00'
-                    ]
-                ],
-            ]
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Non banking merchant ids provided: 100abc000abc00',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
