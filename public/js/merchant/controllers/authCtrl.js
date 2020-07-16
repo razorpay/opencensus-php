@@ -1105,9 +1105,7 @@ app
 
         // doing reload to trigger the Google Optimize experiment
         window.location.href = '#/access/signup';
-        if (!location.search.includes('next')) {
-          location.reload();
-        }
+        location.reload();
       };
 
       // client redirection to signup
