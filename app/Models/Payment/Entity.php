@@ -495,7 +495,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::SUBSCRIPTION_ID,
         self::AMOUNT_TRANSFERRED,
         self::GATEWAY_PROVIDER,
-        self::ACQUIRER_DATA,
         self::ACCOUNT_ID,
         self::TERMINAL_ID,
         self::FEE_BEARER,
@@ -3002,19 +3001,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         if ($app['basicauth']->isProxyOrPrivilegeAuth() === false)
         {
             unset($attributes[self::AMOUNT_TRANSFERRED]);
-        }
-    }
-
-    public function setPublicAcquirerDataAttribute(array & $array)
-    {
-        $app = \App::getFacadeRoot();
-
-        $auth = $app['basicauth'];
-
-        if (($auth->getMerchant() !== null) and
-            ($auth->getMerchant()->isExposeARNPaymentEnabled() === false))
-        {
-            unset($array[self::ACQUIRER_DATA]);
         }
     }
 

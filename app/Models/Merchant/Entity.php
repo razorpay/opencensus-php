@@ -817,11 +817,6 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::EXPOSE_ARN_REFUND) === true);
     }
 
-    public function isExposeARNPaymentEnabled(): bool
-    {
-       return ($this->isFeatureEnabled(Feature\Constants::EXPOSE_ARN_PAYMENT) === true);
-    }
-
     public function isExposeCardExpiryEnabled(): bool
     {
        return ($this->isFeatureEnabled(Feature\Constants::EXPOSE_CARD_EXPIRY) === true);

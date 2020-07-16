@@ -794,7 +794,6 @@ return [
                     'disable_amount_check',
                     'subscription_v2',
                     'subscription_auth_v2',
-                    'expose_arn_payment',
                     'expose_arn_refund',
                     'offers',
                     'otp_auth_default',

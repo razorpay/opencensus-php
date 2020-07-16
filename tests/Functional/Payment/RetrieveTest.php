@@ -57,8 +57,6 @@ class PaymentRetrieveTest extends TestCase
      */
     public function testRetrievePaymentWithId()
     {
-        $this->fixtures->merchant->addFeatures(['expose_arn_payment']);
-
         $payments = $this->retrievePaymentsDefault();
 
         //GIVEN
@@ -182,8 +180,6 @@ class PaymentRetrieveTest extends TestCase
 
     public function testRetrievePaymentWithCardDetails()
     {
-        $this->fixtures->merchant->addFeatures(['expose_arn_payment']);
-
         $payment = $this->fixtures->create('payment:captured', ['fee' => 23000]);
 
         $this->ba->privateAuth();
@@ -201,8 +197,6 @@ class PaymentRetrieveTest extends TestCase
 
     public function testRetrieveMultiplePaymentsWithCardDetails()
     {
-        $this->fixtures->merchant->addFeatures(['expose_arn_payment']);
-
         $payment = $this->fixtures->create('payment:captured', ['fee' => 23000]);
         $payment = $this->fixtures->create('payment:netbanking_captured', ['fee' => 23000]);
 

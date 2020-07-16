@@ -335,7 +335,6 @@ class Preferences
         Feature::EMAIL_OPTIONAL,
         Feature::EXPOSE_CARD_IIN,
         Feature::USE_MSWIPE_TERMINALS,
-        Feature::EXPOSE_ARN_PAYMENT,
     ];
     const MSWIPE_METHOD_LIST            = [
         Methods\Entity::CREDIT_CARD   => 1,

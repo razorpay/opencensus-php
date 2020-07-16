@@ -1162,8 +1162,6 @@ class PaymentCreateTest extends TestCase
 
     public function testPaymentWithEmptyAcquirerData()
     {
-        $this->fixtures->merchant->addFeatures(['expose_arn_payment']);
-
         $paymentData = $this->getDefaultPaymentArray();
 
         $payment = $this->doAuthPayment($paymentData);
@@ -1183,8 +1181,6 @@ class PaymentCreateTest extends TestCase
 
     public function testPaymentWithAcquirerData()
     {
-        $this->fixtures->merchant->addFeatures(['expose_arn_payment']);
-
         $paymentData = $this->getDefaultNetbankingPaymentArray();
 
         $this->doAuthPayment($paymentData);

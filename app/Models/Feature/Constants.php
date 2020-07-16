@@ -90,7 +90,6 @@ class Constants
     const DISABLE_AMOUNT_CHECK            = 'disable_amount_check';
     const SUBSCRIPTION_V2                 = 'subscription_v2';
     const SUBSCRIPTION_AUTH_V2            = 'subscription_auth_v2';
-    const EXPOSE_ARN_PAYMENT              = 'expose_arn_payment';
     const EXPOSE_ARN_REFUND               = 'expose_arn_refund';
     const OFFERS                          = 'offers';
     const OTP_AUTH_DEFAULT                = 'otp_auth_default';
@@ -503,7 +502,6 @@ class Constants
         self::DISABLE_AMOUNT_CHECK            => true,
         self::SUBSCRIPTION_V2                 => true,
         self::SUBSCRIPTION_AUTH_V2            => true,
-        self::EXPOSE_ARN_PAYMENT              => true,
         self::EXPOSE_ARN_REFUND               => true,
         self::OFFERS                          => true,
         self::OTP_AUTH_DEFAULT                => true,
