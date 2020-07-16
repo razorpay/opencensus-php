@@ -99,6 +99,7 @@ return [
                     'feature'               => 'esautomatic',
                     'payment_method'        => 'netbanking',
                     'payment_method_type'   => '',
+                    'payment_method_subtype'=> '',
                     'payment_network'       => '',
                     'percent_rate'          => '10',
                     'international'         => '0',
@@ -114,6 +115,7 @@ return [
                     'feature'               => 'payment',
                     'payment_method'        => 'card',
                     'payment_method_type'   => 'credit',
+                    'payment_method_subtype'=> '', 
                     'payment_network'       => 'DICL',
                     'percent_rate'          => '10',
                     'international'         => '0',
@@ -129,6 +131,7 @@ return [
                     'feature'               => 'payment',
                     'payment_method'        => 'card',
                     'payment_method_type'   => 'credit',
+                    'payment_method_subtype'=> '', 
                     'payment_network'       => 'DICL',
                     'percent_rate'          => '10',
                     'international'         => '0',
@@ -143,10 +146,11 @@ return [
                     'feature'               => 'payment',
                     'payment_method'        => 'card',
                     'payment_method_type'   => 'credit',
+                    'payment_method_subtype'=> '',
                     'payment_network'       => 'DICL',
                     'percent_rate'          => '10',
                     'international'         => '0',
-                    'idempotency_key'       => 'batch_DxtFGiJXmcdLfM',
+                    'idempotency_key'       => 'batch_DxtFGiJXmcdLaM',
                     'amount_range_active'   => '',
                     'amount_range_min'      => '',
                     'amount_range_max'      => '',
@@ -158,10 +162,11 @@ return [
                     'feature'               => 'payment',
                     'payment_method'        => 'card',
                     'payment_method_type'   => 'credit',
+                    'payment_method_subtype'=> '',
                     'payment_network'       => 'DICL',
                     'percent_rate'          => '10',
                     'international'         => '0',
-                    'idempotency_key'       => 'batch_DxtFGiJXmcdLfM',
+                    'idempotency_key'       => 'batch_DxtFGiJXmcdLfa',
                     'amount_range_active'   => '',
                     'amount_range_min'      => '',
                     'amount_range_max'      => '',
@@ -173,6 +178,7 @@ return [
                     'feature'               => 'payment',
                     'payment_method'        => 'upi',
                     'payment_method_type'   => 'credit',
+                    'payment_method_subtype'=> '',
                     'payment_network'       => 'DICL',
                     'percent_rate'          => '10',
                     'international'         => '0',
@@ -188,6 +194,7 @@ return [
                     'feature'               => 'esondemand',
                     'payment_method'        => 'netbanking',
                     'payment_method_type'   => '',
+                    'payment_method_subtype'=> '',
                     'payment_network'       => '',
                     'percent_rate'          => '10',
                     'international'         => '0',
@@ -203,6 +210,7 @@ return [
                     'feature'               => 'esautomatic',
                     'payment_method'        => 'emandate',
                     'payment_method_type'   => '',
+                    'payment_method_subtype'=> '',
                     'payment_network'       => '',
                     'percent_rate'          => '',
                     'international'         => '0',
@@ -218,6 +226,7 @@ return [
                     'feature'               => 'esautomatic',
                     'payment_method'        => 'wallet',
                     'payment_method_type'   => '',
+                    'payment_method_subtype'=> '',
                     'payment_network'       => '',
                     'percent_rate'          => '',
                     'international'         => '0',
@@ -233,6 +242,7 @@ return [
                     'feature'               => 'esautomatic',
                     'payment_method'        => 'wallet',
                     'payment_method_type'   => '',
+                    'payment_method_subtype'=> '',
                     'payment_network'       => '',
                     'percent_rate'          => '',
                     'international'         => '0',
@@ -248,6 +258,7 @@ return [
                     'feature'               => 'esautomatic',
                     'payment_method'        => 'wallet',
                     'payment_method_type'   => '',
+                    'payment_method_subtype'=> '',
                     'payment_network'       => '',
                     'percent_rate'          => '',
                     'international'         => '0',
@@ -263,6 +274,7 @@ return [
                     'feature'               => 'esautomatic',
                     'payment_method'        => 'wallet',
                     'payment_method_type'   => '',
+                    'payment_method_subtype'=> '',
                     'payment_network'       => '',
                     'percent_rate'          => '',
                     'international'         => '0',
@@ -272,6 +284,70 @@ return [
                     'amount_range_max'      => '',
                     'update'                => ''
                 ],
+                [
+                    'merchant_id'           => '10000000000000',
+                    'product'               => 'primary',
+                    'feature'               => 'esautomatic',
+                    'payment_method'        => 'wallet',
+                    'payment_method_type'   => '',
+                    'payment_method_subtype'=> 'invalidsubtype',
+                    'payment_network'       => '',
+                    'percent_rate'          => '',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_DZtFGiJXdcdcdr',
+                    'amount_range_active'   => true,
+                    'amount_range_min'      => 900,
+                    'amount_range_max'      => 19000,
+                    'update'                => ''
+                ],
+                [
+                    'merchant_id'           => '10000000000000',
+                    'product'               => 'primary',
+                    'feature'               => 'payment',
+                    'payment_method'        => 'card',
+                    'payment_method_type'   => 'credit',
+                    'payment_method_subtype'=> 'business',
+                    'payment_network'       => 'BAJAJ',
+                    'percent_rate'          => '11',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_DxtFGiJXmcdLfM',
+                    'amount_range_active'   => '',
+                    'amount_range_min'      => '400',
+                    'amount_range_max'      => '600',
+                    'update'                => ''
+                ],
+                [
+                    'merchant_id'           => '10000000000000',
+                    'product'               => 'primary',
+                    'feature'               => 'payment',
+                    'payment_method'        => 'card',
+                    'payment_method_type'   => 'credit',
+                    'payment_method_subtype'=> 'consumer',
+                    'payment_network'       => 'BAJAJ',
+                    'percent_rate'          => '12',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_DxtFGiJXmcdLfe',
+                    'amount_range_active'   => '',
+                    'amount_range_min'      => '400',
+                    'amount_range_max'      => '600',
+                    'update'                => ''
+                ],
+                [
+                    'merchant_id'           => '10000000000000',
+                    'product'               => 'primary',
+                    'feature'               => 'payment',
+                    'payment_method'        => 'card',
+                    'payment_method_type'   => 'credit',
+                    'payment_method_subtype'=> 'invalidsubtype',
+                    'payment_network'       => 'BAJAJ',
+                    'percent_rate'          => '12',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_DxtFGiJXmcdLfh',
+                    'amount_range_active'   => '',
+                    'amount_range_min'      => '400',
+                    'amount_range_max'      => '600',
+                    'update'                => ''
+                ]
             ],
             'url'       => '/pricing/rules/bulk',
             'method'    => 'POST',
@@ -279,7 +355,7 @@ return [
         'response' => [
             'content'   => [
                 'entity'    => 'collection',
-                'count'     => 12,
+                'count'     => 16,
                 'items'     => [
                     [
                         'success'           => true,
@@ -302,11 +378,11 @@ return [
                         ]
                     ],
                     [
-                        'idempotency_key'   => 'batch_DxtFGiJXmcdLfM',
+                        'idempotency_key'   => 'batch_DxtFGiJXmcdLaM',
                         'success'           => true
                     ],
                     [
-                        'idempotency_key'   => 'batch_DxtFGiJXmcdLfM',
+                        'idempotency_key'   => 'batch_DxtFGiJXmcdLfa',
                         'success'           => false,
                         'error' => [
                             'description'   => 'The new rule is same as the previous rule',
@@ -362,8 +438,32 @@ return [
                         'error' =>  [
                             'description'   =>  "Pricing rule amount range collides with another existing rule's amount range.",
                             'code'          =>  "BAD_REQUEST_PRICING_RULE_FOR_AMOUNT_RANGE_OVERLAP"
-                         ]
-                     ],
+                        ]
+                    ],
+                    [
+                        'idempotency_key'   =>  "batch_DZtFGiJXdcdcdr",
+                        'success'           =>  false,
+                        'error' =>  [
+                            'description'   =>  "The payment method subtype field may be sent only when payment method is card",
+                            'code'          =>  "BAD_REQUEST_VALIDATION_FAILURE"
+                        ]
+                    ],
+                    [
+                        'idempotency_key'   => 'batch_DxtFGiJXmcdLfM',
+                        'success'           => true
+                    ],
+                    [
+                        'idempotency_key'   => 'batch_DxtFGiJXmcdLfe',
+                        'success'           => true
+                    ],
+                    [
+                        'idempotency_key'   =>  "batch_DxtFGiJXmcdLfh",
+                        'success'           =>  false,
+                        'error' =>  [
+                            'description'   =>  "Not a valid sub_type: invalidsubtype",
+                            'code'          =>  "BAD_REQUEST_VALIDATION_FAILURE"
+                        ]
+                    ],
                 ]
             ],
             'status_code' => 200,
@@ -379,6 +479,7 @@ return [
                     'feature'               => 'esautomatic',
                     'payment_method'        => 'netbanking',
                     'payment_method_type'   => '',
+                    'payment_method_subtype'=> '',
                     'payment_network'       => '',
                     'percent_rate'          => '10',
                     'international'         => '0',
@@ -394,6 +495,7 @@ return [
                     'feature'               => 'esautomatic',
                     'payment_method'        => 'upi',
                     'payment_method_type'   => '',
+                    'payment_method_subtype'=> '',
                     'payment_network'       => '',
                     'percent_rate'          => '10',
                     'international'         => '0',
@@ -409,6 +511,7 @@ return [
                     'feature'               => 'payment',
                     'payment_method'        => 'card',
                     'payment_method_type'   => 'credit',
+                    'payment_method_subtype'=> '',
                     'payment_network'       => 'DICL',
                     'percent_rate'          => '10',
                     'international'         => '0',
@@ -424,6 +527,7 @@ return [
                     'feature'               => 'payment',
                     'payment_method'        => 'card',
                     'payment_method_type'   => 'credit',
+                    'payment_method_subtype'=> '',
                     'payment_network'       => 'DICL',
                     'percent_rate'          => '10',
                     'international'         => '0',
@@ -477,6 +581,7 @@ return [
                     'feature'               => 'payment',
                     'payment_method'        => 'card',
                     'payment_method_type'   => 'credit',
+                    'payment_method_subtype'=> '',
                     'payment_network'       => 'DICL',
                     'percent_rate'          => '1000',
                     'international'         => '0',

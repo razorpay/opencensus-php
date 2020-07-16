@@ -86,7 +86,8 @@ class Service extends Base\Service
 
                     $ruleOrgId = $plan->getOrgId();
 
-
+                    // the route is being used by terminalsService also for paypal onboarding pricing update, we don't send subtype from there
+                    $methodSubtype = isset($item[Pricing\Entity::PAYMENT_METHOD_SUBTYPE]) ? $item[Pricing\Entity::PAYMENT_METHOD_SUBTYPE] : null;
                     /** @var Pricing\Entity $existingRule */
                     $existingRule = (new Pricing\Repository)->getPricingRuleByMultipleParams(
                         $planId,
@@ -94,6 +95,7 @@ class Service extends Base\Service
                         $item[Pricing\Entity::FEATURE],
                         $item[Pricing\Entity::PAYMENT_METHOD],
                         $item[Pricing\Entity::PAYMENT_METHOD_TYPE],
+                        $methodSubtype,
                         $item[Pricing\Entity::PAYMENT_NETWORK],
                         $item[Pricing\Entity::INTERNATIONAL],
                         0);
@@ -147,6 +149,7 @@ class Service extends Base\Service
                                 $item[Pricing\Entity::FEATURE],
                                 $item[Pricing\Entity::PAYMENT_METHOD],
                                 $item[Pricing\Entity::PAYMENT_METHOD_TYPE],
+                                $methodSubtype,
                                 $item[Pricing\Entity::PAYMENT_NETWORK],
                                 $item[Pricing\Entity::INTERNATIONAL],
                                 0);

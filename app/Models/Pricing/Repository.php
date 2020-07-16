@@ -392,6 +392,7 @@ class Repository extends Base\Repository
         $feature,
         $method,
         $methodType,
+        $methodSubtype,
         $network,
         $international,
         $amountRangeActive = 0)
@@ -402,6 +403,7 @@ class Repository extends Base\Repository
                      ->where(Entity::FEATURE, '=', $feature)
                      ->where(Entity::PAYMENT_METHOD, '=', $method)
                      ->where(Entity::PAYMENT_METHOD_TYPE, '=', $methodType)
+                     ->where(Entity::PAYMENT_METHOD_SUBTYPE, '=', $methodSubtype)
                      ->where(Entity::PAYMENT_NETWORK, '=', $network)
                      ->where(Entity::INTERNATIONAL, '=', $international)
                      ->where(Entity::AMOUNT_RANGE_ACTIVE, '=', $amountRangeActive)

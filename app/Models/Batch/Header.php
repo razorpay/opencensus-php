@@ -781,19 +781,20 @@ class Header
     const TERMINAL_CREATION_CAPABILITY           = 'Capability';
 
     // Pricing Rules Addition Headers
-    const PRICING_RULE_MERCHANT_ID         = 'merchant_id';
-    const PRICING_RULE_PRODUCT             = 'product';
-    const PRICING_RULE_FEATURE             = 'feature';
-    const PRICING_RULE_PAYMENT_METHOD      = 'payment_method';
-    const PRICING_RULE_PAYMENT_METHOD_TYPE = 'payment_method_type';
-    const PRICING_RULE_PAYMENT_NETWORK     = 'payment_network';
-    const PRICING_RULE_INTERNATIONAL       = 'international';
-    const PRICING_RULE_PERCENT_RATE        = 'percent_rate';
-    const PRICING_RULE_AMOUNT_RANGE_ACTIVE = 'amount_range_active';
-    const PRICING_RULE_AMOUNT_RANGE_MIN    = 'amount_range_min';
-    const PRICING_RULE_AMOUNT_RANGE_MAX    = 'amount_range_max';
-    const PRICING_RULE_FIXED_RATE          = 'fixed_rate';
-    const PRICING_RULE_UPDATE              = 'update';
+    const PRICING_RULE_MERCHANT_ID              = 'merchant_id';
+    const PRICING_RULE_PRODUCT                  = 'product';
+    const PRICING_RULE_FEATURE                  = 'feature';
+    const PRICING_RULE_PAYMENT_METHOD           = 'payment_method';
+    const PRICING_RULE_PAYMENT_METHOD_TYPE      = 'payment_method_type';
+    const PRICING_RULE_PAYMENT_METHOD_SUBTYPE   = 'payment_method_subtype';
+    const PRICING_RULE_PAYMENT_NETWORK          = 'payment_network';
+    const PRICING_RULE_INTERNATIONAL            = 'international';
+    const PRICING_RULE_PERCENT_RATE             = 'percent_rate';
+    const PRICING_RULE_AMOUNT_RANGE_ACTIVE      = 'amount_range_active';
+    const PRICING_RULE_AMOUNT_RANGE_MIN         = 'amount_range_min';
+    const PRICING_RULE_AMOUNT_RANGE_MAX         = 'amount_range_max';
+    const PRICING_RULE_FIXED_RATE               = 'fixed_rate';
+    const PRICING_RULE_UPDATE                   = 'update';
 
     // NPCI RUPAY IIN Batch
     const IIN_NPCI_RUPAY_ROW                     = 'row';
@@ -2548,6 +2549,7 @@ class Header
                 self::PRICING_RULE_FEATURE,
                 self::PRICING_RULE_PAYMENT_METHOD,
                 self::PRICING_RULE_PAYMENT_METHOD_TYPE,
+                self::PRICING_RULE_PAYMENT_METHOD_SUBTYPE,
                 self::PRICING_RULE_PAYMENT_NETWORK,
                 self::PRICING_RULE_INTERNATIONAL,
                 self::PRICING_RULE_PERCENT_RATE,
@@ -2562,6 +2564,7 @@ class Header
                 self::PRICING_RULE_FEATURE,
                 self::PRICING_RULE_PAYMENT_METHOD,
                 self::PRICING_RULE_PAYMENT_METHOD_TYPE,
+                self::PRICING_RULE_PAYMENT_METHOD_SUBTYPE,
                 self::PRICING_RULE_PAYMENT_NETWORK,
                 self::PRICING_RULE_INTERNATIONAL,
                 self::PRICING_RULE_PERCENT_RATE,
