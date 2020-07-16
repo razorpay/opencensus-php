@@ -99,11 +99,7 @@ class FirstData extends Base
             $item = Gateway::PARES_DATA_CACHE_KEY . $item;
         });
 
-        // pares data may be over 100MB. Redis request may time out while reading data.
-        // increasing timeout to 10s for that.
-        $this->cache->setConnection('default_with_high_timeout');
-
-        $ids =  array_chunk($ids, 1000);
+        $ids =  array_chunk($ids, 100);
 
         $data = [];
 
@@ -119,8 +115,6 @@ class FirstData extends Base
                 'count'           => count($data),
                 'message'         => 'pares data retrieved from cache.',
             ]);
-
-        $this->cache->setConnection('default');
 
         return $data;
     }
