@@ -89,6 +89,62 @@ return [
         ]
     ],
 
+    'testNoMinLimitFornEsAutomaticMerchants' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand',
+            'method'  => 'post',
+            'content' => [
+                'amount'    => 2000,
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+//                    'id'                   => 'sod_FFEK3Ne1b6uCXf',
+                    'amount'               => '2000',
+                    'total_fees'           => 48,
+                    'total_tax'            => 8,
+                    'total_amount_pending' => 1952,
+                    'max_balance'          => 0,
+                    'currency'             => 'INR',
+                    'status'               => 'initiated',
+                    'narration'            => null,
+                    'notes'                => [],
+//                    'created_at'           => 1582000200,
+//                    'updated_at'           => 1582000200,
+            ]
+        ]
+    ],
+
+    'testMinLimitForNonEsAutomaticMerchants' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand',
+            'method'  => 'post',
+            'content' => [
+                'amount'    => 100000,
+                'narration' => 'Demo Narration - optional',
+                'notes'     => [
+                                'key1' => 'note3',
+                                'key2' => 'note5'
+                            ],
+                'expand'    => true
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Minimum settlement amount should Rs 2000. To remove the cap, please enable daily settlements',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_AMOUNT_LESS_THAN_MIN_LIMIT_FOR_NON_ES_AUTOMATIC_MERCHANTS,
+        ],
+    ],
+
     'testBankingHourOndemandCreationWithMockWebhook' => [
         'request'  => [
             'url'     => '/settlements/ondemand',

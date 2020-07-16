@@ -399,6 +399,7 @@ class PublicErrorDescription
     //on_demand
     const BAD_REQUEST_INSUFFICIENT_BALANCE                                      = 'Amount requested for the ondemand settlement exceeds the settlement balance.';
     const BAD_REQUEST_ONDEMAND_SETTLEMENT_AMOUNT_MAX_LIMIT_EXCEEDED             = 'Amount requested is more than the max limit for ondemand settlement';
+    const BAD_REQUEST_AMOUNT_LESS_THAN_MIN_LIMIT_FOR_NON_ES_AUTOMATIC_MERCHANTS = 'Minimum settlement amount should Rs 2000. To remove the cap, please enable daily settlements';
 
     const BAD_REQUEST_DOCUMENT_TYPE_INVALID                                     = 'invalid document type';
     const INVALID_ARGUMENT_INVALID_FILE_HANDLER_SOURCE                          = 'Server error';

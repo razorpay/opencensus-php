@@ -54,6 +54,9 @@ class Core extends Base\Core
 
     public function setMode()
     {
+        //Temporary fix - always returning IMPS to use PG ICIC nodal for X merchant
+        return FundTransfer\Mode::IMPS;
+
         //For ES_AUTOMATIC Merchants IMPS mode is used always regardless of banking or non-banking hour
         if ($this->merchant->isFeatureEnabled(Feature\Constants::ES_AUTOMATIC) === true)
         {

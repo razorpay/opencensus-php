@@ -2,8 +2,11 @@
 
 namespace RZP\Models\Settlement\Ondemand;
 
+use App;
+
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Base\JitValidator;
 use Razorpay\Trace\TraceCode;
@@ -11,10 +14,11 @@ use Razorpay\Trace\Logger as Trace;
 
 class Validator extends Base\Validator
 {
-    const SETTLEMENT_ONDEMAND_INPUT      = 'settlement_ondemand_input';
-    const SETTLEMENT_ONDEMAND_FEES_INPUT = 'settlement_ondemand_fees_input';
-    const MAX_ONDEMAND_AMOUNT            = 2000000000;
-    const MIN_ONDEMAND_AMOUNT            = 100;
+    const SETTLEMENT_ONDEMAND_INPUT         = 'settlement_ondemand_input';
+    const SETTLEMENT_ONDEMAND_FEES_INPUT    = 'settlement_ondemand_fees_input';
+    const MAX_ONDEMAND_AMOUNT               = 2000000000;
+    const MIN_ONDEMAND_AMOUNT               = 100;
+    const MIN_ONDEMAND_AMOUNT_FOR_DASHBOARD = 200000;
 
     protected static $createRules = [
         Entity::AMOUNT                => 'required|integer|custom',
@@ -55,7 +59,19 @@ class Validator extends Base\Validator
             ]);
         }
 
-        if ($value < self::MIN_ONDEMAND_AMOUNT)
+        $app = App::getFacadeRoot();
+
+        if (($app['basicauth']->isProxyAuth() === true) && 
+            (($value < self::MIN_ONDEMAND_AMOUNT_FOR_DASHBOARD) === true) && 
+            ($app['basicauth']->getMerchant()->isFeatureEnabled(Feature\Constants::ES_AUTOMATIC) === false))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_AMOUNT_LESS_THAN_MIN_LIMIT_FOR_NON_ES_AUTOMATIC_MERCHANTS,
+            null,
+            [
+                'amount' => $value,
+            ]);
+        }
+        else if ($value < self::MIN_ONDEMAND_AMOUNT)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_AMOUNT_LESS_THAN_MIN_ONDEMAND_AMOUNT,
