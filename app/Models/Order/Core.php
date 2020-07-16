@@ -273,6 +273,15 @@ class Core extends Base\Core
             $data[Entity::AUTH_TYPE] = $tokenRegistration->getAuthType();
         }
 
+        if ($order->upiMandate !== null)
+        {
+            $data['token']['start_time'] = $order->upiMandate['start_time'];
+            $data['token']['end_time'] = $order->upiMandate['end_time'];
+            $data['token']['recurring_type'] = $order->upiMandate['recurring_type'];
+            $data['token']['frequency'] = $order->upiMandate['frequency'];
+            $data['token']['max_amount']= $order->upiMandate['max_amount'];
+        }
+
         if ($orderMethod !== null)
         {
             $data += [Entity::METHOD => $orderMethod];

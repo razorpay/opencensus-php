@@ -1424,6 +1424,11 @@ class Gateway
         Gateway::AMEX,
     ];
 
+    public static $upiRecurringGateways = [
+        Gateway::UPI_MINDGATE,
+        Gateway::UPI_ICICI,
+    ];
+
     public static $recurringCardNetworks = [
         Network::MC,
         Network::VISA,

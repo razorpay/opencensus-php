@@ -225,6 +225,8 @@ class Core extends Base\Core
 
             $this->addRecurringEmandateToMethodsIfApplicable($merchant, $methods, $data['recurring']);
 
+            $this->addRecurringUpiToMethodsIfApplicable($merchant, $methods, $data['recurring']);
+
             $data['recurring'][Entity::NACH] = $methods->isNachEnabled();
         }
 
@@ -271,6 +273,24 @@ class Core extends Base\Core
             $supportedIssuersForDebitCardRecurring = Payment\Gateway::getIssuersSupportedForDebitCardRecurring();
 
             $recurringData['card']['debit'] = $this->getBankNames($supportedIssuersForDebitCardRecurring);
+        }
+    }
+
+    public function addRecurringUpiToMethodsIfApplicable(
+        Merchant\Entity $merchant,
+        Methods\Entity $methods,
+        array & $recurringData)
+    {
+        if ($methods->isUpiEnabled() === false)
+        {
+            return;
+        }
+
+        $recurringUpiTerminals = $this->repo->terminal->getUpiRecurringTerminalsByMid($merchant->getId());
+
+        if (empty($recurringUpiTerminals) === false)
+        {
+            $recurringData['upi'] = true;
         }
     }
 

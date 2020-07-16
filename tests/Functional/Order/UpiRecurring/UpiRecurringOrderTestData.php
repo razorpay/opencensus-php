@@ -195,5 +195,28 @@ return [
                 'currency'      => 'INR',
             ],
         ],
-    ]
+    ],
+    'testPreferencesForUpiRecurringOrder' => [
+        'request' => [
+            'content' => [],
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'upi' => true,
+                    'recurring' => [
+                        'upi' => true,
+                    ]
+                ],
+                'order' => [
+                    'token' => [
+                        'recurring_type' => 'before',
+                        'frequency' => 'monthly'
+                    ]
+                ],
+            ],
+        ],
+    ],
 ];

@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Order;
 use RZP\Models\Order;
 use RZP\Models\UpiMandate;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -20,6 +21,12 @@ class UpiRecurringOrderTest extends TestCase
         parent::setUp();
 
         $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+        $this->fixtures->create('terminal:shared_mindgate_recurring_terminal', ['merchant_id'=> '10000000000000']);
     }
 
     public function testCreateUpiRecurringOrder()
@@ -106,5 +113,18 @@ class UpiRecurringOrderTest extends TestCase
         $this->assertNotNull($upiMandate['start_time']);
 
         $this->assertNotNull($upiMandate['end_time']);
+    }
+
+    public function testPreferencesForUpiRecurringOrder()
+    {
+        $this->testCreateUpiRecurringOrder();
+
+        $order = $this->getDbLastEntity('order');
+
+        $this->ba->publicAuth();
+
+        $testData['request']['content'] = ['order_id' => $order->getPublicId()];
+
+        $this->startTest($testData);
     }
 }

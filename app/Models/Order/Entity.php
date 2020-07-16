@@ -11,6 +11,7 @@ use RZP\Models\Invoice;
 use RZP\Models\Transfer;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use RZP\Models\UpiMandate;
 use RZP\Models\Payment\Config;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Currency\Currency;
@@ -22,6 +23,7 @@ use RZP\Models\SubscriptionRegistration;
  * @property Merchant\Entity $merchant
  * @property Invoice\Entity  $invoice
  * @property Transfer\Entity $transfer
+ * @property UpiMandate\Entity $upiMandate
  */
 class Entity extends Base\PublicEntity
 {
@@ -315,6 +317,11 @@ class Entity extends Base\PublicEntity
     public function virtualAccount()
     {
         return $this->morphOne('RZP\Models\VirtualAccount\Entity', 'entity');
+    }
+
+    public function upiMandate()
+    {
+        return $this->hasOne('RZP\Models\UpiMandate\Entity');
     }
 
     public function associateOffer(Offer\Entity $offer)
