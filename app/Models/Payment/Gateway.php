@@ -749,6 +749,7 @@ class Gateway
         Payment\Gateway::ENACH_NPCI_NETBANKING,
         Payment\Gateway::PAYLATER,
         Payment\Gateway::PAYLATER_ICICI,
+        Payment\Gateway::UPI_JUSPAY,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [

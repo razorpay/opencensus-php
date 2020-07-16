@@ -11,6 +11,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Exception\GatewayErrorException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\Payment\Refund\Status as RefundStatus;
 
 class UpiJuspayGatewayTest extends TestCase
 {
@@ -163,7 +164,7 @@ class UpiJuspayGatewayTest extends TestCase
 
         $this->assertTrue($payment->isCaptured());
 
-        $response = $this->refundPayment($payment->getPublicId());
+        $response = $this->refundPayment($payment->getPublicId(), $payment->getAmount());
 
         $payment->refresh();
 
@@ -176,7 +177,8 @@ class UpiJuspayGatewayTest extends TestCase
         $this->assertArraySubset([
             Refund\Entity::PAYMENT_ID   => $payment->getId(),
             Refund\Entity::AMOUNT       => $payment->getAmount(),
-            Refund\Entity::STATUS       => 'failed',
+            // Through scrooge during failure, status is set to created
+            Refund\Entity::STATUS       => RefundStatus::CREATED,
             Refund\Entity::GATEWAY      => $payment->getGateway(),
             Refund\Entity::GATEWAY_REFUNDED   => false
         ], $refund->toArray());
