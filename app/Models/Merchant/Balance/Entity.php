@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Balance;
 
+use App;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -15,6 +16,7 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestException;
 use Razorpay\Spine\DataTypes\Dictionary;
+use RZP\Models\Merchant\Credits\Constants;
 
 /**
  * Class Entity
@@ -446,13 +448,26 @@ class Entity extends Base\PublicEntity
 
     public function subtractRefundCredits($amount, int $negativeLimit = 0)
     {
-        $credits = $this->getRefundCredits();
+        $mutex = App::getFacadeRoot()['api.mutex'];
 
-        $credits -= $amount;
+        $mutexKey = Constants::MERCHANT_CREDIT_TYPE_MUTEX_PREFIX . $this->merchant->getId() . '_' . \RZP\Models\Merchant\Credits\Type::REFUND;
 
-        assertTrue($credits >= $negativeLimit);
+        $mutex->acquireAndRelease(
+            $mutexKey,
+            function() use ($amount, $negativeLimit)
+            {
+                $credits = $this->getRefundCredits();
 
-        $this->setAttribute(self::REFUND_CREDITS, $credits);
+                $credits -= $amount;
+
+                assertTrue($credits >= $negativeLimit);
+
+                $this->setAttribute(self::REFUND_CREDITS, $credits);
+            },
+            Constants::MERCHANT_CREDIT_TYPE_MUTEX_TIMEOUT,
+            ErrorCode::BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS,
+            Constants::MERCHANT_CREDIT_TYPE_MUTEX_ACQUIRE_RETRY_LIMIT
+        );
     }
 
     public function setAmountCredits($credits)

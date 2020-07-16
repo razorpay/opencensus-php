@@ -115,42 +115,16 @@ class Core extends Base\Core
             throw new Exception\LogicException('Credit Amount should be negative in reversal cases');
         }
 
-        $creditAmount = -1 * $creditAmount;
-
-        // credit_transactions used in the forward transaction in reverse order
-        $creditTransactions = $this->repo->credit_transaction->getAllCreditLogsOfTransaction($forwardTxnId);
-
-        $creditIds = $creditTransactions->pluck(Entity::CREDITS_ID)
-                                        ->toArray();
-
-        $creditsUsed = $creditTransactions->pluck(Entity::CREDITS_USED)
-                                          ->toArray();
-
-        $creditsToReverse = [];
-
-        foreach ($creditIds as $key => $creditId)
-        {
-            // When all the credit logs are reversed with used amount/fee
-            if ($creditAmount === 0)
-            {
-                break;
-            }
-
-            $toReverse = min($creditAmount, $creditsUsed[$key]);
-
-            $creditAmount -= $toReverse;
-
-            $creditsToReverse[$creditId] = -1 * $toReverse;
-        }
-
         $mutex = App::getFacadeRoot()['api.mutex'];
 
         $mutexKey = Credits\Constants::MERCHANT_CREDIT_TYPE_MUTEX_PREFIX . $txn->merchant->getId() . '_' . $creditType;
 
         $mutex->acquireAndRelease(
             $mutexKey,
-            function() use ($txn, $creditsToReverse)
+            function() use ($txn, $creditAmount, $forwardTxnId)
             {
+                $creditsToReverse = $this->getCreditsToBeReversed($creditAmount, $forwardTxnId);
+
                 $credits = $this->repo->credits->getCreditEntities(array_keys($creditsToReverse));
 
                 //
@@ -169,6 +143,38 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS,
             Credits\Constants::MERCHANT_CREDIT_TYPE_MUTEX_ACQUIRE_RETRY_LIMIT
         );
+    }
+
+    protected function getCreditsToBeReversed(int $creditAmount, string $forwardTxnId)
+    {
+        $creditAmount = -1 * $creditAmount;
+
+        // credit_transactions used in the forward transaction in reverse order
+        $creditTransactions = $this->repo->credit_transaction->getAllCreditLogsOfTransaction($forwardTxnId);
+
+        $creditIds = $creditTransactions->pluck(Entity::CREDITS_ID)
+            ->toArray();
+
+        $creditsUsed = $creditTransactions->pluck(Entity::CREDITS_USED)
+            ->toArray();
+
+        $creditsToReverse = [];
+
+        foreach ($creditIds as $key => $creditId)
+        {
+            // When all the credit logs are reversed with used amount/fee
+            if ($creditAmount === 0)
+            {
+                break;
+            }
+
+            $toReverse = min($creditAmount, $creditsUsed[$key]);
+
+            $creditAmount -= $toReverse;
+
+            $creditsToReverse[$creditId] = -1 * $toReverse;
+        }
+        return $creditsToReverse;
     }
 
     protected function getCreditsUsedAndUpdateCreditAmount(Credits\Entity $credit, int & $creditAmount): int

@@ -75,16 +75,27 @@ class Core extends Base\Core
 
         $this->app['workflow']->handle((new \stdClass), $creditsLog);
 
-        return $this->repo->transaction(function() use ($merchant, $creditsLog)
-        {
-            $this->repo->saveOrFail($creditsLog);
+        $resource = "credits_create" . $merchant->getId() . '_' . $creditsLog->getType();
 
-            $type = $creditsLog->getType();
+        $mutex = App::getFacadeRoot()['api.mutex'];
 
-            $this->updateCreditsInMerchantAccount($merchant, $creditsLog->getValue(), $type);
+        return $mutex->acquireAndRelease(
+            $resource,
+            function() use ($creditsLog, $merchant) {
 
-            return $creditsLog;
-        });
+                $this->repo->transaction(function() use ($merchant, $creditsLog)
+                {
+                    $this->repo->saveOrFail($creditsLog);
+
+                    $type = $creditsLog->getType();
+
+                    $this->updateCreditsInMerchantAccount($merchant, $creditsLog->getValue(), $type);
+
+                    return $creditsLog;
+                });
+
+                return $creditsLog;
+            });
     }
 
     public function updateCreditsInMerchantAccount($merchant, $credits, $type = Credits\Type::AMOUNT)
