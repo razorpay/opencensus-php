@@ -1003,6 +1003,7 @@ class UpiMindgateGatewayTest extends TestCase
         $terminal = $this->fixtures->create('terminal:direct_settlement_upi_mindgate_terminal');
 
         $data = $this->testData['testUnexpectedPaymentSuccess'];
+        $data['pgMerchantId'] = 'shared_merchant';
 
         $response = $this->createUnexpectedPayment($data);
 

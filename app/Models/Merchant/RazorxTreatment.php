@@ -118,8 +118,6 @@ final class RazorxTreatment
     // Decides if should forward passport(jwt) received from edge to subscriptions service.
     const FORWARD_PASSPORT_TO_SUBSCRIPTIONS = 'forward_passport_to_subscriptions';
 
-    const VIRTUAL_VPA_PREFIX = 'virtual_vpa_prefix';
-
     // Experiment for 2FA on critical actions
     const VALIDATE_USER_2FA_STATUS = 'validate_user_2fa_status';
 

@@ -197,48 +197,26 @@ class Generator extends Base\Core
 
     protected function setTerminalConfigsForVpa(Entity $vpa): Terminal\Entity
     {
-        $variant = 'on';
-        
-        try
-        {
-            $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
-                                                        Merchant\RazorxTreatment::VIRTUAL_VPA_PREFIX,
-                                                        $this->mode
-            );
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->info(TraceCode::RAZORX_REQUEST_FAILED);
-        }
-
         $isUpiIciciVpaEnabled = $this->isUpiIciciVpaEnabled();
 
-        if ((strtolower($variant) === 'on') or
-            ($isUpiIciciVpaEnabled === true))
+        $virtualVpaPrefix = $this->repo
+                                 ->virtual_vpa_prefix
+                                 ->fetchEntityByMerchantId($this->merchant->getId());
+
+        if ($virtualVpaPrefix !== null)
         {
-            $virtualVpaPrefix = $this->repo
-                ->virtual_vpa_prefix
-                ->fetchEntityByMerchantId($this->merchant->getId());
+            $terminal = $this->repo
+                             ->terminal
+                             ->getById($virtualVpaPrefix->getTerminalId());
 
-            if ($virtualVpaPrefix !== null)
-            {
-                $terminal = $this->repo
-                    ->terminal
-                    ->getById($virtualVpaPrefix->getTerminalId());
+            $this->setConfigForVpa($terminal, $virtualVpaPrefix->getPrefix());
 
-                $this->setConfigForVpa($terminal, $virtualVpaPrefix->getPrefix());
-
-                return $terminal;
-            }
-
-            $gateway = ($isUpiIciciVpaEnabled === true) ? Gateway::UPI_ICICI : Gateway::UPI_MINDGATE;
-
-            $terminal = (new TerminalProcessor())->getTerminalForUpiTransfer(null, $gateway);
+            return $terminal;
         }
-        else
-        {
-            $terminal = (new Provider())->getTerminalForMethod(Method::UPI, $vpa, null, $this->options);
-        }
+
+        $gateway = ($isUpiIciciVpaEnabled === true) ? Gateway::UPI_ICICI : Gateway::UPI_MINDGATE;
+
+        $terminal = (new TerminalProcessor())->getTerminalForUpiTransfer(null, $gateway);
 
         if ($terminal === null)
         {

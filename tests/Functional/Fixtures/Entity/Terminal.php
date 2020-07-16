@@ -3515,11 +3515,10 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
-    public function createVpaTerminal(array $attributes = [])
+    public function createVpaSharedTerminal(array $attributes = [])
     {
         $defaultValues = [
-            'id'                          => '1VirtualVpaTrm',
-            'merchant_id'                 => '10000000000000',
+            'id'                          => 'VirtVpaShrdTrm',
             'gateway_merchant_id'         => 'HDFCVPATEST',
             'type'                        => [
                 Type::NON_RECURRING => '1',
@@ -3527,24 +3526,6 @@ class Terminal extends Base
             ],
             'virtual_upi_root'            => 'rzpy.',
             'virtual_upi_merchant_prefix' => 'test000000',
-            'virtual_upi_handle'          => 'hdfcbank',
-        ];
-
-        $attributes = array_merge($defaultValues, $attributes);
-
-        return $this->createSharedUpiMindgateTerminal($attributes);
-    }
-
-    public function createVpaSharedTerminal(array $attributes = [])
-    {
-        $defaultValues = [
-            'id'                          => 'VirtVpaShrdTrm',
-            'type'                        => [
-                Type::NON_RECURRING => '1',
-                Type::UPI_TRANSFER  => '1',
-            ],
-            'virtual_upi_root'            => 'rzpy.',
-            'virtual_upi_merchant_prefix' => 'payto00000',
             'virtual_upi_handle'          => 'hdfcbank',
         ];
 

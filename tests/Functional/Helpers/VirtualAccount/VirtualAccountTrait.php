@@ -398,6 +398,8 @@ trait VirtualAccountTrait
 
     private function savePrefix(string $prefix)
     {
+        $this->ba->proxyAuth();
+
         $content  = [
             'prefix' => $prefix,
         ];

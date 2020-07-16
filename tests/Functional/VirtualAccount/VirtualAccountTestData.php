@@ -1144,21 +1144,6 @@ return [
         ],
     ],
 
-    'testCreateVirtualAccountForVpaWithDefaultPrefix' => [
-        'name'        => 'Test virtual account',
-        'entity'      => 'virtual_account',
-        'status'      => 'active',
-        'description' => 'VA for tests',
-        'receivers'   => [
-            [
-                "entity"   => "vpa",
-                "username" => "rzpy.payto00000virtualvpa",
-                "handle"   => "hdfcbank",
-                "address"  => "rzpy.payto00000virtualvpa@hdfcbank"
-            ],
-        ],
-    ],
-
     'testCreateVirtualAccountWithVpaForIcici' => [
         'name'        => 'Test virtual account',
         'entity'      => 'virtual_account',
