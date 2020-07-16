@@ -6,16 +6,18 @@ use Queue;
 use \RZP\Constants;
 use RZP\Models\Feature;
 use RZP\Jobs\FaVpaValidation;
-use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
+use RZP\Models\FundAccount\Entity as FundAccount;
+use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Models\FundAccount\Validation\Entity as Validation;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
@@ -525,6 +527,44 @@ class FundAccountValidationTest extends TestCase
         // validate fund transfer attempt table last entry
         $this->assertEquals('penny_testing', $fta['purpose']);
         $this->assertEquals($fav['id'], $fta['source']);
+    }
+
+    public function testFundAccValidationWithAccountNumberThatIsAlreadyProcessed()
+    {
+        $this->createValidationWithFundAccountEntity();
+
+        $this->ba->privateAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts/validations',
+            'content' => [
+                Validation::FUND_ACCOUNT  => [
+                    FundAccount::ACCOUNT_TYPE => 'bank_account',
+                    FundAccount::DETAILS      => [
+                        BankAccount::ACCOUNT_NUMBER => '123456789',
+                        BankAccount::NAME           => 'Rohit Keshwani',
+                        BankAccount::IFSC           => 'SBIN0010411',
+                    ],
+                ],
+                Validation::AMOUNT        => '100',
+                Validation::CURRENCY      => 'INR',
+                Validation::NOTES         => [],
+                Validation::RECEIPT       => '12345667',
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        $this->assertEquals(0, $fav['attempts']);
+        $this->assertEquals('completed', $fav['status']);
+        $this->assertEquals('active', $fav['results']['account_status']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('penny_testing', $fta['purpose']);
+        // There won't be FTA for second FAV
+        $this->assertNotEquals($fav['id'], $fta['source']);
     }
 
     public function testFundAccValidationWithAccountNumberAndVpa()

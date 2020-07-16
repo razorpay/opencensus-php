@@ -4,8 +4,8 @@ namespace RZP\Models\FundAccount\Validation;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Constants\Table;
 use RZP\Models\FundAccount\Type;
-use RZP\Models\Merchant\Balance;
 
 class Repository extends Base\Repository
 {
@@ -59,6 +59,30 @@ class Repository extends Base\Repository
                     ->merchantId($merchantId)
                     ->where($favsBalanceIdColumn, $balanceId)
                     ->whereBetween($favsCreatedAtColumn, [$startTime, $endTime])
+                    ->first();
+    }
+
+    public function fetchCompletedFAVByAccountNumber(string $accountNumber, int $startTime)
+    {
+        $fundAccountId = $this->repo->fund_account->dbColumn(\RZP\Models\FundAccount\Entity::ID);
+        $fundAccountIdInFAV = $this->dbColumn(Entity::FUND_ACCOUNT_ID);
+
+        $bankAccountIdInFundAccount = $this->repo->fund_account->dbColumn(\RZP\Models\FundAccount\Entity::ACCOUNT_ID);
+        $bankAccountId = $this->repo->bank_account->dbColumn(\RZP\Models\BankAccount\Entity::ID);
+
+        $createdAtInFAV = $this->dbColumn(Entity::CREATED_AT);
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            ->leftJoin(Table::FUND_ACCOUNT, $fundAccountIdInFAV, '=', $fundAccountId)
+            ->leftJoin(Table::BANK_ACCOUNT, $bankAccountIdInFundAccount, '=', $bankAccountId)
+            ->where(Entity::FUND_ACCOUNT_TYPE, '=', Type::BANK_ACCOUNT)
+            ->where(Entity::STATUS, '=', Status::COMPLETED)
+            ->where(Entity::ACCOUNT_STATUS, '=', AccountStatus::ACTIVE)
+            ->where($createdAtInFAV, '>', $startTime);
+
+        $bankAccountNumberCol = $this->repo->bank_account->dbColumn(\RZP\Models\BankAccount\Entity::ACCOUNT_NUMBER);
+
+        return $query->where($bankAccountNumberCol, $accountNumber)
                     ->first();
     }
 }

@@ -177,8 +177,7 @@ return [
                 ],
                 Validation::AMOUNT        => '100',
                 Validation::CURRENCY      => 'INR',
-                Validation::NOTES         => [],
-                Validation::RECEIPT       => '12345667',
+                Validation::NOTES         => []
             ],
         ],
         'response' => [

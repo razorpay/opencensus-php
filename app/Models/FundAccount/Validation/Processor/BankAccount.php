@@ -3,18 +3,19 @@
 namespace RZP\Models\FundAccount\Validation\Processor;
 
 use Carbon\Carbon;
-use Illuminate\Support\Arr;
-use RZP\Constants\Timezone;
+
 use RZP\Exception;
 use Monolog\Logger;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use Illuminate\Support\Arr;
+use RZP\Constants\Timezone;
 use RZP\Constants\Entity as Table;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\FundAccount\Validation\Status;
 use RZP\Models\FundAccount\Validation\Constants;
 use RZP\Models\FundAccount\Validation\AccountStatus;
-use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\FundAccount\Validation\Entity as Validation;
 
 class BankAccount extends Base
@@ -32,6 +33,14 @@ class BankAccount extends Base
         6 => 55800,      // 15 Hours 30 Minutes
         7 => 86400,      // 24 Hours
         // Thereafter 24 Hours
+    ];
+
+    protected static $benificiaryNameNotAllowedArray = [
+        'Unregistered',
+        'UNREGISTERED',
+        'RBL BANK',
+        'ICICI BANK NODAL A',
+        'IMPS CUSTOMER',
     ];
 
     /**
@@ -65,6 +74,47 @@ class BankAccount extends Base
     }
 
     public function preProcessValidation()
+    {
+        // TODO: right now we are fetching only completed FAV
+        // so, user can still send simultaneous request to send money to same account number
+        // will add mutex and validation over merchant, account_number later to solve this.
+        $result = $this->repo->fund_account_validation
+                       ->fetchCompletedFAVByAccountNumber(
+                           $this->account->getAccountNumber(),
+                           Carbon::now()->subMonth(1)->getTimestamp());
+
+        // If same account detail was already processed and it is active account
+        // copy and return
+        if (($result != null) and
+            ($result->getAccountStatus() === AccountStatus::ACTIVE))
+        {
+            $beneficiaryName = $result->getRegisteredName();
+
+            // if beneficiary Name exist then only copy details
+            // Also, not checking for empty because older beneficiary Names
+            // can still have names from $benificiaryNameNotAllowedArray
+            if ($this->isBeneficiaryNamePresent($beneficiaryName) === true)
+            {
+                $this->copyFundAccountDetailsAndMarkAsCompleted($result);
+
+                return;
+            }
+        }
+
+        // initiate a fund transfer if this account number is new.
+        $this->initiateFundTransfer();
+    }
+
+    protected function copyFundAccountDetailsAndMarkAsCompleted(Entity $result)
+    {
+        $this->validation->setRegisteredName($result->getRegisteredName());
+
+        $this->validation->setAttempts($this->validation->getAttempts() - 1);
+
+        $this->markValidationAsCompleted(AccountStatus::ACTIVE, null);
+    }
+
+    protected function initiateFundTransfer()
     {
         try
         {
@@ -154,7 +204,7 @@ class BankAccount extends Base
 
         $beneficiaryName = $input['beneficiary_name'] ?? '';
 
-        if ((empty($beneficiaryName) === false) and ($beneficiaryName !== 'NA'))
+        if ($this->isBeneficiaryNamePresent($beneficiaryName) === true)
         {
             $this->validation->setRegisteredName($beneficiaryName);
 
@@ -162,6 +212,19 @@ class BankAccount extends Base
 
             return;
         }
+    }
+
+    public function isBeneficiaryNamePresent(string $beneficiaryName)
+    {
+        if ((empty($beneficiaryName) === true) or
+            (array_search(
+                $beneficiaryName,
+                self::$benificiaryNameNotAllowedArray)) === true)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     /**

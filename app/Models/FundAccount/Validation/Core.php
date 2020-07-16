@@ -129,15 +129,15 @@ class Core extends Base\Core
                 // We are fetching entity inside the transaction because it could have been updated by another such process.
                 $fundAccountValidation = $this->repo->fund_account_validation->findOrFail($favId);
 
+                $attempt = $fundAccountValidation->getAttempts() + 1;
+
+                $fundAccountValidation->setAttempts($attempt);
+
                 $processor = Processor\Factory::get($fundAccountValidation);
 
                 $processor->validateRetry();
 
-                $attempt = $fundAccountValidation->getAttempts() + 1;
-
                 $processor->preProcessValidation();
-
-                $fundAccountValidation->setAttempts($attempt);
 
                 $fundAccountValidation->setRetryAt(null);
 
@@ -215,6 +215,8 @@ class Core extends Base\Core
             $processor = Processor\Factory::get($validation);
 
             $processor->setDefaultValuesForValidation();
+
+            $validation->setAttempts(1);
 
             // We are saving here because when when creating transaction,
             // it is assumed that source already exist.

@@ -19,6 +19,7 @@ trait FundAccountValidationTrait
 
         // Queue will be processed by now.
         $fav = $this->getLastEntity('fund_account_validation', true);
+        $this->assertEquals(1, $fav['attempts']);
         $this->assertEquals('completed', $fav['status']);
         $this->assertEquals($fundAccount['id'], 'fa_'.$fav['fund_account_id']);
         $this->assertEquals('active', $fav['results']['account_status']);
