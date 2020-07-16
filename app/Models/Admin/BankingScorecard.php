@@ -55,6 +55,11 @@ class BankingScorecard extends Base\Core
     {
         $bankingScorecardMail = new BankingScorecardMail($data);
 
-        Mail::queue($bankingScorecardMail);
+        //
+        // This mail is huge (more than 256KB) and breaches SQS message payload.
+        // Think twice before cleverly changing it to queue, as was attempted
+        // previously check this https://razorpay.slack.com/archives/CR3K6S6C8/p1594860881228700
+        //
+        Mail::send($bankingScorecardMail);
     }
 }
