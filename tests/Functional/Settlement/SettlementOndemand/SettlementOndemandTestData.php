@@ -45,7 +45,7 @@ return [
 
     'testBankingHourOndemandCreation' => [
         'request'  => [
-            'url'     => '/settlement/ondemand',
+            'url'     => '/settlements/ondemand',
             'method'  => 'post',
             'content' => [
                 'amount'    => 20030000,
@@ -91,7 +91,7 @@ return [
 
     'testBankingHourOndemandCreationWithMockWebhook' => [
         'request'  => [
-            'url'     => '/settlement/ondemand',
+            'url'     => '/settlements/ondemand',
             'method'  => 'post',
             'content' => [
                 'amount' => 20030000,
@@ -131,7 +131,7 @@ return [
 
     'testBankingHourOndemandCreationWithReversal' => [
         'request'  => [
-            'url'     => '/settlement/ondemand',
+            'url'     => '/settlements/ondemand',
             'method'  => 'post',
             'content' => [
                 'amount'      => 110000,
@@ -171,7 +171,7 @@ return [
 
     'testNonBankingHourOndemandCreation' => [
         'request'  => [
-            'url'     => '/settlement/ondemand',
+            'url'     => '/settlements/ondemand',
             'method'  => 'post',
             'content' => [
                 'amount'      => 20030000,
@@ -222,7 +222,7 @@ return [
 
     'testNonBankingHourOndemandCreationWithMockWebhook' => [
         'request'  => [
-            'url'     => '/settlement/ondemand',
+            'url'     => '/settlements/ondemand',
             'method'  => 'post',
             'content' => [
                 'amount' => 20030000,
@@ -273,7 +273,7 @@ return [
 
     'testNonBankingHourOndemandCreationWithPartialReversal' => [
         'request'  => [
-            'url'     => '/settlement/ondemand',
+            'url'     => '/settlements/ondemand',
             'method'  => 'post',
             'content' => [
                 'amount' => 20110000,
@@ -324,7 +324,7 @@ return [
 
     'testCreateOndemandForMaxBalance' => [
         'request'  => [
-            'url'     => '/settlement/ondemand',
+            'url'     => '/settlements/ondemand',
             'method'  => 'post',
             'content' => [
                 'max_balance' => 1,
@@ -362,7 +362,7 @@ return [
 
     'testCreateOndemandOnLowBalance' => [
         'request'  => [
-            'url'     => '/settlement/ondemand',
+            'url'     => '/settlements/ondemand',
             'method'  => 'post',
             'content' => [
                 'amount' => 2000,
@@ -388,7 +388,7 @@ return [
 
     'testCreateOndemandGreaterThanMaxLimit' => [
         'request'  => [
-            'url'     => '/settlement/ondemand',
+            'url'     => '/settlements/ondemand',
             'method'  => 'post',
             'content' => [
                 'amount' => 2000000500,
@@ -414,7 +414,7 @@ return [
 
     'testCreateOndemandForFundsOnHoldMerchant' => [
         'request'  => [
-            'url'     => '/settlement/ondemand',
+            'url'     => '/settlements/ondemand',
             'method'  => 'post',
             'content' => [
                 'amount' => 20000,
@@ -440,7 +440,7 @@ return [
 
     'testOndemandCreationForFixedRatePricing' => [
         'request'  => [
-            'url'     => '/settlement/ondemand',
+            'url'     => '/settlements/ondemand',
             'method'  => 'post',
             'content' => [
                 'amount' => 20030000,
@@ -491,7 +491,7 @@ return [
 
     'testOndemandFees' => [
         'request'  => [
-            'url'     => '/settlement/ondemand/fees',
+            'url'     => '/settlements/ondemand/fees',
             'method'  => 'get',
             'content' => [
                 'amount' => 20030000
@@ -525,7 +525,7 @@ return [
 
     'testOndemandFeesForFixedRate' => [
         'request'  => [
-            'url'     => '/settlement/ondemand/fees',
+            'url'     => '/settlements/ondemand/fees',
             'method'  => 'get',
             'content' => [
                 'amount' => 20030000
@@ -559,7 +559,7 @@ return [
 
     'testAdjustmentAditionToOndemandXMerchant' => [
         'request'  => [
-            'url'     => '/settlement/ondemand',
+            'url'     => '/settlements/ondemand',
             'method'  => 'post',
             'content' => [
                 'amount'    => 20030000,

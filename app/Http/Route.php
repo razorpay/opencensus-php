@@ -1317,13 +1317,13 @@ class Route
         'settings_upsert_internal'                 => ['post',     'settings_internal/{module}/',                    'SettingsController@upsert'                                         ],
 
         //Ondemand routes
-        'settlement_ondemand_create'               => ['post',      'settlement/ondemand',                           'SettlementOndemandController@postSettlementOndemand'               ],
+        'settlement_ondemand_create'               => ['post',      'settlements/ondemand',                          'SettlementOndemandController@postSettlementOndemand'               ],
         'bulk_create_fund_accounts'                => ['post',      'settlement/ondemand/create_fund_account',       'SettlementOndemandController@createFundAccount'                    ],
         'settlement_ondemand_razorpayx_webhook'    => ['post',      'settlement/ondemand/update',                    'SettlementOndemandController@ondemandPayoutUpdate'                 ],
-        'settlement_ondemand_fees'                 => ['get',       'settlement/ondemand/fees',                      'SettlementOndemandController@calculateFees'                        ],
+        'settlement_ondemand_fees'                 => ['get',       'settlements/ondemand/fees',                     'SettlementOndemandController@calculateFees'                        ],
         'settlement_ondemand_create_dashboard'     => ['post',      'settlement/ondemand/dashboard',                 'SettlementOndemandController@postSettlementOndemand'               ],
         'settlement_ondemand_fees_dashboard'       => ['get',       'settlement/ondemand/fees/dashboard',            'SettlementOndemandController@calculateFees'                        ],
-        'settlement_ondemand_fetch_by_id'          => ['get',       'settlement/ondemand/{id}',                      'SettlementOndemandController@getSettlementOndemand'                ],
+        'settlement_ondemand_fetch_by_id'          => ['get',       'settlements/ondemand/{id}',                     'SettlementOndemandController@getSettlementOndemand'                ],
 
 
         // OAuth routes
