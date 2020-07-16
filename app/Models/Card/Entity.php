@@ -151,6 +151,7 @@ class Entity extends Base\PublicEntity
         self::EXPIRY_MONTH,
         self::EXPIRY_YEAR,
         self::FLOWS,
+        self::SUBTYPE,
     ];
 
     protected $fundAccount = [
