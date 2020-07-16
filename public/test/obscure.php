@@ -347,6 +347,8 @@ function disableEmptyInputs(form) {
                 <option value="otp">Card - OTP</option>
                 <option value="debitcard">eMandate - Debit Card</option>
                 <option value="netbanking">eMandate - Netbanking</option>
+                <option value="aadhaar">eMandate - Aadhaar</option>
+                <option value="aadhaar_fp">eMandate - Aadhaar finger print</option>
             </select>
         </td>
     </tr>

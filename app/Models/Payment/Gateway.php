@@ -1652,6 +1652,7 @@ class Gateway
      */
     public static $staticCallbackGateways = [
         Gateway::NETBANKING_KVB,
+        Gateway::ESIGNER_LEGALDESK,
     ];
 
     /**

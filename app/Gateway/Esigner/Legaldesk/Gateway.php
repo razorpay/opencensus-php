@@ -33,13 +33,17 @@ class Gateway extends Base\Gateway
 
         $request = $this->getMandateCreationRequestArray($input);
 
+        $traceContent = $request;
+
+        unset($traceContent['headers']);
+
         $this->trace->info(
             TraceCode::GATEWAY_MANDATE_REQUEST,
             [
                 'gateway'     => $this->gateway,
                 'payment_id'  => $input['payment']['id'],
                 'terminal_id' => $input['terminal']['id'],
-                'request'     => $request,
+                'request'     => $traceContent,
             ]
         );
 
@@ -83,10 +87,10 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        if ((isset($input['gateway']['status']) === false) or
-            ($input['gateway']['status'] !== Status::SUCCESS))
+        if ((isset($input['gateway'][ResponseFields::CALLBACK_STATUS]) === false) or
+            ($input['gateway'][ResponseFields::CALLBACK_STATUS] !== Status::SUCCESS))
         {
-            $status = $input['gateway'][ResponseFields::STATUS] ?? null;
+            $status = $input['gateway'][ResponseFields::CALLBACK_STATUS] ?? null;
             $message = $input['gateway'][ResponseFields::MESSAGE] ?? null;
 
             throw new Exception\GatewayErrorException(
@@ -171,10 +175,14 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content, 'POST', 'fetch', true);
 
+        $traceContent = $request;
+
+        unset($traceContent['headers']);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
-                'request'    => $request,
+                'request'    => $traceContent,
                 'gateway'    => $this->gateway,
                 'payment_id' => $input['payment']['id'],
                 'mandate_id' => $mandateId,
@@ -200,10 +208,10 @@ class Gateway extends Base\Gateway
     protected function getRedirectRequestArray($input, $response)
     {
         $request = [
-            'url'     => $response[ ResponseFields::QUICK_INVITE_URL ],
+            'url'     => $response[ResponseFields::QUICK_INVITE_URL],
             'method'  => 'get',
             'content' => [
-                'reference_id' => $response[ ResponseFields::EMANDATE_ID ],
+                'reference_id' => $response[ResponseFields::EMANDATE_ID],
             ],
         ];
 
@@ -283,31 +291,24 @@ class Gateway extends Base\Gateway
 
         $mcc = $this->input['terminal']['category'];
 
-        $bankCode = $this->getTerminalAccessCode($input);
-
-        $serviceProviderName = $input['merchant']->getFilteredDba() ?: $this->getGatewayMerchantId2();
-
         $content = [
             RequestFields::REFERENCE_ID               => $input['payment']['id'],
-            RequestFields::MANDATE_REQUEST_ID         => $input['payment']['id'],
             RequestFields::DEBTOR_ACCOUNT_TYPE        => Constants::DEBTOR_ACCOUNT_TYPE_SAVINGS,
+            RequestFields::PHONE_NUMBER               => $input['payment']['contact'],
             RequestFields::DEBTOR_ACCOUNT_ID          => $input['token']->getAccountNumber(),
             RequestFields::INSTRUCTED_AGENT_ID_TYPE   => Constants::INSTRUCTED_AGENT_ID_TYPE_IFSC,
             RequestFields::INSTRUCTED_AGENT_ID        => $destinationBankIfsc,
-            RequestFields::INSTRUCTED_AGENT_ID_CODE   => substr($destinationBankIfsc, 0, 4),
             RequestFields::OCCURANCE_SEQUENCE_TYPE    => Constants::OCCURANCE_SEQUENCE_TYPE_RECURRING,
             RequestFields::OCCURANCE_FREQUENCY_TYPE   => Constants::OCCURANCE_FREQUENCY_TYPE_ADHOC,
             RequestFields::DEBTOR_NAME                => $input['token']->getBeneficiaryName(),
             RequestFields::FIRST_COLLECTION_DATE      => $nextWorkingDt,
             RequestFields::COLLECTION_AMOUNT_TYPE     => Constants::COLLECTION_AMOUNT_TYPE_MAXIMUM,
             RequestFields::AMOUNT                     => $input['token']->getMaxAmount() / 100,
-            RequestFields::MANDATE_TYPE_CATEGORY_CODE => CategoryCode::getCategoryCodeFromMcc($mcc),
+            RequestFields::MANDATE_TYPE_CATEGORY_CODE => 'C001', // as of now Legaldesk is only accepting this.
+            RequestFields::INSTRUCTED_AGENT_CODE      => $input['payment']['bank'],
             RequestFields::ESIGN_TYPE                 => Constants::ESIGN_TYPE_OTP,
-            RequestFields::INSTRUCTING_AGENT_NAME     => 'RBL Bank',
-            RequestFields::INSTRUCTING_AGENT_ID       => $bankCode,
-            RequestFields::CREDITOR_NAME              => substr($serviceProviderName, 0, 40),
-            RequestFields::CREDITOR_ACCOUNT_ID        => $this->getGatewayMerchantId(),
-            RequestFields::CALLBACK_URL               => $this->input['callbackUrl'],
+            RequestFields::AUTHENTICATION_MODE        => Constants::DEFAULT_AUTHENTICATION_MODE,
+            RequestFields::IS_UNTIL_CANCELLED         => 'true',
         ];
 
         if ($input['token']->getExpiredAt() !== null)
@@ -315,6 +316,7 @@ class Gateway extends Base\Gateway
             $finalCollection = Carbon::createFromTimestamp($input['token']->getExpiredAt(), Timezone::IST);
 
             $content[RequestFields::FINAL_COLLECTION_DATE] = $finalCollection->format('Y-m-d');
+            unset($content[RequestFields::IS_UNTIL_CANCELLED]);
         }
 
         if ($input['payment']['auth_type'] === Payment\AuthType::AADHAAR_FP)
@@ -348,6 +350,16 @@ class Gateway extends Base\Gateway
         $request['headers'] = $headers;
 
         return $request;
+    }
+
+    public function preProcessServerCallback($input, $gateway = null, $mode = null): array
+    {
+        return $input;
+    }
+
+    public function getPaymentIdFromServerCallback(array $response)
+    {
+        return $response[RequestFields::REFERENCE_ID];
     }
 
     protected function getApiKey(): string

@@ -2,12 +2,14 @@
 
 namespace RZP\Tests\Functional\Gateway\Esigner\Legaldesk;
 
+use RZP\Models\Admin;
 use RZP\Constants\Entity;
-use RZP\Exception\GatewayTimeoutException;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Feature\Constants;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Esigner\Legaldesk;
+use RZP\Exception\GatewayTimeoutException;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Fixtures\Entity\TransactionTrait;
 
@@ -17,21 +19,34 @@ class LegaldeskGatewayTest extends TestCase
     use TransactionTrait;
     use DbEntityFetchTrait;
 
+    /**
+     * @var array
+     */
+    protected $terminal;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/LegaldeskGatewayTestData.php';
 
         parent::setUp();
 
-        $this->fixtures->create('terminal:shared_legaldesk_terminal');
+        $this->terminal = $this->fixtures->create('terminal:shared_enach_rbl_terminal');
         $this->fixtures->create(Entity::CUSTOMER);
+
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::MERCHANT_ENACH_CONFIGS => [
+                    'auth_gateway' =>
+                        [
+                            'override' => Gateway::ESIGNER_LEGALDESK,
+                        ]
+                ]
+            ]);
 
         $this->fixtures->merchant->enableEmandate();
         $this->fixtures->merchant->addFeatures([Constants::CHARGE_AT_WILL]);
 
         $this->gateway = 'esigner_legaldesk';
-
-        $this->markTestSkipped();
     }
 
     public function testEsignGeneration()
@@ -49,7 +64,7 @@ class LegaldeskGatewayTest extends TestCase
         $this->doAuthPayment($payment);
 
         $payment = $this->getDbLastEntity('payment')->toArray();
-        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('authorized', $payment['status']);
     }
 
     public function testBiometricEsignGeneration()
@@ -68,7 +83,7 @@ class LegaldeskGatewayTest extends TestCase
 
         $payment = $this->getDbLastEntity('payment')->toArray();
         $this->assertEquals('aadhaar_fp', $payment['auth_type']);
-        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('authorized', $payment['status']);
     }
 
     // Mandate fails at the S2S request before we redirect the user to Legaldesk page
@@ -120,9 +135,8 @@ class LegaldeskGatewayTest extends TestCase
         {
             if ($action === 'mandate_sign')
             {
-                $content[Legaldesk\ResponseFields::STATUS] = 'failed';
-                $content[Legaldesk\ResponseFields::MESSAGE] = 'Signing failed';
-                unset($content['emandate_id']);
+                $content[Legaldesk\ResponseFields::CALLBACK_STATUS] = 'failed';
+                $content[Legaldesk\ResponseFields::MESSAGE]         = 'Signing failed';
             }
         });
 
@@ -168,7 +182,7 @@ class LegaldeskGatewayTest extends TestCase
         return $payment;
     }
 
-    protected function runPaymentCallbackFlowEsignerLegaldesk($response, &$callback = null)
+    protected function runPaymentCallbackFlowEnachRbl($response, &$callback = null)
     {
         $mock = $this->isGatewayMocked();
 
@@ -180,6 +194,12 @@ class LegaldeskGatewayTest extends TestCase
                 $url, $method, $content);
         }
 
-        return $this->submitPaymentCallbackRequest($request);
+        $response = $this->sendRequest($request);
+
+        $data = array(
+            'url' => $response->headers->get('location'),
+            'method' => 'get');
+
+        return $this->submitPaymentCallbackRequest($data);
     }
 }

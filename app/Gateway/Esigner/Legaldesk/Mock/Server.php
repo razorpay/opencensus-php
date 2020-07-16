@@ -50,24 +50,20 @@ class Server extends Base\Mock\Server
     public function sign($input)
     {
         $content = [
-            'status'      => 'success',
-            'message'     => 'Signing success',
-            'emandate_id' => $input['mandate_id'],
+            'mandate_status' => 'success',
+            'message'        => 'Signing success',
+            'emandate_id'    => $input['mandate_id'],
+            'reference_id'   => $input['reference_id'],
         ];
 
         $this->content($content, 'mandate_sign');
 
-        // In tests we create a payment with the gateway Legaldesk, however when testing it via mocks
-        // out of the tests, the payment would be having the gateway Enach RBL
-        $payment = $this->app['repo']->payment
-                        ->getLastCreatedEmandatePaymentByGateway(Payment\Gateway::ESIGNER_LEGALDESK);
-
-        if ($payment === null)
-        {
-            $payment = $this->app['repo']->payment->getLastCreatedEmandatePaymentByGateway(Payment\Gateway::ENACH_RBL);
-        }
-
-        $callbackUrl = $this->route->getPublicCallbackUrlWithHash($payment[Payment\Entity::PUBLIC_ID]);
+        $callbackUrl = $this->route->getUrlWithPublicAuth('gateway_payment_static_callback_post',
+                                    [
+                                        'method'    => 'emandate',
+                                        'gateway'   => 'esigner_legaldesk',
+                                        'mode'      => 'test',
+                                    ]);
 
         $request = [
             'url'     => $callbackUrl,
@@ -113,7 +109,7 @@ class Server extends Base\Mock\Server
             ResponseFields::ERROR_CODE          => 'NA',
             ResponseFields::EMANDATE_ID         => $mandateId,
             ResponseFields::RESPONSE_TIME_STAMP => '2018-08-09T20:04:59',
-            ResponseFields::QUICK_INVITE_URL    => $this->getMockPaymentGatewayUrl($mandateId)
+            ResponseFields::QUICK_INVITE_URL    => $this->getMockPaymentGatewayUrl($mandateId, $input['reference_id'])
         ];
 
         $this->content($response, 'mandate_create');
@@ -140,11 +136,12 @@ class Server extends Base\Mock\Server
         ];
     }
 
-    protected function getMockPaymentGatewayUrl($mandateId)
+    protected function getMockPaymentGatewayUrl($mandateId, $paymentId)
     {
         $route = 'mock_esigner_payment';
 
-        return $this->route->getUrl($route, ['signer' => 'esigner_legaldesk']) . '?mandate_id=' . $mandateId;
+        return $this->route->getUrl($route, ['signer' => 'esigner_legaldesk']) . '?mandate_id=' . $mandateId.
+            '&reference_id=' . $paymentId;
     }
 
     protected function generateRandomNumber($length)

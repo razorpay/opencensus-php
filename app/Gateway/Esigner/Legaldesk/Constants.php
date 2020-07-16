@@ -10,11 +10,13 @@ class Constants
 
     const OCCURANCE_SEQUENCE_TYPE_RECURRING = 'RCUR';
 
-    const OCCURANCE_FREQUENCY_TYPE_ADHOC = 'Adho';
+    const OCCURANCE_FREQUENCY_TYPE_ADHOC = 'ADHO';
 
     const COLLECTION_AMOUNT_TYPE_MAXIMUM = 'MAXIMUM';
 
     const ESIGN_TYPE_OTP = 'otp';
 
     const ESIGN_TYPE_BIOMETRIC = 'biometric';
+
+    const DEFAULT_AUTHENTICATION_MODE = 'eSign';
 }

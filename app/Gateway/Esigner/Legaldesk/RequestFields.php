@@ -17,6 +17,7 @@ class RequestFields
     const INSTRUCTED_AGENT_ID        = 'instructed_agent_id';
     const INSTRUCTED_AGENT_ID_CODE   = 'instructed_agent_id_code';
     const INSTRUCTED_AGENT_NAME      = 'instructed_agent_name';
+    const INSTRUCTED_AGENT_CODE      = 'instructed_agent_code';
     const OCCURANCE_SEQUENCE_TYPE    = 'occurance_sequence_type';
     const OCCURANCE_FREQUENCY_TYPE   = 'occurance_frequency_type';
     const SCHEME_REFERENCE_NUMBER    = 'scheme_reference_number';
@@ -38,6 +39,8 @@ class RequestFields
     const INSTRUCTING_AGENT_ID       = 'instructing_agent_id';
     const CREDITOR_NAME              = 'creditor_name';
     const CREDITOR_ACCOUNT_ID        = 'creditor_account_id';
+    const AUTHENTICATION_MODE        = 'authentication_mode';
+    const IS_UNTIL_CANCELLED         = 'is_until_cancel';
 
     const EMANDATE_ID = 'emandate_id';
 }

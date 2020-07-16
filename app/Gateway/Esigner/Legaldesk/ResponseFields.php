@@ -9,6 +9,7 @@ class ResponseFields
     const API_RESPONSE_ID     = 'api_response_id';
     const EMANDATE_ID         = 'emandate_id';
     const STATUS              = 'status';
+    const CALLBACK_STATUS     = 'mandate_status';
     const RESPONSE_TIME_STAMP = 'response_time_stamp';
     const QUICK_INVITE_URL    = 'quick_invite_url';
     const ERROR               = 'error';
