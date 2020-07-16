@@ -528,6 +528,8 @@ class Service extends Base\Service
 
         $response = $merchant->toArray();
 
+        $response['logo_large_size_url'] = $this->merchant->getFullLogoUrlWithSize(Logo::LARGE_SIZE);
+
         $response['settlement_ux_revamp'] = $this->shouldShowSettlementUxRevamp();
 
         $response[Refund\Constants::REFUND_STATUS_FILTER] =
