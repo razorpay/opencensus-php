@@ -586,6 +586,12 @@ class Entity extends Base\PublicEntity
                 ];
                 break;
 
+            case Payment\Method::NETBANKING:
+                $acquirerData = [
+                    self::ARN   => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
+
             case Payment\Method::EMANDATE:
                 $acquirerData = [
                     self::UTR   => $this->getAttribute(self::REFERENCE1)

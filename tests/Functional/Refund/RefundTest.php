@@ -1707,6 +1707,11 @@ class RefundTest extends TestCase
         $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
         $this->assertEquals('test', $bankAccount['beneficiary_name']);
         $this->assertEquals('refund', $bankAccount['type']);
+
+        $rfnd = $this->getDbEntityById('refund', $refund['id']);
+
+        $actual = $rfnd->toArrayPublic();
+        $actual['acquirer_data'] = $rfnd->getAcquirerData()->toArray();
     }
 
     public function testTpvPaymentRefundNetbankingOld()
@@ -3837,6 +3842,11 @@ class RefundTest extends TestCase
         $this->assertEquals('instant', $refund['speed_processed']);
         $this->assertEquals(118, $refund['fee']);
         $this->assertEquals(18, $refund['tax']);
+
+        $rfnd = $this->getDbEntityById('refund', $refund['id']);
+
+        $actual = $rfnd->toArrayPublic();
+        $actual['acquirer_data'] = $rfnd->getAcquirerData()->toArray();
     }
 
     public function testRetryViaBankAccountOnFailedInstantRefunds()
