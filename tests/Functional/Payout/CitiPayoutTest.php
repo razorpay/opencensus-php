@@ -527,7 +527,7 @@ class CitiPayoutTest extends TestCase
         $this->assertEquals(1, $updatedSummary[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
         $this->assertEquals(10000001, $updatedSummary[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
 
-        $this->app['cache']->flush();
+        $this->flushCache();
     }
 
     public function testCreatePayoutWithModeNotSet()
