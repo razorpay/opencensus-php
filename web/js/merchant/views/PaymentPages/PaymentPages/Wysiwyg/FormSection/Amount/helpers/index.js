@@ -16,7 +16,7 @@ export function mapFieldToAmountFieldType(amountField) {
   let amountFieldType = null;
 
   if (amountField && amountField.item) {
-    if (!amountField.item.hasOwnProperty('amount')) {
+    if (!amountField.item.amount) {
       amountFieldType = getAmountFieldTypes()[1]; // FIELD_TYPES.dynamic_price
     } else {
       if (
