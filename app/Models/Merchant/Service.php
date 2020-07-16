@@ -1191,7 +1191,7 @@ class Service extends Base\Service
      */
     public function getBankAccountChangeStatus($id)
     {
-        $type = Constants::MERCHANT_WORKFLOWS[Constants::BANK_DETAIL_UPDATE];
+        $type = Constants::BANK_DETAIL_UPDATE;
 
         return $this->openWorkflowExists($type);
     }
