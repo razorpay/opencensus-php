@@ -17,9 +17,17 @@ const THEMES = {
     navBg: '#FF5D27',
     primary: '#F04E00',
   },
-  icici: {
-    navBg: '#F07937',
+  icic: {
+    navBg: '#363636',
     primary: '#0A3D6B',
+    actStatus: '#ff6600',
+    actText: '#ff6600',
+    actStatusBg: '#000',
+    sidebarLinkActive: '#5697fc',
+    sideBarIconActive: '#fff',
+    sideBarIcon: '#ff6600',
+    sideBarColor: '#fff',
+    brandBg: '#666666',
   },
 };
 
@@ -60,8 +68,17 @@ tabbed-container header a.active {
   background-color: ${it.transparent};
 }
 
+${it.actStatus ? `.activation-status{color:${it.actStatus}  !important;}` : ''}
+${
+  it.actStatusBg
+    ? `.activation-status{background-color:${it.actStatusBg} !important;}`
+    : ''
+}
+${it.actText ? `.activation-bar-text{color:${it.actText}  !important;}` : ''}
+${it.brandBg ? `.brand-logo{background:${it.brandBg}  !important;}` : ''}
+
 .sidebar {
-  background-color: ${it.navBg || it.primary};
+  background-color: ${it.navBg || it.primary} !important;
 }
 
 .sidebar .brand-logo::after {
@@ -69,17 +86,38 @@ tabbed-container header a.active {
 }
 
 .sidebar .nav > a {
-  color: ${it.textLight};
+  color: ${it.sideBarColor || it.textLight} !important;
 }
 
 .sidebar .nav > a:hover {
   background-color: ${it.transparent};
+  ${it.sideBarColor ? `color:${it.sideBarColor} !important;` : ''}
 }
 
 .sidebar .nav > a:focus,
 .sidebar .nav > a.active {
-  background-color: ${it.transparentDark};
-  border-color: ${it.transparent};
+  background-color: ${it.sidebarLinkActive || it.transparentDark} !important;
+  border-color: ${it.sidebarLinkActive || it.transparent} !important;
+}
+
+${
+  it.sideBarIcon
+    ? `
+.sidebar .nav > a:focus,
+.sidebar .nav > a >i{
+color:${it.sideBarIcon};
+}`
+    : ``
+}
+
+${
+  it.sideBarIconActive
+    ? `
+.sidebar .nav > a:focus,
+.sidebar .nav > a.active>i{
+color:${it.sideBarIconActive};
+}`
+    : ``
 }
 
 .table-striped > tbody > tr:nth-child(odd) > td,
