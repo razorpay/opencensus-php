@@ -1598,7 +1598,7 @@ trait Refund
             $refund->setSpeedRequested(RefundSpeed::OPTIMUM);
             $refund->setSpeedDecisioned(RefundSpeed::OPTIMUM);
 
-            $mode = $this->getRefundModeFromScrooge($payment);
+            $mode = $this->getRefundModeFromScrooge($payment, $refund);
 
             if (empty($mode) === false)
             {
@@ -3197,7 +3197,7 @@ trait Refund
         ];
     }
 
-    protected function getRefundModeFromScrooge(Payment\Entity $payment)
+    protected function getRefundModeFromScrooge(Payment\Entity $payment, RefundEntity $refund = null)
     {
         //
         // Calling Scrooge for speed decisioning and mode selection
@@ -3208,8 +3208,12 @@ trait Refund
         $queryParams = [
             RefundEntity::GATEWAY   => $payment->getGateway(),
             RefundConstants::METHOD => $payment->getMethod(),
-            RefundConstants::AMOUNT => $payment->getAmount(),
         ];
+
+        // setting default amount when actual refund amount is not known yet
+        // and scrooge always expects this parameter in request
+        $queryParams[RefundConstants::AMOUNT] = (empty($refund) === false) ? $refund->getBaseAmount() :
+            RefundConstants::DEFAULT_REFUND_AMOUNT_FOR_MODE_DECISIONING;
 
         if ($payment->getMethod() === Payment\Method::CARD)
         {
@@ -3242,7 +3246,7 @@ trait Refund
 
     protected function setRefundModeAndSpeed(Payment\Entity $payment, RefundEntity &$refund)
     {
-        $mode = $this->getRefundModeFromScrooge($payment);
+        $mode = $this->getRefundModeFromScrooge($payment, $refund);
 
         // If the mode is empty we are decisioning the speed to normal
         (empty($mode) === false) ?
