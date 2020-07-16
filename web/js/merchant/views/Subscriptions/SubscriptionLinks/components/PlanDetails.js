@@ -36,7 +36,7 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
     }
 
     if (val > planPeriodToMaxCycleMap[(this.selectedPlan || {}).period]) {
-      return 'Billing cycles cannot exceed the period of 10 years';
+      return 'Billing cycles cannot exceed the period of 100 years';
     }
   };
 
@@ -193,8 +193,8 @@ function getPlans(plans) {
 }
 
 const planPeriodToMaxCycleMap = {
-  daily: 3650,
-  weekly: 520,
-  monthly: 120,
-  yearly: 10,
+  daily: 36500,
+  weekly: 5200,
+  monthly: 1200,
+  yearly: 100,
 };
