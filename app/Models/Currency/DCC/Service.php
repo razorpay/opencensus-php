@@ -150,7 +150,7 @@ class Service extends Base\Service
 
             if((empty($rates) === false) and (isset($rates[$requestedCurrency]) === true))
             {
-                $forexRate = number_format($rates[$requestedCurrency], 2);
+                $forexRate = number_format($rates[$requestedCurrency], 6);
 
                 $markUpPercent = $this->getDCCMarkUpPercentage($rates, $requestedCurrency);
 
