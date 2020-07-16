@@ -253,7 +253,8 @@ class Service extends Base\Service
                 $this->trace->info(
                     TraceCode::PAYMENT_DOWNTIME_CREATE_EMAIL,
                     [
-                        'message'            => 'Mail Sent'
+                        'message'            => 'Mail Sent',
+                        'id'                 => $downtimeArray['id'],
                     ]);
             }
             elseif ($status === Constants::RESOLVED)
@@ -265,7 +266,8 @@ class Service extends Base\Service
                 $this->trace->info(
                     TraceCode::PAYMENT_DOWNTIME_RESOLVE_EMAIL,
                     [
-                        'message'            => 'Mail Sent'
+                        'message'            => 'Mail Sent',
+                        'id'                 => $downtimeArray['id'],
                     ]);
             }
         }
@@ -278,6 +280,7 @@ class Service extends Base\Service
                 [
                     'error'              => $e->getMessage(),
                     'status'             => $status,
+                    'id'                 => $downtimeArray['id'],
                 ]);
         }
     }

@@ -596,12 +596,12 @@ class Core extends Base\Core
                 if ($input['key'] === DowntimeDetection::ISSUER)
                 {
                     $downtimeArray[Entity::ISSUER] = $input['value'];
-                    $downtimeArray[Entity::NETWORK] = Entity::NA;
+                    $downtimeArray[Entity::NETWORK] = Entity::UNKNOWN;
                 }
                 elseif ($input['key'] === DowntimeDetection::NETWORK)
                 {
                     $downtimeArray[Entity::NETWORK] = $input['value'];
-                    $downtimeArray[Entity::ISSUER] = Entity::NA;
+                    $downtimeArray[Entity::ISSUER] = Entity::UNKNOWN;
                 }
                 break;
 
