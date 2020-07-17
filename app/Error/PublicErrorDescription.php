@@ -1154,4 +1154,22 @@ class PublicErrorDescription
     const BAD_REQUEST_BALANCE_CONFIG_INVALID_NEGATIVE_LIMIT                          = 'Invalid negative limit for Balance Config creation';
     const BAD_REQUEST_BALANCE_CONFIG_INVALID_NEGATIVE_TRANSACTION_FLOW               = 'Invalid transaction flows for Balance Config creation';
     const BAD_REQUEST_X_CREDITS_SUPPORTED_IN_ONLY_LIVE_MODE                          = 'Bad request, X credits supported in only live mode';
+
+    const BAD_REQUEST_CRED_CUSTOMER_NOT_ELIGIBLE                                    = 'User is not eligible for Pay with CRED';
+    const BAD_REQUEST_MISSING_HEADERS                                               = 'Missing Headers';
+    const BAD_REQUEST_INVALID_TRACKING_ID                                           = 'Incorrect tracking id';
+    const BAD_REQUEST_PAYMENT_DUPLICATE_REQUEST                                     = 'Duplicate tracking id';
+    const GATEWAY_ERROR_PAYMENT_REFUND_FAILED                                       = 'Order is not in COMPLETED state';
+    const GATEWAY_ERROR_REFUND_AMOUNT_GREATER_THAN_CAPTURED                         = 'Refund value is greater than order value';
+    const GATEWAY_ERROR_INTERNAL_SERVER_ERROR                                       = 'Internal error occurred';
+    const BAD_REQUEST_CRED_MISSING_FIELDS_MESSAGE                                   = 'Incorrect/Missing values in request';
+    const BAD_REQUEST_CRED_USER_NOT_REGISTERED                                      = 'This user does not exist in CRED';
+    const BAD_REQUEST_CRED_PENDING_USER                                             = 'User in pending state and has not completed sign up in CRED app';
+    const BAD_REQUEST_CRED_CARD_NOT_VERIFIED                                        = 'User is a gated in user but has not verified even 1 card on CRED app';
+    const BAD_REQUEST_CRED_WAITLISTED_USER                                          = 'User is waitlisted';
+    const BAD_REQUEST_CRED_UNSUPPORTED_APP_VERSION                                  = 'User has at least one device without checkout supported app version';
+    const BAD_REQUEST_CRED_NO_SUPPORTED_APP_VERSION                                 = 'User do not have at least one version with checkout supported app version';
+    const BAD_REQUEST_CRED_INACTIVE_USER                                            = 'User has not completed sign up in CRED app';
+    const BAD_REQUEST_CRED_BLOCKED_USER                                             = 'User is not allowed to login to CRED';
+    const GATEWAY_ERROR_CRED_RESERVED_ERROR                                         = 'Reserved for future use. Raise ticket if you got this now';
 }
