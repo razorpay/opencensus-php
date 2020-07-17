@@ -165,7 +165,7 @@ class RblBankingAccountStatementTest extends TestCase
             'method'    => 'POST'
         ];
 
-        $this->flushCache();
+        $this->app['cache']->flush();
 
         (new AdminService)->setConfigKeys([ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT => 1]);
 

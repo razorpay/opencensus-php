@@ -387,6 +387,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerRazorpayXClient();
 
+        $this->registerCustomCacheProvider();
+
         $this->registerSettlementsDashboard();
 
         $this->registerHttpClients();
@@ -596,6 +598,15 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new RedisDualWrite($app);
+        });
+    }
+
+    protected function registerCustomCacheProvider()
+    {
+        $manager = $this->app['cache'];
+
+        $manager->extend('custom', function($app) {
+            return Cache::repository(new CustomCache($app));
         });
     }
 

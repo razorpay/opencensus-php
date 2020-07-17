@@ -14,11 +14,10 @@ class ConfigKey
 
     const PREFIX                                = 'config:';
 
-    const HEARTBEAT_CONFIG_PREFIX               = '{heartbeat}:';
-
     // Logs
     const TERMINAL_SELECTION_LOG_VERBOSE        = self::PREFIX . 'terminal_selection_log_verbose';
     const PRICING_RULE_SELECTION_LOG_VERBOSE    = self::PREFIX . 'pricing_rule_selection_log_verbose';
+    const HEARTBEAT_LOG_VERBOSE                 = self::PREFIX . 'heartbeat_log_verbose';
     const THROTTLE_MOCK_LOG_VERBOSE             = self::PREFIX . 'throttle_mock_log_verbose';
     const CURL_INFO_LOG_VERBOSE                 = self::PREFIX . 'curl_info_log_verbose';
 
@@ -29,15 +28,13 @@ class ConfigKey
     const SKIP_SLAVE                            = self::PREFIX . 'skip_slave';
 
     const MASTER_PERCENT                        = self::PREFIX . 'master_percent';
-
-    const HEARTBEAT_MOCK                        = self::PREFIX . self::HEARTBEAT_CONFIG_PREFIX . 'heartbeat_mock';
-    const HEARTBEAT_ROUTES                      = self::PREFIX . self::HEARTBEAT_CONFIG_PREFIX . 'heartbeat_routes';
-    const HEARTBEAT_ENABLED                     = self::PREFIX . self::HEARTBEAT_CONFIG_PREFIX . 'heartbeat_enabled';
-    const HEARTBEAT_FORCE_RUN                   = self::PREFIX . self::HEARTBEAT_CONFIG_PREFIX . 'heartbeat_force_run';
-    const HEARTBEAT_LOG_VERBOSE                 = self::PREFIX . self::HEARTBEAT_CONFIG_PREFIX . 'heartbeat_log_verbose';
-    const HEARTBEAT_TIME_THRESHOLD              = self::PREFIX . self::HEARTBEAT_CONFIG_PREFIX . 'heartbeat_time_threshold';
-    const HEARTBEAT_TRAFFIC_PERCENTAGE          = self::PREFIX . self::HEARTBEAT_CONFIG_PREFIX . 'heartbeat_traffic_percentage';
-    const HEARTBEAT_SLAVE_TIME_THRESHOLD        = self::PREFIX . self::HEARTBEAT_CONFIG_PREFIX . 'heartbeat_slave_time_threshold';
+    const HEARTBEAT_MOCK                        = self::PREFIX . 'heartbeat_mock';
+    const HEARTBEAT_ROUTES                      = self::PREFIX . 'heartbeat_routes';
+    const HEARTBEAT_ENABLED                     = self::PREFIX . 'heartbeat_enabled';
+    const HEARTBEAT_FORCE_RUN                   = self::PREFIX . 'heartbeat_force_run';
+    const HEARTBEAT_TIME_THRESHOLD              = self::PREFIX . 'heartbeat_time_threshold';
+    const HEARTBEAT_TRAFFIC_PERCENTAGE          = self::PREFIX . 'heartbeat_traffic_percentage';
+    const HEARTBEAT_SLAVE_TIME_THRESHOLD        = self::PREFIX . 'heartbeat_slave_time_threshold';
 
     const DISABLE_MAGIC                         = self::PREFIX . 'disable_magic';
     const NPCI_UPI_DEMO                         = self::PREFIX . 'npci_upi_demo';

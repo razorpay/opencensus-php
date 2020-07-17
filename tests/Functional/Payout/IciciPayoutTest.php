@@ -40,7 +40,7 @@ class IciciPayoutTest extends TestCase
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);
 
-        $this->flushCache();
+        $this->app['cache']->flush();
 
         $this->ba->privateAuth();
     }
@@ -51,7 +51,7 @@ class IciciPayoutTest extends TestCase
 
         $this->startTest();
 
-        $this->flushCache();
+        $this->app['cache']->flush();
     }
 
     public function testCreatePayoutForIciciToCardViaNEFT()
@@ -71,7 +71,7 @@ class IciciPayoutTest extends TestCase
 
         $this->startTest();
 
-        $this->flushCache();
+        $this->app['cache']->flush();
     }
 
 
@@ -112,7 +112,7 @@ class IciciPayoutTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
 
-        $this->flushCache();
+        $this->app['cache']->flush();
     }
 
     public function testCreatePayoutWithModeNotSet()
@@ -134,7 +134,7 @@ class IciciPayoutTest extends TestCase
 
         $this->startTest();
 
-        $this->flushCache();
+        $this->app['cache']->flush();
     }
 
     public function testCreateQueuedPayoutWithModeSet()
@@ -193,7 +193,7 @@ class IciciPayoutTest extends TestCase
         $this->assertEquals(1, $updatedSummary[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
         $this->assertEquals(10000001, $updatedSummary[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
 
-        $this->flushCache();
+        $this->app['cache']->flush();
     }
 
     public function testCreateQueuedPayoutUnsupportedModeForCitiIcici()
@@ -217,7 +217,7 @@ class IciciPayoutTest extends TestCase
 
     public function tearDown()
     {
-        $this->flushCache();
+        $this->app['cache']->flush();
 
         parent::tearDown();
     }

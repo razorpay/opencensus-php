@@ -61,8 +61,8 @@ return [
         ],
 
         'redis' => [
-            'driver' => 'redis',
-            'connection' => 'query_cache_redis',
+            'driver' => env('REDIS_CACHE_DRIVER', 'redis'),
+            'connection' => 'default',
         ],
 
         'throttle' => [
@@ -91,6 +91,16 @@ return [
             'driver'     => 'redis',
             'connection' => 'query_cache_redis',
             'prefix'     => 'session:laravel',
+        ],
+
+        'ec_cluster'    => [
+            'driver'     => 'redis',
+            'connection' => 'query_cache_redis',
+        ],
+
+        'redislabs'     => [
+            'driver'     => 'redis',
+            'connection' => 'default',
         ],
     ],
 
