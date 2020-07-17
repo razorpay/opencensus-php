@@ -145,14 +145,6 @@ class UserController extends Controller
         {
             list($error, $data) = (new User\Service)->register($input);
 
-            if (empty($error) === false)
-            {
-                $this->trace->info(TraceCode::USER_SIGNUP_ERROR_LOG, [
-                    'error' => $error,
-                    'email' => $input['email'] ?? '',
-                ]);
-            }
-
             if (empty($error))
             {
                 $credentials = [

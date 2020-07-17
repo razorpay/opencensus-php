@@ -40,11 +40,11 @@ class Handler extends ExceptionHandler
      * @var array
      */
     protected $dontReport = [
-        DecryptException::class,
+      //  DecryptException::class,
         HttpException::class,
         ModelNotFoundException::class,
         NotFoundHttpException::class,
-        TokenMismatchException::class,
+    //    TokenMismatchException::class,
         \UnexpectedValueException::class,
     ];
 
@@ -130,6 +130,15 @@ class Handler extends ExceptionHandler
                  ($e instanceof DecryptException))
         {
             $routeName = $request->route()->getName();
+
+            $app = \App::getFacadeRoot();
+
+            $trace = $app['trace'];
+
+            $context = $this->getExceptionDetails($e);
+
+            // Debugging Unauthorized exception
+            $trace->info(TraceCode::USER_UNAUTHORIZED_EXCEPTION, ['context' => $context]);
 
             return AppResponse::unauthorizedResponse('Unauthorized.', $routeName);
         }

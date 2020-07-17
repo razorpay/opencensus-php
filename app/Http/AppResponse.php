@@ -6,6 +6,7 @@ use Debugbar;
 use Response;
 use League\Csv\Writer;
 use SplTempFileObject;
+use App\Trace\TraceCode;
 
 class AppResponse
 {
@@ -65,6 +66,17 @@ class AppResponse
         {
             return redirect($url);
         }
+
+        $app = \App::getFacadeRoot();
+
+        $trace = $app['trace'];
+
+        // Debugging Unauthorized exception
+        $trace->info(TraceCode::USER_UNAUTHORIZED, [
+            'error' => $error,
+            'route' => $routeName,
+            'url'   => $url
+        ]);
 
         return response($error, 401);
     }

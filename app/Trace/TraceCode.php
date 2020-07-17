@@ -33,7 +33,8 @@ class TraceCode
     const USER_UNLOCK_RESPONSE                      = 'USER_UNLOCK_RESPONSE';
     const ENABLE_INSTANT_ACTIVATIONS                = 'ENABLE_INSTANT_ACTIVATIONS';
 
-    const USER_SIGNUP_ERROR_LOG                     = 'USER_SIGNUP_ERROR_LOG';
+    const USER_UNAUTHORIZED                         = 'USER_UNAUTHORIZED';
+    const USER_UNAUTHORIZED_EXCEPTION               = 'USER_UNAUTHORIZED_EXCEPTION';
 
     const BULK_RAZORX_CALL_FAILED                   = 'BULK_RAZORX_CALL_FAILED';
 
