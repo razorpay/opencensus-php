@@ -432,7 +432,13 @@ export default class SettlementsListContainer extends ListContainer {
                           <span style={{ fontSize: '13px' }}>
                             <span>&nbsp;</span>
                             <strong>
-                              <Amount value={balance} currency="INR" />
+                              <Amount
+                                value={
+                                  this.props.settlement_amount.data
+                                    .settlement_amount
+                                }
+                                currency="INR"
+                              />
                             </strong>{' '}
                             will be settled on{' '}
                             <Time
