@@ -9,7 +9,7 @@ const getLocationUrl = url => {
       // Eg. #/access/signin
       url = location.hash;
       // trim leading #/
-      url = url.replace(/#\//,'');
+      url = url.replace(/#\//, '');
     } else {
       // Eg. /app/payment/some_module/payment_id
       url = location.pathname;

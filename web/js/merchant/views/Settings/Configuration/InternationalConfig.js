@@ -4,7 +4,6 @@ import RTracking from 'react-tracking';
 import { makePopup } from '@typeform/embed';
 
 import Button from 'common/new-ui/Button';
-import ModalHeader from 'common/ui/ModalHeader';
 import SwitchField from 'common/ui/Forms/SwitchField';
 import { InternationalStatusLabel } from 'merchant/components/StatusLabel';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -19,52 +18,21 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { isPresent } from 'common/utils/rzp-utils';
 import LocalStorageService from 'common/utils/localStorage';
 
-const PROPRIETORSHIP = 1;
-const NGO = 7;
-const TRUST = 9;
-const SOCIETY = 10;
+import RequestInitiateModal from './components/InternationalConfigComponents/RequestInitiateModal.js';
+import RequestSubmittedModal from './components/InternationalConfigComponents/RequestSubmittedModal.js';
+import ProductInfo from './components/InternationalConfigComponents/ProductInfo.js';
 
-const RequestSubmittedModal = ({ closeModal }) => (
-  <div>
-    <ModalHeader title="Request Submitted" onCloseClick={closeModal} />
-    <div class="modal-body">
-      <div>
-        We have received your request for enabling international payments for
-        Payment Pages, Payment Links & Invoices.
-      </div>
-      <br />
-      <div>We would get back to you shortly with an update on your request</div>
-      <div class="Modal__actions text-right">
-        <Button.Primary onClick={closeModal}>Got it</Button.Primary>
-      </div>
-    </div>
-  </div>
-);
+const StatusMap = {
+  no_action_received: 'disabled',
+  in_review: 'access_requested',
+  approved: 'approved',
+  rejected: 'rejected',
+};
 
-const RequestInitiateModal = ({ closeModal, openTypeForm }) => (
-  <div>
-    <ModalHeader
-      title="Enable International Payments"
-      onCloseClick={closeModal}
-    />
-    <div class="modal-body">
-      <div>
-        To enable international payments we would need some details about your
-        business
-      </div>
-      <div class="Modal__actions text-right">
-        <Button.Primary
-          onClick={() => {
-            closeModal();
-            openTypeForm();
-          }}
-        >
-          Provide Details
-        </Button.Primary>
-      </div>
-    </div>
-  </div>
-);
+const NO_ACTION_RECEIVED = 'no_action_received';
+const IN_REVIEW = 'in_review';
+const APPROVED = 'approved';
+const REJECTED = 'rejected';
 
 @connect(
   state => ({
@@ -84,6 +52,9 @@ class InternationalConfig extends Component {
     super(props);
     this.state = {
       isAccessRequested: false,
+      pgProductStatus: '', // Payment Gateway
+      otherProductsStatus: '', // otherProducts = Payment Pages, Payment Links, Invoices
+      requestedAccessFrom: '',
       isWebsiteInWorkflow: null,
     };
     this.initializeTypeForm();
@@ -95,7 +66,6 @@ class InternationalConfig extends Component {
       `https://razorpay.typeform.com/to/jJCZoO?mid=${currentMID}`,
       {
         mode: 'popup',
-        autoClose: 3000,
         hideHeaders: true,
         hideFooters: true,
         onSubmit: this.handleTypeFormSubmitted,
@@ -104,24 +74,32 @@ class InternationalConfig extends Component {
     this.IntlEnableTypeForm = IntlEnableTypeForm; // saving reference typeform
   };
 
-  componentDidMount() {
-    const internationalEnabled = this.props.user.international;
+  async componentDidMount() {
     const currentMID = this.props.user.current;
     const isAccessRequested = LocalStorageService.getItem(
       `international-access-requested-${currentMID}`
     );
 
-    if (isPresent(isAccessRequested)) {
-      if (internationalEnabled) {
-        LocalStorageService.removeItem(
-          `international-access-requested-${currentMID}`
-        );
-      } else {
-        this.setState({
-          isAccessRequested,
-        });
+    try {
+      const fetchStatusRes = await merchantFetch({
+        url: 'merchants/product_international/workflow/status/all',
+        mode: 'live',
+        method: 'GET',
+      });
+
+      if (fetchStatusRes.success) {
+        this.setInternationalFlowStatusForProducts(fetchStatusRes.data.data);
       }
+    } catch (err) {
+      this.props.showNotification({
+        type: 'error',
+        message: 'Could not fetch international payments feature status!',
+      });
     }
+
+    this.setState({
+      isAccessRequested: !!isAccessRequested,
+    });
 
     this.props
       .fetchAddWebsiteWorkflowStatus()
@@ -138,6 +116,37 @@ class InternationalConfig extends Component {
       });
   }
 
+  setInternationalFlowStatusForProducts = internationalWorkflowStatus => {
+    const currentMID = this.props.user.current;
+
+    const isPGStatusSetInLocalStorage = !!LocalStorageService.getItem(
+      `international-pg-${currentMID}`
+    );
+    const isOtherProductsStatusInLocalStorage = !!LocalStorageService.getItem(
+      `international-otherProducts-${currentMID}`
+    );
+
+    let pgProductStatus = '';
+    let otherProductsStatus = '';
+
+    pgProductStatus = internationalWorkflowStatus['payment_gateway'];
+
+    if (pgProductStatus === NO_ACTION_RECEIVED && isPGStatusSetInLocalStorage) {
+      pgProductStatus = IN_REVIEW;
+    }
+
+    otherProductsStatus = internationalWorkflowStatus['payment_links'];
+
+    if (
+      otherProductsStatus === NO_ACTION_RECEIVED &&
+      isOtherProductsStatusInLocalStorage
+    ) {
+      otherProductsStatus = IN_REVIEW;
+    }
+
+    this.setState({ pgProductStatus, otherProductsStatus });
+  };
+
   analytics = action => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Settings',
@@ -149,29 +158,58 @@ class InternationalConfig extends Component {
     this.props.closeModal();
   };
 
-  openRequestInitiateModal = () => {
+  openRequestInitiateModal = ({ triggerSource = '' }) => {
     this.props.openModal({
       component: (
         <RequestInitiateModal
           closeModal={this.closeModal}
           openTypeForm={this.openTypeForm}
+          triggerSource={triggerSource}
+          showNotification={this.props.showNotification}
         />
       ),
       size: 'medium',
     });
   };
 
-  openTypeForm = () => {
-    this.IntlEnableTypeForm.open();
+  openTypeForm = triggerSource => {
+    this.setState(
+      {
+        requestedAccessFrom: triggerSource
+          ? triggerSource
+          : 'requestedFromHeader',
+      },
+      () => {
+        this.IntlEnableTypeForm.open();
+      }
+    );
   };
 
   handleTypeFormSubmitted = () => {
+    const { requestedAccessFrom } = this.state;
     const currentMID = this.props.user.current;
-    LocalStorageService.setItem(
-      `international-access-requested-${currentMID}`,
-      true
-    );
-    this.setState({ isAccessRequested: true }, () => {
+
+    if (requestedAccessFrom === 'requestedFromHeader') {
+      LocalStorageService.setItem(
+        `international-access-requested-${currentMID}`,
+        true
+      );
+    } else {
+      LocalStorageService.setItem(
+        `international-${requestedAccessFrom}-${currentMID}`,
+        true
+      );
+    }
+
+    let stateKeyToUpdate = '';
+
+    if (requestedAccessFrom === 'pg') {
+      stateKeyToUpdate = 'pgProductStatus';
+    } else if (requestedAccessFrom === 'otherProducts') {
+      stateKeyToUpdate = 'otherProductsStatus';
+    } else stateKeyToUpdate = 'isAccessRequested';
+
+    this.setState({ [stateKeyToUpdate]: IN_REVIEW }, () => {
       this.IntlEnableTypeForm.close();
       this.openRequestSubmittedModal();
     });
@@ -235,60 +273,85 @@ class InternationalConfig extends Component {
       });
   };
 
-  renderHeaderActions = () => {
-    const isAccessRequested = this.state.isAccessRequested;
-    const isRequestAccessAllowed = this.isRequestAccessAllowed;
-    const isRequestButtonDisabled =
-      !this.props.user.has_key_access ||
-      (this.isKycCompleteRequired && !this.props.user.isAccepted);
+  hasRequestedAccessForProduct = product => {
+    const currentMID = this.props.user.current;
 
-    if (isRequestAccessAllowed) {
-      return (
-        <Button.Primary
-          class="pull-right"
-          onClick={this.openRequestInitiateModal}
-          disabled={isRequestButtonDisabled}
-        >
-          Request Access
-        </Button.Primary>
-      );
+    const isProductAccessRequested = LocalStorageService.getItem(
+      `international-${product}-${currentMID}`
+    );
+
+    return (
+      this.isStatusUpdatedForProduct(product) ||
+      isPresent(isProductAccessRequested)
+    );
+  };
+
+  get currentStatusOnHeader() {
+    const { pgProductStatus, otherProductsStatus } = this.state;
+
+    if (
+      !(pgProductStatus || otherProductsStatus) ||
+      this.isAnyProductIntlApproved
+    ) {
+      return null;
     }
 
-    if (isAccessRequested || this.props.user.international) {
-      return (
-        <span class="pull-right">
-          <InternationalStatusLabel
-            status={isAccessRequested ? 'access-requested' : 'enabled'}
-          />
-        </span>
-      );
+    if (!this.isStatusUpdatedForAnyProduct && this.state.isAccessRequested) {
+      return IN_REVIEW;
+    }
+
+    const isAnyProductInReview =
+      pgProductStatus === IN_REVIEW || otherProductsStatus === IN_REVIEW;
+
+    if (isAnyProductInReview) {
+      return IN_REVIEW;
+    }
+
+    const allProductsRejected =
+      pgProductStatus === REJECTED && otherProductsStatus === REJECTED;
+
+    if (allProductsRejected) {
+      return REJECTED;
     }
 
     return null;
-  };
-
-  get isKycCompleteRequired() {
-    const KYC_COMPLETE_BIZ_TYPE = [PROPRIETORSHIP, NGO, TRUST, SOCIETY];
-    const bizType = Number(this.props.user.business_type);
-
-    if (KYC_COMPLETE_BIZ_TYPE.includes(bizType)) return true;
-
-    return false;
   }
 
-  get isRequestAccessAllowed() {
-    const { user } = this.props;
-    const { isAccessRequested } = this.state;
+  isStatusUpdatedForProduct = product => {
+    const { pgProductStatus, otherProductsStatus } = this.state;
+
+    if (!pgProductStatus && !otherProductsStatus) return false;
+
+    if (product === 'pg' && pgProductStatus !== NO_ACTION_RECEIVED) {
+      return true;
+    }
+
+    if (
+      product === 'otherProducts' &&
+      otherProductsStatus !== NO_ACTION_RECEIVED
+    ) {
+      return true;
+    }
+
+    return false;
+  };
+
+  get isStatusUpdatedForAnyProduct() {
+    const { pgProductStatus, otherProductsStatus } = this.state;
 
     return (
-      !user.international && this.isInternationalGreyList && !isAccessRequested
+      pgProductStatus !== NO_ACTION_RECEIVED ||
+      otherProductsStatus !== NO_ACTION_RECEIVED
     );
   }
 
-  get isTogglerVisible() {
+  get isRequestAccessAllowed() {
+    const { isAccessRequested } = this.state;
+
     return (
-      this.props.user.international_activation_flow === 'whitelist' &&
-      this.props.user.has_key_access
+      this.isInternationalGreyList &&
+      !isAccessRequested &&
+      !this.isStatusUpdatedForAnyProduct
     );
   }
 
@@ -307,11 +370,22 @@ class InternationalConfig extends Component {
     );
   }
 
+  get isAnyProductIntlApproved() {
+    return (
+      this.state.pgProductStatus === APPROVED ||
+      this.state.otherProductsStatus === APPROVED
+    );
+  }
+
   get isInternationalWhiteList() {
     return !!(
       this.props.user.international_activation_flow &&
       this.props.user.international_activation_flow === 'whitelist'
     );
+  }
+
+  get isKycComplete() {
+    return this.props.user.isAccepted;
   }
 
   get description() {
@@ -322,27 +396,34 @@ class InternationalConfig extends Component {
       'Accept international payments in nearly 100 foreign currencies from your customers.';
     let line2 = '';
 
-    if (
-      this.isKycCompleteRequired &&
-      this.isInternationalGreyList &&
-      !user.isAccepted
-    ) {
-      if (user.activation_status === 'under_review') {
-        line2 = 'Your KYC form is under review.';
+    if (this.isInternationalGreyList && !this.isKycComplete) {
+      if (
+        user.activation_status === 'under_review' ||
+        user.activation_status === 'needs_clarification'
+      ) {
+        line2 =
+          'Your KYC form is under review. You will be able to request access for international payments once your KYC is approved.';
       } else {
         line2 = 'Please submit your KYC form to request access.';
       }
     } else {
-      if (!user.has_key_access) {
-        if (!user.business_website && !this.state.isWebsiteInWorkflow) {
-          if (this.isInternationalWhiteList) {
-            line2 = 'Add a website to enable international payments.';
-          } else if (this.isInternationalGreyList) {
-            line2 =
-              'You need to add your website to request access for international payments.';
-          }
-        } else {
-          line2 = 'Your website is currently under review.';
+      if (!this.isWebsiteAdded) {
+        if (this.isInternationalWhiteList) {
+          line2 = 'Add a website to enable international payments.';
+        } else if (this.isInternationalGreyList) {
+          line2 =
+            'You need to add your website to request access for international payments.';
+        }
+      } else {
+        // Intl. whitelist but added website after L1 completion
+        if (this.isInternationalWhiteList && user.isAccepted) {
+          line2 =
+            'Your website is currently in review. International payments will be enabled once website is approved.';
+        } else if (
+          this.isInternationalWhiteList &&
+          user.instantActivation.isL1Submitted
+        ) {
+          line2 = 'Please complete your KYC to enable international payments.';
         }
       }
     }
@@ -352,7 +433,7 @@ class InternationalConfig extends Component {
         <>
           {line1}
           <br />
-          {line2}
+          {!this.isAnyProductIntlApproved && line2}
         </>
       );
     }
@@ -362,9 +443,87 @@ class InternationalConfig extends Component {
     );
   }
 
+  get isWebsiteAdded() {
+    return this.props.user.business_website || this.state.isWebsiteInWorkflow;
+  }
+
+  renderProductsSection() {
+    if (!this.isAnyProductIntlApproved) {
+      return null;
+    }
+
+    const { pgProductStatus, otherProductsStatus } = this.state;
+
+    return (
+      <div>
+        <ProductInfo
+          title="On Payment Gateway"
+          description="API & SDK & Plugin integrations"
+          status={StatusMap[pgProductStatus]}
+          showRequestAccessBtn={!this.hasRequestedAccessForProduct('pg')}
+          onRequestAccessClick={e => {
+            e.preventDefault();
+            this.openRequestInitiateModal({ triggerSource: 'pg' });
+          }}
+          isWebsiteAdded={this.isWebsiteAdded}
+          isKycComplete={this.isKycComplete}
+          product="pg"
+        />
+
+        <div class="international__ProductSeparator" />
+
+        <ProductInfo
+          title="On Other Products"
+          description="Payment Pages, Payment Links & Invoices"
+          status={StatusMap[otherProductsStatus]}
+          showRequestAccessBtn={
+            !this.hasRequestedAccessForProduct('otherProducts')
+          }
+          onRequestAccessClick={e => {
+            e.preventDefault();
+            this.openRequestInitiateModal({ triggerSource: 'otherProducts' });
+          }}
+          isWebsiteAdded={this.isWebsiteAdded}
+          isKycComplete={this.isKycComplete}
+          product="otherProducts"
+        />
+
+        <div class="international__ProductSeparator" />
+      </div>
+    );
+  }
+
+  renderInternationalAccessOrStatus() {
+    const isRequestButtonDisabled = !this.isWebsiteAdded || !this.isKycComplete;
+
+    if (this.isRequestAccessAllowed) {
+      return (
+        <Button.Primary
+          class="pull-right"
+          onClick={this.openRequestInitiateModal}
+          disabled={isRequestButtonDisabled}
+        >
+          Request Access
+        </Button.Primary>
+      );
+    }
+
+    const currentStatus = this.currentStatusOnHeader;
+
+    if (currentStatus) {
+      return (
+        <span class="pull-right">
+          <InternationalStatusLabel status={StatusMap[currentStatus]} />
+        </span>
+      );
+    }
+
+    return null;
+  }
+
   render() {
     const internationalEnabled = this.props.user.international;
-    const isTogglerVisible = this.isTogglerVisible;
+    const isTogglerVisible = this.isAnyProductIntlApproved;
     const description = this.description;
 
     return (
@@ -388,12 +547,13 @@ class InternationalConfig extends Component {
             </span>
           )}
 
-          {this.isInternationalGreyList && this.renderHeaderActions()}
+          {this.renderInternationalAccessOrStatus()}
         </div>
 
         <div class="panel-body">
           <form class="form-horizontal">
             <div class="description">{description}</div>
+            <div class="description">{this.renderProductsSection()}</div>
             <div class="form-group">
               <ShowWhen
                 additionalCondition={user =>

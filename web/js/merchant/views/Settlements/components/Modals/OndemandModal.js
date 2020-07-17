@@ -224,8 +224,7 @@ export default class OndemandModal extends Component {
       amount: this.state.amount * 100,
       currency: 'INR',
     };
-    if(this.state.validAmount)
-    {
+    if (this.state.validAmount) {
       return ajax(
         {
           url: this.getFeesUrl(),
@@ -251,7 +250,7 @@ export default class OndemandModal extends Component {
           });
         });
     }
-  }
+  };
 
   componentDidMount() {
     document.addEventListener('keydown', this.escFunction);
@@ -305,8 +304,7 @@ export default class OndemandModal extends Component {
         amount: this.state.amount * 100,
         currency: 'INR',
       };
-      if(this.state.validAmount)
-      {
+      if (this.state.validAmount) {
         return ajax(
           {
             url: this.getFeesUrl(),
@@ -533,13 +531,11 @@ export default class OndemandModal extends Component {
                       ) : (
                         <React.Fragment />
                       )}
-                      </div>
+                    </div>
+                  ) : this.state.validAmount ? (
+                    <div class="loader" />
                   ) : (
-                    this.state.validAmount ? (
-                      <div class="loader" />
-                    ) : (
                     <React.Fragment />
-                    )
                   )}
                 </span>
               </span>
@@ -583,7 +579,8 @@ export default class OndemandModal extends Component {
           <div class="overflow-box">
             {this.breakup()}
             <div class="help-block">
-              Your settlement has been initiated and should reflect on your bank account in some time
+              Your settlement has been initiated and should reflect on your bank
+              account in some time
               <i class="i i-info-circle" />
               <Popover
                 align="right"

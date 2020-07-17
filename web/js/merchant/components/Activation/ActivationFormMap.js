@@ -244,7 +244,7 @@ const businessModel = [
         if (businessCategory) {
           showSubcategory = businessCategory !== 'others';
           let subcategories = props.categories[businessCategory].subcategories;
-          if(Object.keys(subcategories).length === 1) {
+          if (Object.keys(subcategories).length === 1) {
             showSubcategory = false;
           }
         }

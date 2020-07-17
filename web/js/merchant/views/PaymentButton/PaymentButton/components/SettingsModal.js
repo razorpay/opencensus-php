@@ -70,7 +70,6 @@ export default class SettingsModal extends React.Component {
       });
   };
 
-
   onCustomInputBlur = e => {
     this.props.track && this.props.track.customMessage(e.target.value);
   };

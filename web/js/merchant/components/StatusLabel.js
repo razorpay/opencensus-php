@@ -111,8 +111,12 @@ export const offerStatusMap = {
 };
 
 export const internationalStatusMap = {
-  'access-requested': 'bg-primary',
+  rejected: 'label-danger',
+  disabled: 'label-muted',
+  access_requested: 'bg-primary',
   enabled: 'label-success',
+  approved: 'label-success',
+  no_website_added: 'label-warning',
 };
 
 export const commissionInvoiceStatusMap = {
