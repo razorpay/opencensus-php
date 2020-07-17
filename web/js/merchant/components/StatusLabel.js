@@ -59,6 +59,7 @@ export const batchUploadStatusMap = {
   failure: 'label-danger',
   cancelled: 'label-danger',
   paused: 'label-yellow',
+  scheduled: 'label-info',
 };
 
 export const virtualAccountStatusMap = {

@@ -1,5 +1,6 @@
 import { Field, formValueSelector } from 'redux-form';
 import { connect } from 'react-redux';
+import moment from 'moment';
 
 import RadioButton from 'common/ui/Forms/RadioButton';
 import ReduxDatetime from 'common/ui/ReduxDatetime';
@@ -49,6 +50,7 @@ export default class BatchProcessingOptions extends React.Component {
                     component={ReduxDatetime}
                     timeFormat={false}
                     closeOnSelect
+                    isValidDate={isValidBatchScheduleDate}
                   />
                 </div>
               </div>
@@ -71,4 +73,10 @@ export default class BatchProcessingOptions extends React.Component {
       </>
     );
   }
+}
+
+const yesterday = moment().subtract(1, 'days');
+
+function isValidBatchScheduleDate(date) {
+  return date.isAfter(yesterday);
 }

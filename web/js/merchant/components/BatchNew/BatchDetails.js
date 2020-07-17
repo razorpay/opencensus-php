@@ -28,15 +28,17 @@ export default function BatchDetails({ renderDetails, ...props }) {
             <strong>{batchName || batch.id}</strong>
           </div>
           <div class="SliderPanel__Body">
-            <Banner
-              cta="Download Report"
-              ctaOnClick={onDownload.bind(this, batch.id)}
-            >
-              <span>
-                {downloadReportText ||
-                  'Download the report containing all Payment Links data.'}
-              </span>
-            </Banner>
+            {batch.status === 'processed' && (
+              <Banner
+                cta="Download Report"
+                ctaOnClick={onDownload.bind(this, batch.id)}
+              >
+                <span>
+                  {downloadReportText ||
+                    'Download the report containing all data.'}
+                </span>
+              </Banner>
+            )}
             <div class="panel-body">
               {renderDetails && renderDetails(props)}
             </div>

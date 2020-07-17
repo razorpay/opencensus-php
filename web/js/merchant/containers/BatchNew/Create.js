@@ -8,11 +8,37 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 
 import BatchCreateModal from 'merchant/components/BatchNew/CreateModal';
 
+const oneHour = 3600 * 1000; //1 hour in milliseconds
+
 @connect(state => state.session, { showNotification })
 @RTracking(() => window.rzpQ.component('BatchCreate'))
 export default class BatchCreate extends Component {
   formInitialValues = {
     name: this.props.batchName,
+  };
+
+  getSchedulingOptions = (scheduleDate, scheduleTime) => {
+    const scheduleDateTs = scheduleDate
+      .clone()
+      .startOf('day')
+      .valueOf();
+
+    const scheduleTimeTs = scheduleTime.diff(
+      scheduleTime.clone().startOf('day'),
+      'milliseconds'
+    );
+
+    const schedule = scheduleDateTs + scheduleTimeTs;
+
+    if (schedule - moment().valueOf() < oneHour) {
+      this.props.showNotification({
+        type: 'error',
+        message: 'Please select a time with atleast one hour gap from now',
+      });
+      return;
+    }
+
+    return schedule;
   };
 
   @RTracking(() =>
@@ -32,15 +58,13 @@ export default class BatchCreate extends Component {
     };
 
     if (processing === 'scheduled') {
-      const scheduleDateTs = scheduleDate
-        .clone()
-        .startOf('day')
-        .valueOf();
-      const scheduleTimeTs = scheduleTime.diff(
-        scheduleTime.clone().startOf('day'),
-        'milliseconds'
-      );
-      data.schedule = scheduleDateTs + scheduleTimeTs;
+      const schedule = this.getSchedulingOptions(scheduleDate, scheduleTime);
+
+      if (!schedule) {
+        return;
+      }
+
+      data.schedule = schedule;
     }
 
     this.props.trackUploadBatch('Create');
@@ -99,6 +123,6 @@ export default class BatchCreate extends Component {
 
 const batchFormDefaults = {
   processing: 'immediate',
-  scheduleDate: moment(),
+  scheduleDate: moment().add(1, 'days'),
   scheduleTime: moment(),
 };

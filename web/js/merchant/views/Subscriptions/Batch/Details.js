@@ -30,8 +30,19 @@ function renderBatchDetails({ batch }) {
         <EntityDetailRow label="Batch Name" value={batch.name} />
         <EntityDetailRow label="Status">
           <BatchUploadStatusLabel status={batch.status} />
+          {batch.status === 'scheduled' && (
+            <p>
+              <em>
+                Scheduled for{' '}
+                <Time
+                  value={parseInt(batch.schedule_time / 1000)}
+                  format="lll"
+                />
+              </em>
+            </p>
+          )}
         </EntityDetailRow>
-        <EntityDetailRow label="Status">
+        <EntityDetailRow label="Created">
           <Time value={batch.created_at} />
         </EntityDetailRow>
       </div>
