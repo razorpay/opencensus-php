@@ -1,9 +1,7 @@
 import { Component } from 'react';
-
 import Amount from 'common/ui/Amount';
 import Table from 'common/ui/Table/Index';
-
-import { createdAt, creditId } from 'common/ui/item/pair';
+import { createdAt } from 'common/ui/item/pair';
 
 export default class CreditDetails extends Component {
   state = {
@@ -66,7 +64,7 @@ export default class CreditDetails extends Component {
                 class="history"
                 rows={creditItems}
                 columns={[
-                  creditId,
+                  { title: 'Credit Id', value: ({ id }) => id },
                   {
                     title: 'Campaign',
                     value: ({ campaign }) => campaign,
