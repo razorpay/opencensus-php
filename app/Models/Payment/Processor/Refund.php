@@ -30,6 +30,7 @@ use RZP\Models\FundTransfer;
 use RZP\Models\Card\IIN\IIN;
 use RZP\Models\Bank\BankCodes;
 use RZP\Jobs\ScroogeRefundRetry;
+use RZP\Models\Payment\UpiMetadata;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Gateway\Base\ScroogeResponse;
@@ -2991,12 +2992,68 @@ trait Refund
     {
         $input = null;
 
-        if (isset($data['vpa']) === true)
+        if ($this->isUpiPaymentAndFtaFlow($payment) === true)
         {
-            $input = $data['vpa'];
+            $input[RefundConstants::VPA_ADDRESS] = $payment->getVpa();
+
+            return $input;
+        }
+
+        if (isset($data[RefundConstants::VPA]) === true)
+        {
+            $input = $data[RefundConstants::VPA];
         }
 
         return $input;
+    }
+
+    protected function isUpiPaymentAndFtaFlow(Payment\Entity $payment): bool
+    {
+        if ($payment->isUpi() === true)
+        {
+            // Processing refunds for upi otm payments via fta since gateways dont support refund flows yet
+            if ($this->isPaymentCapturedAndUpiOtmGateway($payment) === true)
+            {
+                return true;
+            }
+
+            // Processing refunds for upi recurring payments via fta since gateways dont support refund flows yet
+            if ($this->isPaymentAndGatewayUpiRecurring($payment) === true)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function isPaymentCapturedAndUpiOtmGateway(Payment\Entity $payment): bool
+    {
+        if (($payment->isUpi() === true) and
+            ($payment->isGatewayCaptured() === true) and
+            (Payment\Gateway::isUpiOtmSupportedGateway($payment->getGateway())))
+        {
+            $upiMetadataEntity = $this->repo->upi_metadata->fetchByPaymentId($payment->getId());
+
+            if ($upiMetadataEntity[UpiMetadata\Entity::TYPE] === UpiMetadata\Type::OTM)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function isPaymentAndGatewayUpiRecurring(Payment\Entity $payment): bool
+    {
+        if (($payment->isUpi() === true) and
+            ($payment->isRecurring() === true) and
+            (Payment\Gateway::isUpiRecurringSupportedGateway($payment->getGateway()) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function getFundTransferAttemptInput(Payment\Entity $payment, $data = []): array

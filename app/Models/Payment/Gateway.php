@@ -1992,6 +1992,10 @@ class Gateway
         Gateway::HDFC_DEBIT_EMI,
     ];
 
+    public static $upiOtmGateways = [
+        Gateway::UPI_MINDGATE,
+    ];
+
     public static function isNonTerminalGateway(string $gateway)
     {
         return in_array($gateway, self::$nonTerminalGateways, true);
@@ -2672,6 +2676,16 @@ class Gateway
         ];
 
         return (in_array($gateway, $gateways, true));
+    }
+
+    public static function isUpiOtmSupportedGateway($gateway): bool
+    {
+        return in_array($gateway, self::$upiOtmGateways, true);
+    }
+
+    public static function isUpiRecurringSupportedGateway($gateway): bool
+    {
+        return in_array($gateway, self::$upiRecurringGateways, true);
     }
 
     public static function isCardPaymentServiceGateway($gateway)
