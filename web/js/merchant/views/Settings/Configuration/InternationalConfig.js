@@ -384,6 +384,13 @@ class InternationalConfig extends Component {
     );
   }
 
+  get isInternationalBlackList() {
+    return !!(
+      this.props.user.international_activation_flow &&
+      this.props.user.international_activation_flow === 'blacklist'
+    );
+  }
+
   get isKycComplete() {
     return this.props.user.isAccepted;
   }
@@ -448,7 +455,7 @@ class InternationalConfig extends Component {
   }
 
   renderProductsSection() {
-    if (!this.isAnyProductIntlApproved) {
+    if (!this.isAnyProductIntlApproved || this.isInternationalBlackList) {
       return null;
     }
 
