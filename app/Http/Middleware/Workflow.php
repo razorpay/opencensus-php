@@ -60,6 +60,14 @@ class Workflow
         Permission::EDIT_GOVERNOR_RULE,
         Permission::DELETE_GOVERNOR_RULE,
         Permission::EDIT_MERCHANT_INTERNATIONAL_NEW,
+        Permission::CREATE_SHIELD_RULE,
+        Permission::EDIT_SHIELD_RULE,
+        Permission::DELETE_SHIELD_RULE,
+        Permission::CREATE_SHIELD_LIST,
+        Permission::DELETE_SHIELD_LIST,
+        Permission::ADD_SHIELD_LIST_ITEMS,
+        Permission::PURGE_SHIELD_LIST_ITEMS,
+        Permission::DELETE_SHIELD_LIST_ITEM,
     ];
 
     protected $app;

@@ -817,12 +817,15 @@ return [
         ],
 
         PermissionCategory::SHIELD => [
-            Permission::CREATE_SHIELD_RULES => 'Create shield rules',
-            Permission::EDIT_SHIELD_RULES   => 'Edit shield rules',
-            Permission::DELETE_SHIELD_RULES => 'Delete shield rules',
-            Permission::VIEW_SHIELD_LISTS   => 'View shield lists',
-            Permission::CREATE_SHIELD_LISTS => 'Create shield lists',
-            Permission::DELETE_SHIELD_LISTS => 'Delete shield lists',
+            Permission::CREATE_SHIELD_RULE      => 'Create shield rule',
+            Permission::EDIT_SHIELD_RULE        => 'Edit shield rule',
+            Permission::DELETE_SHIELD_RULE      => 'Delete shield rule',
+            Permission::VIEW_SHIELD_LIST        => 'View shield list',
+            Permission::CREATE_SHIELD_LIST      => 'Create shield list',
+            Permission::DELETE_SHIELD_LIST      => 'Delete shield list',
+            Permission::ADD_SHIELD_LIST_ITEMS   => 'Add Shield List Items',
+            Permission::PURGE_SHIELD_LIST_ITEMS => 'Purge Shield List Items',
+            Permission::DELETE_SHIELD_LIST_ITEM => 'Delete Shield List Item',
         ],
 
         PermissionCategory::REPORTING => [
