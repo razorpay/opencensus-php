@@ -29,6 +29,6 @@ class Reconciliate extends Base\Reconciliate
     // Used to unzip the MIS file
     public function getReconPassword($fileDetails)
     {
-        return 'RAZORMPR';
+        return '037111004800466';
     }
 }
