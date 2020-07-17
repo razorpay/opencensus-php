@@ -81,6 +81,13 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function getIin($iin)
+    {
+        $iinEntity = $this->repo->iin->findOrFailPublic($iin);
+
+        return $iinEntity->toArrayPublic();
+    }
+
     public function editIinBulk($input)
     {
         $this->trace->info(TraceCode::IIN_UPDATE_BULK, [

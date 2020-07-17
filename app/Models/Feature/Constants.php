@@ -387,6 +387,11 @@ class Constants
 
     const BEPG  = 'bepg';
 
+    /*
+     * This feature will be used to allow merchants consume BIN data API
+     */
+    const BIN_API = 'bin_api';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -610,6 +615,7 @@ class Constants
         self::BEPG                            => true,
         self::LOAN                            => true,
         self::USE_SETTLEMENT_ONDEMAND         => true,
+        self::BIN_API                         => true,
     ];
 
     // Entity type constants
