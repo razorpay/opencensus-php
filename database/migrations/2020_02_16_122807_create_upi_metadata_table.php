@@ -41,6 +41,27 @@ class CreateUpiMetadataTable extends Migration
             $table->string(Entity::PROVIDER)
                   ->nullable();
 
+            $table->char(Entity::MODE, 25)
+                ->nullable();
+
+            $table->string(Entity::REFERENCE, 100)
+                  ->nullable();
+
+            $table->char(Entity::RRN, 12)
+                ->nullable();
+
+            $table->string(Entity::UMN)
+                  ->nullable();
+
+            $table->string(Entity::INTERNAL_STATUS, 100)
+                  ->nullable();
+
+            $table->string(Entity::REMINDER_ID, Entity::ID_LENGTH)
+                  ->nullable();
+
+            $table->integer(Entity::REMIND_AT)
+                  ->nullable();
+
             // Timestamps
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);

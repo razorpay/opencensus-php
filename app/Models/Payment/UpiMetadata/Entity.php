@@ -7,14 +7,22 @@ use RZP\Models\Payment;
 
 class Entity extends Base\PublicEntity
 {
-    const PAYMENT_ID  = 'payment_id';
-    const FLOW        = 'flow';
-    const TYPE        = 'type';
-    const START_TIME  = 'start_time';
-    const END_TIME    = 'end_time';
-    const VPA         = 'vpa';
-    const EXPIRY_TIME = 'expiry_time';
-    const PROVIDER    = 'provider';
+    const PAYMENT_ID                = 'payment_id';
+    const FLOW                      = 'flow';
+    const TYPE                      = 'type';
+    const MODE                      = 'mode';
+    const START_TIME                = 'start_time';
+    const END_TIME                  = 'end_time';
+    const VPA                       = 'vpa';
+    const EXPIRY_TIME               = 'expiry_time';
+    const PROVIDER                  = 'provider';
+    const REFERENCE                 = 'reference';
+    const NPCI_TXN_ID               = 'npci_txn_id';
+    const UMN                       = 'umn';
+    const RRN                       = 'rrn';
+    const INTERNAL_STATUS           = 'internal_status';
+    const REMINDER_ID               = 'reminder_id';
+    const REMIND_AT                 = 'remind_at';
 
     // Constants
     const UPI_METADATA = 'upi_metadata';
@@ -42,22 +50,31 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::FLOW,
         self::TYPE,
+        self::MODE,
         self::START_TIME,
         self::END_TIME,
         self::VPA,
         self::EXPIRY_TIME,
         self::PROVIDER,
+        self::REFERENCE,
+        self::NPCI_TXN_ID,
+        self::UMN,
+        self::RRN,
+        self::INTERNAL_STATUS,
+        self::REMINDER_ID,
+        self::REMIND_AT,
     ];
 
     protected $public = [
         self::PAYMENT_ID,
         self::FLOW,
         self::TYPE,
+        self::MODE,
         self::START_TIME,
         self::END_TIME,
         self::VPA,
         self::EXPIRY_TIME,
-        self::PROVIDER,
+        self::UMN,
     ];
 
     protected $defaults = [
@@ -69,6 +86,7 @@ class Entity extends Base\PublicEntity
     protected $dates = [
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::REMIND_AT,
         self::START_TIME,
         self::END_TIME,
     ];
@@ -93,6 +111,11 @@ class Entity extends Base\PublicEntity
     public function getFlow()
     {
         return $this->getAttribute(self::FLOW);
+    }
+
+    public function getMode()
+    {
+        return $this->getAttribute(self::MODE);
     }
 
     public function getType()
@@ -125,6 +148,41 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PROVIDER);
     }
 
+    public function getReference()
+    {
+        return $this->getAttribute(self::REFERENCE);
+    }
+
+    public function getNpciTxnId()
+    {
+        return $this->getAttribute(self::NPCI_TXN_ID);
+    }
+
+    public function getUmn()
+    {
+        return $this->getAttribute(self::UMN);
+    }
+
+    public function getRrn()
+    {
+        return $this->getAttribute(self::RRN);
+    }
+
+    public function getInternalStatus()
+    {
+        return $this->getAttribute(self::INTERNAL_STATUS);
+    }
+
+    public function getReminderId()
+    {
+        return $this->getAttribute(self::REMINDER_ID);
+    }
+
+    public function getRemindAt()
+    {
+        return $this->getAttribute(self::REMIND_AT);
+    }
+
     // --------------  END GETTERS ----------------
 
     // -------------- SETTERS --------------------
@@ -137,6 +195,11 @@ class Entity extends Base\PublicEntity
     public function setType(string $type)
     {
         return $this->setAttribute(self::TYPE, $type);
+    }
+
+    public function setMode(string $mode)
+    {
+        return $this->setAttribute(self::TYPE, $mode);
     }
 
     public function setStartTime(int $time)
@@ -162,6 +225,41 @@ class Entity extends Base\PublicEntity
     public function setProvider(string $provider)
     {
         return $this->setAttribute(self::PROVIDER, $provider);
+    }
+
+    public function setReference($reference)
+    {
+        return $this->setAttribute(self::REFERENCE, $reference);
+    }
+
+    public function setNpciTxnId($npciTxnId)
+    {
+        return $this->setAttribute(self::NPCI_TXN_ID, $npciTxnId);
+    }
+
+    public function setUmn($umn)
+    {
+        return $this->setAttribute(self::UMN, $umn);
+    }
+
+    public function setRrn($rrn)
+    {
+        return $this->setAttribute(self::RRN, $rrn);
+    }
+
+    public function setInternalStatus($internalStatus)
+    {
+        return $this->setAttribute(self::INTERNAL_STATUS, $internalStatus);
+    }
+
+    public function setReminderId($reminderId)
+    {
+        return $this->setAttribute(self::REMINDER_ID, $reminderId);
+    }
+
+    public function setRemindAt($remindAt)
+    {
+        return $this->setAttribute(self::REMIND_AT, $remindAt);
     }
 
     // -------------- END SETTERS ----------------

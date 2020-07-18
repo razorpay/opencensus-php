@@ -5854,3 +5854,13 @@ ALTER TABLE payment_page_items
 
 ALTER TABLE merchant_details
     MODIFY COLUMN additional_websites TEXT default NULL;
+
+ALTER TABLE upi_metadata
+    ADD COLUMN `mode` CHAR(25) DEFAULT NULL,
+    ADD COLUMN `reference` VARCHAR(100) DEFAULT NULL,
+    ADD COLUMN `npci_txn_id` VARCHAR(100) DEFAULT NULL,
+    ADD COLUMN `rrn` CHAR(12) DEFAULT NULL,
+    ADD COLUMN `umn` VARCHAR(255) DEFAULT NULL,
+    ADD COLUMN `internal_status` VARCHAR(100) DEFAULT NULL,
+    ADD COLUMN `reminder_id` CHAR(14) DEFAULT NULL,
+    ADD COLUMN `remind_at` INTEGER DEFAULT NULL;
