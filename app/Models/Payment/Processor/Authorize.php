@@ -4000,12 +4000,12 @@ trait Authorize
 
             // These fields will be set for upi recurring payments. We dont need to have a check for recurring because
             // we are checking if the fields exist. If not values for these in token will be null.
-            $saveMethodInput[Token\Entity::MAX_AMOUNT] =
-                $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::MAX_AMOUNT] ?? null;
-            $saveMethodInput[Token\Entity::EXPIRED_AT] =
-                $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? null;
-            $saveMethodInput[Token\Entity::START_TIME] =
-                $input[Payment\Entity::RECURRING_TOKEN][Token\Entity::START_TIME] ?? null;
+            if ($this->upiMandate !== null)
+            {
+                $saveMethodInput[Token\Entity::MAX_AMOUNT] = $this->upiMandate->getMaxAmount() ?? null;
+                $saveMethodInput[Token\Entity::EXPIRED_AT] = $this->upiMandate->getEndTime() ?? null;
+                $saveMethodInput[Token\Entity::START_TIME] = $this->upiMandate->getStartTime() ?? null;
+            }
         }
 
         $token = null;

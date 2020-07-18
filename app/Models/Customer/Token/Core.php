@@ -583,6 +583,13 @@ class Core extends Base\Core
 
     protected function validateExistingTokenUpi($existingTokens, $newToken)
     {
+        // If the token being created is for recurring payment, we want to create new token. But if the token is for
+        // saved vpa, we dont want to create a new token if a token already exists.
+        if ($newToken->isUpiRecurringToken() === true)
+        {
+            return null;
+        }
+
         foreach ($existingTokens as $token)
         {
             if ($token->getVpaId() === $newToken->getVpaId())

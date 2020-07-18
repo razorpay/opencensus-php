@@ -278,31 +278,7 @@ trait UpiRecurring
 
     protected function validateAutoRecurringForUpi(Payment\Entity $payment, array $input, Token\Entity $token)
     {
-        $currentTime = Carbon::now()->getTimestamp();
-
-        if (($token->getExpiredAt() !== null) and
-            (($token->getExpiredAt() < $currentTime) === true))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_RECURRING_TOKEN_EXPIRED,
-                null,
-                [
-                    Token\Entity::ID         => $token->getId(),
-                    Token\Entity::EXPIRED_AT => $token->getExpiredAt(),
-                ]);
-        }
-
-        if (($token->getStartTime() !== null) and
-            (($token->getStartTime() > $currentTime) === true))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MANDATE_EXECUTION_ATTEMPT_BEFORE_START_TIME,
-                null,
-                [
-                    Token\Entity::ID         => $token->getId(),
-                    Token\Entity::EXPIRED_AT => $token->getExpiredAt(),
-                ]);
-        }
+        //TODO:: This has to be added in the auto recurring PR for upi.
     }
 
     protected function modifyAutoRecurringForUpiIfApplicable(Entity $payment, array $data = null, array $input = [])

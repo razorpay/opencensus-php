@@ -748,4 +748,9 @@ class Entity extends Base\PublicEntity
 
         return $publicArray;
     }
+
+    public function isUpiRecurringToken()
+    {
+        return (($this->getStartTime() !== null) and ($this->getMethod() === Payment\Method::UPI));
+    }
 }

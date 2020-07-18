@@ -104,4 +104,19 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::TOKEN_ID);
     }
+
+    public function getMaxAmount()
+    {
+        return $this->getAttribute(self::MAX_AMOUNT);
+    }
+
+    public function getStartTime()
+    {
+        return $this->getAttribute(self::START_TIME);
+    }
+
+    public function getEndTime()
+    {
+        return $this->getAttribute(self::END_TIME);
+    }
 }
