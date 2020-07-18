@@ -16,4 +16,13 @@ class Repository extends Base\Repository
 
         return $upiMandate;
     }
+
+    public function findByTokenId(string $tokenId): Entity
+    {
+        $upiMandate = $this->newQuery()
+                           ->where(Entity::TOKEN_ID, '=', $tokenId)
+                           ->firstOrFail();
+
+        return $upiMandate;
+    }
 }

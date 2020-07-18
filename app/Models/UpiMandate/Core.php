@@ -3,8 +3,10 @@
 namespace RZP\Models\UpiMandate;
 
 use Carbon\Carbon;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
+use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 
@@ -92,5 +94,13 @@ class Core extends Base\Core
         unset($input['expire_at']);
 
         return $input;
+    }
+
+    public function validateUpiMandateForCancel(Entity $upiMandate)
+    {
+        if ($upiMandate->getStatus() !== Status::CONFIRMED)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_TOKEN_FOR_CANCEL);
+        }
     }
 }

@@ -4,7 +4,11 @@ namespace RZP\Tests\Functional\PaymentsUpi;
 
 use Carbon\Carbon;
 
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Models\UpiMandate\Status;
 use RZP\Tests\Functional\TestCase;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -149,5 +153,78 @@ class UpiRecurringPaymentSharpTest extends TestCase
             'status'        => 'created',
             'verify_at'     => null,
         ], $payment->toArray());
+    }
+
+    public function testRevokeMandate()
+    {
+        $mandate = $this->createFirstUpiRecurringPayment();
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->revokeUpiRecurringMandate($token->getPublicId());
+
+        $mandate->reload();
+
+        $this->assertEquals(Status::REVOKED, $mandate['status']);
+    }
+
+    public function testRevokeCreatedMandate()
+    {
+        $orderId = $this->createUpiRecurringOrder();
+
+        $payment = $this->getDefaultUpiRecurringPaymentArray();
+        $payment['order_id'] = $orderId;
+        $payment['customer_id'] = 'cust_100000customer';
+        $payment['vpa'] = 'failure@razorpay';
+
+        $this->doAuthPayment($payment);
+
+        $mandate = $this->getDbLastEntity('upi_mandate');
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->assertEquals(Status::CREATED, $mandate['status']);
+
+        $data = $this->getRevokeCreatedMandateResponse();
+
+        $this->runRequestResponseFlow($data, function() use ($token) {
+            $this->revokeUpiRecurringMandate($token->getPublicId());
+        });
+
+        $mandate->reload();
+
+        $this->assertEquals(Status::CREATED, $mandate['status']);
+    }
+
+    protected function getRevokeCreatedMandateResponse()
+    {
+        return [
+            'response' => [
+                'content'     => [
+                    'error' => [
+                        'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description'   => PublicErrorDescription::BAD_REQUEST_INVALID_TOKEN_FOR_CANCEL,
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'               => 'RZP\Exception\BadRequestException',
+                'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_TOKEN_FOR_CANCEL,
+            ],
+        ];
+    }
+
+    protected function revokeUpiRecurringMandate(string $tokenId)
+    {
+        $this->ba->privateAuth();
+
+        $request = [
+            'method'  => 'PUT',
+            'content' => [],
+            'url' => '/customers/cust_100000customer/tokens/' . $tokenId . '/cancel',
+        ];
+
+        $this->makeRequestAndGetContent($request);
     }
 }

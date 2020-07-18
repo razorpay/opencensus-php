@@ -6,11 +6,13 @@ use RZP\Exception\InvalidArgumentException;
 
 class Status
 {
-    const CREATED = 'created';
+    const CREATED   = 'created';
 
     const CONFIRMED = 'confirmed';
 
     const REJECTED  = 'rejected';
+
+    const REVOKED   = 'revoked';
 
     public static function isUpiMandateStatusValid($status): bool
     {

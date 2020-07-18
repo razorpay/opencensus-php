@@ -73,6 +73,23 @@ class Service extends Base\Service
         return $token->toArrayPublic();
     }
 
+    public function cancel($id, $tokenId)
+    {
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $token = $this->core->getByTokenIdAndCustomer($tokenId, $customer);
+
+        $this->core->validateTokenForCancel($token);
+
+        $upiMandate = $this->repo->upi_mandate->findByTokenId($token['id']);
+
+        $paymentServiceClass = new Payment\Service;
+
+        $paymentServiceClass->mandateCancel($id, $upiMandate, $token);
+
+        return ['success' => true];
+    }
+
     /**
      * fetch token for local customer
      *

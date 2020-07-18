@@ -81,6 +81,13 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function cancelToken($id, $token)
+    {
+        $data = $this->service(E::TOKEN)->cancel($id, $token);
+
+        return ApiResponse::json($data);
+    }
+
     public function deleteToken($id, $token)
     {
         $data = $this->service(E::TOKEN)->deleteTokenForLocalCustomer($id, $token);

@@ -81,6 +81,71 @@ trait UpiRecurring
         2000);
     }
 
+    public function mandateCancel($customerId, $upiMandate, $token)
+    {
+        $action = Payment\Action::MANDATE_CANCEL;
+
+        $tokenTerminal = $this->repo->terminal->getById($token[Token\Entity::TERMINAL_ID]);
+
+        if ($tokenTerminal === null)
+        {
+            throw new Exception\RuntimeException(
+                ErrorCode::SERVER_ERROR);
+        }
+
+        Customer\Entity::verifyIdAndStripSign($customerId);
+
+        $payment = $this->repo->payment->getByTokenIdAndCustomerId($token['id'], $customerId);
+
+        $gateway = $tokenTerminal->getGateway();
+
+        $input = [
+            'terminal'    => $tokenTerminal,
+            'gateway'     => $gateway,
+            'token'       => $token,
+            'payment'     => $payment,
+            'merchant'    => $this->merchant,
+            'upi_mandate' => $upiMandate,
+        ];
+
+        // Input, GatewayInput and Response are currently same, we are using different variable
+        // names as make sure there usage are not mixed, and later they all can be different.
+        $gatewayData = $input;
+
+        $gatewayResponse = null;
+
+        $this->mutex->acquireAndRelease($this->getMandateUpdateMutexResource($token),
+            function() use ($gatewayData, $action, $gateway, $tokenTerminal) {
+                try
+                {
+                    $gatewayResponse = $this->app['gateway']->call(
+                        $gateway,
+                        $action,
+                        $gatewayData,
+                        $this->mode,
+                        $tokenTerminal);
+
+                    return
+                        [
+                            'success' => true,
+                        ];
+                }
+                catch (Exception\GatewayErrorException $exception)
+                {
+                    $this->trace->traceException($exception, Trace::INFO, TraceCode::GATEWAY_MANDATE_UPDATE_ERROR);
+
+                    throw $exception;
+                }
+            },
+            60,
+            ErrorCode::BAD_REQUEST_TOKEN_UPDATION_OPERATION_IN_PROGRESS,
+            20,
+            1000,
+            2000);
+
+        return ['success' => true];
+    }
+
     protected function getMandateUpdateMutexResource(Token\Entity $token): string
     {
         return 'mandate_update_' . $token->getId();

@@ -239,6 +239,11 @@ class Gateway extends Base\Gateway
         return true;
     }
 
+    public function mandateCancel(array $input)
+    {
+        return ['success' => true];
+    }
+
     public function getIntentUrl($input)
     {
         return $this->getIntentRequest($input);

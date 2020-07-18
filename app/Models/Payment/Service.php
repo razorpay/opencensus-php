@@ -26,6 +26,7 @@ use RZP\Models\Feature;
 use RZP\Models\Card;
 use RZP\Models\Card\IIN;
 use RZP\Models\Transfer;
+use RZP\Models\UpiMandate;
 use RZP\Models\Transaction;
 use RZP\Models\Admin\Org;
 use RZP\Services\Doppler;
@@ -2183,6 +2184,20 @@ class Service extends Base\Service
     public function mandateUpdate($id, $token, $input)
     {
         $data = $this->getNewProcessor()->mandateUpdate($id, $token, $input);
+    }
+
+    public function mandateCancel($id, $upiMandate, $token)
+    {
+        (new UpiMandate\Core())->validateUpiMandateForCancel($upiMandate);
+
+        $data = $this->getNewProcessor()->mandateCancel($id, $upiMandate, $token);
+
+        if ($data['success'] === true)
+        {
+            $upiMandate->setStatus(UpiMandate\Status::REVOKED);
+
+            $this->repo->saveOrFail($upiMandate);
+        }
     }
 
     public function validateEntity(array $input)

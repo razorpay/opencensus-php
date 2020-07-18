@@ -649,4 +649,16 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_UPDATE_NOT_CONFIRMED_TOKEN);
         }
     }
+
+    public function validateTokenForCancel(Token\Entity $token)
+    {
+        $method = $token->getMethod();
+
+        $recurring = $token->isRecurring();
+
+        if (($method !== Method::UPI) or ($recurring !== true))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_TOKEN_FOR_CANCEL);
+        }
+    }
 }
