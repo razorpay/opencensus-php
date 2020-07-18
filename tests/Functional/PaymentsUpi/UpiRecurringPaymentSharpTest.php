@@ -132,6 +132,12 @@ class UpiRecurringPaymentSharpTest extends TestCase
 
         $payment['token'] = $mandate->token->getPublicId();
 
+        $orderId = $this->createUpiOrder();
+
+        $payment['order_id'] = $orderId;
+
+        unset($payment['vpa']);
+
         $response = $this->doS2SRecurringPayment($payment);
 
         $this->assertArrayHasKey('razorpay_payment_id', $response);

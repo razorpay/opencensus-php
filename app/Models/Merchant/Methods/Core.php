@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Admin;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -284,6 +285,12 @@ class Core extends Base\Core
         if ($methods->isUpiEnabled() === false)
         {
             return;
+        }
+
+        // This is to enable merchants to test upi recurring on test mode with sharp terminal.
+        if (($this->mode === Mode::TEST) and ($this->app->runningUnitTests() === false))
+        {
+            $recurringData['upi'] = true;
         }
 
         $recurringUpiTerminals = $this->repo->terminal->getUpiRecurringTerminalsByMid($merchant->getId());

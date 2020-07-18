@@ -2718,9 +2718,9 @@ class Processor
             $payment->setBank($this->order->getBankForNachMethod());
         }
 
-        if ($payment->isUpiRecurring() === true)
+        if (($payment->isUpiRecurring() === true) and (empty($input[Payment\Entity::TOKEN]) === true))
         {
-            $this->validateOrderForUpiRecurring($this->order);
+            $this->validateOrderForUpiInitialRecurring($this->order);
         }
 
         if ($this->isOtmPayment($input) === true)
@@ -2781,7 +2781,7 @@ class Processor
         }
     }
 
-    protected function validateOrderForUpiRecurring(Order\Entity $order)
+    protected function validateOrderForUpiInitialRecurring(Order\Entity $order)
     {
         $orderId = $order['id'];
 

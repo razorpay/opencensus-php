@@ -3652,6 +3652,10 @@ trait Authorize
         else if ($payment->isUpiRecurring() === true)
         {
             $payment->localToken()->associate($token);
+
+            $vpa = $token->vpa;
+
+            $payment->setVpa($vpa->getAddress());
         }
         else if ($this->shouldSaveVpaForUpiPayments() === true)
         {
@@ -3714,6 +3718,10 @@ trait Authorize
         else if ($payment->isUpiRecurring() === true)
         {
             $payment->globalToken()->associate($token);
+
+            $vpa = $token->vpa;
+
+            $payment->setVpa($vpa->getAddress());
         }
         else if ($this->shouldSaveVpaForUpiPayments() === true)
         {
