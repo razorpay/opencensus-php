@@ -1,9 +1,10 @@
 <?php
 
-namespace RZP\Jobs;
+namespace RZP\Jobs\SettlementOndemand;
 
 use App;
 
+use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
 use RZP\Services\RazorpayXClient;
 use Razorpay\Trace\Logger as Trace;

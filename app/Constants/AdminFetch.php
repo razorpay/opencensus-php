@@ -1206,6 +1206,42 @@ class AdminFetch
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
 
+            Entity::SETTLEMENT_ONDEMAND => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'status' => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'created',
+                        'initiated',
+                        'processed',
+                        'partially_processed',
+                        'reversed',
+                    ],
+                ],
+            ],
+            Entity::SETTLEMENT_ONDEMAND_PAYOUT => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'settlement_ondemand_id' => [
+                    Fetch::LABEL  => 'Settlement Ondemand ID',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'status' => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'created',
+                        'initiated',
+                        'processed',
+                        'reversed',
+                    ],
+                ],
+            ],
+
+            Entity::SETTLEMENT_ONDEMAND_FUND_ACCOUNT => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+            ],
+
             Entity::EMI_PLAN => [
                 'bank' => [
                     Fetch::LABEL  => 'Bank',

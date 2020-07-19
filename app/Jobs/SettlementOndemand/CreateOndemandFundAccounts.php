@@ -1,7 +1,8 @@
 <?php
 
-namespace RZP\Jobs;
+namespace RZP\Jobs\SettlementOndemand;
 
+use RZP\Jobs\Job;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;

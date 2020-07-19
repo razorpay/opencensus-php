@@ -6,8 +6,8 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Jobs\CreateOndemandFundAccounts;
-use RZP\Jobs\CreateSettlementOndemandFundAccount;
+use RZP\Jobs\SettlementOndemand\CreateOndemandFundAccounts;
+use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandFundAccount;
 
 use Razorpay\Trace\Logger as Trace;
 

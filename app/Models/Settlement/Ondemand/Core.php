@@ -46,11 +46,13 @@ class Core extends Base\Core
         $this->checkMerchantFundsOnHold();
 
         $input = $input + [
-            Entity::STATUS      => Status::CREATED,
-            Entity::CURRENCY    => $input[Entity::CURRENCY] ?? Currency::INR,
-            Entity::MAX_BALANCE => $input[Entity::MAX_BALANCE] ?? 0,
-            Entity::NOTES       => $input[Entity::NOTES] ?? null,
-            Entity::NARRATION   => $input[Entity::NARRATION] ?? null,
+            Entity::TOTAL_AMOUNT_SETTLED  => 0,
+            Entity::TOTAL_AMOUNT_REVERSED => 0,
+            Entity::STATUS                => Status::CREATED,
+            Entity::CURRENCY              => $input[Entity::CURRENCY] ?? Currency::INR,
+            Entity::MAX_BALANCE           => $input[Entity::MAX_BALANCE] ?? 0,
+            Entity::NOTES                 => $input[Entity::NOTES] ?? null,
+            Entity::NARRATION             => $input[Entity::NARRATION] ?? null,
         ];
 
         $data = $input;
@@ -118,7 +120,7 @@ class Core extends Base\Core
         });
     }
 
-    public function createReversal($settlementOndemandPayout, $reversalReason)
+    public function createPartialReversal($settlementOndemandPayout, $reversalReason)
     {
         if ($settlementOndemandPayout->getStatus() === OndemandPayout\Status::REVERSED)
         {

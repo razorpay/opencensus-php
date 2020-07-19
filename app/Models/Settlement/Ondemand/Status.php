@@ -12,14 +12,12 @@ class Status
     const PROCESSED             = 'processed';
     const PARTIALLY_PROCESSED   = 'partially_processed';
     const REVERSED              = 'reversed';
-    const FAILED                = 'failed';
 
 
     public static $finalStates = [
         self::PROCESSED,
         self::PARTIALLY_PROCESSED,
-        self::REVERSED,
-        self::FAILED
+        self::REVERSED
     ];
 
     /**
@@ -41,7 +39,6 @@ class Status
             self::PROCESSED,
             self::PARTIALLY_PROCESSED,
             self::REVERSED,
-            self::FAILED,
             self::INITIATED,
         ],
         self::PARTIALLY_PROCESSED => [
@@ -55,9 +52,6 @@ class Status
             self::REVERSED,
         ],
         self::REVERSED => [
-            // this is empty because it's the final status
-        ],
-        self::FAILED => [
             // this is empty because it's the final status
         ],
     ];

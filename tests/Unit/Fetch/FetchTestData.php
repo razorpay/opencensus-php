@@ -474,6 +474,33 @@ return [
         ],
     ],
 
+    E::SETTLEMENT_ONDEMAND => [
+        Type::ADMIN_AUTH => [
+            [
+                'merchant_id' => '10000000000000',
+                'status'      => 'processed',
+            ],
+        ],
+    ],
+
+    E::SETTLEMENT_ONDEMAND_PAYOUT => [
+        Type::ADMIN_AUTH => [
+            [
+                'merchant_id'            => '10000000000000',
+                'status'                 => 'processed',
+                'settlement_ondemand_id' => 'sod_' . str_random(14),
+            ],
+        ],
+    ],
+
+    E::SETTLEMENT_ONDEMAND_FUND_ACCOUNT => [
+        Type::ADMIN_AUTH => [
+            [
+                'merchant_id'            => '10000000000000',
+            ],
+        ],
+    ],
+
     // Full test case for Invoices Fetch
     E::INVOICE => [
 

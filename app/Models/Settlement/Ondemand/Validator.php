@@ -16,6 +16,7 @@ class Validator extends Base\Validator
 {
     const SETTLEMENT_ONDEMAND_INPUT         = 'settlement_ondemand_input';
     const SETTLEMENT_ONDEMAND_FEES_INPUT    = 'settlement_ondemand_fees_input';
+    const FETCH_BY_TIMESTAMP_INPUT       = 'fetch_by_timestamp_input';
     const MAX_ONDEMAND_AMOUNT               = 2000000000;
     const MIN_ONDEMAND_AMOUNT               = 100;
     const MIN_ONDEMAND_AMOUNT_FOR_DASHBOARD = 200000;
@@ -23,11 +24,12 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::AMOUNT                => 'required|integer|custom',
         Entity::TOTAL_AMOUNT_PENDING  => 'sometimes|integer',
+        Entity::TOTAL_AMOUNT_SETTLED  => 'sometimes|integer',
         Entity::TOTAL_AMOUNT_REVERSED => 'sometimes|integer',
         Entity::TOTAL_FEES            => 'sometimes|integer',
         Entity::TOTAL_TAX             => 'sometimes|integer',
         Entity::CURRENCY              => 'sometimes|size:3',
-        Entity::NARRATION             => 'sometimes|nullable|string',
+        Entity::NARRATION             => 'sometimes|nullable|string|max:30',
         Entity::REMARKS               => 'sometimes|nullable|string',
         Entity::NOTES                 => 'sometimes|nullable|array',
         Entity::MAX_BALANCE           => 'sometimes|boolean',
@@ -41,6 +43,14 @@ class Validator extends Base\Validator
         Entity::NARRATION           => 'sometimes|nullable|string',
         Entity::NOTES               => 'sometimes|nullable|array',
         'expand'                    => 'sometimes|boolean',
+    ];
+
+    public static $fetchByTimestampInputRules = [
+        'from'                => 'required|epoch',
+        'to'                  => 'sometimes|epoch',
+        'count'               => 'sometimes|integer|min:1|max:100',
+        'expand'              => 'sometimes|boolean',
+        'skip'                => 'sometimes|integer',
     ];
 
     public static $settlementOndemandFeesInputRules = [

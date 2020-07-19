@@ -1,10 +1,11 @@
 <?php
 
-namespace RZP\Jobs;
+namespace RZP\Jobs\SettlementOndemand;
 
 use App;
 use Config;
 
+use RZP\Jobs\Job;
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Constants\HashAlgo;

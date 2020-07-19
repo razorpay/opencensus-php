@@ -3,6 +3,7 @@
 namespace RZP\Models\Settlement\Ondemand;
 
 use Config;
+use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Error\Error;
@@ -16,13 +17,14 @@ use RZP\Models\Adjustment;
 use RZP\Base\JitValidator;
 use RZP\Models\FundAccount;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Jobs\MockPayoutOndemandWebhook;
 use RZP\Models\Settlement\OndemandPayout;
-use RZP\Jobs\CreateSettlementOndemandPayoutJobs;
+use RZP\Jobs\SettlementOndemand\MockPayoutOndemandWebhook;
+use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutJobs;
 
 class Service extends Base\Service
 {
     protected $settlementOndemandPayout;
+
 
     public function __construct()
     {
@@ -103,12 +105,30 @@ class Service extends Base\Service
         }
     }
 
-    public function createReversal($settlementOndemandPayoutId, $merchantId, $reversalReason)
+    public function createSettlementOndemandReversal($settlementOndemandId, $merchantId, $reversalReason)
+    {
+        $this->repo->transaction(function() use ($settlementOndemandId, $merchantId, $reversalReason)
+        {
+            $settlementOndemand = (new Repository)->findByIdAndMerchantIdWithLock($settlementOndemandId, $merchantId);
+
+            $settlementOndemandPayoutIds = (new OndemandPayout\Repository)
+                                            ->fetchIdsByOndemandIdAndMerchantId($settlementOndemand->getId(),
+                                                                                $settlementOndemand->getMerchantId());
+
+            foreach($settlementOndemandPayoutIds as $settlementOndemandPayoutId)
+            {
+                $this->createPartialReversal($settlementOndemandPayoutId, $merchantId, $reversalReason);      
+
+            }
+        });
+    }
+
+    public function createPartialReversal($settlementOndemandPayoutId, $merchantId, $reversalReason)
     {
         $settlementOndemandPayout = (new OndemandPayout\Repository)->findByIdAndMerchantIdWithLock
                                                 ($settlementOndemandPayoutId , $merchantId);
 
-        $this->core()->createReversal($settlementOndemandPayout, $reversalReason);
+        $this->core()->createPartialReversal($settlementOndemandPayout, $reversalReason);
     }
 
     public function validateIfOndemandMerchant()
@@ -137,8 +157,36 @@ class Service extends Base\Service
         }
     }
 
+    public function fetchMultiple($input)
+    {
+        (new Validator)->validateInput(Validator::FETCH_BY_TIMESTAMP_INPUT, $input);
+
+        if (!isset($input['to']) === true)
+        {
+            $input['to'] = Carbon::now()->getTimestamp();
+        }
+
+        if (isset($input['expand']) === true && boolval($input['expand']) === true)
+        {
+            $input['expand'] = [Entity::SETTLEMENT_ONDEMAND_PAYOUTS];
+        }
+        else if (isset($input['expand']) === true)
+        {
+            unset($input['expand']);
+        }
+
+        return (new Repository)->fetch($input, $this->merchant->getId())->toArrayPublic();
+    }
+
     public function getResponse($settlementOndemand, $settlementOndemandPayouts = null)
     {
+        $settlementOndemandArray = $settlementOndemand->toArrayPublic();
+
+        if (isset($settlementOndemandArray['settlement_ondemand_payouts']) === true)
+        {
+            unset($settlementOndemandArray['settlement_ondemand_payouts']);
+        }
+
         if (isset($settlementOndemandPayouts) === true)
         {
             $settlementOndemandPayoutArray = [];
@@ -148,13 +196,13 @@ class Service extends Base\Service
                 array_push($settlementOndemandPayoutArray, $settlementOndemandPayout->toArrayPublic());
             }
 
-            return $settlementOndemand->toArrayPublic() + [
-                'payouts'   => $settlementOndemandPayoutArray,
+            return $settlementOndemandArray + [
+                'settlement_ondemand_payouts'   => $settlementOndemandPayoutArray,
             ];
         }
         else
         {
-            return $settlementOndemand->toArrayPublic();
+            return $settlementOndemandArray;
         }
     }
 }

@@ -1,10 +1,10 @@
 <?php
 
-namespace RZP\Jobs;
+namespace RZP\Jobs\SettlementOndemand;
 
 use App;
-use Mail;
 
+use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Ondemand;
@@ -49,7 +49,7 @@ class CreateSettlementOndemandPayoutReversal extends Job
 
             $this->repo->transaction(function()
             {
-                (new Ondemand\Service)->createReversal($this->settlementOndemandPayoutId, $this->merchantId ,$this->reversalReason);
+                (new Ondemand\Service)->createPartialReversal($this->settlementOndemandPayoutId, $this->merchantId ,$this->reversalReason);
             });
         }
         catch(\Exception $e)

@@ -15,5 +15,9 @@ class Validator extends Base\Validator
         Entity::MODE                    => 'required|in:NEFT,IMPS',
         Entity::SETTLEMENT_ONDEMAND_ID  => 'sometimes|alpha_num|size:14',
         Entity::STATUS                  => 'sometimes|string',
+        Entity::INITIATED_AT            => 'sometimes|epoch|nullable',
+        Entity::PROCESSED_AT            => 'sometimes|epoch|nullable',
+        Entity::REVERSED_AT             => 'sometimes|epoch|nullable',
+        Entity::UTR                     => 'sometimes|string|nullable',
     ];
 }

@@ -23,6 +23,8 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'settlement.ondemand';
 
+    const SETTLEMENT_ONDEMAND_PAYOUTS = 'settlement_ondemand_payouts';
+
     const ID_LENGTH = 14;
 
     protected $table  = Table::SETTLEMENT_ONDEMAND;
@@ -52,6 +54,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        self::MERCHANT_ID,
         self::AMOUNT,
         self::TOTAL_AMOUNT_SETTLED,
         self::TOTAL_FEES,
@@ -65,6 +68,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::SETTLEMENT_ONDEMAND_PAYOUTS,
     ];
 
     protected $fillable = [

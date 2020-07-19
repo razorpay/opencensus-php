@@ -1,7 +1,8 @@
 <?php
 
-namespace RZP\Jobs;
+namespace RZP\Jobs\SettlementOndemand;
 
+use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Ondemand;
@@ -67,13 +68,29 @@ class CreateSettlementOndemandPayoutJobs extends Job
                 $this->delete();
             }
 
+            try
+            {
+                (new Ondemand\Service)->createSettlementOndemandReversal($this->settlementOndemandId, $this->merchantId, 'job failure');
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::REVERSAL_FAILURE_FOR_SETTLEMENT_JOB_FAILURE,
+                    [
+                        'merchant_id'      => $this->merchantId,
+                        'ondemand_id'      => $this->settlementOndemandId,
+                    ]);
+            }
+
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
                 TraceCode::MAKE_SETTLEMENT_ONDEMAND_PAYOUT_REQUEST_FAILURE,
                 [
-                    'merchant_id'      => $this->settlementOndemand->getMerchantId(),
-                    'ondemand_id'      => $this->settlementOndemand->getId(),
+                    'merchant_id'      => $this->merchantId,
+                    'ondemand_id'      => $this->settlementOndemandId,
                 ]);
         }
     }

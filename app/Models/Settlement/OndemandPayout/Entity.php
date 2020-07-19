@@ -42,7 +42,6 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::MERCHANT_ID,
-        self::USER_ID,
         self::SETTLEMENT_ONDEMAND_ID,
         self::MODE,
         self::INITIATED_AT,
@@ -53,6 +52,7 @@ class Entity extends Base\PublicEntity
         self::TAX,
         self::UTR,
         self::STATUS,
+        self::CREATED_AT,
     ];
 
     protected $fillable = [

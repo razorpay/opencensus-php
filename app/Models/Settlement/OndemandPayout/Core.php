@@ -22,7 +22,7 @@ use RZP\Models\Settlement\Holidays;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Settlement\OndemandFundAccount;
-use RZP\Jobs\CreateSettlementOndemandPayoutReversal;
+use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutReversal;
 
 class Core extends Base\Core
 {
@@ -125,6 +125,10 @@ class Core extends Base\Core
                 Entity::MODE                   => $mode,
                 Entity::AMOUNT                 => $settlementOndemandPayoutAmount,
                 Entity::STATUS                 => Status::CREATED,
+                Entity::UTR                    => null,
+                Entity::INITIATED_AT           => null,
+                Entity::PROCESSED_AT           => null,
+                Entity::REVERSED_AT            => null,
             ];
 
             /** @var Entity $settlementOndemandPayout */

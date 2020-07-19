@@ -1326,6 +1326,7 @@ class Route
         'settlement_ondemand_create_dashboard'     => ['post',      'settlement/ondemand/dashboard',                 'SettlementOndemandController@postSettlementOndemand'               ],
         'settlement_ondemand_fees_dashboard'       => ['get',       'settlement/ondemand/fees/dashboard',            'SettlementOndemandController@calculateFees'                        ],
         'settlement_ondemand_fetch_by_id'          => ['get',       'settlements/ondemand/{id}',                     'SettlementOndemandController@getSettlementOndemand'                ],
+        'settlement_ondemand_fetch'                => ['get',       'settlements/ondemand',                          'SettlementOndemandController@getMultipleSettlementOndemand'        ],
 
 
         // OAuth routes
@@ -1982,6 +1983,7 @@ class Route
     public static $private = [
         'settlement_ondemand_fees',
         'settlement_ondemand_create',
+        'settlement_ondemand_fetch',
         'settlement_ondemand_fetch_by_id',
         'payment_links_service_main_route',
         'payment_links_service_sub_route',
@@ -5051,6 +5053,7 @@ class Route
         'on_demand_settlement'                 => [Feature::ES_ON_DEMAND],
         'on_demand_settlement_fees'            => [Feature::ES_ON_DEMAND],
         'settlement_ondemand_create'           => [Feature::ES_ON_DEMAND],
+        'settlement_ondemand_fetch'            => [Feature::ES_ON_DEMAND],
         'settlement_ondemand_fetch_by_id'      => [Feature::ES_ON_DEMAND],
         'settlement_ondemand_create_dashboard' => [Feature::ES_ON_DEMAND],
         'settlement_ondemand_fees'             => [Feature::ES_ON_DEMAND],

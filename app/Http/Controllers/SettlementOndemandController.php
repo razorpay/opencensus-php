@@ -36,6 +36,15 @@ class SettlementOndemandController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getMultipleSettlementOndemand()
+    {
+        $input = Request::all();
+
+        $data = $this->service(Entity::SETTLEMENT_ONDEMAND)->fetchMultiple($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function ondemandPayoutUpdate()
     {
         //since razorpayx_webhook is adirect route the mode will not be set by default
