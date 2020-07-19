@@ -137,6 +137,13 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $checkBalanceObj, Action::CHECK_BALANCE);
     }
 
+    public function mandateRevoke($input)
+    {
+        $mandateRevokeObj = new MandateRevokeData();
+
+        return $this->processMockResponse($input, $mandateRevokeObj, Action::MANDATE_REVOKE);
+    }
+
     protected function makeResponseJson($body)
     {
         $response = \Response::make($body);
@@ -1191,6 +1198,48 @@ class Server extends Base\Mock\Server
             'TxnInitDate'       => '20200715211840',
             'TxnCompletionDate' => '20200715211843',
             'UMN'               => $payment['id'] . '@icici',
+        ];
+
+        return json_encode($response);
+    }
+
+    protected function getAsyncCallbackResponsePauseForIcici($mandate)
+    {
+        $response = [
+            'merchantId'        => '400660',
+            'subMerchantId'     => '400660',
+            'terminalId'        => '5094',
+            'BankRRN'           => '019721040510',
+            'merchantTranId'    => '12345678',
+            'PayerName'         => 'payer',
+            'PayerMobile'       => '9876543210',
+            'PayerVA'           => 'test@icici',
+            'PayerAmount'       => '5',
+            'TxnStatus'         => 'SUSPEND-SUCCESS',
+            'TxnInitDate'       => '20200715211840',
+            'TxnCompletionDate' => '20200715211843',
+            'UMN'               => $mandate['umn'],
+        ];
+
+        return json_encode($response);
+    }
+
+    protected function getAsyncCallbackResponseResumeForIcici($mandate)
+    {
+        $response = [
+            'merchantId'        => '400660',
+            'subMerchantId'     => '400660',
+            'terminalId'        => '5094',
+            'BankRRN'           => '019721040510',
+            'merchantTranId'    => '12345678',
+            'PayerName'         => 'payer',
+            'PayerMobile'       => '9876543210',
+            'PayerVA'           => 'test@icici',
+            'PayerAmount'       => '5',
+            'TxnStatus'         => 'REACTIVATE-SUCCESS',
+            'TxnInitDate'       => '20200715211840',
+            'TxnCompletionDate' => '20200715211843',
+            'UMN'               => $mandate['umn'],
         ];
 
         return json_encode($response);

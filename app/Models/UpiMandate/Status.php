@@ -14,6 +14,8 @@ class Status
 
     const REVOKED   = 'revoked';
 
+    const PAUSED    = 'paused';
+
     public static function isUpiMandateStatusValid($status): bool
     {
         return (defined(__CLASS__ . '::' . strtoupper($status)));

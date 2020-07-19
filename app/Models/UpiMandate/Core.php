@@ -103,4 +103,32 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_TOKEN_FOR_CANCEL);
         }
     }
+
+    public function validateUpiMandateForPause(Entity $upiMandate)
+    {
+        // Mandate pause is customer initiated. For these, we directly get callbacks from gateway. As that is the
+        // ultimate source of truth, we dont throw an exception. We will consider these callbacks and update the
+        // mandate status. If mandate status is not confirmed, we trace such instances to check for inconsistencies.
+        if ($upiMandate->getStatus() !== Status::CONFIRMED)
+        {
+            $this->trace->info(TraceCode::UPI_MANDATE_STATUS_MISMATCH_FOR_PAUSE, [
+                'id'     => $upiMandate->getId(),
+             'status' => $upiMandate->getStatus(),
+            ]);
+        }
+    }
+
+    public function validateUpiMandateForResume(Entity $upiMandate)
+    {
+        // Mandate resume is customer initiated. For these, we directly get callbacks from gateway. As that is the
+        // ultimate source of truth, we dont throw an exception. We will consider these callbacks and update the
+        // mandate status. If mandate status is not confirmed, we trace such instances to check for inconsistencies.
+        if ($upiMandate->getStatus() !== Status::PAUSED)
+        {
+            $this->trace->info(TraceCode::UPI_MANDATE_STATUS_MISMATCH_FOR_RESUME, [
+                'id'     => $upiMandate->getId(),
+                'status' => $upiMandate->getStatus(),
+            ]);
+        }
+    }
 }

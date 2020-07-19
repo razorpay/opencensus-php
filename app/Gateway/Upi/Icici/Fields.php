@@ -44,4 +44,5 @@ class Fields
     const TXN_INIT_DATE             = 'TxnInitDate';
     const TXN_STATUS                = 'TxnStatus';
     const RESPONSE_CODE             = 'ResponseCode';
+    const UMN                       = 'UMN';
 }

@@ -228,9 +228,103 @@ class UpiIciciRecurringTest extends TestCase
         $this->assertEquals('confirmed', $upiMandate['status']);
     }
 
+    public function testRevokeMandate()
+    {
+        $this->testRecurringMandateCreate();
+
+        $mandate = $this->getDbLastEntity('upi_mandate');
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->revokeUpiRecurringMandate($token->getPublicId());
+
+        $mandate->reload();
+
+        $this->assertEquals(Status::REVOKED, $mandate['status']);
+    }
+
+    public function testRevokeCreatedMandate()
+    {
+        $orderId = $this->createUpiRecurringOrder();
+
+        $this->payment['order_id'] = $orderId;
+
+        $this->payment['customer_id'] = 'cust_100000customer';
+
+        $this->doAuthPayment($this->payment);
+
+        $mandate = $this->getDbLastEntity('upi_mandate');
+
+        $token = $this->getDbLastEntity('token');
+
+        $data = $this->testData['testRevokeCreatedMandate'];
+
+        $this->runRequestResponseFlow($data, function() use ($token)
+        {
+            $this->revokeUpiRecurringMandate($token->getPublicId());
+        });
+
+        $mandate->reload();
+
+        $this->assertEquals(Status::CREATED, $mandate['status']);
+    }
+
+    public function testPauseMandate()
+    {
+        $this->testRecurringMandateCreate();
+
+        $mandate = $this->getDbLastEntity('upi_mandate');
+
+        $this->mandatePauseCallback($mandate);
+
+        $mandate->reload();
+
+        $this->assertEquals(Status::PAUSED, $mandate['status']);
+    }
+
+    public function testResumeMandate()
+    {
+        $this->testPauseMandate();
+
+        $mandate = $this->getDbLastEntity('upi_mandate');
+
+        $this->mandateResumeCallback($mandate);
+
+        $mandate->reload();
+
+        $this->assertEquals(Status::CONFIRMED, $mandate['status']);
+    }
+
+    protected function revokeUpiRecurringMandate(string $tokenId)
+    {
+        $this->ba->privateAuth();
+
+        $request = [
+            'method'  => 'PUT',
+            'content' => [],
+            'url' => '/customers/cust_100000customer/tokens/' . $tokenId . '/cancel',
+        ];
+
+        $this->makeRequestAndGetContent($request);
+    }
+
     protected function mandateCreateCallback($payment)
     {
         $content = $this->mockServer()->getAsyncCallbackResponseMandateCreateForIcici($payment);
+
+        $this->makeS2SCallbackAndGetContent($content, 'upi_icici');
+    }
+
+    protected function mandatePauseCallback($mandate)
+    {
+        $content = $this->mockServer()->getAsyncCallbackResponsePauseForIcici($mandate);
+
+        $this->makeS2SCallbackAndGetContent($content, 'upi_icici');
+    }
+
+    protected function mandateResumeCallback($mandate)
+    {
+        $content = $this->mockServer()->getAsyncCallbackResponseResumeForIcici($mandate);
 
         $this->makeS2SCallbackAndGetContent($content, 'upi_icici');
     }

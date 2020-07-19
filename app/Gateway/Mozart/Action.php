@@ -48,4 +48,6 @@ class Action
     const DECRYPT               = 'decrypt';
 
     const MERCHANT_ONBOARD      = 'merchantOnboard';
+
+    const MANDATE_REVOKE        = 'mandate_revoke';
 }

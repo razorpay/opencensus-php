@@ -849,6 +849,30 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
+    public function mandateRevoke($input)
+    {
+        parent::action($input, Action::MANDATE_REVOKE);
+
+        $request = $this->getMozartRequestArray($input);
+
+        $traceReq = [
+            'method' => $request['method'],
+            'url'    => $request['url'],
+        ];
+
+        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_MANDATE_REVOKE_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $traceRes = $this->getRedactedData($response);
+
+        $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_MANDATE_REVOKE_RESPONSE);
+
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+
+        return;
+    }
+
     public function immediateVerifyApplicable($input)
     {
         $immediateVerifyEnabledMethods = [
@@ -1576,6 +1600,7 @@ class Gateway extends Base\Gateway
                 Action::AUTH_VERIFY       => null,
                 Action::PAY_INIT          => null,
                 Action::PAY_VERIFY        => null,
+                Action::MANDATE_REVOKE    => null,
             ],
         ];
 
@@ -1737,6 +1762,7 @@ class Gateway extends Base\Gateway
                 Action::AUTH_VERIFY       => null,
                 Action::PAY_INIT          => null,
                 Action::PAY_VERIFY        => null,
+                Action::MANDATE_REVOKE    => null,
             ],
         ];
 

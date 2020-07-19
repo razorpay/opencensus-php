@@ -8,6 +8,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
+use RZP\Models\UpiMandate;
 use RZP\Models\Merchant;
 use RZP\Services\Reminders;
 use RZP\Models\Payment\Entity;
@@ -114,7 +115,7 @@ trait UpiRecurring
 
         $gatewayResponse = null;
 
-        $this->mutex->acquireAndRelease($this->getMandateUpdateMutexResource($token),
+        $this->mutex->acquireAndRelease($this->getTokenUpdateMutexResource($token),
             function() use ($gatewayData, $action, $gateway, $tokenTerminal) {
                 try
                 {
@@ -180,8 +181,8 @@ trait UpiRecurring
 
         $gatewayResponse = null;
 
-        $this->mutex->acquireAndRelease($this->getMandateUpdateMutexResource($token),
-            function() use ($gatewayData, $action, $gateway, $tokenTerminal) {
+        $this->mutex->acquireAndRelease($this->getMandateUpdateMutexResource($upiMandate),
+            function() use ($gatewayData, $action, $gateway, $tokenTerminal, $upiMandate) {
                 try
                 {
                     $gatewayResponse = $this->app['gateway']->call(
@@ -191,6 +192,10 @@ trait UpiRecurring
                         $this->mode,
                         $tokenTerminal);
 
+                    $upiMandate->setStatus(UpiMandate\Status::REVOKED);
+
+                    $this->repo->saveOrFail($upiMandate);
+
                     return
                         [
                             'success' => true,
@@ -198,8 +203,6 @@ trait UpiRecurring
                 }
                 catch (Exception\GatewayErrorException $exception)
                 {
-                    $this->trace->traceException($exception, Trace::INFO, TraceCode::GATEWAY_MANDATE_UPDATE_ERROR);
-
                     throw $exception;
                 }
             },
@@ -208,13 +211,34 @@ trait UpiRecurring
             20,
             1000,
             2000);
+    }
+
+    public function mandatePause($input, $upiMandate)
+    {
+        $upiMandate->setStatus(UpiMandate\Status::PAUSED);
+
+        $this->repo->saveOrFail($upiMandate);
 
         return ['success' => true];
     }
 
-    protected function getMandateUpdateMutexResource(Token\Entity $token): string
+    public function mandateResume($input, $upiMandate)
     {
-        return 'mandate_update_' . $token->getId();
+        $upiMandate->setStatus(UpiMandate\Status::CONFIRMED);
+
+        $this->repo->saveOrFail($upiMandate);
+
+        return ['success' => true];
+    }
+
+    protected function getTokenUpdateMutexResource(Token\Entity $token): string
+    {
+        return 'token_update_' . $token->getId();
+    }
+
+    protected function getMandateUpdateMutexResource(UpiMandate\Entity $upiMandate): string
+    {
+        return 'mandate_update_' . $upiMandate->getId();
     }
 
     protected function updateTokenOnAuthorizedForUpiRecurring(

@@ -33,6 +33,13 @@ trait RecurringTrait
         return $gateway->callback($input);
     }
 
+    protected function recurringMandateRevoke(array $input)
+    {
+        $gateway = $this->getMozartGatewayWithModeSet();
+
+        return $gateway->mandateRevoke($input);
+    }
+
     protected function firstDebit(array $input)
     {
         $gateway = $this->getMozartGatewayWithModeSet();

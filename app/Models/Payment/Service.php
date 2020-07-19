@@ -1092,6 +1092,28 @@ class Service extends Base\Service
         return $this->getNewProcessor($merchant)->mandateUpdateCallback($payment, $input);
     }
 
+    public function mandatePauseCallback($id, $input, $gateway)
+    {
+        $upiMandate = $this->repo->upi_mandate->findOrFail($id);
+
+        (new UpiMandate\Core())->validateUpiMandateForPause($upiMandate);
+
+        $this->merchant = $this->repo->merchant->findOrFail($upiMandate['merchant_id']);
+
+        return $this->getNewProcessor($this->merchant)->mandatePause($input, $upiMandate);
+    }
+
+    public function mandateResumeCallback($id, $input, $gateway)
+    {
+        $upiMandate = $this->repo->upi_mandate->findOrFail($id);
+
+        (new UpiMandate\Core())->validateUpiMandateForResume($upiMandate);
+
+        $this->merchant = $this->repo->merchant->findOrFail($upiMandate['merchant_id']);
+
+        return $this->getNewProcessor($this->merchant)->mandateResume($input, $upiMandate);
+    }
+
     public function unexpectedCallback(array $input, string $referenceId, string $gateway)
     {
         $isProduction = ($this->app->environment('production') === true);
@@ -2191,14 +2213,7 @@ class Service extends Base\Service
     {
         (new UpiMandate\Core())->validateUpiMandateForCancel($upiMandate);
 
-        $data = $this->getNewProcessor()->mandateCancel($id, $upiMandate, $token);
-
-        if ($data['success'] === true)
-        {
-            $upiMandate->setStatus(UpiMandate\Status::REVOKED);
-
-            $this->repo->saveOrFail($upiMandate);
-        }
+        return $this->getNewProcessor()->mandateCancel($id, $upiMandate, $token);
     }
 
     public function validateEntity(array $input)

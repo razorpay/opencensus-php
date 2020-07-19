@@ -872,6 +872,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_MANDATE_UPDATE_REQUEST                        = 'GATEWAY_MANDATE_UPDATE_REQUEST';
     const GATEWAY_MANDATE_UPDATE_RESPONSE                       = 'GATEWAY_MANDATE_UPDATE_RESPONSE';
     const GATEWAY_MANDATE_UPDATE_ERROR                          = 'GATEWAY_MANDATE_UPDATE_ERROR';
+    const GATEWAY_MANDATE_REVOKE_REQUEST                        = 'GATEWAY_MANDATE_REVOKE_REQUEST';
+    const GATEWAY_MANDATE_REVOKE_RESPONSE                       = 'GATEWAY_MANDATE_REVOKE_RESPONSE';
     const GATEWAY_PRE_AUTH_RESPONSE                             = 'GATEWAY_PRE_AUTH_RESPONSE';
     const GATEWAY_AUTHORIZE_ERROR                               = 'GATEWAY_AUTHORIZE_ERROR';
     const GATEWAY_VOID_RESPONSE                                 = 'GATEWAY_VOID_RESPONSE';
@@ -3040,6 +3042,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const UPI_MANDATE_CREATE_REQUEST                            = 'UPI_MANDATE_CREATE_REQUEST';
     const UPI_MANDATE_CREATED                                   = 'UPI_MANDATE_CREATED';
+    const UPI_MANDATE_STATUS_MISMATCH_FOR_PAUSE                 = 'UPI_MANDATE_STATUS_MISMATCH_FOR_PAUSE';
+    const UPI_MANDATE_STATUS_MISMATCH_FOR_RESUME                = 'UPI_MANDATE_STATUS_MISMATCH_FOR_RESUME';
 
     //payment config
     const CONFIG_CREATE_REQUEST                                 = 'CONFIG_CREATE_REQUEST';

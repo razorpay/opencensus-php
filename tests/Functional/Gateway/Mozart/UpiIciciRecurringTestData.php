@@ -20,4 +20,19 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED
         ]
     ],
+    'testRevokeCreatedMandate' => [
+        'response'  => [
+            'content'   => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_INVALID_TOKEN_FOR_CANCEL
+                ]
+            ],
+            'status_code'           => 400
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\BadRequestException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_INVALID_TOKEN_FOR_CANCEL,
+        ]
+    ],
 ];

@@ -641,6 +641,11 @@ class Gateway extends Base\Gateway
         $payment->saveOrFail();
     }
 
+    public function mandateCancel(array $input)
+    {
+        return $this->recurringMandateRevoke($input);
+    }
+
     public function verify(array $input)
     {
         parent::verify($input);
@@ -1044,9 +1049,28 @@ class Gateway extends Base\Gateway
 
         $decoded = json_decode($body, true);
 
-        if (($decoded !== null) and (isset($decoded['UMN']) === true))
+        if (($decoded !== null) and (isset($decoded[Fields::UMN]) === true))
         {
             $response = $this->parseGatewayResponse($body, false, $isUpiTransfer);
+
+            if (($this->isMandatePauseCallback($response) === true))
+            {
+                return [
+                    'upi_mandate' => [
+                        'umn'     => $response[Fields::UMN],
+                        'action'  => 'pause',
+                    ]
+                ];
+            }
+            else if ($this->isMandateResumeCallback($response) === true)
+            {
+                return [
+                    'upi_mandate' => [
+                        'umn'     => $response[Fields::UMN],
+                        'action'  => 'resume',
+                    ]
+                ];
+            }
         }
         else
         {
@@ -1072,6 +1096,26 @@ class Gateway extends Base\Gateway
         }
 
         return $response;
+    }
+
+    protected function isMandatePauseCallback($input)
+    {
+        if ((isset($input[Fields::TXN_STATUS]) === true) and ($input[Fields::TXN_STATUS] === Status::PAUSE_SUCCESS))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isMandateResumeCallback($input)
+    {
+        if ((isset($input[Fields::TXN_STATUS]) === true) and ($input[Fields::TXN_STATUS] === Status::RESUME_SUCCESS))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function getQrData(array $input)

@@ -1667,7 +1667,8 @@ class Gateway
      * @var array
      */
     public static $s2sMandateCallbackGateways = [
-        Gateway::UPI_MINDGATE
+        Gateway::UPI_MINDGATE,
+        Gateway::UPI_ICICI,
     ];
 
     /**

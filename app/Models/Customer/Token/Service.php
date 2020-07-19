@@ -85,9 +85,9 @@ class Service extends Base\Service
 
         $paymentServiceClass = new Payment\Service;
 
-        $paymentServiceClass->mandateCancel($id, $upiMandate, $token);
+        $response = $paymentServiceClass->mandateCancel($id, $upiMandate, $token);
 
-        return ['success' => true];
+        return $response;
     }
 
     /**

@@ -22,6 +22,7 @@ use RZP\Models\Payment\Gateway;
 use Exception as BaseException;
 use RZP\Models\Gateway\Downtime;
 use RZP\Gateway\Mozart as Mozart;
+use RZP\Models\UpiMandate\Entity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Upi\Base as BaseUpi;
 use RZP\Gateway\Upi\Base\ProviderCode;
@@ -79,6 +80,11 @@ class GatewayController extends Controller
         // Eg: gateway request needs to be decrypted, this shouldn't be direct method call
         // TODO: change this to utilize callGatewayFunction
         $input = $gateway->preProcessServerCallback($input, $gatewayDriver);
+
+        if (isset($input['upi_mandate']) === true)
+        {
+            return $this->processMandateServerCallback($input, $gatewayDriver);
+        }
 
         // TODO: this should also utilize callGatewayFunction, although we should have
         // used preProcessServerCallback itself to return it in some way
@@ -238,6 +244,36 @@ class GatewayController extends Controller
         }
 
         return $data;
+    }
+
+    protected function processMandateServerCallback($input, $gatewayDriver)
+    {
+        [$id, $mode] = $this->app['repo']->upi_mandate->determineIdAndLiveOrTestModeForEntityWithUMN($input['upi_mandate']['umn']);
+
+        if ($mode === null)
+        {
+            throw new Exception\LogicException(
+                'UMN not found in either database',
+                null,
+                [
+                    'gateway'    => $gatewayDriver,
+                    'umn'        => $input['umn'],
+                ]);
+        }
+        else
+        {
+            $this->app['basicauth']->setModeAndDbConnection($mode);
+
+            $id = Entity::getSignedId($id);
+
+            switch($input['upi_mandate']['action'])
+            {
+                case 'pause':
+                    return (new Payment\Service)->mandatePauseCallback($id, $input, $gatewayDriver);
+                case 'resume':
+                    return (new Payment\Service)->mandateResumeCallback($id, $input, $gatewayDriver);
+            }
+        }
     }
 
     protected function callbackEbs($input)

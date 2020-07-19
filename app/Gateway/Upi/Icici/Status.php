@@ -27,4 +27,8 @@ class Status
     const NO_RECORDS = 'original record not found';
 
     const NO_RECORDS2 = 'merchant tranid is not available';
+
+    const PAUSE_SUCCESS = 'SUSPEND-SUCCESS';
+
+    const RESUME_SUCCESS = 'REACTIVATE-SUCCESS';
 }
