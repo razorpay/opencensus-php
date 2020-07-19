@@ -204,7 +204,9 @@ class Table
     const CARDLESS_EMI          = 'cardless_emi';
 
     // Upi Related
-    const UPI_METADATA          = 'upi_metadata';
+    // UPI Metadata entity is now pointing to a new temporary table
+    // https://razorpay.slack.com/archives/C3BPZHG8P/p1594905339294000
+    const UPI_METADATA          = 'upi_metadata_new';
 
     // Sessions table
     const SESSION               = 'sessions';
