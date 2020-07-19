@@ -1794,6 +1794,7 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::PAYMENT_TIMED_OUT,
             [
+                'method'     => $method,
                 'total'      => $total,
                 'count'      => $count,
                 'error'      => $error,

@@ -226,6 +226,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const PAYMENT_TIMEOUT_FILE_BASED_DEBIT  = 2592000;  // 30 Days -- TODO: Reduce later
     const BASE_CURRENCY                     = 'base_currency';
     const PAYMENT_TIMEOUT_NACH              = 1728000;  // 20 Days
+    const PAYMENT_TIMEOUT_UPI_RECURRING     = 259200;   // 3 Days
 
     // payment services
     const API                               = 0;
@@ -3678,6 +3679,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         else if ($this->isNach() === true)
         {
             return self::PAYMENT_TIMEOUT_NACH;
+        }
+        else if ($this->isUpiAutoRecurring() === true)
+        {
+            return self::PAYMENT_TIMEOUT_UPI_RECURRING;
         }
 
         $autoRefundDelay = $this->merchant->getAutoRefundDelay();

@@ -244,6 +244,52 @@ class UpiRecurringPaymentSharpTest extends TestCase
         ], $metadata->toArray(), true);
     }
 
+    public function testCreateAutoRecurringPaymentTimeout()
+    {
+        $now = Carbon::now();
+
+        Carbon::setTestNow(Carbon::now()->subDays(2));
+
+        $mandate = $this->createFirstUpiRecurringPayment();
+
+        $payment = $this->getDefaultUpiRecurringPaymentArray();
+
+        $payment['token'] = $mandate->token->getPublicId();
+
+        $response = $this->doS2SRecurringPayment($payment);
+
+        $payment = $this->getDbLastPayment();
+
+        Carbon::setTestNow($now);
+
+        // We can see that payment is in fact one day older
+        $this->assertTrue($payment->getCreatedAt() < (time() - 86400));
+
+        $this->ba->cronAuth();
+
+        $response = $this->timeoutOldPayment();
+
+        // Not a single payment timed out
+        $this->assertSame(0, $response['count']);
+
+        $payment->refresh();
+        // it is still created
+        $this->assertTrue($payment->isCreated());
+
+        // Now mark payment order than three days by just one secound
+        $payment->setCreatedAt(Carbon::now()->subSeconds(259201)->getTimestamp());
+        $payment->saveOrFail();
+
+        $response = $this->timeoutOldPayment();
+
+        // Not a single payment timed out
+        $this->assertSame(1, $response['count']);
+
+        $payment->refresh();
+        $this->assertTrue($payment->isFailed());
+        $this->assertSame('BAD_REQUEST_PAYMENT_TIMED_OUT', $payment->getInternalErrorCode());
+    }
+
     public function testRevokeMandate()
     {
         $mandate = $this->createFirstUpiRecurringPayment();
