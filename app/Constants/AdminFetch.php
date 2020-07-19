@@ -2671,6 +2671,18 @@ class AdminFetch
                     Fetch::TYPE     => Fetch::TYPE_STRING,
                 ],
             ],
+
+            Entity::UPI_MANDATE => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'order_id' => [
+                    Fetch::LABEL  => 'Order Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'token_id' => [
+                    Fetch::LABEL  => 'Token Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
         ];
 
         //

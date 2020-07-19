@@ -200,6 +200,14 @@ return [
         ],
     ],
 
+    E::UPI_MANDATE => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' => '10000000000000'
+            ],
+        ],
+    ],
+
     E::COUPON => [
         Type::PRIVILEGE_AUTH => [
             [

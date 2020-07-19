@@ -536,6 +536,7 @@ class Entity
         self::PAYMENT_META              => \RZP\Models\Payment\PaymentMeta::class,
         self::UPI_METADATA              => \RZP\Models\Payment\UpiMetadata::class,
         self::MERCHANT_ATTRIBUTE        => \RZP\Models\Merchant\Attribute::class,
+        self::UPI_MANDATE               => \RZP\Models\UpiMandate::class,
 
         //ondemand
         self::SETTLEMENT_ONDEMAND_FUND_ACCOUNT  => \RZP\Models\Settlement\OndemandFundAccount::class,
