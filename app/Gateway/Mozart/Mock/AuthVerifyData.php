@@ -51,6 +51,29 @@ class AuthVerifyData extends Base\Mock\Server
         return $response;
     }
 
+    public function upi_icici($entities)
+    {
+        $response = [
+            'next'              => [],
+            'error'             => null,
+            'success'           => true,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'data'              => [
+                '_raw'            => 'dummy_raw_value',
+                'paymentId'       => $entities['payment']['id'],
+                'bank_payment_id' => '999999',
+                'amount'          => $entities['payment']['amount'],
+                'status'          => 'callback_successful',
+                'umn'             => '989892819',
+                'rrn'             => '012345678912',
+                'npci_txn_id'     => 'HDFC00001124',
+            ],
+        ];
+
+        return $response;
+    }
+
     public function wallet_paypal($entities)
     {
         try

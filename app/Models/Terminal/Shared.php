@@ -92,6 +92,7 @@ class Shared
     const UPI_MINDGATE_SBI_INTENT_TERMINAL   = '100UPIIntMgSbi';
     const UPI_MINDGATE_RECURRING_TERMINAL    = '100MgateRcrTml';
     const UPI_ICICI_RAZORPAY_TERMINAL        = '100UPIICICITml';
+    const UPI_ICICI_RECURRING_TERMINAL       = '100IciciRcrTml';
     const UPI_ICICI_TPV_TERMINAL             = '100UPIICTpvTml';
     const UPI_AXIS_RAZORPAY_TERMINAL         = '100UPIAXISTmnl';
     const UPI_RBL_RAZORPAY_TERMINAL          = '100UPIRBLTrmnl';

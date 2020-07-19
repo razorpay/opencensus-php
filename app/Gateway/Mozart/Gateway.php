@@ -1571,6 +1571,12 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY  =>  Action::PAY_INIT,
                 Action::VERIFY      =>  Action::PAY_VERIFY,
             ],
+            Payment\Gateway::UPI_ICICI => [
+                Action::AUTH_INIT         => null,
+                Action::AUTH_VERIFY       => null,
+                Action::PAY_INIT          => null,
+                Action::PAY_VERIFY        => null,
+            ],
         ];
 
         return $previousActionForStep[$gateway][$this->action];
@@ -1725,6 +1731,12 @@ class Gateway extends Base\Gateway
                 Action::PAY_INIT    =>  null,
                 Action::PAY_VERIFY  =>  Action::AUTHORIZE,
                 Action::VERIFY      =>  Action::AUTHORIZE,
+            ],
+            Payment\Gateway::UPI_ICICI => [
+                Action::AUTH_INIT         => null,
+                Action::AUTH_VERIFY       => null,
+                Action::PAY_INIT          => null,
+                Action::PAY_VERIFY        => null,
             ],
         ];
 
@@ -2034,6 +2046,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::UPI_JUSPAY,
             Payment\Gateway::UPI_SBI,
             Payment\Gateway::UPI_MINDGATE,
+            Payment\Gateway::UPI_ICICI,
             Payment\Gateway::WALLET_PHONEPE,
             Payment\Gateway::WALLET_PHONEPESWITCH,
             Payment\Gateway::WALLET_PAYPAL,
@@ -2134,22 +2147,15 @@ class Gateway extends Base\Gateway
         }
         if ($this->isFirstUpiRecurringPayment($input['payment']) === true)
         {
-            if ($input['gateway']['redirect']['mandateDtls'][0]['mandateType'] === 'CREATE')
+            if (($input['payment']['gateway'] === Payment\Gateway::UPI_MINDGATE) and
+                ($input['gateway']['redirect']['mandateDtls'][0]['mandateType'] === 'CREATE'))
             {
-                $response = [
-                    'acquirer' => [
-                        Payment\Entity::VPA         => $mozartResponse['data']['vpa'] ?? $input['payment']['vpa'] ?? null,
-                        Payment\Entity::REFERENCE16 => $mozartResponse['data']['rrn'] ?? null,
-                    ],
-                    'mandate' => [
-                        'order_id'      => $input['payment']['order_id'],
-                        'status'        => 'confirmed',
-                        'umn'           => $mozartResponse['data']['umn'] ?? null,
-                        'npci_txn_id'   => $mozartResponse['data']['npci_txn_id'] ?? null,
-                        'rrn'           => $mozartResponse['data']['rrn'] ?? null,
-                    ],
-                    'upi' => array_only($mozartResponse['data'], (new UpiEntity())->getFillable()),
-                ];
+                $response = $this->getMandateCreateResponseData($input, $mozartResponse);
+
+            }
+            else if ($input['payment']['gateway'] === Payment\Gateway::UPI_ICICI)
+            {
+                $response = $this->getMandateCreateResponseData($input, $mozartResponse);
             }
             else
             {
@@ -2178,6 +2184,27 @@ class Gateway extends Base\Gateway
 
         return $response;
     }
+
+    protected function getMandateCreateResponseData($input, $mozartResponse)
+    {
+        $response = [
+            'acquirer' => [
+                Payment\Entity::VPA         => $mozartResponse['data']['vpa'] ?? $input['payment']['vpa'] ?? null,
+                Payment\Entity::REFERENCE16 => $mozartResponse['data']['rrn'] ?? null,
+            ],
+            'mandate' => [
+                'order_id'      => $input['payment']['order_id'],
+                'status'        => 'confirmed',
+                'umn'           => $mozartResponse['data']['umn'] ?? null,
+                'npci_txn_id'   => $mozartResponse['data']['npci_txn_id'] ?? null,
+                'rrn'           => $mozartResponse['data']['rrn'] ?? null,
+            ],
+            'upi' => array_only($mozartResponse['data'], (new UpiEntity())->getFillable()),
+        ];
+
+        return $response;
+    }
+
 
     protected function checkTpvAndModifyOrder(& $content, $input)
     {

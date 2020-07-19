@@ -746,4 +746,47 @@ class PayInitData extends Base\Mock\Server
 
         return $response;
     }
+
+    public function upi_icici($entities)
+    {
+        $response = [
+            'data' =>
+                [
+                    'errCode'               => "MD200",                               // UPI Switch/NPCI Error code
+                    'gateway_payment_id'    => "HDFA3D2FF1416365154E0535DB2E20A9668", // txnId
+                    'npci_reference_id'     => "011300040570",                        // custRefNo
+                    'vpa'                   => $entities['payment']['vpa'] ?? 'some@hdfcbank',           // payerVPA
+                    'mandateStatus'         => 'PENDING',
+                    'reqStatus'             => 'S',
+                    'message'               => 'Mandate Request Initiated to NPCI',
+                    'payerVPA'              => 'testvpa@yesb',
+                    'payeeVPA'              => 'india.uber@hdfcbank',
+                    'credAcc'               => '01601200021634',
+                    'endDate'               => '26 Jul 2019',
+                    'txnId'                 => 'HDF542de25ds56ad9896ac96cef89475623',
+                    'creditIFSC'            => 'HDFC0000160',
+                    'mcc'                   => '4121',
+                    'startDate'             => '24 Jul 2019',
+                    '_raw' => '{"status": "S","statusDesc": "Mandate request initiated successfully","errCode": "MD200","mandateDtls": [{"payeeName": "Razorpay","errCode": "MD200","mcc": "6012","remRecuCount": 0,"payType": "P2M","show_QR": "N","message": "Mandate Request Initiated to NPCI","is_verified": true,"requestDate": "22 Apr 2020 12:56 AM","txnId": "HDFA3D2FF1416365154E0535DB2E20A9668","remarks": "Mandate Create","startDate": "22 Apr 2020","nextRecurDate": "Apr 22, 2020","endDate": "22 Apr 2020","ref_url": "https://mer.invoice.com/upi/3ddsfsdg","amount": "1.52","purpose_code": "00","custRefNo": "011300040570","referenceNumber": "CyAtSQ3u000203","payerName": "Customer","create_date_time": "22 Apr 2020 12:56 AM","initiatedBy": "PAYEE","frequency": "ONETIME","payerVPA": "jahangirali@hdfcbank","creditIfsc": "HDFC0004272","onBehalf_Of": "PAYEE","amt_rule": "MAX","name": "Mandate","status": "PENDING","crediAccount": "50100100670996","noOfDebit": 1,"mandateType": "CREATE","isRevokeable": "N","payeeVPA": "razorpay01@hdfcbank","blockFund": "Y"}],"requestInfo": {"pgMerchantId": "HDFC000000000054","pspRefNo": "CyAtSQ3u000203"}}',
+                ],
+            'error' => null,
+            'success' => true,
+            'mozart_id' => '',
+            'external_trace_id' => '',
+        ];
+
+        switch ($entities['payment']['description'])
+        {
+            case 'mandateCreateFailed':
+                $response['success'] = false;
+                $response['error'] = [
+                    'gateway_error_code' => 'QN',
+                    'gateway_error_description' => 'DUPLICATE MANDATE REQUEST',
+                    'internal_error_code' => 'GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST'
+                ];
+                break;
+        }
+
+        return $response;
+    }
 }

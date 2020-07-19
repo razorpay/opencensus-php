@@ -32,6 +32,8 @@ use RZP\Models\Payment\Verify\Action as VerifyAction;
 class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
+    use Base\RecurringTrait;
+    use Base\MandateTrait;
 
     /**
      * Default request timeout duration in seconds.
@@ -88,6 +90,19 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::action($input, Action::AUTHENTICATE);
+
+        if ($this->isFirstRecurringPayment($input) === true)
+        {
+            $data = $this->getGatewayEntityAttributes($input);
+
+            $gatewayPayment = $this->createGatewayPaymentEntity($data, Action::AUTHENTICATE);
+
+            $response = $this->authorizeRecurring($input);
+
+            $this->updateGatewayPaymentResponse($gatewayPayment, $response['upi']);
+
+            return $response;
+        }
 
         if (($this->isBharatQrPayment() === true) or
             ($this->isUpiTransferPayment() === true))
@@ -1022,7 +1037,21 @@ class Gateway extends Base\Gateway
      */
     public function preProcessServerCallback($body, $isBharatQr = false, bool $isUpiTransfer = false): array
     {
-        $response = $this->parseGatewayResponse($body, true, $isUpiTransfer);
+        // This is a temporary check added to handle recurring callbacks. For normal payments, we get a normal string
+        // in callback, whereas for recurring we get json. Currently, there is no encryption for recurring, so we need
+        // to check the callback. We are checking if we are getting json response and UMN field (which we get only for
+        // recurring). If yes, then we process recurring callback, otherwise normal.
+
+        $decoded = json_decode($body, true);
+
+        if (($decoded !== null) and (isset($decoded['UMN']) === true))
+        {
+            $response = $this->parseGatewayResponse($body, false, $isUpiTransfer);
+        }
+        else
+        {
+            $response = $this->parseGatewayResponse($body, true, $isUpiTransfer);
+        }
 
         $traceResponse = $this->maskUpiDataForTracing($response, [
             Entity::VPA             => Fields::PAYER_VA,
@@ -1109,6 +1138,17 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        if ($this->isFirstUpiRecurringPayment($input['payment']) === true)
+        {
+            $response = $this->recurringMandateCreateCallback($input);
+
+            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHENTICATE);
+
+            $this->updateGatewayPaymentResponse($gatewayPayment, $response['upi']);
+
+            return $response;
+        }
+
         $content = $input['gateway'];
 
         $status = $content[Fields::TXN_STATUS];
@@ -1152,6 +1192,21 @@ class Gateway extends Base\Gateway
                 Payment\Entity::REFERENCE16 => $gatewayPayment->getNpciReferenceId(),
             ]
         ];
+    }
+
+    public function debit(array $input)
+    {
+        parent::debit($input);
+
+        $data = $this->getGatewayEntityAttributes($input);
+
+        $gatewayPayment = $this->createGatewayPaymentEntity($data, Action::AUTHORIZE);
+
+        $response = $this->firstDebit($input);
+
+        $this->updateGatewayPaymentResponse($gatewayPayment, $response['upi']);
+
+        return $response;
     }
 
     public function refund(array $input)

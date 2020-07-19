@@ -1422,6 +1422,7 @@ class Gateway
         Gateway::UPI_MINDGATE,
         Gateway::NACH_CITI,
         Gateway::AMEX,
+        Gateway::UPI_ICICI,
     ];
 
     public static $upiRecurringGateways = [
