@@ -16,7 +16,6 @@ use RZP\Tests\Functional\Helpers\PaymentsUpiRecurringTrait;
 class UpiIciciRecurringTest extends TestCase
 {
     use PaymentTrait;
-    use DbEntityFetchTrait;
     use PaymentsUpiRecurringTrait;
 
     protected $payment;
