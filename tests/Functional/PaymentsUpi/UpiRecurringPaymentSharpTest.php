@@ -139,8 +139,16 @@ class UpiRecurringPaymentSharpTest extends TestCase
         $orderId = $this->createUpiOrder();
 
         $payment['order_id'] = $orderId;
-
         unset($payment['vpa']);
+
+        // The request which we have sent to create the reminder
+        $createReminder = null;
+
+        $this->mockReminderService('createReminder',
+            function($request, $merchantId) use (& $createReminder)
+            {
+                $createReminder = $request;
+            });
 
         $response = $this->doS2SRecurringPayment($payment);
 
@@ -148,11 +156,92 @@ class UpiRecurringPaymentSharpTest extends TestCase
 
         $payment = $this->getDbLastPayment();
 
+        // Now we can assert the request to RS
+        $this->assertArraySubset([
+            'namespace'     => 'upi_auto_recurring',
+            'entity_id'     => $payment->getId(),
+            'entity_type'   => 'payment',
+            'callback_url'  => 'reminders/send/test/payment/upi_auto_recurring/' . $payment->getId(),
+        ], $createReminder, true);
+
         $this->assertArraySubset([
             'terminal_id'   => '1000SharpTrmnl',
             'status'        => 'created',
             'verify_at'     => null,
-        ], $payment->toArray());
+        ], $payment->toArray(), true);
+
+        $metadata = $payment->getUpiMetadata();
+
+        $this->assertArraySubset([
+            'type'              => 'recurring',
+            'flow'              => 'collect',
+            'mode'              => 'auto',
+            'reference'         => null,
+            'rrn'               => null,
+            'umn'               => null,
+            'npci_txn_id'       => null,
+            'internal_status'   => 'reminder_in_progress_for_pre_debit',
+            'reminder_id'       => 'TestReminderId',
+            'remind_at'         => $createReminder['reminder_data']['remind_at']
+        ], $metadata->toArray(), true);
+
+        // Update reminder call to RS
+        $updateReminder = null;
+
+        // In the call from reminder service, an updateReminder function will be called
+        $this->mockReminderService('updateReminder',
+            function($request, $merchantId) use (& $updateReminder)
+            {
+                $updateReminder = $request;
+            });
+
+        // Now we will initiate the reminder
+        $response = $this->sendReminderRequest($createReminder);
+        $this->assertTrue($response['success']);
+
+        $metadata->refresh();
+
+        $this->assertArraySubset([
+            'type'              => 'recurring',
+            'flow'              => 'collect',
+            'mode'              => 'auto',
+            'reference'         => 'preDebitReference',
+            'rrn'               => null,
+            'umn'               => $mandate->umn,
+            'npci_txn_id'       => null,
+            'internal_status'   => 'reminder_in_progress_for_authorize',
+            'reminder_id'       => 'TestReminderId',
+            'remind_at'         => $updateReminder['reminder_data']['remind_at']
+        ], $metadata->toArray(), true);
+
+        $response = $this->sendReminderRequest($updateReminder);
+        $this->assertTrue($response['success']);
+
+        $payment->refresh();
+
+        $this->assertArraySubset([
+            'terminal_id'   => '1000SharpTrmnl',
+            'status'        => 'captured',
+            'verify_at'     => null,
+            'refund_at'     => null,
+            'reference16'   => '001000100001',
+            'vpa'           => 'success@razorpay',
+        ], $payment->toArray(), true);
+
+        $metadata->refresh();
+
+        $this->assertArraySubset([
+            'type'              => 'recurring',
+            'flow'              => 'collect',
+            'mode'              => 'auto',
+            'reference'         => 'preDebitReference',
+            'rrn'               => '001000100001',
+            'umn'               => $mandate->umn,
+            'npci_txn_id'       => 'npci_txn_id_for_' . $payment->getId(),
+            'internal_status'   => 'authorized',
+            'reminder_id'       => 'TestReminderId',
+            'remind_at'         => null,
+        ], $metadata->toArray(), true);
     }
 
     public function testRevokeMandate()

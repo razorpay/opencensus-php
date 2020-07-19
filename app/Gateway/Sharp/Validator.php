@@ -11,4 +11,13 @@ class Validator extends Base\Validator
         Fields::AMOUNT    => 'required|integer|min:0',
         Fields::REFERENCE => 'required|string|size:17',
     ];
+
+    protected static $preDebitRules = [
+        'action'            => 'required|string',
+        'gateway'           => 'required|string',
+        'terminal'          => 'required',
+        'payment'           => 'required',
+        'upi_mandate'       => 'required',
+        'upi_metadata'      => 'required',
+    ];
 }

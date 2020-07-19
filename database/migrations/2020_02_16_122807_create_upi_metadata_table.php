@@ -47,6 +47,9 @@ class CreateUpiMetadataTable extends Migration
             $table->string(Entity::REFERENCE, 100)
                   ->nullable();
 
+            $table->string(Entity::NPCI_TXN_ID, 100)
+                  ->nullable();
+
             $table->char(Entity::RRN, 12)
                 ->nullable();
 

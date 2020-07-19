@@ -18,4 +18,13 @@ class Validator extends Base\Validator
         Entity::EXPIRY_TIME => 'sometimes|integer|between:5,5760|filled',
         Entity::PROVIDER    => 'sometimes|string',
     ];
+
+    protected static $editRules = [
+        Entity::VPA         => 'sometimes|string',
+        Entity::NPCI_TXN_ID => 'sometimes|string',
+        Entity::REFERENCE   => 'sometimes|string',
+        Entity::RRN         => 'sometimes|string',
+        Entity::UMN         => 'sometimes|string',
+        Entity::REMIND_AT   => 'sometimes|epoch',
+    ];
 }

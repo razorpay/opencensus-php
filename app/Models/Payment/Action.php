@@ -20,6 +20,7 @@ class Action
     const VOID                          = 'void';
     const REVERSE                       = 'reverse';
     const TOPUP                         = 'topup';
+    const PRE_DEBIT                     = 'pre_debit';
     const DEBIT                         = 'debit';
     const VERIFY                        = 'verify';
     const VERIFY_INTERNAL_REFUND        = 'verify_internal_refund';

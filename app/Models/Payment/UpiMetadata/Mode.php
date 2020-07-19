@@ -1,0 +1,12 @@
+<?php
+
+namespace RZP\Models\Payment\UpiMetadata;
+
+class Mode
+{
+    const BHARAT_QR = 'bharat_qr';
+    const UPI_QR    = 'upi_qr';
+
+    // For auto recurring payments
+    const AUTO      = 'auto';
+}

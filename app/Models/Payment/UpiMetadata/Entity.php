@@ -25,7 +25,8 @@ class Entity extends Base\PublicEntity
     const REMIND_AT                 = 'remind_at';
 
     // Constants
-    const UPI_METADATA = 'upi_metadata';
+    const UPI_METADATA              = 'upi_metadata';
+    const PAYMENT                   = 'payment';
 
     // 90 days, in seconds
     const DEFAULT_OTM_EXECUTION_RANGE = 7776000;
@@ -44,6 +45,10 @@ class Entity extends Base\PublicEntity
         self::VPA,
         self::EXPIRY_TIME,
         self::PROVIDER,
+        self::REFERENCE,
+        self::NPCI_TXN_ID,
+        self::UMN,
+        self::RRN,
     ];
 
     protected $visible = [
@@ -199,7 +204,7 @@ class Entity extends Base\PublicEntity
 
     public function setMode(string $mode)
     {
-        return $this->setAttribute(self::TYPE, $mode);
+        return $this->setAttribute(self::MODE, $mode);
     }
 
     public function setStartTime(int $time)
@@ -324,5 +329,10 @@ class Entity extends Base\PublicEntity
     public function isOtmIntent()
     {
         return (($this->isTypeOtm() === true) and ($this->isFlowIntent() === true));
+    }
+
+    public function isInternalStatus(string $status): bool
+    {
+        return ($this->getInternalStatus() === $status);
     }
 }

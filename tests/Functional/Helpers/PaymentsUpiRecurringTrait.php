@@ -2,12 +2,16 @@
 
 namespace RZP\Tests\Functional\Helpers;
 
+use Mockery;
 use Carbon\Carbon;
 use RZP\Models\UpiMandate;
+use RZP\Services\Mock\Reminders;
 
 trait PaymentsUpiRecurringTrait
 {
     use DbEntityFetchTrait;
+
+    protected $mockedReminderService;
 
     protected function createUpiRecurringOrder(array $override = [])
     {
@@ -109,5 +113,51 @@ trait PaymentsUpiRecurringTrait
         }
 
         return $mandate;
+    }
+
+    protected function mockReminderService(string $method, callable $assert = null, callable $response = null)
+    {
+        if (empty($this->mockedReminderService))
+        {
+            $this->mockedReminderService = Mockery::mock(Reminders::class)->makePartial();
+        }
+
+        if (is_null($assert) === true)
+        {
+            $assert = function($param1, $param2 = null, $param3 = null)
+            {
+                $this->assertTrue(is_array($param1));
+            };
+        }
+
+        if (is_null($response) === true)
+        {
+            $response = function()
+            {
+                return 'TestReminderId';
+            };
+        }
+
+        $this->mockedReminderService->shouldReceive($method)
+            ->andReturnUsing(function($request, $merchantId) use ($assert, $response)
+            {
+                $assert($request, $merchantId);
+
+                return ['id' => $response()];
+            });
+
+        $this->app->instance('reminders', $this->mockedReminderService);
+    }
+
+    protected function sendReminderRequest($reminder)
+    {
+        $request = [
+            'url'       => '/v1/' . $reminder['callback_url'],
+            'method'    => 'post',
+            'content'   => [],
+        ];
+
+        $this->ba->appAuth('rzp_test', 'api');
+        return $this->makeRequestAndGetContent($request);
     }
 }

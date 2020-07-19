@@ -3627,7 +3627,7 @@ class Processor
 
         // UPI recurring payment when created are supposed to be left in created state
         // We will set a instantaneous reminder, which will process the payment state
-        if ($payment->isUpi() and $payment->isSecondRecurring())
+        if ($this->shouldHitGatewayForAutoRecurringForUpi($payment, $gatewayInput) === false)
         {
             return false;
         }

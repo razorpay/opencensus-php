@@ -8,12 +8,78 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
+use RZP\Models\Merchant;
+use RZP\Services\Reminders;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Customer\Token;
+use RZP\Models\Payment\UpiMetadata;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Reminders\ReminderProcessor;
+use RZP\Models\UpiMandate\Entity as Mandate;
 
 trait UpiRecurring
 {
+    public function processAutoRecurringPreDebitForUpi(Payment\Entity $payment)
+    {
+        $mandate = $this->repo->upi_mandate->findByTokenId($payment->getTokenId());
+
+        $this->validateAutoRecurringForUpiBeforePreDebit($payment, $mandate);
+
+        $input = [
+            'action'        => Payment\Action::PRE_DEBIT,
+            'gateway'       => $payment->getGateway(),
+            'terminal'      => $payment->terminal,
+            'upi_mandate'   => $mandate,
+            'payment'       => $payment,
+            'upi_metadata'  => $payment->getUpiMetadata(),
+        ];
+
+        $this->mutex->acquireAndRelease($payment->getId(),
+            function() use ($input, $payment, $mandate) {
+                try
+                {
+                    // Before making gateway call, we will change the status
+                    $metadata = $payment->getUpiMetadata();
+                    $metadata->setInternalStatus(UpiMetadata\InternalStatus::PRE_DEBIT_INITIATED);
+                    $this->repo->saveOrFail($metadata);
+
+
+                    $gatewayResponse = $this->app['gateway']->call(
+                        $input['gateway'],
+                        $input['action'],
+                        $input,
+                        $this->mode,
+                        $input['terminal']);
+
+                    return $this->processPreDebitGatewaySuccess($payment, $mandate, $gatewayResponse);
+                }
+                catch (Exception\GatewayErrorException $exception)
+                {
+                    return $this->processPreDebitGatewayFailure($payment, $mandate, $exception);
+                }
+            },
+            60,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
+            20,
+            1000,
+            2000);
+    }
+
+    public function processAutoRecurringAuthorizeForUpi(Payment\Entity $payment)
+    {
+        $mandate = $this->repo->upi_mandate->findByTokenId($payment->getTokenId());
+
+        $input = [];
+        $gatewayInput = [
+            'selected_terminal_ids' => [$payment->getTerminalId()],
+            'upi_mandate'           => $mandate->toArray(),
+        ];
+
+        $this->modifyAutoRecurringForUpiIfApplicable($payment, $input, $gatewayInput);
+
+        $this->gatewayRelatedProcessing($payment, [], $gatewayInput);
+    }
+
     public function mandateUpdate($customerId, $token, array $input)
     {
         $action = Payment\Action::MANDATE_UPDATE;
@@ -346,7 +412,12 @@ trait UpiRecurring
         //TODO:: This has to be added in the auto recurring PR for upi.
     }
 
-    protected function modifyAutoRecurringForUpiIfApplicable(Entity $payment, array $data = null, array $input = [])
+    protected function validateAutoRecurringForUpiBeforePreDebit(Entity $payment, Mandate $mandate)
+    {
+        // TODO: Add predebit validation, these will go as logic exception for now
+    }
+
+    protected function modifyAutoRecurringForUpiIfApplicable(Entity $payment, array & $input, array & $gatewayInput)
     {
         // Do nothing for other payments
         if ($payment->isUpiAutoRecurring() === false)
@@ -359,19 +430,53 @@ trait UpiRecurring
         {
             $payment->setNonVerifiable();
         }
+
+        $metadata = $this->getUpiMetadataForPayment($payment);
+
+        if ($metadata->exists === false)
+        {
+            $metadata->setMode(UpiMetadata\Mode::AUTO);
+            $metadata->setType(UpiMetadata\Type::RECURRING);
+
+            // Adding 30 seconds as buffer
+            $metadata->setRemindAt($metadata->freshTimestamp() + 30);
+            $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_PENDING_FOR_PRE_DEBIT);
+        }
+
+        // Now for gateway input part, we need to attack extra fields to the upi block
+        $gatewayInput['upi'] = $metadata->toArray();
     }
 
-    protected function shouldAutoReccuringAuthorizedForUpi(Entity $payment, array $data): bool
+    protected function shouldHitGatewayForAutoRecurringForUpi(Entity $payment, array $gatewayInput)
     {
-        // Any payment which is not UPI Auto Recurring can be authorized
-        if (($payment->isUpiAutoRecurring()) === false)
+        if ($payment->isUpiAutoRecurring() === false)
         {
             return true;
         }
 
+        $metadata = $this->getUpiMetadataForPayment($payment);
+
+        if ($metadata->isInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_AUTHORIZE))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function shouldAutoReccuringSkipAuthorizeForUpi(Entity $payment, array $data): bool
+    {
+        // Any payment which is not UPI Auto Recurring can be authorized
+        if (($payment->isUpiAutoRecurring()) === false)
+        {
+            return false;
+        }
+
         // Data will be empty when gateway call is not made, or there is some issue with gateway integration
         // In both cases we can leave the payment in created state, it can be picked again by cron
-        if (empty($data) === true)
+        $metadata = $this->getUpiMetadataForPayment($payment);
+
+        if ($metadata->isInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_AUTHORIZE))
         {
             return false;
         }
@@ -379,10 +484,160 @@ trait UpiRecurring
         return true;
     }
 
+    // Now since we are going to create an auto recurring payment, the flow goes like this.
+    // 1. First we will have payment created
+    // 2. We will make a RS call and get the reminder_id
     protected function processAutoRecurringCreatedForUpi(Entity $payment, array $data)
     {
-        // What to process here?
+        $metadata = $payment->getUpiMetadata();
+
+        // Make actual call to create a reminder
+        $reminderId = $this->setUpiAutoRecurringReminder($metadata);
+
+        if (empty($reminderId) === false)
+        {
+            $metadata->setReminderId($reminderId);
+            $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_PRE_DEBIT);
+
+            $this->repo->saveOrFail($metadata);
+        }
 
         return ['razorpay_payment_id' => $payment->getPublicId()];
+    }
+
+    protected function processPreDebitGatewaySuccess(Entity $payment, Mandate $mandate, array $response)
+    {
+        $metadata = $payment->getUpiMetadata();
+
+        $metadata->edit($response['upi']);
+
+        $reminderId = $this->setUpiAutoRecurringReminder($metadata);
+
+        if (empty($reminderId) === false)
+        {
+            $metadata->setReminderId($reminderId);
+            $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_AUTHORIZE);
+        }
+        else
+        {
+            $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_PENDING_FOR_AUTHORIZE);
+        }
+
+        $this->repo->save($metadata);
+
+        return true;
+    }
+
+    protected function processPreDebitGatewayFailure(
+        Entity $payment,
+        Mandate $mandate,
+        Exception\GatewayErrorException $exception)
+    {
+        $response = $exception->getData();
+
+        $metadata = $payment->getUpiMetadata();
+
+        $upiEdit = array_only($response['upi'], $metadata->getFillable());
+
+        $metadata->edit($upiEdit);
+
+        $reminderId = $this->setUpiAutoRecurringReminder($metadata);
+
+        if (empty($reminderId) === false)
+        {
+            $metadata->setReminderId($reminderId);
+            $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_PENDING_FOR_PRE_DEBIT);
+        }
+        else
+        {
+            $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_PRE_DEBIT);
+        }
+
+        $this->repo->save($metadata);
+
+        return true;
+    }
+
+    protected function updateUpiMetadataOnAuthorized(Entity $payment, array $data)
+    {
+        // If not UPI, nothing to be done
+        if ($payment->isUpi() === false)
+        {
+            return;
+        }
+
+        if (isset($data['upi']) === false)
+        {
+            if ($payment->isUpiAutoRecurring() === true)
+            {
+                throw new Exception\LogicException('UPI auto recurring must have upi block in response');
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        // now we can simply update the upi block
+        $metadata = $payment->getUpiMetadata();
+
+        $upiEdit = array_only($data['upi'], $metadata->getFillable());
+
+        $metadata->edit($upiEdit);
+        $metadata->setInternalStatus(UpiMetadata\InternalStatus::AUTHORIZED);
+        $metadata->setRemindAt(null);
+
+        $this->repo->saveOrFail($metadata);
+    }
+
+    protected function setUpiAutoRecurringReminder(UpiMetadata\Entity $metadata)
+    {
+        $reminderId = $metadata->getReminderId();
+
+        $reminderData = [
+            'remind_at' => $metadata->getRemindAt(),
+        ];
+
+        $namespace  = ReminderProcessor::UPI_AUTO_RECURRING;
+        $paymentId  = $metadata->getPaymentId();
+        $merchantId = Merchant\Account::SHARED_ACCOUNT;
+        $url = sprintf('reminders/send/%s/payment/%s/%s', $this->mode, $namespace, $paymentId);
+
+        $request = [
+            'namespace'     => $namespace,
+            'entity_id'     => $paymentId,
+            'entity_type'   => UpiMetadata\Entity::PAYMENT,
+            'reminder_data' => $reminderData,
+            'callback_url'  => $url,
+        ];
+
+        $response = [];
+
+        try
+        {
+            // Reminder was never created
+            if (empty($reminderId) === false)
+            {
+                $response = $this->app['reminders']->updateReminder($request, $reminderId, $merchantId);
+            }
+            else
+            {
+                $response = $this->app['reminders']->createReminder($request, $merchantId);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            // We will have fallback for reminder failures, thus no need to throw exception
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::REMINDERS_RESPONSE,
+                [
+                    'request'           => $request,
+                    'merchant_id'       => $merchantId,
+                ]);
+        }
+
+        return array_get($response, Entity::ID);
     }
 }

@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Sharp;
 
 use Crypt;
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\GooglePay\Action;
@@ -57,6 +58,21 @@ class Gateway extends Base\Gateway
             }
             else if ($input['payment']['method'] === 'upi')
             {
+                if (($input['upi']['internal_status'] === 'authorize_initiated') or
+                    ($input['upi']['internal_status'] === 'reminder_in_progress_for_authorize'))
+                {
+                    // Handle failure here
+                    return [
+                        'acquirer' => [
+                            'vpa'           => $input['payment']['vpa'],
+                            'reference16'   => '001000100001',
+                        ],
+                        'upi'   => [
+                            'rrn'           => '001000100001',
+                            'npci_txn_id'   => 'npci_txn_id_for_' . $input['payment']['id'],
+                        ],
+                    ];
+                }
                 throw new Exception\LogicException('No gateway call for upi second recurring');
             }
 
@@ -471,6 +487,30 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA);
         }
+    }
+
+    public function preDebit(array $input): array
+    {
+        (new Validator)->validateInput('pre_debit', $input);
+
+        $descripion = $input['payment']['desctiption'];
+
+        // Handle failures for pre debit on description
+
+        $mandate = $input['upi_mandate'];
+
+        return [
+            // Data which is needed for mandate
+            'upi_mandate'   => [],
+            // Data which is needed for UPI Metadata
+            'upi'           => [
+                'vpa'               => $input['payment']['vpa'],
+                'reference'         => 'preDebitReference',
+                'umn'               => $mandate['umn'],
+                // For Sharp Gateway, webhook will be almost instantaneous
+                'remind_at'         => Carbon::now()->addSeconds(30)->getTimestamp(),
+            ],
+        ];
     }
 
     protected function verifyPaymentCreateResponse($input)

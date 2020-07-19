@@ -204,4 +204,29 @@ trait UpiTrait
             }
         }
     }
+
+    /**
+     * @param Payment\Entity $payment
+     * @param bool $strict
+     * @return Entity
+     * @throws Exception\LogicException
+     */
+    protected function getUpiMetadataForPayment(Payment\Entity $payment, bool $strict = true)
+    {
+        $metadata = $payment->getMetadata(Entity::UPI_METADATA);
+
+        if (empty($metadata) === true)
+        {
+            // This will check in database
+            $metadata = $payment->getUpiMetadata();
+        }
+
+        if ((empty($metadata) === true) and
+            ($strict === true))
+        {
+            throw new Exception\LogicException('Upi metadata not found when needed');
+        }
+
+        return $metadata;
+    }
 }

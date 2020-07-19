@@ -158,6 +158,10 @@ trait Authorize
             $data['acquirer'] = $ret['acquirer'];
             unset($ret['acquirer']);
 
+            // UPI Auto recurring will also send UPI block along with acquirer
+            $data['upi'] = $ret['upi'] ?? null;
+            unset($ret['upi']);
+
             // To set ret to null instead of keeping it as an empty array
             if (empty($ret) === true)
             {
@@ -769,7 +773,7 @@ trait Authorize
             return $this->processNachPaymentCreated($payment);
         }
 
-        if ($this->shouldAutoReccuringAuthorizedForUpi($payment, $data) === false)
+        if ($this->shouldAutoReccuringSkipAuthorizeForUpi($payment, $data) === true)
         {
             return $this->processAutoRecurringCreatedForUpi($payment, $data);
         }
@@ -3159,7 +3163,7 @@ trait Authorize
         $this->setChargeAccountMerchantIfApplicable($input, $gatewayInput);
 
         // Not doing inside above mentioned UPI condition because Recurring data is set after that logic
-        $this->modifyAutoRecurringForUpiIfApplicable($payment, null, $input);
+        $this->modifyAutoRecurringForUpiIfApplicable($payment, $input, $gatewayInput);
     }
 
     protected function setChargeAccountMerchantIfApplicable($input, & $gatewayInput)
@@ -6532,6 +6536,9 @@ trait Authorize
         // set the order to be paid
         //
         $this->updateAuthorizedOrderStatus($payment);
+
+        // We will be updating the details in upi_mandate too.
+        $this->updateUpiMetadataOnAuthorized($payment, $data);
     }
 
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment): bool
