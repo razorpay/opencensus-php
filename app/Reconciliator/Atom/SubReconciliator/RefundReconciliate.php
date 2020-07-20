@@ -7,9 +7,10 @@ use RZP\Reconciliator\Base;
 
 class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
-    const COLUMN_REFUND_AMOUNT              = 'gross_txn_amount';
-    const COLUMN_ATOM_TRANSACTION_ID        = 'atom_txn_id';
     const COLUMN_PAYMENT_ID                 = 'merchant_txn_id';
+    const COLUMN_REFUND_AMOUNT              = 'gross_txn_amount';
+    const COLUMN_BANK_REFERENCE_NO          = 'bank_ref_no';
+    const COLUMN_ATOM_TRANSACTION_ID        = 'atom_txn_id';
 
     protected function getRefundId($row)
     {
@@ -40,6 +41,11 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         }
 
         return $refundId;
+    }
+
+    protected function getArn(array $row)
+    {
+        return $row[self::COLUMN_BANK_REFERENCE_NO] ?? null;
     }
 
     protected function getGatewayTransactionId(array $row)

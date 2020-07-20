@@ -1584,6 +1584,10 @@ class ReconciliationFileTest extends TestCase
         $updatedTransaction2 = $this->getEntityById('transaction', $refundEntity2['transaction_id'], true);
         $updatedTransaction3 = $this->getEntityById('transaction', $refundEntity3['transaction_id'], true);
 
+        $this->assertNotNull($refundEntity1['reference1']);
+        $this->assertNull($refundEntity2['reference1']);
+        $this->assertNull($refundEntity3['reference1']);
+
         //
         // One payment and one refund row get reconciled, other 2 refunds
         // remain unreconciled, as we could not identify the refund uniquely.
@@ -1658,6 +1662,10 @@ class ReconciliationFileTest extends TestCase
         $updatedTransaction1 = $this->getEntityById('transaction', $refundEntity1['transaction_id'], true);
         $updatedTransaction2 = $this->getEntityById('transaction', $refundEntity2['transaction_id'], true);
         $updatedTransaction3 = $this->getEntityById('transaction', $refundEntity3['transaction_id'], true);
+
+        $this->assertNotNull($refundEntity1['reference1']);
+        $this->assertNull($refundEntity2['reference1']);
+        $this->assertNull($refundEntity3['reference1']);
 
         //
         // One payment and one refund row get reconciled, other 2 refunds
