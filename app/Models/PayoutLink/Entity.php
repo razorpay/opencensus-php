@@ -385,6 +385,15 @@ class Entity extends Base\PublicEntity
             return $this->payout()->getUtr();
         }
     }
+
+    public function getPayoutMode()
+    {
+        if ($this->payout() !== null)
+        {
+            return $this->payout()->getMode();
+        }
+    }
+
     // -------------------------------------- End Getters -----------------------------
 
     // ----------------------------------------- Setters ------------------------------

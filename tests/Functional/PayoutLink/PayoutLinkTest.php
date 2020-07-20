@@ -7,6 +7,7 @@ use Mail;
 use Config;
 use Mockery;
 use Exception;
+use ReflectionClass;
 use RZP\Models\Payout;
 use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
@@ -121,19 +122,19 @@ class PayoutLinkTest extends TestCase
             {
                 switch ($path)
                 {
-                    case "/twirp/rzp.stork.webhook.v1.WebhookAPI/Create":
-                        return $this->getStorkCreateResponse("rx-test", "https://www.example.com",
+                    case '/twirp/rzp.stork.webhook.v1.WebhookAPI/Create':
+                        return $this->getStorkCreateResponse('rx-test', 'https://www.example.com',
                                                              [
-                                                                 "payout.created",
-                                                                 "payout_link.issued",
-                                                                 "payout_link.processing",
-                                                                 "payout_link.processed",
-                                                                 "payout_link.attempted",
-                                                                 "payout_link.cancelled",
+                                                                 'payout.created',
+                                                                 'payout_link.issued',
+                                                                 'payout_link.processing',
+                                                                 'payout_link.processed',
+                                                                 'payout_link.attempted',
+                                                                 'payout_link.cancelled',
                                                              ]);
                         break;
 
-                    case "/twirp/rzp.stork.webhook.v1.WebhookAPI/List":
+                    case '/twirp/rzp.stork.webhook.v1.WebhookAPI/List':
                         $this->getStorkListResponseEmpty();
                         break;
                 }
@@ -157,25 +158,25 @@ class PayoutLinkTest extends TestCase
             {
                 switch ($path)
                 {
-                    case "/twirp/rzp.stork.webhook.v1.WebhookAPI/Get":
-                        return $this->getStorkCreateResponse("rx-test", "https://www.example.com",
+                    case '/twirp/rzp.stork.webhook.v1.WebhookAPI/Get':
+                        return $this->getStorkCreateResponse('rx-test', 'https://www.example.com',
                             [
-                                "payout.created",
-                                "payout_link.issued",
-                                "payout_link.processing",
-                                "payout_link.processed",
-                                "payout_link.attempted",
-                                "payout_link.cancelled",
+                                'payout.created',
+                                'payout_link.issued',
+                                'payout_link.processing',
+                                'payout_link.processed',
+                                'payout_link.attempted',
+                                'payout_link.cancelled',
                             ]);
                         break;
 
-                    case "/twirp/rzp.stork.webhook.v1.WebhookAPI/Update":
-                        return $this->getStorkCreateResponse("rx-test", "https://www.example.com",
+                    case '/twirp/rzp.stork.webhook.v1.WebhookAPI/Update':
+                        return $this->getStorkCreateResponse('rx-test', 'https://www.example.com',
                             [
-                                "payout.created",
-                                "payout_link.processing",
-                                "payout_link.processed",
-                                "payout_link.cancelled",
+                                'payout.created',
+                                'payout_link.processing',
+                                'payout_link.processed',
+                                'payout_link.cancelled',
                             ]);
 
                         break;
@@ -198,17 +199,17 @@ class PayoutLinkTest extends TestCase
             {
                 switch ($path)
                 {
-                    case "/twirp/rzp.stork.webhook.v1.WebhookAPI/Create":
-                        return $this->getStorkCreateResponse("rx-test", "https://www.example.com",
+                    case '/twirp/rzp.stork.webhook.v1.WebhookAPI/Create':
+                        return $this->getStorkCreateResponse('rx-test', 'https://www.example.com',
                             [
-                                "payout.created",
-                                "payout_link.processing",
-                                "payout_link.attempted",
-                                "payout_link.cancelled",
+                                'payout.created',
+                                'payout_link.processing',
+                                'payout_link.attempted',
+                                'payout_link.cancelled',
                             ]);
                         break;
 
-                    case "/twirp/rzp.stork.webhook.v1.WebhookAPI/List":
+                    case '/twirp/rzp.stork.webhook.v1.WebhookAPI/List':
                         $this->getStorkListResponseEmpty();
                         break;
                 }
@@ -777,7 +778,7 @@ class PayoutLinkTest extends TestCase
     public function testMerchantSettingsUpdateApiForIMPSDisabled()
     {
         $queueMethodOutput = [
-            "Payout Mode IMPS disabled for 10000000000000 by DASHBOARD_INTERNAL",
+            'Payout Mode IMPS disabled for 10000000000000 by DASHBOARD_INTERNAL',
             [],
             [
                 'channel'  => Config::get('slack.channels.operations_log'),
@@ -802,7 +803,7 @@ class PayoutLinkTest extends TestCase
     public function testMerchantSettingsUpdateApiForUPIDisabled()
     {
         $queueMethodOutput = [
-            "Payout Mode UPI disabled for 10000000000000 by DASHBOARD_INTERNAL",
+            'Payout Mode UPI disabled for 10000000000000 by DASHBOARD_INTERNAL',
             [],
             [
                 'channel'  => Config::get('slack.channels.operations_log'),
@@ -1139,7 +1140,6 @@ class PayoutLinkTest extends TestCase
         $payout->setStatus(Payout\Status::INITIATED);
 
         $payout->save();
-
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
             'fta_status'        => 'failed',
@@ -1847,4 +1847,151 @@ class PayoutLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testPayoutLinkPaymentMode()
+    {
+        $payout_mode = 'IMPS';
+
+        $contact = $this->fixtures->create('contact',
+                                           [
+                                               'id'      => '1000011contact',
+                                               'contact' => '8888888888',
+                                               'email'   => '',
+                                               'name'    => 'test user'
+                                           ]);
+
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'contact_id' => $contact->getId(),
+                                                  'balance_id' => $this->bankingBalance->getId()
+                                              ]);
+
+        $bankingAccount = $this->fixtures->create('banking_account',
+                                                  [
+                                                      'channel'      => 'hdfc',
+                                                      'account_type' => 'card'
+                                                  ]);
+
+        $payoutLink->balance->bankingAccount =$bankingAccount;
+
+        $payout = $this->fixtures->create('payout',
+                                          [
+                                              'payout_link_id' => $payoutLink->getId(),
+                                              'mode'           => $payout_mode
+                                          ]);
+
+        $merchant = $this->contact->merchant;
+
+        $core = (new Core());
+
+        $reflection = new ReflectionClass($core);
+
+        $method = $reflection->getMethod('getDataForHostedPage');
+
+        $method->setAccessible(true);
+
+        $reflectionProperty = $reflection->getProperty('merchant');
+
+        $reflectionProperty->setAccessible(true);
+
+        $reflectionProperty->setValue($core, $merchant);
+
+        $response = $method->invokeArgs($core, [$payoutLink]);
+
+        $this->assertEquals($payout_mode , $response['payout_mode']);
+    }
+
+    public function testPayoutLinkGetPayoutSuccess()
+    {
+        $contact = $this->fixtures->create('contact',
+                                           [
+                                               'id'      => '1000011contact',
+                                               'contact' => '8888888888',
+                                               'email'   => '',
+                                               'name'    => 'test user'
+                                           ]);
+
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'contact_id' => $contact->getId(),
+                                                  'balance_id' => $this->bankingBalance->getId()
+                                              ]);
+
+        $this->assertEquals($payoutLink->getPayoutMode(), null);
+
+    }
+
+    public function testPayoutLinkGetPayoutFailed()
+    {
+        $contact = $this->fixtures->create('contact',
+                                           [
+                                               'id'      => '1000011contact',
+                                               'contact' => '8888888888',
+                                               'email'   => '',
+                                               'name'    => 'test user'
+                                           ]);
+
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'contact_id' => $contact->getId(),
+                                                  'balance_id' => $this->bankingBalance->getId()
+                                              ]);
+
+        $this->fixtures->create('payout',
+                                [
+                                    'payout_link_id' => $payoutLink->getId(),
+                                    'mode'           => Payout\Mode::UPI
+                                ]);
+
+        $this->assertEquals($payoutLink->getPayoutMode(), Payout\Mode::UPI);
+
+    }
+
+    public function testPayoutLinkPaymentModeWithoutPayout()
+    {
+        $contact = $this->fixtures->create('contact',
+                                           [
+                                               'id'      => '1000011contact',
+                                               'contact' => '8888888888',
+                                               'email'   => '',
+                                               'name'    => 'test user'
+                                           ]);
+
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'contact_id' => $contact->getId(),
+                                                  'balance_id' => $this->bankingBalance->getId()
+                                              ]);
+
+        $bankingAccount = $this->fixtures->create('banking_account',
+                                                  [
+                                                      'channel'      => 'hdfc',
+                                                      'account_type' => 'card'
+                                                  ]);
+
+        $payoutLink->balance->bankingAccount =$bankingAccount;
+
+        $payout = $this->fixtures->create('payout' , [
+
+        ]);
+
+        $merchant = $this->contact->merchant;
+
+        $core = (new Core());
+
+        $reflection = new ReflectionClass($core);
+
+        $method = $reflection->getMethod('getDataForHostedPage');
+
+        $method->setAccessible(true);
+
+        $reflectionProperty = $reflection->getProperty('merchant');
+
+        $reflectionProperty->setAccessible(true);
+
+        $reflectionProperty->setValue($core, $merchant);
+
+        $response = $method->invokeArgs($core, [$payoutLink]);
+
+        $this->assertNull($response['payout_mode']);
+    }
 }

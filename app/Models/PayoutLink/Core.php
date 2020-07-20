@@ -709,6 +709,7 @@ class Core extends Base\Core
             'fund_account_details'              => json_encode($fundAccountDetails),
             'purpose'                           => $payoutLink->getPurpose(),
             'payout_utr'                        => $payoutLink->getPayoutUtr(),
+            'payout_mode'                       => $payoutLink->getPayoutMode(),
             'payout_links_custom_message'       => $settingsAttributeArray[Entity::CUSTOM_MESSAGE] ?? null,
             'support_contact'                   => $settingsAttributeArray[Entity::SUPPORT_CONTACT] ?? null,
             'support_email'                     => $settingsAttributeArray[Entity::SUPPORT_EMAIL] ?? null,

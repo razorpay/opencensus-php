@@ -185,6 +185,7 @@
         fundAccountDetails : JSON.parse('{!! $fund_account_details !!}'),
         purpose  : '{{ $purpose }}',
         payoutUtr : '{{ $payout_utr }}',
+        payoutMode : '{{ $payout_mode }}',
         payoutLinksCustomMessage : '{{ $payout_links_custom_message }}'
     };
 </script>
