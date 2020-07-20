@@ -131,4 +131,18 @@ class Core extends Base\Core
             ]);
         }
     }
+
+    public function validateUpiMandateForCancelCallback(Entity $upiMandate)
+    {
+        // If mandate cancel is initiated by payer, we directly get callbacks from gateway. As that is the
+        // ultimate source of truth, we dont throw an exception. We will consider these callbacks and update the
+        // mandate status. If mandate status is not confirmed, we trace such instances to check for inconsistencies.
+        if ($upiMandate->getStatus() !== Status::CONFIRMED)
+        {
+            $this->trace->info(TraceCode::UPI_MANDATE_STATUS_MISMATCH_FOR_CANCEL, [
+                'id'     => $upiMandate->getId(),
+                'status' => $upiMandate->getStatus(),
+            ]);
+        }
+    }
 }

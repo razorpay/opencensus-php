@@ -81,7 +81,7 @@ class GatewayController extends Controller
         // TODO: change this to utilize callGatewayFunction
         $input = $gateway->preProcessServerCallback($input, $gatewayDriver);
 
-        if (isset($input['upi_mandate']) === true)
+        if (isset($input['upi_mandate']) === true and (isset($input['upi_mandate']['status']) === true))
         {
             return $this->processMandateServerCallback($input, $gatewayDriver);
         }
@@ -266,12 +266,14 @@ class GatewayController extends Controller
 
             $id = Entity::getSignedId($id);
 
-            switch($input['upi_mandate']['action'])
+            switch($input['upi_mandate']['status'])
             {
                 case 'pause':
                     return (new Payment\Service)->mandatePauseCallback($id, $input, $gatewayDriver);
                 case 'resume':
                     return (new Payment\Service)->mandateResumeCallback($id, $input, $gatewayDriver);
+                case 'revoke':
+                    return (new Payment\Service)->mandateCancelCallback($id, $input, $gatewayDriver);
             }
         }
     }

@@ -295,6 +295,19 @@ class UpiIciciRecurringTest extends TestCase
         $this->assertEquals(Status::CONFIRMED, $mandate['status']);
     }
 
+    public function testRevokeMandateViaCallback()
+    {
+        $this->testRecurringMandateCreate();
+
+        $mandate = $this->getDbLastEntity('upi_mandate');
+
+        $this->mandateRevokeCallback($mandate);
+
+        $mandate->reload();
+
+        $this->assertEquals(Status::REVOKED, $mandate['status']);
+    }
+
     protected function revokeUpiRecurringMandate(string $tokenId)
     {
         $this->ba->privateAuth();
@@ -325,6 +338,13 @@ class UpiIciciRecurringTest extends TestCase
     protected function mandateResumeCallback($mandate)
     {
         $content = $this->mockServer()->getAsyncCallbackResponseResumeForIcici($mandate);
+
+        $this->makeS2SCallbackAndGetContent($content, 'upi_icici');
+    }
+
+    protected function mandateRevokeCallback($mandate)
+    {
+        $content = $this->mockServer()->getAsyncCallbackResponseRevokeForIcici($mandate);
 
         $this->makeS2SCallbackAndGetContent($content, 'upi_icici');
     }

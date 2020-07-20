@@ -1058,7 +1058,7 @@ class Gateway extends Base\Gateway
                 return [
                     'upi_mandate' => [
                         'umn'     => $response[Fields::UMN],
-                        'action'  => 'pause',
+                        'status'  => 'pause',
                     ]
                 ];
             }
@@ -1067,7 +1067,16 @@ class Gateway extends Base\Gateway
                 return [
                     'upi_mandate' => [
                         'umn'     => $response[Fields::UMN],
-                        'action'  => 'resume',
+                        'status'  => 'resume',
+                    ]
+                ];
+            }
+            else if ($this->isMandateRevokeCallback($response) === true)
+            {
+                return [
+                    'upi_mandate' => [
+                        'umn'     => $response[Fields::UMN],
+                        'status'  => 'revoke',
                     ]
                 ];
             }
@@ -1111,6 +1120,16 @@ class Gateway extends Base\Gateway
     protected function isMandateResumeCallback($input)
     {
         if ((isset($input[Fields::TXN_STATUS]) === true) and ($input[Fields::TXN_STATUS] === Status::RESUME_SUCCESS))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isMandateRevokeCallback($input)
+    {
+        if ((isset($input[Fields::TXN_STATUS]) === true) and ($input[Fields::TXN_STATUS] === Status::REVOKE_SUCCESS))
         {
             return true;
         }

@@ -231,6 +231,15 @@ trait UpiRecurring
         return ['success' => true];
     }
 
+    public function mandateCancelViaCallback($input, $upiMandate)
+    {
+        $upiMandate->setStatus(UpiMandate\Status::REVOKED);
+
+        $this->repo->saveOrFail($upiMandate);
+
+        return ['success' => true];
+    }
+
     protected function getTokenUpdateMutexResource(Token\Entity $token): string
     {
         return 'token_update_' . $token->getId();

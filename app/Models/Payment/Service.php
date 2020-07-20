@@ -1114,6 +1114,17 @@ class Service extends Base\Service
         return $this->getNewProcessor($this->merchant)->mandateResume($input, $upiMandate);
     }
 
+    public function mandateCancelCallback($id, $input, $gateway)
+    {
+        $upiMandate = $this->repo->upi_mandate->findOrFail($id);
+
+        (new UpiMandate\Core())->validateUpiMandateForCancelCallback($upiMandate);
+
+        $this->merchant = $this->repo->merchant->findOrFail($upiMandate['merchant_id']);
+
+        return $this->getNewProcessor($this->merchant)->mandateCancelViaCallback($input, $upiMandate);
+    }
+
     public function unexpectedCallback(array $input, string $referenceId, string $gateway)
     {
         $isProduction = ($this->app->environment('production') === true);

@@ -31,4 +31,6 @@ class Status
     const PAUSE_SUCCESS = 'SUSPEND-SUCCESS';
 
     const RESUME_SUCCESS = 'REACTIVATE-SUCCESS';
+
+    const REVOKE_SUCCESS = 'REVOKE-SUCCESS';
 }
