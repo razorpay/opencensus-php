@@ -187,6 +187,8 @@ class OAuthApplicationTest extends TestCase
                                     'PUT',
                                     $requestParams);
 
+        $this->expectstorkInvalidateAffectedOwnersCacheRequest('10000000000000');
+
         $this->startTest();
 
         $accessMapEntity = $this->getDbEntity('merchant_access_map', ['id' => $accessMap->getId()], 'live');

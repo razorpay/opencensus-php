@@ -44,13 +44,19 @@ class Stork
     public $request;
 
     /**
+     * @var \RZP\Services\Aws\Sns
+     */
+    protected $sns;
+
+    /**
      * @var \Razorpay\Trace\Logger
      */
     protected $trace;
 
     public function __construct()
     {
-        $this->trace = app()->trace;
+        $this->sns   = app('sns');
+        $this->trace = app('trace');
     }
 
     /**
@@ -205,6 +211,11 @@ class Stork
         }
 
         return $res;
+    }
+
+    public function publishOnSns(array $payload)
+    {
+        $this->sns->publish(json_encode($payload), 'stork');
     }
 
     protected function formatListResponse(string $entity, array $res): array

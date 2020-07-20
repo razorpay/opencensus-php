@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Merchant\Webhook;
 
-
 use Carbon\Carbon;
 
 use RZP\Models\Event;
@@ -250,12 +249,34 @@ class Stork
         return json_decode($res->body, true) ?: [];
     }
 
-    public function invalidateCacheForBothModeWithoutFail(string $merchantId = null)
+    public function invalidateAffectedOwnersCache(string $merchantId, string $mode)
     {
-        if ($merchantId !== null)
+        $this->trace->info(TraceCode::STORK_INVALIDATE_AFFECTED_OWNERS_CACHE_REQ, compact('merchantId', 'mode'));
+
+        $this->service->init($mode);
+
+        $snsMsgPayload = [
+            'invalidate_affected_owners_cache_request' => [
+                'service'    => $this->service->service,
+                'owner_id'   => $merchantId,
+                'owner_type' => E::MERCHANT,
+            ],
+        ];
+
+        try
         {
-            (new self)->invalidateCacheWithoutFail($merchantId, 'live');
-            (new self)->invalidateCacheWithoutFail($merchantId, 'test');
+            $this->service->publishOnSns($snsMsgPayload);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Logger::ERROR, TraceCode::STORK_INVALIDATE_CACHE_FAILED);
+
+            // Falls back to HTTP API call which should be removed once SNS
+            // connectivity is tested on production.
+            // Todo: Check if should remove invalidateCacheWithoutFail() and
+            // invalidateCache() methods after this ^. There should be no more
+            // case of such communication between api<>stork.
+            $this->invalidateCacheWithoutFail($merchantId, $mode);
         }
     }
 

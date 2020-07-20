@@ -45,7 +45,6 @@ use RZP\Models\Merchant\LegalEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant\Balance\Type;
 use RZP\Exception\BadRequestException;
-use RZP\Models\Merchant\Webhook\Stork;
 use RZP\Mail\Merchant\PartnerOnBoarded;
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Mail\Payout\Payout as PayoutMail;
@@ -1593,8 +1592,6 @@ class Core extends Base\Core
 
             return $accessMap;
         });
-
-        (new Stork)->invalidateCacheForBothModeWithoutFail($submerchant->getId());
 
         return $accessMap->toArrayPublic();
     }

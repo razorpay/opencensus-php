@@ -462,6 +462,8 @@ class PartnerTest extends OAuthTestCase
 
         $this->ba->batchAuth();
 
+        $this->expectstorkInvalidateAffectedOwnersCacheRequest(self::DEFAULT_SUBMERCHANT_ID);
+
         $this->startTest();
     }
 
@@ -484,6 +486,8 @@ class PartnerTest extends OAuthTestCase
         $existingTags = ['RandomTag-1', 'RandomTag-2'];
 
         $submerchant->retag($existingTags);
+
+        $this->expectstorkInvalidateAffectedOwnersCacheRequest(self::DEFAULT_SUBMERCHANT_ID);
 
         $this->startTest();
 
@@ -690,6 +694,8 @@ class PartnerTest extends OAuthTestCase
                      ->get();
 
         $this->assertNotEmpty($mapping);
+
+        $this->expectstorkInvalidateAffectedOwnersCacheRequest(self::DEFAULT_SUBMERCHANT_ID);
 
         $testData = $this->testData[__FUNCTION__];
 

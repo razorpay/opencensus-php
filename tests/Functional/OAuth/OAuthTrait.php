@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\OAuth;
 
+use Mockery;
 use Razorpay\OAuth\Token;
 use Razorpay\OAuth\Client;
 use Razorpay\OAuth\Application;
@@ -9,6 +10,7 @@ use Lcobucci\JWT\Token as JWTToken;
 use Razorpay\OAuth\Tests\Helpers\OAuthTestHelper;
 
 use Carbon\Carbon;
+use RZP\Services\Stork;
 use RZP\Constants\Timezone;
 use RZP\Services\AuthService;
 
@@ -159,5 +161,34 @@ trait OAuthTrait
     protected function getDefaultParamsForAuthServiceRequest()
     {
         return ['merchant_id' => '10000000000000'];
+    }
+
+    public function expectstorkInvalidateAffectedOwnersCacheRequest(string $merchantId, string $mode = null)
+    {
+        // 0. Expects in both modes if no mode arg is passed.
+        if ($mode === null)
+        {
+            $this->expectstorkInvalidateAffectedOwnersCacheRequest($merchantId, 'live');
+            $this->expectstorkInvalidateAffectedOwnersCacheRequest($merchantId, 'test');
+            return;
+        }
+
+        // 1. Creates mock and replaces implementation, if not already.
+        if ($this->app['stork_service'] instanceof Mockery\MockInterface === false)
+        {
+            $this->app->instance('stork_service', Mockery::mock(Stork::class)->makePartial());
+        }
+
+        // 2. Sets expectation.
+        $matcher = function(array $arg) use ($merchantId, $mode)
+        {
+            $req = & $arg['invalidate_affected_owners_cache_request'];
+
+            return (($merchantId === $req['owner_id']) and
+                ($mode === str_after($req['service'], 'api-')) and
+                ('merchant' === $req['owner_type']));
+        };
+        $this->app['stork_service']
+            ->shouldReceive('publishOnSns')->once()->with(Mockery::on($matcher))->andReturn(null);
     }
 }

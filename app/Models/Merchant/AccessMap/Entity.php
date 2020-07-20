@@ -60,6 +60,15 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
     ];
 
+    /**
+     * {@inheritDoc}
+     */
+    protected $dispatchesEvents = [
+        // Event 'saved' fires on insert and update both.
+        'saved'   => EventSaved::class,
+        'deleted' => EventDeleted::class,
+    ];
+
     // --------------- Relation to other entities ------------------------------
 
     public function entity()

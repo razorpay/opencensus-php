@@ -12,6 +12,7 @@ use RZP\Events;
 use RZP\Jobs\Job;
 use RZP\Listeners;
 use RZP\Events\P2p;
+use RZP\Models\Merchant\AccessMap;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -86,6 +87,13 @@ class EventServiceProvider extends ServiceProvider
         ],
         P2p\VpaCreated::class        => [
             Listeners\P2pWebhookListener::class,
+        ],
+
+        AccessMap\EventSaved::class => [
+            Listeners\AccessMapListener::class . '@onSaved',
+        ],
+        AccessMap\EventDeleted::class => [
+            Listeners\AccessMapListener::class . '@onDeleted',
         ],
     ];
 

@@ -1868,6 +1868,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const ACCESS_MAP_UPDATE_REQUEST                             = 'ACCESS_MAP_UPDATE_REQUEST';
     const ACCESS_MAP_UPDATE_ERROR                               = 'ACCESS_MAP_UPDATE_ERROR';
+    const ACCESS_MAP_EVENT_SAVED                                = 'ACCESS_MAP_EVENT_SAVED';
+    const ACCESS_MAP_EVENT_DELETED                              = 'ACCESS_MAP_EVENT_DELETED';
 
     const GRATIS_TO_POSTPAID_INPUT                              = 'GRATIS_TO_POSTPAID_INPUT';
     const GRATIS_TO_POSTPAID_FAILED                             = 'GRATIS_TO_POSTPAID_FAILED';
@@ -2606,7 +2608,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ONBOARDING_KYC_VERIFICATION_JOB_REQUEST               = 'ONBOARDING_KYC_VERIFICATION_JOB_REQUEST';
     const ONBOARDING_KYC_VERIFICATION_JOB_DELETE                = 'ONBOARDING_KYC_VERIFICATION_JOB_DELETE';
     const ONBOARDING_KYC_VERIFICATION_JOB_ERROR                 = 'ONBOARDING_KYC_VERIFICATION_JOB_ERROR';
-    
+
     // Salesforce integration
     const SALESFORCE_ACCESS_TOKEN_ERROR                         = 'SALESFORCE_ACCESS_TOKEN_ERROR';
     const SALESFORCE_INTEGRATION_ERROR                          = 'SALESFORCE_INTEGRATION_ERROR';
@@ -2763,6 +2765,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const STORK_ADMIN_REQUEST                                   = 'STORK_ADMIN_REQUEST';
     const STORK_ADMIN_RESPONSE                                  = 'STORK_ADMIN_RESPONSE';
     const STORK_SAVE_SETTING_FAILED                             = 'STORK_SAVE_SETTING_FAILED';
+    const STORK_INVALIDATE_CACHE_FAILED                         = 'STORK_INVALIDATE_CACHE_FAILED';
+    const STORK_INVALIDATE_AFFECTED_OWNERS_CACHE_REQ            = 'STORK_INVALIDATE_AFFECTED_OWNERS_CACHE_REQ';
 
     const WEBHOOK_DEACTIVATE_EMAIL_FOR_STORK                   = 'WEBHOOK_DEACTIVATE_EMAIL_FOR_STORK';
 
@@ -3128,7 +3132,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const IS_DIRECT_SETTLEMENT_PAYMENT  = 'IS_DIRECT_SETTLEMENT_PAYMENT';
     const NET_AMOUNT_FOR_TRANSACTION    = 'NET_AMOUNT_FOR_TRANSACTION';
     //                                ==========
-    
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

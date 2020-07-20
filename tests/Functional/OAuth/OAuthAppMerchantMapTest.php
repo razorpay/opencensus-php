@@ -22,6 +22,8 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
 
     public function testOAuthAppMerchantMap()
     {
+        $this->expectstorkInvalidateAffectedOwnersCacheRequest('10000000000000');
+
         $this->startTest();
 
         $liveMapping = $this->getMapping('live');
@@ -79,6 +81,8 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
     public function testOAuthAppDeleteMerchantMap()
     {
         $this->fixtures->create('merchant_access_map', ['id' => 'BWkmyutEXIuvvX']);
+
+        $this->expectstorkInvalidateAffectedOwnersCacheRequest('10000000000000');
 
         $this->startTest();
 

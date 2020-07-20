@@ -50,7 +50,6 @@ use RZP\Models\Admin\Org\Hostname;
 use RZP\Services\SalesForceClient;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant\EsEnabledNotify;
-use RZP\Models\Merchant\Webhook\Stork;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Settlement\SettlementTrait;
 use RZP\Constants\Entity as EntityConstants;
@@ -3693,8 +3692,6 @@ class Service extends Base\Service
 
             $this->detachSubMerchantOwnerIfApplicable($partner, $submerchant);
         });
-
-        (new Stork)->invalidateCacheForBothModeWithoutFail($submerchant->getId());
     }
 
     /**

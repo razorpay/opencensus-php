@@ -11,7 +11,6 @@ use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\Merchant\Webhook\Stork;
 
 use Razorpay\OAuth\Token;
 use Razorpay\OAuth\Application;
@@ -39,8 +38,6 @@ class Core extends Base\Core
         }
 
         $this->repo->saveOrFail($merchantMapping);
-
-        $this->invalidateStorkCache($merchant);
 
         return $merchantMapping;
     }
@@ -106,8 +103,6 @@ class Core extends Base\Core
         if (empty($mapping) === false)
         {
             $resp = $this->repo->merchant_access_map->deleteOrFail($mapping);
-
-            $this->invalidateStorkCache($mapping->getEntityOwnerId());
 
             return $resp;
         }
@@ -316,10 +311,5 @@ class Core extends Base\Core
                     'application_id' => $app->getId(),
                 ]);
         }
-    }
-
-    protected function invalidateStorkCache(string $ownerId)
-    {
-        (new Stork)->invalidateCacheWithoutFail($ownerId, $this->mode);
     }
 }
