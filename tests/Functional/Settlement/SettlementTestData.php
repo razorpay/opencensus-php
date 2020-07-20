@@ -39,14 +39,6 @@ return [
         'status'                    => 'processed',
         'type'                      => 'normal',
         'details'                   => [
-            'fee'   => [
-                'type' => 'debit',
-                'amount' => 12,
-            ],
-            'tax'   => [
-                'type' => 'debit',
-                'amount' => 13,
-            ],
             'payment' => [
                 'type' => 'credit',
                 'amount' => 1200,
@@ -97,18 +89,6 @@ return [
     ],
 
     'testSettlementCreateFromNewServiceSettlementDetails' => [
-        [
-            'component' => 'fee',
-            'amount'    => 12,
-            'count'     => NULL,
-            'type'      => 'debit'
-        ],
-        [
-            'component' => 'tax',
-            'amount'    => 13,
-            'count'     => NULL,
-            'type'      => 'debit'
-        ],
         [
             'component' => 'payment',
             'amount'    => 1200,

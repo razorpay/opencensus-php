@@ -301,12 +301,16 @@ class Merchant
             {
                 case SetlDetails\Component::FEE:
                 case SetlDetails\Component::TAX:
+                    // this is added to support the negative fees in case of reversal
+                    // if the reversal is only consider then amount comes negative in settlement
+                    // details entity thus added credit and debit to figure out it is reversal or proper fee
+                    $txnType = $detail['amount'] < 0 ? 'credit' : 'debit';
 
                     $this->createSetlDetailsEntity(
                         $componentType,
-                        'debit',
+                        $txnType,
                         null,
-                        $detail['amount']);
+                        abs($detail['amount']));
 
                     break;
 
