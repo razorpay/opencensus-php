@@ -65,9 +65,15 @@ export default ({
         !!emiPlan &&
         getEMI(payment.amount, emiPlan.duration, emiPlan.rate / 100);
 
+    const subTypeMap = {
+      consumer: 'Consumer',
+      business: 'Business',
+    };
+
     const cardTitle = (
         <span>
           {paymentMethod === 'emi' ? 'EMI on ' : ''}
+          {subTypeMap[cardDetails.sub_type]}{' '}
           {cardDetails.international ? 'International ' : 'Domestic '}
           {cardDetails.type !== 'unknown' && titleCase(cardDetails.type + ' ')}
           Card
@@ -125,8 +131,8 @@ export default ({
       content = (
         <Definition allowEmptyTitle={true}>
           {upiTransfer &&
-            (upiTransfer.virtual_account &&
-              upiTransfer.virtual_account.description) && (
+            upiTransfer.virtual_account &&
+            upiTransfer.virtual_account.description && (
               <span>{upiTransfer.virtual_account.description}</span>
             )}
 
