@@ -20,6 +20,7 @@ class Component
     const COMMISSION              = 'commission';
     const FUND_ACCOUNT_VALIDATION = 'fund_account_validation';
     const SETTLEMENT_TRANSFER     = 'settlement_transfer';
+    const SETTLEMENT_ONDEMAND     = 'settlement.ondemand';
 
     public static function validateComponent(string $component)
     {
@@ -47,6 +48,7 @@ class Component
             self::COMMISSION,
             self::FUND_ACCOUNT_VALIDATION,
             self::SETTLEMENT_TRANSFER,
+            self::SETTLEMENT_ONDEMAND,
         ];
     }
 }
