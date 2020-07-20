@@ -42,8 +42,7 @@ trait UpiRecurring
                     // Before making gateway call, we will change the status
                     $metadata = $payment->getUpiMetadata();
                     $metadata->setInternalStatus(UpiMetadata\InternalStatus::PRE_DEBIT_INITIATED);
-                    $this->repo->saveOrFail($metadata);
-
+                    (new UpiMetadata\Core)->update($metadata);
 
                     $gatewayResponse = $this->app['gateway']->call(
                         $input['gateway'],
@@ -78,7 +77,7 @@ trait UpiRecurring
 
         $this->modifyAutoRecurringForUpiIfApplicable($payment, $input, $gatewayInput);
 
-        $this->gatewayRelatedProcessing($payment, [], $gatewayInput);
+        return $this->gatewayRelatedProcessing($payment, [], $gatewayInput);
     }
 
     public function mandateUpdate($customerId, $token, array $input)
@@ -542,7 +541,8 @@ trait UpiRecurring
     {
         $metadata = $payment->getUpiMetadata();
 
-        $metadata->edit($response['upi']);
+        $upiEdit = array_only($response['upi'], $metadata->getFillable());
+        $metadata->edit($upiEdit);
 
         $reminderId = $this->setUpiAutoRecurringReminder($metadata);
 
@@ -556,7 +556,7 @@ trait UpiRecurring
             $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_PENDING_FOR_AUTHORIZE);
         }
 
-        $this->repo->save($metadata);
+        (new UpiMetadata\Core)->update($metadata);
 
         return true;
     }
@@ -586,7 +586,7 @@ trait UpiRecurring
             $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_PRE_DEBIT);
         }
 
-        $this->repo->save($metadata);
+        (new UpiMetadata\Core)->update($metadata);
 
         return true;
     }

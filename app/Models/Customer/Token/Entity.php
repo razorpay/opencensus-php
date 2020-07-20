@@ -12,6 +12,7 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
+use RZP\Models\UpiMandate;
 use RZP\Models\PaymentsUpi\Vpa;
 use RZP\Models\Merchant\Account;
 
@@ -282,6 +283,11 @@ class Entity extends Base\PublicEntity
                     ->limit(5);
     }
 
+    public function upiMandate()
+    {
+        return $this->hasOne(UpiMandate\Entity::class);
+    }
+
     public function hasCard()
     {
         return $this->isAttributeNotNull(self::CARD_ID);
@@ -420,6 +426,11 @@ class Entity extends Base\PublicEntity
     public function getRecurringFailureReason()
     {
         return $this->getAttribute(self::RECURRING_FAILURE_REASON);
+    }
+
+    public function getUpiMandate()
+    {
+        return $this->upiMandate;
     }
 
     public function isLocal()

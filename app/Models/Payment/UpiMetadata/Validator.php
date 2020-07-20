@@ -25,6 +25,6 @@ class Validator extends Base\Validator
         Entity::REFERENCE   => 'sometimes|string',
         Entity::RRN         => 'sometimes|string',
         Entity::UMN         => 'sometimes|string',
-        Entity::REMIND_AT   => 'sometimes|epoch',
+        Entity::REMIND_AT   => 'sometimes|nullable|epoch',
     ];
 }

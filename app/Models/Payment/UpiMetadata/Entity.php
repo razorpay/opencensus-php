@@ -31,6 +31,9 @@ class Entity extends Base\PublicEntity
     // 90 days, in seconds
     const DEFAULT_OTM_EXECUTION_RANGE = 7776000;
 
+    // 90 second buffer for reminder service request
+    const DEFAULT_BUFFER_FOR_REMINDER = 90;
+
     protected $entity = 'upi_metadata';
 
     protected $generateIdOnCreate = false;
@@ -49,6 +52,7 @@ class Entity extends Base\PublicEntity
         self::NPCI_TXN_ID,
         self::UMN,
         self::RRN,
+        self::REMIND_AT,
     ];
 
     protected $visible = [
@@ -334,5 +338,10 @@ class Entity extends Base\PublicEntity
     public function isInternalStatus(string $status): bool
     {
         return ($this->getInternalStatus() === $status);
+    }
+
+    public function canBeAuthorized(): bool
+    {
+        return $this->isInternalStatus(InternalStatus::AUTHORIZE_INITIATED);
     }
 }

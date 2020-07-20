@@ -128,7 +128,7 @@ class UpiRecurringPaymentSharpTest extends TestCase
         $this->assertEquals('rejected@razorpay', $payment->getVpa());
     }
 
-    public function testCreateAutoRecurringPaymentSuccess()
+    public function testCreateMonthlyAutoRecurringPaymentSuccess()
     {
         $mandate = $this->createFirstUpiRecurringPayment();
 
@@ -147,7 +147,17 @@ class UpiRecurringPaymentSharpTest extends TestCase
         $this->mockReminderService('createReminder',
             function($request, $merchantId) use (& $createReminder)
             {
+                $payment = $this->getDbLastPayment();
+                $metadata = $payment->getUpiMetadata();
+
                 $createReminder = $request;
+
+                $this->assertArraySubset([
+                    'internal_status'   => 'reminder_pending_for_pre_debit',
+                    'reminder_id'       => null,
+                    'remind_at'         => $createReminder['reminder_data']['remind_at']
+                ], $metadata->toArray(), true);
+
             });
 
         $response = $this->doS2SRecurringPayment($payment);
@@ -190,10 +200,23 @@ class UpiRecurringPaymentSharpTest extends TestCase
 
         // In the call from reminder service, an updateReminder function will be called
         $this->mockReminderService('updateReminder',
-            function($request, $merchantId) use (& $updateReminder)
+            function($request, $merchantId) use (& $updateReminder, $createReminder, $metadata)
             {
                 $updateReminder = $request;
+                $metadata->refresh();
+
+                $this->assertArraySubset([
+                    'internal_status'   => 'pre_debit_initiated',
+                    'remind_at'         => $createReminder['reminder_data']['remind_at']
+                ], $metadata->toArray(), true);
+                $createRemindAt = $createReminder['reminder_data']['remind_at'];
+                $updateRemindAt = $updateReminder['reminder_data']['remind_at'];
+
+
+                $this->assertTrue(($createRemindAt + 90) <= $updateRemindAt);
             });
+
+        Carbon::setTestNow(Carbon::now()->addSeconds(90));
 
         // Now we will initiate the reminder
         $response = $this->sendReminderRequest($createReminder);
@@ -244,7 +267,7 @@ class UpiRecurringPaymentSharpTest extends TestCase
         ], $metadata->toArray(), true);
     }
 
-    public function testCreateAutoRecurringPaymentTimeout()
+    public function testCreateMonthlyAutoRecurringPaymentTimeout()
     {
         $now = Carbon::now();
 
