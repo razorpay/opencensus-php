@@ -596,6 +596,9 @@ class Route
         'geoip_update'                             => ['post',     'geoip/update',                                   'AdminController@updateGeoIps'                                      ],
         'gateway_payment_callback_upi_airtel'      => ['post',     'gateway/upi_airtel/callback',                    'GatewayController@callbackUpiAirtel'                               ],
 
+        // Temporary route for upi recurring callbacks from icici.
+        'gateway_payment_callback_recurring'       => ['post',     'callback/recurring/{gateway}',                   'GatewayController@callbackGateway'                                 ],
+
         // File-based Emandate Routes
         'emandate_debit_reconcile'                 => ['post',     'emandate/debit/reconcile/{gateway}',             'EMandateController@postReconcileDebitFile'                         ],
 
@@ -4415,6 +4418,7 @@ class Route
         'transparent_redirect_post',
         'gateway_payment_callback_get',
         'gateway_payment_callback_post',
+        'gateway_payment_callback_recurring',
         'gateway_payment_static_callback_get',
         'gateway_payment_static_callback_post',
         'gateway_payment_callback_kotak',
