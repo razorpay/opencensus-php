@@ -40,7 +40,7 @@ class CitiPayoutTest extends TestCase
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);
 
-        $this->app['cache']->flush();
+        $this->flushCache();
 
         $this->ba->privateAuth();
     }
@@ -143,7 +143,7 @@ class CitiPayoutTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][0]);
 
-        $this->app['cache']->flush();
+        $this->flushCache();
     }
 
     // this test case will makes two payouts, one will consume credits
@@ -330,7 +330,7 @@ class CitiPayoutTest extends TestCase
             'amount'          => 500,
         ];
 
-        $this->app['cache']->flush();
+        $this->flushCache();
     }
 
     public function testCreatePayoutToBankAccountViaIMPS()
@@ -370,7 +370,7 @@ class CitiPayoutTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
 
-        $this->app['cache']->flush();
+        $this->flushCache();
     }
 
     public function testCreatePayoutForVpaFundAccountId()
@@ -385,7 +385,7 @@ class CitiPayoutTest extends TestCase
 
         $this->startTest();
 
-        $this->app['cache']->flush();
+        $this->flushCache();
     }
 
     public function testCreateQueuedPayoutWithModeSet()
@@ -444,7 +444,7 @@ class CitiPayoutTest extends TestCase
         $this->assertEquals(1, $updatedSummary[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
         $this->assertEquals(10000001, $updatedSummary[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
 
-        $this->app['cache']->flush();
+        $this->flushCache();
     }
 
     public function testCreateQueuedPayoutWithModeSetWithCredits()
@@ -554,7 +554,7 @@ class CitiPayoutTest extends TestCase
 
     public function tearDown()
     {
-        $this->app['cache']->flush();
+        $this->flushCache();
 
         parent::tearDown();
     }
