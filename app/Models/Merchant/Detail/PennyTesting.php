@@ -36,7 +36,7 @@ class PennyTesting extends Base\Core
      * @param Merchant\Entity $fromMerchant
      *
      * @return FundAccountValidationEntity
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function attempt(Entity $merchantDetails, Merchant\Entity $fromMerchant)
     {
@@ -85,7 +85,7 @@ class PennyTesting extends Base\Core
     /**
      * @param FundAccountValidationEntity $validationEntity
      *
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function handlePennyTestingEvent(FundAccountValidation $validationEntity)
     {
@@ -99,21 +99,31 @@ class PennyTesting extends Base\Core
 
         [$merchant, $merchantDetails] = $this->getMerchantAndSetBasicAuth($input[Constants::MERCHANT_ID]);
 
-        $this->updateBankDetailVerificationStatus($input, $merchant, $merchantDetails);
+        $shouldVerifyPennyTestingResult = $this->verifyPennyTestingResults($merchantDetails);
 
-        $isPennyTestingRetryRequired = $this->isPennyTestingRetryRequired($merchantDetails, $input);
+        $isPennyTestingRetryRequired = false;
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetails, $isPennyTestingRetryRequired) {
+        if ($shouldVerifyPennyTestingResult === true)
+        {
+            $this->updateBankDetailVerificationStatus($input, $merchant, $merchantDetails);
 
-            if ( $isPennyTestingRetryRequired === true)
+            $isPennyTestingRetryRequired = $this->isPennyTestingRetryRequired($merchantDetails, $input);
+        }
+
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetails, $isPennyTestingRetryRequired, $shouldVerifyPennyTestingResult) {
+
+            if ($shouldVerifyPennyTestingResult === true)
             {
-                $this->retryPennyTesting($merchantDetails);
-            }
-            else
-            {
-                $this->updateMerchantContext($merchantDetails, $merchant);
+                if ($isPennyTestingRetryRequired === true)
+                {
+                    $this->retryPennyTesting($merchantDetails);
+                }
+                else
+                {
+                    $this->updateMerchantContext($merchantDetails, $merchant);
 
-                $this->repo->merchant->saveOrFail($merchant);
+                    $this->repo->merchant->saveOrFail($merchant);
+                }
             }
 
             $this->repo->merchant_detail->saveOrFail($merchantDetails);
@@ -142,7 +152,7 @@ class PennyTesting extends Base\Core
                                                 $nameValidationData,
                                                 $input);
         }
-        catch (\Throwable $e)
+        catch (Throwable $e)
         {
             $this->trace->traceException($e);
         }
@@ -161,7 +171,7 @@ class PennyTesting extends Base\Core
      * @param Merchant\Entity $merchant
      *
      * @throws LogicException
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function updateMerchantContext(Entity $merchantDetails, Merchant\Entity $merchant)
     {
@@ -383,7 +393,7 @@ class PennyTesting extends Base\Core
     /**
      * @param Entity $merchantDetails
      *
-     * @throws \Throwable
+     * @throws Throwable
      */
     protected function retryPennyTesting(Entity $merchantDetails)
     {
@@ -404,9 +414,9 @@ class PennyTesting extends Base\Core
     /**
      * @param Entity $merchantDetails
      *
-     * @throws \Throwable
+     * @throws Throwable
      */
-    public function triggerPennyTesting(Entity $merchantDetails)
+    public function triggerPennyTesting(Entity $merchantDetails): void
     {
         $fromMerchant = $this->repo->merchant->findOrFailPublic(Merchant\Preferences::MID_ONBOARDING_PENNY_TESTING);
 
@@ -423,6 +433,47 @@ class PennyTesting extends Base\Core
         $fundAccountValidation = (new PennyTesting)->attempt($merchantDetails, $fromMerchant);
 
         $merchantDetails->setFundAccountValidationId($fundAccountValidation->getId());
+    }
+
+    /**
+     * if merchant status is already changed to activation or need_clarification,
+     * we need not to trigger penny testing
+     *
+     * @param Entity $merchantDetails
+     *
+     * @return bool
+     */
+    public function shouldPerformPennyTesting(Entity $merchantDetails): bool
+    {
+        $isPennyTestingRequired = in_array($merchantDetails->getActivationStatus(), [Status::ACTIVATED, Status::NEEDS_CLARIFICATION]) === false;
+
+        return $isPennyTestingRequired;
+    }
+
+    /**
+     * if we need not to trigger penny testing, and bank_details_verification_status is initiated state,
+     * just update status as failed.
+     *
+     * @param Entity $merchantDetails
+     *
+     * @return bool
+     */
+    public function verifyPennyTestingResults(Entity $merchantDetails): bool
+    {
+        $shouldPerformPennyTesting = $this->shouldPerformPennyTesting($merchantDetails);
+
+        if (($shouldPerformPennyTesting == false) and
+            ($merchantDetails->getBankDetailsVerificationStatus() === BankDetailsVerificationStatus::INITIATED))
+        {
+            $this->trace->info(TraceCode::MERCHANT_PENNY_TESTING_NOT_REQUIRED, [
+                Constants::ACCOUNT_STATUS                   => $merchantDetails->getActivationStatus(),
+                Constants::BANK_DETAILS_VERIFICATION_STATUS => $merchantDetails->getBankDetailsVerificationStatus()
+            ]);
+
+            $this->setBankDetailsVerificationStatusAndUpdatedAt($merchantDetails, BankDetailsVerificationStatus::FAILED);
+        }
+
+        return $shouldPerformPennyTesting;
     }
 
     /**

@@ -256,7 +256,7 @@ class Repository extends Base\Repository
      */
     public function fetchMerchantDetailsForPennyTestingRetry(string $status, int $pennyTestingUpdatedAt)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->where(Entity::BANK_DETAILS_VERIFICATION_STATUS, '=', $status)
                     ->where(Entity::PENNY_TESTING_UPDATED_AT, '<', $pennyTestingUpdatedAt)
                     ->get();

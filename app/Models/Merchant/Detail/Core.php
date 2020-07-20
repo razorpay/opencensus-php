@@ -2203,7 +2203,12 @@ class Core extends Base\Core
 
                 if ($isPennyTestingAttemptLessThenMaxAttempt === true)
                 {
-                    $pennyTesting->triggerPennyTesting($merchantDetail);
+                    $shouldPerformPennyTesting = $pennyTesting->verifyPennyTestingResults($merchantDetail);
+
+                    if ($shouldPerformPennyTesting === true)
+                    {
+                        $pennyTesting->triggerPennyTesting($merchantDetail);
+                    }
                 }
                 else
                 {

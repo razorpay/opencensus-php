@@ -1805,6 +1805,31 @@ class ActivationTest extends OAuthTestCase
         $this->verifySuccessBankDetailVerification($favAttribute, $merchantDetailAttribute, 'activated');
     }
 
+    public function testProcessFavFromQueueActivatedMerchant()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            'bank_details_verification_status' => 'initiated',
+            'activation_status'                => 'activated',
+            'fund_account_validation_id'       => 'favid123456789'
+        ]);
+
+        $this->fixtures->create('fund_account_validation', [
+            ValidationEntity::ACCOUNT_STATUS => "active",
+            ValidationEntity::NOTES          => [
+                ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],
+            ],
+        ]);
+
+        $fav = $this->getLastEntity('fund_account_validation', true, 'test');
+
+        FundAccountValidation::dispatch('test', $fav['id']);
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantDetail['merchant_id']);
+
+        $this->assertEquals('failed', $merchantDetail->getBankDetailsVerificationStatus());
+        $this->assertEquals('favid123456789', $merchantDetail->getFundAccountValidationId());
+    }
+
     /**
      * @param array  $customFavAttributes
      * @param array  $customMerchantAttributes
@@ -1923,8 +1948,6 @@ class ActivationTest extends OAuthTestCase
 
         $attribute1 = $this->getFavAttributes($merchantDetail, "rishabh acharya", "active");
 
-        $this->createBalanceForSharedMerchant();
-
         $this->updateRetryCountInRedis($merchantDetail);
 
         $this->checkFirstPennyTestingTry($attribute, $merchantDetail, 'initiated');
@@ -1951,8 +1974,6 @@ class ActivationTest extends OAuthTestCase
 
         $attribute = $this->getFavAttributes($merchantDetail, "rishabh acharya", "active");
 
-        $this->createBalanceForSharedMerchant();
-
         $this->updateRetryCountInRedis($merchantDetail);
 
         $testData = $this->testData['testPennyTestingRetryCron'];
@@ -1962,6 +1983,25 @@ class ActivationTest extends OAuthTestCase
         $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantDetail['merchant_id']);
 
         $this->checkSecondPennyTestingTry($attribute, $merchantDetail, 'activated', 'verified');
+    }
+
+    public function testPennyTestingCronActivatedMerchants()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            'bank_details_verification_status' => 'initiated',
+            'activation_status'                => 'activated',
+            'penny_testing_updated_at'         => time() - 7300,
+        ]);
+
+        $this->ba->appAuthTest();
+
+        $testData = $this->testData['testPennyTestingRetryCron'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantDetail['merchant_id']);
+
+        $this->assertEquals($merchantDetail->getBankDetailsVerificationStatus(),'failed');
     }
 
     public function testPennyTestingCronFailure()
@@ -1983,8 +2023,6 @@ class ActivationTest extends OAuthTestCase
         Mail::fake();
 
         $attribute = $this->getFavAttributes($merchantDetail, "random name", "active");
-
-        $this->createBalanceForSharedMerchant();
 
         $this->updateRetryCountInRedis($merchantDetail);
 
