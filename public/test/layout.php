@@ -137,7 +137,7 @@ function getRazorpayConfig () {
     var RzpConfig = {};
 
     if (params.branch) {
-        frameUrl = '/test/checkout/?branch=' + params.branch;
+        frameUrl = '/test/checkout.html?branch=' + params.branch;
     }
 
     var config = {
