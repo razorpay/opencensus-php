@@ -68,15 +68,26 @@ class ThrottleController extends Controller
         return ApiResponse::json($response);
     }
 
-    protected function getRedisKey($input): string
+    protected function getRedisOldKey($input): string
     {
         if (empty($input['merchant_id']) === true)
         {
 
-            return K::THROTTLE_PREFIX . K::CONFIGURATION_TYPE_ROUTE . ':' . $input['route'];
+            return K::THROTTLE_PREFIX . K::CONFIGURATION_TYPE_ROUTE  . ':' .  $input['route'];
         }
 
-        return K::THROTTLE_PREFIX . K::CONFIGURATION_TYPE_MERCHANT . ':' . $input['merchant_id'];
+        return K::THROTTLE_PREFIX  . K::CONFIGURATION_TYPE_MERCHANT  . ':'.  $input['merchant_id'];
+    }
+
+    protected function getRedisNewKey($input): string
+    {
+        if (empty($input['merchant_id']) === true)
+        {
+
+            return K::THROTTLE_PREFIX . '{' . K::CONFIGURATION_TYPE_ROUTE  . '}:' .  $input['route'];
+        }
+
+        return K::THROTTLE_PREFIX . '{' . K::CONFIGURATION_TYPE_MERCHANT  . '}:'.  $input['merchant_id'];
     }
 
 
@@ -95,12 +106,12 @@ class ThrottleController extends Controller
         foreach ($merchants as $merchantId)
         {
             ++$totalIteration;
-            $key = $this->getRedisKey(['merchant_id' => $merchantId]);
+            $key = $this->getRedisOldKey(['merchant_id' => $merchantId]);
 
             try
             {
                 $rules = $redisLabs->hgetall($key);
-                $key = "{".$key."}";
+                $key = $this->getRedisNewKey(['merchant_id' => $merchantId]);
                 $throttleEC->hmset($key, $rules);
             }
             catch (\Throwable $e)
@@ -122,12 +133,12 @@ class ThrottleController extends Controller
         foreach ($routes as $route)
         {
             ++$totalIteration;
-            $key = $this->getRedisKey(['route' => $route]);
+            $key = $this->getRedisOldKey(['route' => $route]);
 
             try
             {
                 $rules = $redisLabs->hgetall($key);
-                $key = "{".$key."}";
+                $key = $this->getRedisNewKey(['route' => $route]);
                 $throttleEC->hmset($key, $rules);
             }
             catch (\Throwable $e)
@@ -150,6 +161,7 @@ class ThrottleController extends Controller
             ++$totalIteration;
             try
             {
+                $key = "laravel:".$key;
                 $value = $redisLabs->get($key);
                 $configRedis->set($key, $value);
             }

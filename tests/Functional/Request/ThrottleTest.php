@@ -110,8 +110,8 @@ class ThrottleTest extends TestCase
             ->will($this->returnValue(array("abc")));
 
         $map = array(
-            array('{throttle:merchant:MID1}', array("abc")),
-            array('{throttle:merchant:MID1}', array("abc"))
+            array('throttle:{merchant}:MID1', array("abc")),
+            array('throttle:{merchant}:MID1', array("abc"))
         );
 
         $redisMockThrottle->method('hmset')->will($this->returnValueMap($map));
