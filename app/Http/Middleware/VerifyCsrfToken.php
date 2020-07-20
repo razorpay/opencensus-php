@@ -29,6 +29,9 @@ class VerifyCsrfToken extends BaseVerifier
         '/test/transactions/*',
         '/live/transactions/*',
 
+        // Register Route
+        '/user/register',
+
         // Aggregation requests
         '/test/analytics/aggregations/day',
         '/test/analytics/aggregations/week',
