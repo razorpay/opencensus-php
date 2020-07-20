@@ -5,12 +5,14 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import ModalHeader from 'common/ui/ModalHeader';
 import { updateSelfContact } from 'merchant/reducers/team';
+import { verifyTwoFactorOtp } from 'merchant_common/reducers/twoFactor';
 
 import { OtpInput } from 'merchant/components/OtpInput';
 import Form from 'common/new-ui/Form';
 import { AsyncBtn } from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
 
+import ajax from 'merchant/utils/ajax';
 import { isPhone } from 'common/utils/validators';
 
 @connect(
@@ -32,33 +34,28 @@ export default class UpdateSelfContactMobile extends Component {
   };
 
   onSubmit = () => {
-    return (
-      this.props
-        .updateSelfContact(this.state.values)
-        // there will be no then since it will fail from api, since we've not sent OTP
-        .catch(({ errors }) => {
-          const error = (errors || [])[0];
+    return this.props
+      .updateSelfContact(this.state.values)
+      .then(() => {
+        this.props.openModal({
+          size: 'small',
+          component: (
+            <VerifyOtp
+              contactMobile={this.state.values.contact_mobile}
+              onSuccess={this.props.onSuccess}
+              onClose={this.props.onClose}
+            />
+          ),
+        });
+      })
+      .catch(({ errors }) => {
+        const error = (errors || [])[0];
 
-          if (error === 'OTP is required') {
-            // open OTP modal
-            this.props.openModal({
-              size: 'small',
-              component: (
-                <VerifyOtp
-                  contactMobile={this.state.values.contact_mobile}
-                  onSuccess={this.props.onSuccess}
-                  onClose={this.props.onClose}
-                />
-              ),
-            });
-          } else {
-            this.props.showNotification({
-              type: 'error',
-              message: error,
-            });
-          }
-        })
-    );
+        this.props.showNotification({
+          type: 'error',
+          message: error,
+        });
+      });
   };
 
   onChange = ({ target }) => {
@@ -123,7 +120,7 @@ export default class UpdateSelfContactMobile extends Component {
 }
 
 @connect(null, {
-  updateSelfContact,
+  verifyTwoFactorOtp,
   showNotification,
   openModal,
   closeModal,
@@ -133,10 +130,12 @@ class VerifyOtp extends Component {
 
   onConfirm = () => {
     return this.props
-      .updateSelfContact({
-        contact_mobile: this.props.contactMobile,
-        otp: this.otpValue,
-      })
+      .verifyTwoFactorOtp(
+        {
+          otp: this.otpValue,
+        },
+        ajax
+      )
       .then(response => {
         if (response.success) {
           this.props.onSuccess && this.props.onSuccess();
