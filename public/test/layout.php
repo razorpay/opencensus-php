@@ -67,26 +67,20 @@ iframe {
     width: 100%;
   }
 }
+.hidden {
+    display: none;
+}
 </style>
 </head>
 <body>
 <div id="keys">
 ⌘ ⏎
 </div>
-<div id="code">var test_key = 'rzp_test_1DP5mmOlF5G5ag';
+<div id="code-keys" class="hidden">var test_key = 'rzp_test_1DP5mmOlF5G5ag';
 var live_key = 'rzp_live_ILgsfZCZoFIKMb';
 
-var key = test_key;
-
-<?php if ($_SERVER['HTTP_HOST'] !== "api.razorpay.com"): ?>
-var Razorpay = {
-  config: {
-    api: '/'
-  }
-};
-<?php endif; ?>
-
-var options = {
+var key = test_key;</div>
+<div id="code-options" class="hidden">var options = {
   key: key,
   amount: 600000,
   handler: resp => alert(resp.razorpay_payment_id),
@@ -99,10 +93,82 @@ var options = {
     'card[cvv]': '123'
   }
 }</div>
+<div id="code"></div>
 <script>
+
+/**
+ * Returns the default code to be used
+ */
+function getBaseCode () {
+    var rzpConfig = getRazorpayConfig();
+
+    var keys = document.querySelector('#code-keys').innerHTML;
+    var options = document.querySelector('#code-options').innerHTML;
+    var config = rzpConfig ? 'var Razorpay = ' + JSON.stringify(rzpConfig, null, 4) + ';' : '';
+
+    return [keys, config, options].join('\n');
+}
+
+/**
+ * Returns the search params from current URL
+ */
+function getSearchParams () {
+    var search = window.location.search.replace('?', '');
+    var params = {};
+
+    var items = search.split('&');
+
+    var i;
+    for (i = 0; i < items.length; i++) {
+      var pair = items[i].split('=');
+
+      params[pair[0]] = pair[1];
+    }
+
+    return params;
+  }
+
+/**
+ * Generates the config if any needs to be used
+ */
+function getRazorpayConfig () {
+    var params = getSearchParams();
+    var frameUrl;
+    var RzpConfig = {};
+
+    if (params.branch) {
+        frameUrl = '/test/checkout/?branch=' + params.branch;
+    }
+
+    var config = {
+        api: '/',
+    };
+
+    if (frameUrl) {
+        config.frame = frameUrl;
+    }
+
+    // Don't need "api" config on prod
+    if (window.location.hostname === 'api.razorpay.com') {
+        delete config.api;
+    }
+
+    if (Object.keys(config).length > 0) {
+        RzpConfig.config = config;
+    }
+
+    var shouldAddConfig = Object.keys(RzpConfig).length > 0;
+
+    if (shouldAddConfig) {
+        return RzpConfig;
+    }
+}
+
 var $ = document.querySelector.bind(document);
 if (localStorage.code) {
   $('#code').innerHTML = localStorage.code;
+} else {
+  $('#code').innerHTML = getBaseCode();
 }
 var flask = new CodeFlask;flask.run('#code',{language:'javascript'});
 var t = $('textarea');
@@ -120,7 +186,9 @@ $('#keys').onclick = t.onkeydown = e => {
     var isDark = window.location.hostname.toLowerCase().indexOf('api-dark') >= 0;
     var source = 'checkout.razorpay.com';
 
-    if (isStage) {
+    if (getSearchParams().branch) {
+      source = `betacdn.razorpay.com/_checkout/${getSearchParams().branch}`
+    } else if (isStage) {
       source = 'checkout.stage.razorpay.in';
     } else if (isFunc) {
       source = 'checkout.func.razorpay.in';
@@ -133,7 +201,7 @@ $('#keys').onclick = t.onkeydown = e => {
     if (iframes) {
       for (var i = 0; i < iframes.length; i++) {
         iframes[i].remove();
-      } 
+      }
     }
 
     // Create iframes
