@@ -35,38 +35,22 @@ return [
         'bank_payment_id' => '99999999',
         'received'        => true,
         'bank'            => 'PUNB_R',
-        'status'          => '0',
+        'status'          => 'S',
     ],
 
     'testAuthorizeFailed' => [
         'response' => [
             'content'     => [
                 'error' => [
-                    'code'          => PublicErrorCode::GATEWAY_ERROR,
-                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
                 ],
             ],
-            'status_code' => 502,
+            'status_code' => 400,
         ],
         'exception' => [
             'class'               => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
-        ],
-    ],
-
-    'testVerifyCallbackFailure' => [
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'          => PublicErrorCode::GATEWAY_ERROR,
-                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
-                ],
-            ],
-            'status_code' => 502,
-        ],
-        'exception' => [
-            'class'                 => Rzp\Exception\GatewayErrorException::class,
-            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         ],
     ],
 
@@ -118,38 +102,6 @@ return [
         ],
     ],
 
-    'testVerifyRefundProcessingOnGateway' => [
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_ALREADY_REFUND_INITIATED,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'                 => Rzp\Exception\GatewayErrorException::class,
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_REFUND_INITIATED,
-        ],
-    ],
-
-    'testVerifyRefundDuplicateRecordOnGateway' => [
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'          => PublicErrorCode::GATEWAY_ERROR,
-                    'description'   => PublicErrorDescription::GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND,
-                ],
-            ],
-            'status_code' => 502,
-        ],
-        'exception' => [
-            'class'                 => Rzp\Exception\GatewayErrorException::class,
-            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND,
-        ],
-    ],
-
     'testPaymentFailedNetbankingEntity' => [
         'bank_payment_id' => null,
         'received'        => false,
@@ -161,22 +113,22 @@ return [
         'bank_payment_id' => '99999999',
         'received'        => true,
         'bank'            => 'PUNB_R',
-        'status'          => '0'
+        'status'          => 'S'
     ],
 
     'testAuthFailedVerifyFailedEntity' => [
         'received'        => false,
         'bank'            => 'PUNB_R',
-        'status'          => '1000'
+        'status'          => 'F'
     ],
 
     'testAuthSuccessVerifyFailedNetbankingEntity' => [
         'received'        => true,
         'bank'            => 'PUNB_R',
-        'status'          => '0'
+        'status'          => 'S'
     ],
 
-    'testRefundAmountGreaterThanPaymentAmount' => [
+    'testRefundFailed' => [
         'response'  => [
             'content'     => [
                 'error' => [

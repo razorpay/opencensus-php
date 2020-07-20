@@ -33,7 +33,7 @@ class Reconciliator extends Mock\Reconciliator
     {
         $payment = $data['payment'];
 
-        $data['netbanking'] = $this->repo
+        $data['gateway'] = $this->repo
                                    ->netbanking
                                    ->findByPaymentIdAndAction($payment['id'], 'authorize')
                                    ->toArray();
@@ -43,21 +43,23 @@ class Reconciliator extends Mock\Reconciliator
     {
         foreach ($input as $row)
         {
-            $payment = $row['payment'];
-
-            $netbanking = $row['netbanking'];
+            $date = Carbon::createFromTimestamp(
+                $row['payment']['created_at'],
+                Timezone::IST)
+                ->format('Y-m-d');
 
             $data[] = [
-                $netbanking['bank_payment_id'],
-                number_format($payment['amount'] / 100, 1, '.', ''),
-                Carbon::createFromTimestamp($payment['created_at'], Timezone::IST)->format('d/m/Y'),
-                $payment['id'],
+                'prn'            => $row['payment']['reference1'],
+                'payment_id'     => $row['payment']['id'],
+                'bank_reference' => $row['gateway']['bank_payment_id'],
+                'amount'         => number_format($row['payment']['amount'] / 100, 2, '.', ''),
+                'date'           => $date,
             ];
         }
 
         $this->content($data);
 
-        return $this->generateText($data, '^');
+        return $this->generateText($data, '|');
     }
 
     protected function createFile(

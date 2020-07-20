@@ -77,13 +77,14 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <td colspan="40">Select Bank (Netbanking): </td>
         <td>
             <select name="bank">
-                <option value="PUNB">Punjab National Bank</option>
+                <option value="PUNB_R">Punjab National Bank Retail Banking</option>
+                <option value="PUNB_C">Punjab National Bank Corporate Banking</option>
             </select>
         </td>
     </tr>
 
         <input type="hidden" value="INR" name="currency">
-        <input type="hidden" value="<?=$key_id?>" name="key_id">
+        <input type="hidden" value="rzp_test_ZAxCg9TB9J6ifu" name="key_id">
 
 
         <tr>

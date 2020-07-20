@@ -772,10 +772,12 @@ return [
     ],
 
     'netbanking_pnb' => [
-        'test_merchant_id'     => env('NETBANKING_PNB_GATEWAY_TEST_MERCHANT_ID'),
-        'test_salt'            => env('NETBANKING_PNB_GATEWAY_TEST_SALT'),
-        'test_encryption_key'  => env('NETBANKING_PNB_GATEWAY_TEST_ENCRYPTION_KEY'),
-        'test_decryption_key'  => env('NETBANKING_PNB_GATEWAY_TEST_DECRYPTION_KEY')
+        'test_merchant_id'       => env('NETBANKING_PNB_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'       => env('NETBANKING_PNB_GATEWAY_TEST_HASH_SECRET'),
+        'live_hash_secret'       => env('NETBANKING_PNB_GATEWAY_LIVE_HASH_SECRET'),
+        'test_salt'              => env('NETBANKING_PNB_GATEWAY_TEST_SALT'),
+        'test_terminal_password' => env('NETBANKING_PNB_GATEWAY_TEST_TERMINAL_PASSWORD'),
+        'live_terminal_password' => env('NETBANKING_PNB_GATEWAY_LIVE_TERMINAL_PASSWORD'),
     ],
 
     'netbanking_csb' => [

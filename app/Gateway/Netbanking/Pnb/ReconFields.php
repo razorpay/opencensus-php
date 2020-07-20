@@ -4,18 +4,20 @@ namespace RZP\Gateway\Netbanking\Pnb;
 
 class ReconFields
 {
-    const BANK_PAYMENT_ID = 'bank transaction id';
+    const PRN = 'prn';
+    const PAYMENT_ID = 'payment_id';
+    const BANK_PAYMENT_ID = 'bank_reference';
     const AMOUNT = 'amount';
-    const DATE = 'transaction date';
-    const PAYMENT_ID = 'aggregator ref id';
+    const DATE = 'date';
 
     public static function getPaymentColumnHeaders()
     {
         return [
+            self::PRN,
+            self::PAYMENT_ID,
             self::BANK_PAYMENT_ID,
             self::AMOUNT,
             self::DATE,
-            self::PAYMENT_ID,
         ];
     }
 }

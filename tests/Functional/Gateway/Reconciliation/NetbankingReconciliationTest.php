@@ -311,7 +311,7 @@ class NetbankingReconciliationTest extends TestCase
         $this->mockReconContentFunction(
             function(& $content, $action = null)
             {
-                $content[0][1] = '50.00';
+                $content[0]['amount'] = '50.00';
             });
 
         $fileContents = $this->generateFile('pnb', []);

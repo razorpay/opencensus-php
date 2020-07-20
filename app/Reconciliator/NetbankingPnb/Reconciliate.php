@@ -19,6 +19,6 @@ class Reconciliate extends Base\Reconciliate
 
     public function getDelimiter()
     {
-        return '^';
+        return '|';
     }
 }
