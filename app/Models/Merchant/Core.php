@@ -790,7 +790,7 @@ class Core extends Base\Core
 
             if (array_key_exists($action, Constants::$internationalActionMapping))
             {
-                (new Detail\Core())->updateInternationalActivationFlow($merchant,
+                (new Detail\Core())->adminUpdateInternationalActivationFlow($merchant,
                                                                        Constants::$internationalActionMapping[$action]);
             }
         });
@@ -3610,7 +3610,7 @@ class Core extends Base\Core
 
         $productInternationalField->setMultipleProductStatus($productNameStatus);
 
-        (new Detail\Core())->updateInternationalActivationFlow($merchant, 1);
+        (new Detail\Core())->adminUpdateInternationalActivationFlow($merchant, 1);
 
         $this->repo->saveOrFail($merchant);
     }

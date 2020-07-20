@@ -2117,7 +2117,7 @@ class Core extends Base\Core
      * Sets international_activation_flow to blacklist if its being disabled by admin. .
      * SHOULD BE CALLED ONLY IN CASE OF ADMIN FLOW
      */
-    public function updateInternationalActivationFlow(Merchant\Entity $merchant, $international)
+    public function adminUpdateInternationalActivationFlow(Merchant\Entity $merchant, $international)
     {
         $merchantDetail = $merchant->merchantDetail;
 
@@ -2125,11 +2125,7 @@ class Core extends Base\Core
 
         if ($international === 1)
         {
-            $internationalActivationFlow = BusinessSubCategoryMetaData::getFeatureValueUsingCategoryOrSubcategory(
-                BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION,
-                $merchantDetail->getBusinessCategory(),
-                $merchantDetail->getBusinessSubcategory(),
-                ActivationFlow::BLACKLIST);
+            $internationalActivationFlow = (new Detail\InternationalCore)->getInternationalActivationFlow($merchant);
         }
 
         $merchantDetail->setInternationalActivationFlow($internationalActivationFlow);

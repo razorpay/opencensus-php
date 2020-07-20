@@ -7075,7 +7075,7 @@ class MerchantTest extends TestCase
 
     public function testMerchantInternationalPGEnableAction()
     {
-        $this->setMerchantMerchantDetailsAndPricing(false, 'greylist');
+        $this->setMerchantMerchantDetailsAndPricing(false, 'whitelist');
 
         $this->ba->adminAuth();
 
@@ -7090,6 +7090,33 @@ class MerchantTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testMerchantInternationalEnableCategoryOneGreylist()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'pricing_plan_id' => '1In3Yh5Mluj605',
+            'international'   => 'greylist']);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                   => '10000000000000',
+            'international_activation_flow' => 'greylist',
+            'business_category'             => 'education',
+            'business_subcategory'          => 'college',
+            'business_type'                 => 1]);
+
+        $this->fixtures->pricing->createPromotionalPlan();
+
+        $this->fixtures->edit('pricing', '1AXp2Xd3t5aRLX', ['international' => true]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', 10000000000000);
+
+        $this->assertEquals('greylist', $merchantDetail['international_activation_flow']);
+    }
+
 
     public function testMerchantInternationalDisableBulkEdit()
     {

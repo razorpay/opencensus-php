@@ -5973,6 +5973,27 @@ return [
         ]
     ],
 
+    'testMerchantInternationalEnableCategoryOneGreylist' => [
+        'request'  => [
+            'content' => [
+                'action'                 => 'enable_international',
+                'international_products' => ['invoices']
+            ],
+            'url'     => '/merchants/10000000000000/action',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity'                => 'merchant',
+                'international'         => true,
+                'product_international' => '0111000000',
+                'merchant_detail'       => [
+                    'international_activation_flow' => 'greylist',
+                ]
+            ]
+        ]
+    ],
+
     'testMerchantInternationalDisableBulkEdit' => [
         'request'  => [
             'content' => [
