@@ -19,6 +19,10 @@ class Validator extends Base\Validator
 {
     const EMANDATE_MAX_AMOUNT_LIMIT = 9999900;
 
+    const UPIMANDATE_AMOUNT_MIN_LIMIT = 100;
+
+    const UPIMANDATE_AMOUNT_MAX_LIMIT = 200000;
+
     protected static $createRules = [
         Entity::EXPIRE_AT                       => 'sometimes|epoch',
         Entity::MAX_AMOUNT                      => 'sometimes|integer|nullable',
@@ -111,6 +115,11 @@ class Validator extends Base\Validator
                     ($method === Payment\Method::NACH && $authType === Payment\AuthType::MIGRATED ) )
             {
                 $maxAmountLimit = PaperMandate\Validator::MAX_AMOUNT_LIMIT;
+            }
+
+            if ($method === Payment\Method::UPI)
+            {
+                $maxAmountLimit = self::UPIMANDATE_AMOUNT_MAX_LIMIT;
             }
 
             if ($maxAmount > $maxAmountLimit)
@@ -294,6 +303,13 @@ class Validator extends Base\Validator
         if (empty($input[Entity::FIRST_PAYMENT_AMOUNT]) === true)
         {
             return;
+        }
+
+        if ($input[Entity::METHOD] === Method::UPI)
+        {
+            throw new BadRequestValidationFailureException(
+                'first payment amount not allowed'
+            );
         }
 
         if ($input[Entity::METHOD] === Method::NACH)

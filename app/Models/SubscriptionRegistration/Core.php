@@ -122,22 +122,38 @@ class Core extends Base\Core
 
     public function createOrderForUPI(& $input, $customer)
     {
+        // Validate amount and Max amount fields specific to UPI here
+        // These data will not be available in subscription registration entity, so can not be validated there
+        // Also Recurring Type will not be available in order entity, hence validating here
+        if (isset($input['amount']) === false or
+            $input['amount'] < Validator::UPIMANDATE_AMOUNT_MIN_LIMIT or
+            $input['amount'] > Validator::UPIMANDATE_AMOUNT_MAX_LIMIT)
+        {
+            $msg = 'For UPI Authlink, amount should be between '
+                        . Validator::UPIMANDATE_AMOUNT_MIN_LIMIT
+                        . ' and '
+                        . Validator::UPIMANDATE_AMOUNT_MAX_LIMIT;
+
+            throw new Exception\BadRequestValidationFailureException( $msg, 'amount');
+        }
+
         $orderPayLoad =
             [
-                'amount'          =>  $input['subscription_registration']['first_payment_amount'],
+                'amount'          => $input['amount'],
                 'currency'        => 'INR',
-                'method'          =>  Method::UPI,
+                'method'          => Method::UPI,
                 'customer_id'     => $input[Entity::CUSTOMER_ID],
                 'payment_capture' => 1,
                 'token'           =>
                     [
-                        'max_amount'      => $input['subscription_registration']['max_amount'],
-                        'frequency'       => $input['subscription_registration']['frequency'],
+                        'max_amount'      => $input['subscription_registration']['max_amount'] ?? null,
+                        'frequency'       => $input['subscription_registration']['frequency'] ?? null,
                         'recurring_type'  => \RZP\Models\UpiMandate\RecurringType::BEFORE,
                         'recurring_value' => 31,
                         'start_time'      => Carbon::now()->addDay(1)->getTimestamp(),
-                        'end_time'        => isset($input['subscription_registration']['end_time']) ? $input['subscription_registration']['end_time'] :
-                                                                            Carbon::now()->addYear(10)->getTimestamp(),
+                        'end_time'        => isset($input['subscription_registration']['end_time'])
+                                                ? $input['subscription_registration']['end_time']
+                                                : Carbon::now()->addYear(10)->getTimestamp(),
                     ]
             ];
 
