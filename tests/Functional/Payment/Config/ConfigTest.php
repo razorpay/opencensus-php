@@ -158,4 +158,34 @@ class ConfigTest extends TestCase
 
         $this->assertEquals($config->getPublicId(), $this->testData[__FUNCTION__]['response']['content']['id']);
     }
+
+    public function testUpdateConfigFieldForLateAuthConfigBulk()
+    {
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $config = $this->fixtures->create('config', ['type' => 'late_auth']);
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/admin/lateauth/config/bulk';
+
+        $this->startTest();
+    }
+
+    public function testCreateCheckoutConfigBulk()
+    {
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $config = $this->fixtures->create('config', ['type' => 'late_auth']);
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment/config/bulk';
+
+        $this->startTest();
+    }
 }

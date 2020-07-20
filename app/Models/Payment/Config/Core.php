@@ -9,6 +9,7 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 
 class Core extends Base\Core
 {
@@ -301,5 +302,12 @@ class Core extends Base\Core
 
                 return  $configEntity;
             });
+    }
+
+    public function withMerchant(Merchant\Entity $merchant)
+    {
+        $this->merchant = $merchant;
+
+        return $this;
     }
 }

@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Config;
 
 use RZP\Diag\EventCode;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 
 
 class Service extends Base\Service
@@ -70,5 +71,99 @@ class Service extends Base\Service
         $config = $this->core->updateLateAuthConfig($input);
 
         return $config->toArrayPublic();
+    }
+
+    public function updateLateAuthConfigBulk(array  $input)
+    {
+        $this->trace->info(TraceCode::CONFIG_UPDATE_BULK_REQUEST, $input);
+
+        (new Validator())->validateInput('edit_bulk', $input);
+
+        $merchantIds = $input['merchant_ids'];
+
+        $success  = 0;
+        $failures = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                $bulkUploadInput = array(
+                    'type' => Type::LATE_AUTH,
+                    'config' => $input['config'],
+                );
+
+                $this->core->withMerchant($merchant)->updateLateAuthConfig($bulkUploadInput);
+
+                $success += 1;
+            }
+            catch(\Exception $e)
+            {
+                $this->trace->traceException($e);
+
+                $failures[] = $merchantId;
+            }
+        }
+
+        $summary  = [
+            'success'  => $success,
+            'failures' => $failures
+        ];
+
+        $this->trace->info(TraceCode::CONFIG_UPDATE_BULK_RESPONSE, $summary);
+
+        return $summary;
+    }
+
+    public function createBulk(array  $input)
+    {
+        $this->trace->info(TraceCode::CONFIG_CREATE_BULK_REQUEST, $input);
+
+        (new Validator())->validateInput('create_bulk', $input);
+
+        $merchantIds = $input['merchant_ids'];
+
+        $type = $input['type'];
+
+        $success  = 0;
+        $failures = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $name = $type.'_'.$merchantId;
+
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                $bulkCreateInput = array(
+                    'type'       => $type,
+                    'config'     => $input['config'],
+                    'name'       => $name,
+                    'is_default' => $input['is_default'],
+                );
+
+                $this->core->withMerchant($merchant)->create($bulkCreateInput);
+
+                $success += 1;
+            }
+            catch(\Exception $e)
+            {
+                $this->trace->traceException($e);
+
+                $failures[] = $merchantId;
+            }
+        }
+
+        $summary  = [
+            'success'  => $success,
+            'failures' => $failures
+        ];
+
+        $this->trace->info(TraceCode::CONFIG_CREATE_BULK_RESPONSE, $summary);
+
+        return $summary;
     }
 }

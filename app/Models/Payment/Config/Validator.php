@@ -59,6 +59,20 @@ class Validator extends Base\Validator
         Entity::CONFIG         => 'required_if:type,late_auth|array',
     ];
 
+    protected static $editBulkRules = [
+        Entity::CONFIG         => 'required|array',
+        'merchant_ids'         => 'array',
+        'merchant_ids.*'       => 'filled|string|unsigned_id',
+    ];
+
+    protected static $createBulkRules = [
+        Entity::CONFIG         => 'required|array',
+        Entity::IS_DEFAULT     => 'required|boolean',
+        Entity::TYPE           => 'required|string|custom',
+        'merchant_ids'         => 'array',
+        'merchant_ids.*'       => 'filled|string|unsigned_id',
+    ];
+
     protected static $createValidators = [
         Self::CONFIG_JSON,
     ];

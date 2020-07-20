@@ -27,9 +27,11 @@ class Route
         'fetch_payment_config'                     => ['get',      'payment/config/{type}',                          'ConfigController@fetchPaymentConfig'                               ],
         'fetch_payment_config_admin'               => ['get',      'admin/payment/config/{type}',                    'ConfigController@fetchPaymentConfig'                               ],
         'create_payment_config'                    => ['post',     'payment/config',                                 'ConfigController@createPaymentConfig'                              ],
+        'create_payment_config_bulk'               => ['post',     'payment/config/bulk',                            'ConfigController@createPaymentConfigBulk'                          ],
         'create_payment_config_admin'              => ['post',     'admin/payment/config',                           'ConfigController@createPaymentConfig'                              ],
         'update_payment_config'                    => ['patch',    'payment/config',                                 'ConfigController@updatePaymentConfig'                              ],
         'update_payment_config_admin'              => ['patch',    'admin/payment/config',                           'ConfigController@updatePaymentConfig'                              ],
+        'update_late_auth_config_admin_bulk'       => ['patch',    'admin/lateauth/config/bulk',                     'ConfigController@updateLateAuthConfigBulk'                         ],
         // callback_url case handler for automatic checkout
         'checkout_onyx'                            => ['post',     'checkout/onyx',                                  'PublicController@postCallbackUrlWithParams'                        ],
 
@@ -3483,6 +3485,8 @@ class Route
         'setl_bank_account_update',
         'setl_bank_account_get',
         'setl_bank_account_delete',
+        'update_late_auth_config_admin_bulk',
+        'create_payment_config_bulk',
     ];
 
     public static $routePermission = [
@@ -4165,6 +4169,8 @@ class Route
         'fetch_payment_config_admin'                => '*',
         'create_payment_config_admin'               => '*',
         'update_payment_config_admin'               => '*',
+        'update_late_auth_config_admin_bulk'        => '*',
+        'create_payment_config_bulk'                => '*',
         'admin_fetch_fund_account_validate'         => '*',
         'create_promotions_events'                  => Permission::CREATE_PROMOTION_EVENT,
         'fee_recovery_payout_admin'                 => Permission::PROCESS_FEE_RECOVERY,

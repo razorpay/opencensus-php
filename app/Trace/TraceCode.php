@@ -3053,6 +3053,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     //payment config
     const CONFIG_CREATE_REQUEST                                 = 'CONFIG_CREATE_REQUEST';
     const CONFIG_UPDATE_REQUEST                                 = 'CONFIG_UPDATE_REQUEST';
+    const CONFIG_UPDATE_BULK_REQUEST                            = 'CONFIG_UPDATE_BULK_REQUEST';
+    const CONFIG_UPDATE_BULK_RESPONSE                           = 'CONFIG_UPDATE_BULK_RESPONSE';
+    const CONFIG_CREATE_BULK_REQUEST                            = 'CONFIG_CREATE_BULK_REQUEST';
+    const CONFIG_CREATE_BULK_RESPONSE                           = 'CONFIG_CREATE_BULK_RESPONSE';
 
     // DB wait timeout
     const WAIT_TIMEOUT_EXCEPTION                                = 'WAIT_TIMEOUT_EXCEPTION';

@@ -351,4 +351,49 @@ return  [
             ]
         ],
     ],
+
+    'testUpdateConfigFieldForLateAuthConfigBulk' => [
+        'request' => [
+            'content' => [
+                'config'     => [
+                    "capture"=> 'automatic',
+                    "capture_options"=> [
+                        "manual_expiry_period"=> 1600,
+                        "automatic_expiry_period"=> 600,
+                        "refund_speed"=> "normal"
+                    ]
+                ],
+                'merchant_ids' => ['10000000000000'],
+            ],
+            'method'    => 'PATCH',
+            'url'       => '',
+        ],
+        'response' => [
+            'content' => [
+                'success'       => 1,
+                'failures'      => []
+            ]
+        ],
+    ],
+
+    'testCreateCheckoutConfigBulk' => [
+        'request' => [
+            'content' => [
+                'type'       => 'checkout',
+                'config'     => [
+                    'method' => 'card',
+                ],
+                'is_default' => true,
+                'merchant_ids' => ['10000000000000'],
+            ],
+            'method'    => 'POST',
+            'url'       => '',
+        ],
+        'response' => [
+            'content' => [
+                'success'       => 1,
+                'failures'      => []
+            ]
+        ],
+    ],
 ];
