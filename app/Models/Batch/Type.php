@@ -314,6 +314,7 @@ class Type
         self::TERMINAL_CREATION,
         self::NACH_MIGRATION,
         self::MPAN,
+        self::REFUND,
     ];
 
     /**
@@ -341,7 +342,6 @@ class Type
         self::MERCHANT_STATUS_ACTION,
         self::NACH_MIGRATION,
         self::MPAN,
-        self::REFUND,
         self::MERCHANT_ACTIVATION,
     ];
 

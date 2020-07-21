@@ -6,12 +6,14 @@ use Carbon\Carbon;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Method;
 use RZP\Constants\Environment;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Refund extends Base
@@ -75,6 +77,20 @@ class Refund extends Base
         $this->batch->setProcessedAmount($processedAmount);
     }
 
+    protected function validateEntries(array & $entries, array $input)
+    {
+        $variant = $this->getVariant(Merchant\RazorxTreatment::BATCH_SERVICE_REFUND_MIGRATION);
+
+        $result = (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON);
+
+        $this->getValidator()->validateBatchRefundEntries($entries, $input, $this->merchant, $result);
+    }
+
+    protected function getValidator()
+    {
+        return new Payment\Refund\BatchValidator($this->batch);
+    }
+
     /**
      * Schedules the batch at: current time + 1 hour.
      * Skipping scheduling for QA envs, otherwise all the existing tests related to refund batch
@@ -86,5 +102,24 @@ class Refund extends Base
         {
             $input[Batch\Constants::SCHEDULE] = Carbon::now(Timezone::IST)->addHour()->addMinutes(10)->getTimestamp() * 1000;
         }
+    }
+
+    protected function updateBatchHeadersIfApplicable(array &$headers, array $entries)
+    {
+        $variant = $this->getVariant(Merchant\RazorxTreatment::BATCH_SERVICE_REFUND_MIGRATION);
+
+        $result = (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON);
+
+        if ($result === false)
+        {
+            $index = array_search(Batch\Header::SPEED, $headers);
+
+            if ($index !== false)
+            {
+                unset($headers[$index]);
+            }
+        }
+
+        return;
     }
 }

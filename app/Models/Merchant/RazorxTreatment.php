@@ -140,5 +140,7 @@ final class RazorxTreatment
     // which makes request to stork & then dual writes to API.
     const API_WEBHOOK_V2_PATH = 'api_webhook_v2_path';
 
+    const BATCH_SERVICE_REFUND_MIGRATION     = 'batch_service_refund_migration';
+
     const CREDCASE_DUAL_WRITE_ENABLED = 'credcase_dual_write_enabled';
 }
