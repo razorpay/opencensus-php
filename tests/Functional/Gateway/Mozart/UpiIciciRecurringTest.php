@@ -241,6 +241,10 @@ class UpiIciciRecurringTest extends TestCase
         $mandate->reload();
 
         $this->assertEquals(Status::REVOKED, $mandate['status']);
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->assertEquals(Token\RecurringStatus::CANCELLED, $token['recurring_status']);
     }
 
     public function testRevokeCreatedMandate()
@@ -280,6 +284,10 @@ class UpiIciciRecurringTest extends TestCase
         $mandate->reload();
 
         $this->assertEquals(Status::PAUSED, $mandate['status']);
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->assertEquals(Token\RecurringStatus::PAUSED, $token['recurring_status']);
     }
 
     public function testResumeMandate()
@@ -293,6 +301,10 @@ class UpiIciciRecurringTest extends TestCase
         $mandate->reload();
 
         $this->assertEquals(Status::CONFIRMED, $mandate['status']);
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->assertEquals(Token\RecurringStatus::CONFIRMED, $token['recurring_status']);
     }
 
     public function testRevokeMandateViaCallback()
@@ -306,6 +318,10 @@ class UpiIciciRecurringTest extends TestCase
         $mandate->reload();
 
         $this->assertEquals(Status::REVOKED, $mandate['status']);
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->assertEquals(Token\RecurringStatus::CANCELLED, $token['recurring_status']);
     }
 
     protected function revokeUpiRecurringMandate(string $tokenId)

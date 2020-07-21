@@ -661,4 +661,70 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_TOKEN_FOR_CANCEL);
         }
     }
+
+    /*
+     * Handle Token Pause Event
+     */
+    public function pauseTokenEvent($tokenId, $customerId)
+    {
+        $this->trace->info(
+            TraceCode::CUSTOMER_TOKEN_PAUSE,
+            [
+                'token_id'    => $tokenId,
+                'customer_id' => $customerId,
+            ]);
+
+        // Todo: handle getting customer in test case, currently erroring out
+        //$customer = $this->repo->customer->findByPublicId($customerId);
+
+        $token = $this->repo->token->findByPublicId('token_' . $tokenId);
+
+        $token->setRecurringStatus(RecurringStatus::PAUSED);
+
+        $token->saveOrFail();
+    }
+
+    /*
+     * Handle Token Resume Event
+     */
+    public function resumeTokenEvent($tokenId, $customerId)
+    {
+        $this->trace->info(
+            TraceCode::CUSTOMER_TOKEN_RESUME,
+            [
+                'token_id'    => $tokenId,
+                'customer_id' => $customerId,
+            ]);
+
+        // Todo: handle getting customer in test case, currently erroring out
+        //$customer = $this->repo->customer->findByPublicId($customerId);
+
+        $token = $this->repo->token->findByPublicId('token_' . $tokenId);
+
+        $token->setRecurringStatus(RecurringStatus::CONFIRMED);
+
+        $token->saveOrFail();
+    }
+
+    /*
+     * Handle Token Pause Event
+     */
+    public function cancelTokenEvent($tokenId, $customerId)
+    {
+        $this->trace->info(
+            TraceCode::CUSTOMER_TOKEN_CANCEL,
+            [
+                'token_id'    => $tokenId,
+                'customer_id' => $customerId,
+            ]);
+
+        // Todo: handle getting customer in test case, currently erroring out
+        //$customer = $this->repo->customer->findByPublicId($customerId);
+
+        $token = $this->repo->token->findByPublicId('token_' . $tokenId);
+
+        $token->setRecurringStatus(RecurringStatus::CANCELLED);
+
+        $token->saveOrFail();
+    }
 }

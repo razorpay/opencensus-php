@@ -195,6 +195,8 @@ trait UpiRecurring
 
                     $this->repo->saveOrFail($upiMandate);
 
+                    (new Token\Core)->cancelTokenEvent($upiMandate->getTokenId(), $upiMandate->getCustomerId());
+
                     return
                         [
                             'success' => true,
@@ -218,6 +220,8 @@ trait UpiRecurring
 
         $this->repo->saveOrFail($upiMandate);
 
+        (new Token\Core)->pauseTokenEvent($upiMandate->getTokenId(), $upiMandate->getCustomerId());
+
         return ['success' => true];
     }
 
@@ -227,6 +231,8 @@ trait UpiRecurring
 
         $this->repo->saveOrFail($upiMandate);
 
+        (new Token\Core)->resumeTokenEvent($upiMandate->getTokenId(), $upiMandate->getCustomerId());
+
         return ['success' => true];
     }
 
@@ -235,6 +241,8 @@ trait UpiRecurring
         $upiMandate->setStatus(UpiMandate\Status::REVOKED);
 
         $this->repo->saveOrFail($upiMandate);
+
+        (new Token\Core)->cancelTokenEvent($upiMandate->getTokenId(), $upiMandate->getCustomerId());
 
         return ['success' => true];
     }

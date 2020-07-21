@@ -100,6 +100,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    public function getCustomerId()
+    {
+        return $this->getAttribute(self::CUSTOMER_ID);
+    }
+
     public function getTokenId()
     {
         return $this->getAttribute(self::TOKEN_ID);

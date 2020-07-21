@@ -30,6 +30,16 @@ class RecurringStatus
 
     const PAID              = 'paid';
 
+    /**
+     * This status indicates that this token has been paused for future recurring payments
+     */
+    const PAUSED         = 'paused';
+
+    /**
+     * This status indicates that this token has been cancel for future recurring payments
+     */
+    const CANCELLED      = 'cancelled';
+
     public static $webhookStatuses = [
         self::CONFIRMED,
         self::REJECTED

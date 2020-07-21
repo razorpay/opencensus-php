@@ -510,6 +510,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CUSTOMER_CREATE                                       = 'CUSTOMER_CREATE';
     const CUSTOMER_EDIT                                         = 'CUSTOMER_EDIT';
     const CUSTOMER_TOKEN_CREATE                                 = 'CUSTOMER_TOKEN_CREATE';
+    const CUSTOMER_TOKEN_PAUSE                                  = 'CUSTOMER_TOKEN_PAUSE';
+    const CUSTOMER_TOKEN_RESUME                                 = 'CUSTOMER_TOKEN_RESUME';
+    const CUSTOMER_TOKEN_CANCEL                                 = 'CUSTOMER_TOKEN_CANCEL';
     const CUSTOMER_TOKEN_EDIT                                   = 'CUSTOMER_TOKEN_EDIT';
     const CUSTOMER_TOKEN_STATUS_MISMATCH                        = 'CUSTOMER_TOKEN_STATUS_MISMATCH';
     const CARD_NUMBER_SCRUBBED                                  = 'CARD_NUMBER_SCRUBBED';
