@@ -661,7 +661,8 @@ class Gateway extends Base\Gateway
 
         else if ($this->fullyEncryptedFlow($input['payment']['gateway']) === false)
         {
-            if ($this->isFirstUpiRecurringPayment($input['payment']) === true)
+            if (($this->isFirstUpiRecurringPayment($input['payment']) === true) and
+                ($this->isMandateCreateCallback($input['gateway'], $input['payment']['gateway']) === true))
             {
                 parent::action($input, Action::AUTH_VERIFY);
             }
@@ -871,6 +872,28 @@ class Gateway extends Base\Gateway
         $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
 
         return;
+    }
+
+    protected function isMandateCreateCallback($input, $gateway)
+    {
+        switch($gateway)
+        {
+            case Payment\Gateway::UPI_MINDGATE:
+                return ($input['mandateDtls'][0]['mandateType'] === 'CREATE');
+            case Payment\Gateway::UPI_ICICI:
+                return (substr($input['merchantTranId'], 14, 6) === 'create');
+        }
+    }
+
+    protected function isFirstDebitCallback($input, $gateway)
+    {
+        switch($gateway)
+        {
+            case Payment\Gateway::UPI_MINDGATE:
+                return ($input['mandateDtls'][0]['mandateType'] === 'EXECUTE');
+            case Payment\Gateway::UPI_ICICI:
+                return (substr($input['merchantTranId'], 14, 6) === 'execte');
+        }
     }
 
     public function immediateVerifyApplicable($input)
@@ -2028,6 +2051,17 @@ class Gateway extends Base\Gateway
     {
         if ($this->shouldRunCallbackValidations($input['payment']['gateway']) === true)
         {
+            // For upi recurring payments, we get mandate create callback first. We get the mandate amount in the
+            // mandate create callback and not the payment amount. So adding condition for that here.
+            if (($this->isFirstUpiRecurringPayment($input['payment']) === true) and
+                ($this->isUpiRecurringApplicableGateway($input['payment']['gateway']) === true) and
+                ($this->isMandateCreateCallback($input['gateway']['redirect'], $input['payment']['gateway']) === true))
+            {
+                $this->runMandateCreateCallbackValidations($input, $response);
+
+                return;
+            }
+
             if (isset($response['data']['paymentId']) === true)
             {
                 $this->assertPaymentId($input['payment']['id'], $response['data']['paymentId']);
@@ -2064,6 +2098,25 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function runMandateCreateCallbackValidations($input, $response)
+    {
+        //TODO:: We need to remove the return statement and start validating this once icici fixes this.
+        return;
+
+        if (isset($response['data']['mandate_amount']) === true)
+        {
+            $dbAmount = $input['upi_mandate']['max_amount'];
+            $gatewayAmount = $response['data']['mandate_amount'];
+
+            $this->assertAmount($dbAmount, $gatewayAmount);
+        }
+        else
+        {
+            throw new Exception\LogicException(
+                'Amount should have been passed for Mandate create callback validation');
+        }
+    }
+
     protected function shouldRunCallbackValidations($gateway)
     {
         $validationGateways = [
@@ -2090,6 +2143,16 @@ class Gateway extends Base\Gateway
         ];
 
         return in_array($gateway, $validationGateways, true);
+    }
+
+    protected function isUpiRecurringApplicableGateway($gateway)
+    {
+        $upiRecurringApplicableGateways = [
+            Payment\Gateway::UPI_ICICI,
+            Payment\Gateway::UPI_MINDGATE,
+        ];
+
+        return in_array($gateway, $upiRecurringApplicableGateways, true);
     }
 
     protected function fullyEncryptedFlow($gateway)
@@ -2173,15 +2236,19 @@ class Gateway extends Base\Gateway
         }
         if ($this->isFirstUpiRecurringPayment($input['payment']) === true)
         {
-            if (($input['payment']['gateway'] === Payment\Gateway::UPI_MINDGATE) and
-                ($input['gateway']['redirect']['mandateDtls'][0]['mandateType'] === 'CREATE'))
+            if ($this->isMandateCreateCallback($input['gateway']['redirect'], $input['payment']['gateway']) === true)
             {
                 $response = $this->getMandateCreateResponseData($input, $mozartResponse);
-
             }
-            else if ($input['payment']['gateway'] === Payment\Gateway::UPI_ICICI)
+            else if ($this->isFirstDebitCallback($input['gateway']['redirect'], $input['payment']['gateway']) === true)
             {
-                $response = $this->getMandateCreateResponseData($input, $mozartResponse);
+                $response = [
+                    'acquirer' => [
+                        Payment\Entity::VPA         => $mozartResponse['data']['vpa'] ?? $input['payment']['vpa'] ?? '',
+                        Payment\Entity::REFERENCE16 => $mozartResponse['data']['rrn'] ?? '',
+                    ],
+                    'upi' => array_only($mozartResponse['data'], (new UpiEntity())->getFillable()),
+                ];
             }
             else
             {
@@ -2221,9 +2288,9 @@ class Gateway extends Base\Gateway
             'mandate' => [
                 'order_id'      => $input['payment']['order_id'],
                 'status'        => 'confirmed',
-                'umn'           => $mozartResponse['data']['umn'] ?? null,
-                'npci_txn_id'   => $mozartResponse['data']['npci_txn_id'] ?? null,
-                'rrn'           => $mozartResponse['data']['rrn'] ?? null,
+                'umn'           => $mozartResponse['data']['umn'] ?? '',
+                'npci_txn_id'   => $mozartResponse['data']['npci_txn_id'] ?? '',
+                'rrn'           => $mozartResponse['data']['rrn'] ?? '',
             ],
             'upi' => array_only($mozartResponse['data'], (new UpiEntity())->getFillable()),
         ];

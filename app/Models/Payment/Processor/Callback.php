@@ -26,12 +26,11 @@ use RZP\Models\Payment\Status;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
-use RZP\Models\UpiMandate\Entity;
 use RZP\Gateway\Upi\Base\RecurringTrait;
 
 trait Callback
 {
-    use RecurringTrait;
+    protected $shouldAuthorizePaymentOnCallback = true;
 
     /**
      * After payment initiation, bank redirects to us
@@ -141,6 +140,16 @@ trait Callback
                     $isS2sCallback = true;
 
                     $this->processPaymentCallback($payment, $gatewayInput, $isS2sCallback);
+
+                    // For this is firstUpiRecurringPayment and it is not authorized
+                    // We will not follow the further steps.
+                    // We do not just want to rely on payment status being authorized
+                    // Note: Later if needed, one can add another payment check
+                    if (($this->isFirstUpiRecurringPayment($payment) === true) and
+                        ($payment->hasBeenAuthorized() === false))
+                    {
+                        return;
+                    }
 
                     $this->postPaymentAuthorizeOfferProcessing($payment);
 
@@ -288,6 +297,14 @@ trait Callback
             $input['upi'] = $payment->getUpiMetadata()->toArray();
         }
 
+        //Adding data for upi mandate.
+        if ($payment->isUpiRecurring() === true)
+        {
+            $upiMandate = $this->repo->upi_mandate->findByOrderId($payment['order_id']);
+
+            $input['upi_mandate'] = $upiMandate;
+        }
+
         // In case of axis corporate payments, the s2s call back return unencrypted
         // data, however, the normal callback return parameters which are encrypted.
         if ($s2sCallback === true)
@@ -430,23 +447,14 @@ trait Callback
         // Or we will receive failure in callback, in both cases payment is marked failed.
         if ($input['payment']['method'] === Payment\Method::UPI)
         {
-            if ($this->isFirstUpiRecurringPayment($input['payment']) === false)
+            if ($this->shouldDebitRecurringPaymentForUpi($input, $data) === false)
             {
                 return $data;
             }
-            // TODO:: Move this resource identification to mandate.id
-            $orderId = array_pull($data['mandate'], 'order_id');
 
-            $upiMandate = $this->repo->upi_mandate->findByOrderId($orderId);
+            $upiMandate = $this->updateRecurringMandateForUpiIfApplicable($this->payment, $data);
 
-            // Mandate Status must be confirmed at this stage
-            $upiMandate = $this->updateUpiMandateOnCallback($upiMandate, $data['mandate']);
-
-            // TODO:: Rename the upi_mandate key to just mandate
-            $input['upi_mandate'] = $upiMandate->toArray();
-
-            //TODO:: Add upi metadata also in upi block.
-            $input['upi']['expiry_time'] = 5;
+            $this->modifyRecurringDebitInputForUpi($upiMandate, $input, $data);
 
             $this->callGatewayFunction(Payment\Action::DEBIT, $input);
         }
@@ -456,22 +464,6 @@ trait Callback
         }
 
         return $data;
-    }
-
-    protected function updateUpiMandateOnCallback(Entity $upiMandate, $attributes)
-    {
-        $status = array_pull($attributes, 'status');
-
-        $upiMandate->edit($attributes);
-
-        if ($status !== null)
-        {
-            $upiMandate->setStatus($status);
-        }
-
-        (new UpiMandate\Core())->update($upiMandate);
-
-        return $upiMandate;
     }
 
     protected function checkForRecentFailedPayment($payment)

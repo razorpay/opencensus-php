@@ -40,7 +40,7 @@ class AuthVerifyData extends Base\Mock\Server
                 '_raw'            => 'dummy_raw_value',
                 'paymentId'       => $entities['payment']['id'],
                 'bank_payment_id' => '999999',
-                'amount'          => $entities['payment']['amount'],
+                'mandate_amount'  => $entities['upi_mandate']['max_amount'],
                 'status'          => 'callback_successful',
                 'umn'             => '989892819',
                 'rrn'             => '012345678912',
@@ -63,11 +63,14 @@ class AuthVerifyData extends Base\Mock\Server
                 '_raw'            => 'dummy_raw_value',
                 'paymentId'       => $entities['payment']['id'],
                 'bank_payment_id' => '999999',
-                'amount'          => $entities['payment']['amount'],
+                'mandate_amount'  => $entities['upi_mandate']['max_amount'],
                 'status'          => 'callback_successful',
                 'umn'             => '989892819',
                 'rrn'             => '012345678912',
                 'npci_txn_id'     => 'HDFC00001124',
+                'gateway_data'    => [
+                    'id'          => $entities['gateway']['redirect']['merchantTranId'],
+                ]
             ],
         ];
 

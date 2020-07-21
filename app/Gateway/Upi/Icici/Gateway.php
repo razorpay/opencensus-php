@@ -75,6 +75,7 @@ class Gateway extends Base\Gateway
         Fields::ORIGINAL_BANK_RRN         => Entity::GATEWAY_PAYMENT_ID,
         Fields::MERCHANT_ID               => Entity::GATEWAY_MERCHANT_ID,
         Fields::ORIGINAL_BANK_RRN_REQ     => Entity::NPCI_REFERENCE_ID,
+        Entity::GATEWAY_DATA              => Entity::GATEWAY_DATA,
     ];
 
     protected $forceFillable = [
@@ -93,6 +94,8 @@ class Gateway extends Base\Gateway
 
         if ($this->isFirstRecurringPayment($input) === true)
         {
+            $this->setGatewayDataBlockForUpiRecurring($input);
+
             $data = $this->getGatewayEntityAttributes($input);
 
             $gatewayPayment = $this->createGatewayPaymentEntity($data, Action::AUTHENTICATE);
@@ -257,6 +260,7 @@ class Gateway extends Base\Gateway
         return [
             Entity::VPA => $input['payment']['vpa'],
             Entity::TYPE => Base\Type::COLLECT,
+            Entity::GATEWAY_DATA => $input['upi']['gateway_data'] ?? null,
         ];
     }
 
@@ -643,6 +647,10 @@ class Gateway extends Base\Gateway
 
     public function mandateCancel(array $input)
     {
+        parent::action($input, Action::MANDATE_CANCEL);
+
+        $this->setGatewayDataBlockForUpiRecurring($input);
+
         return $this->recurringMandateRevoke($input);
     }
 
@@ -1023,6 +1031,11 @@ class Gateway extends Base\Gateway
      */
     public function getPaymentIdFromServerCallback(array $response): string
     {
+        if (isset($response[Fields::UMN]) === true)
+        {
+            return substr($response[Fields::MERCHANT_TRAN_ID], 0, 14);
+        }
+
         return $response[Fields::MERCHANT_TRAN_ID];
     }
 
@@ -1205,7 +1218,17 @@ class Gateway extends Base\Gateway
         {
             $response = $this->recurringMandateCreateCallback($input);
 
-            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHENTICATE);
+            $action = Action::AUTHENTICATE;
+
+            // If we get mandate block in the response, that means that the callback is for mandate create. In that
+            // case, we need to update the authenticate entity. If we dont get the mandate block, that means
+            // that the callback is for first debit and we need to update the authorize entity.
+            if (isset($response['mandate']) === false)
+            {
+                $action = Action::AUTHORIZE;
+            }
+
+            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], $action);
 
             $this->updateGatewayPaymentResponse($gatewayPayment, $response['upi']);
 
@@ -1260,6 +1283,10 @@ class Gateway extends Base\Gateway
     public function debit(array $input)
     {
         parent::debit($input);
+
+        $this->action = Action::DEBIT;
+
+        $this->setGatewayDataBlockForUpiRecurring($input);
 
         $data = $this->getGatewayEntityAttributes($input);
 

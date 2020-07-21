@@ -1182,6 +1182,69 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
+    protected function getAsyncCallbackResponseFirstDebitForMindgate($payment)
+    {
+        $response = [
+            'call_back_id'  => '1234',
+            'requestInfo'   => [
+                'pgMerchantid'  => 'HDFC000006002278',
+                'pspRefNo'      =>  $payment['id'],
+            ],
+            'mandateDtls' => [
+                [
+                    'custRefNo'            => '987654321',
+                    'requestDate'          => '25 Jul 2019 03:20 PM',
+                    'referenceNumber'      => $payment['id'],
+                    'txnId'                => '',
+                    'remarks'              => '',
+                    'name'                 => '',
+                    'mandateType'          => 'EXECUTE',
+                    'amount'               => '20.00',
+                    'startDate'            => '25 July 2019',
+                    'endDate'              => '26 July 2019',
+                    'UMN'                  => '',
+                    'payerVpa'             => $payment['vpa'],
+                    'payerName'            => '',
+                    'payeeVpa'             => '',
+                    'payeeName'            => '',
+                    'status'               => 'ACTIVE',
+                    'debitIfsc'            => 'HSBC0001850',
+                    'debitAccount'         => '777777777777777',
+                    'creditIfsc'           => 'SBIN0000001',
+                    'creditAccount'        => '671176176817611',
+                    'noOfDebit'            => 0,
+                    'remainingDebit'       => 0,
+                    'onBehalf_Of'          => 'PAYER',
+                    'amt_rule'             => 'EXACT',
+                    'has_update_authority' => 'N',
+                    'shareToPayee'         => 'Y',
+                    'create_date_time'     => '25 Jul 2019 03:20 PM',
+                    'show_QR'              => 'Y',
+                    'callback_type'        => 'MANDATE_STATUS',
+                    'purpose_code'         => '00',
+                    'message'              => 'Mandate created successfully'
+                ]
+            ],
+        ];
+
+
+        $jsonResponse =  json_encode($response);
+
+        $iv = strtoupper(bin2hex(random_bytes(16)));
+
+        $content = $this->encryptForMandate($jsonResponse, $iv);
+
+        $response = [
+            'pgMerchantId' => 'HDFC000006002278',
+            'payload'      => $content,
+            'ivToken'      => $iv,
+            'keyId'        => 1
+        ];
+
+        return $response;
+    }
+
+
     protected function getAsyncCallbackResponseMandateCreateForIcici($payment)
     {
         $response = [
@@ -1189,7 +1252,28 @@ class Server extends Base\Mock\Server
             'subMerchantId'     => '400660',
             'terminalId'        => '5094',
             'BankRRN'           => '019721040510',
-            'merchantTranId'    => $payment['id'],
+            'merchantTranId'    => $payment['id']. 'create0',
+            'PayerName'         => 'payer',
+            'PayerMobile'       => '9876543210',
+            'PayerVA'           => 'test@icici',
+            'PayerAmount'       => '5',
+            'TxnStatus'         => 'SUCCESS',
+            'TxnInitDate'       => '20200715211840',
+            'TxnCompletionDate' => '20200715211843',
+            'UMN'               => $payment['id'] . '@icici',
+        ];
+
+        return json_encode($response);
+    }
+
+    protected function getAsyncCallbackResponseFirstDebitForIcici($payment)
+    {
+        $response = [
+            'merchantId'        => '400660',
+            'subMerchantId'     => '400660',
+            'terminalId'        => '5094',
+            'BankRRN'           => '019721040510',
+            'merchantTranId'    => $payment['id']. 'execte0',
             'PayerName'         => 'payer',
             'PayerMobile'       => '9876543210',
             'PayerVA'           => 'test@icici',

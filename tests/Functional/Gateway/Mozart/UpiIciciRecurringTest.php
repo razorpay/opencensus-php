@@ -91,9 +91,14 @@ class UpiIciciRecurringTest extends TestCase
         ], $upiMandate->toArray());
 
         $this->assertArraySubset([
-            Base\Entity::ACTION      => 'authenticate',
-            Base\Entity::TYPE        => 'collect',
-            Base\Entity::PAYMENT_ID  => $payment['id'],
+            Base\Entity::ACTION        => 'authenticate',
+            Base\Entity::TYPE          => 'collect',
+            Base\Entity::PAYMENT_ID    => $payment['id'],
+            Base\Entity::GATEWAY_DATA  => [
+                'id'      => $payment['id']. 'create0',
+                'act'     => 'create',
+                'ano'     => 0,
+            ]
         ], $upi->toArray());
 
         $this->mandateCreateCallback($payment);
@@ -109,7 +114,7 @@ class UpiIciciRecurringTest extends TestCase
         $this->assertArraySubset([
             Payment\Entity::ORDER_ID        => substr($orderId, 6),
             Payment\Entity::CUSTOMER_ID     => '100000customer',
-            Payment\Entity::STATUS          => 'captured',
+            Payment\Entity::STATUS          => 'created',
         ], $payment->toArray());
 
         $this->assertArraySubset([
@@ -123,19 +128,36 @@ class UpiIciciRecurringTest extends TestCase
         ], $upiMandate->toArray());
 
         $this->assertArraySubset([
+            Base\Entity::ACTION      => 'authorize',
+            Base\Entity::TYPE        => 'collect',
+            Base\Entity::PAYMENT_ID  => $payment['id'],
+            Base\Entity::GATEWAY_DATA  => [
+                'id'     => $payment['id']. 'execte0',
+                'act'    => 'execte',
+                'ano'    => 0,
+            ],
+        ], $upi->toArray());
+
+        $this->assertArraySubset([
+            Token\Entity::RECURRING_STATUS => 'initiated'
+        ], $token->toArray());
+
+        $this->firstDebitCallback($payment);
+
+        $payment->reload();
+
+        $token->reload();
+
+        $upi->reload();
+
+        $this->assertArraySubset([
             Token\Entity::RECURRING        => true,
             Token\Entity::RECURRING_STATUS => 'confirmed'
         ], $token->toArray());
 
-        $this->assertArraySubset([
-            Base\Entity::ACTION      => 'authorize',
-            Base\Entity::TYPE        => 'collect',
-            Base\Entity::PAYMENT_ID  => $payment['id'],
-        ], $upi->toArray());
+        //$this->assertNotNull($upi[Base\Entity::NPCI_REFERENCE_ID]);
 
-       // $this->assertNotNull($upi[Base\Entity::NPCI_REFERENCE_ID]);
-
-       // $this->assertNotNull($upi[Base\Entity::GATEWAY_PAYMENT_ID]);
+        //$this->assertNotNull($upi[Base\Entity::GATEWAY_PAYMENT_ID]);
 
         $this->assertNotNull($upiMandate[Entity::UMN]);
         $this->assertNotNull($upiMandate[Entity::RRN]);
@@ -217,6 +239,50 @@ class UpiIciciRecurringTest extends TestCase
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
             $this->mandateCreateCallback($payment);
+        });
+
+        $payment->reload();
+
+        $upiMandate->reload();
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $this->assertEquals('confirmed', $upiMandate['status']);
+    }
+
+    public function testRecurringMandateCreateDebitCallbackFailed()
+    {
+        $orderId = $this->createUpiRecurringOrder();
+
+        $this->payment['order_id'] = $orderId;
+
+        $this->payment['customer_id'] = 'cust_100000customer';
+
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $this->assertEquals('created', $upiMandate['status']);
+
+        $this->mandateCreateCallback($payment);
+
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'pay_verify')
+            {
+                $content['success'] = false;
+
+                $content['data']['status'] = "debit_failed";
+            }
+        });
+
+        $data = $this->testData['testRecurringMandateCreateRejected'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->firstDebitCallback($payment);
         });
 
         $payment->reload();
@@ -342,6 +408,13 @@ class UpiIciciRecurringTest extends TestCase
         $content = $this->mockServer()->getAsyncCallbackResponseMandateCreateForIcici($payment);
 
         $this->makeS2SCallbackAndGetContent($content, 'upi_icici');
+    }
+
+    protected function firstDebitCallback($payment)
+    {
+        $content = $this->mockServer()->getAsyncCallbackResponseFirstDebitForIcici($payment);
+
+        $this->makeS2sCallbackAndGetContent($content, 'upi_icici');
     }
 
     protected function mandatePauseCallback($mandate)

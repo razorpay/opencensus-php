@@ -4632,6 +4632,15 @@ trait Authorize
 
     protected function updateAndNotifyPaymentAuthorized(array $data = [], bool $wasFailed = false)
     {
+        // For UPI Initial Recurring payment, we will get two callbacks
+        // The first callback will trigger the debit function on gateway
+        // in that case, we can not mark the payment authorized.
+        // Only when we receive the callback for debit call, we will authorize.
+        if ($this->shouldInitialReccuringSkipAuthorizeForUpi($this->payment, $data) === true)
+        {
+            return;
+        }
+
         // Updates payment entity to authorized and adds a transaction.
         $updated = $this->updatePaymentAuthorized($data, $wasFailed);
 

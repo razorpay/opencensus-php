@@ -172,6 +172,9 @@ trait UpiRecurring
             'payment'     => $payment,
             'merchant'    => $this->merchant,
             'upi_mandate' => $upiMandate,
+            'upi'         => [
+                'expiry_time' => 10,
+            ]
         ];
 
         // Input, GatewayInput and Response are currently same, we are using different variable
@@ -524,6 +527,33 @@ trait UpiRecurring
         return true;
     }
 
+    protected function shouldInitialReccuringSkipAuthorizeForUpi(Entity $payment, array $data): bool
+    {
+        if ($this->isFirstUpiRecurringPayment($payment) === false)
+        {
+            return false;
+        }
+
+        // Even if this is first recurring payment, for sharp we do not play two callback attempts
+        // thus we will have make the payment authorized in the first callback itself.
+        if ($payment->isGateway(Payment\Gateway::SHARP) === true)
+        {
+            return false;
+        }
+
+        $mandate = array_get($data, 'mandate');
+
+        // If the first debit never ran for this payment, we have to skip the authorize
+        if ((isset($mandate['status'])) and
+            ($mandate['status'] === UpiMandate\Status::CONFIRMED))
+        {
+            return true;
+        }
+
+        // If the first debit is completed then we can authorize the payment and also update the token
+        return false;
+    }
+
     // Now since we are going to create an auto recurring payment, the flow goes like this.
     // 1. First we will have payment created
     // 2. We will make a RS call and get the reminder_id
@@ -691,5 +721,63 @@ trait UpiRecurring
         }
 
         return array_get($response, Entity::ID);
+    }
+
+    protected function shouldDebitRecurringPaymentForUpi(array $input, array $data)
+    {
+        return (($this->isFirstUpiRecurringPayment($input['payment']) === true) and
+                ($this->isMandateCreateCallback($data) === true));
+    }
+
+    protected function isFirstUpiRecurringPayment($payment): bool
+    {
+        return ($payment['method'] === 'upi' and $payment['recurring_type'] === 'initial');
+    }
+
+    protected function isMandateCreateCallback(array $data)
+    {
+        if (isset($data['mandate']) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function updateRecurringMandateForUpiIfApplicable($payment, array $data)
+    {
+        $orderId = array_pull($data['mandate'], 'order_id');
+
+        $upiMandate = $this->repo->upi_mandate->findByOrderId($orderId);
+
+        // Mandate Status must be confirmed at this stage
+        return $this->updateUpiMandateOnCallback($upiMandate, $data['mandate']);
+    }
+
+    protected function modifyRecurringDebitInputForUpi($mandate, array & $input, array $data)
+    {
+        if ($mandate instanceof Mandate)
+        {
+            // TODO:: Rename the upi_mandate key to just mandate
+            $input['upi_mandate'] = $mandate->toArray();
+        }
+
+        $input['upi']['expiry_time'] = 5;
+    }
+
+    protected function updateUpiMandateOnCallback(Mandate $upiMandate, $attributes)
+    {
+        $status = array_pull($attributes, 'status');
+
+        $upiMandate->edit($attributes);
+
+        if ($status !== null)
+        {
+            $upiMandate->setStatus($status);
+        }
+
+        $this->repo->saveOrFail($upiMandate);
+
+        return $upiMandate;
     }
 }

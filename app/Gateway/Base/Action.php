@@ -27,6 +27,7 @@ class Action
     const DISABLE_TERMINAL = 'disable_terminal';
     const DEBIT            = 'debit';
     const PRE_DEBIT        = 'pre_debit';
+    const MANDATE_CANCEL   = 'mandate_cancel';
 
     public static $nonVerifiableActions = [
         self::AUTHENTICATE

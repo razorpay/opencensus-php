@@ -91,6 +91,11 @@ class UpiMindgateRecurringTest extends TestCase
             Base\Entity::ACTION      => 'authenticate',
             Base\Entity::TYPE        => 'collect',
             Base\Entity::PAYMENT_ID  => $payment['id'],
+            Base\Entity::GATEWAY_DATA  => [
+                'id'      => $payment['id']. 'create0',
+                'act'     => 'create',
+                'ano'     => 0,
+            ]
         ], $upi->toArray());
 
         $this->mandateCreateCallback($payment);
@@ -106,7 +111,7 @@ class UpiMindgateRecurringTest extends TestCase
         $this->assertArraySubset([
             Payment\Entity::ORDER_ID        => substr($orderId, 6),
             Payment\Entity::CUSTOMER_ID     => '100000customer',
-            Payment\Entity::STATUS          => 'captured',
+            Payment\Entity::STATUS          => 'created',
         ], $payment->toArray());
 
         $this->assertArraySubset([
@@ -120,15 +125,31 @@ class UpiMindgateRecurringTest extends TestCase
         ], $upiMandate->toArray());
 
         $this->assertArraySubset([
-            Token\Entity::RECURRING        => true,
-            Token\Entity::RECURRING_STATUS => 'confirmed'
-        ], $token->toArray());
-
-        $this->assertArraySubset([
             Base\Entity::ACTION      => 'authorize',
             Base\Entity::TYPE        => 'collect',
             Base\Entity::PAYMENT_ID  => $payment['id'],
+            Base\Entity::GATEWAY_DATA  => [
+                'id'      => $payment['id']. 'execte0',
+                'act'     => 'execte',
+                'ano'     => 0,
+            ]
         ], $upi->toArray());
+
+        $this->firstDebitCallback($payment);
+
+        $payment->reload();
+        $token->reload();
+
+        $this->assertArraySubset([
+            Payment\Entity::ORDER_ID        => substr($orderId, 6),
+            Payment\Entity::CUSTOMER_ID     => '100000customer',
+            Payment\Entity::STATUS          => 'captured',
+        ], $payment->toArray());
+
+        $this->assertArraySubset([
+            Token\Entity::RECURRING        => true,
+            Token\Entity::RECURRING_STATUS => 'confirmed'
+        ], $token->toArray());
 
         $this->assertNotNull($upi[Base\Entity::NPCI_REFERENCE_ID]);
 
@@ -253,6 +274,13 @@ class UpiMindgateRecurringTest extends TestCase
         $order = $this->makeRequestAndGetContent($request);
 
         return $order['id'];
+    }
+
+    protected function firstDebitCallback($payment)
+    {
+        $content = $this->mockServer()->getAsyncCallbackResponseFirstDebitForMindgate($payment);
+
+        $this->makeS2sCallbackAndGetContent($content, 'upi_mindgate');
     }
 }
 

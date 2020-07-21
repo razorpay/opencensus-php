@@ -81,6 +81,7 @@ class Gateway extends Base\Gateway
         ResponseFields::ACCOUNT_NUMBER    => Entity::ACCOUNT_NUMBER,
         ResponseFields::IFSC_CODE         => Entity::IFSC,
         Entity::MERCHANT_REFERENCE        => Entity::MERCHANT_REFERENCE,
+        Entity::GATEWAY_DATA              => Entity::GATEWAY_DATA,
     ];
 
     /**
@@ -95,6 +96,8 @@ class Gateway extends Base\Gateway
 
         if ($this->isFirstRecurringPayment($input) === true)
         {
+            $this->setGatewayDataBlockForUpiRecurring($input);
+
             $data = $this->getGatewayEntityAttributes($input);
 
             $gatewayPayment = $this->createGatewayPaymentEntity($data, Action::AUTHENTICATE);
@@ -166,6 +169,10 @@ class Gateway extends Base\Gateway
     public function debit(array $input)
     {
         parent::debit($input);
+
+        $this->action = Action::DEBIT;
+
+        $this->setGatewayDataBlockForUpiRecurring($input);
 
         $data = $this->getGatewayEntityAttributes($input);
 
@@ -359,6 +366,7 @@ class Gateway extends Base\Gateway
             Entity::VPA                 => $input['payment']['vpa'],
             Entity::ACTION              => $action,
             Entity::TYPE                => $type,
+            Entity::GATEWAY_DATA        => $input['upi']['gateway_data'] ?? null,
         ];
 
         if ($action === Action::REFUND)
@@ -568,16 +576,23 @@ class Gateway extends Base\Gateway
 
         if ($this->isFirstUpiRecurringPayment($input['payment']) === true)
         {
-            if ($input['gateway']['mandateDtls'][0]['mandateType'] === 'CREATE')
+            $response = $this->recurringMandateCreateCallback($input);
+
+            $action = Action::AUTHENTICATE;
+
+            // If we get mandate block in the response, that means that the callback is for mandate create. In that
+            // case, we need to update the authenticate entity. If we dont get the mandate block, that means
+            // that the callback is for first debit and we need to update the authorize entity.
+            if (isset($response['mandate']) === false)
             {
-                $response = $this->recurringMandateCreateCallback($input);
-
-                $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHENTICATE);
-
-                $this->updateGatewayPaymentResponse($gatewayPayment, $response['upi'], false);
-
-                return $response;
+                $action = Action::AUTHORIZE;
             }
+
+            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], $action);
+
+            $this->updateGatewayPaymentResponse($gatewayPayment, $response['upi'], false);
+
+            return $response;
         }
 
         if ($this->isMandateProcessedCallback($input) === true)
