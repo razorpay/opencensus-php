@@ -4120,7 +4120,7 @@ class Service extends Base\Service
                 return;
             }
 
-            (new Activate)->activateBusinessBankingIfApplicable($merchant);
+            (new Activate)->activateBusinessBankingIfApplicable($merchant, $wasEnabledNow);
 
             // creating a user mapping for a merchant on X is equivalent to him signing up on X
             // platform, so we will check if sign up has any promotion running and will assign rewards

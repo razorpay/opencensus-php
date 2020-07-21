@@ -5442,6 +5442,49 @@ class MerchantTest extends TestCase
         return array($entity1, $entity2);
     }
 
+    public function testMerchantSwitchProductActivationSMS($expValue = 'on', $category2 = 'school')
+    {
+        $this->enableRazorXTreatmentForXOnboarding($expValue);
+
+        $user = (new User())->createUserForMerchant('10000000000000', [
+            'contact_mobile' => '8888888888',
+        ]);
+
+        $this->mockRaven();
+
+        $this->fixtures->edit('merchant',
+            '10000000000000',
+            ['activated' => true, 'business_banking' => false, 'category2' => $category2]);
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'activation_status' => 'activated'
+            ]);
+
+        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
+            ['merchant_id' => '100000Razorpay']);
+
+        // To create a virtual account we need to enable bank transfer
+        $this->fixtures->edit('methods', '10000000000000', ['bank_transfer' => true]);
+
+        $liveBankingAccount = $this->getDbEntity('banking_account',
+            [
+                'merchant_id' => '10000000000000',
+            ],
+            'live');
+
+        $this->assertNull($liveBankingAccount);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'owner');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->startTest();
+    }
+
     /**
      * Switches product of merchant from PG to BB.
      */
@@ -5452,8 +5495,6 @@ class MerchantTest extends TestCase
         $user = (new User())->createUserForMerchant('10000000000000', [
             'contact_mobile' => '8888888888',
         ]);
-
-        $this->mockRaven();
 
         $this->fixtures->edit('merchant',
                               '10000000000000',

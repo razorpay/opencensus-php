@@ -553,6 +553,13 @@ class Core extends Base\Core
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_USER_NOT_PRESENT);
             }
 
+            // Mask Account Number
+            $accountNumber = $bankingAccount->getAccountNumber();
+            $accountNumberLength = strlen($accountNumber);
+
+            $accountNumberMasked = str_pad(substr($accountNumber, ($accountNumberLength - 4), $accountNumberLength),
+                                "6", "X", STR_PAD_LEFT);
+
             foreach ($users as $user)
             {
                 $payload = [
@@ -560,7 +567,7 @@ class Core extends Base\Core
                     'source'   => "api",
                     'template' => 'sms.account.activate_banking_ca',
                     'params'   => [
-                        'account_number' => $bankingAccount->getAccountNumber(),
+                        'account_number' => $accountNumberMasked,
                     ],
                 ];
 

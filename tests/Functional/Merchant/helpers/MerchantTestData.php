@@ -4912,6 +4912,17 @@ return [
         ],
     ],
 
+    'testMerchantSwitchProductActivationSMS' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
     'testMerchantSwitchProductWithInvalidBeneficiaryNameThrowsProperException' => [
         'request'  => [
             'url'     => '/merchants/product-switch',

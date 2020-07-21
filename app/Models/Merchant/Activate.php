@@ -126,7 +126,7 @@ class Activate extends Base\Core
                 $merchantCore->addMerchantEmailToMailingList($merchant);
             }
 
-            $this->activateBusinessBankingIfApplicable($merchant);
+            $this->activateBusinessBankingIfApplicable($merchant, true);
         });
         //
         // Activate Promotions/Coupons for Merchant if applicable.
@@ -200,8 +200,6 @@ class Activate extends Base\Core
 
         $detailCore->updateActivationStatus($merchant, $activationStatusData, $merchant);
 
-        $this->activateBusinessBankingIfApplicable($merchant);
-
         $this->activateMerchantPromotions($merchant);
 
         if ($sendActivationMail === true)
@@ -260,7 +258,7 @@ class Activate extends Base\Core
             }
         });
 
-        $this->activateBusinessBankingIfApplicable($merchant);
+        $this->activateBusinessBankingIfApplicable($merchant, true);
 
         //
         // Live transactions get disabled if the activation_status changes to 'rejected'.
@@ -448,15 +446,15 @@ class Activate extends Base\Core
      */
     public function sendBankingVaActivationSmsIfApplicable(Entity $merchant)
     {
-        $this->trace->info(TraceCode::BANKING_ACTIVATION_CONFIRMATION_SMS_VA_REQUEST,
-            [
-                'merchant_id' => $merchant->getId(),
-            ]);
-
         if (($merchant->isActivated() === false) || ($merchant->isBusinessBankingEnabled() === false))
         {
             return;
         }
+
+        $this->trace->info(TraceCode::BANKING_ACTIVATION_CONFIRMATION_SMS_VA_REQUEST,
+            [
+                'merchant_id' => $merchant->getId(),
+            ]);
 
         try
         {
@@ -548,10 +546,12 @@ class Activate extends Base\Core
      *
      * @param Entity $merchant
      *
+     * @param bool   $sendActivationSms
+     *
      * @return Entity
      * @throws Throwable
      */
-    public function activateBusinessBankingIfApplicable(Entity $merchant): Entity
+    public function activateBusinessBankingIfApplicable(Entity $merchant, bool $sendActivationSms = false): Entity
     {
         if ($merchant->isBusinessBankingEnabled() === false)
         {
@@ -588,7 +588,10 @@ class Activate extends Base\Core
 
         $this->setDbAndModelConnectionWithMode($originalMode, $merchant);
 
-        $this->sendBankingVaActivationSmsIfApplicable($merchant);
+        if ($sendActivationSms === true)
+        {
+            $this->sendBankingVaActivationSmsIfApplicable($merchant);
+        }
 
         // Refreshing merchant here so that relations for original mode are fetched again
         return $merchant->refresh();
