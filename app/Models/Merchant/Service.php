@@ -4614,6 +4614,11 @@ class Service extends Base\Service
             'type' => Payment\Config\Type::LATE_AUTH,
         );
 
+        //
+        // Reset the connection to the requests original mode
+        //
+        $originalMode = $this->app['basicauth']->getMode();
+
         $this->repo->transactionOnLiveAndTest(function () use($configInput, $merchant)
         {
             try
@@ -4628,6 +4633,8 @@ class Service extends Base\Service
                 throw $t;
             }
         });
+
+        $this->app['basicauth']->setModeAndDbConnection($originalMode);
     }
 
     private function createConfigWithMode(string $mode, $configInput, $merchant)
