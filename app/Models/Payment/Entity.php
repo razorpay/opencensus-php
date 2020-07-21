@@ -429,6 +429,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::TRANSFER,
         self::ACCOUNT_ID,
         self::FEE_BEARER,
+        self::PROVIDER,
     ];
 
     /**
@@ -501,6 +502,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::FEE_BEARER,
         self::LATE_AUTHORIZED,
         self::DETAILED_REASON,
+        self::PROVIDER,
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
@@ -2927,6 +2929,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             $array[self::ORDER_ID] = Order\Entity::getSignedId($array[self::ORDER_ID]);
         }
+    }
+
+    public function setPublicProviderAttribute(array & $array)
+    {
+        if ($array[Entity::METHOD] === Method::APP)
+        {
+            $array[self::PROVIDER] = $array[self::GATEWAY];
+            unset($array[self::WALLET]);
+        }
+
     }
 
     public function setPublicInvoiceIdAttribute(array & $array)

@@ -21,6 +21,31 @@ class CredTest extends TestCase
         $this->fixtures->merchant->enableApp('10000000000000', 'cred');
     }
 
+    public function testCredGetPayment()
+    {
+        $payment = $this->getDefaultCredPayment();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments',
+            'content' => $payment
+        ];
+        $this->ba->publicAuth();
+        $response = $this->makeRequestAndGetContent($request);
+        $payment = $this->getLastPayment('payment', 'true');
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/payments/' . $payment['id'],
+        ];
+
+        $this->ba->privateAuth();
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals('cred', $response['provider']);
+        $this->assertEquals(false, array_key_exists('wallet', $response));
+    }
+
+
     public function testCredPaymentCreateResponseIntentFlow()
     {
         $payment = $this->getDefaultCredPayment();
