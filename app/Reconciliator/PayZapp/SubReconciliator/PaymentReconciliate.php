@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Reconciliator\Base;
+use RZP\Models\Base\PublicEntity;
 use RZP\Reconciliator\Base\SubReconciliator\Helper;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
@@ -15,6 +16,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      * Row Header Names
      *******************/
     const COLUMN_GATEWAY_PAYMENT_ID2 = 'pg_sale_id';
+    const COLUMN_PAYMENT_ID          = 'track_id';
     const COLUMN_SERVICE_TAX         = ['cgst', 'igst', 'sgst', 'utgst'];
     const COLUMN_FEE                 = 'commission_amt';
     const COLUMN_AMOUNT              = 'gross_amt';
@@ -37,11 +39,18 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         if ($gatewayPayment === null)
         {
+            if ((isset($row[self::COLUMN_PAYMENT_ID]) === true) and
+                (PublicEntity::verifyUniqueId($row[self::COLUMN_PAYMENT_ID], false) === true))
+            {
+                return $row[self::COLUMN_PAYMENT_ID];
+            }
+
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'            => TraceCode::RECON_INFO_ALERT,
                     'info_code'             => Base\InfoCode::PAYMENT_ABSENT ,
                     'payment_reference_id'  => $gatewayPaymentId2,
+                    'payment_id'            => $row[self::COLUMN_PAYMENT_ID] ?? null,
                     'gateway'               => $this->gateway,
                 ]
             );
@@ -49,9 +58,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             return null;
         }
 
-        $paymentId = $gatewayPayment->getPaymentId();
-
-        return $paymentId;
+        return $gatewayPayment->getPaymentId();
     }
 
     protected function getGatewayServiceTax($row)
