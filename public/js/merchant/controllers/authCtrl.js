@@ -70,6 +70,7 @@ app
       $scope.eventsMode = 'live';
       $scope.showTopbar = false;
       $scope.isSignupDisplayEventFired = false;
+      $scope.currentService = 'PG';
 
       $scope.organization = {};
       $scope.isOrgCheckDone = false;
@@ -304,6 +305,27 @@ app
           });
         }
       }
+
+      /**
+       * Get current service name ie either X/PG/Partner/Other
+       */
+      function serviceName() {
+        var service = 'PG';
+        if (window.top !== window.self) {
+          service = 'X';
+        } else if ($scope.signup.settings.partner_intent) {
+          service = 'Partner';
+        } else if (
+          referral_code ||
+          $scope.signup.data.invitation ||
+          $scope.signup.data.merchant_invitation
+        ) {
+          service = 'Other';
+        }
+        return service;
+      }
+
+      $scope.currentService = serviceName();
 
       $scope.createAccount = function($valid) {
         window.rzpAnalytics({
@@ -889,7 +911,7 @@ app
       /**
        * Invokes ColumbiaTech pixel for coupon code campaign
        */
-      const invokeColumbiaTech = function invokeColumbiaTech() {
+      var invokeColumbiaTech = function invokeColumbiaTech() {
         if (!isProd) return;
 
         var colombiaPixelURL = `https://ade.clmbtech.com/cde/eventTracking.htm?pixelId=3913&_w=1&rd=${new Date().getTime()}`;
@@ -1760,6 +1782,7 @@ app
                 .success('signup.display_signup_page', {
                   mode: $scope.eventsMode,
                   version: 1,
+                  service: $scope.currentService,
                 })
             );
           $scope.isSignupDisplayEventFired = true;
@@ -2127,13 +2150,11 @@ app
       };
 
       function shouldAutoApplyOffer() {
-        var isMerchantX = false;
-        if (window.top !== window.self) {
-          isMerchantX = true;
-        }
-        if ($scope.signup.settings.partner_intent || isMerchantX) {
+        if (
+          $scope.currentService === 'X' ||
+          $scope.currentService === 'Partner'
+        )
           return false;
-        }
         var startDate = new Date('July 15, 2020 00:00:00').getTime();
         var endDate = new Date('August 1, 2020 00:00:00').getTime();
         var now = new Date().getTime();
