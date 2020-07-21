@@ -12,7 +12,7 @@ use RZP\Models\Payment\Entity;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
-    const COLUMN_AMOUNT                     = 'charge_amount';
+    const COLUMN_PAYMENT_AMOUNT             = 'charge_amount';
     const COLUMN_SETTLED_AT_DATE            = 'settlement_date';
     const COLUMN_MERCHANT_ACCOUNT_NUMBER    = 'merchant_account_number';
     const COLUMN_CHARGE_REFERENCE_NUMBER    = 'charge_reference_number';
@@ -48,16 +48,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         return true;
-    }
-
-    protected function getReconPaymentAmount(array $row)
-    {
-        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_AMOUNT] ?? null);
-    }
-
-    protected function setAllowForceAuthorization(Payment\Entity $payment)
-    {
-        $this->allowForceAuthorization = true;
     }
 
     /**
