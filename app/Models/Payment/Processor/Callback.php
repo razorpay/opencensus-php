@@ -19,6 +19,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Card\IIN;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\UpiMandate;
 use RZP\Gateway\GooglePay;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Status;
@@ -457,7 +458,7 @@ trait Callback
         return $data;
     }
 
-    protected function updateUpiMandateOnCallback (Entity $upiMandate, $attributes)
+    protected function updateUpiMandateOnCallback(Entity $upiMandate, $attributes)
     {
         $status = array_pull($attributes, 'status');
 
@@ -468,7 +469,7 @@ trait Callback
             $upiMandate->setStatus($status);
         }
 
-        $this->repo->saveOrFail($upiMandate);
+        (new UpiMandate\Core())->update($upiMandate);
 
         return $upiMandate;
     }

@@ -193,7 +193,7 @@ trait UpiRecurring
 
                     $upiMandate->setStatus(UpiMandate\Status::REVOKED);
 
-                    $this->repo->saveOrFail($upiMandate);
+                    (new UpiMandate\Core)->update($upiMandate);
 
                     (new Token\Core)->cancelTokenEvent($upiMandate->getTokenId(), $upiMandate->getCustomerId());
 
@@ -218,7 +218,7 @@ trait UpiRecurring
     {
         $upiMandate->setStatus(UpiMandate\Status::PAUSED);
 
-        $this->repo->saveOrFail($upiMandate);
+        (new UpiMandate\Core)->update($upiMandate);
 
         (new Token\Core)->pauseTokenEvent($upiMandate->getTokenId(), $upiMandate->getCustomerId());
 
@@ -229,7 +229,7 @@ trait UpiRecurring
     {
         $upiMandate->setStatus(UpiMandate\Status::CONFIRMED);
 
-        $this->repo->saveOrFail($upiMandate);
+        (new UpiMandate\Core)->update($upiMandate);
 
         (new Token\Core)->resumeTokenEvent($upiMandate->getTokenId(), $upiMandate->getCustomerId());
 

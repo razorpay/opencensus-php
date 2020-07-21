@@ -3056,6 +3056,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UPI_MANDATE_CREATED                                   = 'UPI_MANDATE_CREATED';
     const UPI_MANDATE_STATUS_MISMATCH_FOR_PAUSE                 = 'UPI_MANDATE_STATUS_MISMATCH_FOR_PAUSE';
     const UPI_MANDATE_STATUS_MISMATCH_FOR_RESUME                = 'UPI_MANDATE_STATUS_MISMATCH_FOR_RESUME';
+    const UPI_MANDATE_STATUS_UPDATED                            = 'UPI_MANDATE_STATUS_UPDATED';
     const UPI_MANDATE_STATUS_MISMATCH_FOR_CANCEL                = 'UPI_MANDATE_STATUS_MISMATCH_FOR_CANCEL';
 
     //payment config

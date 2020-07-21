@@ -132,6 +132,26 @@ class Core extends Base\Core
         }
     }
 
+    public function update(Entity $upiMandate): Entity
+    {
+        $dirty = $upiMandate->getDirty();
+        $original = $upiMandate->getOriginal();
+
+        $toTrace = [
+            'id'              => $upiMandate->getId(),
+            'merchant_id'     => $upiMandate->merchant->getId(),
+            'token_id'        => $upiMandate->getTokenId(),
+            'old_status'      => $original[Entity::STATUS] ?? null,
+            'new_status'      => $dirty[Entity::STATUS] ?? null,
+        ];
+
+        $this->repo->saveOrFail($upiMandate);
+
+        $this->trace->info(TraceCode::UPI_MANDATE_STATUS_UPDATED, $toTrace);
+
+        return $upiMandate;
+    }
+  
     public function validateUpiMandateForCancelCallback(Entity $upiMandate)
     {
         // If mandate cancel is initiated by payer, we directly get callbacks from gateway. As that is the
