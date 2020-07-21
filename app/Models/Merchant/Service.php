@@ -22,6 +22,7 @@ use RZP\Models\User;
 use RZP\Models\Offer;
 use RZP\Models\Payout;
 use RZP\Models\Coupon;
+use RZP\Diag\EventCode;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
@@ -55,6 +56,7 @@ use RZP\Models\Settlement\SettlementTrait;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Models\Payment\Config as PaymentConfig;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
 use RZP\Constants\{Mode, Entity as CE, Product};
 use RZP\Models\Pricing\Feature as PricingFeature;
@@ -117,6 +119,8 @@ class Service extends Base\Service
         {
             $this->assignOnboardingCategoryForBankingMerchant($merchant);
         }
+
+        $this->setDefaultLateAuthConfigForMerchant($merchant);
 
         return $merchantData;
     }
@@ -4591,5 +4595,55 @@ class Service extends Base\Service
             "parent"               => $this->settlementToPartner($mid),
             "partner_bank_account" => isset($merchantSettleToPartner[$mid]) ? $merchantSettleToPartner[$mid] : null,
         ];
+    }
+
+    private function setDefaultLateAuthConfigForMerchant($merchant)
+    {
+        $defaultConfig = array(
+            'capture' => "automatic",
+            'capture_options' => [
+                'automatic_expiry_period' => 7200,
+                'refund_speed' => 'normal'
+            ]
+        );
+
+        $configInput = array(
+            'config' => $defaultConfig,
+            'is_default' => true,
+            'name' => 'late_auth_' . $merchant->getId(),
+            'type' => Payment\Config\Type::LATE_AUTH,
+        );
+
+        $this->repo->transactionOnLiveAndTest(function () use($configInput, $merchant)
+        {
+            try
+            {
+                $this->createConfigWithMode(Mode::LIVE, $configInput, $merchant);
+                $this->createConfigWithMode(Mode::TEST, $configInput, $merchant);
+            }
+            catch (\Throwable $t)
+            {
+                $this->trace->traceException($t);
+
+                throw $t;
+            }
+        });
+    }
+
+    private function createConfigWithMode(string $mode, $configInput, $merchant)
+    {
+        $config = (new Payment\Config\Entity())->build($configInput, 'create');
+
+        $config['merchant_id'] = $merchant->getId();;
+
+        (new PaymentConfig\Core())->withMerchant($merchant)->trackLateAuthConfigEvent(EventCode::PAYMENT_CONFIG_CREATION_INITIATED, $configInput, 'default');
+
+        $this->app['basicauth']->setModeAndDbConnection($mode);
+
+        $config->setConnection($mode);
+
+        $config->refresh();
+
+            $this->repo->config->save($config);
     }
 }

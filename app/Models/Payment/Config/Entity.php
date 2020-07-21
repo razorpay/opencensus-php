@@ -33,7 +33,9 @@ class Entity extends Base\PublicEntity
             self::NAME,
             self::MERCHANT_ID,
             self::CONFIG,
-            self::IS_DEFAULT
+            self::IS_DEFAULT,
+            self::CREATED_AT,
+            self::UPDATED_AT,
     ];
 
     protected $public = [
@@ -43,6 +45,8 @@ class Entity extends Base\PublicEntity
             self::MERCHANT_ID,
             self::CONFIG,
             self::IS_DEFAULT,
+            self::CREATED_AT,
+            self::UPDATED_AT,
     ];
 
     protected $publicSetters = [

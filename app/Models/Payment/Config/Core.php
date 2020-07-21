@@ -95,7 +95,7 @@ class Core extends Base\Core
             });
     }
 
-    public function trackLateAuthConfigEvent($eventCode, $input)
+    public function trackLateAuthConfigEvent($eventCode, $input, $source = 'api')
     {
         $properties = $input;
 
@@ -103,7 +103,7 @@ class Core extends Base\Core
 
         $properties['merchant_id'] = $this->merchant->getId();
 
-        $properties['source'] = 'api';
+        $properties['source'] = $source;
 
         if ($this->ba->isProxyAuth() === true)
         {

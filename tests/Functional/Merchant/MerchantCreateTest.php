@@ -1458,4 +1458,32 @@ class MerchantCreateTest extends TestCase
         }
 
     }
+
+    public function testCreateMerchantWithDefaultLateAuthConfig()
+    {
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $org = $this->fixtures->org->createHdfcOrg();
+
+        $this->ba->adminAuth('test', 'SuperSecretTokenForRazorpaySuprHdfcbToken', $org->getPublicId(), 'hdfcbank.com');
+
+        $this->merchantId = '1X4hRFHFx4UiXt';
+
+        $testData = $this->testData['testCreateMerchant'];
+
+        $testData['request']['content']['org_id'] = $org->getPublicId();
+
+        $testData['response']['content']['pricing_plan_id'] = 'BAJq6FJDNJ4ZqD';
+
+        $this->runRequestResponseFlow($testData);
+
+        $liveConfig = $this->getDbLastEntity(
+            Constants\Entity::CONFIG, 'live');
+
+        $testConfig = $this->getDbLastEntity(
+            Constants\Entity::CONFIG, 'test');
+
+        $this->assertEquals('late_auth_'.$this->merchantId, $liveConfig['name']);
+        $this->assertEquals('late_auth_'.$this->merchantId, $testConfig['name']);
+    }
 }
