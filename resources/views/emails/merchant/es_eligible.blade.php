@@ -25,11 +25,9 @@
                 <center style="text-align:left;max-width:572px;padding-left:16px;padding-right:16px;margin-left:auto;margin-right:auto;line-height:25px;letter-spacing:.2px;color:#515878;font-size:16px;margin-top:20px">
                     <p>Greetings from Razorpay!<br>
                         <br>
-                        We are glad to inform you that you're now eligible for Razorpay Early Settlements. Now, you can reduce your <strong>settlement period from T+2 days to within a few seconds</strong> for a nominal fee.
+                        There's some good news for you! You're now eligible for Razorpay Early Settlements. You can now reduce your <strong>settlement period from T+2 days to a few seconds</strong>, just for a nominal fee.
                         <br><br>
-                        Enable <strong>Scheduled Same-day Settlements </strong>to get your customer payments twice a day or use <strong>On-demand Instand Settlements </strong>to get pending settlements any time, even during non-banking hours and holidays.
-                        <br><br>
-                        If you enable Same Day Settlements and trigger On-Demand Settlements, <strong>you can get the settlements in less than 10 seconds.</strong>
+                        Enable <strong>Same-day Settlements </strong>to get your customer payments twice a day on the same day. With Same Day Settlements, you can trigger On-Demand settlements for any amount and <strong>get your settlements within 10 seconds</strong>, even on weekends and holidays!
                         <br><br>
                     <strong>Enable Same-Day Settlements with these 4 simple steps:</strong>
                     <ol>
