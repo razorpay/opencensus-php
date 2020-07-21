@@ -70,7 +70,8 @@ class Constants
     /**
      * razorx experiments related constants
      */
-    const RAZORX_VARIANT_ON = 'on';
+    const RAZORX_VARIANT_ON                      = 'on';
+    const RAZORX_KEY_REFUND_ROUTE_VIA_FTA_SUFFIX = 'refund_route_via_fta';
 
     // Used to ack scrooge that update status request came from fta status update
     const FTA_UPDATE = 'fta_update';

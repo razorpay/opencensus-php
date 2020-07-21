@@ -2137,7 +2137,7 @@ trait Refund
             return;
         }
 
-        $vpaInput = $this->getVpaInput($payment, $input);
+        $vpaInput = $this->getVpaInput($refund, $payment, $input);
 
         if (empty($vpaInput) === false)
         {
@@ -2988,7 +2988,7 @@ trait Refund
         return substr($customerName, 0, 35);
     }
 
-    protected function getVpaInput(Payment\Entity $payment, array $data = [])
+    protected function getVpaInput(Payment\Refund\Entity $refund, Payment\Entity $payment, array $data = [])
     {
         $input = null;
 
@@ -3002,6 +3002,31 @@ trait Refund
         if (isset($data[RefundConstants::VPA]) === true)
         {
             $input = $data[RefundConstants::VPA];
+
+            return $input;
+        }
+
+        //
+        // If gateway is not functioning or for any other reason product takes a call to route traffic
+        // of a UPI gateway via FTA
+        // This is applicable only for 1 automated FTA attempt only.
+        //
+        if ($this->isPaymentUpiAndCardTransferRefund($refund, $payment, false) === true)
+        {
+            $featureFlag = $payment->getGateway() . '_' . RefundConstants::RAZORX_KEY_REFUND_ROUTE_VIA_FTA_SUFFIX;
+
+            $variant = $this->app->razorx->getTreatment(
+                $payment->getMerchantId(),
+                $featureFlag,
+                $this->mode
+            );
+
+            if (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON)
+            {
+                $input[RefundConstants::VPA_ADDRESS] = $payment->getVpa();
+
+                return $input;
+            }
         }
 
         return $input;
