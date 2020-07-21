@@ -5846,6 +5846,9 @@ ALTER TABLE d2c_bureau_reports
     MODIFY COLUMN report json DEFAULT NULL,
     MODIFY COLUMN ufh_file_id char(255) DEFAULT NULL;
 
+ALTER TABLE `pricing`
+    ADD INDEX  `pricing_plan_name_plan_id_index` (`plan_name`,`plan_id`),
+
 ALTER TABLE payment_meta
     MODIFY COLUMN forex_rate decimal(20,6);
 

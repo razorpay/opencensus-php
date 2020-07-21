@@ -658,6 +658,81 @@ class PricingTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetPricingPlansGroupingPagination()
+    {
+        $this->ba->adminAuth();
+
+        $this->createPricingPlan();
+        $this->createPricingPlan2();
+
+        $request = [
+            'method' => 'get',
+            'url'    => '/pricing/merchants?count=5&skip=8',
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        /* the unpaginated result has 12 rows. we are doing count=5 and skip=8 and expect just 4 rows*/
+
+        $this->assertEquals(4, count($response));
+    }
+
+    public function testGetPricingPlansGroupingPlanNameParam()
+    {
+        $this->ba->adminAuth();
+
+        $this->createPricingPlan();
+        $this->createPricingPlan2();
+
+        // found case
+        $request = [
+            'method' => 'get',
+            'url'    => '/pricing/merchants?plan_name=TestPlan1',
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, count($response));
+        $this->assertEquals('TestPlan1', $response['0']['plan_name']);
+
+        //not found case
+        $request['url'] = '/pricing/merchants?plan_name=InvalidPlanName';
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(0, count($response));
+
+    }
+
+    public function testGetPricingPlansGroupingPlanIdParam()
+    {
+        $this->ba->adminAuth();
+
+        $this->createPricingPlan();
+        $this->createPricingPlan2();
+
+        // found case
+        $request = [
+            'method' => 'get',
+            'url'    => '/pricing/merchants?plan_id=1ycviEdCgurrFI',
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        //in db plan_id=1ycviEdCgurrFI corresponds to plan_name='TestPlan1'
+        $this->assertEquals(1, count($response));
+        $this->assertEquals('TestPlan1', $response['0']['plan_name']);
+
+        //not found case
+        $request['url'] = '/pricing/merchants?plan_id=0123456789abcd';
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(0, count($response));
+
+    }
+
+
     public function testGetMerchantPlansWithFilters()
     {
         $this->createPricingPlan();

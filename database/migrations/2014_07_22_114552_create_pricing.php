@@ -118,6 +118,7 @@ class CreatePricing extends Migration
                   ->nullable();
 
             $table->index(Pricing::PLAN_ID);
+            $table->index([Pricing::PLAN_NAME, Pricing::PLAN_ID]);
             $table->index([Pricing::ORG_ID, Pricing::PLAN_ID]);
             $table->index([Pricing::ORG_ID, Pricing::PLAN_NAME]);
             $table->index(Pricing::INTERNATIONAL);
