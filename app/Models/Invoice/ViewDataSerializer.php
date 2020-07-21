@@ -548,11 +548,21 @@ class ViewDataSerializer extends Base\Core
 
               break;
 
+
           case Preferences::MID_RBL_BANK:
           case Preferences::MID_RBL_BANK_LTD:
           case Preferences::MID_RBL_BANK_1:
 
               $serialized['custom_labels']['receipt_number'] = 'CREDIT CARD NUMBER';
+
+              break;
+
+          case Preferences::MID_GEPL_CAPITAL_PVT_LTD:
+          case Preferences::MID_GEPL_CAPITAL_PVT_LTD_1:
+          case Preferences::MID_GEPL_COMMODITIES_PVT_LTD:
+          case Preferences::MID_GEPL_COMMODITIES_PVT_LTD_1:
+
+              $serialized['view_preferences']['hide_issued_to'] = true;
 
               break;
         }

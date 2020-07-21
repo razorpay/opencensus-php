@@ -142,6 +142,11 @@ class Preferences
     const MID_CLIX_FINANCE            = 'DdUJZmctBydK1m';
     const MID_CLIX_FINANCE_1          = 'DdU3RrefV6jkck';
 
+    const MID_GEPL_CAPITAL_PVT_LTD        = 'EhtHoWq8Bx2EU9';
+    const MID_GEPL_CAPITAL_PVT_LTD_1      = 'Ep10N8KxDvJilQ';
+    const MID_GEPL_COMMODITIES_PVT_LTD    = 'EzJPtuXMDJRlxl';
+    const MID_GEPL_COMMODITIES_PVT_LTD_1  = 'EzJQOzN6kg48LY';
+
     const MID_NSDL_MERCHANTS        = 'Anjg29UHP4PlvQ';
     const MID_AIRTEL                = 'AqUQQH9neAMkUG';
 
