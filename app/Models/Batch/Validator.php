@@ -15,6 +15,7 @@ use RZP\Models\User\Role;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
 use RZP\Http\UserRolesScope;
+use RZP\Models\Payment\Refund;
 use RZP\Exception\BaseException;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Entity as ME;
@@ -27,6 +28,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Batch\Helpers\OauthMigration as OMHelper;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as HdfcEMDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
+
 
 /**
  * Class Validator
@@ -810,6 +812,8 @@ class Validator extends Base\Validator
                 ]);
         }
 
+        $isInstantRefundDisabled = $merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === true;
+
         foreach ($entries as $entry)
         {
             $amount     = $entry[Header::AMOUNT];
@@ -840,6 +844,29 @@ class Validator extends Base\Validator
             {
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_BATCH_FILE_DUPLICATE_PAYMENT_ID);
+            }
+
+            // 
+            // If merchant has instant refund disabled in their feature set,
+            // dont even allow them to process a refund batch with optimum speed
+            // 
+            if (($isInstantRefundDisabled === true) and 
+                (empty($entry[Header::SPEED]) === false) and 
+                (in_array(strtolower($entry[Header::SPEED]), [Refund\Constants::OPTIMUM], true) === true))
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_INSTANT_REFUNDS_DISABLED);
+            }
+
+            // 
+            // Speed is optional, but if specified, 
+            // should strictly contain only one of the two values
+            // 
+            if ((empty($entry[Header::SPEED]) === false) and
+                (in_array(strtolower($entry[Header::SPEED]), [Refund\Constants::NORMAL, Refund\Constants::OPTIMUM], true) === false))
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_SPEED);
             }
 
             $existingPaymentIds[] = $paymentId;

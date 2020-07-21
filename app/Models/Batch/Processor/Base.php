@@ -16,6 +16,7 @@ use RZP\Models\Settings;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Models\Batch\Header;
+use RZP\Models\Payment\Refund;
 use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
 use RZP\Models\Base as BaseModel;
@@ -40,6 +41,13 @@ class Base extends BaseModel\Core
      * be shown to merchant for reference
      */
     const MAX_PARSED_ROWS    = 3;
+
+    /**
+     * Max number of parsed rows, 
+     * specifically for batch refund validate API, 
+     * that should be shown to merchant for reference
+     */
+    const MAX_PARSED_ROWS_FOR_REFUND = 10;
 
     /**
      * Map for the file type of batch entity and the
@@ -377,7 +385,9 @@ class Base extends BaseModel\Core
             return (isset($entry[Batch\Header::ERROR_CODE]) === false);
         });
 
-        $previewData = array_slice($correctEntries, 0, self::MAX_PARSED_ROWS);
+        $maxRowsToParse = ($this->batch->getType() === Refund\Constants::REFUND) ? self::MAX_PARSED_ROWS_FOR_REFUND : self::MAX_PARSED_ROWS;
+
+        $previewData = array_slice($correctEntries, 0, $maxRowsToParse);
 
         $this->removeErrorColumnsFromEntries($previewData);
 
@@ -387,7 +397,39 @@ class Base extends BaseModel\Core
             Batch\Constants::PARSED_ENTRIES    => $previewData,
         ];
 
+        // 
+        // only if speed column exist, return the respone for it,
+        // speed column is only introduced in batch refunds
+        // 
+        if(array_key_exists(Batch\Header::SPEED, $entries[0]) === true)
+        {
+            // 
+            // add speed related details in the response
+            // 
+            $normalSpeedCount = $this->getSpeedCount($correctEntries, Refund\Constants::NORMAL);
+            $optimumSpeedCount = $this->getSpeedCount($correctEntries, Refund\Constants::OPTIMUM);
+            $defaultSpeedCount = count($correctEntries) - ($normalSpeedCount + $optimumSpeedCount);
+
+            $speedCount = array(
+                Refund\Constants::NORMAL    => $normalSpeedCount,
+                Refund\Constants::OPTIMUM   => $optimumSpeedCount,
+                Refund\Constants::DEFAULT   => $defaultSpeedCount
+            );
+
+            $response += [Refund\Constants::SPEED_COUNT => $speedCount];
+        }
+
         return $response;
+    }
+
+    protected function getSpeedCount(array $entries, string $speed): int
+    {
+        $count = count(array_filter($entries, function($entry) use ($speed)
+        {
+            return strtolower($entry[Batch\Header::SPEED]) === $speed;
+        }));
+
+        return $count;
     }
 
     /**
@@ -856,6 +898,11 @@ class Base extends BaseModel\Core
                             $dict["notes[{$k}]"] = $v;
                         }
                     }
+                    // lowercase any value in speed column
+                    else if ($header === Batch\Header::SPEED)
+                    {
+                        $dict[$header] = strtolower($value);
+                    }
                     // Else just put the key value in dictionary
                     else
                     {
@@ -1323,23 +1370,26 @@ class Base extends BaseModel\Core
         $diff     = array_values(array_diff($headings, $firstRow));
 
         //
-        // In case of notes, the diff would be just 'notes', as the actual row will have values like notes[<key>].
+        // In case of notes, the diff would be just 'notes' or 'speed'(for batch refunds), as the actual row will have values like notes[<key>].
         // Todo: This is because of allowing(early bad decision) optional header row in CSV.
         //
-        if (($diff === []) or ($diff === [Batch\Header::NOTES]))
+        if ((empty($diff) === true) or 
+            ($diff === [Batch\Header::NOTES]) or 
+            ($diff === [Batch\Header::SPEED]) or 
+            ($diff === [Batch\Header::NOTES, Batch\Header::SPEED]))
         {
             array_shift($rows);
 
             $headings = $firstRow;
         }
         //
-        // Else 1) because notes is optional column and 2) valid header is not sent, we just assume that the file
-        // doesn't have notes column and so process it with headers - [notes]. It will give validation error in case of
+        // Else 1) because notes or speed(for batch refunds) is optional column and 2) valid header is not sent, we just assume that the file
+        // doesn't have notes column and so process it with headers - [notes, speed]. It will give validation error in case of
         // extra columns or other failures.
         //
         else
         {
-            $headings = array_diff($headings, [Batch\Header::NOTES]);
+            $headings = array_diff($headings, [Batch\Header::NOTES, Batch\Header::SPEED]);
         }
 
         return $headings;

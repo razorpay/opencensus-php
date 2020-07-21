@@ -2,6 +2,7 @@
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Models\Batch\Header;
 
 return [
     'testUploadRefundFile' => [
@@ -382,5 +383,97 @@ return [
                 'attempts'         => 2,
             ],
         ],
+    ],
+
+    'testBatchValidateWithSpeed' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'     => 'refund'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'speed_count'       => ['normal' => 0, 'optimum' => 1, 'default' => 0],
+                'processable_count' => 1,
+                'error_count'       => 0,
+                'parsed_entries'    => [
+                    [
+                        Header::SPEED       => 'optimum',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testBatchValidateWithoutSpeed' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'     => 'refund'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count' => 1,
+                'error_count'       => 0,
+                'parsed_entries'    => [
+                    [
+                        Header::AMOUNT       => 4000,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testBatchValidateWithOneEmptySpeed' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'     => 'refund'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'speed_count'       => ['normal' => 0, 'optimum' => 1, 'default' => 1],
+                'processable_count' => 2,
+                'error_count'       => 0,
+                'parsed_entries'    => [
+                    [
+                        Header::SPEED       =>  '',
+                    ],
+                    [
+                        Header::SPEED       => 'optimum',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testBatchWithDisableInstantRefundFeature' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'refund',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Instant Refund feature is not enabled for your account',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_BATCH_FILE_INSTANT_REFUNDS_DISABLED,
+        ],
+
     ],
 ];

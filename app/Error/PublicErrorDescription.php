@@ -635,6 +635,8 @@ class PublicErrorDescription
     const BAD_REQUEST_BATCH_FILE_DUPLICATE_TRANSFER_ID                          = 'The file should not have multiple entries for the same Transfer Id';
     const BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED                              = 'The uploaded file is already processed';
     const BAD_REQUEST_BATCH_FILE_UNDER_PROCESSING                               = 'The uploaded file is being processed';
+    const BAD_REQUEST_BATCH_FILE_INVALID_SPEED                                  = 'Invalid speed. Should be \'optimum\' or \'normal\'';
+    const BAD_REQUEST_BATCH_FILE_INSTANT_REFUNDS_DISABLED                       = 'Instant Refund feature is not enabled for your account';
     const BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS                       = 'Request failed because another operation on the batch is in progress';
     const BAD_REQUEST_LAMBDA_ANOTHER_OPERATION_IN_PROGRESS                      = 'Request failed because another operation of lambda is in progress';
     const BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT                                   = 'The uploaded file exceeds the number of entries allowed';

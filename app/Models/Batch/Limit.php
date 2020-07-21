@@ -17,7 +17,7 @@ class Limit
      * Above is subject to those value not being empty
      */
     const HEADER_MAP = [
-        Type::REFUND                                => 1000,
+        Type::REFUND                                => 5000,
         Type::PAYMENT_LINK                          => 500100,
         Type::INSTANT_ACTIVATION                    => 50001,
         Type::ENTITY_UPDATE_ACTION                  => 50000,

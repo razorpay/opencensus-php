@@ -38,6 +38,7 @@ class Header
     //
     const PAYMENT_ID        = 'Payment Id';
     const AMOUNT            = 'Amount';
+    const SPEED             = 'Speed';
     const REFUND_ID         = 'Refund Id';
     const REFUNDED_AMOUNT   = 'Refunded Amount';
     const STATUS            = 'Status';
@@ -1024,6 +1025,7 @@ class Header
                 self::PAYMENT_ID,
                 self::AMOUNT,
                 self::NOTES,
+                self::SPEED
             ],
 
             self::OUTPUT => [
@@ -1035,6 +1037,7 @@ class Header
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
+                self::SPEED
             ],
         ],
 
@@ -2852,6 +2855,18 @@ class Header
             (in_array(self::NOTES, $actualHeaders, true) === false))
         {
             $actualHeaders[] = self::NOTES;
+        }
+
+
+        // 
+        // Speed is also optional. See ^above comments about Notes;
+        // Speed is optional for batch type refunds.
+        // 
+        if (($type === Type::REFUND) and
+            (in_array(self::SPEED, $expectedHeaders, true) === true) and
+            (in_array(self::SPEED, $actualHeaders, true) === false))
+        {
+            $actualHeaders[] = self::SPEED;
         }
 
         //

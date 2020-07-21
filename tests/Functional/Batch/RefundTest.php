@@ -6,6 +6,7 @@ use Mail;
 use Illuminate\Support\Facades\Queue;
 
 use Mockery;
+use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Models\Batch\Header;
 use RZP\Jobs\Batch as BatchJob;
@@ -343,6 +344,79 @@ class RefundTest extends TestCase
         $this->assertEquals('processed', $batch->getStatus());
         $this->assertEquals(1, $batch->getProcessedCount());
         $this->assertEquals(100, $batch->getProcessedPercentage());
+    }
+
+    // test with speed specified
+    public function testBatchValidateWithSpeed()
+    {
+        $entries = $this->getDefaultRefundFileEntries();
+        $payment = $this->defaultAuthPayment();
+        $entries[0][Header::SPEED] = 'OPTIMUM';
+
+        // for generating excel sheet for processing
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        // for generating token for validation
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+    }
+
+    // test without speed specified
+    public function testBatchValidateWithoutSpeed()
+    {
+        $entries = $this->getDefaultRefundFileEntries();
+        $payment = $this->defaultAuthPayment();
+
+        // for generating excel sheet for processing
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        // for generating token for validation
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+    }
+
+    // test with one of the speed as nil
+    public function testBatchValidateWithOneEmptySpeed()
+    {
+        $entries = $this->getDefaultRefundFileEntries();
+        $payment = $this->defaultAuthPayment();
+        $entries[0][Header::SPEED] = ''; // empty speed
+
+        $entries[] = [ 
+                        Header::PAYMENT_ID  => $payment['id'],
+                        Header::AMOUNT      => 5000,
+                        'notes[key_1]'      => 'Array2, Notes Value 1',
+                        'notes[key_2]'      => 'Array2, Notes Value 2',
+                        Header::SPEED       => 'optimum'
+                     ];
+
+        // for generating excel sheet for processing
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        // for generating token for validation
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+    }
+
+    // test with merchant having instant refund disabled in their feature list
+    public function testBatchWithDisableInstantRefundFeature()
+    {
+        $this->fixtures->merchant->addFeatures('disable_instant_refunds');
+
+        $entries = $this->getDefaultRefundFileEntries();
+        $payment = $this->defaultAuthPayment();
+        $entries[0][Header::SPEED] = 'OPTIMUM';
+
+        // for generating excel sheet for processing
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        // for generating token for validation
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
     }
 
     protected function getDefaultRefundFileEntries(bool $withNotes = true)

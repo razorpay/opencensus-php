@@ -126,6 +126,10 @@ class Constants
     // Todo : Fetch such public status values/configs from scrooge
     const SCROOGE_PUBLIC_STATUS_TO_PROCESSED_TIME = 172800;
 
+    const SPEED_COUNT                    = 'speed_count';
+    const DEFAULT                        = 'default';
+    const NORMAL                         = 'normal';
+    const OPTIMUM                        = 'optimum';
     // Default refund amount value set for mode decisioning when actual refund amount is unknown
     // Set tentatively to 100 rupees since no modes are restricted for this amount
     const DEFAULT_REFUND_AMOUNT_FOR_MODE_DECISIONING = 10000;
