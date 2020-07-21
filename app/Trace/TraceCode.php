@@ -236,6 +236,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VERIFY_CAPTURE_RESPONSE                               = 'VERIFY_CAPTURE_RESPONSE';
     const PAYMENT_ANALYTICS_SAVE_FAILED                         = 'PAYMENT_ANALYTICS_SAVE_FAILED';
     const PAYMENT_UPI_METADATA_SAVE_FAILED                      = 'PAYMENT_UPI_METADATA_SAVE_FAILED';
+    const PAYMENT_UPI_METADATA_NOT_FOUND                        = 'PAYMENT_UPI_METADATA_NOT_FOUND';
     const PAYMENT_UPI_METADATA_UPDATED                          = 'PAYMENT_UPI_METADATA_UPDATED';
     const PAYMENT_ANALYTICS_UNRECOGNIZED_DATA                   = 'PAYMENT_ANALYTICS_UNRECOGNIZED_DATA';
     const PAYMENT_ANALYTICS_INCORRECT_DATA                      = 'PAYMENT_ANALYTICS_INCORRECT_DATA';

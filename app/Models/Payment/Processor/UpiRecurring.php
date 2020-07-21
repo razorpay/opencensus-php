@@ -622,6 +622,17 @@ trait UpiRecurring
         // now we can simply update the upi block
         $metadata = $payment->getUpiMetadata();
 
+        if (($metadata instanceof UpiMetadata\Entity) === false)
+        {
+            $this->trace->critical(
+                TraceCode::PAYMENT_UPI_METADATA_NOT_FOUND,
+                [
+                    'payment_id' => $payment->getId(),
+                ]);
+
+            return;
+        }
+
         $upiEdit = array_only($data['upi'], $metadata->getFillable());
 
         $metadata->edit($upiEdit);

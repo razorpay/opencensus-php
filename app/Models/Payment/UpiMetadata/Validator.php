@@ -11,7 +11,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::FLOW        => 'required|string|in:collect,intent,omnichannel',
-        Entity::TYPE        => 'required|string|in:otm,default',
+        Entity::TYPE        => 'required|string|in:otm,default,recurring',
         Entity::START_TIME  => 'required_if:type,otm|epoch',
         Entity::END_TIME    => 'required_if:type,otm|epoch',
         Entity::VPA         => 'sometimes|string',
