@@ -72,6 +72,8 @@ export default class AmountDetails extends React.Component {
 
     newAmountField.item.name = `SUPPORT FOR CAUSE ${presetIndexInOrder}`;
 
+    newAmountField.uniqueKey = new Date().getTime() * presetIndexInOrder;
+
     this.props.updateAmountField(newAmountField);
     setTimeout(this.toggleSubmitBtn);
   };
@@ -161,6 +163,8 @@ export default class AmountDetails extends React.Component {
 
     const { hasPresetAmountFields } = this.state;
 
+    const presetAmountFields = amountFields.slice(1);
+
     return (
       <div
         class="Form"
@@ -190,10 +194,10 @@ export default class AmountDetails extends React.Component {
           </div>
 
           {/* Not adding check for hasPresetAmountFields bcoz of debounce feature */}
-          {amountFields.slice(1).map((field, index) => {
+          {presetAmountFields.map((field, index) => {
             return (
               <PresetAmountField
-                key={field.item.name + index}
+                key={field.uniqueKey}
                 indexInOrder={index + 1} // Accounting index of the main amount field
                 field={field}
                 currency={currency}

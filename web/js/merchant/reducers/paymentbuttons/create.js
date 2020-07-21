@@ -207,8 +207,9 @@ export default function(state = initialState, action) {
         entityData.settings.allow_social_share === '1';
 
       // 3.
-      entityData.payment_page_items.forEach(pi => {
+      entityData.payment_page_items.forEach((pi, index) => {
         // While creation/editing, all amounts are converted to Paisa (or smaller unit)
+        pi.uniqueKey = new Date().getTime() * index; // Used as React keys if required, eg: For preset amount fields in Donation template's
 
         if (pi.item.amount) {
           pi.item.amount = paiseToRupees(pi.item.amount); // Convert in Rupees (or bigger unit)
