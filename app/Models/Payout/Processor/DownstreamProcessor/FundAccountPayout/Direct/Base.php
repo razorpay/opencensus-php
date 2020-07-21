@@ -174,7 +174,7 @@ class Base extends FundAccountPayout\Base
             $tax = 0;
 
             (new Credits\Transaction\Core)->subtractMerchantCreditBalanceAndCreateTransactions(
-                                                            $this->merchant,
+                                                            $payout->merchant,
                                                             CreditType::REWARD_FEE,
                                                             Product::BANKING,
                                                             $rewardUsed,
