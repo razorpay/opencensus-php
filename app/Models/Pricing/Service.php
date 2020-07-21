@@ -21,7 +21,9 @@ use RZP\Exception\BadRequestException;
 
 class Service extends Base\Service
 {
-    const PAYOUTS_FILTER = 'payouts_filter';
+    const PAYOUTS_FILTER                        = 'payouts_filter';
+    const MERCHANT_PRICING_UPDATE_MUTEX         = 'merchant_pricing_update_%s';
+    const MERCHANT_PRICING_UPDATE_MUTEX_TIMEOUT = 30;
 
     public function createPlan($input)
     {
@@ -69,6 +71,10 @@ class Service extends Base\Service
             $shouldUpdate = isset($item['update']) ? $item['update'] : false;
             try
             {
+                $mutex = App::getFacadeRoot()['api.mutex'];
+                $mutexKey = sprintf(self::MERCHANT_PRICING_UPDATE_MUTEX, $item[Entity::MERCHANT_ID]);
+                $pricingRulesCollection = $mutex->acquireAndRelease($mutexKey, function () use ($idempotencyKey, $shouldUpdate, $item, $pricingRulesCollection)
+                {
                 $result = $this->repo->transactionOnLiveAndTest(function () use ($item, $idempotencyKey, $shouldUpdate)
                 {
                     $merchant = $this->repo->merchant->findByPublicId($item[Entity::MERCHANT_ID]);
@@ -173,6 +179,11 @@ class Service extends Base\Service
                 });
 
                 $pricingRulesCollection->push($result);
+
+                return $pricingRulesCollection;
+                },
+                static::MERCHANT_PRICING_UPDATE_MUTEX_TIMEOUT,
+                ErrorCode::BAD_REQUEST_ANOTHER_PRICING_UPDATE_IN_PROGRESS);
             }
             catch (\Throwable $e)
             {
