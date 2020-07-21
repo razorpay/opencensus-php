@@ -2,15 +2,15 @@
 
 namespace RZP\Reconciliator\NetbankingYesb\SubReconciliator;
 
-use RZP\Models\Payment\Status;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Action;
+use RZP\Models\Payment\Status;
 use RZP\Models\Base\PublicEntity;
 use RZP\Gateway\Mozart\NetbankingYesb\Constants;
 use RZP\Gateway\Mozart\NetbankingYesb\ReconFields;
 
-class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
 {
     const BLACKLISTED_COLUMNS = [];
 

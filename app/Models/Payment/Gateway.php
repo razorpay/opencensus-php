@@ -2733,6 +2733,7 @@ class Gateway
             self::NETBANKING_ICICI,
             self::NETBANKING_JSB,
             self::BILLDESK,
+            self::NETBANKING_YESB,
         ];
 
         return (in_array($gateway, $gateways, true));

@@ -4,12 +4,13 @@ namespace RZP\Models\Gateway\File\Processor\Refund;
 
 use Carbon\Carbon;
 
-use RZP\Gateway\Mozart\NetbankingYesb\RefundFields;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
+use RZP\Services\NbPlus\Netbanking;
 use RZP\Models\Gateway\File\Processor\FileHandler;
+use RZP\Gateway\Mozart\NetbankingYesb\RefundFields;
 
 class Yesb extends Base
 {
@@ -41,7 +42,7 @@ class Yesb extends Base
                 RefundFields::MERCHANT_CODE      => $row['terminal']['gateway_merchant_id'],
                 RefundFields::TRANSACTION_DATE   => $date,
                 RefundFields::PAYMENT_ID         => $row['payment']['id'],
-                RefundFields::BANK_REFERENCE_ID  => $this->fetchBankPaymentId($row['gateway']['raw']),
+                RefundFields::BANK_REFERENCE_ID  => $this->fetchBankPaymentId($row),
                 RefundFields::TRANSACTION_AMOUNT => $this->getFormattedAmount($row['payment']['amount']),
                 RefundFields::REFUND_AMOUNT      => $this->getFormattedAmount($row['refund']['amount']),
             ];
@@ -60,9 +61,12 @@ class Yesb extends Base
 
     protected function fetchBankPaymentId($data)
     {
-        $dataArray = json_decode($data, true);
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['gateway'][Netbanking::BANK_TRANSACTION_ID]; // payment through nbplus service
+        }
 
-        return $dataArray['bank_payment_id'];
+        return $data['gateway']['data']['bank_payment_id'];
     }
 
     protected function getFormattedAmount($amount): String

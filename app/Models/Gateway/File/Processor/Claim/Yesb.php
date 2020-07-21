@@ -3,14 +3,15 @@
 namespace RZP\Models\Gateway\File\Processor\Claim;
 
 use Carbon\Carbon;
-use RZP\Gateway\Mozart\NetbankingYesb\ClaimFields;
+
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
+use RZP\Services\NbPlus\Netbanking;
+use RZP\Gateway\Mozart\NetbankingYesb\ClaimFields;
 
-
-class Yesb extends Base
+class Yesb extends NetbankingBase
 {
     const EXTENSION = FileStore\Format::XLS;
     const FILE_TYPE = FileStore\Type::YESB_NETBANKING_CLAIM;
@@ -33,7 +34,7 @@ class Yesb extends Base
                 ClaimFields::MERCHANT_CODE      => $row['terminal']['gateway_merchant_id'],
                 ClaimFields::TRANSACTION_DATE   => $date,
                 ClaimFields::PAYMENT_ID         => $row['payment']['id'],
-                ClaimFields::BANK_REFERENCE_ID  => $this->fetchBankPaymentId($row['gateway']['raw']),
+                ClaimFields::BANK_REFERENCE_ID  => $this->fetchBankPaymentId($row),
                 ClaimFields::TRANSACTION_AMOUNT => $this->getFormattedAmount($row['payment']['amount']),
             ];
         }
@@ -56,9 +57,12 @@ class Yesb extends Base
 
     protected function fetchBankPaymentId($data)
     {
-        $dataArray = json_decode($data, true);
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['gateway'][Netbanking::BANK_TRANSACTION_ID]; // payment through nbplus service
+        }
 
-        return $dataArray['bank_payment_id'];
+        return $data['gateway']['data']['bank_payment_id']; // payment through api - mozart
     }
 
     protected function setGatewayMerchantId($id)
