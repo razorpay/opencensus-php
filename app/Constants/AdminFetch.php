@@ -272,7 +272,8 @@ class AdminFetch
                         'reconciliation',
                         'merchant_status_action',
                         'admin_batch',
-                        'merchant_activation'
+                        'merchant_activation',
+                        'banking_account_activation_comments'
                     ],
                 ],
             ],

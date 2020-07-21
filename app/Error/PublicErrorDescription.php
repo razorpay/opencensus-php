@@ -641,6 +641,8 @@ class PublicErrorDescription
     const BAD_REQUEST_LAMBDA_ANOTHER_OPERATION_IN_PROGRESS                      = 'Request failed because another operation of lambda is in progress';
     const BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT                                   = 'The uploaded file exceeds the number of entries allowed';
     const BAD_REQUEST_BATCH_STATS_NOT_SUPPORTED_FOR_TYPE                        = 'Batch stats are not available for this batch type';
+    const BAD_REQUEST_BATCH_FILE_INVALID_RZP_REF_NO                             = 'The file should not have empty or non-numeric RZP Reference numbers';
+    const BAD_REQUEST_BATCH_FILE_INVALID_COMMENT                                = 'The file should not have empty comments';
 
     const BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS                  = 'Request failed because another settlement operation in progress';
     const BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS                     = 'Request failed because another settlement reconciliation operation in progress';

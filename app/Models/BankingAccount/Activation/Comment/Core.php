@@ -12,9 +12,17 @@ class Core extends Base\Core
 {
     public function create(BA\Entity $bankingAccount, array $input): Entity
     {
-        $admin = $this->app['basicauth']->getAdmin();
+        // TODO: handle this in middleware
+        if (isset($input[Entity::ADMIN_ID]) === true)
+        {
+            $admin = $this->repo->admin->findorFail($input[Entity::ADMIN_ID]);
+        }
+        else
+        {
+            $admin = $this->app['basicauth']->getAdmin();
 
-        $input[Entity::ADMIN_ID] = $admin->getId();
+            $input[Entity::ADMIN_ID] = $admin->getId();
+        }
 
         $input[Entity::BANKING_ACCOUNT_ID] = $bankingAccount->getId();
 

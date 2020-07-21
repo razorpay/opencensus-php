@@ -39,6 +39,7 @@ class Constants
     const RAZORPAY_X                    = 'razorpay_x';
     const CAPITAL_SUPPORT               = 'capital_support';
     const CAPITAL_CREDIT                = 'capital_credit';
+    const BANKING_ACCOUNT               = 'banking_account';
     const NACH                          = 'nach';
     const PARTNER_ON_BOARDING           = 'partner_on_boarding';
     const RAZORPAY_HELP_DESK            = 'help_desk';
@@ -101,6 +102,7 @@ class Constants
         self::PG_NOTIFICATION_UPI       => 'pg-notifications-upi@razorpay.com',
         self::PG_NOTIFICATION_NETBANKING=> 'pg-notifications-netbanking@razorpay.com',
         self::PG_NOTIFICATION_WALLET    => 'pg-notifications-wallets@razorpay.com',
+        self::BANKING_ACCOUNT           => 'x.support@razorpay.com'
     ];
 
     const HEADERS = [
@@ -134,6 +136,7 @@ class Constants
         self::NACH                    => 'Razorpay Nach',
         self::PARTNER_PAYMENTS        => 'Partner Payments',
         self::PARTNER_OPS             => 'Partner Ops',
-        self::RAZORPAY_HELP_DESK      => 'Team Razorpay'
+        self::RAZORPAY_HELP_DESK      => 'Team Razorpay',
+        self::BANKING_ACCOUNT         => 'Team RazorpayX'
     ];
 }

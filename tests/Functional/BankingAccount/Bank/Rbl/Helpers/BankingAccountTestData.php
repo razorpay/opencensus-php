@@ -1124,6 +1124,33 @@ return [
         ],
     ],
 
+    'testCreateBankingAccountActivationCommentViaBatch' => [
+        'request' => [
+            'url'     => '/banking_accounts/activation/comments/batch',
+            'method'  => 'POST',
+            'content' => [
+                'comment'           => 'this is a comment from Ops team',
+                'source_team_type'  => 'internal',
+                'source_team'       => 'ops',
+                'added_at'          => '1593567500',
+                'bank_reference_number' => '',
+                'channel'           => 'rbl',
+                'admin_id'          => ''
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'comment'           => 'this is a comment from Ops team',
+                'source_team_type'  => 'internal',
+                'source_team'       => 'ops',
+                'added_at'          => 1593567500,
+                'admin'             => [
+                    'name' => 'test admin'
+                ]
+            ],
+        ],
+    ],
+
     'testGetBankingAccountActivationComment' => [
         'request' => [
             'url'     => '/banking_accounts/activation/{id}/comments?expand[]=admin',

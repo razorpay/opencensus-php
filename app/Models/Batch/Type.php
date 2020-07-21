@@ -114,6 +114,8 @@ class Type
 
     const CREDIT              = 'credit';
 
+    const BANKING_ACCOUNT_ACTIVATION_COMMENTS  = 'banking_account_activation_comments';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -150,6 +152,7 @@ class Type
         self::BANK_TRANSFER_EDIT,
         self::CREDIT,
         self::MERCHANT_STATUS_ACTION,
+        self::BANKING_ACCOUNT_ACTIVATION_COMMENTS,
         self::NACH_MIGRATION,
         self::MERCHANT_ACTIVATION,
     ];

@@ -890,6 +890,10 @@ class Header
     const BUSINESS_REGISTERED_PIN  = Detail\Entity::BUSINESS_REGISTERED_PIN;
     const SEND_ACTIVATION_EMAIL    = 'send_activation_email';
 
+    // CA Activation
+    const RZP_REF_NO                = 'RZP Ref No';
+    const COMMENT                   = 'Comment';
+
     /**
      * Input and output file headers
      * The keys need to be like <type>_<sub-type>_<gateway>.
@@ -2819,6 +2823,20 @@ class Header
 
             self::OUTPUT => [
                 self::ID,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
+        ],
+
+        'banking_account_activation_comments' => [
+            self::INPUT => [
+                self::RZP_REF_NO,
+                self::COMMENT,
+            ],
+            self::OUTPUT => [
+                self::RZP_REF_NO,
+                self::COMMENT,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,

@@ -74,6 +74,8 @@ class MailTags
     const BATCH_FUND_ACCOUNT_FILE          = 'batch_fund_account_file';
     const BATCH_PAYOUT_FILE                = 'batch_payout_file';
     const BATCH_MERCHANT_ONBOARDING_FILE   = 'batch_merchant_onboarding_file';
+    const BATCH_BANKING_ACCOUNT_ACTIVATION_COMMENTS_FILE
+                                           = 'batch_banking_account_activation_comments_file';
 
     const PAYMENT_SUCCESSFUL               = 'payment_successful';
     const REFUND_SUCCESSFUL                = 'refund_successful';

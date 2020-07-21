@@ -209,6 +209,12 @@ class Validator extends Base\Validator
         Entity::SCHEDULE             => 'sometimes|numeric',
     ];
 
+    protected static $bankingAccountActivationCommentsCreateRules = [
+        Entity::FILE        => 'required|file' . self::DEFAULT_MIME_RULE,
+        Entity::TYPE        => 'required|in:banking_account_activation_comments',
+        Entity::CONFIG      => 'filled|array',
+    ];
+
     protected static $virtualBankAccountCreateRules = [
         Entity::TYPE                 => 'required|in:virtual_bank_account',
         Entity::FILE                 => 'required|file' . self::DEFAULT_MIME_RULE,
@@ -796,6 +802,29 @@ class Validator extends Base\Validator
             'limit_rule'        => $limitValidatorName,
             'validator_method'  => $validatorMethodName,
         ];
+    }
+
+    // TODO: move to batch service
+    protected function validateBankingAccountActivationCommentsEntries(array &$entries, array $params, ME $merchant)
+    {
+        foreach ($entries as $entry)
+        {
+            $bankReferenceNumber = $entry[Header::RZP_REF_NO];
+
+            $comment = $entry[Header::COMMENT];
+
+            if ((empty($bankReferenceNumber) === true) or (is_numeric($bankReferenceNumber) === false))
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_RZP_REF_NO);
+            }
+
+            if (empty($comment) === true)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_COMMENT);
+            }
+        }
     }
 
     protected function validateRefundEntries(array & $entries, array $params, ME $merchant)

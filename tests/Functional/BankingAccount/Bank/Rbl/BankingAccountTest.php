@@ -1601,6 +1601,30 @@ class BankingAccountTest extends TestCase
         return $bankingAccount;
     }
 
+    public function testCreateBankingAccountActivationCommentViaBatch()
+    {
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $bankingAccount = $this->createBankingAccount();
+
+        $admin = $this->getDbLastEntity('admin');
+
+        $dataToReplace = [
+            'request'  => [
+                'content' => [
+                    'bank_reference_number' => $bankingAccount['bank_reference_number'],
+                    'admin_id'          => $admin['id']
+                ]
+            ],
+        ];
+
+        $this->ba->batchAuth();
+
+        $this->startTest($dataToReplace);
+
+        return $bankingAccount;
+    }
+
     public function testGetBankingAccountActivationComment()
     {
         $bankingAccount =$this->testCreateBankingAccountActivationComment();

@@ -1,0 +1,24 @@
+<?php
+
+return [
+    'testBatchUpload'          => [
+        'request'  => [
+            'url'     => '/admin/batches',
+            'method'  => 'post',
+            'content' => [
+                'type'     => 'banking_account_activation_comments',
+                'config'   => [
+                    'added_at' => 1593567500,
+                    'source_team_type' => 'external',
+                    'source_team'   => 'bank',
+                    'channel'       => 'rbl'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status'        => 'CREATED'
+            ],
+        ],
+    ],
+];
