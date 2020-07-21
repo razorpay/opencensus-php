@@ -1794,6 +1794,8 @@ class ReconciliationFileTest extends TestCase
         $updatedTransaction2 = $this->getEntityById('transaction', $updatedRefund2['transaction_id'], true);
 
         //Reconciled at should not be null
+        $this->assertNotNull($updatedRefund['reference1']);
+        $this->assertNotNull($updatedRefund2['reference1']);
         $this->assertNotNull($updatedTransaction2['reconciled_at']);
         $this->assertNotNull($updatedTransaction2['reconciled_type']);
 

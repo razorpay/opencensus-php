@@ -12,10 +12,11 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_REFUND_ID      = 'refund_id';
-    const COLUMN_PAYMENT_ID     = 'ref_1';
-    const COLUMN_RZP_REFUND_ID  = 'ref_3';
-    const COLUMN_REFUND_AMOUNT  = 'refund_amount_rs_ps';
+    const COLUMN_REFUND_ID          = 'refund_id';
+    const COLUMN_PAYMENT_ID         = 'ref_1';
+    const COLUMN_RZP_REFUND_ID      = 'ref_3';
+    const COLUMN_REFUND_AMOUNT      = 'refund_amount_rs_ps';
+    const COLUMN_BANK_REFERENCE_NO  = 'bank_ref_no';
 
     const BLACKLISTED_COLUMNS = [];
 
@@ -75,6 +76,11 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         }
 
         return $refundId;
+    }
+
+    protected function getArn(array $row)
+    {
+        return $row[self::COLUMN_BANK_REFERENCE_NO] ?? null;
     }
 
     protected function getPaymentId(array $row)
