@@ -549,6 +549,54 @@ return [
         ],
     ],
 
+    'testCreateAuthLinkWithBankAndNonZeroAmountAllowed' => [
+        'request' => [
+            'url'     => '/subscription_registration/auth_links',
+            'method'  => 'post',
+            'content' => [
+                'type'                      => 'link',
+                'amount'                    => '1500',
+                'receipt'                   => '00000000000001',
+                'customer'                  => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+                'description'               => 'test description',
+                'subscription_registration' => [
+                    'method'       => 'emandate',
+                    'auth_type'    => 'netbanking',
+                    'expire_at'    => '1484512480',
+                    'bank_account' => [
+                        'bank_name'          => 'ICIC',
+                        'ifsc_code'          => 'ICIC0004245',
+                        'account_number'     => '123312563456',
+                        'account_type'       => 'savings',
+                        'beneficiary_name'   => 'test',
+                        'beneficiary_email'  => 'test@razorpay.com',
+                        'beneficiary_mobile' => '9999999999'
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'receipt'          => '00000000000001',
+                'customer_details' => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+
+                'status'       => 'issued',
+                'amount'       => 1500,
+                'currency'     => 'INR',
+                'payment_id'   => null,
+                'type'         => 'link',
+            ],
+        ],
+    ],
+
     'testCreateAuthLinkWithUPIAndMaxAllowedAmount' => [
         'request'   => [
             'url'     => '/subscription_registration/auth_links',

@@ -23,6 +23,7 @@ use RZP\Exception\ExtraFieldsException;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\SubscriptionRegistration\SubscriptionRegistrationConstants;
 
 /**
  * Class Validator
@@ -341,13 +342,22 @@ class Validator extends Base\Validator
             return;
         }
 
+        // for non-SubscriptionRegistration and not EMANDATE and not NACH, zero amount check is not required
         if (($invoice->isTypeOfSubscriptionRegistration() === true)
             and (($invoice->entity->getMethod() == SubscriptionRegistration\Method::EMANDATE) or
                 ($invoice->entity->getMethod() == SubscriptionRegistration\Method::NACH)))
         {
             $amount = (int) $input[Entity::AMOUNT];
 
-            if($amount !== 0)
+            // if amount is 0 return as no further validation required
+            if ($amount === 0)
+            {
+                return;
+            }
+
+            // as amount is greater than 0, check if it's allowed for bank, auth type & method combination
+            // If not allowed then throw error, else do further validations
+            if ($this->eMandateNonZeroAllowed($invoice->tokenRegistration, $invoice->entity->getMethod()) === false)
             {
                 throw new BadRequestValidationFailureException(
                     'The amount should be 0.',
@@ -357,8 +367,9 @@ class Validator extends Base\Validator
                         'amount'             => $input[Entity::AMOUNT],
                     ]);
             }
-            return;
         }
+
+        // further validations: that means amount is > 0 and allowed, do further validations
 
         $this->checkIfAmountIsExpectedInInput($input);
 
@@ -366,6 +377,34 @@ class Validator extends Base\Validator
          * Removed max amount check from here since order already does the validations properly
          */
         $this->validateMinAmount($input);
+    }
+
+    /**
+    * Check if merchant is allowed to charge some amount while registering for eMandate
+    */
+    private function eMandateNonZeroAllowed(SubscriptionRegistration\Entity $tokenRegistration, $method): bool
+    {
+        // if not emandate, non-zero not allowed
+        if (($method !== SubscriptionRegistration\Method::EMANDATE) or
+            (in_array($tokenRegistration->getAuthType(),
+             SubscriptionRegistrationConstants::authTypeForDebitOnMandateRegister) === false))
+        {
+            return false;
+        }
+
+        // Dont allow if some other bank is selected
+        if ($tokenRegistration !== null and $tokenRegistration->bankAccount !== null)
+        {
+            $forBank = $tokenRegistration->bankAccount->toArray()["bank_name"];
+
+            if (($forBank !== '') and
+                (in_array($forBank, SubscriptionRegistrationConstants::banksForDebitOnMandateRegister) === false))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

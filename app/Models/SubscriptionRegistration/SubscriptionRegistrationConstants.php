@@ -8,4 +8,11 @@ class SubscriptionRegistrationConstants
     const ERRORS           = 'errors';
     const PAYMENT_RESPONSE = 'payment_response';
     const URL              = 'url';
+
+    /**
+     * Banks on which we can charge while doing Mandate Registration
+     * Exact bank names here as invoice/subscription entity does not return bank code
+     */
+    const banksForDebitOnMandateRegister    = [ 'ICICI Bank', 'HDFC Bank' ];
+    const authTypeForDebitOnMandateRegister = [ 'netbanking' ];
 }

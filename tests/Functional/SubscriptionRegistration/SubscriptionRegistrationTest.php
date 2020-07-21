@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Services\BatchMicroService;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -180,6 +181,23 @@ class SubscriptionRegistrationTest extends TestCase
 
     public function testCreateAuthLinkWithBankAndNonZeroAmount()
     {
+        $this->startTest();
+    }
+
+    public function testCreateAuthLinkWithBankAndNonZeroAmountAllowed()
+    {
+        /*
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
+        */
+
         $this->startTest();
     }
 

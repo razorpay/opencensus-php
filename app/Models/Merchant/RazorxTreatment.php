@@ -128,6 +128,8 @@ final class RazorxTreatment
 
     const PAYMENT_TRANSFER_ASYNC = 'payment_transfer_async';
 
+    const EMANDATE_NONZERO_AMOUNT = 'emandate_nonzero_amount';
+
     // Added to test support of prepaid cards payouts for test merchants.
     // TODO: Remove experiment once testing concludes.
     const PAYOUT_TO_PREPAID_CARDS = 'payout_to_prepaid_cards';
