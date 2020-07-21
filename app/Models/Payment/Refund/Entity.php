@@ -180,6 +180,7 @@ class Entity extends Base\PublicEntity
         self::ACQUIRER_DATA,
         self::REVERSAL,
         self::CREATED_AT,
+        self::BATCH_ID
     ];
 
     protected $publicCustomer = [
@@ -207,6 +208,7 @@ class Entity extends Base\PublicEntity
         self::RECEIPT           => null,
         self::FEE               => 0,
         self::TAX               => 0,
+        self::BATCH_ID          => null,
     ];
 
     protected $casts = [
@@ -910,6 +912,11 @@ class Entity extends Base\PublicEntity
     public function setBatchFundTransferId($value)
     {
         $this->setAttribute(self::BATCH_FUND_TRANSFER_ID, $value);
+    }
+
+    public function setBatchId($value)
+    {
+        $this->setAttribute(self::BATCH_ID, $value);
     }
 
     /**

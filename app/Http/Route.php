@@ -187,6 +187,8 @@ class Route
         'billdesk_create_cancelled_refunds'        => ['post',     'refunds/billdesk/cancelled',                     'RefundController@postCreateBilldeskCancelledRefunds'               ],
         'refund_create_gateway_record'             => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
         'gateway_validate_unknown_refund'          => ['post',     'refunds/{gateway}/validate',                     'RefundController@postGatewayValidateRefund'                        ],
+        'refund_create_batch_service'              => ['post',     'refunds/batch_service',                          'RefundController@postCreateBatchRefund'                            ],
+
         // TODO: Add rate limiting on this route!
         'refund_fetch_for_customer'                => ['get',      'customer/refund',                                'RefundController@getRefundDetailsForCustomer'                      ],
         'refunds_fetch_for_customer'               => ['get',      'customer/refunds',                               'RefundController@getRefundsDetailsForCustomer'                     ],
@@ -2442,6 +2444,7 @@ class Route
         'merchant_create_terminal_internal',
         'retry_penny_testing_cron',
         'merchant_methods_edit_internal',
+        'refund_create_batch_service',
         'credits_create_bulk_batch',
         'terminal_create_bulk',
         'mpans_bulk',
@@ -4908,6 +4911,7 @@ class Route
             'bank_transfer_process_rbl_internal',
             'update_admin_through_batch',
             'bank_transfer_edit_payer_account_internal',
+            'refund_create_batch_service',
             'credits_create_bulk_batch',
             'terminal_create_bulk',
             'mpans_bulk',

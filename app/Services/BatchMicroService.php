@@ -122,7 +122,14 @@ class BatchMicroService
 
         $batchResponse['id'] = 'batch_' . $batchResponse['id'];
 
-        $batchResponse['status'] = $this->statusClusterMapping($batchResponse['status']);
+        if ($input[Batch\Entity::TYPE] !== Batch\Type::REFUND)
+        {
+            $batchResponse['status'] = $this->statusClusterMapping($batchResponse['status']);
+        }
+        else
+        {
+            $batchResponse['status'] = $this->statusClusterMappingRefundBatch($batchResponse['status']);
+        }
 
         $batchResponse[Batch\Entity::TYPE] = $input[Batch\Entity::TYPE];
 
@@ -376,6 +383,29 @@ class BatchMicroService
         }
     }
 
+    protected function statusClusterMappingRefundBatch(string $status)
+    {
+        switch ($status)
+        {
+            case 'CREATED':
+                return Batch\Status::CREATED;
+
+            case 'COMPLETED':
+                return Batch\Status::PROCESSED;
+
+            case 'FAILED':
+                return Batch\Status::FAILURE;
+
+            case 'CANCELLED':
+                return Batch\Status::CANCELLED;
+
+            case 'SCHEDULED':
+                return Batch\Status::CREATED;
+
+            default:
+                return Batch\Status::PROCESSING;
+        }
+    }
 
     /**
      * @param array           $fetchResult
@@ -451,7 +481,14 @@ class BatchMicroService
 
         if (isset($input['status']))
         {
-            $input['status'] = $this->statusClusterMapping($input['status']);
+            if ( $input['type'] !== Batch\Type::REFUND)
+            {
+                $input['status'] = $this->statusClusterMapping($input['status']);
+            }
+            else
+            {
+                $input['status'] = $this->statusClusterMappingRefundBatch($input['status']);
+            }
         }
 
         if(array_key_exists('settings',$input))

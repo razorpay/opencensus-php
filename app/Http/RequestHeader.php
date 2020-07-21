@@ -33,6 +33,8 @@ class RequestHeader
 
     const X_DASHBOARD_IP                = 'X-Dashboard-Ip';
 
+    const X_ENTITY_ID                   = 'X-Entity-Id';
+
     // Is user's identity verfied using 2FA?
     const X_DASHBOARD_USER_2FA_VERIFIED = 'X-Dashboard-User-2FA-Verified';
 

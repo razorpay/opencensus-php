@@ -2,10 +2,13 @@
 
 namespace RZP\Models\Batch\Processor;
 
+use Carbon\Carbon;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Payment\Method;
+use RZP\Constants\Environment;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
@@ -41,7 +44,7 @@ class Refund extends Base
             Payment\Refund\Entity::NOTES  => $entry[Batch\Header::NOTES] ?? [],
         ];
 
-        $refund = $paymentProcessor->refundPaymentViaBatchEntry($payment, $this->batch, $input);
+        $refund = $paymentProcessor->refundPaymentViaBatchEntry($payment, $input, $this->batch);
 
         // Update the entry with output values
         $entry[Batch\Header::STATUS]          = Batch\Status::SUCCESS;
@@ -70,5 +73,18 @@ class Refund extends Base
         }
 
         $this->batch->setProcessedAmount($processedAmount);
+    }
+
+    /**
+     * Schedules the batch at: current time + 1 hour.
+     * Skipping scheduling for QA envs, otherwise all the existing tests related to refund batch
+     * will be affected.
+     */
+    public function addSettingsIfRequired(& $input)
+    {
+        if (Environment::isEnvironmentQA($this->env) === false)
+        {
+            $input[Batch\Constants::SCHEDULE] = Carbon::now(Timezone::IST)->addHour()->addMinutes(10)->getTimestamp() * 1000;
+        }
     }
 }

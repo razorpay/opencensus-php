@@ -64,7 +64,7 @@ trait Refund
      *
      * @throws Exception\BadRequestException
      */
-    public function refund(Payment\Entity $payment, array $input, Batch\Entity $batch = null)
+    public function refund(Payment\Entity $payment, array $input, Batch\Entity $batch = null, $batchId = null)
     {
         if ($this->isInvalidInstantRefundsRequest($payment, $input) === true)
         {
@@ -91,7 +91,7 @@ trait Refund
             }
         }
 
-        $refund = $this->buildRefundEntity($payment, $input, $batch);
+        $refund = $this->buildRefundEntity($payment, $input, $batch, $batchId);
 
         $this->processRefund();
 
@@ -884,13 +884,19 @@ trait Refund
         }
     }
 
-    public function refundPaymentViaBatchEntry(Payment\Entity $payment, Batch\Entity $batch, array $input)
+    public function refundPaymentViaBatchEntry(Payment\Entity $payment, array $input, Batch\Entity $batch = null, $batchId = null)
     {
         //
         // Check if a refund already exists.
         // If one exists, then we should not fire a new one else two refunds will happen.
         //
-        $refund = $this->findExistingRefundForBatch($batch, $payment);
+
+        $refund = null;
+
+        if (empty($batch) === false)
+        {
+            $refund = $this->findExistingRefundForBatch($batch, $payment);
+        }
 
         if ($refund !== null)
         {
@@ -898,7 +904,7 @@ trait Refund
         }
 
         // No refund existed so fire a new one.
-        return $this->refundCapturedPayment($payment, $input, $batch);
+        return $this->refundCapturedPayment($payment, $input, $batch, $batchId);
     }
 
     /**
@@ -1439,7 +1445,7 @@ trait Refund
         });
     }
 
-    protected function buildRefundEntity(Payment\Entity $payment, array $input, Batch\Entity $batch = null)
+    protected function buildRefundEntity(Payment\Entity $payment, array $input, Batch\Entity $batch = null, $batchId = null)
     {
         $this->setPayment($payment);
 
@@ -1544,8 +1550,18 @@ trait Refund
                 $this->validateMerchantBalance($refund, 'refund');
             }
         }
-
-        $refund->batch()->associate($batch);
+         //
+         // If the batch is created in batch service, api db will not have batch entity corresponding to batch_id.
+         // As a result we cant associate the refund to batch entity. So, only setting the batch_id here.
+         //
+         if (empty($batchId) === false)
+         {
+            $refund->setBatchId($batchId);
+         }
+         else
+         {
+            $refund->batch()->associate($batch);
+         }
 
         $this->refund = $refund;
 
@@ -2240,7 +2256,7 @@ trait Refund
         return null;
     }
 
-    public function refundCapturedPayment($payment, array $input = [], Batch\Entity $batch = null)
+    public function refundCapturedPayment($payment, array $input = [], Batch\Entity $batch = null, $batchID = null)
     {
         $this->validatePaymentForRefund($payment, $input);
 
@@ -2261,7 +2277,7 @@ trait Refund
             }
         });
 
-        return $this->refund($payment, $input, $batch);
+        return $this->refund($payment, $input, $batch, $batchID);
     }
 
     protected function validatePaymentForRefund(Payment\Entity $payment, array $input = null)

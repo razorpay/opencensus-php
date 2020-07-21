@@ -32,6 +32,9 @@ class Status
     const SUCCESS             = 'success';
     const FAILURE             = 'failure';
 
+    // Used as External status for Refund Batch
+    const PROCESSING          = 'processing';
+
     const BATCH_STATUSES = [
         self::CREATED,
         self::PARTIALLY_PROCESSED,

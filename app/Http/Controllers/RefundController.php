@@ -9,6 +9,15 @@ class RefundController extends Controller
 {
     use Traits\HasCrudMethods;
 
+    public function postCreateBatchRefund()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createBatchRefund($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postRefundCreate()
     {
         $input = Request::all();

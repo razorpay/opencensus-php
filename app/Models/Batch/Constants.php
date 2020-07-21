@@ -20,4 +20,6 @@ class Constants
     const ACTION                         = 'action';
 
     const IDEMPOTENCY_KEY                = 'idempotency_key';
+    const TYPE                           = 'type';
+    const SCHEDULE                       = 'schedule';
 }

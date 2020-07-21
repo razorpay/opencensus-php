@@ -112,6 +112,15 @@ class Constants
     // Scrooge skip verify flag
     const SCROOGE_SKIP_REFUND_VERIFY = 'skip_refund_verify';
 
+    // Batch related constants
+    const NOTES                 = 'notes';
+    const STATUS                = 'status';
+    const REFUNDED_AMOUNT       = 'refunded_amount';
+    const ERROR_CODE            = 'error_code';
+    const ERROR_DESCRIPTION     = 'error_description';
+    const FAILURE               = 'failure';
+    const SPEED                 = 'speed';
+
     // For flipkart like cases we show refunds as processed after 48 hours
     // even if it is not actually processed and config is stored in scrooge
     // Todo : Fetch such public status values/configs from scrooge

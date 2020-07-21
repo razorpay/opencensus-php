@@ -4,23 +4,26 @@ namespace RZP\Models\Payment\Refund;
 
 use Config;
 use Carbon\Carbon;
-use RZP\Constants\Mode;
-use RZP\Constants\Timezone;
-
+use RZP\Models\Batch;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
+use RZP\Http\RequestHeader;
+use RZP\Constants\Timezone;
 use RZP\Models\Bank\BankCodes;
+use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Jobs\ScroogeRefundUpdate;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\BulkScroogeVerifyRefund;
+use RZP\Exception\BadRequestException;
 use RZP\Jobs\BulkRefund as BulkRefundJob;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Admin\Service as AdminService;
@@ -29,6 +32,7 @@ use RZP\Models\Payment\Refund\Core as RefundCore;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
+use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Service extends Base\Service
 {
@@ -43,6 +47,81 @@ class Service extends Base\Service
 
         $this->mutex = $this->app['api.mutex'];
     }
+
+    public function createBatchRefund(array  $input)
+    {
+       $tracePayload = [];
+
+        try
+        {
+            $tracePayload =[
+                Entity::PAYMENT_ID => $input[Entity::PAYMENT_ID],
+                Entity::AMOUNT     => $input[Entity::AMOUNT],
+            ];
+
+            $this->trace->debug(TraceCode::BATCH_PROCESSING_ENTRY, $tracePayload);
+
+            $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id) ?? null;
+
+            $merchantId = $this->app['request']->header(RequestHeader::X_ENTITY_ID) ?? null;
+
+            $paymentId = trim($input[Refund\Constants::PAYMENT_ID]);
+
+            $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            /** @var Payment\Entity $payment */
+            $payment = $this->repo->payment->findByPublicIdAndMerchant(
+                $paymentId,
+                $this->merchant);
+
+            if (($this->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::DISABLE_CARD_REFUNDS) === true) and
+                ($payment->getMethod() === Method::CARD))
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_CARD_REFUND_NOT_ALLOWED,
+                    Payment\Entity::METHOD,
+                    [
+                        Payment\Entity::MERCHANT_ID => $this->merchant->getId(),
+                        Refund\Entity::PAYMENT_ID    => $paymentId,
+                    ]);
+            }
+
+            unset($input[Batch\Constants::TYPE]);
+            unset($input[RefundConstants::PAYMENT_ID]);
+
+            $paymentProcessor = (new PaymentProcessor($this->merchant));
+
+            $refund = $paymentProcessor->refundPaymentViaBatchEntry($payment, $input, null, $batchId);
+
+            $input[RefundConstants::PAYMENT_ID]        = $paymentId;
+            $input[RefundConstants::REFUND_ID ]        = $refund->getPublicId();
+            $input[RefundConstants::REFUNDED_AMOUNT]   = $refund->getAmount();
+            $input[RefundConstants::STATUS]            = Batch\Status::SUCCESS;
+            $input[RefundConstants::ERROR_CODE]        = null;
+            $input[RefundConstants::ERROR_DESCRIPTION] = null;
+            $input[Entity::SPEED_REQUESTED]            = $refund->getSpeedRequested();
+
+        }
+        catch (\Exception $e)
+        {
+            // RZP Exceptions have public error code & description which can be exposed in the output file
+            $this->trace->traceException($e, null, TraceCode::BATCH_PROCESSING_ERROR, $tracePayload);
+
+            $error = $e->getError();
+
+            $input[RefundConstants::PAYMENT_ID]        = $paymentId;
+            $input[RefundConstants::STATUS]            = RefundConstants::FAILURE;
+            $input[RefundConstants::REFUND_ID]         = $input[RefundConstants::REFUND_ID] ?? null;
+            $input[RefundConstants::REFUNDED_AMOUNT]   = $input[RefundConstants::REFUNDED_AMOUNT] ?? null;
+            $input[RefundConstants::ERROR_CODE]        = $error->getPublicErrorCode();
+            $input[RefundConstants::ERROR_DESCRIPTION] = $error->getDescription();
+            $input[Entity::SPEED_REQUESTED]            = $input[Entity::SPEED] ?? null;
+        }
+        finally
+        {
+            return $input;
+        }
+}
 
     public function create(array $input)
     {
