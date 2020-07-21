@@ -375,4 +375,11 @@ class RefundController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function cancelRefundsBatch(string $batchId)
+    {
+        $this->service()->cancelRefundsBatch($batchId);
+
+        return ApiResponse::json([]);
+    }
 }

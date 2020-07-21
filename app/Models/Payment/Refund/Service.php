@@ -4,10 +4,10 @@ namespace RZP\Models\Payment\Refund;
 
 use Config;
 use Carbon\Carbon;
-use RZP\Models\Batch;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\Batch;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
@@ -3020,5 +3020,52 @@ class Service extends Base\Service
         $setConfigInput[ConfigKey::GATEWAY_UNPROCESSED_REFUNDS] = $input[RefundConstants::REFUND_IDS];
 
         return (new AdminService)->setConfigKeys($setConfigInput);
+    }
+
+    public function cancelRefundsBatch(string $batchId)
+    {
+        $batch = $this->fetchBatchById($batchId);
+
+        if ($batch === [])
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID,
+                null,
+                [
+                    'batch_id'      => $batchId,
+                ]
+            );
+        }
+
+        return $this->core->cancelRefundsBatch($batch);
+    }
+
+    protected function fetchBatchById(string $batchId): array
+    {
+        $batch = [];
+
+        if ($this->auth->isAdminAuth() === true)
+        {
+            $batch = (new Batch\Service())->fetchBatchById($batchId);
+        }
+        else
+        {
+            $batch = (new Batch\Service())->getBatchById($batchId, $this->merchant);
+
+            if (($batch !== []) and
+                ((array_key_exists(Batch\ResponseEntity::BATCH_TYPE_ID, $batch) === false) or
+                 ($batch[Batch\ResponseEntity::BATCH_TYPE_ID] !== Batch\Type::REFUND)))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_TYPE,
+                    null,
+                    [
+                        'batch_id' => $batchId,
+                    ]
+                );
+            }
+        }
+
+        return $batch;
     }
 }

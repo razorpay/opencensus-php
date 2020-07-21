@@ -175,6 +175,7 @@ class Route
         // We will change this in the future when we want to update more things than just marking it as processed.
         'refund_update_status'                     => ['put',      'refunds/{id}/update_status',                     'RefundController@updateScroogeRefundStatus'                        ],
         'refund_fetch_status'                      => ['get',      'refunds/{id}/status',                            'RefundController@getRefundEntity'                                  ],
+        'refund_cancel_batch'                      => ['post',     'refunds/batch/{batchId}/cancel',                 'RefundController@cancelRefundsBatch'                               ],
         // Both the following routes refund_verify_call, refund_gateway_call must always point to master DB
         'refund_gateway_call'                      => ['post',     'refunds/{id}/gateway_refund',                    'RefundController@postGatewayRefundCall'                            ],
         'refund_verify_call'                       => ['post',     'refunds/{id}/gateway_verify',                    'RefundController@postGatewayVerifyRefundCall'                      ],
@@ -2836,6 +2837,9 @@ class Route
         // Virtual VPA Prefix
         'virtual_vpa_prefix_validate',
         'virtual_vpa_prefix_save',
+
+        // Refunds
+        'refund_cancel_batch',
 
         // TwoFa validation routes
         'user_trigger_2fa_otp',

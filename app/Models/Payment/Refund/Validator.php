@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Refund;
 use App;
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\PublicCollection;
@@ -553,6 +554,21 @@ class Validator extends Base\Validator
                 'method',
                 [
                     'method' => $method,
+                ]
+            );
+        }
+    }
+
+    public function validateCancelRefundsBatch(array $batch)
+    {
+        if (in_array($batch[Batch\Entity::STATUS], Batch\Status::REFUND_BATCH_STATUSES_VALID_FOR_CANCEL) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_BATCH_FILE_STATUS_INVALID_FOR_CANCEL,
+                $batch[Batch\Entity::STATUS],
+                [
+                    'batch_id'  => $batch[Batch\Entity::ID],
+                    'status'    => $batch[Batch\Entity::STATUS],
                 ]
             );
         }

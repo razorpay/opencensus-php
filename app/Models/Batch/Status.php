@@ -50,6 +50,11 @@ class Status
         self::SCHEDULED,
     ];
 
+    const REFUND_BATCH_STATUSES_VALID_FOR_CANCEL = [
+        self::CREATED,
+        self::SCHEDULED,
+    ];
+
     public static function validateStatus(string $type)
     {
         if (in_array($type, self::BATCH_STATUSES, true) === false)

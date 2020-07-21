@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Refund;
 
 use App;
 use RZP\Models\Base;
+use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Refund;
@@ -361,5 +362,26 @@ class Core extends Base\Core
         }
 
         return $maxSeqNo + 1;
+    }
+
+    /**
+     * Cancels all the payment refund request rows which are yet to be processed on the batch service
+     * If the batch is yet to be processed / partially processed
+     *
+     * @param array $batch
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public function cancelRefundsBatch(array $batch)
+    {
+        (new Validator())->validateCancelRefundsBatch($batch);
+
+        $batchService = new Batch\Service();
+
+        $needToStopBatch = $batchService->isStoppingRequired($batch[Batch\Entity::STATUS]);
+
+        if ($needToStopBatch === true)
+        {
+            $batchService->stopBatchProcess($batch);
+        }
     }
 }
