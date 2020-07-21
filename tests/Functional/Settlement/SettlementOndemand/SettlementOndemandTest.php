@@ -242,8 +242,6 @@ class SettlementOndemandTest extends TestCase
 
     public function testFetchApi()
     {
-        $this->markTestSkipped();
-
         $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
 
         $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_fund_account');
@@ -259,13 +257,9 @@ class SettlementOndemandTest extends TestCase
 
         $this->app['config']->set('applications.razorpayx_client.live.mock_webhook', false);
 
-        $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
+        $this->makeRequestAndGetContent($this->testData['testNonBankingHourOndemandCreationWithMockWebhook']['request']);
 
-        Carbon::setTestNow($bankingHour);
-
-        $this->makeRequestAndGetContent($this->testData['testBankingHourOndemandCreationWithMockWebhook']['request']);
-
-        $this->makeRequestAndGetContent($this->testData['testBankingHourOndemandCreationWithReversal']['request']);
+        $this->makeRequestAndGetContent($this->testData['testNonBankingHourOndemandCreationWithPartialReversal']['request']);
 
         $key = $this->fixtures->create('key', ['merchant_id' => $this->merchantDetail['merchant_id']]);
 

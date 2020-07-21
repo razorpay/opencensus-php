@@ -15,6 +15,11 @@ use RZP\Models\Payout as PayoutModel;
  */
 class SettlementOndemandPayout extends Base
 {
+    protected function setAmount()
+    {
+        $this->amount = $this->entity->getBaseAmount();
+    }
+
     public function validateFees($totalFees)
     {
         return;

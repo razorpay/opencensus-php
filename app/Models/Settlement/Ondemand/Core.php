@@ -74,11 +74,6 @@ class Core extends Base\Core
         $settlementOndemandPayouts = (new OndemandPayout\Service)
                                         ->createSettlementOndemandPayout($settlementOndemand);
 
-        foreach($settlementOndemandPayouts as $settlementOndemandPayout)
-        {
-            $settlementOndemand->settlementOndemandPayouts->add($settlementOndemandPayout);
-        }
-
         $settlementOndemand = $this->createTransaction($settlementOndemand);
 
         $settlementOndemand->setTotalAmountPending($settlementOndemand->getAmountToBeSettled());

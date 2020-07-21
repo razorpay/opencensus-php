@@ -141,7 +141,7 @@ class Service extends Base\Service
 
     public function fetch(string $id, array $input): array
     {
-        $settlementOndemand = (new Repository)->findByIdAndMerchantId($id, $this->merchant->getId());
+        $settlementOndemand = (new Repository)->findByPublicIdAndMerchant($id, $this->merchant);
 
         if (isset($input['expand']) === true && boolval($input['expand']) === true)
         {
@@ -189,15 +189,8 @@ class Service extends Base\Service
 
         if (isset($settlementOndemandPayouts) === true)
         {
-            $settlementOndemandPayoutArray = [];
-
-            foreach($settlementOndemandPayouts as $settlementOndemandPayout)
-            {
-                array_push($settlementOndemandPayoutArray, $settlementOndemandPayout->toArrayPublic());
-            }
-
             return $settlementOndemandArray + [
-                'settlement_ondemand_payouts'   => $settlementOndemandPayoutArray,
+                'settlement_ondemand_payouts'   => $settlementOndemand->settlementOndemandPayouts->toArrayPublic(),
             ];
         }
         else

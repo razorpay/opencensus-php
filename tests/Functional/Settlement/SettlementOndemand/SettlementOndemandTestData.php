@@ -76,6 +76,9 @@ return [
                 ],
 //                'created_at'         => 1582000200,
                 'settlement_ondemand_payouts' => [
+                    'entity' => 'collection',
+                    'count'  => 1,
+                    'items'  => [
                     [
 //                        'id'            => 'sodp_F2hdIfWGvMza0E',
                         'merchant_id'    => '10000000000000',
@@ -85,8 +88,9 @@ return [
                         'tax'            => 72108,
                         'mode'           => 'NEFT',
                         'amount'         => '20030000',
-                        'status'         => 'created',
-                    ],
+                        'status'         => 'inititated',
+                    ]
+                    ]
                 ]
             ]
         ]
@@ -99,87 +103,119 @@ return [
         ],
         'response' => [
             'content' => [
-                    'entity' => 'collection',
-                    'count'  => 2,
-                    'items'  =>  [
-                        [
-//                           'id'                     => 'sod_FF8EosqZtqVKJm',
-                            'merchant_id'           => '10000000000000',
-                            'amount'                => 110000,
-                            'total_amount_settled'  => 0,
-                            'total_fees'            => 2596,
-                            'total_tax'             => 396,
-                            'total_amount_reversed' => 0,
-                            'total_amount_pending'  => 107404,
-                            'max_balance'           => 0,
-                            'currency'              => 'INR',
-                            'status'                => 'initiated',
-                            'narration'             => 'Demo Narration - optional',
-                            'notes'                 => [],
-//                            'created_at'            =>  1582000200,
- //                           'updated_at'            =>  1582000200,
-                            'settlement_ondemand_payouts' => [
-                            'entity'                      => 'collection',
-                                'count'                   => 1,
-                                'items' =>  [
-                                     [
-//                                        'id'                   => 'sodp_FF8Eot5uqWw1zg',
-                                        'merchant_id'            => '10000000000000',
-//                                        'settlement_ondemand_id' => 'FF8EosqZtqVKJm',
-                                        'mode'                   => 'NEFT',
-//                                        'initiated_at'         => 1582000200,
-                                        'processed_at'           => null,
-                                        'reversed_at'            => null,
-                                        'amount'                 => 110000,
-                                        'fees'                   => 2596,
-                                        'tax'                    => 396,
-                                        'utr'                    => null,
-                                        'status'                 => 'initiated',
-                                    ]
+                'entity' => 'collection',
+                'count' => 2,
+                'items' => [
+                    [
+//                        'id'                    => 'sod_FGi3a0Du84Lr7B',
+                        'merchant_id'           => '10000000000000',
+                        'amount'                => 20110000,
+                        'total_amount_settled'  => 0,
+                        'total_fees'            => 474596,
+                        'total_tax'             => 72396,
+                        'total_amount_reversed' => 0,
+                        'total_amount_pending'  => 19635404,
+                        'max_balance'           => 0,
+                        'currency'              => 'INR',
+                        'status'                => 'initiated',
+                        'narration'             => 'Demo Narration - optional',
+                        'notes'                 => [],
+//                        'created_at'            => 1595239294,
+//                        'updated_at'            => 1595239294,
+                        'settlement_ondemand_payouts' => [
+                            'entity' => 'collection',
+                            'count'  => 2,
+                            'items'  => [
+                                [
+//                                    'id'                       => 'sodp_FGi3a0IjIScQNQ',
+                                    'merchant_id'              => '10000000000000',
+//                                    'settlement_ondemand_id'   => 'FGi3a0Du84Lr7B',
+                                    'mode'                     => 'IMPS',
+//                                    'initiated_at'             => 1595239294,
+                                    'processed_at'             => null,
+                                    'reversed_at'              => null,
+                                    'amount'                   => 20000000,
+                                    'fees'                     => 472000,
+                                    'tax'                      => 72000,
+                                    'utr'                      => null,
+                                    'status'                   => 'initiated',
+//                                    'created_at'               => 1595239294,
+                                ],
+                                [
+//                                    'id'                       => 'sodp_FGi3a1LoIoGfCr',
+                                    'merchant_id'              => '10000000000000',
+//                                    'settlement_ondemand_id'   => 'FGi3a0Du84Lr7B',
+                                    'mode'                     => 'IMPS',
+//                                    'initiated_at'             => 1595239294,
+                                    'processed_at'             => null,
+                                    'reversed_at'              => null,
+                                    'amount'                   => 110000,
+                                    'fees'                     => 2596,
+                                    'tax'                      => 396,
+                                    'utr'                      => null,
+                                    'status'                   => 'initiated',
+//                                    'created_at'               => 1595239294,
                                 ]
                             ]
-                        ],
-                        [
-//                            'id'                          => 'sod_FF8Eo7MwLIxLbX',
-                            'merchant_id'                 => '10000000000000',
-                            'amount'                      => 20030000,
-                            'total_amount_settled'        => 0,
-                            'total_fees'                  => 472708,
-                            'total_tax'                   => 72108,
-                            'total_amount_reversed'       => 0,
-                            'total_amount_pending'        => 19557292,
-                            'max_balance'                 => 0,
-                            'currency'                    => 'INR',
-                            'status'                      => 'initiated',
-                            'narration'                   => 'Demo Narration - optional',
-                            'notes'                       => [],
- //                           'created_at'                  => 1582000200,
-//                            'updated_at'                  => 1582000200,
-                            'settlement_ondemand_payouts' => [
-                                'entity'                  => 'collection',
-                                'count'                   =>  1,
-                                'items'                   =>[
-                                     [
-//                                        'id'                     => 'sodp_FF8EoBbS8gUQPz',
-                                        'merchant_id'            => '10000000000000',
- //                                       'settlement_ondemand_id' => 'FF8Eo7MwLIxLbX',
-                                        'mode'                   => 'NEFT',
-                                        'initiated_at'           => 1582000200,
-                                        'processed_at'           => null,
-                                        'reversed_at'            => null,
-                                        'amount'                 => 20030000,
-                                        'fees'                   => 472708,
-                                        'tax'                    => 72108,
-                                        'utr'                    => null,
-                                        'status'                 => 'initiated',
-                                    ]
+                        ]
+                    ],
+                    [
+//                        'id'                    => 'sod_FGi3ZQErsqc9lc',
+                        'merchant_id'           => '10000000000000',
+                        'amount'                => 20030000,
+                        'total_amount_settled'  => 0,
+                        'total_fees'            => 472708,
+                        'total_tax'             => 72108,
+                        'total_amount_reversed' => 0,
+                        'total_amount_pending'  => 19557292,
+                        'max_balance'           => 0,
+                        'currency'              => 'INR',
+                        'status'                => 'initiated',
+                        'narration'             => 'Demo Narration - optional',
+                        'notes'                 => [],
+//                        'created_at'           => 1595239294,
+//                        'updated_at'           => 1595239294,
+                        'settlement_ondemand_payouts' => [
+                            'entity' => 'collection',
+                            'count'  => 2,
+                            'items'  => [
+                                [
+//                                    'id'                      => 'sodp_FGi3ZSdqiiG3AP',
+                                    'merchant_id'              => '10000000000000',
+//                                    'settlement_ondemand_id'   => 'FGi3ZQErsqc9lc',
+                                    'mode'                     => 'IMPS',
+//                                    'initiated_at'            => 1595239294,
+                                    'processed_at'            => null,
+                                    'reversed_at'             => null,
+                                    'amount'                  => 20000000,
+                                    'fees'                    => 472000,
+                                    'tax'                     => 72000,
+                                    'utr'                     => null,
+                                    'status'                  => 'initiated',
+//                                    'created_at'              => 1595239293,
+                                ],
+                                [
+//                                    'id'                       => 'sodp_FGi3ZYZjPQhi49',
+                                    'merchant_id'              => '10000000000000',
+//                                    'settlement_ondemand_id'   => 'FGi3ZQErsqc9lc',
+                                    'mode'                     => 'IMPS',
+//                                    'initiated_at'             => 1595239294,
+                                    'processed_at'             => null,
+                                    'reversed_at'              => null,
+                                    'amount'                   => 30000,
+                                    'fees'                     => 708,
+                                    'tax'                      => 108,
+                                    'utr'                      => null,
+                                    'status'                   =>  'initiated',
+//                                    'created_at'               => 1595239293,
                                 ]
                             ]
                         ]
                     ]
                 ]
             ]
-        ],      
+        ]
+    ],      
 
 
     'testNoMinLimitFornEsAutomaticMerchants' => [
@@ -265,6 +301,9 @@ return [
                 'narration'             => 'Demo Narration - optional',
 //                'created_at'          => 1582000200,
                 'settlement_ondemand_payouts' => [
+                    'entity' => 'collection',
+                    'count'  => 1,
+                    'items'  => [
                     [
 //                        'id'             => 'sodp_F2hdIfWGvMza0E',
                         'merchant_id'    => '10000000000000',
@@ -274,8 +313,9 @@ return [
                         'tax'            => 72108,
                         'mode'           => 'NEFT',
                         'amount'         => '20030000',
-                        'status'         => 'created',
-                    ],
+                        'status'         => 'processed',
+                    ]
+                    ]
                 ]
             ]
         ]
@@ -308,6 +348,10 @@ return [
                 'narration'             => 'Demo Narration - optional',
 //                'created_at'           => 1582000200,
                 'settlement_ondemand_payouts' => [
+                    'settlement_ondemand_payouts' => [
+                        'entity' => 'collection',
+                        'count'  => 1,
+                        'items'  => [
                     [
  //                       'id'            => 'sodp_F2hdIfWGvMza0E',
                         'merchant_id'   => '10000000000000',
@@ -317,10 +361,12 @@ return [
                         'tax'           => 396,
                         'mode'          => 'NEFT',
                         'amount'        => '110000',
-                        'status'        => 'created',
-                    ],
+                        'status'        => 'reversed',
+                    ]
+                    ]
                 ]
-             ]
+            ]
+        ]
         ]
     ],
 
@@ -351,6 +397,9 @@ return [
                 'narration'             => 'Demo Narration - optional',
 //                'created_at'            => 1582036200,
                 'settlement_ondemand_payouts' => [
+                    'entity' => 'collection',
+                    'count'  => 2,
+                    'items'  => [
                     [
 //                        'id'            => 'sodp_F2iLNGiioWkjZm',
                         'merchant_id'   => '10000000000000',
@@ -360,7 +409,7 @@ return [
                         'tax'           => 72000,
                         'mode'          => 'IMPS',
                         'amount'        => 20000000,
-                        'status'        => 'created',
+                        'status'        => 'initiated',
                     ],
                     [
 //                        'id'            => 'sodp_F2iLNHUZcSfTAG',
@@ -371,7 +420,8 @@ return [
                         'tax'           => 108,
                         'mode'          => 'IMPS',
                         'amount'        => 30000,
-                        'status'        => 'created',
+                        'status'        => 'initiated',
+                    ]
                     ]
                 ]
             ]
@@ -405,27 +455,31 @@ return [
                 'narration'             => 'Demo Narration - optional',
 //                'created_at'            => 1582036200,
                 'settlement_ondemand_payouts' => [
+                    'entity' => 'collection',
+                    'count'  => 2,
+                    'items'  => [
                     [
 //                        'id'            => 'sodp_F2iLNGiioWkjZm',
                         'merchant_id'   => '10000000000000',
 //                        'ondemand_id'   => 'F2iLNDZn8cODKc',
                         'fees'          => 472000,
-                        'utr'           => null,
+//                        'utr'           => '5779103076',
                         'tax'           => 72000,
                         'mode'          => 'IMPS',
                         'amount'        => 20000000,
-                        'status'        => 'created',
+                        'status'        => 'processed',
                     ],
                     [
 //                        'id'            => 'sodp_F2iLNHUZcSfTAG',
                         'merchant_id'   => '10000000000000',
 //                        'ondemand_id'   => 'F2iLNDZn8cODKc',
                         'fees'          => 708,
-                        'utr'           => null,
+//                        'utr'           => '3949845006',
                         'tax'           => 108,
                         'mode'          => 'IMPS',
                         'amount'        => 30000,
-                        'status'        => 'created',
+                        'status'        => 'processed',
+                    ]
                     ]
                 ]
             ]
@@ -459,16 +513,19 @@ return [
                 'narration'             => 'Demo Narration - optional',
 //                'created_at'            => 1582036200,
                 'settlement_ondemand_payouts' => [
+                    'entity' => 'collection',
+                    'count'  => 2,
+                    'items'  => [
                     [
 //                        'id'            => 'sodp_F2iLNGiioWkjZm',
                         'merchant_id'   => '10000000000000',
 //                        'ondemand_id'   => 'F2iLNDZn8cODKc',
                         'fees'          => 472000,
-                        'utr'           => null,
+//                        'utr'           => '5779103076',
                         'tax'           => 72000,
                         'mode'          => 'IMPS',
                         'amount'        => 20000000,
-                        'status'        => 'created',
+                        'status'        => 'processed',
                     ],
                     [
 //                        'id'            => 'sodp_F2iLNHUZcSfTAG',
@@ -479,7 +536,8 @@ return [
                         'utr'           => null,
                         'mode'          => 'IMPS',
                         'amount'        => 110000,
-                        'status'        => 'created',
+                        'status'        => 'reversed',
+                    ]
                     ]
                 ]
             ]
@@ -511,6 +569,9 @@ return [
                 'narration'            => 'Demo Narration - optional',
 //                'created_at'         => 1582000200,
                 'settlement_ondemand_payouts' => [
+                    'entity' => 'collection',
+                    'count'  => 1,
+                    'items'  => [
                     [
 //                        'id'            => 'sodp_F2hdIfWGvMza0E',
                         'merchant_id'    => '10000000000000',
@@ -520,8 +581,9 @@ return [
                         'tax'            => 72108,
                         'mode'           => 'NEFT',
                         'amount'         => 20030000,
-                        'status'         => 'created',
-                    ],
+                        'status'         => 'inititated',
+                    ]
+                    ]
                 ]
             ]
         ]
@@ -632,6 +694,9 @@ return [
                 'narration'             => 'Demo Narration - optional',
 //                'created_at'            => 1582036200,
                 'settlement_ondemand_payouts' => [
+                    'entity' => 'collection',
+                    'count'  => 2,
+                    'items'  => [
                     [
 //                        'id'            => 'sodp_F2iLNGiioWkjZm',
                         'merchant_id'   => '10000000000000',
@@ -641,7 +706,7 @@ return [
                         'mode'          => 'IMPS',
                         'utr'           => null,
                         'amount'        => 20000000,
-                        'status'        => 'created',
+                        'status'        => 'initiated',
                     ],
                     [
 //                        'id'            => 'sodp_F2iLNHUZcSfTAG',
@@ -652,7 +717,8 @@ return [
                         'utr'           => null,
                         'mode'          => 'IMPS',
                         'amount'        => 30000,
-                        'status'        => 'created',
+                        'status'        => 'initiated',
+                    ]
                     ]
                 ]
             ]
@@ -760,6 +826,9 @@ return [
                                         ],
 //                'created_at'         => 1582000200,
                 'settlement_ondemand_payouts' => [
+                    'entity' => 'collection',
+                    'count'  => 1,
+                    'items'  => [
                     [
 //                        'id'            => 'sodp_F2hdIfWGvMza0E',
                         'merchant_id'    => '10000000000000',
@@ -768,8 +837,9 @@ return [
                         'tax'            => 72108,
                         'mode'           => 'NEFT',
                         'amount'         => '20030000',
-                        'status'         => 'created',
-                    ],
+                        'status'         => 'initiated',
+                    ]
+                    ]
                 ]
             ]
         ]
