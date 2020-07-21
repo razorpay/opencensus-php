@@ -151,7 +151,7 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $verify->payment;
 
         $verify->verifyResponseContent = $this->getMandateStatusAndSignedXml(
-            $gatewayPayment['mandate_id'],
+            $gatewayPayment['gateway_reference_id'],
             $verify->input
         );
     }

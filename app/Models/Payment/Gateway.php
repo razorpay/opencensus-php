@@ -170,7 +170,7 @@ class Gateway
     // If for a merchant, the esigner gateway is not assigned via config,
     // the below gateway would be used
     //
-    const DEFAULT_ESIGNER_GATEWAY = self::ESIGNER_DIGIO;
+    const DEFAULT_ESIGNER_GATEWAY = self::ESIGNER_LEGALDESK;
 
     const BAJAJ = 'bajajfinserv';
 
