@@ -26,7 +26,11 @@ class Entity extends Base\PublicEntity
     const TIME              = 'time';
     const REQUEST_PAYLOAD   = 'request_payload';
 
-    const TRANSACTION_ID    = 'transaction_id';
+    const TRANSACTION_ID        = 'transaction_id';
+    const PAYER_ACCOUNT_TYPE    = 'payer_account_type';
+    const PAYER_ADDRESS         = 'payer_address';
+    const CURRENCY              = 'currency';
+    const ATTEMPT               = 'attempt';
 
     protected static $sign = 'btr';
 
@@ -78,9 +82,10 @@ class Entity extends Base\PublicEntity
     ];
 
     protected static $unsetCreateInput = [
-        BankTransfer\Entity::PAYER_ACCOUNT_TYPE,
-        BankTransfer\Entity::PAYER_ADDRESS,
-        BankTransfer\Entity::ATTEMPT,
+        self::PAYER_ACCOUNT_TYPE,
+        self::PAYER_ADDRESS,
+        self::CURRENCY,
+        self::ATTEMPT,
     ];
 
     protected $casts = [
