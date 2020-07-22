@@ -1,7 +1,12 @@
-<?php namespace App\Http\Middleware;
+<?php
+
+namespace App\Http\Middleware;
 
 use Closure;
 use Response;
+use App\Trace\Trace;
+use App\Trace\TraceCode;
+use Illuminate\Session\TokenMismatchException;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as BaseVerifier;
 
 class VerifyCsrfToken extends BaseVerifier
@@ -46,13 +51,15 @@ class VerifyCsrfToken extends BaseVerifier
         '/live/analytics/payment/aggregations',
     ];
 
-	/**
-	 * Handle an incoming request.
-	 *
-	 * @param  \Illuminate\Http\Request  $request
-	 * @param  \Closure  $next
-	 * @return mixed
-	 */
+    /**
+     * Handle an incoming request.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \Closure                 $next
+     *
+     * @return mixed
+     * @throws \Illuminate\Session\TokenMismatchException
+     */
 	public function handle($request, Closure $next)
 	{
         $routeName = $request->route()->getName();
@@ -89,9 +96,38 @@ class VerifyCsrfToken extends BaseVerifier
         }
         else
         {
-            return parent::handle($request, $next);
-        }
+            if (
+                $this->isReading($request) ||
+                $this->runningUnitTests() ||
+                $this->shouldPassThrough($request) ||
+                $this->tokensMatch($request)
+            ) {
+                return $this->addCookieToResponse($request, $next($request));
+            }
 
+            if ($this->tokensMatch($request) == false)
+            {
+                $sessionToken = $request->session()->token();
+
+                $token = $request->input('_token') ?: $request->header('X-CSRF-TOKEN');
+
+                if (! $token && $header = $request->header('X-XSRF-TOKEN')) {
+                    $token = $this->encrypter->decrypt($header);
+                }
+
+
+                // This is bad, but here the token is logged only when it's a mismatch to check why the tokens are
+                // mismatching
+                app('trace')->info(TraceCode::MISMATCHED_VERIFY_TOKEN, [
+                    'session_token' => $sessionToken,
+                    'verify_token'  => $token,
+                ]);
+            }
+
+            $this->addCookieToResponse($request, $next($request));
+
+            throw new TokenMismatchException;
+        }
     }
 
     private function getErrorResponseForGraphQlClients()

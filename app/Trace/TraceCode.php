@@ -42,6 +42,8 @@ class TraceCode
     const ADMIN_LOGOUT                              = 'ADMIN_LOGOUT';
     const ADMIN_AS_MERCHANT                         = 'ADMIN_AS_MERCHANT';
 
+    const MISMATCHED_VERIFY_TOKEN                   = 'MISMATCHED_VERIFY_TOKEN';
+
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',
