@@ -99,7 +99,7 @@ final class PostAuthenticate
         if ($fromEdge and $errors)
         {
             $this->reqCtx->passportAttrsMismatch = true;
-            $this->trace->count(Metric::PASSPORT_ATTRS_MISMATCH_TOTAL);
+            $this->trace->count(Metric::PASSPORT_ATTRS_MISMATCH_TOTAL, $this->ba->getRequestMetricDimensions());
             $this->trace->warning(TraceCode::PASSPORT_ATTRS_MISMATCH, compact('errors'));
         }
     }

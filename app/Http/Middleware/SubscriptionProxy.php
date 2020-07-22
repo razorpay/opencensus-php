@@ -89,20 +89,6 @@ class SubscriptionProxy
             return $next($request);
         }
 
-        $this->trace->info(TraceCode::SUBSCRIPTION_SERVICE_PROXY_REQUEST, [
-            'request'      => $request->path(),
-            'method'       => $request->method(),
-            'body'         => $request->post(),
-            'query_string' => $request->getQueryString(),
-        ]);
-
-        $res = $this->forwardSubscriptionServiceRequest($request);
-
-        return $res;
-    }
-
-    protected function forwardSubscriptionServiceRequest(Request $request)
-    {
         $url = $request->path();
 
         $body = [];
@@ -122,6 +108,14 @@ class SubscriptionProxy
         $method = $request->method();
 
         $body = $this->getRequestBody($request);
+
+        $this->trace->info(TraceCode::SUBSCRIPTION_SERVICE_PROXY_REQUEST, [
+            'request'      => $request->path(),
+            'method'       => $request->method(),
+            'body'         => $request->post(),
+            'query_string' => $request->getQueryString(),
+            'has_passport' => array_key_exists(Passport::PASSPORT_JWT_V1, $headers),
+        ]);
 
         $response = $this->sendRequestAndParseResponse($url, $method, $body, $headers);
 
