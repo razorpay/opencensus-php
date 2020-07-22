@@ -3,6 +3,7 @@
 namespace RZP\Models\Key;
 
 use Crypt;
+use Request;
 use Twirp\Error;
 use Twirp\Context;
 use Razorpay\Trace\Logger;
@@ -58,8 +59,9 @@ class Credcase
         $migrateApiClient = new MigrateAPIClient($host, $httpClient);
         $this->migrateApiClient = new RetriableMigrateAPIClient($migrateApiClient);
 
-        $authHeader = 'Basic '.base64_encode($config['user'].':'.$config['password']);
-        $this->apiClientCtx = Context::withHttpRequestHeaders([], ['Authorization' => $authHeader]);
+        $auth = 'Basic '.base64_encode($config['user'].':'.$config['password']);
+        $headers = ['Authorization' => $auth, 'X-Request-ID' => Request::getTaskId()];
+        $this->apiClientCtx = Context::withHttpRequestHeaders([], $headers);
     }
 
     /**
@@ -78,13 +80,24 @@ class Credcase
             return;
         }
 
+        return $this->migrateWithoutRazorxCheck($key, $mode);
+    }
+
+    /**
+     * @see Credcase's migrate function. This is used with migration where we do not want to check for razorx.
+     *
+     * @param  Entity $key
+     * @param  string $mode
+     * @return void
+     * @throws \Twirp\Error
+     */
+    public function migrateWithoutRazorxCheck(Entity $key, string $mode)
+    {
         $this->trace->info(TraceCode::CREDCASE_REQUEST_MIGRATE, ['key_id' => $key->getId(), 'mode' => $mode]);
 
         $req = newMigrateApiKeyRequest($key, $mode);
 
         $this->migrateApiClient->MigrateApiKey($this->apiClientCtx, $req);
-
-        return;
     }
 
     /**
@@ -117,8 +130,6 @@ class Credcase
         $req->setCreateKey($migrateApiKeyRequest);
 
         $this->migrateApiClient->RotateApiKey($this->apiClientCtx, $req);
-
-        return;
     }
 }
 
