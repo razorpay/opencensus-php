@@ -5,6 +5,7 @@ namespace RZP\Constants;
 class MailTags
 {
     const HEADER                           = 'X-Mailgun-Tag';
+    const SES_HEADER                       = 'X-SES-MESSAGE-TAGS';
 
     /**
      * Defines tags associated with emails, stored in the X-Mailgun-Tag header

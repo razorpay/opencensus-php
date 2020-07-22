@@ -3,9 +3,12 @@
 namespace RZP\Mail\Base;
 
 use App;
+use \Swift_Mailer;
 use RZP\Diag\EventCode;
+use RZP\Constants\MailTags;
 use RZP\Constants\HashAlgo;
 use Illuminate\Bus\Queueable;
+use RZP\Constants\Environment;
 use Illuminate\Container\Container;
 use Illuminate\Mail\Mailable as BaseMailable;
 use Illuminate\Contracts\Queue\Factory as Queue;
@@ -60,6 +63,39 @@ class Mailable extends BaseMailable
                     ->addHeaders();
     }
 
+    /**
+     * Email driver is a transport layer wrapped inside Swift_Mailer.
+     * MailerContract contains this Swift_Mailer object. This method sets
+     * a swift mailer with ses driver on the passed MailerContract
+     *
+     * @param MailerContract &$mailerContract reference to the mailerContract object on which
+     *                       ses driver needs to be set.
+     *
+     * @throws \InvalidArgumentException if the driver is invalid (thrown by Illuminate\Support\Manager)
+     */
+    private function setSesDriver(MailerContract &$mailerContract)
+    {
+        $app = App::getFacadeRoot();
+        $mailer = $app['swift.ses_mailer'] ?? new Swift_Mailer($app['swift.transport']->driver('ses'));
+        $mailerContract->setSwiftMailer($mailer);
+    }
+
+    /**
+     * Checks the config if the template has been whitelisted for ses.
+     */
+    private function shouldSetSesDriver(): bool
+    {
+        $app = App::getFacadeRoot();
+
+        if ($app->environment(Environment::PRODUCTION) === false)
+        {
+            return false;
+        }
+
+        $sesWhitelistedViews = config('mail_template.ses_whitelist');
+        return in_array($this->view ?? '', $sesWhitelistedViews, true);
+    }
+
     public function send(MailerContract $mailer)
     {
         $app = App::getFacadeRoot();
@@ -78,11 +114,40 @@ class Mailable extends BaseMailable
         {
             Container::getInstance()->call([$this, 'build']);
 
+            // all Mailable sub classes implement addHeaders() method to
+            // add a swift message callback. In the callback they add
+            // a X-Mailgun-Tag header to identify the emails.
+            $shouldReplaceMailgunHeadersWithSes = false;
+            $driverName = 'mailgun';
+
+            // razorX evaluation
+            if (($this->shouldCheckForSesTemplates() === true) and
+                ($this->shouldSetSesDriver() === true))
+            {
+                try
+                {
+                    // alters the mailer object passed
+                    $this->setSesDriver($mailer);
+                    $shouldReplaceMailgunHeadersWithSes = true;
+                    $driverName = 'ses';
+                }
+                catch(\InvalidArgumentException $e)
+                {
+                    $trace->traceException($e, Trace::ERROR, TraceCode::MAILER_INVALID_DRIVER, ['driver' => 'ses']);
+                }
+            }
+
+            if ($shouldReplaceMailgunHeadersWithSes === true)
+            {
+                $this->replaceMailgunHeadersWithSesHeaders();
+            }
+
             if ($this->isValidRecipient() === true)
             {
                 // same html template can have different texts. Hence sending both in data lake.
                 $eventProperties['text_template'] = $this->textView ?? '';
                 $eventProperties['html_template'] = $this->view ?? '';
+                $eventProperties['email_driver'] = $driverName;
 
                 if ((isset($this->to[0])) and
                     (isset($this->to[0]['address'])) and
@@ -253,6 +318,47 @@ class Mailable extends BaseMailable
     }
 
     /**
+     * This method removes all mailgun headers with SES headers.
+     * Most of the classes implement a method addHeaders() which
+     * adds mailgun headers. Since the method is tightly coupled
+     * to the mailgun driver, hence have to replace the headers.
+     */
+    protected function replaceMailgunHeadersWithSesHeaders()
+    {
+        $this->withSwiftMessage(function ($message)
+        {
+            $allHeaders = $message->getHeaders();
+
+            $mailgunHeaders = $allHeaders->getAll(MailTags::HEADER);
+
+            $mailgunHeadersLastIndex = count($mailgunHeaders) - 1;
+
+            if ($mailgunHeadersLastIndex < 0)
+            {
+                return;
+            }
+
+            $sesHeader = '';
+            // 1=webhook,2=FGlwDQqCIkI5hx,
+            for ($i=0; $i<=$mailgunHeadersLastIndex; $i++)
+            {
+                $mailgunHeaderVal = $mailgunHeaders[$i]->getValue();
+                $sesHeaderEntry = sprintf('%d=%s', $i, $mailgunHeaderVal);
+                if ($i !== $mailgunHeadersLastIndex)
+                {
+                    $sesHeaderEntry = $sesHeaderEntry . ',';
+                }
+                $sesHeader = $sesHeader . $sesHeaderEntry;
+            }
+
+            //remove mailgun headers
+            $allHeaders->removeAll(MailTags::HEADER);
+
+            $allHeaders->addTextHeader(MailTags::SES_HEADER, $sesHeader);
+        });
+    }
+
+    /**
      * Checks if the recipient email is not void@razorpay.com and is a valid email
      * by checking MX records. Check details here https://github.com/nojacko/email-validator
      *
@@ -284,6 +390,26 @@ class Mailable extends BaseMailable
         $default = config('queue.mail.default');
 
         return config("queue.mail.{$key}", $default);
+    }
+
+    /**
+     * some email templates are to be sent via ses. Following
+     * makes a call to razorX to gradually ramp up to ses for
+     * those templates
+     */
+    protected function shouldCheckForSesTemplates(): bool
+    {
+        $app = App::getFacadeRoot();
+
+        if ($app->environment(Environment::PRODUCTION) === false)
+        {
+            return false;
+        }
+
+        $variant  =  app('razorx')->getTreatment($app['request']->getTaskId(),
+                            Merchant\RazorxTreatment::API_EMAIL_SES_DRIVER, $this->mode);
+
+        return strtolower($variant) === 'on';
     }
 
     protected function getView($newView, $oldView)

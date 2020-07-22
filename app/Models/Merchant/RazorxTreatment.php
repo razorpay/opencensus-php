@@ -145,4 +145,8 @@ final class RazorxTreatment
     const BATCH_SERVICE_REFUND_MIGRATION     = 'batch_service_refund_migration';
 
     const CREDCASE_DUAL_WRITE_ENABLED = 'credcase_dual_write_enabled';
+
+    // New driver of ses to be used for some templates. Following flag
+    // helps in ramping up to ses for those templates
+    const API_EMAIL_SES_DRIVER = 'api_email_ses_driver';
 }
