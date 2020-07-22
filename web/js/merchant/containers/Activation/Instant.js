@@ -255,9 +255,9 @@ export default class ActivationWizard extends React.Component {
 
         if (this.onActivationSuccess) {
           if (!has_pan_error) {
-            return this.onActivationSuccess(response);
+            this.onActivationSuccess(response);
           } else {
-            return this.onActivationSuccess({ success: false });
+            this.onActivationSuccess({ success: false });
           }
         }
 

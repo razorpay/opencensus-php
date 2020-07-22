@@ -166,7 +166,8 @@ export default class ActivationContainer extends React.Component {
         }
 
         if (this.onKYCSuccess) {
-          return this.onKYCSuccess(response);
+          this.onKYCSuccess(response);
+          return response;
         }
 
         this.postSubmitStep(response);
