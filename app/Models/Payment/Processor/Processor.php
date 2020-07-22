@@ -3311,6 +3311,14 @@ class Processor
             return false;
         }
 
+        $amount = $payment->getAdjustedAmountWrtCustFeeBearer();
+
+        if (($amount > $order->getAmountDue()) and
+            ($this->merchant->isFeatureEnabled(Feature::EXCESS_ORDER_AMOUNT) === false))
+        {
+           return false;
+        }
+
         $captureConfig = $this->shouldAutoCapturePaymentConfig($payment);
 
         if ($captureConfig === true)

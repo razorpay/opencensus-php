@@ -1370,7 +1370,7 @@ class VerifyTest extends TestCase
                 'auto_capture_late_auth' => true,
             ]);
 
-        $this->fixtures->merchant->addFeatures(['disable_amount_check']);
+        $this->fixtures->merchant->addFeatures(['disable_amount_check','excess_order_amount']);
 
         $data = $this->testData['testTimeoutPaymentVerify'];
 
@@ -1408,7 +1408,7 @@ class VerifyTest extends TestCase
     {
         $this->setMockGatewayTrue();
 
-        $this->fixtures->merchant->addFeatures(['disable_amount_check']);
+        $this->fixtures->merchant->addFeatures(['disable_amount_check','excess_order_amount']);
 
         $this->fixtures->create('config', ['type' => 'late_auth', 'is_default' => true,
             'config'     => '{
@@ -1462,7 +1462,7 @@ class VerifyTest extends TestCase
                 'auto_capture_late_auth' => true,
             ]);
 
-        $this->fixtures->merchant->addFeatures(['disable_amount_check']);
+        $this->fixtures->merchant->addFeatures(['disable_amount_check','excess_order_amount']);
 
         $this->fixtures->create('config', ['type' => 'late_auth', 'is_default' => true,
             'config'     => '{
