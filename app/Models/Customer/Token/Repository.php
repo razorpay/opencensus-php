@@ -153,7 +153,13 @@ class Repository extends Base\Repository
                       ->where(Token\Entity::MERCHANT_ID, '=', $merchantId)
                       ->whereIn(
                           Token\Entity::RECURRING_STATUS,
-                          [RecurringStatus::CONFIRMED, RecurringStatus::REJECTED, RecurringStatus::INITIATED])
+                          [
+                              RecurringStatus::CONFIRMED,
+                              RecurringStatus::REJECTED,
+                              RecurringStatus::INITIATED,
+                              RecurringStatus::PAUSED,
+                              RecurringStatus::CANCELLED
+                          ])
                       ->with('customer');
 
         $query = $this->buildFetchQuery($query, $input);
