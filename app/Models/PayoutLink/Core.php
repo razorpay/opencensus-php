@@ -1005,26 +1005,19 @@ class Core extends Base\Core
      * @param string    $key
      * @param array     $oldArray
      * @param array     $newArray
-     * @param bool      $defaultValue
      * @return bool
      */
-    protected function isBooleanValueChanged($key, $oldArray, $newArray, $defaultValue = false)
+    protected function isBooleanValueChanged($key, $oldArray, $newArray)
     {
         $isValueChanged = false;
 
-        if(key_exists($key, $oldArray))
+        $oldArrayValue = array_pull($oldArray, $key, true);
+
+        $newArrayValue = array_pull($newArray, $key, $oldArrayValue);
+
+        if (boolval($oldArrayValue) !== boolval($newArrayValue))
         {
-            if(boolval($oldArray[$key]) !== boolval($newArray[$key]) )
-            {
-                $isValueChanged = true;
-            }
-        }
-        else
-        {
-            if(boolval($newArray[$key]) !== boolval($defaultValue))
-            {
-                $isValueChanged = true;
-            }
+            $isValueChanged = true;
         }
 
         return $isValueChanged;
@@ -1041,28 +1034,32 @@ class Core extends Base\Core
      */
     protected function notifyPayoutModeSettingChangeOnSlack($merchantId, $oldSettings, $newSettings)
     {
-        $isImpsModeChanged = $this->isBooleanValueChanged(Entity::IMPS,
-                                                          $oldSettings,
-                                                          $newSettings,
-                                                          true);
-
-        if($isImpsModeChanged === true)
+        if(key_exists(Entity::IMPS, $newSettings) === true)
         {
-            $this->sendPayoutModeNotificationOnSlack($merchantId,
-                                                     Entity::IMPS,
-                                                     boolval($newSettings[Entity::IMPS]));
+            $isImpsModeChanged = $this->isBooleanValueChanged(Entity::IMPS,
+                                                              $oldSettings,
+                                                              $newSettings);
+
+            if($isImpsModeChanged === true)
+            {
+                $this->sendPayoutModeNotificationOnSlack($merchantId,
+                                                         Entity::IMPS,
+                                                         boolval($newSettings[Entity::IMPS]));
+            }
         }
 
-        $isUPIModeChanged = $this->isBooleanValueChanged(Entity::UPI,
-                                                         $oldSettings,
-                                                         $newSettings,
-                                                         true);
-
-        if($isUPIModeChanged === true)
+        if(key_exists(Entity::UPI, $newSettings) === true)
         {
-            $this->sendPayoutModeNotificationOnSlack($merchantId,
-                                                     Entity::UPI,
-                                                     boolval($newSettings[Entity::UPI]));
+            $isUPIModeChanged = $this->isBooleanValueChanged(Entity::UPI,
+                                                             $oldSettings,
+                                                             $newSettings);
+
+            if($isUPIModeChanged === true)
+            {
+                $this->sendPayoutModeNotificationOnSlack($merchantId,
+                                                         Entity::UPI,
+                                                         boolval($newSettings[Entity::UPI]));
+            }
         }
     }
 
@@ -1074,7 +1071,7 @@ class Core extends Base\Core
      */
     protected function sendPayoutModeNotificationOnSlack($merchantId, $payoutMode, $modeEnabled)
     {
-        $message = "Payout Mode ";
+        $message = 'Payout Mode ';
 
         $message .= $payoutMode;
 

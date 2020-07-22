@@ -199,6 +199,27 @@ return [
         ]
     ],
 
+    'testMerchantSettingsUpdateApiForNonPayoutModeSettings' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/merchant/dashboardsettings',
+            'content' => [
+                'support_email'   => 'amit@gmail.com',
+                'support_url'     => 'http://dsjsd',
+                'support_contact' => '1212121212',
+                'ticket_id'       => '128'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'support_email'   => 'amit@gmail.com',
+                'support_url'     => 'http://dsjsd',
+                'support_contact' => '1212121212',
+                'ticket_id'       => '128'
+            ]
+        ]
+    ],
+
     'testMerchantSettingsUpdateApiForUPIDisabled' => [
         'request'  => [
             'method'  => 'POST',

@@ -775,6 +775,17 @@ class PayoutLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testMerchantSettingsUpdateApiForNonPayoutModeSettings()
+    {
+        $this->ba->proxyAuth();
+
+        $slackMock = Mockery::mock();
+
+        $this->startTest();
+
+        $slackMock->shouldNotHaveReceived('queue');
+    }
+
     public function testMerchantSettingsUpdateApiForIMPSDisabled()
     {
         $queueMethodOutput = [
