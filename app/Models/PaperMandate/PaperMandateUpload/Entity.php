@@ -216,6 +216,8 @@ class Entity extends Base\PublicEntity
         self::SPONSOR_CODE,
         self::FORM_CHECKSUM,
         self::SIGNATURE_PRESENT_PRIMARY,
+        self::SIGNATURE_PRESENT_SECONDARY,
+        self::SIGNATURE_PRESENT_TERTIARY,
         self::ACCOUNT_NUMBER,
         self::IFSC_CODE,
         self::ACCOUNT_TYPE,
@@ -269,6 +271,34 @@ class Entity extends Base\PublicEntity
     public function isSignaturePresentPrimary()
     {
         return $this->getAttribute(self::SIGNATURE_PRESENT_PRIMARY) === 'yes';
+    }
+
+    public function isAccountHolderPresentPrimary()
+    {
+        return $this->getAttribute(self::PRIMARY_ACCOUNT_HOLDER) !== null and
+               $this->getAttribute(self::PRIMARY_ACCOUNT_HOLDER) !== '';
+    }
+
+    public function isSignaturePresentSecondary()
+    {
+        return $this->getAttribute(self::SIGNATURE_PRESENT_SECONDARY) === 'yes';
+    }
+
+    public function isAccountHolderPresentSecondary()
+    {
+        return $this->getAttribute(self::SECONDARY_ACCOUNT_HOLDER) !== null and
+               $this->getAttribute(self::SECONDARY_ACCOUNT_HOLDER) !== '';
+    }
+
+    public function isSignaturePresentTertiary()
+    {
+        return $this->getAttribute(self::SIGNATURE_PRESENT_TERTIARY) === 'yes';
+    }
+
+    public function isAccountHolderPresentTertiary()
+    {
+        return $this->getAttribute(self::TERTIARY_ACCOUNT_HOLDER) !== null and
+               $this->getAttribute(self::TERTIARY_ACCOUNT_HOLDER) !== '';
     }
 
     public function setEnhancedFileId(string $fileId)
@@ -355,6 +385,45 @@ class Entity extends Base\PublicEntity
             }
         }
 
+        if ((in_array(self::SIGNATURE_PRESENT_PRIMARY, $fieldsNotMatching) === true) and
+            (in_array(self::SIGNATURE_PRESENT_SECONDARY, $fieldsNotMatching) === true) and
+            (in_array(self::SIGNATURE_PRESENT_TERTIARY, $fieldsNotMatching) === true))
+        {
+            $this->saveBeforeExit($fieldsNotMatching);
+
+            throw new BadRequestValidationFailureException(
+                'signature is not detected in the NACH form',
+                'SIGNATURE'
+            );
+        }
+        else
+        {
+            // The customer can sign anywhere of the three fields
+            // and we will pass if we find at-least one sign
+            $fieldsNotMatching = array_merge(array_diff($fieldsNotMatching,
+                                            [
+                                              self::SIGNATURE_PRESENT_PRIMARY,
+                                              self::SIGNATURE_PRESENT_SECONDARY,
+                                              self::SIGNATURE_PRESENT_TERTIARY
+                                            ]));
+        }
+
+        if (in_array(self::FORM_CHECKSUM, $fieldsNotMatching))
+        {
+            $this->saveBeforeExit($fieldsNotMatching);
+
+            throw new BadRequestValidationFailureException(
+                'The data on the form does not match our records.' .
+                'Please verify the details on the form and upload it again',
+                ''
+            );
+        }
+
+        $this->saveBeforeExit($fieldsNotMatching);
+    }
+
+    private function saveBeforeExit(array $fieldsNotMatching): void
+    {
         if (empty($fieldsNotMatching) === false)
         {
             $this->setStatus(Status::REJECTED);
@@ -369,14 +438,6 @@ class Entity extends Base\PublicEntity
         $this->setNotMatching(json_encode($fieldsNotMatching));
 
         $this->saveOrFail();
-
-        if (in_array(self::SIGNATURE_PRESENT_PRIMARY, $fieldsNotMatching) === true)
-        {
-            throw new BadRequestValidationFailureException(
-                'signature is not detected in the NACH form',
-                Entity::SIGNATURE_PRESENT_PRIMARY
-            );
-        }
     }
 
     protected function validateUtilityCode(): bool
@@ -413,7 +474,23 @@ class Entity extends Base\PublicEntity
 
     protected function validateSignaturePresentPrimary(): bool
     {
+        // ToDo when we are clarified that Sign should be as per Account Holder basis
+        // return $this->isAccountHolderPresentPrimary() ? $this->isSignaturePresentPrimary() : true;
         return $this->isSignaturePresentPrimary();
+    }
+
+    protected function validateSignaturePresentSecondary(): bool
+    {
+        // ToDo when we are clarified that Sign should be as per Account Holder basis
+        //return $this->isAccountHolderPresentSecondary() ? $this->isSignaturePresentSecondary() : true;
+        return $this->isSignaturePresentSecondary();
+    }
+
+    protected function validateSignaturePresentTertiary(): bool
+    {
+        // ToDo when we are clarified that Sign should be as per Account Holder basis
+        //return $this->isAccountHolderPresentTertiary() ? $this->isSignaturePresentTertiary() : true;
+        return $this->isSignaturePresentTertiary();
     }
 
     protected function validateAccountNumber(): bool
