@@ -14,4 +14,15 @@ export default class Token extends GenericEntity {
       }
     });
   }
+
+  cancel(customer_id, token_id) {
+    return this.makeGenericAjaxCall({
+      url: `/customers/${customer_id}/tokens/${token_id}/cancel`,
+      method: 'put',
+    }).then(response => {
+      if (response.success) {
+        return response.data;
+      }
+    });
+  }
 }

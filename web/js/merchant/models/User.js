@@ -608,6 +608,10 @@ export default class User {
     return this.getExpStatus('support_call') && this.isActivated;
   }
 
+  get isUPICAWEnabled() {
+    return this.getExpStatus('upi_caw');
+  }
+
   // TODO: Remove from razorX bcoz it's rolled out 100%
   get isPaymentPageReceiptsEnabled() {
     return true;

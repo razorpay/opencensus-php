@@ -74,6 +74,15 @@ const PAYMENT_METHODS = {
 
 const CardMandatoryFields = [{ name: 'amount', validator: isAmount }];
 
+const UPIMandatoryFields = [
+  {
+    name: 'amount',
+    validator: value => {
+      return isAmount(value) && value <= 2000 && value >= 1;
+    },
+  },
+];
+
 let DEFAULT_MAX_AMOUNT = 99999;
 let DEFAULT_FIRST_CHARGE = 0;
 
@@ -122,17 +131,31 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
   }
 
   get isEmandatePayment() {
-    return this.state.formFields.mandateMethod === 'emandate';
+    const isEmandate = this.state.formFields.mandateMethod === 'emandate';
+    if (isEmandate) {
+      DEFAULT_MAX_AMOUNT = 99999;
+    }
+    return isEmandate;
   }
 
   get isCardPayment() {
     return this.state.formFields.mandateMethod === 'card';
   }
 
+  get isUPIPayment() {
+    const isUPI = this.state.formFields.mandateMethod === 'upi';
+
+    if (isUPI) {
+      DEFAULT_MAX_AMOUNT = 2000;
+    }
+
+    return isUPI && this.props.user.isUPICAWEnabled;
+  }
+
   get isNACHPayment() {
     const isNACH = this.state.formFields.mandateMethod === 'nach';
     if (isNACH) {
-      DEFAULT_MAX_AMOUNT = 100000;
+      DEFAULT_MAX_AMOUNT = 10000000;
 
       return isNACH;
     }
@@ -142,7 +165,9 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
   }
 
   get Tabs() {
-    return getTabs(this.isEmandatePayment || this.isNACHPayment);
+    return getTabs(
+      this.isEmandatePayment || this.isNACHPayment || this.isUPIPayment
+    );
   }
 
   componentWillMount() {
@@ -213,6 +238,12 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     this.setFormFields('notes', notes);
   };
 
+  handlePaymentMethod = ({ option }) => {
+    this.setFormFields('mandateMethod', option);
+
+    trackClickPaymentMethod(option);
+  };
+
   changeTab = step => () => {
     const currentTab = this.state.currentTab + step;
 
@@ -245,12 +276,17 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       if (methods && methods.recurring) {
         let emandateBanks = [];
 
-        const avlblMethods = Object.keys(methods.recurring)
-          .filter(methodName => methods.recurring[methodName])
-          .map(method => ({
-            label: titleCase(method),
-            value: method,
-          }));
+        const avlblMethods = Object.keys(methods.recurring).filter(
+          methodName => {
+            if (methodName === 'upi') {
+              return (
+                methods.recurring[methodName] && this.props.user.isUPICAWEnabled
+              );
+            }
+
+            return methods.recurring[methodName];
+          }
+        );
 
         if (methods.recurring.emandate) {
           const emandates = methods.recurring.emandate || {};
@@ -262,8 +298,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
           }));
         }
 
-        const mandateMethod =
-          avlblMethods.length < 2 ? avlblMethods[0].value : '';
+        const mandateMethod = avlblMethods.length < 2 ? avlblMethods[0] : '';
 
         this.setState({
           loading: false,
@@ -369,6 +404,19 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       payload.subscription_registration.max_amount = max_amount;
     }
 
+    if (this.isUPIPayment) {
+      // Currently frequency is hard coded
+      payload.subscription_registration.frequency = 'monthly';
+
+      let max_amount = rupeesToPaise(DEFAULT_MAX_AMOUNT);
+
+      if (data.mandateMaxAmount) {
+        max_amount = rupeesToPaise(data.mandateMaxAmount);
+      }
+
+      payload.subscription_registration.max_amount = max_amount;
+    }
+
     return payload;
   };
 
@@ -442,13 +490,11 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
           }
 
           mandatoryFields = EmandateMandatoryFields;
-        }
-
-        if (this.isCardPayment) {
+        } else if (this.isCardPayment) {
           mandatoryFields = CardMandatoryFields;
-        }
-
-        if (this.isNACHPayment) {
+        } else if (this.isUPIPayment) {
+          mandatoryFields = UPIMandatoryFields;
+        } else if (this.isNACHPayment) {
           mandatoryFields = NACHMandatoryFields;
         }
 
@@ -473,6 +519,16 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       }
 
       case 2: {
+        if (this.isUPIPayment) {
+          const fields = this.state.formFields;
+          if (
+            fields.mandateMaxAmount > 2000 ||
+            fields.mandateMaxAmount < fields.amount
+          ) {
+            return false;
+          }
+        }
+
         return true;
       }
     }
@@ -519,13 +575,14 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
             bankAccountNumber={formFields.bankAccountNumber}
             isCardPayment={this.isCardPayment}
             isNACHPayment={this.isNACHPayment}
+            isUPIPayment={this.isUPIPayment}
             isEmandatePayment={this.isEmandatePayment}
             handleNotesChange={this.handleNotesChange}
-            trackClickPaymentMethod={trackClickPaymentMethod}
             trackSkipBankDetails={trackSkipBankDetails}
             formReference1={formFields.formReference1}
             formReference2={formFields.formReference2}
             onBlurElement={this.onBlurElement}
+            handlePaymentMethod={this.handlePaymentMethod}
           />
         );
       }
@@ -533,6 +590,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       case 2: {
         return (
           <TokenDetailsForm
+            isUPIPayment={this.isUPIPayment}
             isFirstAmountHidden={this.props.user.isFirstAmountHidden}
             amount={formFields.amount}
             mandateExpireAt={formFields.mandateExpireAt}

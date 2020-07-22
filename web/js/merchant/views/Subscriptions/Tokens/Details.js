@@ -4,7 +4,7 @@ import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 
-import { AsyncBtn } from 'common/new-ui/Button';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Spinner from 'common/ui/Spinner';
 import Alert from 'common/ui/Forms/Alert';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
@@ -24,6 +24,7 @@ import {
   fetchToken,
   deleteToken,
   resubmitNACHFile,
+  cancelToken,
 } from 'merchant/reducers/token';
 import { downloadSignedNACHFile } from 'merchant/reducers/registration_link';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -39,10 +40,11 @@ import {
 } from './ga';
 
 @withRouter
-@connect(state => ({ ...state.token }), {
+@connect(state => ({ ...state.token, user: state.session.user }), {
   fetchToken,
   openModal,
   closeModal,
+  cancelToken,
   deleteToken,
   showNotification,
 })
@@ -58,6 +60,12 @@ export default class TokenDetailsContainer extends Component {
 
   get isNACHMethod() {
     return this.props.entity.method === 'nach';
+  }
+
+  get isUPIMethod() {
+    return (
+      this.props.entity.method === 'upi' && this.props.user.isUPICAWEnabled
+    );
   }
 
   componentWillMount() {
@@ -137,6 +145,44 @@ export default class TokenDetailsContainer extends Component {
     });
   };
 
+  handleCancelToken = () => {
+    this.trackTokenDetailsView('cancel.initiate');
+
+    this.context.confirm({
+      header: 'Cancel Token?',
+      message:
+        'Once the token is cancel you will not be able to charge this token',
+      affirmativeLabel: 'Yes, Cancel',
+      abortLabel: "No, don't",
+      affirmativePendingLabel: 'Cancelling...',
+      action: () => {
+        return this.props
+          .cancelToken(this.props.entity.customer.id, this.props.id)
+          .then(resp => {
+            if (resp) {
+              this.props.showNotification({
+                type: 'success',
+                message: `The ${this.props.id} has been successfully cancelled`,
+              });
+            }
+
+            this.trackTokenDetailsView('cancel.confirm');
+          })
+          .catch(({ errors }) => {
+            this.props.showNotification({
+              type: 'error',
+              message: errors[0],
+            });
+
+            this.trackTokenDetailsView('cancel.fail', { response: errors[1] });
+          });
+      },
+      abort: () => {
+        this.trackTokenDetailsView('cancel.abandon');
+      },
+    });
+  };
+
   downloadSignedNACHFile = () => {
     this.trackTokenDetailsView('nach.download_signed_nach.initiate');
 
@@ -171,7 +217,10 @@ export default class TokenDetailsContainer extends Component {
   render() {
     const { loading: isLoading, entity = {}, error } = this.props;
 
+    const isCancelled = !isLoading && getTokenStatus(entity) === 'cancelled';
+
     const showChangeBtn =
+      !isCancelled &&
       ['rejected', 'initiated'].indexOf(
         (entity.recurring_details || {}).status
       ) === -1;
@@ -184,27 +233,28 @@ export default class TokenDetailsContainer extends Component {
           </div>
         ) : (
           <div class="panel panel-default SliderPanel">
-            <div class="panel-heading">
-              {entity.id}
-              <div class="btn-toolbar pull-right">
-                {showChangeBtn && (
-                  <button
-                    class="btn btn-primary btn-sm"
-                    onClick={this.handleChargeNow}
-                  >
-                    Charge Now
-                  </button>
-                )}
-              </div>
-            </div>
+            <div class="panel-heading">{entity.id}</div>
             <Alert type="error" message={error} />
             {!error && (
               <div class="SliderPanel__Body">
                 <div class="panel-body">
                   <div class="list-group details-row-container">
+                    <div class="charge-now">
+                      <MandateCustomerDetails customer={entity.customer} />
+
+                      {showChangeBtn && (
+                        <Button.Primary onClick={this.handleChargeNow}>
+                          ₹ Charge Now
+                        </Button.Primary>
+                      )}
+                    </div>
+
                     {/* status of token */}
                     <EntityDetailRow label="Status">
-                      <TokenStatusLabel status={getTokenStatus(entity)} />
+                      <TokenStatusLabel
+                        class="m-r"
+                        status={getTokenStatus(entity)}
+                      />
                     </EntityDetailRow>
 
                     <EntityDetailRow label="Failure Reason">
@@ -243,24 +293,36 @@ export default class TokenDetailsContainer extends Component {
                       </EntityDetailRow>
                     )}
 
-                    <EntityDetailRow label="Customer Details">
-                      <MandateCustomerDetails customer={entity.customer} />
-                    </EntityDetailRow>
-
                     <EntityDetailRow label="Created At">
                       <TimeStamps token={entity} />
                     </EntityDetailRow>
 
                     <NestedEntityDetailRow label="Notes" value={entity.notes} />
 
-                    <div class="pair-group-item">
+                    <EntityDetailRow
+                      label="Actions"
+                      class="pair-group-item actions"
+                    >
+                      {this.isUPIMethod &&
+                        !isCancelled && (
+                          <button
+                            class="btn btn-default"
+                            onClick={this.handleCancelToken}
+                            style={{
+                              marginRight: 8,
+                            }}
+                          >
+                            <i class="i i-close" /> Cancel Token
+                          </button>
+                        )}
+
                       <button
-                        class="btn btn-default"
+                        class="btn Button--invert Button--danger"
                         onClick={this.handleDeleteToken}
                       >
-                        Delete Token
+                        <i class="i i-delete" /> Delete Token
                       </button>
-                    </div>
+                    </EntityDetailRow>
                   </div>
                 </div>
               </div>

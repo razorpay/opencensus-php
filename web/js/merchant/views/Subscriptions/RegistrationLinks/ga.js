@@ -12,9 +12,9 @@ export function trackClickNext(type) {
   });
 }
 
-export function trackClickPaymentMethod(event) {
+export function trackClickPaymentMethod(value) {
   track({
-    eventAction: `${event.target.value} - Payment Method`,
+    eventAction: `${value} - Payment Method`,
   });
 }
 

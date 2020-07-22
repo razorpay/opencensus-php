@@ -1,7 +1,9 @@
 import { titleCase } from 'common/utils/rzp-utils';
 
-const StatusLabel = statusMap => ({ status = '' }) => (
-  <span class={`status-label label ${statusMap[status.toLowerCase()]}`}>
+const StatusLabel = statusMap => ({ status = '', className }) => (
+  <span
+    class={`status-label label ${statusMap[status.toLowerCase()]} ${className}`}
+  >
     {titleCase(status)}
   </span>
 );
@@ -104,6 +106,7 @@ export const tokenStatusMap = {
   confirmed: 'label-success',
   initiated: 'label-info',
   rejected: 'label-danger',
+  cancelled: 'label-danger',
 };
 
 export const offerStatusMap = {

@@ -1,16 +1,17 @@
 import Input from 'common/new-ui/Input';
+import { AmountTooltip } from 'common/ui/Amount';
 
 import { checkIfAmount } from './utils';
 
-export default ({ amount, onBlurElement }) => (
+export default ({ amount, onBlurElement, placeholder, ...props }) => (
   <React.Fragment>
     <Input.Group class="InputGroup--inline" label="Amount">
       <div class="Input-content">
         <Input
           required
           name="amount"
-          type="tel"
-          placeholder="0.00"
+          type="number"
+          placeholder={placeholder}
           description="Amount of Registration Link Payment"
           value={amount}
           validator={checkIfAmount}
@@ -18,6 +19,10 @@ export default ({ amount, onBlurElement }) => (
           class="Input--Amount"
           onBlur={onBlurElement}
           data-name="amount"
+          addonBefore={
+            <AmountTooltip currency={'INR'} parentQuerySelector=".Modal" />
+          }
+          {...props}
         />
       </div>
     </Input.Group>

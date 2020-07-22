@@ -1,6 +1,8 @@
+import { PowerSelect } from 'react-power-select';
+
 import Input from 'common/new-ui/Input';
 
-import Card from './Card';
+import AmountScreen from './Amount';
 import NACH from './NACH';
 import Emandate from './Emandate';
 import { checkIfAmount } from './utils';
@@ -23,12 +25,13 @@ export default props => {
     bankName,
     beneficiaryName,
     bankAccountNumber,
-    trackClickPaymentMethod,
     trackReceivedNACHForm,
     trackNACHToolTipHover,
     formReference1,
     formReference2,
     onBlurElement,
+    handlePaymentMethod,
+    isUPIPayment,
   } = props;
 
   return (
@@ -36,7 +39,7 @@ export default props => {
       <PaymentMethod
         mandateMethod={mandateMethod}
         avlblMethods={avlblMethods}
-        trackClickPaymentMethod={trackClickPaymentMethod}
+        handlePaymentMethod={handlePaymentMethod}
         onBlurElement={onBlurElement}
       />
 
@@ -55,7 +58,22 @@ export default props => {
         />
       )}
 
-      {isCardPayment && <Card amount={amount} onBlurElement={onBlurElement} />}
+      {isCardPayment && (
+        <AmountScreen
+          amount={amount}
+          onBlurElement={onBlurElement}
+          placeholder="0.00"
+        />
+      )}
+
+      {isUPIPayment && (
+        <AmountScreen
+          amount={amount}
+          onBlurElement={onBlurElement}
+          placeholder="Max 2000"
+          validator={amountValidator}
+        />
+      )}
 
       {isNACHPayment && (
         <NACH
@@ -90,27 +108,33 @@ export default props => {
 function PaymentMethod({
   avlblMethods,
   mandateMethod,
-  trackClickPaymentMethod,
+  handlePaymentMethod,
   onBlurElement,
 }) {
   if (avlblMethods.length) {
     return (
-      <Input.Radio
-        required
-        label="Payment Method"
-        name="mandateMethod"
-        options={avlblMethods}
-        defaultValue={mandateMethod}
-        onChange={trackClickPaymentMethod}
-        data-name="method"
-        onBlur={onBlurElement}
-        class="Input--vTop"
-        description="Method to be used for Registration Link"
-      />
+      <div class="Input">
+        <div class="Input-label">Payment Method</div>
+
+        <div class="Input-content">
+          <PowerSelect
+            showClear={false}
+            searchEnabled={false}
+            name="mandateMethod"
+            options={avlblMethods}
+            placeholder="Method to be used for Registration Link "
+            optionComponent={PaymentMethodOption}
+            selectedOptionComponent={PaymentMethodOption}
+            onBlur={onBlurElement}
+            selected={mandateMethod}
+            onChange={handlePaymentMethod}
+          />
+        </div>
+      </div>
     );
   }
 
-  return <PaymentMethodPlaceHolder content={avlblMethods[0].label} />;
+  return <PaymentMethodPlaceHolder content={avlblMethods[0]} />;
 }
 
 function PaymentMethodPlaceHolder({ content }) {
@@ -122,4 +146,49 @@ function PaymentMethodPlaceHolder({ content }) {
   );
 }
 
+const PAYMENT_METHODS_OPTIONS = {
+  card: {
+    method: 'Card',
+    icon: 'card',
+    desc: 'Through Credit and Debit Cards',
+  },
+  nach: {
+    method: 'NACH',
+    icon: 'bank',
+    desc: 'Through a NACH Form',
+  },
+  emandate: {
+    method: 'Emandate',
+    icon: 'bank',
+    desc: 'Through NetBanking Details',
+  },
+  upi: {
+    method: 'UPI',
+    icon: 'upi',
+    desc: 'Through UPI mandates',
+  },
+};
+
+function PaymentMethodOption({ option }) {
+  const { icon, desc, method } = PAYMENT_METHODS_OPTIONS[option];
+
+  return (
+    <div class="PaymentMethodOption">
+      <i class={`i i-${icon}`} /> <span class="method">{method}</span> {desc}
+    </div>
+  );
+}
+
 export { checkIfAmount };
+
+function amountValidator(value) {
+  const validation = checkIfAmount(value);
+
+  if (validation) {
+    return validation;
+  }
+
+  if (value > 2000) {
+    return 'Amount should not be greater than 2000';
+  }
+}

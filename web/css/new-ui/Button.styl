@@ -32,6 +32,15 @@
   background-color: #fff
   color: $primary-color
 
+  &.Button--danger
+    background-color: rgba(245, 106, 106, 0.12)
+    color: $textDangerColor
+    border: 1px solid rgba(245, 106, 106, 0.12)
+
+    &:not(:disabled)
+      &:hover
+        color: #c72f2f
+
 .Button--transparent
   background-color: transparent
   color: $primary-color

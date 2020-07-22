@@ -54,5 +54,15 @@ export default function MandatePaymentMethod({ mandate }) {
     );
   }
 
+  if (method === 'upi') {
+    return (
+      <Definition>
+        <strong>UPI</strong>
+        Payment Frequency: Monthly{' '}
+        {/* Frequency is hard coded to monthly now */}
+      </Definition>
+    );
+  }
+
   return titleCase(method);
 }
