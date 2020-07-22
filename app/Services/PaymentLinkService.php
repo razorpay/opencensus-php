@@ -5,8 +5,12 @@ namespace RZP\Services;
 use Cache;
 use ApiResponse;
 use RZP\Exception;
+use RZP\Models\Order;
+use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Entity;
 use RZP\Http\RequestHeader;
 use Illuminate\Http\Request;
 use RZP\Http\Request\Requests;
@@ -39,8 +43,15 @@ class PaymentLinkService
 
     protected $trace;
 
+    protected $plUrls;
+
+    protected $app;
+
+    protected $mock;
+
     public function __construct($app)
     {
+        $this->app     = $app;
         $plinkConfig   = $app['config']->get('applications.payment_links');
         $this->trace   = $app['trace'];
         $this->baseUrl = $plinkConfig['url'];
@@ -48,6 +59,8 @@ class PaymentLinkService
         $this->secret  = $plinkConfig['secret'];
         $this->timeOut = $plinkConfig['timeout'];
         $this->ba      = $app['basicauth'];
+        $this->plUrls  = $plinkConfig['pl_urls'];
+        $this->mock    = $plinkConfig['mock'];
     }
 
     public function sendRequest(\Illuminate\Http\Request $request, $param = null)
@@ -73,6 +86,96 @@ class PaymentLinkService
                 $e
             );
         }
+    }
+
+    public function notifyOrderPaid(Order\Entity $order, Payment\Entity $payment)
+    {
+        try
+        {
+
+            $data = [
+                Entity::ORDER     => $order->toArray(),
+                Entity::PAYMENT   => $payment->toArray(),
+                Entity::DISCOUNT  =>  isset($payment->discount) ? $payment->discount->toArrayPublic() : null,
+            ];
+
+            $this->trace->info(
+                TraceCode::ORDER_NOTIFY_REQUEST_FOR_PAYMENT_V2,
+                [
+                    'data'    => $data,
+                ]);
+
+            $merchant = $payment->merchant;
+
+            $this->setRequestParamsAndSendRequest($merchant, $data,  $this->plUrls['verify_order'], Request::METHOD_POST);
+
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYMENT_LINK_SERVICE_REQUEST_FAILURE,
+                [
+                    'data' => $data
+                ]);
+        }
+    }
+
+    protected function setRequestParamsAndSendRequest(Merchant\Entity $merchant, array $data, string $url, string $method)
+    {
+        if ($this->mock === true)
+        {
+            return;
+        }
+
+        $url = $this->baseUrl.$url;
+
+        $headers = [
+            'Accept'            => self::CONTENT_TYPE_JSON,
+            'Content-Type'      => self::CONTENT_TYPE_JSON,
+            'X-Razorpay-TaskId' => $this->app['request']->getTaskId(),
+            'X-Razorpay-Mode'   => $this->ba->getMode(),
+        ];
+
+        if ($merchant !== null)
+        {
+            $enabledFeatures = $merchant->getEnabledFeatures();
+
+            $headers['X-Razorpay-Merchant-Features'] = json_encode($enabledFeatures);
+        }
+
+        $options = [
+            'timeout' => $this->timeOut,
+            'auth'    => [$this->key, $this->secret],
+        ];
+
+        $params = [
+            'url'     => $url,
+            'headers' => $headers,
+            'data'    => json_encode($data),
+            'options' => $options,
+            'method'  => $method,
+        ];
+
+        $this->trace->info(
+            TraceCode::ORDER_NOTIFY_REQUEST_PARAMS_FOR_PAYMENT_V2,
+            [
+                'params'    => $params,
+            ]);
+
+        $response = \Requests::request(
+            $params['url'],
+            $params['headers'],
+            $params['data'],
+            $params['method'],
+            $params['options']);
+
+        $this->trace->info(
+            TraceCode::ORDER_NOTIFY_RESPONSE_FOR_PAYMENT_V2,
+            [
+                'response'    => $this->parseAndReturnResponse($response),
+            ]);
     }
 
     protected function parseAndReturnResponse($res)

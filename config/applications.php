@@ -431,10 +431,14 @@ return [
     ],
 
     'payment_links' => [
-        'url'      => env('APP_PAYMENT_LINKS_URL'),
-        'username' => 'api',
-        'secret'   => env('APP_PAYMENT_LINKS_SECRET'),
-        'timeout'  => env('APP_PAYMENT_LINKS_TIMEOUT_SECS'),
+        'mock'          => env('MOCK_PAYMENT_LINK_SERVICE', false),
+        'url'           => env('APP_PAYMENT_LINKS_URL'),
+        'username'      => 'api',
+        'secret'        => env('APP_PAYMENT_LINKS_SECRET'),
+        'timeout'       => env('APP_PAYMENT_LINKS_TIMEOUT_SECS'),
+        'pl_urls'       => [
+            'verify_order'  => 'v1/payment_links_verify_payment',
+        ],
     ],
 
     'myoperator' => [

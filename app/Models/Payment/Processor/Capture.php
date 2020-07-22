@@ -1013,6 +1013,8 @@ trait Capture
         {
             $this->updateInvoiceAfterCapture($invoice, $payment);
         }
+
+        $this->updateProductsIfApplicable($order, $payment);
     }
 
     protected function updateVirtualAccountStatusForVaPayment(Payment\Entity $payment)
@@ -1233,6 +1235,32 @@ trait Capture
         }
 
         return false;
+    }
+
+    /**
+     * @param Order\Entity $order
+     * @param Payment\Entity $payment
+     *
+     * Update/call services according to product type once the order is paid
+     */
+    protected function updateProductsIfApplicable(Order\Entity $order, Payment\Entity $payment)
+    {
+        switch ($order->getProductType())
+        {
+            case Order\ProductType::PAYMENT_LINK_V2:
+
+                $this->trace->info(
+                    TraceCode::ORDER_PAID_FOR_PAYMENT_LINK_V2,
+                    [
+                        'order'    => $order,
+                    ]);
+
+                $plService = $this->app['paymentlinkservice'];
+
+                $plService->notifyOrderPaid($order, $payment);
+
+                break;
+        }
     }
 
     /**
