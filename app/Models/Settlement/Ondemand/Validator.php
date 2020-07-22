@@ -46,7 +46,7 @@ class Validator extends Base\Validator
     ];
 
     public static $fetchByTimestampInputRules = [
-        'from'                => 'required|epoch',
+        'from'                => 'sometimes|epoch',
         'to'                  => 'sometimes|epoch',
         'count'               => 'sometimes|integer|min:1|max:100',
         'expand'              => 'sometimes|boolean',
