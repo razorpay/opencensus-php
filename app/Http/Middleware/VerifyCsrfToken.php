@@ -100,28 +100,10 @@ class VerifyCsrfToken extends BaseVerifier
                 $this->isReading($request) ||
                 $this->runningUnitTests() ||
                 $this->shouldPassThrough($request) ||
-                $this->tokensMatch($request)
+                $this->tokensMatch($request) ||
+                $this->tokensMatchCookie($request)
             ) {
                 return $this->addCookieToResponse($request, $next($request));
-            }
-
-            if ($this->tokensMatch($request) == false)
-            {
-                $sessionToken = $request->session()->token();
-
-                $token = $request->input('_token') ?: $request->header('X-CSRF-TOKEN');
-
-                if (! $token && $header = $request->header('X-XSRF-TOKEN')) {
-                    $token = $this->encrypter->decrypt($header);
-                }
-
-
-                // This is bad, but here the token is logged only when it's a mismatch to check why the tokens are
-                // mismatching
-                app('trace')->info(TraceCode::MISMATCHED_VERIFY_TOKEN, [
-                    'session_token' => $sessionToken,
-                    'verify_token'  => $token,
-                ]);
             }
 
             $this->addCookieToResponse($request, $next($request));
@@ -149,5 +131,45 @@ class VerifyCsrfToken extends BaseVerifier
 
             'data'      => null,
         ];
+    }
+
+    /**
+     * Here we match with the incoming cookie,
+     *
+     * This is a valid csrf implementation because we get the data from header and match it with the token which we
+     * receive
+     * Laravel session tokens are wacky in the implementation of csrf when concurrent requests are there.
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return bool
+     */
+    private function tokensMatchCookie($request)
+    {
+        $sessionToken = $request->session()->token();
+
+        $token = $request->header('X-CSRF-TOKEN');
+
+        if (empty($token) == true && $header = $request->header('X-XSRF-TOKEN')) {
+            $token = $this->encrypter->decrypt($header);
+        }
+
+        $xsrfCookieToken = $request->cookie('XSRF-TOKEN');
+
+        // This is bad, but here the token is logged only when it's a mismatch to check why the tokens are
+        // mismatching
+        app('trace')->info(TraceCode::MISMATCHED_VERIFY_TOKEN, [
+            'session_token' => $sessionToken,
+            'verify_token'  => $token,
+            'xsrf_token'    => $xsrfCookieToken,
+        ]);
+
+        if ((is_string($xsrfCookieToken) === true) and (is_string($token) === true) and
+            hash_equals($xsrfCookieToken, $token) == true) {
+
+            return true;
+        }
+
+        return false;
     }
 }
