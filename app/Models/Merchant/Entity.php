@@ -2620,4 +2620,17 @@ class Entity extends Base\PublicEntity
         return $merchantAttribute->getValue();
     }
 
+    public function isInternationalEnabledForProduct(string $product)
+    {
+        if (in_array($product,ProductInternational\ProductInternationalMapper::LIVE_PRODUCTS,  true) === true)
+        {
+            $merchantProductInternationalField = new ProductInternational\ProductInternationalField($this);
+
+            $status = $merchantProductInternationalField->getProductStatus($product, $this->getProductInternational());
+
+            return ($status === ProductInternational\ProductInternationalMapper::ENABLED);
+        }
+
+        return true;
+    }
 }

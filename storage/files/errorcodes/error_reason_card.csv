@@ -154,5 +154,9 @@ BAD_REQUEST_MESSAGE_EXPIRED,,message_expired,,provider,,payment_authorization,
 BAD_REQUEST_PAYMENT_NOT_FOUND,,payment_not_found,,provider,,payment_authorization,
 BAD_REQUEST_MERCHANT_ID_DOES_NOT_MATCH,,invalid_merchant_id,,provider,,payment_authorization,
 BAD_REQUEST_INPUT_VALIDATION_FAILURE,,incorrect_request,,provider,,payment_authorization,
+BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_GATEWAY,International cards are not allowed for this merchant on payment gateway,international_transaction_not_allowed,Business,business,Retry with domestic card,payment_initiation,D
+BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_LINKS,International cards are not allowed for this merchant on payment links,international_transaction_not_allowed,Business,business,Retry with domestic card,payment_initiation,D
+BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_PAGES,International cards are not allowed for this merchant on payment pages,international_transaction_not_allowed,Business,business,Retry with domestic card,payment_initiation,D
+BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_INVOICES,International cards are not allowed for this merchant on invoices,international_transaction_not_allowed,Business,business,Retry with domestic card,payment_initiation,D
 BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED,Payment created long back and cannot be cancelled now,payment_cancelled,,customer,,payment_authentication,
 GATEWAY_ERROR_ISSUER_DOWN,Payment processing failed due to error at bank or wallet gateway,bank_technical_error,,issuer_bank,,payment_authorization,
