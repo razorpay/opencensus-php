@@ -6333,8 +6333,8 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        $testKeyValue = Redis::connection('default')->get('test:tag:merchant_10000000000000:key');
-        $liveKeyValue = Redis::connection('default')->get('live:tag:merchant_10000000000000:key');
+        $testKeyValue = Redis::connection('query_cache_redis')->get('test:tag:merchant_10000000000000:key');
+        $liveKeyValue = Redis::connection('query_cache_redis')->get('live:tag:merchant_10000000000000:key');
 
         $this->assertNull($testKeyValue);
         $this->assertNotNull($liveKeyValue);
@@ -6345,8 +6345,8 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        $testKeyValue = Redis::connection('default')->get('test:tag:merchant_10000000000000:key');
-        $liveKeyValue = Redis::connection('default')->get('live:tag:merchant_10000000000000:key');
+        $testKeyValue = Redis::connection('query_cache_redis')->get('test:tag:merchant_10000000000000:key');
+        $liveKeyValue = Redis::connection('query_cache_redis')->get('live:tag:merchant_10000000000000:key');
 
         $this->assertNull($testKeyValue);
         $this->assertNotNull($liveKeyValue);
