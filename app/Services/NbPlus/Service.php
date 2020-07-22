@@ -220,6 +220,8 @@ class Service
 
     protected function traceResponse($response)
     {
+        unset($response[Response::RESPONSE][Response::DATA][Response::ACCOUNT_INFO]);
+
         $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_RESPONSE, $response ?? []);
     }
 
