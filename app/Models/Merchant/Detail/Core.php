@@ -54,11 +54,15 @@ class Core extends Base\Core
 
     protected $kycServiceRetryDelayInSecond;
 
+    protected $mutex;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->kycServiceRetryDelayInSecond = (int) $this->app['config']['applications.kyc']['retry_delay'];
+
+        $this->mutex = $this->app['api.mutex'];
     }
 
     public function saveMerchantDetails(array $input,
@@ -87,33 +91,40 @@ class Core extends Base\Core
 
         $this->verifyGSTINIfApplicable($merchantDetails, $merchant, $input);
 
-        return $this->repo
-                    ->transactionOnLiveAndTest(
-                        function () use (
-                            $input,
-                            $merchantDetails,
-                            $merchant,
-                            $originProduct
-                        )
-                        {
-                            $merchantDetails = $this->editMerchantDetailFields($merchant, $input);
+        return $this->mutex->acquireAndRelease(
+            $merchant->getId(),
+            function() use ($input, $merchantDetails, $merchant, $originProduct) {
 
-                            $response = $this->createResponse($merchantDetails);
+                return $this->repo->transactionOnLiveAndTest(function() use (
+                    $input,
+                    $merchantDetails,
+                    $merchant,
+                    $originProduct
+                ) {
 
-                            if ($this->canSubmit($input, $response) === true)
-                            {
-                                // blacklisted merchant should not be allowed to submit l2 form
-                                $merchantDetails->getValidator()->validateFullActivationForm($merchant);
+                    $this->repo->merchant->lockForUpdate($merchant->getId());
 
-                                $response = $this->submitActivationForm($merchant, $originProduct);
-                            }
-                            else
-                            {
-                                $response = $this->updateActivationProgress($merchant);
-                            }
+                    $this->repo->merchant_detail->lockForUpdate($merchantDetails->getId());
 
-                            return $response;
-                        });
+                    $merchantDetails = $this->editMerchantDetailFields($merchant, $input);
+
+                    $response = $this->createResponse($merchantDetails);
+
+                    if ($this->canSubmit($input, $response) === true)
+                    {
+                        // blacklisted merchant should not be allowed to submit l2 form
+                        $merchantDetails->getValidator()->validateFullActivationForm($merchant);
+
+                        $response = $this->submitActivationForm($merchant, $originProduct);
+                    }
+                    else
+                    {
+                        $response = $this->updateActivationProgress($merchant);
+                    }
+
+                    return $response;
+                });
+            });
     }
 
     public function submitActivationForm(Merchant\Entity $merchant, string $originProduct = Product::PRIMARY)
@@ -487,59 +498,67 @@ class Core extends Base\Core
                                                         Merchant\Entity $merchant, bool $batchFlow = false,
                                                         bool $sendActivationMail = true)
     {
-        return $this->repo->transactionOnLiveAndTest(function() use (
-            $input, $merchantDetails, $merchant, $batchFlow, $sendActivationMail
-        ) {
-            // The function below, uses isDirty() and hence must be called before saveOrFail over merchantDetails
-            $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
 
-            $this->updateToDefaultDepartmentVolumeIfApplicable($merchantDetails);
+        $response = $this->mutex->acquireAndRelease(
+            $merchant->getId(),
+            function() use ($input, $merchantDetails, $merchant, $batchFlow, $sendActivationMail) {
 
-            $this->updateLegalEntity($input, $merchant);
+                return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant, $batchFlow, $sendActivationMail) {
+                    // The function below, uses isDirty() and hence must be called before saveOrFail over merchantDetails
+                    $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
 
-            $this->repo->saveOrFail($merchantDetails);
+                    $this->updateToDefaultDepartmentVolumeIfApplicable($merchantDetails);
 
-            $merchantCore = new Merchant\Core();
-            // Sync few input fields to merchant entity
-            $merchant = $merchantCore->syncMerchantEntityFields($merchant, $input);
+                    $this->updateLegalEntity($input, $merchant);
 
-            // IN Batch Flow we skip the merchant category sub category check for grey list or blacklist
-            // As desired by the use case
-            if ($batchFlow === true)
-            {
-                $this->processInstantActivationBatch($merchant, $sendActivationMail, $batchFlow);
-            }
-            else
-            {
-                if ($merchantCore->isAutoKycEnabled($merchantDetails, $merchant) === true)
-                {
-                    if ($this->canProcessInstantActivation($merchantDetails) === true)
+                    $this->repo->saveOrFail($merchantDetails);
+
+                    $merchantCore = new Merchant\Core();
+                    // Sync few input fields to merchant entity
+                    $merchant = $merchantCore->syncMerchantEntityFields($merchant, $input);
+
+                    // IN Batch Flow we skip the merchant category sub category check for grey list or blacklist
+                    // As desired by the use case
+                    if ($batchFlow === true)
                     {
-                        $this->processInstantActivation($merchant, $merchantDetails);
+                        $this->processInstantActivationBatch($merchant, $sendActivationMail, $batchFlow);
                     }
-                }
-                else
-                {
-                    $this->processInstantActivation($merchant, $merchantDetails);
-                }
-            }
+                    else
+                    {
+                        if ($merchantCore->isAutoKycEnabled($merchantDetails, $merchant) === true)
+                        {
+                            if ($this->canProcessInstantActivation($merchantDetails) === true)
+                            {
+                                $this->processInstantActivation($merchant, $merchantDetails);
+                            }
+                        }
+                        else
+                        {
+                            $this->processInstantActivation($merchant, $merchantDetails);
+                        }
+                    }
 
-            $response = $this->createResponse($merchantDetails);
+                    $response = $this->createResponse($merchantDetails);
 
-            // used to show the progress of the activation form on the dashboard
-            $activationProgress = $response['verification']['activation_progress'];
-            $merchantDetails->setActivationProgress($activationProgress);
-            $this->repo->saveOrFail($merchantDetails);
+                    // used to show the progress of the activation form on the dashboard
+                    $activationProgress = $response['verification']['activation_progress'];
+                    $merchantDetails->setActivationProgress($activationProgress);
+                    $this->repo->saveOrFail($merchantDetails);
 
-            $this->trackActivationProgressEvents($merchant, $activationProgress);
+                    return $response;
+                });
+            });
 
-            $this->app->hubspot->trackL1ContactProperties($input, $merchant, $merchantDetails->getActivationFlow());
+        $activationProgress = $response['verification']['activation_progress'];
 
-            // Only Linked accounts will have auto Activated set to true.
-            $response['auto_activated'] = false;
+        $this->trackActivationProgressEvents($merchant, $activationProgress);
 
-            return $response;
-        });
+        $this->app->hubspot->trackL1ContactProperties($input, $merchant, $merchantDetails->getActivationFlow());
+
+        // Only Linked accounts will have auto Activated set to true.
+        $response['auto_activated'] = false;
+
+        return $response;
     }
 
     public function saveInstantActivationDetailsBatch(array $input, Merchant\Entity $merchant): array
@@ -2578,7 +2597,7 @@ class Core extends Base\Core
      * @throws LogicException
      * @throws \Throwable
      */
-    public function verifyMerchantAttributes(Merchant\Entity $merchant, string $verificationType, array $input) : array
+    public function verifyMerchantAttributes(Merchant\Entity $merchant, string $verificationType, array $input): array
     {
         $this->trace->info(
             TraceCode::MERCHANT_VERIFY_ATTRIBUTES,
@@ -2587,27 +2606,37 @@ class Core extends Base\Core
                 'verification_type' => $verificationType
             ]);
 
-        switch (strtoupper($verificationType))
-        {
-            case DetailConstants::CIN :
+        return $this->mutex->acquireAndRelease(
+            $merchant->getId(),
+            function() use ($input, $merchant, $verificationType) {
 
-                $merchantDetails = $this->repo->merchant_detail->findOrFail($merchant->getId());
+                return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchant, $verificationType) {
 
-                $merchant = $merchantDetails->merchant;
+                    switch (strtoupper($verificationType))
+                    {
+                        case DetailConstants::CIN :
 
-                $merchantDetails->edit($input, 'cin_verification');
+                            $merchantDetails = $this->repo->merchant_detail->findOrFail($merchant->getId());
 
-                $this->verifyCINDetailsIfApplicable($merchantDetails, $merchant);
+                            $merchant = $merchantDetails->merchant;
 
-                $this->repo->saveOrFail($merchantDetails);
+                            $this->repo->merchant_detail->lockForUpdateAndReload($merchantDetails);
 
-                return $merchantDetails->toArrayPublic();
+                            $merchantDetails->edit($input, 'cin_verification');
 
-            default:
-                throw new LogicException(
-                    ErrorCode::BAD_REQUEST_INVALID_VERIFICATION_TYPE,
-                    ['verification_type' => $verificationType]);
-        }
+                            $this->verifyCINDetailsIfApplicable($merchantDetails, $merchant);
+
+                            $this->repo->saveOrFail($merchantDetails);
+
+                            return $merchantDetails->toArrayPublic();
+
+                        default:
+                            throw new LogicException(
+                                ErrorCode::BAD_REQUEST_INVALID_VERIFICATION_TYPE,
+                                ['verification_type' => $verificationType]);
+                    }
+                });
+            });
     }
 
     /**

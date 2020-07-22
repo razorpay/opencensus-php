@@ -22,11 +22,15 @@ class PennyTesting extends Base\Core
 {
     protected $cache;
 
+    protected $mutex;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->cache = $this->app['cache'];
+
+        $this->mutex = $this->app['api.mutex'];
     }
 
     /**
@@ -99,35 +103,40 @@ class PennyTesting extends Base\Core
 
         [$merchant, $merchantDetails] = $this->getMerchantAndSetBasicAuth($input[Constants::MERCHANT_ID]);
 
-        $shouldVerifyPennyTestingResult = $this->verifyPennyTestingResults($merchantDetails);
+        $this->mutex->acquireAndRelease(
+            $merchant->getId(),
+            function() use ($input, $merchant, $merchantDetails) {
 
-        $isPennyTestingRetryRequired = false;
+                $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetails, $input) {
 
-        if ($shouldVerifyPennyTestingResult === true)
-        {
-            $this->updateBankDetailVerificationStatus($input, $merchant, $merchantDetails);
+                    $this->repo->merchant_detail->lockForUpdateAndReload($merchantDetails);
 
-            $isPennyTestingRetryRequired = $this->isPennyTestingRetryRequired($merchantDetails, $input);
-        }
+                    $this->repo->merchant->lockForUpdateAndReload($merchant);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetails, $isPennyTestingRetryRequired, $shouldVerifyPennyTestingResult) {
+                    $shouldVerifyPennyTestingResult = $this->verifyPennyTestingResults($merchantDetails);
 
-            if ($shouldVerifyPennyTestingResult === true)
-            {
-                if ($isPennyTestingRetryRequired === true)
-                {
-                    $this->retryPennyTesting($merchantDetails);
-                }
-                else
-                {
-                    $this->updateMerchantContext($merchantDetails, $merchant);
+                    if ($shouldVerifyPennyTestingResult === true)
+                    {
+                        $this->updateBankDetailVerificationStatus($input, $merchant, $merchantDetails);
 
-                    $this->repo->merchant->saveOrFail($merchant);
-                }
+                        $isPennyTestingRetryRequired = $this->isPennyTestingRetryRequired($merchantDetails, $input);
+
+                        if ($isPennyTestingRetryRequired === true)
+                        {
+                            $this->retryPennyTesting($merchantDetails);
+                        }
+                        else
+                        {
+                            $this->updateMerchantContext($merchantDetails, $merchant);
+
+                            $this->repo->merchant->saveOrFail($merchant);
+                        }
+                    }
+
+                    $this->repo->merchant_detail->saveOrFail($merchantDetails);
+                });
             }
-
-            $this->repo->merchant_detail->saveOrFail($merchantDetails);
-        });
+        );
     }
 
     /**
