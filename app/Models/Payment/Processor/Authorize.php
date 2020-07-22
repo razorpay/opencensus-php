@@ -55,7 +55,6 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
-use RZP\Models\Order\ProductType;
 use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\UpiMetadata;
 use Razorpay\Trace\Logger as Trace;
@@ -71,7 +70,6 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Gateway\Enach\Npci\Netbanking\Gateway as enachNpciGateway;
-use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 
 trait Authorize
 {
@@ -2727,51 +2725,17 @@ trait Authorize
     {
         $merchant = $payment->merchant;
 
-        $productType = $payment->order ? $payment->order->getProductType() : null;
-
         if ($merchant->isInternational() === false)
         {
             $e = new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED, null,
-                [
-                    'payment_id' => $payment->getPublicId(),
-                    'method' => $payment->getMethod()
-                ]);
+            [
+                'payment_id' => $payment->getPublicId(),
+                'method'     => $payment->getMethod()
+            ]);
 
             $this->updatePaymentAuthFailedAndThrowException($e);
         }
-
-        switch ($productType)
-        {
-            case ProductType::PAYMENT_LINK:
-            case ProductType::PAYMENT_LINK_V2:
-                $paymentProduct = ProductInternationalMapper::PAYMENT_LINKS;
-                break;
-            case ProductType::INVOICE:
-                $paymentProduct = ProductInternationalMapper::INVOICES;
-                break;
-            case ProductType::PAYMENT_PAGE:
-                $paymentProduct = ProductInternationalMapper::PAYMENT_PAGES;
-                break;
-            default :
-                //If product type is null ,it is treated as payment gateway
-                $paymentProduct = $productType ? $productType : ProductInternationalMapper::PAYMENT_GATEWAY;
-        }
-
-        if ($merchant->isInternationalEnabledForProduct($paymentProduct) === false)
-        {
-            $errorCode = ProductInternationalMapper::PRODUCT_ERROR_CODE[$paymentProduct];
-
-            $e = new Exception\BadRequestException($errorCode, null,
-                [
-                    'payment_id' => $payment->getPublicId(),
-                    'method' => $payment->getMethod(),
-                    'product' => $paymentProduct
-                ]);
-
-            $this->updatePaymentAuthFailedAndThrowException($e);
-        }
-
     }
 
     protected function validateBlockedCard(Payment\Entity $payment)

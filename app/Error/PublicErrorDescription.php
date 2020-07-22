@@ -221,10 +221,6 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE                 = 'Payment amount is greater than the amount due for order';
     const BAD_REQUEST_PAYMENT_UPI_MULTIPLE_ACCOUNTS_LINKED                      = 'Payment failed since account linked with multiple names';
     const BAD_REQUEST_UPI_INVALID_ATM_PIN                                       = 'Invalid PIN entered.';
-    const BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_GATEWAY        = 'International cards are not allowed for this merchant on payment gateway';
-    const BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_LINKS          = 'International cards are not allowed for this merchant on payment links';
-    const BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_PAGES          = 'International cards are not allowed for this merchant on payment pages';
-    const BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_INVOICES               = 'International cards are not allowed for this merchant on invoices';
 
     const BAD_REQUEST_MANDATE_EXECUTION_ATTEMPT_BEFORE_START_TIME               = 'Mandate execution attempted before the start time';
 

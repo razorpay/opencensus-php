@@ -53,11 +53,10 @@ class Fixtures
         $this->merchant->setUp();
 
         $merchantData = [
-            'id'                    => '1cXSLlUU8V9sXl',
-            'pricing_plan_id'       => '1hDYlICobzOCYt',
-            'org_id'                => '100000razorpay',
-            'international'         => 1,
-            'product_international' => '1111000000',
+            'id' => '1cXSLlUU8V9sXl',
+            'pricing_plan_id' => '1hDYlICobzOCYt',
+            'org_id'          => '100000razorpay',
+            'international' => 1
         ];
 
         $apiMerchant = $this->create('merchant', $merchantData);

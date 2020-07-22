@@ -39,6 +39,7 @@ class ProductInternationalMapper
             self::PROD_V2 => [self::PAYMENT_LINKS, self::PAYMENT_PAGES, self::INVOICES]
         ];
 
+
     //Position of products (default value of ProductInternational is 0000000000)
     const PRODUCT_POSITION =
         [
@@ -60,15 +61,6 @@ class ProductInternationalMapper
             Name::EDIT_MERCHANT_PG_INTERNATIONAL,
             Name::EDIT_MERCHANT_PROD_V2_INTERNATIONAL,
             Name::EDIT_MERCHANT_INTERNATIONAL_NEW
-        ];
-
-    //Product ErrorCode mapping
-    const PRODUCT_ERROR_CODE =
-        [
-            self::PAYMENT_LINKS   => ErrorCode::BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_LINKS,
-            self::PAYMENT_PAGES   => ErrorCode::BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_PAGES,
-            self::INVOICES        => ErrorCode::BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_INVOICES,
-            self::PAYMENT_GATEWAY => ErrorCode::BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_GATEWAY
         ];
 
     const INTERNATIONAL_PRODUCTS = 'international_products';

@@ -7134,9 +7134,6 @@ class MerchantTest extends TestCase
     {
         $this->setMerchantMerchantDetailsAndPricing(false, 'whitelist');
 
-        $this->fixtures->edit('merchant', '10000000000000', [
-            'product_international'   => '0000000000']);
-
         $this->ba->adminAuth();
 
         $this->startTest();
@@ -7145,9 +7142,6 @@ class MerchantTest extends TestCase
     public function testMerchantInternationalProdV2EnableAction()
     {
         $this->setMerchantMerchantDetailsAndPricing(false, 'whitelist');
-
-        $this->fixtures->edit('merchant', '10000000000000', [
-            'product_international'   => '0000000000']);
 
         $this->ba->adminAuth();
 
@@ -7381,8 +7375,6 @@ class MerchantTest extends TestCase
     public function testRequestMerchantProductInternational()
     {
         $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
-
-        $this->fixtures->edit('merchant','10000000000000', ['product_international' => '0000000000']);
 
         $this->ba->proxyAuth('rzp_test_10000000000000');
 
