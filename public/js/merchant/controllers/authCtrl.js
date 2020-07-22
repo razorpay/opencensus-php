@@ -693,8 +693,15 @@ app
             // if verification is already done, go to dashboard (call /user again to check)
             user.identity(true).then(function(userDetails) {
               // user.authorize and then if email verified
+
+              var signinSuccessCb = authCallbacks.getSigninCallback();
+
               if (user.isVerified()) {
-                $scope.goToDashboard();
+                if (signinSuccessCb) {
+                  signinSuccessCb(userDetails);
+                } else {
+                  $scope.goToDashboard();
+                }
               } else {
                 goToVerification();
               }
@@ -1182,6 +1189,7 @@ app
             }
           } else {
             user.identity().then(function(userDetails) {
+              var signinSuccessCb = authCallbacks.getSigninCallback();
               $scope.isLoggedIn = true;
               $scope.login.data.email = userDetails.email;
               $scope.signup.mid = userDetails.current;
@@ -1209,7 +1217,11 @@ app
               } else if (!user.isVerified()) {
                 goToVerification();
               } else {
-                $scope.goToDashboard();
+                if (signinSuccessCb) {
+                  signinSuccessCb(userDetails);
+                } else {
+                  $scope.goToDashboard();
+                }
               }
             });
           }
