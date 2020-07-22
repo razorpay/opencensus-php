@@ -660,6 +660,16 @@ class Pricing extends Base
                 'fixed_rate'     => 0,
                 'org_id'         => '100000razorpay',
             ],
+            [
+                'id'             => '1zE31zbyeGCTe1',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'settlement_ondemand',
+                'payment_method' => 'fund_transfer',
+                'percent_rate'   => 18,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+            ],
         ];
 
         $this->addPricingRulesToDb($rows);

@@ -2278,7 +2278,7 @@ class Service extends Base\Service
         $merchantCore->addMerchantEmailToMailingList($merchant, [Constants::LIVE_SETTLEMENT_DEFAULT]);
     }
 
-    public function getOnDemandEarlySettlementPricingForMerchant()
+    public function getOnDemandEarlySettlementPricingForMerchant($pricingFeature = PricingFeature::PAYOUT)
     {
         // This is a wrapper over getPricingPlans to fetch payout pricing for given
         // pricingPlanId along with corresponding rules
@@ -2287,22 +2287,19 @@ class Service extends Base\Service
         $onDemandPricing = $this->repo->pricing
                                     ->getPricingRulesByPlanIdProductFeaturePaymentMethod($pricingPlanId,
                                                                                          Product::PRIMARY,
-                                                                                         PricingFeature::PAYOUT,
+                                                                                         $pricingFeature,
                                                                                          Payout\Method::FUND_TRANSFER);
 
-        // Restrict flow if on demand pricing is not found
         if ($onDemandPricing->count() < 1)
         {
-            throw new Exception\LogicException(
-                'ES On Demand Pricing has not been assigned to the merchant.',
-                ErrorCode::SERVER_ERROR_ES_ON_DEMAND_PRICING_NOT_FOUND);
+            return null;
         }
 
         // We do not expect multiple rows of primary-payout-fund_transfer for a given planId
         return $onDemandPricing->first();
     }
 
-    public function updateOnDemandPricingForMerchantBeforeEnableSchedule()
+    public function updateOnDemandPricingForMerchantBeforeEnableSchedule($pricingFeature = PricingFeature::PAYOUT)
     {
         //
         // W.e.f March 2020 Product wants to provide es on demand with under 20 bps if scheduled is enabled too.
@@ -2314,38 +2311,45 @@ class Service extends Base\Service
             // and update payout pricing to 15bps
         // For merchants who have payout pricing percent rate lesser than 20 already won't get the change
         //
-        $onDemandPricing = $this->getOnDemandEarlySettlementPricingForMerchant();
+        $onDemandPricing = $this->getOnDemandEarlySettlementPricingForMerchant($pricingFeature);
 
-        $onDemandPricingRuleId = $onDemandPricing->getId();
-
-        if ($onDemandPricing->getPercentRate() < 20)
+        if(empty($onDemandPricing) === false)
         {
-            return $onDemandPricing->toArrayPublic()['percent_rate'];
+            $onDemandPricingRuleId = $onDemandPricing->getId();
+
+            if ($onDemandPricing->getPercentRate() < 20)
+            {
+                return $onDemandPricing->toArrayPublic()['percent_rate'];
+            }
+
+            $planId = $this->merchant->getPricingPlanId();
+
+            $plan = $this->repo->pricing->getPlanByIdOrFailPublic($planId);
+
+            // Replicates plan for this merchant if it was shared
+            if ($this->repo->merchant->fetchMerchantsCountWithPricingPlanId($planId) !== 1)
+            {
+                // Replicate also takes care of assigning the plan to the merchant
+                $newPlan = (new Pricing\Service())->replicatePlanAndAssign($this->merchant, $plan);
+
+                $this->merchant->refresh();
+
+                $plan = $newPlan;
+
+                // Currently we have just one rule id for on demand
+                $onDemandPricingRuleId = $this->getOnDemandEarlySettlementPricingForMerchant($pricingFeature)->getId();
+            }
+
+            $updatedPlanRule = (new Pricing\Service())->updatePlanRule($plan->getId(),
+                                                    $onDemandPricingRuleId,
+                                                    ['percent_rate' => 15]);
+
+            return $updatedPlanRule['percent_rate'];
         }
-
-        $planId = $this->merchant->getPricingPlanId();
-
-        $plan = $this->repo->pricing->getPlanByIdOrFailPublic($planId);
-
-        // Replicates plan for this merchant if it was shared
-        if ($this->repo->merchant->fetchMerchantsCountWithPricingPlanId($planId) !== 1)
+        else
         {
-            // Replicate also takes care of assigning the plan to the merchant
-            $newPlan = (new Pricing\Service())->replicatePlanAndAssign($this->merchant, $plan);
-
-            $this->merchant->refresh();
-
-            $plan = $newPlan;
-
-            // Currently we have just one rule id for on demand
-            $onDemandPricingRuleId = $this->getOnDemandEarlySettlementPricingForMerchant()->getId();
+            return null;
         }
-
-        $updatedPlanRule = (new Pricing\Service())->updatePlanRule($plan->getId(),
-                                                $onDemandPricingRuleId,
-                                                ['percent_rate' => 15]);
-
-        return $updatedPlanRule['percent_rate'];
     }
 
     public function enableScheduledEs(): array
@@ -2406,9 +2410,11 @@ class Service extends Base\Service
             // Pricing plan updates, if required, need not be blocked by workflows.
             $this->app['workflow']->skipWorkflows(function() use(&$pricingForMerchant)
             {
-                $onDemandPricing = $this->updateOnDemandPricingForMerchantBeforeEnableSchedule();
+                $onDemandPayoutPricing = $this->updateOnDemandPricingForMerchantBeforeEnableSchedule();
 
-                $pricingForMerchant['on_demand_percent_rate'] = $onDemandPricing;
+                $settlementOndemandPricing = $this->updateOnDemandPricingForMerchantBeforeEnableSchedule(PricingFeature::SETTLEMENT_ONDEMAND);
+
+                $pricingForMerchant['on_demand_percent_rate'] = [$onDemandPayoutPricing, $settlementOndemandPricing] ;
             });
 
             $this->addOrRemoveMerchantFeatures([

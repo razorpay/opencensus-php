@@ -3423,6 +3423,8 @@ class MerchantTest extends TestCase
         // Update pricing rule percent rate to 23 and later test it to have 15
         $this->fixtures->pricing->edit('1zE31zbyeGCTd9', ['percent_rate' => 23]);
 
+        $this->fixtures->pricing->edit('1zE31zbyeGCTe1', ['percent_rate' => 23]);
+
         $this->fixtures->create(
             'schedule',
             [
@@ -3469,11 +3471,17 @@ class MerchantTest extends TestCase
 
         $this->assertEquals('es_on_demand', $features['items'][1]['name']);
 
-        $pricingRule = $this->getDbLastEntity('pricing');
+        $settlementOndemandPricingRule = $this->getDbEntities('pricing', ['feature'         => 'settlement_ondemand',
+                                                                           'payment_method' => 'fund_transfer',
+                                                                           'plan_id'        => '1A0Fkd38fGZPVC'])->toArray();
+                                              
+        $ondemandPayoutPricingRule = $this->getDbEntities('pricing', ['feature'         => 'payout',
+                                                                      'payment_method'  => 'fund_transfer',
+                                                                      'plan_id'         => '1A0Fkd38fGZPVC'])->toArray();
 
-        $this->assertEquals('15', $pricingRule['percent_rate']);
+        $this->assertEquals('15', $settlementOndemandPricingRule[0]['percent_rate']);
 
-        $this->assertEquals('1A0Fkd38fGZPVC', $pricingRule['plan_id']);
+        $this->assertEquals('15', $ondemandPayoutPricingRule[0]['percent_rate']);
 
         // In this case we expect only one mail is queued
         Mail::assertQueued(EsEnabledNotify::class, 1);
@@ -3509,6 +3517,8 @@ class MerchantTest extends TestCase
 
         // Update pricing rule percent rate to 23 and later test it to have 15
         $this->fixtures->pricing->edit('1zE31zbyeGCTd9', ['percent_rate' => 23]);
+
+        $this->fixtures->pricing->edit('1zE31zbyeGCTe1', ['percent_rate' => 23]);
 
         $this->fixtures->create(
             'schedule',
@@ -3556,11 +3566,17 @@ class MerchantTest extends TestCase
 
         $this->assertEquals('es_on_demand', $features['items'][1]['name']);
 
-        $pricingRule = $this->getDbLastEntity('pricing');
+        $settlementOndemandPricingRule = $this->getDbEntities('pricing', ['feature'        => 'settlement_ondemand',
+                                                                          'payment_method' => 'fund_transfer',
+                                                                          'percent_rate'   => 15])->toArray();
 
-        $this->assertEquals('15', $pricingRule['percent_rate']);
+        $ondemandPayoutPricingRule = $this->getDbEntities('pricing', ['feature'        => 'payout',
+                                                                      'payment_method' => 'fund_transfer',
+                                                                      'percent_rate'   => 15])->toArray();
 
-        $this->assertNotEquals('1A0Fkd38fGZPVC', $pricingRule['plan_id']);
+        $this->assertNotEquals('1A0Fkd38fGZPVC', $settlementOndemandPricingRule[0]['plan_id']);
+
+        $this->assertNotEquals('1A0Fkd38fGZPVC', $ondemandPayoutPricingRule[0]['plan_id']);
 
         // In this case we expect only one mail is queued
         Mail::assertQueued(EsEnabledNotify::class, 1);
