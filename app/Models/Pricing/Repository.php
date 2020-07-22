@@ -298,12 +298,9 @@ class Repository extends Base\Repository
     {
         $query = $this->newQueryWithOrgIdParam();
 
-        foreach ([Entity::TYPE, Entity::PLAN_ID, Entity::PLAN_NAME] as $attribute)
+        if (empty($input[Entity::TYPE]) === false)
         {
-            if (empty($input[$attribute]) === false)
-            {
-                $query->where($attribute, $input[$attribute]);
-            }
+            $query->where(Pricing\Entity::TYPE, $input[Entity::TYPE]);
         }
 
         return $query->selectRaw(
@@ -318,8 +315,6 @@ class Repository extends Base\Repository
                          Pricing\Entity::ORG_ID,
                          Pricing\Entity::TYPE)
                      ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
-                     ->limit($input[Fetch::COUNT])
-                     ->offset($input[Fetch::SKIP])
                      ->get();
     }
 
