@@ -1252,6 +1252,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::ERROR_CODE, null);
         $this->setAttribute(self::INTERNAL_ERROR_CODE, null);
         $this->setAttribute(self::ERROR_DESCRIPTION, null);
+        $this->setAttribute(self::REFERENCE13, null);
     }
 
     public function setEmiPlanId($planId)
