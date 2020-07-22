@@ -1,5 +1,5 @@
 <?php
- 
+
 namespace RZP\Http;
 
 use ApiResponse;
@@ -1029,6 +1029,7 @@ class Route
         'vendor_payment_cancel'                    => ['post',     'vendor-payments/{id}/cancel',                    'VendorPaymentController@cancel'                                    ],
         'vendor_payment_bulk_cancel'               => ['post',     'vendor-payments/bulk-cancel',                    'VendorPaymentController@bulkCancel'                                ],
         'vendor_payment_get_ocr_data'              => ['get',      'vendor-payments/get-ocr-data/{ocr_reference_id}','VendorPaymentController@getOcrData'                                ],
+        'vendor_payment_ocr_accuracy_cron'         => ['post',     'vendor-payments/_meta/ocr-accuracy-check',       'VendorPaymentController@ocrAccuracyCheck'                          ],
 
         // Tax Payments
         'tax_payments_get_all_settings'            => ['get',     'tax-payments/settings/',                          'TaxPaymentController@getAllSettings'                               ],
@@ -2457,6 +2458,7 @@ class Route
         'entity_bulk_update',
         'settings_fetch_internal',
         'settings_upsert_internal',
+        'vendor_payment_ocr_accuracy_cron',
         'banking_account_comments_create_via_batch'
     ];
 
@@ -4732,7 +4734,8 @@ class Route
             'tokens_upi_vpa_bulk_cron',
             'terminals_proxy_delete_submerchant',
             'terminals_proxy_create_submerchant',
-            'cps_backfill_entities'
+            'cps_backfill_entities',
+            'vendor_payment_ocr_accuracy_cron'
         ],
 
         'subscriptions' => [

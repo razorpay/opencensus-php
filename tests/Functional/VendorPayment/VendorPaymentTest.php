@@ -141,5 +141,20 @@ class VendorPaymentTest extends TestCase
         $vpMock->shouldHaveReceived('getOcrData');
     }
 
+    public function testVendorPaymentOcrAccuracyCheck()
+    {
+        $this->ba->appAuthTest($this->config['applications.cron.secret']);
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('ocrAccuracyCheck')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('ocrAccuracyCheck');
+    }
+
 
 }

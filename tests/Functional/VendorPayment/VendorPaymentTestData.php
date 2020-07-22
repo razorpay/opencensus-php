@@ -143,6 +143,19 @@ return [
         ]
     ],
 
+    'testVendorPaymentOcrAccuracyCheck' => [
+        'request'  => [
+            'method' => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'    => '/vendor-payments/_meta/ocr-accuracy-check',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
     'testCreatePayout' => [
         'request'  => [
             'method'  => 'POST',

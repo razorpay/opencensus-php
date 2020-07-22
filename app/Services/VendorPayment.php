@@ -39,6 +39,7 @@ class VendorPayment
     const GET_INVOICE_SIGNED_URL    = 'GetInvoiceSignedURL';
     const VP_SUMMARY_API            = 'SummaryApi';
     const GET_OCR_DATA              = 'GetOcrData';
+    const OCR_ACCURACY_CHECK        = 'GetOcrAccuracy';
     const BASE_PATH                 = 'twirp/vendorpayments.Vendorpayments';
 
     protected $app;
@@ -275,7 +276,7 @@ class VendorPayment
         // The MS we are calling, expects JSON content,
         // so we are sending the contents of the file in
         // base_64 encoded byte array
-        
+
         $input['file'] = base64_encode(file_get_contents($_FILES['file']['tmp_name']));
         $input['file_name'] = $_FILES['file']['name'];
 
@@ -356,13 +357,22 @@ class VendorPayment
         return $this->makeRequest($merchant, $url, $input);
     }
 
-    protected function makeRequest(MerchantEntity $merchant,
-                                   string $url,
+    public function ocrAccuracyCheck()
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::OCR_ACCURACY_CHECK);
+
+        return $this->makeRequest(null, $url, ['time' => now()]);
+    }
+
+    protected function makeRequest(MerchantEntity $merchant = null,
+                                   string $url = "",
                                    array $data = [],
                                    array $headers = [],
                                    string $method = 'POST')
     {
-        $data = array_merge($data, ['merchant_id' => $merchant->getId()]);
+        if ($merchant !== null) {
+            $data = array_merge($data, ['merchant_id' => $merchant->getId()]);
+        }
 
         $headers['Content-Type'] = 'application/json';
 
@@ -389,18 +399,17 @@ class VendorPayment
         $responseBody = json_decode($response->body, true);
 
         $this->trace->info(TraceCode::VENDOR_PAYMENT_RESPONSE,
-                           [
-                               'response' => $responseBody
-                           ]);
+            [
+                'response' => $responseBody
+            ]);
 
-        if ($response->status_code !== StatusCode::SUCCESS)
-        {
+        if ($response->status_code !== StatusCode::SUCCESS) {
             $description = array_pull($responseBody, 'msg', $responseBody);
 
             throw new BadRequestException(ErrorCode::BAD_REQUEST_VENDOR_PAYMENT_MICRO_SERVICE_FAILED,
-                                          null,
-                                          $description,
-                                          $description);
+                null,
+                $description,
+                $description);
         }
         return $responseBody;
     }

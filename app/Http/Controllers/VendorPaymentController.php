@@ -178,4 +178,9 @@ class VendorPaymentController extends Controller
     {
         return $this->service->getOcrData($this->ba->getMerchant(), $ocrReferenceId);
     }
+
+    public function ocrAccuracyCheck()
+    {
+        return $this->service->ocrAccuracyCheck();
+    }
 }
