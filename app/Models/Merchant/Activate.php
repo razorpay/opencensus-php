@@ -440,13 +440,14 @@ class Activate extends Base\Core
 
     /**
      * Sends banking activation sms to the merchant If
-     * Business Banking is Enabled AND Merchant is Activated
+     * Business Banking is Enabled AND Merchant status is activated
      *
      * @param Entity $merchant
      */
     public function sendBankingVaActivationSmsIfApplicable(Entity $merchant)
     {
-        if (($merchant->isActivated() === false) || ($merchant->isBusinessBankingEnabled() === false))
+        if ((optional($merchant->merchantDetail)->getActivationStatus() !== Merchant\Detail\Status::ACTIVATED) ||
+            ($merchant->isBusinessBankingEnabled() === false))
         {
             return;
         }
