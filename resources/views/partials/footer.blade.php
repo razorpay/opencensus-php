@@ -65,7 +65,7 @@
 
     if (window.analytics) {
         analytics.init(
-          ['perf', 'ga', 'fb', 'twitter', 'linkedin', 'bing', 'lj', 'quora', 'reddit'],
+          ['ga', 'fb', 'twitter', 'linkedin', 'bing', 'lj', 'quora', 'reddit'],
           {
             ga: appEnvironment === 'prod' ? 'UA-53341507-2' : 'UA-53341507-4',
             fb: '697927486977350',

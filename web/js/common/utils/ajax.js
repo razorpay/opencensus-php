@@ -1,10 +1,10 @@
 import { getCookie } from './cookies';
-import { captureXhrResponseMetrics } from './perf';
+// import { captureXhrResponseMetrics } from './perf';
 
-axios.interceptors.response.use(function(response) {
-  captureXhrResponseMetrics(response);
-  return response;
-});
+// axios.interceptors.response.use(function(response) {
+//   captureXhrResponseMetrics(response);
+//   return response;
+// });
 
 export default function ajax(params = {}) {
   return new Promise((resolve, reject) => {
