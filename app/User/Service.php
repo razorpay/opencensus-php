@@ -1055,7 +1055,6 @@ class Service extends Base\Service
             'announcements_early_settlements_1',
             'checkout_survey',
             'sellerapp_plus',
-            'second_factor_auth',
             'disable-view-reports',
             'mobile_hotjar_survey',
             'paymentpages_mli',
