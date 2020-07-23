@@ -309,14 +309,14 @@ class SavedCardsPaymentCreateTest extends TestCase
      */
     public function testGlobalSavedCardPaymentCreateWithTokenId()
     {
+        $this->mockSession();
+
         // create payment data
         $this->payment = $this->getDefaultPaymentArray();
 
         $this->payment[Payment::CARD] = ['cvv' => 111];
 
         $this->payment[Payment::TOKEN] = 'token_10000custgcard';
-
-        $this->payment[Payment::APP_TOKEN] = 'capp_1000000custapp';
 
         // create payment and fetch entities
         $content = $this->doAuthAndCapturePayment($this->payment);

@@ -601,13 +601,14 @@ class GatewayEmiFileTest extends TestCase
     protected function makeEmiPaymentOnCard($card, $emiDuration,
         $save = 0, $appToken = null, $customerId = null, $merchantSubvention = false)
     {
+        $this->mockSession($appToken);
+
         $payment = $this->getDefaultPaymentArray();
         $payment['amount'] = 500000;
         $payment['method'] = 'emi';
         $payment['emi_duration'] = $emiDuration;
         $payment['card']['number'] = $card;
         $payment['save'] = $save;
-        $payment['app_token'] = $appToken;
         $payment['customer_id'] = $customerId;
 
         if ($merchantSubvention === true)
@@ -616,6 +617,15 @@ class GatewayEmiFileTest extends TestCase
         }
 
         $this->doAuthAndCapturePayment($payment);
+    }
+
+    protected function mockSession($appToken = null)
+    {
+        $data = array(
+            'test_app_token' => $appToken,
+        );
+
+        $this->session($data);
     }
 
     protected function prerequisitesForSbiEmi()

@@ -140,9 +140,10 @@ class CybersourceGatewayTest extends TestCase
 
     public function testPaymentWithSavedCard()
     {
+        $this->mockSession();
+
         $payment = $this->getDefaultPaymentArray();
         $payment['token'] = '1000gcardtoken';
-        $payment['app_token'] = 'capp_1000000custapp';
 
         $response = $this->doAuthPayment($payment);
 
@@ -1478,5 +1479,15 @@ class CybersourceGatewayTest extends TestCase
         $this->assertEquals('processed', $actualRefund['status']);
         $this->assertEquals(1, $actualRefund['attempts']);
         $this->assertEquals(true, $actualRefund['gateway_refunded']);
+    }
+
+    protected function mockSession()
+    {
+        $data = array(
+            'test_app_token'   => 'capp_1000000custapp',
+            'test_checkcookie' => '1'
+        );
+
+        $this->session($data);
     }
 }

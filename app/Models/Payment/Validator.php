@@ -87,7 +87,6 @@ class Validator extends Base\Validator
         'receiver.type'                 => 'required_with:receiver|filled|string',
         'receiver.id'                   => 'required_with:receiver|filled|public_id',
         'payment_link_id'               => 'sometimes|public_id|size:17',
-        'app_token'                     => 'sometimes',
         'token'                         => 'sometimes',
         'save'                          => 'sometimes|in:0,1',
         'recurring'                     => 'sometimes|in:1,preferred',
@@ -314,7 +313,7 @@ class Validator extends Base\Validator
             ((Carbon::now()->getTimestamp() - $input['from']) > 604800))
         {
             throw new Exception\BadRequestValidationFailureException(
-                "The date range is invalid", null, null );
+                'The date range is invalid', null, null );
         }
 
     }
@@ -602,21 +601,20 @@ class Validator extends Base\Validator
         $merchant = $app['basicauth']->getMerchant();
 
         if ($merchant->isFeatureEnabled(Feature\Constants::CALLBACK_URL_VALIDATION) === true)
-
         {
-            $merchantUrlArray = explode(".", parse_url($merchant->getWebsite(), PHP_URL_HOST));
-            $callbackUrlArray = explode(".", parse_url($callbackUrl, PHP_URL_HOST));
+            $merchantUrlArray = explode('.', parse_url($merchant->getWebsite(), PHP_URL_HOST));
+            $callbackUrlArray = explode('.', parse_url($callbackUrl, PHP_URL_HOST));
 
             // case where https://example.com
             if (count($merchantUrlArray) === 2)
             {
-                array_unshift($merchantUrlArray, "");
+                array_unshift($merchantUrlArray, '');
             }
 
             // case where https://example.com
             if (count($callbackUrlArray) === 2)
             {
-                array_unshift($callbackUrlArray, "");
+                array_unshift($callbackUrlArray, '');
             }
 
             if ((empty($callbackUrlArray) === true) or
@@ -736,7 +734,7 @@ class Validator extends Base\Validator
                 break;
 
             default:
-                return ;
+                return;
         }
     }
 
@@ -857,7 +855,7 @@ class Validator extends Base\Validator
 
         $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
 
-        $currency = $input["currency"];
+        $currency = $input['currency'];
 
         $baseAmount = $amount;
 
@@ -869,7 +867,7 @@ class Validator extends Base\Validator
         if (($baseAmount > $maxAmountAllowed) === true)
         {
             $this->trace->count(Metric::PAYMENT_CREATION_AMOUNT_VALIDATION_FAILURE_COUNT, [
-                'business_type' => $this->entity->merchant->merchantDetail->getBusinessType() ?? "",
+                'business_type' => $this->entity->merchant->merchantDetail->getBusinessType() ?? '',
             ]);
 
             throw new Exception\BadRequestValidationFailureException(
@@ -1409,7 +1407,7 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_UPI_MANDATE_TIME_RANGE_REQUIRED,
                 'upi',
-                ['input'=> $input]
+                ['input' => $input]
             );
         }
 
@@ -1418,7 +1416,7 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_UPI_MANDATE_END_TIME_INVALID,
                 'upi.end_time',
-                ['input'=> $input]
+                ['input' => $input]
             );
         }
 
