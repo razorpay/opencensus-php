@@ -2652,7 +2652,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 31,
+                'count' => 30,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -2864,13 +2864,6 @@ return [
                             'issuer' => 'YESB_C',
                         ],
                     ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'HDFC_C',
-                        ],
-                    ],
                 ],
             ],
         ],
@@ -2884,7 +2877,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 32,
+                'count' => 31,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -3101,13 +3094,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'YESB_C',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'HDFC_C',
                         ],
                     ],
                 ],
