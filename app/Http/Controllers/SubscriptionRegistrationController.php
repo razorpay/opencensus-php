@@ -62,6 +62,28 @@ class SubscriptionRegistrationController extends Controller
         return ApiResponse::json($invoice);
     }
 
+    public function fetchPaperMandateIssues()
+    {
+        $input = Request::all();
+
+        $paperMandateUpload = $this->service()->fetchPaperMandateUpload($input);
+
+        $response = ApiResponse::json([  "success"   => true, "data" => $paperMandateUpload]);
+
+        return $response;
+    }
+
+    public function approvePaperMandateIssues()
+    {
+        $input = Request::all();
+
+        $paperMandateUpload = $this->service()->approvePaperMandateIssues($input);
+
+        $response = ApiResponse::json([  "success"   => true, "data" => $paperMandateUpload]);
+
+        return $response;
+    }
+
     public function deleteToken(string $id)
     {
         $invoice = $this->service()->deleteToken($id);

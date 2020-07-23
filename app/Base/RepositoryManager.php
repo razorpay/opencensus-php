@@ -88,6 +88,8 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Settlement\OndemandPayout\Repository        $settlement_ondemand_payout
  * @property Models\Settlement\OndemandFundAccount\Repository   $settlement_ondemand_fund_account
  * @property Models\BankTransferRequest\Repository              $bank_transfer_request
+ * @property Models\PaperMandate\PaperMandateUpload\Repository  $paper_mandate_upload
+ * @property Models\PaperMandate\Repository                     $paper_mandate
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

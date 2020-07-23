@@ -112,6 +112,7 @@ class Name
     const VIEW_MERCHANT_REQUESTS              = 'view_merchant_requests';
     const ADD_RECONCILIATION_FILE             = 'add_reconciliation_file';
     const UPLOAD_NACH_MIGRATION               = 'upload_nach_migration';
+    const VERIFY_NACH_UPLOADS                 = 'verify_nach_uploads';
     const ADD_MANUAL_RECONCILIATION_FILE      = 'add_manual_reconciliation_file';
     const ADD_SETTLEMENT_RECONCILIATION       = 'add_settlement_reconciliation';
     const SEND_NEWSLETTER                     = 'send_newsletter';

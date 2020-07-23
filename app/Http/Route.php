@@ -1527,7 +1527,8 @@ class Route
         'subscription_registration_create_links'        => ['post',     'subscription_registration/auth_links',                'SubscriptionRegistrationController@createAuthLink'                 ],
         'subscription_registration_nach_migration'      => ['post',     'subscription_registration/migration',                'SubscriptionRegistrationController@migrateNach'                 ],
 
-
+        'paper_nach_fetch_failure'                      => ['post',     'admin/fetchPaperMandateIssues/',                      'SubscriptionRegistrationController@fetchPaperMandateIssues'        ],
+        'paper_nach_approve_failure'                    => ['post',     'admin/approvePaperMandateIssues/',                    'SubscriptionRegistrationController@approvePaperMandateIssues'      ],
         'subscription_registration_fetch_link'          => ['get',      'subscription_registration/auth_links/{id}',           'SubscriptionRegistrationController@fetchAuthLink'                  ],
         'subscription_registration_resend_link'         => ['post',     'subscription_registration/auth_links/{id}/notify_by/{medium}', 'SubscriptionRegistrationController@sendNotification'      ],
         'subscription_registration_resend_links_batch'  => ['put',      'subscription_registration/auth_links/batch/{batchId}/notify',  'SubscriptionRegistrationController@notifyAuthLinksOfBatch'],
@@ -2873,6 +2874,8 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'paper_nach_fetch_failure',
+        'paper_nach_approve_failure',
         'payout_reject_admin_bulk',
         'emi_plans_migrate',
         'los_service_admin',
@@ -3510,6 +3513,8 @@ class Route
     ];
 
     public static $routePermission = [
+        'paper_nach_fetch_failure'                 => Permission::VERIFY_NACH_UPLOADS,
+        'paper_nach_approve_failure'               => Permission::VERIFY_NACH_UPLOADS,
         'bulk_create_fund_accounts'                => '*',
         'payout_reject_admin_bulk'                 => Permission::REJECT_PAYOUT_BULK,
         'ufh_admin_upload_file'                    => '*',

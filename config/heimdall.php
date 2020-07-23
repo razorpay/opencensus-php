@@ -365,6 +365,7 @@ return [
             ],
             Permission::ADD_RECONCILIATION_FILE             => '',
             Permission::UPLOAD_NACH_MIGRATION               => '',
+            Permission::VERIFY_NACH_UPLOADS                 => '',
             Permission::ADD_MANUAL_RECONCILIATION_FILE      => [
                 'description' => 'Upload manually prepared MIS file to mark txn reconciled (used by FinOps)',
                 'assignable'  => true,
