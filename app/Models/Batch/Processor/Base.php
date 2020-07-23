@@ -6,6 +6,7 @@ use Mail;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Encryption;
 use RZP\Models\Batch;
 use RZP\Models\Invoice;
 use RZP\Models\Feature;
@@ -129,6 +130,12 @@ class Base extends BaseModel\Core
     protected $reconBatchOutputData;
 
     /**
+     * Flag to check if encryption/decryption is required or not
+     * @var
+     */
+    protected $isEncrypted;
+
+    /**
      * Holds delimiter for output text file
      *
      * @var string
@@ -143,6 +150,7 @@ class Base extends BaseModel\Core
 
         $this->mutex            = $this->app['api.mutex'];
         $this->batch            = $batch;
+        $this->isEncrypted      = false;
 
         if($batch !== null)
         {
@@ -188,7 +196,6 @@ class Base extends BaseModel\Core
     {
         // encrypt sensitive fields before saving file
        $this->encryptBatchSensitiveFields($input);
-
 
         //
         // We upload the file and create file store entity first. As of now
@@ -307,7 +314,7 @@ class Base extends BaseModel\Core
      * TODO: add support for other than csv formats also
      */
     protected function encryptBatchSensitiveFields(array $input)
-    {        
+    {
         $type = $input['type'];
 
         if (in_array($type, Batch\Type::$haveSensitiveData, true) === false)
@@ -334,7 +341,7 @@ class Base extends BaseModel\Core
         foreach(Header::HEADER_MAP[$type][Header::SENSITIVE_HEADERS] as $sensitiveHeader)
         {
             $index = array_search($sensitiveHeader, $headings);
-            
+
             if ($index != false)
             {
                 array_push($sensitiveHeadersIndexes, $index);
@@ -345,10 +352,10 @@ class Base extends BaseModel\Core
 
         $aesCrypto = new AESCrypto();
 
-        foreach($rows as $idx => $row) 
-        {  
+        foreach ($rows as $idx => $row)
+        {
             // skip encryption for first row i.e. headings
-            if($idx !== 0) 
+            if ($idx !== 0)
             {
                 foreach($sensitiveHeadersIndexes as $index)
                 {
@@ -358,15 +365,15 @@ class Base extends BaseModel\Core
                     }
                 }
             }
-            
+
             array_push($rowsToWrite, $row);
         }
 
         $myFile = fopen($file->path(), 'w');
 
-        foreach ($rowsToWrite as $rowToWrite) { 
-            fputcsv($myFile, $rowToWrite);  
-        } 
+        foreach ($rowsToWrite as $rowToWrite) {
+            fputcsv($myFile, $rowToWrite);
+        }
 
         fclose($myFile);
     }
@@ -459,6 +466,8 @@ class Base extends BaseModel\Core
                      ->merchantId($this->merchant->getId())
                      ->getFile();
 
+            $this->performDecryptionIfApplicable($accessor->getFile());
+
             return $accessor->get();
         }
 
@@ -470,7 +479,31 @@ class Base extends BaseModel\Core
 
         $ufhFile = $ufh->getFileInstance();
 
+        $this->performDecryptionIfApplicable($ufh->getFullFilePath());
+
         return $ufhFile;
+    }
+
+    protected function performDecryptionIfApplicable($fileToBeDecrypted)
+    {
+        if ($this->shouldDecrypt() === true)
+        {
+            $type = Type::AES_ENCRYPTION;
+
+            $params = [
+                'mode'   => \phpseclib\Crypt\Base::MODE_CBC,
+                'secret' => $this->secret,
+            ];
+
+            $encryptionHandler = new Encryption\Handler($type, $params);
+
+            $encryptionHandler->decryptFile($fileToBeDecrypted);
+
+            $this->trace->info(TraceCode::BATCH_FILE_DECRYPTION,
+                [
+                    $this->batch->getType(),
+                ]);
+        }
     }
 
     protected function saveSettings(array $input)
@@ -1286,26 +1319,47 @@ class Base extends BaseModel\Core
             $ufh->entity($this->batch);
         }
 
-        if ($this->shouldEncrypt() and ($type === FileStore\Type::BATCH_INPUT))
-        {
-            $ufh->encrypt(Type::AES_ENCRYPTION, [
-                    'mode'   => \phpseclib\Crypt\Base::MODE_CBC,
-                    'secret' => openssl_random_pseudo_bytes(256)
-                ]);
-        }
-
         if ($this->shouldSendToBatchService())
         {
            $ufh->addBucketConfigForBatchService(Batch\Constants::BATCH_SERVICE);
         }
 
-        return $ufh->localFilePath($filePath)
-                   ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$ext][0])
-                   ->name($name)
-                   ->extension($ext)
-                   ->merchant($this->merchant)
-                   ->type($type)
-                   ->save();
+        $ufh->localFilePath($filePath)
+            ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$ext][0])
+            ->name($name)
+            ->extension($ext)
+            ->merchant($this->merchant)
+            ->type($type);
+
+        if ($this->shouldEncrypt() and
+            ($type === FileStore\Type::BATCH_INPUT or $type === FileStore\Type::BATCH_VALIDATED))
+        {
+            $this->performEncryption($ufh);
+
+            $this->trace->info(TraceCode::BATCH_FILE_ENCRYPTION,
+                [
+                    'name' => $name,
+                    'type' => $type,
+                ]);
+        }
+
+        return $ufh->save();
+    }
+
+    protected function performEncryption($fileHandler)
+    {
+        $type = Type::AES_ENCRYPTION;
+
+        $params = [
+            'mode'   => \phpseclib\Crypt\Base::MODE_CBC,
+            'secret' => $this->secret,
+        ];
+
+        $encryptionHandler = new Encryption\Handler($type, $params);
+
+        $fileToBeEncrypted = $fileHandler->getFullFilePath();
+
+        $encryptionHandler->encryptFile($fileToBeEncrypted);
     }
 
     /**
@@ -1345,6 +1399,11 @@ class Base extends BaseModel\Core
                         ->id($inputFile->getId())
                         ->merchantId($this->batch->getMerchantId())
                         ->getFile();
+
+        if ($inputFile->getType() === FileStore\Type::BATCH_VALIDATED)
+        {
+            $this->performDecryptionIfApplicable($filePath);
+        }
 
         $this->inputFileLocalPath = $filePath;
         $this->inputFileType      = $inputFile->getType();
@@ -1559,7 +1618,12 @@ class Base extends BaseModel\Core
 
     protected function shouldEncrypt()
     {
-        return false;
+        return $this->isEncrypted;
+    }
+
+    protected function shouldDecrypt()
+    {
+        return $this->isEncrypted;
     }
 
     protected function trimEntry(array & $entry)

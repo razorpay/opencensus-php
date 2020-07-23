@@ -36,6 +36,8 @@ class DirectDebit extends Base
         $this->orderCore = new Order\Core();
 
         $this->customerCore = new Customer\Core();
+
+        $this->isEncrypted = true;
     }
 
     protected function processEntry(array & $entry)
@@ -151,7 +153,12 @@ class DirectDebit extends Base
 
     protected function shouldEncrypt()
     {
-        return true;
+        return $this->isEncrypted;
+    }
+
+    protected function shouldDecrypt()
+    {
+        return $this->isEncrypted;
     }
 
     protected function mask(string $card)

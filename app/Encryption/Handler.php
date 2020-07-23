@@ -30,6 +30,15 @@ class Handler
         file_put_contents($filePath, $encryptedData);
     }
 
+    public function decryptFile(string $filePath)
+    {
+        $data = file_get_contents($filePath);
+
+        $decryptedData = $this->decrypt($data);
+
+        file_put_contents($filePath, $decryptedData);
+    }
+
     public function encrypt(string $data)
     {
         return $this->cipher->encrypt($data);

@@ -56,6 +56,13 @@ class Core
      */
     protected $config;
 
+    /**
+     * Secret for encryption/decryption of files
+     *
+     * @var secret
+     */
+    protected $secret;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -76,6 +83,10 @@ class Core
         $this->merchant = $this->app['basicauth']->getMerchant();
 
         $this->device = $this->app['basicauth']->getDevice();
+
+        $batchApplication = $this->config->get('applications.batch');
+
+        $this->secret = $batchApplication['aes_key'];
 
         $this->init();
     }

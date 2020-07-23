@@ -1540,6 +1540,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_FILE_PROCESS_USING_SPREADSHEET                  = 'BATCH_FILE_PROCESS_USING_SPREADSHEET';
     const BATCH_FILE_PROCESSING_ERROR                           = 'BATCH_FILE_PROCESSING_ERROR';
     const BATCH_FILE_PROCESSED                                  = 'BATCH_FILE_PROCESSED';
+    const BATCH_FILE_ENCRYPTION                                 = 'BATCH_FILE_ENCRYPTION';
+    const BATCH_FILE_DECRYPTION                                 = 'BATCH_FILE_DECRYPTION';
     const BATCH_ALREADY_PROCESSED                               = 'BATCH_ALREADY_PROCESSED';
     const RETRY_ALLOWED_FOR_IN_PROCESSING_BATCH                 = 'RETRY_ALLOWED_FOR_IN_PROCESSING_BATCH';
     const BATCH_PROCESSING_ENTRY                                = 'BATCH_PROCESSING_ENTRY';
