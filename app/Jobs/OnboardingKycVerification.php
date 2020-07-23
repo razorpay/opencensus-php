@@ -94,14 +94,13 @@ class OnboardingKycVerification extends Job
         $this->mutex->acquireAndRelease(
             $this->merchantId, function() {
 
-            $this->repoManager->transactionOnLiveAndTest(function() {
+            [$merchant, $merchantDetails] = (New Detail\Core())->getMerchantAndSetBasicAuth($this->merchantId);
+
+            $this->repoManager->transactionOnLiveAndTest(function() use ($merchant, $merchantDetails) {
+
                 switch ($this->documentType)
                 {
                     case Constants::CIN :
-
-                        $merchant = $this->repoManager->merchant->findOrFail($this->merchantId);
-
-                        $merchantDetails = $merchant->merchantDetail;
 
                         $this->repoManager->merchant_detail->lockForUpdateAndReload($merchantDetails);
 

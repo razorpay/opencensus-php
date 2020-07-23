@@ -2718,4 +2718,15 @@ class Core extends Base\Core
             $input[$key] = $input[$value];
         }
     }
+
+    public function getMerchantAndSetBasicAuth(string $merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        return [$merchant, $merchantDetails];
+    }
 }

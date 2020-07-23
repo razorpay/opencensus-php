@@ -101,7 +101,7 @@ class PennyTesting extends Base\Core
             "data" => $input
         ]);
 
-        [$merchant, $merchantDetails] = $this->getMerchantAndSetBasicAuth($input[Constants::MERCHANT_ID]);
+        [$merchant, $merchantDetails] = (New Merchant\Detail\Core())->getMerchantAndSetBasicAuth($input[Constants::MERCHANT_ID]);
 
         $this->mutex->acquireAndRelease(
             $merchant->getId(),
@@ -542,17 +542,6 @@ class PennyTesting extends Base\Core
         $pennyTestingAttemptRedisKey = $this->getPennyTestingAttemptRedisKey($merchantDetails->getId());
 
         $this->cache->put($pennyTestingAttemptRedisKey, $pennyTestingAttempt, Constants::PENNY_TESTING_ATTEMPT_COUNT_TTL_IN_MIN);
-    }
-
-    protected function getMerchantAndSetBasicAuth(string $merchantId)
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
-        $this->app['basicauth']->setMerchant($merchant);
-
-        $merchantDetails = $merchant->merchantDetail;
-
-        return [$merchant, $merchantDetails];
     }
 
     /**
