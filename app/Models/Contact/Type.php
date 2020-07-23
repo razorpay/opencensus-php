@@ -2,9 +2,11 @@
 
 namespace RZP\Models\Contact;
 
+use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -35,6 +37,12 @@ final class Type
     public static $internal = [
         self::RZP_FEES,
         self::TAX_PAYMENT_INTERNAL_CONTACT,
+    ];
+
+    public static $internalAppToAllowedInternalContact = [
+        'vendor_payments' => [
+            self::TAX_PAYMENT_INTERNAL_CONTACT,
+        ],
     ];
 
     public static function isInDefaults(string $type): bool
@@ -157,5 +165,23 @@ final class Type
     protected function getSettingsAccessor(Merchant\Entity $merchant): Settings\Accessor
     {
         return Settings\Accessor::for($merchant, Settings\Module::CONTACT_TYPE, Mode::LIVE);
+    }
+
+    public static function validateInternalAppAllowedCreatingPayoutsOnType(string $contactType, string $internalAppName)
+    {
+        $listOfValidContactTypes = self::$internalAppToAllowedInternalContact[$internalAppName] ?? null;
+
+        if (($listOfValidContactTypes === null) or
+            (in_array($contactType, $listOfValidContactTypes, true) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_APP_NOT_PERMITTED_TO_CREATE_PAYOUT_ON_THIS_CONTACT_TYPE,
+                null,
+                [
+                    'contact_type'      => $contactType,
+                    'internal_app_name' => $internalAppName
+                ]
+            );
+        }
     }
 }

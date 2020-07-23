@@ -5,7 +5,7 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
-    'testSettingsInternalApiAddOrUpdate'                        => [
+    'testSettingsInternalApiAddOrUpdate'                                  => [
         'request'  => [
             'method'  => 'POST',
             'server'  => [
@@ -22,7 +22,7 @@ return [
             ]
         ]
     ],
-    'testSettingsInternalApiGet'                                => [
+    'testSettingsInternalApiGet'                                          => [
         'request'  => [
             'method'  => 'GET',
             'server'  => [
@@ -39,7 +39,7 @@ return [
             ],
         ]
     ],
-    'testTaxPaymentSettingGetCallsServiceMethods'               => [
+    'testTaxPaymentSettingGetCallsServiceMethods'                         => [
         'request'  => [
             'method' => 'GET',
             'url'    => '/tax-payments/settings',
@@ -48,7 +48,7 @@ return [
             'content' => []
         ]
     ],
-    'testTaxPaymentSettingAddOrUpdateCallsServiceMethods'       => [
+    'testTaxPaymentSettingAddOrUpdateCallsServiceMethods'                 => [
         'request'  => [
             'method' => 'POST',
             'url'    => '/tax-payments/settings',
@@ -57,7 +57,7 @@ return [
             'content' => []
         ]
     ],
-    'testGetTaxPaymentCallsServiceMethod'                       => [
+    'testGetTaxPaymentCallsServiceMethod'                                 => [
         'request'  => [
             'method' => 'GET',
             'url'    => '/tax-payments/txpy_1234',
@@ -66,7 +66,7 @@ return [
             'content' => []
         ]
     ],
-    'testListTaxPaymentCallsServiceMethod'                      => [
+    'testListTaxPaymentCallsServiceMethod'                                => [
         'request'  => [
             'method' => 'GET',
             'url'    => '/tax-payments',
@@ -75,7 +75,7 @@ return [
             'content' => []
         ]
     ],
-    'testPayTaxPaymentCallsServiceMethod'                       => [
+    'testPayTaxPaymentCallsServiceMethod'                                 => [
         'request'  => [
             'method' => 'POST',
             'url'    => '/tax-payments/some_payment_id/pay',
@@ -84,7 +84,7 @@ return [
             'content' => []
         ]
     ],
-    'testTaxPayContactCreationFailsWhenNotVendorPaymentApp'     => [
+    'testTaxPayContactCreationFailsWhenNotVendorPaymentApp'               => [
         'request'   => [
             'method'  => 'POST',
             'url'     => '/contacts',
@@ -107,7 +107,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNAL_CONTACT_CREATE_UPDATE_NOT_PERMITTED,
         ]
     ],
-    'testTaxContactCreationSuccessWithTheRightVendorApp'        => [
+    'testTaxContactCreationSuccessWithTheRightVendorApp'                  => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/contacts_internal',
@@ -128,7 +128,7 @@ return [
             'status_code' => '201',
         ]
     ],
-    'testTaxPayFundAccountCreationFailsWhenNotVendorPaymentApp' => [
+    'testTaxPayFundAccountCreationFailsWhenNotVendorPaymentApp'           => [
         'request'   => [
             'method'  => 'POST',
             'url'     => '/fund_accounts',
@@ -155,7 +155,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNAL_FUND_ACCOUNT_CREATION_NOT_PERMITTED,
         ]
     ],
-    'testTaxFundAccountCreationSuccessWithTheRightVendorApp'    => [
+    'testTaxFundAccountCreationSuccessWithTheRightVendorApp'              => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/fund_accounts_internal',
@@ -187,7 +187,7 @@ return [
             'status_code' => 201,
         ],
     ],
-    'testTaxPaymentInternalContactUpdateForbidden'              => [
+    'testTaxPaymentInternalContactUpdateForbidden'                        => [
         'request'   => [
             'method'  => 'PATCH',
             'url'     => '/contacts/',
@@ -212,7 +212,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNAL_CONTACT_CREATE_UPDATE_NOT_PERMITTED,
         ]
     ],
-    'testUpdatingContactTypeToInternalContactForbidden'         => [
+    'testUpdatingContactTypeToInternalContactForbidden'                   => [
         'request'   => [
             'method'  => 'PATCH',
             'url'     => '/contacts/',
@@ -228,6 +228,144 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Invalid type: rzp_tax_pay',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+    'testPayoutCreateOnRzpInternalContactSucceeds'                        => [
+        'request'  => [
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'method'  => 'POST',
+            'url'     => '/internalContactPayout',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => '',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'payout',
+                'amount'    => 2000000,
+                'currency'  => 'INR',
+                'narration' => 'Batman',
+                'purpose'   => 'refund',
+                'status'    => 'processing',
+                'mode'      => 'IMPS',
+                'tax'       => 162,
+                'fees'      => 1062,
+                'notes'     => [
+                    'abc' => 'xyz',
+                ],
+            ]
+        ],
+    ],
+    'testPayoutInternalPayoutRouteFailsWhenFundAccountIdMissing'          => [
+        'request'   => [
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'method'  => 'POST',
+            'url'     => '/internalContactPayout',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'amount'         => 2000000,
+                'currency'       => 'INR',
+                'purpose'        => 'refund',
+                'narration'      => 'Batman',
+                'mode'           => 'IMPS',
+                'notes'          => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => ErrorCode::BAD_REQUEST_FUND_ACCOUNT_ID_IS_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+    'testPayoutInternalPayoutRouteFailsWhenContactIsNotInternalType'      => [
+        'request'   => [
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'method'  => 'POST',
+            'url'     => '/internalContactPayout',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => '',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => ErrorCode::BAD_REQUEST_ONLY_INTERNAL_CONTACT_PERMITTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+    'testInternalPayoutFailsWhenInternalContactIsRestrictedForCurrentApp' => [
+        'request'   => [
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'method'  => 'POST',
+            'url'     => '/internalContactPayout',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => '',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => ErrorCode::BAD_REQUEST_APP_NOT_PERMITTED_TO_CREATE_PAYOUT_ON_THIS_CONTACT_TYPE,
                 ],
             ],
             'status_code' => 400,

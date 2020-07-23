@@ -11,11 +11,13 @@ use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 
 class TaxPaymentTests extends TestCase
 {
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
+    use TestsBusinessBanking;
 
     protected $config;
 
@@ -125,6 +127,21 @@ class TaxPaymentTests extends TestCase
         $tpMock->shouldHaveReceived('listTaxPayments');
     }
 
+    public function testPayTaxPaymentCallsServiceMethod()
+    {
+        $this->ba->proxyAuth();
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+
+        $tpMock->shouldReceive('payTaxPayment')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('payTaxPayment');
+    }
+
     /**
      * This is to test that the Tax Payment Internal Contact can only be created from VendorPayments app
      *
@@ -205,4 +222,87 @@ class TaxPaymentTests extends TestCase
 
         $this->startTest();
     }
+
+    // this one calls the route that allows creating payouts on internal contacts
+    public function testPayoutCreateOnRzpInternalContactSucceeds()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $contact = $this->fixtures->create('contact', ['type' => 'rzp_tax_pay']);
+
+        $fundAccount = $this->fixtures->fund_account->createBankAccount(
+            [
+                'source_type' => 'contact',
+                'source_id'   => $contact->getId(),
+            ],
+            [
+                'name'           => 'test',
+                'ifsc'           => 'SBIN0007105',
+                'account_number' => '111000',
+            ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testPayoutInternalPayoutRouteFailsWhenFundAccountIdMissing()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->startTest();
+    }
+
+    public function testPayoutInternalPayoutRouteFailsWhenContactIsNotInternalType()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $contact = $this->fixtures->create('contact', ['type' => 'employee']); // not an internal type
+
+        $fundAccount = $this->fixtures->fund_account->createBankAccount(
+            [
+                'source_type' => 'contact',
+                'source_id'   => $contact->getId(),
+            ],
+            [
+                'name'           => 'test',
+                'ifsc'           => 'SBIN0007105',
+                'account_number' => '111000',
+            ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testInternalPayoutFailsWhenInternalContactIsRestrictedForCurrentApp()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $contact = $this->fixtures->create('contact', ['type' => 'rzp_fees']); // not mapped to this internal app
+
+        $fundAccount = $this->fixtures->fund_account->createBankAccount(
+            [
+                'source_type' => 'contact',
+                'source_id'   => $contact->getId(),
+            ],
+            [
+                'name'           => 'test',
+                'ifsc'           => 'SBIN0007105',
+                'account_number' => '111000',
+            ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
+
+        $this->startTest();
+    }
+
 }

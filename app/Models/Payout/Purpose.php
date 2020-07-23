@@ -11,13 +11,14 @@ use RZP\Models\FundTransfer\Attempt\Purpose as FTAPurpose;
 
 class Purpose
 {
-    const REFUND       = 'refund';
-    const CASHBACK     = 'cashback';
-    const SALARY       = 'salary';
-    const UTILITY_BILL = 'utility bill';
-    const VENDOR_BILL  = 'vendor bill';
-    const PAYOUT       = 'payout';
-    const RZP_FEES     = 'rzp_fees';
+    const REFUND          = 'refund';
+    const CASHBACK        = 'cashback';
+    const SALARY          = 'salary';
+    const UTILITY_BILL    = 'utility bill';
+    const VENDOR_BILL     = 'vendor bill';
+    const PAYOUT          = 'payout';
+    const RZP_FEES        = 'rzp_fees';
+    const RZP_TAX_PAYMENT = 'rzp_tax_pay';
 
     protected static $default = [
         self::REFUND,
@@ -29,16 +30,17 @@ class Purpose
     ];
 
     protected static $defaultPurposeTypeMap = [
-        self::REFUND       => FTAPurpose::REFUND,
-        self::CASHBACK     => FTAPurpose::REFUND,
-        self::PAYOUT       => FTAPurpose::SETTLEMENT,
-        self::SALARY       => FTAPurpose::SETTLEMENT,
-        self::UTILITY_BILL => FTAPurpose::SETTLEMENT,
-        self::VENDOR_BILL  => FTAPurpose::SETTLEMENT,
+        self::REFUND          => FTAPurpose::REFUND,
+        self::CASHBACK        => FTAPurpose::REFUND,
+        self::PAYOUT          => FTAPurpose::SETTLEMENT,
+        self::SALARY          => FTAPurpose::SETTLEMENT,
+        self::UTILITY_BILL    => FTAPurpose::SETTLEMENT,
+        self::VENDOR_BILL     => FTAPurpose::SETTLEMENT,
     ];
 
     protected static $internalPurposeTypeMap = [
-        self::RZP_FEES  => FTAPurpose::SETTLEMENT,
+        self::RZP_FEES        => FTAPurpose::SETTLEMENT,
+        self::RZP_TAX_PAYMENT => FTAPurpose::SETTLEMENT,
     ];
 
     public static function isInDefaults(string $purpose): bool

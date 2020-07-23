@@ -2,8 +2,8 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
 use Request;
+use ApiResponse;
 
 class PayoutController extends Controller
 {
@@ -12,6 +12,15 @@ class PayoutController extends Controller
         $input = Request::all();
 
         $data = $this->service()->fundAccountPayout($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postFundAccountOnInternalContact()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fundAccountPayoutOnInternalContact($input);
 
         return ApiResponse::json($data);
     }

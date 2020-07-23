@@ -23,6 +23,7 @@ class TaxPayments
     const ADD_OR_UPDATE_SETTINGS = 'AddOrUpdateSettings';
     const GET_TAX_PAYMENT_BY_ID  = 'GetTaxPayment';
     const LIST_TAX_PAYMENTS      = 'ListTaxPayments';
+    const PAY_TAX_PAYMENTS       = 'PayTaxPayment';
 
 
     protected $app;
@@ -44,6 +45,30 @@ class TaxPayments
 
         $this->repo =  $app['repo'];
 
+    }
+
+    public function payTaxPayment(MerchantEntity $merchant, string $taxPaymentId, array $input, UserEntity $user = null)
+    {
+        if ($user === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST,
+                                          null,
+                                          [
+                                              'tax_payment_id' => $taxPaymentId,
+                                              'merchant_id'    => $merchant->getPublicId()
+                                          ]);
+        }
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::PAY_TAX_PAYMENTS);
+
+        $input['tax_payment_id'] = $taxPaymentId;
+
+        if ($user !== null)
+        {
+            $input['user_id'] = $user->getPublicId();
+        }
+
+        return $this->makeRequest($merchant, $url, $input);
     }
 
     public function getAllSettings(MerchantEntity $merchant)

@@ -985,6 +985,7 @@ class Route
         'mock_event_tracker'                       => ['post',     'mock/track',                                     'MockLumberjackController@mockEventTrack'                           ],
         'payout_create'                            => ['post',     'payouts',                                        'PayoutController@postFundAccountPayout'                            ],
         'payout_create_internal'                   => ['post',     'payouts_internal',                               'PayoutController@postFundAccountPayout'                            ],
+        'payout_create_on_internal_contact'        => ['post',     'internalContactPayout',                          'PayoutController@postFundAccountOnInternalContact'                 ],
         'payout_bulk_create'                       => ['post',     'payouts/bulk',                                   'PayoutController@createPayoutBulk'                                 ],
         'payout_create_with_otp'                   => ['post',     'payouts_with_otp',                               'PayoutController@postFundAccountPayoutWithOtp'                     ],
         'payout_approve_bulk'                      => ['post',     'payouts/approve/bulk',                           'PayoutController@bulkApproveFundAccountPayouts'                    ],
@@ -1031,7 +1032,9 @@ class Route
         'vendor_payment_get_ocr_data'              => ['get',      'vendor-payments/get-ocr-data/{ocr_reference_id}','VendorPaymentController@getOcrData'                                ],
         'vendor_payment_ocr_accuracy_cron'         => ['post',     'vendor-payments/_meta/ocr-accuracy-check',       'VendorPaymentController@ocrAccuracyCheck'                          ],
 
+
         // Tax Payments
+        'tax_payments_pay'                         => ['post',    'tax-payments/{id}/pay',                           'TaxPaymentController@payTaxPayment'                                ],
         'tax_payments_get_all_settings'            => ['get',     'tax-payments/settings/',                          'TaxPaymentController@getAllSettings'                               ],
         'tax_payments_add_or_update_settings'      => ['post',    'tax-payments/settings/',                          'TaxPaymentController@addOrUpdateSettings'                          ],
         'tax_payments_list'                        => ['get',     'tax-payments/',                                    'TaxPaymentController@listTaxPayments'                             ],
@@ -2458,6 +2461,7 @@ class Route
         'entity_bulk_update',
         'settings_fetch_internal',
         'settings_upsert_internal',
+        'payout_create_on_internal_contact',
         'vendor_payment_ocr_accuracy_cron',
         'banking_account_comments_create_via_batch'
     ];
@@ -2853,6 +2857,7 @@ class Route
         'fetch_payout_downtimes_enabled',
 
         // tax payment routes
+        'tax_payments_pay',
         'tax_payments_get_all_settings',
         'tax_payments_add_or_update_settings',
         'merchant_credits_balance_fetch',
@@ -4387,6 +4392,7 @@ class Route
         'merchant_credits_balance_fetch'               => '*',
 
         // tax payment permission
+        'tax_payments_pay'                             => '*',
         'tax_payments_get_all_settings'                => '*',
         'tax_payments_add_or_update_settings'          => '*',
         'tax_payments_list'                            => '*',
@@ -4543,6 +4549,7 @@ class Route
             'settings_fetch_internal',
             'settings_upsert_internal',
             'fund_account_create_internal',
+            'payout_create_on_internal_contact',
         ],
 
         'dashboard' => [
@@ -5114,6 +5121,7 @@ class Route
         'vendor_payment_cancel'                => [Feature::RX_VENDOR_PAYMENTS],
         'vendor_payment_bulk_cancel'           => [Feature::RX_VENDOR_PAYMENTS],
         'vendor_payment_execute'               => [Feature::RX_VENDOR_PAYMENTS],
+        'tax_payments_pay'                     => [Feature::RX_VENDOR_PAYMENTS],
         'tax_payments_get_all_settings'        => [Feature::RX_VENDOR_PAYMENTS],
         'tax_payments_add_or_update_settings'  => [Feature::RX_VENDOR_PAYMENTS],
         'tax_payments_list'                    => [Feature::RX_VENDOR_PAYMENTS],
@@ -5434,6 +5442,7 @@ class Route
         'fund_transfer_attempt_process',
         'on_demand_settlement',
 
+        'tax_payments_pay',
         'tax_payments_get_all_settings',
         'tax_payments_add_or_update_settings',
         'tax_payments_list',

@@ -3254,6 +3254,21 @@ class PayoutTest extends TestCase
         $this->startTest($data);
     }
 
+    public function testCreatePayoutToRzpTaxContactShouldFail()
+    {
+        $this->createContact();
+
+        $this->fixtures->edit('contact', $this->contact->getId(), ['type' => 'rzp_tax_pay']);
+
+        $this->createFundAccount();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['content']['fund_account_id'] = $this->fundAccount->getPublicId();
+
+        $this->startTest($data);
+    }
+
     protected function createPayoutWithWorkflowHavingPayoutRules()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_WORKFLOWS]);

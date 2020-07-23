@@ -3,14 +3,12 @@
 namespace RZP\Models\Payout;
 
 use Carbon\Carbon;
-
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Card;
-use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Models\Pricing;
@@ -23,12 +21,11 @@ use RZP\Models\FundAccount;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Permission;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
 use RZP\Models\FundAccount\Service as FundAccountService;
 use RZP\Models\FundAccount\BatchHelper as FundAccountHelper;
-
-use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
@@ -55,7 +52,42 @@ class Service extends Base\Service
         $this->fundAccountService = new FundAccountService;
     }
 
-    public function fundAccountPayout(array $input): array
+    public function fundAccountPayoutOnInternalContact(array $input): array
+    {
+        // check that the auth in internal
+        if ($this->auth->isPrivilegeAuth() === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+        }
+
+        // check that the contact is internal type
+        if (key_exists(Entity::FUND_ACCOUNT_ID, $input) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_FUND_ACCOUNT_ID_IS_REQUIRED,
+                null,
+                $input
+            );
+        }
+
+        $contact = $this->repo->fund_account->findByPublicId($input[Entity::FUND_ACCOUNT_ID])->contact;
+
+        if (Contact\Type::isInInternal($contact->getType()) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_ONLY_INTERNAL_CONTACT_PERMITTED,
+                null,
+                $input
+            );
+        }
+
+        Contact\Type::validateInternalAppAllowedCreatingPayoutsOnType($contact->getType(),
+                                                                      $this->auth->getInternalApp());
+
+        return $this->fundAccountPayout($input, true);
+    }
+
+    public function fundAccountPayout(array $input, bool $internal = false): array
     {
         // Only allow access over strictly private auth, for proxy auth: OTP auth flow is mandated.
         if ($this->auth->isStrictPrivateAuth() === false and
@@ -68,7 +100,7 @@ class Service extends Base\Service
         $this->processAccountNumber($input);
 
         $payout = $this->repo->transaction(
-            function () use ($input)
+            function () use ($input, $internal)
             {
                 $isCompositePayout = false;
 
@@ -83,7 +115,7 @@ class Service extends Base\Service
                 }
 
                 /** @var Entity $payout */
-                $payout = $this->core->createPayoutToFundAccount($input, $this->merchant);
+                $payout = $this->core->createPayoutToFundAccount($input, $this->merchant, null, $internal);
 
                 if ($isCompositePayout === true)
                 {

@@ -242,6 +242,9 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE                                 = 'Your account does not have enough balance to carry out the payout operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
     const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING                         = 'Your account does not have enough balance to carry out the payout operation.';
     const BAD_REQUEST_PAYOUT_STATUS_UPDATE_ALLOWED_ONLY_IN_TEST_MODE            = 'Payout status update is allowed only in test mode';
+    const BAD_REQUEST_FUND_ACCOUNT_ID_IS_REQUIRED                               = 'fund_account_id is required';
+    const BAD_REQUEST_ONLY_INTERNAL_CONTACT_PERMITTED                           = 'Please send fund accounts of internal type contacts only';
+    const BAD_REQUEST_APP_NOT_PERMITTED_TO_CREATE_PAYOUT_ON_THIS_CONTACT_TYPE   = 'App not allowed to create payout on this internal contact type';
     const BAD_REQUEST_REFUND_INVALID_STATE_TO_PROCESSED                         = 'Refund in an invalid state to be marked as processed';
     const BAD_REQUEST_REFUND_INVALID_STATE_UPDATE                               = 'Refund can not be updated to this state';
     const BAD_REQUEST_REFUND_NOT_SCROOGE                                        = 'Gateway refund cannot be called for non-scrooge gateway';
