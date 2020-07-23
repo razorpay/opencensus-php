@@ -15,6 +15,7 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\FundAccount\Validation\Status;
 use RZP\Models\FundAccount\Validation\Constants;
+use RZP\Models\Feature\Constants as MerchantFeature;
 use RZP\Models\FundAccount\Validation\AccountStatus;
 use RZP\Models\FundAccount\Validation\Entity as Validation;
 
@@ -77,15 +78,19 @@ class BankAccount extends Base
     {
         // TODO: right now we are fetching only completed FAV
         // so, user can still send simultaneous request to send money to same account number
-        // will add mutex and validation over merchant, account_number later to solve this.
+        // will add mutex and validation over merchant, account_number, status later to solve this.
         $result = $this->repo->fund_account_validation
                        ->fetchCompletedFAVByAccountNumber(
                            $this->account->getAccountNumber(),
                            Carbon::now()->subMonth(1)->getTimestamp());
 
-        // If same account detail was already processed and it is active account
+        $doNotRetry = $this->validation->merchant->isFeatureEnabled(MerchantFeature::EXPOSE_FA_VALIDATION_UTR);
+
+        // If merchant is expecting utr, we can not return same utr, so no retry
+        // Now, If same account detail was already processed and it is active account
         // copy and return
-        if (($result != null) and
+        if (($doNotRetry === false) and
+            ($result != null) and
             ($result->getAccountStatus() === AccountStatus::ACTIVE))
         {
             $beneficiaryName = $result->getRegisteredName();
@@ -110,6 +115,8 @@ class BankAccount extends Base
         $this->validation->setRegisteredName($result->getRegisteredName());
 
         $this->validation->setAttempts($this->validation->getAttempts() - 1);
+
+        $this->validation->setUtr($result->getUtr());
 
         $this->markValidationAsCompleted(AccountStatus::ACTIVE, null);
     }

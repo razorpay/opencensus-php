@@ -562,9 +562,51 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('active', $fav['results']['account_status']);
 
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $ftaEntity = $this->getDbEntityById('fund_transfer_attempt',  preg_replace('/^fta_/', '', $fta['id']));
         $this->assertEquals('penny_testing', $fta['purpose']);
         // There won't be FTA for second FAV
         $this->assertNotEquals($fav['id'], $fta['source']);
+        $this->assertNotNull($ftaEntity->getUtr());
+    }
+
+    public function testFundAccValidationWithAccountNumberThatIsAlreadyProcessedButUtrNeeded()
+    {
+        $this->fixtures->merchant->addFeatures(['expose_fa_validation_utr']);
+
+        $this->createValidationWithFundAccountEntity();
+
+        $this->ba->privateAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts/validations',
+            'content' => [
+                Validation::FUND_ACCOUNT  => [
+                    FundAccount::ACCOUNT_TYPE => 'bank_account',
+                    FundAccount::DETAILS      => [
+                        BankAccount::ACCOUNT_NUMBER => '123456789',
+                        BankAccount::NAME           => 'Rohit Keshwani',
+                        BankAccount::IFSC           => 'SBIN0010411',
+                    ],
+                ],
+                Validation::AMOUNT        => '100',
+                Validation::CURRENCY      => 'INR',
+                Validation::NOTES         => [],
+                Validation::RECEIPT       => '12345667',
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        $this->assertEquals(1, $fav['attempts']);
+        $this->assertEquals('completed', $fav['status']);
+        $this->assertEquals('active', $fav['results']['account_status']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('penny_testing', $fta['purpose']);
+        $this->assertEquals($fav['id'], $fta['source']);
+        $this->assertNotNull($fav['utr']);
     }
 
     public function testFundAccValidationWithAccountNumberAndVpa()
