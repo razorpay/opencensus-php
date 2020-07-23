@@ -898,7 +898,7 @@ class AxisGatewayTest extends TestCase
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
         $this->fixtures->merchant->editDefaultRefundSpeed('optimum');
 
-        $refund = $this->refundPayment($payment['id'], $payment['amount'], ['is_fta' => true]);
+        $refund = $this->refundPayment($payment['id'], $payment['amount'], ['is_fta' => true, 'fta_data' => ['card_transfer' => ['card_id' => $payment['card_id']]]]);
 
         // Assert for fta created for given refund
         $fta = $this->getLastEntity('fund_transfer_attempt', true);

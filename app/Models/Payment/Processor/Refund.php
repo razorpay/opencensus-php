@@ -2505,13 +2505,12 @@ trait Refund
         {
             $fundTransferAttemptInput = $this->getFundTransferAttemptInput($payment, $data);
 
-            if (isset($data['vpa']) === true)
+            if (isset($data[RefundConstants::VPA]) === true)
             {
                 $fta = $this->refundViaFundTransferToVpa($data, $fundTransferAttemptInput);
             }
             // If bank account details are given - we need to refund to bank account instead of card transfer
-            else if ((isset($data['bank_account']) === false) and
-                     ($this->isPaymentCardAndCardTransferRefund($refund, $payment, $data[RefundConstants::IS_FTA])))
+            else if (isset($data[RefundConstants::CARD_TRANSFER]) === true)
             {
                 $fta = $this->refundViaFundTransferToCard($payment, $data, $fundTransferAttemptInput);
             }
@@ -2623,7 +2622,8 @@ trait Refund
     {
         if (isset($data[RefundConstants::IS_FTA]) === true)
         {
-            if ($data[RefundConstants::IS_FTA] === false) {
+            if ($data[RefundConstants::IS_FTA] === false)
+            {
                 return false;
             }
         }
@@ -2637,8 +2637,10 @@ trait Refund
         // Bank account or vpa input can come from dashboard also, but card_transfer will not come from dashboard.
         // Not keeping check for card_transfer so that every time, we will evaluate if it is card_transfer refund.
         //
-        if (((isset($data['bank_account']) === true) or
-            (isset($data['vpa']) === true)) and ($payment->isGatewayCaptured() === true))
+        if (((isset($data[RefundConstants::BANK_ACCOUNT]) === true) or
+             (isset($data[RefundConstants::VPA]) === true) or
+             (isset($data[RefundConstants::CARD_TRANSFER]) === true)) and
+            ($payment->isGatewayCaptured() === true))
         {
             return true;
         }
@@ -2647,7 +2649,6 @@ trait Refund
         if (($payment->isBankTransfer() === true) or
             ($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true) or
             ($this->isPaymentTpvAndBankTransferRefund($payment) === true) or
-            ($this->isPaymentCardAndCardTransferRefund($refund, $payment, $data[RefundConstants::IS_FTA]) === true) or
             ($this->isPaymentNachAndNachRefundGateway($payment) === true))
         {
             return true;

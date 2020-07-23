@@ -64,7 +64,9 @@ class Constants
     const VPA_ADDRESS     = 'address';
     const CARD_TYPE       = 'card_type';
     const SOURCE_VPA      = 'source_vpa';
+    const BANK_ACCOUNT    = 'bank_account';
     const NETWORK_CODE    = 'network_code';
+    const CARD_TRANSFER   = 'card_transfer';
     const TRANSFER_METHOD = 'transfer_method';
 
     /**

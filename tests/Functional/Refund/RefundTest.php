@@ -2366,7 +2366,19 @@ class RefundTest extends TestCase
 
         // Adding specific amount to refund - this is meant to test failed refunds on scrooge -
         // in which case we have reversal of refund transactions as well
-        $refund = $this->refundPayment($payment['id'], 3470, ['speed' => 'optimum', 'is_fta' => true]);
+        $refund = $this->refundPayment(
+            $payment['id'],
+            3470,
+            [
+                'speed'    => 'optimum',
+                'is_fta'   => true,
+                'fta_data' => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
+            ]
+        );
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
 
@@ -2494,7 +2506,19 @@ class RefundTest extends TestCase
 
         // Adding specific amount to refund - this is meant to test failed refunds on scrooge -
         // in which case we have reversal of refund transactions as well
-        $refund = $this->refundPayment($payment['id'], 3470, ['speed' => 'optimum', 'is_fta' => true]);
+        $refund = $this->refundPayment(
+            $payment['id'],
+            3470,
+            [
+                'speed'    => 'optimum',
+                'is_fta'   => true,
+                'fta_data' => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
+            ]
+        );
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
 
@@ -2621,7 +2645,19 @@ class RefundTest extends TestCase
         $this->fixtures->pricing->createInstantRefundsModeLevelPricingPlan();
 
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
-        $refund = $this->refundPayment($payment['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
+        $refund = $this->refundPayment(
+            $payment['id'],
+            3471,
+            [
+                'speed'    => 'optimum',
+                'is_fta'   => true,
+                'fta_data' => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
+            ]
+        );
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
 
@@ -2708,8 +2744,6 @@ class RefundTest extends TestCase
 
         $this->assertEquals($iin['issuer'], 'HDFC');
 
-
-
         $this->gateway = 'hdfc';
 
         $this->mockServerContentFunction(function (& $content, $action = null) {
@@ -2739,7 +2773,16 @@ class RefundTest extends TestCase
         $refund = $this->refundPayment(
             $payment['id'],
             3471,
-            ['speed' => 'optimum', 'is_fta' => true, 'mode_requested' => 'CT']
+            [
+                'speed'          => 'optimum',
+                'is_fta'         => true,
+                'mode_requested' => 'CT',
+                'fta_data'       => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
+            ]
         );
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
@@ -2855,8 +2898,13 @@ class RefundTest extends TestCase
                 'amount'     => 3471
             ],
             [
-                'speed' => 'optimum',
-                'is_fta' => true
+                'speed'    => 'optimum',
+                'is_fta'   => true,
+                'fta_data' => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
             ]
         );
 
@@ -2950,7 +2998,19 @@ class RefundTest extends TestCase
         $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
 
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
-        $refund = $this->refundPayment($payment['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
+        $refund = $this->refundPayment(
+            $payment['id'],
+            3471,
+            [
+                'speed'    => 'optimum',
+                'is_fta'   => true,
+                'fta_data' => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
+            ]
+        );
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
 
@@ -3058,7 +3118,19 @@ class RefundTest extends TestCase
                            ->willReturn($scroogeResponse);
 
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
-        $refund = $this->refundPayment($payment['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
+        $refund = $this->refundPayment(
+            $payment['id'],
+            3471,
+            [
+                'speed'    => 'optimum',
+                'is_fta'   => true,
+                'fta_data' => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
+            ]
+        );
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
 
@@ -3166,7 +3238,19 @@ class RefundTest extends TestCase
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
 
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
-        $refund = $this->refundPayment($upiPayment['id'], 3471, ['speed' => 'optimum', 'is_fta' => true, 'fta_data' => ['vpa' => ['address' => $paymentEntity->getVpa()]]]);
+        $refund = $this->refundPayment(
+            $upiPayment['id'],
+            3471,
+            [
+                'speed'    => 'optimum',
+                'is_fta'   => true,
+                'fta_data' => [
+                    'vpa' => [
+                        'address' => $paymentEntity->getVpa()
+                    ]
+                ]
+            ]
+        );
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
 
@@ -3222,7 +3306,19 @@ class RefundTest extends TestCase
 
         // Adding specific amount to refund - this is meant to test failed refunds on scrooge -
         // in which case we have reversal of refund transactions as well
-        $refund = $this->refundPayment($upiPayment['id'], 3470, ['speed' => 'optimum', 'is_fta' => true, 'fta_data' => ['vpa' => ['address' => $paymentEntity->getVpa()]]]);
+        $refund = $this->refundPayment(
+            $upiPayment['id'],
+            3470,
+            [
+                'speed'    => 'optimum',
+                'is_fta'   => true,
+                'fta_data' => [
+                    'vpa' => [
+                        'address' => $paymentEntity->getVpa()
+                    ]
+                ]
+            ]
+        );
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
 
@@ -3383,7 +3479,19 @@ class RefundTest extends TestCase
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
 
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
-        $refund = $this->refundPayment($payment['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
+        $refund = $this->refundPayment(
+            $payment['id'],
+            3471,
+            [
+                'speed'    => 'optimum',
+                'is_fta'   => true,
+                'fta_data' => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
+            ]
+        );
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
 
@@ -3481,7 +3589,19 @@ class RefundTest extends TestCase
 
         // Adding specific amount to refund - this is meant to test failed refunds on scrooge -
         // in which case we have reversal of refund transactions as well
-        $refund = $this->refundPayment($payment['id'], 3470, ['speed' => 'optimum', 'is_fta' => true]);
+        $refund = $this->refundPayment(
+            $payment['id'],
+            3470,
+            [
+                'speed'    => 'optimum',
+                'is_fta'   => true,
+                'fta_data' => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
+            ]
+        );
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
 
@@ -3597,7 +3717,19 @@ class RefundTest extends TestCase
 
         // Adding specific amount to refund - this is meant to test failed refunds on scrooge -
         // in which case we have reversal of refund transactions as well
-        $refund = $this->refundPayment($payment['id'], 3470, ['speed' => 'optimum', 'is_fta' => true]);
+        $refund = $this->refundPayment(
+            $payment['id'],
+            3470,
+            [
+                'speed'    => 'optimum',
+                'is_fta'   => true,
+                'fta_data' => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
+            ]
+        );
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
 
@@ -3701,7 +3833,19 @@ class RefundTest extends TestCase
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
 
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
-        $refund = $this->refundPayment($payment['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
+        $refund = $this->refundPayment(
+            $payment['id'],
+            3471,
+            [
+                'speed'    => 'optimum',
+                'is_fta'   => true,
+                'fta_data' => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
+            ]
+        );
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
 
@@ -3786,16 +3930,17 @@ class RefundTest extends TestCase
             $netbankingPayment['id'],
             3471,
             [
-                'speed' => 'optimum',
-                'is_fta' => true,
+                'speed'    => 'optimum',
+                'is_fta'   => true,
                 'fta_data' => [
                     'bank_account' => [
-                        'account_number' => '987654321234567',
+                        'account_number'   => '987654321234567',
                         'beneficiary_name' => 'Not Availabe',
-                        'ifsc_code' => 'RATN0000999',
+                        'ifsc_code'        => 'RATN0000999',
                     ]
                 ]
-            ]);
+            ]
+        );
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
 
@@ -3881,7 +4026,19 @@ class RefundTest extends TestCase
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
 
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
-        $refund = $this->refundPayment($payment['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
+        $refund = $this->refundPayment(
+            $payment['id'],
+            3471,
+            [
+                'speed'    => 'optimum',
+                'is_fta'   => true,
+                'fta_data' => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
+            ]
+        );
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
 
@@ -3939,8 +4096,8 @@ class RefundTest extends TestCase
         $bankAccountData =
             [
                 'bank_account' => [
-                    'ifsc_code' => '12345678911',
-                    'account_number' => '123456789',
+                    'ifsc_code'        => '12345678911',
+                    'account_number'   => '123456789',
                     'beneficiary_name' => 'test'
                 ]
             ];
@@ -4001,7 +4158,16 @@ class RefundTest extends TestCase
         $refund = $this->refundPayment(
             $payment['id'],
             3471,
-            ['speed' => 'optimum', 'is_fta' => true, 'mode_requested' => 'NEFT']
+            [
+                'speed'          => 'optimum',
+                'is_fta'         => true,
+                'mode_requested' => 'NEFT',
+                'fta_data' => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
+            ]
         );
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
@@ -4031,7 +4197,13 @@ class RefundTest extends TestCase
 
         $this->enableRazorXTreatmentForRazorXRefund();
 
-        $response = $this->refundPayment($payment['id'], $payment['amount'], ['is_fta' => true]);
+        $response = $this->refundPayment(
+            $payment['id'],
+            $payment['amount'],
+            [
+                'is_fta' => true
+            ]
+        );
 
         $refund  = $this->getLastEntity('refund', true);
 
@@ -4351,7 +4523,19 @@ class RefundTest extends TestCase
         $this->fixtures->pricing->createInstantRefundsModeLevelPricingPlan();
 
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
-        $refund = $this->refundPayment($payment['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
+        $refund = $this->refundPayment(
+            $payment['id'],
+            3471,
+            [
+                'speed'    => 'optimum',
+                'is_fta'   => true,
+                'fta_data' => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
+            ]
+        );
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
 
@@ -4436,7 +4620,19 @@ class RefundTest extends TestCase
         $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
 
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
-        $refund = $this->refundPayment($payment['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
+        $refund = $this->refundPayment(
+            $payment['id'],
+            3471,
+            [
+                'speed'    => 'optimum',
+                'is_fta'   => true,
+                'fta_data' => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
+            ]
+        );
 
         $refund = $this->getLastEntity('refund', true);
 
@@ -4470,7 +4666,19 @@ class RefundTest extends TestCase
         $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
 
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
-        $refund = $this->refundPayment($payment['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
+        $refund = $this->refundPayment(
+            $payment['id'],
+            3471,
+            [
+                'speed'    => 'optimum',
+                'is_fta'   => true,
+                'fta_data' => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
+            ]
+        );
 
         $refund = $this->getLastEntity('refund', true);
 
@@ -4534,7 +4742,12 @@ class RefundTest extends TestCase
             [
                 'speed'          => 'optimum',
                 'is_fta'         => true,
-                'mode_requested' => 'IMPS'
+                'mode_requested' => 'IMPS',
+                'fta_data'       => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
             ]
         );
 
@@ -4691,7 +4904,16 @@ class RefundTest extends TestCase
         $refund = $this->refundPayment(
             $payment['id'],
             3471,
-            ['speed' => 'optimum', 'is_fta' => true, 'mode_requested' => 'CT']
+            [
+                'speed'          => 'optimum',
+                'is_fta'         => true,
+                'mode_requested' => 'CT',
+                'fta_data'       => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
+            ]
         );
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
@@ -4718,7 +4940,16 @@ class RefundTest extends TestCase
         $refund = $this->refundPayment(
             $payment['id'],
             3471,
-            ['speed' => 'optimum', 'is_fta' => true, 'mode_requested' => 'CT']
+            [
+                'speed'          => 'optimum',
+                'is_fta'         => true,
+                'mode_requested' => 'CT',
+                'fta_data'       => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
+            ]
         );
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
@@ -4779,7 +5010,14 @@ class RefundTest extends TestCase
         $vpaData = ['vpa' => ['address' => $paymentEntity->getVpa()]];
 
         // Adding specific amount to refund - this is meant to test successful refunds on scrooge
-        $refund = $this->refundPayment($upiPayment['id'], 4000, ['is_fta' => true, 'fta_data' => $vpaData]);
+        $refund = $this->refundPayment(
+            $upiPayment['id'],
+            4000,
+            [
+                'is_fta'   => true,
+                'fta_data' => $vpaData
+            ]
+        );
 
         $refundEntity = $this->getDbLastEntity('refund');
 
@@ -4914,7 +5152,14 @@ class RefundTest extends TestCase
         $vpaData = ['vpa' => ['address' => $paymentEntity->getVpa()]];
 
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
-        $refund = $this->refundPayment($upiPayment['id'], 3948, ['is_fta' => true, 'fta_data' => $vpaData]);
+        $refund = $this->refundPayment(
+            $upiPayment['id'],
+            3948,
+            [
+                'is_fta'   => true,
+                'fta_data' => $vpaData
+            ]
+        );
 
         $this->assertEquals($vpaData, $scroogeInput['fta_data']);
 
