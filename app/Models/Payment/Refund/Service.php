@@ -425,7 +425,8 @@ class Service extends Base\Service
      *           }
      *       },
      *   "extra_data":[
-     *       "ifsc_code"
+     *       "ifsc_code",
+     *       "is_fta_only_refund"
      *   ]
      *   "refund_ids":["C6rXXXXXXXX43","C6rQQL1KTvb43"]
      * }
@@ -466,7 +467,8 @@ class Service extends Base\Service
      *            }
      *        }
      *       "extra_data": {
-     *           "ifsc_code": "HDFC0000001"
+     *           "ifsc_code": "HDFC0000001",
+     *           "is_fta_only_refund": true
      *       }
      *    }
      * }
@@ -668,6 +670,11 @@ class Service extends Base\Service
         $bank = (empty($refund->payment->getBank()) === false) ? $refund->payment->getBank() : '';
 
         return BankCodes::getIfscForBankCode($bank);
+    }
+
+    protected function getExtraDataIsFtaOnlyRefund(Entity $refund) : bool
+    {
+        return $this->getNewProcessor($refund->merchant)->refundViaFtaOnly($refund->payment);
     }
 
     public function fetchMultiple($input)

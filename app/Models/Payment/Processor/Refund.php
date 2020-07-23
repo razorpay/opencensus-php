@@ -2645,16 +2645,8 @@ trait Refund
             return true;
         }
 
-        // Certain types of payments have refunds routed via bank transfers
-        if (($payment->isBankTransfer() === true) or
-            ($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true) or
-            ($this->isPaymentTpvAndBankTransferRefund($payment) === true) or
-            ($this->isPaymentNachAndNachRefundGateway($payment) === true))
-        {
-            return true;
-        }
-
-        return false;
+        // Certain types of payments have refunds routed via fund transfers
+        return $this->refundToBankAccountViaFta($payment);
     }
 
     protected function isPaymentEmandateAndEmandateRefundGateway(Payment\Entity $payment): bool
@@ -2938,46 +2930,49 @@ trait Refund
         {
             $input = $data['bank_account'];
         }
-        else if ($payment->isBankTransfer() === true)
+        else if ($this->refundToBankAccountViaFta($payment) === true)
         {
-            $paymentId = $payment->getId();
-
-            // https://github.com/razorpay/api/pull/9612/files#diff-45d61a7b834fae07d62a86dd461e5940R1697
-            if ($paymentId === 'AQNG7kHM5tfk4G')
+            if ($payment->isBankTransfer() === true)
             {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
-                    $input);
+                $paymentId = $payment->getId();
+
+                // https://github.com/razorpay/api/pull/9612/files#diff-45d61a7b834fae07d62a86dd461e5940R1697
+                if ($paymentId === 'AQNG7kHM5tfk4G')
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
+                        $input);
+                }
+
+                $bankTransfer = $this->repo->bank_transfer->findByPaymentId($paymentId);
+
+                $input = (new BankTransfer\Core)->getAccountForRefund($bankTransfer);
             }
+            else if ($this->isPaymentTpvAndBankTransferRefund($payment) === true)
+            {
+                $order = $payment->order;
 
-            $bankTransfer = $this->repo->bank_transfer->findByPaymentId($paymentId);
+                $input = (new Order\Core)->getAccountForRefund($order);
+            }
+            else if (($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true) or
+                ($this->isPaymentNachAndNachRefundGateway($payment) === true))
+            {
+                $customerName = $this->getFormattedCustomerNameFromPayment($payment);
 
-            $input = (new BankTransfer\Core)->getAccountForRefund($bankTransfer);
-        }
-        else if ($this->isPaymentTpvAndBankTransferRefund($payment) === true)
-        {
-            $order = $payment->order;
+                $token = $payment->getGlobalOrLocalTokenEntity();
 
-            $input = (new Order\Core)->getAccountForRefund($order);
-        }
-        else if (($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true) or
-            ($this->isPaymentNachAndNachRefundGateway($payment) === true))
-        {
-            $customerName = $this->getFormattedCustomerNameFromPayment($payment);
+                $input[BankAccount\Entity::IFSC_CODE]          = $token->getIfsc();
+                $input[BankAccount\Entity::ACCOUNT_NUMBER]     = $token->getAccountNumber();
+                $input[BankAccount\Entity::BENEFICIARY_NAME]   = $customerName;
+            }
+            else if ($this->isPaymentUpiTransferAndUpiTransferRefund($payment) === true)
+            {
+                $customerName = $this->getFormattedCustomerNameFromPayment($payment);
 
-            $token = $payment->getGlobalOrLocalTokenEntity();
-
-            $input[BankAccount\Entity::IFSC_CODE]          = $token->getIfsc();
-            $input[BankAccount\Entity::ACCOUNT_NUMBER]     = $token->getAccountNumber();
-            $input[BankAccount\Entity::BENEFICIARY_NAME]   = $customerName;
-        }
-        else if ($this->isPaymentUpiTransferAndUpiTransferRefund($payment))
-        {
-            $customerName = $this->getFormattedCustomerNameFromPayment($payment);
-
-            $input[BankAccount\Entity::IFSC_CODE]          = $payment->upiTransfer->getPayerIfsc();
-            $input[BankAccount\Entity::ACCOUNT_NUMBER]     = $payment->upiTransfer->getPayerAccount();
-            $input[BankAccount\Entity::BENEFICIARY_NAME]   = $customerName;
+                $input[BankAccount\Entity::IFSC_CODE]          = $payment->upiTransfer->getPayerIfsc();
+                $input[BankAccount\Entity::ACCOUNT_NUMBER]     = $payment->upiTransfer->getPayerAccount();
+                $input[BankAccount\Entity::BENEFICIARY_NAME]   = $customerName;
+            }
         }
 
         if ((isset($input[BankAccount\Entity::IFSC_CODE]) === true) and
@@ -2989,6 +2984,15 @@ trait Refund
         }
 
         return $input;
+    }
+
+    protected function refundToBankAccountViaFta(Payment\Entity $payment) : bool
+    {
+        return (($payment->isBankTransfer() === true) or
+            ($this->isPaymentTpvAndBankTransferRefund($payment) === true) or
+            ($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true) or
+            ($this->isPaymentNachAndNachRefundGateway($payment) === true) or
+            ($this->isPaymentUpiTransferAndUpiTransferRefund($payment) === true));
     }
 
     protected function getFormattedCustomerNameFromPayment(Payment\Entity $payment)
@@ -3009,16 +3013,16 @@ trait Refund
     {
         $input = null;
 
-        if ($this->isUpiPaymentAndFtaFlow($payment) === true)
+        if (isset($data[RefundConstants::VPA]) === true)
         {
-            $input[RefundConstants::VPA_ADDRESS] = $payment->getVpa();
+            $input = $data[RefundConstants::VPA];
 
             return $input;
         }
 
-        if (isset($data[RefundConstants::VPA]) === true)
+        if ($this->refundToUpiViaFta($payment) === true)
         {
-            $input = $data[RefundConstants::VPA];
+            $input[RefundConstants::VPA_ADDRESS] = $payment->getVpa();
 
             return $input;
         }
@@ -3049,7 +3053,7 @@ trait Refund
         return $input;
     }
 
-    protected function isUpiPaymentAndFtaFlow(Payment\Entity $payment): bool
+    protected function refundToUpiViaFta(Payment\Entity $payment): bool
     {
         if ($payment->isUpi() === true)
         {
@@ -3069,11 +3073,17 @@ trait Refund
         return false;
     }
 
+    public function refundViaFtaOnly(Payment\Entity $payment): bool
+    {
+        return (($this->refundToUpiViaFta($payment) === true) or
+            ($this->refundToBankAccountViaFta($payment) === true));
+    }
+
     protected function isPaymentCapturedAndUpiOtmGateway(Payment\Entity $payment): bool
     {
         if (($payment->isUpi() === true) and
             ($payment->isGatewayCaptured() === true) and
-            (Payment\Gateway::isUpiOtmSupportedGateway($payment->getGateway())))
+            (Payment\Gateway::isUpiOtmSupportedGateway($payment->getGateway()) === true))
         {
             $upiMetadataEntity = $this->repo->upi_metadata->fetchByPaymentId($payment->getId());
 

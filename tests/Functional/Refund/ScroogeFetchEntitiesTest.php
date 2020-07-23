@@ -184,6 +184,9 @@ class ScroogeFetchEntitiesTest extends TestCase
                     'category'
                 ]
             ],
+            'extra_data' => [
+                'is_fta_only_refund'
+            ]
         ];
 
         $expectedOutput = [
@@ -197,6 +200,9 @@ class ScroogeFetchEntitiesTest extends TestCase
                         'gateway_acquirer' => 'hdfc',
                         'category' => NULL
                     ]
+                ],
+                'extra_data' => [
+                    'is_fta_only_refund' => false
                 ]
             ],
             substr($subTestArgs['refund2']['id'], 5) => [
@@ -209,6 +215,9 @@ class ScroogeFetchEntitiesTest extends TestCase
                         'gateway_acquirer' => 'hdfc',
                         'category' => NULL
                     ]
+                ],
+                'extra_data' => [
+                    'is_fta_only_refund' => false
                 ]
             ]
         ];
@@ -228,6 +237,9 @@ class ScroogeFetchEntitiesTest extends TestCase
                     'provider'
                 ]
             ],
+            'extra_data' => [
+                'is_fta_only_refund'
+            ]
         ];
 
         $expectedOutput = [
@@ -237,6 +249,9 @@ class ScroogeFetchEntitiesTest extends TestCase
                         'type' => NULL,
                         'provider' => NULL
                     ]
+                ],
+                'extra_data' => [
+                    'is_fta_only_refund' => false
                 ]
             ]
         ];
@@ -263,6 +278,11 @@ class ScroogeFetchEntitiesTest extends TestCase
 
         $upiMetadata->save();
 
+        $this->fixtures->payment->edit(substr($subTestArgs['refund1']['payment_id'], 4), [
+            'method' => 'upi',
+            'gateway' => 'upi_mindgate',
+        ]);
+
         $input = [
             'refund_ids' => [
                 substr($subTestArgs['refund1']['id'], 5)
@@ -273,6 +293,9 @@ class ScroogeFetchEntitiesTest extends TestCase
                     'provider'
                 ]
             ],
+            'extra_data' => [
+                'is_fta_only_refund'
+            ]
         ];
 
         $expectedOutput = [
@@ -282,6 +305,9 @@ class ScroogeFetchEntitiesTest extends TestCase
                         'type' => 'otm',
                         'provider' => NULL
                     ]
+                ],
+                'extra_data' => [
+                    'is_fta_only_refund' => true
                 ]
             ]
         ];
@@ -365,6 +391,38 @@ class ScroogeFetchEntitiesTest extends TestCase
         ];
 
         $expectedOutput = [];
+
+        return [$input, $expectedOutput];
+    }
+
+    public function scroogeFetchEntitiesSubTest9($subTestArgs) : array
+    {
+        $this->fixtures->payment->edit(substr($subTestArgs['refund1']['payment_id'], 4), [
+            'method' => 'bank_transfer'
+        ]);
+
+        $input = [
+            'refund_ids' => [
+                substr($subTestArgs['refund1']['id'], 5),
+                substr($subTestArgs['refund2']['id'], 5),
+            ],
+            'extra_data' => ['ifsc_code', 'is_fta_only_refund'],
+        ];
+
+        $expectedOutput = [
+            substr($subTestArgs['refund1']['id'], 5) => [
+                'extra_data' => [
+                    'ifsc_code' => 'HDFC0000001',
+                    'is_fta_only_refund' => true
+                ]
+            ],
+            substr($subTestArgs['refund2']['id'], 5) => [
+                'extra_data' => [
+                    'ifsc_code' => 'HDFC0000001',
+                    'is_fta_only_refund' => true
+                ]
+            ]
+        ];
 
         return [$input, $expectedOutput];
     }
