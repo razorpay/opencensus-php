@@ -45,6 +45,10 @@ class CacheQueryBuilder extends RememberableQueryBuilder
 
         try
         {
+            // set custom prefix for query cache key. This is created from default
+            // prefix and cache tags
+            $this->prefix($this->getKeyPrefix());
+
             return parent::getCached($columns);
         }
         catch (\Throwable $e)
@@ -75,6 +79,10 @@ class CacheQueryBuilder extends RememberableQueryBuilder
 
         try
         {
+            // set custom prefix for query cache key. This is created from default
+            // prefix and cache tags
+            $this->prefix($this->getKeyPrefix());
+
             return parent::pluckCached($column, $key);
         }
         catch (\Throwable $e)
@@ -141,5 +149,13 @@ class CacheQueryBuilder extends RememberableQueryBuilder
         }
 
         return true;
+    }
+
+    protected function getKeyPrefix(): string
+    {
+        // this is needed to ensure all query cache keys related to a entity
+        // go to one hash slot, so that while flushing all the keys, RedisTaggedCache
+        // can delete all keys in 1 command
+        return $this->cachePrefix . ':{' . $this->cacheTags . '}' ;
     }
 }

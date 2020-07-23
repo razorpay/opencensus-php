@@ -389,8 +389,8 @@ jobs:
         DB_UPI_PAYMENTS_TEST_HOST: mysql
         REDIS_HOST: redis
         REDIS_LABS_HOST: redis
-        QUERY_CACHE_REDIS_HOST: redis
-        QUERY_CACHE_REDIS_PORT: 6379
+        QUERY_CACHE_REDIS_HOST: redis-cluster
+        QUERY_CACHE_REDIS_PORT: 7000
         MUTEX_REDIS_HOST: redis
         MUTEX_REDIS_PORT: 6379
         THROTTLE_REDIS_HOST: redis
@@ -400,6 +400,8 @@ jobs:
     services:
       redis:
         image: redis
+      redis-cluster:
+        image: grokzen/redis-cluster:5.0.9
       mysql:
         image: mysql:5.7
         env:
