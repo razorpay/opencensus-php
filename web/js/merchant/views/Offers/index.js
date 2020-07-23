@@ -143,7 +143,7 @@ export default class OfferIndex extends Component {
                             );
                           }}
                         >
-                          Create No Cost Emi
+                          Create No Cost EMI
                         </span>
                       </NavLink>
                     </ShowWhen>
