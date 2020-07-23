@@ -441,7 +441,8 @@ class Validator extends Base\Validator
         Entity::VISA_MPAN                  => 'sometimes|string|size:16',
         Entity::RUPAY_MPAN                 => 'sometimes|string|size:16',
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
-        Entity::IFSC_CODE                  => 'sometimes|string|size:11'
+        Entity::IFSC_CODE                  => 'sometimes|string|size:11',
+        Entity::STATUS                     => 'sometimes|string|in:deactivated,activated',
     ];
 
     protected static $mpgsEditTerminalRules = [

@@ -781,8 +781,9 @@ class TerminalTest extends TestCase
     public function testEditHitachiDebitRecurringTerminal()
     {
         $attributes = [
-            'used' => true,
-            'type' => [
+            'used'   => true,
+            'status' => "activated",
+            'type'   => [
                 'recurring_non_3ds' => '1',
                 'recurring_3ds'     => '1',
             ],
@@ -798,11 +799,14 @@ class TerminalTest extends TestCase
                 'recurring_3ds'     => '1',
                 'debit_recurring'   => '1',
             ],
+            'status' => "deactivated",
         ];
 
         $content = $this->editTerminal($tid, $data);
 
         $this->assertEquals($content['type'], ['recurring_3ds', 'recurring_non_3ds', 'debit_recurring']);
+        $this->assertEquals($content['status'], "deactivated");
+
     }
 
     public function testEditCollectTerminal()
