@@ -204,6 +204,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
+        $this->fixtures->merchant->addFeatures(['ivr_disable']);
 
         $this->mockCardVault();
 

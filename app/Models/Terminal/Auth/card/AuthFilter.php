@@ -72,7 +72,7 @@ class AuthFilter extends Terminal\Auth\Base
 
     protected function canRunIvrFlow(Payment\Entity $payment): bool
     {
-        if (($payment->merchant->isFeatureEnabled(Feature\Constants::IVR) === true) and
+        if (($payment->merchant->isIvrEnabled() === true) and
             (is_null($payment->card) === false) and
             ($payment->card->iinRelation !== null) and
             ($this->isAuthTypeOtp($payment) === true) and

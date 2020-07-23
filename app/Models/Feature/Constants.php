@@ -240,7 +240,7 @@ class Constants
 
     // Payment authentication
     const ATM_PIN_AUTH                    = 'atm_pin_auth';
-    const IVR                             = 'ivr';
+    const IVR_DISABLE                     = 'ivr_disable';
 
     // Pre-Auth Shield Integration
     const PRE_AUTH_SHIELD_INTG          = 'pre_auth_shield_intg';
@@ -536,7 +536,6 @@ class Constants
         self::PL_FIRST_MIN_AMOUNT             => true,
         self::PL_HIDE_ISSUED_TO               => true,
         self::REPORTING_GENRERIC_NOTES        => true,
-        self::IVR                             => true,
         self::S2S_OTP_JSON                    => true,
         self::S2S_JSON                        => true,
         self::FUND_ACCOUNT_VALIDATIONS        => true,
@@ -615,6 +614,7 @@ class Constants
         self::BEPG                            => true,
         self::LOAN                            => true,
         self::USE_SETTLEMENT_ONDEMAND         => true,
+        self::IVR_DISABLE                     => true,
         self::BIN_API                         => true,
     ];
 

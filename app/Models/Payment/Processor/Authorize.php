@@ -1614,7 +1614,7 @@ trait Authorize
                       ($payment->card->iinRelation->supports(IIN\Flow::OTP) === false)) and
                      (($payment->merchant->isHeadlessEnabled() === false) or
                       ($payment->card->iinRelation->supports(IIN\Flow::HEADLESS_OTP) === false)) and
-                     (($payment->merchant->isFeatureEnabled(Feature\Constants::IVR) === false) or
+                     (($payment->merchant->isIvrEnabled() === false) or
                       ($payment->card->iinRelation->supports(IIN\Flow::IVR) === false))))
                 {
                     throw new Exception\BadRequestValidationFailureException(
@@ -5668,7 +5668,7 @@ trait Authorize
 
     protected function  canRunIvrFlow(Payment\Entity $payment)
     {
-        if (($payment->merchant->isFeatureEnabled(Feature\Constants::IVR) === true) and
+        if (($payment->merchant->isIvrEnabled() === true) and
             ($payment->card->iinRelation !== null) and
             ($this->isAuthTypeOtp($payment) === true) and
             ($payment->card->iinRelation->supports(IIN\Flow::IVR) === true))

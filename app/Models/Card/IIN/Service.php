@@ -257,6 +257,14 @@ class Service extends Base\Service
             $collectiveIins =  array_merge($collectiveIins, $iins);
         }
 
+        if (($exposedFlow === Flow::OTP) and
+            ($this->merchant->isIvrEnabled() === true))
+        {
+            $iins = $this->repo->iin->findIinsByFlows(Flow::$flows[Flow::IVR]);
+
+            $collectiveIins =  array_merge($collectiveIins, $iins);
+        }
+
         return array_values(array_unique($collectiveIins));
     }
 

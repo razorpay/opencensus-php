@@ -26,9 +26,9 @@ class Flow
 
     public static $featureToFlowMappings = [
         Flow::OTP => [
-            Feature::IVR               => Flow::IVR,
             Feature::AXIS_EXPRESS_PAY  => Flow::OTP,
             Feature::HEADLESS_DISABLE  => Flow::HEADLESS_OTP,
+            Feature::IVR_DISABLE       => Flow::IVR,
         ],
     ];
 

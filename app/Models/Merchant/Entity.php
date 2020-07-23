@@ -2167,7 +2167,8 @@ class Entity extends Base\PublicEntity
 
     public function isIvrEnabled() : bool
     {
-        return $this->isFeatureEnabled(Feature\Constants::IVR) === false;
+        return ($this->isHeadlessEnabled() === true) and
+                ($this->isFeatureEnabled(Feature\Constants::IVR_DISABLE) === false);
     }
 
     /**
