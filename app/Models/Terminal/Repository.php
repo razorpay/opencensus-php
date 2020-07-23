@@ -438,11 +438,11 @@ class Repository extends Base\Repository
     public function getUpiRecurringTerminalsByMid($mid)
     {
         $query = $this->newQuery()
-            ->whereIn(Entity::GATEWAY, Payment\Gateway::$upiRecurringGateways)
-            ->type([Terminal\Type::RECURRING_3DS])
-            ->enabled();
+                      ->whereIn(Entity::GATEWAY, Payment\Gateway::$upiRecurringGateways)
+                      ->type([Terminal\Type::RECURRING_3DS])
+                      ->enabled();
 
-        $this->addMerchantWhereCondition($query, [$mid]);
+        $this->addMerchantWhereCondition($query, [$mid, Account::SHARED_ACCOUNT]);
 
         return $query->first();
     }
