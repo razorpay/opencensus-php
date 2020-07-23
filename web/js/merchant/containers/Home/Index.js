@@ -32,7 +32,7 @@ import InstantActivationSuccess from 'merchant/components/Home/InstantActivation
 import PANVerificationStatusModal from 'merchant/components/Home/PANVerificationStatusModal';
 import KYCStatusModal from 'merchant/components/Home/KYCStatusModal';
 import KycDetailsModal from 'merchant/components/Home/KycDetailsModal';
-
+import { fetchLateAuthConfig } from 'merchant/reducers/config';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { switchToMode } from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
 import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
@@ -98,6 +98,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
       kycStatusModalType: state.home.kycStatusModalType,
       settlement_amount: state.home.settlement_amount,
       virtualAccounts: state.virtualaccounts,
+      lateAuthConfig: state.config.lateAuthConfig,
     };
   },
   {
@@ -106,6 +107,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
     showNotification,
     fetchPayments,
     fetchVirtualAccounts,
+    fetchLateAuthConfig,
   }
 )
 @RTracking(() => window.rzpQ.component('HomeContainer'))
@@ -497,6 +499,7 @@ export default class HomeContainer extends Component {
   componentDidMount() {
     this.props.fetchSettlementAmount();
     this.props.fetchBalanceConfig();
+    this.props.fetchLateAuthConfig();
     this.setScrollAmountToStickHeader();
 
     window.addEventListener('resize', this.onResize);
@@ -644,6 +647,7 @@ export default class HomeContainer extends Component {
       kycStatusModalType,
       settlement_amount,
       merchantBalanceConfigs,
+      lateAuthConfig,
     } = this.props;
 
     const { activation_flow } = user;
@@ -708,6 +712,7 @@ export default class HomeContainer extends Component {
       trafficSectionTitle,
       settlement_amount,
       merchantBalanceConfigs,
+      lateAuthConfig,
     };
 
     const { dismissDiwaliPromotion, hideDiwaliPromotion } = this.state;

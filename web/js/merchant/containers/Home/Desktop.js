@@ -77,6 +77,19 @@ class AnalyticsDesktop extends Component {
     });
   }
 
+  isCaptureSettingsDefault = items => {
+    if (!items) return false;
+    else {
+      if (items[0]) {
+        // check for created_at & updated_at in config
+        const config = items[0];
+        const isSame = moment(config.created_at).isSame(config.updated_at);
+        // If both created_at & updated_at are same, only then show banner
+        return isSame;
+      } else return false;
+    }
+  };
+
   render() {
     const {
       mode,
@@ -110,9 +123,10 @@ class AnalyticsDesktop extends Component {
       recentActivityTitle,
       trafficSectionTitle,
       merchantBalanceConfigs,
+      lateAuthConfig,
     } = this.props;
 
-    const { settlement_ux_revamp } = config.config;
+    const { data: { items } } = lateAuthConfig;
 
     const hasSecondaryBanner =
       showInstantActivation && config.config && !config.config.hasPersonalised;
@@ -146,6 +160,21 @@ class AnalyticsDesktop extends Component {
 
           {showInstantActivation && (
             <Announcement mode={mode} user={user} payments={payments} />
+          )}
+
+          {this.isCaptureSettingsDefault(items) && (
+            <AnnouncementBanner
+              title="Capture Settings"
+              theme="success"
+              canBeClosed={true}
+            >
+              Currently all payments with order id are being captured by
+              default, click{' '}
+              <Link to={'/config'} target="_blank">
+                here
+              </Link>{' '}
+              to configure your capture setting.
+            </AnnouncementBanner>
           )}
 
           {current_balance.data.balance < 0 && (
