@@ -37,6 +37,7 @@ class Factory
 
         throw new LogicException(
             ErrorCode::INVALID_ARGUMENT_INVALID_INTERNATIONAL_ACTIVATION_FLOW,
+            null,
             [Detail\Entity::INTERNATIONAL_ACTIVATION_FLOW => $internationalActivationFlow]);
     }
 }
