@@ -44,4 +44,5 @@ final class Es
     const MULTI_MATCH          = 'multi_match';
     const BEST_FIELDS          = 'best_fields';
     const MINIMUM_SHOULD_MATCH = 'minimum_should_match';
+    const TOTAL                = 'total';
 }

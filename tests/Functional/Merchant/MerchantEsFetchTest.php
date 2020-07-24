@@ -76,6 +76,37 @@ class MerchantEsFetchTest extends TestCase
             ]);
     }
 
+    public function testGetMerchantsFromEsWithCountAndSkip()
+    {
+
+        $requestToken = $this->getAdminRequestToken('10000000000014');
+
+        $this->ba->adminAuth("test", $requestToken);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $response = $this->startTest($testData);
+
+        $this->assertEsFetchResults([
+            '10000000000012',
+        ], $response);
+    }
+
+    public function testGetMerchantsFromEsWithCount()
+    {
+
+        $requestToken = $this->getAdminRequestToken('10000000000014');
+
+        $this->ba->adminAuth("test", $requestToken);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $response = $this->startTest($testData);
+
+        $this->assertEsFetchResults([
+            '10000000000011',
+        ], $response);
+    }
 
 
     public function testGetMerchantsFromEsByQForAdmin15()

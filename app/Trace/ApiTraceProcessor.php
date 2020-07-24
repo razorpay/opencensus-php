@@ -420,7 +420,10 @@ class ApiTraceProcessor
         {
             $traceId = $this->app->request->headers->get(RequestHeader::X_REQUEST_TRACE_ID);
 
-            $record['request']['x_request_trace_id'] = $traceId;
+            if(empty($traceId) === false)
+            {
+                $record['request']['x_request_trace_id'] = $traceId;
+            }
         }
     }
 }

@@ -222,7 +222,7 @@ class Repository extends Base\Repository
         // such thing.
         if (count($esParams) > 0)
         {
-            return $this->runEsFetch($esParams, $merchantId, $expands);
+            return $this->runEsFetch($esParams, $expands, $merchantId);
         }
 
         // If above doesn't happen we build query for mysql fetch and return the
