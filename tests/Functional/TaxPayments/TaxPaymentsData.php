@@ -375,4 +375,14 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
+
+    'testBulkPayTaxPaymentCallsServiceMethod'                   => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/tax-payments/bulk-pay',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];

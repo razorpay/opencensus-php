@@ -1038,6 +1038,7 @@ class Route
 
         // Tax Payments
         'tax_payments_pay'                         => ['post',    'tax-payments/{id}/pay',                           'TaxPaymentController@payTaxPayment'                                ],
+        'tax_payments_bulk_pay'                    => ['post',    'tax-payments/bulk-pay',                           'TaxPaymentController@bulkPayTaxPayment'                            ],
         'tax_payments_get_all_settings'            => ['get',     'tax-payments/settings/',                          'TaxPaymentController@getAllSettings'                               ],
         'tax_payments_add_or_update_settings'      => ['post',    'tax-payments/settings/',                          'TaxPaymentController@addOrUpdateSettings'                          ],
         'tax_payments_list'                        => ['get',     'tax-payments/',                                    'TaxPaymentController@listTaxPayments'                             ],
@@ -2864,6 +2865,7 @@ class Route
 
         // tax payment routes
         'tax_payments_pay',
+        'tax_payments_bulk_pay',
         'tax_payments_get_all_settings',
         'tax_payments_add_or_update_settings',
         'merchant_credits_balance_fetch',
@@ -4405,6 +4407,7 @@ class Route
 
         // tax payment permission
         'tax_payments_pay'                             => '*',
+        'tax_payments_bulk_pay'                        => '*',
         'tax_payments_get_all_settings'                => '*',
         'tax_payments_add_or_update_settings'          => '*',
         'tax_payments_list'                            => '*',
@@ -5139,6 +5142,7 @@ class Route
         'vendor_payment_bulk_cancel'           => [Feature::RX_VENDOR_PAYMENTS],
         'vendor_payment_execute'               => [Feature::RX_VENDOR_PAYMENTS],
         'tax_payments_pay'                     => [Feature::RX_VENDOR_PAYMENTS],
+        'tax_payments_bulk_pay'                => [Feature::RX_VENDOR_PAYMENTS],
         'tax_payments_get_all_settings'        => [Feature::RX_VENDOR_PAYMENTS],
         'tax_payments_add_or_update_settings'  => [Feature::RX_VENDOR_PAYMENTS],
         'tax_payments_list'                    => [Feature::RX_VENDOR_PAYMENTS],
@@ -5460,6 +5464,7 @@ class Route
         'on_demand_settlement',
 
         'tax_payments_pay',
+        'tax_payments_bulk_pay',
         'tax_payments_get_all_settings',
         'tax_payments_add_or_update_settings',
         'tax_payments_list',

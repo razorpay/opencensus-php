@@ -5,7 +5,6 @@ namespace RZP\Tests\Functional\TaxPayments;
 use App;
 use Mockery;
 use RZP\Models\Contact\Type;
-use RZP\Models\Contact\Entity;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
@@ -246,6 +245,21 @@ class TaxPaymentTests extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
 
         $this->startTest();
+    }
+
+    public function testBulkPayTaxPaymentCallsServiceMethod()
+    {
+        $this->ba->proxyAuth();
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+
+        $tpMock->shouldReceive('bulkPayTaxPayment')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('bulkPayTaxPayment');
     }
 
     public function testPayoutInternalPayoutRouteFailsWhenFundAccountIdMissing()

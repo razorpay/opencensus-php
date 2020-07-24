@@ -4,9 +4,6 @@ namespace RZP\Http\Controllers;
 
 use Mail;
 use ApiResponse;
-use RZP\Trace\TraceCode;
-use RZP\Mail\VendorPayments\Unpaid;
-use RZP\Models\User\Core as UserCore;
 
 class TaxPaymentController extends Controller
 {
@@ -23,6 +20,13 @@ class TaxPaymentController extends Controller
                                              $taxPaymentId,
                                              $this->input,
                                              $this->ba->getUser());
+    }
+
+    public function bulkPayTaxPayment()
+    {
+        return $this->service->bulkPayTaxPayment($this->ba->getMerchant(),
+                                                 $this->input,
+                                                 $this->ba->getUser());
     }
 
     public function listTaxPayments()
