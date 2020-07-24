@@ -134,7 +134,7 @@ Route::group(['middleware' => ['web']], function () {
         // Send Feedback Mail to support@razorpay.com
         Route::post('/sendfeedback', 'MerchantController@sendFeedback')->name('send_feedback');
 
-        Route::get('/reports/{log_id}', 'MerchantController@downloadReport');
+        Route::get('/reports/{log_id}', 'MerchantController@downloadReport')->name('report_download');
 
         Route::get('ufh/file/{file_id}', 'MerchantController@downloadFileFromUFH');
 
