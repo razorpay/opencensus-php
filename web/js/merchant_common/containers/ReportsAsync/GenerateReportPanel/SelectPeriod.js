@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 import Input from 'common/new-ui/Input';
 import { isNone } from 'common/utils/rzp-utils';
 
@@ -6,9 +8,11 @@ import { getTimeUnix, getStartAndEndUnixTimeStampsForDaysFrom } from '../utils';
 const DEFAULT_SELECTED_DATE = moment()
   .subtract(1, 'day')
   .startOf('day');
-const DEFAULT_SELECTED_END_AT = moment().endOf('day');
-const DEFAULT_SELECTED_START_AT = moment()
+const DEFAULT_SELECTED_END_AT = moment()
   .subtract(1, 'day')
+  .endOf('day');
+const DEFAULT_SELECTED_START_AT = moment()
+  .subtract(2, 'day')
   .startOf('day');
 const DEFAULT_SELECTED_MONTH = moment()
   .subtract(1, 'month')
@@ -78,6 +82,8 @@ export default class SelectPeriod extends React.Component {
     const { selectedPeriod, ...values } = this.state.values;
     let startTime, endTime;
     switch (selectedPeriod) {
+      case 'today':
+        return getStartAndEndUnixTimeStampsForDaysFrom(0, moment());
       case 'yesterday':
         return getStartAndEndUnixTimeStampsForDaysFrom(0);
 
@@ -152,6 +158,7 @@ export default class SelectPeriod extends React.Component {
               name="selectedPeriod"
               onChange={this.onChange}
               disabled={isFormDisabled}
+              defaultValue="yesterday"
             />
             {!isFormDisabled && (
               <PredefinedPeriodDurations selectedPeriod={selectedPeriod} />
@@ -209,6 +216,7 @@ function SelectInterval({
         <SelectSingleDay
           onDateChange={onDateChange}
           selectedDate={defaults.selectedDate}
+          allowToday={true}
         />
       );
     case 'dateRange':
@@ -224,7 +232,8 @@ function SelectInterval({
   return null;
 }
 
-function SelectMonth({ onDateChange, selectedMonth, name, allowToday = true }) {
+const currentMonth = moment().month();
+function SelectMonth({ onDateChange, selectedMonth, name }) {
   return (
     <Input.ToCalendar
       type="month"
@@ -235,7 +244,7 @@ function SelectMonth({ onDateChange, selectedMonth, name, allowToday = true }) {
       label="Select Month"
       class="Input--vTop"
       onChange={onDateChange}
-      allowToday={allowToday}
+      disabledDate={date => date.month() >= currentMonth}
     />
   );
 }
@@ -286,6 +295,7 @@ export function SelectRange({ selectedStartAt, selectedEndAt, ...props }) {
         placeholder="Start At"
         defaultValue={selectedStartAt}
         label="Start At"
+        allowToday={false}
         {...props}
       />
 
@@ -294,6 +304,7 @@ export function SelectRange({ selectedStartAt, selectedEndAt, ...props }) {
         placeholder="End At"
         defaultValue={selectedEndAt}
         label="End At"
+        allowToday={false}
         {...props}
       />
     </>

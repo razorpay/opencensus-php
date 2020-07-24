@@ -14,9 +14,29 @@ import {
   Description,
 } from './index';
 
+const now = moment();
 class CalendarWrapper extends React.Component {
   state = {
     value: this.props.defaultValue,
+  };
+
+  constructor(props) {
+    super(props);
+    this.disabedDateStrategy = this.getDisabledDateStrategy();
+  }
+
+  getDisabledDateStrategy = () => {
+    if (this.props.allowAllDates) {
+      return this.disabledInvalidDates;
+    } else if (this.props.disabledDate) {
+      if (this.props.disabledDate === 'function') {
+        return this.props.disabledDate;
+      }
+    } else if (this.props.disablePastDates) {
+      return this.disabledPastDates;
+    } else {
+      return this.disabledFutureDates;
+    }
   };
 
   getFormat() {
@@ -63,10 +83,11 @@ class CalendarWrapper extends React.Component {
 
     const isBefore2015 = current.year() < 2015;
     let isFuture;
+    const diffInDays = current.diff(date, 'days');
     if (this.props.allowToday) {
-      isFuture = current.diff(date) > 1;
+      isFuture = diffInDays > 0;
     } else {
-      isFuture = current.diff(date) >= 1;
+      isFuture = diffInDays >= 0;
     }
 
     return isBefore2015 || isFuture; // can not select future dates
@@ -81,14 +102,15 @@ class CalendarWrapper extends React.Component {
     const date = moment();
     date.startOf('day');
 
+    const isBefore2015 = current.year() < 2015;
     let isPast;
+    const diffInDays = current.diff(date, 'days');
     if (this.props.allowToday) {
-      isPast = current.diff(date) < 0;
+      isPast = diffInDays < 0;
     } else {
-      isPast = current.diff(date) <= 0;
+      isPast = diffInDays <= 0;
     }
 
-    const isBefore2015 = current.year() < 2015;
     return isBefore2015 || isPast; // can not select past dates
   };
 
@@ -114,13 +136,7 @@ class CalendarWrapper extends React.Component {
         <MonthCalendar
           locale={enUS}
           style={{ zIndex: 1000 }}
-          disabledDate={
-            this.props.allowAllDates
-              ? this.disabledInvalidDates
-              : this.props.disablePastDates
-                ? this.disabledPastDates
-                : this.disabledFutureDates
-          }
+          disabledDate={this.disabedDateStrategy}
         />
       );
     } else {
@@ -134,13 +150,7 @@ class CalendarWrapper extends React.Component {
           showDateInput={true}
           showToday={false}
           showClear={false}
-          disabledDate={
-            this.props.allowAllDates
-              ? this.disabledInvalidDates
-              : this.props.disablePastDates
-                ? this.disabledPastDates
-                : this.disabledFutureDates
-          }
+          disabledDate={this.disabedDateStrategy}
         />
       );
     }

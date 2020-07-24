@@ -216,6 +216,7 @@ export default class GenerateReportPanel extends React.PureComponent {
 }
 
 const defaultPeriodOptions = [
+  { label: 'Today', name: 'today' },
   { label: 'Yesterday', name: 'yesterday' },
   { label: 'Last 7 days', name: 'last_7_days' },
   { label: 'Last Month', name: 'last_month' },
@@ -225,6 +226,7 @@ const defaultPeriodOptions = [
 ];
 
 const dailyPeriodOptions = [
+  { label: 'Today', name: 'today' },
   { label: 'Yesterday', name: 'yesterday' },
   { label: 'Daily', name: 'daily' },
 ];
