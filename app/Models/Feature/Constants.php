@@ -298,6 +298,21 @@ class Constants
     const LOAN = 'loan';
 
     /**
+     * Gives access to loc service
+     */
+    const WITHDRAW_LOC = 'withdraw_loc';
+
+    /**
+     * Gives access to apply for line of credit service
+     */
+    const LOC_STAGE_1 = 'loc_stage_1';
+
+    /**
+     * Gives access to apply for line of credit service
+     */
+    const LOC_STAGE_2 = 'loc_stage_2';
+
+    /**
      * Flag to use settlement/ondemand route for ondemand settlement .
      */
     const USE_SETTLEMENT_ONDEMAND      = 'use_settlement_ondemand';
@@ -616,6 +631,9 @@ class Constants
         self::USE_SETTLEMENT_ONDEMAND         => true,
         self::IVR_DISABLE                     => true,
         self::BIN_API                         => true,
+        self::WITHDRAW_LOC                    => true,
+        self::LOC_STAGE_1                     => true,
+        self::LOC_STAGE_2                     => true,
     ];
 
     // Entity type constants
@@ -703,6 +721,21 @@ class Constants
         self::LOAN                      => [
             'feature'       => self::LOAN,
             'display_name'  => 'Loan',
+            'documentation' => '',
+        ],
+        self::WITHDRAW_LOC              => [
+            'feature'       => self::WITHDRAW_LOC,
+            'display_name'  => 'Withdraw Loc',
+            'documentation' => '',
+        ],
+        self::LOC_STAGE_1               => [
+            'feature'       => self::LOC_STAGE_1,
+            'display_name'  => 'Line of credit Stage 1',
+            'documentation' => '',
+        ],
+        self::LOC_STAGE_2               => [
+            'feature'       => self::LOC_STAGE_2,
+            'display_name'  => 'Line of credit Stage 2',
             'documentation' => '',
         ],
         self::PL_FIRST_MIN_AMOUNT       => [
@@ -813,6 +846,18 @@ class Constants
     ];
 
     /**
+     * Features that are dependant on other features.
+     * Dependency is checked when the merchant makes the request to update the features.
+     *
+     * @var array
+     */
+    public static $featureDependencyMap = [
+        self::LOC_STAGE_2         => [
+            self::LOC_STAGE_1
+        ],
+    ];
+
+    /**
      * Features that merchants can enable/disable
      * Must be defined in the visibleFeaturesMap
      * The features defined here which are a part of the PRODUCT_FEATURES array,
@@ -827,7 +872,8 @@ class Constants
         self::VIRTUAL_ACCOUNTS,
         self::ES_AUTOMATIC,
         self::SHOW_CREDIT_SCORE,
-        self::SKIP_WORKFLOWS_FOR_API
+        self::SKIP_WORKFLOWS_FOR_API,
+        self::LOC_STAGE_2,
     ];
 
     /*

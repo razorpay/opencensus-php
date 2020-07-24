@@ -228,8 +228,13 @@ return [
     'perfios' => [
         'secret' => env('FINANCIAL_DATA_SERVICE_PERFIOS_WEBHOOK_SECRET'),
     ],
+
     'los' => [
         'secret' => env('LOS_PASSWORD'),
+    ],
+
+    'loc' => [
+        'secret' => env('LOC_PASSWORD'),
     ],
 
     'leegality' => [
@@ -421,6 +426,13 @@ return [
         'username'      => 'key',
         'secret'        => env('APP_LOAN_ORIGINATION_SYSTEM_SECRET'),
         'timeout'       => env('APP_LOAN_ORIGINATION_SYSTEM_TIMEOUT', 60),
+    ],
+
+    'line_of_credit' => [
+        'url'           => env('APP_LINE_OF_CREDIT_URL'),
+        'username'      => 'key',
+        'secret'        => env('APP_LINE_OF_CREDIT_SECRET'),
+        'timeout'       => env('APP_LINE_OF_CREDIT_TIMEOUT', 60),
     ],
 
     'offline_verification' => [

@@ -692,6 +692,9 @@ class Route
         'los_service'                              => ['any',      'los/service/{path?}',                            'LOSController@handleProxyRequests'                                 ],
         'los_service_admin'                        => ['any',      'los/admin/{path?}',                              'LOSController@handleAdminRequests'                                 ],
         'los_mail'                                 => ['post',     'los/mail',                                       'LOSController@sendMail'                                            ],
+        'loc_service'                              => ['post',     'loc/service/{path?}',                            'LOCController@handleProxyRequests'                                 ],
+        'loc_service_admin'                        => ['post',     'loc/admin/{path?}',                              'LOCController@handleAdminRequests'                                 ],
+        'loc_mail'                                 => ['post',     'loc/mail',                                       'LOCController@sendMail'                                            ],
         'leegality_webhook'                        => ['post',     'leegality/webhook',                              'LOSController@handleLeegalityWebhook'                              ],
         'reminder_admin'                           => ['any',      'reminders/admin/{path?}',                        'RemindersController@remindersAdmin'                                ],
         'reminder_next_run'                        => ['get',      'reminders/next_run/{entity}/{id}/{namespace?}',  'RemindersController@remindersNextRun'                              ],
@@ -2222,6 +2225,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'loc_mail',
         'cps_backfill_entities',
         'vendor_payment_composite_expands_helper',
         'los_mail',
@@ -2538,6 +2542,7 @@ class Route
         'fetch_product_status',
         'settlement_ondemand_create_dashboard',
         'settlement_ondemand_fees_dashboard',
+        'loc_service',
         'merchant_verify_attributes',
         'feature_get_status',
         'feature_get_all',
@@ -2876,6 +2881,7 @@ class Route
     public static $admin = [
         'paper_nach_fetch_failure',
         'paper_nach_approve_failure',
+        'loc_service_admin',
         'payout_reject_admin_bulk',
         'emi_plans_migrate',
         'los_service_admin',
@@ -3517,6 +3523,7 @@ class Route
         'paper_nach_approve_failure'               => Permission::VERIFY_NACH_UPLOADS,
         'bulk_create_fund_accounts'                => '*',
         'payout_reject_admin_bulk'                 => Permission::REJECT_PAYOUT_BULK,
+        'loc_service_admin'                        => Permission::LOC,
         'ufh_admin_upload_file'                    => '*',
         'los_service_admin'                        => Permission::LOANS_EDIT,
         'offline_verification_service_get'         => Permission::OFFLINE_VERIFICATION_SERVICE_VIEW,
@@ -4826,6 +4833,10 @@ class Route
             'los_d2c_bureau_report_fetch',
         ],
 
+        'loc'  => [
+            'loc_mail',
+        ],
+
         'leegality' => [
             'leegality_webhook',
         ],
@@ -5025,6 +5036,7 @@ class Route
      * A route can belong to multiple features, mapped here
      */
     public static $routeNameToFeaturesMap = [
+        'loc_service'                          => [Feature::WITHDRAW_LOC],
         'los_service'                          => [Feature::LOAN],
         'feature_dummy'                        => [Feature::DUMMY],
         'customer_delete'                      => [Feature::TOKENS, Feature::CHARGE_AT_WILL],

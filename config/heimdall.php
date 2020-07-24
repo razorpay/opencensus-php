@@ -891,10 +891,36 @@ return [
                 'assignable'  => true,
             ],
 
+            Permission::LOC => [
+                'description' => 'Allow access to capital-loc service from dashboard',
+                'assignable'  => true,
+            ],
+
+            Permission::LOC_CONFIG_EDIT => [
+                'description' => 'Allow update access to capital-loc withdrawal_config, source_accounts and destination_accounts',
+                'assignable'  => true,
+            ],
+
+            Permission::LOC_CONFIG_VIEW => [
+                'description' => 'Allow viewing access to capital-loc withdrawal_config, source_accounts and destination_accounts',
+                'assignable'  => true,
+            ],
+
+            Permission::LOC_WITHDRAWAL_EDIT => [
+                'description' => 'Allow update access to capital-loc withdrawals and repayments',
+                'assignable'  => true,
+            ],
+
+            Permission::LOC_WITHDRAWAL_VIEW => [
+                'description' => 'Allow viewing access to capital-loc withdrawals and repayments',
+                'assignable'  => true,
+            ],
+
             Permission::OFFLINE_VERIFICATION_SERVICE_VIEW => [
                 'description' => 'Allow read access to Offline Verification Service routes/actions from dashboard',
                 'assignable'  => true,
             ],
+
             Permission::OFFLINE_VERIFICATION_SERVICE_EDIT => [
                 'description' => 'Allow edit access to Offline Verification Service routes/actions from dashboard',
                 'assignable'  => true,

@@ -655,6 +655,153 @@ return [
         ]
     ],
 
+    'testAddMerchantLocStage2FeatureFailure' => [
+        'request' => [
+            'content' => [
+                'features' => [
+                    'loc_stage_2' => '1',
+                ]
+            ],
+            'url' => '/merchants/me/features',
+            'method' => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+        ],
+    ],
+
+    'testAddMerchantLocStage2FeatureSuccess' => [
+        'request' => [
+            'content' => [
+                'features' => [
+                    'loc_stage_2' => '1',
+                ]
+            ],
+            'url' => '/merchants/me/features',
+            'method' => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    [
+                        'feature'      => 'noflashcheckout',
+                        'value'        => false,
+                        'display_name' => 'No Flash Checkout'
+                    ],
+                    [
+                        'feature'      => 'marketplace',
+                        'value'        => false,
+                        'display_name' => 'Route'
+                    ],
+                    [
+                        'feature'      => 'subscriptions',
+                        'value'        => false,
+                        'display_name' => 'Subscriptions'
+                    ],
+                    [
+                        'feature'      => 'virtual_accounts',
+                        'value'        => false,
+                        'display_name' => 'Smart Collect'
+                    ],
+                    [
+                        'feature'      => 'payout',
+                        'value'        => false,
+                        'display_name' => 'Payouts'
+                    ],
+                    [
+                        'feature'      => 'report_v2',
+                        'value'        => false,
+                        'display_name' => 'Report V2'
+                    ],
+                    [
+                        'feature'      => 'es_on_demand',
+                        'value'        => false,
+                        'display_name' => 'On demand Payout'
+                    ],
+                    [
+                        'feature'      => 'es_automatic',
+                        'value'        => false,
+                        'display_name' => 'Es Automatic'
+                    ],
+                    [
+                        'feature'      => 'loan',
+                        'value'        => false,
+                        'display_name' => 'Loan'
+                    ],
+                    [
+                        'feature'      => 'withdraw_loc',
+                        'value'        => false,
+                        'display_name' => 'Withdraw Loc'
+                    ],
+                    [
+                        'feature'      => 'loc_stage_1',
+                        'value'        => true,
+                        'display_name' => 'Line of credit Stage 1'
+                    ],
+                    [
+                        'feature'      => 'loc_stage_2',
+                        'value'        => true,
+                        'display_name' => 'Line of credit Stage 2'
+                    ],
+                ]
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testAddMerchantLocStage2FeatureAdminAuth' => [
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['loc_stage_2'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name' => 'loc_stage_2',
+                    'entity_id' => '10000000000000',
+                    'entity_type' => 'merchant',
+                ]
+            ]
+        ]
+    ],
+
+    'testAddMerchantLocStage1FeatureAdminAuth' => [
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['loc_stage_1'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000',
+                'should_sync' => true
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name' => 'loc_stage_1',
+                    'entity_id' => '10000000000000',
+                    'entity_type' => 'merchant',
+                ]
+            ]
+        ]
+    ],
+
     'verifyProductOnboardingSubmissionStatus' => [
         'request'  => [
             'content' => [

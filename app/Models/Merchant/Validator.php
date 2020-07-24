@@ -774,6 +774,7 @@ class Validator extends Base\Validator
 
         $visibleFeatures = array_keys(Feature\Constants::$visibleFeaturesMap);
         $editableFeature = Feature\Constants::$merchantEditableFeatures;
+        $featureDependency = array_keys(Feature\Constants::$featureDependencyMap);
 
         foreach ($featureNames as $feature)
         {
@@ -794,6 +795,23 @@ class Validator extends Base\Validator
                     ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
                     'feature',
                     [$feature]);
+            }
+            else
+            {
+                if (in_array($feature, $featureDependency, true) == true)
+                {
+                    $requiredFeatures = Feature\Constants::$featureDependencyMap[$feature];
+                    foreach ($requiredFeatures as $requiredFeature)
+                    {
+                        if ($this->entity->isFeatureEnabled($requiredFeature) === false)
+                        {
+                            throw new Exception\BadRequestException(
+                                ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+                                'feature',
+                                [$feature]);
+                        }
+                    }
+                }
             }
         }
     }

@@ -16,9 +16,10 @@ use RZP\Jobs\MailingListUpdate;
 use RZP\Exception\LogicException;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Base\PublicEntity;
-use RZP\Mail\Merchant\FeatureEnabled;
 use RZP\Mail\Merchant\EsEligible;
+use RZP\Mail\Merchant\FeatureEnabled;
 use RZP\Models\Merchant\SlackActions;
+use RZP\Mail\Loc\CashAdvanceEligible;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Settlement\OndemandFundAccount;
 use RZP\Models\Merchant\Notify as NotifyTrait;
@@ -214,6 +215,29 @@ class Core extends Base\Core
 
             $this->trace->info(
                 TraceCode::ES_ELIGIBLE_MERCHANT_NOTIFIED,
+                [
+                    PublicEntity::MERCHANT_ID => $entityId,
+                    Entity::SHOULD_SYNC       => $shouldSync,
+                    Mode::LIVE                => $isLiveMode,
+                    Entity::NEW_FEATURE       => $feature,
+                    Merchant\Entity::EMAIL    => $merchantEmail
+                ]);
+        }
+        else if (($feature->getName() === Constants::LOC_STAGE_1) and
+                 ($isLiveMode === true) and
+                 ($shouldSync === true))
+        {
+            $merchantEmail = $merchant->getEmail();
+
+            $data['contact_name']  = $merchant->getName();
+            $data['contact_email'] = $merchantEmail;
+
+            $esEligibleEmail = new CashAdvanceEligible($data);
+
+            Mail::queue($esEligibleEmail);
+
+            $this->trace->info(
+                TraceCode::LOC_ELIGIBLE_MERCHANT_NOTIFIED,
                 [
                     PublicEntity::MERCHANT_ID => $entityId,
                     Entity::SHOULD_SYNC       => $shouldSync,

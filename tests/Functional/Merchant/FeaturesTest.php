@@ -9,6 +9,7 @@ use Event;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Mail\Loc\CashAdvanceEligible;
 use RZP\Models\Feature\Entity;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
@@ -702,6 +703,53 @@ class FeaturesTest extends TestCase
         $this->ba->proxyAuthTest();
 
         $this->startTest();
+    }
+
+    /**
+     * This function tests updating of merchant feature loc_stage_2.
+     * It will fail because loc_stage_1 is not present
+     */
+    public function testAddMerchantLocStage2FeatureFailure()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of merchant feature loc_stage_2.
+     * It will pass because loc_stage_1 is present
+     */
+    public function testAddMerchantLocStage2FeatureSuccess()
+    {
+        $this->addFeatures(Mode::LIVE, false, [Constants::LOC_STAGE_1]);
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of merchant feature loc_stage_2.
+     * It will pass even without loc_stage_1 because admin sent the request
+     */
+    public function testAddMerchantLocStage2FeatureAdminAuth()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of merchant feature loc_stage_1.
+     */
+    public function testAddMerchantLocStage1FeatureAdminAuth()
+    {
+        Mail::fake();
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+        Mail::assertQueued(CashAdvanceEligible::class);
     }
 
     /**

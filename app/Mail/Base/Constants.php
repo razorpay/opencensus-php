@@ -38,6 +38,7 @@ class Constants
     const LINKED_ACCOUNT_REVERSAL       = 'linked_account_reversal';
     const RAZORPAY_X                    = 'razorpay_x';
     const CAPITAL_SUPPORT               = 'capital_support';
+    const CAPITAL_OPS                   = 'capital_ops';
     const CAPITAL_CREDIT                = 'capital_credit';
     const BANKING_ACCOUNT               = 'banking_account';
     const NACH                          = 'nach';
@@ -89,6 +90,7 @@ class Constants
         self::LINKED_ACCOUNT_REVERSAL   => 'refunds@razorpay.com',
         self::GATEWAY_POD               => 'pod.gateway@razorpay.com',
         self::CAPITAL_SUPPORT           => 'capital.support@razorpay.com',
+        self::CAPITAL_OPS               => 'capital-operations@razorpay.com',
         self::CAPITAL_CREDIT            => 'capital-credit@razorpay.com',
         self::NACH                      => 'nach@razorpay.com',
         self::PARTNER_ON_BOARDING       => 'partnercommunication@razorpay.com',
@@ -132,6 +134,7 @@ class Constants
         self::RAZORPAY_X              => 'RazorpayX',
         self::PARTNER_ON_BOARDING     => 'Razorpay Partner Program',
         self::CAPITAL_SUPPORT         => 'Razorpay Capital',
+        self::CAPITAL_OPS             => 'Capital Ops Team',
         self::CAPITAL_CREDIT          => 'Capital Credit',
         self::NACH                    => 'Razorpay Nach',
         self::PARTNER_PAYMENTS        => 'Partner Payments',

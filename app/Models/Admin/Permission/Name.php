@@ -329,6 +329,12 @@ class Name
     // Permission to access capital-los service
     const LOANS_EDIT                          = 'loans_edit';
 
+    const LOC                                 = 'loc';
+    const LOC_CONFIG_EDIT                     = 'loc_config_edit';
+    const LOC_CONFIG_VIEW                     = 'loc_config_view';
+    const LOC_WITHDRAWAL_EDIT                 = 'loc_withdrawal_edit';
+    const LOC_WITHDRAWAL_VIEW                 = 'loc_withdrawal_view';
+
     const CREATE_PAYOUT_BULK                  = 'create_payout_bulk';
     const APPROVE_PAYOUT_BULK                 = 'approve_payout_bulk';
     const REJECT_PAYOUT_BULK                  = 'reject_payout_bulk';
