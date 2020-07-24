@@ -38,7 +38,7 @@ import track from './track';
 const inActiveStatusReasonMap = {
   completed: 'One or more items are out of stock',
   expired: 'The link is expired',
-  deactivated: 'You manually deactivated the link',
+  deactivated: 'You manually deactivated the payment button',
 };
 
 @connect(
@@ -243,7 +243,9 @@ export default class PaymentButtonEntity extends React.Component {
       paymentButtonEntity,
       editPaymentButton,
       formItems,
+      reActivateLink,
       currentHighlightedButtonSettings,
+      toggleManualActivation,
     } = this.props;
     const { isPageReceiptModalOpened } = this.state;
 
@@ -340,15 +342,15 @@ export default class PaymentButtonEntity extends React.Component {
                         status={paymentButtonEntity.status}
                       />
 
-                      {!isActive && (
-                        <Button.Transparent
-                          class="Button--Link"
-                          style={{ marginLeft: 12 }}
-                          onClick={this.props.reActivateLink}
-                        >
-                          Activate
-                        </Button.Transparent>
-                      )}
+                      <Button.Transparent
+                        class="Button--Link"
+                        style={{ marginLeft: 12 }}
+                        onClick={
+                          isActive ? toggleManualActivation : reActivateLink
+                        }
+                      >
+                        {isActive ? 'Deactivate' : 'Activate'}
+                      </Button.Transparent>
 
                       <div style={{ marginTop: 4, color: '#8991ae' }}>
                         {

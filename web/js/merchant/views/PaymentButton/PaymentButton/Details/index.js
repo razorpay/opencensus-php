@@ -11,6 +11,7 @@ import {
   editPaymentPage as editPaymentButton,
   editPaymentPageItem as editPaymentButtonItem,
   activatePaymentPage as activatePaymentButton,
+  deactivatePaymentPage as deactivatePaymentButton,
 } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { updatePBInReduxList } from 'merchant/reducers/paymentbuttons/list';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
@@ -32,6 +33,10 @@ import track from './track';
 })
 @RTracking(() => window.rzpQ.component('PaymentButtonDetails'))
 export default class PaymentButtonDetails extends React.Component {
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
+
   state = {
     paymentButtonEntity: {},
     paymentButtonPayments: [],
@@ -350,6 +355,100 @@ export default class PaymentButtonDetails extends React.Component {
     });
   };
 
+  toggleManualActivation = () => {
+    const status = this.state.paymentButtonEntity.status;
+    const statusReason = this.state.paymentButtonEntity.status_reason;
+
+    const isActive = status === 'active';
+    const isDeactivated =
+      statusReason && statusReason.toLowerCase() === 'deactivated';
+
+    let apiAction,
+      header,
+      message,
+      affirmativeLabel,
+      affirmativePendingLabel,
+      successMsg;
+
+    if (isActive) {
+      /* Wants manual deactivation */
+      apiAction = deactivatePaymentButton;
+      header = 'Deactivate Payment Button?';
+      message =
+        'Once you deactivate the payment button, you will not be able to accept payments till you activate it again.';
+      affirmativeLabel = 'Yes, deactivate';
+      affirmativePendingLabel = 'Deactivating..';
+      successMsg = `${this.state.paymentButtonEntity.id} is now Inactive`;
+    } else if (isDeactivated) {
+      /* Wants activation for manual deactivation for cancelled status */
+
+      apiAction = activatePaymentButton;
+      header = 'Activate Page?';
+      message =
+        'Once you activate the page, you will be able to accept payments.';
+      affirmativeLabel = 'Yes, activate';
+      affirmativePendingLabel = 'Activating..';
+      successMsg = `${this.state.paymentButtonEntity.id} is now Active`;
+    }
+
+    this.context.confirm({
+      header,
+      message: () => (
+        <div class="text-semi-muted">
+          <p>{message}</p>
+        </div>
+      ),
+      affirmativeLabel,
+      affirmativePendingLabel,
+      abortLabel: "No, don't!",
+      action: () => {
+        return apiAction(this.state.paymentButtonEntity.id)
+          .then(resp => {
+            if (resp.data) {
+              this.props.showNotification({
+                type: 'success',
+                message: successMsg,
+              });
+
+              this.props.closeModal();
+
+              this.props.updatePBInReduxList(resp.data, false);
+
+              this.setState({
+                paymentButtonEntity: resp.data,
+              });
+            }
+            return resp;
+          })
+          .catch(({ errors }) => {
+            let err = errors;
+
+            if (Array.isArray(err)) {
+              err = [];
+
+              errors.length &&
+                errors.forEach(e => {
+                  if (e && e.toLowerCase().indexOf('status code') === -1) {
+                    err.push(e);
+                  }
+                });
+
+              err = err.length ? err : null;
+            }
+
+            if (!err) {
+              err = `Some network error has occured`;
+            }
+
+            this.props.showNotification({
+              type: 'error',
+              message: err,
+            });
+          });
+      },
+    });
+  };
+
   render() {
     let { paymentButtonEntity, loading } = this.state;
 
@@ -386,6 +485,7 @@ export default class PaymentButtonDetails extends React.Component {
         fetchEntityPayments={this.fetchEntityPayments}
         updatePaymentButtonEntity={this.updatePaymentButtonEntity}
         reActivateLink={this.reActivateLink}
+        toggleManualActivation={this.toggleManualActivation}
       />
     );
   }
