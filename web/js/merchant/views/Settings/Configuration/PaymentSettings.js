@@ -88,11 +88,32 @@ export default class PaymentSettings extends Component {
       if (!body.skipped && body.manual) {
         const manualTimeoutValue = this.getTimeoutValue(body.manual);
         payload.config.capture_options.manual_expiry_period = manualTimeoutValue;
+
+        window.rzpAnalytics({
+          eventCategory: 'Dashboard - Payments Capture Settings',
+          eventAction: 'Automatic Timeout',
+          eventLabel: 'Setting Both Automatic & Manual Timeouts',
+          timeoutValue: `Automatic - ${automaticTimeoutValue} - Manual - ${manualTimeoutValue}`,
+        });
+      } else {
+        window.rzpAnalytics({
+          eventCategory: 'Dashboard - Payments Capture Settings',
+          eventAction: 'Automatic Timeout',
+          eventLabel: 'Setting Only Automatic Timeouts',
+          timeoutValue: `Automatic - ${automaticTimeoutValue}`,
+        });
       }
     } else {
       // For capture type manual
       const timeoutValue = this.getTimeoutValue(body.manual);
       payload.config.capture_options.manual_expiry_period = timeoutValue;
+
+      window.rzpAnalytics({
+        eventCategory: 'Dashboard - Payments Capture Settings',
+        eventAction: 'Manual Timeout',
+        eventLabel: 'Setting Timeout Value',
+        timeoutValue: `${timeoutValue}`,
+      });
     }
 
     payload.config.capture_options.refund_speed = body.refundValue;
