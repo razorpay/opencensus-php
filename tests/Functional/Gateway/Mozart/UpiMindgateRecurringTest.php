@@ -48,7 +48,7 @@ class UpiMindgateRecurringTest extends TestCase
             Entity::ORDER_ID        => substr($orderId, 6),
             Entity::CUSTOMER_ID     => '100000customer',
             Entity::FREQUENCY       => 'monthly',
-            Entity::RECURRING_VALUE => 30,
+            Entity::RECURRING_VALUE => 31,
             Entity::RECURRING_TYPE  => 'before',
             Entity::STATUS          => Status::CREATED,
         ], $upiMandate->toArray());
@@ -81,7 +81,7 @@ class UpiMindgateRecurringTest extends TestCase
             Entity::ORDER_ID        => substr($orderId, 6),
             Entity::CUSTOMER_ID     => '100000customer',
             Entity::FREQUENCY       => 'monthly',
-            Entity::RECURRING_VALUE => 30,
+            Entity::RECURRING_VALUE => 31,
             Entity::RECURRING_TYPE  => 'before',
             Entity::STATUS          => Status::CREATED,
             Entity::TOKEN_ID        => $token['id'],
@@ -118,7 +118,7 @@ class UpiMindgateRecurringTest extends TestCase
             Entity::ORDER_ID        => substr($orderId, 6),
             Entity::CUSTOMER_ID     => '100000customer',
             Entity::FREQUENCY       => 'monthly',
-            Entity::RECURRING_VALUE => 30,
+            Entity::RECURRING_VALUE => 31,
             Entity::RECURRING_TYPE  => 'before',
             Entity::TOKEN_ID        => $token['id'],
             Entity::STATUS          => Status::CONFIRMED,
@@ -256,8 +256,6 @@ class UpiMindgateRecurringTest extends TestCase
             'token'           => [
                 'max_amount'      => 150000,
                 'frequency'       => 'monthly',
-                'recurring_type'  => 'before',
-                'recurring_value' => 30,
                 'start_at'        => Carbon::now()->addDay(1)->getTimestamp(),
                 'expire_at'          => Carbon::now()->addDay(60)->getTimestamp(),
             ]

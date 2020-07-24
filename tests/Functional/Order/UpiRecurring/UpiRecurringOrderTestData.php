@@ -18,8 +18,6 @@ return [
                 'token'           => [
                     'max_amount'      => 150000,
                     'frequency'       => 'monthly',
-                    'recurring_type'  => 'before',
-                    'recurring_value' => 30,
                     'start_at'        => Carbon::now()->addDay(1)->getTimestamp(),
                     'expire_at'       => Carbon::now()->addDay(60)->getTimestamp(),
                 ]
@@ -45,8 +43,6 @@ return [
                 'token'           => [
                     'max_amount'      => 250000,
                     'frequency'       => 'monthly',
-                    'recurring_type'  => 'before',
-                    'recurring_value' => 30,
                     'start_at'        => Carbon::now()->addDay(1)->getTimestamp(),
                     'expire_at'       => Carbon::now()->addDay(60)->getTimestamp(),
                 ]
@@ -58,7 +54,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The max amount may not be greater than 200000.',
+                    'description' => 'Max amount for UPI recurring payment cannot be greater than Rs. 2000.00',
                     'field' => 'max_amount'
                 ],
             ],
@@ -80,8 +76,6 @@ return [
                 'token'           => [
                     'max_amount'      => 150000,
                     'frequency'       => 'montly',
-                    'recurring_type'  => 'before',
-                    'recurring_value' => 30,
                     'start_at'        => Carbon::now()->addDay(1)->getTimestamp(),
                     'expire_at'       => Carbon::now()->addDay(60)->getTimestamp(),
                 ]
@@ -114,8 +108,6 @@ return [
                 'token'           => [
                     'max_amount'      => 150000,
                     'frequency'       => 'monthly',
-                    'recurring_type'  => 'befre',
-                    'recurring_value' => 30,
                     'start_at'        => Carbon::now()->addDay(1)->getTimestamp(),
                     'expire_at'       => Carbon::now()->addDay(60)->getTimestamp(),
                 ]
@@ -148,8 +140,6 @@ return [
                 'token'           => [
                     'max_amount'      => 150000,
                     'frequency'       => 'monthly',
-                    'recurring_type'  => 'before',
-                    'recurring_value' => 30,
                     'start_at'        => Carbon::now()->addDay(60)->getTimestamp(),
                     'expire_at'       => Carbon::now()->addDay(1)->getTimestamp(),
                 ]
@@ -182,8 +172,51 @@ return [
                 'token'           => [
                     'max_amount'      => 150000,
                     'frequency'       => 'monthly',
-                    'recurring_type'  => 'before',
-                    'recurring_value' => 30,
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+            ],
+        ],
+    ],
+    'testCreateOrderWithoutFrequency' => [
+        'request' => [
+            'content' => [
+                'amount'          => 50000,
+                'currency'        => 'INR',
+                'method'          => 'upi',
+                'customer_id'     => 'cust_100000customer',
+                'payment_capture' => 1,
+                'token'           => [
+                    'max_amount'      => 150000,
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+            ],
+        ],
+    ],
+    'testCreateOrderWithDailyFrequency' => [
+        'request' => [
+            'content' => [
+                'amount'          => 50000,
+                'currency'        => 'INR',
+                'method'          => 'upi',
+                'customer_id'     => 'cust_100000customer',
+                'payment_capture' => 1,
+                'token'           => [
+                    'max_amount'      => 150000,
+                    'frequency'       => 'daily',
                 ]
             ],
             'method'    => 'POST',
@@ -217,6 +250,39 @@ return [
                     ]
                 ],
             ],
+        ],
+    ],
+    'testCreateOrderAmountGreaterThanMaxAmount' => [
+        'request' => [
+            'content' => [
+                'amount'          => 500000,
+                'currency'        => 'INR',
+                'method'          => 'upi',
+                'customer_id'     => 'cust_100000customer',
+                'payment_capture' => 1,
+                'token'           => [
+                    'max_amount'      => 200000,
+                    'frequency'       => 'monthly',
+                    'start_at'        => Carbon::now()->addDay(1)->getTimestamp(),
+                    'expire_at'       => Carbon::now()->addDay(60)->getTimestamp(),
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The order amount cannot be greater than the token max amount for upi recurring',
+                    'field' => 'max_amount'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
 ];

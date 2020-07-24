@@ -14,9 +14,9 @@ class Validator extends Base\Validator
 
     protected static $createRules = [
         Entity::FREQUENCY              => 'required|string|custom',
-        Entity::RECURRING_TYPE         => 'required|string|custom',
-        Entity::RECURRING_VALUE        => 'required|integer|nullable',
-        Entity::MAX_AMOUNT             => 'required|integer|max:200000|min:100',
+        Entity::RECURRING_TYPE         => 'sometimes|string|custom',
+        Entity::RECURRING_VALUE        => 'sometimes|integer|nullable',
+        Entity::MAX_AMOUNT             => 'required|integer',
         Entity::RECEIPT                => 'sometimes|nullable|string|max:40',
         Entity::START_TIME             => 'sometimes|epoch',
         Entity::END_TIME               => 'sometimes|epoch',
@@ -31,6 +31,7 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
       'time',
+      'max_amount',
     ];
 
     protected function validateFrequency(string $attribute, string $value)
@@ -63,6 +64,27 @@ class Validator extends Base\Validator
         {
             throw new BadRequestValidationFailureException(
                 'The start time should be less than end time and greater than current time.'
+            );
+        }
+    }
+
+    public function validateMaxAmount($input)
+    {
+        $amount = $input[Entity::MAX_AMOUNT];
+
+        if ($amount > 200000)
+        {
+            throw new BadRequestValidationFailureException(
+                'Max amount for UPI recurring payment cannot be greater than Rs. 2000.00',
+                Entity::MAX_AMOUNT
+            );
+        }
+
+        if ($amount < 100)
+        {
+            throw new BadRequestValidationFailureException(
+                'Max amount for UPI recurring payment cannot be less than Re. 1.00',
+                Entity::MAX_AMOUNT
             );
         }
     }

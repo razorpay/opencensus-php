@@ -26,15 +26,7 @@ class Core extends Base\Core
 
         $this->transformTokenParamsForUpi($input);
 
-        if (isset($input['start_time']) === false)
-        {
-            $input['start_time'] = Carbon::now()->getTimestamp();
-        }
-
-        if (isset($input['end_time']) === false)
-        {
-            $input['end_time'] = Carbon::now()->addYears(10)->getTimestamp();
-        }
+        $this->addDefaultsForUpiMandateInput($input);
 
         $upiMandate = (new Entity)->build($input);
 
@@ -61,8 +53,21 @@ class Core extends Base\Core
         return $upiMandate;
     }
 
-    public function validateTokenInput($input)
+    protected function validateOrderAndTokenDetailsForUpiMandate($input, $orderInput)
     {
+        if ($orderInput[Order\Entity::AMOUNT] > $input[Entity::MAX_AMOUNT])
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The order amount cannot be greater than the token max amount for upi recurring',
+                Entity::MAX_AMOUNT
+            );
+        }
+    }
+
+    public function validateTokenInput($input, $orderInput)
+    {
+        $this->validateOrderAndTokenDetailsForUpiMandate($input, $orderInput);
+
         $this->transformTokenParamsForUpi($input);
 
         $validator = new Validator();
@@ -70,6 +75,23 @@ class Core extends Base\Core
         $validator->setStrictFalse();
 
         $validator->validateInput('create', $input);
+    }
+
+    protected function addDefaultsForUpiMandateInput(array & $input)
+    {
+        if (isset($input['start_time']) === false)
+        {
+            $input['start_time'] = Carbon::now()->getTimestamp();
+        }
+
+        if (isset($input['end_time']) === false)
+        {
+            $input['end_time'] = Carbon::now()->addYears(10)->getTimestamp();
+        }
+
+        $input['recurring_type'] = 'before';
+
+        $input['recurring_value'] = Frequency::$frequencyToRecurringValueMap[$input['frequency']] ?? null;
     }
 
     // We need to support start_at and expire_at fields being passed by merchant for upi recurring. So, adding this
@@ -89,6 +111,9 @@ class Core extends Base\Core
         {
             $input[Entity::END_TIME] = $endTime;
         }
+
+        // We default the frequency to as_presented if merchant does not pass us this parameter.
+        $input['frequency'] = $input['frequency'] ?? Frequency::AS_PRESENTED;
 
         unset($input['start_at']);
         unset($input['expire_at']);

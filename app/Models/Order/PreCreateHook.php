@@ -22,7 +22,7 @@ class PreCreateHook extends Hook
         if ((isset($this->orderInput[Entity::METHOD]) === true) and
             ($this->orderInput[Entity::METHOD] === Methods\Entity::UPI))
         {
-            $this->validateTokenParamsForUpiMandate($paramInput);
+            $this->validateTokenParamsForUpiMandate($paramInput, $this->orderInput);
         }
         else
         {
@@ -32,9 +32,9 @@ class PreCreateHook extends Hook
         $this->validateCustomerIdNonEmpty();
     }
 
-    protected function validateTokenParamsForUpiMandate($input)
+    protected function validateTokenParamsForUpiMandate($input, $orderInput)
     {
-        (new UpiMandateCore())->validateTokenInput($input);
+        (new UpiMandateCore())->validateTokenInput($input, $orderInput);
     }
 
     protected function validateTokenParamsForSubscriptionRegistration($input)
