@@ -1483,6 +1483,7 @@
                 "shasum": ""
             },
             "require": {
+                "ext-gmp": "*",
                 "php": ">=7.0.0"
             },
             "require-dev": {
@@ -1648,16 +1649,16 @@
         },
         {
             "name": "giggsey/libphonenumber-for-php",
-            "version": "8.12.2",
+            "version": "8.12.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/libphonenumber-for-php.git",
-                "reference": "030682bc4fcdc0c6fb85b68aec2ffeff6978768a"
+                "reference": "cb79970730aacaedb74c8288214a5576572fa7b0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/030682bc4fcdc0c6fb85b68aec2ffeff6978768a",
-                "reference": "030682bc4fcdc0c6fb85b68aec2ffeff6978768a",
+                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/cb79970730aacaedb74c8288214a5576572fa7b0",
+                "reference": "cb79970730aacaedb74c8288214a5576572fa7b0",
                 "shasum": ""
             },
             "require": {
@@ -1712,20 +1713,20 @@
                 "phonenumber",
                 "validation"
             ],
-            "time": "2020-04-22T19:37:04+00:00"
+            "time": "2020-05-19T11:20:54+00:00"
         },
         {
             "name": "giggsey/locale",
-            "version": "1.8",
+            "version": "1.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/Locale.git",
-                "reference": "85a1b251bad11c986fec2a051b10d4b80a5caa1b"
+                "reference": "b07f1eace8072ccc61445ad8fbd493ff9d783043"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/Locale/zipball/85a1b251bad11c986fec2a051b10d4b80a5caa1b",
-                "reference": "85a1b251bad11c986fec2a051b10d4b80a5caa1b",
+                "url": "https://api.github.com/repos/giggsey/Locale/zipball/b07f1eace8072ccc61445ad8fbd493ff9d783043",
+                "reference": "b07f1eace8072ccc61445ad8fbd493ff9d783043",
                 "shasum": ""
             },
             "require": {
@@ -1761,7 +1762,7 @@
                 }
             ],
             "description": "Locale functions required by libphonenumber-for-php",
-            "time": "2019-10-09T18:53:14+00:00"
+            "time": "2020-07-07T11:16:24+00:00"
         },
         {
             "name": "goetas-webservices/xsd2php-runtime",
@@ -3685,6 +3686,7 @@
                 "shasum": ""
             },
             "require": {
+                "ext-gmp": "*",
                 "fgrosse/phpasn1": "v2.0.x",
                 "php": ">=7.0"
             },
@@ -3863,7 +3865,7 @@
             "time": "2017-07-22T07:25:06+00:00"
         },
         {
-            "name": "mikey179/vfsStream",
+            "name": "mikey179/vfsstream",
             "version": "v1.3.0",
             "source": {
                 "type": "git",
@@ -6155,17 +6157,17 @@
             ],
             "authors": [
                 {
+                    "name": "Ben Ramsey",
+                    "email": "ben@benramsey.com",
+                    "homepage": "https://benramsey.com"
+                },
+                {
                     "name": "Marijn Huizendveld",
                     "email": "marijn.huizendveld@gmail.com"
                 },
                 {
                     "name": "Thibaud Fabre",
                     "email": "thibaud@aztech.io"
-                },
-                {
-                    "name": "Ben Ramsey",
-                    "email": "ben@benramsey.com",
-                    "homepage": "https://benramsey.com"
                 }
             ],
             "description": "Formerly rhumsaa/uuid. A PHP 5.4+ library for generating RFC 4122 version 1, 3, 4, and 5 universally unique identifiers (UUID).",
@@ -6421,7 +6423,7 @@
                 "import",
                 "laravel"
             ],
-            "time": "2017-08-10T18:30:30+00:00"
+            "time": "2020-04-04T18:44:38+00:00"
         },
         {
             "name": "razorpay/lqext",
@@ -11200,5 +11202,6 @@
         "php": ">=7.1",
         "ext-gmp": "*"
     },
-    "platform-dev": []
+    "platform-dev": [],
+    "plugin-api-version": "1.1.0"
 }
