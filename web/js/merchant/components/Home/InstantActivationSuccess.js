@@ -20,36 +20,38 @@ export default ({
 
   return (
     <ModalMask>
-      <Modal className="instant-activations-success" onClose={onClose}>
-        <modal-header>
+      <Modal className="pan-status-modal" onClose={onClose}>
+        <div className="modal-header success">
           <h1>{title || 'Payments Enabled'}</h1>
           <p>{subtitle || defaultSubtitle}</p>
-        </modal-header>
-        <modal-body>
-          {content ? (
-            <p>{content}</p>
-          ) : (
-            <>
-              <p>
-                Congratulations, your account has been enabled for payments.
-              </p>
-              <p>
-                You can start using our products right away. Go ahead and make
-                your first transaction, meanwhile we will await your KYC details
-                to enable settlements for your account.
-              </p>
-            </>
-          )}
+        </div>
+        <div className="modal-body">
+          <div className="modal-description">
+            {content ? (
+              <p>{content}</p>
+            ) : (
+              <>
+                <p>
+                  Congratulations! You can start accepting payments from your
+                  customers now.
+                </p>
+                <p>
+                  However, you must complete KYC for the payments to be settled
+                  to your account.
+                </p>
+              </>
+            )}
+          </div>
           <button
             onClick={onCompleteKYC}
-            className="btn btn-default ias__complete_kyc"
+            className="btn btn-default KYC__more_details"
           >
             Complete KYC
           </button>
           <button className="btn btn-primary" onClick={onGoToDashboard}>
             Accept Payments
           </button>
-        </modal-body>
+        </div>
       </Modal>
     </ModalMask>
   );

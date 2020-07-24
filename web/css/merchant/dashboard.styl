@@ -1993,7 +1993,6 @@ $stepIndicatorSize = 36px;
   max-width: 328px;
 
   .modal-header, .modal-body {
-    display: block;
     text-align: center;
   }
 
@@ -2043,13 +2042,13 @@ $stepIndicatorSize = 36px;
 
     .modal-description {
       margin-bottom: 30px;
+      text-align: justify;
 
       > p {
         margin-bottom: 10px;
       }
     }
   }
-
 }
 
 // Instant Activations , Transactions helper
@@ -2164,7 +2163,13 @@ $stepIndicatorSize = 36px;
 
   width: 90%;
   max-width: 328px;
-  padding: 30px 24px 24px 24px;
+  padding: 18px 24px 24px 24px;
+
+  .modal-header {
+    text-align: center;
+    padding: 0;
+    border: 0;
+  }
 
   b {
 
@@ -2180,7 +2185,7 @@ $stepIndicatorSize = 36px;
 
   .kyc-details-modal {
     &__btn {
-      margin-top : 44px;
+      margin-top : 20px;
 
       button, a {
         width: 47%;
@@ -2199,7 +2204,9 @@ $stepIndicatorSize = 36px;
     }
 
     &__desc {
+      margin-top: 20px;
       width: 90%;
+      text-align: justify;
     }
   }
 }

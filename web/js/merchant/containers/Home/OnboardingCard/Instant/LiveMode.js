@@ -72,9 +72,10 @@ export default class LiveMode extends Component {
                 className="btn-link"
                 onClick={() => track.fillKYCForm()}
               >
-                Fill the KYC Form
-              </Link>{' '}
-              in order to unlock Live Payments
+                Fill KYC Form
+              </Link>
+              &nbsp; to complete verification and get live payments enabled for
+              your account.
             </span>
           );
         } else {

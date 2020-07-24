@@ -12,10 +12,10 @@ export default ({ onClose, onGiveDetails }) => {
         onClose={onClose}
         style={{ textAlign: 'left' }}
       >
-        <p>
+        <div className="modal-header">
           <b>Few more details required</b>
-        </p>
-        <p className="m-t kyc-details-modal__desc">
+        </div>
+        <p className="kyc-details-modal__desc">
           For your business model, you need to give a few more details to
           activate your account
         </p>

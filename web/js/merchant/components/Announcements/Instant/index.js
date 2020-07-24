@@ -37,8 +37,7 @@ export default class InstantActivationAnnouncements extends Component {
             <span>
               You can start using our products to accept payments right away.
               Meanwhile we will await your KYC details to enable settlements for
-              your account.
-              <span class="big-dot-separator" />
+              your account. &nbsp;
               <Link to="/activation">Fill KYC Form</Link>
             </span>
           );
@@ -46,20 +45,34 @@ export default class InstantActivationAnnouncements extends Component {
           title = 'Enable Settlements';
           content = (
             <span>
-              You can keep accepting payments but to enable settlements for your
-              account kindly fill your KYC Form.
-              <span class="big-dot-separator" />
+              You can continue accepting payments from your customers. However,
+              you must complete KYC for the payments to be settled to your
+              account. &nbsp;
               <Link to="/activation">Fill KYC Form</Link>
             </span>
           );
         }
-      } else if (payments && payments.items.length > 0 && !user.isAccepted) {
+      } else if (user.instantActivation.isGraylistFlow) {
+        title = 'Submit your KYC';
+        content = (
+          <span>
+            In order to enable payments for your business model we need your KYC
+            Details. &nbsp;
+            <Link to="/activation">Fill KYC Form</Link>
+          </span>
+        );
+      } else if (
+        payments &&
+        payments.items.length > 0 &&
+        !user.isAccepted &&
+        mode === 'live'
+      ) {
         title = 'Enable Settlements';
         content = (
           <span>
-            Your settlements are on hold. You will need to fill the KYC Form to
-            receive your payments in your bank account.
-            <span class="big-dot-separator" />
+            You can continue accepting payments from your customers. However,
+            you must complete KYC for the payments to be settled to your
+            account. &nbsp;
             <Link to="/activation">Fill KYC Form</Link>
           </span>
         );
@@ -79,8 +92,7 @@ export default class InstantActivationAnnouncements extends Component {
             <span>
               Your PAN was successfully verified and you can start accepting
               domestic payments now. Meanwhile we will await your KYC details to
-              enable settlements for your account.
-              <span class="big-dot-separator" />
+              enable settlements for your account. &nbsp;
               <Link to="/activation">Fill KYC Form</Link>
             </span>
           );
@@ -89,9 +101,8 @@ export default class InstantActivationAnnouncements extends Component {
           title = 'Unable To Verify PAN';
           content = (
             <React.Fragment>
-              The central databse seems to be down, we couldn't verify you PAN
-              details. Please try again in a couple of minutes.{' '}
-              <span class="big-dot-separator" />{' '}
+              Government’s PAN database seems to be down, we couldn’t verify
+              your PAN Details. Please try again in a couple of minutes. &nbsp;
               <Link
                 to="/activation?auto-submit=l1-form"
                 onClick={() => {
@@ -110,9 +121,8 @@ export default class InstantActivationAnnouncements extends Component {
           title = 'PAN Verification Failed';
           content = (
             <React.Fragment>
-              Your PAN details did not match with the government database.
-              Please review your details.
-              <span class="big-dot-separator" />
+              Your PAN details did not match with the government PAN database.
+              Please review and submit again. &nbsp;
               <Link
                 to="/activation"
                 onClick={() => {
@@ -134,7 +144,10 @@ export default class InstantActivationAnnouncements extends Component {
           theme = 'success';
           title = 'Settlements Enabled';
           content =
-            'KYC verification successful. Payments collected by you will now be settled in your bank account in the next immediate settlement cycle.';
+            'Your KYC verification was successful. Payments will be settled to your bank account as per settlement cycle.';
+          if (user.instantActivation.isGraylistFlow) {
+            content = content + ' ' + 'Go ahead and accept your first payment.';
+          }
         } else return null;
       } else if (user.isRejected || user.needsClarification) {
         theme = 'danger';
@@ -171,8 +184,7 @@ export default class InstantActivationAnnouncements extends Component {
                 however your settlements will be enabled after your KYC is
                 reviewed. KYC Review process usually takes 1-2 days from the
                 date of the first transaction, we will reach out to you on your
-                registered email ID if we need any clarifications.
-                <span class="big-dot-separator" />
+                registered email ID if we need any clarifications. &nbsp;
                 <a
                   href="https://razorpay.freshdesk.com/support/solutions/articles/11000092582"
                   target="_blank"

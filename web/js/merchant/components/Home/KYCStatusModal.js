@@ -6,13 +6,10 @@ function getKycActivationSubmitBody(args) {
   if (args.isWhitelistFlow) {
     return (
       <div>
-        <p>You can start using our products to accept payments right away.</p>
-        <br />
         <p>
-          KYC Review process usually takes 1-2 working days from the date of the
-          first transaction, we will reach out to you on your registered email
-          ID if we need any clarifications. Your settlements will be enabled
-          post KYC is reviewed and approved.
+          KYC review process takes 1-2 working days post your first transaction.
+          So go ahead and start accepting payments. As soon as your KYC is
+          approved we will process settlements to your bank account.
         </p>
       </div>
     );

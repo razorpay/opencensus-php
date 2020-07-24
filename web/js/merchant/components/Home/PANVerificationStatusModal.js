@@ -26,11 +26,13 @@ const MODAL_CONTENT = {
     subtitle: 'Ready to accept domestic payments',
     body: () => (
       <>
-        <p>Congratulations, your account has been enabled for payments.</p>
         <p>
-          You can start using our products right away. Go ahead and make your
-          first transaction, meanwhile we will await your KYC details to enable
-          settlements for your account.
+          Congratulations! You can start accepting payments from your customers
+          now.
+        </p>
+        <p>
+          However, you must complete KYC for the payments to be settled to your
+          account.
         </p>
       </>
     ),
