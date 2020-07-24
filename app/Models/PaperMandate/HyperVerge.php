@@ -121,7 +121,7 @@ class HyperVerge extends Base\Core
 
         $input[self::UTILITY_CODE] = $paperMandateDetails[Entity::UTILITY_CODE];
 
-        $input[self::BANK_NAME] = $bankAccount->getBankName();
+        $input[self::BANK_NAME] = substr($bankAccount->getBankName(), 0, 45);
 
         $input[self::ACCOUNT_TYPE] = $this->getAccountType($paperMandate);
 
