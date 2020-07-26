@@ -109,6 +109,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_AUTO_REFUND_CRON_SUMMARY                      = 'PAYMENT_AUTO_REFUND_CRON_SUMMARY';
     const REFUND_FROM_AUTHORIZED_REQUEST                        = 'REFUND_FROM_AUTHORIZED_REQUEST';
     const PAYMENT_QUEUE_CAPTURE_REQUEST                         = 'PAYMENT_QUEUE_CAPTURE_REQUEST';
+    const PAYMENT_QUEUE_CAPTURE                                 = 'PAYMENT_QUEUE_CAPTURE';
     const PAYMENT_QUEUE_CAPTURE_SUCCESS                         = 'PAYMENT_QUEUE_CAPTURE_SUCCESS';
     const PAYMENT_QUEUE_CAPTURE_FAILURE                         = 'PAYMENT_QUEUE_CAPTURE_FAILURE';
     const PAYMENT_CAPTURE_FAILURE_EXCEPTION                     = 'PAYMENT_CAPTURE_FAILURE_EXCEPTION';

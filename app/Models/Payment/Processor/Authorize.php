@@ -954,6 +954,21 @@ trait Authorize
         $this->repo->saveOrFail($payment);
     }
 
+    public function shouldGatewayCapturePayment(Payment\Entity $payment)
+    {
+        if (($payment->isGatewayCaptured() === false) and
+            ($payment->getGateway() === Payment\Gateway::PAYSECURE))
+        {
+            if (($payment->card !== null) and
+                ($payment->card->iinRelation !== null) and
+                ($payment->card->iinRelation->isRupaySms() === true))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function autoCapturePaymentIfApplicable(Payment\Entity $payment)
     {
         if ($this->shouldAutoCapture($payment) === true)
@@ -961,6 +976,10 @@ trait Authorize
             // If payment_capture was sent as true in order,
             // then we capture it in this step only.
             $this->autoCapturePayment($payment);
+        }
+        else if ($this->shouldGatewayCapturePayment($payment) === true)
+        {
+            $this->gatewayCapturePaymentViaQueue($payment);
         }
     }
 

@@ -194,6 +194,17 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SUBTYPE);
     }
 
+    public function getMessageType()
+    {
+        return $this->getAttribute(self::MESSAGE_TYPE);
+    }
+
+    public function isRupaySMS()
+    {
+        return (($this->getNetworkCode() === Card\Network::RUPAY) and
+                ($this->getMessageType() === 'SMS'));
+    }
+
     public function setType($type)
     {
         Card\Type::checkType($type);

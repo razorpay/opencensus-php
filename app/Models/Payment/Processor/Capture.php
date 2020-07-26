@@ -69,6 +69,24 @@ trait Capture
         return $this->capturePayment($payment, $input['amount'], $input['currency']);
     }
 
+    public function gatewayCapturePaymentViaQueue($payment)
+    {
+        $this->setPayment($payment);
+
+        $amount = $payment->getAmount();
+
+        if ($payment->isFeeBearerCustomer() === true)
+        {
+            $amount -= $payment->getFee();
+        }
+
+        $currency = $payment->getCurrency();
+
+        $data = $this->getCaptureData($payment, $amount, $currency);
+
+        $this->dispatchAsyncCapture($data);
+    }
+
     /**
      * Captures a payment and sets auto-capture flag true
      *
@@ -331,36 +349,9 @@ trait Capture
     {
         try
         {
-            $this->modifyCaptureAmountForDiscountedOrder($payment, $captureAmount);
-
-            $this->modifyCaptureAmountForPaymentFee($payment, $captureAmount);
-
             $autoCaptured = $payment->getAutoCaptured();
 
-            $payment->getValidator()->captureValidate($payment, $captureAmount, $currency);
-
-            $data = [
-                'payment' => $payment->toArrayGateway(),
-                'amount' => $payment->getGatewayAmount(),
-                'currency' => $payment->getGatewayCurrency()
-            ];
-
-            if ($payment->isMethodCardOrEmi())
-            {
-                $card = $this->repo->card->fetchForPayment($payment);
-                $data['card'] = $card->toArray();
-            }
-
-            if ($payment->getConvertCurrency() === true)
-            {
-                $data['amount'] = $payment->getBaseAmount();
-                $data['currency'] = Currency\Currency::INR;
-            }
-
-            if ($payment->isUpiOtm() === true)
-            {
-                $data['upi'] = $payment->getUpiMetadata()->toArray();
-            }
+            $data = $this->getCaptureData($payment, $captureAmount, $currency);
 
             $this->captureOnGateway($data, $autoCaptured);
 
@@ -376,6 +367,40 @@ trait Capture
 
             throw $e;
         }
+    }
+
+    protected function getCaptureData(Payment\Entity $payment, int $captureAmount, string $currency)
+    {
+        $this->modifyCaptureAmountForDiscountedOrder($payment, $captureAmount);
+
+        $this->modifyCaptureAmountForPaymentFee($payment, $captureAmount);
+
+        $payment->getValidator()->captureValidate($payment, $captureAmount, $currency);
+
+        $data = [
+            'payment' => $payment->toArrayGateway(),
+            'amount' => $payment->getGatewayAmount(),
+            'currency' => $payment->getGatewayCurrency()
+        ];
+
+        if ($payment->isMethodCardOrEmi())
+        {
+            $card = $this->repo->card->fetchForPayment($payment);
+            $data['card'] = $card->toArray();
+        }
+
+        if ($payment->getConvertCurrency() === true)
+        {
+            $data['amount'] = $payment->getBaseAmount();
+            $data['currency'] = Currency\Currency::INR;
+        }
+
+        if ($payment->isUpiOtm() === true)
+        {
+            $data['upi'] = $payment->getUpiMetadata()->toArray();
+        }
+
+        return $data;
     }
 
     /**
@@ -543,6 +568,8 @@ trait Capture
         {
             case Payment\Gateway::HDFC:
                 return (($ex instanceof Exception\GatewayTimeoutException) === true);
+            case Payment\Gateway::PAYSECURE:
+                return true;
         }
 
         return false;
