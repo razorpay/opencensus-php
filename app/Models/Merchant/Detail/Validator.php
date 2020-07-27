@@ -986,6 +986,33 @@ class Validator extends Base\Validator
     }
 
     /**
+     * This Function Skip the validation activation form lock status, as some merchant already filled up the L2 form
+     * and those form will be locked, so to update through batch we are skipping lock check.
+     *
+     * @param array $input
+     *
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function performInstantActivationValidationsBatch(array $input)
+    {
+        $merchantDetails = $this->entity;
+
+        // validates if the business subcategory belongs to the business category
+        $this->validateBusinessSubcategoryForCategory($input);
+
+        $merchantValidator = new Merchant\Validator;
+
+        $merchant = $merchantDetails->merchant;
+
+        //
+        // Block a whitelisted (and hence, activated) merchant from submitting the instant activation form again.
+        // However, a non activated merchant (blacklisted and greylisted merchants) can still submit the form.
+        //
+        $merchantValidator->validateIsNotActivated($merchant);
+    }
+
+    /**
      * Contains validations for full activation form (L2 activation form)
      * L1 and L2 activation form have different validations
      *
@@ -1053,4 +1080,27 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * This functions is to Check if activation is coming from batch flow and if it is coming from batch flow  check from
+     * DB whether activation status is null or not. If activation status is null in DB, we allow activationStatus to get updated.
+     * If activation status is not null in DB and it is batch flow, then skip updateActivationStatus function
+     *
+     * @param Merchant\Entity $merchant
+     * @param array           $input
+     * @param bool            $batchFlow
+     *
+     * @return bool
+     */
+    public function validateBatchFlowAndActivationStatusState(Merchant\Entity $merchant, array $input, bool $batchFlow = false):bool
+    {
+        $detailCore = new Merchant\Detail\Core;
+
+        $merchantDetails = $detailCore->getMerchantDetails($merchant, $input);
+
+        $merchantDetails->getValidator()->validateInput('activationStatus', $input);
+
+        $currentActivationStatus = $merchantDetails->getActivationStatus();
+
+        return (($batchFlow === true) and ($currentActivationStatus !== null) === false);
+    }
 }

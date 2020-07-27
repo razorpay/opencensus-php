@@ -577,7 +577,7 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
-        $merchantDetails->getValidator()->performInstantActivationValidations($input);
+        $merchantDetails->getValidator()->performInstantActivationValidationsBatch($input);
 
         $merchantDetails->edit($input, 'instant_activation_batch');
 
@@ -630,7 +630,7 @@ class Core extends Base\Core
 
         $merchantDetails = $merchant->merchantDetail;
 
-        (new Merchant\Activate)->instantlyActivate($merchant, $merchantDetails, $sendActivationMail);
+        (new Merchant\Activate)->instantlyActivate($merchant, $merchantDetails, $batchFlow, $sendActivationMail);
     }
     /**
      * Contains preconditions for Processing Instant activation

@@ -146,14 +146,15 @@ class Activate extends Base\Core
     /**
      * @param Entity        $merchant
      * @param Detail\Entity $merchantDetails
+     * @param bool          $batchFlow
      * @param bool          $sendActivationMail
      *
      * @return array
-     * @throws Exception\BadRequestException
+     * @throws BadRequestException
      * @throws Exception\LogicException
      * @throws Throwable
      */
-    public function instantlyActivate(Entity $merchant, Detail\Entity $merchantDetails, bool $sendActivationMail = true): array
+    public function instantlyActivate(Entity $merchant, Detail\Entity $merchantDetails, bool $batchFlow = false, bool $sendActivationMail = true): array
     {
         $detailCore = new Detail\Core;
 
@@ -198,7 +199,10 @@ class Activate extends Base\Core
             (new Merchant\Core)->addMerchantEmailToMailingList($merchant);
         }
 
-        $detailCore->updateActivationStatus($merchant, $activationStatusData, $merchant);
+        if (($batchFlow === false) or (new Detail\Validator)->validateBatchFlowAndActivationStatusState($merchant,$activationStatusData,$batchFlow))
+        {
+            $detailCore->updateActivationStatus($merchant, $activationStatusData, $merchant);
+        }
 
         $this->activateMerchantPromotions($merchant);
 
