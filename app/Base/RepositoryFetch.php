@@ -171,7 +171,18 @@ trait RepositoryFetch
         // how that happens.
         list($mysqlParams, $esParams) = $this->getMysqlAndEsParams($params);
 
-        $paginate = false;
+        // If we find that there are es params then we do es search.
+        // Currently (as commented in getMysqlAndEsParams method) we raise bad
+        // request error if we get mix of MySQL and es params. Later we might support
+        // such thing.
+        if (count($esParams) > 0)
+        {
+            return $this->runEsFetch($esParams, $merchantId, $expands);
+        }
+
+        // If above doesn't happen we build query for mysql fetch and return the
+        // result.
+        $query = $this->buildFetchQuery($query, $mysqlParams);
 
         //
         // For now, we want to expose this only for proxy auth.
@@ -182,24 +193,6 @@ trait RepositoryFetch
         // exposing on private auth. SDKs _might_ have to fixed too.
         //
         if ($this->auth->isProxyAuth() === true)
-        {
-            $paginate = true;
-        }
-
-        // If we find that there are es params then we do es search.
-        // Currently (as commented in getMysqlAndEsParams method) we raise bad
-        // request error if we get mix of MySQL and es params. Later we might support
-        // such thing.
-        if (count($esParams) > 0)
-        {
-            return $this->runEsFetch($esParams, $expands, $merchantId, $paginate);
-        }
-
-        // If above doesn't happen we build query for mysql fetch and return the
-        // result.
-        $query = $this->buildFetchQuery($query, $mysqlParams);
-
-        if ($paginate === true)
         {
             return $this->getPaginated($query, $params);
         }
@@ -313,36 +306,28 @@ trait RepositoryFetch
      * Runs ES fetch
      *
      * @param array       $params
-     * @param array       $expands
      * @param string|null $merchantId
-     * @param bool        $shouldEnrich
      *
      * @return PublicCollection
      */
     protected function runEsFetch(
         array $params,
-        array $expands,
         string $merchantId = null,
-        bool $shouldEnrich = false): PublicCollection
+        array $expands): PublicCollection
     {
         $response = $this->esRepo->buildQueryAndSearch($params, $merchantId);
-        $totalHits = $response[Es::HITS][Es::TOTAL] ?? 0;
 
         // Extract results from ES response. If hit has _source get that else just the document id.
         $result = array_map(
                     function ($res)
                     {
-                        return $res[Es::_SOURCE] ?? [Common::ID => $res[Es::_ID]];
+                        return $res[ES::_SOURCE] ?? [Common::ID => $res[ES::_ID]];
                     },
-                    $response[Es::HITS][Es::HITS]);
+                    $response[ES::HITS][ES::HITS]);
 
         if (count($result) === 0)
         {
-            $emptyCollection = new PublicCollection;
-
-            $this->enrichCollectionIfApplicable($params, $totalHits, $emptyCollection, $shouldEnrich);
-
-            return $emptyCollection;
+            return new PublicCollection;
         }
 
         // If callee expects only es data (for auto-complete etc) then hydrate the result into model and return.
@@ -350,12 +335,7 @@ trait RepositoryFetch
 
         if ($esHitsOnly)
         {
-            $hydratedCollection = $this->hydrate($result);
-
-            $this->enrichCollectionIfApplicable($params, $totalHits, $hydratedCollection, $shouldEnrich);
-
-            return $hydratedCollection;
-
+            return $this->hydrate($result);
         }
 
         // Else extract the matched ids and return collection by making a MySQL query on found ids.
@@ -379,8 +359,6 @@ trait RepositoryFetch
         {
             $this->trace->critical(TraceCode::ES_MYSQL_RESULTS_MISMATCH, ['ids' => $ids]);
         }
-
-        $this->enrichCollectionIfApplicable($params, $totalHits, $entities, $shouldEnrich);
 
         return $entities;
     }
@@ -670,13 +648,13 @@ trait RepositoryFetch
      */
     protected function resolvePageForPagination($query, $params)
     {
-        $query->getModel()->setPerPage($params[self::COUNT]);
+        $query->getModel()->setPerPage($params['count']);
 
         Paginator::currentPageResolver(function() use ($params) {
-            $skip = $params[self::SKIP] ?? 0;
+            $skip = $params['skip'] ?? 0;
             // We always add a default count param if not sent in the request.
             // Check `addDefaultParamCount` function.
-            $count = $params[self::COUNT];
+            $count = $params['count'];
 
             return (($skip + $count) / $count);
         });
@@ -876,8 +854,6 @@ trait RepositoryFetch
      *
      * @param BuilderEx $query
      * @param string    $merchantId
-     *
-     * @throws InvalidArgumentException
      */
     protected function addCommonQueryParamMerchantId($query, $merchantId)
     {
@@ -1025,38 +1001,6 @@ trait RepositoryFetch
         if (isset($params['count']) === false)
         {
             $params['count'] = $count;
-        }
-    }
-
-    /**
-     * Enriches the collection with the `hasMore` attribute if applicable.
-     *
-     * @param array $params
-     * @param int $totalHits
-     * @param PublicCollection $collection
-     * @param bool $shouldEnrich
-     */
-    protected function enrichCollectionIfApplicable(array $params,
-                                                    int $totalHits,
-                                                    PublicCollection $collection,
-                                                    bool $shouldEnrich): void
-    {
-        if ($shouldEnrich === false)
-        {
-            return;
-        }
-
-        $skip = $params[self::SKIP] ?? 0;
-
-        $count = $params[self::COUNT] ?? 10;
-
-        if (($skip + $count) < $totalHits)
-        {
-            $collection->setHasMore(true);
-        }
-        else
-        {
-            $collection->setHasMore(false);
         }
     }
 }

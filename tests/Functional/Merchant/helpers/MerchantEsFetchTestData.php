@@ -15,37 +15,6 @@ return [
         ],
     ],
 
-    'testGetMerchantsFromEsWithCountAndSkip' => [
-        'request' => [
-            'url'     => '/admins/merchants',
-            'method'  => 'GET',
-            'content' => [
-                'q'              => 'jitendra',
-                'account_status' => 'activated',
-                'count'          => 1,
-                'skip'           => 1,
-            ],
-        ],
-        'response' => [
-            'content' => [],
-        ],
-    ],
-
-    'testGetMerchantsFromEsWithCount' => [
-        'request' => [
-            'url'     => '/admins/merchants',
-            'method'  => 'GET',
-            'content' => [
-                'q'              => 'jitendra',
-                'account_status' => 'activated',
-                'count'          => 1,
-            ],
-        ],
-        'response' => [
-            'content' => [],
-        ],
-    ],
-
     'testGetMerchantsFromEsByAccountStatusAll' => [
         'request'  => [
             'url'     => '/admins/merchants',

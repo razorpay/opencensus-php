@@ -122,7 +122,6 @@ class PublicCollection extends Collection
     {
         $array[static::ENTITY] = $this->entity;
         $array[static::COUNT] = count($this->items);
-        $this->setHasMoreInCollectionResponse($array);
         $array['admin'] = true;
 
         $array[static::ITEMS] = $this->itemsToArrayAdmin();

@@ -114,8 +114,6 @@ class PayoutTest extends TestCase
 
         $payout = $this->getLastEntity('payout', true);
 
-        $contact = $this->getLastEntity('contact', true);
-
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         // On private auth, payout.user_id should be null
@@ -2282,21 +2280,6 @@ class PayoutTest extends TestCase
         $this->testCreatePayout();
         $this->testCreatePayout();
         $this->testCreatePayout();
-
-        $this->ba->proxyAuth();
-        $this->startTest();
-    }
-
-    public function testFetchMultipleWithHasMoreEsWithSkipAndCount()
-    {
-        $this->testCreatePayout();
-        $this->testCreatePayout();
-        $this->testCreatePayout();
-        $this->testCreatePayout();
-
-        $contact = $this->getLastEntity('contact', true);
-
-        $this->testData[__FUNCTION__]['request']['content']['contact_name'] = $contact['name'];
 
         $this->ba->proxyAuth();
         $this->startTest();
@@ -5020,89 +5003,5 @@ class PayoutTest extends TestCase
 
         // Assert that no payouts remain in batch_processing state
         $this->assertEquals(0, $batchProcessingPayouts->count());
-    }
-
-    public function testFetchMultipleWithHasMoreOnPrivateFromES()
-    {
-        $this->testCreatePayout();
-
-        $this->ba->privateAuth();
-        $response = $this->startTest();
-
-        $this->assertArrayNotHasKey(PublicCollection::HAS_MORE, $response);
-    }
-
-    public function testFetchMultipleWithHasMoreFalseWithNoResultsFromES()
-    {
-        $this->ba->proxyAuth();
-        $this->startTest();
-    }
-
-    public function testFetchMultipleWithHasMoreWithSkipAndCountFromES()
-    {
-        $this->testCreatePayout();
-        $this->testCreatePayout();
-        $this->testCreatePayout();
-        $this->testCreatePayout();
-
-        $contact = $this->getLastEntity('contact', true);
-        $this->testData[__FUNCTION__]['request']['content']['contact_name'] = $contact['name'];
-
-        $this->ba->proxyAuth();
-        $this->startTest();
-    }
-
-    public function testFetchMultipleWithHasMoreWithExactSkipAndCountFromES()
-    {
-        $this->testCreatePayout();
-        $this->testCreatePayout();
-        $this->testCreatePayout();
-        $this->testCreatePayout();
-
-        $contact = $this->getLastEntity('contact', true);
-        $this->testData[__FUNCTION__]['request']['content']['contact_name'] = $contact['name'];
-
-        $this->ba->proxyAuth();
-        $this->startTest();
-    }
-
-
-    public function testFetchMultipleWithHasMoreWithOnlyCountFromES()
-    {
-        $this->testCreatePayout();
-        $this->testCreatePayout();
-        $this->testCreatePayout();
-
-        $contact = $this->getLastEntity('contact', true);
-        $this->testData[__FUNCTION__]['request']['content']['contact_name'] = $contact['name'];
-
-        $this->ba->proxyAuth();
-        $this->startTest();
-    }
-
-    public function testFetchMultipleWithHasMoreWithOnlyMaxCountFromES()
-    {
-        $this->testCreatePayout();
-        $this->testCreatePayout();
-        $this->testCreatePayout();
-
-        $contact = $this->getLastEntity('contact', true);
-        $this->testData[__FUNCTION__]['request']['content']['contact_name'] = $contact['name'];
-
-        $this->ba->proxyAuth();
-        $this->startTest();
-    }
-
-    public function testFetchMultipleWithHasMoreWithNoCountAndSkipFromES()
-    {
-        $this->testCreatePayout();
-        $this->testCreatePayout();
-        $this->testCreatePayout();
-
-        $contact = $this->getLastEntity('contact', true);
-        $this->testData[__FUNCTION__]['request']['content']['contact_name'] = $contact['name'];
-
-        $this->ba->proxyAuth();
-        $this->startTest();
     }
 }
