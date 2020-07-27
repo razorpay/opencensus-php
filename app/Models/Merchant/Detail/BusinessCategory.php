@@ -96,38 +96,6 @@ class BusinessCategory
 
     // Business Category to Subcategories Details mapping
     const SUBCATEGORY_MAP = [
-        self::ACCOUNTING => [
-            Sub::ACCOUNTING,
-        ],
-
-        self::COUPONS => [
-            Sub::COUPONS,
-        ],
-
-        self::REPAIR_AND_CLEANING => [
-            Sub::REPAIR_AND_CLEANING,
-        ],
-
-        self::CAB_HAILING => [
-            Sub::CAB_HAILING,
-        ],
-
-        self::CATERING => [
-            Sub::CATERING,
-        ],
-
-        self::CHARITY => [
-            Sub::CHARITY,
-        ],
-
-        self::COMPUTER_PROGRAMMING_DATA_PROCESSING => [
-            Sub::COMPUTER_PROGRAMMING_DATA_PROCESSING,
-        ],
-
-        self::CONSULTING_AND_OUTSOURCING => [
-            Sub::CONSULTING_AND_OUTSOURCING,
-        ],
-
         self::ECOMMERCE => [
             Sub::ECOMMERCE_MARKETPLACE,
             Sub::AGRICULTURE,
@@ -256,31 +224,6 @@ class BusinessCategory
             Sub::FASHION_AND_LIFESTYLE,
         ],
 
-        self::FINANCIAL_SERVICES => [
-            Sub::MUTUAL_FUND,
-            Sub::LENDING,
-            Sub::CRYPTOCURRENCY,
-            Sub::INSURANCE,
-            Sub::NBFC,
-            Sub::COOPERATIVES,
-            Sub::PENSION_FUND,
-            Sub::FOREX,
-            Sub::SECURITIES,
-            Sub::COMMODITIES,
-            Sub::ACCOUNTING,
-            Sub::FINANCIAL_ADVISOR,
-            Sub::CROWDFUNDING,
-            Sub::TRADING,
-            Sub::BETTING,
-            Sub::GET_RICH_SCHEMES,
-            Sub::MONEYSEND_FUNDING,
-            Sub::WIRE_TRANSFERS_AND_MONEY_ORDERS,
-            Sub::TAX_PREPARATION_SERVICES,
-            Sub::TAX_PAYMENTS,
-            Sub::DIGITAL_GOODS,
-            Sub::ATMS,
-        ],
-
         self::FOOD => [
             Sub::ONLINE_FOOD_ORDERING,
             Sub::RESTAURANT,
@@ -292,31 +235,18 @@ class BusinessCategory
             Sub::BAKERIES,
         ],
 
-        self::GAMING => [
-            Sub::GAME_DEVELOPER,
-            Sub::ESPORTS,
-            Sub::ONLINE_CASINO,
-            Sub::FANTASY_SPORTS,
-            Sub::GAMING_MARKETPLACE,
-        ],
-
-        self::DROP_SHIPPING => [
-            Sub::DROP_SHIPPING,
-        ],
-
-        self::GOVERNMENT => [
-            Sub::CENTRAL,
-            Sub::STATE,
-            Sub::INTRA_GOVERNMENT_PURCHASES,
-            Sub::GOVERMENT_POSTAL_SERVICES,
-        ],
-
         self::GROCERY => [
             Sub::GROCERY,
         ],
 
-        self::HEALTH_COACHING => [
-            Sub::HEALTH_COACHING,
+        self::IT_AND_SOFTWARE => [
+            Sub::SAAS,
+            Sub::PAAS,
+            Sub::IAAS,
+            Sub::CONSULTING_AND_OUTSOURCING,
+            Sub::WEB_DEVELOPMENT,
+            Sub::TECHNICAL_SUPPORT,
+            Sub::DATA_PROCESSING,
         ],
 
         self::HEALTHCARE => [
@@ -340,75 +270,6 @@ class BusinessCategory
             Sub::HEALTH_PRACTITIONERS_MEDICAL_SERVICES,
             Sub::TESTING_LABORATORIES,
             Sub::DOCTORS,
-        ],
-
-        self::HOUSING => [
-            Sub::DEVELOPER,
-            Sub::FACILITY_MANAGEMENT,
-            Sub::RWA,
-            Sub::COWORKING,
-            Sub::REALESTATE_CLASSIFIEDS,
-            Sub::SPACE_RENTAL,
-        ],
-
-        self::IT_AND_SOFTWARE => [
-            Sub::SAAS,
-            Sub::PAAS,
-            Sub::IAAS,
-            Sub::CONSULTING_AND_OUTSOURCING,
-            Sub::WEB_DEVELOPMENT,
-            Sub::TECHNICAL_SUPPORT,
-            Sub::DATA_PROCESSING,
-        ],
-
-        self::LOGISTICS => [
-            Sub::FREIGHT,
-            Sub::COURIER,
-            Sub::WAREHOUSING,
-            Sub::DISTRIBUTION,
-            Sub::END_TO_END_LOGISTICS,
-            Sub::COURIER_SERVICES,
-        ],
-
-        self::MEDIA_AND_ENTERTAINMENT => [
-            Sub::VIDEO_ON_DEMAND,
-            Sub::MUSIC_STREAMING,
-            Sub::MULTIPLEX,
-            Sub::CONTENT_AND_PUBLISHING,
-            Sub::TICKETING,
-            Sub::NEWS,
-            Sub::VIDEO_GAME_ARCADES,
-            Sub::VIDEO_TAPE_PRODUCTION_AND_DISTRIBUTION,
-            Sub::BOWLING_ALLEYS,
-            Sub::BILLIARD_AND_POOL_ESTABLISHMENTS,
-            Sub::AMUSEMENT_PARKS_AND_CIRCUSES,
-            Sub::TICKET_AGENCIES,
-        ],
-
-        self::NOT_FOR_PROFIT => [
-            Sub::CHARITY,
-            Sub::EDUCATIONAL,
-            Sub::RELIGIOUS,
-            Sub::PERSONAL,
-        ],
-
-        self::OTHERS => [
-        ],
-
-        self::PAAS => [
-            Sub::PAAS,
-        ],
-
-        self::COWORKING => [
-            Sub::COWORKING,
-        ],
-
-        self::SAAS => [
-            Sub::SAAS,
-        ],
-
-        self::SERVICE_CENTRE => [
-            Sub::SERVICE_CENTRE,
         ],
 
         self::SERVICES => [
@@ -506,6 +367,149 @@ class BusinessCategory
             sub::PROFESSIONAL_SERVICES,
         ],
 
+        self::WEB_DEVELOPMENT => [
+            Sub::WEB_DEVELOPMENT,
+        ],
+
+        self::ACCOUNTING => [
+            Sub::ACCOUNTING,
+        ],
+
+        self::COUPONS => [
+            Sub::COUPONS,
+        ],
+
+        self::REPAIR_AND_CLEANING => [
+            Sub::REPAIR_AND_CLEANING,
+        ],
+
+        self::CAB_HAILING => [
+            Sub::CAB_HAILING,
+        ],
+
+        self::CATERING => [
+            Sub::CATERING,
+        ],
+
+        self::CHARITY => [
+            Sub::CHARITY,
+        ],
+
+        self::COMPUTER_PROGRAMMING_DATA_PROCESSING => [
+            Sub::COMPUTER_PROGRAMMING_DATA_PROCESSING,
+        ],
+
+        self::CONSULTING_AND_OUTSOURCING => [
+            Sub::CONSULTING_AND_OUTSOURCING,
+        ],
+
+        self::FINANCIAL_SERVICES => [
+            Sub::MUTUAL_FUND,
+            Sub::LENDING,
+            Sub::CRYPTOCURRENCY,
+            Sub::INSURANCE,
+            Sub::NBFC,
+            Sub::COOPERATIVES,
+            Sub::PENSION_FUND,
+            Sub::FOREX,
+            Sub::SECURITIES,
+            Sub::COMMODITIES,
+            Sub::ACCOUNTING,
+            Sub::FINANCIAL_ADVISOR,
+            Sub::CROWDFUNDING,
+            Sub::TRADING,
+            Sub::BETTING,
+            Sub::GET_RICH_SCHEMES,
+            Sub::MONEYSEND_FUNDING,
+            Sub::WIRE_TRANSFERS_AND_MONEY_ORDERS,
+            Sub::TAX_PREPARATION_SERVICES,
+            Sub::TAX_PAYMENTS,
+            Sub::DIGITAL_GOODS,
+            Sub::ATMS,
+        ],
+
+        self::GAMING => [
+            Sub::GAME_DEVELOPER,
+            Sub::ESPORTS,
+            Sub::ONLINE_CASINO,
+            Sub::FANTASY_SPORTS,
+            Sub::GAMING_MARKETPLACE,
+        ],
+
+        self::DROP_SHIPPING => [
+            Sub::DROP_SHIPPING,
+        ],
+
+        self::GOVERNMENT => [
+            Sub::CENTRAL,
+            Sub::STATE,
+            Sub::INTRA_GOVERNMENT_PURCHASES,
+            Sub::GOVERMENT_POSTAL_SERVICES,
+        ],
+
+        self::HEALTH_COACHING => [
+            Sub::HEALTH_COACHING,
+        ],
+
+        self::HOUSING => [
+            Sub::DEVELOPER,
+            Sub::FACILITY_MANAGEMENT,
+            Sub::RWA,
+            Sub::COWORKING,
+            Sub::REALESTATE_CLASSIFIEDS,
+            Sub::SPACE_RENTAL,
+        ],
+
+        self::LOGISTICS => [
+            Sub::FREIGHT,
+            Sub::COURIER,
+            Sub::WAREHOUSING,
+            Sub::DISTRIBUTION,
+            Sub::END_TO_END_LOGISTICS,
+            Sub::COURIER_SERVICES,
+        ],
+
+        self::MEDIA_AND_ENTERTAINMENT => [
+            Sub::VIDEO_ON_DEMAND,
+            Sub::MUSIC_STREAMING,
+            Sub::MULTIPLEX,
+            Sub::CONTENT_AND_PUBLISHING,
+            Sub::TICKETING,
+            Sub::NEWS,
+            Sub::VIDEO_GAME_ARCADES,
+            Sub::VIDEO_TAPE_PRODUCTION_AND_DISTRIBUTION,
+            Sub::BOWLING_ALLEYS,
+            Sub::BILLIARD_AND_POOL_ESTABLISHMENTS,
+            Sub::AMUSEMENT_PARKS_AND_CIRCUSES,
+            Sub::TICKET_AGENCIES,
+        ],
+
+        self::NOT_FOR_PROFIT => [
+            Sub::CHARITY,
+            Sub::EDUCATIONAL,
+            Sub::RELIGIOUS,
+            Sub::PERSONAL,
+        ],
+
+        self::OTHERS => [
+        ],
+
+        self::PAAS => [
+            Sub::PAAS,
+        ],
+
+        self::COWORKING => [
+            Sub::COWORKING,
+        ],
+
+        self::SAAS => [
+            Sub::SAAS,
+        ],
+
+        self::SERVICE_CENTRE => [
+            Sub::SERVICE_CENTRE,
+        ],
+
         self::SOCIAL => [
             Sub::MATCHMAKING,
             Sub::SOCIAL_NETWORK,
@@ -559,10 +563,6 @@ class BusinessCategory
 
         self::UTILITIES_ELECTRIC_GAS_OIL_WATER => [
             Sub::UTILITIES_ELECTRIC_GAS_OIL_WATER,
-        ],
-
-        self::WEB_DEVELOPMENT => [
-            Sub::WEB_DEVELOPMENT,
         ],
     ];
 
