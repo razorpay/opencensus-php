@@ -3555,7 +3555,7 @@ class Terminal extends Base
     {
         $defaultValues = [
             'id'                          => 'VaVpaShrdicici',
-            'gateway_merchant_id'         => '12345',
+            'gateway_merchant_id'         => '403343',
             'gateway_merchant_id2'        => 'rzr.payto00000@icici',
             'type'                        => [
                 Type::NON_RECURRING => '1',

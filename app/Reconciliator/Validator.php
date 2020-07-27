@@ -71,7 +71,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::VIRTUAL_ACC_YESBANK=> ["/Confidential \| Cash Management MIS Report E-Collect/"],
         RequestProcessor\Base::HITACHI            => ["/RAZORPAY RBL SETTLED REPORT for the date of [0-9]{2}-"
                                                      . "[0-9]{2}-20[0-9]{2}/"],
-        RequestProcessor\Base::UPI_ICICI          => [
+        RequestProcessor\Base::UPI_ICICI          => ["/Eazypay app sales summary-[0-9]{2}-[0-9]{2}-20[0-9]{2}_[0-9]{2}-[0-9]{2}-20[0-9]{2}/",
                                                          "/Eazypay app\s*sales summary-[0-9]{2}-"
                                                          . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
                                                          "/Refund MIS for [0-9]{6}_RAZORPAY/"

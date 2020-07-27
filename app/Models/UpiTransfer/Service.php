@@ -194,6 +194,11 @@ class Service extends Base\Service
 
     protected function determineAndSetMode()
     {
+        if (isset($this->app['rzp.mode']) === true)
+        {
+            return;
+        }
+
         $routeName = $this->app['api.route']->getCurrentRouteName();
 
         // Gets mode per route and sets application & db mode.

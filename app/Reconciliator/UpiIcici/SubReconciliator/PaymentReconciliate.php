@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\BharatQr;
 use RZP\Trace\TraceCode;
+use RZP\Models\UpiTransfer;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Status;
 use RZP\Models\Payment\Gateway;
@@ -51,11 +52,17 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         UpiIciciFields::TXN_COMPLETION_DATE => self::TIME,
     ];
 
+    const UPI_TRANSFER_MERCHANT_ID      = '403343';
+
     protected function getPaymentId(array $row)
     {
         if (strpos($row[self::SUB_MERCHANT_NAME], 'BHARAT QR') !== false)
         {
             return $this->getPaymentIdFromBharatQrEntity($row);
+        }
+        else if ($this->isUpiTransferPaymentTxn($row) === true)
+        {
+            return $this->fetchOrCreatePaymentIdForUpiTransfer($row);
         }
         else
         {
@@ -382,5 +389,75 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         // have received the payment in MIS file, which means payment got success at bank's side)
         //
         $this->allowForceAuthorization = true;
+    }
+
+    private function isUpiTransferPaymentTxn(array $row)
+    {
+        return ($row[self::MERCHANT_ID] === self::UPI_TRANSFER_MERCHANT_ID);
+    }
+
+    private function fetchOrCreatePaymentIdForUpiTransfer(array $row)
+    {
+        $referenceNumber = $this->getReferenceNumber($row);
+
+        if (empty($referenceNumber) === true)
+        {
+            return null;
+        }
+
+        $upiTransfer = $this->repo->upi_transfer->findByNpciReferenceIdAndGateway($referenceNumber, Gateway::UPI_ICICI);
+
+        if ($upiTransfer !== null)
+        {
+            return $upiTransfer->payment->getId();
+        }
+
+        $callbackData = $this->generateCallbackData($row);
+
+        if ($callbackData === null)
+        {
+            return null;
+        }
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'info_code' => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATE_INITIATED,
+                'rrn'       => $referenceNumber,
+                'gateway'   => $this->gateway,
+                'batch_id'  => $this->batchId
+            ]
+        );
+
+        $response = (new UpiTransfer\Service())->processUpiTransferPayment(json_encode($callbackData), Gateway::UPI_ICICI);
+
+        $upiTransfer = $this->repo->upi_transfer->findByNpciReferenceIdAndGateway($referenceNumber, Gateway::UPI_ICICI);
+
+        if ($upiTransfer === null)
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'infoCode' => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATION_FAILED,
+                    'rrn'      => $referenceNumber,
+                    'response' => $response,
+                    'gateway'  => $this->gateway,
+                    'batch_id' => $this->batchId,
+                ]);
+
+            return null;
+        }
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'infoCode'   => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATED,
+                'payment_id' => $upiTransfer->payment->getId(),
+                'rrn'        => $referenceNumber,
+                'gateway'    => $this->gateway,
+                'batch_id'   => $this->batchId,
+            ]);
+
+        return $upiTransfer->payment->getId();
     }
 }

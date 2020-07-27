@@ -9,6 +9,7 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Status;
+use RZP\Services\RazorXClient;
 use RZP\Models\Base\PublicEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
@@ -630,5 +631,72 @@ class UpiIciciGatewayReconTest extends TestCase
         $this->fixtures->create('upi', ['payment_id' => $payment->getId()]);
 
         return $payment->getId();
+    }
+
+    public function testUpiIciciUpiTransferPaymentCreateViaRecon()
+    {
+        $this->enableRazorXTreatmentForRazorXVpaIcici();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->fixtures->merchant->addFeatures(['virtual_accounts']);
+
+        $this->t2 = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
+
+        $va = $this->createVirtualAccount([], false, null, null, true, 'vaVpaIcici');
+        $vpa = $this->getDbEntityById('vpa', $va['receivers'][0]['id']);
+
+        $reconRow = $this->testData['upiIcici'];
+
+        $reconRow['merchantID']     = '403343';
+        $reconRow['merchantTranID'] = explode('.', $vpa->getUsername())[1];
+
+        $entries[] = $reconRow;
+
+        $file = $this->writeToExcelFile($entries, 'mis_report', 'files/settlement', 'Recon MIS');
+
+        $uploadedFile = $this->createUploadedFile($file);
+
+        $this->reconcile($uploadedFile, 'UpiIcici');
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertArraySubset([
+                                     'method'           => 'upi',
+                                     'status'           => 'captured',
+                                     'receiver_id'      => $vpa->getId(),
+                                     'receiver_type'    => 'vpa',
+                                     'auto_captured'    => true,
+                                     'gateway'          => 'upi_icici',
+                                     'gateway_captured' => true,
+                                     'vpa'              => $reconRow['payerVA'],
+                                     'reference16'      => $reconRow['bankTranID'],
+                                 ], $payment->toArray(), true);
+
+        $transactionId = $payment['transaction_id'];
+        $transaction   = $this->getDbEntityById('transaction', $transactionId);
+
+        $this->assertNotNull($transaction['reconciled_at']);
+    }
+
+    protected function enableRazorXTreatmentForRazorXVpaIcici()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function($mid, $feature, $mode) {
+                                  if ($feature === 'virtual_vpa_icici')
+                                  {
+                                      return 'on';
+                                  }
+
+                                  return 'off';
+                              }));
     }
 }

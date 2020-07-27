@@ -168,7 +168,7 @@ class Base extends Core
         self::JIOMONEY               => [],
         self::EBS                    => [],
         self::FIRST_DATA             => ['customer.care@icici.mailserv.in'],
-        self::UPI_ICICI              => [],
+        self::UPI_ICICI              => ['eazypay@icicibank.com'],
         self::VIRTUAL_ACC_KOTAK      => ['kmb.reports@kotak.com'],
         self::VIRTUAL_ACC_YESBANK    => ['ereport@yesbank.in'],
         self::VIRTUAL_ACC_RBL        => [],

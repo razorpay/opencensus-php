@@ -60,7 +60,7 @@ return [
         'url'     => '/test/upi/callback/icici/upi_icici',
         'method'  => 'post',
         'content' => [
-            Fields::MERCHANT_ID         => '12345',
+            Fields::MERCHANT_ID         => '403343',
             Fields::SUBMERCHANT_ID      => '78965412',
             Fields::TERMINAL_ID         => '5411',
             Fields::BANK_RRN            => '015306767323',
