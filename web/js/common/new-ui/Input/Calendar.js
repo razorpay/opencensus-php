@@ -29,7 +29,7 @@ class CalendarWrapper extends React.Component {
     if (this.props.allowAllDates) {
       return this.disabledInvalidDates;
     } else if (this.props.disabledDate) {
-      if (this.props.disabledDate === 'function') {
+      if (typeof this.props.disabledDate === 'function') {
         return this.props.disabledDate;
       }
     } else if (this.props.disablePastDates) {
