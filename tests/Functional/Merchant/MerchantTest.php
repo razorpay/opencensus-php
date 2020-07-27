@@ -30,6 +30,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\BankingAccount;
+use RZP\Services\DiagClient;
 use RZP\Services\RazorXClient;
 use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
@@ -60,6 +61,7 @@ use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
+use function Clue\StreamFilter\fun;
 
 /**
  * @group dns-sensitive
@@ -3474,7 +3476,7 @@ class MerchantTest extends TestCase
         $settlementOndemandPricingRule = $this->getDbEntities('pricing', ['feature'         => 'settlement_ondemand',
                                                                            'payment_method' => 'fund_transfer',
                                                                            'plan_id'        => '1A0Fkd38fGZPVC'])->toArray();
-                                              
+
         $ondemandPayoutPricingRule = $this->getDbEntities('pricing', ['feature'         => 'payout',
                                                                       'payment_method'  => 'fund_transfer',
                                                                       'plan_id'         => '1A0Fkd38fGZPVC'])->toArray();
@@ -6029,6 +6031,49 @@ class MerchantTest extends TestCase
                              ->method($salesforceClientMethodName);
 
         $this->testMerchantSwitchProductWhenMerchantNotActivatedAndXOnboardingExperimentOff('off', 'school', $banking);
+    }
+
+    public function testMerchantProductSwitchSendsMetricsWithUTMParams($shouldFireEvents = true, $bankingEnabled = false) {
+        //Given
+        $methodsToObserve = ['trackOnboardingEvent'];
+
+        $diagClient = $this->getMockBuilder(DiagClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods($methodsToObserve)
+                           ->getMock();
+
+        $this->app->instance('diag', $diagClient);
+
+        $eventsCalled = [];
+
+        $diagClient->expects($this->any())
+                   ->method($methodsToObserve[0])
+                   ->will($this->returnCallback(
+                       function (array $eventData, Merchant\Entity $merchant = null,
+                                 \Throwable $ex = null, array $customProperties = [])
+                       use (&$eventsCalled) {
+                           $eventsCalled[] = $eventData;
+                           return true;
+                       }));
+
+        //When
+        $this->testMerchantSwitchProductWhenMerchantNotActivatedAndXOnboardingExperimentOff('off', 'school', $bankingEnabled);
+
+        //Then
+        $expectedEvents = [
+            "group" => "onboarding",
+            "name" => "product_switch"
+        ];
+
+        if ($shouldFireEvents) {
+            $this->assertContains($expectedEvents, $eventsCalled);
+        } else {
+            $this->assertNotContains($expectedEvents, $eventsCalled);
+        }
+    }
+
+    public function testMerchantProductSwitchDoesntFireIfBankingAlreadyEnabled() {
+        $this->testMerchantProductSwitchSendsMetricsWithUTMParams(false, true);
     }
 
     /**

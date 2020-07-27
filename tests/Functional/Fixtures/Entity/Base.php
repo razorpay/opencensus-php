@@ -146,8 +146,8 @@ class Base
 
         $entity = Factory::build($entity, $attributes);
 
-        $testEntity = clone $entity;
-        $liveEntity = clone $entity;
+        $testEntity = unserialize(serialize($entity));
+        $liveEntity = unserialize(serialize($entity));
 
         $testEntity->setConnection('test')->saveOrFail();
         $liveEntity->setConnection('live')->saveOrFail();

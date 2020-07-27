@@ -424,6 +424,11 @@ class EventCode
         'name'  => 'signup.create_account.failed',
     ];
 
+    const PRODUCT_SWITCH = [
+        'group' => 'onboarding',
+        'name' => 'product_switch',
+    ];
+
     const ACT_SUBMIT_FORM_SUCCESS = [
         'group' => 'onboarding',
         'name'  => 'act.submit_form.success',

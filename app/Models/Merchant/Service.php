@@ -40,6 +40,7 @@ use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Group;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
+use RZP\Services\DiagClient;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Pricing\Plan;
 use RZP\Models\Payment\Refund;
@@ -4098,8 +4099,11 @@ class Service extends Base\Service
             }
         }
 
-        $this->repo->transactionOnLiveAndTest(function() use ($product)
+        $wasEnabledNow = false;
+
+        $this->repo->transactionOnLiveAndTest(function() use ($product, &$wasEnabledNow)
         {
+
             // Add Banking Role for the current merchant User.
             (new User\Service)->addProductSwitchRole($product);
 
@@ -4132,6 +4136,17 @@ class Service extends Base\Service
             // platform, so we will check if sign up has any promotion running and will assign rewards
              (new Promotion\Core)->applyPromotion($merchant, $product, Promotion\Event\Constants::SIGN_UP);
         });
+
+        // At this point the product switch has happened, and if there were exceptions it
+        // wouldn't have come till here
+        if ($wasEnabledNow) {
+            /** @var $diagClient DiagClient */
+            $diagClient = $this->app['diag'];
+            $utmParams = [];
+            (new User\Service)->addUtmParameters($utmParams);
+            $diagClient->trackOnboardingEvent(EventCode::PRODUCT_SWITCH, $merchant, null, $utmParams);
+        }
+
     }
 
     public function migrationBankingVAs(array $input)
