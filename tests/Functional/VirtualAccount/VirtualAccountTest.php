@@ -2048,6 +2048,16 @@ class VirtualAccountTest extends TestCase
         $this->createVirtualAccount($this->testData['createVAWithAllowedPayer']);
     }
 
+    public function testWebhookVirtualAccountClosedWithAllowedPayers()
+    {
+        $virtualAccount = $this->createVirtualAccount($this->testData['createVAWithAllowedPayer']);
+
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
+        $this->expectWebhookEventWithContents('virtual_account.closed', $expectedEvent);
+
+        $this->closeVirtualAccount($virtualAccount['id']);
+    }
+
     public function testFetchVirtualAccountWithAllowedPayer()
     {
         $response = $this->createVirtualAccount($this->testData['createVAWithAllowedPayer']);

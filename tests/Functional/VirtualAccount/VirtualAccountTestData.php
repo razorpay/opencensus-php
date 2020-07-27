@@ -1385,6 +1385,55 @@ return [
         ],
     ],
 
+    'testWebhookVirtualAccountClosedWithAllowedPayers' => [
+        'mode' => 'test',
+        'event' => [
+            'entity'    => 'event',
+            'event'     => 'virtual_account.closed',
+            'contains'  => [
+                'virtual_account',
+            ],
+            'payload' => [
+                'virtual_account' => [
+                    'entity' => [
+                        'name' => 'Test virtual account',
+                        'entity' => 'virtual_account',
+                        'status' => 'closed',
+                        'description' => 'VA for tests',
+                        'notes' => [
+                            'a' => 'b',
+                        ],
+                        'amount_paid' => 0,
+                        'customer_id' => null,
+                        'receivers' => [
+                            [
+                                'name'      => 'Test virtual account',
+                                'entity'    => 'bank_account',
+                                'ifsc'      => 'RAZR0000001',
+                            ],
+                        ],
+                        'allowed_payers' => [
+                            [
+                                'type'          => 'bank_account',
+                                'bank_account'  => [
+                                    'ifsc'              => 'HDFC0000053',
+                                    'account_number'    => '765432123456789',
+                                ]
+                            ],
+                            [
+                                'type'          => 'bank_account',
+                                'bank_account'  => [
+                                    'ifsc'              => 'UTIB0000013',
+                                    'account_number'    => '000123499988',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testFetchVirtualAccountWithAllowedPayer' => [
         'name'           => 'Test virtual account',
         'entity'         => 'virtual_account',
