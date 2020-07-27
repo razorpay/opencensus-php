@@ -68,7 +68,7 @@ class SubscriptionRegistrationController extends Controller
 
         $paperMandateUpload = $this->service()->fetchPaperMandateUpload($input);
 
-        $response = ApiResponse::json([  "success"   => true, "data" => $paperMandateUpload]);
+        $response = ApiResponse::json($paperMandateUpload);
 
         return $response;
     }
@@ -79,7 +79,7 @@ class SubscriptionRegistrationController extends Controller
 
         $paperMandateUpload = $this->service()->approvePaperMandateIssues($input);
 
-        $response = ApiResponse::json([  "success"   => true, "data" => $paperMandateUpload]);
+        $response = ApiResponse::json($paperMandateUpload);
 
         return $response;
     }
