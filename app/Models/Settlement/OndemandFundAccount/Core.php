@@ -81,8 +81,14 @@ class Core extends Base\Core
     {
         $accountDetails = (new Merchant\Service)->getBankAccount($merchantId);
 
+        $benificiaryName = str_limit(preg_replace('/[^a-zA-Z0-9 ]+/',
+                                                  '',
+                                                  $accountDetails[BankAccount\Entity::BENEFICIARY_NAME]),
+                                                  50,
+                                                  '');
+
         $data =[
-            'name'           => $accountDetails[BankAccount\Entity::BENEFICIARY_NAME],
+            'name'           => $benificiaryName,
             'ifsc'           => $accountDetails[BankAccount\Entity::IFSC_CODE],
             'account_number' => $accountDetails[BankAccount\Entity::ACCOUNT_NUMBER],
             'account_type'   => self::ACCOUNT_TYPE,

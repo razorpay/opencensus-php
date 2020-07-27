@@ -370,7 +370,7 @@ return [
         ]
     ],
 
-    'testNonBankingHourOndemandCreation' => [
+    'testOndemandCreationBankingHour' => [
         'request'  => [
             'url'     => '/settlements/ondemand',
             'method'  => 'post',
@@ -804,7 +804,7 @@ return [
                                 '1' => 'note1',
                                 '2' => 'note2'
                             ],
-                'expand'    => true
+                'expand'    => false
             ],
         ],
         'response' => [
@@ -825,22 +825,6 @@ return [
                                             '2' => 'note2'
                                         ],
 //                'created_at'         => 1582000200,
-                'settlement_ondemand_payouts' => [
-                    'entity' => 'collection',
-                    'count'  => 1,
-                    'items'  => [
-                    [
-//                        'id'            => 'sodp_F2hdIfWGvMza0E',
-                        'merchant_id'    => '10000000000000',
-//                        'ondemand_id'   => 'F2hdIcWTkePDcC',
-                        'fees'           => 472708,
-                        'tax'            => 72108,
-                        'mode'           => 'NEFT',
-                        'amount'         => '20030000',
-                        'status'         => 'initiated',
-                    ]
-                    ]
-                ]
             ]
         ]
     ],

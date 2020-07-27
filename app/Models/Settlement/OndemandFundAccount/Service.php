@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement\OndemandFundAccount;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\SettlementOndemand\CreateOndemandFundAccounts;
@@ -26,7 +27,9 @@ class Service extends Base\Service
 
     public function dispatchSettlementOndemandFundAccountUpdateJob($merchantId)
     {
-        CreateSettlementOndemandFundAccount::dispatch($this->mode, $merchantId);
+        CreateSettlementOndemandFundAccount::dispatch(Mode::TEST, $merchantId);
+
+        CreateSettlementOndemandFundAccount::dispatch(Mode::LIVE, $merchantId);
     }
 
     public function addOndemandFundAccountForMerchant($merchantId)

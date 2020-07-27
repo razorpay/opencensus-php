@@ -485,7 +485,7 @@ class SettlementOndemandTest extends TestCase
                     ], $settlementOndemandPayout);
     }
 
-    public function testNonBankingHourOndemandCreation()
+    public function testOndemandCreationBankingHour()
     {
         $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
 
@@ -502,10 +502,10 @@ class SettlementOndemandTest extends TestCase
 
         $this->app['config']->set('applications.razorpayx_client.live.mock_webhook', false);
 
-        // Force setting non banking hour for non banking hour test.
-        $nonBankingHour = Carbon::create(2020, 2, 18, 20, 0, 0, Timezone::IST);
+        //set time as banking hour for testing
+        $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
 
-        Carbon::setTestNow($nonBankingHour);
+        Carbon::setTestNow($bankingHour);
 
         $this->startTest();
 
@@ -933,14 +933,15 @@ class SettlementOndemandTest extends TestCase
     //Creating Ondemand for merchant whose funds are on hold
     public function testCreateOndemandForFundsOnHoldMerchant()
     {
-        $this->markTestSkipped();
-
         $this->ba->proxyAuth('rzp_live_10000000000000');
 
         $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand_fund_account');
 
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_automatic']);
 
         $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 3000000]);
 
@@ -1073,8 +1074,6 @@ class SettlementOndemandTest extends TestCase
 
     public function testAdjustmentAditionToOndemandXMerchant()
     {
-        $this->markTestSkipped();
-
         $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id'], $this->user->getId());
 
         $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand_fund_account');
