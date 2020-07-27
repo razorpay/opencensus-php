@@ -7,8 +7,6 @@ import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBa
 import { activationDuration } from 'merchant/helpers/data';
 import { trackGoToActivationFromError } from '../../../containers/Home/ga';
 
-const FREE_CREDITS_SIGNUP_SEGMENT = 1594751400;
-
 @RTracking(() => window.rzpQ.component('InstantActivationAnnouncements'))
 export default class InstantActivationAnnouncements extends Component {
   trackEvent = eventOrigin => {
@@ -35,25 +33,14 @@ export default class InstantActivationAnnouncements extends Component {
       ) {
         if (payments && payments.items.length === 0) {
           title = 'Accept Payments';
-          if (user.created_at > FREE_CREDITS_SIGNUP_SEGMENT) {
-            content = (
-              <span>
-                Start accepting payments right away to avail ₹1 lakh free
-                credits & slashed pricing on apps. Meanwhile we will await your
-                KYC details to enable settlements. &nbsp;
-                <Link to="/activation">Fill KYC Form</Link>
-              </span>
-            );
-          } else {
-            content = (
-              <span>
-                You can start using our products to accept payments right away.
-                Meanwhile we will await your KYC details to enable settlements
-                for your account. &nbsp;
-                <Link to="/activation">Fill KYC Form</Link>
-              </span>
-            );
-          }
+          content = (
+            <span>
+              You can start using our products to accept payments right away.
+              Meanwhile we will await your KYC details to enable settlements for
+              your account. &nbsp;
+              <Link to="/activation">Fill KYC Form</Link>
+            </span>
+          );
         } else if (payments && payments.items.length > 0) {
           title = 'Enable Settlements';
           content = (
@@ -101,25 +88,14 @@ export default class InstantActivationAnnouncements extends Component {
         if (user.isActivated && user.poi_verification_status == 'verified') {
           theme = 'success';
           title = 'Accept Payments';
-          if (user.created_at > FREE_CREDITS_SIGNUP_SEGMENT) {
-            content = (
-              <span>
-                Your PAN is verified and you can start accepting domestic
-                payments to avail ₹1 lakh free credits. Meanwhile we will await
-                your KYC details to enable settlements. &nbsp;
-                <Link to="/activation">Fill KYC Form</Link>
-              </span>
-            );
-          } else {
-            content = (
-              <span>
-                Your PAN was successfully verified and you can start accepting
-                domestic payments now. Meanwhile we will await your KYC details
-                to enable settlements for your account. &nbsp;
-                <Link to="/activation">Fill KYC Form</Link>
-              </span>
-            );
-          }
+          content = content = (
+            <span>
+              Your PAN was successfully verified and you can start accepting
+              domestic payments now. Meanwhile we will await your KYC details to
+              enable settlements for your account. &nbsp;
+              <Link to="/activation">Fill KYC Form</Link>
+            </span>
+          );
         } else if (user.poi_verification_status == 'failed') {
           theme = 'danger';
           title = 'Unable To Verify PAN';
