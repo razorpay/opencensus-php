@@ -311,7 +311,7 @@ class UpiRecurringPaymentSharpTest extends TestCase
         $this->assertSame('BAD_REQUEST_PAYMENT_TIMED_OUT', $payment->getInternalErrorCode());
     }
 
-    public function testCreateDailyAutoRecurringPaymentSuccess()
+    public function testCreateDailyAutoRecurringPaymentAndNotifySkips()
     {
         $this->createDbUpiMandate([
             'frequency' => 'daily',
@@ -336,7 +336,9 @@ class UpiRecurringPaymentSharpTest extends TestCase
                 ]);
             });
 
-        $this->doS2SRecurringPayment($this->getDbUpiAutoRecurringPayment());
+        $this->doS2SRecurringPayment($this->getDbUpiAutoRecurringPayment([
+            'description'   => 'notify_skips',
+        ]));
 
         $this->sendReminderRequest($createReminder);
 

@@ -524,6 +524,11 @@ class Gateway extends Base\Gateway
                     // Just fail the retries completely
                     $remindAt  = null;
                 }
+                break;
+
+            case 'notify_skips':
+                $shouldSkip = true;
+                break;
         }
 
         $response = [
