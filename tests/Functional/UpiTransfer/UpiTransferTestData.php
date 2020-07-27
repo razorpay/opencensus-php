@@ -103,7 +103,7 @@ return [
         ],
     ],
 
-    'testUpiTransferValidateTpvWithValidPayeeDetails' => [
+    'testUpiTransferValidateTpvWithValidPayerDetails' => [
         'url'     => '/test/upi/callback/hdfc/upi_mindgate',
         'method'  => 'post',
         'content' => [
@@ -112,7 +112,7 @@ return [
         ],
     ],
 
-    'testUpiTransferValidateTpvWitInvalidPayeeDetails' => [
+    'testUpiTransferValidateTpvWitInvalidPayerDetails' => [
         'url'     => '/test/upi/callback/hdfc/upi_mindgate',
         'method'  => 'post',
         'content' => [

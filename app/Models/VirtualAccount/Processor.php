@@ -37,6 +37,7 @@ abstract class Processor extends Base\Core
     const VIRTUAL_ACCOUNT_NOT_FOUND = 'VIRTUAL_ACCOUNT_NOT_FOUND';
     const VIRTUAL_ACCOUNT_DUE_TO_BE_CLOSED = 'VIRTUAL_ACCOUNT_DUE_TO_BE_CLOSED';
     const VIRTUAL_ACCOUNT_MERCHANT_NOT_LIVE = 'VIRTUAL_ACCOUNT_MERCHANT_NOT_LIVE';
+    const VIRTUAL_ACCOUNT_PAYMENT_TPV_FAILED = 'VIRTUAL_ACCOUNT_PAYMENT_TPV_FAILED';
     const VIRTUAL_ACCOUNT_PAYMENT_AMOUNT_DOES_NOT_MATCH_ORDER_AMOUNT = 'VIRTUAL_ACCOUNT_PAYMENT_AMOUNT_DOES_NOT_MATCH_ORDER_AMOUNT';
 
     public function __construct()
@@ -464,6 +465,10 @@ abstract class Processor extends Base\Core
                 return true;
             }
         }
+
+        $entity->setUnexpectedReason(self::VIRTUAL_ACCOUNT_PAYMENT_TPV_FAILED);
+
+        $this->repo->saveOrFail($entity);
 
         $this->trace->info(
             TraceCode::VIRTUAL_ACCOUNT_PAYMENT_PAYER_VALIDATION_FAILED,

@@ -2983,7 +2983,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($errorMessage, $bankTransferRequest['error_message']);
     }
 
-    public function testBankTransferValidateTpvWithValidPayeeDetails()
+    public function testBankTransferValidateTpvWithValidPayerDetails()
     {
         $this->processBankTransferForVaWithTpvEnabled($this->testData['bankTransferValidateTpv']);
 
@@ -2999,7 +2999,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('bank_account', $payment['receiver_type']);
     }
 
-    public function testBankTransferValidateTpvWithInvalidPayeeDetails()
+    public function testBankTransferValidateTpvWithInvalidPayerDetails()
     {
         $testData = $this->testData['bankTransferValidateTpv'];
         $testData['request']['content']['payer_account'] = strtoupper(random_alphanum_string(16));
@@ -3008,9 +3008,15 @@ class BankTransferTest extends TestCase
 
         $bankTransfer = $this->getLastEntity('bank_transfer', true);
         $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals('VIRTUAL_ACCOUNT_PAYMENT_TPV_FAILED', $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
 
-        // Payment is automatically captured
+        $this->runBankTransferRequestAssertions(
+            true,
+            'VIRTUAL_ACCOUNT_PAYMENT_TPV_FAILED'
+        );
+
+        // Payment is automatically refunded
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('refunded', $payment['status']);

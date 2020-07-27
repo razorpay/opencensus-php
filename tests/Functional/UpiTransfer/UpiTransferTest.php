@@ -406,17 +406,17 @@ class UpiTransferTest extends TestCase
         $this->assertEquals('VIRTUAL_ACCOUNT_DUE_TO_BE_CLOSED', $upiTransfer['unexpected_reason']);
     }
 
-    public function testUpiTransferValidateTpvWithValidPayeeDetails()
+    public function testUpiTransferValidateTpvWithValidPayerDetails()
     {
         $this->processUpiTransferForVaWithTpvEnabled(__FUNCTION__, true);
     }
 
-    public function testUpiTransferValidateTpvWitInvalidPayeeDetails()
+    public function testUpiTransferValidateTpvWitInvalidPayerDetails()
     {
-        $this->processUpiTransferForVaWithTpvEnabled(__FUNCTION__, false);
+        $this->processUpiTransferForVaWithTpvEnabled(__FUNCTION__, false, 'VIRTUAL_ACCOUNT_PAYMENT_TPV_FAILED');
     }
 
-    protected function processUpiTransferForVaWithTpvEnabled($testFunction, $tpvStatus)
+    protected function processUpiTransferForVaWithTpvEnabled($testFunction, $tpvStatus, $unexpectedReason = null)
     {
         $this->createVirtualAccount('test', '10000000000000', 'testvpatpv', $this->testData['createVAWithAllowedPayer']);
 
@@ -431,6 +431,7 @@ class UpiTransferTest extends TestCase
 
         $this->assertEquals($upiTransfer['payment_id'], $payment['id']);
         $this->assertEquals($upiTransfer['expected'], true);
+        $this->assertEquals($unexpectedReason, $upiTransfer['unexpected_reason']);
 
         $paymentStatus = ($tpvStatus === true) ? 'captured' : 'refunded';
         $this->assertEquals($paymentStatus, $payment['status']);
