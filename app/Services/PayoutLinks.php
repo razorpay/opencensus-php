@@ -290,7 +290,22 @@ class PayoutLinks
 
         $response = $this->makeRequest($url, $request);
 
+        $payoutUtr = null;
+
         $payoutLinkInfo = $response['payout_link_response'];
+
+        if (key_exists('payouts', $payoutLinkInfo)
+            && key_exists('count', $payoutLinkInfo['payouts']))
+        {
+            $payoutsCount = $payoutLinkInfo['payouts']['count'];
+
+            if ($payoutsCount > 0)
+            {
+                $payouts = $payoutLinkInfo['payouts']['items'];
+
+                $payoutUtr = $payouts[0]['utr'];
+            }
+        }
 
         $settings = array_pull($response['settings'], self::MODE, []);
 
@@ -321,7 +336,7 @@ class PayoutLinks
             'is_production'               => $isProduction,
             'fund_account_details'        => json_encode($fundAccountDetails),
             'purpose'                     => $payoutLinkInfo['purpose'] ?? null,
-            'payout_utr'                  => $payoutLinkInfo['payout_utr'] ?? null,
+            'payout_utr'                  => $payoutUtr,
             'payout_links_custom_message' => $settings[Entity::CUSTOM_MESSAGE] ?? null,
             'support_contact'             => $settings[Entity::SUPPORT_CONTACT] ?? null,
             'support_email'               => $settings[Entity::SUPPORT_EMAIL] ?? null,
@@ -570,4 +585,5 @@ class PayoutLinks
 
         $payoutLink[self::SEND_EMAIL] = filter_var($payoutLink[self::SEND_EMAIL], FILTER_VALIDATE_BOOLEAN);
     }
+
 }
