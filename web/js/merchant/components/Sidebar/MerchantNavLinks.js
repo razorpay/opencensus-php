@@ -99,7 +99,6 @@ export default function MerchantNavLinks(props) {
         label="Offers"
         icon="i i-offer text-success"
         to="/offers"
-        isNew={true}
         additionalCondition={user => user.isAllowedView('settlements')}
       />
 
