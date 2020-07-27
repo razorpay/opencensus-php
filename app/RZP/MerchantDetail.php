@@ -20,6 +20,8 @@ class MerchantDetail extends Entity
         {
             $relativeUrl = 'merchant/activation';
 
+            $this->forwardUTMCookies();
+
             $response = $this->request('GET', $relativeUrl)->toArray();
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
@@ -28,6 +30,16 @@ class MerchantDetail extends Entity
         }
 
         return [ $error, $response ];
+    }
+
+    public function forwardUTMCookies(){
+        if (empty($_COOKIE['rzp_utm']) === false) {
+            $cookie = $_COOKIE['rzp_utm'];
+
+            $cookie = str_replace('+', '%2B', $cookie);
+
+            ApiRequest::addHeader('cookie', 'rzp_utm=' . $cookie);
+        }
     }
 
     public function updateDetailsByAdmin($merchantId, array $input)
