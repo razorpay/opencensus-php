@@ -162,20 +162,21 @@ class AnalyticsDesktop extends Component {
             <Announcement mode={mode} user={user} payments={payments} />
           )}
 
-          {this.isCaptureSettingsDefault(items) && (
-            <AnnouncementBanner
-              title="Capture Settings"
-              theme="success"
-              canBeClosed={true}
-            >
-              Currently all payments with order id are being captured by
-              default, click{' '}
-              <Link to={'/config'} target="_blank">
-                here
-              </Link>{' '}
-              to configure your capture setting.
-            </AnnouncementBanner>
-          )}
+          {this.isCaptureSettingsDefault(items) &&
+            user.instantActivation.isWhitelistFlow === true && (
+              <AnnouncementBanner
+                title="Capture Settings"
+                theme="success"
+                canBeClosed={true}
+              >
+                Currently all payments with order id are being captured by
+                default, click{' '}
+                <Link to={'/config'} target="_blank">
+                  here
+                </Link>{' '}
+                to configure your capture setting.
+              </AnnouncementBanner>
+            )}
 
           {current_balance.data.balance < 0 && (
             <AnnouncementBanner
