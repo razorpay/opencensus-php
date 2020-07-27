@@ -464,6 +464,38 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
+    public function correctMerchantOwnerForBanking($id): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $primaryOwner = $merchant->primaryOwner();
+
+        $bankingOwner = $merchant->primaryOwner('banking');
+
+        if ((empty($primaryOwner) === true) or
+            (empty($bankingOwner) === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR_OWNER_NOT_EXISTS,
+                null,
+                [
+                    'primary_owner' => $primaryOwner,
+                    'banking_owner' => $bankingOwner
+                ]);
+        }
+
+        if ($primaryOwner !== $bankingOwner)
+        {
+            // Demote banking owner to view_only role
+            (new User\Core)->detachAndAttachMerchantUser($bankingOwner, $merchant->getId(), 'view_only', 'banking');
+
+            // Promote the owner in PG to owner in banking
+            (new User\Core)->detachAndAttachMerchantUser($primaryOwner, $merchant->getId(), 'owner', 'banking');
+        }
+
+        return $merchant->toArrayPublic();
+    }
+
     public function editConfig(array $input): array
     {
         // Adds uploaded logo's url to the input.

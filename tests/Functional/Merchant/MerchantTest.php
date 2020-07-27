@@ -998,6 +998,142 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testCorrectMerchantOwnerForBanking()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $primaryOwner = $this->fixtures->create('user');
+
+        $bankingOwner = $this->fixtures->create('user');
+
+        $this->fixtures->on('live')->user->createUserMerchantMapping([
+            'merchant_id' => $merchant->getId(),
+            'user_id'     => $primaryOwner->getId(),
+            'product'     => 'primary',
+            'role'        => 'owner',
+        ], 'live');
+
+        $this->fixtures->on('live')->user->createUserMerchantMapping([
+            'merchant_id' => $merchant->getId(),
+            'user_id'     => $bankingOwner->getId(),
+            'product'     => 'banking',
+            'role'        => 'owner',
+        ], 'live');
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] =  '/merchants/'.$merchant->getId().'/correct_owner';
+
+        $this->testData[__FUNCTION__]['request'] = $request;
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+
+        $newBankingOwner = $merchant->primaryOwner('banking');
+
+        $newPrimaryOwner = $merchant->primaryOwner('primary');
+
+        $this->assertEquals($newBankingOwner->getId(), $newPrimaryOwner->getId());
+    }
+
+    public function testCorrectMerchantOwnerForBankingWithSameOwner()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $owner = $this->fixtures->create('user');
+
+        $this->fixtures->on('live')->user->createUserMerchantMapping([
+            'merchant_id' => $merchant->getId(),
+            'user_id'     => $owner->getId(),
+            'product'     => 'primary',
+            'role'        => 'owner',
+        ], 'live');
+
+        $this->fixtures->on('live')->user->createUserMerchantMapping([
+            'merchant_id' => $merchant->getId(),
+            'user_id'     => $owner->getId(),
+            'product'     => 'banking',
+            'role'        => 'owner',
+        ], 'live');
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] =  '/merchants/'.$merchant->getId().'/correct_owner';
+
+        $this->testData[__FUNCTION__]['request'] = $request;
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+
+        $newBankingOwner = $merchant->primaryOwner('banking');
+
+        $newPrimaryOwner = $merchant->primaryOwner('primary');
+
+        $this->assertEquals($newBankingOwner->getId(), $newPrimaryOwner->getId());
+    }
+
+    public function testCorrectMerchantOwnerForBankingWherePrimaryOwnerHasAdminRole()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $primaryOwner = $this->fixtures->create('user');
+
+        $bankingOwner = $this->fixtures->create('user');
+
+        $this->fixtures->on('live')->user->createUserMerchantMapping([
+            'merchant_id' => $merchant->getId(),
+            'user_id'     => $primaryOwner->getId(),
+            'product'     => 'primary',
+            'role'        => 'owner',
+        ], 'live');
+
+        $this->fixtures->on('live')->user->createUserMerchantMapping([
+            'merchant_id' => $merchant->getId(),
+            'user_id'     => $primaryOwner->getId(),
+            'product'     => 'banking',
+            'role'        => 'admin',
+        ], 'live');
+
+        $this->fixtures->on('live')->user->createUserMerchantMapping([
+            'merchant_id' => $merchant->getId(),
+            'user_id'     => $bankingOwner->getId(),
+            'product'     => 'banking',
+            'role'        => 'owner',
+        ], 'live');
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] =  '/merchants/'.$merchant->getId().'/correct_owner';
+
+        $this->testData[__FUNCTION__]['request'] = $request;
+
+        $beforeCount = $merchant->users()->where('product', 'banking')
+            ->where('role','!=','owner')
+            ->where('id', $primaryOwner->getId())
+            ->count();
+
+        $this->assertEquals(1, $beforeCount);
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+
+        $newBankingOwner = $merchant->primaryOwner('banking');
+
+        $newPrimaryOwner = $merchant->primaryOwner('primary');
+
+        $afterCount = $merchant->users()->where('product', 'banking')
+            ->where('role','!=','owner')
+            ->where('id', $primaryOwner->getId())
+            ->count();
+
+        $this->assertEquals(0, $afterCount);
+
+        $this->assertEquals($newBankingOwner->getId(), $newPrimaryOwner->getId());
+    }
+
     public function testEditMerchantEmail()
     {
         config(['app.query_cache.mock' => false]);

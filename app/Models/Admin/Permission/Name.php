@@ -436,6 +436,8 @@ class Name
     const SET_RX_ACCOUNT_PREFIX               = 'set_rx_account_prefix';
     const SET_SHARED_ACCOUNT_ALLOWED_CHANNELS = 'set_shared_account_allowed_channels';
 
+    const CORRECT_MERCHANT_OWNER_MISMATCH     = 'correct_merchant_owner_mismatch';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

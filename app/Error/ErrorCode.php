@@ -402,6 +402,7 @@ class ErrorCode
     const BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED                                       = 'BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED';
     const BAD_REQUEST_RATE_LIMIT_EXCEEDED                                           = 'BAD_REQUEST_RATE_LIMIT_EXCEEDED';
     const BAD_REQUEST_ERROR                                                         = 'BAD_REQUEST_ERROR';
+    const BAD_REQUEST_ERROR_OWNER_NOT_EXISTS                                        = 'BAD_REQUEST_ERROR_OWNER_NOT_EXISTS';
     const BAD_REQUEST_DUPLICATE_PAYOUT                                              = 'BAD_REQUEST_DUPLICATE_PAYOUT';
     const BAD_REQUEST_INVALID_REQUEST_BODY                                          = 'BAD_REQUEST_INVALID_REQUEST_BODY';
     const BAD_REQUEST_EXTRA_FIELDS_PROVIDED                                         = 'BAD_REQUEST_EXTRA_FIELDS_PROVIDED';

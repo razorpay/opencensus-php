@@ -765,6 +765,45 @@ return [
         ],
     ],
 
+    'testCorrectMerchantOwnerForBanking' => [
+        'request'   => [
+            'method'  => 'PUT',
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCorrectMerchantOwnerForBankingWithSameOwner' => [
+        'request'   => [
+            'method'  => 'PUT',
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCorrectMerchantOwnerForBankingWherePrimaryOwnerHasAdminRole' => [
+        'request'   => [
+            'method'  => 'PUT',
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testEditMerchantEmail' => [
         'request' => [
             'content' => [

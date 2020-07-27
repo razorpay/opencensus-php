@@ -230,6 +230,8 @@ class Route
         'merchant_fetch_config'                    => ['get',      'account/config',                                 'MerchantController@getAccountConfig'                               ],
         'merchant_fetch_config_internal'           => ['get',      'internal/account/config',                        'MerchantController@getAccountConfigInternal'                       ],
         'merchant_edit_email'                      => ['put',      'merchants/{id}/email',                           'MerchantController@putMerchantEmail'                               ],
+        // TODO : Remove this route after permanent fix is deployed.
+        'correct_merchant_owners_products'         => ['put',      'merchants/{id}/correct_owner'   ,                'MerchantController@correctMerchantOwnerForBanking'                 ],
         'merchant_delete_additional_email'         => ['delete',   'merchants/{id}/additionalemail/{type}',          'MerchantEmailController@deleteMerchantEmails'                      ],
         'merchant_fetch_additional_email'          => ['get',      'merchants/{id}/additionalemail/{type}',          'MerchantEmailController@fetchMerchantEmailByType'                  ],
         'merchant_create_additional_email'         => ['post',     'merchants/{id}/additionalemail',                 'MerchantEmailController@postMerchantEmails'                        ],
@@ -2881,6 +2883,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'correct_merchant_owners_products',
         'paper_nach_fetch_failure',
         'paper_nach_approve_failure',
         'loc_service_admin',
@@ -3521,6 +3524,7 @@ class Route
     ];
 
     public static $routePermission = [
+        'correct_merchant_owners_products'         => Permission::CORRECT_MERCHANT_OWNER_MISMATCH,
         'paper_nach_fetch_failure'                 => Permission::VERIFY_NACH_UPLOADS,
         'paper_nach_approve_failure'               => Permission::VERIFY_NACH_UPLOADS,
         'bulk_create_fund_accounts'                => '*',

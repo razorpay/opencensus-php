@@ -65,6 +65,19 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    /**
+     *  This corrects mismatch in owners of different products
+     *  Don't use lightly
+     */
+    public function correctMerchantOwnerForBanking($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->correctMerchantOwnerForBanking($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function updateLinkedAccountMerchantEmail()
     {
         $input = Request::all();

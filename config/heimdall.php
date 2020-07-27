@@ -38,6 +38,7 @@ return [
                 'assignable' => true,
                 'workflow'   => false,
             ],
+            Permission::CORRECT_MERCHANT_OWNER_MISMATCH => 'Correct Merchant Owner Mismatch',
         ],
 
         PermissionCategory::RAZORX => [
