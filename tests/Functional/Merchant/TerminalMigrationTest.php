@@ -1459,7 +1459,7 @@ class TerminalMigrationTest extends TestCase
 
             $response = new \Requests_Response;
 
-            $data = $this->terminalRepository->findOrFail($terminal['id'])->toArray();
+            $data = $this->terminalRepository->findOrFail($terminal['id'])->toArrayWithPassword();
 
             return $this->getDefaultTerminalServiceResponse($data);
 

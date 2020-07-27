@@ -76,7 +76,16 @@ trait Migrate
 
         $mode = $app['rzp.mode'] ?? \RZP\Constants\Mode::LIVE;
 
-        $variant = $app['razorx']->getTreatment($app['request']->getId(), $feature, $mode);
+        $merchant = $app['basicauth']->getMerchant();
+
+        $reqId = $app['request']->getId();
+
+        if (isset($merchant) === true)
+        {
+            $reqId = $merchant->getId();
+        }
+
+        $variant = $app['razorx']->getTreatment($reqId, $feature, $mode);
 
         self::logRazorxResponse($feature, $variant);
 
@@ -110,6 +119,7 @@ trait Migrate
     {
 
         $data[Entity::TERMINAL_ID] = $terminal->getId();
+        // array sort, log mismatch, deactivated check
 
         try
         {
@@ -153,7 +163,7 @@ trait Migrate
             Terminal\Entity::TERMINAL_ID => $terminal->getId(),
         ];
 
-        if ($this->isMigrateTerminalSuccess($terminal, $fetchedTerminal, true) === true)
+        if ($this->isMigrateTerminalSuccess($terminal, $fetchedTerminal, false) === true)
         {
             $this->pushTerminalsServiceMetrics(Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, $data);
         }
@@ -279,13 +289,17 @@ trait Migrate
         {
             $fetchedTerminalIds[] = $fetchedTerminal[Entity::ID];
         }
+
         $fetchedTerminalIds= array_values($fetchedTerminalIds);
 
         $terminalIds = [];
 
         foreach ($terminals as $terminal)
         {
-            $terminalIds[] = $terminal->getId();
+            if ($terminal->getStatus() === Status::ACTIVATED)
+            {
+                $terminalIds[] = $terminal->getId();
+            }
         }
 
         $terminalIds = array_values($terminalIds);
@@ -338,4 +352,121 @@ trait Migrate
         throw new Exception\IntegrationException('terminals service field mismatch');
     }
 
+    public function compareTerminalArray(array $apiResponse, array $terminalResponse)
+    {
+        $ignoreAttributes = [
+            Entity::SUB_MERCHANTS,
+            Entity::ADMIN,
+            Entity::CREATED_AT,
+            Entity::UPDATED_AT,
+            Entity::DELETED_AT,
+            Entity::SYNC_STATUS,
+            Entity::SHARED,
+            Entity::USED_COUNT,
+            Entity::DIRECT
+        ];
+
+        $mismatchData = [];
+
+        foreach (array_keys($apiResponse) as $attribute)
+        {
+            if (array_search($attribute, $ignoreAttributes) !== false)
+            {
+                continue;
+            }
+
+            $originalValue = $apiResponse[$attribute];
+
+            if (array_key_exists($attribute, $terminalResponse) === true)
+            {
+                $responseValue = $terminalResponse[$attribute];
+            }
+            else
+            {
+                $responseValue = '';
+            }
+
+            if (is_array($originalValue) === true)
+            {
+                $originalValue = $originalValue ?? [];
+
+                $responseValue = $responseValue ?? [];
+
+                sort($originalValue);
+
+                sort($responseValue);
+            }
+
+            if ($originalValue != $responseValue)
+            {
+                $data = [];
+
+                if ($attribute !== Entity::MPAN)
+                {
+                    $data = ["api" => $originalValue, "terminal" => $responseValue];
+                }
+                else
+                {
+                    $data = ["api" => "mpan_mismatch", "terminal" => "mpan_mismatch"];
+                }
+
+                $mismatchData[$attribute] = $data;
+            }
+        }
+
+        if (count($mismatchData) > 0)
+        {
+            $app = App::getFacadeRoot();
+
+            $data = ["api"=>$apiResponse["id"], "terminal"=>$terminalResponse["id"]];
+
+            $mismatchData["id"] = $data;
+
+            $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH, $mismatchData);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    public function compareArrayOfTerminalArrays(array $apiResponse, array $terminalResponse)
+    {
+        if (count($apiResponse) !== count($terminalResponse)){
+            $app = App::getFacadeRoot();
+
+            $traceData = ["api_count"=> count($apiResponse), "terminals_count" => count($terminalResponse)];
+
+            $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_COUNT, $traceData);
+
+            return false;
+        }
+
+        usort($apiResponse, function($a, $b) {
+            return $a['id'] <=> $b['id'];
+        });
+
+        usort($terminalResponse, function($a, $b) {
+            return $a['id'] <=> $b['id'];
+        });
+
+        $mismatchedIds = [];
+
+        foreach ($apiResponse as $index => $value){
+            if ($this->compareTerminalArray($value, $terminalResponse[$index]) === false)
+            {
+                $mismatchedIds[] = $value["id"];
+            }
+        }
+
+        if (count($mismatchedIds) > 0)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+
 }
+

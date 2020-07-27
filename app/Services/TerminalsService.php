@@ -193,7 +193,7 @@ class TerminalsService
 
     public function proxyTerminalService($input, $method, $path, $options = [], $headers = []) : array
     {
-        if ($input === [])
+        if ($input === [] || $input == '')
         {
             $input = '';
         }
@@ -311,6 +311,10 @@ class TerminalsService
         if (isset($content[Terminal\Entity::MERCHANT_ID]) === true)
         {
             $data[Terminal\Entity::MERCHANT_ID] = $content[Terminal\Entity::MERCHANT_ID];
+        }
+        if (isset($content[Terminal\Entity::ID]) === true)
+        {
+            $data[Terminal\Entity::ID] = $content[Terminal\Entity::ID];
         }
 
         try

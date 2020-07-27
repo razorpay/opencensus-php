@@ -6,6 +6,7 @@ use App;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Batch;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
@@ -70,7 +71,44 @@ class Service extends Base\Service
             $this->runGetTerminalsForMerchantComparison($terminals, $merchant, $subMerchantFlag);
         }
 
-        return $terminals->toArrayAdmin($subMerchantFlag);
+        $data = $terminals->toArrayAdmin($subMerchantFlag);
+
+        // proxy code
+        $mode  = $this->mode ?? Mode::LIVE;
+
+        $variantFlag = $this->app->razorx->getTreatment($mid, "ROUTE_PROXY_TS_MERCHANT_TERMINAL_FETCH", $mode);
+
+        if ($variantFlag === 'proxy'){
+
+            $content = ["merchant_ids" => [$merchant->getId()]];
+
+            $content["sub_merchant"] = $subMerchantFlag;
+
+            $content["status"] = Status::ACTIVATED;
+
+            $content["deleted"] = true;
+
+            $path = "v1/merchants/terminals";
+
+            $response = $this->app['terminals_service']->proxyTerminalService($content, "POST", $path);
+
+            $dataToCompare = $data["items"];
+
+            foreach ($response as $index => $value)
+            {
+                    $response[$index]["id"] = "term_" . $response[$index]["id"];
+            }
+
+            if ($this->compareArrayOfTerminalArrays($dataToCompare, $response) === false)
+            {
+                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_MERCHANT_TERMINAL_FETCH_COMPARISON_FAILED, $content);
+
+                // once comparison has run for sometime, next line will be uncommented
+                // return $response;
+            }
+        }
+
+        return $data;
     }
 
     public function getTerminal($mid, $tid)
@@ -976,3 +1014,5 @@ class Service extends Base\Service
     }
 
 }
+
+

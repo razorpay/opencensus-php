@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\File;
 
 use RZP\Models\Admin;
 use RZP\Models\Report;
+use RZP\Models\Terminal;
 use RZP\Services\Stork;
 use RZP\Trace\TraceCode;
 
@@ -45,6 +46,27 @@ class AdminController extends Controller
 
         $data = $this->service()->fetchTerminalEntityByIdWithFlag($type, $id, $subMerchantFlag);
 
+        $mode  = $this->ba->getMode();
+
+        $variantFlag = $this->app->razorx->getTreatment($id, "ROUTE_PROXY_TS_ADMIN_FETCH", $mode);
+
+        if ($variantFlag === 'proxy'){
+
+            $path = "v1/admin/terminals/" . $id;
+
+            $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
+
+            if ((new Terminal\Service())->compareTerminalArray($data, $response) === false)
+            {
+                $traceData = ["api" => $data["id"], "terminals" => $response["id"]];
+
+                $this->trace->info(TraceCode::TERMINALS_SERVICE_ADMIN_FETCH_TERMINAL_BY_ID_COMPARISON_FAILED, $traceData);
+            }
+
+            // once comparison has run for sometime, next line will be uncommented
+            // return ApiResponse::json($response);
+
+        }
         return ApiResponse::json($data);
     }
 
@@ -459,4 +481,6 @@ class AdminController extends Controller
 
         return ApiResponse::json($value);
     }
+
+
 }

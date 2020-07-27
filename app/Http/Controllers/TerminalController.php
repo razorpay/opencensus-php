@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
+use RZP\Trace\TraceCode;
 
 class TerminalController extends Controller
 {
@@ -35,6 +36,28 @@ class TerminalController extends Controller
         $input = Request::all();
 
         $data = $this->service()->checkTerminalEncryptedValue($id, $input);
+
+        // proxy code
+        $mode  = $this->ba->getMode();
+
+        $variantFlag = $this->app->razorx->getTreatment($id, "ROUTE_PROXY_TS_CHECK_SECRETS", $mode);
+
+        if ($variantFlag === 'proxy'){
+
+            $path = "v1/terminals/" . $id . "/secrets";
+
+            $response = $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
+
+            if ($response != $data)
+            {
+                $traceData = ["api" => $data, "terminals" => $response];
+
+                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TS_CHECK_SECRETS_COMPARISON_FAILED, $traceData);
+
+                // once comparison has run for sometime, next line will be uncommented
+                // return ApiResponse::json($response);
+            }
+        }
 
         return ApiResponse::json($data);
     }
@@ -74,6 +97,27 @@ class TerminalController extends Controller
     public function getBanks(string $id)
     {
         $data = $this->service()->getBanks($id);
+
+        $mode  = $this->ba->getMode();
+
+        $variantFlag = $this->app->razorx->getTreatment($id, "ROUTE_PROXY_TS_BANK_FETCH", $mode);
+
+        if ($variantFlag === 'proxy'){
+
+            $path = "v1/terminals/" . $id . "/banks";
+
+            $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
+
+            if ($response != $data)
+            {
+                $traceData = ["api" => $data, "terminals" => $response,];
+
+                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TS_BANK_FETCH_COMPARISON_FAILED, $traceData);
+
+                // once comparison has run for sometime, next line will be uncommented
+                // return ApiResponse::json($response);
+            }
+        }
 
         return ApiResponse::json($data);
     }

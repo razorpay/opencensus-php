@@ -611,7 +611,6 @@ class Repository extends Base\Repository
     {
         $this->repo->transaction(function () use ($terminal, $merchant) {
             $terminal->merchants()->detach($merchant);
-
             if (Migrate::shouldMigrateSubmerchant() === true)
             {
                 (new Terminal\Service)->migrateTerminalRemoveMerchant($terminal, $merchant);
