@@ -30,7 +30,7 @@ class Validator extends Base\Validator
         Entity::EMAIL                           => 'required|email|unique:users,email',
         Entity::PASSWORD                        => 'required|between:8,50|confirmed|numbers|letters',
         Entity::PASSWORD_CONFIRMATION           => 'required|between:8,50',
-        Entity::CONTACT_MOBILE                  => 'sometimes|max:15',
+        Entity::CONTACT_MOBILE                  => 'sometimes|nullable|max:15|contact_syntax',
         Entity::REMEMBER_TOKEN                  => 'sometimes',
         Entity::CONFIRM_TOKEN                   => 'sometimes',
         Entity::CAPTCHA                         => 'required_without:captcha_disable',
@@ -42,7 +42,7 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         Entity::NAME                  => 'sometimes|string|max:200',
-        Entity::CONTACT_MOBILE        => 'sometimes|max:15',
+        Entity::CONTACT_MOBILE        => 'sometimes|nullable|max:15|contact_syntax',
         Entity::SETTINGS              => 'nullable|associative_array',
     ];
 
@@ -76,7 +76,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $setup2faMobileRules = [
-        Entity::CONTACT_MOBILE        => 'required|max:15',
+        Entity::CONTACT_MOBILE        => 'required|max:15|contact_syntax',
     ];
 
     protected static $setup2faVerifyMobileRules = [
@@ -97,7 +97,7 @@ class Validator extends Base\Validator
 
     protected static $preSignupRules = [
         Entity::NAME                  => 'sometimes|alpha_space|max:200',
-        Entity::CONTACT_MOBILE        => 'sometimes|numeric|digits_between:8,11',
+        Entity::CONTACT_MOBILE        => 'sometimes|nullable|max:15|contact_syntax',
     ];
 
     protected static $teamManagementRules = [
@@ -119,12 +119,12 @@ class Validator extends Base\Validator
 
     protected static $editContactMobileRules = [
         Entity::OTP_AUTH_TOKEN => 'sometimes|filled',
-        Entity::CONTACT_MOBILE => 'required|numeric|digits_between:8,11',
+        Entity::CONTACT_MOBILE => 'required|max:15|contact_syntax',
     ];
 
     protected static $updateContactMobileRules = [
         Entity::USER_ID        => 'required|alpha_num|size:14',
-        Entity::CONTACT_MOBILE => 'required|numeric|digits_between:8,11',
+        Entity::CONTACT_MOBILE => 'required|max:15|contact_syntax',
     ];
 
     protected static $bulkUserMappingRules = [
@@ -171,7 +171,7 @@ class Validator extends Base\Validator
     protected static $sendOtpWithContactRules = [
         Entity::ACTION          => 'required|filled|in:bureau_verify',
         Entity::TOKEN           => 'sometimes|filled',
-        Entity::CONTACT_MOBILE  => 'required|max:15',
+        Entity::CONTACT_MOBILE  => 'required|max:15|contact_syntax',
         Entity::MEDIUM          => 'sometimes|filled|in:sms',
     ];
 
@@ -179,7 +179,7 @@ class Validator extends Base\Validator
         Entity::OTP             => 'required|filled|min:4',
         Entity::TOKEN           => 'required|unsigned_id',
         Entity::ACTION          => 'sometimes|filled|in:bureau_verify',
-        Entity::CONTACT_MOBILE  => 'required_if:action,bureau_verify|max:15',
+        Entity::CONTACT_MOBILE  => 'required_if:action,bureau_verify|max:15|contact_syntax',
     ];
 
     protected static $resendOtpRules = [
@@ -210,7 +210,7 @@ class Validator extends Base\Validator
 
     protected static $editContactMobileForBankingRules = [
         Entity::OTP_AUTH_TOKEN => 'required|filled',
-        Entity::CONTACT_MOBILE => 'required|max:15',
+        Entity::CONTACT_MOBILE => 'required|max:15|contact_syntax',
         Entity::OTP            => 'sometimes|filled|min:4',
     ];
 
