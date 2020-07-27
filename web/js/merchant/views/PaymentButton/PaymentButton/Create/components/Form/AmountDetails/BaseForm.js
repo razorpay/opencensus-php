@@ -276,18 +276,17 @@ export default class BaseForm extends React.Component {
           </div>
         </OptionsItem>
 
-        {typeof indexInOrder !== 'undefined' &&
-          handleDeleteField && (
-            <OptionsItem>
-              <div
-                class="OptionsDropdown-item--delete"
-                onClick={handleDeleteField}
-              >
-                <i class="i i-delete" />
-                <div>Delete Field</div>
-              </div>
-            </OptionsItem>
-          )}
+        {typeof indexInOrder !== 'undefined' && handleDeleteField && (
+          <OptionsItem>
+            <div
+              class="OptionsDropdown-item--delete"
+              onClick={handleDeleteField}
+            >
+              <i class="i i-delete" />
+              <div>Delete Field</div>
+            </div>
+          </OptionsItem>
+        )}
       </FieldOptionsDropdown>
     );
   }

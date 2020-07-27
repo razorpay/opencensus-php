@@ -530,3 +530,93 @@
       position: relative;
       img
         width: 700px;
+
+.OnBoarding--Withdrawals
+  //min-height: 85vh
+  display: flex
+
+  .Product--Details
+    margin-top: 64px
+    padding: 0 64px
+    width: 46%
+    z-index: 2
+
+    .divider
+      height: 3px
+      width: 32px
+      background-color: #6EEDB3
+      margin-top: 6px
+      z-index: 2
+
+    hr
+      border-color: rgba(22, 47, 86, 0.07);
+      margin-bottom: 0px;
+
+    @media(max-width: 1024px)
+      padding: 0 24px
+      width: auto
+
+    .Details-heading
+      font-weight: 900
+
+    .Details-title
+      font-size: 36px
+      line-height: 48px
+      margin: 16px 0 8px 0
+      font-weight: 900
+      color: #0D2366
+
+      @media(max-width: 1024px)
+        font-size: 28px
+
+    .Details-desc
+      margin-top: 10px;
+      font-size: 18px;
+      line-height: 24px;
+      margin-bottom: 20px;
+      &.privileges
+        margin-bottom: 8px
+
+    .DataList
+      display: flex
+      flex-direction: column
+      align-items: flex-start
+
+      .DataList-Item
+        font-size: 16px;
+        display: flex;
+        line-height: 1.25;
+        flex: 1;
+        align-items: center;
+        min-width: 100px;
+        margin-top: 14px;
+        border-color: #cfdadd;
+
+        .privilege-description
+          padding-top: 4px;
+          line-height: 20px;
+          font-size: 14px;
+
+        @media(max-width: 767px)
+          padding: 0
+          display: block
+
+        //b
+        //  font-size: 20px
+
+        .i
+          margin-right: 12px
+          margin-top: 4px
+          font-size: 11px
+  .Landing--Image
+    position: absolute;
+    right: 360px;
+    bottom: -12px;
+    .image-wrapper
+      height: calc(300px - 40px);
+      overflow: hidden;
+      position: relative;
+      img
+        width: 530px;
+  .right-floating-card
+    right: 90px;

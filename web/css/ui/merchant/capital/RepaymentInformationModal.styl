@@ -1,0 +1,49 @@
+.repayment-modal{
+  .description{
+    margin-left: 24px;
+  }
+  .overflow-box {
+    margin: 10px -45px 20px -45px;
+    border: 1px solid rgba(173, 188, 201, 0.17);
+    padding-top: 0px;
+    padding-bottom: 20px;
+    box-shadow: 0px 2px 6px rgba(62, 71, 84, 0.13);
+    border-radius: 2px;
+    background-color: white;
+
+    .repayment-amount-details{
+      border-left: 3px solid #F08A0A;
+      color: rgba(22, 47, 86, 0.74);
+      margin: 22px 0 12px;
+      padding: 0 30px;
+      margin-left: -2px;
+    }
+    hr{
+      margin: 12px 30px 8px;
+    }
+    .other-details-wrapper{
+      padding: 0 30px;
+      .item{
+        padding: 4px 0;
+        p{
+          &:first-child{
+            flex: 1;
+          }
+        }
+      }
+    }
+  }
+  &.withdrawals {
+    .overflow-box {
+      margin: 10px -25px 20px -25px;
+      .repayment-amount-details, hr, .other-details-wrapper {
+        padding: 0 24px;
+      }
+    }
+  }
+  .summary {
+    font-size: 13px;
+    margin: 12px 30px;
+    color: rgba(22, 47, 86, 0.74);
+  }
+}

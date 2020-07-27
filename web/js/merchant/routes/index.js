@@ -46,6 +46,7 @@ import NewRegistrationLink from 'merchant/views/Subscriptions/RegistrationLinks/
 import NewSubscriptionLink from 'merchant/views/Subscriptions/SubscriptionLinks/New';
 import UpdateSubscriptionLink from 'merchant/views/Subscriptions/SubscriptionLinks/Update';
 import CreditSubDetails from 'merchant/views/Account/Credits/components/CreditSubDetails';
+import WithdrawalDetails from '../views/Capital/CashAdvance/WithdrawalDetails';
 
 /*
  * NOTE: entityDetailsMap and entityModalsMap must be mutually exclusive sets
@@ -108,6 +109,10 @@ const entityDetailsMap = {
     additionalCondition: user => user.isChargeAtWillEnabled,
   },
 
+  '/capital/cash-advance/withdrawals/:id': {
+    component: WithdrawalDetails,
+    additionalCondition: user => user.isFlashCreditStage2Enabled,
+  },
   '/subscriptions/:id(sub_.+)/:invoice_id(inv_.+)': {
     component: SubscriptionDetails,
   },
@@ -208,10 +213,10 @@ export const supportHashMapping = {
 };
 
 /*
-* Certain views are stand alone views with no Header or Siderbar
-* Example: payment pages
-*
-* */
+ * Certain views are stand alone views with no Header or Siderbar
+ * Example: payment pages
+ *
+ * */
 const fullPageViewsMap = {
   '/paymentpages/new': {
     component: PaymentPagesWysiwyg,

@@ -1,0 +1,77 @@
+.withdrawal-config-container
+  border-top: 2px solid #24A832 !important;
+  padding: 0 !important;
+  display: flex;
+  .banner-wrapper
+    position: relative;
+    .green_patch
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      height: 70px;
+    .loan-application-message-banner
+      padding: 0 !important;
+      margin: 0;
+      background: #fbfbfb;
+      border-bottom: 1px solid rgba(22, 47, 86, 0.1);
+      .banner-message-wrapper
+        border-left: none !important;
+  .footer
+    padding: 12px;
+.withdrawal-form-container
+  flex: 1;
+  .withdrawal-lead-form
+    .Input-label
+      margin-bottom: 7px;
+    .Input
+      margin: 12px 0 8px;
+    .Input--small
+      width: 230px;
+    .Select-elWrapper
+      width: 230px;
+  .withdrawal-config-details
+    border: 1px solid rgba(11, 112, 231, 0.1);
+    padding: 12px;
+    .pair-group-item
+      display: flex;
+      align-items: center;
+      padding: 12px 0;
+      &.highlight
+        margin-left: -12px;
+        margin-right: 0px;
+        width: calc(100% + 12px);
+        &:before
+          content: " ";
+          height: 28px;
+          top: 0;
+          width: 3px;
+          background: #528FF0;
+          margin-right: 12px;
+          margin-top: -12px;
+          border-radius: 6px;
+      &:not(:last-child)
+        border-bottom: 1px solid rgba(11, 112, 231, 0.1);
+      .pair-label, .pair-value
+        color: rgba(22, 47, 86, 0.76);
+      .pair-label
+        flex: 1;
+      .pair-value
+        width: auto;
+        .help-content--currency .rzp-amount
+          .rzp-currency, .rzp-whole, rzp-paise
+            font-weight: 600;
+
+.lead-generation-message-container
+  background: #0a8aff08;
+  margin-top: 50%;
+  margin-left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 32px;
+  width: 410px;
+  height: 350px;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  &.pending
+    background: #ffb82e21;

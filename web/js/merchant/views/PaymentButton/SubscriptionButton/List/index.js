@@ -142,16 +142,15 @@ export default class PaymentButtonsList extends ListContainer {
 
             <DocsLink url="https://razorpay.com/docs/subscription-button/" />
 
-            {isRoleAllowedEdit &&
-              user.isSubscriptionButtonEnabledByRazorX && (
-                <span
-                  class="btn btn-primary"
-                  onClick={this.openSubscriptionButtonsNewPage}
-                >
-                  <i class="i i-plus" />
-                  <span>Create Subscription Button</span>
-                </span>
-              )}
+            {isRoleAllowedEdit && user.isSubscriptionButtonEnabledByRazorX && (
+              <span
+                class="btn btn-primary"
+                onClick={this.openSubscriptionButtonsNewPage}
+              >
+                <i class="i i-plus" />
+                <span>Create Subscription Button</span>
+              </span>
+            )}
           </div>
         </HeaderAction>
 

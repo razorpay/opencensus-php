@@ -32,7 +32,10 @@ import Support from 'merchant/components/Support';
 import Offers from 'merchant/views/Offers';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import PaypalOnboardRedirect from 'merchant/views/Settings/Configuration/PaypalOnboardRedirect';
-import LoanDetails from 'merchant/views/Capital/index';
+import LoanDetails from 'merchant/views/Capital/Loans';
+import FlashCreditLandingPage from 'merchant/views/Capital/CashAdvance/index';
+import FlashCreditWithdrawals from 'merchant/views/Capital/CashAdvance/withdrawals';
+
 import qs from 'query-string';
 
 import {
@@ -396,6 +399,14 @@ export default class Content extends Component {
             component={PaypalOnboardRedirect}
           />
           <ShowWhenRoute path="/capital/loans" component={LoanDetails} />
+          <ShowWhenRoute
+            path="/capital/cash-advance/withdrawals"
+            component={FlashCreditWithdrawals}
+          />
+          <ShowWhenRoute
+            path="/capital/cash-advance"
+            component={FlashCreditLandingPage}
+          />
           <Route exact path="/" component={HandleIndex} />
         </Switch>
       </ErrorBoundary>

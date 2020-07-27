@@ -130,8 +130,7 @@ export default class CreateVirtualAccount extends React.Component {
 
       document.querySelector('.Modal-container--VirtualAccountV2').style[
         'max-height'
-      ] =
-        formEle.offsetHeight + 156 + 'px';
+      ] = formEle.offsetHeight + 156 + 'px';
     });
   };
 
@@ -518,17 +517,16 @@ export default class CreateVirtualAccount extends React.Component {
                       }
                       description={
                         <>
-                          {_internals.hasVPA &&
-                            showVPAPrefix && (
-                              <>
-                                To update{' '}
-                                <strong>"{vpaConfig.merchant_prefix}"</strong>{' '}
-                                prefix{' '}
-                                <a onClick={this.openVPAPrefixModal}>
-                                  click here
-                                </a>
-                              </>
-                            )}
+                          {_internals.hasVPA && showVPAPrefix && (
+                            <>
+                              To update{' '}
+                              <strong>"{vpaConfig.merchant_prefix}"</strong>{' '}
+                              prefix{' '}
+                              <a onClick={this.openVPAPrefixModal}>
+                                click here
+                              </a>
+                            </>
+                          )}
 
                           {!_internals.hasVPA && (
                             <>Get a VPA to accept fund transfers via UPI.</>
@@ -647,9 +645,7 @@ export default class CreateVirtualAccount extends React.Component {
 
                         <div class="description">
                           {!!allowedPayers.length
-                            ? `Configured with ${
-                                allowedPayers.length
-                              } authorised accounts.`
+                            ? `Configured with ${allowedPayers.length} authorised accounts.`
                             : 'Not Configured'}
 
                           <div class="actions">

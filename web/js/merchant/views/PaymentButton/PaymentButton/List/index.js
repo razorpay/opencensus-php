@@ -144,16 +144,15 @@ export default class PaymentButtonsList extends ListContainer {
 
             <DocsLink url="https://razorpay.com/docs/payment-button/" />
 
-            {isRoleAllowedEdit &&
-              user.isPaymentButtonEnabledByRazorX && (
-                <span
-                  class="btn btn-primary"
-                  onClick={this.openPaymentButtonsNewPage}
-                >
-                  <i class="i i-plus" />
-                  <span>Create Payment Button</span>
-                </span>
-              )}
+            {isRoleAllowedEdit && user.isPaymentButtonEnabledByRazorX && (
+              <span
+                class="btn btn-primary"
+                onClick={this.openPaymentButtonsNewPage}
+              >
+                <i class="i i-plus" />
+                <span>Create Payment Button</span>
+              </span>
+            )}
           </div>
         </HeaderAction>
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { TOOLTIP_DESCRIPTIONS } from '../constants';
+import { TOOLTIP_DESCRIPTIONS } from '../Loans/constants';
 
 function SettlementAccountDetails({
   user,

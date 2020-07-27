@@ -129,17 +129,11 @@ export default class RequestEarlyAccessForm extends Component {
         priority: 3,
         email: this.props.user.user.email,
         phone: this.props.user.contact_mobile,
-        subject: `Razorpay | Early Settlement Request [${
-          this.props.user.current
-        }]`,
+        subject: `Razorpay | Early Settlement Request [${this.props.user.current}]`,
         type: 'Service request',
         group_id: 1000097912,
         ticketType: 'early_settlement',
-        description: `<div dir="ltr"><div>Hey,<br><br>We have received a request for ${
-          formData.interested_in
-        } Early Settlement for <strong>${
-          this.props.user.name
-        }</strong>. The pricing agreed to is <strong>${pricing}%.</strong> For international payments, it is <strong>1%</strong> more.<br><br>We will update you once the changes have been approved.<br><br>Cheers,<br>Team Razorpay</div></div>`,
+        description: `<div dir="ltr"><div>Hey,<br><br>We have received a request for ${formData.interested_in} Early Settlement for <strong>${this.props.user.name}</strong>. The pricing agreed to is <strong>${pricing}%.</strong> For international payments, it is <strong>1%</strong> more.<br><br>We will update you once the changes have been approved.<br><br>Cheers,<br>Team Razorpay</div></div>`,
         custom_fields: {
           cf_requester_category: 'Merchant',
           cf_requestor_subcategory: 'Account configuration/changes',

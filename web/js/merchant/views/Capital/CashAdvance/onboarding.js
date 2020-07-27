@@ -1,0 +1,281 @@
+import React, { Component } from 'react';
+import DataList from 'merchant/components/OnBoarding/Slides/DataList';
+import { CAPITAL_LINKS } from '../Loans/constants';
+import { OnBoardingWrapper } from 'merchant/components/OnBoarding';
+import LeadDetails from './LeadDetails';
+import { withRouter } from 'react-router-dom';
+import Banner from '../components/Banner';
+import Amount from 'common/ui/Amount';
+import Button from 'common/new-ui/Button';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
+
+const PROS = [
+  <div class="flex">
+    <img
+      src={'/dist/css/assets/capital/internal_credit.svg'}
+      alt="landing-image"
+    />
+    <div class="p-l m-l m-t">
+      <strong>
+        <p>Flexible Credit Limit</p>
+      </strong>
+      <p class="privilege-description">
+        Razorpay's Credit Decisioning System sets a higher credit limit based on
+        timely repayments.
+      </p>
+    </div>
+  </div>,
+  <div class="flex m-t">
+    <img
+      src={'/dist/css/assets/capital/auto_repayment.svg'}
+      alt="landing-image"
+    />
+    <div className="p-l m-l m-t">
+      <strong>
+        <p>Auto Repayment</p>
+      </strong>
+      <p class="privilege-description">
+        Repay automatically through settlements just like it is an advance of
+        your settlements.
+      </p>
+    </div>
+  </div>,
+  <div class="flex m-t">
+    <img
+      src={'/dist/css/assets/capital/flexible_interest.svg'}
+      alt="landing-image"
+    />
+    <div className="p-l m-l m-t">
+      <strong>
+        <p>Pay Interest only on your use </p>
+      </strong>
+      <p class="privilege-description">
+        Pay interest only on the amount withdrawn for the duration of the
+        withdrawal.
+      </p>
+    </div>
+  </div>,
+];
+
+@withRouter
+class Onboarding extends Component {
+  render() {
+    const {
+      createFDTicket,
+      onRaiseRequest,
+      leadGenerated,
+      hasWithdrawalConfiguration,
+      hasLOCStage2Feature,
+      withdrawalConfiguration,
+    } = this.props;
+
+    return (
+      <OnBoardingWrapper class="Withdrawals">
+        <div className="Landing--Image">
+          <div class="image-wrapper">
+            <img
+              src={'/dist/css/assets/capital/withdrawal_landing.svg'}
+              alt="landing-image"
+            />
+          </div>
+        </div>
+        <div className="Product--Details">
+          <div className="Details-title">
+            Cash Advance
+            <div className="divider" />
+          </div>
+          <div className="Details-desc">
+            Withdraw money up to your credit limit, repay when customers pay and
+            borrow again when you need cash.
+          </div>
+          <hr />
+          <DataList>{PROS}</DataList>
+        </div>
+
+        <div
+          className={`right-floating-card loan-application-home ${
+            hasLOCStage2Feature && hasWithdrawalConfiguration
+              ? 'withdrawal-config-container'
+              : ''
+          }`}
+        >
+          {hasLOCStage2Feature && hasWithdrawalConfiguration && (
+            <div className="banner-wrapper">
+              <Banner
+                title="Congratulations!"
+                description={
+                  <div>
+                    <p>
+                      Your cash advance application has been successfully
+                      approved!
+                      <br />
+                      Process your first withdrawal to boost your business.
+                    </p>
+                  </div>
+                }
+                type="success"
+                isFormHeader={true}
+              />
+              <img
+                src="/dist/css/assets/capital/green_patch.svg"
+                className="green_patch"
+              />
+            </div>
+          )}
+          {hasLOCStage2Feature && hasWithdrawalConfiguration && (
+            <div class="withdrawal-form-container p-all m-all">
+              <div class="withdrawal-config-details">
+                <EntityDetailRow
+                  pairClass="highlight"
+                  label={
+                    <div>
+                      <p>Maximum Withdrawable amount</p>
+                      <p class="text-small text-faded">
+                        in a single transaction
+                      </p>
+                    </div>
+                  }
+                >
+                  <h4>
+                    <Amount
+                      value={
+                        withdrawalConfiguration.configuration
+                          .max_withdraw_amount
+                      }
+                    />
+                  </h4>
+                </EntityDetailRow>
+                <EntityDetailRow
+                  label={
+                    <div>
+                      <p>Total Withdrawable Balance</p>
+                      <p class="text-small text-faded">as a credit limit</p>
+                    </div>
+                  }
+                >
+                  <h4>
+                    <Amount
+                      value={
+                        withdrawalConfiguration.configuration
+                          .internal_credit_limit
+                      }
+                    />
+                  </h4>
+                </EntityDetailRow>
+                <EntityDetailRow
+                  label={
+                    <div>
+                      <p>Repayment Method</p>
+                    </div>
+                  }
+                >
+                  <div class="text-right">
+                    <p>From your settlement Balance</p>
+                    <p className="text-small text-faded">
+                      Repayment amount will be deducted
+                    </p>
+                  </div>
+                </EntityDetailRow>
+              </div>
+              <div className="p-all text-center m-all">
+                <Button.Primary
+                  onClick={() => {
+                    this.props.trackGA({
+                      eventAction: 'Flash Credit Tab',
+                      eventLabel: 'Apply | Start your First Withdrawal',
+                    });
+                    this.props.history.push(
+                      '/capital/cash-advance/withdrawals'
+                    );
+                  }}
+                >
+                  Start your First withdrawal
+                </Button.Primary>
+              </div>
+            </div>
+          )}
+          {hasLOCStage2Feature && !hasWithdrawalConfiguration && (
+            <div className="withdrawal-form-container">
+              <div className="lead-generation-message-container text-center pending">
+                <img
+                  src={'/dist/css/assets/capital/lead_pending.svg'}
+                  alt="landing-image"
+                />
+                <h4 className="m-t m-b">
+                  <strong>Application is in progress</strong>
+                </h4>
+                <p className="m-t">
+                  Your cash advance application is currently in progress. Any
+                  queries, Reach out to us by writing us here.
+                </p>
+              </div>
+            </div>
+          )}
+          {!hasLOCStage2Feature &&
+            !hasWithdrawalConfiguration &&
+            leadGenerated && (
+              <div className="withdrawal-form-container">
+                <div className="lead-generation-message-container text-center">
+                  <img
+                    src={'/dist/css/assets/capital/lead_generated.svg'}
+                    alt="landing-image"
+                  />
+                  <p className="m-t">
+                    We have successfully collected your details, Our team will
+                    reach you back to take forward your application.
+                  </p>
+                </div>
+              </div>
+            )}
+
+          {!hasLOCStage2Feature &&
+            !hasWithdrawalConfiguration &&
+            !leadGenerated && (
+              <div className="status-overview">
+                <div className="loan-application-overview-header flex">
+                  <div className="loan-meta-wrapper">
+                    <h4>
+                      <strong>Cash Advance</strong>
+                    </h4>
+                    <p className="text--secondary">
+                      Share your basic details here, So that we will get back to
+                      you.
+                    </p>
+                  </div>
+                </div>
+                <div className="m-all p-l">
+                  <hr className="no-margin" />
+                </div>
+                <div className="withdrawal-form-container">
+                  <LeadDetails
+                    createFDTicket={createFDTicket}
+                    onRaiseRequest={onRaiseRequest}
+                  />
+                </div>
+              </div>
+            )}
+          <div className="p-l p-r footer">
+            <div className="btn-toolbar">
+              <a
+                className="m-l link"
+                //TODO: add valid link, after the faq section in website is
+                // ready
+                href={'https://razorpay.com/capital/'}
+                target="_blank"
+              >
+                <strong>Show FAQ's</strong>
+                <i className="i i-question-circle-o m-l" />
+              </a>
+            </div>
+            <img
+              src="/dist/css/assets/capital/capital_logo.svg"
+              alt="Loading icon"
+            />
+          </div>
+        </div>
+      </OnBoardingWrapper>
+    );
+  }
+}
+
+export default Onboarding;

@@ -23,7 +23,7 @@ export default class GenerateReportPanel extends React.PureComponent {
     const { selectedAccount } = prevState;
     if (
       accounts &&
-      (!selectedAccount && !accounts.loading && isPresent(accounts.accounts))
+      !selectedAccount && !accounts.loading && isPresent(accounts.accounts)
     ) {
       return {
         selectedAccount: accounts.accounts[0],

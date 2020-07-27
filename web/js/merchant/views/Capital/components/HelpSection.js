@@ -3,7 +3,7 @@ import {
   APPLICATION_STATE_DESCRIPTIONS,
   CAPITAL_LINKS,
   SIDE_NAVIGATION_STATE_GROUPS,
-} from '../constants';
+} from '../Loans/constants';
 import Button from 'common/new-ui/Button';
 import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
 

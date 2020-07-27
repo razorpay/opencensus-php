@@ -126,7 +126,9 @@ class AnalyticsDesktop extends Component {
       lateAuthConfig,
     } = this.props;
 
-    const { data: { items } } = lateAuthConfig;
+    const {
+      data: { items },
+    } = lateAuthConfig;
 
     const hasSecondaryBanner =
       showInstantActivation && config.config && !config.config.hasPersonalised;
@@ -155,8 +157,9 @@ class AnalyticsDesktop extends Component {
           }`}
         >
           {/* nps banner */}
-          {user.isNPSSurveyBannerEnabled &&
-            user.isAccepted && <NPSAnnouncement user={user} />}
+          {user.isNPSSurveyBannerEnabled && user.isAccepted && (
+            <NPSAnnouncement user={user} />
+          )}
 
           {showInstantActivation && (
             <Announcement mode={mode} user={user} payments={payments} />

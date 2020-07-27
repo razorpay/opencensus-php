@@ -112,6 +112,18 @@ export default function MerchantNavLinks(props) {
         }
       />
 
+      <MainNavLink
+        label="Cash Advance"
+        icon="i fa fa-star text-warning"
+        to="/capital/cash-advance"
+        isNew={true}
+        additionalCondition={user =>
+          user.isAllowedView('cash_advance') &&
+          user.isWithdrawEnabled &&
+          user.isFlashCreditStage1Enabled
+        }
+      />
+
       <div class="divider" />
 
       <MainNavLink

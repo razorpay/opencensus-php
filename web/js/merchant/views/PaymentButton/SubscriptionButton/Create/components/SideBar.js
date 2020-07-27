@@ -50,7 +50,7 @@ export default class SideBar extends React.Component {
   render() {
     const { subscriptionButtonEntity } = this.props;
     const progressPercentage = subscriptionButtonEntity
-      ? this.totalTabsDone * 100 / this.totalTabs
+      ? (this.totalTabsDone * 100) / this.totalTabs
       : 0;
 
     return (

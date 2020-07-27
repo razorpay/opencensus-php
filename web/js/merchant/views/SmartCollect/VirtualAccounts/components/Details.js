@@ -167,23 +167,7 @@ export default class extends React.Component {
                 </div>
 
                 {!user.isVACreationBankAccountDisabled &&
-                  (!isClosed &&
-                    !hasBankAccount && (
-                      <>
-                        <br />
-
-                        <button
-                          class="btn btn-default"
-                          onClick={this.openEnableTransferModeModal}
-                        >
-                          Enable Account Transfer
-                        </button>
-                      </>
-                    ))}
-
-                {!isClosed &&
-                  !upiAddress &&
-                  !isTestMode && (
+                  !isClosed && !hasBankAccount && (
                     <>
                       <br />
 
@@ -191,10 +175,23 @@ export default class extends React.Component {
                         class="btn btn-default"
                         onClick={this.openEnableTransferModeModal}
                       >
-                        Enable UPI Transfer
+                        Enable Account Transfer
                       </button>
                     </>
                   )}
+
+                {!isClosed && !upiAddress && !isTestMode && (
+                  <>
+                    <br />
+
+                    <button
+                      class="btn btn-default"
+                      onClick={this.openEnableTransferModeModal}
+                    >
+                      Enable UPI Transfer
+                    </button>
+                  </>
+                )}
 
                 <div style={{ margin: '24px 0' }}>
                   <EntityDetailRow label="Amount Paid">
@@ -290,9 +287,7 @@ export default class extends React.Component {
                     Payments to this account - {va_payments.length} payments
                     <Link
                       class="pull-right"
-                      to={`/smartcollect/payments/?virtual_account_id=${
-                        virtualaccount.id
-                      }`}
+                      to={`/smartcollect/payments/?virtual_account_id=${virtualaccount.id}`}
                     >
                       View All Payments
                     </Link>

@@ -303,18 +303,17 @@ export default class TokenDetailsContainer extends Component {
                       label="Actions"
                       class="pair-group-item actions"
                     >
-                      {this.isUPIMethod &&
-                        !isCancelled && (
-                          <button
-                            class="btn btn-default"
-                            onClick={this.handleCancelToken}
-                            style={{
-                              marginRight: 8,
-                            }}
-                          >
-                            <i class="i i-close" /> Cancel Token
-                          </button>
-                        )}
+                      {this.isUPIMethod && !isCancelled && (
+                        <button
+                          class="btn btn-default"
+                          onClick={this.handleCancelToken}
+                          style={{
+                            marginRight: 8,
+                          }}
+                        >
+                          <i class="i i-close" /> Cancel Token
+                        </button>
+                      )}
 
                       <button
                         class="btn Button--invert Button--danger"
@@ -388,7 +387,10 @@ class ErrorMessage extends React.PureComponent {
   };
 
   render() {
-    const { recurringDetails: { failure_reason }, isNACHMethod } = this.props;
+    const {
+      recurringDetails: { failure_reason },
+      isNACHMethod,
+    } = this.props;
 
     if (isNACHMethod && failure_reason) {
       return (

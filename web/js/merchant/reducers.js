@@ -96,6 +96,7 @@ import { reportsReducer } from 'merchant/reducers/reports';
 import LoanApplicationReducer from 'merchant/reducers/capital';
 
 import wysiwygReducer from 'merchant/reducers/wysiwyg';
+import WithdrawalsReducer from 'merchant/reducers/capital/withdrawals';
 
 export default combineReducers({
   modal: modalReducer,
@@ -179,4 +180,5 @@ export default combineReducers({
   commissionInvoice: commissionInvoice,
   loanApplicationDetails: LoanApplicationReducer,
   twoFactor: twoFactorReducer,
+  withdrawals: WithdrawalsReducer,
 });

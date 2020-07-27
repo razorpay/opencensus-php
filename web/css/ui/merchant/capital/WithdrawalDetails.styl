@@ -1,0 +1,131 @@
+.Withdrawal--Details
+  .stepper-container
+    padding-top: 12px;
+    background: rgba(22, 47, 86, 0.02);
+    width: 100%;
+    height: 130px;
+    display: flex;
+    align-items: center;
+  .stepper
+    position: relative;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    .step
+      display: flex;
+      flex: 1;
+      align-items: center;
+      flex-direction: column;
+      position: relative;
+      z-index: 2;
+      width: 120px;
+
+      .step__summary .status-label
+        text-align: center;
+      &.active
+        // .icon-wrapper
+        //   height: 26px;
+        //   width: 26px;
+        .step__summary .status-label
+          border-radius: 12px;
+          padding: 2px 12px;
+          color: white;
+          font-size: 12px;
+      &.active.failed .step__summary
+        .status-label
+          background: #BF7676;
+
+      &.active .step__summary
+        .status-label
+          background: #8684E3;
+          margin-bottom: 6px;
+      &.active.partial-completed .step__summary
+        .status-label
+          background: #FFB36C;
+          color: #000;
+      &.active.completed .step__summary
+        .status-label
+          background: #5EBE5B;
+          color: #fff;
+      &.active.half-complete .step__summary
+        .status-label
+          background: #EDF1F2;
+          color: #000;
+      .icon-wrapper
+        height: 24px;
+        width: 24px;
+        z-index: 22;
+        border-radius: 50%;
+        border: 1px solid rgba(22, 47, 86, 0.36);
+        color: rgba(22, 47, 86, 0.36);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        .i
+          margin-top: 2px;
+      &:not(:last-child)
+        &:after
+          content: " ";
+          position: absolute;
+          width: calc(100% - 36px);
+          height: 0px;
+          z-index: -1;
+          border: 1px dashed rgba(22, 47, 86, 0.1);
+          // background: transparent url(assets/onboarding/inactive_connector.png) 50% 0 no-repeat;
+          top: 13px;
+          left: calc(50% + 18px);
+      .step__summary
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 8px;
+      &.completed, &.active
+        .icon-wrapper
+          background: #F0FFF2;
+          border-color: #24A831;
+          color: #24A831;
+      &.completed, &.half-complete
+        .icon-wrapper
+          background: #F0FFF2;
+          border-color: #24A831;
+        &:after
+          background: #24A831;
+          height: 2px;
+          z-index: -1;
+          border: none;
+          color: #24A831;
+      &.half-complete
+        &:after
+          background: rgba(36, 168, 49, 0.8) !important;
+          width: 50% !important;
+        + .step
+          &:before
+            content: " ";
+            position: absolute;
+            width: calc(50% - 20px - 18px);
+            height: 0px;
+            z-index: -1;
+            border: 1px dashed rgba(22, 47, 86, 0.1);
+            // background: transparent url(assets/onboarding/inactive_connector.png) 50% 0 no-repeat;
+            top: 13px;
+            transform: translate(calc(-50% - 18px), 0px);
+      &.partial-completed
+        .icon-wrapper
+          background: #F0FFF2;
+          border-color: #24A831;
+          color: #24A831;
+      &.active
+        &:after
+          background: none;
+          border: 1px dashed rgba(22, 47, 86, 0.1);
+      &.failed
+        .icon-wrapper
+          background: #fff;
+          border-color: #987181;
+          color: #987181;
+  .rzp-amount
+    .rzp-currency, .rzp-whole, rzp-paise
+      font-weight: 600;

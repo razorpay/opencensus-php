@@ -212,17 +212,16 @@ export default class AmountDetails extends React.Component {
           })}
 
           {/* Not adding check for hasPresetAmountFields bcoz of debounce feature */}
-          {amountFields.length > 1 &&
-            amountFields.length < this.maxItemsLimit && (
-              <div>
-                <Button.Transparent
-                  onClick={this.handleAddPresetAmountField}
-                  disabled={!hasPresetAmountFields}
-                >
-                  <b>+ Add Another Preset</b>
-                </Button.Transparent>
-              </div>
-            )}
+          {amountFields.length > 1 && amountFields.length < this.maxItemsLimit && (
+            <div>
+              <Button.Transparent
+                onClick={this.handleAddPresetAmountField}
+                disabled={!hasPresetAmountFields}
+              >
+                <b>+ Add Another Preset</b>
+              </Button.Transparent>
+            </div>
+          )}
         </div>
 
         <div class="Form-controls">

@@ -2,7 +2,7 @@ import React from 'react';
 import ModalHeader from 'common/ui/ModalHeader';
 import Amount from 'common/ui/Amount';
 import Button from 'common/new-ui/Button';
-import { TENURE_UNIT_LABELS, TOOLTIP_DESCRIPTIONS } from '../constants';
+import { TENURE_UNIT_LABELS, TOOLTIP_DESCRIPTIONS } from '../Loans/constants';
 
 function RepaymentModal({ closeModal, creditOffer }) {
   return (

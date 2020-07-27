@@ -152,10 +152,10 @@ export default class PaymentButtonCreate extends React.Component {
   };
 
   /*
-  *
-  * Api methods
-  *
-  * */
+   *
+   * Api methods
+   *
+   * */
 
   fetchDetails = id => {
     const promise = this.props.fetchPaymentButtonDetails(
@@ -214,10 +214,10 @@ export default class PaymentButtonCreate extends React.Component {
   // TODO: Split handleSavePaymentButton() into 2 parts, one as handler and other to just make api call
 
   /*
-  *
-  * Action handler methods
-  *
-  * */
+   *
+   * Action handler methods
+   *
+   * */
 
   handleTogglePageReceiptModal = () => {
     this.setState({
@@ -458,10 +458,10 @@ export default class PaymentButtonCreate extends React.Component {
   };
 
   /*
-  *
-  * Others
-  *
-  * */
+   *
+   * Others
+   *
+   * */
 
   resetPageData = () => {
     this.setState({
@@ -526,10 +526,10 @@ export default class PaymentButtonCreate extends React.Component {
   }
 
   /*
-  *
-  * Render helpers
-  *
-  * */
+   *
+   * Render helpers
+   *
+   * */
 
   get TopBar() {
     let title;
@@ -683,10 +683,10 @@ export default class PaymentButtonCreate extends React.Component {
   }
 
   /*
-  *
-  * Main render
-  *
-  * */
+   *
+   * Main render
+   *
+   * */
 
   render() {
     return (

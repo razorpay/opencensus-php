@@ -30,7 +30,7 @@ export default class SideBar extends React.Component {
 
     if (this.isQuickPayTemplate) {
       hasButtonDetails =
-        hasButtonDetails && (amountFields && !!amountFields.length);
+        hasButtonDetails && amountFields && !!amountFields.length;
     }
 
     return hasButtonDetails && stepsProgress.isButtonDetailsReviewed;
@@ -75,7 +75,7 @@ export default class SideBar extends React.Component {
   }
 
   render() {
-    const progressPercentage = this.totalTabsDone * 100 / this.totalTabs;
+    const progressPercentage = (this.totalTabsDone * 100) / this.totalTabs;
 
     return (
       <div class="PaymentButton-Create-SideBar">

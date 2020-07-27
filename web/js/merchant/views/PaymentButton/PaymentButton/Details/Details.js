@@ -284,9 +284,7 @@ export default class PaymentButtonEntity extends React.Component {
 
                 <Link
                   class="Button Button--primary--invert"
-                  to={`/paymentbuttons/new?duplicate_id=${
-                    paymentButtonEntity.id
-                  }`}
+                  to={`/paymentbuttons/new?duplicate_id=${paymentButtonEntity.id}`}
                   onClick={track.lj.trackOptionsOpenDuplicate}
                 >
                   <i class="i i-copy" />

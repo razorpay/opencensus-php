@@ -427,70 +427,69 @@ export default class SettlementsListContainer extends ListContainer {
                           )}
                         </span>
                       ) : null}
-                      {nextSettlement &&
-                        !no_settlement && (
-                          <span style={{ fontSize: '13px' }}>
-                            <span>&nbsp;</span>
-                            <strong>
-                              <Amount
-                                value={
-                                  this.props.settlement_amount.data
-                                    .settlement_amount
-                                }
-                                currency="INR"
-                              />
-                            </strong>{' '}
-                            will be settled on{' '}
-                            <Time
+                      {nextSettlement && !no_settlement && (
+                        <span style={{ fontSize: '13px' }}>
+                          <span>&nbsp;</span>
+                          <strong>
+                            <Amount
                               value={
                                 this.props.settlement_amount.data
-                                  .next_settlement_time
+                                  .settlement_amount
                               }
-                              format="DD MMM YYYY, hh:mm:ss a"
+                              currency="INR"
                             />
-                            {this.props.settlement_amount.data
-                              .reason_for_delay && (
-                              <>
-                                <i class="i i-info-circle" />
-                                <Popover theme="dark" align="left">
-                                  <PopoverBody>
-                                    <div>
-                                      {
-                                        this.props.settlement_amount.data
-                                          .reason_for_delay
-                                      }
-                                    </div>
-                                  </PopoverBody>
-                                </Popover>
-                              </>
-                            )}
-                            <span
-                              onClick={() => {
-                                this.props.openModal({
-                                  size: 'medium',
-                                  component: (
-                                    <SettlementDetail
-                                      user={user}
-                                      settlementAmount={
-                                        this.props.settlement_amount.data
-                                      }
-                                    />
-                                  ),
-                                });
+                          </strong>{' '}
+                          will be settled on{' '}
+                          <Time
+                            value={
+                              this.props.settlement_amount.data
+                                .next_settlement_time
+                            }
+                            format="DD MMM YYYY, hh:mm:ss a"
+                          />
+                          {this.props.settlement_amount.data
+                            .reason_for_delay && (
+                            <>
+                              <i class="i i-info-circle" />
+                              <Popover theme="dark" align="left">
+                                <PopoverBody>
+                                  <div>
+                                    {
+                                      this.props.settlement_amount.data
+                                        .reason_for_delay
+                                    }
+                                  </div>
+                                </PopoverBody>
+                              </Popover>
+                            </>
+                          )}
+                          <span
+                            onClick={() => {
+                              this.props.openModal({
+                                size: 'medium',
+                                component: (
+                                  <SettlementDetail
+                                    user={user}
+                                    settlementAmount={
+                                      this.props.settlement_amount.data
+                                    }
+                                  />
+                                ),
+                              });
 
-                                window.rzpAnalytics({
-                                  eventCategory: 'Settlement Revamp',
-                                  eventAction: 'Know more - Next Settlement',
-                                  eventLabel: `Settlements`,
-                                });
-                              }}
-                              class="btn-link pointer"
-                              style={{ marginLeft: '5px' }}
-                            >
-                              <b>Know More</b>
-                            </span>
+                              window.rzpAnalytics({
+                                eventCategory: 'Settlement Revamp',
+                                eventAction: 'Know more - Next Settlement',
+                                eventLabel: `Settlements`,
+                              });
+                            }}
+                            class="btn-link pointer"
+                            style={{ marginLeft: '5px' }}
+                          >
+                            <b>Know More</b>
                           </span>
-                        )}
+                        </span>
+                      )}
                     </div>
                   </div>
                 )}

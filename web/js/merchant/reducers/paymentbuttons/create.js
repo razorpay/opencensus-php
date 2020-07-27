@@ -38,10 +38,10 @@ const UPDATE_BUTTON_SETTINGS_HIGHLIGHTER = 'UPDATE_BUTTON_SETTINGS_HIGHLIGHTER';
 const DEFAULT_CURRENCY = 'INR';
 
 /*
-* Save all the default configs related to template.
-* 'data' can be used to pass presets like pre-defined amountFields / udfFields
-* TODO: Use this to pre-add the payment_button_text
-* */
+ * Save all the default configs related to template.
+ * 'data' can be used to pass presets like pre-defined amountFields / udfFields
+ * TODO: Use this to pre-add the payment_button_text
+ * */
 export const updateTemplateType = (data, templateKey) => {
   let paymentButtonText = 'Pay Now';
   let amountFields = [];

@@ -631,7 +631,8 @@ export default class RefundModal extends Component {
                             <div class="flex">
                               <div class="w50 text-left">Taxes</div>
                               <div class="w50 text-right">
-                                +<Amount
+                                +
+                                <Amount
                                   value={this.state.instant_fee.tax}
                                   currency={payment.currency}
                                 />
@@ -732,10 +733,9 @@ export default class RefundModal extends Component {
         <div class="modal-body">
           {nonFraudDisputeCount ? (
             <div class="text-danger m-b">
-              There {nonFraudDisputeCount > 1 ? 'are' : 'is'} dispute{nonFraudDisputeCount >
-                1 && 's'}{' '}
-              raised against this payment. Kindly check the dispute details
-              before initiating a refund.
+              There {nonFraudDisputeCount > 1 ? 'are' : 'is'} dispute
+              {nonFraudDisputeCount > 1 && 's'} raised against this payment.
+              Kindly check the dispute details before initiating a refund.
             </div>
           ) : null}
           <form
@@ -779,7 +779,8 @@ export default class RefundModal extends Component {
                     This will be a{' '}
                     <b>
                       <RefundType partial={partial} /> refund
-                    </b>.
+                    </b>
+                    .
                     {!partial && (
                       <span>&nbsp; Change amount for a partial refund.</span>
                     )}

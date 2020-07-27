@@ -4,7 +4,7 @@ import Form from 'common/new-ui/Form';
 import * as PropTypes from 'prop-types';
 import FileUpload from 'merchant/components/File/Upload';
 import ToggleWithDescription from '../components/ToggleWithDescription';
-import { DOCUMENT_GROUP_NAMES_MAP } from '../constants';
+import { DOCUMENT_GROUP_NAMES_MAP } from '../Loans/constants';
 
 class DocumentsUpload extends React.Component {
   render() {

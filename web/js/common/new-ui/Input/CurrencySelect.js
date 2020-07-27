@@ -11,9 +11,8 @@ function CurrencyOption({ option }, noTick = false) {
   return (
     <div>
       <span>
-        <span class="currency-symbol">{option.sym}</span> - {option.label} ({
-          option.name
-        })
+        <span class="currency-symbol">{option.sym}</span> - {option.label} (
+        {option.name})
       </span>
       {noTick && <i className="i-check text-success" />}
     </div>
@@ -49,9 +48,9 @@ export default class extends React.Component {
     const defaultValue = this.props.defaultValue || 'INR'; // If no value passed, then INR is the displayed option.
 
     /*
-    * Note: it can happen that international is manually disabled (by merchant / by support team).
-    * And some payments in international currency might exist, hence regardless international enable, currency requested via this component must reflect correct currency, and not INR.
-    * */
+     * Note: it can happen that international is manually disabled (by merchant / by support team).
+     * And some payments in international currency might exist, hence regardless international enable, currency requested via this component must reflect correct currency, and not INR.
+     * */
     Object.keys(window.currencyList).forEach(c => {
       const fullName = window.currencyList[c].name,
         ISO = c,

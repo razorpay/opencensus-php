@@ -61,7 +61,10 @@ export default class PaymentSettings extends Component {
   }
 
   handleCreateLateAuthConfig = (body, authType) => {
-    const { data: { items }, error } = this.props.lateAuthConfig;
+    const {
+      data: { items },
+      error,
+    } = this.props.lateAuthConfig;
     this.props.closeModal();
 
     let method = '';
@@ -309,7 +312,10 @@ export default class PaymentSettings extends Component {
   };
 
   render() {
-    const { data: { items }, error } = this.props.lateAuthConfig;
+    const {
+      data: { items },
+      error,
+    } = this.props.lateAuthConfig;
     const { isToggleActive } = this.state;
     const { role } = this.props.user;
 

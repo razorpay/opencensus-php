@@ -88,25 +88,24 @@ export default ({
         {...maxAmountProps}
       />
 
-      {!isFirstAmountHidden &&
-        !isUPIPayment && (
-          <Input
-            name="firstPaymentAmount"
-            type="number"
-            placeholder={defaultFirstChargeAmount}
-            size="half_big"
-            label="Amount"
-            class="Input--Amount"
-            description="Amount of First Charge"
-            data-name="first_payment_amount"
-            onBlur={onBlurElement}
-            value={firstPaymentAmount}
-            validator={firstPaymentAmountValidator(mandateMaxAmount)}
-            addonBefore={
-              <AmountTooltip currency={'INR'} parentQuerySelector=".Modal" />
-            }
-          />
-        )}
+      {!isFirstAmountHidden && !isUPIPayment && (
+        <Input
+          name="firstPaymentAmount"
+          type="number"
+          placeholder={defaultFirstChargeAmount}
+          size="half_big"
+          label="Amount"
+          class="Input--Amount"
+          description="Amount of First Charge"
+          data-name="first_payment_amount"
+          onBlur={onBlurElement}
+          value={firstPaymentAmount}
+          validator={firstPaymentAmountValidator(mandateMaxAmount)}
+          addonBefore={
+            <AmountTooltip currency={'INR'} parentQuerySelector=".Modal" />
+          }
+        />
+      )}
     </React.Fragment>
   );
 };

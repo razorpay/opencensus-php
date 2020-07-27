@@ -632,6 +632,18 @@ export default class User {
     return this.isFeatureEnabled('loan');
   }
 
+  get isWithdrawEnabled() {
+    return this.isFeatureEnabled('withdraw_loc');
+  }
+
+  get isFlashCreditStage1Enabled() {
+    return this.isFeatureEnabled('loc_stage_1');
+  }
+
+  get isFlashCreditStage2Enabled() {
+    return this.isFeatureEnabled('loc_stage_2');
+  }
+
   get isUnregisteredBusiness() {
     const userBusinessType = Number(this.business_type);
     const UNREGISTERED_BUSINESS_TYPES = [2, 11];

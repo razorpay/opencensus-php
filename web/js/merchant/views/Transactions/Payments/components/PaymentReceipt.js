@@ -81,9 +81,7 @@ export default class PaymentReceipt extends React.Component {
   };
 
   openDownloadReceiptUrl = () => {
-    window.location.href = `https://invoices.razorpay.com/v1/invoices/${
-      this.state.invoiceId
-    }/pdf?download=1`;
+    window.location.href = `https://invoices.razorpay.com/v1/invoices/${this.state.invoiceId}/pdf?download=1`;
   };
 
   downloadReceipt = receipt => {

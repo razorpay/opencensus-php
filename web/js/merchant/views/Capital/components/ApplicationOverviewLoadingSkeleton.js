@@ -1,7 +1,7 @@
 import React from 'react';
 import CircularProgress from 'common/new-ui/CircularProgress';
 import MultiLevelStepper from 'merchant/views/Capital/components/MultiLevelStepper';
-import { CONSOLIDATED_STATES } from '../constants';
+import { CONSOLIDATED_STATES } from '../Loans/constants';
 
 function ApplicationOverviewLoadingSkeleton() {
   return (

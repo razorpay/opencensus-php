@@ -97,9 +97,9 @@ export default class TransactionsContainer extends Component {
           (pathname === '/payments' ||
             pathname === '/refunds' ||
             pathname === '/orders') &&
-          (mode === 'live' &&
+          mode === 'live' &&
             this.props.payments &&
-            this.props.payments.items.length > 0) ? (
+            this.props.payments.items.length > 0 ? (
             <div class="text-right settlement-caption">
               {no_settlement.caption}
               {no_settlement.reason && (

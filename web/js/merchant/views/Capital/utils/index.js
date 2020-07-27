@@ -1,4 +1,4 @@
-import { APPLICATION_STATE_SEQUENCE } from '../constants';
+import { APPLICATION_STATE_SEQUENCE } from '../Loans/constants';
 
 export const getDisbursalAmount = (
   creditOffered,
@@ -20,5 +20,5 @@ export const isPreceedingState = (state1, state2) => {
 };
 
 export const calculatePercentageAmount = (rate, credit_amount) => {
-  return rate * credit_amount / 100;
+  return (rate * credit_amount) / 100;
 };

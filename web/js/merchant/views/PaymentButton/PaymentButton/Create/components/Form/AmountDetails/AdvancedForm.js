@@ -95,9 +95,9 @@ export default class AdvancedForm extends React.PureComponent {
 }
 
 /*
-*
-*
-* */
+ *
+ *
+ * */
 class FieldWithPurchaseLimits extends React.Component {
   state = {
     hasPurchaseLimits:
@@ -219,9 +219,9 @@ class FieldWithPurchaseLimits extends React.Component {
 }
 
 /*
-*
-*
-* */
+ *
+ *
+ * */
 export class FieldWithAmountLimits extends React.Component {
   state = {
     hasAmountLimits: this.props.field.minimum || this.props.field.maximum, // Assuming that 0 as minimum is not allowed
@@ -360,9 +360,9 @@ export class FieldWithAmountLimits extends React.Component {
 }
 
 /*
-*
-*
-* */
+ *
+ *
+ * */
 class FieldWithStockLimit extends React.Component {
   state = {
     hasStockLimit: this.props.field.stock != null,

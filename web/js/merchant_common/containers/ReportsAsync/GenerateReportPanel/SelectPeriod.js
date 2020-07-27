@@ -183,10 +183,9 @@ export default class SelectPeriod extends React.Component {
             withTime={withTime}
             defaults={defaults}
           />
-          {!!dateRangeError &&
-            selectedPeriod === 'dateRange' && (
-              <div class="m-t text-danger text-small">{dateRangeError}</div>
-            )}
+          {!!dateRangeError && selectedPeriod === 'dateRange' && (
+            <div class="m-t text-danger text-small">{dateRangeError}</div>
+          )}
         </div>
       </Input.Group>
     ) : (

@@ -79,13 +79,7 @@ export default class GetCodeModal extends React.Component {
 
     const { paymentButton } = this.state;
 
-    const embedBtnCode = `<form><script src="https://cdn.razorpay.com/static/widget/payment-button.js" data-payment_button_id="${
-      paymentButton.id
-    }" data-button_text="${
-      paymentButton.settings.payment_button_text
-    }" data-button_theme="${
-      paymentButton.settings.payment_button_theme
-    }"> </script> </form>`;
+    const embedBtnCode = `<form><script src="https://cdn.razorpay.com/static/widget/payment-button.js" data-payment_button_id="${paymentButton.id}" data-button_text="${paymentButton.settings.payment_button_text}" data-button_theme="${paymentButton.settings.payment_button_theme}"> </script> </form>`;
 
     let children = this.props.children;
 

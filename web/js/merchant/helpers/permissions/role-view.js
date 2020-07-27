@@ -173,4 +173,5 @@ export default {
   earnings: [OWNER, ADMIN, MANAGER],
   partner_applications: [OWNER, MANAGER, ADMIN],
   loans: [OWNER, ADMIN],
+  cash_advance: [OWNER, ADMIN],
 };

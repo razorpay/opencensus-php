@@ -2,7 +2,7 @@ import React from 'react';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import Amount from 'common/ui/Amount';
 import { calculatePercentageAmount, getDisbursalAmount } from '../utils';
-import { TENURE_UNIT_LABELS, TOOLTIP_DESCRIPTIONS } from '../constants';
+import { TENURE_UNIT_LABELS, TOOLTIP_DESCRIPTIONS } from '../Loans/constants';
 
 const CreditOffer = ({
   offerDetails,

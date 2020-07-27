@@ -206,9 +206,7 @@ export default class PaymentButtonDetails extends React.Component {
 
                   this.props.showNotification({
                     type: 'success',
-                    message: `${
-                      this.state.subscriptionButtonEntity.id
-                    } is now Active`,
+                    message: `${this.state.subscriptionButtonEntity.id} is now Active`,
                   });
                 } else {
                   throw 'Some network error has occurred';

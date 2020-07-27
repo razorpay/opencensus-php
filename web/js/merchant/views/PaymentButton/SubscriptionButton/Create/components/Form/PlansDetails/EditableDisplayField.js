@@ -139,18 +139,17 @@ export default class EditableDisplayField extends React.Component {
           </React.Fragment>
         )}
 
-        {isEditModeOpened &&
-          plansOptions && (
-            <BaseForm
-              indexInOrder={indexInOrder} // Index in the ordered schema. If not defined, tells that it's a new field
-              field={field}
-              currency={currency}
-              plansOptions={plansOptions}
-              handleDeleteField={this.handleDeleteField}
-              handleClose={this.handleToggleEditMode}
-              onSubmit={this.onSubmitBaseForm}
-            />
-          )}
+        {isEditModeOpened && plansOptions && (
+          <BaseForm
+            indexInOrder={indexInOrder} // Index in the ordered schema. If not defined, tells that it's a new field
+            field={field}
+            currency={currency}
+            plansOptions={plansOptions}
+            handleDeleteField={this.handleDeleteField}
+            handleClose={this.handleToggleEditMode}
+            onSubmit={this.onSubmitBaseForm}
+          />
+        )}
       </div>
     );
   }

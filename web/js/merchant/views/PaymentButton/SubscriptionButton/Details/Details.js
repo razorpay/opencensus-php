@@ -274,9 +274,7 @@ export default class subscriptionButtonEntity extends React.Component {
               <div class="page-options pull-right">
                 <Link
                   class="Button Button--primary--invert"
-                  to={`/subscription_buttons/${
-                    subscriptionButtonEntity.id
-                  }/edit`}
+                  to={`/subscription_buttons/${subscriptionButtonEntity.id}/edit`}
                   // onClick={track.lj.trackOptionsOpenEdit}
                 >
                   <i class="i i-edit-outline" />
@@ -284,9 +282,7 @@ export default class subscriptionButtonEntity extends React.Component {
 
                 <Link
                   class="Button Button--primary--invert"
-                  to={`/subscription_buttons/new?duplicate_id=${
-                    subscriptionButtonEntity.id
-                  }`}
+                  to={`/subscription_buttons/new?duplicate_id=${subscriptionButtonEntity.id}`}
                   // onClick={track.lj.trackOptionsOpenDuplicate}
                 >
                   <i class="i i-copy" />

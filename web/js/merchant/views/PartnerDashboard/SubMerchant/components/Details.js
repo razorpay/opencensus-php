@@ -83,9 +83,7 @@ export default props => {
                 {submerchant.application && (
                   <EntityDetailRow label="Application Id">
                     <Link
-                      to={`/submerchants/applications/${
-                        submerchant.application.id
-                      }`}
+                      to={`/submerchants/applications/${submerchant.application.id}`}
                     >
                       {submerchant.application.id}
                     </Link>
