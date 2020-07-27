@@ -45,8 +45,6 @@ class PaymentEvent extends Event
                 'card_network'     => $input['card']['network'],
                 'card_type'        => $input['card']['type'],
                 'card_country'     => $input['card']['country'],
-                // Global fingerprint is not set for google pay
-                'card_fingerprint' => $input['card']['global_fingerprint'] ?? null
             ];
         }
 
@@ -115,8 +113,7 @@ class PaymentEvent extends Event
                 'card_network'      => $card->getNetwork(),
                 'card_type'         => $card->getType(),
                 'card_country'      => $card->getCountry(),
-                // Global fingerprint is not set for google pay
-                'card_fingerprint'  => $input['card']['global_fingerprint'] ?? null,
+                'card_fingerprint'  => $card->getGlobalFingerPrint(),
                 'international'     => $payment->isInternational(),
             ];
         }
