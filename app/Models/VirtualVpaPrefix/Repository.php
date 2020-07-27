@@ -26,7 +26,7 @@ class Repository extends Base\Repository
 
     public function fetchEntityByMerchantId(string $merchantId)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->first();
     }
