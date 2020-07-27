@@ -21,6 +21,8 @@ trait PaymentsUpiTrait
         ], $attributes));
 
         $vpa->save();
+
+        return $vpa;
     }
 
     public function createUpiPaymentsLocalCustomerVpa($attributes = [])
@@ -37,5 +39,7 @@ trait PaymentsUpiTrait
         ], $attributes));
 
         $vpa->save();
+
+        return $vpa;
     }
 }

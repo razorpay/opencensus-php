@@ -30,7 +30,8 @@ class Action
     const MANDATE_CANCEL   = 'mandate_cancel';
 
     public static $nonVerifiableActions = [
-        self::AUTHENTICATE
+        self::AUTHENTICATE,
+        self::PRE_DEBIT,
     ];
 
     public static $cpsSupportedActions = [

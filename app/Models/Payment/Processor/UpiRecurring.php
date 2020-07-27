@@ -32,7 +32,7 @@ trait UpiRecurring
             'terminal'      => $payment->terminal,
             'upi_mandate'   => $mandate,
             'payment'       => $payment,
-            'upi_metadata'  => $payment->getUpiMetadata(),
+            'upi'           => $payment->getUpiMetadata(),
         ];
 
         $this->mutex->acquireAndRelease($payment->getId(),
@@ -55,6 +55,17 @@ trait UpiRecurring
                 }
                 catch (Exception\GatewayErrorException $exception)
                 {
+                    $this->trace->traceException(
+                        $exception,
+                        Trace::INFO,
+                        TraceCode::GATEWAY_PAYMENT_ERROR,
+                        [
+                            'payment_id'    => $metadata->getPaymentId(),
+                            'gateway'       => $input['gateway'],
+                            'action'        => $input['action'],
+                            'terminal_id'   => $input['terminal']->getId(),
+                        ]);
+
                     return $this->processPreDebitGatewayFailure($payment, $mandate, $exception);
                 }
             },
@@ -582,6 +593,15 @@ trait UpiRecurring
         $upiEdit = array_only($response['upi'], $metadata->getFillable());
         $metadata->edit($upiEdit);
 
+        // For certain frequencies, gateways might ask to skip the notification
+        if ($metadata->getRemindAt() === null)
+        {
+            $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_AUTHORIZE);
+            (new UpiMetadata\Core)->update($metadata);
+
+            return true;
+        }
+
         $reminderId = $this->setUpiAutoRecurringReminder($metadata);
 
         if (empty($reminderId) === false)
@@ -609,19 +629,30 @@ trait UpiRecurring
         $metadata = $payment->getUpiMetadata();
 
         $upiEdit = array_only($response['upi'], $metadata->getFillable());
-
         $metadata->edit($upiEdit);
+
+        // For exception, where retries are exhausted gateway will send remind at null
+        if ($metadata->getRemindAt() === null)
+        {
+            $metadata->setInternalStatus(UpiMetadata\InternalStatus::PRE_DEBIT_FAILED);
+            (new UpiMetadata\Core)->update($metadata);
+
+            $this->payment = $payment;
+            $this->updatePaymentAuthFailed($exception);
+
+            return true;
+        }
 
         $reminderId = $this->setUpiAutoRecurringReminder($metadata);
 
         if (empty($reminderId) === false)
         {
             $metadata->setReminderId($reminderId);
-            $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_PENDING_FOR_PRE_DEBIT);
+            $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_PRE_DEBIT);
         }
         else
         {
-            $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_PRE_DEBIT);
+            $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_PENDING_FOR_PRE_DEBIT);
         }
 
         (new UpiMetadata\Core)->update($metadata);

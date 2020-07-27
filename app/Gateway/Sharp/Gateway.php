@@ -12,6 +12,7 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\BharatQr;
+use RZP\Models\UpiMandate;
 use RZP\Gateway\Upi\Base\Vpa;
 use RZP\Gateway\Upi\Base as UpiBase;
 use RZP\Models\Customer\Token;
@@ -493,24 +494,61 @@ class Gateway extends Base\Gateway
     {
         (new Validator)->validateInput('pre_debit', $input);
 
-        $descripion = $input['payment']['desctiption'];
+        $metadata    = $input['upi'];
+        $attempt     = (int)(substr($metadata['reference'], 18)) + 1;
+        $remindAt    = Carbon::now()->addSeconds(90)->getTimestamp();
+        $descripion  = $input['payment']['description'];
+        $errorCode   = null;
+        $mandate     = $input['upi_mandate'];
+        $shouldSkip  = UpiMandate\Frequency::shouldSkipNotify($this->gateway, $mandate['frequency']);
 
-        // Handle failures for pre debit on description
+        switch ($descripion)
+        {
+            case 'notify_fails_twice':
+                if ($attempt < 3)
+                {
+                    $errorCode = ErrorCode::GATEWAY_ERROR_BANK_OFFLINE;
+                    $remindAt  = Carbon::now()->addSeconds(3600)->getTimestamp();
+                }
+                break;
 
-        $mandate = $input['upi_mandate'];
+            case 'notify_fails':
+                if ($attempt < 3)
+                {
+                    $errorCode = ErrorCode::GATEWAY_ERROR_BANK_OFFLINE;
+                    $remindAt  = Carbon::now()->addSeconds(3600)->getTimestamp();
+                }
+                else if ($attempt === 3)
+                {
+                    $errorCode = ErrorCode::GATEWAY_ERROR_BANK_OFFLINE;
+                    // Just fail the retries completely
+                    $remindAt  = null;
+                }
+        }
 
-        return [
+        $response = [
             // Data which is needed for mandate
             'upi_mandate'   => [],
             // Data which is needed for UPI Metadata
             'upi'           => [
                 'vpa'               => $input['payment']['vpa'],
-                'reference'         => 'preDebitReference',
+                'reference'         => 'preDebitReference:' . $attempt,
                 'umn'               => $mandate['umn'],
                 // For Sharp Gateway, webhook will be almost instantaneous
-                'remind_at'         => Carbon::now()->addSeconds(30)->getTimestamp(),
+                'remind_at'         => $shouldSkip ? null : $remindAt,
             ],
         ];
+
+        if (($shouldSkip === true) or ($errorCode === null))
+        {
+            return $response;
+        }
+
+        $exception = new Exception\GatewayErrorException($errorCode, null, null, $response);
+
+        $exception->setAction('pre_debit');
+
+        throw $exception;
     }
 
     protected function verifyPaymentCreateResponse($input)

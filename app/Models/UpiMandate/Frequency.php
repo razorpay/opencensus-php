@@ -28,4 +28,14 @@ class Frequency
     {
         return (defined(Frequency::class.'::'.strtoupper($frequency)));
     }
+
+    public static function shouldSkipNotify(string $gateway, string $frequency): bool
+    {
+        // Handle gateway specific part if needed
+        return in_array($frequency, [
+            self::ONE_TIME,
+            self::DAILY,
+            self::AS_PRESENTED,
+        ]);
+    }
 }

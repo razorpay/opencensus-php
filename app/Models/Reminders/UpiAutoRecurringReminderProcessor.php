@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Reminders;
 
+use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\Payment\UpiMetadata;
 
@@ -11,6 +12,8 @@ class UpiAutoRecurringReminderProcessor extends ReminderProcessor
     {
         $payment = $this->retrievePayment($id);
         $metadata = $payment->getUpiMetadata();
+        $waitForAuthReminder = false;
+        $processed = false;
 
         if ($metadata->isInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_PRE_DEBIT))
         {
@@ -18,20 +21,29 @@ class UpiAutoRecurringReminderProcessor extends ReminderProcessor
             $processor->setPayment($payment);
 
             $processor->processAutoRecurringPreDebitForUpi($payment);
+            $processed = true;
+
+            // Now if the next remind at is in future, we need to wait for auth reminder call
+            if ($metadata->getRemindAt() > Carbon::now()->getTimestamp())
+            {
+                $waitForAuthReminder = true;
+            }
         }
-        else if ($metadata->isInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_AUTHORIZE))
+
+        // processAutoRecurringPreDebitForUpi can set the remind time to a past or current value,
+        // thus without sending a reminder, this condition will pick the same payment for authorization right away
+        // Note: The processor will not send a reminder update call if the remind at is in past.
+        if (($metadata->isInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_AUTHORIZE)) and
+            ($waitForAuthReminder === false))
         {
             $processor = (new Payment\Processor\Processor($payment->merchant));
             $processor->setPayment($payment);
 
             $processor->processAutoRecurringAuthorizeForUpi($payment);
-        }
-        else
-        {
-            $this->handleInvalidReminder();
+            $processed = true;
         }
 
-        return ['success' => true];
+        return ['success' => $processed];
     }
 
     protected function retrievePayment($id): Payment\Entity

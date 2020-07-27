@@ -4,14 +4,40 @@ namespace RZP\Tests\Functional\Helpers;
 
 use Mockery;
 use Carbon\Carbon;
+use RZP\Models\Order;
 use RZP\Models\UpiMandate;
+use RZP\Models\Customer\Token;
 use RZP\Services\Mock\Reminders;
+use RZP\Models\Payment\UpiMetadata;
 
 trait PaymentsUpiRecurringTrait
 {
+    use PaymentsUpiTrait;
     use DbEntityFetchTrait;
 
-    protected $mockedReminderService;
+    protected $merchantId               = '10000000000000';
+
+    protected $terminalId               = '1000SharpTrmnl';
+
+    protected $customerId               = '100000customer';
+    /**
+     * @var Order\Entity
+     */
+    protected $order                    = null;
+    /**
+     * @var UpiMandate\Entity
+     */
+    protected $upiMandate               = null;
+    /**
+     * @var Token\Entity
+     */
+    protected $token                    = null;
+    /**
+     * @var UpiMetadata\Entity
+     */
+    protected $lastUpiMetadata          = null;
+    protected $lastUpiRecurringEntities = [];
+    protected $mockedReminderService    = null;
 
     protected function createUpiRecurringOrder(array $override = [])
     {
@@ -149,7 +175,7 @@ trait PaymentsUpiRecurringTrait
         $this->app->instance('reminders', $this->mockedReminderService);
     }
 
-    protected function sendReminderRequest($reminder)
+    protected function sendReminderRequest(array $reminder, bool $assert = true)
     {
         $request = [
             'url'       => '/v1/' . $reminder['callback_url'],
@@ -158,6 +184,158 @@ trait PaymentsUpiRecurringTrait
         ];
 
         $this->ba->appAuth('rzp_test', 'api');
-        return $this->makeRequestAndGetContent($request);
+
+        $response =  $this->makeRequestAndGetContent($request);
+
+        if ($assert)
+        {
+            $this->assertArrayHasKey('success' , $response, 'Failure on reminder request');
+            $this->assertTrue($response['success'], 'Failure on reminder request');
+        }
+
+        return $response;
     }
+
+    protected function createDbUpiOrder(array $oInput = [])
+    {
+        $oInput = array_merge([
+            'merchant_id'       => $this->merchantId,
+            'customer_id'       => '100000customer',
+            'amount'            => 50000,
+            'currency'          => 'INR',
+            'method'            => 'upi',
+            'payment_capture'   => 1,
+            'status'            => Order\Status::CREATED,
+            'notes'             => []
+        ], $oInput);
+
+        $this->order = new Order\Entity();
+        $this->order->forceFill($oInput);
+        $this->order->saveOrFail();
+    }
+
+    protected function createDbUpiMandate(array $mInput = [], array $oInput = [])
+    {
+        $this->createDbUpiOrder($oInput);
+
+        $mInput = array_merge([
+            'merchant_id'       => $this->merchantId,
+            'customer_id'       => $this->customerId,
+            'order_id'          => $this->order->getId(),
+            'max_amount'        => 150000,
+            'frequency'         => 'monthly',
+            'recurring_type'    => 'before',
+            'recurring_value'   => 30,
+            'start_time'        => Carbon::now()->addDay(1)->getTimestamp(),
+            'end_time'          => Carbon::now()->addDay(60)->getTimestamp(),
+            'status'            => UpiMandate\Status::CREATED,
+        ], $mInput);
+
+        $this->upiMandate = new UpiMandate\Entity();
+        $this->upiMandate->forceFill($mInput);
+        $this->upiMandate->saveOrFail();
+    }
+
+    protected function createDbUpiToken(array $tInput = [], array $mInput = [])
+    {
+        $vpa = $this->createUpiPaymentsLocalCustomerVpa();
+
+        $tInput = array_merge([
+            'merchant_id'       => $this->merchantId,
+            'customer_id'       => $this->customerId,
+            'terminal_id'       => $this->terminalId,
+            'token'             => '1000TokenToken',
+            'recurring_status'  => 'confirmed',
+            'method'            => 'upi',
+            'recurring'         => 1,
+            'vpa_id'            => $vpa->getId(),
+        ], $tInput);
+
+        $this->token = new Token\Entity();
+        $this->token->forceFill($tInput);
+        $this->token->saveOrFail();
+
+        // When token is created the mandate is also updated
+        $mInput = array_merge([
+            'token_id'      => $this->token->getId(),
+            'status'        => UpiMandate\Status::CONFIRMED,
+            'umn'           => 'FirstUpiRecPayment@razorpay',
+            'rrn'           => '001000100001',
+            'npci_txn_id'   => 'RZP12345678910111213141516',
+        ], $mInput);
+
+        $this->upiMandate->forceFill($mInput);
+        $this->upiMandate->saveOrFail();
+
+        // We are not making a payment just mocking the data
+        // Idea is any subsequent logic should not rely on
+        // existence of first payment rather status of mandate and token
+        // Later if needed we add another helper to create a payment
+    }
+
+    protected function getDbUpiAutoRecurringPayment(array $override = [])
+    {
+        $payment = $this->getDefaultUpiRecurringPaymentArray();
+        $payment['token'] = $this->token->getPublicId();
+
+        $this->createDbUpiOrder();
+        $payment['order_id'] = $this->order->getPublicId();
+        unset($payment['vpa']);
+
+        $payment = array_merge($payment, $override);
+
+        return $payment;
+    }
+
+    protected function getUpiDbLastEntity($entity)
+    {
+        $this->lastUpiRecurringEntities[$entity] = $this->getDbLastEntity($entity);
+        return $this->lastUpiRecurringEntities[$entity];
+    }
+
+    protected function assertUpiDbLastEntity(string $entity, array $actualDiff = [], bool $strict = true)
+    {
+        // Last one was never set
+        if ((isset($this->lastUpiRecurringEntities[$entity]) === false) or
+            ($strict === false))
+        {
+            $newEntity = $this->getUpiDbLastEntity($entity);
+            $this->assertArraySubset($actualDiff, $newEntity->toArray(), true);
+        }
+        else
+        {
+            $newEntity = $this->getDbLastEntity($entity);
+            $oldEntity = $this->lastUpiRecurringEntities[$entity];
+
+            $oldEntity->forceFill($actualDiff);
+
+            $this->assertArraySubset($oldEntity->toArray(), $newEntity->toArray(), true);
+        }
+
+        return $newEntity;
+    }
+
+    protected function assertUpiMetadataStatus(string $status, UpiMetadata\Entity $entity = null)
+    {
+        if ($entity === null)
+        {
+            $entity = $this->getUpiDbLastEntity('upi_metadata');
+        }
+
+        $this->assertSame($status, $entity->getInternalStatus());
+    }
+
+    protected function assertReminderRequest(string $action, & $reminder, & $metadata)
+    {
+        // The request which we have sent to create the reminder
+        $this->mockReminderService($action,
+            function($request, $merchantId) use (& $reminder, & $metadata)
+            {
+                $reminder = $request;
+                $metadata = $this->getUpiDbLastEntity('upi_metadata');
+
+                $this->assertSame($metadata['remind_at'], $metadata->getRemindAt());
+            });
+    }
+
 }

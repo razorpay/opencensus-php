@@ -18,6 +18,6 @@ class Validator extends Base\Validator
         'terminal'          => 'required',
         'payment'           => 'required',
         'upi_mandate'       => 'required',
-        'upi_metadata'      => 'required',
+        'upi'               => 'required',
     ];
 }

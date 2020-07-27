@@ -219,8 +219,7 @@ class UpiRecurringPaymentSharpTest extends TestCase
         Carbon::setTestNow(Carbon::now()->addSeconds(90));
 
         // Now we will initiate the reminder
-        $response = $this->sendReminderRequest($createReminder);
-        $this->assertTrue($response['success']);
+        $this->sendReminderRequest($createReminder);
 
         $metadata->refresh();
 
@@ -228,7 +227,7 @@ class UpiRecurringPaymentSharpTest extends TestCase
             'type'              => 'recurring',
             'flow'              => 'collect',
             'mode'              => 'auto',
-            'reference'         => 'preDebitReference',
+            'reference'         => 'preDebitReference:1',
             'rrn'               => null,
             'umn'               => $mandate->umn,
             'npci_txn_id'       => null,
@@ -237,8 +236,7 @@ class UpiRecurringPaymentSharpTest extends TestCase
             'remind_at'         => $updateReminder['reminder_data']['remind_at']
         ], $metadata->toArray(), true);
 
-        $response = $this->sendReminderRequest($updateReminder);
-        $this->assertTrue($response['success']);
+        $this->sendReminderRequest($updateReminder);
 
         $payment->refresh();
 
@@ -257,7 +255,7 @@ class UpiRecurringPaymentSharpTest extends TestCase
             'type'              => 'recurring',
             'flow'              => 'collect',
             'mode'              => 'auto',
-            'reference'         => 'preDebitReference',
+            'reference'         => 'preDebitReference:1',
             'rrn'               => '001000100001',
             'umn'               => $mandate->umn,
             'npci_txn_id'       => 'npci_txn_id_for_' . $payment->getId(),
@@ -311,6 +309,142 @@ class UpiRecurringPaymentSharpTest extends TestCase
         $payment->refresh();
         $this->assertTrue($payment->isFailed());
         $this->assertSame('BAD_REQUEST_PAYMENT_TIMED_OUT', $payment->getInternalErrorCode());
+    }
+
+    public function testCreateDailyAutoRecurringPaymentSuccess()
+    {
+        $this->createDbUpiMandate([
+            'frequency' => 'daily',
+        ]);
+
+        $this->createDbUpiToken();
+
+        // The request which we have sent to create the reminder
+        $createReminder = null;
+        $this->mockReminderService('createReminder',
+            function($request, $merchantId) use (& $createReminder)
+            {
+                $createReminder = $request;
+
+                $this->assertUpiDbLastEntity('payment', [
+                    'status' => 'created',
+                ]);
+                $this->assertUpiDbLastEntity('upi_metadata', [
+                    'internal_status'   => 'reminder_pending_for_pre_debit',
+                    'reminder_id'       => null,
+                    'remind_at'         => $createReminder['reminder_data']['remind_at']
+                ]);
+            });
+
+        $this->doS2SRecurringPayment($this->getDbUpiAutoRecurringPayment());
+
+        $this->sendReminderRequest($createReminder);
+
+        $payment = $this->assertUpiDbLastEntity('payment', [
+            'status' => 'captured',
+        ], false);
+
+        $this->assertUpiDbLastEntity('upi_metadata', [
+            'vpa'               => 'localuser@icici',
+            'reference'         => 'preDebitReference:1',
+            'rrn'               => '001000100001',
+            'umn'               => $this->upiMandate->umn,
+            'npci_txn_id'       => 'npci_txn_id_for_' . $payment->getId(),
+            'internal_status'   => 'authorized',
+            'reminder_id'       => 'TestReminderId',
+            'remind_at'         => null,
+        ]);
+    }
+
+    public function testCreateMonthlyAutoRecurringPaymentNotifyFailsTwice()
+    {
+        $this->createDbUpiMandate();
+        $this->createDbUpiToken();
+
+        $input = $this->getDbUpiAutoRecurringPayment([
+            'description' => 'notify_fails_twice',
+        ]);
+
+        // The request which we have sent to create the reminder
+        $this->assertReminderRequest('createReminder', $createReminder, $pending);
+
+        $this->doS2SRecurringPayment($input);
+
+        $this->assertUpiMetadataStatus('reminder_pending_for_pre_debit', $pending);
+        // Now waiting for first reminder from RS
+        $this->assertUpiMetadataStatus('reminder_in_progress_for_pre_debit');
+        // The first reminder call will trigger an update reminder
+        $this->assertReminderRequest('updateReminder', $updateReminder, $pending);
+        // Making first call from RS
+        $this->sendReminderRequest($createReminder);
+
+        $this->assertUpiMetadataStatus('pre_debit_initiated', $pending);
+        // Because of first failure status moved back to reminder in progress
+        $this->assertUpiMetadataStatus('reminder_in_progress_for_pre_debit');
+        // Now making second call from RS
+        $this->sendReminderRequest($updateReminder);
+
+        $this->assertUpiMetadataStatus('pre_debit_initiated', $pending);
+        // Because of Second failure status moved back to reminder pending
+        $this->assertUpiMetadataStatus('reminder_in_progress_for_pre_debit');
+
+        $this->assertUpiDbLastEntity('upi_metadata', [
+            'reference'  => 'preDebitReference:2',
+        ]);
+
+        // Third attempt for recurring
+        $this->sendReminderRequest($updateReminder);
+        // Because of Second failure status moved back to reminder pending
+        $this->assertUpiMetadataStatus('reminder_in_progress_for_authorize');
+    }
+
+    public function testCreateMonthlyAutoRecurringPaymentNotifyFailsCompletely()
+    {
+        $this->createDbUpiMandate();
+        $this->createDbUpiToken();
+
+        $input = $this->getDbUpiAutoRecurringPayment([
+            'description' => 'notify_fails',
+        ]);
+
+        // The request which we have sent to create the reminder
+        $this->assertReminderRequest('createReminder', $createReminder, $pending);
+
+        $this->doS2SRecurringPayment($input);
+
+        $this->assertUpiMetadataStatus('reminder_pending_for_pre_debit', $pending);
+        // Now waiting for first reminder from RS
+        $this->assertUpiMetadataStatus('reminder_in_progress_for_pre_debit');
+        // The first reminder call will trigger an update reminder
+        $this->assertReminderRequest('updateReminder', $updateReminder, $pending);
+        // Making first call from RS
+        $this->sendReminderRequest($createReminder);
+
+        $this->assertUpiMetadataStatus('pre_debit_initiated', $pending);
+        // Because of first failure status moved back to reminder in progress
+        $this->assertUpiMetadataStatus('reminder_in_progress_for_pre_debit');
+        // Now making second call from RS
+        $this->sendReminderRequest($updateReminder);
+
+        $this->assertUpiMetadataStatus('pre_debit_initiated', $pending);
+        // Because of Second failure status moved back to reminder pending
+        $this->assertUpiMetadataStatus('reminder_in_progress_for_pre_debit');
+
+        $this->assertUpiDbLastEntity('upi_metadata', [
+            'reference'  => 'preDebitReference:2',
+        ]);
+
+        // Third attempt for recurring
+        $this->sendReminderRequest($updateReminder);
+        // Because of third failure status is finally failed
+        $this->assertUpiMetadataStatus('pre_debit_failed');
+
+        // We do not need to verify payments where the pre debit has failed 3 times
+        $this->assertUpiDbLastEntity('payment', [
+            'status'                => 'failed',
+            'internal_error_code'   => 'GATEWAY_ERROR_BANK_OFFLINE',
+            'verify_at'             => null,
+        ]);
     }
 
     public function testRevokeMandate()
