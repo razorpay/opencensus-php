@@ -395,16 +395,16 @@ class WithdrawalDetails extends Component {
                         ) : (
                           <EntityDetailRow label="Amount to be Repaid">
                             <Amount
-                              value={
+                              value={parseFloat(
                                 this.getDueAmount(
                                   data,
                                   withdrawalConfigurationDetails
                                 ).interest +
-                                this.getDueAmount(
-                                  data,
-                                  withdrawalConfigurationDetails
-                                ).principal
-                              }
+                                  this.getDueAmount(
+                                    data,
+                                    withdrawalConfigurationDetails
+                                  ).principal
+                              )}
                             />
                             {!showBreakdown && (
                               <div>

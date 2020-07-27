@@ -290,6 +290,7 @@ export default class AmountWithdraw extends React.Component {
       ) {
         this.setState({
           currentView: VIEWS.WITHDRAW_SUCCESS,
+          showRepaymentDetailsBreakup: false,
         });
         this.fetchWithdrawalConfiguration();
         this.fetchWithdrawals();
@@ -561,10 +562,8 @@ export default class AmountWithdraw extends React.Component {
 
   withdrawalSuccessView = () => {
     const { selectedDueDate, withdrawalAmount } = this.state;
-    const repayableAmount =
-      this.getRepayableAmount().interest +
-      this.getRepayableAmount().principle +
-      '00';
+    const { interest, principle } = this.getRepayableAmount();
+    const repayableAmount = parseFloat((interest + principle) * 100).toFixed(2);
 
     return (
       <div className="withdrawals__action-container">

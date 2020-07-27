@@ -21,7 +21,10 @@ function WithdrawnAmountSummary({
             <div className="description">
               <p>Principle Repayable</p>
             </div>
-            <Amount value={principle * 100} className="pull-right" />
+            <Amount
+              value={parseFloat(principle * 100).toFixed(2)}
+              className="pull-right"
+            />
           </div>
         </div>
         <div className="withdrawals__credit-meta__list-item">
@@ -47,7 +50,7 @@ function WithdrawnAmountSummary({
                 </Popover>
               </small>
             </div>
-            <Amount value={parseInt(interest * 100)} className="pull-right" />
+            <Amount value={parseFloat(interest * 100)} className="pull-right" />
           </div>
         </div>
         <div className="withdrawals__credit-meta__list-item">
@@ -63,8 +66,8 @@ function WithdrawnAmountSummary({
         </div>
       </div>
       <div className="block-note text-small m-t">
-        Repayment amount will be automatically collected from your settlement
-        balance on <strong>{repaymentDate.format('LL')}</strong>.
+        Repayment amount will be collected as daily installments from your
+        settlement balance till <strong>{repaymentDate.format('LL')}</strong>.
       </div>
     </div>
   );
