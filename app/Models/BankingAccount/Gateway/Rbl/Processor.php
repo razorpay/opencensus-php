@@ -56,28 +56,7 @@ class Processor extends BankingAccount\Gateway\Processor
 
         $this->checkBalanceForActivation($balance);
 
-        try
-        {
-            $this->createAccountMappingForFts($bankingAccount);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::CRITICAL,
-                TraceCode::FTS_FAILURE_EXCEPTION,
-                [
-                    'code'          => $e->getCode(),
-                    'message'       => $e->getMessage(),
-                ]);
-
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED,
-                null,
-                [
-                    'banking_account' => $bankingAccount->getPublicId(),
-                ]);
-        }
+        $this->createAccountMappingForFts($bankingAccount);
 
         $input = [
             Entity::STATUS  => BankingAccount\Status::ACTIVATED,

@@ -447,6 +447,110 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
+    public function testActivateFailedDueToFtsFundAccountValidationFailure($ftsResponseCallable = null,
+                                                                           string $ftsErrorDescription = null,
+                                                                           string $endUserErrorDescription = null,
+                                                                           string $internalErrorCode = null)
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' .  $merchantDetail->merchant['id']);
+
+        $this->createBankingAccount();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->setupDataForActivation($bankingAccount);
+
+        $dataToReplace = [
+            'request' => [
+                'url' => '/banking_accounts/' . $bankingAccount->getPublicId() . '/activate'
+            ]
+        ];
+
+        $mozartResponse = $this->getMozartMockedResponse(camel_case(Rbl\Action::ACCOUNT_BALANCE . '_' .
+            Rbl\Status::SUCCESS));
+
+        $this->setMozartMockResponse($mozartResponse);
+
+        $ftsErrorDescription = $ftsErrorDescription ?: "bank_account: beneficiary_mobile: not a valid input";
+
+        $internalErrorCode = $internalErrorCode ?: \RZP\Error\ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_FUND_ACCOUNT_CREATION_VALIDATION_FAILED;
+
+        $this->mockFundAccountService($ftsResponseCallable ?: function () use ($ftsErrorDescription)
+        {
+            return [
+                'body' => [
+                    "internal_error" => [
+                        "code"      => "VALIDATION_ERROR",
+                        "message"   => $ftsErrorDescription,
+                        "sub_code"  => 0
+                    ],
+                    "public_error" => [
+                        "code"      => "BAD_REQUEST_ERROR",
+                        "message"   => "invalid request sent"
+                    ]
+                ],
+                "code" => 400
+            ];
+        });
+
+        $endUserErrorDescription = $endUserErrorDescription ?: 'Operation failed. FTS Account could not stored because of a validation error: ' . $ftsErrorDescription;
+
+        $this->testData[__FUNCTION__]['response']['content']['error']['description'] = $endUserErrorDescription;
+
+        $this->testData[__FUNCTION__]['exception']['internal_error_code'] = $internalErrorCode;
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testActivateFailedDueToFtsSourceAccountValidationFailure()
+    {
+        $ftserrorDescription = 'bank_account: corp_id: not a valid input';
+
+        $endUserErrorDescription = 'Operation failed. FTS Account could not stored because of a validation error: ' . $ftserrorDescription;
+
+        $internalErrorCode = \RZP\Error\ErrorCode::BAD_REQUEST_ERROR_SOURCE_ACCOUNT_CREATION_VALIDATION_FAILED;
+
+        $this->testActivateFailedDueToFtsFundAccountValidationFailure(function ($endpoint, $method, $data = []) use ($ftserrorDescription)
+        {
+            switch ($endpoint)
+            {
+                case '/account':
+                    $response = [
+                        'body' => [
+                            'fund_account_id' => random_integer(2),
+                        ],
+                        'code' => 201
+                    ];
+
+                    return $response;
+
+                case '/source_account':
+                    $response = [
+                        'body'=> [
+                            "internal_error" => [
+                                "code"      => "VALIDATION_ERROR",
+                                "message"   => $ftserrorDescription,
+                                "sub_code"  => 0
+                            ],
+                            "public_error" => [
+                                "code"      => "BAD_REQUEST_ERROR",
+                                "message"   => "invalid request sent"
+                            ]
+                        ]
+                    ];
+
+                    return $response;
+            }
+        },
+            $ftserrorDescription, $endUserErrorDescription, $internalErrorCode);
+    }
+
     public function testActivateFailedDueToMissingData()
     {
         $attribute = ['activation_status' => 'activated'];

@@ -24,6 +24,13 @@ abstract class Processor extends Base\Core
 
     const CREDENTIALS_VAULT_NAMESPACE = 'nodal_certs';
 
+    const FTS_VALIDATION_ERROR_DESCRIPTION = 'Operation failed. FTS Account could not stored because of a validation error: ';
+
+    protected $ftsErrorCodesToPropagate = [
+        ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_FUND_ACCOUNT_CREATION_VALIDATION_FAILED,
+        ErrorCode::BAD_REQUEST_ERROR_SOURCE_ACCOUNT_CREATION_VALIDATION_FAILED
+    ];
+
     public function validateAndPreProcessInputForAccountCreation(array $input)
     {
         $this->validateInputForAccountCreation($input);
@@ -77,28 +84,56 @@ abstract class Processor extends Base\Core
 
     public function createAccountMappingForFts(Entity $bankingAccount)
     {
-        $this->trace->info(
-            TraceCode::BANKING_ACCOUNT_FTS_MAPPING_CREATION_REQUEST,
-            [
-                'id' => $bankingAccount->getId()
-            ]);
+        try
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_FTS_MAPPING_CREATION_REQUEST,
+                [
+                    'id' => $bankingAccount->getId()
+                ]);
 
-        $fundAccountId = $this->createOrFetchFtsFundAccountForMerchant($bankingAccount);
+            $fundAccountId = $this->createOrFetchFtsFundAccountForMerchant($bankingAccount);
 
-        $channel = $bankingAccount->getChannel();
+            $channel = $bankingAccount->getChannel();
 
-        $content = $this->generateRequestForSourceAccount($bankingAccount);
+            $content = $this->generateRequestForSourceAccount($bankingAccount);
 
-        $product = 'PAYOUT';
+            $product = 'PAYOUT';
 
-        $this->makeSourceAccountRequest(
-            $bankingAccount->getId(),
-            $fundAccountId,
-            $content,
-            $product,
-            $channel);
+            $this->makeSourceAccountRequest(
+                $bankingAccount->getId(),
+                $fundAccountId,
+                $content,
+                $product,
+                $channel);
 
-        return $bankingAccount;
+            return $bankingAccount;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                \Razorpay\Trace\Logger::CRITICAL,
+                TraceCode::FTS_FAILURE_EXCEPTION,
+                [
+                    'code'          => $e->getCode(),
+                    'message'       => $e->getMessage(),
+                ]);
+
+            if ($this->shouldPropagateErrorToUser($e->getCode()))
+            {
+                throw $e;
+            }
+            else
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED,
+                    null,
+                    [
+                        'banking_account' => $bankingAccount->getPublicId(),
+                    ]);
+            }
+        }
     }
 
     public function activate(Entity $bankingAccount, array $input): Entity
@@ -163,15 +198,7 @@ abstract class Processor extends Base\Core
             }
         }
 
-        if (empty($response[FTS\Constants::BODY][FTS\Constants::FUND_ACCOUNT_ID]) === true)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_FUND_ACCOUNT_CREATION_FAILED,
-                null,
-                ['id' => $bankingAccount->getId(), 'response' => $response],
-                'FTS fund Account Id could not stored, Please try again!'
-            );
-        }
+        $this->checkFundAccountResponseForError($response, $bankingAccount);
 
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_FTS_MAPPING_CREATION_RESPONSE,
@@ -210,7 +237,7 @@ abstract class Processor extends Base\Core
                                                              $product,
                                                              $channel);
 
-                return $this->checkSourceAccountResponseForError($response);
+                return $this->checkSourceAccountResponseForError($response, $ftsAccountId);
 
             }
             catch (RecordAlreadyExists $e)
@@ -248,26 +275,86 @@ abstract class Processor extends Base\Core
         }
     }
 
-    protected function checkSourceAccountResponseForError(array $response)
+    protected function shouldPropagateErrorToUser(string $errorCode)
     {
+        return (in_array($errorCode, $this->ftsErrorCodesToPropagate, true) === true);
+    }
+
+    protected function isValidationError($response)
+    {
+        return (array_key_exists(FTS\Constants::INTERNAL_ERROR, $response[FTS\Constants::BODY])
+                    && array_key_exists(FTS\Constants::CODE, $response[FTS\Constants::BODY][FTS\Constants::INTERNAL_ERROR])
+                    && $response[FTS\Constants::BODY][FTS\Constants::INTERNAL_ERROR][FTS\Constants::CODE] === FTS\Constants::VALIDATION_ERROR);
+    }
+
+    protected function checkSourceAccountResponseForError(array $response, $ftsAccountId)
+    {
+        $contextData = [
+            'fts_account_id' => $ftsAccountId,
+            'response'       => $response
+        ];
+
         if (((isset($response[FTS\Constants::BODY][FTS\Constants::MESSAGE]) === true) and
             ($response[FTS\Constants::BODY][FTS\Constants::MESSAGE] === 'source account registered')))
         {
             $this->trace->info(
                 TraceCode::BANKING_ACCOUNT_SOURCE_ACCOUNT_CREATION_RESPONSE,
-                ['response' => $response]
+                $contextData
             );
 
             return null;
         }
 
-        // in any other case source account creation failed. So we throw an exception here.
-        throw new BadRequestException(
-            ErrorCode::BAD_REQUEST_ERROR_SOURCE_ACCOUNT_CREATION_FAILED,
-            null,
-            null,
-            'Source account creation failed, Try again'
-        );
+        // If it's a validation error, we want to propagate the error back to the user (Ops user from admin dashboard)
+        // in this case
+        if ($this->isValidationError($response))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR_SOURCE_ACCOUNT_CREATION_VALIDATION_FAILED,
+                null,
+                $contextData,
+                self::FTS_VALIDATION_ERROR_DESCRIPTION
+                . trim($response[FTS\Constants::BODY][FTS\Constants::INTERNAL_ERROR][FTS\Constants::MESSAGE])
+            );
+        }
+        else
+        {
+            // in any other case source account creation failed. So we throw an exception here.
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR_SOURCE_ACCOUNT_CREATION_FAILED,
+                null,
+                $contextData,
+                'Source account creation failed, Try again'
+            );
+        }
+
+    }
+
+    protected function checkFundAccountResponseForError(array $response, $bankingAccount)
+    {
+        if (empty($response[FTS\Constants::BODY][FTS\Constants::FUND_ACCOUNT_ID]) === true)
+        {
+            // If it's a validation error, we want to propagate the error back to the user (Ops user from admin dashboard)
+            // in this case
+            if ($this->isValidationError($response) === true)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_FUND_ACCOUNT_CREATION_VALIDATION_FAILED,
+                    null,
+                    ['id' => $bankingAccount->getId(), 'response' => $response],
+                    self::FTS_VALIDATION_ERROR_DESCRIPTION
+                    . trim($response[FTS\Constants::BODY][FTS\Constants::INTERNAL_ERROR][FTS\Constants::MESSAGE])
+                );
+            }
+
+            // Throw a generic error for any other case
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_FUND_ACCOUNT_CREATION_FAILED,
+                null,
+                ['id' => $bankingAccount->getId(), 'response' => $response],
+                'FTS fund Account Id could not stored, Please try again!'
+            );
+        }
     }
 
     protected function tokenizeKey(string $element): string
