@@ -614,6 +614,12 @@ return [
 
     E::VIRTUAL_ACCOUNT_TPV => [],
 
+    E::BANK_TRANSFER_HISTORY => [],
+
+    E::VIRTUAL_VPA_PREFIX => [],
+
+    E::VIRTUAL_VPA_PREFIX_HISTORY => [],
+
     E::BALANCE_CONFIG => [
         Type::PROXY_AUTH => [
             [

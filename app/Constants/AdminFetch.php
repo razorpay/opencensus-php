@@ -2633,10 +2633,6 @@ class AdminFetch
                     Fetch::LABEL => 'Bank Transfer ID',
                     Fetch::TYPE => Fetch::TYPE_STRING,
                 ],
-                'created_by' => [
-                    Fetch::LABEL => 'Admin Email',
-                    Fetch::TYPE => Fetch::TYPE_STRING
-                ],
             ],
 
             Entity::VIRTUAL_VPA_PREFIX => [
