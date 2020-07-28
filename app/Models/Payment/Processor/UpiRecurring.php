@@ -530,9 +530,18 @@ trait UpiRecurring
         // In both cases we can leave the payment in created state, it can be picked again by cron
         $metadata = $this->getUpiMetadataForPayment($payment);
 
+        // When the metadata status is ReminderInProgressForAuthorized or AuthorizeInitiated
+        // Then we will check for internal status if any sent from gateway
         if ($metadata->isInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_AUTHORIZE))
         {
-            return false;
+            $internalStatus = $data['upi']['internal_status'] ?? null;
+
+            // If gateway is explicitly telling that the payment is authorized at gateways end
+            // We will not skip authorize for those cases
+            if ($internalStatus === UpiMetadata\InternalStatus::AUTHORIZED)
+            {
+                return false;
+            }
         }
 
         return true;
@@ -565,22 +574,60 @@ trait UpiRecurring
         return false;
     }
 
-    // Now since we are going to create an auto recurring payment, the flow goes like this.
+    // This function will be called in two cases where Authorize is called.
+    // In first case when merchant has sent a request where we are going to create an auto recurring payment,
+    // the flow goes like this.
     // 1. First we will have payment created
     // 2. We will make a RS call and get the reminder_id
+    // In Second case where RS calls for authorization and a callback is expected from gateway
     protected function processAutoRecurringCreatedForUpi(Entity $payment, array $data)
     {
         $metadata = $payment->getUpiMetadata();
 
-        // Make actual call to create a reminder
-        $reminderId = $this->setUpiAutoRecurringReminder($metadata);
-
-        if (empty($reminderId) === false)
+        // First case, where reminder is supposed to be sent for payment
+        if ($metadata->isInternalStatus(UpiMetadata\InternalStatus::REMINDER_PENDING_FOR_PRE_DEBIT))
         {
-            $metadata->setReminderId($reminderId);
-            $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_PRE_DEBIT);
+            // Make actual call to create a reminder
+            $reminderId = $this->setUpiAutoRecurringReminder($metadata);
 
-            $this->repo->saveOrFail($metadata);
+            if (empty($reminderId) === false)
+            {
+                $metadata->setReminderId($reminderId);
+                $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_PRE_DEBIT);
+
+                (new UpiMetadata\Core)->update($metadata);
+            }
+            // If reminder fails, the payment is already in pending state
+        }
+        // Second case where the response is coming from gateway
+        else if ($metadata->isInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_AUTHORIZE))
+        {
+            $upiEdit = array_only($data['upi'], $metadata->getFillable());
+
+            $metadata->edit($upiEdit);
+            $metadata->setInternalStatus(UpiMetadata\InternalStatus::AUTHORIZE_INITIATED);
+            $metadata->setRemindAt(null);
+
+            (new UpiMetadata\Core)->update($metadata);
+
+            // Now since we are expecting a callback from gateway, we can enable the verify for payment
+            // But since it is auto recurring payment and neither customer not merchant is blocked on this
+            // We can later increase the verify for the payment.
+            $payment->setVerifyAt(Carbon::now()->addMinutes(2)->getTimestamp());
+
+            $this->repo->saveOrFail($payment);
+        }
+        else
+        {
+            $this->trace->critical(
+                TraceCode::PAYMENT_RECURRING_INVALID_STATUS,
+                [
+                    'method'            => __FUNCTION__,
+                    'payment_id'        => $payment->getId(),
+                    'gateway'           => $payment->getGateway(),
+                    'internal_status'   => $metadata->getInternalStatus(),
+                    'data'              => $data,
+                ]);
         }
 
         return ['razorpay_payment_id' => $payment->getPublicId()];

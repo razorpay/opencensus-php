@@ -4,13 +4,13 @@ namespace RZP\Tests\Functional\PaymentsUpi;
 
 use Carbon\Carbon;
 
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Models\UpiMandate\Status;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Feature\Constants as Feature;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\PaymentsUpiRecurringTrait;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
@@ -447,6 +447,68 @@ class UpiRecurringPaymentSharpTest extends TestCase
             'internal_error_code'   => 'GATEWAY_ERROR_BANK_OFFLINE',
             'verify_at'             => null,
         ]);
+    }
+
+    public function testCreateMonthlyAutoRecurringPaymentSuccessOnCallback()
+    {
+        $this->createDbUpiMandate();
+
+        $this->createDbUpiToken();
+
+        $this->assertReminderRequest('createReminder', $createReminder, $pending);
+
+        $this->doS2SRecurringPayment($this->getDbUpiAutoRecurringPayment([
+            'description' => 'authorize_on_callback',
+        ]));
+
+        $payment = $this->assertUpiDbLastEntity('payment', [
+            'status'    => 'created',
+            'verify_at' => null,
+        ]);
+
+        $this->assertUpiMetadataStatus('reminder_pending_for_pre_debit', $pending);
+
+        $this->assertReminderRequest('updateReminder', $updateReminder, $pending);
+
+        $this->sendReminderRequest($createReminder);
+
+        $this->assertUpiMetadataStatus('pre_debit_initiated', $pending);
+        $this->assertUpiMetadataStatus('reminder_in_progress_for_authorize');
+
+        // Fields updated by notify
+        $this->assertUpiDbLastEntity('upi_metadata', [
+            'rrn'           => null,
+            'npci_txn_id'   => null,
+            'umn'           => 'FirstUpiRecPayment@razorpay'
+        ]);
+
+        // Not this reminder will try to get payment authorized
+        $this->sendReminderRequest($updateReminder);
+
+        $this->assertUpiMetadataStatus('pre_debit_initiated', $pending);
+
+        $this->assertUpiMetadataStatus('authorize_initiated');
+
+        $this->assertUpiDbLastEntity('upi_metadata', [
+            'rrn'           => '001000100000',
+            'npci_txn_id'   => 'expecting_from_callback',
+        ]);
+
+        $payment = $this->assertUpiDbLastEntity('payment', [
+            'status'        => 'created',
+        ], false);
+        // Verify is enabled for the payment
+        $this->assertGreaterThanOrEqual(Carbon::now()->getTimestamp(), $payment->getVerifyAt());
+
+        (new Payment\Service)->s2scallback($payment->getPublicId(), [
+            'status'        => 'authorized',
+            'rrn'           => '001000100002',
+            'npci_txn_id'   => 'npci_txn_id_for_' . $payment->getId(),
+        ]);
+
+        $this->assertUpiDbLastEntity('payment', [
+            'status'    => 'captured',
+        ], false);
     }
 
     public function testRevokeMandate()

@@ -63,16 +63,30 @@ class Gateway extends Base\Gateway
                     ($input['upi']['internal_status'] === 'reminder_in_progress_for_authorize'))
                 {
                     // Handle failure here
-                    return [
+                    $response = [
                         'acquirer' => [
                             'vpa'           => $input['payment']['vpa'],
                             'reference16'   => '001000100001',
                         ],
                         'upi'   => [
-                            'rrn'           => '001000100001',
-                            'npci_txn_id'   => 'npci_txn_id_for_' . $input['payment']['id'],
+                            'rrn'               => '001000100001',
+                            'npci_txn_id'       => 'npci_txn_id_for_' . $input['payment']['id'],
+                            'internal_status'   => 'authorized',
                         ],
                     ];
+
+                    // This is the scenario where the gateway callback is needed to authorize the auto recurring
+                    // payments, On live gateways it will default behavior of UPI AutoPay
+                    if ($input['payment']['description'] === 'authorize_on_callback')
+                    {
+                        $response['upi'] = [
+                            'rrn'               => '001000100000',
+                            'npci_txn_id'       => 'expecting_from_callback',
+                        ];
+                        $response['acquirer'] = [];
+                    }
+
+                    return $response;
                 }
                 throw new Exception\LogicException('No gateway call for upi second recurring');
             }
@@ -384,6 +398,18 @@ class Gateway extends Base\Gateway
                     'umn'           => sprintf('%s@razorpay', $input['payment']['id']),
                     'npci_txn_id'   => 'RZP12345678910111213141516',
                     'rrn'           => '001000100001',
+                ],
+            ];
+        }
+
+        if (($this->isSecondRecurringPaymentRequest($input) === true) and
+            ($input['payment']['method'] === 'upi'))
+        {
+            $acquirerData = [
+                'acquirer' => $acquirerData['acquirer'],
+                'upi'      => [
+                    'rrn'           => $input['gateway']['rrn'],
+                    'npci_txn_id'   => $input['gateway']['npci_txn_id'],
                 ],
             ];
         }
