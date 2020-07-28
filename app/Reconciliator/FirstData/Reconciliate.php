@@ -153,7 +153,6 @@ class Reconciliate extends Base\Reconciliate
         {
             $responseFD = $this->getRefundIdFromScrooge($requestForScrooge, Gateway::FIRST_DATA);
             $responseMpgs = $this->getRefundIdFromScrooge($requestForScrooge, Gateway::MPGS);
-            $responseFromScrooge =  array_replace($responseFD, $responseMpgs);
 
             foreach ($fileContents as &$row)
             {
@@ -162,9 +161,13 @@ class Reconciliate extends Base\Reconciliate
                 {
                     $txnId = ltrim($row[RefundReconciliate::GATEWAY_TRANSACTION_ID], '0');
 
-                    if (empty($responseFromScrooge[$txnId]) === false)
+                    if (empty($responseFD[$txnId]) === false)
                     {
-                        $row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID] = $responseFromScrooge[$txnId]['refund_id'];
+                        $row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID] = $responseFD[$txnId]['refund_id'];
+                    }
+                    elseif (empty($responseMpgs[$txnId]) === false)
+                    {
+                        $row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID] = $responseMpgs[$txnId]['refund_id'];
                     }
                 }
             }
