@@ -348,15 +348,15 @@ const predefinedReasons = {
       },
       unable_to_validate_acc_number: {
         description:
-          "We're unable to validate the account number from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.",
+          "We're unable to validate the account details from the information provided by you. Kindly submit a scanned copy of cancelled cheque.",
       },
       unable_to_validate_beneficiary_name: {
         description:
-          "We're unable to validate the beneficiary name from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.",
+          "We're unable to validate the account details from the information provided by you. Kindly submit a scanned copy of cancelled cheque.",
       },
       unable_to_validate_ifsc: {
         description:
-          "We're unable to validate the IFSC from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.",
+          "We're unable to validate the account details from the information provided by you. Kindly submit a scanned copy of cancelled cheque.",
       },
     },
   },

@@ -63,7 +63,25 @@ const MODAL_CONTENT = {
   },
 };
 
-const ModalButtons = ({ args }) => {
+const ModalButtons = ({ args, modalType}) => {
+
+  if(modalType === 'KYC_CLARIFICATION_SUBMIT_MODAL') {
+    return (
+      <>
+        <a
+          className="btn btn-default KYC__more_details"
+          href="https://razorpay.com/support/"
+          target="_blank"
+          onClick={args.onGoToDashboard}
+        >
+          Contact Support
+        </a>
+        <button className="btn btn-primary" onClick={args.onGoToDashboard}>
+          Go to Dashboard
+        </button>
+      </>
+    )
+  }
   if (args.isWhitelistFlow) {
     return (
       <>
@@ -111,7 +129,7 @@ const KYCStatusModal = ({ onClose, onGoToDashboard, user, modalType }) => {
         </div>
         <div className="modal-body">
           <div className="modal-description">{content.body(args)}</div>
-          <ModalButtons args={args} />
+          <ModalButtons args={args} modalType={modalType}/>
         </div>
       </Modal>
     </ModalMask>

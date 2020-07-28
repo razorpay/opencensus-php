@@ -156,17 +156,21 @@ export default class InstantActivationAnnouncements extends Component {
           title = 'Account Suspended';
           content =
             'Due to irregularities in documents submitted by you, your account has been suspended. You will not be able to conduct live transactions';
+        } else if(user.kyc_clarification_reasons &&
+          user.kyc_clarification_reasons.additional_details &&
+          user.kyc_clarification_reasons.additional_details.cancelled_cheque ) {
+          title = 'Bank Verification Failed';
+          content = (
+            <> 
+              We were unable to verify your bank account details. Please upload bank account proof. &nbsp;
+              <Link to="/activation">Upload Now</Link>
+            </>
+          )
         } else {
           title = 'KYC Clarification';
           content = (
             <React.Fragment>
-              Your KYC details require further clarification. We have reached
-              out to you seeking more information. Please check your email for
-              details.
-              <span class="big-dot-separator" />
-              <Link to="/activation" onClick={trackGoToActivationFromError}>
-                Review Details
-              </Link>
+              Your KYC details require further clarifications. Please check your registered email inbox for a mail with <span style={{"font-weight": "bold"}}>"Razorpay: Activation form update" </span>as subject and complete the requested steps for a quick resolution.
             </React.Fragment>
           );
         }
