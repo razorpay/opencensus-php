@@ -111,8 +111,8 @@ class Constants
     const FAILED_AT            = 'failed_at';
     const REFUND_STATUS_FILTER = 'rs_filter';
 
-    // Scrooge skip verify flag
-    const SCROOGE_SKIP_REFUND_VERIFY = 'skip_refund_verify';
+    // Skip refund verify flag
+    const SKIP_REFUND_VERIFY = 'skip_refund_verify';
 
     // Batch related constants
     const NOTES                 = 'notes';

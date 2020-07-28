@@ -1482,7 +1482,7 @@ class Service extends Base\Service
                 }
 
                 // Will be passing this flag to scrooge for skipping verify before retry
-                $input[RefundConstants::SCROOGE_SKIP_REFUND_VERIFY] = true;
+                $input[RefundConstants::SKIP_REFUND_VERIFY] = true;
 
                 $this->getNewProcessor($refund->merchant)->processRefundRetry($refund, $input);
             }

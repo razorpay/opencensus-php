@@ -8,6 +8,7 @@ use RZP\Models\Admin;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 class BulkRefund extends Job
 {
@@ -65,7 +66,10 @@ class BulkRefund extends Job
     protected function runBulkRefundFlowForQueue()
     {
         $refundId = $this->data['id'];
+
         $verify = $this->data['verify'] ?? true;
+
+        $retryData = [];
 
         $refund = $this->repoManager->refund->findOrFailPublic($refundId);
 
@@ -75,18 +79,10 @@ class BulkRefund extends Job
 
         if ($verify === false)
         {
-            $this->setConfigForUnprocessedRefunds($refundId);
+            // Will be passing this flag for skipping verify before retry
+            $retryData[RefundConstants::SKIP_REFUND_VERIFY] = true;
         }
 
-        return $paymentProcessor->processRefundRetry($refund);
-    }
-
-    protected function setConfigForUnprocessedRefunds($refundId)
-    {
-        $currentUnprocessedRefunds = $this->cache->get(Admin\ConfigKey::GATEWAY_UNPROCESSED_REFUNDS) ?? [];
-
-        $currentUnprocessedRefunds[] = $refundId;
-
-        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::GATEWAY_UNPROCESSED_REFUNDS => $currentUnprocessedRefunds]);
+        return $paymentProcessor->processRefundRetry($refund, $retryData);
     }
 }

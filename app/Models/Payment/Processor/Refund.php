@@ -1931,11 +1931,18 @@ trait Refund
             $payment->getId(),
             function() use ($data, $payment, $refund)
             {
-                $verifyResponse = $this->verifyRefund($refund);
+                $skipVerify = $data[RefundConstants::SKIP_REFUND_VERIFY] ?? false;
 
-                // true  if refunded
-                // false if not refunded
-                $refundedOnGateway = $verifyResponse[Payment\Gateway::SUCCESS];
+                $refundedOnGateway = $verifyResponse[Payment\Gateway::SUCCESS] = false;
+
+                if ($skipVerify === false)
+                {
+                    $verifyResponse = $this->verifyRefund($refund);
+
+                    // true  if refunded
+                    // false if not refunded
+                    $refundedOnGateway = $verifyResponse[Payment\Gateway::SUCCESS];
+                }
 
                 if ($refundedOnGateway === true)
                 {
@@ -2211,7 +2218,7 @@ trait Refund
         unset($refundData[RefundEntity::SPEED_DECISIONED]);
 
         // Flag for skipping verify call on scrooge when retrying refund
-        $refundData[RefundConstants::SCROOGE_SKIP_REFUND_VERIFY] = $input[RefundConstants::SCROOGE_SKIP_REFUND_VERIFY] ?? false;
+        $refundData[RefundConstants::SKIP_REFUND_VERIFY] = $input[RefundConstants::SKIP_REFUND_VERIFY] ?? false;
 
         $scroogeData = array_merge($refundData, $extraData);
 
