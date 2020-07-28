@@ -183,9 +183,10 @@ export default class SelectPeriod extends React.Component {
             withTime={withTime}
             defaults={defaults}
           />
-          {!!dateRangeError && selectedPeriod === 'dateRange' && (
-            <div class="m-t text-danger text-small">{dateRangeError}</div>
-          )}
+          {!!dateRangeError &&
+            selectedPeriod === 'dateRange' && (
+              <div class="m-t text-danger text-small">{dateRangeError}</div>
+            )}
         </div>
       </Input.Group>
     ) : (
@@ -294,7 +295,6 @@ export function SelectRange({ selectedStartAt, selectedEndAt, ...props }) {
         placeholder="Start At"
         defaultValue={selectedStartAt}
         label="Start At"
-        allowToday={false}
         {...props}
       />
 
@@ -303,7 +303,6 @@ export function SelectRange({ selectedStartAt, selectedEndAt, ...props }) {
         placeholder="End At"
         defaultValue={selectedEndAt}
         label="End At"
-        allowToday={false}
         {...props}
       />
     </>
