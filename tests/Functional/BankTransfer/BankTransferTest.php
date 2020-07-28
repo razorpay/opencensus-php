@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\BankTransfer;
 
 use DB;
+use Mail;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
@@ -16,6 +17,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Mail\Transaction\BankTransfer;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\BankTransfer\Entity as E;
@@ -2333,6 +2335,26 @@ class BankTransferTest extends TestCase
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
+    }
+
+    public function testBankTransferProcessWithFields()
+    {
+        Mail::fake();
+
+        $accountNumber = $this->bankAccount['account_number'];
+
+        $this->testData[__FUNCTION__]['request']['content']['payee_account'] = $accountNumber;
+
+        $this->startTest();
+
+        // Created bank transfer is an expected one
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        Mail::assertNotQueued(BankTransfer::class);
     }
 
     protected function processBankTransfer($accountNumber, $ifsc, $utr = null, $amount = null, $mode = 'test')

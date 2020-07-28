@@ -91,13 +91,15 @@ class Entity extends Base\PublicEntity
     const NARRATION          = 'narration';
 
     // Input keys
-    const REFUND_ID          = 'refund_id';
-    const GATEWAY            = 'gateway';
+    const REFUND_ID                     = 'refund_id';
+    const GATEWAY                       = 'gateway';
+    const FIRST_TIME_ON_TEST_MODE       = 'first_time_on_test_mode';
 
     const INVALID_ACC_CREDIT_NARRATION  = 'ACC DOESNT EXIST';
     const MAX_NARRATION_LENGTH          = 39;
     const SPECIAL_IFSC_CODE             = 'RAZR0000001';
     const MAX_DESCRIPTION_LENGTH        = 255;
+
 
     protected $fillable = [
         self::PAYER_NAME,

@@ -32,6 +32,9 @@ class Entity extends Base\PublicEntity
     const CURRENCY              = 'currency';
     const ATTEMPT               = 'attempt';
 
+    // Input keys
+    const FIRST_TIME_ON_TEST_MODE = 'first_time_on_test_mode';
+
     protected static $sign = 'btr';
 
     protected $entity = Constants\Entity::BANK_TRANSFER_REQUEST;

@@ -5,6 +5,7 @@ namespace RZP\Models\BankTransfer;
 use App;
 use Cache;
 use Config;
+use Request;
 use Exception;
 use Carbon\Carbon;
 
@@ -128,8 +129,11 @@ class Processor extends VirtualAccount\Processor
             }
         });
 
+
         // Currently dispatches transaction.created only for bank transfer on banking balance.
-        if ($bankTransfer->isBalanceTypeBanking() === true)
+        //skipping dispatching event for first time fund loading on test mode.
+        if ($bankTransfer->isBalanceTypeBanking() === true and
+            $this->isFirstTimeOnTestMode() === false)
         {
             (new Transaction\Core)->dispatchEventForTransactionCreated($bankTransfer->transaction);
         }
@@ -137,6 +141,20 @@ class Processor extends VirtualAccount\Processor
         $this->refundOrCapturePayment($bankTransfer);
 
         return $bankTransfer;
+    }
+
+    private function isFirstTimeOnTestMode(): bool
+    {
+        $input = Request::all();
+
+        if ($this->isTestMode() === true and
+            isset($input['first_time_on_test_mode']) === true and
+            $input['first_time_on_test_mode'] === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function processPaymentForPg(Entity $bankTransfer)
