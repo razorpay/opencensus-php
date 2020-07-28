@@ -52,10 +52,6 @@ class Entity extends Transaction\Entity
         self::BALANCE,
         self::SOURCE,
         self::CREATED_AT,
-        self::CREDIT_TYPE,
-        self::CREDITS,
-        self::FEE,
-        self::TAX,
     ];
 
     protected $publicSetters = [

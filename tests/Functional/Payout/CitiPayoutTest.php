@@ -259,10 +259,6 @@ class CitiPayoutTest extends TestCase
         $this->ba->privateAuth();
         $response = $this->makeRequestAndGetContent($request);
         $this->assertEquals(1000, $response['debit']);
-        $this->assertEquals(500, $response['fee']);
-        $this->assertEquals(0, $response['tax']);
-        $this->assertEquals(500, $response['fee_credits']);
-        $this->assertEquals('reward_fee', $response['credit_type']);
         $this->assertEquals('reward_fee', $response['source']['fee_type']);
 
         // 2nd payout
@@ -292,11 +288,6 @@ class CitiPayoutTest extends TestCase
         ];
         $this->ba->privateAuth();
         $response = $this->makeRequestAndGetContent($request);
-        $this->assertEquals(590, $response['fee']);
-        $this->assertEquals(1590, $response['debit']);
-        $this->assertEquals(90, $response['tax']);
-        $this->assertEquals('default', $response['credit_type']);
-        $this->assertEquals(0, $response['fee_credits']);
         $this->assertNull($response['source']['fee_type']);
 
         $txnId = str_after($txn['id'], 'txn_');

@@ -600,11 +600,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->ba->privateAuth();
         $response = $this->makeRequestAndGetContent($request);
-        $this->assertEquals(500, $response['fee']);
         $this->assertEquals(10095, $response['debit']);
-        $this->assertEquals(0, $response['tax']);
-        $this->assertEquals('reward_fee', $response['credit_type']);
-        $this->assertEquals(500, $response['fee_credits']);
         $this->assertEquals('reward_fee', $response['source']['fee_type']);
 
         // check payout fetch route for dashboard
