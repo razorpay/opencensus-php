@@ -306,7 +306,7 @@ class Service extends Base\Service
             return $this->core->updateSettings($this->merchant, $input);
         }
 
-        return $this->app['payout-links']->updateSettings($merchantId, $input);
+        return $this->app['payout-links']->updateSettings($this->merchant->getPublicId(), $input);
     }
 
     public function getSettings(string $merchantId = null)
@@ -323,7 +323,7 @@ class Service extends Base\Service
             return $this->core->getSettings($this->merchant);
         }
 
-        return $this->app['payout-links']->getSettings($merchantId);
+        return $this->app['payout-links']->getSettings($this->merchant->getPublicId());
     }
 
     public function initiate(string $payoutLinkId, array $input)
