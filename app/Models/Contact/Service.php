@@ -115,4 +115,76 @@ class Service extends Base\Service
 
         return $flag;
     }
+
+    public function trimContactNameAndType(Merchant\Entity $merchant)
+    {
+        $merchantId = $merchant->getId();
+
+        $typeObj = new Type();
+
+        $allCustomKeys = $typeObj->getCustom($merchant);
+
+        $keysWithWhiteSpace = [];
+
+        foreach ($allCustomKeys as  $type)
+        {
+            if (strlen($type) !== strlen(trim($type)))
+            {
+                array_push($keysWithWhiteSpace, $type);
+
+                $typeObj->trimType($type, $merchant);
+            }
+        }
+
+        $contacts = $this->repo->contact->fetchContactWithMerchantIdAndLimit1000($merchantId);
+
+        while (count($contacts) > 0)
+        {
+            $lastContactCreatedAt = 0;
+
+            foreach ($contacts as $contact)
+            {
+                $contactType = $contact->getType();
+
+                $trimmedContactType = trim(str_replace('\n', '', $contactType));
+
+                $contactName = $contact->getName();
+
+                $trimmedContactName = trim(str_replace('\n', '', $contactName));
+
+                if (($contactType > $trimmedContactType) or
+                    ($contactName > $trimmedContactName))
+                {
+                    if (in_array($contactType, $keysWithWhiteSpace, false) === false)
+                    {
+                        $typeObj->trimType($contactType, $merchant);
+                    }
+
+                    $contact->setType($trimmedContactType);
+
+                    $contact->setName($trimmedContactName);
+
+                    $contact->saveOrFail();
+
+                    $this->trace->info(
+                        TraceCode::CONTACT_NAME_AND_TYPE_TRIMMED,
+                        [
+                            'contact_id' => $contact->getId(),
+                        ]
+                    );
+                }
+
+                $lastContactCreatedAt = $contact->getCreatedAt();
+            }
+
+            $contacts = $this->repo->contact->fetchContactWithMerchantIdAndLimit1000($merchantId, $lastContactCreatedAt);
+        }
+
+        $this->trace->info(
+            TraceCode::CONTACT_NAME_AND_TYPE_TRIMMED_FOR_MERCHANT,
+            [
+                'merchant_id' => $merchant->getId()
+            ]
+        );
+    }
 }

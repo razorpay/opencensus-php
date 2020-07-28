@@ -160,4 +160,15 @@ class Repository extends Base\Repository
                     ->merchantId($merchantId)
                     ->first();
     }
+
+    public function fetchContactWithMerchantIdAndLimit1000(string $merchantId,
+                                                           $lastContactCreatedAt = 0)
+    {
+        return $this->newQueryWithoutTimestamps()
+                    ->where(Entity::CREATED_AT, '>', $lastContactCreatedAt)
+                    ->merchantId($merchantId)
+                    ->orderBy(Entity::CREATED_AT, 'asc')
+                    ->limit(1000)
+                    ->get();
+    }
 }

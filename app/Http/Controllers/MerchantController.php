@@ -1766,4 +1766,13 @@ class MerchantController extends Controller
 
         return $variant === 'on';
     }
+
+    public function trimSpacesForMerchant()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->fixDataForMerchant($input);
+
+        return ApiResponse::json($response);
+    }
 }

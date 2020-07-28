@@ -124,6 +124,9 @@ final class RazorxTreatment
     // Block external transaction webhooks for RBL CA
     const BLOCK_EXTERNAL_TRANSACTION_CREATED_WEBHOOK_RBL = 'block_external_transaction_created_webhook_rbl';
 
+    // Trim space in merchants data
+    const TRIM_SPACE_FOR_MERCHANT = 'trim_space_for_merchant';
+
     const VIRTUAL_VPA_ICICI = 'virtual_vpa_icici';
 
     const PAYMENT_TRANSFER_ASYNC = 'payment_transfer_async';

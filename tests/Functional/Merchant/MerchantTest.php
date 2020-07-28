@@ -17,13 +17,12 @@ use Rzp\Credcase\Migrate\V1\RotateApiKeyRequest;
 use Rzp\Credcase\Migrate\V1\MigrateApiKeyRequest;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
-use RZP\Models\Feature\Constants;
 use RZP\Models\Key;
 use RZP\Jobs\EsSync;
 use RZP\Models\Admin;
+use RZP\Models\Pricing;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
-use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
@@ -32,14 +31,15 @@ use RZP\Models\Transaction;
 use RZP\Models\BankingAccount;
 use RZP\Services\DiagClient;
 use RZP\Services\RazorXClient;
+use RZP\Models\Feature\Constants;
 use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
 use RZP\Services\SalesForceClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\User\Core as UserCore;
 use Illuminate\Support\Facades\Queue;
-use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Exception\BadRequestException;
+use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Document\Source;
 use RZP\Models\User\Entity as UserEntity;
@@ -7681,6 +7681,145 @@ class MerchantTest extends TestCase
 
         $this->assertArrayHasKey('offers', $response);
 
+    }
+
+    public function testTrimMerchantData()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
+
+        $createdMerchant = $this->getDbEntity('merchant', ['id' => '10000000000000']);
+
+        $fund_account = $this->fixtures->create('fund_account:bank_account', ['id' => '100000000000fa']);
+
+        $this->fixtures->edit('bank_account',
+            $fund_account['account_id'],
+            [
+                'merchant_id'      => $createdMerchant['id'],
+                'beneficiary_name' => 'name   ',
+                'account_number'   => "11111111\n "
+            ]
+        );
+
+        $this->fixtures->edit('fund_account',
+            $fund_account['id'],
+            [
+                'merchant_id' => $createdMerchant['id']
+            ]
+        );
+
+        $payout = $this->fixtures->create('payout');
+
+        $customPurpose = [
+            'purpose'      => 'custom_purpose  ',
+            'purpose_type' => 'refund'
+        ];
+
+        $requestPurpose =  [
+            'content' => $customPurpose,
+            'url'     => '/payouts/purposes',
+            'method'  => 'POST'
+        ];
+
+        $this->ba->privateAuth();
+
+        $payoutPurposeBeforeUpdate = $this->makeRequestAndGetContent($requestPurpose);
+
+        $customType = [
+            'type' => 'custom_type  '
+        ];
+
+        $requestContactType =  [
+            'content' => $customType,
+            'url'     => '/contacts/types',
+            'method'  => 'POST'
+        ];
+
+        $contactTypeBeforeUpdate = $this->makeRequestAndGetContent($requestContactType);
+
+        $this->fixtures->edit('payout',
+            $payout['id'],
+            [
+                'merchant_id' => $createdMerchant['id'],
+                'purpose'     => $customPurpose['purpose']
+            ]
+        );
+
+        $this->fixtures->create('contact',
+            [
+                'id'          => '1000011contact',
+                'contact'     => '8888888888',
+                'email'       => '',
+                'name'        => 'test user   ',
+                'type'        => $customType['type'],
+                'merchant_id' => $createdMerchant['id']
+            ]);
+
+        $bank_account = $this->getLastEntity('bank_account', true);
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $contact = $this->getLastEntity('contact', true);
+
+        $this->assertTrue(in_array($customPurpose, $payoutPurposeBeforeUpdate['items'], true));
+
+        $this->assertTrue(in_array($customType, $contactTypeBeforeUpdate['items'], true));
+
+        $this->ba->adminAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['merchant_ids'] = [$createdMerchant['id']];
+
+        $this->startTest();
+
+        $bankAccountUpdated = $this->getLastEntity('bank_account', true);
+
+        $payoutUpdated = $this->getLastEntity('payout', true);
+
+        $contactUpdated = $this->getLastEntity('contact', true);
+
+        $this->ba->privateAuth();
+
+        $requestPurpose['method'] = 'GET';
+
+        $updatedPurpose = $this->makeRequestAndGetContent($requestPurpose);
+
+        $requestContactType['method'] = 'GET';
+
+        $updateTypes = $this->makeRequestAndGetContent($requestContactType);
+
+        $this->assertFalse(in_array($customPurpose, $updatedPurpose['items'], false));
+
+        $customPurpose['purpose'] = trim($customPurpose['purpose']);
+
+        $this->assertTrue(in_array($customPurpose, $updatedPurpose['items'], true));
+
+        $this->assertFalse(in_array($customType, $updateTypes['items'], false));
+
+        $customType['type'] = trim($customType['type']);
+
+        $this->assertTrue(in_array($customType, $updateTypes['items'], true));
+
+        $this->assertNotEquals($payout['purpose'], $payoutUpdated['purpose']);
+        $this->assertEquals(trim($payout['purpose']), $payoutUpdated['purpose']);
+
+        $this->assertNotEquals($bank_account['beneficiary_name'], $bankAccountUpdated['beneficiary_name']);
+        $this->assertEquals(trim($bank_account['beneficiary_name']), $bankAccountUpdated['beneficiary_name']);
+
+        $this->assertNotEquals($bank_account['account_number'], $bankAccountUpdated['account_number']);
+        $this->assertEquals(trim($bank_account['account_number']), $bankAccountUpdated['account_number']);
+
+        $this->assertNotEquals($contact['name'], $contactUpdated['name']);
+        $this->assertEquals(trim($contact['name']), $contactUpdated['name']);
+
+        $this->assertNotEquals($contact['type'], $contactUpdated['type']);
+        $this->assertEquals(trim($contact['type']), $contactUpdated['type']);
     }
 }
 

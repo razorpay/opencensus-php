@@ -449,6 +449,7 @@ class Route
         'merchant_payout_mail'                     => ['post',     'merchant/payout/mail',                           'MerchantController@sendPayoutMail'                                 ],
         'merchants_update_onboarding_category_to_normal_cron'
                                                    => ['post',     'merchants/onboarding_category/normal',           'MerchantController@postUpdateSelfServeBankingMerchantsToNormal'    ],
+        'fix_merchant_data_cron'                   => ['patch',    'merchants/trim_space',                           'MerchantController@trimSpacesForMerchant'                          ],
         'pricing_create_plan'                      => ['post',     'pricing',                                        'PricingController@postCreatePlan'                                  ],
         'pricing_get_plans'                        => ['get',      'pricing',                                        'PricingController@getPlans'                                        ],
         'pricing_get_merchant_plans'               => ['get',      'pricing/merchants',                              'PricingController@getMerchantPricingPlans'                         ],
@@ -3519,6 +3520,7 @@ class Route
         'setl_bank_account_update',
         'setl_bank_account_get',
         'setl_bank_account_delete',
+        'fix_merchant_data_cron',
         'update_late_auth_config_admin_bulk',
         'create_payment_config_bulk',
     ];
@@ -4242,6 +4244,7 @@ class Route
         //payout downtime fetch from X dashboard
         'fetch_payout_downtimes_enabled'           => '*',
 
+        'fix_merchant_data_cron'                   => Permission::UPDATE_CONFIG_KEY,
     ];
 
     public static $bankingRoutePermissions = [

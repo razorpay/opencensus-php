@@ -22,6 +22,7 @@ use RZP\Models\User;
 use RZP\Models\Offer;
 use RZP\Models\Payout;
 use RZP\Models\Coupon;
+use RZP\Models\Contact;
 use RZP\Diag\EventCode;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
@@ -39,6 +40,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Group;
 use RZP\Models\BankAccount;
+use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Services\DiagClient;
 use RZP\Base\RuntimeManager;
@@ -4647,6 +4649,51 @@ class Service extends Base\Service
             "active"               => $merchant->isActivated(),
             "parent"               => $this->settlementToPartner($mid),
             "partner_bank_account" => isset($merchantSettleToPartner[$mid]) ? $merchantSettleToPartner[$mid] : null,
+        ];
+    }
+
+    public function fixDataForMerchant(array $input): array
+    {
+        (new Validator)->validateInput('trim_merchant_data', $input);
+
+        $merchantIds = $input['merchant_ids'];
+
+        $count = 0;
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            $mode = $this->mode;
+
+            $treatment = $this->app
+                              ->razorx
+                              ->getTreatment(
+                                  $merchant->getId(),
+                                  RazorxTreatment::TRIM_SPACE_FOR_MERCHANT,
+                                  $mode
+                              );
+
+            if ($treatment === 'on')
+            {
+
+                $count += $this->repo->transaction(function () use ($merchant)
+                {
+                    (new Payout\Service)->trimPayoutPurpose($merchant);
+
+                    (new FundAccount\Service)->trimBeneficiaryNameAndAccountNumber($merchant);
+
+                    (new Contact\Service)->trimContactNameAndType($merchant);
+
+                    return 1;
+                });
+            }
+        }
+
+        return [
+            'status'        => 'updated',
+            'updated_count' => $count,
+            'total_count'   => count($merchantIds)
         ];
     }
 

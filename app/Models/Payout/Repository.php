@@ -1042,6 +1042,22 @@ class Repository extends Base\Repository
                      ->get();
     }
 
+    public function trimPayoutPurposeWithMerchantIdAndPayoutPurpose(string $merchantId,
+                                                                    string $payout_purpose,
+                                                                    string $trimmedPurpose,
+                                                                    string $type)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Entity::PURPOSE, '=', $payout_purpose)
+                    ->update(
+                        [
+                            Entity::PURPOSE => $trimmedPurpose,
+                            Entity::TYPE => $type
+                        ]
+                    );
+    }
+  
     /**
      * get yesterday's total payout amount and tax count
      *

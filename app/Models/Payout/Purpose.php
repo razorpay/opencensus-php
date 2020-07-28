@@ -202,4 +202,26 @@ class Purpose
     {
         return Settings\Accessor::for($merchant, Settings\Module::PAYOUT_PURPOSE, Mode::LIVE);
     }
+
+    public function trimPurpose(Merchant\Entity $merchant, string $purpose, string $type)
+    {
+        $this->getSettingsAccessor($merchant)
+             ->delete($purpose)
+             ->save();
+
+        $trimmedPurpose = trim(str_replace('\n', '', $purpose));
+
+        $data = [
+            $trimmedPurpose => $type
+        ];
+
+        $allCustomKeys = $this->getCustom($merchant);
+
+        if (array_key_exists($trimmedPurpose, $allCustomKeys) === false)
+        {
+            $this->getSettingsAccessor($merchant)
+                ->upsert($data)
+                ->save();
+        }
+    }
 }

@@ -162,6 +162,28 @@ final class Type
              ->save();
     }
 
+    public function trimType(string $type, Merchant\Entity $merchant)
+    {
+        $this->getSettingsAccessor($merchant)
+             ->delete($type)
+             ->save();
+
+        $trimmedType = trim(str_replace('\n', '', $type));
+
+        $data = [
+            $trimmedType => ''
+        ];
+
+        $allCustomKeys = $this->getCustom($merchant);
+
+        if (array_search($trimmedType, $allCustomKeys, false) === false)
+        {
+            $this->getSettingsAccessor($merchant)
+                 ->upsert($data)
+                 ->save();
+        }
+    }
+
     protected function getSettingsAccessor(Merchant\Entity $merchant): Settings\Accessor
     {
         return Settings\Accessor::for($merchant, Settings\Module::CONTACT_TYPE, Mode::LIVE);

@@ -440,6 +440,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BENEFICIARY_NAME, $name);
     }
 
+    public function setAccountNumber($accountNumber)
+    {
+        $this->setAttribute(self::ACCOUNT_NUMBER, $accountNumber);
+    }
+
     protected function setNameAttribute($name)
     {
         $this->setAttribute(self::BENEFICIARY_NAME, $name);
