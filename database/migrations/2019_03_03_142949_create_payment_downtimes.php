@@ -52,6 +52,9 @@ class CreatePaymentDowntimes extends Migration
             $table->char(PaymentDowntime::AUTH_TYPE, 10)
                   ->nullable();
 
+            $table->string(PaymentDowntime::PSP, 255)
+                ->nullable();
+
             $table->integer(PaymentDowntime::CREATED_AT);
 
             $table->integer(PaymentDowntime::UPDATED_AT);

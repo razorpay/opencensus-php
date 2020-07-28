@@ -5867,3 +5867,6 @@ ALTER TABLE upi_metadata
     ADD COLUMN `internal_status` VARCHAR(100) DEFAULT NULL,
     ADD COLUMN `reminder_id` CHAR(14) DEFAULT NULL,
     ADD COLUMN `remind_at` INTEGER DEFAULT NULL;
+
+ALTER TABLE payment_downtimes
+    Add COLUMN psp VARCHAR(255) DEFAULT NULL;

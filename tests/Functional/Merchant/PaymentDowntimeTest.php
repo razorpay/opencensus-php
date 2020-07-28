@@ -1063,6 +1063,44 @@ class PaymentDowntimeTest extends TestCase
         Mail::assertSent(DowntimeNotification::class);
     }
 
+    public function testGooglePayPspDowntime()
+    {
+        $this->ba->adminAuth();
+
+        $addDowntimeRequest = [
+            'content' => [
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp,
+                'gateway'     => 'ALL',
+                'reason_code' => 'HIGHER_DECLINES',
+                'method'      => 'upi',
+                'source'      => 'BANK',
+                'vpa_handle'  => 'oksbi',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $this->makeRequestAndGetContent($addDowntimeRequest);
+
+        $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
+
+        $addDowntimeRequest['content']['begin'] = Carbon::now()->subMinutes(50)->timestamp;
+        $addDowntimeRequest['content']['vpa_handle'] = 'okhdfcbank';
+        $this->makeRequestAndGetContent($addDowntimeRequest);
+
+        $addDowntimeRequest['content']['begin'] = Carbon::now()->subMinutes(40)->timestamp;
+        $addDowntimeRequest['content']['vpa_handle'] = 'okaxis';
+        $this->makeRequestAndGetContent($addDowntimeRequest);
+
+        $addDowntimeRequest['content']['begin'] = Carbon::now()->subMinutes(30)->timestamp;
+        $addDowntimeRequest['content']['vpa_handle'] = 'okicici';
+        $this->makeRequestAndGetContent($addDowntimeRequest);
+
+        $downtime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals($downtime['psp'], 'google_pay');
+
+    }
 
     public function testGetCheckoutPreferencesWithPaymentDowntime()
     {

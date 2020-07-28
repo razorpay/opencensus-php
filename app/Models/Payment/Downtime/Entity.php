@@ -24,6 +24,7 @@ class Entity extends Base\PublicEntity
     const NETWORK    = 'network';
     const AUTH_TYPE  = 'auth_type';
     const VPA_HANDLE = 'vpa_handle';
+    const PSP        = 'psp';
 
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
@@ -52,6 +53,7 @@ class Entity extends Base\PublicEntity
         self::NETWORK,
         self::AUTH_TYPE,
         self::VPA_HANDLE,
+        self::PSP,
     ];
 
     protected $visible = [
@@ -67,6 +69,7 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::NETWORK,
         self::VPA_HANDLE,
+        self::PSP,
         self::AUTH_TYPE,
         self::INSTRUMENT,
         self::CREATED_AT,
@@ -86,7 +89,6 @@ class Entity extends Base\PublicEntity
         // self::TYPE,
         // self::NETWORK,
         // self::AUTH_TYPE,
-        self::VPA_HANDLE,
         self::INSTRUMENT,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -151,8 +153,14 @@ class Entity extends Base\PublicEntity
 
             case Method::UPI:
                 $vpaHandle = $this->getVpaHandle();
-                if( isset($vpaHandle) === true){
+                if( empty($vpaHandle) === false)
+                {
                     $instrument[self::VPA_HANDLE] = $vpaHandle;
+                }
+                $psp = $this->getPSP();
+                if( empty($psp) === false)
+                {
+                    $instrument[self::PSP] = $psp;
                 }
                 break;
 
@@ -210,6 +218,11 @@ class Entity extends Base\PublicEntity
     public function getVpaHandle()
     {
         return $this->getAttribute(self::VPA_HANDLE);
+    }
+
+    public function getPSP()
+    {
+        return $this->getAttribute(self::PSP);
     }
 
     public function isScheduled()

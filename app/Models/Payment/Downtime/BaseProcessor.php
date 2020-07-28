@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Gateway;
+use RZP\Gateway\Upi\Base\ProviderPsp;
 use RZP\Models\Payment\Downtime\Service;
 use RZP\Models\Gateway\Downtime\Severity;
 use RZP\Models\Gateway\Downtime\ReasonCode;
@@ -20,6 +21,7 @@ class BaseProcessor extends Base\Core
     protected function endOngoingDowntimes(array $unavailableList = [])
     {
         $ongoingDowntimes = $this->getRepo()->fetchOngoingDowntimesByMethod($this->method);
+        $ongoingDowntimes = $ongoingDowntimes->where(Entity::PSP, '!=', ProviderPsp::GOOGLE_PAY);
 
         /**
          * Filter out all the downtimes which should be resolved by checking the unavailable list
@@ -39,6 +41,11 @@ class BaseProcessor extends Base\Core
             }
         }
 
+        $this->endDowntime($ongoingDowntimes);
+    }
+
+    protected function endDowntime($ongoingDowntimes)
+    {
         foreach ($ongoingDowntimes as $downtime)
         {
             $downtime->setEndNow();

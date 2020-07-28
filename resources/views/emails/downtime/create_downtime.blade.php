@@ -232,8 +232,12 @@
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
 
-                                                    <div class="card highlight" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top: 2px solid #528FF0; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><p class="para-normal font-size-medium" style="font-size: 14px; line-height: 1.5; color: #515978;">Dear Customer, <br> <br>We have observed a higher number of declines for {{ $method }} {{ $dimension }} Transactions
-                                                            @if($scheduled == true && isset($begin) && isset($end))
+                                                    <div class="card highlight" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top: 2px solid #528FF0; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><p class="para-normal font-size-medium" style="font-size: 14px; line-height: 1.5; color: #515978;">Dear Customer, <br> <br>We have observed a higher number of declines for
+                                                            @if($method == 'card')
+                                                                transactions made by cards issued by {{ $dimension }}
+                                                            @else
+                                                                {{ $method }} transactions made by {{ $dimension }}
+                                                            @endif                                                            @if($scheduled == true && isset($begin) && isset($end))
                                                                 as there is a scheduled downtime from {{ $begin }} to {{ $end }}
                                                             @endif
                                                             .</p><p class="para-normal font-size-medium" style="font-size: 14px; line-height: 1.5; color: #515978;">We are looking into this and will update you once the success rates are stable. <br><br> Thanks and best regards, <br> Razorpay Support</p> </div>

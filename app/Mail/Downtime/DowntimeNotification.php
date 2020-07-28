@@ -63,9 +63,18 @@ class DowntimeNotification extends Mailable
                 break;
 
             case Method::UPI :
-                if (isset($this->data[Entity::VPA_HANDLE]))
+                if (isset($this->data[Entity::PSP]))
+                {
+                    $dimension = $this->data[Entity::PSP];
+
+                }
+                else if (isset($this->data[Entity::VPA_HANDLE]))
                 {
                     $dimension = $this->data[Entity::VPA_HANDLE];
+                }
+                else
+                {
+                    $dimension = 'All UPI instruments';
                 }
                 break;
         }
@@ -109,54 +118,27 @@ class DowntimeNotification extends Mailable
 
         $subject = null;
 
-        switch ($this->status)
+        if ($this->status === self::RESOLVED)
         {
-            case self::CREATED :
-                if ($scheduled === false)
-                {
-                    if (isset($this->data['dimension']))
-                    {
-                        $subject = 'Unscheduled Downtime -- '. $this->data['dimension'] . ' ' . $method;
-                    }
-                    else
-                        {
-                        $subject = 'Unscheduled Downtime -- '. $method;
-                    }
-                }
-                else {
-                    if (isset($this->data['dimension']))
-                    {
-                        $subject = 'Scheduled Downtime -- '. $this->data['dimension'] . ' ' . $method;
-                    }
-                    else
-                        {
-                        $subject = 'Scheduled Downtime -- '. $method;
-                    }
-                }
-                break;
+            $subject = '[Resolved] RE: ';
+        }
 
-            case self::RESOLVED :
-                if ($scheduled === false) {
-                    if (isset($this->data['dimension']))
-                    {
-                        $subject = '[Resolved] RE: Unscheduled Downtime -- '. $this->data['dimension'] . ' ' . $method;
-                    }
-                    else
-                        {
-                        $subject = '[Resolved] RE: Unscheduled Downtime -- '. $method;
-                    }
-                }
-                else {
-                    if (isset($this->data['dimension']))
-                    {
-                        $subject = '[Resolved] RE: Scheduled Downtime -- '. $this->data['dimension'] . ' ' . $method;
-                    }
-                    else
-                        {
-                        $subject = '[Resolved] RE: Scheduled Downtime -- '. $method;
-                    }
-                }
-                break;
+        if ($scheduled === false)
+        {
+            $subject = $subject . 'Unscheduled Downtime -- ' . strtoupper($method) ;
+        }
+        else
+        {
+            $subject = $subject . 'Scheduled Downtime -- ' . strtoupper($method);
+        }
+
+        if (isset($this->data['dimension']) && $method === Method::CARD)
+        {
+            $subject = $subject . 's issued by ' . $this->data['dimension'];
+        }
+        elseif (isset($this->data['dimension']))
+        {
+            $subject = $subject . ' transactions by ' . $this->data['dimension'] ;
         }
 
         $this->subject($subject);

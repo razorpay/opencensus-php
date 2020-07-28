@@ -4,9 +4,10 @@ namespace RZP\Models\Payment\Downtime;
 
 use Illuminate\Database\Eloquent\Collection;
 
+use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Payment\Method;
-use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\Downtime\Source;
+use RZP\Gateway\Upi\Base\ProviderPsp;
 use RZP\Models\Gateway\Downtime\Entity as GatewayDowntime;
 
 class UpiProcessor extends BaseProcessor
@@ -37,6 +38,8 @@ class UpiProcessor extends BaseProcessor
         {
             $this->endOngoingDowntimes($vpaList);
         }
+
+        $this->googlePayDowntime($gatewayDowntimes);
     }
 
     protected function impliesUpiDowntime(Collection $gatewayDowntimes)
@@ -65,9 +68,9 @@ class UpiProcessor extends BaseProcessor
         return false;
     }
 
-    protected function createPaymentDowntime(Collection $gatewayDowntimes, $vpa = null): Entity
+    protected function createPaymentDowntime(Collection $gatewayDowntimes, $vpa = null, $psp = null): Entity
     {
-        $input = $this->getPaymentDowntimeCreationArray($gatewayDowntimes, $vpa);
+        $input = $this->getPaymentDowntimeCreationArray($gatewayDowntimes, $vpa, $psp);
 
         $downtime = $this->getDuplicate($input);
 
@@ -89,7 +92,7 @@ class UpiProcessor extends BaseProcessor
         return $downtime;
     }
 
-    protected function getPaymentDowntimeCreationArray(Collection $gatewayDowntimes, $vpa = null): array
+    protected function getPaymentDowntimeCreationArray(Collection $gatewayDowntimes, $vpa = null, $psp = null): array
     {
         list($begin, $end) = $this->calculateDowntimePeriod($gatewayDowntimes, $vpa);
 
@@ -112,6 +115,7 @@ class UpiProcessor extends BaseProcessor
             Entity::SCHEDULED   => $scheduled,
             Entity::SEVERITY    => $severity,
             Entity::VPA_HANDLE  => $vpa,
+            Entity::PSP         => $psp ?? UpiVpaMapping::getPsp($vpa),
         ];
 
         return $input;
@@ -140,5 +144,48 @@ class UpiProcessor extends BaseProcessor
         $vpa = $gatewaydowntimes->pluck(GatewayDowntime::VPA_HANDLE)->toArray();
 
         return $vpa;
+    }
+
+    protected function googlePayDowntime($gatewayDowntimes)
+    {
+        $activeDowntime = $this->getRepo()->fetchOngoingDowntimesByMethod($this->method);
+        $activeDowntime = $activeDowntime->where(Entity::PSP, '=', ProviderPsp::GOOGLE_PAY);
+
+        $gatewayDowntimes = $gatewayDowntimes
+            ->whereIn(Entity::VPA_HANDLE, [ProviderCode::OKAXIS,ProviderCode::OKHDFCBANK, ProviderCode::OKICICI, ProviderCode::OKSBI]);
+
+        if ($activeDowntime->isEmpty() === true)
+        {
+            if ($this->isGooglePayDown($gatewayDowntimes) === true)
+            {
+                $this->createPaymentDowntime($gatewayDowntimes, null, ProviderPsp::GOOGLE_PAY);
+            }
+        }
+        else
+        {
+            if ( $this->isGooglePayDown($gatewayDowntimes) === false)
+            {
+                $this->endDowntime($activeDowntime);
+            }
+        }
+    }
+
+    protected function isGooglePayDown($gatewayDowntimes)
+    {
+        $vpaMap = UpiVpaMapping::getMultiplePspVpaMapping();
+
+        foreach ($gatewayDowntimes as $gatewayDowntime)
+        {
+            $vpa = $gatewayDowntime->getVpaHandle();
+
+            array_delete($vpa, $vpaMap[ProviderPsp::GOOGLE_PAY]);
+        }
+
+        if (empty( $vpaMap[ProviderPsp::GOOGLE_PAY]))
+        {
+            return true;
+        }
+
+        return false;
     }
 }
