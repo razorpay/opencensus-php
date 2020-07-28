@@ -1262,7 +1262,8 @@ class Validator extends Base\Validator
 
     protected function failIfRefundConfigSetLateAuth($payment)
     {
-        if ($payment->isLateAuthorized() === true)
+        if (($payment->isLateAuthorized() === true) and
+            ($payment->isDirectSettlement() === false))
         {
             $processor = new Payment\Processor\Processor($this->entity->merchant);
 
