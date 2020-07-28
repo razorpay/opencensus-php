@@ -374,11 +374,7 @@ export default class User {
   }
 
   get isMinimumFirstPaymentEnabled() {
-    // For merchant who have new PL microservice enabled, this feature would be enabled by default
-    return (
-      this.isFeatureEnabled('pl_first_min_amount') ||
-      this.isPaymentlinksV2Enabled
-    );
+    return this.isFeatureEnabled('pl_first_min_amount');
   }
 
   /* Check case-insensitive tag check existence */
