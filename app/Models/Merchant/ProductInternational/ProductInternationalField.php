@@ -49,6 +49,7 @@ class ProductInternationalField
      * @param string $productName
      *
      * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\LogicException
      */
     public function requestEnablement(string $productName)
@@ -69,11 +70,13 @@ class ProductInternationalField
         return $productInternational[$productPosition];
     }
 
+
     /**
      * @param string $productName
      * @param string $status
      *
      * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\LogicException
      */
     public function updateProductStatus(string $productName, string $status)
@@ -85,9 +88,10 @@ class ProductInternationalField
 
 
     /**
-     * @param array $productNameStatus
+     * @param array  $productNameStatus
      *
      * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\LogicException
      */
     public function setMultipleProductStatus(array $productNameStatus)
@@ -104,6 +108,7 @@ class ProductInternationalField
      * @param string $status
      *
      * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\LogicException
      */
     public function setProductStatus(string $productName, string $status)
@@ -178,10 +183,11 @@ class ProductInternationalField
      * @param $newStatus
      *
      * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\LogicException
      *
-     * Checks if a product is being enabled, then it shoulf satisfy the criteria of being enabled, and if international
-     * isnt activated yet, then that is also taken care of.
+     * Checks if a product is being enabled, then it should satisfy the criteria of being enabled, and if international
+     * isn't activated yet, then that is also taken care of.
      */
     private function handleProductEnabling($newStatus)
     {

@@ -525,7 +525,7 @@ class Entity extends Base\PublicEntity
         $productInternationalField = new ProductInternationalField($this);
 
         $productInternationalField->setProductStatus(ProductInternationalMapper::PAYMENT_GATEWAY,
-                                                      ProductInternationalMapper::ENABLED);
+                                                     ProductInternationalMapper::ENABLED);
     }
 
     protected function generateTransactionReportEmail($input)

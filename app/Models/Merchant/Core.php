@@ -2755,15 +2755,16 @@ class Core extends Base\Core
         }
     }
 
-
     /**
      * @param Entity        $merchant
      * @param Detail\Entity $merchantDetails
      *
      * @throws BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\LogicException
      */
-    public function updateInternationalTypeform(Entity $merchant, Detail\Entity $merchantDetails)
+    public function updateInternationalTypeform(Entity $merchant,
+                                                   Detail\Entity $merchantDetails)
     {
         $this->shouldActivateProductInternational($merchant, $merchantDetails);
 
@@ -2771,22 +2772,55 @@ class Core extends Base\Core
 
     }
 
+
     /**
-     * @param $merchant
-     * @param $merchantDetails
+     * @param Entity        $merchant
+     * @param Detail\Entity $merchantDetails
      *
      * @throws BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\LogicException
      */
-    public function shouldActivateProductInternational($merchant, $merchantDetails)
+    public function shouldActivateProductInternational(Entity $merchant, Detail\Entity $merchantDetails)
     {
-        //
-        // $activationFlowImpl will be an instance of the ActivationFlowInterface
-        //
-        $activationFlowImpl = InternationalActivationFlow\Factory::getActivationFlowImpl($merchant);
+        $canBeInternationallyEnabled = false;
 
-        if (($activationFlowImpl->shouldActivateTypeformInternational() === false)
-            or ($this->checkInternationalEnablementPreconditions($merchant, $merchantDetails) === false))
+        $internationalAuthFlow = $this->app['basicauth']->isAdminAuth() === true ?
+            ProductInternationalMapper::ADMIN_FLOW :
+            ProductInternationalMapper::MERCHANT_FLOW;
+
+        switch ($internationalAuthFlow)
+        {
+
+            case ProductInternationalMapper::MERCHANT_FLOW:
+
+                $activationFlowImpl = InternationalActivationFlow\Factory::getActivationFlowImpl($merchant);
+
+                $canBeInternationallyEnabled =
+                    ($activationFlowImpl->shouldActivateTypeformInternational() === true) and
+                ($this->checkInternationalEnablementPreconditions($merchant, $merchantDetails) === true);
+
+                break;
+
+            case ProductInternationalMapper::ADMIN_FLOW:
+
+                if ($merchant->getOrgId() === Org::RAZORPAY_ORG_ID)
+                {
+                    $activationFlowImpl = InternationalActivationFlow\Factory::getActivationFlowImpl($merchant);
+
+                    $canBeInternationallyEnabled =
+                        ($activationFlowImpl->shouldActivateTypeformInternational() === true) and
+                    ($this->checkInternationalEnablingAdminFlowPreconditions($merchant, $merchantDetails) === true);
+                }
+                else
+                {
+                    $canBeInternationallyEnabled =
+                        ($this->checkInternationalEnablingAdminFlowPreconditions($merchant, $merchantDetails) === true);
+                }
+                break;
+        }
+
+        if ($canBeInternationallyEnabled === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PRODUCT_INTERNATIONAL_CANT_BE_ENABLED);
@@ -2880,6 +2914,13 @@ class Core extends Base\Core
         return $activationFlowImpl->shouldActivateInternational();
     }
 
+    /**
+     * @param Entity        $merchant
+     * @param Detail\Entity $merchantDetails
+     *
+     * @return bool
+     * @throws Exception\BadRequestValidationFailureException
+     */
     protected function checkInternationalEnablementPreconditions(Entity $merchant, Detail\Entity $merchantDetails): bool
     {
         $autoEnableInternational = $this->autoEnableInternational($merchant, $merchantDetails);
@@ -2888,7 +2929,20 @@ class Core extends Base\Core
         {
             return false;
         }
-        //
+
+        return $this->checkInternationalEnablingAdminFlowPreconditions($merchant, $merchantDetails);
+    }
+
+    /**
+     * @param Entity        $merchant
+     * @param Detail\Entity $merchantDetails
+     *
+     * @return bool
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function checkInternationalEnablingAdminFlowPreconditions(Entity $merchant,
+                                                                     Detail\Entity $merchantDetails): bool
+    {
         // Enable international for merchant if
         // 1) Merchant has a valid website
         // 2) If international activation flow is set
@@ -2905,7 +2959,6 @@ class Core extends Base\Core
 
         return true;
     }
-
 
     public function validateWebsiteCheckForInternationalActivation(Entity $merchant, Detail\Entity $merchantDetails): bool
     {
@@ -2940,7 +2993,7 @@ class Core extends Base\Core
     /**
      * Auto Enable International for merchant if
      *  1) Merchant belongs to Razorpay org Or
-     *  2) Merchant is not in unregistered business onBoarding flow
+     *  2) Merchant belongs to Razorpay org and Merchant is not in unregistered business onBoarding flow
      *  3) If Submerchant is getting activated using a submerchant batch and if the submerchant
      *     batch parameters define to not auto-enable international attribute, false will be returned.
      *
@@ -3577,6 +3630,7 @@ class Core extends Base\Core
      * @param $internationalProducts
      *
      * @throws BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\LogicException
      */
     private function handleEnableProductInternationalAction($action, $merchant, $internationalProducts)
@@ -3594,12 +3648,22 @@ class Core extends Base\Core
      * @param Entity $merchant
      *
      * @throws BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\LogicException
      */
     public function enableProductInternational(array $internationalProducts, Entity $merchant)
     {
-        $internationalProducts =
-            ProductInternationalField::updateProductNamesThroughCategory($internationalProducts);
+        //if merchant is non org merchant then enable international for all the live products
+        // irrespective of the input given.
+        if ($merchant->getOrgId() !== Org::RAZORPAY_ORG_ID)
+        {
+            $internationalProducts = ProductInternationalMapper::LIVE_PRODUCTS;
+        }
+        else
+        {
+            $internationalProducts =
+                ProductInternationalField::updateProductNamesThroughCategory($internationalProducts);
+        }
 
         $productNameStatus = array_fill_keys($internationalProducts, ProductInternationalMapper::ENABLED);
 

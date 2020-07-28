@@ -7,14 +7,18 @@ use RZP\Models\Partner;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Models\Merchant\Detail\InternationalActivationFlow\InternationalActivationFlow;
 
 class InternationalCore extends Base\Core
 {
 
-    /** Activates international payments for a merchant
-     *
+    /**
      * @param Merchant\Entity $merchant
+     *
+     * @throws \RZP\Exception\BadRequestException
+     *
+     * Activates international payments for a merchant
      */
     public function activateInternational(Merchant\Entity $merchant)
     {
@@ -22,7 +26,8 @@ class InternationalCore extends Base\Core
 
         $merchant->enableInternational();
 
-        if($this->getInternationalActivationFlow($merchant) === InternationalActivationFlow::WHITELIST)
+        if ($this->getInternationalActivationFlow($merchant) === InternationalActivationFlow::WHITELIST
+            and ($merchant->getOrgId() === Org::RAZORPAY_ORG_ID))
         {
             $merchant->enablePgInternational();
         }

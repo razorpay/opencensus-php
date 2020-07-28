@@ -6002,6 +6002,27 @@ return [
         ]
     ],
 
+    'testOutOfOrgMerchantInternationalEnableAction' => [
+        'request'  => [
+            'content' => [
+                'action'                 => 'enable_international',
+                'international_products' => ['payment_gateway']
+            ],
+            'url'     => '/merchants/10000000000000/action',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity'                => 'merchant',
+                'international'         => true,
+                'product_international' => '1111000000',
+                'merchant_detail'       => [
+                    'international_activation_flow' => 'whitelist',
+                ]
+            ]
+        ]
+    ],
+
     'testMerchantInternationalProdV2EnableAction' => [
         'request'  => [
             'content' => [
@@ -6022,6 +6043,28 @@ return [
             ]
         ]
     ],
+
+    'testOutOfOrgBlacklistedMerchantInternationalEnableAction' => [
+        'request'  => [
+            'content' => [
+                'action'                 => 'enable_international',
+                'international_products' => ['invoices']
+            ],
+            'url'     => '/merchants/10000000000000/action',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity'                => 'merchant',
+                'international'         => true,
+                'product_international' => '1111000000',
+                'merchant_detail'       => [
+                    'international_activation_flow' => 'whitelist',
+                ]
+            ]
+        ]
+    ],
+
 
     'testMerchantInternationalEnableCategoryOneGreylist' => [
         'request'  => [

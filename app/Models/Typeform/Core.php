@@ -21,6 +21,7 @@ class Core extends Base\Core
      *
      * @return array
      * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\LogicException
      */
     public function processTypeformWebhook(array $input)
@@ -77,6 +78,7 @@ class Core extends Base\Core
      * @param array    $input
      *
      * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\LogicException
      */
     private function createInternationalWorkflow(Merchant $merchant, array $typeformWorkflowData, array $input)

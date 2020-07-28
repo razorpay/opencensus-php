@@ -65,6 +65,10 @@ class ProductInternationalMapper
 
     const INTERNATIONAL_PRODUCTS = 'international_products';
 
+    const ADMIN_FLOW    = "admin_flow";
+    const MERCHANT_FLOW = "merchant_flow";
+
+
     /**
      * @param string $productName
      *

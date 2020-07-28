@@ -7320,9 +7320,32 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testOutOfOrgMerchantInternationalEnableAction()
+    {
+        $this->setMerchantMerchantDetailsAndPricing(false, 'whitelist');
+
+        $this->fixtures->edit('merchant', '10000000000000', ['org_id' => Org::SBIN_ORG]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+
     public function testMerchantInternationalProdV2EnableAction()
     {
         $this->setMerchantMerchantDetailsAndPricing(false, 'whitelist');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testOutOfOrgBlacklistedMerchantInternationalEnableAction()
+    {
+        $this->setMerchantMerchantDetailsAndPricing(false, 'blacklist');
+
+        $this->fixtures->edit('merchant', '10000000000000', ['org_id' => Org::SBIN_ORG]);
 
         $this->ba->adminAuth();
 
