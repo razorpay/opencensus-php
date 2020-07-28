@@ -105,7 +105,6 @@ class LOCController extends Controller
         $body    = $request->all();
         $this->trace->info(TraceCode::LINE_OF_CREDIT_PROXY_REQUEST, [
             'request' => $url,
-            'body'    => $body,
         ]);
 
         $isMerchantAccessible = false;
@@ -143,7 +142,6 @@ class LOCController extends Controller
 
         $this->trace->info(TraceCode::LINE_OF_CREDIT_PROXY_REQUEST, [
             'request' => $url,
-            'body'    => $body,
         ]);
 
         $isLocRoute = false;
@@ -250,7 +248,6 @@ class LOCController extends Controller
 
         $this->trace->info(TraceCode::LINE_OF_CREDIT_PROXY_RESPONSE, [
             'status_code' => $code,
-            'body'        => $body,
         ]);
 
         if (isset($body['code']) === true)
