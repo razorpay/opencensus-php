@@ -150,6 +150,11 @@ class Preferences
     const MID_NSDL_MERCHANTS        = 'Anjg29UHP4PlvQ';
     const MID_AIRTEL                = 'AqUQQH9neAMkUG';
 
+    const MID_ADWORTH_BUSINESS_SOL_LTD = 'ENgpyPMGtUTujD';
+    const MID_BALAJI_TRADERS           = 'EAFMzRGMFH7GHa';
+    const MID_TRUEVENTURE_TECH_PVT_LTD = 'EHhGINJDXP39jk';
+    const MID_ASHISH_TRADING_COMPANY   = 'E2hBu7TFTKWi2p';
+
     const MID_ADITYA_BIRLA_HEALTH   = 'F0sFCmi0LOeeGc';
 
     const DEMO_ACCOUNT         = '100DemoAccount';
@@ -330,6 +335,10 @@ class Preferences
      */
     const NO_MERCHANT_INVOICE_MIDS = [
         self::MID_AIRTEL,
+        self::MID_ADWORTH_BUSINESS_SOL_LTD,
+        self::MID_BALAJI_TRADERS,
+        self::MID_TRUEVENTURE_TECH_PVT_LTD,
+        self::MID_ASHISH_TRADING_COMPANY,
     ];
 
     // MSwipe Configurations
