@@ -244,7 +244,7 @@ function SelectMonth({ onDateChange, selectedMonth, name }) {
       label="Select Month"
       class="Input--vTop"
       onChange={onDateChange}
-      disabledDate={date => date.month() >= currentMonth}
+      disabledDate={date => date.month() > currentMonth}
     />
   );
 }
@@ -295,6 +295,7 @@ export function SelectRange({ selectedStartAt, selectedEndAt, ...props }) {
         placeholder="Start At"
         defaultValue={selectedStartAt}
         label="Start At"
+        allowToday={true}
         {...props}
       />
 
@@ -303,6 +304,7 @@ export function SelectRange({ selectedStartAt, selectedEndAt, ...props }) {
         placeholder="End At"
         defaultValue={selectedEndAt}
         label="End At"
+        allowToday={true}
         {...props}
       />
     </>
