@@ -448,6 +448,10 @@ class Service extends Base\Service
 
         $this->repo->paper_mandate->saveOrFail($paperMandate);
 
+        // assign the merchant for further processing
+        // this route is called from admin
+        $this->merchant = $this->repo->merchant->findOrFail($paperMandateUpload->merchant->getId());;
+
         // create payment
         $this->createPaymentForPaperMandate($input);
 
