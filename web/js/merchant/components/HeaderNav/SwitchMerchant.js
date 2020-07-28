@@ -10,7 +10,7 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
       options={merchants}
       className="switch-merchant"
       placeholder="Switch Merchant"
-      searchIndices={['name']}
+      searchIndices={['name', 'display_name']}
       showClear={false}
       optionComponent={({ option }) => {
         return (
