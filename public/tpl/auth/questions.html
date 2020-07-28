@@ -87,7 +87,7 @@
               class="form-control auth-form-input" ng-pattern="websiteRegex" placeholder="Website" >
               <span class="input-helper">Leave blank if unavailable</span>
           </div>
-          
+
           <label class="form-label details-label" for="contact_name">Contact Details:</label>
           <div class="details-form-input-group">
             <i class="fa fa-user"></i>
@@ -97,15 +97,15 @@
 
           <div class="details-form-input-group">
               <i class="fa fa-phone"></i>
-            <input type="tel" ng-focus="onInputFocus('contact_mobile')" ng-pattern="/^[0-9]{8,11}$/" name="contact_mobile" id="contact_mobile" ng-model="signup.merchantData.contact_mobile"
+            <input type="tel" ng-focus="onInputFocus('contact_mobile')" ng-pattern="^\+?[0-9]{8,13}$" name="contact_mobile" id="contact_mobile" ng-model="signup.merchantData.contact_mobile"
               class="form-control auth-form-input" placeholder="10 digit mobile number" required ng-minlength="10" ng-maxlength="13" >
           </div>
-          
+
           <div class="coupon" ng-if="coupon.shouldRender">
             <span class="btn btn-link coupon-btn" ng-click="onGotCouponCodeClick()" ng-show="!allowInput">Got a coupon code ?</span>
             <label for="coupon-input" class="form-label details-label coupon-label" ng-show="allowInput">Coupon Code:</label>
             <div class="input-group" ng-show="allowInput">
-              <input type="text" placeholder="Enter coupon code" class="coupon-input form-control" id="coupon-input" 
+              <input type="text" placeholder="Enter coupon code" class="coupon-input form-control" id="coupon-input"
                 ng-model="coupon.val" ng-disabled="coupon.disabled" ng-change="onCouponChange()"/>
               <div class="input-group-btn">
                 <i class="btn coupon-helper-btns spin-loader" ng-show="coupon.isValidating"></i>
