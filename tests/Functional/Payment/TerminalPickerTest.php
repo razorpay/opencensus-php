@@ -2,9 +2,11 @@
 
 namespace RZP\Tests\Functional\Payment;
 
-use RZP\Exception\RuntimeException;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use DB;
+
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+
 
 class TerminalTest extends TestCase
 {
@@ -55,6 +57,8 @@ class TerminalTest extends TestCase
     public function testDeleteTerminalAndDoPayment()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        DB::table('terminals')->delete();
 
         $terminal = $this->fixtures->create('terminal:axis_genius_terminal');
 

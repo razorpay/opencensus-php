@@ -7,9 +7,11 @@ use Config;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 
-use RZP\Models\Card\SubType;
 use RZP\Models\Feature;
 use RZP\Models\Card\Network;
+use RZP\Models\Card\SubType;
+use RZP\Models\Terminal\Type;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Credits;
@@ -74,6 +76,75 @@ class Merchant extends Base
 
         $this->fixtures->on('test')->create('terminal', ['id' => '1n25f6uN5S1Z5a', 'merchant_id' => '10000000000000']);
         $this->fixtures->on('live')->create('terminal', ['id' => '1n25f6uN5S1Z5a', 'merchant_id' => '10000000000000']);
+        $this->fixtures->on('test')->create('terminal',
+                                            [
+                                                'id'                   => 'BANKACC3DSN3DT',
+                                                'merchant_id'          => '10000000000000',
+                                                'gateway'              => Gateway::BT_YESBANK,
+                                                'gateway_merchant_id'  => '222444',
+                                                'gateway_merchant_id2' => '00',
+                                                'card'                 => 0,
+                                                'recurring'            => 0,
+                                                'gateway_acquirer'     => null,
+                                                'type'                 => [
+                                                    Type::NON_RECURRING   => '1',
+                                                    Type::NUMERIC_ACCOUNT => '1',
+                                                    'business_banking'    => '1',
+                                                ],
+                                                'bank_transfer'        => '1',
+                                            ]);
+        $this->fixtures->on('live')->create('terminal',
+                                            [
+                                                'id'                   => 'BANKACC3DSN3DT',
+                                                'merchant_id'          => '10000000000000',
+                                                'gateway'              => Gateway::BT_YESBANK,
+                                                'gateway_merchant_id'  => '222444',
+                                                'gateway_merchant_id2' => '00',
+                                                'card'                 => 0,
+                                                'recurring'            => 0,
+                                                'gateway_acquirer'     => null,
+                                                'type'                 => [
+                                                    Type::NON_RECURRING   => '1',
+                                                    Type::NUMERIC_ACCOUNT => '1',
+                                                    'business_banking'    => '1',
+                                                ],
+                                                'bank_transfer'        => '1',
+                                            ]);
+        $this->fixtures->on('test')->create('terminal',
+                                            [
+                                                'id'                   => 'BANKACC3DSN3DZ',
+                                                'merchant_id'          => '10000000000000',
+                                                'gateway'              => Gateway::BT_YESBANK,
+                                                'gateway_merchant_id'  => '232323',
+                                                'gateway_merchant_id2' => '00',
+                                                'card'                 => 0,
+                                                'recurring'            => 0,
+                                                'gateway_acquirer'     => null,
+                                                'type'                 => [
+                                                    Type::NON_RECURRING   => '1',
+                                                    Type::NUMERIC_ACCOUNT => '1',
+                                                    'business_banking'    => '1',
+                                                ],
+                                                'bank_transfer'        => '1',
+                                            ]);
+        $this->fixtures->on('live')->create('terminal',
+                                            [
+                                                'id'                   => 'BANKACC3DSN3DZ',
+                                                'merchant_id'          => '10000000000000',
+                                                'gateway'              => Gateway::BT_YESBANK,
+                                                'gateway_merchant_id'  => '232323',
+                                                'gateway_merchant_id2' => '00',
+                                                'card'                 => 0,
+                                                'recurring'            => 0,
+                                                'gateway_acquirer'     => null,
+                                                'type'                 => [
+                                                    Type::NON_RECURRING   => '1',
+                                                    Type::NUMERIC_ACCOUNT => '1',
+                                                    'business_banking'    => '1',
+                                                ],
+                                                'bank_transfer'        => '1',
+                                            ]);
+
         $this->fixtures->on('test')->create('balance', ['id' => '10000000000000', 'balance' => '1000000', 'merchant_id' => '10000000000000']);
         $this->fixtures->on('live')->create('balance', ['id' => '10000000000000', 'balance' => '0', 'merchant_id' => '10000000000000']);
         $this->fixtures->on('test')->create('balance', ['id' => '100000Balance1', 'balance' => '500', 'merchant_id' => '100000Razorpay']);

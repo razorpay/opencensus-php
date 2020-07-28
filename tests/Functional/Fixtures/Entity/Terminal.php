@@ -6,19 +6,25 @@ use Crypt;
 
 use RZP\Models\Terminal\Mode;
 use RZP\Models\Terminal\Type;
+use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\Shared;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Terminal\TpvType;
+use RZP\Tests\TestDummy\Factory;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Terminal\BankingType;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Terminal\Entity as TerminalEntity;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class Terminal extends Base
 {
+
+    use DbEntityFetchTrait;
+
     public function create(array $attributes = [])
     {
         $this->addEnabledBanksIfApplicable($attributes);
@@ -1366,7 +1372,27 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return $this->createEntityInTestAndLive('terminal', $attributes);
+
+        $terminalLiveMode = $this->getDbEntity('terminal',
+                                           [
+                                               'id' => $attributes['id'],
+                                           ], 'live');
+
+        $terminalTestMode = $this->getDbEntity('terminal',
+                                           [
+                                               'id' => $attributes['id'],
+                                           ], 'test');
+
+        //create only if terminal does not exists in both test and live modes
+        if (empty($terminalLiveMode) === true and
+            empty($terminalTestMode) === true)
+        {
+            return $this->createEntityInTestAndLive('terminal', $attributes);
+        }
+
+        $entity = E::getEntityClass('terminal');
+
+        return Factory::build($entity, $attributes);
     }
 
     public function createBankAccountTerminalForBusinessBanking(array $attributes = [])
@@ -1391,7 +1417,7 @@ class Terminal extends Base
             ],
         ];
 
-         $this->createBankAccountTerminal(array_merge($defaultValues, $attributes));
+        $this->createBankAccountTerminal(array_merge($defaultValues, $attributes));
 
         $this->createBankAccountTerminal(array_merge($defaultValues1, $attributes));
     }

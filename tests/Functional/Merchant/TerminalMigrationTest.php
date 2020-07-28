@@ -1538,6 +1538,14 @@ class TerminalMigrationTest extends TestCase
 
     public function testFetchTerminalsAdminAuth()
     {
+        DB::table('terminals')->delete();
+
+        $terminal = $this->fixtures->create(
+            'terminal', [
+            'id'          => '1n25f6uN5S1Z5a',
+            'merchant_id' => '10000000000000',
+        ]);
+
         $this->razorxValue = 'migrate';
 
         $terminal = $this->fixtures->create(
@@ -1601,7 +1609,7 @@ class TerminalMigrationTest extends TestCase
     {
         $this->razorxValue = 'migrate';
 
-        $terminal = $this->fixtures->create(
+        $this->fixtures->create(
             'terminal', [
             'merchant_id' => '10000000000000',
             'used'        => true,
@@ -1649,6 +1657,14 @@ class TerminalMigrationTest extends TestCase
 
     public function testFetchTerminalsAdminAuthTerminalFieldMismatch()
     {
+        DB::table('terminals')->delete();
+
+        $this->fixtures->create(
+            'terminal', [
+            'id'          => '1n25f6uN5S1Z5a',
+            'merchant_id' => '10000000000000',
+        ]);
+
         $this->razorxValue = 'migrate';
 
         $terminal = $this->fixtures->create(

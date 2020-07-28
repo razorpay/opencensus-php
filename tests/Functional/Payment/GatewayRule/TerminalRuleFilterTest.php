@@ -2,15 +2,17 @@
 
 namespace RZP\Tests\Functional\Payment\GatewayRule;
 
+use DB;
 use App;
+
 use RZP\Models\Card;
 use RZP\Models\Emi;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
-use RZP\Models\Customer\Token;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+
 
 class TerminalRuleFilterTest extends TestCase
 {
@@ -144,6 +146,8 @@ class TerminalRuleFilterTest extends TestCase
 
     public function testUpiFilter()
     {
+        DB::table('terminals')->delete();
+
         $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
         $this->fixtures->create('terminal:shared_upi_icici_terminal');
 

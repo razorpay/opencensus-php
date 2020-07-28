@@ -2,16 +2,21 @@
 
 namespace RZP\Tests\Functional\Gateway\Billdesk;
 
-use RZP\Exception;
+use DB;
 use Carbon\Carbon;
+
+use RZP\Exception;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Billdesk\Gateway;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+
 
 class BilldeskGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -19,9 +24,9 @@ class BilldeskGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
+        DB::table('terminals')->delete();
 
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
 
         $this->gateway = 'billdesk';
 
