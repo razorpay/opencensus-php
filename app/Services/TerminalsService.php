@@ -85,8 +85,8 @@ class TerminalsService
             self::PATH      =>  'v2/terminals',
             self::METHOD    =>  Requests::POST,
             self::OPTIONS => [
-                self::TIMEOUT         => 7, // 7 seconds
-                self::CONNECT_TIMEOUT => 7, // 7 seconds
+                self::TIMEOUT         => 20, // 20 seconds
+                self::CONNECT_TIMEOUT => 20, // 20 seconds
             ],
         ],
         self::FETCH_TERMINALS_FOR_MERCHANT  => [
