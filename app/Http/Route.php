@@ -4014,8 +4014,8 @@ class Route
         'merchant_balance_bulk_backfill_ids'       => Permission::MERCHANT_BALANCE_BULK_BACKFILL,
         'terminal_bank_bulk'                       => Permission::EDIT_TERMINAL,
         'set_redis_keys'                           => '*',
-        'set_gateway_downtime_conf'                => '*',
-        'get_gateway_downtime_conf'                => '*',
+        'set_gateway_downtime_conf'                => Permission::CREATE_GATEWAY_DOWNTIME,
+        'get_gateway_downtime_conf'                => Permission::VIEW_GATEWAY_DOWNTIME,
         'get_redis_key'                            => '*',
         'update_redis_keys'                        => '*',
         // TODO fix the permissions later after discussing
