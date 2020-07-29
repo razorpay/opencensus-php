@@ -40,6 +40,11 @@ class RecurringStatus
      */
     const CANCELLED      = 'cancelled';
 
+    /**
+    * These apps are notified when token status changes
+    */
+    const appsToNotifyTokenStatus  = [ 'subscription', ];
+
     public static $webhookStatuses = [
         self::CONFIRMED,
         self::REJECTED

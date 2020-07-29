@@ -9,6 +9,7 @@ use RZP\Models\Card;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Method;
+use RZP\Jobs\TokenActionsHandler;
 use RZP\Models\Terminal;
 use RZP\Models\Customer\AppToken;
 use RZP\Models\Customer\Token;
@@ -662,7 +663,7 @@ class Core extends Base\Core
         }
     }
 
-    /*
+    /**
      * Handle Token Pause Event
      */
     public function pauseTokenEvent($tokenId, $customerId)
@@ -682,9 +683,11 @@ class Core extends Base\Core
         $token->setRecurringStatus(RecurringStatus::PAUSED);
 
         $token->saveOrFail();
+
+        $this->notifyAppsTokenStatus($token, RecurringStatus::PAUSED);
     }
 
-    /*
+    /**
      * Handle Token Resume Event
      */
     public function resumeTokenEvent($tokenId, $customerId)
@@ -704,9 +707,11 @@ class Core extends Base\Core
         $token->setRecurringStatus(RecurringStatus::CONFIRMED);
 
         $token->saveOrFail();
+
+        $this->notifyAppsTokenStatus($token, RecurringStatus::CONFIRMED);
     }
 
-    /*
+    /**
      * Handle Token Pause Event
      */
     public function cancelTokenEvent($tokenId, $customerId)
@@ -726,5 +731,42 @@ class Core extends Base\Core
         $token->setRecurringStatus(RecurringStatus::CANCELLED);
 
         $token->saveOrFail();
+
+        $this->notifyAppsTokenStatus($token, RecurringStatus::CANCELLED);
+    }
+
+    /**
+     * notify apps if the token status change
+     * listed apps ["subscriptions"]
+     */
+    public function notifyAppsTokenStatus($token, $status)
+    {
+        // Send to apps
+        if ($token->getMethod() === Method::UPI) {
+            $upiMandate = $this->repo->upi_mandate->findByTokenId($token->getId());
+            $orderId = $upiMandate->order->getId();
+
+            $order = $this->repo->order->findByPublicId('order_' . $orderId);
+
+            if (in_array($order->getProductType(), RecurringStatus::appsToNotifyTokenStatus, true) === true)
+            {
+                $tokenData = [
+                    'isTokenAction'   => true,
+                    'token_id'        => $token->getId(),
+                    'subscription_id' => $order->getProductId(),
+                    'token_status'    => $status,
+                    'mode'            => $this->mode
+                ];
+
+                $this->trace->info(
+                    TraceCode::CUSTOMER_TOKEN_ACTION_ASYNC,
+                    [
+                        'payload'   => $tokenData,
+                        'mode'      => $this->mode,
+                    ]);
+
+                TokenActionsHandler::dispatch($tokenData, $this->mode);
+            }
+        }
     }
 }

@@ -379,6 +379,10 @@ return [
         'test'       => env('AWS_CPS_SYNC_TEST_QUEUE'),
         'live'       => env('AWS_CPS_SYNC_LIVE_QUEUE'),
     ],
+    'token_action_notify' => [
+        'test'       => env('AWS_TOKEN_ACTION_NOTIFY_QUEUE'),
+        'live'       => env('AWS_TOKEN_ACTION_NOTIFY_QUEUE'),
+    ],
     'subscriptions_payment_notify' => [
         'test'       => env('AWS_SUBSCRIPTIONS_PAYMENT_NOTIFY_QUEUE'),
         'live'       => env('AWS_SUBSCRIPTIONS_PAYMENT_NOTIFY_QUEUE'),
