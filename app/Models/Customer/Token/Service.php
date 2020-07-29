@@ -130,6 +130,28 @@ class Service extends Base\Service
     }
 
     /**
+     * Fetch vpq details associated with a token
+     * - Used by subcriptions service to populate mail/checkout page data.
+     * - VPA entity includes HANDLE and username
+     *
+     * @param  string $id public token id
+     * @return array public card entity
+     */
+    public function fetchVpa($id)
+    {
+        $token = $this->repo->token->getByPublicIdAndMerchant($id, $this->merchant);
+
+        if ($token === null)
+        {
+            $sharedMerchant = $this->repo->merchant->getSharedAccount();
+
+            $token = $this->repo->token->findByPublicIdAndMerchant($id, $sharedMerchant);
+        }
+
+        return $token->vpa->toArrayToken();
+    }
+
+    /**
      * fetch tokens for local customer
      *
      * @param string $id customer ID

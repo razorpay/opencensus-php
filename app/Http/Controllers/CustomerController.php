@@ -130,6 +130,13 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchTokenVpa($id)
+    {
+        $data = $this->service(E::TOKEN)->fetchVpa($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function fetchTokensForGlobalCustomer()
     {
         $tokens = $this->service(E::TOKEN)->fetchTokensForGlobalCustomer();
