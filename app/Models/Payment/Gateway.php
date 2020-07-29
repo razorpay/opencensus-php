@@ -446,10 +446,12 @@ class Gateway
 
     const EMANDATE_NB_DIRECT_DEBIT_BANK = [
         IFSC::ICIC,
+        IFSC::HDFC,
     ];
 
     const EMANDATE_NB_DIRECT_DEBIT_GATEWAY = [
         Gateway::NETBANKING_ICICI,
+        Gateway::NETBANKING_HDFC,
     ];
 
     // The 2 commented banks are mentioned at the bottom

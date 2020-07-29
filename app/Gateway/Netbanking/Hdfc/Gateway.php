@@ -76,7 +76,7 @@ class Gateway extends Base\Gateway
         $traceRequest = $request;
 
         unset($traceRequest['content'][Fields::REF3], $traceRequest['content'][Fields::CLIENT_ACCOUNT_NUMBER]);
-        
+
         $this->traceGatewayPaymentRequest($traceRequest, $input);
 
         return $request;
@@ -116,10 +116,14 @@ class Gateway extends Base\Gateway
         // For emandate registration request, we set the amount to Rs 1
         if ($this->isFirstRecurringPayment($input) === true)
         {
-            $expectedAmount = number_format(Fields::INIT_AMOUNT, 2, '.', '');
+            if ($input['payment']['amount'] === 0)
+            {
+                $expectedAmount = number_format(Fields::INIT_AMOUNT, 2, '.', '');
+            }
         }
 
         $actualAmount = number_format($input['gateway']['TxnAmount'], 2, '.', '');
+
         $this->assertAmount($expectedAmount, $actualAmount);
 
         unset($input['gateway']['CheckSum']);
@@ -192,7 +196,10 @@ class Gateway extends Base\Gateway
         // For emandate registration request, we set the amount to Rs 1
         if ($this->isFirstRecurringPayment($input) === true)
         {
-            $expectedAmount = number_format(Fields::INIT_AMOUNT, 2, '.', '');
+            if ($input['payment']['amount'] === 0)
+            {
+                $expectedAmount = number_format(Fields::INIT_AMOUNT, 2, '.', '');
+            }
         }
 
         $actualAmount   = number_format($verify->verifyResponseContent[Fields::TXN_AMOUNT], 2, '.', '');
@@ -237,11 +244,13 @@ class Gateway extends Base\Gateway
 
         $clientCode = $this->getClientCode($input);
 
+        $paymentAmount = $input['payment']['amount'];
+
         $data = [
             'ClientCode'        => $clientCode,
             'MerchantCode'      => $this->getMerchantId(),
             'TxnCurrency'       => 'INR',
-            'TxnAmount'         => $input['payment']['amount'] / 100,
+            'TxnAmount'         => $paymentAmount / 100,
             'TxnScAmount'       => '0',
             'MerchantRefNo'     => $input['payment']['id'],
             'SuccessStaticFlag' => 'N',
@@ -301,7 +310,7 @@ class Gateway extends Base\Gateway
             // This payment would be used by HDFC to verify the account details and once
             // verified, the same amount would be refunded to the account holder the next day
             //
-            $data['TxnAmount']                   = Fields::INIT_AMOUNT;
+            $data['TxnAmount']                   = ($paymentAmount > 0) ? $paymentAmount / 100 : Fields::INIT_AMOUNT;
 
             $data[Fields::CLIENT_ACCOUNT_NUMBER] = $emData[RHeadings::CUSTOMER_ACCOUNT_NUMBER];
 
@@ -377,7 +386,7 @@ class Gateway extends Base\Gateway
         //
         if ($this->isFirstRecurringPayment($input))
         {
-            $txnAmount = Fields::INIT_AMOUNT;
+            $txnAmount = ($input['payment']['amount'] > 0) ? $txnAmount : Fields::INIT_AMOUNT;
         }
 
         $content = array(
