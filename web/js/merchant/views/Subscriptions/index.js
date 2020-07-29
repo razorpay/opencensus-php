@@ -10,7 +10,10 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
 import { fetchPlans } from 'merchant/reducers/plans';
-import { fetchSubscriptions } from 'merchant/reducers/subscriptions';
+import {
+  fetchSubscriptions,
+  getCheckoutInfo,
+} from 'merchant/reducers/subscriptions';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
@@ -30,6 +33,7 @@ import OnBoarding, {
 import QuickGuide, {
   getSubscriptionQuickGuideIsClosed,
 } from 'merchant/views/Subscriptions/QuickGuide';
+import SubscriptionSettings from 'merchant/views/Subscriptions/Settings';
 
 @connect(
   state => ({
@@ -45,6 +49,7 @@ import QuickGuide, {
   }),
   {
     fetchPlans,
+    getCheckoutInfo,
     fetchSubscriptions,
     handleProductQuickGuide,
   }
@@ -53,6 +58,7 @@ export default class SubscriptionsController extends React.Component {
   componentDidMount() {
     this.initSubscriptions();
     this.fetchDataForOnboarding();
+    this.props.getCheckoutInfo(this.props.user.current);
   }
 
   componentWillUnmount() {
@@ -149,6 +155,15 @@ export default class SubscriptionsController extends React.Component {
                 Subscriptions
               </NavLink>
               <NavLink to="/plans">Plans</NavLink>
+              <ShowWhen
+                additionalCondition={user =>
+                  !user.isChargeAtWillEnabled && user.isUPISubscriptionEnabled
+                }
+              >
+                <NavLink to="/subscriptions/settings">
+                  Settings <span class="badge bg-success">new</span>
+                </NavLink>
+              </ShowWhen>
             </ShowWhen>
 
             <ShowWhen additionalCondition={user => user.isChargeAtWillEnabled}>
@@ -191,6 +206,14 @@ export default class SubscriptionsController extends React.Component {
                 path="/subscriptions/batchuploads"
                 component={HostedEmanadateBatches}
                 additionalCondition={user => user.isChargeAtWillEnabled}
+              />
+
+              <ShowWhenRoute
+                path="/subscriptions/settings"
+                component={SubscriptionSettings}
+                additionalCondition={user =>
+                  !user.isChargeAtWillEnabled && user.isUPISubscriptionEnabled
+                }
               />
 
               <ShowWhenRoute

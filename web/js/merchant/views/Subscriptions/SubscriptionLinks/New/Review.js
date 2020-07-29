@@ -1,5 +1,7 @@
 import Amount from 'common/ui/Amount';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
+import UPIBanner from '../components/UPIBanner';
 
 import { getIntervalCycle } from 'common/utils/rzp-utils';
 
@@ -19,13 +21,13 @@ export default function NewSubscriptionLinkReview({
       (totalAmount, { item, quantity }) => totalAmount + item.amount * quantity,
       0
     );
-  const subscriptioAmount = planAmount * planQuantity;
+  const subscriptionAmount = planAmount * planQuantity;
   const minAuthAmount =
     currency === 'INR'
       ? 500
       : (props.getCurrencyList[currency] || {}).min_auth_value;
   const authorizationAmount = getAuthorizationAmount(
-    subscriptioAmount,
+    subscriptionAmount,
     addOnAmount,
     internals._startsImmediately,
     minAuthAmount
@@ -35,6 +37,13 @@ export default function NewSubscriptionLinkReview({
     selectedPlan.interval,
     selectedPlan.period
   );
+
+  let showUPIUnAvlBanner = authorizationAmount > UPI_AVL_LIMIT;
+
+  if (!showUPIUnAvlBanner) {
+    showUPIUnAvlBanner = subscriptionAmount > UPI_AVL_LIMIT;
+  }
+
   return (
     <div class="Subscription--New-review">
       <div class="plan-details">
@@ -90,7 +99,7 @@ export default function NewSubscriptionLinkReview({
             <p>
               <strong>Recurring Payments:</strong>{' '}
               <Amount
-                value={subscriptioAmount}
+                value={subscriptionAmount}
                 currency={selectedPlan.item.currency}
                 parentQuerySelector=".Modal-body"
               />
@@ -103,6 +112,8 @@ export default function NewSubscriptionLinkReview({
             </div>
           </div>
         </div>
+
+        {showUPIUnAvlBanner && <UPIBanner />}
       </div>
     </div>
   );

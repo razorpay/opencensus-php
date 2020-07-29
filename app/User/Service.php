@@ -1089,6 +1089,7 @@ class Service extends Base\Service
             'upi_caw',
             'rx_payout_links_inactive',
             'rx_payout_links_ms',
+            'upi_subscription'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

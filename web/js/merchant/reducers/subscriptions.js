@@ -24,6 +24,9 @@ const SUBSCRIPTION_DELETE = 'SUBSCRIPTION_DELETE';
 const SUBSCRIPTION_CANCEL = 'SUBSCRIPTION_CANCEL';
 const SUBSCRIPTION_FETCH = 'SUBSCRIPTION_FETCH';
 const SUBSCRIPTION_INVOICES_FETCH = 'SUBSCRIPTION_INVOICES_FETCH';
+const SUBSCRIPTION_SETTINGS = 'SUBSCRIPTION_SETTINGS';
+const SUBSCRIPTION_SETTINGS_UPDATE = 'SUBSCRIPTION_SETTINGS_UPDATE';
+const CHECKOUT_INFO = 'CHECKOUT_INFO';
 
 export const fetchSubscriptionItems = params => {
   let item = new SubscriptionItem();
@@ -121,6 +124,50 @@ export const cancelSubscription = ({ id, cancel_at_cycle_end }) => {
   };
 };
 
+export const pauseSubscription = id => {
+  return {
+    type: SUBSCRIPTION_UPDATE,
+    payload: merchantFetch({
+      url: `subscriptions/${id}/pause`,
+      data: {
+        modify_charge_date: 0,
+      },
+    }),
+  };
+};
+
+export const getCheckoutInfo = id => {
+  return {
+    type: CHECKOUT_INFO,
+    payload: merchantFetch({
+      url: `subscriptions/${id}/checkout_info`,
+      data: {
+        modify_charge_date: 0,
+      },
+    }),
+  };
+};
+
+export const fetchSettings = () => {
+  return {
+    type: SUBSCRIPTION_SETTINGS,
+    payload: merchantFetch({
+      url: 'subscriptions/settings',
+    }),
+  };
+};
+
+export const saveSettings = data => {
+  return {
+    type: SUBSCRIPTION_SETTINGS_UPDATE,
+    payload: merchantFetch({
+      url: 'subscriptions/settings',
+      method: 'post',
+      data,
+    }),
+  };
+};
+
 export const testChargeSubscription = (subscriptionId, success) => {
   return merchantFetch({
     url: `subscriptions/${subscriptionId}/charge`,
@@ -138,12 +185,65 @@ export const paymentManualAttempt = (subscriptionId, invoiceId) =>
     method: 'post',
   });
 
+let entityListInitialState = {
+  loading: true,
+  items: [],
+  error: null,
+  settings: {
+    loading: true,
+    items: [],
+    error: null,
+  },
+};
+
 // List Reducer
 export const subscriptionsReducer = makeActionCollectionReducer(
   'SUBSCRIPTIONS',
   {
     [`${SUBSCRIPTION_CANCEL}::SUCCESS`]: updateEntityInList,
-  }
+    [`${SUBSCRIPTION_UPDATE}::SUCCESS`]: updateEntityInList,
+    [`${SUBSCRIPTION_SETTINGS}::SUCCESS`]: (state, action) => {
+      return {
+        ...state,
+        settings: action.payload.data,
+        loading: false,
+      };
+    },
+    [`${SUBSCRIPTION_SETTINGS}::ERROR`]: (state, action) => {
+      return {
+        ...state,
+        settings: {
+          ...action.payload.data,
+          loading: false,
+          error: action.payload.errors,
+        },
+      };
+    },
+    [`${SUBSCRIPTION_SETTINGS_UPDATE}::SUCCESS`]: (state, action) => {
+      let items = state.settings.items;
+
+      if (items.length === 0) {
+        items.push(action.payload.data);
+      } else {
+        items = items.map(method => {
+          if (method.name === action.payload.data.name) {
+            return action.payload.data;
+          }
+
+          return method;
+        });
+      }
+
+      return {
+        ...state,
+        settings: {
+          ...state.settings,
+          items,
+        },
+      };
+    },
+  },
+  entityListInitialState
 );
 
 const updateInvoicesEntity = status => (state, action) => {

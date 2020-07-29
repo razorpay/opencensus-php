@@ -1,5 +1,5 @@
 import { TypeAhead } from 'react-power-select';
-
+import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
 import { classList } from 'common/utils/rzp-utils';
 
 import Amount from 'common/ui/Amount';
@@ -8,6 +8,7 @@ import Input, { Label, Description } from 'common/new-ui/Input';
 import { getIntervalCycle } from 'common/utils/rzp-utils';
 
 import QuantitySelector from '../New/QuantitySelector';
+import UPIBanner from './UPIBanner';
 
 export default class NewSubscriptionLinkPlanDetails extends React.Component {
   static defaultProps = {
@@ -62,6 +63,8 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
     const planPlaceholder = props.plans.loading
       ? 'Loading...'
       : 'Select a plan';
+
+    const showUPIUnAvlBanner = selectedPlan.amount > UPI_AVL_LIMIT;
 
     return (
       <>
@@ -157,6 +160,8 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
             props.isEdit ? fields.remaining_count : fields.total_count
           }
         />
+
+        {showUPIUnAvlBanner && <UPIBanner />}
       </>
     );
   }

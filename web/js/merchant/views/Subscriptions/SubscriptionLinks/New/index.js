@@ -483,8 +483,13 @@ export default class NewSubscriptionLink extends Component {
   }
 
   renderWizard() {
-    const { isFetchingSubscription, currentTab } = this.state;
+    const { isFetchingSubscription, currentTab, fields } = this.state;
     const isLastTab = currentTab === tabs.length - 1;
+
+    const selectedPlan =
+      fields.plan_id &&
+      this.props.plans.items.filter(({ id }) => id === fields.plan_id)[0];
+    const showUPIUnAvlBanner = selectedPlan && selectedPlan.item.isUPIUnAvl;
 
     return (
       // need to improve this css styling

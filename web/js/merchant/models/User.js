@@ -577,6 +577,10 @@ export default class User {
     return this.getExpStatus('emandate_nonzero_amount');
   }
 
+  get isUPISubscriptionEnabled() {
+    return this.getExpStatus('upi_subscription');
+  }
+
   get isPaymentButtonEnabledByRazorX() {
     return this.getExpStatus('enable_payment_buttons');
   }

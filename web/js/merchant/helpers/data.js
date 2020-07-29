@@ -131,3 +131,5 @@ export const RZPFeatures = {
   INVOICE: 'invoices',
   OFFERS: 'offers',
 };
+
+export const UPI_AVL_LIMIT = 200000;

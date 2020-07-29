@@ -35,6 +35,7 @@ export const fetchSubscriptionsByPlanId = plan => {
 
 export const savePlan = params => {
   const plan = new Plan(params);
+
   return {
     type: plan.isNew ? PLAN_CREATE : PLAN_EDIT,
     payload: plan.save(),

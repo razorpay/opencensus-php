@@ -19,6 +19,10 @@ const notificationClassMap = {
 // Note: class is needed for "ref" to work in parent component
 export default class InvoiceDetail extends Component {
   getAddOnList() {
+    const isUPIPaymentMethod = this.props.subscription.payment_method === 'upi';
+
+    if (isUPIPaymentMethod) return;
+
     let invoiceStatus = this.props.invoice.status;
     let addons = this.props.addons;
 

@@ -1,5 +1,8 @@
+import { connect } from 'react-redux';
 import React from 'react';
 import { Link, NavLink } from 'react-router-dom';
+
+import { openModal } from 'merchant_common/reducers/modals';
 
 import Time from 'common/ui/Time';
 import Amount from 'common/ui/Amount';
@@ -19,6 +22,8 @@ import { SubscriptionStatusLabel } from 'merchant/components/StatusLabel';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { changeData } from 'merchant/views/Subscriptions/SubscriptionLinks/Update/Review';
 import Tooltip from 'common/ui/Tooltip';
+
+import ManualChargeModal from './ManualChargeModal';
 
 import { trackClickDuplicateSubscription } from '../ga';
 
@@ -52,9 +57,9 @@ export default props => {
 
   const testModeMsg = getTestModeMessage(subscription.status) || {};
 
-  const allowUpdateSubscription = ['authenticated', 'active'].includes(
-    subscription.status
-  );
+  const allowUpdateSubscription =
+    ['authenticated', 'active'].includes(subscription.status) &&
+    subscription.payment_method !== 'upi';
 
   const hideCancelUpdate = ['cancelled', 'completed', 'expired'].includes(
     subscription.status
@@ -79,6 +84,9 @@ export default props => {
     `${subscription.paid_count} of ${
       subscription.total_count
     } invoices charged`;
+
+  const showCancelBtn =
+    ['cancelled', 'completed', 'expired'].indexOf(subscription.status) === -1;
 
   return (
     <div class="content-wrapper content-sm txn-details SubscriptionLinks--Details">
@@ -164,13 +172,11 @@ export default props => {
                   <SubscriptionStatusLabel status={subscription.status} />
 
                   <span>
-                    {['cancelled', 'completed', 'expired'].indexOf(
-                      subscription.status
-                    ) === -1 ? (
+                    {showCancelBtn && (
                       <button class="btn-link" onClick={onCancelClick}>
-                        Cancel Subscription
+                        Cancel
                       </button>
-                    ) : null}
+                    )}
                   </span>
                 </div>
               </EntityDetailRow>
