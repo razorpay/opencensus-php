@@ -1436,6 +1436,20 @@ class PayoutLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testInitiateApiHasPayoutInfo()
+    {
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'balance_id' => $this->bankingBalance->getId()
+                                              ]);
+
+        $this->mockRedisSuccess(__FUNCTION__ , $payoutLink->getPublicId());
+
+        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::INITIATE);
+
+        $this->startTest();
+    }
+
     public function testPayoutLinkStatusApi()
     {
         $this->ba->publicAuth();

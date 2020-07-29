@@ -150,7 +150,8 @@ class Entity extends Base\PublicEntity
         self::USER,
         self::CANCELLED_AT,
         self::CREATED_AT,
-        self::UPDATED_AT
+        self::UPDATED_AT,
+        self::PAYOUTS
     ];
 
     protected $public = [
@@ -401,6 +402,13 @@ class Entity extends Base\PublicEntity
     public function setShortUrl(string $shortUrl)
     {
         $this->setAttribute(self::SHORT_URL, $shortUrl);
+    }
+
+    public function setPayout()
+    {
+        $payout_array = $this->payout() != null ? array($this->payout()) : array();
+
+        $this->setAttribute(self::PAYOUTS,$this->newCollection($payout_array)->toArrayPublic());
     }
 
     public function setContactPhoneNumber(string $phoneNumber)

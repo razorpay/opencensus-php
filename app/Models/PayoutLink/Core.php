@@ -263,6 +263,8 @@ class Core extends Base\Core
 
                         (new PayoutClient())->processPayout($payoutLink, $this->merchant, $mode);
 
+                        $payoutLink->setPayout();
+
                         $this->app->events->fire(Status::getWebhookEventCorrespondingToStatus(Status::PROCESSING),
                                                  [$payoutLink]);
 

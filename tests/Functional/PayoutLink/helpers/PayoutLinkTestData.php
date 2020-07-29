@@ -1071,6 +1071,33 @@ return [
         ]
     ],
 
+    'testInitiateApiHasPayoutInfo' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '',
+            'content' => [
+                'token'         => 'random token string',
+                "account_type"  => "bank_account",
+                "bank_account"  =>[
+                    "name"          => "Test",
+                    "ifsc"          => "UTIB0002953",
+                    "account_number"=> "916010007268867"
+                ]
+
+            ]
+
+        ],
+        'response' => [
+            'content' => [
+                'payouts' =>
+                    [
+                        'entity'=> 'collection',
+                        'count' => 1
+                    ]
+            ],
+        ]
+    ],
+    
     'testGetFundAccountWithInvalidTokenRaisesException' => [
         'request'  => [
             'method'  => 'POST',
