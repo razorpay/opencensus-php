@@ -144,6 +144,13 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $mandateRevokeObj, Action::MANDATE_REVOKE);
     }
 
+    public function notify($input)
+    {
+        $notifyObject = new NotifyData();
+
+        return $this->processMockResponse($input, $notifyObject, Action::NOTIFY);
+    }
+
     protected function makeResponseJson($body)
     {
         $response = \Response::make($body);
@@ -162,6 +169,8 @@ class Server extends Base\Mock\Server
         $entities = $input['entities'];
 
         $gateway = $gateway === null ? $this->getGateway($entities) : $gateway;
+
+        $this->request($entities, $action);
 
         $response = $actionClass->$gateway($entities);
 
@@ -754,9 +763,9 @@ class Server extends Base\Mock\Server
                     // if request reached here, it means checkDbConstraints did not through exception, throwing exception here to fail test
                     // this is necessary to confirm that error is raised while creating terminal in checkDbConstraints and not by creating actual terminal after receiving gateway response
                     throw new Exception\LogicException('Request should not have reached here');
-                break;    
-                case "8":                    
-                    // asserts that req_type is 'A' for additional tid flow instead of 'N' 
+                break;
+                case "8":
+                    // asserts that req_type is 'A' for additional tid flow instead of 'N'
                     assert($reqType === 'A');
 
                     $responseBody = [
@@ -779,10 +788,6 @@ class Server extends Base\Mock\Server
                         ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
                     throw $ex;
                 break;
-
-        
-
-
         }
 
         $response = \Response::make($responseBody);

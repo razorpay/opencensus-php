@@ -89,6 +89,16 @@ class Gateway extends Base\Gateway
         return new Entity;
     }
 
+    /**
+     * @return Entity
+     */
+    protected function getUpiEntityForAction(array $input, string $action)
+    {
+        $entity = $this->getRepository()->findByPaymentIdAndAction($input['payment']['id'], $action);
+
+        return $entity;
+    }
+
     protected function generateIntentString(array $content)
     {
         $url = 'upi://pay?' . str_replace(' ', '', urldecode(http_build_query($content)));

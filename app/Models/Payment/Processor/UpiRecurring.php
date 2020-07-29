@@ -32,7 +32,8 @@ trait UpiRecurring
             'terminal'      => $payment->terminal,
             'upi_mandate'   => $mandate,
             'payment'       => $payment,
-            'upi'           => $payment->getUpiMetadata(),
+            'merchant'      => $payment->merchant,
+            'upi'           => $payment->getUpiMetadata()->toArray(),
         ];
 
         $this->mutex->acquireAndRelease($payment->getId(),

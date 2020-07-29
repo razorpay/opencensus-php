@@ -741,7 +741,7 @@ class Terminal extends Base
 
         $attributes = array_merge($default, $attributes);
 
-        $this->createSharedUpiIciciTerminal($attributes);
+        return $this->createSharedUpiIciciTerminal($attributes);
     }
 
     public function createSharedOlamoneyTerminal(array $attributes = [])

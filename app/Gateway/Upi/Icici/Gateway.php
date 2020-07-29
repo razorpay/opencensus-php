@@ -587,9 +587,14 @@ class Gateway extends Base\Gateway
         return base64_encode($data);
     }
 
-    protected function updateGatewayPaymentResponse(Entity $payment, array $response)
+    protected function updateGatewayPaymentResponse(Entity $payment, array $response, bool $shouldMap = true)
     {
-        $attr = $this->getMappedAttributes($response);
+        $attr = $response;
+
+        if ($shouldMap === true)
+        {
+            $attr = $this->getMappedAttributes($response);
+        }
 
         // For payment's entities, we need NPCI REF ID to be generated.
         // Now, gateway payment entity will have authorize action in 3 scenarios - authorize, callback and verify.
@@ -1299,6 +1304,26 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
+    public function preDebit(array $input)
+    {
+        parent::action($input, Action::PRE_DEBIT);
+
+        if ($this->shouldSkipNotityForAutoRecurring($input) === true)
+        {
+            return $this->getResponseForAutoRecurring($input, null);
+        }
+
+        // PreDebit action for UPI ICICI requires a notification
+        // First we need check if there is already notify attempted
+        $preDebit = $this->firstOrCreateEntityForRecurring($input, Action::PRE_DEBIT, true);
+
+        $this->setRequestDataForUpiRecurring($input, $preDebit);
+
+        $response = $this->sendPreDebitRequest($input, $preDebit);
+
+        return $response;
+    }
+
     public function refund(array $input)
     {
         parent::refund($input);
@@ -1433,7 +1458,6 @@ class Gateway extends Base\Gateway
     {
         return $refund['id'] . ($refund['attempts'] ?: '');
     }
-
 
     public function generateRefunds($input)
     {

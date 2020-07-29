@@ -1,0 +1,455 @@
+<?php
+
+namespace RZP\Tests\Functional\Gateway\Mozart\Upi;
+
+use Carbon\Carbon;
+use RZP\Exception;
+use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
+use RZP\Gateway\Upi\Base;
+use RZP\Models\Customer\Token;
+use RZP\Models\UpiMandate\Entity;
+use RZP\Models\UpiMandate\Status;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\PaymentsUpiRecurringTrait;
+
+class UpiIciciAutoRecurringTest extends TestCase
+{
+    use PaymentTrait;
+    use PaymentsUpiRecurringTrait;
+
+    protected $payment;
+    protected $terminal;
+
+    public function setUp()
+    {
+        parent::setUp();
+
+        $this->gateway = 'mozart';
+
+        $this->terminal = $this->fixtures->create('terminal:shared_icici_recurring_terminal');
+
+        $this->terminalId = $this->terminal->getId();
+
+        $this->fixtures->create('customer');
+
+        $this->fixtures->merchant->enableUpi('10000000000000');
+
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
+
+        $this->payment = $this->getDefaultUpiRecurringPaymentArray();
+
+        $this->setMockGatewayTrue();
+    }
+
+    public function testAutoRecurringPaymentSuccess()
+    {
+        $this->createDbUpiMandate();
+
+        $this->createDbUpiToken();
+
+        $requestAsserted = false;
+
+        $input = $this->getDbUpiAutoRecurringPayment();
+
+        // The request which we have sent to create the reminder
+        $this->assertReminderRequest('createReminder', $createReminder, $pending);
+
+        $this->doS2SRecurringPayment($input);
+
+        $payment = $this->assertUpiDbLastEntity('payment', [
+            'gateway' => 'upi_icici',
+        ]);
+
+        // The first reminder call will trigger an update reminder
+        $this->assertReminderRequest('updateReminder', $updateReminder, $pending);
+
+        $requestAsserted = [
+            'notify'    => false,
+            'pay_init'  => false,
+        ];
+
+        // Gateway request will be sent in next step
+        $this->mockServerRequestFunction(function (& $content, $action) use (& $requestAsserted)
+        {
+            if ($action === 'notify')
+            {
+                $requestAsserted['notify'] = true;
+
+                $paymentId = $content['payment']['id'];
+                $paymentCreatedAt = $content['payment']['created_at'];
+
+                $this->assertArraySubset([
+                    'act'   => 'notify',
+                    'ano'   => 1,
+                    'ext'   => $paymentCreatedAt + 86400,
+                    'sno'   => 1,
+                    'id'    => $paymentId . 'notify' . 1,
+                ], $content['upi']['gateway_data']);
+
+                // All the entities sent to mozart
+                $this->assertSame([
+                    'action',
+                    'gateway',
+                    'terminal',
+                    'upi_mandate',
+                    'payment',
+                    'merchant',
+                    'upi',
+                ], array_keys($content));
+
+                return;
+            }
+        });
+
+        // Making first call from RS, This will call preDebit action no ICICI Gateway
+        $this->sendReminderRequest($createReminder);
+
+        $this->assertTrue($requestAsserted['notify']);
+
+        $metadata = $this->assertUpiDbLastEntity('upi_metadata', [
+            'vpa'               => 'localuser@icici',
+            'rrn'               => '615519221396',
+            'umn'               => 'FirstUpiRecPayment@razorpay',
+            'internal_status'   => 'reminder_in_progress_for_authorize',
+            'remind_at'         => $updateReminder['reminder_data']['remind_at'],
+        ]);
+
+        $this->assertUpiDbLastEntity('upi', [
+            'status_code'       => '0',
+            'gateway_data'      => [
+                'act'   => 'notify',
+                'ano'   => 1,
+                'ext'   => $payment->getCreatedAt() + 86400,
+                'sno'   => 1,
+            ],
+        ]);
+
+        // Skipping to execution time, with 90 seconds buffer
+        Carbon::setTestNow(Carbon::now()->addDay()->addSeconds(90));
+
+        // Remind at should be in last 3 minutes
+        $this->assertLessThan(Carbon::now()->getTimestamp(), $metadata->getRemindAt());
+        $this->assertGreaterThan(Carbon::now()->subMinute(3)->getTimestamp(), $metadata->getRemindAt());
+    }
+
+    public function testAutoRecurringPaymentNotifyRetry()
+    {
+        $this->createDbUpiMandate();
+
+        $this->createDbUpiToken();
+
+        $input = $this->getDbUpiAutoRecurringPayment([
+            'description' => 'notify_fails_twice',
+        ]);
+
+        // The request which we have sent to create the reminder
+        $this->assertReminderRequest('createReminder', $createReminder, $pending);
+
+        $this->doS2SRecurringPayment($input);
+
+        $payment = $this->assertUpiDbLastEntity('payment', [
+            'gateway'   => 'upi_icici',
+            'status'    => 'created',
+            'verify_at' => null,
+        ]);
+
+        // The first reminder call will trigger an update reminder
+        $this->assertReminderRequest('updateReminder', $updateReminder, $pending);
+
+        $calls = [];
+
+        // Gateway request will be sent in next step
+        $this->mockServerRequestFunction(function (& $content, $action) use ($calls)
+        {
+            if ($action === 'notify')
+            {
+                $gatewayData = $content['upi']['gateway_data'];
+                $calls[$gatewayData['ano']] = $gatewayData;
+            }
+        });
+
+        // Making first call from RS, This will call preDebit action on Gateway
+        $this->sendReminderRequest($createReminder);
+
+        $payment = $this->assertUpiDbLastEntity('payment', [
+            'gateway'   => 'upi_icici',
+            'status'    => 'created',
+            'verify_at' => null,
+        ], false);
+
+        $metadata = $this->assertUpiDbLastEntity('upi_metadata', [
+            'vpa'               => 'localuser@icici',
+            'rrn'               => '615519221396',
+            'umn'               => 'FirstUpiRecPayment@razorpay',
+            'internal_status'   => 'reminder_in_progress_for_pre_debit',
+            'remind_at'         => $updateReminder['reminder_data']['remind_at'],
+        ]);
+
+        $this->assertUpiDbLastEntity('upi', [
+            'status_code'       => '08',
+            'gateway_data'      => [
+                'act'   => 'notify',
+                'ano'   => 1,
+                'ext'   => $payment->getCreatedAt() + 86400,
+                'sno'   => 1,
+            ],
+        ]);
+
+        // Skipping to first retry time, with 90 seconds buffer
+        Carbon::setTestNow(Carbon::now()->addMinutes(10)->addSeconds(90));
+
+        // Remind at should be in last 3 minutes
+        $this->assertLessThan(Carbon::now()->getTimestamp(), $metadata->getRemindAt());
+        $this->assertGreaterThan(Carbon::now()->subMinute(3)->getTimestamp(), $metadata->getRemindAt());
+
+        // Making first retry call from RS, This will again call preDebit action on Gateway
+        $this->sendReminderRequest($updateReminder);
+
+        $payment = $this->assertUpiDbLastEntity('payment', [
+            'gateway'   => 'upi_icici',
+            'status'    => 'created',
+            'verify_at' => null,
+        ], false);
+
+        $metadata = $this->assertUpiDbLastEntity('upi_metadata', [
+            'internal_status'   => 'reminder_in_progress_for_pre_debit',
+            'remind_at'         => $updateReminder['reminder_data']['remind_at'],
+        ]);
+
+        $this->assertUpiDbLastEntity('upi', [
+            'status_code'       => '08',
+            'gateway_data'      => [
+                'ano'   => 2,
+            ],
+        ]);
+
+        // Skipping to second retry time, with 90 seconds buffer
+        Carbon::setTestNow(Carbon::now()->addMinutes(20)->addSeconds(90));
+
+        // Remind at should be in last 3 minutes
+        $this->assertLessThan(Carbon::now()->getTimestamp(), $metadata->getRemindAt());
+        $this->assertGreaterThan(Carbon::now()->subMinute(3)->getTimestamp(), $metadata->getRemindAt());
+
+        // Making second retry call from RS, This will again call preDebit action on Gateway
+        $this->sendReminderRequest($updateReminder);
+
+        $payment = $this->assertUpiDbLastEntity('payment', [
+            'gateway'   => 'upi_icici',
+            'status'    => 'created',
+            'verify_at' => null,
+        ], false);
+
+        $metadata = $this->assertUpiDbLastEntity('upi_metadata', [
+            'internal_status'   => 'reminder_in_progress_for_authorize',
+            'remind_at'         => $updateReminder['reminder_data']['remind_at'],
+        ]);
+
+        $this->assertUpiDbLastEntity('upi', [
+            'status_code'       => '0',
+            'gateway_data'      => [
+                'ano'   => 3,
+            ],
+        ]);
+
+        // Skipping to final time of authorization, with 90 seconds buffer
+        Carbon::setTestNow(Carbon::now()->addDay()->addSeconds(90));
+
+        // Remind at should be in last 3 minutes
+        $this->assertLessThan(Carbon::now()->getTimestamp(), $metadata->getRemindAt());
+        $this->assertGreaterThan(Carbon::now()->subMinute(3)->getTimestamp(), $metadata->getRemindAt());
+
+        // TODO: Add authorization part here too
+    }
+
+    public function testAutoRecurringPaymentNotifyFails()
+    {
+        $this->createDbUpiMandate();
+
+        $this->createDbUpiToken();
+
+        $input = $this->getDbUpiAutoRecurringPayment([
+            'description' => 'notify_fails',
+        ]);
+
+        // The request which we have sent to create the reminder
+        $this->assertReminderRequest('createReminder', $createReminder, $pending);
+
+        $this->doS2SRecurringPayment($input);
+
+        $payment = $this->assertUpiDbLastEntity('payment', [
+            'gateway'   => 'upi_icici',
+            'status'    => 'created',
+            'verify_at' => null,
+        ]);
+
+        // The first reminder call will trigger an update reminder
+        $this->assertReminderRequest('updateReminder', $updateReminder, $pending);
+
+        $calls = [];
+
+        // Gateway request will be sent in next step
+        $this->mockServerRequestFunction(function (& $content, $action) use ($calls)
+        {
+            if ($action === 'notify')
+            {
+                $gatewayData = $content['upi']['gateway_data'];
+                $calls[$gatewayData['ano']] = $gatewayData;
+            }
+        });
+
+        // Making first call from RS, This will call preDebit action on Gateway
+        $this->sendReminderRequest($createReminder);
+
+        $payment = $this->assertUpiDbLastEntity('payment', [
+            'gateway'   => 'upi_icici',
+            'status'    => 'created',
+            'verify_at' => null,
+        ], false);
+
+        $metadata = $this->assertUpiDbLastEntity('upi_metadata', [
+            'vpa'               => 'localuser@icici',
+            'rrn'               => '615519221396',
+            'umn'               => 'FirstUpiRecPayment@razorpay',
+            'internal_status'   => 'reminder_in_progress_for_pre_debit',
+            'remind_at'         => $updateReminder['reminder_data']['remind_at'],
+        ]);
+
+        $this->assertUpiDbLastEntity('upi', [
+            'status_code'       => '08',
+            'gateway_data'      => [
+                'act'   => 'notify',
+                'ano'   => 1,
+                'ext'   => $payment->getCreatedAt() + 86400,
+                'sno'   => 1,
+            ],
+        ]);
+
+        // Skipping to first retry time, with 90 seconds buffer
+        Carbon::setTestNow(Carbon::now()->addMinutes(10)->addSeconds(90));
+
+        // Remind at should be in last 3 minutes
+        $this->assertLessThan(Carbon::now()->getTimestamp(), $metadata->getRemindAt());
+        $this->assertGreaterThan(Carbon::now()->subMinute(3)->getTimestamp(), $metadata->getRemindAt());
+
+        // Making first retry call from RS, This will again call preDebit action on Gateway
+        $this->sendReminderRequest($updateReminder);
+
+        $payment = $this->assertUpiDbLastEntity('payment', [
+            'gateway'   => 'upi_icici',
+            'status'    => 'created',
+            'verify_at' => null,
+        ], false);
+
+        $metadata = $this->assertUpiDbLastEntity('upi_metadata', [
+            'internal_status'   => 'reminder_in_progress_for_pre_debit',
+            'remind_at'         => $updateReminder['reminder_data']['remind_at'],
+        ]);
+
+        $this->assertUpiDbLastEntity('upi', [
+            'status_code'       => '08',
+            'gateway_data'      => [
+                'ano'   => 2,
+            ],
+        ]);
+
+        // Skipping to second retry time, with 90 seconds buffer
+        Carbon::setTestNow(Carbon::now()->addMinutes(20)->addSeconds(90));
+
+        // Remind at should be in last 3 minutes
+        $this->assertLessThan(Carbon::now()->getTimestamp(), $metadata->getRemindAt());
+        $this->assertGreaterThan(Carbon::now()->subMinute(3)->getTimestamp(), $metadata->getRemindAt());
+
+        // Making second retry call from RS, This will again call preDebit action on Gateway
+        $this->sendReminderRequest($updateReminder);
+
+        $payment = $this->assertUpiDbLastEntity('payment', [
+            'gateway'               => 'upi_icici',
+            'status'                => 'failed',
+            'verify_at'             => null,
+            'internal_error_code'   => 'GATEWAY_ERROR_BANK_OFFLINE',
+        ], false);
+
+        $metadata = $this->assertUpiDbLastEntity('upi_metadata', [
+            'internal_status'   => 'pre_debit_failed',
+            'remind_at'         => null,
+        ]);
+
+        $this->assertUpiDbLastEntity('upi', [
+            'status_code'       => '08',
+            'gateway_data'      => [
+                'ano'   => 3,
+            ],
+        ]);
+    }
+
+    public function testAutoRecurringPaymentNotifyFatal()
+    {
+        $this->createDbUpiMandate();
+
+        $this->createDbUpiToken();
+
+        $input = $this->getDbUpiAutoRecurringPayment([
+            'description' => 'notify_fails',
+        ]);
+
+        // The request which we have sent to create the reminder
+        $this->assertReminderRequest('createReminder', $createReminder, $pending);
+
+        $this->doS2SRecurringPayment($input);
+
+        $payment = $this->assertUpiDbLastEntity('payment', [
+            'gateway'   => 'upi_icici',
+            'status'    => 'created',
+            'verify_at' => null,
+        ]);
+
+        // The first reminder call will trigger an update reminder
+        $this->assertReminderRequest('updateReminder', $updateReminder, $pending);
+
+        $calls = [];
+
+        // Gateway request will be sent in next step
+        $this->mockServerRequestFunction(function (& $content, $action) use ($calls)
+        {
+            if ($action === 'notify')
+            {
+                throw new Exception\ServerErrorException('Application down', ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
+            }
+        });
+
+        // Making first call from RS, This will call preDebit action on Gateway
+        $this->makeRequestAndCatchException(function() use ($createReminder)
+            {
+                $this->sendReminderRequest($createReminder);
+            },
+            Exception\ServerErrorException::class,
+            'Application down');
+
+        $payment = $this->assertUpiDbLastEntity('payment', [
+            'gateway'   => 'upi_icici',
+            'status'    => 'created',
+            'verify_at' => null,
+        ], false);
+
+        $metadata = $this->assertUpiDbLastEntity('upi_metadata', [
+            'internal_status'   => 'pre_debit_initiated',
+            'reminder_id'       => 'TestReminderId',
+        ]);
+
+        $this->assertUpiDbLastEntity('upi', [
+            'status_code'       => null,
+            'gateway_data'      => [
+                'act'   => 'notify',
+                'ano'   => 1,
+                'ext'   => $payment->getCreatedAt() + 86400,
+                'sno'   => 1,
+            ],
+        ]);
+
+        // TODO: Add cron code here
+    }
+
+}

@@ -33,6 +33,9 @@ class Entity extends Base\Entity
 
     const GATEWAY_DATA          = 'gateway_data';
 
+    // Input Keys
+    const PAYMENT               = 'payment';
+
     public $incrementing = true;
 
     protected $entity = 'upi';
@@ -189,6 +192,11 @@ class Entity extends Base\Entity
     public function getRefundId()
     {
         return $this->getAttribute(self::REFUND_ID);
+    }
+
+    public function getStatusCode()
+    {
+        return $this->getAttributes(self::STATUS_CODE);
     }
 
     public function extractProviderFromVpa()

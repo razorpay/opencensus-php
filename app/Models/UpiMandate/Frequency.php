@@ -4,6 +4,15 @@ namespace RZP\Models\UpiMandate;
 
 class Frequency
 {
+    const DAILY        = 'daily';
+    const AS_PRESENTED = 'as_presented';
+    const WEEKLY       = 'weekly';
+    const BIMONTHLY    = 'bimonthly';
+    const MONTHLY      = 'monthly';
+    const QUARTERLY    = 'quarterly';
+    const HALF_YEARLY  = 'half_yearly';
+    const YEARLY       = 'yearly';
+
     public static $frequencyToRecurringValueMap = [
         self::WEEKLY       => 7,
         self::BIMONTHLY    => 15,
@@ -15,14 +24,6 @@ class Frequency
         self::YEARLY       => 31,
     ];
 
-    const DAILY        = 'daily';
-    const AS_PRESENTED = 'as_presented';
-    const WEEKLY       = 'weekly';
-    const BIMONTHLY    = 'bimonthly';
-    const MONTHLY      = 'monthly';
-    const QUARTERLY    = 'quarterly';
-    const HALF_YEARLY  = 'half_yearly';
-    const YEARLY       = 'yearly';
 
     public static function isValid($frequency)
     {
@@ -31,6 +32,7 @@ class Frequency
 
     public static function shouldSkipNotify(string $gateway, string $frequency): bool
     {
+        // As per banks notification is made mandatory for all frequencies
         return false;
     }
 }

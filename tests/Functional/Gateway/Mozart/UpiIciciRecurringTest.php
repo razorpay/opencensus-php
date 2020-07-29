@@ -19,6 +19,7 @@ class UpiIciciRecurringTest extends TestCase
     use PaymentsUpiRecurringTrait;
 
     protected $payment;
+    protected $terminal;
 
     public function setUp()
     {
@@ -28,7 +29,7 @@ class UpiIciciRecurringTest extends TestCase
 
         $this->gateway = 'mozart';
 
-        $this->fixtures->create('terminal:shared_icici_recurring_terminal');
+        $this->terminal = $this->fixtures->create('terminal:shared_icici_recurring_terminal');
 
         $this->fixtures->create('customer');
 

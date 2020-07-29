@@ -6,6 +6,7 @@ use Mockery;
 use Carbon\Carbon;
 use RZP\Models\Order;
 use RZP\Models\UpiMandate;
+use RZP\Models\Base\Entity;
 use RZP\Models\Customer\Token;
 use RZP\Services\Mock\Reminders;
 use RZP\Models\Payment\UpiMetadata;
@@ -308,8 +309,10 @@ trait PaymentsUpiRecurringTrait
             $oldEntity = $this->lastUpiRecurringEntities[$entity];
 
             $oldEntity->forceFill($actualDiff);
+            $expected = $oldEntity->toArray();
+            unset($expected[Entity::UPDATED_AT]);
 
-            $this->assertArraySubset($oldEntity->toArray(), $newEntity->toArray(), true);
+            $this->assertArraySubset($expected, $newEntity->toArray(), true);
         }
 
         return $newEntity;

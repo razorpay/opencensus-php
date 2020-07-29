@@ -360,6 +360,12 @@ class TransactionFilter extends Terminal\Filter
             {
                 return true;
             }
+
+            if ($payment->isUpiAutoRecurring() === true)
+            {
+                // Its UPI auto recurring payment, does not have anything to do with gateway token(As of now)
+                return true;
+            }
         }
 
         return (new Terminal\Core)->hasApplicableGatewayTokens($terminal, $payment, $gatewayTokens);

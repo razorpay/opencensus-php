@@ -620,6 +620,28 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function preDebit(array $input)
+    {
+        parent::action($input, Action::NOTIFY);
+
+        $request = $this->getMozartRequestArray($input);
+
+        $traceReq = [
+            'method' => $request['method'],
+            'url' => $request['url'],
+        ];
+
+        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_SUPPORT_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $traceRes = $this->getRedactedData($response);
+
+        $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_SUPPORT_RESPONSE);
+
+        return $response;
+    }
+
     public function callback(array $input)
     {
         parent::action($input, Action::PAY_VERIFY);
@@ -1624,6 +1646,7 @@ class Gateway extends Base\Gateway
                 Action::PAY_INIT          => null,
                 Action::PAY_VERIFY        => null,
                 Action::MANDATE_REVOKE    => null,
+                Action::NOTIFY            => null,
             ],
         ];
 
@@ -1786,6 +1809,7 @@ class Gateway extends Base\Gateway
                 Action::PAY_INIT          => null,
                 Action::PAY_VERIFY        => null,
                 Action::MANDATE_REVOKE    => null,
+                Action::NOTIFY            => null,
             ],
         ];
 
