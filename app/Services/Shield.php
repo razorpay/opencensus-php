@@ -154,6 +154,8 @@ class Shield
         $payloadDetails[ShieldConstants::MERCHANT_CREATED_AT]     = $merchant->getCreatedAt();
         $payloadDetails[ShieldConstants::MERCHANT_ACTIVATED_AT]   = $merchant->getActivatedAt();
 
+        $payloadDetails[ShieldConstants::ORG_ID] = $merchant->getOrgId();
+
         $this->populateWhiteListedDomains($merchant, $payloadDetails);
 
     }
@@ -271,6 +273,7 @@ class Shield
         $isPaymentInitiatedByPartner = ((is_null($partnerMerchantId) === false) and ($partnerMerchantId != $merchant->getId()));
 
         $partnerWhitelistedDomains = [];
+        $partnerIds = [];
 
         if ($isPaymentInitiatedByPartner === true)
         {
@@ -289,6 +292,7 @@ class Shield
                     ($partnerMerchant->isPurePlatformPartner() === true))
                 {
                     $partnerWhitelistedDomains[$partnerMerchant->getId()] = (array) $partnerMerchant->getWhitelistedDomains();
+                    $partnerIds[] = $partnerMerchant->getId();
                 }
             }
         }
@@ -296,6 +300,8 @@ class Shield
         $payloadDetails[ShieldConstants::IS_PARTNER_INITIATED_PAYMENT] = $isPaymentInitiatedByPartner;
 
         $payloadDetails[ShieldConstants::PARTNER_WHITELISTED_DOMAINS] = $partnerWhitelistedDomains;
+
+        $payloadDetails[ShieldConstants::PARTNER_IDS] = $partnerIds;
     }
 
     protected function getPaymentProduct(Payment\Entity $payment)

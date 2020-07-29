@@ -9,6 +9,8 @@ final class Shield
 {
     // Request payload constants
     const MERCHANT_ID                  = 'merchant_id';
+    const ORG_ID                       = 'org_id';
+    const PARTNER_IDS                  = 'partner_ids';
     const ENTITY_TYPE                  = 'entity_type';
     const ENTITY_ID                    = 'entity_id';
     const INPUT                        = 'input';
