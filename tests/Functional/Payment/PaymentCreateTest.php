@@ -3784,4 +3784,151 @@ class PaymentCreateTest extends TestCase
             $this->doAuthPayment($payment);
         });
     }
+
+    public function testIntlPaymentWhenNotAllowedForPaymentGateway()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::INTERNATIONAL => true,
+            MERCHANT::PRODUCT_INTERNATIONAL => '0111000000'
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function ()
+        {
+            $this->payment['card']['number'] = '4012010000000007';
+            $this->doAuthPayment($this->payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['gateway'], null);
+        $this->assertEquals($payment['terminal_id'], null);
+        $this->assertEquals($payment['status'], 'failed');
+        $this->assertEquals($payment['error_code'], 'BAD_REQUEST_ERROR');
+        $this->assertEquals($payment['internal_error_code'], 'BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_GATEWAY');
+    }
+
+    public function testIntlPaymentWithOrderIDWhenNotAllowedForPaymentGateway()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::INTERNATIONAL => true,
+            MERCHANT::PRODUCT_INTERNATIONAL => '0111000000'
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+
+        //product_type and product_id will be null here.Hence the payment belongs to payment_gateway
+        $this->fixtures->create('order', ['id' => '100000000order']);
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function ()
+        {
+            $this->payment['amount'] = 1000000;
+            $this->payment['order_id'] = 'order_100000000order';
+            $this->payment['card']['number'] = '4012010000000007';
+            $this->doAuthPayment($this->payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['gateway'], null);
+        $this->assertEquals($payment['terminal_id'], null);
+        $this->assertEquals($payment['status'], 'failed');
+        $this->assertEquals($payment['error_code'], 'BAD_REQUEST_ERROR');
+        $this->assertEquals($payment['internal_error_code'], 'BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_GATEWAY');
+    }
+
+    public function testIntlPaymentWithOrderIDWhenNotAllowedForPaymentLinks()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::INTERNATIONAL => true,
+            MERCHANT::PRODUCT_INTERNATIONAL => '1011000000'
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+
+        $this->fixtures->create('order', ['id' => '100000000order' , 'product_type' => 'payment_link']);
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function ()
+        {
+            $this->payment['amount'] = 1000000;
+            $this->payment['order_id'] = 'order_100000000order';
+            $this->payment['card']['number'] = '4012010000000007';
+            $this->doAuthPayment($this->payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['gateway'], null);
+        $this->assertEquals($payment['terminal_id'], null);
+        $this->assertEquals($payment['status'], 'failed');
+        $this->assertEquals($payment['error_code'], 'BAD_REQUEST_ERROR');
+        $this->assertEquals($payment['internal_error_code'], 'BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_LINKS');
+    }
+
+    public function testIntlPaymentWithOrderIDWhenNotAllowedForPaymentPages()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::INTERNATIONAL => true,
+            MERCHANT::PRODUCT_INTERNATIONAL => '1101000000'
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+
+        $this->fixtures->create('order', ['id' => '100000000order' , 'product_type' => 'payment_page']);
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function ()
+        {
+            $this->payment['amount'] = 1000000;
+            $this->payment['order_id'] = 'order_100000000order';
+            $this->payment['card']['number'] = '4012010000000007';
+            $this->doAuthPayment($this->payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['gateway'], null);
+        $this->assertEquals($payment['terminal_id'], null);
+        $this->assertEquals($payment['status'], 'failed');
+        $this->assertEquals($payment['error_code'], 'BAD_REQUEST_ERROR');
+        $this->assertEquals($payment['internal_error_code'], 'BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_PAGES');
+    }
+
+    public function testIntlPaymentWithOrderIDWhenNotAllowedForInvoices()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::INTERNATIONAL => true,
+            MERCHANT::PRODUCT_INTERNATIONAL => '1110000000'
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+
+        $this->fixtures->create('order', ['id' => '100000000order' , 'product_type' => 'invoice']);
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function ()
+        {
+            $this->payment['amount'] = 1000000;
+            $this->payment['order_id'] = 'order_100000000order';
+            $this->payment['card']['number'] = '4012010000000007';
+            $this->doAuthPayment($this->payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['gateway'], null);
+        $this->assertEquals($payment['terminal_id'], null);
+        $this->assertEquals($payment['status'], 'failed');
+        $this->assertEquals($payment['error_code'], 'BAD_REQUEST_ERROR');
+        $this->assertEquals($payment['internal_error_code'], 'BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_INVOICES');
+    }
 }

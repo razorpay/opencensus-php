@@ -61,11 +61,12 @@ class Merchant extends Base
         // Default merchant to be used for tests
         $this->fixtures->create('merchant',
                                 [
-                                    'id'            => '10000000000000',
-                                    'email'         => 'test@razorpay.com',
-                                    'billing_label' => 'Test Merchant',
-                                    'activated_at'  => time(),
-                                    'category'      => '5399'
+                                    'id'                    => '10000000000000',
+                                    'email'                 => 'test@razorpay.com',
+                                    'billing_label'         => 'Test Merchant',
+                                    'activated_at'          => time(),
+                                    'category'              => '5399',
+                                    'product_international' => '1111000000'
                                 ]);
 
         // Merchant on whom all shared terminals are created

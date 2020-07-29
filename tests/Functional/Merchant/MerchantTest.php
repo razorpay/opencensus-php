@@ -7315,6 +7315,9 @@ class MerchantTest extends TestCase
     {
         $this->setMerchantMerchantDetailsAndPricing(false, 'whitelist');
 
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'product_international'   => '0000000000']);
+
         $this->ba->adminAuth();
 
         $this->startTest();
@@ -7324,7 +7327,9 @@ class MerchantTest extends TestCase
     {
         $this->setMerchantMerchantDetailsAndPricing(false, 'whitelist');
 
-        $this->fixtures->edit('merchant', '10000000000000', ['org_id' => Org::SBIN_ORG]);
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'org_id'                => Org::SBIN_ORG,
+            'product_international' => '0000000000']);
 
         $this->ba->adminAuth();
 
@@ -7336,6 +7341,9 @@ class MerchantTest extends TestCase
     {
         $this->setMerchantMerchantDetailsAndPricing(false, 'whitelist');
 
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'product_international'   => '0000000000']);
+
         $this->ba->adminAuth();
 
         $this->startTest();
@@ -7345,7 +7353,9 @@ class MerchantTest extends TestCase
     {
         $this->setMerchantMerchantDetailsAndPricing(false, 'blacklist');
 
-        $this->fixtures->edit('merchant', '10000000000000', ['org_id' => Org::SBIN_ORG]);
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'org_id'                => Org::SBIN_ORG,
+            'product_international' => '0000000000']);
 
         $this->ba->adminAuth();
 
@@ -7355,8 +7365,9 @@ class MerchantTest extends TestCase
     public function testMerchantInternationalEnableCategoryOneGreylist()
     {
         $this->fixtures->edit('merchant', '10000000000000', [
-            'pricing_plan_id' => '1In3Yh5Mluj605',
-            'international'   => 'greylist']);
+            'pricing_plan_id'        => '1In3Yh5Mluj605',
+            'international'          => 'greylist',
+            'product_international'  => '0000000000']);
 
         $this->fixtures->create('merchant_detail', [
             'merchant_id'                   => '10000000000000',
@@ -7579,6 +7590,8 @@ class MerchantTest extends TestCase
     public function testRequestMerchantProductInternational()
     {
         $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->edit('merchant','10000000000000', ['product_international' => '0000000000']);
 
         $this->ba->proxyAuth('rzp_test_10000000000000');
 

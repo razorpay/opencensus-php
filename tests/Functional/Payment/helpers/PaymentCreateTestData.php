@@ -670,5 +670,101 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
+
+    'testIntlPaymentWhenNotAllowedForPaymentGateway' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_GATEWAY,
+                    'reason' => 'international_transaction_not_allowed',
+                    'source' => 'business',
+                    'step'   => 'payment_initiation'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_GATEWAY
+        ],
+    ],
+
+    'testIntlPaymentWithOrderIDWhenNotAllowedForPaymentGateway' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_GATEWAY,
+                    'reason' => 'international_transaction_not_allowed',
+                    'source' => 'business',
+                    'step'   => 'payment_initiation'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_GATEWAY
+        ],
+    ],
+
+    'testIntlPaymentWithOrderIDWhenNotAllowedForPaymentLinks' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_LINKS,
+                    'reason' => 'international_transaction_not_allowed',
+                    'source' => 'business',
+                    'step'   => 'payment_initiation'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_LINKS
+        ],
+    ],
+
+    'testIntlPaymentWithOrderIDWhenNotAllowedForPaymentPages' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_PAGES,
+                    'reason' => 'international_transaction_not_allowed',
+                    'source' => 'business',
+                    'step'   => 'payment_initiation'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_PAGES
+        ],
+    ],
+
+    'testIntlPaymentWithOrderIDWhenNotAllowedForInvoices' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_INVOICES,
+                    'reason' => 'international_transaction_not_allowed',
+                    'source' => 'business',
+                    'step'   => 'payment_initiation'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_INVOICES
+        ],
+    ],
+
 ];
 
