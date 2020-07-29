@@ -574,6 +574,7 @@ class Core extends Base\Core
                 break;
 
             case 'bank_transfer_process_icici':
+            case 'bank_transfer_process_icici_internal':
                 $properties = [
                     'source'        => 'file',
                     'request_from'  => 'bank',

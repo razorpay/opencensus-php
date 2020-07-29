@@ -889,7 +889,7 @@ return [
     ],
 
     'testBankTransferIcici' => [
-        'url'     => '/ecollect/validate/icici',
+        'url'     => '/ecollect/validate/icici/internal',
         'method'  => 'post',
         'content' => [
             'payee_account'  => null,
@@ -906,7 +906,7 @@ return [
     ],
 
     'testBankTransferIciciWithIfscAsBankCode' => [
-        'url'     => '/ecollect/validate/icici',
+        'url'     => '/ecollect/validate/icici/internal',
         'method'  => 'post',
         'content' => [
             'payee_account'  => null,
@@ -923,7 +923,7 @@ return [
     ],
 
     'testBankTransferIciciWithIfscAsInvalidBankCode' => [
-        'url'     => '/ecollect/validate/icici',
+        'url'     => '/ecollect/validate/icici/internal',
         'method'  => 'post',
         'content' => [
             'payee_account'  => null,
