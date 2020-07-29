@@ -19,6 +19,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Models\FeeRecovery\Entity as FeeRecoveryEntity;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 
 class FeeRecoveryTest extends TestCase
@@ -689,24 +690,26 @@ class FeeRecoveryTest extends TestCase
 
         $feeRecoveryEntity1->reload();
 
-        $feeRecoveryEntity3 = $this->getDbLastEntity('fee_recovery')->toArray();
+        // 2 fee_recovery entities correspond to the same payout (1 debit and 1 credit) are created
+        $feeRecoveryEntity3 = $this->getDbEntity('fee_recovery',
+                                                [
+                                                    FeeRecoveryEntity::ENTITY_ID => $feeRecoveryEntity2['entity_id'],
+                                                    FeeRecoveryEntity::TYPE      => FeeRecovery\Type::CREDIT
+                                                ])->toArray();
 
         // Assert that we are creating a new fee recovery entity for the failed payout
         $this->assertEquals(FeeRecovery\Entity::PAYOUT, $feeRecoveryEntity3['entity_type']);
         $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecoveryEntity3['status']);
         $this->assertEquals(0, $feeRecoveryEntity3['attempt_number']);
         $this->assertNull($feeRecoveryEntity3['recovery_payout_id']);
-        $this->assertEquals($feeRecoveryEntity3['type'], FeeRecovery\Type::CREDIT);
 
         // Assert that the status of fee recovery entity corresponding to this
         // recovery payout has been updated back to unrecovered
         $this->assertEquals($feeRecoveryEntity1['recovery_payout_id'], $feeRecoveryPayout['id']);
-        $this->assertEquals($feeRecoveryEntity1['status'], FeeRecovery\Status::UNRECOVERED);
+        $this->assertEquals(FeeRecovery\Status::FAILED, $feeRecoveryEntity1['status']);
 
-        // Assert that last 2 fee_recovery entities correspond to the same payout (1 debit and 1 credit)
-        $this->assertEquals($feeRecoveryEntity3['entity_id'], $feeRecoveryEntity2['entity_id']);
-        $this->assertEquals($feeRecoveryEntity2['type'], FeeRecovery\Type::DEBIT);
-        $this->assertEquals($feeRecoveryEntity3['type'], FeeRecovery\Type::CREDIT);
+        $this->assertEquals(FeeRecovery\Type::DEBIT, $feeRecoveryEntity2['type']);
+        $this->assertEquals(FeeRecovery\Type::CREDIT, $feeRecoveryEntity3['type']);
     }
 
     public function testUpdateFeeRecoveryAfterPayoutFTAReconReversed()
@@ -730,7 +733,12 @@ class FeeRecoveryTest extends TestCase
                                                     'recovery_payout_id' => $feeRecoveryPayout->getId()
                                                 ]);
 
-        $latestFeeRecoveryEntity = $this->getDbLastEntity('fee_recovery')->toArray();
+        $feeRecoveryPayoutReversal = $this->getDbLastEntity('reversal');
+
+        $latestFeeRecoveryEntity = $this->getDbEntity('fee_recovery',
+            [
+                FeeRecoveryEntity::ENTITY_ID => $feeRecoveryPayoutReversal->getId()
+            ])->toArray();
 
         // Assert that we are creating a new fee recovery entity for the reversal
         $this->assertEquals(FeeRecovery\Entity::REVERSAL, $latestFeeRecoveryEntity['entity_type']);
@@ -742,7 +750,7 @@ class FeeRecoveryTest extends TestCase
         // Assert that the status of fee recovery entity corresponding to this
         // recovery payout has been updated back to unrecovered
         $this->assertEquals($feeRecoveryEntity['recovery_payout_id'], $feeRecoveryPayout['id']);
-        $this->assertEquals($feeRecoveryEntity['status'], FeeRecovery\Status::UNRECOVERED);
+        $this->assertEquals($feeRecoveryEntity['status'], FeeRecovery\Status::FAILED);
     }
 
     public function testUpdateFeeRecoveryAfterPayoutFTAReconSuccessFollowedByReversed()
@@ -775,19 +783,24 @@ class FeeRecoveryTest extends TestCase
                                                     'recovery_payout_id' => $feeRecoveryPayout->getId()
                                                 ]);
 
-        $latestFeeRecoveryEntity = $this->getDbLastEntity('fee_recovery')->toArray();
+        $latestFeeRecoveryPayoutReversal = $this->getDbLastEntity('reversal');
+
+        $latestFeeRecoveryEntity = $this->getDbEntity('fee_recovery',
+                                                [
+                                                    'entity_id'      => $latestFeeRecoveryPayoutReversal->getId(),
+                                                    'attempt_number' => 0
+                                                ])->toArray();
 
         // Assert that we are creating a new fee recovery entity for the reversal
         $this->assertEquals(FeeRecovery\Entity::REVERSAL, $latestFeeRecoveryEntity['entity_type']);
         $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $latestFeeRecoveryEntity['status']);
-        $this->assertEquals(0, $latestFeeRecoveryEntity['attempt_number']);
         $this->assertNull($latestFeeRecoveryEntity['recovery_payout_id']);
         $this->assertEquals($latestFeeRecoveryEntity['type'], FeeRecovery\Type::CREDIT);
 
         // Assert that the status of fee recovery entity corresponding to this
         // recovery payout has been updated back to unrecovered
         $this->assertEquals($feeRecoveryEntityUpdated['recovery_payout_id'], $feeRecoveryPayout['id']);
-        $this->assertEquals($feeRecoveryEntityUpdated['status'], FeeRecovery\Status::UNRECOVERED);
+        $this->assertEquals($feeRecoveryEntityUpdated['status'], FeeRecovery\Status::FAILED);
     }
 
     public function testCreateFeeRecoveryScheduleTaskForMerchant()
@@ -1819,5 +1832,923 @@ class FeeRecoveryTest extends TestCase
         $this->fixtures->edit('balance', $this->balance->getId(), [
             'created_at'   => $pastTimeStamp
         ]);
+    }
+
+    public function testFeeRecoveryRetryAfterOnePayoutFTAReconFailedSecondSuccess()
+    {
+        $this->testCreateFeeRecoveryPayout();
+
+        $feeRecoveryPayout = $this->getDbEntity('payout', ['purpose' => 'rzp_fees']);
+
+        $feeRecoveryEntityRzpFees1 = $this->getDbEntity('fee_recovery',
+                                                [
+                                                    FeeRecoveryEntity::ENTITY_ID => $feeRecoveryPayout->getId()
+                                                ]);
+
+        // -----------------------------------------------------
+        // normal attempt at 1 fail and start retry for Attempt 2
+        // -----------------------------------------------------
+
+        $this->updateFtaAndSource($feeRecoveryPayout, Payout\Status::FAILED, '933815383818');
+
+        // 2 fee_recovery entities correspond to the same payout (1 debit and 1 credit) are created
+        $feeRecoveryEntityRzpFees2 = $this->getDbEntity('fee_recovery',
+                                                [
+                                                    FeeRecoveryEntity::ENTITY_ID => $feeRecoveryEntityRzpFees1['entity_id'],
+                                                    FeeRecoveryEntity::TYPE      => FeeRecovery\Type::CREDIT
+                                                ])->toArray();
+
+        // Assert that we are creating a new fee recovery entity for the failed payout
+        $this->assertEquals(FeeRecovery\Entity::PAYOUT, $feeRecoveryEntityRzpFees2['entity_type']);
+        $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecoveryEntityRzpFees2['status']);
+        $this->assertEquals(0, $feeRecoveryEntityRzpFees2['attempt_number']);
+
+        $this->assertEquals(FeeRecovery\Type::DEBIT, $feeRecoveryEntityRzpFees1['type']);
+        $this->assertEquals(FeeRecovery\Type::CREDIT, $feeRecoveryEntityRzpFees2['type']);
+
+        $this->assertNull($feeRecoveryEntityRzpFees2['recovery_payout_id']);
+
+        $feeRecoveryRetryPayout = $this->getDbLastEntity('payout');
+
+        $feeRecoveryRetryPayout->setStatus(Payout\Status::INITIATED);
+        $feeRecoveryRetryPayout->saveOrFail();
+
+        $feeRecoveryEntities = $this->getDbEntities('fee_recovery',
+                                                   [
+                                                       FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryPayout->getId(),
+                                                       FeeRecoveryEntity::STATUS             => FeeRecovery\Status::FAILED,
+                                                       FeeRecoveryEntity::ATTEMPT_NUMBER     => 1
+                                                   ])->toArray();
+
+        $feeRecoveryRetryEntities = $this->getDbEntities('fee_recovery',
+                                                        [
+                                                            FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayout->getId(),
+                                                            FeeRecoveryEntity::STATUS             => FeeRecovery\Status::PROCESSING,
+                                                            FeeRecoveryEntity::ATTEMPT_NUMBER     => 2
+                                                        ])->toArray();
+
+        $this->assertSameSize($feeRecoveryEntities, $feeRecoveryRetryEntities);
+
+        $feeRecoveryRetryEntityRzpFeesDebit = $this->getDbEntity('fee_recovery',
+                                                                [
+                                                                    FeeRecoveryEntity::ENTITY_ID => $feeRecoveryRetryPayout->getId()
+                                                                ])->toArray();
+
+        // Assert that we are creating a new fee recovery entity
+        $this->assertEquals(FeeRecovery\Entity::PAYOUT, $feeRecoveryRetryEntityRzpFeesDebit['entity_type']);
+        $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecoveryRetryEntityRzpFeesDebit['status']);
+        $this->assertEquals(0, $feeRecoveryRetryEntityRzpFeesDebit['attempt_number']);
+
+        $this->assertEquals(FeeRecovery\Type::DEBIT, $feeRecoveryRetryEntityRzpFeesDebit['type']);
+
+        $this->updateFtaAndSource($feeRecoveryRetryPayout, Payout\Status::PROCESSED, '933815383814');
+
+        $feeRecoveryRetryEntitiesAfterSuccess = $this->getDbEntities('fee_recovery',
+                                                        [
+                                                            FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayout->getId(),
+                                                            FeeRecoveryEntity::STATUS             => FeeRecovery\Status::RECOVERED,
+                                                            FeeRecoveryEntity::ATTEMPT_NUMBER     => 2
+                                                        ])->toArray();
+
+        $this->assertSameSize($feeRecoveryRetryEntities, $feeRecoveryRetryEntitiesAfterSuccess);
+    }
+
+    public function testFeeRecoveryRetryAfterTwoPayoutFTAReconFailedThirdSuccess()
+    {
+        $this->testCreateFeeRecoveryPayout();
+
+        $feeRecoveryPayout = $this->getDbEntity('payout', ['purpose' => 'rzp_fees']);
+
+        $feeRecoveryEntityRzpFees1 = $this->getDbEntity('fee_recovery',
+                                                       [
+                                                           FeeRecoveryEntity::ENTITY_ID => $feeRecoveryPayout->getId()
+                                                       ]);
+
+        // -----------------------------------------------------
+        // normal attempt at 1 fail and start retry for Attempt 2
+        // -----------------------------------------------------
+
+        $this->updateFtaAndSource($feeRecoveryPayout, Payout\Status::FAILED, '933815383818');
+
+        // 2 fee_recovery entities correspond to the same payout (1 debit and 1 credit) are created
+        $feeRecoveryEntityRzpFees2 = $this->getDbEntity('fee_recovery',
+                                                       [
+                                                           FeeRecoveryEntity::ENTITY_ID => $feeRecoveryEntityRzpFees1['entity_id'],
+                                                           FeeRecoveryEntity::TYPE      => FeeRecovery\Type::CREDIT
+                                                       ])->toArray();
+
+        // Assert that we are creating a new fee recovery entity for the failed payout
+        $this->assertEquals(FeeRecovery\Entity::PAYOUT, $feeRecoveryEntityRzpFees2['entity_type']);
+        $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecoveryEntityRzpFees2['status']);
+        $this->assertEquals(0, $feeRecoveryEntityRzpFees2['attempt_number']);
+
+        $this->assertEquals(FeeRecovery\Type::DEBIT, $feeRecoveryEntityRzpFees1['type']);
+        $this->assertEquals(FeeRecovery\Type::CREDIT, $feeRecoveryEntityRzpFees2['type']);
+
+        $this->assertNull($feeRecoveryEntityRzpFees2['recovery_payout_id']);
+
+        $feeRecoveryRetryPayoutAttemptOne = $this->getDbLastEntity('payout');
+
+        $feeRecoveryRetryPayoutAttemptOne->setStatus(Payout\Status::INITIATED);
+        $feeRecoveryRetryPayoutAttemptOne->saveOrFail();
+
+        $feeRecoveryEntities = $this->getDbEntities('fee_recovery',
+                                                   [
+                                                       FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryPayout->getId(),
+                                                       FeeRecoveryEntity::STATUS             => FeeRecovery\Status::FAILED,
+                                                       FeeRecoveryEntity::ATTEMPT_NUMBER     => 1
+                                                   ])->toArray();
+
+        $feeRecoveryRetryEntitiesAttemptOne = $this->getDbEntities('fee_recovery',
+                                                        [
+                                                            FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptOne->getId(),
+                                                            FeeRecoveryEntity::STATUS             => FeeRecovery\Status::PROCESSING,
+                                                            FeeRecoveryEntity::ATTEMPT_NUMBER     => 2
+                                                        ])->toArray();
+
+        $this->assertSameSize($feeRecoveryEntities, $feeRecoveryRetryEntitiesAttemptOne);
+
+        $feeRecoveryRetryEntityRzpFeesAttemptOneDebit = $this->getDbEntity('fee_recovery',
+                                                                          [
+                                                                              FeeRecoveryEntity::ENTITY_ID => $feeRecoveryRetryPayoutAttemptOne->getId()
+                                                                          ])->toArray();
+
+        // -----------------------------------------------------
+        // retry attempt at 2 fail and start retry for Attempt 3
+        // -----------------------------------------------------
+
+        $this->updateFtaAndSource($feeRecoveryRetryPayoutAttemptOne, Payout\Status::FAILED, '933815383814');
+
+        $feeRecoveryRetryEntitiesAfterFail = $this->getDbEntities('fee_recovery',
+                                                                    [
+                                                                        FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptOne->getId(),
+                                                                        FeeRecoveryEntity::STATUS             => FeeRecovery\Status::FAILED,
+                                                                        FeeRecoveryEntity::ATTEMPT_NUMBER     => 2
+                                                                    ])->toArray();
+
+        $this->assertSameSize($feeRecoveryRetryEntitiesAttemptOne, $feeRecoveryRetryEntitiesAfterFail);
+
+        // 2 fee_recovery entities correspond to the same payout (1 debit and 1 credit) are created
+        $feeRecoveryRetryEntityRzpFeesAttemptOneCredit = $this->getDbEntity('fee_recovery',
+                                                                           [
+                                                                               FeeRecoveryEntity::ENTITY_ID => $feeRecoveryRetryPayoutAttemptOne->getId(),
+                                                                               FeeRecoveryEntity::TYPE      => FeeRecovery\Type::CREDIT
+                                                                           ])->toArray();
+
+        // Assert that we are creating a new fee recovery entity for the failed payout
+        $this->assertEquals(FeeRecovery\Entity::PAYOUT, $feeRecoveryRetryEntityRzpFeesAttemptOneCredit['entity_type']);
+        $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecoveryRetryEntityRzpFeesAttemptOneCredit['status']);
+        $this->assertEquals(0, $feeRecoveryRetryEntityRzpFeesAttemptOneCredit['attempt_number']);
+
+        $this->assertEquals(FeeRecovery\Type::DEBIT, $feeRecoveryRetryEntityRzpFeesAttemptOneDebit['type']);
+        $this->assertEquals(FeeRecovery\Type::CREDIT, $feeRecoveryRetryEntityRzpFeesAttemptOneCredit['type']);
+
+        $this->assertNull($feeRecoveryEntityRzpFees2['recovery_payout_id']);
+
+        $feeRecoveryRetryPayoutAttemptTwo = $this->getDbLastEntity('payout');
+
+        $feeRecoveryRetryPayoutAttemptTwo->setStatus(Payout\Status::INITIATED);
+        $feeRecoveryRetryPayoutAttemptTwo->saveOrFail();
+
+        $feeRecoveryEntitiesAttemptOne = $this->getDbEntities('fee_recovery',
+                                                             [
+                                                                 FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptOne->getId(),
+                                                                 FeeRecoveryEntity::STATUS             => FeeRecovery\Status::FAILED,
+                                                                 FeeRecoveryEntity::ATTEMPT_NUMBER     => 2
+                                                             ])->toArray();
+
+        $feeRecoveryRetryEntitiesAttemptTwo = $this->getDbEntities('fee_recovery',
+                                                                  [
+                                                                      FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptTwo->getId(),
+                                                                      FeeRecoveryEntity::STATUS             => FeeRecovery\Status::PROCESSING,
+                                                                      FeeRecoveryEntity::ATTEMPT_NUMBER     => 3
+                                                                  ])->toArray();
+
+        $this->assertSameSize($feeRecoveryEntitiesAttemptOne, $feeRecoveryRetryEntitiesAttemptTwo);
+
+        $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit = $this->getDbEntity('fee_recovery',
+                                                                          [
+                                                                              FeeRecoveryEntity::ENTITY_ID => $feeRecoveryRetryPayoutAttemptTwo->getId()
+                                                                          ])->toArray();
+
+        // Assert that we are creating a new fee recovery entity
+        $this->assertEquals(FeeRecovery\Entity::PAYOUT, $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit['entity_type']);
+        $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit['status']);
+        $this->assertEquals(0, $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit['attempt_number']);
+
+        $this->assertEquals(FeeRecovery\Type::DEBIT, $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit['type']);
+
+        $this->updateFtaAndSource($feeRecoveryRetryPayoutAttemptTwo, Payout\Status::PROCESSED, '933815383819');
+
+        $feeRecoveryRetryEntitiesAfterSuccessAttemptTwo = $this->getDbEntities('fee_recovery',
+                                                                              [
+                                                                                  FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptTwo->getId(),
+                                                                                  FeeRecoveryEntity::STATUS             => FeeRecovery\Status::RECOVERED,
+                                                                                  FeeRecoveryEntity::ATTEMPT_NUMBER     => 3
+                                                                              ])->toArray();
+
+        $this->assertSameSize($feeRecoveryRetryEntitiesAttemptTwo, $feeRecoveryRetryEntitiesAfterSuccessAttemptTwo);
+    }
+
+    public function testFeeRecoveryNoRetryAfterThreePayoutFTAReconFailed()
+    {
+        $this->testCreateFeeRecoveryPayout();
+
+        $feeRecoveryPayout = $this->getDbEntity('payout', ['purpose' => 'rzp_fees']);
+
+        $feeRecoveryEntityRzpFees1 = $this->getDbEntity('fee_recovery',
+                                                       [
+                                                           FeeRecoveryEntity::ENTITY_ID => $feeRecoveryPayout->getId()
+                                                       ]);
+
+        // -----------------------------------------------------
+        // normal attempt at 1 fail and start retry for Attempt 2
+        // -----------------------------------------------------
+
+        $this->updateFtaAndSource($feeRecoveryPayout, Payout\Status::FAILED, '933815383818');
+
+        // 2 fee_recovery entities correspond to the same payout (1 debit and 1 credit) are created
+        $feeRecoveryEntityRzpFees2 = $this->getDbEntity('fee_recovery',
+                                                       [
+                                                           FeeRecoveryEntity::ENTITY_ID => $feeRecoveryEntityRzpFees1['entity_id'],
+                                                           FeeRecoveryEntity::TYPE      => FeeRecovery\Type::CREDIT
+                                                       ])->toArray();
+
+        // Assert that we are creating a new fee recovery entity for the failed payout
+        $this->assertEquals(FeeRecovery\Entity::PAYOUT, $feeRecoveryEntityRzpFees2['entity_type']);
+        $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecoveryEntityRzpFees2['status']);
+        $this->assertEquals(0, $feeRecoveryEntityRzpFees2['attempt_number']);
+
+        $this->assertEquals(FeeRecovery\Type::DEBIT, $feeRecoveryEntityRzpFees1['type']);
+        $this->assertEquals(FeeRecovery\Type::CREDIT, $feeRecoveryEntityRzpFees2['type']);
+
+        $this->assertNull($feeRecoveryEntityRzpFees2['recovery_payout_id']);
+
+        $feeRecoveryRetryPayoutAttemptOne = $this->getDbLastEntity('payout');
+
+        $feeRecoveryRetryPayoutAttemptOne->setStatus(Payout\Status::INITIATED);
+        $feeRecoveryRetryPayoutAttemptOne->saveOrFail();
+
+        $feeRecoveryEntities = $this->getDbEntities('fee_recovery',
+                                                   [
+                                                       FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryPayout->getId(),
+                                                       FeeRecoveryEntity::STATUS             => FeeRecovery\Status::FAILED,
+                                                       FeeRecoveryEntity::ATTEMPT_NUMBER     => 1
+                                                   ])->toArray();
+
+        $feeRecoveryRetryEntitiesAttemptOne = $this->getDbEntities('fee_recovery',
+                                                                  [
+                                                                      FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptOne->getId(),
+                                                                      FeeRecoveryEntity::STATUS             => FeeRecovery\Status::PROCESSING,
+                                                                      FeeRecoveryEntity::ATTEMPT_NUMBER     => 2
+                                                                  ])->toArray();
+
+        $this->assertSameSize($feeRecoveryEntities, $feeRecoveryRetryEntitiesAttemptOne);
+
+        $feeRecoveryRetryEntityRzpFeesAttemptOneDebit = $this->getDbEntity('fee_recovery',
+                                                                          [
+                                                                              FeeRecoveryEntity::ENTITY_ID => $feeRecoveryRetryPayoutAttemptOne->getId()
+                                                                          ])->toArray();
+
+        // -----------------------------------------------------
+        // retry attempt at 2 fail and start retry for Attempt 3
+        // -----------------------------------------------------
+
+        $this->updateFtaAndSource($feeRecoveryRetryPayoutAttemptOne, Payout\Status::FAILED, '933815383814');
+
+        $feeRecoveryRetryEntitiesAfterFail = $this->getDbEntities('fee_recovery',
+                                                                 [
+                                                                     FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptOne->getId(),
+                                                                     FeeRecoveryEntity::STATUS             => FeeRecovery\Status::FAILED,
+                                                                     FeeRecoveryEntity::ATTEMPT_NUMBER     => 2
+                                                                 ])->toArray();
+
+        $this->assertSameSize($feeRecoveryRetryEntitiesAttemptOne, $feeRecoveryRetryEntitiesAfterFail);
+
+        // 2 fee_recovery entities correspond to the same payout (1 debit and 1 credit) are created
+        $feeRecoveryRetryEntityRzpFeesAttemptOneCredit = $this->getDbEntity('fee_recovery',
+                                                                           [
+                                                                               FeeRecoveryEntity::ENTITY_ID => $feeRecoveryRetryPayoutAttemptOne->getId(),
+                                                                               FeeRecoveryEntity::TYPE      => FeeRecovery\Type::CREDIT
+                                                                           ])->toArray();
+
+        // Assert that we are creating a new fee recovery entity for the failed payout
+        $this->assertEquals(FeeRecovery\Entity::PAYOUT, $feeRecoveryRetryEntityRzpFeesAttemptOneCredit['entity_type']);
+        $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecoveryRetryEntityRzpFeesAttemptOneCredit['status']);
+        $this->assertEquals(0, $feeRecoveryRetryEntityRzpFeesAttemptOneCredit['attempt_number']);
+
+        $this->assertEquals(FeeRecovery\Type::DEBIT, $feeRecoveryRetryEntityRzpFeesAttemptOneDebit['type']);
+        $this->assertEquals(FeeRecovery\Type::CREDIT, $feeRecoveryRetryEntityRzpFeesAttemptOneCredit['type']);
+
+        $this->assertNull($feeRecoveryRetryEntityRzpFeesAttemptOneCredit['recovery_payout_id']);
+
+        $feeRecoveryRetryPayoutAttemptTwo = $this->getDbLastEntity('payout');
+
+        $feeRecoveryRetryPayoutAttemptTwo->setStatus(Payout\Status::INITIATED);
+        $feeRecoveryRetryPayoutAttemptTwo->saveOrFail();
+
+        $feeRecoveryEntitiesAttemptOne = $this->getDbEntities('fee_recovery',
+                                                             [
+                                                                 FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptOne->getId(),
+                                                                 FeeRecoveryEntity::STATUS             => FeeRecovery\Status::FAILED,
+                                                                 FeeRecoveryEntity::ATTEMPT_NUMBER     => 2
+                                                             ])->toArray();
+
+        $feeRecoveryRetryEntitiesAttemptTwo = $this->getDbEntities('fee_recovery',
+                                                                  [
+                                                                      FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptTwo->getId(),
+                                                                      FeeRecoveryEntity::STATUS             => FeeRecovery\Status::PROCESSING,
+                                                                      FeeRecoveryEntity::ATTEMPT_NUMBER     => 3
+                                                                  ])->toArray();
+
+        $this->assertSameSize($feeRecoveryEntitiesAttemptOne, $feeRecoveryRetryEntitiesAttemptTwo);
+
+        $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit = $this->getDbEntity('fee_recovery',
+                                                                          [
+                                                                              FeeRecoveryEntity::ENTITY_ID => $feeRecoveryRetryPayoutAttemptTwo->getId()
+                                                                          ])->toArray();
+
+        // Assert that we are creating a new fee recovery entity
+        $this->assertEquals(FeeRecovery\Entity::PAYOUT, $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit['entity_type']);
+        $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit['status']);
+        $this->assertEquals(0, $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit['attempt_number']);
+
+        $this->assertEquals(FeeRecovery\Type::DEBIT, $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit['type']);
+
+        $payoutsBeforeFinalFail = $this->getDbEntities('payout')->toArray();
+
+        $this->updateFtaAndSource($feeRecoveryRetryPayoutAttemptTwo, Payout\Status::FAILED, '933815383819');
+
+        $feeRecoveryRetryEntitiesAfterSuccessAttemptTwo = $this->getDbEntities('fee_recovery',
+                                                                              [
+                                                                                  FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptTwo->getId(),
+                                                                                  FeeRecoveryEntity::STATUS             => FeeRecovery\Status::UNRECOVERED,
+                                                                                  FeeRecoveryEntity::ATTEMPT_NUMBER     => 3
+                                                                              ])->toArray();
+
+        $this->assertSameSize($feeRecoveryRetryEntitiesAttemptTwo, $feeRecoveryRetryEntitiesAfterSuccessAttemptTwo);
+
+        // 2 fee_recovery entities correspond to the same payout (1 debit and 1 credit) are created
+        $feeRecoveryRetryEntityRzpFeesAttemptTwoCredit = $this->getDbEntity('fee_recovery',
+                                                                           [
+                                                                               FeeRecoveryEntity::ENTITY_ID => $feeRecoveryRetryPayoutAttemptTwo->getId(),
+                                                                               FeeRecoveryEntity::TYPE      => FeeRecovery\Type::CREDIT
+                                                                           ])->toArray();
+
+        // Assert that we are creating a new fee recovery entity for the failed payout
+        $this->assertEquals(FeeRecovery\Entity::PAYOUT, $feeRecoveryRetryEntityRzpFeesAttemptTwoCredit['entity_type']);
+        $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecoveryRetryEntityRzpFeesAttemptTwoCredit['status']);
+        $this->assertEquals(0, $feeRecoveryRetryEntityRzpFeesAttemptTwoCredit['attempt_number']);
+
+        $this->assertEquals(FeeRecovery\Type::CREDIT, $feeRecoveryRetryEntityRzpFeesAttemptTwoCredit['type']);
+
+        $this->assertNull($feeRecoveryRetryEntityRzpFeesAttemptTwoCredit['recovery_payout_id']);
+
+        $payoutsAfterFinalFail = $this->getDbEntities('payout')->toArray();
+
+        $this->assertSameSize($payoutsBeforeFinalFail, $payoutsAfterFinalFail);
+    }
+
+    public function testFeeRecoveryNoRetryAfterThreePayoutFTAReconReversed()
+    {
+        $this->testCreateFeeRecoveryPayout();
+
+        $feeRecoveryPayout = $this->getDbEntity('payout', ['purpose' => 'rzp_fees']);
+
+        $feeRecoveryEntityRzpFees1 = $this->getDbEntity('fee_recovery',
+            [
+                FeeRecoveryEntity::ENTITY_ID => $feeRecoveryPayout->getId()
+            ]);
+
+        // -----------------------------------------------------
+        // normal attempt at 1 fail and start retry for Attempt 2
+        // -----------------------------------------------------
+
+        $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => $feeRecoveryPayout->getId()]);
+
+        $this->fixtures->edit('fund_transfer_attempt', $fta->getId(), ['status' => Attempt\Status::INITIATED]);
+
+        $this->updateFtaAndSource($feeRecoveryPayout, Payout\Status::REVERSED, '933815383818');
+
+        $feeRecoveryPayoutReversal = $this->getDbLastEntity('reversal');
+
+        // 2 fee_recovery entities correspond to the same payout (1 debit and 1 credit) are created
+        $feeRecoveryEntityRzpFees2 = $this->getDbEntity('fee_recovery',
+            [
+                FeeRecoveryEntity::ENTITY_ID => $feeRecoveryPayoutReversal->getId(),
+                FeeRecoveryEntity::TYPE      => FeeRecovery\Type::CREDIT
+            ])->toArray();
+
+        // Assert that we are creating a new fee recovery entity for the failed payout
+        $this->assertEquals(FeeRecovery\Entity::REVERSAL, $feeRecoveryEntityRzpFees2['entity_type']);
+        $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecoveryEntityRzpFees2['status']);
+        $this->assertEquals(0, $feeRecoveryEntityRzpFees2['attempt_number']);
+
+        $this->assertEquals(FeeRecovery\Type::DEBIT, $feeRecoveryEntityRzpFees1['type']);
+        $this->assertEquals(FeeRecovery\Type::CREDIT, $feeRecoveryEntityRzpFees2['type']);
+
+        $this->assertNull($feeRecoveryEntityRzpFees2['recovery_payout_id']);
+
+        $feeRecoveryRetryPayoutAttemptOne = $this->getDbLastEntity('payout');
+
+        $feeRecoveryRetryPayoutAttemptOne->setStatus(Payout\Status::INITIATED);
+        $feeRecoveryRetryPayoutAttemptOne->saveOrFail();
+
+        $feeRecoveryEntities = $this->getDbEntities('fee_recovery',
+            [
+                FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryPayout->getId(),
+                FeeRecoveryEntity::STATUS             => FeeRecovery\Status::FAILED,
+                FeeRecoveryEntity::ATTEMPT_NUMBER     => 1
+            ])->toArray();
+
+        $feeRecoveryRetryEntitiesAttemptOne = $this->getDbEntities('fee_recovery',
+            [
+                FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptOne->getId(),
+                FeeRecoveryEntity::STATUS             => FeeRecovery\Status::PROCESSING,
+                FeeRecoveryEntity::ATTEMPT_NUMBER     => 2
+            ])->toArray();
+
+        $this->assertSameSize($feeRecoveryEntities, $feeRecoveryRetryEntitiesAttemptOne);
+
+        $feeRecoveryRetryEntityRzpFeesAttemptOneDebit = $this->getDbEntity('fee_recovery',
+            [
+                FeeRecoveryEntity::ENTITY_ID => $feeRecoveryRetryPayoutAttemptOne->getId()
+            ])->toArray();
+
+        // -----------------------------------------------------
+        // retry attempt at 2 fail and start retry for Attempt 3
+        // -----------------------------------------------------
+
+        $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => $feeRecoveryRetryPayoutAttemptOne->getId()]);
+
+        $this->fixtures->edit('fund_transfer_attempt', $fta->getId(), ['status' => Attempt\Status::INITIATED]);
+
+        $this->updateFtaAndSource($feeRecoveryRetryPayoutAttemptOne, Payout\Status::REVERSED, '933815383814');
+
+        $feeRecoveryRetryEntitiesAfterFail = $this->getDbEntities('fee_recovery',
+            [
+                FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptOne->getId(),
+                FeeRecoveryEntity::STATUS             => FeeRecovery\Status::FAILED,
+                FeeRecoveryEntity::ATTEMPT_NUMBER     => 2
+            ])->toArray();
+
+        $this->assertSameSize($feeRecoveryRetryEntitiesAttemptOne, $feeRecoveryRetryEntitiesAfterFail);
+
+        $feeRecoveryRetryPayoutAttemptOneReversal = $this->getDbLastEntity('reversal');
+
+        // 2 fee_recovery entities correspond to the same payout (1 debit and 1 credit) are created
+        $feeRecoveryRetryEntityRzpFeesAttemptOneCredit = $this->getDbEntity('fee_recovery',
+            [
+                FeeRecoveryEntity::ENTITY_ID => $feeRecoveryRetryPayoutAttemptOneReversal->getId(),
+                FeeRecoveryEntity::TYPE      => FeeRecovery\Type::CREDIT
+            ])->toArray();
+
+        // Assert that we are creating a new fee recovery entity for the failed payout
+        $this->assertEquals(FeeRecovery\Entity::REVERSAL, $feeRecoveryRetryEntityRzpFeesAttemptOneCredit['entity_type']);
+        $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecoveryRetryEntityRzpFeesAttemptOneCredit['status']);
+        $this->assertEquals(0, $feeRecoveryRetryEntityRzpFeesAttemptOneCredit['attempt_number']);
+
+        $this->assertEquals(FeeRecovery\Type::DEBIT, $feeRecoveryRetryEntityRzpFeesAttemptOneDebit['type']);
+        $this->assertEquals(FeeRecovery\Type::CREDIT, $feeRecoveryRetryEntityRzpFeesAttemptOneCredit['type']);
+
+        $this->assertNull($feeRecoveryRetryEntityRzpFeesAttemptOneCredit['recovery_payout_id']);
+
+        $feeRecoveryRetryPayoutAttemptTwo = $this->getDbLastEntity('payout');
+
+        $feeRecoveryRetryPayoutAttemptTwo->setStatus(Payout\Status::INITIATED);
+        $feeRecoveryRetryPayoutAttemptTwo->saveOrFail();
+
+        $feeRecoveryEntitiesAttemptOne = $this->getDbEntities('fee_recovery',
+            [
+                FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptOne->getId(),
+                FeeRecoveryEntity::STATUS             => FeeRecovery\Status::FAILED,
+                FeeRecoveryEntity::ATTEMPT_NUMBER     => 2
+            ])->toArray();
+
+        $feeRecoveryRetryEntitiesAttemptTwo = $this->getDbEntities('fee_recovery',
+            [
+                FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptTwo->getId(),
+                FeeRecoveryEntity::STATUS             => FeeRecovery\Status::PROCESSING,
+                FeeRecoveryEntity::ATTEMPT_NUMBER     => 3
+            ])->toArray();
+
+        $this->assertSameSize($feeRecoveryEntitiesAttemptOne, $feeRecoveryRetryEntitiesAttemptTwo);
+
+        $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit = $this->getDbEntity('fee_recovery',
+            [
+                FeeRecoveryEntity::ENTITY_ID => $feeRecoveryRetryPayoutAttemptTwo->getId()
+            ])->toArray();
+
+        // Assert that we are creating a new fee recovery entity
+        $this->assertEquals(FeeRecovery\Entity::PAYOUT, $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit['entity_type']);
+        $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit['status']);
+        $this->assertEquals(0, $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit['attempt_number']);
+
+        $this->assertEquals(FeeRecovery\Type::DEBIT, $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit['type']);
+
+        $payoutsBeforeFinalFail = $this->getDbEntities('payout')->toArray();
+
+        $this->updateFtaAndSource($feeRecoveryRetryPayoutAttemptTwo, Payout\Status::FAILED, '933815383819');
+
+        $feeRecoveryRetryEntitiesAfterSuccessAttemptTwo = $this->getDbEntities('fee_recovery',
+            [
+                FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptTwo->getId(),
+                FeeRecoveryEntity::STATUS             => FeeRecovery\Status::UNRECOVERED,
+                FeeRecoveryEntity::ATTEMPT_NUMBER     => 3
+            ])->toArray();
+
+        $this->assertSameSize($feeRecoveryRetryEntitiesAttemptTwo, $feeRecoveryRetryEntitiesAfterSuccessAttemptTwo);
+
+        // 2 fee_recovery entities correspond to the same payout (1 debit and 1 credit) are created
+        $feeRecoveryRetryEntityRzpFeesAttemptTwoCredit = $this->getDbEntity('fee_recovery',
+            [
+                FeeRecoveryEntity::ENTITY_ID => $feeRecoveryRetryPayoutAttemptTwo->getId(),
+                FeeRecoveryEntity::TYPE      => FeeRecovery\Type::CREDIT
+            ])->toArray();
+
+        // Assert that we are creating a new fee recovery entity for the failed payout
+        $this->assertEquals(FeeRecovery\Entity::PAYOUT, $feeRecoveryRetryEntityRzpFeesAttemptTwoCredit['entity_type']);
+        $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecoveryRetryEntityRzpFeesAttemptTwoCredit['status']);
+        $this->assertEquals(0, $feeRecoveryRetryEntityRzpFeesAttemptTwoCredit['attempt_number']);
+
+        $this->assertEquals(FeeRecovery\Type::CREDIT, $feeRecoveryRetryEntityRzpFeesAttemptTwoCredit['type']);
+
+        $this->assertNull($feeRecoveryRetryEntityRzpFeesAttemptTwoCredit['recovery_payout_id']);
+
+        $payoutsAfterFinalFail = $this->getDbEntities('payout')->toArray();
+
+        $this->assertSameSize($payoutsBeforeFinalFail, $payoutsAfterFinalFail);
+    }
+
+    public function testFeeRecoveryRetryAfterTwoPayoutFTAReconReversedThirdSuccess()
+    {
+        $this->testCreateFeeRecoveryPayout();
+
+        $feeRecoveryPayout = $this->getDbEntity('payout', ['purpose' => 'rzp_fees']);
+
+        $feeRecoveryEntityRzpFees1 = $this->getDbEntity('fee_recovery',
+            [
+                FeeRecoveryEntity::ENTITY_ID => $feeRecoveryPayout->getId()
+            ]);
+
+        // -----------------------------------------------------
+        // normal attempt at 1 fail and start retry for Attempt 2
+        // -----------------------------------------------------
+
+        $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => $feeRecoveryPayout->getId()]);
+
+        $this->fixtures->edit('fund_transfer_attempt', $fta->getId(), ['status' => Attempt\Status::INITIATED]);
+
+        $this->updateFtaAndSource($feeRecoveryPayout, Payout\Status::REVERSED, '933815383818');
+
+        $feeRecoveryPayoutReversal = $this->getDbLastEntity('reversal');
+
+        // 2 fee_recovery entities correspond to the same payout (1 debit and 1 credit) are created
+        $feeRecoveryEntityRzpFees2 = $this->getDbEntity('fee_recovery',
+            [
+                FeeRecoveryEntity::ENTITY_ID => $feeRecoveryPayoutReversal->getId(),
+                FeeRecoveryEntity::TYPE      => FeeRecovery\Type::CREDIT
+            ])->toArray();
+
+        // Assert that we are creating a new fee recovery entity for the failed payout
+        $this->assertEquals(FeeRecovery\Entity::REVERSAL, $feeRecoveryEntityRzpFees2['entity_type']);
+        $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecoveryEntityRzpFees2['status']);
+        $this->assertEquals(0, $feeRecoveryEntityRzpFees2['attempt_number']);
+
+        $this->assertEquals(FeeRecovery\Type::DEBIT, $feeRecoveryEntityRzpFees1['type']);
+        $this->assertEquals(FeeRecovery\Type::CREDIT, $feeRecoveryEntityRzpFees2['type']);
+
+        $this->assertNull($feeRecoveryEntityRzpFees2['recovery_payout_id']);
+
+        $feeRecoveryRetryPayoutAttemptOne = $this->getDbLastEntity('payout');
+
+        $feeRecoveryRetryPayoutAttemptOne->setStatus(Payout\Status::INITIATED);
+        $feeRecoveryRetryPayoutAttemptOne->saveOrFail();
+
+        $feeRecoveryEntities = $this->getDbEntities('fee_recovery',
+            [
+                FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryPayout->getId(),
+                FeeRecoveryEntity::STATUS             => FeeRecovery\Status::FAILED,
+                FeeRecoveryEntity::ATTEMPT_NUMBER     => 1
+            ])->toArray();
+
+        $feeRecoveryRetryEntitiesAttemptOne = $this->getDbEntities('fee_recovery',
+            [
+                FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptOne->getId(),
+                FeeRecoveryEntity::STATUS             => FeeRecovery\Status::PROCESSING,
+                FeeRecoveryEntity::ATTEMPT_NUMBER     => 2
+            ])->toArray();
+
+        $this->assertSameSize($feeRecoveryEntities, $feeRecoveryRetryEntitiesAttemptOne);
+
+        $feeRecoveryRetryEntityRzpFeesAttemptOneDebit = $this->getDbEntity('fee_recovery',
+            [
+                FeeRecoveryEntity::ENTITY_ID => $feeRecoveryRetryPayoutAttemptOne->getId()
+            ])->toArray();
+
+        // -----------------------------------------------------
+        // retry attempt at 2 fail and start retry for Attempt 3
+        // -----------------------------------------------------
+
+        $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => $feeRecoveryRetryPayoutAttemptOne->getId()]);
+
+        $this->fixtures->edit('fund_transfer_attempt', $fta->getId(), ['status' => Attempt\Status::INITIATED]);
+
+        $this->updateFtaAndSource($feeRecoveryRetryPayoutAttemptOne, Payout\Status::REVERSED, '933815383814');
+
+        $feeRecoveryRetryEntitiesAfterFail = $this->getDbEntities('fee_recovery',
+            [
+                FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptOne->getId(),
+                FeeRecoveryEntity::STATUS             => FeeRecovery\Status::FAILED,
+                FeeRecoveryEntity::ATTEMPT_NUMBER     => 2
+            ])->toArray();
+
+        $this->assertSameSize($feeRecoveryRetryEntitiesAttemptOne, $feeRecoveryRetryEntitiesAfterFail);
+
+        $feeRecoveryRetryPayoutAttemptOneReversal = $this->getDbLastEntity('reversal');
+
+        // 2 fee_recovery entities correspond to the same payout (1 debit and 1 credit) are created
+        $feeRecoveryRetryEntityRzpFeesAttemptOneCredit = $this->getDbEntity('fee_recovery',
+            [
+                FeeRecoveryEntity::ENTITY_ID => $feeRecoveryRetryPayoutAttemptOneReversal->getId(),
+                FeeRecoveryEntity::TYPE      => FeeRecovery\Type::CREDIT
+            ])->toArray();
+
+        // Assert that we are creating a new fee recovery entity for the failed payout
+        $this->assertEquals(FeeRecovery\Entity::REVERSAL, $feeRecoveryRetryEntityRzpFeesAttemptOneCredit['entity_type']);
+        $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecoveryRetryEntityRzpFeesAttemptOneCredit['status']);
+        $this->assertEquals(0, $feeRecoveryRetryEntityRzpFeesAttemptOneCredit['attempt_number']);
+
+        $this->assertEquals(FeeRecovery\Type::DEBIT, $feeRecoveryRetryEntityRzpFeesAttemptOneDebit['type']);
+        $this->assertEquals(FeeRecovery\Type::CREDIT, $feeRecoveryRetryEntityRzpFeesAttemptOneCredit['type']);
+
+        $this->assertNull($feeRecoveryEntityRzpFees2['recovery_payout_id']);
+
+        $feeRecoveryRetryPayoutAttemptTwo = $this->getDbLastEntity('payout');
+
+        $feeRecoveryRetryPayoutAttemptTwo->setStatus(Payout\Status::INITIATED);
+        $feeRecoveryRetryPayoutAttemptTwo->saveOrFail();
+
+        $feeRecoveryEntitiesAttemptOne = $this->getDbEntities('fee_recovery',
+            [
+                FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptOne->getId(),
+                FeeRecoveryEntity::STATUS             => FeeRecovery\Status::FAILED,
+                FeeRecoveryEntity::ATTEMPT_NUMBER     => 2
+            ])->toArray();
+
+        $feeRecoveryRetryEntitiesAttemptTwo = $this->getDbEntities('fee_recovery',
+            [
+                FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptTwo->getId(),
+                FeeRecoveryEntity::STATUS             => FeeRecovery\Status::PROCESSING,
+                FeeRecoveryEntity::ATTEMPT_NUMBER     => 3
+            ])->toArray();
+
+        $this->assertSameSize($feeRecoveryEntitiesAttemptOne, $feeRecoveryRetryEntitiesAttemptTwo);
+
+        $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit = $this->getDbEntity('fee_recovery',
+            [
+                FeeRecoveryEntity::ENTITY_ID => $feeRecoveryRetryPayoutAttemptTwo->getId()
+            ])->toArray();
+
+        // Assert that we are creating a new fee recovery entity
+        $this->assertEquals(FeeRecovery\Entity::PAYOUT, $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit['entity_type']);
+        $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit['status']);
+        $this->assertEquals(0, $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit['attempt_number']);
+
+        $this->assertEquals(FeeRecovery\Type::DEBIT, $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit['type']);
+
+        $this->updateFtaAndSource($feeRecoveryRetryPayoutAttemptTwo, Payout\Status::PROCESSED, '933815383819');
+
+        $feeRecoveryRetryEntitiesAfterSuccessAttemptTwo = $this->getDbEntities('fee_recovery',
+            [
+                FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptTwo->getId(),
+                FeeRecoveryEntity::STATUS             => FeeRecovery\Status::RECOVERED,
+                FeeRecoveryEntity::ATTEMPT_NUMBER     => 3
+            ])->toArray();
+
+        $this->assertSameSize($feeRecoveryRetryEntitiesAttemptTwo, $feeRecoveryRetryEntitiesAfterSuccessAttemptTwo);
+    }
+
+    public function testFeeRecoveryRetryAfterTwoPayoutFTAReconProcessedThanReversedThirdSuccess()
+    {
+        $this->testCreateFeeRecoveryPayout();
+
+        $feeRecoveryPayout = $this->getDbEntity('payout', ['purpose' => 'rzp_fees']);
+
+        $feeRecoveryEntityRzpFees1 = $this->getDbEntity('fee_recovery',
+            [
+                FeeRecoveryEntity::ENTITY_ID => $feeRecoveryPayout->getId()
+            ]);
+
+        // -----------------------------------------------------
+        // normal attempt at 1 fail and start retry for Attempt 2
+        // -----------------------------------------------------
+
+        $this->updateFtaAndSource($feeRecoveryPayout, Payout\Status::PROCESSED, '933815383818');
+
+        $feeRecoveryEntity = $this->getDbEntity('fee_recovery',
+            [
+                'recovery_payout_id' => $feeRecoveryPayout->getId()
+            ]);
+
+        $this->assertEquals($feeRecoveryEntity['recovery_payout_id'], $feeRecoveryPayout['id']);
+        $this->assertEquals(FeeRecovery\Status::RECOVERED, $feeRecoveryEntity['status']);
+
+        // Updating FTA status to processed to allow transition to reversed
+        $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => $feeRecoveryPayout->getId()]);
+
+        $this->fixtures->edit('fund_transfer_attempt', $fta->getId(), ['status' => Attempt\Status::PROCESSED]);
+
+        $this->updateFtaAndSource($feeRecoveryPayout, Payout\Status::REVERSED, '933815383818');
+
+        $feeRecoveryPayoutReversal = $this->getDbLastEntity('reversal');
+
+        // 2 fee_recovery entities correspond to the same payout (1 debit and 1 credit) are created
+        $feeRecoveryEntityRzpFees2 = $this->getDbEntity('fee_recovery',
+            [
+                FeeRecoveryEntity::ENTITY_ID => $feeRecoveryPayoutReversal->getId(),
+                FeeRecoveryEntity::TYPE      => FeeRecovery\Type::CREDIT
+            ])->toArray();
+
+        // Assert that we are creating a new fee recovery entity for the failed payout
+        $this->assertEquals(FeeRecovery\Entity::REVERSAL, $feeRecoveryEntityRzpFees2['entity_type']);
+        $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecoveryEntityRzpFees2['status']);
+        $this->assertEquals(0, $feeRecoveryEntityRzpFees2['attempt_number']);
+
+        $this->assertEquals(FeeRecovery\Type::DEBIT, $feeRecoveryEntityRzpFees1['type']);
+        $this->assertEquals(FeeRecovery\Type::CREDIT, $feeRecoveryEntityRzpFees2['type']);
+
+        $this->assertNull($feeRecoveryEntityRzpFees2['recovery_payout_id']);
+
+        $feeRecoveryRetryPayoutAttemptOne = $this->getDbLastEntity('payout');
+
+        $feeRecoveryRetryPayoutAttemptOne->setStatus(Payout\Status::INITIATED);
+        $feeRecoveryRetryPayoutAttemptOne->saveOrFail();
+
+        $feeRecoveryEntities = $this->getDbEntities('fee_recovery',
+            [
+                FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryPayout->getId(),
+                FeeRecoveryEntity::STATUS             => FeeRecovery\Status::FAILED,
+                FeeRecoveryEntity::ATTEMPT_NUMBER     => 1
+            ])->toArray();
+
+        $feeRecoveryRetryEntitiesAttemptOne = $this->getDbEntities('fee_recovery',
+            [
+                FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptOne->getId(),
+                FeeRecoveryEntity::STATUS             => FeeRecovery\Status::PROCESSING,
+                FeeRecoveryEntity::ATTEMPT_NUMBER     => 2
+            ])->toArray();
+
+        $this->assertSameSize($feeRecoveryEntities, $feeRecoveryRetryEntitiesAttemptOne);
+
+        $feeRecoveryRetryEntityRzpFeesAttemptOneDebit = $this->getDbEntity('fee_recovery',
+            [
+                FeeRecoveryEntity::ENTITY_ID => $feeRecoveryRetryPayoutAttemptOne->getId()
+            ])->toArray();
+
+        // -----------------------------------------------------
+        // retry attempt at 2 fail and start retry for Attempt 3
+        // -----------------------------------------------------
+
+
+        $this->updateFtaAndSource($feeRecoveryRetryPayoutAttemptOne, Payout\Status::PROCESSED, '933815383814');
+
+        $feeRecoveryRetryEntityAttemptOne = $this->getDbEntity('fee_recovery',
+            [
+                'recovery_payout_id' => $feeRecoveryRetryPayoutAttemptOne->getId()
+            ]);
+
+        $this->assertEquals($feeRecoveryRetryEntityAttemptOne['recovery_payout_id'], $feeRecoveryRetryPayoutAttemptOne['id']);
+        $this->assertEquals(FeeRecovery\Status::RECOVERED, $feeRecoveryRetryEntityAttemptOne['status']);
+
+        // Updating FTA status to processed to allow transition to reversed
+        $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => $feeRecoveryRetryPayoutAttemptOne->getId()]);
+
+        $this->fixtures->edit('fund_transfer_attempt', $fta->getId(), ['status' => Attempt\Status::PROCESSED]);
+
+        $this->updateFtaAndSource($feeRecoveryRetryPayoutAttemptOne, Payout\Status::REVERSED, '933815383814');
+
+        $feeRecoveryRetryEntitiesAfterFail = $this->getDbEntities('fee_recovery',
+            [
+                FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptOne->getId(),
+                FeeRecoveryEntity::STATUS             => FeeRecovery\Status::FAILED,
+                FeeRecoveryEntity::ATTEMPT_NUMBER     => 2
+            ])->toArray();
+
+        $this->assertSameSize($feeRecoveryRetryEntitiesAttemptOne, $feeRecoveryRetryEntitiesAfterFail);
+
+        $feeRecoveryRetryPayoutAttemptOneReversal = $this->getDbLastEntity('reversal');
+
+        // 2 fee_recovery entities correspond to the same payout (1 debit and 1 credit) are created
+        $feeRecoveryRetryEntityRzpFeesAttemptOneCredit = $this->getDbEntity('fee_recovery',
+            [
+                FeeRecoveryEntity::ENTITY_ID => $feeRecoveryRetryPayoutAttemptOneReversal->getId(),
+                FeeRecoveryEntity::TYPE      => FeeRecovery\Type::CREDIT
+            ])->toArray();
+
+        // Assert that we are creating a new fee recovery entity for the failed payout
+        $this->assertEquals(FeeRecovery\Entity::REVERSAL, $feeRecoveryRetryEntityRzpFeesAttemptOneCredit['entity_type']);
+        $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecoveryRetryEntityRzpFeesAttemptOneCredit['status']);
+        $this->assertEquals(0, $feeRecoveryRetryEntityRzpFeesAttemptOneCredit['attempt_number']);
+
+        $this->assertEquals(FeeRecovery\Type::DEBIT, $feeRecoveryRetryEntityRzpFeesAttemptOneDebit['type']);
+        $this->assertEquals(FeeRecovery\Type::CREDIT, $feeRecoveryRetryEntityRzpFeesAttemptOneCredit['type']);
+
+        $this->assertNull($feeRecoveryEntityRzpFees2['recovery_payout_id']);
+
+        $feeRecoveryRetryPayoutAttemptTwo = $this->getDbLastEntity('payout');
+
+        $feeRecoveryRetryPayoutAttemptTwo->setStatus(Payout\Status::INITIATED);
+        $feeRecoveryRetryPayoutAttemptTwo->saveOrFail();
+
+        $feeRecoveryEntitiesAttemptOne = $this->getDbEntities('fee_recovery',
+            [
+                FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptOne->getId(),
+                FeeRecoveryEntity::STATUS             => FeeRecovery\Status::FAILED,
+                FeeRecoveryEntity::ATTEMPT_NUMBER     => 2
+            ])->toArray();
+
+        $feeRecoveryRetryEntitiesAttemptTwo = $this->getDbEntities('fee_recovery',
+            [
+                FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptTwo->getId(),
+                FeeRecoveryEntity::STATUS             => FeeRecovery\Status::PROCESSING,
+                FeeRecoveryEntity::ATTEMPT_NUMBER     => 3
+            ])->toArray();
+
+        $this->assertSameSize($feeRecoveryEntitiesAttemptOne, $feeRecoveryRetryEntitiesAttemptTwo);
+
+        $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit = $this->getDbEntity('fee_recovery',
+            [
+                FeeRecoveryEntity::ENTITY_ID => $feeRecoveryRetryPayoutAttemptTwo->getId()
+            ])->toArray();
+
+        // Assert that we are creating a new fee recovery entity
+        $this->assertEquals(FeeRecovery\Entity::PAYOUT, $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit['entity_type']);
+        $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit['status']);
+        $this->assertEquals(0, $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit['attempt_number']);
+
+        $this->assertEquals(FeeRecovery\Type::DEBIT, $feeRecoveryRetryEntityRzpFeesAttemptTwoDebit['type']);
+
+        $this->updateFtaAndSource($feeRecoveryRetryPayoutAttemptTwo, Payout\Status::PROCESSED, '933815383819');
+
+        $feeRecoveryRetryEntitiesAfterSuccessAttemptTwo = $this->getDbEntities('fee_recovery',
+            [
+                FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $feeRecoveryRetryPayoutAttemptTwo->getId(),
+                FeeRecoveryEntity::STATUS             => FeeRecovery\Status::RECOVERED,
+                FeeRecoveryEntity::ATTEMPT_NUMBER     => 3
+            ])->toArray();
+
+        $this->assertSameSize($feeRecoveryRetryEntitiesAttemptTwo, $feeRecoveryRetryEntitiesAfterSuccessAttemptTwo);
+    }
+
+    public function testUpdateFeeRecoveryAfterPayoutFTAReconSuccessAndExcludeRewardFeePayout()
+    {
+        $oldTime = Carbon::create(2020, 1,3);
+
+        Carbon::setTestNow($oldTime);
+
+        $oldTimeStamp = $oldTime->getTimestamp();
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 500 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 500 ]);
+
+        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        // Create Reward fee payout
+        $this->createPayoutForFundAccount($fundAccount, $this->balance);
+
+        $payout1 = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout1['id'], ['initiated_at' => $oldTimeStamp]);
+
+        // Process the payout
+        $this->updateFtaAndSource($payout1, Payout\Status::PROCESSED, '933815383818');
+
+        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
+        $this->assertEquals(0, $creditBalanceEntity['balance']);
+
+        $creditEntity = $this->getLastEntity('credits', true);
+        $this->assertEquals(500, $creditEntity['used']);
+
+        $this->testCreateFeeRecoveryPayout();
+
+        $feeRecoveryPayout = $this->getDbEntity('payout', ['purpose' => 'rzp_fees']);
+
+        $this->updateFtaAndSource($feeRecoveryPayout, Payout\Status::PROCESSED, '933815383819');
+
+        $feeRecoveryEntity = $this->getDbEntity('fee_recovery',
+            [
+                'recovery_payout_id' => $feeRecoveryPayout->getId()
+            ]);
+
+        $this->assertEquals($feeRecoveryEntity['recovery_payout_id'], $feeRecoveryPayout['id']);
+        $this->assertEquals($feeRecoveryEntity['status'], FeeRecovery\Status::RECOVERED);
     }
 }

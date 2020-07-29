@@ -83,9 +83,11 @@ class Core extends Base\Core
      * It also updates all the corresponding entries if the state change occurred for a 'rzp_fees' payout
      *
      * @param Payout\Entity        $payout
+     * @param $previousStatus
      * @param Reversal\Entity|null $reversal
      */
     public function handlePayoutStatusUpdate(Payout\Entity $payout,
+                                             $previousStatus = null,
                                              Reversal\Entity $reversal = null)
     {
         if (($payout->getFeeType() !== null) and
@@ -117,6 +119,18 @@ class Core extends Base\Core
             $this->repo->fee_recovery->updateFeeRecoveryOnPayoutStatusUpdate($feeRecoveryPayoutId,
                                                                              $feeRecoveryStatus);
 
+            $payoutStatusFailedForInitiatedPayout = (($payoutStatus === Payout\Status::FAILED) and
+                                                     ($previousStatus === Payout\Status::INITIATED));
+
+            $payoutStatusReversedForInitiatedOrProcessedPayout = (($payoutStatus === Payout\Status::REVERSED) and
+                                                                  (($previousStatus === Payout\Status::INITIATED) or
+                                                                   ($previousStatus === Payout\Status::PROCESSED)));
+
+            if ($payoutStatusFailedForInitiatedPayout or
+                $payoutStatusReversedForInitiatedOrProcessedPayout)
+            {
+                Jobs\FeeRecoveryRetry::dispatch($this->mode, $feeRecoveryPayoutId);
+            }
 
             $this->trace->info(
                 TraceCode::FEE_RECOVERY_UPDATE_AFTER_RZP_FEES_PAYOUT_STATUS_UPDATE,
@@ -162,6 +176,92 @@ class Core extends Base\Core
         $feeRecoveryPayout = $this->processFeeRecovery($balance, $startTimeStamp, $endTimeStamp);
 
         return $feeRecoveryPayout;
+    }
+
+    /**
+     * This function picks up all payouts, failed payouts and reversals from a failed recovery payout Id,
+     * and recreate them in fee recovery
+     * and makes a payout to a designated rzp_fees fund account with the calculated amount
+     *
+     * @param $previousRecoveryPayoutId
+     * @return Payout\Entity
+     *
+     */
+    public function recreateFeeRecoveryPayout($previousRecoveryPayoutId): Payout\Entity
+    {
+        $this->trace->info(
+            TraceCode::FEE_RECOVERY_RETRY_INITIATED,
+            [
+                Entity::PREVIOUS_RECOVERY_PAYOUT_ID => $previousRecoveryPayoutId,
+            ]
+        );
+
+        $previousRecoveryPayout = $this->repo->payout->findOrFail($previousRecoveryPayoutId);
+
+        $balance = $previousRecoveryPayout->balance;
+
+        $amount = $previousRecoveryPayout->getAmount();
+
+        return $this->recreateFeeRecoveryEntityForSourceAndFeeRecoveryPayout($previousRecoveryPayout, $balance, $amount);
+    }
+
+    public function recreateFeeRecoveryEntityForSourceAndFeeRecoveryPayout(Payout\Entity $previousRecoveryPayout, $balance, $amount)
+    {
+        $previousFeeRecoveryEntities = $this->repo->fee_recovery->getFeeRecoveryByRecoveryPayoutId($previousRecoveryPayout->getId());
+
+        if (count($previousFeeRecoveryEntities) === 0)
+        {
+            $data = [
+                'fee_recovery_payout_id' => $previousRecoveryPayout->getId()
+            ];
+
+            $this->trace->info(
+                TraceCode::FEE_RECOVERY_RETRY_FAILED_PROCEED_MANUAL,
+                $data
+            );
+
+            // This slack notification is required to notify for manual recovery alert.
+            $operation = 'Fee Recovery Retry failed';
+
+            (new SlackNotification)->send($operation, $data, null, 1, 'rx_ca_rbl_alerts');
+
+            return null;
+        }
+
+        return $this->repo->transaction(
+            function () use($previousFeeRecoveryEntities, $balance, $amount)
+            {
+                $merchant = $balance->merchant;
+
+                $payoutPayload = $this->getPayloadForFeeRecoveryPayout($balance, $amount);
+
+                $this->trace->info(
+                                   TraceCode::FEE_RECOVERY_PAYOUT_CREATE_REQUEST,
+                                   [
+                                       'payload' => $payoutPayload
+                                   ]
+                );
+
+                $newFeeRecoveryPayout = (new Payout\Core)->createPayoutToFundAccount($payoutPayload,
+                                                                                     $merchant,
+                                                                                     null,
+                                                                                     true);
+
+                $this->trace->info(
+                                   TraceCode::FEE_RECOVERY_PAYOUT_CREATED,
+                                   [
+                                       'fee_recovery_payout_id'     =>  $newFeeRecoveryPayout->getPublicId(),
+                                       'fee_recovery_payout_amount' =>  $newFeeRecoveryPayout->getAmount()
+                                   ]
+                );
+
+                foreach ($previousFeeRecoveryEntities as $feeRecoveryEntity)
+                {
+                    $this->createAndUpdateFeeRecoveryEntityForRecoveryRetry($feeRecoveryEntity, $newFeeRecoveryPayout);
+                }
+
+                return $newFeeRecoveryPayout;
+            });
     }
 
     /**
@@ -583,7 +683,8 @@ class Core extends Base\Core
                                                                                       $currentAttemptNumber);
 
         $updatedReversalsCount = $this->repo->fee_recovery
-                                            ->updateBulkStatusAndRecoveryPayoutId($reversalIds,                                                  Entity::REVERSAL,
+                                            ->updateBulkStatusAndRecoveryPayoutId($reversalIds,
+                                                                                  Entity::REVERSAL,
                                                                                   Type::CREDIT,
                                                                                   $feeRecoveryPayout->getId(),
                                                                                   Status::PROCESSING,
@@ -804,15 +905,55 @@ class Core extends Base\Core
 
             $newFeeRecovery->entity()->associate($sourceEntity);
 
-            $newFeeRecovery->saveOrFail();
+            $this->repo->saveOrFail($newFeeRecovery);
 
             // Set status of earlier attempt to failed
             $feeRecovery->setStatus(Status::FAILED);
 
-            $feeRecovery->saveOrFail();
+            $this->repo->saveOrFail($feeRecovery);
         },
         60,
         ErrorCode::BAD_REQUEST_FEE_RECOVERY_ANOTHER_OPERATION_IN_PROGRESS);
+    }
+
+    protected function createAndUpdateFeeRecoveryEntityForRecoveryRetry(Entity $feeRecoverySourceEntity,
+                                                                        Payout\Entity $feeRecoveryPayout)
+    {
+        $this->mutex->acquireAndRelease(
+            'fee_recovery_' . $feeRecoverySourceEntity->getId(),
+            function () use ($feeRecoverySourceEntity, $feeRecoveryPayout)
+            {
+                $newFeeRecovery = $feeRecoverySourceEntity->replicate();
+
+                $dataToUpdate = [
+                    Entity::RECOVERY_PAYOUT_ID  => $feeRecoveryPayout->getId(),
+                    Entity::ATTEMPT_NUMBER      => $feeRecoverySourceEntity->getAttemptNumber() + 1,
+                ];
+
+                $newFeeRecovery->edit($dataToUpdate);
+
+                $newFeeRecovery->setStatus(Status::PROCESSING);
+
+                if ($feeRecoverySourceEntity->getEntityType() === Entity::REVERSAL)
+                {
+                    $sourceEntity = $feeRecoverySourceEntity->reversal;
+                }
+                else
+                {
+                    $sourceEntity = $feeRecoverySourceEntity->payout;
+                }
+
+                $newFeeRecovery->entity()->associate($sourceEntity);
+
+                $this->repo->saveOrFail($newFeeRecovery);
+
+                // Set status of earlier attempt to failed
+                $feeRecoverySourceEntity->setStatus(Status::FAILED);
+
+                $this->repo->saveOrFail($feeRecoverySourceEntity);
+            },
+            60,
+            ErrorCode::BAD_REQUEST_FEE_RECOVERY_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
     protected function sendSlackAlert($operation, $data)
