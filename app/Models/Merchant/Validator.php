@@ -30,7 +30,8 @@ class Validator extends Base\Validator
 {
     // Maximum image size - 1M.
     const MAXIMAGESIZE = 1024 * 1024;
-    const PREFERENCES = 'preferences';
+    const PREFERENCES     = 'preferences';
+    const PERSONALISATION = 'personalisation';
 
     const BATCH_ID                          = 'Batch Id';
     const BULK_SUBMERCHANT_ASSIGN           = 'Bulk Submerchant Assign';
@@ -322,6 +323,10 @@ class Validator extends Base\Validator
     ];
 
     protected static $preferencesRules = [
+        'contact_id'  => 'filled|public_id',
+    ];
+
+    protected static $personalisationRules = [
         'contact_id'  => 'filled|public_id',
     ];
 

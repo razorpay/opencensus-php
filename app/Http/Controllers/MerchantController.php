@@ -1739,6 +1739,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getPersonalisedMethods()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getPersonalisedMethods($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postVerifyMerchantAttributes(string $verificationType)
     {
         $input = Request::all();

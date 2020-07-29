@@ -6365,6 +6365,64 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesWithPreferredMethods' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'currency' => 'INR',
+                'personalisation' => true,
+                'order_id' => 'null',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'preferred_methods' => [
+                    'default' => [
+                        [
+                            'instrument' => 'abcd@okhdfc',
+                            'method'     => 'upi',
+                            'score'      =>  0.54,
+                        ],
+                        [
+                            'instrument' => 'phonepay',
+                            'method'     => 'wallet',
+                            'score'      =>  0.54,
+                        ],
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPersonalisation' => [
+        'request' => [
+            'url'     => '/personalisation',
+            'method'  => 'get',
+            'content' => [
+                'order_id' => 'null',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'preferred_methods' => [
+                    'default' => [
+                        [
+                            'instrument' => 'abcd@okhdfc',
+                            'method'     => 'upi',
+                            'score'      =>  0.54,
+                        ],
+                        [
+                            'instrument' => 'phonepay',
+                            'method'     => 'wallet',
+                            'score'      =>  0.54,
+                        ],
+                    ],
+                ]
+            ],
+        ],
+    ],
+
     'testTrimMerchantData' => [
         'request'  => [
             'method'  => 'PATCH',

@@ -28,6 +28,8 @@ use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Config as Config;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
+use RZP\Services\DE\PersonalisationService;
+use RZP\Services\Mock\DE\PersonalisationService as MockPersonalisationService;
 
 class Checkout
 {
@@ -98,6 +100,12 @@ class Checkout
         $this->updateCurrencyMethodsIfApplicable($input, $merchant, $data);
 
         $this->checkAndFillContactDetails($input, $merchant, $data);
+
+        if ((isset($input['personalisation']) === true) and
+            (($input['personalisation'] === true) or $input['personalisation'] === '1'))
+        {
+            $this->fillPreferredMethods($merchant, $input, $data);
+        }
 
         return $data;
     }
@@ -260,6 +268,19 @@ class Checkout
         $sessionData = $this->app['request']->session()->all();
         $this->trace->info(
             TraceCode::CHECKOUT_PREFERENCES_REQUEST,
+            [
+                'merchant_id' => $merchant->getId(),
+                'mode'        => $mode,
+                'session'     => $sessionData,
+                'input'       => $input
+            ]);
+    }
+
+    protected function tracePersonalisationRequest(Entity $merchant, $mode, array $input)
+    {
+        $sessionData = $this->app['request']->session()->all();
+        $this->trace->info(
+            TraceCode::PERSONALISATION_REQUEST,
             [
                 'merchant_id' => $merchant->getId(),
                 'mode'        => $mode,
@@ -939,5 +960,208 @@ class Checkout
         $contact =  (new Contact\Core)->fetch($input['contact_id'], $merchant)->toArrayPublic();
 
         $data['contact'] = $contact;
+    }
+
+    /**
+     * Method to return personalised methods for the user
+     *
+     * @param Entity $merchant
+     * @param string $mode
+     * @param array $input
+     *
+     * @return array
+     */
+
+    public function getPersonalisedMethods($merchant, $mode, $input)
+    {
+        $this->tracePersonalisationRequest($merchant, $mode, $input);
+
+        $this->checkAndFillAppTokenInputFromSession($merchant, $mode, $input);
+
+        $data = [];
+
+        $this->checkAndFillSavedTokens($input, $merchant, $data);
+
+        $this->checkAndAddDetailsForOrder($input, $merchant, $data);
+
+        $this->checkAndAddDetailsForInvoice($input, $merchant, $data);
+
+        $this->fillPreferredMethods($merchant, $input, $data);
+
+        return $data;
+    }
+
+    protected function fillPreferredMethods($merchant, $input, array &$data)
+    {
+        if ((isset($data['order']) === false) and
+            (isset($input['amount']) === false))
+        {
+            return;
+        }
+
+        $contact = $this->findContact($input, $merchant, $data);
+
+        $mccCode = $merchant->getCategory();
+
+        $amount = (isset($data['order']) === true) ? $data['order']['amount'] : $input['amount'];
+
+        //call DE api with mccCode, merchant, customerId, amount
+
+        $personalisationMock = $this->app['config']->get('services.de_personalisation.mock');
+
+        if ($personalisationMock === true)
+        {
+            $response = (new MockPersonalisationService())->fetchPersonalisationData();
+        }
+        else
+        {
+            $content = array(
+                'contact'  => $contact,
+                'amount'   => (float)$amount,
+                'mcc'      => $mccCode,
+                'merchant' => $merchant->getId(),
+            );
+
+            if (empty($mccCode) === true)
+            {
+                unset($content['mcc']);
+            }
+            else
+            {
+                $content['mcc'] = (int)$content['mcc'];
+            }
+
+            $response = (new PersonalisationService())->sendPersonalisationRequest($content);
+        }
+
+        if ($response !== null)
+        {
+            $this->trace->info(TraceCode::PERSONALISATION_RESPONSE,[
+                'response' => $response
+            ]);
+
+            $this->processPersonalisationResponse($response, $merchant, $data, $contact, $input);
+        }
+
+    }
+
+    private function processPersonalisationResponse($response, $merchant, & $data, $contact, $input)
+    {
+        try
+        {
+            $responseBody = json_decode($response->body, true);
+
+            $preferences = $responseBody['preferences'];
+
+            $pos = 0;
+
+            foreach ($preferences as $preference)
+            {
+                if ((($preference['method'] === Payment\Method::CARD) or
+                    ($preference['method'] === Payment\Method::EMI)) and
+                    ($preference['instrument'] !== Payment\Method::CARD))
+                {
+                    $card = (new Card\Repository())->findByIdAndMerchant($preference['instrument'], $merchant);
+
+                    $preference['issuer'] = $card->issuer;
+
+                    $preference['type'] = $card->type;
+
+                    $preference['network'] = $card->network;
+
+                    //put token instead of card id in response
+                    if (isset($input[Payment\Entity::APP_TOKEN]) === true)
+                    {
+                        //token for emi payments is stored with method as card
+                        $token = (new Customer\Token\Repository())->fetchByMethodAndCardId(
+                            Payment\Method::CARD,
+                            $preference['instrument']
+                        );
+
+                        if (isset($token) === true)
+                        {
+                            $preference['instrument'] = $token->getPublicId();
+                        }
+
+                        else
+                        {
+                            $preference['instrument'] = null;
+                        }
+                    }
+
+                    else
+                    {
+                        $preference['instrument'] = null;
+                    }
+
+                    //replace the card/emi index value with the new value
+                    $preferences[$pos] = $preference;
+                }
+
+                $pos = $pos + 1;
+            }
+
+            if (isset($contact) === true)
+            {
+                $data['preferred_methods'][$contact] = $preferences;
+            }
+            else
+            {
+                $data['preferred_methods']['default'] = $preferences;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(TraceCode::PERSONALISATION_EXCEPTION, [
+                    'message' => 'error while processing personalised response',
+                    'code'    => $e->getCode(),
+                    'trace'   => $e->getTrace(),
+                ]
+            );
+        }
+    }
+
+    protected function findContact($input, $merchant, $data)
+    {
+        if (isset($input[Payment\Entity::CONTACT]) === true)
+        {
+            return $input[Payment\Entity::CONTACT];
+        }
+
+        if (isset($input['contact_id']) === true)
+        {
+            $contact =  (new Contact\Core)->fetch($input['contact_id'], $merchant);
+
+            return $contact->contact;
+        }
+
+        if ((isset($data['customer']) === true) and
+             (isset($data['customer']['contact']) === true))
+        {
+            return $data['customer']['contact'];
+        }
+
+        if (isset($input[Payment\Entity::CUSTOMER_ID]) === true)
+        {
+            $customer = (new Customer\Repository())->findByPublicIdAndMerchant($input[Payment\Entity::CUSTOMER_ID], $merchant);
+
+            return $customer->contact;
+        }
+
+        if (isset($input[Payment\Entity::APP_TOKEN]) === true)
+        {
+            $appTokenId = $input[Payment\Entity::APP_TOKEN];
+
+            $appToken = (new Customer\AppToken\Core)->getAppByAppTokenId($appTokenId, $merchant);
+
+            if ($appToken !== null)
+            {
+                $customer = (new Customer\Repository())->findByIdAndMerchant($appToken->getCustomerId(), $merchant);
+
+                return $customer->contact;
+            }
+        }
+
+        return;
     }
 }

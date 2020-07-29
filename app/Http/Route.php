@@ -1868,6 +1868,7 @@ class Route
         'cps_backfill_entities'                   => ['get',     'cardps/backfill/{entity}/{column}',                      'CardPSController@BackfillRouteProxy'                           ],
 
         'merchant_verify_attributes'              => ['post',    'merchant/verify/{verificationType}',                      'MerchantController@postVerifyMerchantAttributes'              ],
+        'checkout_personalisation'                => ['get',     'personalisation',                                         'MerchantController@getPersonalisedMethods'                    ],
 
     ];
 
@@ -1964,6 +1965,7 @@ class Route
         'payout_links_added_fund_accounts_cors',
         'payout_links_status',
         'payout_links_status_cors',
+        'checkout_personalisation',
         'payment_button_hosted_view',
         'subscription_button_hosted_view',
         'subscription_button_create_subscription',
@@ -4537,6 +4539,7 @@ class Route
         'app_fetch_payments',
         'customer_logout_global',
         'app_delete_token',
+        'checkout_personalisation',
     ];
 
     /**

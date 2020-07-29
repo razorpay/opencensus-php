@@ -66,6 +66,13 @@ return [
         'secret'                => env('EXCEL_STORE_SECRET'),
     ],
 
+    'de_personalisation' => [
+        'url'                   => env('DE_PERSONALISATION_URL'),
+        'username'              => env('DE_PERSONALISATION_KEY'),
+        'password'              => env('DE_PERSONALISATION_SECRET'),
+        'mock'                  => env('DE_PERSONALISATION_MOCK', true),
+        ],
+
     // See razorpay/credcase.
     'credcase' => [
         'dual_write_enabled' => env('CREDCASE_DUAL_WRITE_ENABLED', true),

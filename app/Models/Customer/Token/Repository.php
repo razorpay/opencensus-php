@@ -504,4 +504,13 @@ class Repository extends Base\Repository
                     ->merchantId($merchant->getId())
                     ->find($id);
     }
+
+    public function fetchByMethodAndCardId($method,string $cardId)
+    {
+        return $this->newQuery()
+                    ->where(Token\Entity::METHOD, '=', $method)
+                    ->where(Token\Entity::CARD_ID, '=', $cardId)
+                    ->first();
+
+    }
 }

@@ -4652,6 +4652,25 @@ class Service extends Base\Service
         ];
     }
 
+    public function getPersonalisedMethods($input)
+    {
+        $merchant = $this->merchant;
+
+        (new Validator)->setStrictFalse()->validateInput(Validator::PERSONALISATION, $input);
+
+        $preferredMethods = [];
+
+        $data = (new Checkout)->getPersonalisedMethods($merchant, $this->mode, $input);
+
+        if (isset($data['preferred_methods']) === true) {
+            $preferredMethods['preferred_methods'] = $data['preferred_methods'];
+        }
+
+        return $preferredMethods;
+
+    }
+
+
     public function fixDataForMerchant(array $input): array
     {
         (new Validator)->validateInput('trim_merchant_data', $input);
@@ -4751,6 +4770,6 @@ class Service extends Base\Service
 
         $config->refresh();
 
-            $this->repo->config->save($config);
+        $this->repo->config->save($config);
     }
 }
