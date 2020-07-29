@@ -3395,6 +3395,14 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(Attempt\Status::INITIATED, $attempt1['status']);
 
+        $this->fixtures->on('live')->create('org_hostname',[
+            'id'                => '70I6GMmOpMJp40',
+            'org_id'            => '100000razorpay',
+            'hostname'          => 'dashboard.razorpay.in',
+            'created_at'        => 12123123,
+            'updated_at'        => 12312321,
+        ]);
+
         $this->updateFta(
             $attempt1['fts_transfer_id'],
             $attempt1['source'],
