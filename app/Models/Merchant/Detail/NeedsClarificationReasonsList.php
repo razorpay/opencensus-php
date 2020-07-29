@@ -45,7 +45,7 @@ class NeedsClarificationReasonsList
         self::SUBMIT_PROPRIETOR_PAN                                   => [
             NeedsClarificationMetaData::DESCRIPTION => 'Please submit a copy of the Proprietor PAN Card.',],
         self::RESUBMIT_CANCELLED_CHEQUE                               => [
-            NeedsClarificationMetaData::DESCRIPTION => 'The statements or cancelled cheque attached is not legible. Please resubmit a clear copy.',],
+            NeedsClarificationMetaData::DESCRIPTION => 'We\'re unable to validate your bank account details. Kindly submit a copy of cancelled cheque by logging into your Razorpay dashboard.',],
         self::SUBMIT_DRIVING_LICENSE                                  => [
             NeedsClarificationMetaData::DESCRIPTION => 'Please submit both photo ID and address page of the driving license- merged as one document.',],
         self::PROVIDE_POC                                             => [

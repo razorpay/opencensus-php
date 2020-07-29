@@ -2899,7 +2899,7 @@ return [
                             'description' => 'We\'re unable to validate the IFSC from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.',
                         ],
                         'resubmit_cancelled_cheque'           => [
-                            'description' => 'The statements or cancelled cheque attached is not legible. Please resubmit a clear copy.',
+                            'description' => 'We\'re unable to validate your bank account details. Kindly submit a copy of cancelled cheque by logging into your Razorpay dashboard.',
                         ],
                     ],
                 ],

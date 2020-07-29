@@ -44,7 +44,6 @@ use RZP\Models\Merchant\Document\OcrVerificationStatus;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
-use RZP\Mail\Merchant\NotifyActivationSubmission as NotifyMerchant;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
 
 class Core extends Base\Core
@@ -521,7 +520,7 @@ class Core extends Base\Core
                     // As desired by the use case
                     if ($batchFlow === true)
                     {
-                        $this->processInstantActivationBatch($merchant, $sendActivationMail, $batchFlow);
+                        $this->processInstantActivationBatch($merchant, $batchFlow);
                     }
                     else
                     {
@@ -622,7 +621,7 @@ class Core extends Base\Core
      * @throws \RZP\Exception\BadRequestException
      * @throws \Throwable
      */
-    protected function processInstantActivationBatch(Merchant\Entity $merchant, $sendActivationMail = true, bool $batchFlow = true)
+    protected function processInstantActivationBatch(Merchant\Entity $merchant, bool $batchFlow = true)
     {
         $this->autoUpdateMerchantActivationFlows($merchant, null, Detail\Constants::ACTIVATION_FLOWS, $batchFlow);
 
@@ -630,7 +629,7 @@ class Core extends Base\Core
 
         $merchantDetails = $merchant->merchantDetail;
 
-        (new Merchant\Activate)->instantlyActivate($merchant, $merchantDetails, $batchFlow, $sendActivationMail);
+        (new Merchant\Activate)->instantlyActivate($merchant, $merchantDetails, $batchFlow);
     }
     /**
      * Contains preconditions for Processing Instant activation
@@ -1083,20 +1082,6 @@ class Core extends Base\Core
             {
                 Mail::queue(new L2SubmissionGreylist($merchant->getId()));
             }
-        }
-        else
-        {
-            $org = $merchant->org->toArray();
-
-            $org['hostname'] = $merchant->org->getPrimaryHostName();
-
-            $data = $merchantDetails->toArray();
-
-            $data[Constants::IS_WHITELISTED_ACTIVATION] = $merchantDetails->getActivationFlow() === ActivationFlow::WHITELIST;
-
-            $notifyMerchantMail = new NotifyMerchant($data, $org);
-
-            Mail::queue($notifyMerchantMail);
         }
     }
 

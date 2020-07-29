@@ -23,7 +23,6 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Merchant\Notify as NotifyTrait;
-use RZP\Mail\Merchant\Activation as ActivationMail;
 use RZP\Models\Admin\Org\Hostname\Entity as HostNameEntity;
 use RZP\Mail\Merchant\RazorpayX\AccountActivationConfirmation;
 use RZP\Mail\Merchant\InstantActivation as InstantActivationMail;
@@ -154,7 +153,7 @@ class Activate extends Base\Core
      * @throws Exception\LogicException
      * @throws Throwable
      */
-    public function instantlyActivate(Entity $merchant, Detail\Entity $merchantDetails, bool $batchFlow = false, bool $sendActivationMail = true): array
+    public function instantlyActivate(Entity $merchant, Detail\Entity $merchantDetails, bool $batchFlow = false): array
     {
         $detailCore = new Detail\Core;
 
@@ -205,11 +204,6 @@ class Activate extends Base\Core
         }
 
         $this->activateMerchantPromotions($merchant);
-
-        if ($sendActivationMail === true)
-        {
-            $this->notifyMerchantForInstantActivation($merchant);
-        }
 
         return $merchant->toArrayPublic();
     }
@@ -407,39 +401,7 @@ class Activate extends Base\Core
                 Mail::queue(new AccountActivationConfirmation($merchant->getId()));
             }
         }
-        else
-        {
-            $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
 
-            $is_whitelist_activation = $merchant->merchantDetail->getActivationFlow() === ActivationFlow::WHITELIST;
-
-            $data = [
-                'merchant' => [
-                    'name'                               => $merchant->getName(),
-                    'website'                            => $merchant->getWebsite(),
-                    'billing_label'                      => $merchant->getBillingLabel(),
-                    'email'                              => $merchant->getEmail(),
-                    'activation_source'                  => $merchant->getActivationSource(),
-                    Constants::IS_WHITELISTED_ACTIVATION => $is_whitelist_activation,
-                    'org'                                => [
-                        'business_name' => $org->getBusinessName(),
-                        'custom_code'   => $org->getCustomCode(),
-                    ],
-                ],
-            ];
-
-            $data['merchant']['org']['hostname'] = $org->getPrimaryHostName();
-
-            // For marketplace accounts, send this email to the parent merchant
-            if ($merchant->isLinkedAccount() === true)
-            {
-                $data['merchant']['email'] = $merchant->parent->getEmail();
-            }
-
-            $activationMail = new ActivationMail($data, $org->toArray());
-
-            Mail::queue($activationMail);
-        }
     }
 
     /**

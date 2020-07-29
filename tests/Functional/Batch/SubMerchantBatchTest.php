@@ -87,7 +87,6 @@ class SubMerchantBatchTest extends TestCase
         });
 
         Mail::assertQueued(AdminSubmitMail::class, 3);
-        Mail::assertQueued(MerchantSubmitMail::class, 3);
 
         $emails = $this->getEntities('merchant_email', [], true)['items'];
 
@@ -167,7 +166,6 @@ class SubMerchantBatchTest extends TestCase
         });
 
         Mail::assertQueued(AdminSubmitMail::class, 3);
-        Mail::assertQueued(MerchantSubmitMail::class, 3);
         Mail::assertNotQueued(ActivationMail::class);
 
         $emails = $this->getEntities('merchant_email', [], true)['items'];
@@ -200,7 +198,6 @@ class SubMerchantBatchTest extends TestCase
         Mail::assertQueued(CreateSubMerchantAffiliate::class, 0);
 
         Mail::assertQueued(AdminSubmitMail::class, 3);
-        Mail::assertQueued(MerchantSubmitMail::class, 3);
 
         $emails = $this->getEntities('merchant_email', [], true)['items'];
 
