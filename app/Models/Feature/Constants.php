@@ -120,6 +120,7 @@ class Constants
     const ADHOC_SETTLEMENT                = 'adhoc_settlement';
     const SUB_TERMINAL_OPTIMIZE           = 'sub_terminal_optimize';
     const SHOW_REFUND_PUBLIC_STATUS       = 'show_refund_public_status';
+    const REFUND_PENDING_STATUS           = 'refund_pending_status';
     const OVERRIDE_SUB_CONFIG             = 'override_sub_config';
     const DOWNTIME_ROUTING                = 'downtime_routing';
     const PAYOUT_TO_CARDS                 = 'payout_to_cards';
@@ -568,6 +569,7 @@ class Constants
         self::ADHOC_SETTLEMENT                => true,
         self::SUB_TERMINAL_OPTIMIZE           => true,
         self::SHOW_REFUND_PUBLIC_STATUS       => true,
+        self::REFUND_PENDING_STATUS           => true,
         self::OVERRIDE_SUB_CONFIG             => true,
         self::DOWNTIME_ROUTING                => true,
         self::PAYOUT_TO_CARDS                 => true,

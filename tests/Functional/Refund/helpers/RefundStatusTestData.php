@@ -49,6 +49,18 @@ return [
         ],
     ],
 
+    'testSnapdealRefundsWithRefundPendingStatusFeature' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/refunds/',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+            ],
+        ],
+    ],
+
     'testTimestampsOnGetRefundApi' => [
         'request' => [
             'method'  => 'get',

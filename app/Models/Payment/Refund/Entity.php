@@ -1200,7 +1200,8 @@ class Entity extends Base\PublicEntity
 
     protected function getPublicStatus($response, array $data = [])
     {
-        $refundPublicStatusFeatureEnabled = $data[Constants::REFUND_PUBLIC_STATUS_FEATURE_ENABLED] ?? false;
+        $refundPublicStatusFeatureEnabled  = $data[Constants::REFUND_PUBLIC_STATUS_FEATURE_ENABLED] ?? false;
+        $refundPendingStatusFeatureEnabled = $data[Constants::REFUND_PENDING_STATUS_FEATURE_ENABLED] ?? false;
 
         $refundStatus = $this->getStatus();
 
@@ -1290,6 +1291,7 @@ class Entity extends Base\PublicEntity
 
         if ((Payment\Refund\Core::isRefundsPublicStatusMerchant($this->getMerchantId()) === false) and
             ($refundPublicStatusFeatureEnabled === false) and
+            ($refundPendingStatusFeatureEnabled === false) and
             ($response[self::SPEED_PROCESSED] === Speed::NORMAL))
         {
             $response[self::STATUS] = Status::PROCESSED;
@@ -1307,10 +1309,12 @@ class Entity extends Base\PublicEntity
     {
         $response = parent::toArrayPublic();
 
-        $refundPublicStatusFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::SHOW_REFUND_PUBLIC_STATUS);
+        $refundPublicStatusFeatureEnabled  = $this->merchant->isFeatureEnabled(Feature::SHOW_REFUND_PUBLIC_STATUS);
+        $refundPendingStatusFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::REFUND_PENDING_STATUS);
 
         $data = [
-            Constants::REFUND_PUBLIC_STATUS_FEATURE_ENABLED => $refundPublicStatusFeatureEnabled,
+            Constants::REFUND_PUBLIC_STATUS_FEATURE_ENABLED  => $refundPublicStatusFeatureEnabled,
+            Constants::REFUND_PENDING_STATUS_FEATURE_ENABLED => $refundPendingStatusFeatureEnabled,
         ];
 
         $scroogeResponse = $this->getPublicStatus($response, $data);

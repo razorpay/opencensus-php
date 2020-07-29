@@ -246,6 +246,48 @@ class RefundStatusTest extends TestCase
         $this->assertSnapdealRefundResponses(__FUNCTION__, $refund);
     }
 
+    public function testSnapdealRefundsWithRefundPendingStatusFeature()
+    {
+        $this->fixtures->merchant->addFeatures('refund_pending_status');
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            if($action === 'refund')
+            {
+                $content['result'] = 'DENIED BY RISK';
+            }
+
+            return $content;
+        });
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $this->assertGreaterThan(time() - 30, $refund['created_at']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('created', $refund['status']);
+
+        $this->ba->privateAuth();
+
+        $this->assertSnapdealRefundResponses(__FUNCTION__, $refund);
+    }
+
     protected function updateRefundStatus($refund, $status)
     {
         $this->fixtures->refund->edit(substr($refund['id'], 3), [Refund\Entity::STATUS => $status]);
