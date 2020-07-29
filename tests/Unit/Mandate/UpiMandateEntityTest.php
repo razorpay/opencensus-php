@@ -56,6 +56,53 @@ class UpiMandateEntityTest extends TestCase
         $this->assertTrue(true);
     }
 
+    public function testGatewayData()
+    {
+        $this->createUpiMandate();
+
+        $this->assertNull($this->mandate->getGatewayData());
+
+        $this->createUpiMandate([
+            'gateway_data' => [
+                'a' => 1,
+                'b' => 2,
+            ],
+        ]);
+
+        $this->assertSame([
+            'a' => 1,
+            'b' => 2,
+        ], $this->mandate->getGatewayData());
+    }
+
+    public function testToArray()
+    {
+        $this->createUpiMandate([
+            'gateway_data' => [
+                'a' => 1,
+                'b' => 2,
+            ],
+            'late_confirmed'    => true,
+            'used_count'        => 2,
+            'confirmed_at'      => 1595866793,
+        ]);
+
+        $this->assertArraySubset([
+            'status'         => 'initiated',
+            'max_amount'     => 2000,
+            'frequency'      => 'monthly',
+            'merchant_id'    => '100000Razorpay',
+            'recurring_type' => 'before',
+            'gateway_data' => [
+                'a' => 1,
+                'b' => 2,
+            ],
+            'late_confirmed'    => true,
+            'used_count'        => 2,
+            'confirmed_at'      => 1595866793,
+        ], $this->mandate->toArray());
+    }
+
     /************************ Helpers ****************************/
 
     protected function createUpiMandate(array $values = [])

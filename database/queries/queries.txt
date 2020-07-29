@@ -5870,3 +5870,9 @@ ALTER TABLE upi_metadata
 
 ALTER TABLE payment_downtimes
     Add COLUMN psp VARCHAR(255) DEFAULT NULL;
+
+ALTER TABLE upi_mandates
+    CHANGE `gateway_reference_id` `gateway_data` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_bin NULL DEFAULT NULL,
+    ADD `used_count` INT UNSIGNED DEFAULT NULL AFTER `gateway_data`,
+    ADD `late_confirmed` TINYINT DEFAULT NULL AFTER `used_count`,
+    ADD `confirmed_at` INT UNSIGNED DEFAULT NULL AFTER `late_confirmed`;

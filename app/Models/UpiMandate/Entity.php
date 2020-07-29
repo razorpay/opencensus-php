@@ -24,7 +24,10 @@ class Entity extends Base\PublicEntity
     const UMN                  = 'umn';
     const RRN                  = 'rrn';
     const NPCI_TXN_ID          = 'npci_txn_id';
-    const GATEWAY_REFERENCE_ID = 'gateway_reference_id';
+    const GATEWAY_DATA         = 'gateway_data';
+    const USED_COUNT           = 'used_count';
+    const LATE_CONFIRMED       = 'late_confirmed';
+    const CONFIRMED_AT         = 'confirmed_at';
 
     protected $entity = 'upi_mandate';
 
@@ -41,7 +44,6 @@ class Entity extends Base\PublicEntity
         self::UMN,
         self::RRN,
         self::NPCI_TXN_ID,
-        self::GATEWAY_REFERENCE_ID,
     ];
 
     protected $public = [
@@ -61,13 +63,53 @@ class Entity extends Base\PublicEntity
         self::UMN,
         self::RRN,
         self::NPCI_TXN_ID,
-        self::GATEWAY_REFERENCE_ID,
+        self::USED_COUNT,
+        self::LATE_CONFIRMED,
+        self::CONFIRMED_AT,
+        self::CREATED_AT,
+    ];
+
+    protected $visible = [
+        self::ID,
+        self::ORDER_ID,
+        self::TOKEN_ID,
+        self::CUSTOMER_ID,
+        self::MERCHANT_ID,
+        self::STATUS,
+        self::MAX_AMOUNT,
+        self::FREQUENCY,
+        self::RECURRING_TYPE,
+        self::RECURRING_VALUE,
+        self::START_TIME,
+        self::END_TIME,
+        self::RECEIPT,
+        self::UMN,
+        self::RRN,
+        self::NPCI_TXN_ID,
+        self::GATEWAY_DATA,
+        self::USED_COUNT,
+        self::LATE_CONFIRMED,
+        self::CONFIRMED_AT,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $defaults = [
         self::STATUS  => 'created',
     ];
 
+    protected $dates = [
+        self::CONFIRMED_AT,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    ];
+
+    protected $casts = [
+        self::GATEWAY_DATA      => 'array',
+        self::LATE_CONFIRMED    => 'bool',
+    ];
+
+    // Relations
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
@@ -88,6 +130,7 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Order\Entity::class);
     }
 
+    // Setters
     public function setTokenId(string $tokenId)
     {
         $this->setAttribute(self::TOKEN_ID, $tokenId);
@@ -100,6 +143,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    // Getters
     public function getCustomerId()
     {
         return $this->getAttribute(self::CUSTOMER_ID);
@@ -128,5 +172,10 @@ class Entity extends Base\PublicEntity
     public function getEndTime()
     {
         return $this->getAttribute(self::END_TIME);
+    }
+
+    public function getGatewayData()
+    {
+        return $this->getAttribute(self::GATEWAY_DATA);
     }
 }

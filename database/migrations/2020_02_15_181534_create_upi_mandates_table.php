@@ -64,7 +64,16 @@ class CreateUpiMandatesTable extends Migration
             $table->string(Entity::NPCI_TXN_ID, 50)
                   ->nullable();
 
-            $table->string(Entity::GATEWAY_REFERENCE_ID, 100)
+            $table->string(Entity::GATEWAY_DATA, 255)
+                  ->nullable();
+
+            $table->unsignedInteger(Entity::USED_COUNT)
+                  ->nullable();
+
+            $table->tinyInteger(Entity::LATE_CONFIRMED)
+                  ->nullable();
+
+            $table->unsignedInteger(Entity::CONFIRMED_AT)
                   ->nullable();
 
             $table->unsignedInteger(Entity::CREATED_AT);

@@ -23,10 +23,10 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::UMN                   => 'sometimes|string',
-        Entity::NPCI_TXN_ID           => 'sometimes|string',
-        Entity::RRN                   => 'sometimes|string',
-        Entity::GATEWAY_REFERENCE_ID  => 'sometimes|string',
+        Entity::UMN          => 'sometimes|string',
+        Entity::NPCI_TXN_ID  => 'sometimes|string',
+        Entity::RRN          => 'sometimes|string',
+        Entity::GATEWAY_DATA => 'sometimes|string',
     ];
 
     protected static $createValidators = [
