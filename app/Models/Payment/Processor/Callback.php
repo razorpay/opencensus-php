@@ -415,6 +415,7 @@ trait Callback
                                     [
                                         Payment\Entity::AMOUNT          => $payment->getAmount(),
                                         Payment\Entity::SUBSCRIPTION_ID => $subscriptionId,
+                                        Payment\Entity::METHOD          => $payment->getMethod(),
                                     ],
                                     $payment->merchant,
                                     $callback = true);

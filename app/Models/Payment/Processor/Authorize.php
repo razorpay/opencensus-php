@@ -51,6 +51,7 @@ use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Status;
 use RZP\Models\Payment\Method;
 use RZP\Models\Customer\Token;
+use RZP\Models\UpiMandate\Core;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
@@ -70,6 +71,7 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Gateway\Enach\Npci\Netbanking\Gateway as enachNpciGateway;
+use RZP\Models\Order as Order;
 
 trait Authorize
 {
@@ -2978,6 +2980,7 @@ trait Authorize
                         [
                             Payment\Entity::AMOUNT          => $payment->getAmount(),
                             Payment\Entity::SUBSCRIPTION_ID => Subscription\Entity::getSignedId($payment->getSubscriptionId()),
+                            Payment\Entity::METHOD          => $input['method'],
                         ],
                         $payment->merchant,
                         $callback = true);
@@ -3020,6 +3023,8 @@ trait Authorize
         }
         else if ($customer->isLocal() === true)
         {
+            $this->createUpiMandateForSubscriptionIfApplicable($customer, $input, $payment);
+
             $this->preProcessPaymentForLocalCustomer($customer, $payment, $input, $gatewayInput);
         }
         else
@@ -3049,9 +3054,16 @@ trait Authorize
                     $localCustomer = $this->subscription->customer;
                 }
             }
+            if($input['method'] === PaymentConstants::UPI and ($this->subscription!==null) and $this->subscription->status === PaymentConstants::CREATED)
+            {
+                $this->createUpiMandateForSubscriptionIfApplicable($localCustomer, $input, $payment);
 
-            $this->preProcessPaymentForGlobalCustomer(
-                $customer, $localCustomer, $customerApp, $payment, $input, $gatewayInput);
+                $this->preProcessPaymentForLocalCustomer($localCustomer, $payment, $input, $gatewayInput);
+            }
+            else
+            {
+                $this->preProcessPaymentForGlobalCustomer($customer, $localCustomer, $customerApp, $payment, $input, $gatewayInput);
+            }
         }
 
         if ($payment->isEmi() === true)
@@ -3213,6 +3225,30 @@ trait Authorize
         }
 
         $gatewayInput[Payment\Entity::CHARGE_ACCOUNT_MERCHANT] = $merchant;
+    }
+
+    protected function createUpiMandateForSubscriptionIfApplicable(Customer\Entity $customer,$input ,$payment)
+    {
+
+        if(($input['method'] === PaymentConstants::UPI) and ($this->subscription!==null) and ($this->subscription->status === PaymentConstants::CREATED))
+        {
+            $input[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
+
+            $upitoken = [
+                'max_amount'        => $this->subscription->getCurrentInvoiceAmount(),
+                'frequency'         => $this->subscription->schedule['period'],
+                'recurring_type'    => 'before',
+                'recurring_value'   => $this->subscription->schedule['anchor'],
+                'start_time'        => Carbon::now()->addMinute(1)->getTimestamp(),
+                'end_time'          => $this->subscription->getEndAt(),
+            ];
+
+                $core = new Core();
+
+                $order = $this->repo->order->findOrFailPublic(Order\Entity::verifyIdAndStripSign($input['order_id']));
+
+                $this->upiMandate = $core->create($upitoken, $order, $customer);
+        }
     }
 
     protected function setPreferredAuthIfApplicable(Payment\Entity $payment)
@@ -5296,6 +5332,7 @@ trait Authorize
                                            [
                                                 Payment\Entity::AMOUNT          => $payment->getAmount(),
                                                 Payment\Entity::SUBSCRIPTION_ID => Subscription\Entity::getSignedId($payment->getSubscriptionId()),
+                                                Payment\Entity::METHOD          => $payment->getMethod(),
                                             ],
                                             $payment->merchant,
                                             $callback = true);

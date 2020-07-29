@@ -14,6 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer\Token;
 use RZP\Models\Plan\Subscription;
+use RZP\Models\Payment\Processor\Constants;
 
 class External extends Base
 {
@@ -97,7 +98,7 @@ class External extends Base
         return $this->sendRequest($url, Requests::GET, $input, $headers);
     }
 
-    public function fetchCheckoutInfo(array $input, Merchant\Entity $merchant)
+    public function fetchCheckoutInfo(array $input, Merchant\Entity $merchant,bool $isupienabled = false)
     {
         $this->getsEntityResponse = true;
 
@@ -107,6 +108,7 @@ class External extends Base
 
         $requestBody = [
             Subscription\Entity::SUBSCRIPTION_CARD_CHANGE => $isCardChange,
+            'isupienabled'                                => $isupienabled
         ];
 
         $this->traceRequest($requestBody);
@@ -191,6 +193,7 @@ class External extends Base
         $amount             = $input[Payment\Entity::AMOUNT] ?? null;
         $isCardChange       = $input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false;
         $isCardPresent      = (isset($input[Payment\Entity::CARD]) === true);
+        $method             = ((isset($input['method']) === true) ? $input['method'] : (($isCardPresent === true) ? Constants::CARD :Constants::UPI ));
 
         $requestBody = [
             Payment\Entity::AMOUNT                        => $amount,
@@ -198,6 +201,7 @@ class External extends Base
             'app_token_present'                           => $appTokenPresent,
             'card_present'                                => $isCardPresent,
             'callback'                                    => $callback,
+            'method'                                      => $method
         ];
 
         if (isset($input[Payment\Entity::TOKEN]) === true)

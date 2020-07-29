@@ -13,4 +13,12 @@ class Constants
     const ACTION                 = 'action';
 
     const ACTION_OTP_RESEND      = 'otp_resend';
+
+    const UPI                    = 'upi';
+
+    const CARD                   = 'card';
+
+    const CREATED                = 'created';
+
+    const SUBSCRIPTION           = 'subscription';
 }

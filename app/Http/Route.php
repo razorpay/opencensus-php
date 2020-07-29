@@ -853,6 +853,8 @@ class Route
         'subscription_item_fetch_multiple'         => ['get',      'subscriptions/items',                            'SubscriptionController@getItems'                                   ],
         'subscription_item_update'                 => ['patch',    'subscriptions/items/{id}',                       'SubscriptionController@postUpdateItem'                             ],
         'subscription_item_delete'                 => ['delete',   'subscriptions/items/{id}',                       'SubscriptionController@postDeleteItem'                             ],
+        'subscription_settings'                    => ['post',     'subscriptions/settings',                         'SubscriptionController@postSubscriptionSettings'                    ],
+        'subscription_settings_get'                => ['get',       'subscriptions/settings',                          'SubscriptionController@getSubscriptionSettings'                    ],
         'addon_fetch'                              => ['get',      'addons/{addonId}',                               'SubscriptionController@getAddon'                                   ],
         'token_fetch_card'                         => ['get',      'tokens/{id}/card',                               'CustomerController@fetchTokenCard'                                 ],
         'addon_fetch_multiple'                     => ['get',      'addons',                                         'SubscriptionController@getAddons'                                  ],
@@ -2102,6 +2104,8 @@ class Route
         'customer_delete_address',
         'customer_fetch_addresses',
         'customer_set_primary_address',
+        'subscription_settings_get',
+        'subscription_settings',
         'plan_create',
         'plan_fetch',
         'plan_fetch_multiple',
@@ -5083,6 +5087,8 @@ class Route
         'la_transfer_create_reversal'          => [Feature::ALLOW_REVERSALS_FROM_LA],
         'plan_create'                          => [Feature::SUBSCRIPTIONS],
         'plan_fetch'                           => [Feature::SUBSCRIPTIONS],
+        'subscription_settings'                =>[Feature::SUBSCRIPTIONS],
+        'subscription_settings_get'            =>[Feature::SUBSCRIPTIONS],
         'plan_fetch_multiple'                  => [Feature::SUBSCRIPTIONS],
         'subscription_create'                  => [Feature::SUBSCRIPTIONS],
         'subscription_fetch'                   => [Feature::SUBSCRIPTIONS],
@@ -5308,6 +5314,8 @@ class Route
         'subscription_cancel_changes',
         'subscription_fetch_hosted_test',
         'subscription_fetch_hosted_live',
+        'subscription_settings',
+        'subscription_settings_get',
     ];
 
     const EXCEL_STORE_PROXY_ROUTES = [

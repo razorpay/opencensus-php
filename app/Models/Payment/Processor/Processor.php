@@ -494,6 +494,23 @@ class Processor
 
             $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($invoice->getOrderId());
         }
+        else if(isset($input['subscription_id']) and
+            ($this->subscription->getStatus() === Constants::CREATED) and
+            $input['method'] === Constants::UPI)
+        {
+            // for subscriptions with trial period we don't create invoice and order, for UPI recurring we need Order to create UPI mandate
+            $orderPayLoad = [
+              "amount"           =>  $input['amount'],
+               "currency"        => $input['currency'],
+               "payment_capture" => true,
+               "product_id"      => $this->subscription->getId(),
+               "product_type"    => Constants::SUBSCRIPTION
+            ];
+
+            $order = (new Order\Core)->create($orderPayLoad, $this->merchant);
+
+            $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($order->getId());
+        }
     }
 
     protected function addCustomerIdToInputForExternalSubscription(array & $input)
@@ -2698,7 +2715,8 @@ class Processor
             if (($tpvRequired === true) or
                 ($payment->isEmandate() === true) or
                 ($payment->isNach() === true) or
-                (($payment->isUpiRecurring() === true) and (empty($input[Payment\Entity::TOKEN]) === true)))
+                (($payment->isUpiRecurring() === true) and
+                    (empty($input[Payment\Entity::TOKEN]) === true)))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
@@ -2718,7 +2736,9 @@ class Processor
             $payment->setBank($this->order->getBankForNachMethod());
         }
 
-        if (($payment->isUpiRecurring() === true) and (empty($input[Payment\Entity::TOKEN]) === true))
+        if (($payment->isUpiRecurring() === true)
+                          and (empty($input[Payment\Entity::TOKEN]) === true)
+                          and (isset($input[Payment\Entity::SUBSCRIPTION_ID]) === false))
         {
             $this->validateOrderForUpiInitialRecurring($this->order);
         }

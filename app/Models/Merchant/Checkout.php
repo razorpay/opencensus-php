@@ -219,7 +219,7 @@ class Checkout
 
         $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
 
-        $subscription = $this->getSubscription($input, $merchant);
+        $subscription = $this->getSubscription($input, $merchant,$data);
 
         //
         // If the subscription has already been authenticated, there's no reason for
@@ -477,7 +477,7 @@ class Checkout
                 $input);
         }
 
-        $subscription = $this->setSubscription($input, $merchant);
+        $subscription = $this->setSubscription($input, $merchant ,$data['methods']['upi']??false);
 
         //
         // If a customer is not associated with the subscription already,
@@ -534,27 +534,27 @@ class Checkout
         return ($hasGlobalCustomer === false);
     }
 
-    protected function setSubscription(array $input, Merchant\Entity $merchant)
+    protected function setSubscription(array $input, Merchant\Entity $merchant,bool $isupienabled = false)
     {
         $subscription = $this->app['module']
                              ->subscription
                              ->fetchCheckoutInfo (
                                  $input,
-                                 $merchant);
+                                 $merchant,$isupienabled);
 
         $this->subscription = $subscription;
 
         return $subscription;
     }
 
-    protected function getSubscription(array $input, Merchant\Entity $merchant)
+    protected function getSubscription(array $input, Merchant\Entity $merchant,array $data)
     {
         if (isset($this->subscription) === true)
         {
             return $this->subscription;
         }
 
-        return $this->setSubscription($input, $merchant);
+        return $this->setSubscription($input, $merchant,$data['methods']['upi']??false);
     }
 
     protected function getMerchantPreferencesData(Entity $merchant, $mode)
