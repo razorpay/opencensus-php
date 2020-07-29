@@ -154,6 +154,11 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('default', $txn['credit_type']);
     }
 
+    public function testCreateValidationForBankNotAllowed()
+    {
+        $this->startTest();
+    }
+
     public function testCreateValidationWithWrongFundAccountEntity()
     {
         $this->startTest();

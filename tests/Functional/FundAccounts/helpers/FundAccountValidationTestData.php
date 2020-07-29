@@ -162,6 +162,40 @@ return [
         ],
     ],
 
+    'testCreateValidationForBankNotAllowed' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                Validation::FUND_ACCOUNT  => [
+                    FundAccount::ACCOUNT_TYPE => 'bank_account',
+                    FundAccount::DETAILS      => [
+                        BankAccount::ACCOUNT_NUMBER => '123456789',
+                        BankAccount::NAME           => 'Rohit Keshwani',
+                        BankAccount::IFSC           => 'PYTM0000001',
+                    ],
+                ],
+                Validation::AMOUNT       => '100',
+                Validation::CURRENCY     => 'INR',
+                Validation::NOTES        => [],
+                Validation::RECEIPT      => '12345667',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Sorry we do not support this bank right now for fund account validation.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_BANK_NOT_ALLOWED,
+        ],
+    ],
+
     'createValidationWithFundAccountEntity' => [
         'request' => [
             'url'     => '/fund_accounts/validations',

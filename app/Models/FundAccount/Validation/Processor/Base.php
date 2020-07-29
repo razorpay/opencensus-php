@@ -135,4 +135,9 @@ abstract class Base extends Core
             FundAccountValidation::dispatch($this->mode, $this->validation->getId());
         }
     }
+
+    public function validateFundAccountBeforeCreating()
+    {
+        // do nothing
+    }
 }
