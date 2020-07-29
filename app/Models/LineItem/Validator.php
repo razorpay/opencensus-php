@@ -36,8 +36,8 @@ class Validator extends Base\Validator
         Entity::REF                 => 'sometimes',
         Entity::NAME                => 'required_without:item_id|string|max:512',
         Entity::DESCRIPTION         => 'sometimes|nullable|string|max:2048',
-        Entity::AMOUNT              => 'required_without:item_id|mysql_unsigned_int|min_amount',
-        Entity::UNIT_AMOUNT         => 'required_without_all:amount,item_id|mysql_unsigned_int|min_amount',
+        Entity::AMOUNT              => 'required_without:item_id|integer|min_amount',
+        Entity::UNIT_AMOUNT         => 'required_without_all:amount,item_id|integer|min_amount',
         Entity::CURRENCY            => 'required_without:item_id|currency|custom',
         Entity::UNIT                => 'sometimes|nullable|string|max:512',
         Entity::TYPE                => 'filled|string|max:16|custom',
@@ -52,7 +52,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createManyRules = [
-        Entity::LINE_ITEMS          => 'required|array|min:1|max:25',
+        Entity::LINE_ITEMS          => 'required|array|min:1|max:50',
         Entity::LINE_ITEMS . '.*'   => 'required|array',
     ];
 
@@ -61,8 +61,8 @@ class Validator extends Base\Validator
         Entity::ITEM_ID             => 'sometimes|nullable|string|max:19',
         Entity::NAME                => 'filled|string|max:512',
         Entity::DESCRIPTION         => 'sometimes|nullable|string|max:2048',
-        Entity::AMOUNT              => 'filled|mysql_unsigned_int',
-        Entity::UNIT_AMOUNT         => 'filled|mysql_unsigned_int',
+        Entity::AMOUNT              => 'filled|integer',
+        Entity::UNIT_AMOUNT         => 'filled|integer',
         Entity::CURRENCY            => 'sometimes|nullable|currency|custom',
         Entity::TYPE                => 'filled|string|max:16|custom',
         Entity::UNIT                => 'sometimes|nullable|string|max:512',

@@ -1101,7 +1101,9 @@ class Core extends Base\Core
         $invoice->setTaxAmount((int) round($taxAmount));
         $invoice->setAmount((int) round($amount));
 
-        $invoice->getValidator()->validateMaxAllowedAmount($grossAmount);
+        /**
+         * Removed max amount check from here since order already does the validations properly
+         */
     }
 
     public function fetchStatsOfBatch(Batch\Entity $batch): array
