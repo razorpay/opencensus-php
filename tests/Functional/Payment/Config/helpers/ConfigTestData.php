@@ -351,7 +351,22 @@ return  [
             ]
         ],
     ],
-
+    'testDeleteLocaleConfig' => [
+        'request' => [
+            'content' => [
+                'type'         => 'checkout',
+                'merchant_ids' => ['10000000000000'],
+            ],
+            'method'    => 'DELETE',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'success'  => 1,
+                'failures' => [],
+            ]
+        ],
+    ],
     'testUpdateConfigFieldForLateAuthConfigBulk' => [
         'request' => [
             'content' => [

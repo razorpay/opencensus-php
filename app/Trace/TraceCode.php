@@ -3082,6 +3082,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     //payment config
     const CONFIG_CREATE_REQUEST                                 = 'CONFIG_CREATE_REQUEST';
     const CONFIG_UPDATE_REQUEST                                 = 'CONFIG_UPDATE_REQUEST';
+    const CONFIG_DELETE_REQUEST                                 = 'CONFIG_DELETE_REQUEST';
+    const CONFIG_DELETE_EXCEPTION                               = 'CONFIG_DELETE_EXCEPTION';
+    const CONFIG_DELETE_RESPONSE                                = 'CONFIG_DELETE_RESPONSE';
     const CONFIG_UPDATE_BULK_REQUEST                            = 'CONFIG_UPDATE_BULK_REQUEST';
     const CONFIG_UPDATE_BULK_RESPONSE                           = 'CONFIG_UPDATE_BULK_RESPONSE';
     const CONFIG_CREATE_BULK_REQUEST                            = 'CONFIG_CREATE_BULK_REQUEST';

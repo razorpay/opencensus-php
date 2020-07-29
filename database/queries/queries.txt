@@ -5868,6 +5868,9 @@ ALTER TABLE upi_metadata
     ADD COLUMN `reminder_id` CHAR(14) DEFAULT NULL,
     ADD COLUMN `remind_at` INTEGER DEFAULT NULL;
 
+ALTER TABLE payment_configs
+    ADD COLUMN is_deleted BOOLEAN DEFAULT 0 NOT NULL;
+
 ALTER TABLE payment_downtimes
     Add COLUMN psp VARCHAR(255) DEFAULT NULL;
 

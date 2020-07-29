@@ -31,6 +31,7 @@ class Route
         'create_payment_config_admin'              => ['post',     'admin/payment/config',                           'ConfigController@createPaymentConfig'                              ],
         'update_payment_config'                    => ['patch',    'payment/config',                                 'ConfigController@updatePaymentConfig'                              ],
         'update_payment_config_admin'              => ['patch',    'admin/payment/config',                           'ConfigController@updatePaymentConfig'                              ],
+        'delete_payment_config'                    => ['delete',   'payment/config',                                 'ConfigController@deletePaymentConfig'                              ],
         'update_late_auth_config_admin_bulk'       => ['patch',    'admin/lateauth/config/bulk',                     'ConfigController@updateLateAuthConfigBulk'                         ],
         // callback_url case handler for automatic checkout
         'checkout_onyx'                            => ['post',     'checkout/onyx',                                  'PublicController@postCallbackUrlWithParams'                        ],
@@ -3495,6 +3496,7 @@ class Route
         'fetch_payment_config_admin',
         'create_payment_config_admin',
         'update_payment_config_admin',
+        'delete_payment_config',
         'admin_fetch_fund_account_validate',
         'create_promotions_events',
 
@@ -4218,6 +4220,7 @@ class Route
         'consume_typeform_webhook'                  => Permission::EDIT_MERCHANT_INTERNATIONAL_NEW,
         'banking_account_create_admin'              => '*',
         'fetch_payment_config_admin'                => '*',
+        'delete_payment_config'                     => '*',
         'create_payment_config_admin'               => Permission::CREATE_PAYMENT_CONFIG,
         'update_payment_config_admin'               => Permission::UPDATE_PAYMENT_CONFIG,
         'update_late_auth_config_admin_bulk'        => '*',

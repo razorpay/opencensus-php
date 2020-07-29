@@ -180,11 +180,26 @@ class ConfigTest extends TestCase
 
         $admin = $this->ba->getAdmin();
 
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
         $config = $this->fixtures->create('config', ['type' => 'late_auth']);
 
         $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/payment/config/bulk';
+
+        $this->startTest();
+    }
+
+    public function testDeleteLocaleConfig()
+    {
+        $config = $this->fixtures->create('config');
+
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
 
         $this->startTest();
     }

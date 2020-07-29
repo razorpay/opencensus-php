@@ -15,6 +15,7 @@ class Entity extends Base\PublicEntity
     const CONFIG              = 'config';
     const RESTRICTIONS        = 'restrictions';
     const IS_DEFAULT          = 'is_default';
+    const IS_DELETED          = 'is_deleted';
 
     protected static $sign    = 'config';
 
@@ -36,6 +37,7 @@ class Entity extends Base\PublicEntity
             self::IS_DEFAULT,
             self::CREATED_AT,
             self::UPDATED_AT,
+            self::IS_DELETED,
     ];
 
     protected $public = [
@@ -63,10 +65,12 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
             self::IS_DEFAULT      => false,
             self::RESTRICTIONS => null,
+            self::IS_DELETED      => false,
     ];
 
     protected $casts = [
             self::IS_DEFAULT      => 'bool',
+            self::IS_DELETED      => 'bool',
     ];
 
     public function merchant()

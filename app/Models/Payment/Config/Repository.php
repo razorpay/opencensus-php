@@ -20,6 +20,7 @@ class Repository extends Base\Repository
     {
            $query =  $this->newQuery()
                     ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->where(Entity::IS_DELETED, false)
                     ->where(Entity::TYPE, $type);
 
            $this->buildQueryWithParams($query, $input);
@@ -35,6 +36,7 @@ class Repository extends Base\Repository
                     ->where(Entity::ID, $id)
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->where(Entity::TYPE, $type)
+                    ->where(Entity::IS_DELETED, false)
                     ->first();
     }
 
@@ -44,6 +46,15 @@ class Repository extends Base\Repository
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->where(Entity::TYPE, $type)
                     ->where(Entity::IS_DEFAULT, true)
+                    ->where(Entity::IS_DELETED, false)
                     ->first();
+    }
+
+    public function deletePaymentConfig($merchantId, $type)
+    {
+        $this->newQuery()
+             ->where(Entity::MERCHANT_ID, $merchantId)
+             ->where(Entity::TYPE, $type)
+             ->update([Entity::IS_DELETED => true]);
     }
 }

@@ -35,6 +35,16 @@ class ConfigController extends Controller
         return ApiResponse::json($data);
     }
 
+
+    public function deletePaymentConfig()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->delete($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function updateLateAuthConfigBulk()
     {
         $input = Request::all();

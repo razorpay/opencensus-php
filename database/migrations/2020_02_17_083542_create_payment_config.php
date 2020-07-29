@@ -38,6 +38,9 @@ class CreatePaymentConfig extends Migration
                   ->default(null)
                   ->nullable();
 
+            $table->boolean(Config::IS_DELETED)
+                  ->default(false);
+
             $table->integer(Config::CREATED_AT);
 
             $table->integer(Config::UPDATED_AT);

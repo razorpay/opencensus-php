@@ -59,6 +59,12 @@ class Validator extends Base\Validator
         Entity::CONFIG         => 'required_if:type,late_auth|array',
     ];
 
+    protected static $deleteRules = [
+        Entity::TYPE           => 'required|string|custom',
+        'merchant_ids'         => 'array',
+        'merchant_ids.*'       => 'filled|string|unsigned_id',
+    ];
+
     protected static $editBulkRules = [
         Entity::CONFIG         => 'required|array',
         'merchant_ids'         => 'array',

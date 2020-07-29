@@ -19,7 +19,7 @@ class Service extends Base\Service
 
     /**
      * @param string           $type
-     *
+     * @param array            $input
      *
      * @return array
      */
@@ -163,6 +163,41 @@ class Service extends Base\Service
         ];
 
         $this->trace->info(TraceCode::CONFIG_CREATE_BULK_RESPONSE, $summary);
+
+        return $summary;
+    }
+
+    public function delete($input)
+    {
+        $this->trace->info(TraceCode::CONFIG_DELETE_REQUEST, $input);
+
+        $merchantIds = $input['merchant_ids'];
+
+        $success  = 0;
+        $failures = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $this->repo->config->deletePaymentConfig($merchantId, $input['type']);
+
+                $success += 1;
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e,null, TraceCode::CONFIG_DELETE_EXCEPTION);
+
+                $failures[] = $merchantId;
+            }
+        }
+
+        $summary  = [
+            'success'  => $success,
+            'failures' => $failures
+        ];
+
+        $this->trace->info(TraceCode::CONFIG_DELETE_RESPONSE, $summary);
 
         return $summary;
     }
