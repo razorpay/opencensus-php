@@ -3120,6 +3120,19 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             $settledBy = Payment\Gateway::DIRECT_SETTLEMENT_GATEWAYS[$gateway];
 
+            if (is_array($settledBy) === true)
+            {
+                $acquirers = Payment\Gateway::DIRECT_SETTLEMENT_GATEWAYS[$gateway];
+
+                $settledBy = $acquirers['default'];
+
+                if (($terminal->getGatewayAcquirer() !== null) and
+                    (array_key_exists($terminal->getGatewayAcquirer(), $acquirers) === true))
+                {
+                    $settledBy = $acquirers[$terminal->getGatewayAcquirer()];
+                }
+            }
+
             $this->setSettledBy($settledBy);
         }
 

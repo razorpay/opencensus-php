@@ -34,6 +34,7 @@ class Gateway
     const EBS                    = 'ebs';
     const ICICI                  = 'icici';
     const KOTAK                  = 'kotak';
+    const YESB                   = 'yesb';
     const RBL                    = 'rbl';
     const AXIS                   = 'axis';
     const ESIGNER_DIGIO          = 'esigner_digio';
@@ -242,10 +243,22 @@ class Gateway
     // this for other card gateways
     const DIRECT_SETTLEMENT_GATEWAYS = [
         self::AMEX                  => self::AMEX,
-        self::AXIS_MIGS             => self::HDFC,
-        self::CYBERSOURCE           => self::HDFC,
+        self::AXIS_MIGS             => [
+            'default'           => self::HDFC,
+            self::ACQUIRER_HDFC => self::HDFC,
+            self::ACQUIRER_AXIS => self::AXIS,
+            self::ACQUIRER_YESB => self::YESB,
+        ],
+        self::CYBERSOURCE           => [
+            'default'           => self::HDFC,
+            self::ACQUIRER_HDFC => self::HDFC,
+            self::ACQUIRER_AXIS => self::AXIS,
+        ],
         self::HDFC                  => self::HDFC,
-        self::ISG                   => self::HDFC,
+        self::ISG                   => [
+            'default'           => self::HDFC,
+            self::ACQUIRER_HDFC => self::HDFC,
+        ],
         self::BILLDESK              => self::BILLDESK,
         self::NETBANKING_AXIS       => self::AXIS,
         self::NETBANKING_HDFC       => self::HDFC,
@@ -257,7 +270,10 @@ class Gateway
         self::UPI_ICICI             => self::ICICI,
         self::UPI_MINDGATE          => self::HDFC,
         self::WALLET_PAYPAL         => self::WALLET_PAYPAL,
-        self::WORLDLINE             => self::AXIS,
+        self::WORLDLINE             => [
+            'default'           => self::AXIS,
+            self::ACQUIRER_AXIS => self::AXIS,
+        ],
         self::WALLET_PAYZAPP        => self::WALLET_PAYZAPP,
         self::ENACH_NPCI_NETBANKING => self::ENACH_NPCI_NETBANKING
     ];
