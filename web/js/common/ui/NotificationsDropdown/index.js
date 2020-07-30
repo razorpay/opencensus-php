@@ -1,6 +1,8 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+import Modal from 'react-modal';
+import RTracking from 'react-tracking';
 import debounce from 'common/utils/debounce';
 import LocalStorageService from 'common/utils/localStorage';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
@@ -19,6 +21,7 @@ function _isUnreadNotification(startTS, endTS, lastReadTS) {
     ...state.config.config,
   };
 })
+@RTracking(() => window.rzpQ.component('NotificationsDropdown'))
 export default class NotificationsDropdown extends Component {
   state = {};
   id = this.props.user.current;
@@ -42,6 +45,15 @@ export default class NotificationsDropdown extends Component {
 
   componentDidMount() {
     this.setUnreadMsgs();
+    // add hubspot form
+    const script = document.createElement('script');
+    script.src = 'https://js.hsforms.net/forms/v2.js';
+    document.body.appendChild(script);
+
+    // add jquery for hubspot
+    const scriptJQ = document.createElement('script');
+    scriptJQ.src = 'https://code.jquery.com/jquery-3.5.1.min.js';
+    document.body.appendChild(scriptJQ);
   }
 
   setUnreadMsgs() {
@@ -60,9 +72,56 @@ export default class NotificationsDropdown extends Component {
 
     trackLoad(totalUnread);
     this.setState({ totalUnread });
+
+    if (totalUnread) {
+      const tracking = this.props.tracking;
+      tracking.trackEvent(
+        window.rzpQ.merchantActions().success('display.notification.bubble')
+      );
+    }
   }
 
+  trackEvents = (value, url, type) => {
+    const tracking = this.props.tracking;
+
+    const eventName =
+      type === 'button'
+        ? 'dashboard.click.notification.card.cta1'
+        : 'dashboard.click.notification.card.cta2';
+    tracking.trackEvent(
+      window.rzpQ.merchantActions().initiated(eventName, {
+        CTAValue: value,
+        url: url,
+      })
+    );
+  };
+
+  handleHbForm = e => {
+    e.preventDefault();
+    this.setState({ shouldShowHubspotForm: true });
+    const tracking = this.props.tracking;
+    if (window.hbspt) {
+      window.hbspt.forms.create({
+        portalId: '5558946',
+        formId: 'd5f93905-4a4a-4d69-ba5f-d838ed1f5be4',
+        target: '#hubspotForm',
+        onFormSubmit: function() {
+          tracking.trackEvent(
+            window.rzpQ.merchantActions().success('click.modal.cta')
+          );
+        },
+      });
+    }
+  };
+
   onShow = () => {
+    const tracking = this.props.tracking;
+    tracking.trackEvent(
+      window.rzpQ
+        .merchantActions()
+        .initiated('dashboard.click.notification.tab')
+    );
+
     trackExpand(this.state.totalUnread);
 
     this.setState({ totalUnread: 0 });
@@ -133,7 +192,6 @@ export default class NotificationsDropdown extends Component {
   render() {
     let { user, showMobileNav, analytics = () => {} } = this.props;
     const hasUnread = !!this.state.totalUnread;
-
     let cardsList = this.state.notifications.map((n, idx) => (
       <div className="media media-action" key={idx}>
         <NotificationCard
@@ -141,9 +199,13 @@ export default class NotificationsDropdown extends Component {
           user={user}
           lastReadTS={this.state.lastReadTS}
           trackAnnouncement={trackAnnouncement}
+          trackEvents={n.id && n.id === 'upiAutopay' ? this.trackEvents : null}
+          handleHbForm={this.handleHbForm}
         />
       </div>
     ));
+
+    const hubspotForm = <div id="hubspotForm" />;
 
     return (
       <Dropdown closeOnClick={false} onShow={this.onShow} onHide={this.onHide}>
@@ -198,6 +260,27 @@ export default class NotificationsDropdown extends Component {
             </div>
           </div>
         </DropdownContent>
+        <Modal
+          isOpen={this.state.shouldShowHubspotForm}
+          onRequestClose={() => this.setState({ shouldShowHubspotForm: false })}
+          ariaHideApp={false}
+          style={{
+            content: {
+              width: '400px',
+              padding: '20px',
+              backgroundColor: 'rgb(244, 248, 255)',
+            },
+          }}
+        >
+          <button
+            type="button"
+            class="close"
+            onClick={() => this.setState({ shouldShowHubspotForm: false })}
+          >
+            <i class="i i-close" />
+          </button>
+          {hubspotForm}
+        </Modal>
       </Dropdown>
     );
   }
@@ -236,6 +319,8 @@ const NotificationCard = ({
   buttons,
   lastReadTS,
   trackAnnouncement,
+  trackEvents,
+  handleHbForm,
   ga,
 }) => {
   const isUnread = _isUnreadNotification(start_ts, end_ts, lastReadTS);
@@ -290,6 +375,7 @@ const NotificationCard = ({
             }
 
             let internalUrl = isHash ? `${location.href}${URL}` : `/app${URL}`;
+            const urlPath = isExternal ? URL : internalUrl;
 
             return (
               <a
@@ -300,8 +386,12 @@ const NotificationCard = ({
                     ga ? ga.action : title,
                     `CTA Click - ${btn.label} - ${isUnread ? 'unread' : 'read'}`
                   );
+                  trackEvents && trackEvents(btn.label, urlPath, btn.type);
+                  if (btn.label === 'Get Early Access') {
+                    handleHbForm(e);
+                  }
                 }}
-                href={isExternal ? URL : internalUrl}
+                href={urlPath}
                 target={isExternal ? '_blank' : ''}
               >
                 <b>

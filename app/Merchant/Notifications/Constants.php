@@ -363,6 +363,26 @@ class Constants
                 'business_type' => MerchantDetails\BusinessType::REGISTERED_BUSINESS_TYPES,
             ]
         ],
+        [
+            'title'       => 'Introducing UPI AutoPay',
+            'description' => 'Powered by Razorpay Subscriptions, your customers can now set up recurring payments using their UPI App.',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/autopay.svg',
+            'id'          => 'upiAutopay',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Get Early Access',
+                    'url'   => ''
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Know More',
+                    'url'   => 'https://razorpay.com/upi-autopay/#dshbrdntf',
+                ],
+            ],
+            'start_ts'    => 1595935137,	
+            'end_ts'      => 1600940643, 
+        ],
     ];
 
     public static function getNotifications(): array
