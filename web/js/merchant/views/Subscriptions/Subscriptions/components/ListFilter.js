@@ -13,6 +13,7 @@ const statusList = [
   'cancelled',
   'completed',
   'expired',
+  'paused',
 ];
 
 export default props => {

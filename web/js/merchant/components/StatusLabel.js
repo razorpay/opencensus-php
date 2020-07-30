@@ -79,6 +79,7 @@ export const subscriptionStatusMap = {
   halted: 'label-danger',
   expired: 'label-danger',
   completed: 'label-muted',
+  paused: 'label-yellow',
 };
 
 export const planStatusMap = {
