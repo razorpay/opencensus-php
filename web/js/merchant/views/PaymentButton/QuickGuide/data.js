@@ -36,14 +36,14 @@ export const getQuickGuideData = {
   ReceivePayments: status => {
     if (status === done) {
       return {
-        title: '2. Payments Received',
+        title: '3. Payments Received',
         content:
           'Customers and supports will use this button to make payments on your website or blog.',
       };
     }
 
     return {
-      title: '2. Receive Payments',
+      title: '3. Receive Payments',
       content:
         'Customers and supports will use this button to make payments on your website or blog.',
     };
