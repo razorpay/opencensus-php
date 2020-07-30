@@ -1715,8 +1715,8 @@ class Route
         . 'change_log'                            => ['get',      'banking_accounts/activation/{id}/status_change_log',        'BankingAccountController@getActivationStatusChangeLog'   ],
         'banking_account_comments_create'         => ['post',     'banking_accounts/activation/{id}/comments',                 'BankingAccountController@createActivationComment'        ],
         'banking_account_comments_list'           => ['get',      'banking_accounts/activation/{id}/comments',                 'BankingAccountController@getActivationComments'          ],
-        'banking_account_comments_create'.
-        '_via_batch'                              => ['post',     'banking_accounts/activation/comments/batch',                'BankingAccountController@postCreateActivationCommentFromBatchService' ],
+        'banking_account_activation_details'.
+        '_via_batch'                              => ['post',     'banking_accounts/activation/details/batch',                'BankingAccountController@postUpdateActivationDetailsFromBatchService' ],
         'banking_account_statement_process'       => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
         'banking_account_statement_generate'      => ['post',     'banking_account_statement/generate',                        'BankingAccountStatementController@generate'                ],
         'banking_account_statement_process_cron'  => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
@@ -2480,9 +2480,9 @@ class Route
         'entity_bulk_update',
         'settings_fetch_internal',
         'settings_upsert_internal',
+        'banking_account_activation_details_via_batch',
         'payout_create_on_internal_contact',
-        'vendor_payment_ocr_accuracy_cron',
-        'banking_account_comments_create_via_batch'
+        'vendor_payment_ocr_accuracy_cron'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -4975,7 +4975,7 @@ class Route
             'credits_create_bulk_batch',
             'terminal_create_bulk',
             'mpans_bulk',
-            'banking_account_comments_create_via_batch'
+            'banking_account_activation_details_via_batch'
         ],
 
         'stork' => [

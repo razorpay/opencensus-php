@@ -4,6 +4,7 @@ use RZP\Models\Contact;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Mail;
 use RZP\Models\BankingAccount\Entity;
+use RZP\Models\BankingAccount\Status;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Models\BankingAccount\AccountType;
 use RZP\Mail\BankingAccount\XProActivation;
@@ -11,6 +12,7 @@ use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Mail\BankingAccount\StatusNotifications\Created;
 use RZP\Mail\BankingAccount\StatusNotifications\Rejected;
 use RZP\Mail\BankingAccount\StatusNotifications\Processed;
@@ -1713,11 +1715,14 @@ class BankingAccountTest extends TestCase
 
         $admin = $this->getDbLastEntity('admin');
 
+        $comment = 'this is a comment from Ops team';
+
         $dataToReplace = [
             'request'  => [
                 'content' => [
                     'bank_reference_number' => $bankingAccount['bank_reference_number'],
-                    'admin_id'          => $admin['id']
+                    'admin_id'          => $admin['id'],
+                    'comment'           => $comment
                 ]
             ],
         ];
@@ -1726,7 +1731,83 @@ class BankingAccountTest extends TestCase
 
         $this->startTest($dataToReplace);
 
+        $bankingAccountComment = $this->getDbLastEntity('banking_account_comment');
+
+        $this->assertequals($comment, $bankingAccountComment->comment);
+
         return $bankingAccount;
+    }
+
+    public function testCreateBankingAccountActivationCommentAndUpdateStatusViaBatch(string $comment = null, string $status = null)
+    {
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $bankingAccount = $this->createBankingAccount();
+
+        $admin = $this->getDbLastEntity('admin');
+
+        $comment = ($comment !== null) ? $comment: 'this is a comment from Ops team';
+
+        $status = ($status !== null) ? $status: 'Razorpay Processing';
+
+        $dataToReplace = [
+            'request'  => [
+                'content' => [
+                    'bank_reference_number' => $bankingAccount['bank_reference_number'],
+                    'admin_id'          => $admin['id'],
+                    'comment'           => $comment,
+                    'status'            => $status
+                ]
+            ],
+        ];
+
+        $this->ba->batchAuth();
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccountComment = $this->getDbLastEntity('banking_account_comment');
+
+        if ($comment === '')
+        {
+            $this->assertNull($bankingAccountComment);
+        }
+        else
+        {
+            $this->assertequals($comment, $bankingAccountComment->comment);
+        }
+
+        $bankingAccountUpdated = $this->getDbEntityById('banking_account', $bankingAccount['id']);
+
+        if ($status === '')
+        {
+            $expectedStatus = $bankingAccount['status'];
+        }
+        else
+        {
+            $expectedStatus = Status::transformFromExternalToInternal($status);
+        }
+
+        $this->assertEquals($expectedStatus, $bankingAccountUpdated->getStatus());
+
+        return $bankingAccount;
+    }
+
+    public function testUpdateStatusWithEmptyCommentViaBatch()
+    {
+        $this->testCreateBankingAccountActivationCommentAndUpdateStatusViaBatch('','Razorpay Processing');
+    }
+
+    public function testCreateBankingAccountCommentWithEmptyStatusViaBatch()
+    {
+        $this->testCreateBankingAccountActivationCommentAndUpdateStatusViaBatch('Sample comment','');
+    }
+
+    public function testCreateBankingAccountCommentWithForbiddenStatusChangeViaBatch()
+    {
+        // Application Received (initial state) -> Bank Processing is not permitted
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->testCreateBankingAccountActivationCommentAndUpdateStatusViaBatch('Sample comment','Bank Processing');
     }
 
     public function testGetBankingAccountActivationComment()

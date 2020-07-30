@@ -893,6 +893,7 @@ class Header
     // CA Activation
     const RZP_REF_NO                = 'RZP Ref No';
     const COMMENT                   = 'Comment';
+    const NEW_STATUS                = 'New Status';
 
     /**
      * Input and output file headers
@@ -2833,10 +2834,12 @@ class Header
             self::INPUT => [
                 self::RZP_REF_NO,
                 self::COMMENT,
+                self::NEW_STATUS,
             ],
             self::OUTPUT => [
                 self::RZP_REF_NO,
                 self::COMMENT,
+                self::NEW_STATUS,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
@@ -2876,10 +2879,10 @@ class Header
         }
 
 
-        // 
+        //
         // Speed is also optional. See ^above comments about Notes;
         // Speed is optional for batch type refunds.
-        // 
+        //
         if (($type === Type::REFUND) and
             (in_array(self::SPEED, $expectedHeaders, true) === true) and
             (in_array(self::SPEED, $actualHeaders, true) === false))

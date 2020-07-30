@@ -31,39 +31,9 @@ class Service extends Base\Service
         /** @var BankingAccount\Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
 
-        $newComment = (new Core)->create($bankingAccount, $input);
+        $admin = $this->app['basicauth']->getAdmin();
 
-        return $newComment->toArrayPublic();
-    }
-
-    public function createFromBatchService(array $input)
-    {
-        $this->trace->info(TraceCode::BANKING_ACCOUNT_BATCH_COMMENT_CREATE,
-            [
-                'input' => $input
-            ]);
-
-        try
-        {
-            $bankingAccount = $this->repo->banking_account->findByBankReferenceAndChannel(
-                $input[BankingAccount\Entity::CHANNEL],
-                $input[BankingAccount\Entity::BANK_REFERENCE_NUMBER]);
-        }
-        catch (\Throwable $e)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_ID, null,
-                [
-                    BankingAccount\Entity::BANK_REFERENCE_NUMBER => $input[BankingAccount\Entity::BANK_REFERENCE_NUMBER],
-                    BankingAccount\Entity::CHANNEL => $input[BankingAccount\Entity::CHANNEL]
-                ]);
-        }
-
-        unset($input[BankingAccount\Entity::CHANNEL]);
-
-        unset($input[BankingAccount\Entity::BANK_REFERENCE_NUMBER]);
-
-        $newComment = (new Core)->create($bankingAccount, $input);
+        $newComment = (new Core)->create($bankingAccount, $admin, $input);
 
         return $newComment->toArrayPublic();
     }

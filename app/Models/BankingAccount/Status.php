@@ -16,6 +16,18 @@ class Status
     const UNSERVICEABLE     = 'unserviceable'; // Temp Unserviceable
     const REJECTED          = 'rejected';      // Bank Rejected
 
+
+    // External Statuses as interpreted by Product
+    const APPLICATION_RECEIVED = 'Application Received';
+    const RAZORPAY_PROCESSING  = 'Razorpay Processing';
+    const SENT_TO_BANK         = 'Sent to Bank';
+    const BANK_PROCESSING      = 'Bank Processing';
+    const CA_OPENED            = 'CA Opened';
+    const MERCHANT_CANCELLED   = 'Merchant Cancelled';
+    const CA_ACTIVATED         = 'CA Activated';
+    const TEMP_UNSERVICEABLE   = 'Temp Unserviceable';
+    const BANK_REJECTED        = 'Bank Rejected';
+
     //
     // Account details can be saved only if the status
     // of banking account is in below array
@@ -33,10 +45,17 @@ class Status
 
     protected static $statuses = [
         self::CREATED,
+        // When Razorpay starts processing the application
+        self::PICKED,
+        // When application is sent to the bank
         self::INITIATED,
+        // When bank starts processing the application
         self::PROCESSING,
         // when user cancels his application to open CA.
         self::CANCELLED,
+        // when Bank has processed, and opened the CA.
+        // The webhook that we received from the bank on
+        // CA opening sets this state.
         self::PROCESSED,
         // when the user's pincode does not belong
         // to the region of pincodes serviceable
@@ -44,6 +63,9 @@ class Status
         // when the user's application to open CA
         //is rejected by RBL for some reason
         self::REJECTED,
+        // API banking has been tested. CA is activated
+        // and ready to use.
+        self::ACTIVATED
     ];
 
     /**
@@ -112,11 +134,37 @@ class Status
         self::ACTIVATED,
     ];
 
+    /**
+     * @var array
+     * This contains a status map that keeps mapping of an external status
+     * to internal status. External signifies the status as understood by the Product.
+     * Internal signifies the status as understood by BE.
+     *
+     * This is used in Admin batch upload when Ops/Sales/Bank teams use a
+     * csv to upload change in statuses in bulk.
+     *
+     * CA Activated and CA Opened are intentionally left out of this list
+     * to prevent change to these states, which should only be allowed via webhook/
+     * manual activation operation via admin dashboard.
+     */
+    public static $externalToInternalStatusMap = [
+        self::APPLICATION_RECEIVED => self::CREATED,
+        self::RAZORPAY_PROCESSING  => self::PICKED,
+        self::SENT_TO_BANK         => self::INITIATED,
+        self::BANK_PROCESSING      => self::PROCESSING,
+        self::MERCHANT_CANCELLED   => self::CANCELLED,
+        self::TEMP_UNSERVICEABLE   => self::UNSERVICEABLE,
+        self::BANK_REJECTED        => self::REJECTED,
+    ];
+
     public static function isValidStatus(string $status = null)
     {
-        $key = __CLASS__ . '::' . strtoupper($status);
+        return in_array($status, self::$statuses);
+    }
 
-        return ((defined($key) === true) and (constant($key) === $status));
+    public static function isValidExternalStatus(string $status)
+    {
+        return in_array($status, array_keys(self::$externalToInternalStatusMap));
     }
 
     public static function validate(string $status = null)
@@ -130,6 +178,26 @@ class Status
                     Entity::STATUS => $status
                 ]);
         }
+    }
+
+    public static function validateExternalStatus(string $status)
+    {
+        if (self::isValidExternalStatus($status) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Not a valid Razorpay Banking External status',
+                Entity::STATUS,
+                [
+                    Entity::STATUS => $status
+                ]);
+        }
+    }
+
+    public static function transformFromExternalToInternal(string $status)
+    {
+        self::validateExternalStatus($status);
+
+        return self::$externalToInternalStatusMap[$status];
     }
 
     public static function validatePreviousToCurrentMapping(string $previousStatus, string $currentStatus)

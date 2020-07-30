@@ -805,24 +805,17 @@ class Validator extends Base\Validator
     }
 
     // TODO: move to batch service
+    // Ok to keep it here temporarily because uploaded file is expected to be a small file.
     protected function validateBankingAccountActivationCommentsEntries(array &$entries, array $params, ME $merchant)
     {
         foreach ($entries as $entry)
         {
             $bankReferenceNumber = $entry[Header::RZP_REF_NO];
 
-            $comment = $entry[Header::COMMENT];
-
             if ((empty($bankReferenceNumber) === true) or (is_numeric($bankReferenceNumber) === false))
             {
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_RZP_REF_NO);
-            }
-
-            if (empty($comment) === true)
-            {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_COMMENT);
             }
         }
     }
@@ -875,22 +868,22 @@ class Validator extends Base\Validator
                     ErrorCode::BAD_REQUEST_BATCH_FILE_DUPLICATE_PAYMENT_ID);
             }
 
-            // 
+            //
             // If merchant has instant refund disabled in their feature set,
             // dont even allow them to process a refund batch with optimum speed
-            // 
-            if (($isInstantRefundDisabled === true) and 
-                (empty($entry[Header::SPEED]) === false) and 
+            //
+            if (($isInstantRefundDisabled === true) and
+                (empty($entry[Header::SPEED]) === false) and
                 (in_array(strtolower($entry[Header::SPEED]), [Refund\Constants::OPTIMUM], true) === true))
             {
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_BATCH_FILE_INSTANT_REFUNDS_DISABLED);
             }
 
-            // 
-            // Speed is optional, but if specified, 
+            //
+            // Speed is optional, but if specified,
             // should strictly contain only one of the two values
-            // 
+            //
             if ((empty($entry[Header::SPEED]) === false) and
                 (in_array(strtolower($entry[Header::SPEED]), [Refund\Constants::NORMAL, Refund\Constants::OPTIMUM], true) === false))
             {

@@ -54,11 +54,13 @@ class BankingAccountActivationCommentsTest extends TestCase
             $entries = [
                 [
                     Batch\Header::RZP_REF_NO => $refno,
-                    Batch\Header::COMMENT => $comment
+                    Batch\Header::COMMENT => $comment,
+                    Batch\Header::NEW_STATUS => 'Razorpay Processing'
                 ],
                 [
                     Batch\Header::RZP_REF_NO => "102020", // non-existent
-                    Batch\Header::COMMENT => $comment
+                    Batch\Header::COMMENT => $comment,
+                    Batch\Header::NEW_STATUS => 'Razorpay Processing'
                 ]
             ];
         }
@@ -87,7 +89,8 @@ class BankingAccountActivationCommentsTest extends TestCase
         $entries = [
             [
                 Batch\Header::RZP_REF_NO => 'abc',
-                Batch\Header::COMMENT => 'Sample comment'
+                Batch\Header::COMMENT => 'Sample comment',
+                Batch\Header::NEW_STATUS => 'Razorpay Processing'
             ]
         ];
 

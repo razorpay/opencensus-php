@@ -32,6 +32,7 @@ use RZP\Mail\BankingAccount\XProActivation;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Jobs\BankingAccountGatewayBalanceUpdate;
+use RZP\Models\BankingAccount\Activation\Comment;
 use RZP\Models\BankingAccount\Channel as BAChannel;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccount\Detail as BankingAccountDetail;

@@ -87,11 +87,11 @@ class BankingAccountController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function postCreateActivationCommentFromBatchService()
+    public function postUpdateActivationDetailsFromBatchService()
     {
         $input = Request::all();
 
-        $response = $this->service(E::BANKING_ACCOUNT_COMMENT)->createFromBatchService($input);
+        $response = $this->service()->updateDetailsFromBatchService($input);
 
         return ApiResponse::json($response);
     }

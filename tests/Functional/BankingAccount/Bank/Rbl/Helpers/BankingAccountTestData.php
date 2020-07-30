@@ -1147,7 +1147,7 @@ return [
 
     'testCreateBankingAccountActivationCommentViaBatch' => [
         'request' => [
-            'url'     => '/banking_accounts/activation/comments/batch',
+            'url'     => '/banking_accounts/activation/details/batch',
             'method'  => 'POST',
             'content' => [
                 'comment'           => 'this is a comment from Ops team',
@@ -1161,13 +1161,29 @@ return [
         ],
         'response' => [
             'content' => [
+                'status' => 'success'
+            ],
+        ],
+    ],
+
+    'testCreateBankingAccountActivationCommentAndUpdateStatusViaBatch' => [
+        'request' => [
+            'url'     => '/banking_accounts/activation/details/batch',
+            'method'  => 'POST',
+            'content' => [
                 'comment'           => 'this is a comment from Ops team',
                 'source_team_type'  => 'internal',
                 'source_team'       => 'ops',
-                'added_at'          => 1593567500,
-                'admin'             => [
-                    'name' => 'test admin'
-                ]
+                'added_at'          => '1593567500',
+                'bank_reference_number' => '',
+                'channel'           => 'rbl',
+                'admin_id'          => '',
+                'status'            => 'Razorpay Processing'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'success'
             ],
         ],
     ],

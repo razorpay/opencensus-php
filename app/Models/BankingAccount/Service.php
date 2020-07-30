@@ -5,7 +5,10 @@ namespace RZP\Models\BankingAccount;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Http\RequestHeader;
+use RZP\Models\Admin\Admin;
 use RZP\Exception\BadRequestException;
+use RZP\Models\BankingAccount\Activation\Comment;
 
 class Service extends Base\Service
 {
@@ -40,9 +43,10 @@ class Service extends Base\Service
      * we are not fetching banking_account by merchant_id.
      * @param string $id
      * @param array $input
+     * @param Admin\Entity $admin
      * @return array
      */
-    public function update(string $id, array $input): array
+    public function update(string $id, array $input, Admin\Entity $admin = null): array
     {
         /** @var Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicId($id);
@@ -61,7 +65,14 @@ class Service extends Base\Service
 
         (new Validator)->setStrictFalse()->validateInput(Validator::INTERNAL_EDIT, $input);
 
-        $admin = $this->app['basicauth']->getAdmin();
+        // $admin can be passed if called by updateDetailsFromBatchService
+        // Ideally, admin should be set in the middleware, but
+        // it's currently not done for requests coming from batch service.
+        // TODO: handle correctly in middleware layer.
+        if ($admin === null)
+        {
+            $admin = $this->app['basicauth']->getAdmin();
+        }
 
         $account = $this->core->updateBankingAccount($bankingAccount, $input, $admin);
 
@@ -200,5 +211,93 @@ class Service extends Base\Service
         $reviewerId = $input[Entity::REVIEWER_ID];
 
         return (new Core)->bulkAssignReviewer($reviewerId, $bankingAccountIds);
+    }
+
+    public function prepareInputForCommentCreate(array $input)
+    {
+        $requiredKeys = [
+            Comment\Entity::COMMENT,
+            Comment\Entity::SOURCE_TEAM_TYPE,
+            Comment\Entity::SOURCE_TEAM,
+            Comment\Entity::ADDED_AT
+        ];
+
+        $commentInput = array_intersect_key($input, array_fill_keys($requiredKeys, ''));
+
+        $commentInput[Comment\Entity::COMMENT] = trim($commentInput[Comment\Entity::COMMENT]);
+
+        return $commentInput;
+    }
+
+    public function prepareInputForUpdate(array $input)
+    {
+        $requiredKeys = [
+            Entity::STATUS
+        ];
+
+        $updateInput = array_intersect_key($input, array_fill_keys($requiredKeys, ''));
+
+        if (empty($updateInput[Entity::STATUS]) === false)
+        {
+            $updateInput[Entity::STATUS] = trim($updateInput[Entity::STATUS]);
+
+            $updateInput[Entity::STATUS] = Status::transformFromExternalToInternal($updateInput[Entity::STATUS]);
+        }
+
+        return $updateInput;
+    }
+
+    public function updateDetailsFromBatchService(array $input)
+    {
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_UPDATE_DETAILS_FROM_BATCH,
+            [
+                'input' => $input,
+                'batch_id' => $this->app['request']->header(RequestHeader::X_Batch_Id, null),
+                'creator_id' => $this->app['request']->header(RequestHeader::X_Creator_Id, null),
+                'creator_type' => $this->app['request']->header(RequestHeader::X_Creator_Type, null)
+            ]);
+
+        try
+        {
+            $bankingAccount = $this->repo->banking_account->findByBankReferenceAndChannel(
+                $input[Entity::CHANNEL],
+                $input[Entity::BANK_REFERENCE_NUMBER]);
+
+            $admin = $this->repo->admin->findOrFailPublic($input[Entity::ADMIN_ID]);
+        }
+        catch (\Throwable $e)
+        {
+            // TODO: throw different validation errors for both the find queries.
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID, null,
+                [
+                    Entity::BANK_REFERENCE_NUMBER => $input[Entity::BANK_REFERENCE_NUMBER],
+                    Entity::CHANNEL => $input[Entity::CHANNEL],
+                    Entity::ADMIN_ID => $input[Entity::ADMIN_ID]
+                ]);
+        }
+
+        // Transaction because we want to eiher process the entire batch row, or nothing, so that it
+        // is possible to retry.
+        $this->repo->transaction(function() use ($input, $bankingAccount, $admin)
+        {
+            $commentCreateInput = $this->prepareInputForCommentCreate($input);
+
+            if (empty($commentCreateInput[Comment\Entity::COMMENT]) === false)
+            {
+                (new Comment\Core)->create($bankingAccount, $admin, $commentCreateInput);
+            }
+
+            $updateInput = $this->prepareInputForUpdate($input);
+
+            if (empty($updateInput[Entity::STATUS]) === false)
+            {
+                $this->update($bankingAccount->getPublicId(), $updateInput, $admin);
+            }
+        });
+
+        return [
+            'status' => 'success'
+        ];
     }
 }
