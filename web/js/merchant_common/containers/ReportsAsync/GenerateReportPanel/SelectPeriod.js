@@ -232,7 +232,13 @@ function SelectInterval({
   return null;
 }
 
+const now = moment();
 const currentMonth = moment().month();
+const currentYear = moment().year();
+
+function disableFutureMonths(date) {
+  return date.month() > currentMonth && date.year() >= currentYear;
+}
 function SelectMonth({ onDateChange, selectedMonth, name }) {
   return (
     <Input.ToCalendar
@@ -244,7 +250,7 @@ function SelectMonth({ onDateChange, selectedMonth, name }) {
       label="Select Month"
       class="Input--vTop"
       onChange={onDateChange}
-      disabledDate={date => date.month() > currentMonth}
+      disabledDate={disableFutureMonths}
     />
   );
 }
