@@ -937,9 +937,14 @@ class ApiEventSubscriber extends Base\Core
 
     protected function getRefundPayload(RefundEntity $refund)
     {
+        $payment = $refund->payment;
+
         $payload = [
             Constants\Entity::REFUND => [
                 'entity' => $refund->toArrayPublic(),
+            ],
+            Constants\Entity::PAYMENT => [
+                'entity' => $payment->toArrayPublic(),
             ],
         ];
 

@@ -1451,7 +1451,7 @@ return [
         'event' => [
             'entity' => 'event',
             'event' => 'refund.speed_changed',
-            'contains' => ['refund'],
+            'contains' => ['refund', 'payment'],
             'payload' => [
                 'refund' => [
                     'entity' => [
@@ -1468,6 +1468,23 @@ return [
                         ],
                     ],
                 ],
+                'payment' => [
+                    'entity' => [
+                        'entity' => 'payment',
+                        'amount' => 50000,
+                        'currency' => 'INR',
+                        'status' => 'captured',
+                        'amount_refunded' => 3470,
+                        'refund_status' => 'partial',
+                        'captured' => true,
+                        'description' => 'random description',
+                        'email' => 'a@b.com',
+                        'contact' => '+919918899029',
+                        'notes' => ['merchant_order_id' => 'random order id'],
+                        'error_code' => null,
+                        'error_description' => null,
+                    ],
+                ],
             ],
         ],
     ],
@@ -1477,7 +1494,7 @@ return [
         'event' => [
             'entity' => 'event',
             'event' => 'refund.failed',
-            'contains' => ['refund'],
+            'contains' => ['refund', 'payment'],
             'payload' => [
                 'refund' => [
                     'entity' => [
@@ -1492,6 +1509,23 @@ return [
                         ],
                     ],
                 ],
+                'payment' => [
+                    'entity' => [
+                        'entity' => 'payment',
+                        'amount' => 50000,
+                        'currency' => 'INR',
+                        'status' => 'captured',
+                        'amount_refunded' => 0,
+                        'refund_status' => null,
+                        'captured' => true,
+                        'description' => 'random description',
+                        'email' => 'a@b.com',
+                        'contact' => '+919918899029',
+                        'notes' => ['merchant_order_id' => 'random order id'],
+                        'error_code' => null,
+                        'error_description' => null,
+                    ],
+                ],
             ],
         ],
     ],
@@ -1501,7 +1535,7 @@ return [
         'event' => [
             'entity' => 'event',
             'event' => 'refund.processed',
-            'contains' => ['refund'],
+            'contains' => ['refund', 'payment'],
             'payload' => [
                 'refund' => [
                     'entity' => [
@@ -1517,6 +1551,23 @@ return [
                         ],
                     ],
                 ],
+                'payment' => [
+                    'entity' => [
+                        'entity' => 'payment',
+                        'amount' => 50000,
+                        'currency' => 'INR',
+                        'status' => 'captured',
+                        'amount_refunded' => 3471,
+                        'refund_status' => 'partial',
+                        'captured' => true,
+                        'description' => 'random description',
+                        'email' => 'a@b.com',
+                        'contact' => '+919918899029',
+                        'notes' => ['merchant_order_id' => 'random order id'],
+                        'error_code' => null,
+                        'error_description' => null,
+                    ],
+                ],
             ],
         ],
     ],
@@ -1526,7 +1577,7 @@ return [
         'event' => [
             'entity' => 'event',
             'event' => 'refund.processed',
-            'contains' => ['refund'],
+            'contains' => ['refund', 'payment'],
             'payload' => [
                 'refund' => [
                     'entity' => [
@@ -1543,6 +1594,23 @@ return [
                         ],
                     ],
                 ],
+                'payment' => [
+                    'entity' => [
+                        'entity' => 'payment',
+                        'amount' => 50000,
+                        'currency' => 'INR',
+                        'status' => 'refunded',
+                        'amount_refunded' => 50000,
+                        'refund_status' => 'full',
+                        'captured' => true,
+                        'description' => 'random description',
+                        'email' => 'a@b.com',
+                        'contact' => '+919918899029',
+                        'notes' => ['merchant_order_id' => 'random order id'],
+                        'error_code' => null,
+                        'error_description' => null,
+                    ],
+                ],
             ],
         ],
     ],
@@ -1552,7 +1620,7 @@ return [
         'event' => [
             'entity' => 'event',
             'event' => 'refund.created',
-            'contains' => ['refund'],
+            'contains' => ['refund', 'payment'],
             'payload' => [
                 'refund' => [
                     'entity' => [
@@ -1564,6 +1632,23 @@ return [
                         'acquirer_data'   => [
                             'arn' => null,
                         ],
+                    ],
+                ],
+                'payment' => [
+                    'entity' => [
+                        'entity' => 'payment',
+                        'amount' => 50000,
+                        'currency' => 'INR',
+                        'status' => 'refunded',
+                        'amount_refunded' => 50000,
+                        'refund_status' => 'full',
+                        'captured' => true,
+                        'description' => 'random description',
+                        'email' => 'a@b.com',
+                        'contact' => '+919918899029',
+                        'notes' => ['merchant_order_id' => 'random order id'],
+                        'error_code' => null,
+                        'error_description' => null,
                     ],
                 ],
             ],
