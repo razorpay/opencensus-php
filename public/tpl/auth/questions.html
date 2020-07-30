@@ -97,7 +97,7 @@
 
           <div class="details-form-input-group">
               <i class="fa fa-phone"></i>
-            <input type="tel" ng-focus="onInputFocus('contact_mobile')" ng-pattern="^\+?[0-9]{8,13}$" name="contact_mobile" id="contact_mobile" ng-model="signup.merchantData.contact_mobile"
+            <input type="tel" ng-focus="onInputFocus('contact_mobile')" ng-pattern="/^\+?[0-9]{8,13}$/" name="contact_mobile" id="contact_mobile" ng-model="signup.merchantData.contact_mobile"
               class="form-control auth-form-input" placeholder="10 digit mobile number" required ng-minlength="10" ng-maxlength="13" >
           </div>
 
