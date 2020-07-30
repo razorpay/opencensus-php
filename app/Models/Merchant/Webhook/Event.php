@@ -37,6 +37,8 @@ class Event
     const SUBSCRIPTION_UPDATED              = 'subscription.updated';
     const TOKEN_CONFIRMED                   = 'token.confirmed';
     const TOKEN_REJECTED                    = 'token.rejected';
+    const TOKEN_PAUSED                      = 'token.paused';
+    const TOKEN_CANCELLED                   = 'token.cancelled';
     const SETTLEMENT_PROCESSED              = 'settlement.processed';
     const VIRTUAL_ACCOUNT_CREDITED          = 'virtual_account.credited';
     const VIRTUAL_ACCOUNT_CREATED           = 'virtual_account.created';
@@ -112,6 +114,8 @@ class Event
         self::SUBSCRIPTION_UPDATED,
         self::TOKEN_CONFIRMED,
         self::TOKEN_REJECTED,
+        self::TOKEN_PAUSED,
+        self::TOKEN_CANCELLED,
         self::SETTLEMENT_PROCESSED,
         self::VIRTUAL_ACCOUNT_CREDITED,
         self::VIRTUAL_ACCOUNT_CREATED,
@@ -193,6 +197,8 @@ class Event
         self::SUBSCRIPTION_UPDATED,
         self::TOKEN_CONFIRMED,
         self::TOKEN_REJECTED,
+        self::TOKEN_PAUSED,
+        self::TOKEN_CANCELLED,
         self::SETTLEMENT_PROCESSED,
         self::VIRTUAL_ACCOUNT_CREDITED,
         self::VIRTUAL_ACCOUNT_CREATED,
@@ -327,6 +333,8 @@ class Event
         self::PAYMENT_LINK_EXPIRED              => 9,
         self::PAYMENT_LINK_CANCELLED            => 10,
         self::SUBSCRIPTION_AUTHENTICATED        => 11,
+        self::TOKEN_PAUSED                      => 12,
+        self::TOKEN_CANCELLED                   => 13,
     ];
 
     /**
@@ -353,6 +361,8 @@ class Event
         self::SUBSCRIPTION_UPDATED              => [Product::PRIMARY],
         self::TOKEN_CONFIRMED                   => [Product::PRIMARY],
         self::TOKEN_REJECTED                    => [Product::PRIMARY],
+        self::TOKEN_PAUSED                      => [Product::PRIMARY],
+        self::TOKEN_CANCELLED                   => [Product::PRIMARY],
         self::SETTLEMENT_PROCESSED              => [Product::PRIMARY],
         self::VIRTUAL_ACCOUNT_CREDITED          => [Product::PRIMARY],
         self::VIRTUAL_ACCOUNT_CREATED           => [Product::PRIMARY],
@@ -435,6 +445,8 @@ class Event
         self::SUBSCRIPTION_UPDATED              => Entity::SUBSCRIPTION,
         self::TOKEN_CONFIRMED                   => Entity::TOKEN,
         self::TOKEN_REJECTED                    => Entity::TOKEN,
+        self::TOKEN_PAUSED                      => Entity::TOKEN,
+        self::TOKEN_CANCELLED                   => Entity::TOKEN,
         self::SETTLEMENT_PROCESSED              => Entity::SETTLEMENT,
         self::PAYMENT_DISPUTE_WON               => Entity::DISPUTE,
         self::PAYMENT_DISPUTE_LOST              => Entity::DISPUTE,
@@ -492,6 +504,8 @@ class Event
         self::SUBSCRIPTION_UPDATED              => Feature\Constants::SUBSCRIPTIONS,
         self::TOKEN_CONFIRMED                   => Feature\Constants::CHARGE_AT_WILL,
         self::TOKEN_REJECTED                    => Feature\Constants::CHARGE_AT_WILL,
+        self::TOKEN_PAUSED                      => Feature\Constants::CHARGE_AT_WILL,
+        self::TOKEN_CANCELLED                   => Feature\Constants::CHARGE_AT_WILL,
         self::VIRTUAL_ACCOUNT_CREDITED          => Feature\Constants::VIRTUAL_ACCOUNTS,
         self::VIRTUAL_ACCOUNT_CREATED           => Feature\Constants::VIRTUAL_ACCOUNTS,
         self::VIRTUAL_ACCOUNT_CLOSED            => Feature\Constants::VIRTUAL_ACCOUNTS,

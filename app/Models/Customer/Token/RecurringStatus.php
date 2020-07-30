@@ -47,7 +47,9 @@ class RecurringStatus
 
     public static $webhookStatuses = [
         self::CONFIRMED,
-        self::REJECTED
+        self::REJECTED,
+        self::PAUSED,
+        self::CANCELLED,
     ];
 
     protected static $finalStatuses = [

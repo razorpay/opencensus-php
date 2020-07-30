@@ -757,11 +757,25 @@ class Entity extends Base\PublicEntity
 
         $publicArray[self::DCC_ENABLED] = $this->isDCCEnabled();
 
+        // For upi recurring tokens, we are not storing max amount, end time in token entity. These are being
+        // stored in mandate entity. So, fetching these details from mandate entity.
+        if ($this->isUpiRecurringToken() === true)
+        {
+            $publicArray[self::MAX_AMOUNT] = $this->getUpiMandate()->getMaxAmount();
+
+            $publicArray[self::EXPIRED_AT] = $this->getUpiMandate()->getEndTime();
+        }
+
         return $publicArray;
     }
 
     public function isUpiRecurringToken()
     {
-        return (($this->getStartTime() !== null) and ($this->getMethod() === Payment\Method::UPI));
+        return (($this->isRecurring() === true) and ($this->getMethod() === Payment\Method::UPI));
+    }
+
+    public function isSaveVpaToken()
+    {
+        return (($this->getStartTime() === null) and ($this->getMethod() === Payment\Method::UPI));
     }
 }

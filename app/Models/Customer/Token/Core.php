@@ -15,6 +15,7 @@ use RZP\Models\Customer\AppToken;
 use RZP\Models\Customer\Token;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Listeners\ApiEventSubscriber;
 
 class Core extends Base\Core
 {
@@ -586,7 +587,7 @@ class Core extends Base\Core
     {
         // If the token being created is for recurring payment, we want to create new token. But if the token is for
         // saved vpa, we dont want to create a new token if a token already exists.
-        if ($newToken->isUpiRecurringToken() === true)
+        if ($newToken->isSaveVpaToken() === false)
         {
             return null;
         }
@@ -680,9 +681,13 @@ class Core extends Base\Core
 
         $token = $this->repo->token->findByPublicId('token_' . $tokenId);
 
+        $oldRecurringStatus = $token->getRecurringStatus();
+
         $token->setRecurringStatus(RecurringStatus::PAUSED);
 
         $token->saveOrFail();
+
+        $this->eventUpiRecurringTokenStatus($token, $oldRecurringStatus);
 
         $this->notifyAppsTokenStatus($token, RecurringStatus::PAUSED);
     }
@@ -704,9 +709,13 @@ class Core extends Base\Core
 
         $token = $this->repo->token->findByPublicId('token_' . $tokenId);
 
+        $oldRecurringStatus = $token->getRecurringStatus();
+
         $token->setRecurringStatus(RecurringStatus::CONFIRMED);
 
         $token->saveOrFail();
+
+        $this->eventUpiRecurringTokenStatus($token, $oldRecurringStatus);
 
         $this->notifyAppsTokenStatus($token, RecurringStatus::CONFIRMED);
     }
@@ -728,11 +737,35 @@ class Core extends Base\Core
 
         $token = $this->repo->token->findByPublicId('token_' . $tokenId);
 
+        $oldRecurringStatus = $token->getRecurringStatus();
+
         $token->setRecurringStatus(RecurringStatus::CANCELLED);
 
         $token->saveOrFail();
-
+      
+        $this->eventUpiRecurringTokenStatus($token, $oldRecurringStatus);
+      
         $this->notifyAppsTokenStatus($token, RecurringStatus::CANCELLED);
+    }
+
+    protected function eventUpiRecurringTokenStatus(Token\Entity $token, string $oldRecurringStatus = null)
+    {
+        $currentRecurringStatus = $token->getRecurringStatus();
+
+        // Ideally the old recurring status should not be the same as the new recurring status. But, in some cases,
+        // such as in cases where we did not get callback for token getting paused, these statuses might be same.
+        // We dont want to send multiple webhooks for the same final status in this case.
+        if (($oldRecurringStatus !== $currentRecurringStatus) and
+            (Token\RecurringStatus::isWebhookStatus($currentRecurringStatus) === true))
+        {
+            $event = 'api.token.' . $currentRecurringStatus;
+
+            $eventPayload = [
+                ApiEventSubscriber::MAIN => $token,
+            ];
+
+            $this->app['events']->fire($event, $eventPayload);
+        }
     }
 
     /**
