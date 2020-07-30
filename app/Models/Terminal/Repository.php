@@ -22,7 +22,7 @@ class Repository extends Base\Repository
 
     protected $entityFetchParamRules = [
         Entity::GATEWAY                 => 'sometimes',
-        Entity::CATEGORY                => 'sometimes|integer|digits:4',
+        Entity::CATEGORY                => 'sometimes|digits:4',
         Entity::ENABLED                 => 'sometimes',
         Entity::STATUS                  => 'sometimes',
     ];
@@ -34,7 +34,7 @@ class Repository extends Base\Repository
         Entity::CARD                    => 'sometimes|boolean',
         Entity::NETBANKING              => 'sometimes|boolean',
         Entity::SHARED                  => 'sometimes|boolean',
-        Entity::CATEGORY                => 'sometimes|integer|digits:4',
+        Entity::CATEGORY                => 'sometimes|digits:4',
         Entity::DELETED                 => 'sometimes|boolean',
         Entity::GATEWAY_MERCHANT_ID     => 'sometimes|string|max:50',
         Entity::GATEWAY_MERCHANT_ID2    => 'sometimes',
