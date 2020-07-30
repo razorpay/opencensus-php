@@ -1838,5 +1838,4 @@ class ErrorCode
     const BAD_REQUEST_CRED_BLOCKED_USER                                             = 'BAD_REQUEST_CRED_BLOCKED_USER';
     const GATEWAY_ERROR_CRED_RESERVED_ERROR                                         = 'GATEWAY_ERROR_CRED_RESERVED_ERROR';
     const BAD_REQUEST_CRED_MISSING_FIELDS_MESSAGE                                   = 'BAD_REQUEST_CRED_MISSING_FIELDS_MESSAGE';
-    const SERVER_ERROR_SFTP_CONNECTION_FAILED                                       = 'SERVER_ERROR_SFTP_CONNECTION_FAILED';
 }

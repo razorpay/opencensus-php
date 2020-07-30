@@ -4,7 +4,6 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
-use Response;
 use RZP\Constants\Entity;
 use RZP\Constants\Entity as E;
 
@@ -440,14 +439,5 @@ class SettlementController extends Controller
         $data = $this->service()->postSettlementCreateStatusUpdate($input);
 
         return ApiResponse::json($data);
-    }
-
-    public function getIrctcSettlementFile(string $date)
-    {
-        $input = Request::all();
-
-        $fileContent = $this->service()->getIrctcSettlementFile($date, $input);
-
-        return ApiResponse::json($fileContent);
     }
 }

@@ -31,7 +31,6 @@ class Route
         'create_payment_config_admin'              => ['post',     'admin/payment/config',                           'ConfigController@createPaymentConfig'                              ],
         'update_payment_config'                    => ['patch',    'payment/config',                                 'ConfigController@updatePaymentConfig'                              ],
         'update_payment_config_admin'              => ['patch',    'admin/payment/config',                           'ConfigController@updatePaymentConfig'                              ],
-        'get_irctc_settlement_file_admin'          => ['get',      'admin/irctc/settlement/{date}',                   'SettlementController@getIrctcSettlementFile'                              ],
         'delete_payment_config'                    => ['delete',   'payment/config',                                 'ConfigController@deletePaymentConfig'                              ],
         'update_late_auth_config_admin_bulk'       => ['patch',    'admin/lateauth/config/bulk',                     'ConfigController@updateLateAuthConfigBulk'                         ],
         // callback_url case handler for automatic checkout
@@ -3535,7 +3534,6 @@ class Route
         'setl_bank_account_update',
         'setl_bank_account_get',
         'setl_bank_account_delete',
-        'get_irctc_settlement_file_admin',
         'fix_merchant_data_cron',
         'update_late_auth_config_admin_bulk',
         'create_payment_config_bulk',
@@ -4259,8 +4257,7 @@ class Route
         'instrument_request_razorx_admin'             => '*',
 
         //payout downtime fetch from X dashboard
-        'fetch_payout_downtimes_enabled'              => '*',
-        'get_irctc_settlement_file_admin'             => '*',
+        'fetch_payout_downtimes_enabled'           => '*',
 
         'fix_merchant_data_cron'                   => Permission::UPDATE_CONFIG_KEY,
     ];
