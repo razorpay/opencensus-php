@@ -57,6 +57,22 @@ class PaymentCreateDCCTest extends TestCase
         $this->assertEquals($payment['id'], 'pay_' . $paymentMeta['payment_id']);
         $this->assertEquals($cardCurrency, $paymentMeta['gateway_currency']);
         $this->assertEquals($usdAmount, $paymentMeta['gateway_amount']);
+
+        //Payment entity fetch with Admin auth
+        $paymentFetchRequestData = [
+            'method'  => 'GET',
+            'url'     => '/admin/payment/' . $paymentMeta['payment_id'],
+        ];
+
+        $response = $this->sendRequest($paymentFetchRequestData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertEquals(true, $responseContent['dcc']);
+        $this->assertEquals($usdAmount, $responseContent['gateway_amount']);
+        $this->assertEquals($cardCurrency, $responseContent['gateway_currency']);
+        $this->assertEquals($paymentMeta['forex_rate'], $responseContent['forex_rate']);
+        $this->assertEquals($paymentMeta['dcc_offered'], $responseContent['dcc_offered']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $responseContent['dcc_mark_up_percent']);
     }
 
     public function testPaymentCreateWithDCCINR()

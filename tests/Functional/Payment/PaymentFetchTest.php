@@ -85,6 +85,19 @@ class PaymentFetchTest extends TestCase
         $this->assertEquals('pay_' . $pay1['id'], $content['items'][0]['id']);
     }
 
+    public function testAdminAuthPaymentFetch()
+    {
+        $this->ba->adminAuth();
+
+        $card = $this->fixtures->create('card', ['name' => 'Test Name']);
+
+        $payment = $this->fixtures->create('payment', ['card_id' => $card->getId()]);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $payment->getPublicId();
+
+        $this->startTest();
+    }
+
     public function testFetchRuleVPAFilterForAdminAuth()
     {
         $this->ba->adminAuth();
@@ -219,7 +232,14 @@ class PaymentFetchTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] .= $payment->getPublicId();
 
-        $this->startTest();
+        $content = $this->startTest();
+
+        $this->assertArrayNotHasKey('dcc', $content);
+        $this->assertArrayNotHasKey('forex_rate', $content);
+        $this->assertArrayNotHasKey('gateway_amount', $content);
+        $this->assertArrayNotHasKey('gateway_currency', $content);
+        $this->assertArrayNotHasKey('dcc_offered', $content);
+        $this->assertArrayNotHasKey('dcc_mark_up_percent', $content);
     }
 
     public function testFetchStatusCountForPrivateAuth()

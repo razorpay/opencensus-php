@@ -251,6 +251,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const APP_PRESENT                       = 'app_present';
 
+    const DCC                               = 'dcc';
+
     protected static $sign      = 'pay';
 
     protected $entity           = 'payment';
@@ -503,6 +505,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::LATE_AUTHORIZED,
         self::DETAILED_REASON,
         self::PROVIDER,
+        self::DCC,
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
@@ -2837,6 +2840,28 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $array[self::ERROR_REASON] = DetailedError::$reasonFieldMap[$reason] ?? 'NA';;
 
             return;
+        }
+    }
+
+    public function setPublicDCCAttribute(array & $array)
+    {
+        $app = \App::getFacadeRoot();
+
+        if ($app['basicauth']->isAdminAuth() === true)
+        {
+            $paymentMetaEntity = $this->paymentMeta;
+
+            $array[self::DCC] = $this->isDcc();
+
+            $array[PaymentMeta\Entity::GATEWAY_AMOUNT] = $this->getGatewayAmount();
+
+            $array[PaymentMeta\Entity::GATEWAY_CURRENCY] = $this->getGatewayCurrency();
+
+            $array[PaymentMeta\Entity::FOREX_RATE] = ($paymentMetaEntity != null) ? $paymentMetaEntity->getForexRate() : null;
+
+            $array[PaymentMeta\Entity::DCC_OFFERED] = ($paymentMetaEntity != null) ? $paymentMetaEntity->isDccOffered() : null;
+
+            $array[PaymentMeta\Entity::DCC_MARK_UP_PERCENT] = ($paymentMetaEntity != null) ? $paymentMetaEntity->getDccMarkUpPercent() : null;
         }
     }
 
