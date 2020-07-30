@@ -769,6 +769,7 @@ class Service extends Base\Service
 
             $data[Constants::BANNER_ID]          = $utmParams[Constants::BANNER_ID] ?? '';
             $data[Constants::BANNER_CLICKSOURCE] = $utmParams[Constants::BANNER_CLICKSOURCE] ?? '';
+            $data[Constants::BANNER_CLICKTIME] = $utmParams[Constants::BANNER_CLICKTIME] ?? '';
 
             foreach (Constants::$clickIdentifier as $clickId)
             {

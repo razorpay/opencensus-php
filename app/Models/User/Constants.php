@@ -36,6 +36,8 @@ class Constants
 
     const BANNER_CLICKSOURCE = 'banner_clicksource';
 
+    const BANNER_CLICKTIME = 'banner_clicktime';
+
     public static $attributionList = [
         self::UTM_SOURCE,
         self::UTM_CAMPAIGN,
