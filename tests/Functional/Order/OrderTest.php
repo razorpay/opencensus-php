@@ -733,26 +733,6 @@ class OrderTest extends TestCase
         $this->fixtures->merchant->disableTPV();
     }
 
-    public function testPreferencesForTPVMerchantsEmptyMethodInvalidBank()
-    {
-        $this->fixtures->merchant->enableTPV();
-        $this->fixtures->merchant->enableUPI();
-
-        $this->setUpBillDeskGateway();
-
-        $this->testCreateTPVOrderUpiBank();
-
-        $order = $this->getLastEntity('order', true);
-
-        $this->ba->publicAuth();
-
-        $testData['request']['content'] = ['key_id' => $this->ba->getKey(), 'order_id' => $order['id']];
-
-        $preferences = $this->startTest($testData);
-
-        $this->fixtures->merchant->disableTPV();
-    }
-
     public function testPreferencesForOrderWithBank()
     {
         $this->testCreateOrderWithBank();

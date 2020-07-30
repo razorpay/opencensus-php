@@ -57,7 +57,7 @@ class Service extends Base\Service
 
             $this->modifyOfferRequestFromOldFormat($input);
 
-            $this->modifyBankAccountRequestFromOldFormat($input);
+            $this->modifyBankAccountRequestFromOldFormat($input, $merchant);
 
             $order = (new Core)->create($input, $merchant);
 
@@ -118,7 +118,7 @@ class Service extends Base\Service
      *
      * @param  array $input
      */
-    protected function modifyBankAccountRequestFromOldFormat(array & $input)
+    protected function modifyBankAccountRequestFromOldFormat(array & $input, $merchant)
     {
         if ($this->isOldFormatBankAccountRequest($input) === false)
         {
@@ -127,7 +127,7 @@ class Service extends Base\Service
             return;
         }
 
-        (new Validator())->validateBank($input);
+        (new Validator())->validateBank($input, $merchant);
 
         if (isset($input[Entity::BANK_ACCOUNT]) === true)
         {
@@ -344,7 +344,7 @@ class Service extends Base\Service
 
             $this->modifyOfferRequestFromOldFormat($input);
 
-            $this->modifyBankAccountRequestFromOldFormat($input);
+            $this->modifyBankAccountRequestFromOldFormat($input, $merchant);
 
             $order = (new Core)->create($input, $merchant, $enablePartialPayment);
 
