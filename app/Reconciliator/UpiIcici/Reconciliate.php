@@ -12,6 +12,8 @@ class Reconciliate extends Base\Reconciliate
 
     const SHEET_NAME                = 'Recon MIS';
 
+    const UPI_TRANSFER_MERCHANT_ID      = '403343';
+
     public function getSheetNames(array $fileDetails = [])
     {
         $fileName = strtolower($fileDetails['file_name']);
@@ -45,5 +47,22 @@ class Reconciliate extends Base\Reconciliate
     protected function getFileName(array $extraDetails): string
     {
         return $extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::FILE_NAME];
+    }
+
+    /**
+     * @param array $fileDetails
+     * @param array $inputDetails
+     *
+     * @return bool|void
+     */
+    public function inExcludeList(array $fileDetails, array $inputDetails = [])
+    {
+        if (($this->mode === 'live') and
+            (strpos($fileDetails['file_name'], self::UPI_TRANSFER_MERCHANT_ID) === false))
+        {
+            return true;
+        }
+
+        return false;
     }
 }
