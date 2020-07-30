@@ -1016,10 +1016,10 @@ class Checkout
         else
         {
             $content = array(
-                'contact'  => $contact,
-                'amount'   => (float)$amount,
-                'mcc'      => $mccCode,
-                'merchant' => $merchant->getId(),
+                'customer'  => $contact,
+                'amount'    => (float)$amount,
+                'mcc'       => $mccCode,
+                'merchant'  => $merchant->getId(),
             );
 
             if (empty($mccCode) === true)
