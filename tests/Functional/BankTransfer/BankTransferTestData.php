@@ -1168,4 +1168,18 @@ return [
             ],
         ],
     ],
+
+    'adminFetchBankTransferRequests' => [
+        'request' => [
+            'url'       => '/admin/bank_transfer_request',
+            'method'    => 'get',
+            'content'   => [],
+        ],
+        'response' => [
+            'content' => [
+                'count'     => 1,
+                'entity'    => 'collection',
+            ],
+        ],
+    ],
 ];

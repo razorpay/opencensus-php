@@ -2678,6 +2678,17 @@ class AdminFetch
                     Fetch::LABEL => 'Payee Account',
                     Fetch::TYPE => Fetch::TYPE_STRING,
                 ],
+                'gateway' => [
+                    Fetch::LABEL => 'Gateway',
+                    Fetch::TYPE => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'kotak',
+                        'yesbank',
+                        'rbl',
+                        'icici',
+                        'dashboard',
+                    ],
+                ],
             ],
 
             Entity::VIRTUAL_ACCOUNT_TPV => [

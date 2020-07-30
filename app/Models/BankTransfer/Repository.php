@@ -70,7 +70,7 @@ class Repository extends Base\Repository
         return $query->first();
     }
 
-    public function findByUtrAndPayeeAccount(string $utr, string $payeeAccount, bool $useWritePdo = false)
+    public function findByUtrAndPayeeAccount(string $utr, $payeeAccount, bool $useWritePdo = false)
     {
         $payeeAccount = strtoupper(str_replace(' ', '', $payeeAccount));
 

@@ -13,6 +13,7 @@ class Fetch extends BaseFetch
             Entity::IS_CREATED      => 'sometimes|boolean',
             Entity::UTR             => 'sometimes|string|max:255',
             Entity::PAYEE_ACCOUNT   => 'sometimes|string|max:40',
+            Entity::GATEWAY         => 'sometimes|string',
         ],
     ];
 
@@ -21,6 +22,7 @@ class Fetch extends BaseFetch
             Entity::IS_CREATED,
             Entity::UTR,
             Entity::PAYEE_ACCOUNT,
+            Entity::GATEWAY,
         ],
     ];
 }

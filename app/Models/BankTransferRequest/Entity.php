@@ -6,6 +6,7 @@ namespace RZP\Models\BankTransferRequest;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\BankTransfer;
+use RZP\Models\VirtualAccount;
 
 class Entity extends Base\PublicEntity
 {
@@ -31,6 +32,14 @@ class Entity extends Base\PublicEntity
     const PAYER_ADDRESS         = 'payer_address';
     const CURRENCY              = 'currency';
     const ATTEMPT               = 'attempt';
+
+    const VIRTUAL_ACCOUNT_ID        = 'virtual_account_id';
+    const BANK_TRANSFER_ID          = 'bank_transfer_id';
+    const PAYMENT_ID                = 'payment_id';
+    const ORDER_ID                  = 'order_id';
+    const PRODUCT_TYPE              = 'product_type';
+    const PRODUCT_ID                = 'product_id';
+    const MERCHANT_NAME             = 'merchant_name';
 
     // Input keys
     const FIRST_TIME_ON_TEST_MODE = 'first_time_on_test_mode';
@@ -58,6 +67,14 @@ class Entity extends Base\PublicEntity
         self::NARRATION,
         self::TIME,
         self::REQUEST_PAYLOAD,
+        self::VIRTUAL_ACCOUNT_ID,
+        self::BANK_TRANSFER_ID,
+        self::PAYMENT_ID,
+        self::ORDER_ID,
+        self::PRODUCT_TYPE,
+        self::PRODUCT_ID,
+        self::MERCHANT_ID,
+        self::MERCHANT_NAME,
     ];
 
     protected $visible = [
@@ -77,7 +94,15 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::NARRATION,
         self::TIME,
-        self::REQUEST_PAYLOAD
+        self::REQUEST_PAYLOAD,
+        self::VIRTUAL_ACCOUNT_ID,
+        self::BANK_TRANSFER_ID,
+        self::PAYMENT_ID,
+        self::ORDER_ID,
+        self::PRODUCT_TYPE,
+        self::PRODUCT_ID,
+        self::MERCHANT_ID,
+        self::MERCHANT_NAME,
     ];
 
     protected static $generators = [
@@ -101,6 +126,22 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::UTR, $input[self::TRANSACTION_ID]);
     }
 
+    // -------------------- Getters --------------------
+
+    public function getUtr()
+    {
+        return $this->getAttribute(self::UTR);
+    }
+
+    public function getPayeeAccount()
+    {
+        return $this->getAttribute(self::PAYEE_ACCOUNT);
+    }
+
+    // -------------------- End Getters --------------------
+
+    // -------------------- Setters --------------------
+
     public function setAmountAttribute(float $amount)
     {
         $amount = (int) number_format(($amount * 100), 0, '.', '');
@@ -108,18 +149,20 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::AMOUNT] = $amount;
     }
 
-    public function setUtr(string $utr)
-    {
-        $this->setAttribute(self::UTR, $utr);
-    }
-
     public function setGateway($gateway)
     {
         $this->setAttribute(self::GATEWAY, $gateway);
+    }
+
+    public function setUtr(string $utr)
+    {
+        $this->setAttribute(self::UTR, $utr);
     }
 
     public function setRequestPayload($requestPayload)
     {
         $this->setAttribute(self::REQUEST_PAYLOAD, $requestPayload);
     }
+
+    // -------------------- End Setters --------------------
 }

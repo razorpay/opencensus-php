@@ -130,6 +130,17 @@ class BankTransferTest extends TestCase
         $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
         $this->assertEquals('Name of account holder', $bankAccount['name']);
+
+        $this->runBankTransferRequestAssertions(
+            true,
+            '',
+            [
+                'virtual_account_id'    => $bankTransfer['virtual_account_id'],
+                'merchant_id'           => $bankTransfer['merchant_id'],
+                'bank_transfer_id'      => $bankTransfer['id'],
+                'payment_id'            => $bankTransfer['payment_id'],
+            ]
+        );
     }
 
     public function testHidePayerDetailsWithFeatureFlag()
@@ -1608,7 +1619,13 @@ class BankTransferTest extends TestCase
 
         $this->runBankTransferRequestAssertions(
             true,
-            'VIRTUAL_ACCOUNT_NOT_FOUND'
+            'VIRTUAL_ACCOUNT_NOT_FOUND',
+            [
+                'virtual_account_id'    => $bankTransfer['virtual_account_id'],
+                'merchant_id'           => $bankTransfer['merchant_id'],
+                'bank_transfer_id'      => $bankTransfer['id'],
+                'payment_id'            => $payment['id'],
+            ]
         );
     }
 
@@ -2922,7 +2939,12 @@ class BankTransferTest extends TestCase
 
         $this->runBankTransferRequestAssertions(
             true,
-            'VIRTUAL_ACCOUNT_NOT_FOUND'
+            'VIRTUAL_ACCOUNT_NOT_FOUND',
+            [
+                'virtual_account_id'    => $bankTransfer['virtual_account_id'],
+                'merchant_id'           => $bankTransfer['merchant_id'],
+                'bank_transfer_id'      => $bankTransfer['id'],
+            ]
         );
     }
 
@@ -2978,6 +3000,8 @@ class BankTransferTest extends TestCase
 
         $response = $this->createVirtualAccountForOrder($order);
 
+        $virtualAccountId = $response['id'];
+
         $accountNumber = $response['receivers'][0]['account_number'];
         $ifsc = $response['receivers'][0]['ifsc'];
 
@@ -2992,17 +3016,34 @@ class BankTransferTest extends TestCase
 
         $this->runBankTransferRequestAssertions(
             false,
-            'Invoice is not payable in cancelled status.'
+            'Invoice is not payable in cancelled status.',
+            [
+                'virtual_account_id'    => $virtualAccountId,
+                'merchant_id'           => '10000000000000',
+                'bank_transfer_id'      => null,
+                'order_id'              => 'order_' . $order['id'],
+            ]
         );
     }
 
-    protected function runBankTransferRequestAssertions(bool $isCreated, string $errorMessage)
+    protected function runBankTransferRequestAssertions(bool $isCreated, string $errorMessage, $expectedValues = [])
     {
         $bankTransferRequest = $this->getDbLastEntity('bank_transfer_request');
 
         $this->assertNotNull($bankTransferRequest['request_payload']);
         $this->assertEquals($isCreated, $bankTransferRequest['is_created']);
         $this->assertEquals($errorMessage, $bankTransferRequest['error_message']);
+
+        if (empty($expectedValues) === true)
+        {
+            return;
+        }
+
+        $this->ba->adminAuth();
+        $response = $this->startTest($this->testData['adminFetchBankTransferRequests']);
+        $bankTransferRequest = $response['items'][0];
+
+        $this->assertArraySelectiveEquals($expectedValues, $bankTransferRequest);
     }
 
     public function testBankTransferValidateTpvWithValidPayerDetails()
