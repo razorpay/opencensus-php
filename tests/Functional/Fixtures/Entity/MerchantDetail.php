@@ -108,7 +108,7 @@ class MerchantDetail extends Base
             "company_cin"                   => "qwer1234",
             "company_pan"                   => "qwert134",
             "company_pan_name"              => "test",
-            "business_model"                => "BModel",
+            "business_model"                => "Business Model to fill fifty characters............",
             "transaction_volume"            => 3,
             "transaction_value"             => 1000,
             "website_about"                 => "http://www.website.com/",
