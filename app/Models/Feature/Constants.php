@@ -350,11 +350,6 @@ class Constants
      */
     const X_PAYOUT_LINKS_MS  = 'x_payout_links_ms';
 
-     /*
-     * This is a feature flag to enable Vendor Payment
-     */
-    const RX_VENDOR_PAYMENTS  = 'rx_vendor_payments';
-
     /*
      * This flag will be used to skip some merchants from hitachi automatic onboarding
      */
@@ -576,7 +571,6 @@ class Constants
         self::PAYMENT_ONHOLD                  => true,
         self::X_PRO_INVITE                    => true,
         self::X_PAYOUT_LINKS_MS               => true,
-        self::RX_VENDOR_PAYMENTS              => true,
         self::GOOGLE_PAY_OMNICHANNEL          => true,
         self::TERMINAL_ONBOARDING             => true,
         self::TEST_MODE_SETTLEMENT            => true,
@@ -788,11 +782,6 @@ class Constants
         self::X_PAYOUT_LINKS_MS            => [
             'feature'       => self::X_PAYOUT_LINKS_MS,
             'display_name'  => 'Razorpay X - Payout Links Microservice',
-            'documentation' => '',
-        ],
-        self::RX_VENDOR_PAYMENTS              => [
-            'feature'       => self::RX_VENDOR_PAYMENTS,
-            'display_name'  => 'Razorpay X - Vendor Payments',
             'documentation' => '',
         ],
         self::PAYOUT_WORKFLOWS          => [

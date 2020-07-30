@@ -420,6 +420,11 @@ class Name
     const UPDATE_MERCHANT_2FA_SETTING         = 'update_merchant_2fa_setting';
     const CREATE_WEBHOOK_STORK_BANKING_BULK   = 'create_webhook_stork_banking_bulk';
 
+    // tax payment settings
+    const PAY_TAX_PAYMENTS                    = 'pay_tax_payment';
+    const UPDATE_TAX_PAYMENT_SETTINGS         = 'update_tax_payment_settings';
+    const VIEW_TAX_PAYMENTS                   = 'view_tax_payments';
+
     const VIEW_INTERNAL_INSTRUMENT_REQUESTS   = 'view_internal_insturment_request';
     const UPDATE_INTERNAL_INSTRUMENT_REQUESTS = 'update_internal_insturment_request';
     const DELETE_INTERNAL_INSTRUMENT_REQUESTS = 'delete_internal_insturment_request';

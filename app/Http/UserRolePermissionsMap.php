@@ -97,6 +97,9 @@ class UserRolePermissionsMap
                  Permission::EDIT_VENDOR_PAYMENTS,
                  Permission::CANCEL_VENDOR_PAYMENTS,
                  Permission::PROCESS_PAYOUT_SCHEDULED,
+                 Permission::PAY_TAX_PAYMENTS,
+                 Permission::UPDATE_TAX_PAYMENT_SETTINGS,
+                 Permission::VIEW_TAX_PAYMENTS,
              ],
 
              BankingRole::ADMIN => [
@@ -177,6 +180,9 @@ class UserRolePermissionsMap
                  Permission::EDIT_VENDOR_PAYMENTS,
                  Permission::CANCEL_VENDOR_PAYMENTS,
                  Permission::PROCESS_PAYOUT_SCHEDULED,
+                 Permission::PAY_TAX_PAYMENTS,
+                 Permission::UPDATE_TAX_PAYMENT_SETTINGS,
+                 Permission::VIEW_TAX_PAYMENTS,
              ],
 
              BankingRole::FINANCE_L1 => [
@@ -247,6 +253,8 @@ class UserRolePermissionsMap
                  Permission::EDIT_VENDOR_PAYMENTS,
                  Permission::CANCEL_VENDOR_PAYMENTS,
                  Permission::PROCESS_PAYOUT_SCHEDULED,
+                 Permission::PAY_TAX_PAYMENTS,
+                 Permission::VIEW_TAX_PAYMENTS,
              ],
 
              BankingRole::OPERATIONS => [
@@ -285,6 +293,7 @@ class UserRolePermissionsMap
                  Permission::CREATE_VENDOR_PAYMENTS,
                  Permission::EDIT_VENDOR_PAYMENTS,
                  Permission::CANCEL_VENDOR_PAYMENTS,
+                 Permission::VIEW_TAX_PAYMENTS,
              ],
 
              BankingRole::VIEW_ONLY => [
@@ -315,6 +324,7 @@ class UserRolePermissionsMap
                  Permission::ONBOARDING_PAYOUT_LINKS,
                  Permission::SUMMARY_PAYOUT_LINKS,
                  Permission::VIEW_VENDOR_PAYMENTS,
+                 Permission::VIEW_TAX_PAYMENTS,
              ],
         ];
 

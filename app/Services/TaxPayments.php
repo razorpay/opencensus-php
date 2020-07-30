@@ -5,8 +5,12 @@ namespace RZP\Services;
 use Requests;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Settings\Module;
+use RZP\Models\Settings\Service;
 use RZP\Http\Response\StatusCode;
+use RZP\Models\Settings\Accessor;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Settings\GlobalAccessor;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 
@@ -18,13 +22,13 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
  */
 class TaxPayments
 {
-    const BASE_PATH              = 'twirp/razorpay.vendorpayments.taxpayments.Taxpayments';
-    const GET_ALL_SETTINGS       = 'GetAllSettings';
-    const ADD_OR_UPDATE_SETTINGS = 'AddOrUpdateSettings';
-    const GET_TAX_PAYMENT_BY_ID  = 'GetTaxPayment';
-    const LIST_TAX_PAYMENTS      = 'ListTaxPayments';
-    const PAY_TAX_PAYMENTS       = 'PayTaxPayment';
-    const BULK_PAY_TAX_PAYMENTS  = 'BulkPayTaxPayments';
+    const BASE_PATH                = 'twirp/razorpay.vendorpayments.taxpayments.Taxpayments';
+    const GET_ALL_SETTINGS         = 'GetAllSettings';
+    const ADD_OR_UPDATE_SETTINGS   = 'AddOrUpdateSettings';
+    const GET_TAX_PAYMENT_BY_ID    = 'GetTaxPayment';
+    const LIST_TAX_PAYMENTS        = 'ListTaxPayments';
+    const PAY_TAX_PAYMENTS         = 'PayTaxPayment';
+    const BULK_PAY_TAX_PAYMENTS    = 'BulkPayTaxPayments';
 
     protected $app;
 
@@ -43,8 +47,7 @@ class TaxPayments
         // we are using the same creds as that of vendor-payments to access the APIs
         $this->config = $app['config']['applications.vendor_payments'];
 
-        $this->repo =  $app['repo'];
-
+        $this->repo = $app['repo'];
     }
 
     public function payTaxPayment(MerchantEntity $merchant, string $taxPaymentId, array $input, UserEntity $user = null)
@@ -58,7 +61,6 @@ class TaxPayments
                                               'merchant_id'    => $merchant->getPublicId()
                                           ]);
         }
-
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::PAY_TAX_PAYMENTS);
 
         $input['tax_payment_id'] = $taxPaymentId;
@@ -74,15 +76,9 @@ class TaxPayments
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST);
         }
-
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::BULK_PAY_TAX_PAYMENTS);
 
         $input['user_id'] = $user->getPublicId();
-
-        if ($user !== null)
-        {
-            $input['user_id'] = $user->getPublicId();
-        }
 
         return $this->makeRequest($merchant, $url, $input);
     }
@@ -100,7 +96,6 @@ class TaxPayments
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST);
         }
-
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::ADD_OR_UPDATE_SETTINGS);
 
         $input['user_id'] = $user->getPublicId();
@@ -124,13 +119,16 @@ class TaxPayments
         return $this->makeRequest($merchant, $url, $input);
     }
 
-    protected function makeRequest(MerchantEntity $merchant,
-                                   string $url,
+    protected function makeRequest(MerchantEntity $merchant = null,
+                                   string $url = '',
                                    array $data = [],
                                    array $headers = [],
                                    string $method = 'POST')
     {
-        $data = array_merge($data, ['merchant_id' => $merchant->getId()]);
+        if ($merchant !== null)
+        {
+            $data = array_merge($data, ['merchant_id' => $merchant->getId()]);
+        }
 
         $headers['Content-Type'] = 'application/json';
 
@@ -145,10 +143,9 @@ class TaxPayments
         $this->trace->info(TraceCode::TAX_PAYMENT_REQUEST,
                            [
                                'headers' => $headers,
-                               'url' => $url,
-                               'data' => $dataLogged,
+                               'url'     => $url,
+                               'data'    => $dataLogged,
                            ]);
-
         $response = Requests::$method(
             $url,
             $headers,
@@ -171,6 +168,7 @@ class TaxPayments
                                           $description,
                                           $description);
         }
+
         return $responseBody;
     }
 }

@@ -122,14 +122,6 @@ class SourceUpdater
 
     protected static function updateVendorPayment(PayoutEntity $payout)
     {
-        // check if vendor payment is updated for this merchant
-        $isFeatureEnabled = $payout->merchant->isFeatureEnabled(Constants::RX_VENDOR_PAYMENTS);
-
-        if ($isFeatureEnabled === false)
-        {
-            return;
-        }
-
         try
         {
             $vendorPaymentService = App::getFacadeRoot()['vendor-payment'];

@@ -2485,7 +2485,7 @@ class Route
         'setl_status_update',
         'banking_account_activation_details_via_batch',
         'payout_create_on_internal_contact',
-        'vendor_payment_ocr_accuracy_cron'
+        'vendor_payment_ocr_accuracy_cron',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -4431,12 +4431,12 @@ class Route
         'merchant_credits_balance_fetch'               => '*',
 
         // tax payment permission
-        'tax_payments_pay'                             => '*',
-        'tax_payments_bulk_pay'                        => '*',
-        'tax_payments_get_all_settings'                => '*',
-        'tax_payments_add_or_update_settings'          => '*',
-        'tax_payments_list'                            => '*',
-        'tax_payments_get_by_id'                       => '*',
+        'tax_payments_pay'                             => Permission::PAY_TAX_PAYMENTS,
+        'tax_payments_bulk_pay'                        => Permission::PAY_TAX_PAYMENTS,
+        'tax_payments_get_all_settings'                => Permission::VIEW_TAX_PAYMENTS,
+        'tax_payments_add_or_update_settings'          => Permission::UPDATE_TAX_PAYMENT_SETTINGS,
+        'tax_payments_list'                            => Permission::VIEW_TAX_PAYMENTS,
+        'tax_payments_get_by_id'                       => Permission::VIEW_TAX_PAYMENTS,
     ];
 
     public static $direct = [
@@ -4783,7 +4783,7 @@ class Route
             'terminals_proxy_delete_submerchant',
             'terminals_proxy_create_submerchant',
             'cps_backfill_entities',
-            'vendor_payment_ocr_accuracy_cron'
+            'vendor_payment_ocr_accuracy_cron',
         ],
 
         'subscriptions' => [
@@ -5157,28 +5157,6 @@ class Route
         'enable_es_scheduled'                  => [Feature::ES_ON_DEMAND],
         'create_virtual_account_from_order'    => [Feature::OFFLINE_PAYMENTS],
         'payment_status_count'                 => [Feature::PAYMENT_STATUS_AGGREGATE],
-        'vendor_payment_get_tds_categories'    => [Feature::RX_VENDOR_PAYMENTS],
-        'vendor_payment_summary'               => [Feature::RX_VENDOR_PAYMENTS],
-        'vendor_payment_invoice_upload'        => [Feature::RX_VENDOR_PAYMENTS],
-        'vendor_payment_invoice_get_signed_url'=> [Feature::RX_VENDOR_PAYMENTS],
-        'vendor_payment_contact_list'          => [Feature::RX_VENDOR_PAYMENTS],
-        'vendor_payment_contact_get'           => [Feature::RX_VENDOR_PAYMENTS],
-        'vendor_payment_contact_create'        => [Feature::RX_VENDOR_PAYMENTS],
-        'vendor_payment_contact_update'        => [Feature::RX_VENDOR_PAYMENTS],
-        'vendor_payment_list'                  => [Feature::RX_VENDOR_PAYMENTS],
-        'vendor_payment_get_by_id'             => [Feature::RX_VENDOR_PAYMENTS],
-        'vendor_payment_create'                => [Feature::RX_VENDOR_PAYMENTS],
-        'vendor_payment_edit'                  => [Feature::RX_VENDOR_PAYMENTS],
-        'vendor_payment_cancel'                => [Feature::RX_VENDOR_PAYMENTS],
-        'vendor_payment_bulk_cancel'           => [Feature::RX_VENDOR_PAYMENTS],
-        'vendor_payment_execute'               => [Feature::RX_VENDOR_PAYMENTS],
-        'tax_payments_pay'                     => [Feature::RX_VENDOR_PAYMENTS],
-        'tax_payments_bulk_pay'                => [Feature::RX_VENDOR_PAYMENTS],
-        'tax_payments_get_all_settings'        => [Feature::RX_VENDOR_PAYMENTS],
-        'tax_payments_add_or_update_settings'  => [Feature::RX_VENDOR_PAYMENTS],
-        'tax_payments_list'                    => [Feature::RX_VENDOR_PAYMENTS],
-        'tax_payments_get_by_id'               => [Feature::RX_VENDOR_PAYMENTS],
-        'vendor_payment_get_ocr_data'          => [Feature::RX_VENDOR_PAYMENTS],
         'iin_get'                              => [Feature::BIN_API],
     ];
 

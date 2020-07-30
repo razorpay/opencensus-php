@@ -103,12 +103,6 @@ class VendorPaymentTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $this->fixtures->create('feature',
-                                [
-                                    'name'      => Constants::RX_VENDOR_PAYMENTS,
-                                    'entity_id' => '10000000000000'
-                                ]);
-
         $vpMock = Mockery::mock('RZP\Services\VendorPayment');
 
         $vpMock->shouldReceive('bulkCancel')->andReturn([]);
@@ -123,12 +117,6 @@ class VendorPaymentTest extends TestCase
     public function testVendorPaymentGetOcrData()
     {
         $this->ba->proxyAuth();
-
-        $this->fixtures->create('feature',
-                                [
-                                    'name'      => Constants::RX_VENDOR_PAYMENTS,
-                                    'entity_id' => '10000000000000'
-                                ]);
 
         $vpMock = Mockery::mock('RZP\Services\VendorPayment');
 

@@ -28,11 +28,6 @@ class TaxPaymentTests extends TestCase
 
         $this->config = App::getFacadeRoot()['config'];
 
-        $this->fixtures->create('feature',
-                                [
-                                    'name'      => Constants::RX_VENDOR_PAYMENTS,
-                                    'entity_id' => '10000000000000'
-                                ]);
     }
 
     public function testSettingsInternalApiAddOrUpdate()
@@ -318,5 +313,4 @@ class TaxPaymentTests extends TestCase
 
         $this->startTest();
     }
-
 }
