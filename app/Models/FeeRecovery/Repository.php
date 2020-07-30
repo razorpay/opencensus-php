@@ -103,19 +103,6 @@ class Repository extends Base\Repository
                     ->update($dataToUpdate);
     }
 
-    public function getFeeRecoveryByRecoveryPayoutId($recoveryPayoutId)
-    {
-        $statusColumn           = $this->dbColumn(Entity::STATUS);
-        $recoveryPayoutIdColumn = $this->dbColumn(Entity::RECOVERY_PAYOUT_ID);
-        $attemptNumberColumn = $this->dbColumn(Entity::ATTEMPT_NUMBER);
-
-        return $this->newQuery()
-                    ->where($recoveryPayoutIdColumn, '=', $recoveryPayoutId)
-                    ->where($statusColumn, Status::UNRECOVERED)
-                    ->where($attemptNumberColumn, '<', 3)
-                    ->get();
-    }
-
     public function getFeeRecoveryEntityByEntityIdTypeAttemptNumberAndStatus($entityId,
                                                                              $entityType,
                                                                              $attemptNumber,

@@ -5,8 +5,6 @@ namespace RZP\Models\Payout;
 use Carbon\Carbon;
 use Illuminate\Database\Query\JoinClause;
 
-use DB;
-
 use RZP\Exception;
 use RZP\Models\User;
 use RZP\Models\Base;
@@ -20,7 +18,7 @@ use RZP\Models\Workflow;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Timezone;
 use RZP\Models\FundAccount;
-use RZP\Models\Transaction;
+use RZP\Models\FeeRecovery;
 use RZP\Models\Workflow\Step;
 use RZP\Constants\Entity as E;
 use RZP\Models\Workflow\Action;
@@ -490,7 +488,6 @@ class Repository extends Base\Repository
     {
         $payoutsIdColumn            = $this->dbColumn(Entity::ID);
         $payoutsFeesColumn          = $this->dbColumn(Entity::FEES);
-        $payoutsFeeTypeColumn       = $this->dbColumn(Entity::FEE_TYPE);
         $payoutsBalanceIdColumn     = $this->dbColumn(Entity::BALANCE_ID);
         $payoutsInitiatedAtColumn   = $this->dbColumn(Entity::INITIATED_AT);
 
@@ -500,7 +497,6 @@ class Repository extends Base\Repository
                     ->where($payoutsBalanceIdColumn, $balanceId)
                     ->whereNotNull($payoutsInitiatedAtColumn)
                     ->whereBetween($payoutsInitiatedAtColumn, [$start, $end])
-                    ->where(DB::raw('COALESCE(' . $payoutsFeeTypeColumn. ', "")'), '!=', Transaction\CreditType::REWARD_FEE)
                     ->get();
     }
 
@@ -522,7 +518,6 @@ class Repository extends Base\Repository
     {
         $payoutsIdColumn            = $this->dbColumn(Entity::ID);
         $payoutsFeesColumn          = $this->dbColumn(Entity::FEES);
-        $payoutsFeeTypeColumn       = $this->dbColumn(Entity::FEE_TYPE);
         $payoutsFailedAtColumn      = $this->dbColumn(Entity::FAILED_AT);
         $payoutsBalanceIdColumn     = $this->dbColumn(Entity::BALANCE_ID);
         $payoutsInitiatedAtColumn   = $this->dbColumn(Entity::INITIATED_AT);
@@ -533,7 +528,6 @@ class Repository extends Base\Repository
                     ->where($payoutsBalanceIdColumn, $balanceId)
                     ->whereNotNull($payoutsInitiatedAtColumn)
                     ->whereBetween($payoutsFailedAtColumn, [$start, $end])
-                    ->where(DB::raw('COALESCE(' . $payoutsFeeTypeColumn. ', "")'),  '!=', [Transaction\CreditType::REWARD_FEE])
                     ->get();
     }
 

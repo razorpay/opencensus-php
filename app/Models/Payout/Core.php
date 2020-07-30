@@ -1739,9 +1739,6 @@ class Core extends Base\Core
 
         $this->repo->transaction(
             function() use ($payout, $ftaFailureReason) {
-
-                $previousStatus = $payout->getStatus();
-
                 $payout->setStatus(Status::FAILED);
 
                 $payout->setFailureReason($ftaFailureReason);
@@ -1763,7 +1760,7 @@ class Core extends Base\Core
 
                 if ($payout->isBalanceAccountTypeDirect() === true)
                 {
-                    (new FeeRecovery\Core)->handlePayoutStatusUpdate($payout, $previousStatus);
+                    (new FeeRecovery\Core)->handlePayoutStatusUpdate($payout);
                 }
             });
 
@@ -1855,8 +1852,6 @@ class Core extends Base\Core
                             $this->handleReversalTransactionForDirectBanking($reversal);
                         }
 
-                        $previousStatus = $payout->getStatus();
-
                         // For certain cases like  where a payout is being marked
                         // as reversed  through recon flows(as in RBL), the above
                         // method handleReversalTransactionForDirectBanking updates
@@ -1871,7 +1866,7 @@ class Core extends Base\Core
                         // Need to keep this here because handlePayoutStatusUpdate needs the correct payout status
                         if ($payout->isBalanceAccountTypeDirect() === true)
                         {
-                            (new FeeRecovery\Core)->handlePayoutStatusUpdate($payout, $previousStatus, $reversal);
+                            (new FeeRecovery\Core)->handlePayoutStatusUpdate($payout, $reversal);
                         }
 
                         $this->repo->saveOrFail($payout);

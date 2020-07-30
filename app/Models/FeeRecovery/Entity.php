@@ -72,8 +72,6 @@ class Entity extends Base\PublicEntity
         self::RECOVERY_PAYOUT_ID,
     ];
 
-    const PREVIOUS_RECOVERY_PAYOUT_ID  = 'previous_recovery_payout_id';
-
     // --------------- Getters ---------------
 
     public function getStatus()
