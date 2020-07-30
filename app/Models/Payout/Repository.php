@@ -396,6 +396,7 @@ class Repository extends Base\Repository
      * select SUM(tax) AS tax,SUM(fees) AS fee
      * from `payouts` where `payouts`.`merchant_id` = ?
      * and `payouts`.`balance_id` = ? and
+     * and `payouts`.`fee_type` is null
      * and `payouts`.`initiated_at` between ? and ?"
      *
      * @param string $merchantId
@@ -413,6 +414,7 @@ class Repository extends Base\Repository
     {
         $payoutsBalanceIdColumn   = $this->dbColumn(Entity::BALANCE_ID);
         $payoutsInitiatedAtColumn = $this->dbColumn(Entity::INITIATED_AT);
+        $payoutsFeeTypeColumn     = $this->dbColumn(Entity::FEE_TYPE);
 
         return $this->newQuery()
                     ->selectRaw(
@@ -420,6 +422,7 @@ class Repository extends Base\Repository
                          SUM(' . Entity::FEES . ') AS fee')
                     ->merchantId($merchantId)
                     ->where($payoutsBalanceIdColumn, $balanceId)
+                    ->whereNull($payoutsFeeTypeColumn)
                     ->whereBetween($payoutsInitiatedAtColumn, [$startTime, $endTime])
                     ->first();
     }
@@ -436,6 +439,7 @@ class Repository extends Base\Repository
      * from `payouts` where `payouts`.`merchant_id` = ?
      * and `payouts`.`balance_id` = ?
      * and `payouts`.`initiated_at` is not null
+     * and `payouts`.`fee_type` is null
      * and `payouts`.`failed_at` between ? and ?
      * and `payouts`.`status` = failed
      *
@@ -456,6 +460,7 @@ class Repository extends Base\Repository
         $payoutsInitiatedAtColumn = $this->dbColumn(Entity::INITIATED_AT);
         $payoutsFailedAtColumn    = $this->dbColumn(Entity::FAILED_AT);
         $payoutsStatusColumn      = $this->dbColumn(Entity::STATUS);
+        $payoutsFeeTypeColumn     = $this->dbColumn(Entity::FEE_TYPE);
 
         return $this->newQuery()
                     ->selectRaw(
@@ -464,6 +469,7 @@ class Repository extends Base\Repository
                     ->merchantId($merchantId)
                     ->where($payoutsBalanceIdColumn, $balanceId)
                     ->whereNotNull($payoutsInitiatedAtColumn)
+                    ->whereNull($payoutsFeeTypeColumn)
                     ->whereBetween($payoutsFailedAtColumn, [$startTime, $endTime])
                     ->where($payoutsStatusColumn, '=', Status::FAILED)
                     ->first();

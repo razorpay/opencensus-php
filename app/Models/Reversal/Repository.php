@@ -129,6 +129,7 @@ class Repository extends Base\Repository
      * from `reversals` inner join `payouts`
      * on `reversals`.`entity_id` = `payouts`.`id`
      * where `reversals`.`merchant_id` = ? and `entity_type` = payout
+     * and `payouts`.`fee_type` is null
      * and `reversals`.`created_at` between ? and ?
      * and `reversals`.`balance_id` = ?
      *
@@ -145,9 +146,10 @@ class Repository extends Base\Repository
         $reversalsEntityIDColumn    = $this->dbColumn(Entity::ENTITY_ID);
         $reversalsCreatedAtColumn   = $this->repo->reversal->dbColumn(Entity::CREATED_AT);
 
-        $payoutsTaxColumn   = $this->repo->payout->dbColumn(Entity::TAX);
-        $payoutsFeeColumn   = $this->repo->payout->dbColumn(PayoutEntity::FEES);
-        $payoutsIDColumn    = $this->repo->payout->dbColumn(Entity::ID);
+        $payoutsTaxColumn           = $this->repo->payout->dbColumn(Entity::TAX);
+        $payoutsFeeColumn           = $this->repo->payout->dbColumn(PayoutEntity::FEES);
+        $payoutsIDColumn            = $this->repo->payout->dbColumn(Entity::ID);
+        $payoutsFeeTypeColumn       = $this->repo->payout->dbColumn(PayoutEntity::FEE_TYPE);
 
         $columns = ' SUM(' . $payoutsTaxColumn . ') AS tax,
                      SUM(' . $payoutsFeeColumn . ') AS fee';
@@ -157,6 +159,7 @@ class Repository extends Base\Repository
                     ->join(Table::PAYOUT, $reversalsEntityIDColumn, $payoutsIDColumn)
                     ->merchantID($merchantId)
                     ->where(Entity::ENTITY_TYPE, Type::PAYOUT)
+                    ->whereNull($payoutsFeeTypeColumn)
                     ->whereBetween($reversalsCreatedAtColumn, [$startTime, $endTime])
                     ->where($balanceIDColumn, $balanceId)
                     ->first();

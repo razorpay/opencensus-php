@@ -59,6 +59,15 @@ class MerchantBankingInvoiceTest extends TestCase
                 'balance_id' => $x['id'],
             ]);
 
+        $y = $this->fixtures->create(
+            'payout',
+            [
+                'channel'    => 'icici',
+                'amount'     => 1000,
+                'balance_id' => $x['id'],
+                'fee_type'   => 'free_credits'
+            ]);
+
         return $x['id'];
     }
 
@@ -110,6 +119,18 @@ class MerchantBankingInvoiceTest extends TestCase
                 'amount'       => 1000,
                 'status'       => 'failed',
                 'balance_id'   => $bankingBalanceId,
+                'initiated_at' => Carbon::now(Timezone::IST)->timestamp,
+            ]);
+
+        // this payout should not be included in invoice amount
+        $z1 = $this->fixtures->create(
+            'payout',
+            [
+                'channel'      => 'rbl',
+                'amount'       => 1000,
+                'status'       => 'failed',
+                'balance_id'   => $bankingBalanceId,
+                'fee_type'     => 'free_credits',
                 'initiated_at' => Carbon::now(Timezone::IST)->timestamp,
             ]);
 
@@ -168,7 +189,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
         $this->makeRequestAndGetContent($request);
 
-        return [$y['id'], $w['id'] ,$z['id']];
+        return [$y['id'], $w['id'] ,$z['id'], $z1['id']];
     }
 
     //Basic Banking Invoice Test
@@ -274,6 +295,15 @@ class MerchantBankingInvoiceTest extends TestCase
                 'channel'    => 'icici',
                 'amount'     => 100000,
                 'balance_id' => $z['id'],
+            ]);
+
+        $this->fixtures->create(
+            'payout',
+            [
+                'channel'    => 'icici',
+                'amount'     => 1000000,
+                'balance_id' => $y['id'],
+                'fee_type'   => 'free_credits'
             ]);
 
         return [ $x['id'] , $y['id'] , $z['id'] ];
@@ -643,10 +673,30 @@ class MerchantBankingInvoiceTest extends TestCase
                 'balance_id' => $y['id'],
             ]);
 
+        $q1 = $this->fixtures->create(
+            'payout',
+            [
+                'channel'    => 'icici',
+                'amount'     => 1000,
+                'balance_id' => $y['id'],
+                'fee_type'   => 'free_credits',
+            ]);
+
         $w = $this->fixtures->reversal->createPayoutReversal(
             [
                 'merchant_id'   => '10000000000000',
                 'entity_id'     => $q['id'],
+                'entity_type'   => 'payout',
+                'balance_id'    => $y['id'],
+                'amount'        => 1000000,
+                'fee'           => 0,
+                'tax'           => 0,
+            ]);
+
+        $w1 = $this->fixtures->reversal->createPayoutReversal(
+            [
+                'merchant_id'   => '10000000000000',
+                'entity_id'     => $q1['id'],
                 'entity_type'   => 'payout',
                 'balance_id'    => $y['id'],
                 'amount'        => 1000000,
@@ -664,7 +714,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'balance_id' => $z['id'],
             ]);
 
-        return [ $x['id'] , $y['id'] , $z['id'] , $w['id'] ];
+        return [ $x['id'] , $y['id'] , $z['id'] , $w['id'] , $w1['id']];
     }
 
     //3 payouts happen . first payout - from banking account no 1, second payout from banking account no 2 , third
