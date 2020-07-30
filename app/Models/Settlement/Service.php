@@ -604,6 +604,20 @@ class Service extends Base\Service
         return $txns->toArrayPublic();
     }
 
+    /**
+     * This function used to update the settlement details back from the settlement service
+     *
+     * @param array $input
+     */
+    public function postSettlementCreateStatusUpdate(array $input)
+    {
+        $input['status'] = strtolower($input['status']);
+
+        (new Validator)->validateInput('settlement_status_update', $input);
+
+        return (new Processor)->settlementStatusUpdate($input);
+    }
+
     public function serviceFetch(array $input) : array
     {
         return app('settlements_dashboard')->fetch($input);

@@ -45,6 +45,8 @@ class Processor extends Base\Core
 
     const MUTEX_ADHOC_RESOURCE  = 'SETTLEMENT_ADHOC_PROCESSING_%s';
 
+    const MUTEX_SETTLEMENT_STATUS_UPDATE_RESOURCE  = "mutex_settlement_status_update_%s_%s";
+
     const MUTEX_RETRY_RESOURCE  = 'SETTLEMENT_RETRY_%s';
 
     const MUTEX_LOCK_TIMEOUT    = 1800;
@@ -1123,5 +1125,70 @@ class Processor extends Base\Core
                 'error'          => $e->getMessage(),
             ];
         }
+    }
+
+    /**
+     * settlementStatusUpdate used to update the status of the settlement from settlement service
+     * @param array $input
+     * @return array|null[]
+     */
+    public function settlementStatusUpdate(array $input)
+    {
+        try
+        {
+            $setl = $this->repo->settlement->findOrFail($input['id']);
+
+            $oldStatus = $setl->getStatus();
+
+            if ($oldStatus === Status::PROCESSED)
+            {
+                return [
+                    'error' => null
+                ];
+            }
+
+            if ($oldStatus !== Status::CREATED)
+            {
+                return [
+                    'error' => sprintf("current settlement status %s can not be updated to processed state", $oldStatus)
+                ];
+            }
+
+            // Avoiding race condition here
+            $resource = sprintf(self::MUTEX_SETTLEMENT_STATUS_UPDATE_RESOURCE, $setl->getId(), $this->mode);
+
+            $setl = $this->mutex->acquireAndRelease(
+                $resource,
+                function () use ($setl, $input)
+                {
+                    $setl->setUtr($input['utr']);
+                    $setl->setStatus($input['status']);
+                    $setl->setRemarks($input['remarks']);
+
+                   return $this->repo->saveOrFail($setl);
+                },
+                30,
+                ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_SETTLEMENT_UPDATE_IN_PROGRESS);
+
+            (new Core)->triggerSettlementWebhook($setl);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SETTLEMENT_STATUS_UPDATE_FAILED_FOR_SERVICE,
+                [
+                    'input' => $input,
+                ]);
+
+            return [
+                'error' => $e->getMessage(),
+            ];
+        }
+
+        return [
+            'error' => null,
+        ];
     }
 }

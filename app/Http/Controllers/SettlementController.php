@@ -433,6 +433,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postSettlementCreateStatusUpdate()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->postSettlementCreateStatusUpdate($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getIrctcSettlementFile(string $date)
     {
         $input = Request::all();

@@ -517,6 +517,7 @@ class Route
         'nodal_initiate_transfer_admin'            => ['post',     'nodal/transfer/admin',                           'SettlementController@postInitiateTransfer'                         ],
         'nodal_add_beneficiary'                    => ['post',     'nodal/beneficiary/{channel}',                    'SettlementController@addBeneficiary'                               ],
         'create_settlement_entry'                  => ['post',     'settlements/create',                             'SettlementController@createSettlementEntry'                        ],
+        'setl_status_update'                       => ['post',     'settlements/status/update',                      'SettlementController@postSettlementCreateStatusUpdate'             ],
         //settlement service proxy routes
         'setl_admin_fetch'                         => ['post',     'admin/settlements/dashboard/fetch',              'SettlementController@serviceFetch'                                 ],
         'setl_admin_fetch_multiple'                => ['post',     'admin/settlements/dashboard/fetch_multiple',     'SettlementController@serviceFetchMultiple'                         ],
@@ -2481,6 +2482,7 @@ class Route
         'entity_bulk_update',
         'settings_fetch_internal',
         'settings_upsert_internal',
+        'setl_status_update',
         'banking_account_activation_details_via_batch',
         'payout_create_on_internal_contact',
         'vendor_payment_ocr_accuracy_cron'
@@ -5011,6 +5013,7 @@ class Route
         'settlements_service' => [
             'create_settlement_entry',
             'get_global_config',
+            'setl_status_update',
         ],
 
         'terminals_service' => [

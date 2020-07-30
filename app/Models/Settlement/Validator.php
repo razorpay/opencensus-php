@@ -120,6 +120,13 @@ class Validator extends Base\Validator
         'year'  =>  'sometimes|digits:4',
     ];
 
+    protected static $settlementStatusUpdateRules = [
+        'id'      => 'required|string|size:14',
+        'utr'     => 'required|string',
+        'status'  => 'required|string|in:processed',
+        'remarks' => 'sometimes|string',
+    ];
+
     protected function validateBalanceType($attribute, $value)
     {
         Balance\Type::validateSettlementBalanceType($value);
