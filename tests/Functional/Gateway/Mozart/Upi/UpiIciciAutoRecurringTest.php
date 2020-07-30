@@ -29,7 +29,9 @@ class UpiIciciAutoRecurringTest extends TestCase
 
         $this->gateway = 'mozart';
 
-        $this->terminal = $this->fixtures->create('terminal:shared_icici_recurring_terminal');
+        $this->terminal = $this->fixtures->create('terminal:shared_icici_recurring_terminal', [
+            'gateway_merchant_id' => '400660',
+        ]);
 
         $this->terminalId = $this->terminal->getId();
 
@@ -133,6 +135,44 @@ class UpiIciciAutoRecurringTest extends TestCase
         // Remind at should be in last 3 minutes
         $this->assertLessThan(Carbon::now()->getTimestamp(), $metadata->getRemindAt());
         $this->assertGreaterThan(Carbon::now()->subMinute(3)->getTimestamp(), $metadata->getRemindAt());
+
+        // Triggering the actual authorization call from RS
+        $this->sendReminderRequest($updateReminder);
+
+        $this->assertUpiDbLastEntity('upi', [
+            'action'        => 'authorize',
+            'status_code'   => '0',
+            'gateway_data'  => [
+                'act'   => 'execte',
+                'ano'   => 1,
+                'ext'   => null,
+                'sno'   => 1,
+            ]
+        ], false);
+
+        $this->assertUpiDbLastEntity('payment', [
+            'status'        => 'created',
+            'reference1'    => null,
+            'reference16'   => null,
+        ], false);
+
+        $content = $this->mockServer()->getAsyncCallbackResponseAutoDebitForIcici($payment);
+
+        $this->makeS2sCallbackAndGetContent($content, 'upi_icici');
+
+        $this->assertUpiDbLastEntity('payment', [
+            'status'        => 'captured',
+            'reference1'    => null,
+            'reference16'   => '011300040570',
+        ], false);
+
+        $this->assertUpiDbLastEntity('upi', [
+            'contact'               => '9876543210',
+            'name'                  => 'payer',
+            'merchant_reference'    => $payment->getId() . 'execte0',
+            'gateway_payment_id'    => '019721040510',
+            'status_code'           => 'SUCCESS'
+        ]);
     }
 
     public function testAutoRecurringPaymentNotifyRetry()
@@ -440,7 +480,7 @@ class UpiIciciAutoRecurringTest extends TestCase
         ]);
 
         $this->assertUpiDbLastEntity('upi', [
-            'status_code'       => null,
+            'status_code'       => 'pending',
             'gateway_data'      => [
                 'act'   => 'notify',
                 'ano'   => 1,

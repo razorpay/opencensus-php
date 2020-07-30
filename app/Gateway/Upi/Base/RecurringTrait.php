@@ -105,6 +105,38 @@ trait RecurringTrait
         return $gateway->debit($input);
     }
 
+    protected function sendDebitRequest(array $input, Entity $upi)
+    {
+        $gateway = $this->getMozartGatewayWithModeSet();
+
+        $response = $gateway->debit($input);
+
+        $attributes = array_only($response['data'], (new Entity)->getFillable());
+
+        $this->updateGatewayPaymentResponse($upi, $attributes, false);
+
+        if ($response['success'] !==  true)
+        {
+            $exception = new GatewayErrorException(
+                $response['error']['internal_error_code'] ?? 'BAD_REQUEST_PAYMENT_FAILED',
+                $response['error']['gateway_error_code'] ?? 'gateway_error_code',
+                $response['error']['gateway_error_description'] ?? 'gateway_error_desc',
+                null,
+                null,
+                $this->action);
+
+            $remindAt = $this->getNextRemindAtForRecurring($upi, $response, $exception);
+
+            $exception->setData($this->getResponseForAutoRecurring($input, $remindAt, $upi));
+
+            throw $exception;
+        }
+
+        $remindAt = $this->getNextRemindAtForRecurring($upi, $response);
+
+        return $this->getResponseForAutoRecurring($input, $remindAt, $upi);
+    }
+
     protected function sendPreDebitRequest(array $input, Entity $upi)
     {
         $gateway = $this->getMozartGatewayWithModeSet();
@@ -194,9 +226,10 @@ trait RecurringTrait
                 // Seq number
                 Constants::SEQUENCE   => $sequenceNo,
             ],
+            Entity::GATEWAY_MERCHANT_ID     => $input['terminal']['gateway_merchant_id'],
         ];
 
-        return $this->createGatewayPaymentEntity($attr);
+        return $this->createGatewayPaymentEntity($attr, $action, false);
     }
 
     protected function shouldSkipNotityForAutoRecurring(array $input)
@@ -233,7 +266,7 @@ trait RecurringTrait
         }
 
         // Three attempt for authorize, no next reminder needed when success
-        if ($action === Action::AUTHORIZE)
+        if ($action === Action::DEBIT)
         {
             if ($attempt >= 3)
             {
@@ -271,6 +304,13 @@ trait RecurringTrait
 
             // Details can be considered nullable, but for API side validation we need to remove nulls
             $response['upi'] = array_merge($response['upi'], array_filter($details));
+
+            // Will only be used if we mark payment authorized and that is done by
+            // sending upi.internal_status=authorized, thus this data will be ignored
+            $response['acquirer'] = [
+                Payment\Entity::REFERENCE1  => $upi->getNpciTransactionId(),
+                Payment\Entity::REFERENCE16 => $upi->getNpciReferenceId(),
+            ];
         }
 
         return $response;

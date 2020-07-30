@@ -614,6 +614,28 @@ class Gateway extends Base\Gateway
                 'upi' => array_only($response['data'], (new UpiEntity())->getFillable()),
             ];
         }
+        else if (($input['payment']['method'] === Payment\Method::UPI) and
+                 ($this->isSecondRecurringPaymentRequest($input)))
+        {
+            parent::action($input, Action::PAY_INIT);
+
+            $request = $this->getMozartRequestArray($input);
+
+            $traceReq = [
+                'method' => $request['method'],
+                'url' => $request['url'],
+            ];
+
+            $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_PAYMENT_DEBIT_REQUEST);
+
+            $response = $this->sendGatewayRequest($request);
+
+            $traceRes = $this->getRedactedData($response);
+
+            $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_PAYMENT_DEBIT_RESPONSE);
+
+            return $response;
+        }
         else
         {
             parent::debit($input);

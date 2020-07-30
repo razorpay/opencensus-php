@@ -266,7 +266,7 @@ trait Callback
             ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
     }
 
-    protected function processPaymentCallback($payment, $gatewayInput, $s2sCallback = false)
+    protected function processPaymentCallback(Payment\Entity $payment, $gatewayInput, $s2sCallback = false)
     {
         $input['payment'] = $payment->toArrayGateway();
         $input['gateway'] = $gatewayInput;
@@ -300,7 +300,15 @@ trait Callback
         //Adding data for upi mandate.
         if ($payment->isUpiRecurring() === true)
         {
-            $upiMandate = $this->repo->upi_mandate->findByOrderId($payment['order_id']);
+            if ($payment->isRecurringTypeAuto())
+            {
+                // UPI Mandate is linked with Payment Local Token and not always with payment order
+                $upiMandate = $payment->localToken->upiMandate;
+            }
+            else
+            {
+                $upiMandate = $this->repo->upi_mandate->findByOrderId($payment['order_id']);
+            }
 
             $input['upi_mandate'] = $upiMandate;
         }

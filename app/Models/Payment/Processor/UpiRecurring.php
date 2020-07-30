@@ -533,7 +533,8 @@ trait UpiRecurring
 
         // When the metadata status is ReminderInProgressForAuthorized or AuthorizeInitiated
         // Then we will check for internal status if any sent from gateway
-        if ($metadata->isInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_AUTHORIZE))
+        if (($metadata->isInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_AUTHORIZE)) or
+            ($metadata->isInternalStatus(UpiMetadata\InternalStatus::AUTHORIZE_INITIATED)))
         {
             $internalStatus = $data['upi']['internal_status'] ?? null;
 

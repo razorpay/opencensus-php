@@ -1292,6 +1292,27 @@ class Server extends Base\Mock\Server
         return json_encode($response);
     }
 
+    protected function getAsyncCallbackResponseAutoDebitForIcici($payment)
+    {
+        $response = [
+            'merchantId'        => '400660',
+            'subMerchantId'     => '400660',
+            'terminalId'        => '5094',
+            'BankRRN'           => '019721040510',
+            'merchantTranId'    => $payment['id']. 'execte0',
+            'PayerName'         => 'payer',
+            'PayerMobile'       => '9876543210',
+            'PayerVA'           => 'localuser@icici',
+            'PayerAmount'       => '500',
+            'TxnStatus'         => 'SUCCESS',
+            'TxnInitDate'       => '20200715211840',
+            'TxnCompletionDate' => '20200715211843',
+            'UMN'               => $payment['id'] . '@icici',
+        ];
+
+        return json_encode($response);
+    }
+
     protected function getAsyncCallbackResponsePauseForIcici($mandate)
     {
         $response = [

@@ -30,9 +30,14 @@ class Gateway extends Base\Gateway
 
     protected $shouldMapLateAuthorized = true;
 
-    protected function createGatewayPaymentEntity($attributes, $action = null)
+    protected function createGatewayPaymentEntity($attributes, $action = null, $shouldMap = true)
     {
-        $attr = $this->getMappedAttributes($attributes);
+        $attr = $attributes;
+
+        if ($shouldMap === true)
+        {
+            $attr = $this->getMappedAttributes($attributes);
+        }
 
         $entity = $this->getNewGatewayPaymentEntity();
 

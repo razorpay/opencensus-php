@@ -107,6 +107,19 @@ class Gateway extends Base\Gateway
             return $response;
         }
 
+        if ($this->isSecondRecurringPayment($input) === true)
+        {
+            parent::action($input, Action::AUTHORIZE);
+
+            $debit = $this->firstOrCreateEntityForRecurring($input, Action::AUTHORIZE, true);
+
+            $this->setRequestDataForUpiRecurring($input, $debit);
+
+            $response = $this->sendDebitRequest($input, $debit);
+
+            return $response;
+        }
+
         if (($this->isBharatQrPayment() === true) or
             ($this->isUpiTransferPayment() === true))
         {
@@ -596,6 +609,9 @@ class Gateway extends Base\Gateway
             $attr = $this->getMappedAttributes($response);
         }
 
+        // We can not save RRN timeline for recurring payments because gateway_data is too short for that
+        $isRecurringAuthorize = (array_get($payment->getGatewayData(), Base\Constants::ACTION) === 'execte');
+
         // For payment's entities, we need NPCI REF ID to be generated.
         // Now, gateway payment entity will have authorize action in 3 scenarios - authorize, callback and verify.
         // In authorize and callback, we dont get OriginalBankRrn or originalBankRrn. So, entity wont have Npci
@@ -607,7 +623,8 @@ class Gateway extends Base\Gateway
         // For refund, we get originalBankRRN in response which is mapped to NPCI reference ID. But refund will have
         // entity with refund action. So, overwrite is safe as long as action is authorize.
         if (($payment->getAction() === Action::AUTHORIZE) and
-            (isset($attr[Entity::GATEWAY_PAYMENT_ID]) === true))
+            (isset($attr[Entity::GATEWAY_PAYMENT_ID]) === true) and
+            ($isRecurringAuthorize === false))
         {
             // Now, The Mapper already maps the BANK_RRN to GATEWAY_PAYMENT_ID
             // Even if it is null, we can update null by null
@@ -1244,6 +1261,13 @@ class Gateway extends Base\Gateway
 
         $status = $content[Fields::TXN_STATUS];
 
+        $actualPaymentId = $content[Fields::MERCHANT_TRAN_ID];
+
+        if ($this->isSecondRecurringPayment($input) === true)
+        {
+            $actualPaymentId = substr($actualPaymentId, 0, 14);
+        }
+
         $repo = $this->getRepository();
 
         $gatewayPayment = $repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
@@ -1253,7 +1277,8 @@ class Gateway extends Base\Gateway
         // extra security for fake callbacks
 
         assertTrue($content[Fields::MERCHANT_ID] === $gatewayPayment->getMerchantId());
-        assertTrue($content[Fields::MERCHANT_TRAN_ID] === $gatewayPayment->getPaymentId());
+
+        assertTrue($actualPaymentId === $gatewayPayment->getPaymentId());
 
         $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
         $actualAmount   = number_format($content[Fields::PAYER_AMOUNT], 2, '.', '');
@@ -1277,12 +1302,19 @@ class Gateway extends Base\Gateway
                 $message);
         }
 
-        return [
+        $response  = [
             'acquirer' => [
                 Payment\Entity::VPA => $gatewayPayment->getVpa(),
                 Payment\Entity::REFERENCE16 => $gatewayPayment->getNpciReferenceId(),
             ]
         ];
+
+        if ($this->isSecondRecurringPayment($input) === true)
+        {
+            $response = array_merge($response, $this->getResponseForAutoRecurring($input, null, $gatewayPayment));
+        }
+
+        return $response;
     }
 
     public function debit(array $input)
