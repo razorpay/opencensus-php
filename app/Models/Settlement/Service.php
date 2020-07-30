@@ -3,7 +3,10 @@
 namespace RZP\Models\Settlement;
 
 use Cache;
+use Config;
 use Carbon\Carbon;
+use phpseclib\Crypt\RSA;
+use phpseclib\Net\SFTP;
 
 use RZP\Exception;
 use RZP\Models\Base;
@@ -673,5 +676,33 @@ class Service extends Base\Service
     public function scheduleGetIds(array $input) : array
     {
         return app('settlements_dashboard')->scheduleGetIds($input);
+    }
+
+    public function getIrctcSettlementFile(string $date, $input)
+    {
+        $sftp = new SFTP('sftp.razorpay.com');
+
+        $privateKey = new RSA();
+
+        $secretKey = Config::get('applications.rzp_sftp.rzp_sftp_secret_key');
+
+        $secretKey = trim(str_replace('\n', "\n", $secretKey));
+
+        $privateKey->loadKey($secretKey, RSA::PRIVATE_FORMAT_PKCS1);
+
+        $privateKey->setEncryptionMode(RSA::ENCRYPTION_PKCS1);
+
+        $fileBasePath = Config::get('applications.rzp_sftp.rzp_sftp_file_path');
+
+        $username = Config::get('applications.rzp_sftp.rzp_sftp_sftp_username');
+
+        if (!$sftp->login($username, $privateKey)) {
+            throw new Exception\ServerErrorException(
+                'sftp connection failed', ErrorCode::SERVER_ERROR_SFTP_CONNECTION_FAILED);
+        }
+
+        $filename = $fileBasePath."RZPX_Settlement_".$input['merchant_id']."_".$date.".csv";
+
+        return ['data' => $sftp->get($filename)];
     }
 }

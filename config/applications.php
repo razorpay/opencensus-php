@@ -602,5 +602,11 @@ return [
 
     'worker' => [
         'is_worker_pod'  => env('IS_WORKER_POD', false),
+    ],
+
+    'rzp_sftp' => [
+        'rzp_sftp_secret_key'       => env('RZP_SFTP_PASSWORD'),
+        'rzp_sftp_sftp_username'    => env('RZP_SETTLEMENT_SFTP_USERNAME'),
+        'rzp_sftp_file_path'        => env('RZP_SETTLEMENT_SFTP_FILE_PATH')
     ]
 ];
