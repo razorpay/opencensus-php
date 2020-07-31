@@ -7325,7 +7325,7 @@ class MerchantTest extends TestCase
 
     public function testOutOfOrgMerchantInternationalEnableAction()
     {
-        $this->setMerchantMerchantDetailsAndPricing(false, 'whitelist');
+        $this->setMerchantMerchantDetailsAndPricing(false, null);
 
         $this->fixtures->edit('merchant', '10000000000000', [
             'org_id'                => Org::SBIN_ORG,
@@ -7351,7 +7351,7 @@ class MerchantTest extends TestCase
 
     public function testOutOfOrgBlacklistedMerchantInternationalEnableAction()
     {
-        $this->setMerchantMerchantDetailsAndPricing(false, 'blacklist');
+        $this->setMerchantMerchantDetailsAndPricing(false, null);
 
         $this->fixtures->edit('merchant', '10000000000000', [
             'org_id'                => Org::SBIN_ORG,

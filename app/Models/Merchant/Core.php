@@ -2945,10 +2945,12 @@ class Core extends Base\Core
     {
         // Enable international for merchant if
         // 1) Merchant has a valid website
-        // 2) If international activation flow is set
-        //
+        // 2) If international activation flow is set for Razorpay Org merchants
+        // For Non Razorpay org merchants, the international activation flow can be null.
+
         if (($this->validateWebsiteCheckForInternationalActivation($merchant, $merchantDetails) === false) or
-            (empty($merchantDetails->getInternationalActivationFlow()) === true))
+            (empty($merchantDetails->getInternationalActivationFlow()) === true and
+             $merchant->getOrgId() === Org::RAZORPAY_ORG_ID ))
         {
             return false;
         }
