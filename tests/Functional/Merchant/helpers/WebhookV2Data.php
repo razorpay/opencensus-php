@@ -5,6 +5,15 @@ use RZP\Error\PublicErrorCode;
 
 return [
 
+    'testCreateWebhookForPartner' => [
+        'request' => [
+            'url'  => '/v1/oauth/applications/10000000000App/webhooks',
+            'content' => [],
+            'method' => 'POST',
+        ],
+        'response' => []
+    ],
+
     'testCreateWebhookForOauth' => [
         'request' => [
             'url'  => '/v1/oauth/applications/10000000000App/webhooks',
@@ -12,6 +21,26 @@ return [
             'method' => 'POST',
         ],
         'response' => []
+    ],
+
+    'testCreateWebhookForPartnerMerchantNoAppAccessFailure' => [
+        'request' => [
+            'url'  => '/v1/oauth/applications/10000000000App/webhooks',
+            'content' => [],
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
     ],
 
     'testCreateWebhookForOauthFailure' => [
@@ -165,6 +194,54 @@ return [
         ],
     ],
 
+    'testListWebhookForPartner' => [
+        'request' => [
+            'url'  => '/v1/webhooks?application_id=10000000000App',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content'  => [],
+        ],
+    ],
+
+    'testListWebhookForPartnerMerchantNotPartnerFailure' => [
+        'request' => [
+            'url'  => '/v1/webhooks?application_id=10000000000App',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
+    'testListWebhookForPartnerMerchantNoAppAccessFailure' => [
+        'request' => [
+            'url'  => '/v1/webhooks?application_id=10000000000App',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
     'testUpdateWebhookForBanking' => [
         'request' => [
             'url'  => '/v1/webhooks/bankingWebhookId',
@@ -204,6 +281,52 @@ return [
             'method' => 'PUT',
         ],
         'response' => [],
+    ],
+
+    'testUpdateWebhookForOauth' => [
+        'request' => [
+            'url'  => '/v1/webhooks/primaryWebhookId',
+            'method' => 'PUT',
+        ],
+        'response' => [],
+    ],
+
+    'testUpdateWebhookForOauthMerchantNotPartnerFailure' => [
+        'request' => [
+            'url'  => '/v1/webhooks/primaryWebhookId',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
+    'testUpdateWebhookForOauthMerchantNoAppAccessFailure' => [
+        'request' => [
+            'url'  => '/v1/webhooks/primaryWebhookId',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
     ],
 
     'testUpdateWebhookInvalidProductEventFailure' => [

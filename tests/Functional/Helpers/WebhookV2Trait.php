@@ -178,15 +178,16 @@ trait WebhookV2Trait
     protected function getApiCreateResponseBodyForOauth(): array
     {
         return [
-            'id'            => 'EZ4ezgl4124qKu',
-            'created_at'    => '2020-04-01T03:32:10Z',
-            'service'       => 'api-test',
-            'owner_id'      => '10000000000App',
-            'owner_type'    => 'application',
-            'context'       => [],
-            'disabled_at'   => '1970-01-01T00:00:00Z',
-            'url'           => 'http://webhook.com/v1/dummy/route',
-            'events'        => [ 'payment.authorized'  => true ],
+            'id'             => 'EZ4ezgl4124qKu',
+            'created_at'     => '2020-04-01T03:32:10Z',
+            'service'        => 'api-test',
+            'owner_id'       => '10000000000App',
+            'owner_type'     => 'application',
+            'context'        => [],
+            'disabled_at'    => '1970-01-01T00:00:00Z',
+            'url'            => 'http://webhook.com/v1/dummy/route',
+            'events'         => [ 'payment.authorized'  => true ],
+            'application_id' => '10000000000App'
         ];
     }
 
@@ -298,6 +299,14 @@ trait WebhookV2Trait
         ];
     }
 
+    protected function getStorkListPayloadForApplication(): array
+    {
+        return [
+            'service'    => 'api-test',
+            'owner_id'   => '10000000000App',
+        ];
+    }
+
     protected function getStorkListResponseBody(): array
     {
         return  [
@@ -338,6 +347,46 @@ trait WebhookV2Trait
         ];
     }
 
+    protected function getStorkListResponseBodyForApplication(): array
+    {
+        return  [
+            [
+                'id'            => 'EZ4ezgl4124qKu',
+                'created_at'    => '2020-04-01T03:32:10Z',
+                'service'       => 'rx-test',
+                'owner_id'      => '10000000000App',
+                'owner_type'    => 'application',
+                'context'       => [],
+                'disabled_at'   => '1970-01-01T00:00:00Z',
+                'url'           => 'http://webhook.com/v1/dummy/route',
+                'subscriptions' => [
+                    [
+                        'id'         => 'EZ4ezhzqgKNjxI',
+                        'created_at' => '2020-04-01T03:32:10Z',
+                        'eventmeta'  => ['name' => 'payout.created',],
+                    ],
+                ],
+            ],
+            [
+                'id'            => 'EZ4ezg241a4qKu',
+                'created_at'    => '2020-04-01T03:32:10Z',
+                'service'       => 'rx-test',
+                'owner_id'      => '10000000000App',
+                'owner_type'    => 'application',
+                'context'       => [],
+                'disabled_at'   => '1970-01-01T00:00:00Z',
+                'url'           => 'http://webhook.com/v1/dummy/route',
+                'subscriptions' => [
+                    [
+                        'id'         => 'EZ4ezhzqgKNjxI',
+                        'created_at' => '2020-04-01T03:32:10Z',
+                        'eventmeta'  => ['name' => 'payout.created',],
+                    ],
+                ],
+            ],
+        ];
+    }
+
     protected function getApiListResponseBody(): array
     {
         return  [
@@ -362,6 +411,36 @@ trait WebhookV2Trait
                 'disabled_at'   => '1970-01-01T00:00:00Z',
                 'url'           => 'http://webhook.com/v1/dummy/route',
                 'events'        => [ 'payout.created' => true ],
+            ],
+        ];
+    }
+
+    protected function getApiListResponseBodyForApplication()
+    {
+        return  [
+            [
+                'id'             => 'EZ4ezgl4124qKu',
+                'created_at'     => '2020-04-01T03:32:10Z',
+                'service'        => 'rx-test',
+                'owner_id'       => '10000000000App',
+                'owner_type'     => 'application',
+                'context'        => [],
+                'disabled_at'    => '1970-01-01T00:00:00Z',
+                'url'            => 'http://webhook.com/v1/dummy/route',
+                'events'         => [ 'payout.created' => true ],
+                'application_id' => '10000000000App',
+            ],
+            [
+                'id'             => 'EZ4ezg241a4qKu',
+                'created_at'     => '2020-04-01T03:32:10Z',
+                'service'        => 'rx-test',
+                'owner_id'       => '10000000000App',
+                'owner_type'     => 'application',
+                'context'        => [],
+                'disabled_at'    => '1970-01-01T00:00:00Z',
+                'url'            => 'http://webhook.com/v1/dummy/route',
+                'events'         => [ 'payout.created' => true ],
+                'application_id' => '10000000000App',
             ],
         ];
     }
@@ -481,6 +560,16 @@ trait WebhookV2Trait
             'id'            => 'primaryWebhookId',
             'url'           => 'http://webhook.com/v1/dummy/route'  ,
             'events'        => [ 'payment.failed' => '1' ],
+        ];
+    }
+
+    protected function getApiUpdatePayloadForOauth(): array
+    {
+        return [
+            'id'             => 'primaryWebhookId',
+            'url'            => 'http://webhook.com/v1/dummy/route'  ,
+            'events'         => [ 'payment.failed' => '1' ],
+            'application_id' => '10000000000App'
         ];
     }
 

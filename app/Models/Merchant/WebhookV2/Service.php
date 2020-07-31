@@ -36,6 +36,7 @@ class Service extends Base\Service
     const ALERT_EMAIL       = 'alert_email';
     const APPLICATION       = 'application';
     const SUBSCRIPTIONS     = 'subscriptions';
+    const APPLICATION_ID    = 'application_id';
     const CREATED_BY_EMAIL  = 'created_by_email';
     const UPDATED_BY_EMAIL  = 'updated_by_email';
 
@@ -84,6 +85,7 @@ class Service extends Base\Service
 
         $this->validator->validateStorkWebhookInput($input, $this->merchant);
         $this->validator->validatePartnerWithWebhooksAccess($this->merchant);
+        $this->validator->validatePartnerMerchantHasApplicationAccess($this->merchant, $appId);
 
         $input[self::OWNER_ID]   = $appId;
         $input[self::OWNER_TYPE] = self::APPLICATION;
@@ -169,9 +171,13 @@ class Service extends Base\Service
 
         $this->validator->validateStorkWebhookInput($input, $this->merchant);
 
-        $input[self::ID]         = $webhookId;
-        $input[self::OWNER_ID]   = $this->merchant->getId();
-        $input[self::OWNER_TYPE] = self::MERCHANT;
+        $isOauthApplicationWebhook = isset($input[self::APPLICATION_ID]);
+        $isOauthApplicationWebhook === true ? $this->validator->validatePartnerWithWebhooksAccess($this->merchant) : null;
+        $isOauthApplicationWebhook === true ? $this->validator->validatePartnerMerchantHasApplicationAccess($this->merchant, $input[self::APPLICATION_ID])  : null;
+
+        $input[self::ID]           = $webhookId;
+        $input[self::OWNER_ID]     = $isOauthApplicationWebhook === true ? $input[self::APPLICATION_ID] : $this->merchant->getId();
+        $input[self::OWNER_TYPE]   = $isOauthApplicationWebhook === true ? self::APPLICATION : self::MERCHANT;
 
         $this->setUserIdForInputAndKey($input, self::UPDATED_BY);
 
@@ -214,14 +220,23 @@ class Service extends Base\Service
     {
         $this->traceOperationEntry('list');
 
+        $ownerId = $this->merchant->getId();
+
         if (($this->app['basicauth']->isHosted() === true) or
             ($this->app['basicauth']->isExpress() === true))
         {
-            $res = (new Stork($this->product))->listWithSecret($this->merchant->getId(), $params);
+            $res = (new Stork($this->product))->listWithSecret($ownerId, $params);
         }
         else
         {
-            $res = (new Stork($this->product))->list($this->merchant->getId(), $params);
+            $isListWkRequestForOauthApplication = isset($params[self::APPLICATION_ID]);
+            if ($isListWkRequestForOauthApplication === true)
+            {
+                $this->validator->validatePartnerMerchantHasApplicationAccess($this->merchant, $params[self::APPLICATION_ID]);
+                $ownerId = $params[self::APPLICATION_ID];
+            }
+
+            $res = (new Stork($this->product))->list($ownerId, $params);
         }
 
         $res['items'] = array_map(function ($v) { return $this->storkToApiFormat($v); }, $res['items']);
@@ -317,7 +332,7 @@ class Service extends Base\Service
      * active field in api format is disabled field in stork format
      *
      * @param array $apiWk webhook in api's format
-     * @return array         webhook in stork's format
+     * @return array       webhook in stork's format
      */
     protected function apiToStorkFormat(array $apiWk): array
     {
@@ -396,6 +411,12 @@ class Service extends Base\Service
         {
             // DISABLED field is not there if it's false.
             $apiWk[self::ACTIVE] = true;
+        }
+
+        if ((isset($storkWk[self::OWNER_TYPE]) and
+            ($storkWk[self::OWNER_TYPE]) === self::APPLICATION))
+        {
+            $apiWk[self::APPLICATION_ID] = $storkWk[self::OWNER_ID] ?? '';
         }
 
         unset($apiWk[self::DISABLED]);
@@ -575,5 +596,4 @@ class Service extends Base\Service
         unset($wk['secret']);
         return $wk;
     }
-
 }

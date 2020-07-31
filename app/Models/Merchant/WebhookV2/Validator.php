@@ -6,6 +6,9 @@ use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Base\JitValidator;
+use RZP\Models\Merchant\Constants;
+use Razorpay\OAuth\Application\Repository as OauthAppRepository;
+use Razorpay\OAuth\Exception\DBQueryException as OauthDBQueryException;
 
 /**
  * Since webhookV2 is a proxy layer this file contains
@@ -13,12 +16,13 @@ use RZP\Base\JitValidator;
  */
 class Validator extends \RZP\Base\Validator
 {
-    const ID            = 'id';
-    const URL           = 'url';
-    const WEBHOOK       = 'webhook';
-    const OWNER_ID      = 'owner_id';
-    const OWNER_TYPE    = 'owner_type';
-    const ALERT_EMAIL   = 'alert_email';
+    const ID             = 'id';
+    const URL            = 'url';
+    const WEBHOOK        = 'webhook';
+    const OWNER_ID       = 'owner_id';
+    const OWNER_TYPE     = 'owner_type';
+    const ALERT_EMAIL    = 'alert_email';
+    const APPLICATION_ID = 'application_id';
 
     // keys peresent in the payload
     const SUBSCRIPTIONS = 'subscriptions';
@@ -117,8 +121,30 @@ class Validator extends \RZP\Base\Validator
     }
 
     /**
+     * @param Merchant\Entity $merchant
+     * @param string          $applicationId
+     */
+    public function validatePartnerMerchantHasApplicationAccess(Merchant\Entity $merchant, string $applicationId)
+    {
+        try
+        {
+            (new OauthAppRepository)->findActiveApplicationByIdAndMerchantId($applicationId, $merchant->getId());
+        }
+        catch (OauthDBQueryException $e)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                self::APPLICATION_ID,
+                [
+                    Merchant\Entity::ID  => $merchant->getId(),
+                    self::APPLICATION_ID => $applicationId,
+                ]);
+        }
+    }
+
+    /**
      * @param string $emailType type of email to be sent
-     * @param array  $data      to build the email
+     * @param array  $input     to build the email
      *
      * @throws Exception\BadRequestException
      */
