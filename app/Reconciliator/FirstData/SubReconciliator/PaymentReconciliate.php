@@ -60,8 +60,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      */
     protected function getGatewayFee($row)
     {
+        // Removing comma from fee, as floatval takes value before last dot or comma
+        $formattedAmount = str_replace(',', '', $row[self::COLUMN_GATEWAY_FEE]);
+
         // Convert fee into basic unit of currency (ex: paise)
-        $gatewayFee = floatval($row[self::COLUMN_GATEWAY_FEE]) * 100;
+        $gatewayFee = floatval($formattedAmount) * 100;
 
         return intval(number_format($gatewayFee, 2, '.', ''));
     }
