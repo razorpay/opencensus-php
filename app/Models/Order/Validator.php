@@ -435,16 +435,11 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateBank($input, $merchant = null)
+    public function validateBank($input)
     {
         if (isset($input[Entity::BANK]) === false)
         {
             return;
-        }
-
-        if (isset($merchant) === false)
-        {
-            $merchant = $this->entity->merchant;
         }
 
         $supportedBanks = [];
@@ -468,7 +463,7 @@ class Validator extends Base\Validator
 
             case Payment\Method::NETBANKING:
             default:
-                $supportedBanks = Netbanking::getSupportedBanks($merchant);
+                $supportedBanks = Netbanking::getSupportedBanks();
         }
 
         $bank = $input[Entity::BANK];
