@@ -147,7 +147,7 @@ class PDO implements IntegrationInterface
             "44" => "With Check Option Violation"
         ];
 
-        if (array_key_exists($error, $errorCodeMsgArray)){
+        if (array_key_exists($error, $errorCodeMsgArray)) {
             $errorTags['error'] = 'true';
             $errorTags['error.code'] = $errorCode;
             $errorTags['error.message'] = $errorCodeMsgArray[$error] ?? '';

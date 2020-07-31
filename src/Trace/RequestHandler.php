@@ -288,12 +288,12 @@ class RequestHandler
             }
         }
 
-        if (array_key_exists('QUERY_STRING', $headers)){
+        if (array_key_exists('QUERY_STRING', $headers)) {
             // add all query parameters as tags
             parse_str($headers['QUERY_STRING'], $queryParams);
 
             foreach ($queryParams as $key => $value) {
-                if(is_array($value)){
+                if (is_array($value)) {
                     $value = implode(', ', $value);
                 }
 
@@ -339,8 +339,7 @@ class RequestHandler
         // omit query parameters in the span name
         if (array_key_exists('REQUEST_URI', $headers) and ($headers['REQUEST_URI'])) {
             return strtok($headers['REQUEST_URI'], '?');
-        }
-        else {
+        } else {
             return self::DEFAULT_ROOT_SPAN_NAME;
         }
     }

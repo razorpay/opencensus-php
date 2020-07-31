@@ -51,7 +51,7 @@ class Redis implements IntegrationInterface
             trigger_error('opencensus extension required to load Redis integrations.', E_USER_WARNING);
         }
 
-        opencensus_trace_method('Predis\Client', '__construct',   function ($predis, $params){
+        opencensus_trace_method('Predis\Client', '__construct', function ($predis, $params) {
               return [
                     'attributes' => [
                         'peer.hostname' => $params['host'],
@@ -76,7 +76,6 @@ class Redis implements IntegrationInterface
                     'kind' => Span::KIND_CLIENT
                 ];
         });
-
     }
 
 

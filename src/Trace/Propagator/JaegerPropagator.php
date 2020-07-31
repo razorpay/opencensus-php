@@ -71,7 +71,7 @@ class JaegerPropagator implements PropagatorInterface
 
         $n = sscanf($data, self::CONTEXT_HEADER_FORMAT, $traceId, $spanId, $parentSpanId, $flags);
 
-        if ($n == 0){
+        if ($n == 0) {
             return new SpanContext();
         }
 

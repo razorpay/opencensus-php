@@ -307,8 +307,7 @@ class Tracer
     {
         $context = self::spanContext();
 
-        if (isset(self::$instance))
-        {
+        if (isset(self::$instance)) {
             self::$instance->inject($context, $headers);
         }
     }
