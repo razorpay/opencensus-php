@@ -267,7 +267,13 @@ const businessModel = [
   {
     label: 'Billing Label',
     name: 'business_dba',
+    required: true,
     info: getBillingLabelInfo,
+    validator: val => {
+      if (val && val.length < 3) {
+        return 'Please enter billing label with at least 3 characters.';
+      }
+    },
   },
   [
     {
