@@ -2151,7 +2151,7 @@ trait Refund
             }
         }
 
-        $bankAccountInput = $this->getBankAccountInput($payment, $input);
+        $bankAccountInput = $this->getBankAccountInput($payment, $refund, $input);
 
         if (empty($bankAccountInput) === false)
         {
@@ -2523,7 +2523,7 @@ trait Refund
             }
             else
             {
-                $fta = $this->refundViaFundTransferToBankAccount($payment, $data, $fundTransferAttemptInput);
+                $fta = $this->refundViaFundTransferToBankAccount($payment, $refund, $data, $fundTransferAttemptInput);
             }
 
             $refundGateway = Settlement\Channel::getNodalGatewayFromChannel($fta->getChannel());
@@ -2577,10 +2577,11 @@ trait Refund
     }
 
     protected function refundViaFundTransferToBankAccount(Payment\Entity $payment,
+                                                          RefundEntity $refund,
                                                           array $data,
                                                           array $fundTransferAttemptInput): FundTransferAttempt\Entity
     {
-        $bankAccountInput = $this->getBankAccountInput($payment, $data);
+        $bankAccountInput = $this->getBankAccountInput($payment, $refund, $data);
 
         if ((isset($bankAccountInput[BankAccount\Entity::TRANSFER_MODE]) === true) and
             (trim($bankAccountInput[BankAccount\Entity::TRANSFER_MODE]) !== ''))
@@ -2637,6 +2638,16 @@ trait Refund
         else
         {
             $data[RefundConstants::IS_FTA] = false;
+        }
+
+        // For API refunds we are handling checks on processing refund via FTA
+        // For scrooge refunds we believe the is_fta flag sent to API
+        if ($refund->isScrooge() === false)
+        {
+            if ($refund->isDirectSettlementRefund() === true)
+            {
+                return false;
+            }
         }
 
         //
@@ -2929,9 +2940,15 @@ trait Refund
         return $input;
     }
 
-    protected function getBankAccountInput(Payment\Entity $payment, array $data = [])
+    protected function getBankAccountInput(Payment\Entity $payment, RefundEntity $refund, array $data = [])
     {
         $input = [];
+
+        if ($refund->isDirectSettlementRefund() === true)
+        {
+            // Not allowing Fund Transfers on direct settlement with refund terminals
+            return [];
+        }
 
         if (isset($data['bank_account']) === true)
         {
@@ -3019,6 +3036,12 @@ trait Refund
     protected function getVpaInput(Payment\Refund\Entity $refund, Payment\Entity $payment, array $data = [])
     {
         $input = null;
+
+        if ($refund->isDirectSettlementRefund() === true)
+        {
+            // Not allowing Fund Transfers on direct settlement with refund terminals
+            return $input;
+        }
 
         if (isset($data[RefundConstants::VPA]) === true)
         {

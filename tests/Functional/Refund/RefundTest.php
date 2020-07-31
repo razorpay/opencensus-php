@@ -1711,6 +1711,34 @@ class RefundTest extends TestCase
         $actual['acquirer_data'] = $rfnd->getAcquirerData()->toArray();
     }
 
+    public function testTpvPaymentRefundNetbankingForDirectSettlementRefund()
+    {
+        list($payment, $order) = $this->tpvPayment();
+
+        $this->fixtures->merchant->addFeatures(['bank_transfer_refund']);
+
+        $this->fixtures->terminal->edit($payment['terminal_id'], [
+            'type' => [
+                'direct_settlement_with_refund' => '1',
+                'recurring_3ds' => '1'
+            ],
+        ]);
+
+        $response = $this->refundPayment($payment['id'], $payment['amount'], ['is_fta' => true]);
+
+        $refund  = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($response['id'], $refund['id']);
+
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+
+        $this->assertEquals('created', $refund['status']);
+
+        $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fundTransferAttempt['source'], null);
+    }
+
     public function testTpvPaymentRefundNetbankingOld()
     {
         list($payment, $order) = $this->tpvPayment();
