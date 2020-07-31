@@ -122,6 +122,9 @@ class CreateMerchants extends Migration
             $table->string(Merchant::ACTIVATION_SOURCE, 255)
                   ->nullable();
 
+            $table->string(Merchant::SIGNUP_SOURCE, 32)
+                  ->nullable();
+
             $table->tinyInteger(Merchant::BUSINESS_BANKING)
                   ->default(0);
 

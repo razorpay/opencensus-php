@@ -9,6 +9,7 @@ use Carbon\Carbon;
 
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Http\RequestHeader;
 use RZP\Mail\User\Otp;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
@@ -91,6 +92,22 @@ class UserTest extends TestCase
                     ->first();
 
         $this->assertNotNull($row);
+    }
+
+    public function testSignupSourceShowingUpInMerchantAfterRegistration() {
+
+        //Given
+        $this->ba->appAuth();
+
+        //When
+        $this->withHeader(RequestHeader::X_REQUEST_ORIGIN, "https://x.razorpay.com");
+        $this->startTest();
+
+        //Then
+        /** @var MerchantEntity $merchant */
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $this->assertEquals($merchant['signup_source'], "banking");
     }
 
     public function testRegisterWithOtp()

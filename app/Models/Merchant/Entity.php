@@ -127,6 +127,8 @@ class Entity extends Base\PublicEntity
 
     // Source denotes if a merchant activation request came from PG or business banking.
     const ACTIVATION_SOURCE        = 'activation_source';
+    // Signup Source is the place from where the merchant signed up from PG or banking
+    const SIGNUP_SOURCE            = 'signup_source';
 
     const BUSINESS_BANKING         = 'business_banking';
 
@@ -307,6 +309,7 @@ class Entity extends Base\PublicEntity
         self::DEFAULT_REFUND_SPEED,
         self::PARTNERSHIP_URL,
         self::EXTERNAL_ID,
+        self::SIGNUP_SOURCE,
     ];
 
     const CONFIG_LIST = [
@@ -394,6 +397,7 @@ class Entity extends Base\PublicEntity
         self::PARTNERSHIP_URL,
         self::EXTERNAL_ID,
         self::PRODUCT_INTERNATIONAL,
+        self::SIGNUP_SOURCE,
      ];
 
     protected $defaults = [
@@ -716,6 +720,10 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACTIVATION_SOURCE, $activationSource);
     }
 
+    public function setSignupSource(string $signupSource){
+        $this->setAttribute(self::SIGNUP_SOURCE, $signupSource);
+    }
+
     protected function setReceiptEmailTriggerEventAttribute($event)
     {
         // For now we are allowing only one of the bit to be set to true, ensuring this by allowing one element in
@@ -888,6 +896,10 @@ class Entity extends Base\PublicEntity
     public function getActivationSource()
     {
         return $this->getAttribute(self::ACTIVATION_SOURCE);
+    }
+
+    public function getSignupSource(){
+        return $this->getAttribute(self::SIGNUP_SOURCE);
     }
 
     public function activate()

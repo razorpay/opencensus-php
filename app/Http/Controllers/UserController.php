@@ -3,6 +3,7 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Models\User\Service;
 
 class UserController extends Controller
 {
@@ -10,7 +11,9 @@ class UserController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->register($input);
+        /** @var Service $userService */
+        $userService = $this->service();
+        $data = $userService->register($input);
 
         return ApiResponse::json($data);
     }
@@ -157,7 +160,9 @@ class UserController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->upgradeUserToMerchant($input);
+        /** @var Service $service */
+        $service = $this->service();
+        $data = $service->upgradeUserToMerchant($input);
 
         return ApiResponse::json($data);
     }

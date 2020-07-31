@@ -54,6 +54,7 @@ class Validator extends Base\Validator
         Entity::COUPON_CODE                 => 'sometimes|string',
         Constants::PARTNER_INTENT           => 'sometimes|boolean',
         Entity::EXTERNAL_ID                 => 'sometimes|string|max:255',
+        Entity::SIGNUP_SOURCE               => 'sometimes|string|max:32',
     ];
 
     protected static $editRules = [

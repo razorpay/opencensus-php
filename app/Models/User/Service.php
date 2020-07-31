@@ -125,8 +125,9 @@ class Service extends Base\Service
         else
         {
             $merchantInputData = [
-                Merchant\Entity::EMAIL => $user[Entity::EMAIL],
-                Merchant\Entity::NAME  => $businessName,
+                Merchant\Entity::EMAIL         => $user[Entity::EMAIL],
+                Merchant\Entity::NAME          => $businessName,
+                Merchant\Entity::SIGNUP_SOURCE => $this->auth->getRequestOriginProduct(),
             ];
 
             if (isset($input[Merchant\Constants::PARTNER_INTENT]))
@@ -518,8 +519,9 @@ class Service extends Base\Service
         $user = $this->repo->user->findOrFailPublic($userId)->toArrayPublic();
 
         $merchantData = [
-            'name'  => $input['business_name'],
-            'email' => $user['email'],
+            Merchant\Entity::NAME          => $input['business_name'],
+            Merchant\Entity::EMAIL         => $user['email'],
+            Merchant\Entity::SIGNUP_SOURCE => $this->auth->getRequestOriginProduct()
         ];
 
         $data = $this->createMerchantFromUser($merchantData, $user);
