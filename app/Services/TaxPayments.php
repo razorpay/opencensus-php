@@ -29,6 +29,8 @@ class TaxPayments
     const LIST_TAX_PAYMENTS        = 'ListTaxPayments';
     const PAY_TAX_PAYMENTS         = 'PayTaxPayment';
     const BULK_PAY_TAX_PAYMENTS    = 'BulkPayTaxPayments';
+    const INITIATE_MONTHLY_PAYOUTS = 'InitiateMonthlyPayouts';
+    const TAX_PAYMENT_ENABLED_KEY  = 'tax_payment_enabled';
 
     protected $app;
 
@@ -48,6 +50,40 @@ class TaxPayments
         $this->config = $app['config']['applications.vendor_payments'];
 
         $this->repo = $app['repo'];
+    }
+
+    /**
+     * This will query the settings service and get all the merchants that have the tax-payment settings enabled
+     */
+    public function settingsOfTaxPaymentEnabledMerchants()
+    {
+         $settings = (new Service())->getSettingsIfKeyPresent(Module::TAX_PAYMENTS, self::TAX_PAYMENT_ENABLED_KEY);
+
+        $settingsOfEnabledMerchants = [];
+
+        foreach ($settings as $setting)
+        {
+            if (boolval($setting['value']) === true)
+            {
+                $merchant = $this->repo->merchant->find($setting['entity_id']);
+
+                $settingsAccessor = Accessor::for($merchant, Module::TAX_PAYMENTS);
+
+                array_push($settingsOfEnabledMerchants,
+                           [
+                               'merchant_id' => $merchant->getId(),
+                               'settings'    => $settingsAccessor->all()->toArray()
+                           ]);
+            }
+        }
+        return $settingsOfEnabledMerchants;
+    }
+
+    public function initiateMonthlyPayouts()
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::INITIATE_MONTHLY_PAYOUTS);
+
+        return $this->makeRequest(null, $url, ['time' => now()]);
     }
 
     public function payTaxPayment(MerchantEntity $merchant, string $taxPaymentId, array $input, UserEntity $user = null)

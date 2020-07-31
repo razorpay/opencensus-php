@@ -234,7 +234,7 @@ class Table
     const TAX_GROUP             = 'tax_groups';
     const TAX_GROUP_TAX_MAP     = 'tax_group_tax_map';
 
-    const SETTING               = 'settings';
+    const SETTINGS              = 'settings';
 
     // Banking Accounts Tables
     const EXTERNAL                        = 'external';

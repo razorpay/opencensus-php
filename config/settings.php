@@ -8,7 +8,7 @@ return [
     'path'        => storage_path() . '/settings.json',
 
     // Table name, for database store
-    'table'       => \RZP\Constants\Table::SETTING,
+    'table'       => \RZP\Constants\Table::SETTINGS,
 
     // For database store, which connection to use.
     // Set to null because set custom connections for test and live

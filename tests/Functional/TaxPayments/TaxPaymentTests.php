@@ -5,6 +5,8 @@ namespace RZP\Tests\Functional\TaxPayments;
 use App;
 use Mockery;
 use RZP\Models\Contact\Type;
+use RZP\Models\Payout\Status;
+use RZP\Models\Payout\Purpose;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
@@ -313,4 +315,72 @@ class TaxPaymentTests extends TestCase
 
         $this->startTest();
     }
+
+    public function testEnabledMerchantSettingInternalApiCall()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $m1 = $this->fixtures->create('merchant', ['id' => '200DemoAccount']);
+
+        $m2 = $this->fixtures->create('merchant', ['id' => '201DemoAccount']);
+
+        $m3 = $this->fixtures->create('merchant', ['id' => '202DemoAccount']);
+
+        $this->createTestSettingsForMerchant($m1->getId(), [
+            'tax_payment_enabled' => true,
+            'merchant_auto_debit_account_number' => 'm1_account',
+        ]);
+
+        $this->createTestSettingsForMerchant($m2->getId(), [
+            'tax_payment_enabled' => true,
+            'merchant_auto_debit_account_number' => 'm2_account',
+        ]);
+
+        $this->createTestSettingsForMerchant($m3->getId(), [
+            'tax_payment_enabled' => false, // as this is false, the settings for this should not be returned
+            'merchant_auto_debit_account_number' => 'm2_account',
+        ]);
+
+        $this->startTest();
+    }
+
+    public function createTestSettingsForMerchant($merchantId, $settings)
+    {
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = $merchantId;
+
+        $this->testData[__FUNCTION__]['request']['content'] = $settings;
+
+        $this->startTest();
+    }
+
+    public function testInitiateMonthlyPayoutsCallsServiceMethod()
+    {
+        $this->ba->proxyAuth();
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+
+        $tpMock->shouldReceive('initiateMonthlyPayouts')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('initiateMonthlyPayouts');
+    }
+
+    public function testPayoutWithTaxPaymentPurposeCanBeDeleted()
+    {
+        $this->ba->proxyAuth();
+        // create a payout with this purpose and call payout delete and there should not be any exception
+        $payout = $this->fixtures->create('payout',
+                                          [
+                                              'purpose' => Purpose::RZP_TAX_PAYMENT,
+                                              'status' => Status::QUEUED
+                                          ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf('/payouts/%s/cancel', $payout->getPublicId());
+
+        $this->startTest();
+    }
+
 }

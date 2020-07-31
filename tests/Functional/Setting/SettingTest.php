@@ -42,7 +42,7 @@ class SettingTest extends TestCase
         $this->startTest();
 
         $settings = \DB::connection('test')
-                       ->table(Table::SETTING)
+                       ->table(Table::SETTINGS)
                        ->pluck('value', 'key');
 
         $expected = [
@@ -67,7 +67,7 @@ class SettingTest extends TestCase
         $this->startTest();
 
         $settings = \DB::connection('test')
-                       ->table(Table::SETTING)
+                       ->table(Table::SETTINGS)
                        ->pluck('value', 'key');
 
         $expected = [

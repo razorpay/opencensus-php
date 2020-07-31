@@ -870,7 +870,9 @@ class Core extends Base\Core
                                  string $remarks = null): Entity
     {
         // If Payout has purpose 'rzp_fees' we won't allow merchant to cancel that
-        if (Purpose::isInInternal($payout->getPurpose()) === true)
+        if ((Purpose::isInInternal($payout->getPurpose()) === true)
+            and
+            ($payout->getPurpose() !== Purpose::RZP_TAX_PAYMENT))
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_FEE_RECOVERY_PAYOUT_CANCEL_NOT_PERMITTED,

@@ -384,4 +384,71 @@ return [
             'content' => []
         ]
     ],
+    'testEnabledMerchantSettingInternalApiCall'                           => [
+        'request'  => [
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '200DemoAccount',
+            ],
+            'url'     => '/tax-payments/enabledMerchantSettings',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'merchant_id' => '200DemoAccount',
+                    'settings'    => [
+                        'tax_payment_enabled'                => '1',
+                        'merchant_auto_debit_account_number' => 'm1_account'
+                    ]
+                ],
+                [
+                    'merchant_id' => '201DemoAccount',
+                    'settings'    => [
+                        'tax_payment_enabled'                => '1',
+                        'merchant_auto_debit_account_number' => 'm2_account'
+                    ]
+                ]
+            ]
+        ]
+    ],
+    'createTestSettingsForMerchant'                                       => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '200DemoAccount',
+            ],
+            'url'     => '/settings_internal/tax_payments',
+            'content' => [
+                'test_key' => 'test_value'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ],
+    'testInitiateMonthlyPayoutsCallsServiceMethod'                             => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/tax-payments/initiateMonthlyPayouts',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testPayoutWithTaxPaymentPurposeCanBeDeleted'                             => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payouts/<>/cancel',
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'cancelled',
+                'purpose' => 'rzp_tax_pay',
+            ]
+        ]
+    ],
 ];

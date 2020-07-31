@@ -1047,6 +1047,8 @@ class Route
 
 
         // Tax Payments
+        'tax_payments_payout_cron'                 => ['post',    'tax-payments/initiateMonthlyPayouts',             'TaxPaymentController@initiateMonthlyPayouts'                       ],
+        'tax_payments_enabled_merchant_settings'   => ['get',     'tax-payments/enabledMerchantSettings',            'TaxPaymentController@enabledMerchantSettings'                      ],
         'tax_payments_pay'                         => ['post',    'tax-payments/{id}/pay',                           'TaxPaymentController@payTaxPayment'                                ],
         'tax_payments_bulk_pay'                    => ['post',    'tax-payments/bulk-pay',                           'TaxPaymentController@bulkPayTaxPayment'                            ],
         'tax_payments_get_all_settings'            => ['get',     'tax-payments/settings/',                          'TaxPaymentController@getAllSettings'                               ],
@@ -2485,6 +2487,8 @@ class Route
         'setl_status_update',
         'banking_account_activation_details_via_batch',
         'payout_create_on_internal_contact',
+        'tax_payments_payout_cron',
+        'tax_payments_enabled_merchant_settings',
         'vendor_payment_ocr_accuracy_cron',
     ];
 
@@ -4591,6 +4595,7 @@ class Route
             'settings_upsert_internal',
             'fund_account_create_internal',
             'payout_create_on_internal_contact',
+            'tax_payments_enabled_merchant_settings',
         ],
 
         'dashboard' => [
@@ -4783,6 +4788,7 @@ class Route
             'terminals_proxy_delete_submerchant',
             'terminals_proxy_create_submerchant',
             'cps_backfill_entities',
+            'tax_payments_payout_cron',
             'vendor_payment_ocr_accuracy_cron',
         ],
 

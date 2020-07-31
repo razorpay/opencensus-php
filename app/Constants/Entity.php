@@ -78,6 +78,7 @@ class Entity
     const FEE_BREAKUP                = 'fee_breakup';
     const UPI_MANDATE                = 'upi_mandate';
     const PAYOUT_LINK                = 'payout_link';
+    const SETTINGS                   = 'settings';
     const FEE_RECOVERY               = 'fee_recovery';
     const LEGAL_ENTITY               = 'legal_entity';
     const PAYMENT_LINK               = 'payment_link';
@@ -480,6 +481,7 @@ class Entity
         self::SUBSCRIPTION              => \RZP\Models\Plan\Subscription::class,
         self::PAYMENT_LINK              => \RZP\Models\PaymentLink::class,
         self::PAYOUT_LINK               => \RZP\Models\PayoutLink::class,
+        self::SETTINGS                  => \RZP\Models\Settings::class,
         self::PAYMENT_PAGE_ITEM         => \RZP\Models\PaymentLink\PaymentPageItem::class,
         self::GATEWAY_TOKEN             => \RZP\Models\Customer\GatewayToken::class,
         self::ENTITY_ORIGIN             => \RZP\Models\EntityOrigin::class,
@@ -786,6 +788,7 @@ class Entity
         self::UFH_FILES                     => \RZP\Services\UfhClient::class,
         self::PAYMENTS_NBPLUS_NETBANKING    => \RZP\Services\NbPlus\Netbanking::class,
         self::PAYOUT_LINK                   => \RZP\Models\PayoutLink\Service::class,
+        self::SETTINGS                      => \RZP\Models\Settings\Service::class,
     ];
 
     protected static $syncedInLiveAndTest = [
