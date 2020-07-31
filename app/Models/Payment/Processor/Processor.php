@@ -3407,10 +3407,10 @@ class Processor
         }
         elseif ($captureValue === 'manual')
         {
+            $this->setPaymentRefundAtForConfig($payment, $manualTimeoutDuration);
+
             if ($difference > $manualTimeoutDuration)
             {
-                $this->setPaymentRefundAtForConfig($payment, $manualTimeoutDuration);
-
                 return false;
             }
         }
