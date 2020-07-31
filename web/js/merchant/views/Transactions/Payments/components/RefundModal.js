@@ -767,6 +767,7 @@ export default class RefundModal extends Component {
                     }}
                     class="form-control refund-amt-input"
                     type="number"
+                    step="0.01"
                     placeholder="Enter the refund amount"
                   />
                 </div>
