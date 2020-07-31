@@ -1016,6 +1016,19 @@ class Notifier extends Base\Core
 
                 break;
 
+            case Preferences::MID_BOB_FIN:
+
+                $template = 'sms.custom_invoice.bobfin';
+
+                $sender = 'BOBFIN';
+
+                $params = [
+                    'invoice_link'    => $invoiceLink,
+                    'card_last_four'  => $this->invoice->getDescription(),
+                ];
+
+                break;
+
             case Preferences::MID_RBL_INTERIM_PROCESS2:
 
                 $subscriptionRegistration = $this->invoice->entity;

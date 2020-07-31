@@ -141,6 +141,7 @@ class Preferences
     const MID_CLIX_HOUSING_FINANCE    = 'DdURgPS1iee3jc';
     const MID_CLIX_FINANCE            = 'DdUJZmctBydK1m';
     const MID_CLIX_FINANCE_1          = 'DdU3RrefV6jkck';
+    const MID_BOB_FIN                 = 'Evfc1S0zDq0daP';
 
     const MID_GEPL_CAPITAL_PVT_LTD        = 'EhtHoWq8Bx2EU9';
     const MID_GEPL_CAPITAL_PVT_LTD_1      = 'Ep10N8KxDvJilQ';
