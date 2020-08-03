@@ -44,6 +44,7 @@ class Entity extends Base\PublicEntity
         self::UMN,
         self::RRN,
         self::NPCI_TXN_ID,
+        self::GATEWAY_DATA,
     ];
 
     protected $public = [
@@ -95,7 +96,8 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::STATUS  => 'created',
+        self::STATUS            => 'created',
+        self::LATE_CONFIRMED    => false,
     ];
 
     protected $dates = [
@@ -106,7 +108,7 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::GATEWAY_DATA      => 'array',
-        self::LATE_CONFIRMED    => 'bool',
+        self::LATE_CONFIRMED    => 'boolean',
     ];
 
     // Relations
@@ -140,7 +142,19 @@ class Entity extends Base\PublicEntity
     {
         Status::validateUpiMandateStatus($status);
 
+        if ($status === Status::CONFIRMED)
+        {
+            $this->setAttribute(self::CONFIRMED_AT, $this->freshTimestamp());
+        }
+
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function incrementUsedCount()
+    {
+        $current = (int) $this->getUsedCount();
+
+        $this->setAttribute(self::USED_COUNT, ($current + 1));
     }
 
     // Getters
@@ -177,5 +191,15 @@ class Entity extends Base\PublicEntity
     public function getGatewayData()
     {
         return $this->getAttribute(self::GATEWAY_DATA);
+    }
+
+    public function getUsedCount()
+    {
+        return $this->getAttribute(self::USED_COUNT);
+    }
+
+    public function getConfirmedAt()
+    {
+        return $this->getAttribute(self::CONFIRMED_AT);
     }
 }

@@ -87,7 +87,7 @@ class UpiIciciAutoRecurringTest extends TestCase
                     'act'   => 'notify',
                     'ano'   => 1,
                     'ext'   => $paymentCreatedAt + 86400,
-                    'sno'   => 1,
+                    'sno'   => 2,
                     'id'    => $paymentId . 'notify' . 1,
                 ], $content['upi']['gateway_data']);
 
@@ -125,7 +125,7 @@ class UpiIciciAutoRecurringTest extends TestCase
                 'act'   => 'notify',
                 'ano'   => 1,
                 'ext'   => $payment->getCreatedAt() + 86400,
-                'sno'   => 1,
+                'sno'   => 2,
             ],
         ]);
 
@@ -146,7 +146,7 @@ class UpiIciciAutoRecurringTest extends TestCase
                 'act'   => 'execte',
                 'ano'   => 1,
                 'ext'   => null,
-                'sno'   => 1,
+                'sno'   => 2,
             ]
         ], false);
 
@@ -234,7 +234,7 @@ class UpiIciciAutoRecurringTest extends TestCase
                 'act'   => 'notify',
                 'ano'   => 1,
                 'ext'   => $payment->getCreatedAt() + 86400,
-                'sno'   => 1,
+                'sno'   => 2,
             ],
         ]);
 
@@ -363,7 +363,7 @@ class UpiIciciAutoRecurringTest extends TestCase
                 'act'   => 'notify',
                 'ano'   => 1,
                 'ext'   => $payment->getCreatedAt() + 86400,
-                'sno'   => 1,
+                'sno'   => 2,
             ],
         ]);
 
@@ -485,7 +485,7 @@ class UpiIciciAutoRecurringTest extends TestCase
                 'act'   => 'notify',
                 'ano'   => 1,
                 'ext'   => $payment->getCreatedAt() + 86400,
-                'sno'   => 1,
+                'sno'   => 2,
             ],
         ]);
 

@@ -36,15 +36,56 @@ class UpiRecurringPaymentSharpTest extends TestCase
     {
         $orderId = $this->createUpiRecurringOrder();
 
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $order = $this->assertUpiDbLastEntity('order', [
+            'status'            => 'created',
+            'method'            => 'upi',
+            'payment_capture'   => true,
+        ]);
+
+        $upiMandate = $this->assertUpiDbLastEntity('upi_mandate', [
+            'status'            => 'created',
+            'max_amount'        => 150000,
+            'frequency'         => 'monthly',
+            'merchant_id'       => '10000000000000',
+            'recurring_type'    => 'before',
+            'recurring_value'   => 31,
+            'umn'               => null,
+            'rrn'               => null,
+            'npci_txn_id'       => null,
+            'gateway_data'      => null,
+            'late_confirmed'    => false,
+            'used_count'        => null,
+            'confirmed_at'      => null,
+        ]);
+
         $payment = $this->getDefaultUpiRecurringPaymentArray($orderId);
         $payment['order_id'] = $orderId;
         $payment['customer_id'] = 'cust_100000customer';
 
         $this->doAuthPayment($payment);
 
-        $order = $this->getDbLastEntity('order');
-        $upiMandate = $this->getDbLastEntity('upi_mandate');
+        $payment = $this->getDbLastPayment();
         $token = $this->getDbLastEntity('token');
+
+        $mandate = $this->assertUpiDbLastEntity('upi_mandate', [
+            'status'            => 'confirmed',
+            'token_id'          => $token->getId(),
+            'umn'               => $payment->getId() . '@razorpay',
+            'rrn'               => '001000100001',
+            'npci_txn_id'       => 'RZP12345678910111213141516',
+            'gateway_data'      => [
+                'id'            => 'ID001000100001',
+            ],
+            'late_confirmed'    => false,
+            'used_count'        => 1,
+        ]);
+
+        $this->assertGreaterThanOrEqual(Carbon::now()->subMinute()->getTimestamp(), $mandate->getConfirmedAt());
+
+        $order = $order->refresh();
+        $upiMandate = $upiMandate->refresh();
 
         $this->assertEquals($upiMandate['token_id'], $token['id']);
         $this->assertEquals($upiMandate['customer_id'], $token['customer_id']);
@@ -194,6 +235,10 @@ class UpiRecurringPaymentSharpTest extends TestCase
             'reminder_id'       => 'TestReminderId',
             'remind_at'         => $createReminder['reminder_data']['remind_at']
         ], $metadata->toArray(), true);
+
+        $this->assertUpiDbLastEntity('upi_mandate', [
+            'used_count'    => 2,
+        ]);
 
         // Update reminder call to RS
         $updateReminder = null;
@@ -398,6 +443,11 @@ class UpiRecurringPaymentSharpTest extends TestCase
         $this->sendReminderRequest($updateReminder);
         // Because of Second failure status moved back to reminder pending
         $this->assertUpiMetadataStatus('reminder_in_progress_for_authorize');
+
+        // Mandate is still showing two used count
+        $this->assertUpiDbLastEntity('upi_mandate', [
+            'used_count'    => 2,
+        ]);
     }
 
     public function testCreateMonthlyAutoRecurringPaymentNotifyFailsCompletely()

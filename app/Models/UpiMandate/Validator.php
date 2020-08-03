@@ -26,12 +26,12 @@ class Validator extends Base\Validator
         Entity::UMN          => 'sometimes|string',
         Entity::NPCI_TXN_ID  => 'sometimes|string',
         Entity::RRN          => 'sometimes|string',
-        Entity::GATEWAY_DATA => 'sometimes|string',
+        Entity::GATEWAY_DATA => 'sometimes|array',
     ];
 
     protected static $createValidators = [
-      'time',
-      'max_amount',
+        'time',
+        'max_amount',
     ];
 
     protected function validateFrequency(string $attribute, string $value)

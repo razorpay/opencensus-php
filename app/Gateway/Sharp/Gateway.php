@@ -398,6 +398,9 @@ class Gateway extends Base\Gateway
                     'umn'           => sprintf('%s@razorpay', $input['payment']['id']),
                     'npci_txn_id'   => 'RZP12345678910111213141516',
                     'rrn'           => '001000100001',
+                    'gateway_data'  => [
+                        'id'        => 'ID001000100001',
+                    ]
                 ],
             ];
         }

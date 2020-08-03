@@ -263,6 +263,7 @@ trait PaymentsUpiRecurringTrait
             'umn'           => 'FirstUpiRecPayment@razorpay',
             'rrn'           => '001000100001',
             'npci_txn_id'   => 'RZP12345678910111213141516',
+            'used_count'    => 1,
         ], $mInput);
 
         $this->upiMandate->forceFill($mInput);
@@ -309,8 +310,7 @@ trait PaymentsUpiRecurringTrait
             $oldEntity = $this->lastUpiRecurringEntities[$entity];
 
             $oldEntity->forceFill($actualDiff);
-            $expected = $oldEntity->toArray();
-            unset($expected[Entity::UPDATED_AT]);
+            $expected = array_except($oldEntity->toArray(), $oldEntity->getEntityDates());
 
             $this->assertArraySubset($expected, $newEntity->toArray(), true);
         }

@@ -212,6 +212,13 @@ trait RecurringTrait
         // Here the sequence no is being passed in payment description as <text>seqno <seqno>
         $sequenceNo = explode('seqno ', $input['payment']['description'])[1] ?? 1;
 
+        // Still giving preference to the hack as we have made couple of mandate and hit few notification api
+        // For which the sequence numbers are not updated in this, this hack will let us test with any number
+        if ($sequenceNo === 1)
+        {
+            $sequenceNo = $input['upi_mandate']['used_count'];
+        }
+
         $attr = [
             Entity::VPA           => $input['payment']['vpa'] ?? null,
             Entity::TYPE          => $input['upi']['fow'] ?? null,

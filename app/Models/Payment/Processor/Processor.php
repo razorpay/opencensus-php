@@ -2462,7 +2462,7 @@ class Processor
 
         $this->validateAndSetInvoiceDetailsIfApplicable($payment);
 
-        $this->validateUpiRecurringIfApplicable($payment);
+        $this->validateUpiRecurringIfApplicable($payment, $input);
 
         $this->setApplicationIfApplicable($payment, $input);
 
@@ -2882,7 +2882,7 @@ class Processor
         }
     }
 
-    protected function validateUpiRecurringIfApplicable(Payment\Entity $payment)
+    protected function validateUpiRecurringIfApplicable(Payment\Entity $payment, array $input)
     {
         if ($payment->isUpiRecurring() === false)
         {
@@ -2899,6 +2899,24 @@ class Processor
                     'recurring_type'    => $payment->getRecurringType(),
                 ]);
         }
+
+        if (($this->upiMandate instanceof UpiMandate\Entity) === false)
+        {
+            $tokenId = $input[Payment\Entity::TOKEN] ?? null;
+
+            Customer\Token\Entity::verifyIdAndStripSign($tokenId);
+
+            $this->upiMandate = $this->repo->upi_mandate->findByTokenId($tokenId);
+
+            assertTrue($this->upiMandate->getMerchantId() === $this->merchant->getId());
+        }
+
+        // As we are going to increment the used count
+        $this->repo->upi_mandate->lockForUpdateAndReload($this->upiMandate);
+
+        $this->upiMandate->incrementUsedCount();
+
+        $this->repo->saveOrFail($this->upiMandate);
     }
 
     protected function validateBankTransferDetailsIfApplicable(Payment\Entity $payment)

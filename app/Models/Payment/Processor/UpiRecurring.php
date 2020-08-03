@@ -856,7 +856,7 @@ trait UpiRecurring
             $upiMandate->setStatus($status);
         }
 
-        $this->repo->saveOrFail($upiMandate);
+        (new UpiMandate\Core)->update($upiMandate);
 
         return $upiMandate;
     }

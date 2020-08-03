@@ -148,6 +148,16 @@ class Entity extends \RZP\Base\EloquentEx
         return [];
     }
 
+    /**
+     * Since we have suppressed the actual getDates method to support the serialization
+     * this method can work as proxy
+     * @return array
+     */
+    public function getEntityDates()
+    {
+        return parent::getDates();
+    }
+
     public function getCreatedAtAttribute()
     {
         return (int) $this->attributes[self::CREATED_AT];
