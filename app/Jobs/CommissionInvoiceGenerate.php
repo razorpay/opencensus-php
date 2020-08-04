@@ -42,12 +42,32 @@ class CommissionInvoiceGenerate extends Job
                     'data'   => $this->data,
                 ]);
 
+            $summary = [
+                'failed_ids'    => [],
+                'failed_count'  => 0,
+                'success_count' => 0,
+            ];
+
             foreach ($this->data['merchant_ids'] as $merchantId)
             {
-                $partner = $this->repoManager->merchant->findOrFailPublic($merchantId);
+                try
+                {
+                    $partner = $this->repoManager->merchant->findOrFailPublic($merchantId);
 
-                (new Invoice\Core)->generateInvoice($partner, $this->data);
+                    (new Invoice\Core)->generateInvoice($partner, $this->data);
+
+                    $summary['success_count']++;
+                }
+                catch (\Throwable $e)
+                {
+                    $summary['failed_count']++;
+                    $summary['failed_ids'][] = $merchantId;
+
+                    $this->trace->traceException($e, Trace::ERROR, TraceCode::COMMISSION_INVOICE_GENERATE_ERROR, ['id' => $merchantId]);
+                }
             }
+
+            $this->trace->info(TraceCode::COMMISSION_INVOICE_GENERATE_SUMMARY, $summary);
 
             $this->delete();
         }
@@ -56,7 +76,7 @@ class CommissionInvoiceGenerate extends Job
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::COMMISSION_INVOICE_GENERATE_ERROR,
+                TraceCode::COMMISSION_INVOICE_GENERATE_JOB_ERROR,
                 [
                     'mode'   => $this->mode,
                     'data'   => $this->data,
