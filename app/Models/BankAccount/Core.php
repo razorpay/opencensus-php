@@ -10,6 +10,7 @@ use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Traits\TrimSpace;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Document;
@@ -21,6 +22,8 @@ use RZP\Models\Merchant\Document\Core as DocumentCore;
 
 class Core extends Base\Core
 {
+    use TrimSpace;
+
     public function createOrChangeBankAccount($input, $merchant)
     {
         $oldBankAccount = $this->repo->bank_account->getBankAccount($merchant);
@@ -92,8 +95,10 @@ class Core extends Base\Core
     {
         (new Validator)->validateIfscCode($input, $this->mode);
 
+        $trimmedInput = $this->trimSpacesIfMerchantEnabled($input, $merchant->getId());
+
         $ba = $this->createBankAccountForSource(
-                        $input,
+                        $trimmedInput,
                         $merchant,
                         $source,
                         'add_fund_account_bank_account');

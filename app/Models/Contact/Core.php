@@ -3,10 +3,13 @@
 namespace RZP\Models\Contact;
 
 use RZP\Constants;
+use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
+use RZP\Traits\TrimSpace;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Contact\BatchHelper as ContactBatchHelper;
 
@@ -17,6 +20,8 @@ use RZP\Models\Contact\BatchHelper as ContactBatchHelper;
  */
 class Core extends Base\Core
 {
+    use TrimSpace;
+
     public function create(
         array $input,
         Merchant\Entity $merchant,
@@ -27,6 +32,17 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::CONTACT_CREATE_REQUEST, ['input' => $input]);
 
         (new Validator)->validateInput('create', $input);
+
+        $treatment = $this->app->razorx->getTreatment(
+            $merchant->getId(),
+            RazorxTreatment::TRIM_SPACES,
+            $this->mode
+        );
+
+        if ($treatment === 'on')
+        {
+            $input = $this->trimSpaces($input);
+        }
 
         if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
         {
@@ -49,6 +65,12 @@ class Core extends Base\Core
         if ($createDuplicate === false)
         {
             $contact = $this->repo->contact->getContactWithSimilarDetails($input, $merchant);
+
+            if (($treatment === 'on') and
+                ($contact === null))
+            {
+                $contact = $this->repo->contact->getContactWithTrimmedSimilarDetails($input, $merchant);
+            }
 
             if ($contact !== null)
             {
@@ -122,6 +144,8 @@ class Core extends Base\Core
         (new Validator)->validateInput('edit', $input);
 
         $this->setTypeIfApplicable($contact, $input);
+
+        $input = $this->trimSpacesIfMerchantEnabled($input, $this->merchant->getId());
 
         // Edit has been shifted below setTypeIfApplicable to handle the case where a merchant tries to update
         // a rzp_fees contact's type to some other type.

@@ -23,6 +23,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
 use RZP\Models\Payout\Status;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base\PublicCollection;
@@ -30,6 +31,7 @@ use RZP\Mail\Banking\LowBalanceAlert;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Webhook\Event;
 use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Mail\Transaction\Payout as PayoutMail;
@@ -5003,5 +5005,135 @@ class PayoutTest extends TestCase
 
         // Assert that no payouts remain in batch_processing state
         $this->assertEquals(0, $batchProcessingPayouts->count());
+    }
+
+    // check trimming in payout creation when experiment is on for merchant.
+    public function testCreatePayoutWithUnnecessarySpacesTrimmedInPurpose()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+                ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+                {
+                    if($featureFlag === (RazorxTreatment::IMPS_MODE_PAYOUT_FILTER))
+                    {
+                        return 'yesbank';
+                    }
+                    return 'on';
+                });
+
+        $this->startTest();
+    }
+
+    // check trimming in payout purpose creation when experiment is on for merchant.
+    public function testCreatePayoutWithOtpAndUnnecessarySpacesTrimmedInPurpose()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+               ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+                {
+                    if($featureFlag === (RazorxTreatment::IMPS_MODE_PAYOUT_FILTER))
+                    {
+                        return 'yesbank';
+                    }
+                    return 'on';
+                });
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    // check trimming in payout purpose creation when experiment is on for merchant.
+    public function testCreatePayoutPurposeWithSpacesTrimmed()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+               ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+                {
+                    if($featureFlag === (RazorxTreatment::IMPS_MODE_PAYOUT_FILTER))
+                    {
+                        return 'yesbank';
+                    }
+                    return 'on';
+                });
+
+        $customPurpose = ' leading trailing ';
+
+        $purpose = & $this->testData[__FUNCTION__]['request']['content']['purpose'];
+
+        $purpose = $customPurpose;
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(in_array(['purpose' => trim($customPurpose), 'purpose_type'  => 'refund'], $response['items'], true), true);
+    }
+
+    // don't trim in payout creation when experiment is not on for merchant.
+    public function testCreatePayoutPurposeWithSpaces()
+    {
+        $customPurpose = ' leading trailing ';
+
+        $purpose = & $this->testData[__FUNCTION__]['request']['content']['purpose'];
+
+        $purpose = $customPurpose;
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(in_array(['purpose' => $customPurpose, 'purpose_type'  => 'refund'], $response['items'], true), true);
+    }
+
+    // check trimming in payout purpose creation when experiment is on for merchant.
+    public function testBulkPayoutWithNotesAndSpacesTrimmed()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+               ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+               {
+                   if($featureFlag === (RazorxTreatment::IMPS_MODE_PAYOUT_FILTER))
+                   {
+                       return 'yesbank';
+                   }
+                   return 'on';
+               });
+
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id' => 'C0zv9I46W4wiOq',
+        ];
+
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
+    // don't trim in payout creation when experiment is not on for merchant.
+    public function testBulkPayoutWithNotesAndSpaces()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id' => 'C0zv9I46W4wiOq',
+        ];
+
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
     }
 }

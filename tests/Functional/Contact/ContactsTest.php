@@ -678,4 +678,150 @@ class ContactsTest extends TestCase
 
         $this->startTest();
     }
+
+    // check trimming in contact create when experiment is on for merchant.
+    public function testCreateContactWithUnnecessarySpacesTrimmedInNameAndType()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
+
+        $this->startTest();
+    }
+
+    // don't trim in contact create when experiment is not on for merchant.
+    public function testCreateContactWithUnnecessarySpacesInNameAndType()
+    {
+        $customType = $this->testAddCustomContactTypeWithSpaces();
+
+        $type = & $this->testData[__FUNCTION__]['request']['content']['type'];
+
+        $type = $customType;
+
+        $this->startTest();
+    }
+
+    // check trimming in contact create when experiment is on for merchant and proxy auth.
+    public function testCreateContactWithUnnecessarySpacesTrimmedInNameAndTypeAndProxyAuth()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    // check trimming in contact update when experiment is on for merchant.
+    public function testUpdateContactWithUnnecessarySpacesTrimmedInNameAndType()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'self', 'reference_id' => '213']);
+
+        $this->startTest();
+
+        // Test with Proxy Auth
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    // check trimming in contact type creation when experiment is on for merchant.
+    public function testAddCustomContactTypeWithSpacesTrimmed()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
+
+        $type = & $this->testData[__FUNCTION__]['request']['content']['type'];
+
+        $customType = ' leading trailing ';
+
+        $type = $customType;
+
+        $this->startTest();
+
+        return $customType;
+    }
+
+    // don't trim in contact type creation when experiment is not on for merchant.
+    public function testAddCustomContactTypeWithSpaces()
+    {
+        $type = & $this->testData[__FUNCTION__]['request']['content']['type'];
+
+        $customType = ' leading trailing ';
+
+        $type = $customType;
+
+        $this->startTest();
+
+        return $customType;
+    }
+
+    // check trimming in contact type creation when experiment is on for merchant.
+    public function testAddCustomContactTypeThatAlreadyExistsTrimmedType()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                  ->willReturn('on');
+
+        $customType = $this->testAddCustomContactTypeWithSpacesTrimmed();
+
+        $type = & $this->testData[__FUNCTION__]['request']['content']['type'];
+
+        $description = & $this->testData[__FUNCTION__]['response']['content']['error']['description'];
+
+        $type = trim($customType);
+
+        $description = sprintf($description, $type);
+
+        $this->startTest();
+    }
+
+    // don't trim in contact type creation when experiment is not on for merchant.
+    // test duplicate creation with space and without spaces type
+    public function testAddCustomContactTypeThatAlreadyExistsSpacesType()
+    {
+        $customType = $this->testAddCustomContactTypeWithSpaces();
+
+        $type = & $this->testData[__FUNCTION__]['request']['content']['type'];
+
+        $type = trim($customType);
+
+        $this->startTest();
+    }
 }

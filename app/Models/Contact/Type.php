@@ -4,9 +4,10 @@ namespace RZP\Models\Contact;
 
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
-use RZP\Error\ErrorCode;
+use RZP\Traits\TrimSpace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -17,6 +18,8 @@ use RZP\Exception\BadRequestValidationFailureException;
  */
 final class Type
 {
+    use TrimSpace;
+
     const CUSTOMER = 'customer';
     const EMPLOYEE = 'employee';
     const VENDOR   = 'vendor';
@@ -57,10 +60,14 @@ final class Type
 
     public function setTypeForContact(Entity $contact, string $type)
     {
+        $merchant = $contact->merchant;
+
+        $trimmedType = $this->trimSpacesIfMerchantEnabled($type, $merchant->getId());
+
         // If $type is one of the defaults, set and return
-        if (self::isInDefaults($type) === true)
+        if (self::isInDefaults($trimmedType) === true)
         {
-            $contact->setType($type);
+            $contact->setType($trimmedType);
 
             return;
         }
@@ -69,11 +76,13 @@ final class Type
         // If type sent is not one of the defaults defined. We hence fetch and
         // check against the custom list, if available.
         //
-        $custom = $this->getCustom($contact->merchant);
+        $custom = $this->getCustom($merchant);
 
-        if (in_array($type, $custom, true) === true)
+        $trimmedCustom = $this->trimSpacesIfMerchantEnabled($custom, $merchant->getId());
+
+        if (in_array($trimmedType, $trimmedCustom, true) === true)
         {
-            $contact->setType($type);
+            $contact->setType($trimmedType);
 
             return;
         }
@@ -90,9 +99,13 @@ final class Type
 
     public function setTypeForInternalContact(Entity $contact, string $type)
     {
-        if (self::isInInternal($type) === true)
+        $merchantId = $contact->merchant->getId();
+
+        $trimmedType = $this->trimSpacesIfMerchantEnabled($type, $merchantId);
+
+        if (self::isInInternal($trimmedType) === true)
         {
-            $contact->setType($type);
+            $contact->setType($trimmedType);
 
             return;
         }
@@ -128,9 +141,15 @@ final class Type
     {
         $allCustomKeys = array_keys($this->getSettingsAccessor($merchant)->all()->toArray());
 
+        $merchantId = $merchant->getId();
+
+        $allCustomKeysTrimmed = $this->trimSpacesIfMerchantEnabled($allCustomKeys, $merchantId);
+
+        $trimmedType = $this->trimSpacesIfMerchantEnabled($type, $merchantId);
+
         $maxTypes = Validator::MAX_TYPES_ALLOWED;
 
-        if (count($allCustomKeys) >= $maxTypes)
+        if (count($allCustomKeysTrimmed) >= $maxTypes)
         {
             throw new BadRequestValidationFailureException(
                 "You have reached the maximum limit ($maxTypes) of custom contact types that can be created.",
@@ -138,15 +157,15 @@ final class Type
         }
 
         // If type is 'rzp_fees' we won't allow adding it as a custom type
-        if (self::isInInternal($type) === true)
+        if (self::isInInternal($trimmedType) === true)
         {
             throw new BadRequestValidationFailureException(
                 "Type '$type' is an internal contact type used by Razorpay and cannot be added.",
                 Entity::TYPE);
         }
 
-        if ((self::isInDefaults(strtolower($type))) or
-            (array_search_ci($type, $allCustomKeys) !== false))
+        if ((self::isInDefaults(strtolower($trimmedType))) or
+            (array_search_ci($trimmedType, $allCustomKeysTrimmed) !== false))
         {
             throw new BadRequestValidationFailureException(
                 "Type '$type' is already defined and cannot be added.",
@@ -154,7 +173,7 @@ final class Type
         }
 
         $data = [
-            $type => ''
+            $trimmedType => ''
         ];
 
         $this->getSettingsAccessor($merchant)

@@ -2387,4 +2387,91 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
         ],
     ],
+
+    'testCreateFundAccountWithBankAccountAndUnnecessarySpacesTrimmedInNameAndNumber' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M ',
+                    'account_number' => "111000111\n",
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111'
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
+    'testCreateFundAccountWithBankAccountAndUnnecessarySpacesInNameAndNumber' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M ',
+                    'account_number' => "111000111\n",
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M ',
+                    'account_number' => "111000111\n"
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
+    'testCreateFundAccountWithBankAccountAndUnnecessarySpacesTrimmedInNameAndNumberAndProxyAuth' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M ',
+                    'account_number' => "111000111\n",
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111'
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
 ];

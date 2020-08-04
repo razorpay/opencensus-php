@@ -5,12 +5,15 @@ namespace RZP\Models\Payout;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
+use RZP\Traits\TrimSpace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Attempt\Purpose as FTAPurpose;
 
 class Purpose
 {
+    use TrimSpace;
+
     const REFUND          = 'refund';
     const CASHBACK        = 'cashback';
     const SALARY          = 'salary';
@@ -57,21 +60,25 @@ class Purpose
                                                string $purpose,
                                                bool $isInternal = false)
     {
+        $merchant = $payout->merchant;
+
+        $trimmedPurpose = $this->trimSpacesIfMerchantEnabled($purpose, $merchant->getId());
+
         // If $purpose is one of the defaults, set and return
-        if (self::isInDefaults($purpose) === true)
+        if (self::isInDefaults($trimmedPurpose) === true)
         {
-            $payout->setPurpose($purpose);
-            $payout->setPurposeType(self::$defaultPurposeTypeMap[$purpose]);
+            $payout->setPurpose($trimmedPurpose);
+            $payout->setPurposeType(self::$defaultPurposeTypeMap[$trimmedPurpose]);
 
             return;
         }
 
         // If payout is an internally generated payout and purpose is part of internal purpose, set and return
         if (($isInternal === true) and
-            (self::isInInternal($purpose) === true))
+            (self::isInInternal($trimmedPurpose) === true))
         {
-            $payout->setPurpose($purpose);
-            $payout->setPurposeType(self::$internalPurposeTypeMap[$purpose]);
+            $payout->setPurpose($trimmedPurpose);
+            $payout->setPurposeType(self::$internalPurposeTypeMap[$trimmedPurpose]);
 
             return;
         }
@@ -80,12 +87,14 @@ class Purpose
         // If purpose sent is not one of the defaults defined. We hence fetch and
         // check against the custom list, if available.
         //
-        $custom = $this->getCustom($payout->merchant);
+        $custom = $this->getCustom($merchant);
 
-        if (isset($custom[$purpose]) === true)
+        $trimmedCustom = $this->trimSpacesIfMerchantEnabled($custom, $merchant->getId());
+
+        if (isset($trimmedCustom[$trimmedPurpose]) === true)
         {
-            $payout->setPurpose($purpose);
-            $payout->setPurposeType($custom[$purpose]);
+            $payout->setPurpose($trimmedPurpose);
+            $payout->setPurposeType($trimmedCustom[$trimmedPurpose]);
 
             return;
         }
@@ -102,7 +111,9 @@ class Purpose
 
     public function validatePurpose(Merchant\Entity $merchant, string $purpose)
     {
-        if(self::isInDefaults($purpose) === true)
+        $trimPurpose = $this->trimSpacesIfMerchantEnabled($purpose, $merchant->getId());
+
+        if(self::isInDefaults($trimPurpose) === true)
         {
             return;
         }
@@ -113,7 +124,9 @@ class Purpose
         //
         $custom = $this->getCustom($merchant);
 
-        if (isset($custom[$purpose]) === true)
+        $trimCustoms = $this->trimSpacesIfMerchantEnabled($custom, $merchant->getId());
+
+        if (isset($trimCustoms[$trimPurpose]) === true)
         {
             return;
         }
@@ -164,33 +177,39 @@ class Purpose
     {
         $allCustomKeys = array_keys($this->getSettingsAccessor($merchant)->all()->toArray());
 
+        $merchantId = $merchant->getId();
+
+        $allCustomKeysTrimmed = $this->trimSpacesIfMerchantEnabled($allCustomKeys, $merchantId);
+
         $maxPurposes = Validator::MAX_PURPOSES_ALLOWED;
 
-        if (count($allCustomKeys) >= $maxPurposes)
+        if (count($allCustomKeysTrimmed) >= $maxPurposes)
         {
             throw new BadRequestValidationFailureException(
                 "You have reached the maximum limit ($maxPurposes) of custom payout purposes that can be created.",
                 Entity::PURPOSE_TYPE);
         }
 
+        $trimmedPurpose = $this->trimSpacesIfMerchantEnabled($purpose, $merchantId);
+
         // If purpose is 'rzp_fees' we won't allow adding it as a custom purpose
-        if (self::isInInternal($purpose) === true)
+        if (self::isInInternal($trimmedPurpose) === true)
         {
             throw new BadRequestValidationFailureException(
-                "Purpose '$purpose' is an internal purpose used by Razorpay and cannot be added.",
+                "Purpose '$trimmedPurpose' is an internal purpose used by Razorpay and cannot be added.",
                 Entity::PURPOSE);
         }
 
-        if ((self::isInDefaults(strtolower($purpose))) or
-            (array_search_ci($purpose, $allCustomKeys) !== false))
+        if ((self::isInDefaults(strtolower($trimmedPurpose))) or
+            (array_search_ci($trimmedPurpose, $allCustomKeysTrimmed) !== false))
         {
             throw new BadRequestValidationFailureException(
-                "Purpose '$purpose' is already defined and cannot be added.",
+                "Purpose '$trimmedPurpose' is already defined and cannot be added.",
                 Entity::PURPOSE);
         }
 
         $data = [
-            $purpose => $type
+            $trimmedPurpose => $this->trimSpacesIfMerchantEnabled($type, $merchantId)
         ];
 
         $this->getSettingsAccessor($merchant)

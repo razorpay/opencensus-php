@@ -4,6 +4,8 @@ namespace RZP\Models\Contact;
 
 use Illuminate\Database\Query\JoinClause;
 
+use DB;
+
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Models\Merchant;
@@ -18,6 +20,34 @@ use RZP\Models\BankAccount;
 class Repository extends Base\Repository
 {
     protected $entity = 'contact';
+
+    /**
+     * Get contact if exists with similar details.
+     * @param  array           $input
+     * @param  Merchant\Entity $merchant
+     * @return Entity|null
+     */
+    public function getContactWithTrimmedSimilarDetails(array $input, Merchant\Entity $merchant)
+    {
+        $contactTypeColumn          = $this->dbColumn(Entity::TYPE);
+        $contactNameColumn          = $this->dbColumn(Entity::NAME);
+        $contactEmailColumn         = $this->dbColumn(Entity::EMAIL);
+        $contactContactColumn       = $this->dbColumn(Entity::CONTACT);
+        $contactReferenceIdColumn   = $this->dbColumn(Entity::REFERENCE_ID);
+
+        // In case all of the input parameters exactly match
+        // with any existing contact, we return the same contact
+        // to the merchant. Name and type are inclusive here.
+        return $this->newQuery()
+                    ->where(DB::raw('trim('. $contactContactColumn .')'), $input[Entity::CONTACT] ?? null)
+                    ->where(DB::raw('trim('. $contactEmailColumn .')'), $input[Entity::EMAIL] ?? null)
+                    ->where(DB::raw('trim('. $contactReferenceIdColumn .')'), $input[Entity::REFERENCE_ID] ?? null)
+                    ->merchantId($merchant->getId())
+                    ->where(DB::raw('trim('. $contactTypeColumn .')'), ($input[Entity::TYPE] ?? null))
+                    ->where(DB::raw('trim('. $contactNameColumn .')'), ($input[Entity::NAME] ?? null))
+                    ->latest()
+                    ->first();
+    }
 
     /**
      * Get contact if exists with similar details.

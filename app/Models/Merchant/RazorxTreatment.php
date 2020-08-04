@@ -152,4 +152,7 @@ final class RazorxTreatment
     // New driver of ses to be used for some templates. Following flag
     // helps in ramping up to ses for those templates
     const API_EMAIL_SES_DRIVER = 'api_email_ses_driver';
+
+    // Check whether trimming is allowed for merchant or not.
+    const TRIM_SPACES = 'trim_spaces';
 }

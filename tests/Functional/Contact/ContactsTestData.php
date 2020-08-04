@@ -1561,4 +1561,245 @@ return [
             'status_code' => '201'
         ],
     ],
+
+    'testCreateContactWithUnnecessarySpacesTrimmedInNameAndType' => [
+        'request'  => [
+            'content' => [
+                'name'         => '  Test / Contact   ',
+                'type'         => 'self ',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
+    'testCreateContactWithUnnecessarySpacesInNameAndType' => [
+        'request'  => [
+            'content' => [
+                'name'         => '  Test / Contact   ',
+                'type'         => ' leading trailing ',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => '  Test / Contact   ',
+                'type'         => ' leading trailing ',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
+    'testCreateContactWithUnnecessarySpacesTrimmedInNameAndTypeAndProxyAuth' => [
+        'request'  => [
+            'content' => [
+                'name'         => '  Test / Contact   ',
+                'type'         => 'self ',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
+    'testUpdateContactWithUnnecessarySpacesTrimmedInNameAndType' => [
+        'request'  => [
+            'content' => [
+                'type'         => ' employee ',
+                'name'         => 'name ',
+                'reference_id' => '213',
+            ],
+            'url'     => '/contacts/cont_1000000contact',
+            'method'  => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'id'           => 'cont_1000000contact',
+                'entity'       => 'contact',
+                'type'         => 'employee',
+                'reference_id' => '213',
+                'name'         => 'name'
+            ]
+        ]
+    ],
+
+    'testAddCustomContactTypeWithSpacesTrimmed' => [
+        'request'  => [
+            'content' => [
+                'type' => ' type'
+            ],
+            'url'     => '/contacts/types',
+            'method'  => 'POST'
+        ],
+
+        'response' => [
+            'content' => [
+                'entity'    => "collection",
+                'count'     => 5,
+                'items'     => [
+                    [
+                        'type' => "customer",
+                    ],
+                    [
+                        'type' => "employee",
+                    ],
+                    [
+                        'type' => "vendor",
+                    ],
+                    [
+                        'type' => "self",
+                    ],
+                    [
+                        'type' => "leading trailing",
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testAddCustomContactTypeWithSpaces' => [
+        'request'  => [
+            'content' => [
+                'type' => ' type'
+            ],
+            'url'     => '/contacts/types',
+            'method'  => 'POST'
+        ],
+
+        'response' => [
+            'content' => [
+                'entity'    => "collection",
+                'count'     => 5,
+                'items'     => [
+                    [
+                        'type' => "customer",
+                    ],
+                    [
+                        'type' => "employee",
+                    ],
+                    [
+                        'type' => "vendor",
+                    ],
+                    [
+                        'type' => "self",
+                    ],
+                    [
+                        'type' => " leading trailing ",
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testAddCustomContactTypeThatAlreadyExistsTrimmedType' => [
+        'request'  => [
+            'content' => [
+                'type' => 'Payouts to Mehul'
+            ],
+            'url'     => '/contacts/types',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Type \'%s\' is already defined and cannot be added.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAddCustomContactTypeThatAlreadyExistsSpacesType' => [
+        'request'  => [
+            'content' => [
+                'type' => 'Payouts to Mehul'
+            ],
+            'url'     => '/contacts/types',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => "collection",
+                'count'     => 6,
+                'items'     => [
+                    [
+                        'type' => "customer",
+                    ],
+                    [
+                        'type' => "employee",
+                    ],
+                    [
+                        'type' => "vendor",
+                    ],
+                    [
+                        'type' => "self",
+                    ],
+                    [
+                        'type' => " leading trailing ",
+                    ],
+                    [
+                        'type' => "leading trailing",
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];
