@@ -1781,7 +1781,6 @@ class Gateway
         IFSC::SBMY         => Gateway::NETBANKING_SBI,
         IFSC::STBP         => Gateway::NETBANKING_SBI,
         IFSC::SBTR         => Gateway::NETBANKING_SBI,
-        IFSC::SVCB         => Gateway::NETBANKING_SVC,
     ];
 
     /**
@@ -1850,6 +1849,7 @@ class Gateway
         Gateway::ATOM,
         Gateway::NETBANKING_CORPORATION,
         Gateway::NETBANKING_KVB,
+        Gateway::NETBANKING_SVC,
     ];
 
     /**
