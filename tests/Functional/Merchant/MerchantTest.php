@@ -40,6 +40,7 @@ use RZP\Models\User\Core as UserCore;
 use Illuminate\Support\Facades\Queue;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Merchant\EsEnabledNotify;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Document\Source;
 use RZP\Models\User\Entity as UserEntity;
@@ -7730,16 +7731,19 @@ class MerchantTest extends TestCase
 
     public function testTrimMerchantData()
     {
-        $this->markTestSkipped("fix in progress by ayush");
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
 
-        $this->app->instance('razorx', $razorxMock);
+        $this->app->instance('razorx', $razorx);
 
-        $this->app->razorx->method('getTreatment')
-                          ->willReturn('on');
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if($featureFlag === (RazorxTreatment::TRIM_SPACE_FOR_MERCHANT))
+                {
+                    return 'on';
+                }
+                return 'control';
+            });
 
         $createdMerchant = $this->getDbEntity('merchant', ['id' => '10000000000000']);
 
