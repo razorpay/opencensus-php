@@ -252,6 +252,28 @@ class AdminFetch
                     ]
                 ],
             ],
+            Entity::SHIELD_RISK_LOGS => [
+                'payment_id'    => [
+                    Fetch::LABEL        => 'Payment Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'vendor'        => [
+                    Fetch::LABEL        => 'Vendor',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        'sift',
+                        'maxmind'
+                    ]
+                ],
+                'vendor_mode' => [
+                    Fetch::LABEL        => 'Vendor Mode',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        'live',
+                        'shadow'
+                    ]
+                ],
+            ],
             Entity::BATCH_SERVICE => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'status' => [

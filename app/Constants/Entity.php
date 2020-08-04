@@ -319,6 +319,7 @@ class Entity
     // Service: Shield
     const SHIELD_RULES                 = 'shield.rules';
     const SHIELD_RISKS                 = 'shield.risks';
+    const SHIELD_RISK_LOGS             = 'shield.risk_logs';
     const SHIELD_LISTS                 = 'shield.lists';
     const SHIELD_LIST_ITEMS            = 'shield.list_items';
     const SHIELD_RULE_ANALYTICS        = 'shield.rule_analytics';
@@ -766,6 +767,7 @@ class Entity
         self::SHIELD_RULES                  => \RZP\Services\ShieldClient::class,
         self::SHIELD_RULE_ANALYTICS         => \RZP\Services\ShieldClient::class,
         self::SHIELD_RISKS                  => \RZP\Services\ShieldClient::class,
+        self::SHIELD_RISK_LOGS              => \RZP\Services\ShieldClient::class,
         self::SHIELD_LISTS                  => \RZP\Services\ShieldClient::class,
         self::SHIELD_LIST_ITEMS             => \RZP\Services\ShieldClient::class,
         self::BATCH_SERVICE                 => \RZP\Services\BatchMicroService::class,

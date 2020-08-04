@@ -21,12 +21,14 @@ class ShieldClient implements ExternalService
     const EVALUATE_PATH                     = '/rules/evaluate';
     const ANALYTICS_PATH                    = '/rules/analytics';
     const RISKS_PATH                        = '/merchants/{merchant_id}/risks';
+    const RISK_LOGS_PATH                    = '/risk/logs';
     const LISTS_PATH                        = '/merchants/{merchant_id}/lists';
     const LIST_ITEMS_PATH                   = '/merchants/{merchant_id}/lists/{list_id}/list_items';
     const CONTENT_TYPE                      = 'content-type';
     const RULES                             = 'rules';
     const RULE_ANALYTICS                    = 'rule_analytics';
     const RISKS                             = 'risks';
+    const RISK_LOGS                         = 'risk_logs';
     const LISTS                             = 'lists';
     const LIST_ITEMS                        = 'list_items';
     const REQUEST_TIMEOUT_INTERNATIONAL     = 10;
@@ -85,6 +87,9 @@ class ShieldClient implements ExternalService
             case self::RISKS:
                 return $this->getRisks($input, $merchantId);
 
+            case self::RISK_LOGS:
+                return $this->getRiskLogs($input);
+
             case self::LISTS:
                 return $this->getLists($input, $merchantId);
 
@@ -106,6 +111,9 @@ class ShieldClient implements ExternalService
 
             case self::RISKS:
                 return $this->getRiskById($id, $merchantId);
+
+            case self::RISK_LOGS:
+                return $this->getRiskLogById($id);
 
             case self::LISTS:
                 return $this->getListById($id, $merchantId);
@@ -174,6 +182,16 @@ class ShieldClient implements ExternalService
     public function getRiskById(string $id, string $merchantId): array
     {
         return $this->sendRequest($this->getMerchantPath(self::RISKS_PATH, $merchantId) . '/' . $id, Requests::GET);
+    }
+
+    public function getRiskLogs(array $input)
+    {
+        return $this->sendRequest(self::RISK_LOGS_PATH, Requests::GET, $input);
+    }
+
+    public function getRiskLogById(string $id): array
+    {
+        return $this->sendRequest(self::RISK_LOGS_PATH . '/' . $id, Requests::GET);
     }
 
     public function getLists(array $input, string $merchantId): array
