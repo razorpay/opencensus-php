@@ -91,6 +91,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Merchant\Balance\LowBalanceConfig\Repository $low_balance_config
  * @property Models\PaperMandate\PaperMandateUpload\Repository   $paper_mandate_upload
  * @property Models\PaperMandate\Repository                      $paper_mandate
+ * @property Models\VirtualAccountTpv\Repository                 $virtual_account_tpv
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

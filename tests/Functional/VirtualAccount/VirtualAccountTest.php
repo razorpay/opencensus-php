@@ -2068,4 +2068,18 @@ class VirtualAccountTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
     }
+
+    public function testAddIciciVpaReceiverToVaWithoutTpv()
+    {
+        $response = $this->createVirtualAccount();
+        $virtualAccountId = $response['id'];
+
+        $this->fixtures->create('terminal:vpa_shared_terminal_icici');
+        $this->enableRazorXTreatmentForRazorXVpaIcici();
+
+        $response = $this->addReceiverToVirtualAccount($virtualAccountId, 'vpa');
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
 }

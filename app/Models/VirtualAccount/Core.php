@@ -686,7 +686,10 @@ class Core extends Base\Core
         {
             $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
 
-            (new VirtualAccountTpv\Core())->validateReceiversForTpv($virtualAccount);
+            if ($this->repo->virtual_account_tpv->isTpvEnabledForVa($virtualAccount->getId()) === true)
+            {
+                (new VirtualAccountTpv\Core())->validateReceiversForTpv($virtualAccount);
+            }
 
             $this->repo->saveOrFail($virtualAccount);
 
