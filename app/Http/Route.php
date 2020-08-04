@@ -1853,6 +1853,15 @@ class Route
         //cron job to retry penny testing for initiated case
         'retry_penny_testing_cron'                => ['post',      'merchants/retry_penny_testing',                           'MerchantController@retryPennyTestingCron'                 ],
 
+        // low balance notification config apis
+        'create_low_balance_config'               => ['post',       'low_balance_configs',                    'LowBalanceConfigController@create'],
+        'update_low_balance_config'               => ['patch',      'low_balance_configs/{id}',               'LowBalanceConfigController@update'],
+        'fetch_low_balance_config'                => ['get',        'low_balance_configs/{id}',               'LowBalanceConfigController@get'],
+        'list_low_balance_config'                 => ['get',        'low_balance_configs',                    'LowBalanceConfigController@list'],
+        'delete_low_balance_config'               => ['delete',     'low_balance_configs/{id}',               'LowBalanceConfigController@delete'],
+        'disable_low_balance_config'              => ['post',       'low_balance_configs/{id}/disable',       'LowBalanceConfigController@disableConfig'],
+        'enable_low_balance_config'               => ['post',       'low_balance_configs/{id}/enable',        'LowBalanceConfigController@enableConfig'],
+
         'get_internal_instrument_request_by_id'   => ['get',       'internal_instrument_request/{id}',                          'InstrumentRequestController@getInternalInstrumentRequestById'   ],
         'patch_internal_instrument_request_by_id' => ['patch',     'internal_instrument_request/{id}',                          'InstrumentRequestController@patchInternalInstrumentRequestById' ],
         'delete_internal_instrument_request_by_id'=> ['delete',    'internal_instrument_request/{id}',                          'InstrumentRequestController@deleteInternalInstrumentRequestById'],
@@ -2874,6 +2883,15 @@ class Route
         // Virtual VPA Prefix
         'virtual_vpa_prefix_validate',
         'virtual_vpa_prefix_save',
+
+        // low balance config
+        'create_low_balance_config',
+        'update_low_balance_config',
+        'fetch_low_balance_config',
+        'list_low_balance_config',
+        'delete_low_balance_config',
+        'disable_low_balance_config',
+        'enable_low_balance_config',
 
         // Refunds
         'refund_cancel_batch',

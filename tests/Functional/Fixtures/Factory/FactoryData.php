@@ -1445,6 +1445,16 @@ final class FactoryData
             'id'                 => $faker->uniqueid,
         ]);
 
+        $factory(\RZP\Models\Merchant\Balance\LowBalanceConfig\Entity::class, [
+                     'id'                  => $faker->uniqueid,
+                     'merchant_id'         => '10000000000000',
+                     'status'              => 'enabled',
+                     'notification_emails' => $faker->email,
+                     'threshold_amount'    => 1000,
+                     'notify_at'           => 0,
+                     'notify_after'        => 8,
+        ]);
+
         $factory(\RZP\Models\Merchant\Credits\Balance\Entity::class, [
                 'id'            => $faker->uniqueid,
                 'merchant_id'   => '10000000000000',

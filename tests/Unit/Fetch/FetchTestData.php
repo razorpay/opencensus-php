@@ -568,6 +568,8 @@ return [
 
     E::MERCHANT_USER => [],
 
+    E::LOW_BALANCE_CONFIG => [],
+
     E::ORDER => [],
 
     E::P2P_DEVICE => [

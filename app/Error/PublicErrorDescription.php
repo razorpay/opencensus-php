@@ -1169,6 +1169,10 @@ class PublicErrorDescription
     const BAD_REQUEST_BALANCE_CONFIG_ALREADY_EXISTS_FOR_BALANCE                      = 'Balance Config already exists for this Balance';
     const BAD_REQUEST_BALANCE_CONFIG_INVALID_NEGATIVE_LIMIT                          = 'Invalid negative limit for Balance Config creation';
     const BAD_REQUEST_BALANCE_CONFIG_INVALID_NEGATIVE_TRANSACTION_FLOW               = 'Invalid transaction flows for Balance Config creation';
+
+    const BAD_REQUEST_LOW_BALANCE_CONFIG_ALREADY_EXISTS_FOR_ACCOUNT_NUMBER           = 'Low balance config already exists for account number';
+    const BAD_REQUEST_LOW_BALANCE_CONFIG_IS_NOT_SUPPORTED_IN_TEST_MODE               = 'Low balance config is not supported in test mode';
+
     const BAD_REQUEST_X_CREDITS_SUPPORTED_IN_ONLY_LIVE_MODE                          = 'Bad request, X credits supported in only live mode';
 
     const BAD_REQUEST_CRED_CUSTOMER_NOT_ELIGIBLE                                    = 'Activate your membership on CRED to unlock this payment option and avail exclusive benefits.';

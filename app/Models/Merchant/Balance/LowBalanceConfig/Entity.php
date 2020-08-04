@@ -6,12 +6,14 @@ use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Base\Traits\HasBalance;
+use RZP\Models\Base\Traits\HardDeletes;
 use RZP\Constants\Entity as EntityConstants;
 
 class Entity extends Base\PublicEntity
 {
     // Traits
     use HasBalance;
+    use HardDeletes;
 
     // properties
     protected $entity = EntityConstants::LOW_BALANCE_CONFIG;
@@ -44,12 +46,14 @@ class Entity extends Base\PublicEntity
 
     // defaults
     protected $defaults = [
+        self::NOTIFY_AT    => 0,
         self::NOTIFY_AFTER => 8,
+        self::STATUS       => Status::ENABLED,
     ];
 
     // generators
     protected static $generators = [
-        self::ID
+        self::ID,
     ];
 
     // fillable attributes
@@ -81,11 +85,14 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::NOTIFY_AFTER,
         self::ACCOUNT_NUMBER,
+        self::CREATED_AT,
     ];
 
     // public setters
     protected $publicSetters = [
+        self::ID,
         self::ACCOUNT_NUMBER,
+        self::NOTIFICATION_EMAILS,
     ];
 
     // ============================= GETTERS ===============================
@@ -120,6 +127,11 @@ class Entity extends Base\PublicEntity
 
     // ============================= SETTERS ===========================
     // TODO:add setters
+
+    public function setStatus(string $status)
+    {
+        $this->setAttribute(self::STATUS, $status);
+    }
     // ============================= END SETTERS ===========================
 
     // ============================= RELATIONS =============================
@@ -138,5 +150,9 @@ class Entity extends Base\PublicEntity
         $attributes[self::ACCOUNT_NUMBER] = $this->getAccountNumberAttribute();
     }
 
+    public function setPublicNotificationEmailsAttribute(array & $attributes)
+    {
+        $attributes[self::NOTIFICATION_EMAILS] = explode(',', $this->getNotificationEmails());
+    }
     // ============================= END PUBLIC SETTERS =======================
 }

@@ -207,6 +207,13 @@ class UserRolesScope
             'reporting_schedule_list'     => array_merge(Role::ALL_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR], BankingRole::getAllRoles()),
             'reporting_schedule_create'   => array_merge(Role::ALL_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR], BankingRole::getAllRoles()),
             'reporting_schedule_delete'   => array_merge(Role::ALL_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR], BankingRole::getAllRoles()),
+
+            // Low Balance Config
+            'create_low_balance_config'   => [Role::OWNER],
+            'update_low_balance_config'   => [Role::OWNER],
+            'delete_low_balance_config'   => [Role::OWNER],
+            'disable_low_balance_config'  => [Role::OWNER],
+            'enable_low_balance_config'   => [Role::OWNER],
         ];
 
         /*
