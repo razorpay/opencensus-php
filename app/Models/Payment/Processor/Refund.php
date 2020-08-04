@@ -2989,14 +2989,6 @@ trait Refund
                 $input[BankAccount\Entity::ACCOUNT_NUMBER]     = $token->getAccountNumber();
                 $input[BankAccount\Entity::BENEFICIARY_NAME]   = $customerName;
             }
-            else if ($this->isPaymentUpiTransferAndUpiTransferRefund($payment) === true)
-            {
-                $customerName = $this->getFormattedCustomerNameFromPayment($payment);
-
-                $input[BankAccount\Entity::IFSC_CODE]          = $payment->upiTransfer->getPayerIfsc();
-                $input[BankAccount\Entity::ACCOUNT_NUMBER]     = $payment->upiTransfer->getPayerAccount();
-                $input[BankAccount\Entity::BENEFICIARY_NAME]   = $customerName;
-            }
         }
 
         if ((isset($input[BankAccount\Entity::IFSC_CODE]) === true) and
@@ -3015,8 +3007,7 @@ trait Refund
         return (($payment->isBankTransfer() === true) or
             ($this->isPaymentTpvAndBankTransferRefund($payment) === true) or
             ($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true) or
-            ($this->isPaymentNachAndNachRefundGateway($payment) === true) or
-            ($this->isPaymentUpiTransferAndUpiTransferRefund($payment) === true));
+            ($this->isPaymentNachAndNachRefundGateway($payment) === true));
     }
 
     protected function getFormattedCustomerNameFromPayment(Payment\Entity $payment)
@@ -3095,6 +3086,11 @@ trait Refund
 
             // Processing refunds for upi recurring payments via fta since gateways dont support refund flows yet
             if ($this->isPaymentAndGatewayUpiRecurring($payment) === true)
+            {
+                return true;
+            }
+
+            if ($this->isPaymentUpiTransferAndUpiTransferRefund($payment) === true)
             {
                 return true;
             }

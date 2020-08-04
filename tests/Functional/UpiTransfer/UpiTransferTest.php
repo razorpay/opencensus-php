@@ -137,27 +137,14 @@ class UpiTransferTest extends TestCase
         // Being used in scrooge checks
         $this->gateway = $payment['gateway'];
 
-        // Sending FTA to FTS
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->willReturn('on');
-
         $this->refundPayment(
             $payment['id'],
             4000,
             [
                 'is_fta' => true,
                 'fta_data' => [
-                    'bank_account' => [
-                        'account_number'   => $upiTransfer['payer_account'],
-                        'ifsc_code'        => $upiTransfer['payer_ifsc'],
-                        'beneficiary_name' => 'Not Available',
+                    'vpa' => [
+                        'address' => $payment['vpa']
                     ],
                 ],
             ]
@@ -172,9 +159,7 @@ class UpiTransferTest extends TestCase
 
         $this->assertEquals($refund->getId(), $fta['source_id']);
         $this->assertEquals('refund', $fta['source_type']);
-        $this->assertNotNull($fta['bank_account_id']);
-        $this->assertEquals(1, $fta['is_fts']);
-        $this->assertEquals('icici', $fta['channel']);
+        $this->assertNotNull($fta['vpa_id']);
     }
 
     public function testProcessMindgateUpiTransferUnexpectedPayment()
