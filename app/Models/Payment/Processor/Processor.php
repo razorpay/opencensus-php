@@ -620,6 +620,28 @@ class Processor
             return;
         }
 
+        if (($payment->merchant->isPhoneOptional() === true) and
+            ($payment->getContact() === Payment\Entity::DUMMY_PHONE))
+        {
+            $coproto = [
+                'type'    => 'respawn',
+                'request' => [
+                    'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
+                    'method'  => 'POST',
+                    'content' => array_assoc_flatten($input, '%s[%s]'),
+                ],
+                'method' => 'cardless_emi',
+                'version' => '1',
+                'provider' => $input['provider'],
+            ];
+
+            $coproto['missing'][] = 'contact';
+            
+            unset($coproto['request']['content']['contact']);
+
+            return $coproto;
+        }
+
         $payment = $this->repo->transaction(function() use ($input, $payment)
         {
             $payment = $this->createPaymentEntity($input, $payment);
@@ -654,30 +676,6 @@ class Processor
         $gateway = Payment\Gateway::CARDLESS_EMI;
 
         $merchant = $payment->merchant;
-
-        if (($payment->merchant->isPhoneOptional() === true) and
-            ($payment->getContact() === Payment\Entity::DUMMY_PHONE))
-        {
-            $coproto = [
-                'type'    => 'respawn',
-                'request' => [
-                    'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
-                    'method'  => 'POST',
-                    'content' => array_assoc_flatten($input, '%s[%s]'),
-                ],
-                'method' => 'cardless_emi',
-                'version' => '1',
-                'provider' => $input['provider'],
-            ];
-
-            $coproto['missing'][] = 'contact';
-
-            $coproto['payment_id'] = $payment->getPublicId();
-
-            unset($coproto['request']['content']['contact']);
-
-            return $coproto;
-        }
 
         $terminal = $this->repo
                          ->terminal
