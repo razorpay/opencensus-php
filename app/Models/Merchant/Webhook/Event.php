@@ -35,6 +35,8 @@ class Event
     const SUBSCRIPTION_CANCELLED            = 'subscription.cancelled';
     const SUBSCRIPTION_COMPLETED            = 'subscription.completed';
     const SUBSCRIPTION_UPDATED              = 'subscription.updated';
+    const SUBSCRIPTION_PAUSED               = 'subscription.paused';
+    const SUBSCRIPTION_RESUMED              = 'subscription.resumed';
     const TOKEN_CONFIRMED                   = 'token.confirmed';
     const TOKEN_REJECTED                    = 'token.rejected';
     const TOKEN_PAUSED                      = 'token.paused';
@@ -105,6 +107,8 @@ class Event
         self::P2P_REJECTED,
         self::P2P_TRANSFERRED,
         self::SUBSCRIPTION_AUTHENTICATED,
+        self::SUBSCRIPTION_PAUSED,
+        self::SUBSCRIPTION_RESUMED,
         self::SUBSCRIPTION_ACTIVATED,
         self::SUBSCRIPTION_CHARGED,
         self::SUBSCRIPTION_PENDING,
@@ -188,6 +192,8 @@ class Event
         self::P2P_REJECTED,
         self::P2P_TRANSFERRED,
         self::SUBSCRIPTION_AUTHENTICATED,
+        self::SUBSCRIPTION_PAUSED,
+        self::SUBSCRIPTION_RESUMED,
         self::SUBSCRIPTION_ACTIVATED,
         self::SUBSCRIPTION_PENDING,
         self::SUBSCRIPTION_HALTED,
@@ -335,6 +341,8 @@ class Event
         self::SUBSCRIPTION_AUTHENTICATED        => 11,
         self::TOKEN_PAUSED                      => 12,
         self::TOKEN_CANCELLED                   => 13,
+        self::SUBSCRIPTION_PAUSED               => 14,
+        self::SUBSCRIPTION_RESUMED              => 15,
     ];
 
     /**
@@ -352,6 +360,8 @@ class Event
         self::INVOICE_PARTIALLY_PAID            => [Product::PRIMARY],
         self::INVOICE_EXPIRED                   => [Product::PRIMARY],
         self::SUBSCRIPTION_AUTHENTICATED        => [Product::PRIMARY],
+        self::SUBSCRIPTION_PAUSED               => [Product::PRIMARY],
+        self::SUBSCRIPTION_RESUMED              => [Product::PRIMARY],
         self::SUBSCRIPTION_ACTIVATED            => [Product::PRIMARY],
         self::SUBSCRIPTION_PENDING              => [Product::PRIMARY],
         self::SUBSCRIPTION_HALTED               => [Product::PRIMARY],
@@ -436,6 +446,8 @@ class Event
         self::INVOICE_EXPIRED                   => Entity::INVOICE,
         self::ORDER_PAID                        => Entity::ORDER,
         self::SUBSCRIPTION_AUTHENTICATED        => Entity::SUBSCRIPTION,
+        self::SUBSCRIPTION_PAUSED               => Entity::SUBSCRIPTION,
+        self::SUBSCRIPTION_RESUMED              => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_ACTIVATED            => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_PENDING              => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_HALTED               => Entity::SUBSCRIPTION,

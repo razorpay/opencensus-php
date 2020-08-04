@@ -26,6 +26,8 @@ class Type
     const SUBSCRIPTION_COMPLETED    = 'subscription.completed';
     // const SUBSCRIPTION_EXPIRED      = 'subscription.expired';
     const SUBSCRIPTION_AUTHENTICATED = 'subscription.authenticated';
+    const SUBSCRIPTION_PAUSED        = 'subscription.paused';
+    const SUBSCRIPTION_RESUMED       = 'subscription.resumed';
 
     const PAYMENT_CREATED           = 'payment.created';
 }
