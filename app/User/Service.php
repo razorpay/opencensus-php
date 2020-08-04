@@ -1066,7 +1066,6 @@ class Service extends Base\Service
             'async_reports',
             'new_pp_success_modal',
             'hide_company_name',
-            'rx_test_mode',
             'batch_cancel',
             'rev_up_chennai_announcement',
             'disable_va_creation_bank_account',
@@ -1089,7 +1088,8 @@ class Service extends Base\Service
             'upi_caw',
             'rx_payout_links_inactive',
             'rx_payout_links_ms',
-            'upi_subscription'
+            'upi_subscription',
+            'rx_bulk_approvals',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
