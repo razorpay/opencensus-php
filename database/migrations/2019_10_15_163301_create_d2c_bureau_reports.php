@@ -33,6 +33,9 @@ class CreateD2cBureauReports extends Migration
             $table->unsignedSmallInteger(Entity::SCORE)
                   ->nullable();
 
+            $table->unsignedSmallInteger(Entity::NTC_SCORE)
+                  ->nullable();
+
             $table->json(Entity::REPORT)
                   ->nullable();
 

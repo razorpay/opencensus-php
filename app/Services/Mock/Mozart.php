@@ -42,6 +42,7 @@ class Mozart extends BaseMozart
                         'success'   => true,
                         'data'      => [
                             'score'         => '752',
+                            'ntc_score'     => null,
                             'report'        => [
                                 'active_accounts'                           => '1',
                                 'closed_accounts'                           => '1',

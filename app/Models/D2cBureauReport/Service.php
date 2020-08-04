@@ -112,25 +112,35 @@ class Service extends Base\Service
 
         $csvUfhFileId = $bureauReport->getCsvReportUfhFileId();
 
-        if (is_null($csvUfhFileId) === true)
+        if(is_null($ufhFileId) === false)
         {
-            $D2cCsvReport = new D2cCsvReportCreate($this->mode, $bureauReport);
+            if (is_null($csvUfhFileId) === true)
+            {
+                $D2cCsvReport = new D2cCsvReportCreate($this->mode, $bureauReport);
 
-            dispatch_now($D2cCsvReport);
+                dispatch_now($D2cCsvReport);
 
-            $bureauReport = $this->repo->d2c_bureau_report->findByPublicId($id);
+                $bureauReport = $this->repo->d2c_bureau_report->findByPublicId($id);
 
-            $csvUfhFileId = $bureauReport->getCsvReportUfhFileId();
+                $csvUfhFileId = $bureauReport->getCsvReportUfhFileId();
+            }
+            return [
+                'signed_url'     => $this->app['ufh.service']->getSignedUrl($ufhFileId,
+                                                                            [],
+                                                                            $bureauReport->getMerchantId())['signed_url'],
+
+                'csv_signed_url' => $this->app['ufh.service']->getSignedUrl($csvUfhFileId,
+                                                                            [],
+                                                                            $bureauReport->getMerchantId())['signed_url']
+            ];
         }
-        return [
-            'signed_url'     => $this->app['ufh.service']->getSignedUrl($ufhFileId,
-                                                                        [],
-                                                                        $bureauReport->getMerchantId())['signed_url'],
-
-            'csv_signed_url' => $this->app['ufh.service']->getSignedUrl($csvUfhFileId,
-                                                                        [],
-                                                                        $bureauReport->getMerchantId())['signed_url']
-        ];
+        else
+        {
+            return [
+                'signed_url'     => null,
+                'csv_signed_url' => null,
+            ];
+        }
     }
 
     public function getCsvReport()

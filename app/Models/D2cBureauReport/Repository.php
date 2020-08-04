@@ -15,7 +15,11 @@ class Repository extends Base\Repository
                     ->where(Entity::PROVIDER, $provider)
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->where(Entity::CREATED_AT, '>=', $after)
-                    ->whereNotNull(Entity::SCORE)
+                    ->where(function ($query)
+                    {
+                        $query->whereNotNull(Entity::SCORE)
+                              ->orWhereNotNull(Entity::NTC_SCORE);
+                    })
                     ->get()
                     ->last();
     }
@@ -31,7 +35,12 @@ class Repository extends Base\Repository
 
     public function findByParams(array $input, int $after)
     {
-        $query = $this->newQuery()->whereNotNull(Entity::SCORE);
+        $query = $this->newQuery()
+                      ->where(function ($query)
+                        {
+                            $query->whereNotNull(Entity::SCORE)
+                                  ->orWhereNotNull(Entity::NTC_SCORE);
+                        });
 
         $query->where(Entity::MERCHANT_ID, $input[Entity::MERCHANT_ID]);
 

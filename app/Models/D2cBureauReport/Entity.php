@@ -25,6 +25,7 @@ class Entity extends Base\PublicEntity
     const PROVIDER                  = 'provider';
     const ERROR_CODE                = 'error_code';
     const SCORE                     = 'score';
+    const NTC_SCORE                 = 'ntc_score';
     const REPORT                    = 'report';
     const UFH_FILE_ID               = 'ufh_file_id';
     const INTERESTED                = 'interested';
@@ -36,6 +37,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::PROVIDER,
         self::SCORE,
+        self::NTC_SCORE,
         self::REPORT,
         self::INTERESTED,
         self::CREATED_AT,
@@ -45,6 +47,7 @@ class Entity extends Base\PublicEntity
     // score & report have been added to hidden to hide them from admin dashboard.
     protected $hidden = [
         self::SCORE,
+        self::NTC_SCORE,
         self::REPORT,
     ];
 
@@ -53,6 +56,7 @@ class Entity extends Base\PublicEntity
         self::PROVIDER,
         self::ERROR_CODE,
         self::SCORE,
+        self::NTC_SCORE,
         self::REPORT,
         self::INTERESTED,
         self::UFH_FILE_ID,
@@ -91,9 +95,12 @@ class Entity extends Base\PublicEntity
 
     public function toArrayForDashboard()
     {
-        $report = $this->makeVisible([self::SCORE, self::REPORT])->toArrayPublic();
+        $report = $this->makeVisible([self::SCORE, self::REPORT, self::NTC_SCORE])->toArrayPublic();
 
-        $report[self::REPORT] = json_decode($report[self::REPORT]);
+        if(isset($report[self::REPORT]) === true)
+        {
+            $report[self::REPORT] = json_decode($report[self::REPORT]);
+        }
 
         return $report;
     }

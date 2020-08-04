@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use Mail;
 use RZP\Trace\TraceCode;
+use RZP\Models\D2cBureauReport;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\D2CReport\D2cReportGenerated;
 use RZP\Models\D2cBureauReport\Processor\CreateCsvReport;
@@ -12,6 +13,7 @@ class D2cCsvReportCreate extends Job
 {
     protected $mode;
 
+    /** @var D2cBureauReport\Entity $report */
     protected $report;
 
     const MAX_ATTEMPTS = 3;
@@ -35,11 +37,20 @@ class D2cCsvReportCreate extends Job
 
         try
         {
-            $processor = new CreateCsvReport($this->report);
+            if (empty($this->report->getUfhFileId()) === false)
+            {
+                $processor = new CreateCsvReport($this->report);
 
-            $processor->createCsvReport();
+                $processor->createCsvReport();
 
-            $this->notify();
+                $this->notify();
+            }
+            else
+            {
+                $this->trace->info(TraceCode::NO_D2C_REPORT_FOUND_TO_CREATE_CSV_REPORT, [
+                    'merchant_id'   => $this->report['merchant_id'],
+                ]);
+            }
 
             $this->delete();
         }

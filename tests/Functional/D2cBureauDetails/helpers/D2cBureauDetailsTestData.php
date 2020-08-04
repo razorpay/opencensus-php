@@ -53,6 +53,7 @@ return [
 //                'id'                => 'd2c_Dg8DrxoP8KXelQ',
                 'provider'          => 'experian',
                 'score'             => 752,
+                'ntc_score'         => null,
                 'report'            => [
                     'active_accounts'                           => '1',
                     'closed_accounts'                           => '1',
@@ -149,6 +150,7 @@ return [
 //                'id'                => 'd2c_Dg8DrxoP8KXelQ',
                 'provider'          => 'experian',
                 'score'             => 752,
+                'ntc_score'         => null,
                 'report'            => [
                         'active_accounts'                           => '1',
                         'closed_accounts'                           => '1',
@@ -159,6 +161,50 @@ return [
                 ],
                 'interested'        => null,
 //                'created_at'        => 1571374473
+            ],
+        ],
+    ],
+
+    'testFetchBureauReportWithInternalAuthNtc' => [
+        'request' => [
+            'url' => '/los/d2c_bureau_reports',
+            'method'    => 'get',
+            'content'   => [
+                'merchant_id'   => '10000000000000',
+                'user_id'       => '20000000000000',
+            ],
+         ],
+        'response' => [
+            'content' => [
+//                'id'                => 'd2c_Dg8DrxoP8KXelQ',
+                'provider'          => 'experian',
+                'score'             => null,
+                'ntc_score'         => 4,
+                'report'            => null,
+                'interested'        => null,
+//                'created_at'        => 1571374473
+            ],
+        ],
+    ],
+
+    'testNtcFlow' => [
+        'request' => [
+            'url' => '/d2c_bureau_details/{id}/otp_submit',
+            'method'    => 'post',
+            'content'   => [
+                'otp'           => '0007',
+                'token'         => 'BUIj3m2Nx2VvVj',
+            ]
+        ],
+        'response' => [
+            'content' => [
+//             id' =>  "d2c_Da2dJt1XFev9Oh"
+                'provider'          => 'experian',
+                'score'             => null,
+                'ntc_score'         => 4,
+                'report'            => null,
+                'max_loan_amount'   => null,
+//                'created_at' => 1572386045
             ],
         ],
     ],
@@ -177,6 +223,7 @@ return [
 //             id' =>  "d2c_Da2dJt1XFev9Oh"
                 'provider'          => 'experian',
                 'score'             => 752,
+                'ntc_score'         => null,
                 'report'            => [
                     'active_accounts'                           => '1',
                     'closed_accounts'                           => '1',
@@ -207,6 +254,7 @@ return [
 //             id' =>  "d2c_Da2dJt1XFev9Oh"
                 'provider'          => 'experian',
                 'score'             => 752,
+                'ntc_score'         => null,
                 'report'            => [
                     'active_accounts'                           => '1',
                     'closed_accounts'                           => '1',
@@ -234,6 +282,7 @@ return [
 //                'id'                => 'd2c_Dg8DrxoP8KXelQ',
                 'provider'          => 'experian',
                 'score'             => 752,
+                'ntc_score'         => null,
                 'report'            => [
                     'active_accounts'                           => '1',
                     'closed_accounts'                           => '1',
@@ -257,6 +306,18 @@ return [
             'content' => [
 //              'signed_url' => 'report_experian_d2cbd_EKTOtrqmCOoNhF.txt.txt',
                 'csv_signed_url' =>'rzp_file_mock_id_1000000_bureau_report_csv',
+            ],
+        ],
+    ],
+    'testGetDownloadUrlForNtc' => [
+        'request' => [
+            'url' => '/d2c_bureau_reports/{id}/download_url',
+            'method'    => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'signed_url'     => null,
+                'csv_signed_url' => null,
             ],
         ],
     ]

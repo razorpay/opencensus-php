@@ -67,6 +67,7 @@ class D2cBureauDetailsTest extends TestCase
                         'success'   => true,
                         'data'      => [
                             'score'         => '752',
+                            'ntc_score'     => null,
                             'report'        => [
                                 'active_accounts'                           => '1',
                                 'closed_accounts'                           => '1',
@@ -185,6 +186,73 @@ class D2cBureauDetailsTest extends TestCase
         ], $d2cBureauReport);
 
         $this->mozartServiceMock = $mozartMockCopy;
+    }
+
+    public function testNtcFlow()
+    {
+        $mozartMockCopy = $this->mozartServiceMock;
+
+        $this->mozartServiceMock = $this->getMockBuilder(Mozart::class)
+                                        ->setConstructorArgs([$this->app])
+                                        ->setMethods(['sendMozartRequest'])
+                                        ->getMock();
+
+        $this->mozartServiceMock->method('sendMozartRequest')
+             ->will($this->returnCallback(
+                function ($namespace, $gateway, $action, $input, $version, $useMozartMappedInternalErrorCode)
+                {
+                    $this->assertArraySelectiveEquals([
+                        'first_name'    => 'john',
+                        'address'       => 'Adress',
+                        'city'          => 'city',
+                    ], $input['d2c_bureau_details']);
+
+                    return [
+                        'success'   => true,
+                        'data'      => [
+                            'score'         => null,
+                            'ntc_score'     => '4',
+                            'report'        => null,
+                            '_raw'          => 'garbage',
+                            'raw_report'    => null,
+                        ]
+                    ];
+                }));
+
+        $this->app->instance('mozart', $this->mozartServiceMock);
+
+        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+
+        $response = $this->makeRequestAndGetContent($this->testData['testPostCreate']['request']);
+
+        $bureauDetailsId = $response['id'];
+
+        $this->reportUrl = 'report_experian_' . $bureauDetailsId . '.txt.txt';
+
+        $this->testData['testPatchBureauDetails']['request']['url'] .= $bureauDetailsId;
+
+        $response = $this->makeRequestAndGetContent($this->testData['testPatchBureauDetails']['request']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = strtr($this->testData[__FUNCTION__]['request']['url'], ['{id}' => $bureauDetailsId,]);
+
+        Queue::fake();
+
+        $this->startTest();
+
+        $d2cBureauReport = $this->getLastEntity('d2c_bureau_report', true);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'            => $this->merchantDetail['merchant_id'],
+            'user_id'                => $this->user->getId(),
+            'd2c_bureau_detail_id'   => D2cBureauDetail\Entity::verifyIdAndStripSign($response['id']),
+            'provider'               => 'experian',
+            'ufh_file_id'            => null,
+            'csv_report_ufh_file_id' => null,
+            'error_code'             => null,
+//                'created_at'        => 1571374473
+        ], $d2cBureauReport);
+
+        Queue::assertPushed(D2cCsvReportCreate::class);
     }
 
     public function testPatchBureauDetails()
@@ -321,6 +389,60 @@ class D2cBureauDetailsTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchBureauReportWithInternalAuthNtc()
+    {
+        $mozartMockCopy = $this->mozartServiceMock;
+
+        $this->mozartServiceMock = $this->getMockBuilder(Mozart::class)
+                                        ->setConstructorArgs([$this->app])
+                                        ->setMethods(['sendMozartRequest'])
+                                        ->getMock();
+
+        $this->mozartServiceMock->method('sendMozartRequest')
+             ->will($this->returnCallback(
+                function ($namespace, $gateway, $action, $input, $version, $useMozartMappedInternalErrorCode)
+                {
+                    $this->assertArraySelectiveEquals([
+                        'first_name'    => 'john',
+                        'address'       => 'Adress',
+                        'city'          => 'city',
+                    ], $input['d2c_bureau_details']);
+
+                    return [
+                        'success'   => true,
+                        'data'      => [
+                            'score'         => null,
+                            'ntc_score'     => '4',
+                            'report'        => null,
+                            '_raw'          => 'garbage',
+                            'raw_report'    => null,
+                        ]
+                    ];
+                }));
+
+        $this->app->instance('mozart', $this->mozartServiceMock);
+
+        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+
+        $response = $this->makeRequestAndGetContent($this->testData['testPostCreate']['request']);
+
+        $bureauDetailsId = $response['id'];
+
+        $this->testData['testPatchBureauDetails']['request']['url'] .= $bureauDetailsId;
+
+        $response = $this->makeRequestAndGetContent($this->testData['testPatchBureauDetails']['request']);
+
+        $this->testData['testSubmitOtp']['request']['url'] = strtr($this->testData['testSubmitOtp']['request']['url'], ['{id}' => $bureauDetailsId,]);
+
+        $response = $this->makeRequestAndGetContent($this->testData['testSubmitOtp']['request']);
+
+        $this->ba->appAuth('rzp_test', Config::get('applications.los')['secret']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = strtr($this->testData[__FUNCTION__]['request']['url'], ['{id}' => $response['id'],]);
+
+        $this->startTest();
+    }
+
     public function testGetDownloadUrl()
     {
         $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
@@ -384,5 +506,65 @@ class D2cBureauDetailsTest extends TestCase
         $this->startTest();
 
         Mail::assertQueued(D2cReportGenerated::class);
+    }
+
+    public function testGetDownloadUrlForNtc()
+    {
+        $mozartMockCopy = $this->mozartServiceMock;
+
+        $this->mozartServiceMock = $this->getMockBuilder(Mozart::class)
+                                        ->setConstructorArgs([$this->app])
+                                        ->setMethods(['sendMozartRequest'])
+                                        ->getMock();
+
+        $this->mozartServiceMock->method('sendMozartRequest')
+             ->will($this->returnCallback(
+                function ($namespace, $gateway, $action, $input, $version, $useMozartMappedInternalErrorCode)
+                {
+                    $this->assertArraySelectiveEquals([
+                        'first_name'    => 'john',
+                        'address'       => 'Adress',
+                        'city'          => 'city',
+                    ], $input['d2c_bureau_details']);
+
+                    return [
+                        'success'   => true,
+                        'data'      => [
+                            'score'         => null,
+                            'ntc_score'     => '4',
+                            'report'        => null,
+                            '_raw'          => 'garbage',
+                            'raw_report'    => null,
+                        ]
+                    ];
+                }));
+
+        $this->app->instance('mozart', $this->mozartServiceMock);
+
+        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+
+        $response = $this->makeRequestAndGetContent($this->testData['testPostCreate']['request']);
+
+        $bureauDetailsId = $response['id'];
+
+        $this->reportUrl = 'report_experian_' . $bureauDetailsId . '.txt.txt';
+
+        $this->testData['testPatchBureauDetails']['request']['url'] .= $bureauDetailsId;
+
+        $response = $this->makeRequestAndGetContent($this->testData['testPatchBureauDetails']['request']);
+
+        $this->testData['testSubmitOtp']['request']['url'] = strtr($this->testData['testSubmitOtp']['request']['url'], ['{id}' => $response['id'],]);
+
+        $response = $this->makeRequestAndGetContent($this->testData['testSubmitOtp']['request']);
+
+        Mail::fake();
+
+        $this->testData[__FUNCTION__]['request']['url'] = strtr($this->testData[__FUNCTION__]['request']['url'], ['{id}' => $response['id'],]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        Mail::assertNotQueued(D2cReportGenerated::class);
     }
 }

@@ -67,21 +67,39 @@ class Core extends Base\Core
         // 1. score: credit score of owner.
         // 2. report: map of attributes to be shown on dashboard mandatorily. this will be saved in json format in db.
         // 3. raw_report: whole dump to be saved in filestore.
+        // 4. ntc_score: this field cantain a value 1- 10 for merchants who does not have experian record,
+        //    other fields will be empty when ntc_score is not null
 
-        $fileName = 'report_' . Provider::EXPERIAN . '_' . $bureauDetail->getPublicId() . '.txt';
+        $input = [];
 
-        $filePath = $this->createTxtFile($fileName, json_encode($response['data']['raw_report']));
+       if (empty($response['data']['score']) === false)
+       {
+            $fileName = 'report_' . Provider::EXPERIAN . '_' . $bureauDetail->getPublicId() . '.txt';
 
-        $file = new UploadedFile($filePath, $fileName, 'text/plain', filesize($filePath), null, true);
+            $filePath = $this->createTxtFile($fileName, json_encode($response['data']['raw_report']));
 
-        $ufhFile = $this->app['ufh.service']->uploadFileAndGetUrl($file, $fileName, 'bureau_report', $bureauDetail);
+            $file = new UploadedFile($filePath, $fileName, 'text/plain', filesize($filePath), null, true);
 
-        $input = [
-            Entity::SCORE       => (int) $response['data']['score'],
-            Entity::REPORT      => json_encode($response['data']['report']),
-            Entity::PROVIDER    => Provider::EXPERIAN,
-            Entity::UFH_FILE_ID => $ufhFile[UfhService::FILE_ID],
-        ];
+            $ufhFile = $this->app['ufh.service']->uploadFileAndGetUrl($file, $fileName, 'bureau_report', $bureauDetail);
+
+            $input = [
+                Entity::SCORE        => (int) $response['data']['score'],
+                Entity::REPORT       => json_encode($response['data']['report']),
+                Entity::PROVIDER     => Provider::EXPERIAN,
+                Entity::UFH_FILE_ID  => $ufhFile[UfhService::FILE_ID],
+                Entity::NTC_SCORE    => null,
+            ];
+        }
+        else
+        {
+            $input = [
+                Entity::SCORE       => null,
+                Entity::REPORT      => null,
+                Entity::PROVIDER    => Provider::EXPERIAN,
+                Entity::UFH_FILE_ID => null,
+                Entity::NTC_SCORE   => (int) $response['data']['ntc_score'],
+            ];
+        }
 
         $report = (new Entity)->build($input);
 
