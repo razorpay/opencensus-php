@@ -3865,7 +3865,7 @@
             "time": "2017-07-22T07:25:06+00:00"
         },
         {
-            "name": "mikey179/vfsStream",
+            "name": "mikey179/vfsstream",
             "version": "v1.3.0",
             "source": {
                 "type": "git",
@@ -6157,17 +6157,17 @@
             ],
             "authors": [
                 {
+                    "name": "Ben Ramsey",
+                    "email": "ben@benramsey.com",
+                    "homepage": "https://benramsey.com"
+                },
+                {
                     "name": "Marijn Huizendveld",
                     "email": "marijn.huizendveld@gmail.com"
                 },
                 {
                     "name": "Thibaud Fabre",
                     "email": "thibaud@aztech.io"
-                },
-                {
-                    "name": "Ben Ramsey",
-                    "email": "ben@benramsey.com",
-                    "homepage": "https://benramsey.com"
                 }
             ],
             "description": "Formerly rhumsaa/uuid. A PHP 5.4+ library for generating RFC 4122 version 1, 3, 4, and 5 universally unique identifiers (UUID).",
@@ -6427,16 +6427,16 @@
         },
         {
             "name": "razorpay/lqext",
-            "version": "1.0.2",
+            "version": "1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/lqext.git",
-                "reference": "bfa6ec349061c982164077dfc65ba7dcc0102a98"
+                "reference": "0b20f566dc77fc22d781b4d28b88a81d3b2aebff"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/lqext/zipball/bfa6ec349061c982164077dfc65ba7dcc0102a98",
-                "reference": "bfa6ec349061c982164077dfc65ba7dcc0102a98",
+                "url": "https://api.github.com/repos/razorpay/lqext/zipball/0b20f566dc77fc22d781b4d28b88a81d3b2aebff",
+                "reference": "0b20f566dc77fc22d781b4d28b88a81d3b2aebff",
                 "shasum": ""
             },
             "require": {
@@ -6473,7 +6473,7 @@
                 }
             ],
             "description": "Laravel queue enhancements, failure handling & retries.",
-            "time": "2020-08-03T07:25:10+00:00"
+            "time": "2019-12-16T05:40:19+00:00"
         },
         {
             "name": "razorpay/metrics-php",
@@ -11202,5 +11202,6 @@
         "php": ">=7.1",
         "ext-gmp": "*"
     },
-    "platform-dev": []
+    "platform-dev": [],
+    "plugin-api-version": "1.1.0"
 }
