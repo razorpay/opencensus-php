@@ -507,7 +507,7 @@ class Gateway extends Base\Gateway
         $request = $this->getStandardRequestArray($content);
 
         $traceData = $this->maskUpiDataForTracing($data, [
-            Entity::VPA             => Fields::PAYER_VA,
+            Entity::VPA             => Fields::PAYER_VA_REQ,
             Entity::ACCOUNT_NUMBER  => Fields::PAYER_ACCOUNT,
         ]);
 
