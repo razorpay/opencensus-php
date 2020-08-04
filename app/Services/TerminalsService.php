@@ -24,6 +24,8 @@ class TerminalsService
     protected $request;
 
     const X_RAZORPAY_TASKID         = 'X-Razorpay-TaskId';
+    const X_RZP_TESTCASE_ID         = 'X-RZP-TESTCASE-ID';
+
 
     const GATEWAY           = 'gateway';
     const MERCHANT_ID       = 'merchant_id';
@@ -404,6 +406,16 @@ class TerminalsService
             self::CONTENT_TYPE      => 'application/json',
             self::X_RAZORPAY_TASKID => $this->request->getTaskId()
         ];
+
+        if ($this->app->environment('production') === false)
+        {
+            $testCaseId = $this->app['request']->header(self::X_RZP_TESTCASE_ID);
+
+            if (empty($testCaseId) === false)
+            {
+                $defaultHeaders[self::X_RZP_TESTCASE_ID] = $testCaseId;
+            }
+        }
 
         return array_merge($defaultHeaders, $additionalHeaders);
     }
