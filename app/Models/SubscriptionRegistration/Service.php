@@ -451,6 +451,7 @@ class Service extends Base\Service
         // assign the merchant for further processing
         // this route is called from admin
         $this->merchant = $this->repo->merchant->findOrFail($paperMandateUpload->merchant->getId());;
+        $this->app['basicauth']->setMerchant( $this->merchant);
 
         // create payment
         $this->createPaymentForPaperMandate($input);
