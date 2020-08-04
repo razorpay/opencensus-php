@@ -205,7 +205,6 @@ class Route
         'iin_upload'                               => ['post',     'iins/upload',                                    'IinController@uploadIin'                                           ],
         'iin_range_upload'                         => ['post',     'iins/range/upload',                              'IinController@rangeUploadIin'                                      ],
         'iin_edit'                                 => ['put',      'iins/{id}',                                      'IinController@editIin'                                             ],
-        'iin_get'                                  => ['get',      'iins/{id}/fetch',                                'IinController@getIin'                                              ],
         'iin_edit_bulk'                            => ['patch',    'iins/bulk',                                      'IinController@editIinBulk'                                         ],
         'iin_generate_post'                        => ['post',     'iins/import/generate',                           'IinController@postIinGenerate'                                     ],
         'iin_batch_process_record'                 => ['post',     'iins/{type}/process',                            'IinController@processRecords'                                       ],
@@ -1978,7 +1977,6 @@ class Route
         'payment_button_hosted_view',
         'subscription_button_hosted_view',
         'subscription_button_create_subscription',
-        'iin_get',
     ];
 
     public static $device = [
@@ -5066,7 +5064,6 @@ class Route
         'merchant_methods_downtime',
         'payment_get_flows',
         'payment_get_iin_details',
-        'iin_get',
     ];
 
     protected static $s2sJsonRoutes = [
@@ -5167,7 +5164,6 @@ class Route
         'enable_es_scheduled'                  => [Feature::ES_ON_DEMAND],
         'create_virtual_account_from_order'    => [Feature::OFFLINE_PAYMENTS],
         'payment_status_count'                 => [Feature::PAYMENT_STATUS_AGGREGATE],
-        'iin_get'                              => [Feature::BIN_API],
     ];
 
     /*

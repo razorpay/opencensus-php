@@ -187,31 +187,6 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetIinDetailsEndpointUnAuthorised()
-    {
-        $this->ba->publicAuth();
-
-        $this->startTest();
-    }
-
-    public function testGetIinDetailsEndpoint()
-    {
-        $this->ba->publicAuth();
-
-        $this->fixtures->merchant->addFeatures(['bin_api']);
-
-        $this->startTest();
-    }
-
-    public function testGetIinDetailsEndpointInvalidIIN()
-    {
-        $this->ba->publicAuth();
-
-        $this->fixtures->merchant->addFeatures(['bin_api']);
-
-        $this->startTest();
-    }
-
     public function testGetPaymentFlowsEmptyResponseFromIinDetailsEndpoint()
     {
         $this->ba->publicAuth();
@@ -385,6 +360,8 @@ class IinTest extends TestCase
 
         $this->startTest();
     }
+
+
 
     public function testGetInnsListWithFeatures()
     {

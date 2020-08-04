@@ -276,59 +276,6 @@ return [
         ],
     ],
 
-    'testGetIinDetailsEndpoint' => [
-        'request'  => [
-            'url'     => '/iins/607500/fetch',
-            'method'  => 'get',
-        ],
-        'response' => [
-            'content' => [
-                'iin'           => '607500',
-                'category'      => 'STANDARD',
-                'network'       => 'RuPay',
-                'type'          => 'debit',
-                'country'       => 'IN',
-                'issuer'        => 'SBIN',
-                'issuer_name'   => 'State Bank of India',
-            ]
-        ],
-    ],
-
-    'testGetIinDetailsEndpointUnAuthorised' => [
-        'request'  => [
-            'url'     => '/iins/607500/fetch',
-            'method'  => 'get',
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The requested URL was not found on the server.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-    ],
-    'testGetIinDetailsEndpointInvalidIIN' => [
-        'request'  => [
-            'url'     => '/iins/123/fetch',
-            'method'  => 'get',
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The id provided does not exist',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID
-        ],
-    ],
-
     'testGetPaymentFlowsEmptyResponseFromIinDetailsEndpoint' => [
         'request'  => [
             'url'     => '/payment/iin',

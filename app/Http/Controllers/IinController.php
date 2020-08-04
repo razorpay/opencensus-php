@@ -64,13 +64,6 @@ class IinController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getIin($id)
-    {
-        $data = $this->service()->getIin($id);
-
-        return ApiResponse::json($data);
-    }
-
     public function editIinBulk()
     {
         $input = Request::all();
