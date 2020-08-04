@@ -427,6 +427,7 @@ class Route
         'merchant_create_key'                      => ['post',     'keys',                                           'KeyController@postCreateKeys'                                      ],
         'merchant_fetch_keys'                      => ['get',      'keys',                                           'KeyController@getKeys'                                             ],
         'merchant_replace_key'                     => ['put',      'keys/{id}',                                      'KeyController@putKeys'                                             ],
+        'admin_key_migrate_to_credcase'            => ['post',     'admin/keys/migrate_to_credcase',                 'KeyController@migratetoCredcase'                                   ],
         'merchant_gst_fetch'                       => ['get',      'merchant/gst',                                   'MerchantController@getGSTDetails'                                  ],
         'merchant_gst_edit'                        => ['patch',    'merchant/gst',                                   'MerchantController@editGSTDetails'                                 ],
         'merchant_international_toggle'            => ['patch',    'merchant/international',                         'MerchantController@toggleInternational'                            ],
@@ -3564,6 +3565,8 @@ class Route
         'fix_merchant_data_cron',
         'update_late_auth_config_admin_bulk',
         'create_payment_config_bulk',
+
+        'admin_key_migrate_to_credcase',
     ];
 
     public static $routePermission = [
@@ -4288,6 +4291,8 @@ class Route
         'get_irctc_settlement_file_admin'             => '*',
 
         'fix_merchant_data_cron'                   => Permission::UPDATE_CONFIG_KEY,
+
+        'admin_key_migrate_to_credcase'            => '*',
     ];
 
     public static $bankingRoutePermissions = [

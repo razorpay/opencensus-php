@@ -2811,6 +2811,17 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CREDCASE_REQUEST_FAILED                               = 'CREDCASE_REQUEST_FAILED';
     const CREDCASE_REQUEST_MIGRATE                              = 'CREDCASE_REQUEST_MIGRATE';
     const CREDCASE_REQUEST_ROTATE                               = 'CREDCASE_REQUEST_ROTATE';
+    const MIGRATE_TO_CREDCASE_REQUEST                           = 'MIGRATE_TO_CREDCASE_REQUEST';
+
+    // See RZP/Modules/Migrate.
+    const MIGRATE_ASYNC_REQUEST                                 = 'MIGRATE_ASYNC_REQUEST';
+    const MIGRATE_ASYNC_SUMMARY                                 = 'MIGRATE_ASYNC_SUMMARY';
+    const MIGRATE_REQUEST                                       = 'MIGRATE_REQUEST';
+    const MIGRATE_TARGET_ACTION_FAILED                          = 'MIGRATE_TARGET_ACTION_FAILED';
+    const MIGRATE_SUMMARY                                       = 'MIGRATE_SUMMARY';
+    const MIGRATE_JOB_RECEIVED                                  = 'MIGRATE_JOB_RECEIVED';
+    const MIGRATE_JOB_HANDLED                                   = 'MIGRATE_JOB_HANDLED';
+    const MIGRATE_JOB_FAILED                                    = 'MIGRATE_JOB_FAILED';
 
     // Terminal Onboarding
     const TERMINAL_ENABLE_REQUEST                                  = 'TERMINAL_ENABLE_REQUEST';

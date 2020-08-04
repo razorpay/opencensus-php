@@ -294,7 +294,7 @@ class Core extends Base\Core
         $limit = $input['limit'] ?? 100;
         if ($webhookIds !== null)
         {
-            $webhooks = $this->repo->webhook->findMultipleByIds($webhookIds);
+            $webhooks = $this->repo->webhook->findMany($webhookIds);
         }
         else
         {

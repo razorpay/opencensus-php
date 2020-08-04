@@ -187,6 +187,11 @@ class Repository extends \Razorpay\Spine\Repository
         return $this->findMany($ids);
     }
 
+    public function findManyByMerchantIds(array $mids): Collection
+    {
+        return $this->newQuery()->whereIn(Common::MERCHANT_ID, $mids)->get();
+    }
+
     public function saveOrFail($entity, array $options = array())
     {
         // TODO: getDirty() doesn't handle related models update. Currently there

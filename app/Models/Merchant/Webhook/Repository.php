@@ -43,13 +43,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function findMultipleByIds(	
-        array $entityIds): Base\PublicCollection	
-    {	
-        return $this->newQuery()
-                    ->findManyOrFailPublic($entityIds);
-    }
-
     public function bumpFailureCount($webhook)
     {
         $webhook->bumpFailureCount();

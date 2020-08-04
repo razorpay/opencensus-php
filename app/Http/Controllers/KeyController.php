@@ -29,4 +29,15 @@ class KeyController extends Controller
 
         return ApiResponse::json($keys);
     }
+
+    /**
+     * @see Key\Service's migrateToCredcase function.
+     * @return void
+     */
+    public function migrateToCredcase()
+    {
+        $summary = $this->service()->migrateToCredcase($this->input);
+
+        return ApiResponse::json($summary);
+    }
 }
