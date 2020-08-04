@@ -59,6 +59,10 @@ class RemindersController extends Controller
             '^merchant_config$',
             '^merchant_settings$',
             '^configs$',
+            '^namespace\/[[:alnum:]|_]{1,100}\/control$'
+        ],
+        self::PUT => [
+            '^configs\/[[:alnum:]]{14}$',
         ],
         self::PATCH => [
             '^merchant_settings\/[[:alnum:]]{14}$',
