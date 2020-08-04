@@ -50,7 +50,7 @@ class Table
     const OFFLINE_DEVICE        = 'offline_devices';
     const IDEMPOTENCY_KEY       = 'idempotency_keys';
     const PAYMENT_PAGE_ITEM     = 'payment_page_items';
-
+    const LOW_BALANCE_CONFIG    = 'low_balance_configs';
     // Account entity is currently pointing to the 'merchants' table.
     // It will be used for basic CRUD operations over regular merchants,
     // sub-merchants as well as linked accounts. For more information, please

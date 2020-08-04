@@ -153,6 +153,7 @@ class Entity
     const MERCHANT_FRESHDESK_TICKETS = 'merchant_freshdesk_tickets';
     const MERCHANT_ATTRIBUTE         = 'merchant_attribute';
     const PAYMENT_META               = 'payment_meta';
+    const LOW_BALANCE_CONFIG         = 'low_balance_config';
 
     //ondemand
     const SETTLEMENT_ONDEMAND_FUND_ACCOUNT  = 'settlement.ondemand_fund_account';
@@ -538,6 +539,7 @@ class Entity
         self::PAYMENT_META              => \RZP\Models\Payment\PaymentMeta::class,
         self::UPI_METADATA              => \RZP\Models\Payment\UpiMetadata::class,
         self::MERCHANT_ATTRIBUTE        => \RZP\Models\Merchant\Attribute::class,
+        self::LOW_BALANCE_CONFIG        => \RZP\Models\Merchant\Balance\LowBalanceConfig::class,
         self::UPI_MANDATE               => \RZP\Models\UpiMandate::class,
 
         //ondemand
