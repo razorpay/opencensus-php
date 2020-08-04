@@ -292,6 +292,8 @@ class PayoutLinks
 
         $payoutUtr = null;
 
+        $payoutMode = null;
+
         $payoutLinkInfo = $response['payout_link_response'];
 
         if (key_exists('payouts', $payoutLinkInfo)
@@ -304,6 +306,8 @@ class PayoutLinks
                 $payouts = $payoutLinkInfo['payouts']['items'];
 
                 $payoutUtr = $payouts[0]['utr'];
+
+                $payoutMode = $payouts[0]['mode'];
             }
         }
 
@@ -337,6 +341,7 @@ class PayoutLinks
             'fund_account_details'        => json_encode($fundAccountDetails),
             'purpose'                     => $payoutLinkInfo['purpose'] ?? null,
             'payout_utr'                  => $payoutUtr,
+            'payout_mode'                 => $payoutMode,
             'payout_links_custom_message' => $settings[Entity::CUSTOM_MESSAGE] ?? null,
             'support_contact'             => $settings[Entity::SUPPORT_CONTACT] ?? null,
             'support_email'               => $settings[Entity::SUPPORT_EMAIL] ?? null,
