@@ -67,17 +67,20 @@ return [
 
     'testBajajFinservVerify' => [
         'request' => [
-            'url'    => '/payments/{id}/verify',
-            'method' => 'get',
+            'url'    => '/payments/verify/all',
+            'method' => 'post',
             'content' => [
             ],
         ],
         'response' => [
             'content' => [
-                'payment' => [
-                    'status'   => 'authorized',
-                    'verified' => 1,
-                ]
+                'not_applicable' => 0,
+                'locked_count'   => 0,
+                'authorized'     => 0,
+                'success'        => 1,
+                'timeout'        => 0,
+                'error'          => 0,
+                'unknown'        => 0
             ],
         ],
     ],
