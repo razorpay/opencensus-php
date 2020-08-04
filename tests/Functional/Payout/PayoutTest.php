@@ -1359,6 +1359,10 @@ class PayoutTest extends TestCase
         $this->assertEquals('processing', $secondApprovalResponse['status']);
         $this->assertEquals('Approving', $secondActionChecker['user_comment']);
         $this->assertEquals(true, $secondActionChecker['approved']);
+
+        $payout = $this->getDbLastEntity('payout', 'live')->toArrayPublic();
+
+        $this->assertEquals(Status::PROCESSING, $payout['status']);
     }
 
     public function testPayoutRejectWhenWorkflowEdit()
@@ -5135,5 +5139,77 @@ class PayoutTest extends TestCase
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
 
         $this->startTest();
+    }
+
+    // Test creates 3 payouts (NEFT, UPI and IMPS) [Amount in range of workflow]
+    public function testBulkPayoutCreationWithWorkflowActive()
+    {
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->ba->batchAuth('rzp_live_10000000000000');
+
+        $headers = [
+            'HTTP_X_Batch_Id' => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+
+        $payouts = $this->getDbEntities('payout', [],'live');
+
+        // Assert status of all 3 payouts. All three should go to 'pending' state
+        $this->assertEquals(Payout\Status::PENDING, $payouts[0]['status']);
+        $this->assertEquals(Payout\Status::PENDING, $payouts[1]['status']);
+        $this->assertEquals(Payout\Status::PENDING, $payouts[2]['status']);
+    }
+
+
+    //
+    // Test that payout goes from pending to batch_submitted state during bulk approval of bulk payouts
+    //
+    public function testApproveBulkPayoutsDelayedInitiation()
+    {
+        $this->testBulkPayoutCreationWithWorkflowActive();
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $payouts = $this->getDbEntities('payout', [],'live');
+
+        $payoutIds = $payouts->getPublicIds();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['payout_ids'] = $payoutIds;
+
+        $firstApprovalResponse = $this->startTest();
+
+        // Validating first approval response
+        $firstActionChecker = $this->getDbLastEntity('action_checker', 'live');
+        $this->assertEquals(3, $firstApprovalResponse['total_count']);
+        $this->assertEquals(true, $firstActionChecker['approved']);
+
+        $this->app['config']->set('database.default', 'live');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['payout_ids'] = $payoutIds;
+
+        // Make Request to Approve pending payout for second level from Finance L3 role
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->finL3RoleUser->getId());
+        $secondApprovalResponse = $this->startTest();
+
+        // Validating second approval response
+        $secondActionChecker = $this->getDbLastEntity('action_checker', 'live');
+        $this->assertEquals(3, $secondApprovalResponse['total_count']);
+        $this->assertEquals(true, $secondActionChecker['approved']);
+
+        $updatedPayouts = $this->getDbEntities('payout', [],'live');
+
+        $this->assertEquals(Status::BATCH_SUBMITTED, $updatedPayouts[0]['status']);
+        $this->assertEquals(Status::BATCH_SUBMITTED, $updatedPayouts[1]['status']);
+        $this->assertEquals(Status::BATCH_SUBMITTED, $updatedPayouts[2]['status']);
     }
 }

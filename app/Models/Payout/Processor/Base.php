@@ -428,6 +428,21 @@ class Base extends BaseCore
                     return $payout;
                 }
 
+                if (empty($payout->getBatchId()) === false)
+                {
+                    $payout->setStatus(Status::BATCH_SUBMITTED);
+
+                    $this->repo->saveOrFail($payout);
+
+                    $this->trace->info(
+                        TraceCode::PENDING_PAYOUT_TO_BATCH_SUBMITTED,
+                        [
+                            'payout_id'      => $payout->getId(),
+                        ]);
+
+                    return $payout;
+                }
+
                 $payout->setQueueFlag($queueFlag);
 
                 $downstreamProcessor = new DownstreamProcessor($payoutType,

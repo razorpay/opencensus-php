@@ -6459,4 +6459,201 @@ return [
             ],
         ],
     ],
+
+    'testBulkPayoutCreationWithWorkflowActive' => [
+        'request'   => [
+            'url'     => '/payouts/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'razorpayx_account_number'  => '2224440041626905',
+                    'payout'                    => [
+                        'amount'                => '100',
+                        'currency'              => 'INR',
+                        'mode'                  => 'NEFT',
+                        'purpose'               => 'refund',
+                        'narration'             => '123',
+                        'reference_id'          => ''
+                    ],
+                    'fund'                      => [
+                        'account_type'          => 'bank_account',
+                        'account_name'          => 'Vivek Karna',
+                        'account_IFSC'          => 'HDFC0003780',
+                        'account_number'        => '50100244702362',
+                        'account_vpa'           => ''
+                    ],
+                    'contact'                   => [
+                        'type'                  => 'customer',
+                        'name'                  => 'Vivek Karna',
+                        'email'                 => 'sampleone@example.com',
+                        'mobile'                => '9988998899',
+                        'reference_id'          => ''
+                    ],
+                    'notes'                     => [
+                        'abc'                   => 'xyz',
+                    ],
+                    'idempotency_key'           => 'batch_abc123',
+
+                ],
+                [
+                    'razorpayx_account_number'  => '2224440041626905',
+                    'payout'                    => [
+                        'amount'                => '100',
+                        'currency'              => 'INR',
+                        'mode'                  => 'UPI',
+                        'purpose'               => 'refund',
+                        'narration'             => '123',
+                        'reference_id'          => ''
+                    ],
+                    'fund'                      => [
+                        'account_type'          => 'vpa',
+                        'account_name'          => 'Mehul Kaushik',
+                        'account_IFSC'          => '',
+                        'account_number'        => '',
+                        'account_vpa'           => 'mehul@hdfc'
+                    ],
+                    'contact'                   => [
+                        'type'                  => 'customer',
+                        'name'                  => 'Vivek Karna',
+                        'email'                 => 'sampleone@example.com',
+                        'mobile'                => '9988998899',
+                        'reference_id'          => ''
+                    ],
+                    'notes'                     => [
+                        'abc2'                  => 'xyz',
+                    ],
+                    'idempotency_key'           => 'batch_abc125'
+                ],
+                [
+                    'razorpayx_account_number'  => '2224440041626905',
+                    'payout'                    => [
+                        'amount'                => '100',
+                        'currency'              => 'INR',
+                        'mode'                  => 'IMPS',
+                        'purpose'               => 'refund',
+                        'narration'             => '123',
+                        'reference_id'          => ''
+                    ],
+                    'fund'                      => [
+                        'account_type'          => 'bank_account',
+                        'account_name'          => 'Vivek Karna',
+                        'account_IFSC'          => 'HDFC0003780',
+                        'account_number'        => '50100244702362',
+                        'account_vpa'           => ''
+                    ],
+                    'contact'                   => [
+                        'type'                  => 'customer',
+                        'name'                  => 'Vivek Karna',
+                        'email'                 => 'sampleone@example.com',
+                        'mobile'                => '9988998899',
+                        'reference_id'          => ''
+                    ],
+                    'notes'                     => [
+                        'abc2'                  => 'xyz',
+                    ],
+                    'idempotency_key'           => 'batch_abc126'
+                ]
+            ],
+        ],
+        'response'                                  => [
+            'content'                               => [
+                'entity'                            => 'collection',
+                'count'                             => 3,
+                'items'                             => [
+                    [
+                        'entity'                    => 'payout',
+                        'fund_account'              => [
+                            'entity'                => 'fund_account',
+                            'account_type'          => 'bank_account',
+                            'bank_account'          => [
+                                'ifsc'              => 'HDFC0003780',
+                                'bank_name'         => 'HDFC Bank',
+                                'name'              => 'Vivek Karna',
+                                'account_number'    => '50100244702362',
+                            ],
+                            'active'                => true,
+                        ],
+                        'amount'                    => 100,
+                        'currency'                  => 'INR',
+                        'fees'                      => 0,
+                        'tax'                       => 0,
+                        'status'                    => 'pending',
+                        'purpose'                   => 'refund',
+                        'utr'                       => null,
+                        'user_id'                   => null,
+                        'mode'                      => 'NEFT',
+                        'reference_id'              => null,
+                        'narration'                 => '123',
+                        'idempotency_key'           => 'batch_abc123',
+                        'notes'                     => [
+                            'abc'                   => 'xyz',
+                        ],
+                    ],
+                    [
+                        'entity'                    => 'payout',
+                        'fund_account'              => [
+                            'entity'                => 'fund_account',
+                            'account_type'          => 'vpa',
+                            'vpa'                   => [
+                                'address'           => 'mehul@hdfc',
+                            ],
+                            'active'                => true,
+                        ],
+                        'amount'                    => 100,
+                        'currency'                  => 'INR',
+                        'fees'                      => 0,
+                        'tax'                       => 0,
+                        'status'                    => 'pending',
+                        'purpose'                   => 'refund',
+                        'utr'                       => null,
+                        'user_id'                   => null,
+                        'mode'                      => 'UPI',
+                        'reference_id'              => null,
+                        'narration'                 => '123',
+                        'idempotency_key'           => 'batch_abc125'
+                    ],
+                    [
+                        'entity'                    => 'payout',
+                        'fund_account'              => [
+                            'entity'                => 'fund_account',
+                            'account_type'          => 'bank_account',
+                            'bank_account'          => [
+                                'ifsc'              => 'HDFC0003780',
+                                'bank_name'         => 'HDFC Bank',
+                                'name'              => 'Vivek Karna',
+                                'account_number'    => '50100244702362',
+                            ],
+                            'active'                => true,
+                        ],
+                        'amount'                    => 100,
+                        'currency'                  => 'INR',
+                        'fees'                      => 0,
+                        'tax'                       => 0,
+                        'status'                    => 'pending',
+                        'purpose'                   => 'refund',
+                        'utr'                       => null,
+                        'user_id'                   => null,
+                        'mode'                      => 'IMPS',
+                        'reference_id'              => null,
+                        'narration'                 => '123',
+                        'idempotency_key'           => 'batch_abc126',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testApproveBulkPayoutsDelayedInitiation' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/approve/bulk',
+            'content' => [
+                'token'   => 'BUIj3m2Nx2VvVj',
+                'otp'     => '0007',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
 ];
