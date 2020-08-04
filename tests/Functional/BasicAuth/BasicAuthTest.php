@@ -6,8 +6,9 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Models\Key;
-
+use RZP\Models\Merchant;
 use RZP\Services\RazorXClient;
+
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -547,6 +548,50 @@ class BasicAuthTest extends TestCase
         $testData['request']['url'] = '/keys/rzp_live_'.$key->getId();
 
         $this->ba->proxyAuth('rzp_live_10000000000000', $merchantUser->getId());
+
+        $this->startTest();
+    }
+
+    public function testRequestWithTwoFaRequiredWithTwoFaVerifiedFalseFromBanking()
+    {
+        $razorxMock = $this->getMockBuilder(RazorxClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will(
+                $this->returnCallback(
+                    function (string $mid, string $feature, string $mode)
+                    {
+                        if ($feature === Merchant\RazorxTreatment::VALIDATE_USER_2FA_STATUS)
+                        {
+                            return 'on';
+                        }
+                        return 'control';
+                    }
+                ));
+
+        $merchant = $this->fixtures->create('merchant:with_keys');
+
+        $merchantId = $merchant->getId();
+
+        $key = $this->fixtures->key->create([
+            Key\Entity::ID                  => 'exampleexample',
+            Key\Entity::MERCHANT_ID         => $merchantId,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/keys/rzp_test_'.$key->getId();
+
+        $this->ba->proxyAuth(
+            'rzp_test_'.$merchantId,
+            $merchantUser->getId());
 
         $this->startTest();
     }

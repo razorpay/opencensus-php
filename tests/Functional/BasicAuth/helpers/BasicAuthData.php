@@ -683,6 +683,24 @@ return [
         ]
     ],
 
+    'testRequestWithTwoFaRequiredWithTwoFaVerifiedFalseFromBanking'     => [
+        'request'       => [
+            // URL will be set in the function
+            'method'    => 'PUT',
+            'content'   => [
+                'delay_roll'       => '1',
+            ],
+            'server'    => [
+                'HTTP_X-Dashboard-User-Role'                => 'owner',
+                'HTTP_X-Request-Origin'                     => config('applications.banking_service_url'),
+            ],
+        ],
+
+        'response'      => [
+            'content'       => [],
+        ]
+    ],
+
     'testRequestWithTwoFaRequiredWithTwoFaVerifiedFalse'     => [
         'request'       => [
             // url is set in the function
