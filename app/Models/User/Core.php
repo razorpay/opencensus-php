@@ -1163,7 +1163,7 @@ class Core extends Base\Core
                 'context',
                 'source');
         }
-        
+
         return $response;
     }
 
@@ -1516,17 +1516,15 @@ class Core extends Base\Core
 
     private function notifyUserAboutContactMobileUpdate(Entity $user, Merchant\Entity $merchant)
     {
-        $userUpdatedAt = $user->getUpdatedAt();
+        $userUpdatedAt = Carbon::createFromTimestamp($user->getUpdatedAt(), Timezone::IST);
 
         $data = [
             'user'          => [
                 Entity::EMAIL               => $user->getEmail(),
                 Entity::NAME                => $user->getName(),
                 Entity::CONTACT_MOBILE      => $user->getMaskedContactMobile(),
-                'updated_on'                => Base\Utility::getTimestampFormatted(
-                                                    $userUpdatedAt, 'jS M, Y'),
-                Entity::UPDATED_AT          => Base\Utility::getTimestampFormatted(
-                                                    $userUpdatedAt, 'g:i A'),
+                'updated_on'                => $userUpdatedAt->format('jS M, Y'),
+                Entity::UPDATED_AT          => $userUpdatedAt->format('g:i A'),
             ],
 
             'merchant'      => [
