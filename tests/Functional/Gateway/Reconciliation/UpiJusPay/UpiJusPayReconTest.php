@@ -143,6 +143,8 @@ class UpiJusPayReconTest extends TestCase
     {
         $updatedRefund = $this->getDbEntity('refund', ['id' => $refund['id']]);
 
+        $this->assertNotNull($updatedRefund['reference1']);
+
         $gatewayEntity = $this->getDbEntity(
             'mozart',
             [
