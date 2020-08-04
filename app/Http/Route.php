@@ -884,6 +884,8 @@ class Route
         'currency_fetch_all_proxy'                 => ['get',      'currency/all/proxy',                             'CurrencyController@getAllCurrency'                                 ],
         'currency_update_rates_multiple'           => ['post',     'currency/rates',                                 'CurrencyController@postCurrencyRatesMultiple'                      ],
         'currency_fetch_rates'                     => ['get',      'currency/{currency}/rates',                      'CurrencyController@getCurrencyRates'                               ],
+        'currency_fetch_rates_proxy'               => ['get',      'currency/{currency}/rates/proxy',                'CurrencyController@getCurrencyRates'                               ],
+
         'reports_fetch_multiple'                   => ['get',      'reports',                                        'ReportController@getReports'                                       ],
         'reports_generate'                         => ['post',     'reports/{entity}/generate',                      'ReportController@generateReport'                                   ],
         'file_get_signed_url'                      => ['get',      '{entity}/{entityId}/signed-url',                 'FileStoreController@getSignedUrlForEntity'                         ],
@@ -2895,6 +2897,7 @@ class Route
         'payouts_scheduled_time_slots',
 
         'payment_links_sign_payload',
+        'currency_fetch_rates_proxy',
     ];
 
     //
@@ -4843,6 +4846,7 @@ class Route
             'merchant_features_fetch',
             'payment_links_sign_payload',
             'payment_links_payment_by_id',
+            'currency_fetch_rates_proxy',
         ],
 
         'kotak' => [

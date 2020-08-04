@@ -568,6 +568,11 @@ class Service extends Base\Service
         $response[Refund\Constants::REFUND_STATUS_FILTER] =
             (new Refund\Service)->getRefundStatusFilterFlagForMerchantDashboard($merchantId);
 
+        if ($isInternal === true)
+        {
+            $response[Entity::MAX_PAYMENT_AMOUNT] =  $this->merchant->getMaxPaymentAmount();
+        }
+
         return $response;
     }
 
