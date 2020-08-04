@@ -193,11 +193,11 @@ export default class CreditPullModal extends Component {
               merchantId
             ).then(
               ([
-                { report, score, max_loan_amount, id: reportId },
+                { report, score, max_loan_amount, id: reportId, ntc_score},
                 userResponse,
               ]) => {
                 this.props.updateSession({ user: userResponse.data });
-                this.openReportScreen(report, score, max_loan_amount, reportId);
+                this.openReportScreen(report, score, max_loan_amount, reportId, ntc_score);
               }
             );
           }}
@@ -228,7 +228,7 @@ export default class CreditPullModal extends Component {
     });
   };
 
-  openReportScreen = (report, score, maxLoan, reportId) => {
+  openReportScreen = (report, score, maxLoan, reportId, ntcScore) => {
     this.props.openModal({
       component: (
         <CreditPullSuccess
@@ -236,6 +236,7 @@ export default class CreditPullModal extends Component {
           report={report}
           maxLoan={maxLoan}
           reportId={reportId}
+          ntcScore={ntcScore}
         />
       ),
       size: 'large',

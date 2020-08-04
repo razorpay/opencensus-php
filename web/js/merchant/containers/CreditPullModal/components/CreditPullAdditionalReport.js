@@ -91,16 +91,6 @@ export default class CreditPullAdditionalReport extends Component {
             </a>
           </div>
         </div>
-        <div className="col-md-12 foot-box">
-          <div className="orange-pad">
-            Your full credit report has been shared on your e-mail.
-          </div>
-          <img
-            className="exp-logo"
-            src="https://cdn.razorpay.com/static/assets/experian_logo.png"
-          />
-          <span className="exp-logo-text">Powered by</span>
-        </div>
       </>
     );
   };

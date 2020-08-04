@@ -8,7 +8,8 @@ const getStateBanner = (loanApplicationDetails, ref, changeActiveState) => {
 
   switch (activeState) {
     case 'CREDIT_PULL_PENDING':
-      if (loanApplicationDetails.bureau_report_details.data.bureau_report) {
+      if (loanApplicationDetails.bureau_report_details.data.bureau_report && loanApplicationDetails.bureau_report_details.data.bureau_report
+        .score) {
         if (
           loanApplicationDetails.bureau_report_details.data.bureau_report
             .score > 450
@@ -21,20 +22,56 @@ const getStateBanner = (loanApplicationDetails, ref, changeActiveState) => {
             />
           );
         } else {
+            return (
+              <Banner
+                title="Sorry!"
+                description="Based on your credit history, you are not eligible for loan. Please apply later."
+                type="error"
+              />
+            );
+        }
+      } else {
+        if(loanApplicationDetails.bureau_report_details.data.bureau_report && loanApplicationDetails.bureau_report_details.data.bureau_report.ntc_score)
+        {
           return (
             <Banner
-              title="Sorry!"
-              description="Based on your credit history, you are not eligible for loan. Please apply later."
-              type="error"
+              title="Congratulations"
+              description="We couldn't find any credit records on your name.  But, you may still be eligible for a loan."
+              type="success"
             />
           );
         }
-      } else {
-        return null;
+        else
+        {
+          return null;
+        }
       }
       break;
     case 'PREVERIFICATION_UPLOAD_PENDING':
-      return (
+      if(loanApplicationDetails.bureau_report_details.data.bureau_report && loanApplicationDetails.bureau_report_details.data.bureau_report.ntc_score)
+      {
+        return(
+          <Banner
+            title="Congratulations"
+            description={
+              <span>
+                We couldn't find any credit records on your name.  But, you may still be eligible for a loan. &nbsp;
+                <Button.Transparent
+                  class="no-margin"
+                  onClick={() =>
+                    changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING)
+                  }
+                >
+                  View Credit Report
+                </Button.Transparent>
+              </span>
+            }
+            type="success"
+            ref={ref}
+          />
+        );
+      }
+      return(
         <Banner
           title="Congratulations"
           description={

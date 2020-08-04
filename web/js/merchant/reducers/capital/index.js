@@ -506,6 +506,7 @@ export default function(state = initialState, action) {
       return merge(state, {
         promoter_details: {
           loading: true,
+          data: state.promoter_details.data,
         },
       });
 

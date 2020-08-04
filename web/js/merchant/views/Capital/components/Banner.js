@@ -11,6 +11,7 @@ const Banner = React.forwardRef(
       isFormHeader = false,
       lockedNote = false,
       cta,
+      rightComponent,
     },
     ref
   ) => (
@@ -59,6 +60,9 @@ const Banner = React.forwardRef(
         )}
       </div>
       {cta}
+      <div>
+        {rightComponent}
+      </div>
     </div>
   )
 );

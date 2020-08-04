@@ -258,9 +258,7 @@ class Onboarding extends Component {
             <div className="btn-toolbar">
               <a
                 className="m-l link"
-                //TODO: add valid link, after the faq section in website is
-                // ready
-                href={'https://razorpay.com/capital/'}
+                href={'https://razorpay.com/capital/cash-advance/#faqs'}
                 target="_blank"
               >
                 <strong>Show FAQ's</strong>

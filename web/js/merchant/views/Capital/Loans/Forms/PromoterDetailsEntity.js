@@ -47,6 +47,7 @@ class PromoterDetailsEntity extends Component {
       loanApplicationDetails.business_details.data &&
       loanApplicationDetails.business_details.data.business &&
       loanApplicationDetails.business_details.data.applicant_ids &&
+      loanApplicationDetails.promoter_details.data &&
       loanApplicationDetails.promoter_details.data.applicant
     ) {
       const {

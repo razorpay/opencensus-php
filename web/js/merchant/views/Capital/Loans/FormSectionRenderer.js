@@ -152,6 +152,15 @@ const stateTitleMap = {
   CREDIT_PULL_COMPLETED: {
     title: 'Credit Inquiry Report',
     description: 'This credit inquiry will not impact your credit score',
+    rightComponent: (
+      <div className="right-component">
+        <span className="exp-logo-text">Powered by</span>
+        <img
+          className="exp-logo"
+          src="https://cdn.razorpay.com/static/assets/experian_logo.png"
+        />
+      </div>
+    ),
   },
   [APPLICATION_STATES.SCORE_GENERATION_PENDING]: {
     title: 'Evaluating Loan Offer',
@@ -377,25 +386,37 @@ class FormSectionRenderer extends Component {
     }
 
     if (state === APPLICATION_STATES.CREDIT_PULL_PENDING) {
-      const { meta } = this.props.loanApplicationDetails;
-      const businessDetails = await this.props.fetchBusinessDetails({
-        business_id: meta.data.application.owner_id,
-      });
-
-      await this.props.fetchApplicantDetails({
-        applicant_id: businessDetails.data.applicant_ids[0],
-      });
-
-      let bureauReportDetails;
-      try {
-        await this.props.fetchD2cReport({
-          application_id: meta.data.application.id,
-          applicant_id: businessDetails.data.applicant_ids[0],
-          merchant_id: businessDetails.data.business.reference_id,
+      const {
+        meta,
+        business_details,
+        promoter_details,
+        bureau_report_details,
+      } = this.props.loanApplicationDetails;
+      if (!business_details.data || !business_details.data.applicant_ids) {
+        await this.props.fetchBusinessDetails({
+          business_id: meta.data.application.owner_id,
         });
+      }
+
+      if (!promoter_details.data || !promoter_details.data.applicant) {
+        const { business_details } = this.props.loanApplicationDetails;
+        await this.props.fetchApplicantDetails({
+          applicant_id: business_details.data.applicant_ids[0],
+        });
+      }
+
+      try {
+        if (!bureau_report_details.error || !bureau_report_details.data) {
+          const { business_details } = this.props.loanApplicationDetails;
+          await this.props.fetchD2cReport({
+            application_id: meta.data.application.id,
+            applicant_id: business_details.data.applicant_ids[0],
+            merchant_id: business_details.data.business.reference_id,
+          });
+        }
       } catch (e) {
         //Suppress the error
-        console.error('No Bureau Report found');
+        console.error('No Bureau Report found', e);
       }
     }
 
@@ -403,19 +424,25 @@ class FormSectionRenderer extends Component {
       state === APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING ||
       state === APPLICATION_STATES.PREVERIFICATION_FAILED
     ) {
-      if (!business_details.data.business) {
-        const businessDetails = await this.props.fetchBusinessDetails({
-          business_id: meta.data.application.owner_id,
-        });
-        if (businessDetails.data.applicant_ids) {
-          await this.props.fetchApplicantDetails({
-            applicant_id: businessDetails.data.applicant_ids[0],
-          });
-        }
-      }
       await this.props.fetchLoanApplicationMeta(
         this.props.loanApplicationDetails.meta.data.application.id
       );
+      // !business_details.data.business
+
+      // Ideally, to fix redundant call, check if the data exists in the store before fetching the data
+      const businessDetails = await this.props.fetchBusinessDetails({
+        business_id: meta.data.application.owner_id,
+      });
+      if (businessDetails.data.applicant_ids) {
+        await this.props.fetchApplicantDetails({
+          applicant_id: businessDetails.data.applicant_ids[0],
+        });
+      }
+      await this.props.fetchD2cReport({
+        application_id: meta.data.application.id,
+        applicant_id: businessDetails.data.applicant_ids[0],
+        merchant_id: businessDetails.data.business.reference_id,
+      });
     }
 
     if (state === APPLICATION_STATES.CREDIT_OFFER_GENERATED) {
@@ -767,7 +794,9 @@ class FormSectionRenderer extends Component {
     if (context) {
       return context.activeState
         ? context.activeState
-        : meta.data.application ? meta.data.application.status : defaultState;
+        : meta.data.application
+        ? meta.data.application.status
+        : defaultState;
     } else {
       return meta.data.application
         ? meta.data.application.status
