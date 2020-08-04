@@ -63,6 +63,7 @@ class ConfigKey
     const BENEFICIARY_REGISTRATION              = self::PREFIX . 'beneficiary_registration:';
     const BENEFICIARY_VERIFICATION              = self::PREFIX . 'beneficiary_verification:';
     const FTS_BENEFICIARY                       = self::PREFIX . 'fts_beneficiary';
+    const ENABLE_NB_KOTAK_ENCRYPTED_FLOW        = self::PREFIX . 'enable_nb_kotak_encrypted_flow';
 
     const CARD_PAYMENT_SERVICE_ENABLED          = self::PREFIX . 'card_payment_service_enabled';
     const CARD_PAYMENT_SERVICE_EMI_FETCH        = self::PREFIX . 'card_payment_service_emi_fetch';
@@ -181,6 +182,7 @@ class ConfigKey
         self::RX_PAYOUTS_DEFAULT_MAX_BATCH_FILE_COUNT,
         self::CARD_PAYMENT_SERVICE_EMI_FETCH,
         self::BATCH_PAYOUTS_FETCH_LIMIT,
+        self::ENABLE_NB_KOTAK_ENCRYPTED_FLOW,
     ];
 
     const REDIS_CONFIG_MAP = [

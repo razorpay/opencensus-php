@@ -15,6 +15,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Gateway\Netbanking\Kotak\AESCrypto;
 use RZP\Gateway\Netbanking\Base\Entity as E;
 
@@ -501,7 +502,7 @@ class Gateway extends Base\Gateway
     {
         // TODO: remove this method when all the terminals are migrated to the new encrypted flow
 
-        if ($this->input['terminal']->getAccountType() === 'enc')
+        if ( ((bool) ConfigKey::get(ConfigKey::ENABLE_NB_KOTAK_ENCRYPTED_FLOW, false)) or ($this->input['terminal']->getAccountType() === 'enc'))
         {
             return true;
         }
