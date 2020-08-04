@@ -7730,6 +7730,7 @@ class MerchantTest extends TestCase
 
     public function testTrimMerchantData()
     {
+        $this->markTestSkipped("fix in progress by ayush");
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
                            ->setMethods(['getTreatment'])

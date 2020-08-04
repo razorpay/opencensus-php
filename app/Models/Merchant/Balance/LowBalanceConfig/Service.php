@@ -54,4 +54,11 @@ class Service extends Base\Service
 
         return $response->toArrayPublic();
     }
+
+    public function alert()
+    {
+        $response = $this->core->processLowBalanceAlertsForMerchants();
+
+        return $response;
+    }
 }

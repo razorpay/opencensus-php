@@ -31,7 +31,7 @@ class Entity extends Base\PublicEntity
     const THRESHOLD_AMOUNT    = 'threshold_amount';
     const NOTIFICATION_EMAILS = 'notification_emails';
     const STATUS              = 'status';
-    const NOTIFY_AFTER        = 'notify_after'; // it is in hours
+    const NOTIFY_AFTER        = 'notify_after'; // it is in seconds
     const NOTIFY_AT           = 'notify_at';
     const CREATED_AT          = 'created_at';
     const UPDATED_AT          = 'updated_at';
@@ -47,7 +47,7 @@ class Entity extends Base\PublicEntity
     // defaults
     protected $defaults = [
         self::NOTIFY_AT    => 0,
-        self::NOTIFY_AFTER => 8,
+        self::NOTIFY_AFTER => 28800, // 8 hrs
         self::STATUS       => Status::ENABLED,
     ];
 
@@ -131,6 +131,11 @@ class Entity extends Base\PublicEntity
     public function setStatus(string $status)
     {
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setNotifyAt(int $notifyAt)
+    {
+        $this->setAttribute(self::NOTIFY_AT, $notifyAt);
     }
     // ============================= END SETTERS ===========================
 

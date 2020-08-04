@@ -118,6 +118,10 @@ class ConfigKey
     const RX_QUEUED_PAYOUTS_PAGINATION          = self::PREFIX . 'rx_queued_payouts_pagination';
     const RX_QUEUED_PAYOUTS_CRON_LAST_RUN_AT    = self::PREFIX . 'rx_queued_payouts_cron_last_run_at';
 
+    // this is used to limit the number of records fetched while querying db to get low balance configs in order
+    // to reduce the load
+    const LOW_BALANCE_CONFIGS_FETCH_LIMIT_IN_ONE_BATCH = self::PREFIX . 'low_balance_configs_fetch_limit_in_one_batch';
+
     // TODO : Remove after June 15 2020 once we can support 25k bulk payouts
     const RX_PAYOUTS_CUSTOM_BATCH_FILE_LIMIT_MERCHANTS  = self::PREFIX . 'rx_payouts_custom_batch_file_limit_merchants';
     const RX_PAYOUTS_DEFAULT_MAX_BATCH_FILE_COUNT       = self::PREFIX . 'rx_payouts_default_max_batch_file_count';
@@ -181,6 +185,7 @@ class ConfigKey
         self::RX_PAYOUTS_CUSTOM_BATCH_FILE_LIMIT_MERCHANTS,
         self::RX_PAYOUTS_DEFAULT_MAX_BATCH_FILE_COUNT,
         self::CARD_PAYMENT_SERVICE_EMI_FETCH,
+        self::LOW_BALANCE_CONFIGS_FETCH_LIMIT_IN_ONE_BATCH,
         self::BATCH_PAYOUTS_FETCH_LIMIT,
         self::ENABLE_NB_KOTAK_ENCRYPTED_FLOW,
     ];

@@ -115,6 +115,7 @@ class Validator extends Base\Validator
         ConfigKey::CVV_REGEX_FOR_REDACTING            => 'filled|string',
         ConfigKey::RX_QUEUED_PAYOUTS_PAGINATION       => 'array',
         ConfigKey::RX_QUEUED_PAYOUTS_CRON_LAST_RUN_AT => 'filled|integer',
+        ConfigKey::LOW_BALANCE_CONFIGS_FETCH_LIMIT_IN_ONE_BATCH => 'filled|integer',
         ConfigKey::BATCH_PAYOUTS_FETCH_LIMIT          => 'integer|nullable',
         ConfigKey::RX_PAYOUTS_CUSTOM_BATCH_FILE_LIMIT_MERCHANTS => 'array',
         ConfigKey::RX_PAYOUTS_DEFAULT_MAX_BATCH_FILE_COUNT      => 'integer|nullable'

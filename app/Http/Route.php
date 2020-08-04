@@ -1861,6 +1861,7 @@ class Route
         'delete_low_balance_config'               => ['delete',     'low_balance_configs/{id}',               'LowBalanceConfigController@delete'],
         'disable_low_balance_config'              => ['post',       'low_balance_configs/{id}/disable',       'LowBalanceConfigController@disableConfig'],
         'enable_low_balance_config'               => ['post',       'low_balance_configs/{id}/enable',        'LowBalanceConfigController@enableConfig'],
+        'low_balance_config_alert_cron'           => ['post',       'low_balance_configs/alert',              'LowBalanceConfigController@alert'],
 
         'get_internal_instrument_request_by_id'   => ['get',       'internal_instrument_request/{id}',                          'InstrumentRequestController@getInternalInstrumentRequestById'   ],
         'patch_internal_instrument_request_by_id' => ['patch',     'internal_instrument_request/{id}',                          'InstrumentRequestController@patchInternalInstrumentRequestById' ],
@@ -2465,6 +2466,7 @@ class Route
         'merchant_poc_update',
         'merchant_poc_update_with_time',
         'unclaimed_merchant_poc_update',
+        'low_balance_config_alert_cron',
 
         // Razorpay Capital
         // Financial Data Service
@@ -4453,6 +4455,15 @@ class Route
         'fetch_payout_downtimes_enabled'               => '*',
         'merchant_credits_balance_fetch'               => '*',
 
+        // low balance configs
+        'create_low_balance_config'                     => Permission::CREATE_LOW_BALANCE_CONFIG,
+        'update_low_balance_config'                     => Permission::UPDATE_LOW_BALANCE_CONFIG,
+        'fetch_low_balance_config'                      => '*',
+        'list_low_balance_config'                       => '*',
+        'delete_low_balance_config'                     => Permission::DELETE_LOW_BALANCE_CONFIG,
+        'disable_low_balance_config'                    => Permission::DISABLE_LOW_BALANCE_CONFIG,
+        'enable_low_balance_config'                     => Permission::ENABLE_LOW_BALANCE_CONFIG,
+
         // tax payment permission
         'tax_payments_pay'                             => Permission::PAY_TAX_PAYMENTS,
         'tax_payments_bulk_pay'                        => Permission::PAY_TAX_PAYMENTS,
@@ -4804,6 +4815,7 @@ class Route
             'fts_bulk_attempts_initiate',
             'merchants_update_onboarding_category_to_normal_cron',
             'tokens_upi_vpa_bulk_cron',
+            'low_balance_config_alert_cron',
             'terminals_proxy_delete_submerchant',
             'terminals_proxy_create_submerchant',
             'cps_backfill_entities',

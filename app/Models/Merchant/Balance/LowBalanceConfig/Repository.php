@@ -16,4 +16,40 @@ class Repository extends Base\Repository
              ->where(Entity::MERCHANT_ID, '=', $merchantId)
              ->get();
     }
+
+    public function getTotalEnabledConfigsCount()
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::ENABLED)
+                    ->get()
+                    ->count();
+    }
+
+    public function getEnabledBalanceConfigsForAlert($limit)
+    {
+        $lowBalanceConfigAttrs = $this->dbColumn('*');
+
+        return $this->newQuery()
+                    ->select($lowBalanceConfigAttrs)
+                    ->where(Entity::STATUS, '=', Status::ENABLED)
+                    ->orderByRaw(Entity::CREATED_AT . ' desc,' . Entity::ID . ' desc')
+                    ->limit($limit)
+                    ->get();
+    }
+
+    public function getBalanceConfigsForAlertUsingLastFetchedConfig($limit, $lastFetchedConfig)
+    {
+        $lowBalanceConfigAttrs = $this->dbColumn('*');
+
+        // https://use-the-index-luke.com/no-offset
+        // using seek(or keyset pagination) instead of offset for better query performance
+        return $this->newQuery()
+            ->select($lowBalanceConfigAttrs)
+            ->where(Entity::STATUS, '=', Status::ENABLED)
+            ->whereRaw('('.Entity::CREATED_AT . ',' . Entity::ID . ')' . '< (?,?)',
+                       [$lastFetchedConfig->getCreatedAt(), $lastFetchedConfig->getId()])
+            ->orderByRaw(Entity::CREATED_AT . ' desc,' . Entity::ID . ' desc')
+            ->limit($limit)
+            ->get();
+    }
 }

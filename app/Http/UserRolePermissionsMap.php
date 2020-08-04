@@ -97,6 +97,13 @@ class UserRolePermissionsMap
                  Permission::EDIT_VENDOR_PAYMENTS,
                  Permission::CANCEL_VENDOR_PAYMENTS,
                  Permission::PROCESS_PAYOUT_SCHEDULED,
+
+                 Permission::CREATE_LOW_BALANCE_CONFIG,
+                 Permission::UPDATE_LOW_BALANCE_CONFIG,
+                 Permission::ENABLE_LOW_BALANCE_CONFIG,
+                 Permission::DISABLE_LOW_BALANCE_CONFIG,
+                 Permission::DELETE_LOW_BALANCE_CONFIG,
+
                  Permission::PAY_TAX_PAYMENTS,
                  Permission::UPDATE_TAX_PAYMENT_SETTINGS,
                  Permission::VIEW_TAX_PAYMENTS,

@@ -12,6 +12,9 @@ return [
             'content' => [
                 'notification_emails' => ['kachra.seth@razorpay.com','dhariya.babu@xyz.com'],
             ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
         ],
         'response' => [
             'content' => [
@@ -28,7 +31,10 @@ return [
                 'account_number'      => '2224440041626905',
                 'threshold_amount'    => 1000,
                 'notification_emails' => ['kunal.sikri@razorpay.com', 'abcd@razorpay.com'],
-                'notify_after'        => 6
+                'notify_after'        => 21600
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
             ],
         ],
         'response'  => [
@@ -53,6 +59,9 @@ return [
             'content' => [
                 'threshold_amount' => 900,
             ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
         ],
         'response' => [
             'content' => [
@@ -66,12 +75,15 @@ return [
             'url'     => '/low_balance_configs',
             'method'  => 'PATCH',
             'content' => [
-                'notify_after' => 8
+                'notify_after' => 28800
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
             ],
         ],
         'response' => [
             'content' => [
-                'notify_after' => '8'
+                'notify_after' => '28800' // 8 hrs
             ]
         ]
     ],
@@ -81,7 +93,10 @@ return [
             'url'     => '/low_balance_configs',
             'method'  => 'PATCH',
             'content' => [
-                'notify_after' => 8
+                'notify_after' => 28800
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
             ],
         ],
         'response'  => [
@@ -103,7 +118,10 @@ return [
                 'account_number'      => '2224440041626905',
                 'threshold_amount'    => 1000,
                 'notification_emails' => ['kunal.sikri@razorpay.com', 'abcd@razorpay.com'],
-                'notify_after'        => 6
+                'notify_after'        => 21600 // 6 hrs
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
             ],
         ],
         'response'  => [
@@ -122,6 +140,9 @@ return [
             'url'     => '/low_balance_configs',
             'method'  => 'DELETE',
             'content' => [],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
         ],
         'response' => [
             'content' => [
@@ -135,6 +156,9 @@ return [
             'url'     => '/low_balance_configs',
             'method'  => 'DELETE',
             'content' => [],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
         ],
         'response'  => [
             'content' => [
@@ -152,6 +176,9 @@ return [
             'url'     => '/low_balance_configs',
             'method'  => 'POST',
             'content' => [],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
         ],
         'response' => [
             'content' => [
@@ -165,6 +192,9 @@ return [
             'url'     => '/low_balance_configs',
             'method'  => 'DELETE',
             'content' => [],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
         ],
         'response'  => [
             'content' => [
@@ -182,6 +212,9 @@ return [
             'url'     => '/low_balance_configs',
             'method'  => 'POST',
             'content' => [],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
         ],
         'response' => [
             'content' => [
@@ -195,6 +228,9 @@ return [
             'url'     => '/low_balance_configs',
             'method'  => 'DELETE',
             'content' => [],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
         ],
         'response'  => [
             'content' => [
@@ -212,13 +248,16 @@ return [
             'url'     => '/low_balance_configs',
             'method'  => 'GET',
             'content' => [],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
         ],
         'response' => [
             'content' => [
                 'account_number'      => '2224440041626905',
                 'threshold_amount'    => 1000,
                 'notification_emails' => ['kunal.sikri@razorpay.com','abcd@razorpay.com'],
-                'notify_after'        => 6,
+                'notify_after'        => 21600, // 6 hrs
                 'status'              => 'enabled',
             ]
         ]
@@ -229,6 +268,9 @@ return [
             'url'     => '/low_balance_configs',
             'method'  => 'GET',
             'content' => [],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
         ],
         'response' => [
             'content' => [
@@ -239,14 +281,14 @@ return [
                     [
                         'threshold_amount'    => 100,
                         'notification_emails' => ['rtz@razorpay.com','xyz@razorpay.com'],
-                        'notify_after'        => 9,
+                        'notify_after'        => 32400, // 9 hrs
                         'status'              => 'enabled',
                     ],
                     [
                         'notification_emails' => ['kunal.sikri@razorpay.com','abcd@razorpay.com'],
                         'status'              => 'enabled',
                         'threshold_amount'    => 1000,
-                        'notify_after'        => 6,
+                        'notify_after'        => 21600, // 6 hrs
                     ],
                 ],
             ],
@@ -261,7 +303,7 @@ return [
                 'account_number'      => '2224440041626905',
                 'threshold_amount'    => 1000,
                 'notification_emails' => ['kunal.sikri@razorpay.com', 'abcd@razorpay.com'],
-                'notify_after'        => 6
+                'notify_after'        => 21600 // 6 hrs
             ],
         ],
         'response'  => [

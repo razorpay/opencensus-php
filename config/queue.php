@@ -439,6 +439,12 @@ return [
         'test'       => env('AWS_DOWNTIME_QUEUE'),
         'live'       => env('AWS_DOWNTIME_QUEUE'),
     ],
+
+    'low_balance_config_alerts_cron' => [
+        'test'       =>  env('AWS_LOW_BALANCE_CONFIG_ALERTS_TEST_QUEUE'),
+        'live'       =>  env('AWS_LOW_BALANCE_CONFIG_ALERTS_LIVE_QUEUE'),
+    ],
+
     'payout_downtime' => [
         'test'       => env('AWS_DOWNTIME_COMMUNICATION_QUEUE'),
         'live'       => env('AWS_DOWNTIME_COMMUNICATION_QUEUE'),

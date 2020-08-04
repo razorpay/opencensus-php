@@ -441,6 +441,13 @@ class Name
     const SET_RX_ACCOUNT_PREFIX               = 'set_rx_account_prefix';
     const SET_SHARED_ACCOUNT_ALLOWED_CHANNELS = 'set_shared_account_allowed_channels';
 
+    // Low Balance Config
+    const CREATE_LOW_BALANCE_CONFIG           = 'create_low_balance_config';
+    const UPDATE_LOW_BALANCE_CONFIG           = 'update_low_balance_config';
+    const ENABLE_LOW_BALANCE_CONFIG           = 'enable_low_balance_config';
+    const DISABLE_LOW_BALANCE_CONFIG          = 'disable_low_balance_config';
+    const DELETE_LOW_BALANCE_CONFIG           = 'delete_low_balance_config';
+
     const CORRECT_MERCHANT_OWNER_MISMATCH     = 'correct_merchant_owner_mismatch';
 
     public static $actionMap = [
