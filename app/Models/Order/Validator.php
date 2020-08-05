@@ -69,12 +69,57 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::NOTES => 'sometimes|notes'
+        Entity::NOTES                       => 'sometimes|notes',
+        Entity::PARTIAL_PAYMENT             => 'sometimes|boolean|custom',
+        Entity::FIRST_PAYMENT_MIN_AMOUNT    => 'sometimes|integer|min_amount|custom',
     ];
 
     protected static $minAmountCheckRules = [
         Entity::AMOUNT => 'required|integer|min_amount'
     ];
+
+    protected function validatePartialPayment($attribute, $value)
+    {
+        $this->validatePartialPaymentUpdateAllowed();
+    }
+
+    protected function validateFirstPaymentMinAmount($attribute, $minAmount)
+    {
+        $this->validatePartialPaymentUpdateAllowed();
+
+        $order = $this->entity;
+
+        $amountDue = $order->getAmountDue();
+
+        if (($minAmount >= $amountDue) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'minimum amount should be less than '.$amountDue,
+                Entity::AMOUNT_DUE,
+                [Entity::AMOUNT_DUE => $amountDue]);
+        }
+    }
+
+    protected function validatePartialPaymentUpdateAllowed()
+    {
+        $order = $this->entity;
+
+        if ($order->getProductType() !== ProductType::PAYMENT_LINK_V2)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'partial payment update not allowed',
+                Entity::PRODUCT_TYPE,
+                [Entity::PRODUCT_TYPE => $order->getProductType()]);
+        }
+
+        if ($order->getStatus() !== Status::CREATED)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'partial payment update not allowed',
+                Entity::STATUS,
+                [Entity::STATUS => $order->getStatus()]);
+        }
+    }
 
     protected function validateAmount($input)
     {

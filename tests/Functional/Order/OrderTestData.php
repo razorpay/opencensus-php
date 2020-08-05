@@ -1518,6 +1518,27 @@ return [
         ],
     ],
 
+    'testCreateOrderWithPlV2ProductType' => [
+        'request' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+                'product_type'  => 'payment_link_v2',
+                'product_id'    => 'somerandtestId',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+            ],
+        ],
+    ],
+
     'testCreateOrderWithInvalidValidProductType' => [
         'request' => [
             'content' => [
@@ -1595,6 +1616,70 @@ return [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ]
+    ],
+
+    'testUpdateOrderWithPartialPayment' => [
+        'request' => [
+            'content' => [
+                'partial_payment'           => true,
+                'first_payment_min_amount'  => 3434,
+            ],
+            'method'    => 'PATCH',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 50000,
+            ],
+        ],
+    ],
+
+    'testUpdateOrderWithPartialPaymentWithInvalidProductType' => [
+        'request' => [
+            'content' => [
+                'partial_payment'           => true,
+                'first_payment_min_amount'  => 3434,
+            ],
+            'method'    => 'PATCH',
+            'url'       => '/orders',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'partial payment update not allowed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testUpdateOrderWithPartialPaymentWithLargerAmount' => [
+        'request' => [
+            'content' => [
+                'partial_payment'           => true,
+                'first_payment_min_amount'  => 34343434,
+            ],
+            'method'    => 'PATCH',
+            'url'       => '/orders',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'minimum amount should be less than 50000',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
     ],
 
     'testCreateOrderWithAmountGreaterThanMaxAmountAndCurrencyUSD' => [

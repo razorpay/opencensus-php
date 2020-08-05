@@ -4896,6 +4896,7 @@ class Route
             'payment_links_sign_payload',
             'payment_links_payment_by_id',
             'currency_fetch_rates_proxy',
+            'order_edit',
         ],
 
         'kotak' => [

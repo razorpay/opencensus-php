@@ -1902,6 +1902,76 @@ class OrderTest extends TestCase
         self::assertEquals($order['product_type'], "invoice");
     }
 
+    public function testCreateOrderWithPlV2ProductType()
+    {
+        $this->startTest();
+
+        $this->getLastEntity('order', true);
+
+        $order = $this->getLastEntity('order', true);
+
+        self::assertEquals($order['product_id'], "somerandtestId");
+
+        self::assertEquals($order['product_type'], "payment_link_v2");
+    }
+
+    public function testUpdateOrderWithPartialPayment()
+    {
+        $this->testCreateOrderWithPlV2ProductType();
+
+        $this->ba->privateAuth();
+
+        $order = $this->getDbLastEntity('order');
+
+        self::assertFalse($order->isPartialPaymentAllowed());
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/orders/'.$order->getPublicId();
+
+        $this->startTest();
+
+        $order = $this->getDbLastEntity('order');
+
+        self::assertTrue($order->isPartialPaymentAllowed());
+
+        self::assertEquals($order->getFirstPaymentMinAmount(), 3434);
+    }
+
+    public function testUpdateOrderWithPartialPaymentWithInvalidProductType()
+    {
+        $this->testCreateOrderWithValidProductType();
+
+        $this->ba->privateAuth();
+
+        $order = $this->getDbLastEntity('order');
+
+        self::assertFalse($order->isPartialPaymentAllowed());
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/orders/'.$order->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testUpdateOrderWithPartialPaymentWithLargerAmount()
+    {
+        $this->testCreateOrderWithPlV2ProductType();
+
+        $this->ba->privateAuth();
+
+        $order = $this->getDbLastEntity('order');
+
+        self::assertFalse($order->isPartialPaymentAllowed());
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/orders/'.$order->getPublicId();
+
+        $this->startTest();
+    }
+
     public function testCreateOrderWithInvalidValidProductType()
     {
         $this->startTest();
