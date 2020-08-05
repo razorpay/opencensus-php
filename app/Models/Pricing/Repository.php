@@ -29,6 +29,15 @@ class Repository extends Base\Repository
         self::WITH_TRASHED      => 'sometimes|in:0,1',
     );
 
+    protected $featureFilterParams = [
+        Feature::PAYMENT,
+        Feature::RECURRING,
+    ];
+
+    protected $productFilterParams = [
+        Product::PRIMARY
+    ];
+
 
     protected function newQueryWithOrgIdParam()
     {
@@ -143,6 +152,27 @@ class Repository extends Base\Repository
         {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+
+        return $pricing;
+    }
+
+    public function getPricingPlanByIdWithProductAndFeatureFilter($id)
+    {
+        $pricing = $this->newQuery()
+            ->where(Pricing\Entity::PLAN_ID, '=', $id)
+            ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+            ->whereIn(Pricing\Entity::PRODUCT, $this->productFilterParams)
+            ->whereIn(Pricing\Entity::FEATURE, $this->featureFilterParams)
+            ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
+            ->orderBy(Pricing\Entity::PAYMENT_METHOD, 'desc')
+            ->orderBy(Pricing\Entity::ID, 'desc')
+            ->get();
+
+        if ($pricing->count() === 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID);
         }
 
         return $pricing;

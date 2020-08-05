@@ -151,6 +151,28 @@ class Entity extends Base\PublicEntity
         self::FEE_BEARER                => FeeBearer::PLATFORM,
     ];
 
+    protected $proxy = [
+        self::PRODUCT,
+        self::FEATURE,
+        self::PAYMENT_METHOD,
+        self::PAYMENT_METHOD_SUBTYPE,
+        self::PAYMENT_METHOD_TYPE,
+        self::PAYMENT_NETWORK,
+        self::PAYMENT_ISSUER,
+        self::EMI_DURATION,
+        self::AUTH_TYPE,
+        self::INTERNATIONAL,
+        self::RECEIVER_TYPE,
+        self::AMOUNT_RANGE_ACTIVE,
+        self::AMOUNT_RANGE_MIN,
+        self::AMOUNT_RANGE_MAX,
+        self::PERCENT_RATE,
+        self::FIXED_RATE,
+        self::MIN_FEE,
+        self::MAX_FEE,
+        self::FEE_BEARER,
+    ];
+
     /**
      * Adds casts for fields
      *
@@ -490,5 +512,14 @@ class Entity extends Base\PublicEntity
         $cacheTags = implode('_', [$entity, $planId, $planType]);
 
         return $cacheTags;
+    }
+
+    public function toArrayProxy()
+    {
+        $array = $this->attributesToArray();
+
+        $this->setPublicAttributes($array);
+
+        return array_only($array, $this->proxy);
     }
 }

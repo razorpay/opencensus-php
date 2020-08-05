@@ -1050,6 +1050,22 @@ class Service extends Base\Service
         return $plan->toArrayPublic();
     }
 
+    public function proxyGetPricingPlan()
+    {
+        $merchant = $this->repo->merchant->find($this->merchant->getId());
+
+        $pricingPlanId = $merchant->getPricingPlanId();
+
+        $plan = new Plan;
+
+        if (empty($pricingPlanId) === false)
+        {
+            $plan = $this->repo->pricing->getPricingPlanByIdWithProductAndFeatureFilter($pricingPlanId);
+        }
+
+        return $plan->toArrayProxy();
+    }
+
     public function sendActivationEmail(array $input)
     {
         $act = new Activate($this->app);

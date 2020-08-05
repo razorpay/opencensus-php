@@ -243,6 +243,7 @@ class Route
         'merchant_fetch_webhooks'                  => ['get',      'merchants/{id}/webhooks',                        'MerchantController@getMerchantWebhooks'                            ],
         'merchant_assign_pricing'                  => ['post',     'merchants/{id}/pricing',                         'MerchantController@postAssignPricingPlan'                          ],
         'merchant_get_pricing'                     => ['get',      'merchants/{id}/pricing',                         'MerchantController@getPricingPlan'                                 ],
+        'proxy_merchant_get_pricing'               => ['get',      'proxy/merchants/pricing',                        'MerchantController@proxyGetPricingPlan'                            ],
         'merchant_bank_account_create'             => ['post',     'merchants/bank_account',                         'MerchantController@postBankAccount'                                ],
         'merchant_edit_bank_account'               => ['put',      'bank_accounts/{id}',                             'MerchantController@putBankAccount'                                 ],
         'merchant_bank_account_change_status'      => ['get',      'merchants/{id}/bank_account_change/status',      'MerchantController@getBankAccountChangeStatus'                     ],
@@ -2916,7 +2917,7 @@ class Route
         'tax_payments_list',
         'tax_payments_get_by_id',
         'payouts_scheduled_time_slots',
-
+        'proxy_merchant_get_pricing',
         'payment_links_sign_payload',
         'currency_fetch_rates_proxy',
     ];

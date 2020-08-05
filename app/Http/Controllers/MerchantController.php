@@ -188,6 +188,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function proxyGetPricingPlan()
+    {
+        $data = $this->service()->proxyGetPricingPlan();
+
+        return ApiResponse::json($data);
+    }
+
     public function postCreateTerminal($id)
     {
         $input = Request::all();
