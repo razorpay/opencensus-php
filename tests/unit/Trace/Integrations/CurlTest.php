@@ -31,13 +31,10 @@ class CurlTest extends TestCase
         $resource = curl_init('https://www.google.com');
 
         $spanOptions = Curl::handleCurlResource($resource);
-        $expected = [
-            'attributes' => [
-                'uri' => 'https://www.google.com'
-            ],
-            'kind' => Span::KIND_CLIENT
-        ];
+        $expected_uri = 'https://www.google.com';
+        $expected_kind = Span::KIND_CLIENT;
 
-        $this->assertEquals($expected, $spanOptions);
+        $this->assertEquals($expected_uri, $spanOptions['attributes']['uri']);
+        $this->assertEquals($expected_kind, $spanOptions['kind']);
     }
 }

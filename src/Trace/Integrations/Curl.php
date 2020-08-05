@@ -80,7 +80,7 @@ class Curl implements IntegrationInterface
             'time_to_pretransfer_in_secs'       => 'pretransfer_time',
             'time_to_starttransfer_in_secs'     => 'starttransfer_time',
             'primary_ip'                        => 'primary_ip',
-            'url'                               => 'url'
+            'uri'                               => 'url'
         ];
 
         $attrs = [];

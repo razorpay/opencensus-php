@@ -34,7 +34,7 @@ class PDOTest extends TestCase
         $spanOptions = PDO::handleQuery($scope, $query);
         $expected = [
             'attributes' => [
-                'query' => 'select * from users'
+                'db.statement' => 'select * from users'
             ],
             'kind' => Span::KIND_CLIENT
         ];
@@ -48,7 +48,8 @@ class PDOTest extends TestCase
         $spanOptions = PDO::handleConnect(null, $dsn);
         $expected = [
             'attributes' => [
-                'dsn' => 'mysql:host=localhost;dbname=testdb'
+                'dsn'       => 'mysql:host=localhost;dbname=testdb',
+                'db.type'   => 'sql'
             ],
             'kind' => Span::KIND_CLIENT
         ];
