@@ -470,7 +470,7 @@ class PayoutLinks
     {
         if (array_key_exists('fund_account_id' , $payoutLinkInfo) === false)
         {
-            return [];
+            return null;
         }
 
         $fundAccountId = $payoutLinkInfo['fund_account_id'];
