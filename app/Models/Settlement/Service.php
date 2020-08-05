@@ -678,6 +678,11 @@ class Service extends Base\Service
         return app('settlements_dashboard')->scheduleGetIds($input);
     }
 
+    public function executionReminder(array $input) : array
+    {
+        return app('settlements_dashboard')->executionReminder($input);
+    }
+
     public function getIrctcSettlementFile(string $date, $input)
     {
         $sftp = new SFTP('sftp.razorpay.com');

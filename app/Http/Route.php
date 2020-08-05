@@ -533,6 +533,7 @@ class Route
         'setl_schedule_create'                     => ['post',     'settlements/schedule/create',                    'SettlementController@scheduleCreate'                               ],
         'setl_schedule_get'                        => ['post',     'settlements/schedule/get',                       'SettlementController@scheduleGet'                                  ],
         'setl_schedule_get_ids'                    => ['get',      'settlements/schedule/get_ids',                   'SettlementController@scheduleGetIds'                               ],
+        'setl_execution_reminder'                  => ['post',     'settlements/reminder/execution',                 'SettlementController@executionReminder'                            ],
         'adj_fetch_by_id'                          => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                       => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
         'adj_add'                                  => ['post',     'adjustments',                                    'AdjustmentController@postAdjustment'                               ],
@@ -2500,6 +2501,7 @@ class Route
         'entity_bulk_update',
         'settings_fetch_internal',
         'settings_upsert_internal',
+        'setl_execution_reminder',
         'setl_status_update',
         'banking_account_activation_details_via_batch',
         'payout_create_on_internal_contact',
@@ -5071,6 +5073,7 @@ class Route
         'settlements_service' => [
             'create_settlement_entry',
             'get_global_config',
+            'setl_execution_reminder',
             'setl_status_update',
         ],
 

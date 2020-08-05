@@ -22,6 +22,8 @@ class Dashboard extends Base
     CONST BANK_ACCOUNT_UPDATE       = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Update';
     const BANK_ACCOUNT_DELETE       = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Delete';
 
+    const EXECUTION_TRIGGER         = '/twirp/rzp.settlements.execution.v1.ExecutionService/Trigger';
+
     const BODY                  = 'body';
     const CODE                  = 'code';
 
@@ -256,6 +258,25 @@ class Dashboard extends Base
         $auth = $this->getAuth(self::SERVICE);
 
         $response = $this->makeRequest(self::BANK_ACCOUNT_DELETE, $input, $auth);
+
+        $this->handleResponseCodes($response);
+
+        return $response[self::BODY];
+    }
+
+    /**
+     * Trigger execution upon receiving reminder
+     * @param array  $input
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws Exception\TwirpException
+     * @throws \Throwable
+     */
+    public function executionReminder(array $input) : array
+    {
+        $auth = $this->getAuth(self::SERVICE);
+
+        $response = $this->makeRequest(self::EXECUTION_TRIGGER, $input, $auth);
 
         $this->handleResponseCodes($response);
 

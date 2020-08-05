@@ -315,7 +315,10 @@ return [
     ],
 
     'settlements_service' => [
-        'url'               => env('SETTLEMENTS_URL'),
+        'url'               => [
+          'live'    =>   env('SETTLEMENTS_LIVE_URL'),
+          'test'    =>   env('SETTLEMENTS_TEST_URL'),
+        ],
         'dashboard' => [
             'key'       => env('SETTLEMENTS_DASHBOARD_KEY'),
             'secret'    => env('SETTLEMENTS_DASHBOARD_SECRET'),

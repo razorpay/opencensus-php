@@ -4,6 +4,7 @@ namespace RZP\Services\Settlements;
 
 use RZP\Exception;
 use Requests_Response;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
 use RZP\Http\Request\Requests;
@@ -64,7 +65,9 @@ class Base
      */
     public function makeRequest(string $endpoint, array $data, array $auth = []): array
     {
-        $url = $this->baseUrl . $endpoint;
+        $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
+
+        $url = $this->baseUrl[$mode] . $endpoint;
 
         $options = [
             'timeout' => self::REQUEST_TIMEOUT,
