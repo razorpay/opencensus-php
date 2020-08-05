@@ -211,13 +211,20 @@ class PayoutLinks
             $input[self::PAYOUT_LINK_ID] = $payoutlinkid;
         }
 
+        $expandArray = [];
+
+        if (key_exists('expand', $input))
+        {
+            $expandArray = $input['expand'];
+        }
+
         $response = $this->makeRequest($url, $input);
 
         $payoutlinks = &$response["items"];
 
         foreach ($payoutlinks as &$value)
         {
-            $this->addEmptyParameters($value);
+            $this->addEmptyParameters($value, $expandArray);
         }
 
         return $response;
@@ -558,7 +565,12 @@ class PayoutLinks
         return $url = sprintf('%s/%s', $this->baseUrl, $path);
     }
 
-    protected function addEmptyParameters(array &$payoutLink)
+
+    /**
+     * @param array $payoutLink
+     * @param array $expandArray format : ["0":"payouts","1":"users"...]
+     */
+    protected function addEmptyParameters(array &$payoutLink, array $expandArray = [])
     {
         $payoutLink[self::FUND_ACCOUNT_ID] = array_pull($payoutLink, self::FUND_ACCOUNT_ID, null);
 
@@ -566,7 +578,22 @@ class PayoutLinks
 
         $payoutLink[self::ATTEMPT_COUNT] = array_pull($payoutLink, self::ATTEMPT_COUNT, 0);
 
-        if (sizeof($payoutLink[self::PAYOUTS]) === 0)
+        $isPayoutInExpandArray = false;
+
+        $isUserInExpandArray = false;
+
+        foreach ($expandArray as $key => $value) {
+            if(strpos($value, self::PAYOUTS) !== false)
+            {
+                $isPayoutInExpandArray = true;
+            }
+            if(strpos($value, self::USER) !== false)
+            {
+                $isUserInExpandArray = true;
+            }
+        }
+
+        if ($isPayoutInExpandArray === true && sizeof($payoutLink[self::PAYOUTS]) === 0)
         {
             $payoutLink[self::PAYOUTS] = [
                 'entity' => 'collection',
@@ -575,7 +602,7 @@ class PayoutLinks
             ];
         }
 
-        if (sizeof($payoutLink[self::USER]) === 0)
+        if ($isUserInExpandArray === true && sizeof($payoutLink[self::USER]) === 0)
         {
             $payoutLink[self::USER] = null;
         }
