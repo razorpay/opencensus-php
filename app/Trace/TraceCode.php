@@ -356,6 +356,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const IDEM_KEY_ENTITY_CREATED                               = 'IDEM_KEY_ENTITY_CREATED';
     const IDEM_KEY_ENTITY_MISSING_FETCH                         = 'IDEM_KEY_ENTITY_MISSING_FETCH';
 
+    const SETTLEMENT_SERVICE_TRANSACTIONS_UPDATED               = 'SETTLEMENT_SERVICE_TRANSACTIONS_UPDATED';
+    const SETTLEMENT_SERVICE_TRANSACTIONS_UPDATE_FAILED         = 'SETTLEMENT_SERVICE_TRANSACTIONS_UPDATE_FAILED';
+
     const FTA_MODE_SET                                          = 'FTA_MODE_SET';
     const FTA_SLA_EXPIRED                                       = 'FTA_SLA_EXPIRED';
     const FTA_MODE_NOT_FOUND                                    = 'FTA_MODE_NOT_FOUND';

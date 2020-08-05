@@ -1,0 +1,123 @@
+<?php
+
+namespace RZP\Jobs;
+
+use Config;
+use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Settlement\SlackNotification;
+
+class ProcessSettlementServiceTxns extends Job
+{
+    const MODE                  = 'mode';
+    const SETTLED_AT            = 'settled_at';
+    const SETTLEMENT_ID         = 'settlement_id';
+    const TRANSACTION_IDS       = 'transaction_ids';
+    const TRANSACTIONS_COUNT    = 'transactions_count';
+
+    protected $queueConfigKey = 'settlement_service_txns';
+
+    protected $mode;
+
+    protected $data;
+
+    /**
+     * Create a new job instance.
+     * @param $payload array
+     *
+     * @return void
+     */
+    public function __construct(array $payload)
+    {
+        $this -> setMode($payload);
+
+        parent::__construct($this->mode);
+
+       $this->data = $this->getSettlementsData($payload);
+    }
+
+    /**
+     * Execute the job.
+     *
+     * @return void
+     */
+    public function handle()
+    {
+        parent::handle();
+
+        $values = [
+            Transaction\Entity::SETTLED_AT      => $this->data[self::SETTLED_AT],
+            Transaction\Entity::SETTLED         => true,
+            Transaction\Entity::SETTLEMENT_ID   => $this->data[self::SETTLEMENT_ID],
+        ];
+
+        $traceData = $values + [
+                self::TRANSACTIONS_COUNT => sizeof($this->data[self::TRANSACTION_IDS]),
+                self::MODE               => $this->mode,
+            ];
+
+        try
+        {
+            $this->repoManager->settlement->findOrFail($this->data[self::SETTLEMENT_ID]);
+
+            $this->repoManager->transaction->updateAsSettled(
+                $this->data[self::TRANSACTION_IDS],
+                $values,
+                true);
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SETTLEMENT_SERVICE_TRANSACTIONS_UPDATE_FAILED,
+                $traceData);
+
+            $operation = 'Transactions update failed for settlement: ' . $traceData[self::SETTLEMENT_ID];
+
+            (new SlackNotification)->send(
+                $operation,
+                $traceData,
+                $e,
+                1,
+                Config::get('slack.channels.settlement_alerts'));
+        }
+        finally
+        {
+             $this->delete();
+        }
+
+        $this->trace->info(TraceCode::SETTLEMENT_SERVICE_TRANSACTIONS_UPDATED, $traceData);
+    }
+
+    /**
+     * Set mode for job.
+     * @param $payload array
+     *
+     * @return void
+     */
+    protected function setMode(array $payload)
+    {
+        if (array_key_exists(self::MODE, $payload) === true)
+        {
+            $this->mode = $payload[self::MODE];
+        }
+    }
+
+    /**
+     * Get settlement details from message payload.
+     * @param $payload array
+     *
+     * @return array
+     */
+    protected function getSettlementsData(array $payload) : array
+    {
+        return [
+            self::SETTLED_AT      => $payload[self::SETTLED_AT],
+            self::SETTLEMENT_ID   => $payload[self::SETTLEMENT_ID],
+            self::TRANSACTION_IDS => $payload[self::TRANSACTION_IDS],
+        ];
+    }
+}

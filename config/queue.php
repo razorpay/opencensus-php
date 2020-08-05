@@ -337,6 +337,11 @@ return [
         'live'       => env('AWS_SETTLEMENT_INITIATE_LIVE_QUEUE'),
     ],
 
+    'settlement_service_txns' => [
+        'test'       => env('AWS_PROCESS_TXNS_TEST_QUEUE'),
+        'live'       => env('AWS_PROCESS_TXNS_LIVE_QUEUE'),
+    ],
+
     // not using anymore for settlement
     // but has dependency on FTA
     'settlement_transactions' => [
@@ -475,6 +480,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Raw SQS Mappings
+    |--------------------------------------------------------------------------
+    |
+    | Here you may configure the job mapping for processing raw SQS messages for
+    | the respective SQS queues. This can be used for receiving messages from other
+    | sources than the API application itself, the connection used will be 'sqs-raw'.
+    | The job instance will be initialised with the payload of the message.
+    | Ref: SqsRawJob.php
+    |
+    */
+    'raw_sqs_mappings'=>[
+
+        // mapping for settlement service txn processing jobs
+        env('AWS_PROCESS_TXNS_TEST_QUEUE') => 'RZP\\Jobs\\ProcessSettlementServiceTxns',
+        env('AWS_PROCESS_TXNS_LIVE_QUEUE') => 'RZP\\Jobs\\ProcessSettlementServiceTxns',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Queue Connections
     |--------------------------------------------------------------------------
     |
@@ -554,6 +578,17 @@ return [
             'expire'     => 60,
         ],
 
+        'sqs-raw' => [
+            'driver' => 'sqs-raw',
+            'key'    => env('AWS_KEY_ID'),
+            'secret' => env('AWS_KEY_SECRET'),
+            'prefix' => env('AWS_QUEUE_PREFIX'),
+            'queue'  => env('AWS_DEFAULT_QUEUE'),
+            'region' => env('AWS_REGION'),
+            // See sqs.timeout configuration above.
+            'timeout'     => 3.0,
+            'credentials' => $awsCredentialsCache,
+        ],
     ],
 
     /*

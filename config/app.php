@@ -184,6 +184,7 @@ return array(
         \Conner\Tagging\Providers\TaggingServiceProvider::class,
 
         \LaravelFCM\FCMServiceProvider::class,
+        \RZP\Providers\SqsRawServiceProvider::class,
     ],
 
     /*

@@ -543,6 +543,57 @@ class Repository extends Base\Repository
         return $count;
     }
 
+    /**
+     * @param array $txnIds - Array of transaction ids to be updated
+     * @param array $values - Array. Key - Column name, Value - Column value
+     * @param boolean $logging
+     *
+     * @throws Exception\LogicException
+     */
+    public function updateAsSettled($txnIds, array $values, $logging = true)
+    {
+        if (sizeof($txnIds) === 0)
+        {
+            return;
+        }
+
+        $batchedIds = array_chunk($txnIds, 1000);
+
+        if ($logging === true)
+        {
+            $startTime = microtime(true);
+        }
+
+        foreach ($batchedIds as $batch)
+        {
+            $count = $this->newQuery()
+                ->whereIn(Transaction\Entity::ID, $batch)
+                ->where(Transaction\Entity::SETTLED, 0)
+                ->whereNull(Transaction\Entity::SETTLEMENT_ID)
+                ->update($values);
+
+            $expected = count($batch);
+
+            if ($count !== $expected)
+            {
+                throw new Exception\LogicException(
+                    'Failed to update expected number of rows.',
+                    null,
+                    [
+                        'expected' => $expected,
+                        'updated'  => $count,
+                    ]);
+            }
+        }
+
+        if ($logging === true)
+        {
+            $timeTaken = microtime(true) - $startTime;
+
+            $this->trace->info(TraceCode::SETTLEMENT_TXN_UPDATE_TIME_TAKEN, ['time_taken' => $timeTaken]);
+        }
+    }
+
     public function fetchSettledTransactionsWithoutSettlementId($type, $count)
     {
         return $this->newQuery()

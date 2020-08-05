@@ -183,6 +183,19 @@ main() {
       echo "starting sqs listener"
       php artisan queue:work "${app_type}" --queue="${APP_MODE}-${queue_name}" --sleep="${sleep_time}"
     fi
+  elif [[ "${app_type}" == "sqs-raw" ]]; then
+    change_db_user_for_workers
+    queue_name=$2
+    sleep_time=$3
+    if [ "$#" -ne 3 ]; then
+        echo "Need to specify following args: "
+        echo "queue: <sqs-name>"
+        echo "sleep: <n seconds>"
+        exit -1
+    else
+      echo "starting sqs-raw listener"
+      php artisan queue:work "${app_type}" --queue="${APP_MODE}-${queue_name}" --sleep="${sleep_time}"
+    fi
   fi
 }
 
