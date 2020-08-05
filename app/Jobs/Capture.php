@@ -26,6 +26,8 @@ class Capture extends Job
 
     protected $slack;
 
+    protected $queueConfigKey = 'capture';
+
     public function __construct(array $data)
     {
         parent::__construct($data['mode']);
