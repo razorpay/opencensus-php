@@ -2125,11 +2125,21 @@ class Core extends Base\Core
     {
         $merchantDetail = $merchant->merchantDetail;
 
-        $internationalActivationFlow = ActivationFlow::BLACKLIST;
+        $internationalActivationFlow = null;
 
-        if ($international === 1)
+        if ($international === Action::ENABLE_INTERNATIONAL_VALUE and
+            empty($merchantDetail->getInternationalActivationFlow() === false))
+        {
+            return;
+        }
+        elseif ($international === Action::ENABLE_INTERNATIONAL_VALUE
+                and empty($merchantDetail->getInternationalActivationFlow()) === true)
         {
             $internationalActivationFlow = (new Detail\InternationalCore)->getInternationalActivationFlow($merchant);
+        }
+        elseif ($international !== Action::ENABLE_INTERNATIONAL_VALUE)
+        {
+            $internationalActivationFlow = Detail\InternationalActivationFlow\InternationalActivationFlow::BLACKLIST;
         }
 
         $merchantDetail->setInternationalActivationFlow($internationalActivationFlow);

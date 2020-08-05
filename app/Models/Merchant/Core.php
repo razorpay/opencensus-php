@@ -762,19 +762,21 @@ class Core extends Base\Core
         $action = $input['action'];
 
         $internationalProducts = array_key_exists(ProductInternationalMapper::INTERNATIONAL_PRODUCTS, $input) ?
-                                 $input[ProductInternationalMapper::INTERNATIONAL_PRODUCTS] :
-                                 null;
+            $input[ProductInternationalMapper::INTERNATIONAL_PRODUCTS] :
+            null;
 
         $originalMerchant = clone $merchant;
 
         $function = camel_case($action);
 
-        $this->repo->transactionOnLiveAndTest(function() use (  $merchant,
-                                                                $function,
-                                                                $useWorkflows,
-                                                                $originalMerchant,
-                                                                $action,
-                                                                $internationalProducts) {
+        $this->repo->transactionOnLiveAndTest(function() use (
+            $merchant,
+            $function,
+            $useWorkflows,
+            $originalMerchant,
+            $action,
+            $internationalProducts
+        ) {
 
             $this->handleEnableProductInternationalAction($action, $merchant, $internationalProducts);
 
@@ -787,25 +789,28 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($merchant);
 
-            if (array_key_exists($action, Constants::$internationalActionMapping))
+            if ($action === \RZP\Models\Merchant\Action::DISABLE_INTERNATIONAL)
             {
                 (new Detail\Core())->adminUpdateInternationalActivationFlow($merchant,
-                                                                       Constants::$internationalActionMapping[$action]);
+                                                                            Constants::$internationalActionMapping[$action]);
             }
         });
 
-        if($action === Merchant\Action::RELEASE_FUNDS)
+        if ($action === Merchant\Action::RELEASE_FUNDS)
         {
             $this->addMerchantToSettlementBucketOnFundsRelease($merchant);
         }
 
-        if($action === Constants::SUSPEND)
+        if ($action === Constants::SUSPEND)
         {
             $this->removeMerchantEmailToMailingList($merchant);
         }
-        else if($action === Constants::UNSUSPEND)
+        else
         {
-            $this->addMerchantEmailToMailingList($merchant);
+            if ($action === Constants::UNSUSPEND)
+            {
+                $this->addMerchantEmailToMailingList($merchant);
+            }
         }
 
         // pipe to slack if the action is defined
@@ -3673,7 +3678,8 @@ class Core extends Base\Core
 
         $productInternationalField->setMultipleProductStatus($productNameStatus);
 
-        (new Detail\Core())->adminUpdateInternationalActivationFlow($merchant, 1);
+        (new Detail\Core())->adminUpdateInternationalActivationFlow(
+            $merchant, \RZP\Models\Merchant\Action::ENABLE_INTERNATIONAL_VALUE);
 
         $this->repo->saveOrFail($merchant);
     }

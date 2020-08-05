@@ -7314,7 +7314,7 @@ class MerchantTest extends TestCase
 
     public function testMerchantInternationalPGEnableAction()
     {
-        $this->setMerchantMerchantDetailsAndPricing(false, 'whitelist');
+        $this->setMerchantMerchantDetailsAndPricing(false, 'greylist');
 
         $this->fixtures->edit('merchant', '10000000000000', [
             'product_international'   => '0000000000']);
@@ -7450,7 +7450,7 @@ class MerchantTest extends TestCase
 
         $this->assertEquals($merchant['product_international'], '1111000000');
 
-        $this->assertEquals($merchantDetail['international_activation_flow'], 'whitelist');
+        $this->assertEquals($merchantDetail['international_activation_flow'], 'greylist');
     }
 
     public function testMerchantProductInternationalEnableBulkEditFailure()

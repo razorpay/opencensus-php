@@ -5996,7 +5996,7 @@ return [
                 'international'         => true,
                 'product_international' => '1000000000',
                 'merchant_detail'       => [
-                    'international_activation_flow' => 'whitelist',
+                    'international_activation_flow' => 'greylist',
                 ]
             ]
         ]
@@ -6017,7 +6017,7 @@ return [
                 'international'         => true,
                 'product_international' => '1111000000',
                 'merchant_detail'       => [
-                    'international_activation_flow' => 'whitelist',
+                    'international_activation_flow' => null,
                 ]
             ]
         ]
@@ -6059,7 +6059,7 @@ return [
                 'international'         => true,
                 'product_international' => '1111000000',
                 'merchant_detail'       => [
-                    'international_activation_flow' => 'whitelist',
+                    'international_activation_flow' => null,
                 ]
             ]
         ]
