@@ -1061,7 +1061,7 @@ class Checkout
                     ($preference['method'] === Payment\Method::EMI)) and
                     ($preference['instrument'] !== Payment\Method::CARD))
                 {
-                    $card = (new Card\Repository())->findByIdAndMerchant($preference['instrument'], $merchant);
+                    $card = (new Card\Repository())->find($preference['instrument']);
 
                     $preference['issuer'] = $card->issuer;
 
@@ -1069,24 +1069,34 @@ class Checkout
 
                     $preference['network'] = $card->network;
 
+                    $token = null;
+
                     //put token instead of card id in response
-                    if (isset($input[Payment\Entity::APP_TOKEN]) === true)
+                    if ((isset($input[Payment\Entity::APP_TOKEN]) === true) and
+                        (isset($card->global_card_id) === true))
                     {
                         //token for emi payments is stored with method as card
-                        $token = (new Customer\Token\Repository())->fetchByMethodAndCardId(
+                        $token = (new Customer\Token\Repository())->fetchByMethodAndCardIdAndMerchant(
                             Payment\Method::CARD,
-                            $preference['instrument']
+                            $card->global_card_id,
+                            $this->repo->merchant->getSharedAccount()->getId()
                         );
+                    }
+                    elseif (isset($input[Payment\Entity::CUSTOMER_ID]) === true)
+                    {
+                        //token for emi payments is stored with method as card
 
-                        if (isset($token) === true)
-                        {
-                            $preference['instrument'] = $token->getPublicId();
-                        }
+                        $token = (new Customer\Token\Repository())->getByMethodAndCustomerIdAndCardIdAndMerchantId(
+                            Payment\Method::CARD,
+                            $input[Payment\Entity::CUSTOMER_ID],
+                            $preference['instrument'],
+                            $merchant->getId()
+                        );
+                    }
 
-                        else
-                        {
-                            $preference['instrument'] = null;
-                        }
+                    if (isset($token) === true)
+                    {
+                        $preference['instrument'] = $token->getPublicId();
                     }
 
                     else
@@ -1104,10 +1114,18 @@ class Checkout
             if (isset($contact) === true)
             {
                 $data['preferred_methods'][$contact] = $preferences;
+
+                $data['preferred_methods'][$contact]['is_customer_identified'] = $responseBody['is_customer_identified'];
+
+                $data['preferred_methods'][$contact]['user_aggregates_available'] = $responseBody['user_aggregates_available'];
             }
             else
             {
                 $data['preferred_methods']['default'] = $preferences;
+
+                $data['preferred_methods']['default']['is_customer_identified'] = $responseBody['is_customer_identified'];
+
+                $data['preferred_methods']['default']['user_aggregates_available'] = $responseBody['user_aggregates_available'];
             }
         }
         catch (\Exception $e)

@@ -11,6 +11,8 @@ class PersonalisationService
         $response = (new \Requests_Response());
 
         $response->body = '{
+            "is_customer_identified" : true,
+            "user_aggregates_available" : false,
             "preferences": [
                 {
                     "instrument" : "abcd@okhdfc",

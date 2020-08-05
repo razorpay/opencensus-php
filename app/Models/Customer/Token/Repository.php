@@ -505,12 +505,34 @@ class Repository extends Base\Repository
                     ->find($id);
     }
 
-    public function fetchByMethodAndCardId($method,string $cardId)
+    public function fetchByMethodAndCardIdAndMerchant($method,string $cardId, $merchantId)
     {
         return $this->newQuery()
                     ->where(Token\Entity::METHOD, '=', $method)
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->where(Token\Entity::CARD_ID, '=', $cardId)
+                    ->where(function($query)
+                    {
+                        $query->whereNull(Token\Entity::EXPIRED_AT)
+                            ->orWhere(Token\Entity::EXPIRED_AT, '>', time());
+                    })
                     ->first();
 
     }
+
+    public function getByMethodAndCustomerIdAndCardIdAndMerchantId($method, $customerId, $cardId, $merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Token\Entity::METHOD, '=', $method)
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Token\Entity::CUSTOMER_ID, '=', $customerId)
+                    ->where(Token\Entity::CARD_ID, '=', $cardId)
+                    ->where(function($query)
+                    {
+                        $query->whereNull(Token\Entity::EXPIRED_AT)
+                            ->orWhere(Token\Entity::EXPIRED_AT, '>', time());
+                    })
+                    ->first();
+    }
+
 }
