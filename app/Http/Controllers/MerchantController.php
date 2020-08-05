@@ -1791,4 +1791,16 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    /**
+     * See Merchant\Service's bootstrapAccessMapsCacheOfStork function.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function bootstrapAccessMapsCacheOfStork()
+    {
+        $summary = $this->service()->bootstrapAccessMapsCacheOfStork($this->input);
+
+        return ApiResponse::json($summary);
+    }
 }

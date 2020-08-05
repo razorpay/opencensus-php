@@ -44,9 +44,11 @@ use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Services\DiagClient;
 use RZP\Base\RuntimeManager;
+use RZP\Base\JitValidator;
 use RZP\Models\Pricing\Plan;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Workflow\Action;
+use RZP\Modules\Migrate\Migrate;
 
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Admin as MainAdmin;
@@ -79,6 +81,12 @@ class Service extends Base\Service
     const ES_ON_DEMAND_ANNOUNCEMENT_TAG = 'es-on-demand.announcement-early-settlement';
 
     const DEFAULT_SUBMERCHANT_FETCH_LIMIT = 100;
+
+    const BOOTSTRAP_ACCESS_MAPS_CACHE_REQUEST_RULES = [
+        'source'        => 'array',
+        'source.mids'   => 'array|min:1|max:10000',
+        'source.mids.*' => 'string|unsigned_id',
+    ];
 
     /**
      * Creates a merchant and saves in database
@@ -4792,5 +4800,28 @@ class Service extends Base\Service
         $config->refresh();
 
         $this->repo->config->save($config);
+    }
+
+    /**
+     * Bootstrap stork's mid<>oauth-app-ids cache using api's access map table as source.
+     *
+     * @param  array $input Holds opts for source and target.
+     * @return array
+     */
+    public function bootstrapAccessMapsCacheOfStork(array $input): array
+    {
+        $this->trace->info(TraceCode::BOOTSTRAP_ACCESS_MAPS_CACHE_REQUEST, $input);
+
+        (new JitValidator)->rules(self::BOOTSTRAP_ACCESS_MAPS_CACHE_REQUEST_RULES)
+            ->caller($this)->input($input)->validate();
+
+        $source  = new AccessMap\MigrateSource;
+        $target  = new AccessMap\MigrateStorkTarget;
+        $migrate = new Migrate($source, $target);
+
+        $sourceOpts = $input['source'] ?? [];
+        $targetOpts = $input['target'] ?? [];
+
+        return $migrate->migrateAsync($sourceOpts, $targetOpts, false);
     }
 }

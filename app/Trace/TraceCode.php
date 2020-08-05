@@ -1887,6 +1887,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ACCESS_MAP_UPDATE_ERROR                               = 'ACCESS_MAP_UPDATE_ERROR';
     const ACCESS_MAP_EVENT_SAVED                                = 'ACCESS_MAP_EVENT_SAVED';
     const ACCESS_MAP_EVENT_DELETED                              = 'ACCESS_MAP_EVENT_DELETED';
+    const BOOTSTRAP_ACCESS_MAPS_CACHE_REQUEST                   = 'BOOTSTRAP_ACCESS_MAPS_CACHE_REQUEST';
 
     const GRATIS_TO_POSTPAID_INPUT                              = 'GRATIS_TO_POSTPAID_INPUT';
     const GRATIS_TO_POSTPAID_FAILED                             = 'GRATIS_TO_POSTPAID_FAILED';

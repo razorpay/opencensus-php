@@ -292,6 +292,7 @@ class Route
         'merchant_get_app_access_mapping'          => ['get',      'merchants/{id}/applications',                    'MerchantController@getConnectedApplications'                       ],
         'merchant_create_app_access_mapping'       => ['post',     'merchants/{id}/applications',                    'MerchantController@postMapOAuthApplication'                        ],
         'merchant_delete_app_access_mapping'       => ['delete',   'merchants/{id}/applications/{appId}',            'MerchantController@deleteMapOAuthApplication'                      ],
+        'admin_access_maps_bootstrap_cache'        => ['post',     'admin/access_maps/bootstrap_cache_of_stork',     'MerchantController@bootstrapAccessMapsCacheOfStork'                ],
         'merchant_tags_bulk'                       => ['post',     'merchants/tags/bulk',                            'MerchantController@bulkTagMerchants'                               ],
         'merchant_schedule_bulk'                   => ['post',     'merchants/schedules/bulk',                       'MerchantController@bulkAssignSchedule'                             ],
         'merchant_schedule_reset'                  => ['post',     'merchants/schedule/reset',                       'MerchantController@resetSettlementSchedule'                        ],
@@ -3572,6 +3573,8 @@ class Route
         'create_payment_config_bulk',
 
         'admin_key_migrate_to_credcase',
+
+        'admin_access_maps_bootstrap_cache',
     ];
 
     public static $routePermission = [
@@ -4298,6 +4301,8 @@ class Route
         'fix_merchant_data_cron'                   => Permission::UPDATE_CONFIG_KEY,
 
         'admin_key_migrate_to_credcase'            => '*',
+
+        'admin_access_maps_bootstrap_cache'        => '*',
     ];
 
     public static $bankingRoutePermissions = [
