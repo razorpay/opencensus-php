@@ -29,8 +29,7 @@ class BankAccount extends Base
     }
 
     protected static $blockedBankCodesForFundAccountValidation = [
-        'CNRB',
-        'PYTM',
+
     ];
 
     protected static $attemptToRetryAfterSecondsMap = [

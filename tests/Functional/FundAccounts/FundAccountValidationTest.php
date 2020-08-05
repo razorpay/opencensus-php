@@ -156,6 +156,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testCreateValidationForBankNotAllowed()
     {
+        $this->markTestSkipped();
+
         $this->startTest();
     }
 
