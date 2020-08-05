@@ -1267,7 +1267,8 @@ class Verify extends Base\Core
 
         $isNotApplicable = ((Payment\Gateway::isCaptureVerifyEnabledGateway($gateway) === false) or
                             ((Payment\Gateway::isCaptureVerifyQREnabledGateways($gateway)=== false) and
-                            ($payment->isBharatQr() === true)));
+                            ($payment->isBharatQr() === true)) or
+                            ($payment->isUpiTransfer() === true));
 
         if ($isNotApplicable === true)
         {
