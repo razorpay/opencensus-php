@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Mindgate;
 
+use Carbon\Carbon;
+use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Metric;
@@ -13,6 +15,7 @@ use RZP\Gateway\Upi\Base\Secure;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\RuntimeException;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\GatewayErrorException;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Payment\Entity as PaymentEntity;
@@ -139,6 +142,39 @@ class UpiMindgateGatewayTest extends TestCase
         $this->capturePayment($paymentId, $payment['amount']);
 
         return $payment;
+    }
+
+    public function testPaymentAsyncStatusException()
+    {
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+        // Co Proto must be working
+        $this->assertEquals('async', $response['type']);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertTrue($payment->isCreated());
+
+        $response = $this->getPaymentStatus($payment->getPublicId());
+
+        $this->assertSame('created', $response['status']);
+
+        // Adding 12 time out minutes and 3 minutes for cron buffer and 30 seconds for test case buffer
+        Carbon::setTestNow(Carbon::now()->addMinutes(15)->addSecond(30));
+
+        $key = Payment\Entity::getCacheUpiStatusKey($payment->getPublicId());
+
+        \Cache::forget($key);
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->getPaymentStatus($payment->getPublicId());
+            },
+            BadRequestException::class,
+            'Payment was not completed on time.');
+
+        // Still in created state
+        $this->assertTrue($payment->refresh()->isCreated());
     }
 
     public function testIntentPayment()

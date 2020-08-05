@@ -1841,12 +1841,37 @@ class Processor
 
         if ($payment->isCreated() === true)
         {
-            // Throw payment failed exception if async payment timeout (5mins)
-            // has been exceeded
-            if ($payment->justCreated() === false)
-            {
-                $this->timeoutPayment();
+            // Earlier we were marking payment failed from this flow after 5 minutes of
+            // payment creation, The timing out will be centralized from the cron only
+            $now = Carbon::now();
 
+            $shouldHaveTimedout = $payment->shouldTimeout($now->getTimestamp());
+
+            // Payment should have timeout, but still in created state. Meaning something is not
+            // right with our timeout cron, and that we need to look in to that asap
+
+            if ($shouldHaveTimedout === true)
+            {
+                $delay = round(($now->getTimestamp() - $payment->getCreatedAt()) / 60);
+
+                $this->trace->error(TraceCode::PAYMENT_SHOULD_HAVE_TIMED_OUT, [
+                    'payment_id'    => $payment->getId(),
+                    'merchant_id'   => $payment->getMerchantId(),
+                    'created_at'    => $payment->getCreatedAt(),
+                    'delay'         => $delay,
+                    'method'        => $payment->getMethod(),
+                    'gateway'       => $payment->getGateway(),
+                ]);
+            }
+
+            // We will also take a 3 minute buffer, so that payment is actually picked
+            // and marked failed from the cron, now if payment is not marked failed even after
+            // 3 minutes buffer, we need to ask checkout/merchant to stop polling.
+            $now->subMinutes(3);
+
+            if ($payment->shouldTimeout($now->getTimestamp()) === true)
+            {
+                // We are not marking payment failed from, but only stopping the polling
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
             }
