@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Contact\Entity;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Payout\BatchHelper;
 
 class Validator extends \Razorpay\Spine\Validation\Validator
 {
@@ -71,6 +72,28 @@ class Validator extends \Razorpay\Spine\Validation\Validator
         if (empty($batchId) === true)
         {
             throw new BadRequestValidationFailureException(Entity::BATCH_ID . ' not present');
+        }
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    public function validatePayoutId($payoutId)
+    {
+        if (empty($payoutId) === true)
+        {
+            throw new BadRequestValidationFailureException(Entity::ID . ' not present');
+        }
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateUpdateAction($payoutUpdateAction)
+    {
+        if (empty($payoutUpdateAction) === true)
+        {
+            throw new BadRequestValidationFailureException(BatchHelper::PAYOUT_UPDATE_ACTION . ' not present');
         }
     }
 

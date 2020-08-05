@@ -19,6 +19,7 @@ class BatchHelper
     const NOTES                    = 'notes';
     const BALANCE_ID               = 'balance_id';
     const SCHEDULED_AT             = 'scheduled_at';
+    const PAYOUT_UPDATE_ACTION     = 'payout_update_action';
 
     public static function getPayoutInput(
         array $entry,

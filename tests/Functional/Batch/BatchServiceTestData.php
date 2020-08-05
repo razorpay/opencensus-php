@@ -116,6 +116,31 @@ return [
         ],
     ],
 
+    'testPayoutApprovalBatchCreate' => [
+        'request' => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'payout_approval',
+                'name' => 'My Payout Approval',
+
+                'otp'=> '0007',
+                'token' => 'FLsaV87Zr0vvPt',
+                'config' => ['user_comment' => 'some user comment']
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'type'             => 'payout_approval',
+                'status'           => 'created',
+                'name'             => 'My Payout Approval',
+                'total_count'      => 1
+            ],
+        ],
+    ],
+
+
     'testBatchRawAPIGetAllBatches' => [
         'request' => [
             'url'     => '/service/batch/batch',

@@ -1004,6 +1004,7 @@ class Route
         'payout_create_internal'                   => ['post',     'payouts_internal',                               'PayoutController@postFundAccountPayout'                            ],
         'payout_create_on_internal_contact'        => ['post',     'internalContactPayout',                          'PayoutController@postFundAccountOnInternalContact'                 ],
         'payout_bulk_create'                       => ['post',     'payouts/bulk',                                   'PayoutController@createPayoutBulk'                                 ],
+        'payout_bulk_approve'                      => ['post',     'payouts/bulk_approve',                           'PayoutController@approvePayoutBulk'                                 ],
         'payout_create_with_otp'                   => ['post',     'payouts_with_otp',                               'PayoutController@postFundAccountPayoutWithOtp'                     ],
         'payout_approve_bulk'                      => ['post',     'payouts/approve/bulk',                           'PayoutController@bulkApproveFundAccountPayouts'                    ],
         'payout_reject_bulk'                       => ['post',     'payouts/reject/bulk',                            'PayoutController@bulkRejectFundAccountPayouts'                     ],
@@ -2813,6 +2814,7 @@ class Route
         'invoice_update_billing_period',
         'bulk_invoice_create',
         'payout_bulk_create',
+        'payout_bulk_approve',
         'reconciliate_via_batch_service',
         'fund_account_bulk_create',
         'bulk_contact_create',
@@ -4333,6 +4335,9 @@ class Route
         'merchant_submit_support_call_request'         => '*',
         // Specific to Banking
         'payout_bulk_create'                           => Permission::CREATE_PAYOUT_BULK,
+        // This is for batch service -- change name
+        'payout_bulk_approve'                          => Permission::APPROVE_PAYOUT_BULK,
+        // This is for dashboard
         'payout_approve_bulk'                          => Permission::APPROVE_PAYOUT_BULK,
         'payout_reject_bulk'                           => Permission::REJECT_PAYOUT_BULK,
         'payout_approve'                               => Permission::APPROVE_PAYOUT,
@@ -5003,6 +5008,7 @@ class Route
             'bulk_contact_create',
             'bulk_submerchant_assign',
             'payout_bulk_create',
+            'payout_bulk_approve',
             'reconciliate_via_batch_service',
             'fund_account_bulk_create',
             'bulk_contact_create',
@@ -5421,6 +5427,7 @@ class Route
         'payout_create',
         'payout_create_with_otp',
         'payout_bulk_create',
+        'payout_bulk_approve',
         'payout_approve_bulk',
         'payout_reject_bulk',
         'payout_approve',

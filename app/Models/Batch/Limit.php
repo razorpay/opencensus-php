@@ -72,7 +72,7 @@ class Limit
     public static function validate(string $type, int $total)
     {
         // We have shifted the payout limit validations downstream so that we can have merchant level configurations.
-        if ($type === Type::PAYOUT)
+        if ($type === Type::PAYOUT || $type === Type::PAYOUT_APPROVAL)
         {
             return;
         }

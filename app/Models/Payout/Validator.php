@@ -178,6 +178,16 @@ class Validator extends Base\Validator
         Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
     ];
 
+    protected static $batchApproveRules = [
+        Entity::PAYOUT_IDS           => 'required|array',
+        Entity::PAYOUT_IDS . '.*'    => 'required|public_id|size:19',
+    ];
+
+    protected static $batchRejectRules = [
+        Entity::PAYOUT_IDS          => 'required|array',
+        Entity::PAYOUT_IDS . '.*'   => 'required|public_id|size:19',
+    ];
+
     protected static $bulkRejectRules = [
         Entity::PAYOUT_IDS          => 'required|array',
         Entity::PAYOUT_IDS . '.*'   => 'required|public_id|size:19',

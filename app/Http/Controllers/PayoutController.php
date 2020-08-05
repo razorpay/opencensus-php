@@ -192,6 +192,18 @@ class PayoutController extends Controller
         return ApiResponse::json($response);
     }
 
+    /**
+     * @return mixed
+     */
+    public function approvePayoutBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->approveBulkPayout($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function calculateEsOnDemandFees()
     {
         $input = Request::all();

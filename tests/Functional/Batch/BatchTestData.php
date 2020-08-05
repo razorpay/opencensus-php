@@ -246,6 +246,32 @@ return [
         ],
     ],
 
+    'testPayoutApprovalSendMailFromBatchService' => [
+        'request'  => [
+            'url'     => '/batch/sendmail',
+            'method'  => 'post',
+            'content' => [
+                'bucket_type'      => 'batch_service',
+                'batch'            => [
+                    'type'        => 'payout_approval',
+                    'merchant_id' => 'CVuOcOYoUiAqNY',
+                ],
+                'settings'         => [
+                    'email' => 'blah@blah.com',
+                    'user_comment' => 'some user comment'
+                ],
+                'download_file'    => true,
+                'output_file_path' => 'testing/key/payment.csv',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+        ],
+    ],
+
+
     'testCreateAdminBatchWithRequiredPermission' => [
         'request'  => [
             'url'     => '/admin/batches',

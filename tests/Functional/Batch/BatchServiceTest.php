@@ -106,6 +106,19 @@ class BatchServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testPayoutApprovalBatchCreate()
+    {
+        $entries = $this->getDefaultFileEntriesForPayoutApprovals();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->mockRazorX(__FUNCTION__,  'batch_service_payout_approval_migration', "on");
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testBatchRawAPIGetAllBatches()
     {
         $this->ba->adminAuth();
@@ -183,6 +196,30 @@ class BatchServiceTest extends TestCase
                 'notes[key1]'            => 'Notes Value 1',
                 'notes[key2]'            => 'Notes Value 2',
             ],
+        ];
+    }
+
+    protected function getDefaultFileEntriesForPayoutApprovals()
+    {
+        return [
+            [
+                Header::APPROVE_REJECT_PAYOUT   => 'A',
+                Header::P_A_PAYOUT_ID    => 'pout_FJR67w0mLwIAHJ',
+                Header::P_A_ACCOUNT_NUMBER => '2224440041626905',
+                Header::P_A_AMOUNT => 100,
+                Header::P_A_CONTACT_ID => 'FJR67hZcn2PX7A',
+                Header::P_A_CONTACT_NAME => 'Some name',
+                Header::P_A_CREATED_AT => 1596377458,
+                Header::P_A_CURRENCY => 'INR',
+                Header::P_A_FEES => 0,
+                Header::P_A_FUND_ACCOUNT_ID => 'fa_100000000000',
+                Header::P_A_MODE => 'live',
+                Header::P_A_NOTES => 'notes blah',
+                Header::P_A_PURPOSE => 'refund',
+                Header::P_A_STATUS => 'pending',
+                Header::P_A_TAX => 0,
+                Header::P_A_SCHEDULED_AT => '1596377468'
+            ]
         ];
     }
 

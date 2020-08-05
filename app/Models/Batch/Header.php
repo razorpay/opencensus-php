@@ -895,6 +895,24 @@ class Header
     const COMMENT                   = 'Comment';
     const NEW_STATUS                = 'New Status';
 
+    // Payout Approval
+    const APPROVE_REJECT_PAYOUT     = 'Approve (A) / Reject (R) payout';
+    const P_A_AMOUNT                = 'amount(Rupees) (do not edit)';
+    const P_A_CURRENCY              = 'currency (do not edit)';
+    const P_A_CONTACT_NAME          = 'contact_name (do not edit)';
+    const P_A_MODE                  = 'mode (do not edit)';
+    const P_A_PURPOSE               = 'purpose (do not edit)';
+    const P_A_PAYOUT_ID             = 'payout_id (do not edit)';
+    const P_A_CONTACT_ID            = 'contact_id (do not edit)';
+    const P_A_FUND_ACCOUNT_ID       = 'fund_account_id (do not edit)';
+    const P_A_CREATED_AT            = 'created_at (do not edit)';
+    const P_A_ACCOUNT_NUMBER        = 'account_number (do not edit)';
+    const P_A_STATUS                = 'status (do not edit)';
+    const P_A_NOTES                 = 'payout notes (do not edit)';
+    const P_A_FEES                  = 'fees (tax inclusive) (do not edit)';
+    const P_A_TAX                   = 'tax (do not edit)';
+    const P_A_SCHEDULED_AT          = 'scheduled_at (do not edit)';
+
     /**
      * Input and output file headers
      * The keys need to be like <type>_<sub-type>_<gateway>.
@@ -2843,6 +2861,27 @@ class Header
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
+            ]
+        ],
+
+        'payout_approval' => [
+            self::INPUT => [
+                self::APPROVE_REJECT_PAYOUT,
+                self::P_A_AMOUNT,
+                self::P_A_CURRENCY,
+                self::P_A_CONTACT_NAME,
+                self::P_A_MODE,
+                self::P_A_PURPOSE,
+                self::P_A_PAYOUT_ID,
+                self::P_A_CONTACT_ID,
+                self::P_A_FUND_ACCOUNT_ID,
+                self::P_A_CREATED_AT,
+                self::P_A_ACCOUNT_NUMBER,
+                self::P_A_STATUS,
+                self::P_A_NOTES,
+                self::P_A_FEES,
+                self::P_A_TAX,
+                self::P_A_SCHEDULED_AT
             ]
         ],
     ];

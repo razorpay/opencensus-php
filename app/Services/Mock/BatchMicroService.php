@@ -38,6 +38,18 @@ class BatchMicroService extends BaseBatchMicroService
             ];
         }
 
+        if (isset($input['type']) and
+            ($input['type'] === 'payout_approval'))
+        {
+            return [
+                'entity'           => 'batch',
+                'type'             => 'payout_approval',
+                'status'           => 'created',
+                'name'             => 'My Payout Approval',
+                'total_count'      => 1
+            ];
+        }
+
         return [
             'id'               => 'C3fzDCb4hA4F6b',
             'created_at'       => 1551782255,

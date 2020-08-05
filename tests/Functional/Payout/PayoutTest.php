@@ -2404,6 +2404,90 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
+    public function testBulkPayoutApproval()
+    {
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout1 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $request = [
+            'method' => 'POST',
+            'url' => '/payouts/'.$payout1['id'].'/approve',
+            'content' => [
+                'token' => 'BUIj3m2Nx2VvVj',
+                'otp' => '0007',
+                'user_comment' => 'Approving',
+            ],
+        ];
+
+        $approvalResponse = $this->makeRequestAndGetContent($request);
+
+        $this->ba->batchAuth('rzp_live_10000000000000');
+
+        $headers = [
+            'HTTP_X_Batch_Id'          => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type'      => 'user',
+            'HTTP_X_Creator_Id'        => $this->finL3RoleUser->getId()
+        ];
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['server'] = $headers;
+        $testData['request']['content'][0]['payout']['id'] = $payout1['id'];
+        $testData['request']['content'][0]['fund']['id'] = $payout1['fund_account_id'];
+
+        $this->startTest();
+
+        $actionChecker = $this->getDbLastEntity('action_checker', 'live');
+        $this->assertEquals(true, $actionChecker['approved']);
+    }
+
+    public function testBulkPayoutRejection()
+    {
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout1 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $request = [
+            'method' => 'POST',
+            'url' => '/payouts/'.$payout1['id'].'/approve',
+            'content' => [
+                'token' => 'BUIj3m2Nx2VvVj',
+                'otp' => '0007',
+                'user_comment' => 'Approving',
+            ],
+        ];
+
+        $approvalResponse = $this->makeRequestAndGetContent($request);
+
+        $this->ba->batchAuth('rzp_live_10000000000000');
+
+        $headers = [
+            'HTTP_X_Batch_Id'          => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type'      => 'user',
+            'HTTP_X_Creator_Id'        => $this->finL3RoleUser->getId()
+        ];
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['server'] = $headers;
+        $testData['request']['content'][0]['payout']['id'] = $payout1['id'];
+        $testData['request']['content'][0]['fund']['id'] = $payout1['fund_account_id'];
+
+        $this->startTest();
+
+        $actionChecker = $this->getDbLastEntity('action_checker', 'live');
+        $this->assertEquals(false, $actionChecker['approved']);
+    }
+
     public function testPayoutStatusUpdate()
     {
         $this->createPayout();

@@ -706,6 +706,156 @@ class Service extends Base\Service
     }
 
     /**
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function approveBulkPayout(array $input): array
+    {
+        $payoutBatch = new Base\PublicCollection;
+
+        $validator = new Validator;
+
+        // Max is 15
+        $validator->validateBulkPayoutCount($input);
+
+        $idempotencyKey = null;
+
+        $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id, null);
+        // bad request if not from batch service
+        $validator->validateBatchId($batchId);
+
+        foreach ($input as $item)
+        {
+            try
+            {
+                $this->trace->info(
+                    TraceCode::BATCH_SERVICE_PAYOUT_APPROVAL_BULK_RESPONSE,
+                    [
+                        Entity::BATCH_ID => $batchId,
+                        'input'          => $item
+                    ]);
+
+                $idempotencyKey = $item[Entity::IDEMPOTENCY_KEY] ?? null;
+
+                $this->validateInputFields($item, $validator, $batchId);
+
+                $this->repo->transaction(function() use (
+                    & $item,
+                    & $payoutBatch,
+                    & $batchId)
+                {
+                    $payout = $this->processEntryForBulkPayoutApproval($item);
+
+                    $payoutArr = $payout->toArrayPublic() + [Entity::IDEMPOTENCY_KEY =>  $item[Entity::IDEMPOTENCY_KEY]];
+
+                    $payoutBatch->push($payoutArr);
+                });
+
+            }
+            catch (Exception\BaseException $exception)
+            {
+                $this->trace->traceException($exception,
+                    Trace::INFO,
+                    TraceCode::BATCH_SERVICE_BULK_BAD_REQUEST);
+                $exceptionData = [
+                    Entity::BATCH_ID        => $batchId,
+                    Entity::IDEMPOTENCY_KEY => $idempotencyKey,
+                    'error'                 => [
+                        Error::DESCRIPTION       => $exception->getError()->getDescription(),
+                        Error::PUBLIC_ERROR_CODE => $exception->getError()->getPublicErrorCode(),
+                    ],
+                    Error::HTTP_STATUS_CODE => $exception->getError()->getHttpStatusCode(),
+                ];
+
+                $payoutBatch->push($exceptionData);
+            }
+            catch (\Throwable $throwable)
+            {
+                $this->trace->traceException($throwable,
+                    Trace::CRITICAL,
+                    TraceCode::BATCH_SERVICE_BULK_EXCEPTION);
+
+                $exceptionData = [
+                    Entity::BATCH_ID        => $batchId,
+                    Entity::IDEMPOTENCY_KEY => $idempotencyKey,
+                    'error'                 => [
+                        Error::DESCRIPTION       => $throwable->getMessage(),
+                        Error::PUBLIC_ERROR_CODE => $throwable->getCode(),
+                    ],
+                    Error::HTTP_STATUS_CODE => 500,
+                ];
+
+                $payoutBatch->push($exceptionData);
+            }
+        }
+
+        $this->trace->info(TraceCode::BATCH_SERVICE_PAYOUT_APPROVAL_BULK_RESPONSE, $payoutBatch->toArrayWithItems());
+
+        return $payoutBatch->toArrayWithItems();
+    }
+
+    /**
+     * @param array $entry
+     * @return Entity
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function processEntryForBulkPayoutApproval(array $entry): Entity
+    {
+        $inputPayout = $entry + [Entity::PAYOUT_IDS => [$entry[Entity::PAYOUT][Entity::ID]]];
+
+        $action = strtoupper($entry[BatchHelper::PAYOUT_UPDATE_ACTION]);
+
+        if($action === 'A')
+        {
+            return $this->approvePayoutsFromBatchService($inputPayout);
+
+        }
+        else if ($action === 'R')
+        {
+            return $this->rejectPayoutFromBatchService($inputPayout);
+        }
+        else
+        {
+            throw  new Exception\BadRequestValidationFailureException(
+               'Unknown update action '.$action.' found');
+        }
+
+    }
+
+    protected function approvePayoutsFromBatchService(array & $input): Entity
+    {
+        $this->trace->info(TraceCode::PAYOUT_BULK_APPROVE_REQUEST, ['input' => $input]);
+
+        (new Validator)->setStrictFalse()->validateInput('batch_approve', $input);
+
+        $payout = $this->repo->payout->findByPublicId($input[Entity::PAYOUT][Entity::ID]);
+
+        $payout->getValidator()->validatePayoutStatusForApproveOrReject();
+
+        $payout = (new Core)->approvePayout($payout, $input);
+
+        return $payout;
+
+    }
+
+    protected function rejectPayoutFromBatchService(array $input): Entity
+    {
+        $this->trace->info(TraceCode::PAYOUT_BULK_REJECT_REQUEST, ['input' => $input]);
+
+        (new Validator)->setStrictFalse()->validateInput('batch_reject', $input);
+
+        $payout = $this->repo->payout->findByPublicId($input[Entity::PAYOUT][Entity::ID]);
+
+        $payout->getValidator()->validatePayoutStatusForApproveOrReject();
+
+        $payout = (new Core)->rejectPayout($payout, $input);
+
+        return $payout;
+    }
+
+    /**
      * This route has been added to update payout status in test mode
      * Since we don't actually hit the banks in test mode
      * In live mode this is taken care of by FTS
@@ -1156,5 +1306,27 @@ class Service extends Base\Service
                 );
             }
         }
+    }
+
+
+    /**
+     * @param $item
+     * @param Validator $validator
+     * @param $batchId
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function validateInputFields($item, Validator $validator, $batchId): void
+    {
+        $idempotencyKey = $item[Entity::IDEMPOTENCY_KEY] ?? null;
+        // fail if idempotency key not present
+        $validator->validateIdempotencyKey($idempotencyKey, $batchId);
+
+        $payoutId = $item[Entity::PAYOUT][Entity::ID] ?? null;
+        // fail if payout id is not present.
+        $validator->validatePayoutId($payoutId);
+
+        $payoutUpdateAction = $item[BatchHelper::PAYOUT_UPDATE_ACTION] ?? null;
+        // fail if update action is not present
+        $validator->validateUpdateAction($payoutUpdateAction);
     }
 }

@@ -1987,6 +1987,97 @@ return [
         ],
     ],
 
+    'testBulkPayoutApproval' => [
+        'request' => [
+            'url' => '/payouts/bulk_approve',
+            'method' => 'POST',
+            'content' => [
+                [
+                    'payout_update_action' => 'A',
+                    'razorpayx_account_number' => '2224440041626905',
+                    'user_comment' => 'Some user comment',
+                    'payout' => [
+                        'amount' => '10000',
+                        'currency' => 'INR',
+                        'mode' => 'IMPS',
+                        'purpose' => 'refund',
+                        'narration' => '123',
+                        'status' => 'pending',
+                    ],
+                    'fund' => [
+
+                    ],
+                    'contact' => [
+                        'name' => 'Vivek Karna',
+                        'reference_id' => ''
+                    ],
+                    'idempotency_key' => 'batch_abc123'
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity' => 'payout',
+                        'amount' => 10000,
+                        'currency' => 'INR',
+                        'status'   => 'processing',
+                        'idempotency_key' => 'batch_abc123'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testBulkPayoutRejection' => [
+        'request' => [
+            'url' => '/payouts/bulk_approve',
+            'method' => 'POST',
+            'content' => [
+                [
+                    'payout_update_action' => 'R',
+                    'razorpayx_account_number' => '2224440041626905',
+                    'user_comment' => 'Some user comment',
+                    'payout' => [
+                        'amount' => '10000',
+                        'currency' => 'INR',
+                        'mode' => 'IMPS',
+                        'purpose' => 'refund',
+                        'narration' => '123',
+                        'status' => 'pending',
+                    ],
+                    'fund' => [
+
+                    ],
+                    'contact' => [
+                        'name' => 'Vivek Karna',
+                        'reference_id' => ''
+                    ],
+                    'idempotency_key' => 'batch_abc123'
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity' => 'payout',
+                        'amount' => 10000,
+                        'currency' => 'INR',
+                        'status'   => 'rejected',
+                        'idempotency_key' => 'batch_abc123'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+
     'testCreatePayoutForRblDirectAccount' => [
         'request'  => [
             'method'  => 'POST',

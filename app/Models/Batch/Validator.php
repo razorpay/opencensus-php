@@ -361,6 +361,23 @@ class Validator extends Base\Validator
         Entity::CONFIG      => 'sometimes'
     ];
 
+    protected static $payoutApprovalCreateRules = [
+        Entity::TYPE                 => 'required|custom',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required_without:file_id|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id',
+        Entity::OTP                  => 'required|filled|min:4',
+        Entity::TOKEN                => 'required|unsigned_id',
+        Entity::SCHEDULE             => 'sometimes|numeric',
+        Entity::CONFIG               => 'sometimes',
+    ];
+
+    protected static $payoutApprovalValidateRules = [
+        Entity::TYPE                 => 'required|custom',
+        Entity::FILE                 => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
+    ];
+
+
     protected static $payoutValidateRules = [
         Entity::TYPE        => 'required|in:payout',
         Entity::NAME        => 'filled|string|max:255',
@@ -405,6 +422,26 @@ class Validator extends Base\Validator
         Header::CONTACT_MOBILE_2            => 'sometimes|nullable|string',
         Header::CONTACT_REFERENCE_ID        => 'sometimes|nullable|string',
         Header::NOTES                       => 'sometimes|nullable|notes',
+    ];
+
+    // Expect APPROVE_REJECT_PAYOUT & Payout ID other columns are optional
+    protected static $payoutApprovalTypeRowRules = [
+        Header::APPROVE_REJECT_PAYOUT       => 'required|size:1|in:A,R',
+        Header::P_A_AMOUNT                  => 'sometimes|numeric|between:1,100000000',
+        Header::P_A_CURRENCY                => 'sometimes|size:3|in:INR',
+        Header::P_A_CONTACT_NAME            => 'sometimes|string',
+        Header::P_A_MODE                    => 'sometimes|string',
+        Header::P_A_PURPOSE                 => 'sometimes|string',
+        Header::P_A_PAYOUT_ID               => 'required|string',
+        Header::P_A_CONTACT_ID              => 'sometimes|string',
+        Header::P_A_FUND_ACCOUNT_ID         => 'sometimes|string',
+        Header::P_A_CREATED_AT              => 'sometimes',
+        Header::P_A_ACCOUNT_NUMBER          => 'sometimes',
+        Header::P_A_STATUS                  => 'sometimes|string',
+        Header::P_A_NOTES                   => 'sometimes|string',
+        Header::P_A_FEES                    => 'sometimes|integer',
+        Header::P_A_TAX                     => 'sometimes|integer',
+        Header::P_A_SCHEDULED_AT            => 'sometimes',
     ];
 
     protected static $creditTypeRowRules = [
@@ -999,6 +1036,19 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validatePayoutApprovalEntries(array & $entries, array $params, ME $merchant)
+    {
+        //Limit number of entries. We are using same bulk payout count restriction
+        $countOfPayouts = count($entries);
+
+        $this->assertCustomLimitForMerchant($merchant, $countOfPayouts);
+
+        //Check other validations required
+        $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
+        {
+            $this->validateInput('payoutApprovalTypeRow', $entry);
+        });
+    }
 
     protected function validateCreditEntries(array & $entries, array $params, ME $merchant)
     {

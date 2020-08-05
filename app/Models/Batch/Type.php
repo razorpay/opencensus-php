@@ -116,6 +116,8 @@ class Type
 
     const BANKING_ACCOUNT_ACTIVATION_COMMENTS  = 'banking_account_activation_comments';
 
+    const PAYOUT_APPROVAL = 'payout_approval';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't

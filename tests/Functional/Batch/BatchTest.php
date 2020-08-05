@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Batch;
 use Hash;
 use Mail;
 
+use RZP\Mail\Batch\PayoutApproval;
 use RZP\Models\Vpa;
 use RZP\Models\Payout;
 use RZP\Models\BankAccount;
@@ -56,6 +57,32 @@ class BatchTest extends TestCase
             return true;
         });
     }
+
+    public function testPayoutApprovalSendMailFromBatchService()
+    {
+
+        Mail::fake();
+
+        $this->ba->appAuth();
+
+        $this->fixtures->create('merchant', ['id' => 'CVuOcOYoUiAqNY']);
+
+        $this->writeToCsvFile([], 'payment', null, 'files/filestore/batch/download');
+
+        $this->startTest();
+
+        Mail::assertSent(PayoutApproval::class, function ($mail)
+        {
+            $this->assertNotEmpty($mail->attachments);
+
+            $body = 'Please find attached processed payouts file.';
+
+            $this->assertEquals($body, $mail->viewData['body']);
+
+            return true;
+        });
+    }
+
 
     protected function getFileEntries(string $callee): array
     {
