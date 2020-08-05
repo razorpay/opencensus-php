@@ -992,7 +992,7 @@ class Core extends Base\Core
         ];
 
         $payload['params'] += $this->getExtraRavenSmsPayload($input, $merchant);
-
+        
         $this->app->raven->sendSms($payload);
 
         return array_only($otp, 'token');
@@ -1235,6 +1235,14 @@ class Core extends Base\Core
                 'amount'         => amount_format_IN($input['amount']),
                 'account_number' => mask_except_last4($input['account_number']),
                 'purpose'        => $input['purpose'],
+            ];
+        }
+        else if ($action === 'bulk_payout_approve') {
+            $payload += [
+                'approved_payout_count'  => $input['approved_payout_count'],
+                'approved_payout_amount' => $input['approved_payout_amount'],
+                'rejected_payout_count'  => $input['rejected_payout_count'],
+                'rejected_payout_amount' => $input['rejected_payout_amount'],
             ];
         }
 

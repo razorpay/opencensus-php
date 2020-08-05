@@ -203,7 +203,9 @@ class UserController extends Controller
 
     public function sendOtp()
     {
-        $response = $this->service()->sendOtp($this->input);
+        /** @var Service $userService */
+        $userService = $this->service();
+        $response = $userService->sendOtp($this->input);
 
         return ApiResponse::json($response);
     }
