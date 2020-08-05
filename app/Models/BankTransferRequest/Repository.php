@@ -6,7 +6,6 @@ namespace RZP\Models\BankTransferRequest;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\VirtualAccount;
-use RZP\Models\Base\PublicCollection;
 
 class Repository extends Base\Repository
 {
@@ -24,7 +23,7 @@ class Repository extends Base\Repository
         string $merchantId = null,
         bool $useSlave = false,
         bool $useMasterEsReplica = false
-    ): PublicCollection
+    ): Base\PublicCollection
     {
         $entities = parent::fetch($params, $merchantId, $useSlave, $useMasterEsReplica);
 
@@ -33,7 +32,7 @@ class Repository extends Base\Repository
             return $entities;
         }
 
-        $bankTransferRequests = new PublicCollection();
+        $bankTransferRequests = new Base\PublicCollection();
 
         foreach ($entities as $bankTransferRequest)
         {
@@ -45,7 +44,25 @@ class Repository extends Base\Repository
         return $bankTransferRequests;
     }
 
-    protected function addAttributesForAdminDashboard(Entity $bankTransferRequest)
+    public function findOrFailByPublicIdWithParams(
+        string $id,
+        array $params,
+        bool $useMasterEsReplica = false
+    ) : Base\PublicEntity
+    {
+        $bankTransferRequest = parent::findOrFailByPublicIdWithParams($id, $params, $useMasterEsReplica);
+
+        if ($this->app['basicauth']->isAdminAuth() === false)
+        {
+            return $bankTransferRequest;
+        }
+
+        $this->addAttributesForAdminDashboard($bankTransferRequest);
+
+        return $bankTransferRequest;
+    }
+
+    protected function addAttributesForAdminDashboard($bankTransferRequest)
     {
         $data = [
             Entity::VIRTUAL_ACCOUNT_ID    => null,
