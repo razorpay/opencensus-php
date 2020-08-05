@@ -14,10 +14,12 @@ class Core extends Base\Core
 {
     public function create(array $input, Order\Entity $order = null, Customer\Entity $customer = null)
     {
+        $customerId = ($customer === null ? null : $customer->getPublicId());
+
         $this->trace->info(
             TraceCode::UPI_MANDATE_CREATE_REQUEST,
             [
-                'customer_id'  => $customer->getPublicId(),
+                'customer_id'  => $customerId,
                 'merchant_id'  => $this->merchant->getPublicId(),
                 'order_id'     => $order->getPublicId(),
                 'input'        => $input,
@@ -43,7 +45,7 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::UPI_MANDATE_CREATED,
             [
-                'customer_id'  => $customer->getPublicId(),
+                'customer_id'  => $customerId,
                 'merchant_id'  => $this->merchant->getPublicId(),
                 'order_id'     => $order->getPublicId(),
                 'mandate_id'   => $upiMandate->getPublicId(),
@@ -176,7 +178,7 @@ class Core extends Base\Core
 
         return $upiMandate;
     }
-  
+
     public function validateUpiMandateForCancelCallback(Entity $upiMandate)
     {
         // If mandate cancel is initiated by payer, we directly get callbacks from gateway. As that is the

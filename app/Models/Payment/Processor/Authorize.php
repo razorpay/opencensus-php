@@ -3279,11 +3279,17 @@ trait Authorize
                 'end_time'          => $this->subscription->getEndAt(),
             ];
 
-                $core = new Core();
+            $this->trace->info(
+                TraceCode::UPI_MANDATE_SUBSCRIPTION_CUSTOMER_MAP,
+                [
+                    'customer_id'    => $customer->getPublicId(),
+                    'subscriptionId' => $this->subscription->getId(),
+                ]);
 
-                $order = $this->repo->order->findOrFailPublic(Order\Entity::verifyIdAndStripSign($input['order_id']));
 
-                $this->upiMandate = $core->create($upitoken, $order, $customer);
+                $this->upiMandate->setCustomerId($customer->getId());
+
+                $this->repo->saveOrFail($this->upiMandate);
         }
     }
 

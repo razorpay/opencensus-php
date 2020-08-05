@@ -38,6 +38,7 @@ use RZP\Models\Payment\Flow;
 use RZP\Constants\Environment;
 use RZP\Models\Payment\Metric;
 use RZP\Models\Payment\Status;
+use RZP\Models\UpiMandate\Core;
 use RZP\Models\Payment\AuthType;
 use RZP\Constants\Entity as E;
 use RZP\Base\RepositoryManager;
@@ -636,7 +637,7 @@ class Processor
             ];
 
             $coproto['missing'][] = 'contact';
-            
+
             unset($coproto['request']['content']['contact']);
 
             return $coproto;
@@ -2494,6 +2495,35 @@ class Processor
      */
     protected function addOrderIdToInputForSubscriptionIfApplicable(array & $input, Payment\Entity $payment)
     {
+        if (($this->subscription !== null) and
+            ($this->subscription->isCreated() === true) and
+            ($payment->getMethod() === Payment\Method::UPI))
+        {
+            $upitoken = [
+                'max_amount'        => $this->subscription->getCurrentInvoiceAmount(),
+                'frequency'         => $this->subscription->schedule['period'],
+                'recurring_type'    => 'before',
+                'recurring_value'   => $this->subscription->schedule['anchor'],
+                'start_time'        => Carbon::now()->addMinute(1)->getTimestamp(),
+                'end_time'          => $this->subscription->getEndAt(),
+            ];
+
+            $this->trace->info(
+                TraceCode::UPI_MANDATE_SUBSCRIPTION_CREATE,
+                [
+                    'upi_token_info'  => $upitoken,
+                    'subscriptionId'  => $this->subscription->getId(),
+                ]);
+
+            $core = new Core();
+
+            $orderId = $input['order_id'];
+
+            $order = $this->repo->order->findOrFailPublic(Order\Entity::verifyIdAndStripSign($orderId));
+
+            $this->upiMandate = $core->create($upitoken, $order, null);
+        }
+
         if (($this->subscription === null) or ($this->subscription->isExternal() === true))
         {
             return;
@@ -2734,9 +2764,8 @@ class Processor
             $payment->setBank($this->order->getBankForNachMethod());
         }
 
-        if (($payment->isUpiRecurring() === true)
-                          and (empty($input[Payment\Entity::TOKEN]) === true)
-                          and (isset($input[Payment\Entity::SUBSCRIPTION_ID]) === false))
+        if (($payment->isUpiRecurring() === true) and
+            (empty($input[Payment\Entity::TOKEN]) === true))
         {
             $this->validateOrderForUpiInitialRecurring($this->order);
         }

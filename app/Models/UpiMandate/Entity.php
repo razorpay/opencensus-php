@@ -138,6 +138,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TOKEN_ID, $tokenId);
     }
 
+    public function setCustomerId(string $customerId)
+    {
+        $this->setAttribute(self::CUSTOMER_ID, $customerId);
+    }
+
     public function setStatus(string $status)
     {
         Status::validateUpiMandateStatus($status);
