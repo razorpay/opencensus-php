@@ -38,18 +38,17 @@ class Validator extends Base\Validator
 
     protected static $settlementOndemandInputRules = [
         Entity::AMOUNT              => 'required_without:max_balance|integer|custom',
-        Entity::MAX_BALANCE         => 'required_without:amount|boolean',
+        'settle_full_balance'       => 'required_without:amount|boolean',
         Entity::CURRENCY            => 'sometimes|in:INR',
-        Entity::NARRATION           => 'sometimes|nullable|string',
+        'description'               => 'sometimes|nullable|string',
         Entity::NOTES               => 'sometimes|nullable|array',
-        'expand'                    => 'sometimes|boolean',
     ];
 
     public static $fetchByTimestampInputRules = [
         'from'                => 'sometimes|epoch',
         'to'                  => 'sometimes|epoch',
         'count'               => 'sometimes|integer|min:1|max:100',
-        'expand'              => 'sometimes|boolean',
+        'expand'              => 'sometimes|nullable|array',
         'skip'                => 'sometimes|integer',
     ];
 
@@ -71,8 +70,8 @@ class Validator extends Base\Validator
 
         $app = App::getFacadeRoot();
 
-        if (($app['basicauth']->isProxyAuth() === true) && 
-            (($value < self::MIN_ONDEMAND_AMOUNT_FOR_DASHBOARD) === true) && 
+        if (($app['basicauth']->isProxyAuth() === true) &&
+            (($value < self::MIN_ONDEMAND_AMOUNT_FOR_DASHBOARD) === true) &&
             ($app['basicauth']->getMerchant()->isFeatureEnabled(Feature\Constants::ES_AUTOMATIC) === false))
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_AMOUNT_LESS_THAN_MIN_LIMIT_FOR_NON_ES_AUTOMATIC_MERCHANTS,

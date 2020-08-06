@@ -19,7 +19,7 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
-    protected static $sign = 'sod';
+    protected static $sign = 'setlod';
 
     protected $entity = 'settlement.ondemand';
 
@@ -54,7 +54,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
-        self::MERCHANT_ID,
+        self::ENTITY,
         self::AMOUNT,
         self::TOTAL_AMOUNT_SETTLED,
         self::TOTAL_FEES,
@@ -66,9 +66,13 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::NARRATION,
         self::NOTES,
-        self::CREATED_AT,
-        self::UPDATED_AT,
         self::SETTLEMENT_ONDEMAND_PAYOUTS,
+        self::CREATED_AT,
+    ];
+
+    protected $casts = [
+        self::MAX_BALANCE   => 'bool',
+        self::AMOUNT        => 'int',
     ];
 
     protected $fillable = [
@@ -249,5 +253,34 @@ class Entity extends Base\PublicEntity
     public function shouldValidateAndUpdateBalances(): bool
     {
         return true;
+    }
+
+    public function toArrayPublic()
+    {
+        $arr = parent::toArrayPublic();
+
+        $newArr = [
+            self::ID                               => $arr[self::ID],
+            self::ENTITY                           => $arr[self::ENTITY],
+            'amount_requested'                     => $arr[self::AMOUNT],
+            'amount_settled'                       => $arr[self::TOTAL_AMOUNT_SETTLED],
+            'amount_pending'                       => $arr[self::TOTAL_AMOUNT_PENDING],
+            'amount_reversed'                      => $arr[self::TOTAL_AMOUNT_REVERSED],
+            'fees'                                 => $arr[self::TOTAL_FEES],
+            'tax'                                  => $arr[self::TOTAL_TAX],
+            self::CURRENCY                         => $arr[self::CURRENCY],
+            'settle_full_balance'                  => $arr[self::MAX_BALANCE],
+            self::STATUS                           => $arr[self::STATUS],
+            'description'                          => $arr[self::NARRATION],
+            self::NOTES                            => $arr[self::NOTES],
+            self::CREATED_AT                       => $arr[self::CREATED_AT],
+        ];
+
+        if (isset($arr[self::SETTLEMENT_ONDEMAND_PAYOUTS]) === true)
+        {
+            $newArr[self::SETTLEMENT_ONDEMAND_PAYOUTS] = $arr[self::SETTLEMENT_ONDEMAND_PAYOUTS];
+        }
+
+        return $newArr;
     }
 }

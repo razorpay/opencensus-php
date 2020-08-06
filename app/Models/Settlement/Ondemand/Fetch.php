@@ -9,7 +9,7 @@ class Fetch extends BaseFetch
 {
     const RULES = [
         self::DEFAULTS => [
-            Entity::ID                    => 'sometimes|public_id|size:18',
+            Entity::ID                    => 'sometimes|public_id|size:21',
             Entity::MERCHANT_ID           => 'sometimes|unsigned_id',
             Entity::STATUS                => 'sometimes|string',
         ],

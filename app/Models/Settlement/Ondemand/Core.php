@@ -21,11 +21,12 @@ class Core extends Base\Core
 {
     public function createSettlementOndemand(array $input, Merchant\Entity $merchant, User\Entity $user = null)
     {
-        if (isset($input[Entity::MAX_BALANCE]) === true && boolval($input[Entity::MAX_BALANCE]) === true)
+        if (isset($input['settle_full_balance']) === true && boolval($input['settle_full_balance']) === true)
         {
             $amount = $merchant->primaryBalance->getBalance();
 
             $input[Entity::AMOUNT] = $amount;
+
         }
         else
         {
@@ -50,14 +51,17 @@ class Core extends Base\Core
             Entity::TOTAL_AMOUNT_REVERSED => 0,
             Entity::STATUS                => Status::CREATED,
             Entity::CURRENCY              => $input[Entity::CURRENCY] ?? Currency::INR,
-            Entity::MAX_BALANCE           => $input[Entity::MAX_BALANCE] ?? 0,
+            Entity::MAX_BALANCE           => $input['settle_full_balance'] ?? 0,
             Entity::NOTES                 => $input[Entity::NOTES] ?? null,
-            Entity::NARRATION             => $input[Entity::NARRATION] ?? null,
+            Entity::NARRATION             => $input['description'] ?? null,
         ];
+
 
         $data = $input;
 
         unset($data['expand']);
+        unset($data['settle_full_balance']);
+        unset($data['description']);
 
         /** @var Entity $settlementOndemand */
         $settlementOndemand = (new Entity)->build($data);

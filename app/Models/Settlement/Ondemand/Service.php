@@ -117,7 +117,7 @@ class Service extends Base\Service
 
             foreach($settlementOndemandPayoutIds as $settlementOndemandPayoutId)
             {
-                $this->createPartialReversal($settlementOndemandPayoutId, $merchantId, $reversalReason);      
+                $this->createPartialReversal($settlementOndemandPayoutId, $merchantId, $reversalReason);
 
             }
         });
@@ -166,16 +166,31 @@ class Service extends Base\Service
             $input['to'] = Carbon::now()->getTimestamp();
         }
 
-        if (isset($input['expand']) === true && boolval($input['expand']) === true)
+        if (empty($input['expand']) === false)
         {
-            $input['expand'] = [Entity::SETTLEMENT_ONDEMAND_PAYOUTS];
-        }
-        else if (isset($input['expand']) === true)
-        {
-            unset($input['expand']);
+            if (($key = array_search('ondemand_payouts', $input['expand'], true)) !== false)
+            {
+                unset($input['expand'][$key]);
+                $input['expand'][] = 'settlement_ondemand_payouts';
+            }
         }
 
-        return (new Repository)->fetch($input, $this->merchant->getId())->toArrayPublic();
+        /** @var Base\PublicCollection $settlementOndemandList */
+        $settlementOndemandList = (new Repository)->fetch($input, $this->merchant->getId())->toArrayPublic();
+
+        if (empty($settlementOndemandList['items']) === false)
+        {
+            foreach ($settlementOndemandList['items'] as $key => $item)
+            {
+                if (isset($item['settlement_ondemand_payouts']) === true)
+                {
+                    $settlementOndemandList['items'][$key]['ondemand_payouts'] = $settlementOndemandList['items'][$key]['settlement_ondemand_payouts'];
+                    unset($settlementOndemandList['items'][$key]['settlement_ondemand_payouts']);
+                }
+            }
+        }
+
+        return $settlementOndemandList;
     }
 
     public function getResponse($settlementOndemand, $settlementOndemandPayouts = null)
@@ -190,7 +205,7 @@ class Service extends Base\Service
         if (isset($settlementOndemandPayouts) === true)
         {
             return $settlementOndemandArray + [
-                'settlement_ondemand_payouts'   => $settlementOndemand->settlementOndemandPayouts->toArrayPublic(),
+                'ondemand_payouts'   => $settlementOndemand->settlementOndemandPayouts->toArrayPublic(),
             ];
         }
         else

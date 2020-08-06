@@ -509,7 +509,7 @@ class SettlementOndemandTest extends TestCase
 
         $this->startTest();
 
-        $settlementOndemand = $this->getLastEntity('settlement.ondemand',true);
+        $settlementOndemand = $this->getLastEntity('settlement.ondemand', true);
 
         $this->assertArraySelectiveEquals([
  //           'id'                    => 'sod_F0qG7YFH2KMpzY',
@@ -521,7 +521,7 @@ class SettlementOndemandTest extends TestCase
             'total_tax'             => 72108,
             'total_amount_reversed' => 0,
             'total_amount_pending'  => 19557292,
-            'max_balance'           => 0,
+            'max_balance'           => false,
             'currency'              => 'INR',
             'status'                => 'initiated',
             'narration'             => 'Demo Narration - optional',
@@ -607,7 +607,7 @@ class SettlementOndemandTest extends TestCase
             'total_tax'             => 72108,
             'total_amount_reversed' => 0,
             'total_amount_pending'  => 0,
-            'max_balance'           => 0,
+            'max_balance'           => false,
             'currency'              => 'INR',
             'status'                => 'processed',
             'narration'             => 'Demo Narration - optional',
@@ -756,7 +756,7 @@ class SettlementOndemandTest extends TestCase
             'total_tax'             => 72000,
             'total_amount_reversed' => 110000,
             'total_amount_pending'  => 0,
-            'max_balance'           => 0,
+            'max_balance'           => false,
             'currency'              => 'INR',
             'status'                => 'partially_processed',
             'narration'             => 'Demo Narration - optional',
@@ -863,7 +863,7 @@ class SettlementOndemandTest extends TestCase
             'total_tax'             => 72108,
             'total_amount_reversed' => 0,
             'total_amount_pending'  => 19557292,
-            'max_balance'           => 1,
+            'max_balance'           => true,
             'currency'              => 'INR',
             'status'                => 'initiated',
             'narration'             => 'Demo Narration - optional',
@@ -989,7 +989,7 @@ class SettlementOndemandTest extends TestCase
             'total_tax'             => 180,
             'total_amount_reversed' => 0,
             'total_amount_pending'  => 20028820,
-            'max_balance'           => 0,
+            'max_balance'           => false,
             'currency'              => 'INR',
             'status'                => 'initiated',
             'narration'             => 'Demo Narration - optional',

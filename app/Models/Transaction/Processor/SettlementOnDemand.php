@@ -124,16 +124,8 @@ class SettlementOndemand extends Base
         if ($hasBalance === false)
         {
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
-                null,
-                [
-                    'payout_id'     => $this->source->getId(),
-                    'txn_id'        => $this->txn->getId(),
-                    'txn_amount'    => $this->txn->getAmount(),
-                    'txn_fees'      => $this->txn->getFee(),
-                    'payout_amount' => $this->source->getAmount(),
-                    'debit_amount'  => $debitAmount,
-                ]);
+                ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE,
+                null);
         }
     }
 }

@@ -12,7 +12,7 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
-    protected static $sign = 'sodp';
+    protected static $sign = 'setlodp';
 
     protected $entity = 'settlement.ondemand_payout';
 
@@ -41,9 +41,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
-        self::MERCHANT_ID,
-        self::SETTLEMENT_ONDEMAND_ID,
-        self::MODE,
+        self::ENTITY,
         self::INITIATED_AT,
         self::PROCESSED_AT,
         self::REVERSED_AT,
@@ -204,5 +202,25 @@ class Entity extends Base\PublicEntity
     public function setReversedAt($time)
     {
         $this->setAttribute(self::REVERSED_AT, $time);
+    }
+
+    public function toArrayPublic()
+    {
+        $arr = parent::toArrayPublic();
+
+        return [
+            self::ID                    => $arr[self::ID],
+            self::ENTITY                => $arr[self::ENTITY],
+            self::INITIATED_AT          => $arr[self::INITIATED_AT],
+            self::PROCESSED_AT          => $arr[self::PROCESSED_AT],
+            self::REVERSED_AT           => $arr[self::REVERSED_AT],
+            self::AMOUNT                => $arr[self::AMOUNT],
+            'amount_settled'            => $this->getPayoutAmount(),
+            self::FEES                  => $arr[self::FEES],
+            self::TAX                   => $arr[self::TAX],
+            self::UTR                   => $arr[self::UTR],
+            self::STATUS                => $arr[self::STATUS],
+            self::CREATED_AT            => $arr[self::CREATED_AT],
+        ];
     }
 }
