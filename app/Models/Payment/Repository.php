@@ -295,12 +295,17 @@ class Repository extends Base\Repository
     /**
      * Fetches old payments which can be timed-out at method level with respective
      * merchant relation.
+     * @param int $fromTimestamp
+     * @param int $toTimestamp
+     * @param int $limit
+     * @param string $method
      */
-    public function fetchOldCreatedPaymentsForMethodForTimeout(int $timestamp, int $limit, string $method)
+    public function fetchOldCreatedPaymentsForMethodForTimeout(int $fromTimestamp, int $toTimestamp, int $limit, string $method)
     {
         return $this->newQuery()
                     ->status(Payment\Status::CREATED)
-                    ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
+                    ->where(Payment\Entity::CREATED_AT, '>=', $fromTimestamp)
+                    ->where(Payment\Entity::CREATED_AT, '<=', $toTimestamp)
                     ->where(Payment\Entity::METHOD, '=', $method)
                     ->with(['merchant', 'merchant.features'])
                     ->limit($limit)
@@ -1972,7 +1977,7 @@ class Repository extends Base\Repository
                     ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
                     ->findOrFailPublic($paymentId);
     }
-    
+
     public function fetchLastNPaymentsForDowntime($from, $to, $type, $key, $value, $limit)
     {
         $paymentCreatedAtCol = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);

@@ -8,6 +8,7 @@ use Config;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
+use RZP\Base\RuntimeManager;
 
 use RZP\Jobs;
 use RZP\Diag\EventCode;
@@ -1759,6 +1760,8 @@ class Service extends Base\Service
 
     public function timeoutOldPayments(array $input)
     {
+        $this->increaseAllowedSystemLimits();
+
         $count = 0;
 
         $limit = $input['limit'] ?? 1000;
@@ -1787,9 +1790,11 @@ class Service extends Base\Service
         // All Payments in created state will be marked as failed after 9 minutes
         $now = time();
 
-        $timestamp = $now - Payment\Entity::PAYMENT_TIMEOUT_DEFAULT_OLD;
+        $toTimestamp = $now - Payment\Entity::PAYMENT_TIMEOUT_DEFAULT_OLD;
 
-        $payments = $this->repo->payment->fetchOldCreatedPaymentsForMethodForTimeout($timestamp, $limit, $method);
+        $fromTimestamp = Carbon::createFromTimestamp($now, Timezone::IST)->subDays(60)->getTimestamp();
+
+        $payments = $this->repo->payment->fetchOldCreatedPaymentsForMethodForTimeout($fromTimestamp, $toTimestamp, $limit, $method);
 
         $total = count($payments);
 
@@ -1836,6 +1841,15 @@ class Service extends Base\Service
             ]);
 
         return $count;
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('1024M');
+
+        RuntimeManager::setTimeLimit(180);
+
+        RuntimeManager::setMaxExecTime(180);
     }
 
     public function autoCaptureOldAuthorizedPayments()
