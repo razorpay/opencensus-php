@@ -39,11 +39,12 @@ class DisputeEvent extends Event
         $properties['payment'] = [
                 'id'           => $payment->getPublicId(),
                 'amount'       => $payment->getAmount(),
+                'base_amount'  => $payment->getBaseAmount(),
                 'currency'     => $payment->getCurrency(),
                 'method'       => $payment->getMethod(),
                 'issuer'       => $payment->getIssuer(),
                 'type'         => $payment->getTransactionType(),
-                'gateway'      => $payment->getGateway()
+                'gateway'      => $payment->getGateway(),
         ];
 
         // upi properties
