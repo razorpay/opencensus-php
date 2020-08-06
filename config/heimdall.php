@@ -468,6 +468,10 @@ return [
 
             Permission::EDIT_MERCHANT_INTERNATIONAL_NEW  => '',
             Permission::TOGGLE_TRANSACTION_HOLD_STATUS => '',
+            Permission::CURRENCY_FETCH_RATES => [
+                'description' => 'Fetch exchange rates for a currency',
+                'assignable'  => true
+            ],
         ],
 
         PermissionCategory::SETTLEMENT => [

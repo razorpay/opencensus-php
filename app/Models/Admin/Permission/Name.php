@@ -433,6 +433,7 @@ class Name
     const VIEW_PAYOUT_DOWNTIME                = 'view_payout_downtime';
     const VAULT_TOKEN_CREATE                  = 'vault_token_create';
 
+    const CURRENCY_FETCH_RATES                = 'currency_fetch_rates';
 
     // Permissions for Financial Data Service - Razorpay Capital
     const FINANCIAL_DATA_SERVICE              = 'financial_data_service';
