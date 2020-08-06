@@ -14,6 +14,7 @@ use Razorpay\OAuth\Token as OAuthToken;
 use Razorpay\Spine\DataTypes\Dictionary;
 use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Application as OAuthApplication;
+use RZP\Models\Merchant\Webhook\Entity as WebhookEntity;
 
 use RZP\Exception;
 use RZP\Models\Base;
@@ -1469,6 +1470,13 @@ class Service extends Base\Service
 
     public function editWebhook($webhookId, $input)
     {
+        // This is a hack. For oauth - merchant dashboard is sending
+        // application_id for the new webhook path (v2 path). Since
+        // this path of webhook update doesn't require application_id
+        // it throws a validation error. Slack reference:
+        // https://razorpay.slack.com/archives/CD1AVRJBX/p1596630046092700?thread_ts=1596462723.044400&cid=CD1AVRJBX
+        unset($input[WebhookEntity::APPLICATION_ID]);
+
         $this->traceWebhookEditRequest($webhookId, $input);
 
         $webhook = (new Merchant\Webhook\Service())->editWebhook($this->merchant, $webhookId, $input);
