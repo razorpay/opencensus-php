@@ -142,12 +142,6 @@ class DowntimeDetection
         $downtimeMetric->numerator = 0;
         $downtimeMetric->denominator = 0;
 
-        // will only be used if downtime is detected
-        $downtimeMetric->downtime_start_time = null;
-
-        // will be used if downtime is resolved
-        $downtimeMetric->downtime_recover_time = null;
-
         $merchantTotalPaymentsMap = [];
 
         $downtimeMetric->top_merchant_count = 0;
@@ -173,14 +167,6 @@ class DowntimeDetection
             if ($this->isSuccess($payment, $type) === true)
             {
                 $downtimeMetric->numerator = $downtimeMetric->numerator + 1;
-
-                // First success payment will be assumed as downtime resolve time.
-                $downtimeMetric->downtime_recover_time = $payment->getCreatedAt();
-            }
-            else
-            {
-                // First failed payment after all success payment will be assumed as downtime start time.
-                $downtimeMetric->downtime_start_time = $payment->getCreatedAt();
             }
         }
 
@@ -212,11 +198,6 @@ class DowntimeDetection
 
     public function createDowntimeIfNecessary($type, $method, $key, $value, $to)
     {
-        $redisKeyForDowntime = Constants::DOWNTIME_KEY . '_' . $type .'_' . $method . '_' . $key .'_' . $value;
-
-        // check if downtime is already there for this issuer
-        //$downtimeCreatedSince = $this->redis->get($redisKeyForDowntime);
-
         //Check if downtime present in Gateway downtime Table
         $downtimeCreatedSince = $this->fetchExistingDowntime($method, $key, $value);
 
@@ -275,13 +256,15 @@ class DowntimeDetection
 
                 $denominator = $metric->denominator;
 
+                $downtimeStartTime = Carbon::now()->timestamp;
+
                 $this->trace->info(TraceCode::GATEWAY_DOWNTIME_CONFIGURATION_V2_METRIC,
                     [
                         'type'                      => $type,
                         'method'                    => $method,
                         'key'                       => $key,
                         'value'                     => $value,
-                        'downtime_start_time'       => $metric->downtime_start_time,
+                        'downtime_start_time'       => $downtimeStartTime,
                         'top_merchant_count'        => $metric->top_merchant_count,
                         'window'                    => $windowSizeInSeconds,
                         'minimumPayments'           => $minimumPayments,
@@ -314,16 +297,11 @@ class DowntimeDetection
                             'method'                    => $method,
                             'key'                       => $key,
                             'value'                     => $value,
-                            'downtime_start_time'       => $metric->downtime_start_time,
+                            'downtime_start_time'       => $downtimeStartTime,
                             'windowSizeInSeconds'       => $windowSizeInSeconds,
                             'minimumPayments'           => $minimumPayments,
                             'successRateForDowntime'    => $successRateForDowntime,
                         ]);
-
-
-                    // set downtime in redis
-                    // plus 30 because payment was created at $metric->downtime_start_time but failed at later time.
-                    //$this->redis->set($redisKeyForDowntime, $metric->downtime_start_time + 30);
 
                     // Storing Downtime in Gateway Downtime table
                     $input = [
@@ -331,7 +309,7 @@ class DowntimeDetection
                         'method'                    => $method,
                         'key'                       => $key,
                         'value'                     => $value,
-                        'downtime_start_time'       => $metric->downtime_start_time + 30,
+                        'downtime_start_time'       => $downtimeStartTime,
                     ];
 
                     (new Core)->createDowntimeV2($input);
@@ -402,6 +380,8 @@ class DowntimeDetection
 
             $denominator = $metric->denominator;
 
+            $downtimeResolvedAt = Carbon::now()->timestamp;
+
             $this->trace->info(TraceCode::GATEWAY_DOWNTIME_CONFIGURATION_V2_METRIC,
                 [
                     'type' => $type,
@@ -410,7 +390,7 @@ class DowntimeDetection
                     'value' => $value,
                     'setting_type' => 'resolve',
                     'downtime_start_time' => $downtimeCreatedSince,
-                    'downtime_recover_time' => $metric->downtime_recover_time,
+                    'downtime_recover_time' => $downtimeResolvedAt,
                     'top_merchant_count' => $metric->top_merchant_count,
                     'minimumPayments' => $minimumPayments,
                     'successRateToResolve' => $successRateToResolve,
@@ -439,7 +419,7 @@ class DowntimeDetection
                         'key' => $key,
                         'value' => $value,
                         'downtime_start_time' => $downtimeCreatedSince,
-                        'downtime_recover_time' => $metric->downtime_recover_time,
+                        'downtime_recover_time' => $downtimeResolvedAt,
                         'minimumPayments' => $minimumPayments,
                         'successRateToResolve' => $successRateToResolve,
                     ]);
@@ -453,8 +433,8 @@ class DowntimeDetection
                     'method'                    => $method,
                     'key'                       => $key,
                     'value'                     => $value,
-                    'downtime_start_time'       => $metric->downtime_start_time + 30,
-                    'downtime_recover_time'     => $metric->downtime_recover_time,
+                    'downtime_start_time'       => $downtimeCreatedSince,
+                    'downtime_recover_time'     => $downtimeResolvedAt,
                 ];
 
                 (new Core)->resolveDowntimeV2($input);
