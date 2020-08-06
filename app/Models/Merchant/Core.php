@@ -2809,7 +2809,7 @@ class Core extends Base\Core
 
             case ProductInternationalMapper::ADMIN_FLOW:
 
-                if ($merchant->getOrgId() === Org::RAZORPAY_ORG_ID)
+                if ($merchant->isRazorpayOrgId() === true)
                 {
                     $activationFlowImpl = InternationalActivationFlow\Factory::getActivationFlowImpl($merchant);
 
@@ -2955,7 +2955,7 @@ class Core extends Base\Core
 
         if (($this->validateWebsiteCheckForInternationalActivation($merchant, $merchantDetails) === false) or
             (empty($merchantDetails->getInternationalActivationFlow()) === true and
-             $merchant->getOrgId() === Org::RAZORPAY_ORG_ID ))
+             $merchant->isRazorpayOrgId() === true ))
         {
             return false;
         }
@@ -3012,7 +3012,7 @@ class Core extends Base\Core
      */
     public function autoEnableInternational(Entity $merchant, Detail\Entity $merchantDetails): bool
     {
-        $isRazorpayOrg = ($merchant->getOrgId() === Org::RAZORPAY_ORG_ID);
+        $isRazorpayOrg = $merchant->isRazorpayOrgId();
 
         if (($isRazorpayOrg === false) or
             ($this->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === true))
@@ -3344,7 +3344,7 @@ class Core extends Base\Core
      */
     public function isUnRegisteredOnBoardingEnabled(Entity $merchant, bool $isUnregisteredBusiness, $mode = null): bool
     {
-        $isRazorpayOrgId = ($merchant->getOrgId() === Org::RAZORPAY_ORG_ID);
+        $isRazorpayOrgId = $merchant->isRazorpayOrgId();
 
         return (($isRazorpayOrgId === true) and
                 ($this->app['basicauth']->getRequestOriginProduct() === Product::PRIMARY) and
@@ -3353,7 +3353,7 @@ class Core extends Base\Core
 
     public function isAutoKycEnabled(Detail\Entity $merchantDetails, Entity $merchant): bool
     {
-        $isRazorpayOrgId = ($merchant->getOrgId() === Org::RAZORPAY_ORG_ID);
+        $isRazorpayOrgId = $merchant->isRazorpayOrgId();
 
         // if merchant belongs to some different org then don't to auto kyc
         if ($isRazorpayOrgId === false)
@@ -3662,7 +3662,7 @@ class Core extends Base\Core
     {
         //if merchant is non org merchant then enable international for all the live products
         // irrespective of the input given.
-        if ($merchant->getOrgId() !== Org::RAZORPAY_ORG_ID)
+        if ($merchant->isRazorpayOrgId() === false)
         {
             $internationalProducts = ProductInternationalMapper::LIVE_PRODUCTS;
         }

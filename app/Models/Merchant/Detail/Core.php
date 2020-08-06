@@ -9,6 +9,7 @@ use Config;
 use Carbon\Carbon;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\State;
 use RZP\Diag\EventCode;
@@ -29,6 +30,7 @@ use RZP\Models\Admin\Permission;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Merchant\Constants;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\LegalEntity;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Jobs\OnboardingKycVerification;
@@ -1334,6 +1336,8 @@ class Core extends Base\Core
             $this->fetchActivationStatusTransitionMetricDimensions(
                 $merchantDetails->getActivationStatus(),
                 $currentActivationStatus));
+
+        $this->sendSmsBasedOnMilestones($currentActivationStatus, $merchantDetails);
 
         return $merchantDetails;
     }
@@ -2724,4 +2728,106 @@ class Core extends Base\Core
 
         return [$merchant, $merchantDetails];
     }
+
+    /**
+     * @param Entity $merchantDetail
+     * @param string $template
+     *
+     * @throws Exception\ServerErrorException
+     */
+    public function sendOnboardingJourneySms(Entity $merchantDetail, string $template)
+    {
+        if ($merchantDetail->merchant->isRazorpayOrgId() === false)
+        {
+            return;
+        }
+
+        $payload = [
+            'receiver' => $merchantDetail->getContactMobile(),
+            'template' => $template,
+            'source'   => SmsTemplates::ONBOARDING_SOURCE,
+            'params'   => [
+                'merchantName' => $merchantDetail->merchant->getName(),
+                'dashboardUrl' => $this->app['config']->get('applications.dashboard.url')
+            ]
+        ];
+
+        $this->trace->info(TraceCode::MERCHANT_ONBOARDING_SMS_SENT,
+                           ['mid'      => $merchantDetail->getMerchantId(),
+                            'template' => $payload['template']]);
+        try
+        {
+            $this->app->raven->sendSms($payload);
+        }
+
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::CRITICAL,
+                                         TraceCode::MERCHANT_ONBOARDING_SMS_FAILED,
+                                         ['mid'      => $merchantDetail->getMerchantId(),
+                                          'template' => $payload['template']]
+            );
+        }
+    }
+
+    /**
+     * @param string|null $oldActivationStatus
+     * @param Entity      $merchantDetail
+     *
+     * @throws Exception\ServerErrorException
+     */
+    private function sendSmsBasedOnMilestones(?string $oldActivationStatus, Entity $merchantDetail)
+    {
+        $newActivationStatus = $merchantDetail->getActivationStatus();
+
+        if ($newActivationStatus === $oldActivationStatus ||
+            $merchantDetail->merchant->isRazorpayOrgId() === false)
+        {
+            return;
+        }
+
+        switch ($newActivationStatus)
+        {
+            case Status::INSTANTLY_ACTIVATED:
+                {
+                    if ((Detail\BusinessType::isUnregisteredBusiness($merchantDetail->getBusinessType()) === true))
+                    {
+                        $this->sendOnboardingJourneySms($merchantDetail,
+                                                        SmsTemplates::UNREGISTERED_PAYMENTS_ENABLED);
+                    }
+                    else
+                    {
+                        $this->sendOnboardingJourneySms($merchantDetail,
+                                                        SmsTemplates::REGISTERED_PAYMENTS_ENABLED);
+                    }
+                }
+                break;
+            case Status::NEEDS_CLARIFICATION:
+                {
+                    $this->sendOnboardingJourneySms($merchantDetail,
+                                                    SmsTemplates::NEEDS_CLARIFICATION);
+                }
+                break;
+            case Status::ACTIVATED:
+                {
+                    if ((Detail\BusinessType::isUnregisteredBusiness($merchantDetail->getBusinessType()) === true))
+                    {
+                        $this->sendOnboardingJourneySms($merchantDetail,
+                                                        SmsTemplates::UNREGISTERED_SETTLEMENTS_ENABLED);
+                    }
+                    else
+                    {
+                        if ($oldActivationStatus !== Status::INSTANTLY_ACTIVATED)
+                        {
+                            $this->sendOnboardingJourneySms($merchantDetail,
+                                                            SmsTemplates::REGISTERED_PAYMENTS_SETTLEMENTS_ENABLED);
+                        }
+                    }
+                }
+                break;
+        }
+
+    }
+
 }

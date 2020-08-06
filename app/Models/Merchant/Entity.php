@@ -2646,4 +2646,9 @@ class Entity extends Base\PublicEntity
 
         return true;
     }
+
+    public function isRazorpayOrgId() :bool
+    {
+        return $this->getOrgId() === Org\Entity::RAZORPAY_ORG_ID;
+    }
 }

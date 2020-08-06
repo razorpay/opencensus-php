@@ -217,6 +217,8 @@ class PennyTesting extends Base\Core
 
                 $merchantDetails->setKycClarificationReasons($kycClarification);
 
+                $detailCore->sendOnboardingJourneySms($merchantDetails, SmsTemplates::PENNY_TESTING_FAILURE);
+
                 break;
             default:
                 throw  new LogicException("Unhandled bank detail verification status");

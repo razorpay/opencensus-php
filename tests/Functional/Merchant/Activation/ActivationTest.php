@@ -7,6 +7,7 @@ use App;
 use Mail;
 use Queue;
 use Config;
+use Mockery;
 
 use Carbon\Carbon;
 use RZP\Constants\Mode;
@@ -1013,6 +1014,9 @@ class ActivationTest extends OAuthTestCase
         $merchantId = '1cXSLlUU8V9sXl';
 
         $data = $this->getKycSubmittedMerchantDetailData($merchantId);
+
+        $this->mockRaven();
+
         $this->fixtures->create('merchant_detail', $data);
 
         $this->fixtures->on('live')->create('methods:default_methods', [
@@ -2107,6 +2111,8 @@ class ActivationTest extends OAuthTestCase
     {
         Mail::fake();
 
+        $this->mockRaven();
+
         $this->fixtures->create('fund_account_validation', $attribute);
 
         $fav = $this->getLastEntity('fund_account_validation', true, 'test');
@@ -2413,6 +2419,28 @@ class ActivationTest extends OAuthTestCase
                                         'promoter_pan_name'       => 'pankaj kumar',
                                         'cin_verification_status' => 'failed'
                                     ]);
+    }
+
+    protected function mockRaven()
+    {
+        $raven = Mockery::mock('RZP\Services\Raven')->makePartial();
+
+        $this->app->instance('raven', $raven);
+
+        $raven->shouldReceive('sendRequest')
+              ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+              ->andReturnUsing(function ($route, $method, $input)
+              {
+                  $this->mockedRavenRequest = [$route, $method, $input];
+
+                  $response = [
+                      'success' => true,
+                  ];
+
+                  return $response;
+              })->between(1, 10);
+
+        $this->app->instance('raven', $raven);
     }
 
 }
