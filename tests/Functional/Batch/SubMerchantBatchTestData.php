@@ -454,7 +454,7 @@ return [
             Header::BILLING_LABEL            => 'acme',
             Header::INTERNATIONAL            => 0,
             Header::PAYMENTS_FOR             => 'business',
-            Header::BUSINESS_MODEL           => 'Acme corp. dummy business model for razorpay. for testing',
+            Header::BUSINESS_MODEL           => 'acme',
             Header::BUSINESS_CATEGORY        => 'financial_services',
             Header::BUSINESS_SUB_CATEGORY    => 'lending',
             Header::REGISTERED_ADDRESS       => 'acme',
@@ -490,7 +490,7 @@ return [
             Header::BILLING_LABEL            => 'acme',
             Header::INTERNATIONAL            => 0,
             Header::PAYMENTS_FOR             => 'business',
-            Header::BUSINESS_MODEL           => 'Acme corp. dummy business model for razorpay. for testing',
+            Header::BUSINESS_MODEL           => 'acme',
             Header::BUSINESS_CATEGORY        => 'financial_services',
             Header::BUSINESS_SUB_CATEGORY    => 'lending',
             Header::REGISTERED_ADDRESS       => 'acme',
@@ -526,7 +526,7 @@ return [
             Header::BILLING_LABEL            => 'acme',
             Header::INTERNATIONAL            => 0,
             Header::PAYMENTS_FOR             => 'business',
-            Header::BUSINESS_MODEL           => 'Acme corp. dummy business model for razorpay. for testing',
+            Header::BUSINESS_MODEL           => 'acme',
 
             // whitelisted activation flow
             Header::BUSINESS_CATEGORY        => 'education',
@@ -568,7 +568,7 @@ return [
             Header::BILLING_LABEL            => 'acme',
             Header::INTERNATIONAL            => 0,
             Header::PAYMENTS_FOR             => 'business',
-            Header::BUSINESS_MODEL           => 'Acme corp. dummy business model for razorpay. for testing',
+            Header::BUSINESS_MODEL           => 'acme',
 
             // whitelisted activation flow
             Header::BUSINESS_CATEGORY        => 'education',
@@ -610,7 +610,7 @@ return [
             Header::BILLING_LABEL            => 'acme',
             Header::INTERNATIONAL            => 0,
             Header::PAYMENTS_FOR             => 'business',
-            Header::BUSINESS_MODEL           => 'Acme corp. dummy business model for razorpay. for testing',
+            Header::BUSINESS_MODEL           => 'acme',
             Header::BUSINESS_CATEGORY        => 'financial_services',
             Header::BUSINESS_SUB_CATEGORY    => 'lending',
             Header::REGISTERED_ADDRESS       => 'acme',
