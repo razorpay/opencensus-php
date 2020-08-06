@@ -67,9 +67,9 @@ class Service extends Base\Service
         });
     }
 
-    public function updateStatusAfterPayoutRequest($payoutStatus, $payoutId, $settlementOndemandPayout)
+    public function updateStatusAfterPayoutRequest($payoutStatus, $payoutId, $settlementOndemandPayout, $response)
     {
-        $this->core()->updateStatusAfterPayoutRequest($payoutStatus, $payoutId, $settlementOndemandPayout);
+        $this->core()->updateStatusAfterPayoutRequest($payoutStatus, $payoutId, $settlementOndemandPayout, $response);
     }
 
     public function makePayoutRequest($settlementOndemandPayoutId, $currency)

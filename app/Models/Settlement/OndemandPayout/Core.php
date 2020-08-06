@@ -28,7 +28,10 @@ class Core extends Base\Core
 {
     const MODE_BUFFER_TIME = 1800;
 
-    const PAYOUT_PROCESSING_STATUS = 'processing';
+    const PAYOUT_PROCESSING_OR_PROCESSED_STATUS = [
+        'processing',
+        'processed',
+    ];
 
     const MAX_IMPS_AMOUNT = FundTransfer\Base\Initiator\NodalAccount::MAX_IMPS_AMOUNT * 100;
 
@@ -153,13 +156,19 @@ class Core extends Base\Core
         return $settlementOndemandPayouts;
     }
 
-    public function updateStatusAfterPayoutRequest($payoutStatus, $payoutId, Entity $settlementOndemandPayout)
+    public function updateStatusAfterPayoutRequest($payoutStatus,
+                                                   $payoutId,
+                                                   Entity $settlementOndemandPayout,
+                                                   $response)
     {
-        if ($payoutStatus !== self::PAYOUT_PROCESSING_STATUS || empty($payoutId) === true)
+        if ((empty($payoutId) === true) or
+            (in_array($payoutStatus, self::PAYOUT_PROCESSING_OR_PROCESSED_STATUS, true) === false))
         {
-            $this->initiateReversal($settlementOndemandPayout->getId(),
-                                    $settlementOndemandPayout->getMerchantId(),
-                                    'payout creation request failed');
+            throw new BadRequestException(ErrorCode::SERVER_ERROR_RAZORPAYX_PAYOUT_CREATION_FAILURE,
+                null,
+                [
+                    'response'   => $response,
+                ]);
         }
         else
         {
@@ -170,6 +179,11 @@ class Core extends Base\Core
             $settlementOndemandPayout->setInitiatedAt(Carbon::now(Timezone::IST)->getTimestamp());
 
             $this->repo->saveOrFail($settlementOndemandPayout);
+
+            if ($payoutStatus === Status::PROCESSED)
+            {
+                $this->handlePayoutProcessedEvent($settlementOndemandPayout, $response['utr']);
+            }
         }
     }
 
@@ -209,8 +223,9 @@ class Core extends Base\Core
                 }
                 else
                 {
-                    $this->initiateReversal($settlementOndemandPayout->getId(), $settlementOndemandPayout->getMerchantId(),
-                        $payoutData['failure_reason']);
+                    $this->initiateReversal($settlementOndemandPayout->getId(),
+                                            $settlementOndemandPayout->getMerchantId(),
+                                            $payoutData['failure_reason']);
 
                     $response = ['response' => 'status updated'];
                 }

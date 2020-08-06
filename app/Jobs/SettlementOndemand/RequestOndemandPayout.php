@@ -5,10 +5,14 @@ namespace RZP\Jobs\SettlementOndemand;
 use App;
 
 use RZP\Jobs\Job;
+use RZP\Error\Error;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Services\RazorpayXClient;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Ondemand;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\GatewayErrorException;
 use RZP\Models\Settlement\OndemandPayout;
 use RZP\Models\Settlement\OndemandFundAccount;
 
@@ -63,7 +67,8 @@ class RequestOndemandPayout extends Job
 
                 (new OndemandPayout\Service)->updateStatusAfterPayoutRequest($payoutStatus,
                                                                              $payoutId,
-                                                                             $this->settlementOndemandPayout);
+                                                                             $this->settlementOndemandPayout,
+                                                                             $response);
             });
         }
         catch (\Throwable $e)

@@ -56,7 +56,7 @@ class RazorpayXClient
 
     public function createFundAccount($contactId, $data)
     {
-        if ((empty($data['name']) === true) || 
+        if ((empty($data['name']) === true) ||
             (empty($data['ifsc']) === true) ||
             (empty($data['account_number']) === true))
         {
@@ -118,7 +118,7 @@ class RazorpayXClient
 
     public function makePayoutRequest($data, $idempotencyKey)
     {
-        if ((empty($data['fund_account_id']) === true) || 
+        if ((empty($data['fund_account_id']) === true) ||
             (empty($data['amount']) === true) ||
             (empty($data['currency']) === true) ||
             (empty($data['mode']) === true) ||
@@ -143,6 +143,11 @@ class RazorpayXClient
         $responseBody = $this->makeRequest('payouts', $data , self::POST, $customHeaders)->body;
 
         $responseMap = json_decode($responseBody, true);
+
+        $this->trace->info(TraceCode::CREATE_SETTLEMENT_ONDEMAND_PAYOUT_RESPONSE, [
+            'settlement_ondemand_payout_id'    => $data['reference_id'],
+            'response'                         => $responseMap,
+        ]);
 
         if (isset($responseMap['id']) === false)
         {
@@ -188,6 +193,26 @@ class RazorpayXClient
                 ErrorCode::SERVER_ERROR_RAZORPAYX_FAILURE,
                 '',
                 $e->getMessage());
+        }
+
+        $this->trace->info(TraceCode::RAZORPAYX_CLIENT_RESPONSE, [
+            'body'          => $response->body,
+            'status_code'   => $response->status_code,
+        ]);
+
+        if (in_array($response->status_code, [503, 504], true) === true)
+        {
+            throw new Exception\GatewayTimeoutException('Response status: '. $response->status_code);
+        }
+        else if ($response->status_code >= 400)
+        {
+            $e = new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
+
+            $data = ['status_code' => $response->status_code, 'body' => $response->body];
+            $e->setData($data);
+
+            throw $e;
         }
 
         return $response;
