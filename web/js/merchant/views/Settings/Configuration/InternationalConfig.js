@@ -357,10 +357,16 @@ class InternationalConfig extends Component {
 
   get isInternationalPaymentsAllowed() {
     const { user } = this.props;
-    return (
-      user.international_activation_flow !== 'blacklist' &&
-      !user.isUnregisteredBusiness
-    );
+
+    if (user.isUnregisteredBusiness && !this.isAnyProductIntlApproved) {
+      return false;
+    }
+
+    if (this.isInternationalBlackList) {
+      return false;
+    }
+
+    return true;
   }
 
   get isInternationalGreyList() {
