@@ -5,6 +5,7 @@ namespace RZP\Http;
 use ApiResponse;
 use Illuminate\Routing\Router;
 
+use RZP\Constants\Mode;
 use RZP\Constants\Entity;
 use RZP\Models\IdempotencyKey;
 use RZP\Http\Request\Requests;
@@ -5551,7 +5552,7 @@ class Route
     // NOTE: Currently this feature is under razorx with merchant id,
     // so add only proxy auth routes which have merchant Id
     public static $twoFactorAuthRequiredRoutes = [
-        'merchant_replace_key',
+        'merchant_replace_key'                  => [Mode::LIVE],
     ];
 
     /**

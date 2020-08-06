@@ -3,20 +3,22 @@
 namespace RZP\Tests\Functional\BasicAuth;
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Factory;
-
 use RZP\Models\Key;
+
 use RZP\Models\Merchant;
 use RZP\Services\RazorXClient;
 
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Partner\PartnerTrait;
+use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class BasicAuthTest extends TestCase
 {
     use PartnerTrait;
+    use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
     public function setUp()
@@ -495,95 +497,106 @@ class BasicAuthTest extends TestCase
 
     public function testRequestWithTwoFaRequiredWithTwoFaVerifiedTrue()
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
+        $this->mockRazorxWith(
+            Merchant\RazorxTreatment::VALIDATE_USER_2FA_STATUS, 'on');
 
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
-
-        $merchant = $this->fixtures->create('merchant:with_keys');
-
+        $merchant = $this->fixtures->create('merchant:with_keys', [
+            // Required for updating keys in live mode
+            Merchant\Entity::HAS_KEY_ACCESS => true,
+            Merchant\Entity::ACTIVATED      => true,
+        ]);
         $merchantId = $merchant->getId();
 
-        $key = $this->fixtures->key->create([
-            Key\Entity::ID                  => 'exampleexample',
-            Key\Entity::MERCHANT_ID         => $merchantId,
-        ]);
+        $key = $this->getDbEntity('key',
+        [
+            'merchant_id'   => $merchantId,
+        ], 'live');
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId, [], 'owner');
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId, [], 'owner', 'live');
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/keys/rzp_test_'.$key->getId();
+        $testData['request']['url'] = '/keys/rzp_live_'.$key->getId();
 
-        $this->ba->proxyAuth('rzp_test_'.$merchantId, $merchantUser->getId());
+        $this->ba->proxyAuth('rzp_live_'.$merchantId, $merchantUser->getId());
 
         $this->startTest();
     }
 
     public function testRequestWithTwoFaRequiredWithTwoFaVerifiedFalse()
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
+        $this->mockRazorxWith(
+            Merchant\RazorxTreatment::VALIDATE_USER_2FA_STATUS);
 
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
-
-        $key = $this->fixtures->key->create([
-            Key\Entity::MERCHANT_ID             => '10000000000000',
+        $merchant = $this->fixtures->create('merchant:with_keys', [
+            // Required for updating keys in live mode
+            Merchant\Entity::HAS_KEY_ACCESS => true,
+            Merchant\Entity::ACTIVATED      => true,
         ]);
+        $merchantId = $merchant->getId();
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant();
+        $key = $this->getDbEntity('key',
+        [
+            'merchant_id'   => $merchantId,
+        ], 'live');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId, [], 'owner', 'live');
 
         $testData = & $this->testData[__FUNCTION__];
 
         $testData['request']['url'] = '/keys/rzp_live_'.$key->getId();
 
-        $this->ba->proxyAuth('rzp_live_10000000000000', $merchantUser->getId());
+        $this->ba->proxyAuth('rzp_live_'.$merchantId, $merchantUser->getId());
 
         $this->startTest();
     }
 
     public function testRequestWithTwoFaRequiredWithTwoFaVerifiedFalseFromBanking()
     {
-        $razorxMock = $this->getMockBuilder(RazorxClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
+        $this->mockRazorxWith(
+            Merchant\RazorxTreatment::VALIDATE_USER_2FA_STATUS);
 
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->will(
-                $this->returnCallback(
-                    function (string $mid, string $feature, string $mode)
-                    {
-                        if ($feature === Merchant\RazorxTreatment::VALIDATE_USER_2FA_STATUS)
-                        {
-                            return 'on';
-                        }
-                        return 'control';
-                    }
-                ));
-
-        $merchant = $this->fixtures->create('merchant:with_keys');
-
+        $merchant = $this->fixtures->create('merchant:with_keys', [
+            // Required for updating keys in live mode
+            Merchant\Entity::HAS_KEY_ACCESS => true,
+            Merchant\Entity::ACTIVATED      => true,
+        ]);
         $merchantId = $merchant->getId();
 
-        $key = $this->fixtures->key->create([
-            Key\Entity::ID                  => 'exampleexample',
-            Key\Entity::MERCHANT_ID         => $merchantId,
-        ]);
+        $key = $this->getDbEntity('key',
+        [
+            'merchant_id'   => $merchantId,
+        ], 'live');
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant();
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId, [], 'owner');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/keys/rzp_live_'.$key->getId();
+
+        $this->ba->proxyAuth(
+            'rzp_live_'.$merchantId,
+            $merchantUser->getId());
+
+        $this->startTest();
+    }
+
+    // This should pass even TwoFaVerified false,
+    // since key update is a critical action only in live mode and not in test mode
+    public function testRequestWithTwoFaRequiredOnlyOnLiveWithTwoFaVerifiedFalse()
+    {
+        $this->mockRazorxWith(
+            Merchant\RazorxTreatment::VALIDATE_USER_2FA_STATUS);
+
+        $merchant = $this->fixtures->create('merchant:with_keys');
+        $merchantId = $merchant->getId();
+
+        $key = $this->getDbEntity('key',
+        [
+            'merchant_id'   => $merchantId,
+        ], 'test');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId, [], 'owner');
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -608,5 +621,23 @@ class BasicAuthTest extends TestCase
         $this->replaceValuesRecursively($testData, $testDataToReplace);
 
         return $this->runRequestResponseFlow($testData);
+    }
+
+    private function mockRazorxWith(string $featureUnderTest, string $value = 'on')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')->will(
+            $this->returnCallback(
+                function (string $mid, string $feature, string $mode) use ($featureUnderTest, $value)
+                {
+                    return $feature === $featureUnderTest ? $value : 'control';
+                }
+            ));
     }
 }

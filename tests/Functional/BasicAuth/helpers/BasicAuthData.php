@@ -728,4 +728,21 @@ return [
             'internal_error_code'   => 'BAD_REQUEST_USER_2FA_VALIDATION_REQUIRED',
         ],
     ],
+
+    'testRequestWithTwoFaRequiredOnlyOnLiveWithTwoFaVerifiedFalse'      => [
+        'request'       => [
+            // URL will be set in the function
+            'method'    => 'PUT',
+            'content'   => [
+                'delay_roll'       => '1',
+            ],
+            'server'    => [
+                'HTTP_X-Dashboard-User-Role'                => 'owner',
+            ],
+        ],
+
+        'response'      => [
+            'content'       => [],
+        ],
+    ]
 ];

@@ -272,9 +272,11 @@ class Merchant extends Base
         return $merchant;
     }
 
-    public function createWithKeys()
+    public function createWithKeys($attributes)
     {
-        $merchant = $this->fixtures->create('merchant', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+        $merchant = $this->fixtures->create(
+            'merchant',
+            array_merge(['pricing_plan_id' => '1hDYlICobzOCYt'], $attributes));
 
         $merchantId = $merchant->getId();
 

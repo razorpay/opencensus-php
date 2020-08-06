@@ -124,7 +124,8 @@ class UserAccess
             $this->ba->verifyAndSetUser();
 
             // Check for routes requiring 2FA validation
-            if (in_array($route, Route::$twoFactorAuthRequiredRoutes, true) === true)
+            if ((array_key_exists($route, Route::$twoFactorAuthRequiredRoutes) === true) and
+                (in_array($this->ba->getMode(), Route::$twoFactorAuthRequiredRoutes[$route]) === true))
             {
                 $this->validateUser2FaStatus();
             }
