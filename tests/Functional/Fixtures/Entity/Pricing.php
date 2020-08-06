@@ -1462,4 +1462,48 @@ class Pricing extends Base
 
         return $pricingPlanId;
     }
+
+    public function createBankTransferPercentPricingPlan(array $attributes = [])
+    {
+        $pricingPlanId = 'BtPercentPrcng';
+
+        $row = array_merge(
+            [
+                'plan_id'               => $pricingPlanId,
+                'plan_name'             => 'Bank transfer percent pricing',
+                'feature'               => 'payment',
+                'payment_method'        => 'bank_transfer',
+                'percent_rate'          => 100,
+                'fixed_rate'            => 0,
+                'org_id'                => '100000razorpay',
+            ],
+            $attributes
+        );
+
+        $this->addPricingRulesToDb(array($row));
+
+        return $pricingPlanId;
+    }
+
+    public function createBankTransferFixedPricingPlan(array $attributes = [])
+    {
+        $pricingPlanId = 'BtFixedPricing';
+
+        $row = array_merge(
+            [
+                'plan_id'               => $pricingPlanId,
+                'plan_name'             => 'Bank transfer percent pricing',
+                'feature'               => 'payment',
+                'payment_method'        => 'bank_transfer',
+                'percent_rate'          => 0,
+                'fixed_rate'            => 1000,
+                'org_id'                => '100000razorpay',
+            ],
+            $attributes
+        );
+
+        $this->addPricingRulesToDb(array($row));
+
+        return $pricingPlanId;
+    }
 }

@@ -173,7 +173,7 @@ class Processor extends VirtualAccount\Processor
 
             $gatewayData[Payment\Entity::TERMINAL_ID] = $terminal->getId();
 
-            $this->createPayment($paymentInput, $gatewayData);
+            $this->createPaymentOrUnexpected($bankTransfer, $paymentInput, $gatewayData);
 
             $payment = $this->getPaymentProcessor()->getPayment();
 
@@ -204,6 +204,50 @@ class Processor extends VirtualAccount\Processor
 
             throw $ex;
         }
+    }
+
+    protected function createPaymentOrUnexpected(Entity $bankTransfer, array $input, array $gatewayData = [])
+    {
+        try
+        {
+            return $this->createPayment($input, $gatewayData);
+        }
+        catch (Exception $ex)
+        {
+            if (UnexpectedReason::shouldCreateUnexpectedPayment($ex->getMessage()) === true)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    null,
+                    TraceCode::VIRTUAL_ACCOUNT_FAILED_PAYMENT_REROUTED_TO_SHARED
+                );
+
+                $bankTransfer->setExpected(false);
+
+                $bankTransfer->setUnexpectedReason($ex->getMessage());
+
+                return $this->createUnexpectedPayment($bankTransfer, $gatewayData);
+            }
+
+            throw $ex;
+        }
+    }
+
+    protected function createUnexpectedPayment(Entity $bankTransfer, array $gatewayData = [])
+    {
+        $this->virtualAccount = (new VirtualAccount\Core())->createOrFetchSharedVirtualAccount();
+
+        $this->setMerchant();
+
+        $bankTransfer->merchant()->associate($this->merchant);
+
+        $bankTransfer->virtualAccount()->associate($this->virtualAccount);
+
+        $input = $this->getPaymentArray($bankTransfer);
+
+        $this->paymentProcessor = new Payment\Processor\Processor($this->merchant);
+
+        return $this->createPayment($input, $gatewayData);
     }
 
     protected function processPaymentForBanking(Entity $bankTransfer)

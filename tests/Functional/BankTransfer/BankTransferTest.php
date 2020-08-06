@@ -2950,19 +2950,54 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferForCustomerFeeBearerWithPercentRate()
     {
-        $this->fixtures->merchant->enableConvenienceFeeModel('10000000000000');
+        $pricingPlanId = $this->fixtures->create('pricing:bank_transfer_percent_pricing_plan', ['fee_bearer' => 'customer']);
 
-        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => 'customer']);
+        $this->fixtures->merchant->createAccount('20000000000000');
+        $this->fixtures->merchant->enableMethod('20000000000000', 'bank_transfer');
+        $this->fixtures->merchant->enableConvenienceFeeModel('20000000000000');
+        $this->fixtures->merchant->edit('20000000000000', ['pricing_plan_id' => $pricingPlanId]);
 
-        $accountNumber = $this->bankAccount['account_number'];
-        $ifsc = $this->bankAccount['ifsc'];
+        $virtualAccount = $this->fixtures->create(
+            'virtual_account',
+            [
+                'merchant_id'   => '20000000000000',
+                'status'        => 'active',
+            ]
+        );
+        $bankAccount = $this->fixtures->create(
+            'bank_account',
+            [
+                'merchant_id'       => '20000000000000',
+                'entity_id'         => $virtualAccount->getId(),
+                'type'              => 'virtual_account',
+                'account_number'    => '1112229988776655',
+                'ifsc_code'         => 'RAZR0000002',
+            ]
+        );
+        $this->fixtures->edit(
+            'virtual_account',
+            $virtualAccount->getId(),
+            ['bank_account_id' => $bankAccount->getId()]
+        );
 
-        $response = $this->processBankTransfer($accountNumber, $ifsc, null, 100);
-        $this->assertEquals(false, $response['valid']);
+        $response = $this->processBankTransfer('1112229988776655', 'RAZR0000002', null, 100);
+        $this->assertEquals(true, $response['valid']);
         $this->assertNull($response['message']);
 
+        $bankTransfer = $this->getDbLastEntity('bank_transfer');
+        $this->assertEquals('1112229988776655', $bankTransfer['payee_account']);
+        $this->assertEquals('RAZR0000002', $bankTransfer['payee_ifsc']);
+        $this->assertEquals(false, $bankTransfer['expected']);
+        $this->assertEquals('Payment failed because fees or tax was tampered', $bankTransfer['unexpected_reason']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('authorized', $payment['status']);
+
         $this->runBankTransferRequestAssertions(
-            false,
+            true,
             'Payment failed because fees or tax was tampered'
         );
     }
@@ -2992,6 +3027,59 @@ class BankTransferTest extends TestCase
         );
     }
 
+    public function testBankTransferForPlatformFeeBearerWithPaymentLessThanFee()
+    {
+        $pricingPlanId = $this->fixtures->create('pricing:bank_transfer_fixed_pricing_plan', ['fee_bearer' => 'platform']);
+
+        $this->fixtures->merchant->createAccount('20000000000000');
+        $this->fixtures->merchant->enableMethod('20000000000000', 'bank_transfer');
+        $this->fixtures->merchant->edit('20000000000000', ['pricing_plan_id' => $pricingPlanId]);
+
+        $virtualAccount = $this->fixtures->create(
+            'virtual_account',
+            [
+                'merchant_id'   => '20000000000000',
+                'status'        => 'active',
+            ]
+        );
+        $bankAccount = $this->fixtures->create(
+            'bank_account',
+            [
+                'merchant_id'       => '20000000000000',
+                'entity_id'         => $virtualAccount->getId(),
+                'type'              => 'virtual_account',
+                'account_number'    => '1112229988776655',
+                'ifsc_code'         => 'RAZR0000002',
+            ]
+        );
+        $this->fixtures->edit(
+            'virtual_account',
+            $virtualAccount->getId(),
+            ['bank_account_id' => $bankAccount->getId()]
+        );
+
+        $response = $this->processBankTransfer('1112229988776655', 'RAZR0000002', null, 1);
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        $bankTransfer = $this->getDbLastEntity('bank_transfer');
+        $this->assertEquals('1112229988776655', $bankTransfer['payee_account']);
+        $this->assertEquals('RAZR0000002', $bankTransfer['payee_ifsc']);
+        $this->assertEquals(false, $bankTransfer['expected']);
+        $this->assertEquals('The fees calculated for payment is greater than the payment amount. Please provide a higher amount', $bankTransfer['unexpected_reason']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->runBankTransferRequestAssertions(
+            true,
+            'The fees calculated for payment is greater than the payment amount. Please provide a higher amount'
+        );
+    }
+
     public function testBankTransferForCancelledInvoice()
     {
         $this->createInvoice(['status' => 'issued']);
@@ -2999,8 +3087,6 @@ class BankTransferTest extends TestCase
         $order = $this->getDbLastEntity('order');
 
         $response = $this->createVirtualAccountForOrder($order);
-
-        $virtualAccountId = $response['id'];
 
         $accountNumber = $response['receivers'][0]['account_number'];
         $ifsc = $response['receivers'][0]['ifsc'];
@@ -3011,17 +3097,27 @@ class BankTransferTest extends TestCase
         $this->makeRequestAndGetContent($request);
 
         $response = $this->processBankTransfer($accountNumber, $ifsc, null, 1000);
-        $this->assertEquals(false, $response['valid']);
+        $this->assertEquals(true, $response['valid']);
         $this->assertNull($response['message']);
 
+        $bankTransfer = $this->getDbLastEntity('bank_transfer');
+        $this->assertEquals('10000000000000', $bankTransfer['merchant_id']);
+        $this->assertEquals('ShrdVirtualAcc', $bankTransfer['virtual_account_id']);
+        $this->assertEquals(false, $bankTransfer['expected']);
+        $this->assertEquals('Invoice is not payable in cancelled status.', $bankTransfer['unexpected_reason']);
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('authorized', $payment['status']);
+
         $this->runBankTransferRequestAssertions(
-            false,
+            true,
             'Invoice is not payable in cancelled status.',
             [
-                'virtual_account_id'    => $virtualAccountId,
+                'virtual_account_id'    => 'va_ShrdVirtualAcc',
                 'merchant_id'           => '10000000000000',
-                'bank_transfer_id'      => null,
-                'order_id'              => 'order_' . $order['id'],
+                'bank_transfer_id'      => $bankTransfer->getPublicId(),
+                'order_id'              => null,
             ]
         );
     }
