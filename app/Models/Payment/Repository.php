@@ -303,6 +303,7 @@ class Repository extends Base\Repository
     public function fetchOldCreatedPaymentsForMethodForTimeout(int $fromTimestamp, int $toTimestamp, int $limit, string $method)
     {
         return $this->newQuery()
+                    ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
                     ->status(Payment\Status::CREATED)
                     ->where(Payment\Entity::CREATED_AT, '>=', $fromTimestamp)
                     ->where(Payment\Entity::CREATED_AT, '<=', $toTimestamp)

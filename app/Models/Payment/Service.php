@@ -1847,9 +1847,9 @@ class Service extends Base\Service
     {
         RuntimeManager::setMemoryLimit('1024M');
 
-        RuntimeManager::setTimeLimit(180);
+        RuntimeManager::setTimeLimit(1200);
 
-        RuntimeManager::setMaxExecTime(180);
+        RuntimeManager::setMaxExecTime(1200);
     }
 
     public function autoCaptureOldAuthorizedPayments()
