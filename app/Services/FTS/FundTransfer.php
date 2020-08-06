@@ -125,6 +125,18 @@ class FundTransfer extends Base
         ],
     ];
 
+    // add channel and identifier here for new channels
+    protected $channelToIdentifierMapping = [
+        Channel::ICICI   => IFSC::ICIC,
+        Channel::YESBANK => IFSC::YESB,
+    ];
+
+    protected $iciciVaIfsc = [
+        'ICIC0000103',
+        'ICIC0000104',
+        'ICIC0000106',
+    ];
+
     const SOURCE_TYPES = [
         Constants::REFUND,
         Constants::PAYOUT,
@@ -713,7 +725,7 @@ class FundTransfer extends Base
             $input);
     }
 
-    public function modifyModeIfRequired()
+    public function modifyModeIfRequired(): bool
     {
         // Assumption is that the validation would have happened already before this
         // step and hence we can assume that the bank account exists and is valid.
@@ -727,26 +739,35 @@ class FundTransfer extends Base
 
             $ifscFirstFour = substr($ifsc, 0, 4);
 
-            $ifscIdentifier = IFSC::YESB;
-
-            if ((starts_with($ifscFirstFour, $ifscIdentifier) === true) and ($channel === Channel::YESBANK))
+            if (array_key_exists($channel, $this->channelToIdentifierMapping) === false)
+            {
+                return false;
+            }
+            if ($channel == Channel::ICICI and in_array($ifsc, $this->iciciVaIfsc, true) === true)
+            {
+                return false;
+            }
+            if ($this->channelToIdentifierMapping[$channel] === $ifscFirstFour)
             {
                 $ifscLastDigits = substr($ifsc, 4, strlen($ifsc)-4);
 
-                if (is_numeric($ifscLastDigits) === true)
+                if (is_numeric($ifscLastDigits) === false)
                 {
-                    $this->fta->setMode(Mode::IFT);
+                    return false;
                 }
-                else
-                {
-                    $this->fta->setMode(Mode::NEFT);
-                }
+
+                $this->fta->setMode(Mode::IFT);
+
+                return true;
             }
         }
+        return false;
     }
 
     public function shouldAllowTransfersViaFts()
     {
+        $modeChanged = false;
+
         if ($this->mode === ModeConstants::TEST)
         {
             return [false, 'Transfers not allowed on test mode'];
@@ -754,11 +775,18 @@ class FundTransfer extends Base
 
         list($mode, $shouldUpdateMode) = $this->getFTSFundTransferMode();
 
-        $this->modifyModeIfRequired();
-
         if ($shouldUpdateMode === true)
         {
             $this->fta->setMode($mode);
+        }
+
+        if (in_array($this->fta->getMode(), [Mode::NEFT, Mode::RTGS], true) === true)
+        {
+            $modeChanged = $this->modifyModeIfRequired();
+        }
+        if ($modeChanged === true || $shouldUpdateMode === true)
+        {
+            $this->FTACore->updateFTA($this->fta, 0);
         }
 
         $mode = $this->fta->getMode();
