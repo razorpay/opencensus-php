@@ -1270,7 +1270,10 @@ class Validator extends Base\Validator
         $params   = [
             Entity::OTP         => $input[Entity::OTP],
             Entity::TOKEN       => $input[Entity::TOKEN],
-            User\Entity::ACTION => "create_{$input[Entity::TYPE]}_batch",
+            //TODO : Doing this for the bulk payout approval. This is not how it should be done,
+            // ideally would have wanted to take the action as a param, but because of previously hard coded create_{}_batch, needed to do this
+            // Change After this is fixed
+            User\Entity::ACTION => $input[Entity::TYPE] === 'payout_approval'? 'bulk_payout_approve': "create_{$input[Entity::TYPE]}_batch",
         ];
 
         (new User\Core)->verifyOtp($params, $auth->getMerchant(), $auth->getUser(), $this->isTestMode());
