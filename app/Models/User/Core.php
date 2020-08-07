@@ -1095,7 +1095,13 @@ class Core extends Base\Core
      */
     public function verifyOtp(array $input, Merchant\Entity $merchant, Entity $user, bool $mock = false)
     {
+        $otp = $input['otp'];
+        unset($input['otp']);
+
+        //Unset OTP for logging
         $this->trace->info(TraceCode::USERS_VERIFY_OTP_FOR_ACTION, compact('input'));
+
+        $input['otp'] = $otp;
 
         $payload = $this->getTokenAndRavenOtpReqParams($input, $merchant, $user);
 
