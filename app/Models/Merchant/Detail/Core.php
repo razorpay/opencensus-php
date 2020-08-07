@@ -2823,6 +2823,11 @@ class Core extends Base\Core
                             $this->sendOnboardingJourneySms($merchantDetail,
                                                             SmsTemplates::REGISTERED_PAYMENTS_SETTLEMENTS_ENABLED);
                         }
+                        else
+                        {
+                            $this->sendOnboardingJourneySms($merchantDetail,
+                                                            SmsTemplates::UNREGISTERED_SETTLEMENTS_ENABLED);
+                        }
                     }
                 }
                 break;
