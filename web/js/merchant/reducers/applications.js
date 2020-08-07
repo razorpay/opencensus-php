@@ -21,13 +21,12 @@ export const fetchAppWebhooks = (appId, mode) => {
   });
 };
 
-const _makeWebhookPayload = data => {
-  let keepKeys = ['url', 'secret', 'events'];
-
+const _makeWebhookPayload = (data, appId) => {
   const payload = {
     url: data.url,
     secret: data.secret,
     events: {},
+    application_id: appId,
   };
 
   for (let k in data.events) {
@@ -41,7 +40,7 @@ const _makeWebhookPayload = data => {
 
 // mode is explicitly sent by partner->settings->webhook
 export const createAppWebhook = ({ appId, data, mode }) => {
-  let payload = _makeWebhookPayload(data);
+  let payload = _makeWebhookPayload(data, appId);
 
   return merchantFetch({
     url: `oauth/applications/${appId}/webhooks`,
@@ -52,8 +51,8 @@ export const createAppWebhook = ({ appId, data, mode }) => {
 };
 
 // mode is explicitly sent by partner->settings->webhook
-export const editAppWebhook = ({ data, mode }) => {
-  let payload = _makeWebhookPayload(data);
+export const editAppWebhook = ({ appId, data, mode }) => {
+  let payload = _makeWebhookPayload(data, appId);
   payload.active = data.active ? 1 : 0; // Send active field also in edit mode
 
   return merchantFetch({
