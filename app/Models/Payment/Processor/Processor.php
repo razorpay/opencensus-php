@@ -1091,6 +1091,17 @@ class Processor
         $terminal = $this->repo->beginTransactionAndRollback(
             function() use ($input, $receiver)
             {
+                //creating dummy order if order_id_mandatory feature is enabled for a merchant
+                //so that payment entity can be created. This is required during product switch.
+                $feature = \RZP\Models\Feature\Constants::ORDER_ID_MANDATORY;
+
+                if ($this->merchant->isFeatureEnabled($feature) === true)
+                {
+                    $order = $this->createDummyOrder($this->merchant);
+
+                    $input += [Payment\Entity::ORDER_ID => $order->getId()];
+                }
+
                 //
                 // We only create a dummy payment entity for purpose
                 // of bharat qr terminal selection and returning it.
@@ -1110,6 +1121,17 @@ class Processor
             });
 
         return $terminal;
+    }
+
+    public function createDummyOrder(Merchant\Entity $merchant)
+    {
+        $input = [
+            'amount'   => 50000,
+            'currency' => 'INR',
+            'receipt'  => 'rcptid42',
+        ];
+
+        return (new Order\Core())->create($input, $merchant);
     }
 
     public function processAndReturnFees(array & $input)

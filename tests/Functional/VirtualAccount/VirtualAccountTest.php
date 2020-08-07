@@ -2,8 +2,6 @@
 
 namespace RZP\Tests\Functional\VirtualAccount;
 
-use Mockery;
-use Closure;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
@@ -112,6 +110,33 @@ class VirtualAccountTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 
         $this->verifyEntityOrigin($response['id'], 'merchant', '10000000000000');
+    }
+
+    public function testCreateVirtualAccountWithOrderIdFeatureEnabled()
+    {
+        $this->fixtures->merchant->addFeatures(['order_id_mandatory']);
+
+        $response = $this->createVirtualAccount();
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->verifyEntityOrigin($response['id'], 'merchant', '10000000000000');
+
+        $order = $this->getDbEntity('order',
+                                          [
+                                              'merchant_id' => '10000000000000',
+                                          ], 'live');
+
+        $this->assertNull($order);
+
+        $order = $this->getDbEntity('order',
+                                    [
+                                        'merchant_id' => '10000000000000',
+                                    ], 'test');
+
+        $this->assertNull($order);
     }
 
     public function testCreateVirtualAccountWithCloseBy()
