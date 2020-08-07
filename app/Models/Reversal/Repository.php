@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Reversal;
 
+use DB;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Table;
@@ -12,6 +14,7 @@ use RZP\Models\Payment\Refund;
 use RZP\Models\Transaction\Type;
 use RZP\Exception\LogicException;
 use RZP\Models\Pricing\Calculator;
+use RZP\Models\Transaction\CreditType;
 use Illuminate\Database\Query\JoinClause;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Merchant\Invoice\Type as InvoiceType;
@@ -185,16 +188,17 @@ class Repository extends Base\Repository
 
     public function fetchFeesAndIdOfReversalsForGivenBalanceIdForPeriod($merchantId, $balanceId, $from, $to)
     {
-        $payoutsTable         = Table::PAYOUT;
-        $reversalsIdColumn    = $this->dbColumn(Entity::ID);
-        $balanceIdColumn      = $this->dbColumn(Entity::BALANCE_ID);
-        $payoutsIdColumn      = $this->repo->payout->dbColumn(PayoutEntity::ID);
-        $payoutsFeesColumn    = $this->repo->payout->dbColumn(PayoutEntity::FEES);
-        $entityTypeColumn     = $this->dbColumn(Entity::ENTITY_TYPE);
-        $payoutsFailedAtColumn = $this->repo->payout->dbColumn(PayoutEntity::FAILED_AT);
-
-        $reversalsCreatedAtColumn   = $this->repo->reversal->dbColumn(Entity::CREATED_AT);
+        $reversalsIdColumn          = $this->dbColumn(Entity::ID);
         $reversalsEntityIdColumn    = $this->dbColumn(Entity::ENTITY_ID);
+        $balanceIdColumn            = $this->dbColumn(Entity::BALANCE_ID);
+        $entityTypeColumn           = $this->dbColumn(Entity::ENTITY_TYPE);
+        $reversalsCreatedAtColumn   = $this->repo->reversal->dbColumn(Entity::CREATED_AT);
+
+        $payoutsTable               = Table::PAYOUT;
+        $payoutsIdColumn            = $this->repo->payout->dbColumn(PayoutEntity::ID);
+        $payoutsFeesColumn          = $this->repo->payout->dbColumn(PayoutEntity::FEES);
+        $payoutsFeeTypeColumn       = $this->repo->payout->dbColumn(PayoutEntity::FEE_TYPE);
+        $payoutsFailedAtColumn      = $this->repo->payout->dbColumn(PayoutEntity::FAILED_AT);
 
         return $this->newQuery()
                     ->select($reversalsIdColumn, $payoutsFeesColumn)
@@ -204,6 +208,7 @@ class Repository extends Base\Repository
                     ->whereBetween($reversalsCreatedAtColumn, [$from, $to])
                     ->whereNull($payoutsFailedAtColumn)
                     ->where($balanceIdColumn, $balanceId)
+                    ->where(DB::raw('COALESCE(' . $payoutsFeeTypeColumn. ', "")'), '!=', CreditType::REWARD_FEE)
                     ->get();
     }
 
