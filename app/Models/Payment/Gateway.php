@@ -767,6 +767,7 @@ class Gateway
         Payment\Gateway::BT_ICICI,
         Payment\Gateway::BT_RBL,
         Payment\Gateway::NETBANKING_JSB,
+        Payment\Gateway::CRED,
         Payment\Gateway::ENACH_RBL,
         Payment\Gateway::NACH_CITI,
         Payment\Gateway::ENACH_NPCI_NETBANKING,
