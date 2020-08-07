@@ -180,11 +180,93 @@ class InstrumentRequestProxyTest extends TestCase
 
                 $this->assertEquals($testCase[self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE], $method);
 
-                $this->assertEquals($testCase[self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE], $method);
-
                 $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], json_decode($content, true));
 
                 $this->assertArrayHasKey('X-Dashboard-Admin-Email', $additionalHeaders);
+
+                $response = new \Requests_Response;
+
+                $response->body = '
+                       {
+                        "data": {
+                           "testKey": "testValue"
+                        }
+                    }';
+
+                return $response;
+            }, 1);
+
+            $this->startTest();
+
+        }
+    }
+
+    public function testMerchantInstrumentMerchantDashboardProxy()
+    {
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $this->ba->proxyAuth();
+
+        $testCases = [
+            [
+                self::REQUEST       => [
+                    'url'      => '/merchant_instrument_request',
+                    'method'   => \Requests::POST,
+                    'content'   =>  [
+                        'instrument'    =>  'pg.cards.visa',
+                    ]
+                ],
+                self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/merchant_instrument_request',
+                self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::POST,
+                self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   => ['instrument' => 'pg.cards.visa', 'merchant_id' => '10000000000000'],
+            ],
+            [
+                self::REQUEST                              => [
+                    'url'      => '/merchant_instrument_request',
+                    'method'   => \Requests::GET,
+                ],
+                self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/merchant_instrument_request?merchant_id=10000000000000',
+                self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::GET,
+                self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   =>  '',
+            ],
+            [
+                self::REQUEST                              => [
+                    'url'      => '/merchant_instrument_request/mir_1234567',
+                    'method'   => \Requests::GET,
+                ],
+                self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/merchant_instrument_request/mir_1234567',
+                self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::GET,
+                self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   =>  '',
+            ],
+            [
+                self::REQUEST                              => [
+                    'url'      => '/merchant_instrument_request/mir_12341234',
+                    'method'   => \Requests::PATCH,
+                    'content'  => [
+                        'status'  => 'cancelled',
+                    ],
+                ],
+                self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/merchant_instrument_request/mir_12341234',
+                self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::PATCH,
+                self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   => [
+                    'status'    =>  'cancelled'
+                ],
+            ],
+        ];
+
+        foreach ($testCases as $testCase)
+        {
+            $this->testData[__FUNCTION__]['response'] = ['content' => ['testKey' => 'testValue']];
+
+            $this->testData[__FUNCTION__]['request'] = $testCase[self::REQUEST];
+
+            $this->mockTerminalsServiceSendRequest(function ($path, $content, $method, $additionalOptions = [], $additionalHeaders) use ($testCase) {
+
+                $this->assertEquals($testCase[self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE], $path);
+
+                $this->assertEquals($testCase[self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE], $method);
+
+                $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], json_decode($content, true));
 
                 $response = new \Requests_Response;
 

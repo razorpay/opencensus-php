@@ -1877,6 +1877,13 @@ class Route
         'patch_internal_instrument_requests'      => ['patch',     'internal_instrument_request',                               'InstrumentRequestController@patchInternalInstrumentRequests'    ],
         'instrument_request_razorx_admin'         => ['get',       'instrument_request/razorx/admin',                           'InstrumentRequestController@getRazorxForAdminDashboard'         ],
 
+
+        // merchant_instrument_requests
+        'merchant_instrument_request_create'                =>  ['post',    'merchant_instrument_request',                      'InstrumentRequestController@createMerchantInstrumentRequest'    ],
+        'merchant_instrument_request_get_by_merchant_id'    =>  ['get',     'merchant_instrument_request',                      'InstrumentRequestController@getMerchantInstrumentRequest'       ],
+        'merchant_instrument_request_get_by_id'             =>  ['get',     'merchant_instrument_request/{id}',                 'InstrumentRequestController@getMerchantInstrumentRequestById'   ],
+        'merchant_instrument_request_update_by_id'          =>  ['patch',   'merchant_instrument_request/{id}',                 'InstrumentRequestController@patchMerchantInstrumentRequestById' ],
+
         'create_promotions_events'                => ['post',      'promotions/events',                                        'PromotionEventController@create'],
 
 
@@ -2253,6 +2260,12 @@ class Route
         // Offline QR
         'link_offline_device',
         'fetch_offline_device_multiple',
+
+        // merchant_instrument_requests
+        'merchant_instrument_request_create',
+        'merchant_instrument_request_get_by_id',
+        'merchant_instrument_request_update_by_id',
+        'merchant_instrument_request_get_by_merchant_id',
     ];
 
     // Only routes defined in internalApps go here
@@ -4296,6 +4309,12 @@ class Route
         'fetch_internal_instrument_requests'          => Permission::VIEW_INTERNAL_INSTRUMENT_REQUESTS,
         'patch_internal_instrument_requests'          => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUESTS,
         'instrument_request_razorx_admin'             => '*',
+
+        // merchant instrument requests
+        'merchant_instrument_request_create'             => '*',
+        'merchant_instrument_request_get_by_id'          => '*',
+        'merchant_instrument_request_update_by_id'       => '*',
+        'merchant_instrument_request_get_by_merchant_id' => '*',
 
         //payout downtime fetch from X dashboard
         'fetch_payout_downtimes_enabled'              => '*',

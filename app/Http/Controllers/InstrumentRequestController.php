@@ -6,6 +6,7 @@ namespace RZP\Http\Controllers;
 use App;
 use Request;
 use ApiResponse;
+use RZP\Trace\TraceCode;
 use Illuminate\Routing\Controller as BaseController;
 
 
@@ -21,6 +22,8 @@ class InstrumentRequestController extends BaseController
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
+
+        $this->trace = $this->app['trace'];
     }
 
     public function getInternalInstrumentRequestById(string $id)
@@ -128,5 +131,85 @@ class InstrumentRequestController extends BaseController
     protected function getAdminEmail() : string
     {
         return $this->app['basicauth']->getDashboardHeaders()['admin_email'] ?? '';
+    }
+
+    public function createMerchantInstrumentRequest() 
+    {
+        $input = Request::all();
+        
+        $merchant = $this->app['basicauth']->getMerchant();
+                
+        $this->trace->info(
+            TraceCode::CREATE_MERCHANT_INSTRUMENT_REQUEST,
+            [
+                'input'          => $input,
+                'merchant_id'    => $merchant->getId(),
+            ]);
+
+        $input['merchant_id'] = $merchant->getId();
+
+        $response = $this->app['terminals_service']->proxyTerminalService(
+            $input,
+            \Requests::POST,
+            'v2/merchant_instrument_request'
+            );
+
+        return ApiResponse::json($response);
+    }
+
+    public function getMerchantInstrumentRequest()
+    {
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $this->trace->info(
+            TraceCode::GET_MERCHANT_INSTRUMENT_REQUESTS,
+            [
+                'merchant_id'          => $merchant->getId(),
+            ]);
+
+        $response = $this->app['terminals_service']->proxyTerminalService(
+            [],
+            \Requests::GET,
+            'v2/merchant_instrument_request?merchant_id=' . $merchant->getId()
+            );
+
+        return ApiResponse::json($response);
+    }
+
+    public function getMerchantInstrumentRequestById(string $id)
+    {
+        $this->trace->info(
+            TraceCode::GET_MERCHANT_INSTRUMENT_REQUEST_BY_ID,
+            [
+                'id'          => $id,
+            ]);
+
+        $response = $this->app['terminals_service']->proxyTerminalService(
+            [],
+            \Requests::GET,
+            'v2/merchant_instrument_request/' . $id
+            );
+
+        return ApiResponse::json($response);
+    }
+
+    public function patchMerchantInstrumentRequestById(string $id)
+    {
+        $input = Request::all();
+
+        $this->trace->info(
+            TraceCode::PATCH_MERCHANT_INSTRUMENT_REQUEST,
+            [
+                'id'          => $id,
+                'input'       => $input,
+            ]);
+
+        $response = $this->app['terminals_service']->proxyTerminalService(
+            $input,
+            \Requests::PATCH,
+            'v2/merchant_instrument_request/' . $id
+            );
+
+        return ApiResponse::json($response);
     }
 }

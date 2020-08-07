@@ -3234,6 +3234,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRANSACTION_DETAILS            = 'TRANSACTION_DETAILS';
     const IS_DIRECT_SETTLEMENT_PAYMENT  = 'IS_DIRECT_SETTLEMENT_PAYMENT';
     const NET_AMOUNT_FOR_TRANSACTION    = 'NET_AMOUNT_FOR_TRANSACTION';
+
+    // merchant instrument request controller traces
+    const CREATE_MERCHANT_INSTRUMENT_REQUEST    =   'CREATE_MERCHANT_INSTRUMENT_REQUEST';
+    const GET_MERCHANT_INSTRUMENT_REQUESTS      =   'GET_MERCHANT_INSTRUMENT_REQUESTS';
+    const PATCH_MERCHANT_INSTRUMENT_REQUEST     =   'PATCH_MERCHANT_INSTRUMENT_REQUEST';
+    const GET_MERCHANT_INSTRUMENT_REQUEST_BY_ID =   'GET_MERCHANT_INSTRUMENT_REQUEST_BY_ID';
+
     //                                ==========
 
     protected static $messages = [
