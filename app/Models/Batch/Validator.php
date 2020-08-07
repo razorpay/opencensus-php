@@ -1017,6 +1017,15 @@ class Validator extends Base\Validator
             $this->validateInput('payoutTypeRow', $entry);
         });
 
+        // Following are Payout Amount Validations.
+        // Only to be done if merchant does not have CA. If the merchant has a current account,
+        // then we do not know his current balance in real time, and hence we simply skip these validations
+
+        if ($merchant->hasDirectBankingBalance() === true)
+        {
+            return;
+        }
+
         // After validating contents per row only should do following aggregate validations.
 
         $totalPayoutAmount = array_sum(array_column($entries, Header::PAYOUT_AMOUNT));
@@ -1025,14 +1034,10 @@ class Validator extends Base\Validator
 
         if ($totalPayoutAmount > $bankingBalance)
         {
-            // For now, we are not handling balance validations for rbl merchants.
-            if ($merchant->isFeatureEnabled(Feature::X_PRO_INVITE) === false)
-            {
-                throw new BadRequestValidationFailureException(
-                    'Total payout amount in uploaded file exceeds available account balance',
-                    Entity::FILE,
-                    compact('totalPayoutAmount', 'bankingBalance'));
-            }
+            throw new BadRequestValidationFailureException(
+                'Total payout amount in uploaded file exceeds available account balance',
+                Entity::FILE,
+                compact('totalPayoutAmount', 'bankingBalance'));
         }
     }
 
