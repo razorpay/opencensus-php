@@ -233,7 +233,7 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $this->assertEquals('okhdfcbank', $gatewayDowntime['vpa_handle']);
 
-        $this->assertNull($paymentDowntime);
+        $this->assertNotNull($paymentDowntime);
     }
 
     public function testDowntimeDetectionForNetbanking()
@@ -335,7 +335,7 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $this->assertEquals('upi', $gatewayDowntime['method']);
 
-        $this->assertNull($paymentDowntime);
+        $this->assertNotNull($paymentDowntime);
     }
 
     protected function enablePaymentDowntimes()

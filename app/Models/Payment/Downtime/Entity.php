@@ -153,14 +153,15 @@ class Entity extends Base\PublicEntity
 
             case Method::UPI:
                 $vpaHandle = $this->getVpaHandle();
-                if( empty($vpaHandle) === false)
-                {
-                    $instrument[self::VPA_HANDLE] = $vpaHandle;
-                }
                 $psp = $this->getPSP();
                 if( empty($psp) === false)
                 {
                     $instrument[self::PSP] = $psp;
+
+                }
+                else if( empty($vpaHandle) === false)
+                {
+                    $instrument[self::VPA_HANDLE] = $vpaHandle;
                 }
                 break;
 
