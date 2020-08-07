@@ -170,6 +170,8 @@ class UpiSbiGatewayReconTest extends TestCase
         {
             $this->assertEquals('processed', $refund['status']);
 
+            $this->assertNotNull($refund['reference1']);
+
             $transactionId = $refund['transaction_id'];
 
             $transaction = $this->getEntityById('transaction', $transactionId, true);

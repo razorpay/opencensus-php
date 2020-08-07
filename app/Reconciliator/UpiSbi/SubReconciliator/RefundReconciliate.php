@@ -7,6 +7,7 @@ use RZP\Reconciliator\Base;
 
 class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
+    const RRN                     = 'refreqno';
     const BANK_REMARK             = 'bankremark';
     const COLUMN_REFUND_ID        = ['refreqno', 'refundreqno'];
     const COLUMN_REFUND_AMOUNT    = 'refundreqamt';
@@ -18,6 +19,11 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     protected function getRefundId(array $row)
     {
         return Base\SubReconciliator\Helper::getArrayFirstValue($row, self::COLUMN_REFUND_ID);
+    }
+
+    protected function getArn(array $row)
+    {
+        return $row[self::RRN] ?? null;
     }
 
     protected function getReconRefundStatus(array $row)
