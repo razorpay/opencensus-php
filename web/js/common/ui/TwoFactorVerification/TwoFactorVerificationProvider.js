@@ -17,6 +17,7 @@ import TwoFaVerificationContext from './TwoFactorVerificationContext';
   state => ({
     twoFactorVerified: state.twoFactor.data.twoFactorVerified,
     user: state.session.user,
+    modeOfApp: state.session.mode,
   }),
   {
     openModal,
@@ -84,10 +85,10 @@ export default class TwoFaVerificationContextProvider extends React.Component {
         })
     );
   })
-  criticalFlow = ({ onUserTwoFaVerified }) => {
-    const { user, twoFactorVerified } = this.props;
+  criticalFlow = ({ onUserTwoFaVerified, modes = ['test', 'live'] }) => {
+    const { user, twoFactorVerified, modeOfApp } = this.props;
 
-    if (user.isCriticalRouteExperimentEnabled) {
+    if (user.isCriticalRouteExperimentEnabled && modes.includes(modeOfApp)) {
       if (!user.isTwoFactorSetupDone) {
         return this.updateAndVerifiyContactMobile({
           onContactMobileUpdated: this.onContactMobileUpdated({

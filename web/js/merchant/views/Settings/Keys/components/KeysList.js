@@ -17,6 +17,7 @@ const KeysListItem = props => {
 
   const onRegenerateKeys = () => {
     return context.criticalFlow({
+      modes: ['live'],
       onUserTwoFaVerified: () => {
         props.showRollKeyModal({ id });
       },
@@ -111,7 +112,8 @@ export default connect(null, { openModal, closeModal })(props => {
                     </React.Fragment>
                   ) : !businessWebsite && !isWebsiteInWorkflow ? (
                     <div>
-                      <p>{`Please provide your Business Website/App details in order to generate API keys in Live Mode`}</p>
+                      <p
+                      >{`Please provide your Business Website/App details in order to generate API keys in Live Mode`}</p>
                       <button
                         class="btn btn-primary"
                         onClick={() =>
