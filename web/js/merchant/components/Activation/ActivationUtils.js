@@ -305,6 +305,25 @@ function isRXV2Onboarding(activation) {
   return isRXV2OnboardingExp && isSourceRX;
 }
 
+function showSubcategory(activation) {
+  let { state, props } = activation;
+  let showSubcategory = false;
+
+  let businessCategory =
+    state.dirty.business_category != null
+      ? state.dirty.business_category
+      : props.data.business_category;
+
+  if (businessCategory) {
+    showSubcategory = businessCategory !== 'others';
+    let subcategories = props.categories[businessCategory].subcategories;
+    if (Object.keys(subcategories).length === 1) {
+      showSubcategory = false;
+    }
+  }
+  return showSubcategory;
+}
+
 export {
   differentAddress,
   isUnregisteredBusiness,
@@ -331,4 +350,5 @@ export {
   isAdditonalDocRequired,
   hasAPIL1Error,
   isRXV2Onboarding,
+  showSubcategory
 };

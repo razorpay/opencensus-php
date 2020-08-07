@@ -40,6 +40,7 @@ import {
   getAdditionalDocCount,
   isAdditonalDocRequired,
   isRXV2Onboarding,
+  showSubcategory
 } from './ActivationUtils';
 
 import { ADDITIONAL_DOCS_LABEL_VALUE_MAP } from './Constants';
@@ -139,6 +140,15 @@ const DefaultBusinessTypeOptions = [
   ...UnregisteredBusinessTypeOptions,
 ];
 
+const BlacklistedErr = () => (
+  <div class="warning-svg red">
+    {WarningSvg()}
+    <span>
+      We do not have the support for your business category selected
+      as of now.
+    </span>
+  </div>
+)
 const businessModel = [
   {
     label: 'Business Type',
@@ -162,6 +172,12 @@ const businessModel = [
             !!activation.props.user.showInstantActivation
           );
         }
+      },
+      description: activation => {
+        if (!showSubcategory(activation) && hasSelectedBlacklistedCategory(activation)) {
+          return <BlacklistedErr />
+        }
+        return '';
       },
     },
     {
@@ -220,37 +236,11 @@ const businessModel = [
       },
       description: activation => {
         if (hasSelectedBlacklistedCategory(activation)) {
-          return (
-            <div class="warning-svg red">
-              {WarningSvg()}
-              <span>
-                We do not have the support for your business category selected
-                as of now.
-              </span>
-            </div>
-          );
+          return <BlacklistedErr />
         }
         return '';
       },
-      _when: activation => {
-        let { state, props } = activation;
-        let showSubcategory = false;
-
-        let businessCategory =
-          state.dirty.business_category != null
-            ? state.dirty.business_category
-            : props.data.business_category;
-
-        if (businessCategory) {
-          showSubcategory = businessCategory !== 'others';
-          let subcategories = props.categories[businessCategory].subcategories;
-          if (Object.keys(subcategories).length === 1) {
-            showSubcategory = false;
-          }
-        }
-        // 'Others' business_category has no sub_category
-        return showSubcategory;
-      },
+      _when: showSubcategory,
       _disabledWhen: activation => {
         if (isRXV2Onboarding(activation)) {
           const { activated, activation_flow } = activation.props.user;
