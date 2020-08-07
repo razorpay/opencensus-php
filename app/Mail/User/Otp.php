@@ -53,7 +53,11 @@ class Otp extends Mailable
         {
             //in verify_email email goes from support support@razorpay.com
             case 'verify_email':
-                $this->from(Constants::MAIL_ADDRESSES[Constants::SUPPORT]);
+                $fromEmail = Constants::MAIL_ADDRESSES[Constants::SUPPORT];
+
+                $fromHeader = Constants::HEADERS[Constants::SUPPORT];
+
+                $this->from($fromEmail, $fromHeader);
                 break;
 
             default:
@@ -82,7 +86,7 @@ class Otp extends Mailable
                 break;
 
             case 'verify_email':
-                $subject = "Razorpay Software Private Ltd | OTP to {$this->getFormattedAction()}";
+                $subject = "Razorpay | OTP to {$this->getFormattedAction()}";
                 break;
         }
 
