@@ -251,8 +251,6 @@ class Processor
 
     protected $secureCacheDriver;
 
-    protected $razorXFlagForDoppler;
-
     public function __construct(Merchant\Entity $merchant)
     {
         $this->app  = App::getFacadeRoot();
@@ -2051,25 +2049,21 @@ class Processor
             $offer->lockDecrementCurrentOfferUsage($payment);
         }
 
-        if ($this->razorXFlagForDoppler === true)
+        try
         {
-            //TODO: Remove this later
-            try
-            {
-                $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
-            }
-            catch (\Throwable $e)
-            {
-                $this->trace->info(
-                    TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
-                    [
-                        'payment'             => $this->payment->toArray(),
-                        'code'                => $code,
-                        'internal_code'       => $internalCode,
-                        'error'               => $e->getMessage()
-                    ]
-                );
-            }
+            $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(
+                TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+                [
+                    'payment'             => $this->payment->toArray(),
+                    'code'                => $code,
+                    'internal_code'       => $internalCode,
+                    'error'               => $e->getMessage()
+                ]
+            );
         }
     }
 
@@ -3120,13 +3114,6 @@ class Processor
         {
             $payment->setApplication($input['application']);
         }
-    }
-
-    public function setRazorXDopplerProperty(bool $razorXFlag): Processor
-    {
-        $this->razorXFlagForDoppler = $razorXFlag;
-
-        return $this;
     }
 
     protected function tracePaymentNewRequest(array $input)

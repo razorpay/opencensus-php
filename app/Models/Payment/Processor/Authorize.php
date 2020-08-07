@@ -365,14 +365,6 @@ trait Authorize
 
         $retry = false;
 
-        // Checking razorX flag for feedback loop here per paymentId
-        $razorXForDoppler = $this->app->doppler->checkRazorXForDoppler($payment->getId(), Doppler::RAZORX_DOPPLER);
-        $this->trace->info(
-            TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
-            [
-                'line'      => "Models/Payment/Processor/Authorize.php:323"
-            ]
-        );
         //
         // We are attempting to rotate across multiple terminals to get a successful payment here.
         // For each of the terminals tried, we want to record the terminal metrics using recordTerminalAudit()
@@ -521,26 +513,22 @@ trait Authorize
 
                 $internalErrorCode = $e->getError()->getInternalErrorCode();
 
-                if ($razorXForDoppler === true)
+                try
                 {
-                    //TODO: Remove this later
-                    try
-                    {
-                        $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT,
-                            $errorCode, $internalErrorCode, $retryAttempts);
-                    }
-                    catch (\Throwable $e)
-                    {
-                        $this->trace->info(
-                            TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
-                            [
-                                'payment'             => $payment->toArray(),
-                                'code'                => $errorCode,
-                                'internal_code'       => $internalErrorCode,
-                                'error'               => $e->getMessage()
-                            ]
-                        );
-                    }
+                    $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT,
+                        $errorCode, $internalErrorCode, $retryAttempts);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->info(
+                        TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+                        [
+                            'payment'             => $payment->toArray(),
+                            'code'                => $errorCode,
+                            'internal_code'       => $internalErrorCode,
+                            'error'               => $e->getMessage()
+                        ]
+                    );
                 }
 
                 // An error occurred on gateway due to user or gateway.
@@ -6591,25 +6579,20 @@ trait Authorize
 
     protected function sendFeedbackPaymentAuthorizedToDoppler($payment)
     {
-        $razorXForDoppler = $this->app->doppler->checkRazorXForDoppler($payment->getId(), Doppler::RAZORX_DOPPLER);
 
-        if ($razorXForDoppler === true)
+        try
         {
-            //TODO: Remove this later
-            try
-            {
-                $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_SUCCESS_EVENT);
-            }
-            catch (\Throwable $e)
-            {
-                $this->trace->info(
-                    TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
-                    [
-                        'payment'             => $payment->toArray(),
-                        'error'               => $e->getMessage()
-                    ]
-                );
-            }
+            $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_SUCCESS_EVENT);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(
+                TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+                [
+                    'payment'             => $payment->toArray(),
+                    'error'               => $e->getMessage()
+                ]
+            );
         }
     }
 

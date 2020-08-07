@@ -37,8 +37,6 @@ class Doppler
 
     const X_RAZORPAY_APP_HEADER    = 'X-Razorpay-App';
 
-    const RAZORX_DOPPLER           = 'api_hitting_doppler_service';
-
     const CONNECT_TIMEOUT = 1;
 
     const REQUEST_TIMEOUT = 5;
@@ -464,23 +462,4 @@ class Doppler
 
         throw new Exception\ServerErrorException($e->getMessage(), $errorCode);
     }
-
-    public function checkRazorXForDoppler($id, $flag)
-    {
-        if (($this->app->environment() !== Environment::PRODUCTION) or
-            ($this->mode !== Mode::LIVE))
-        {
-            return false;
-        }
-
-        $variant = $this->app->razorx->getTreatment($id, $flag, Mode::LIVE);
-
-        if (strtolower($variant) === 'on')
-        {
-            return true;
-        }
-
-        return false;
-    }
-
 }
