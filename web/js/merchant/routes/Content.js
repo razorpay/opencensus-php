@@ -158,7 +158,12 @@ export default class Content extends Component {
     return (
       <ErrorBoundary resetOnProps location={this.baseLocation}>
         <Switch location={this.baseLocation}>
-          <Route path="/dashboard" component={Home} />
+          <ShowWhenRoute
+            path="/dashboard"
+            component={Home}
+            additionalCondition={user => user.isAllowedView('home')}
+            defaultPath="/profile"
+          />
 
           <ShowWhenRoute
             path="/partners"
