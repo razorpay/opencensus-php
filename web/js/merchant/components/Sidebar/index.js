@@ -6,6 +6,7 @@ import RTracking from 'react-tracking';
 import AcceptPaymentsModal from 'merchant/containers/Home/OnboardingCard/Instant/AcceptPaymentsModal';
 
 import { toggleMobileMenu } from 'merchant/reducers/app';
+import { areReportsStillDownloading } from 'merchant/reducers/reports';
 import {
   showAcceptPaymentsModal,
   hideAcceptPaymentsModal,
@@ -59,6 +60,12 @@ const BASE_ROUTES = {
 export default class Sidebar extends Component {
   constructor(props) {
     super(props);
+
+    //reference store data to update UI of sidebar navs
+    this.state = {
+      isReportsPending: areReportsStillDownloading(props.currentReportList),
+    };
+
     this.hideSidebar = this.hideSidebar.bind(this);
   }
 
@@ -68,6 +75,14 @@ export default class Sidebar extends Component {
 
   componentWillReceiveProps(nextProps) {
     this.initializeRoutes(nextProps.location);
+
+    if (this.props.currentReportList !== nextProps.currentReportList) {
+      this.setState({
+        isReportsPending: areReportsStillDownloading(
+          nextProps.currentReportList
+        ),
+      });
+    }
   }
 
   componentDidMount() {
@@ -173,12 +188,14 @@ export default class Sidebar extends Component {
   }
 
   render() {
+    const { isReportsPending } = this.state;
     let { user, config, logoURL, showMobileMenu } = this.props;
     let routes = this.routes;
     const isMerchant = !!user.current;
 
     const merchantNavLinkProps = {
       routes,
+      isReportsPending,
       isChargeAtWillEnabled: user.isChargeAtWillEnabled,
       isSettlementEnabled:
         user.isOndemandSettlementEnabled || user.isAutomaticSettlementEnabled,

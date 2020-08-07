@@ -22,6 +22,7 @@ import PaymentButton from 'merchant/views/PaymentButton';
 import PaymentButtonsDetails from 'merchant/views/PaymentButton/PaymentButton/Details';
 import SubscriptionButtonDetails from 'merchant/views/PaymentButton/SubscriptionButton/Details';
 
+import Reports from 'merchant/views/Reports';
 import ReportsAsync from 'merchant/views/ReportsAsync/Home';
 
 import MyAccount from 'merchant/views/Account';
@@ -334,6 +335,12 @@ export default class Content extends Component {
 
           <ShowWhenRoute
             path="/reports"
+            component={user.isAsyncReportsEnabled ? ReportsAsync : Reports}
+            additionalCondition={user => user.isAllowedView('reports')}
+          />
+
+          <ShowWhenRoute
+            path="/reports-async"
             component={ReportsAsync}
             additionalCondition={user => user.isAllowedView('reports')}
           />
