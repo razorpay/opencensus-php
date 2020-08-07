@@ -573,6 +573,13 @@ class PaymentCreateController extends Controller
                         return $response;
                     }
 
+                    if (($this->app['basicauth']->isStrictPrivateAuth() === true) and
+                        ($merchant->isFeatureEnabled(Feature::S2S_JSON) === true))
+                    {
+                        $response = $this->generateOtpJson($data);
+                        return $response;
+                    }
+
                     $response = Response::make($data['request']['content']);
                     $response->headers->set('X-gateway', $data['gateway']);
 

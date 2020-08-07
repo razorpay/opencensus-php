@@ -4201,6 +4201,115 @@ class OtpPaymentTest extends TestCase
 
     }
 
+    public function testHeadlessOtpAuthenticationPaymentS2SJsonOtpResend()
+    {
+        $this->fixtures->create('terminal:direct_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'otp_auth_default']);
+
+        $this->mockCardVault();
+
+        $this->mockOtpElf();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/json',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertArrayHasKey('next', $content);
+
+        $this->assertArrayHasKey('action', $content['next'][0]);
+        $this->assertEquals('otp_submit', $content['next'][0]['action']);
+        $this->assertTrue($this->isOtpCallbackUrlPrivate($content['next'][0]['url']));
+
+        $this->assertArrayHasKey('action', $content['next'][1]);
+        $this->assertEquals('otp_resend', $content['next'][1]['action']);
+
+        $this->assertTrue($this->isOtpResendUrlPrivate($content['next'][1]['url']));
+
+        $this->assertArrayHasKey('action', $content['next'][2]);
+        $this->assertEquals('redirect', $content['next'][2]['action']);
+        $this->assertTrue($this->isOtpFallbackUrl($content['next'][2]['url']));
+
+        $url = $this->getUri($content['next'][1]['url']);
+
+        $this->ba->privateAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => $url,
+            'content' => []
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertArrayHasKey('next', $content);
+
+        $this->assertArrayHasKey('action', $content['next'][0]);
+        $this->assertEquals('otp_submit', $content['next'][0]['action']);
+        $this->assertTrue($this->isOtpCallbackUrlPrivate($content['next'][0]['url']));
+
+        $this->assertArrayHasKey('action', $content['next'][1]);
+        $this->assertEquals('otp_resend', $content['next'][1]['action']);
+        $this->assertTrue($this->isOtpResendUrlPrivate($content['next'][1]['url']));
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $url = $this->getUri($content['next'][0]['url']);
+
+        $this->ba->privateAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => $url,
+            'content' => [
+                'otp' => 123456
+            ]
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        self::assertNotNull($content['razorpay_payment_id']);
+
+        $payment = $this->getEntityById('payment', $content['razorpay_payment_id'], true);
+
+        self::assertEquals('headless_otp', $payment['auth_type']);
+        self::assertEquals('hitachi', $payment['gateway']);
+        self::assertEquals('100HitaDirTmnl', $payment['terminal_id']);
+        self::assertEquals('authorized', $payment['status']);
+    }
+
     // @codingStandardsIgnoreLine
     protected function doS2SOtpSubmitCallback(array $content, string $otp)
     {
