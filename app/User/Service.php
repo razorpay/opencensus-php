@@ -1090,6 +1090,8 @@ class Service extends Base\Service
             'rx_payout_links_ms',
             'upi_subscription',
             'rx_bulk_approvals',
+            'rx_payout_links_onboarding_revamp',
+            'rx_tax_payments_payout',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
