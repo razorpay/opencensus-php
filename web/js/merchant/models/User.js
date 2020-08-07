@@ -480,11 +480,6 @@ export default class User {
     );
   }
 
-  get isAsyncReportsEnabled() {
-    return true;
-    return this.getExpStatus('async_reports');
-  }
-
   get isDefaultPLBatchRemindersEnabled() {
     return this.getExpStatus('pl_batch_reminders');
   }
