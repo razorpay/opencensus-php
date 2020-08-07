@@ -3,25 +3,13 @@ import { ModalMask, Modal } from 'common/new-ui/Modal';
 import { activationDuration } from 'merchant/helpers/data';
 
 function getKycActivationSubmitBody(args) {
-  if (args.isWhitelistFlow) {
-    return (
-      <div>
-        <p>
-          KYC review process takes 1-2 working days post your first transaction.
-          So go ahead and start accepting payments. As soon as your KYC is
-          approved we will process settlements to your bank account.
-        </p>
-      </div>
-    );
-  }
-
-  if (args.isUnregisteredBusiness) {
+  if (args.isWhitelistFlow || args.isUnregisteredBusiness) {
     return (
       <div>
         We will reach out on your contact email for further clarifications if
-        needed. The review process usually takes 1-2 working days after your
-        first transaction. Your settlements will be enabled post KYC is reviewed
-        and approved.
+        needed. The review process usually takes 1-2 working days{' '}
+        <strong>after your first transaction</strong>. Your settlements will be
+        enabled post KYC is reviewed and approved.
       </div>
     );
   }
@@ -36,12 +24,12 @@ function getKycActivationSubmitBody(args) {
 
 const MODAL_CONTENT = {
   KYC_ACTIVATION_SUBMIT_MODAL: {
-    title: args =>
-      args.isWhitelistFlow ? 'KYC Submitted' : 'KYC Under Review',
-    subtitle: args =>
-      args.isWhitelistFlow
-        ? 'KYC will be processed post your first transaction'
-        : 'Your KYC Form is submitted',
+    title: () => 'KYC Submitted',
+    subtitle: () => (
+      <>
+        KYC will be processed <strong>post your first transaction</strong>
+      </>
+    ),
     body: args => <div>{getKycActivationSubmitBody(args)}</div>,
     background: 'pending',
   },
@@ -63,9 +51,8 @@ const MODAL_CONTENT = {
   },
 };
 
-const ModalButtons = ({ args, modalType}) => {
-
-  if(modalType === 'KYC_CLARIFICATION_SUBMIT_MODAL') {
+const ModalButtons = ({ args, modalType }) => {
+  if (modalType === 'KYC_CLARIFICATION_SUBMIT_MODAL') {
     return (
       <>
         <a
@@ -80,7 +67,7 @@ const ModalButtons = ({ args, modalType}) => {
           Go to Dashboard
         </button>
       </>
-    )
+    );
   }
   if (args.isWhitelistFlow) {
     return (
@@ -129,7 +116,7 @@ const KYCStatusModal = ({ onClose, onGoToDashboard, user, modalType }) => {
         </div>
         <div className="modal-body">
           <div className="modal-description">{content.body(args)}</div>
-          <ModalButtons args={args} modalType={modalType}/>
+          <ModalButtons args={args} modalType={modalType} />
         </div>
       </Modal>
     </ModalMask>

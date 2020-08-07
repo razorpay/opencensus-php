@@ -81,13 +81,34 @@ export default class SettlementDetail extends Component {
     const user = this.props.user;
     if (user.instantActivation.isWhitelistFlow || user.isUnregisteredBusiness) {
       if (user.activation_status === 'under_review') {
-        return 'We have received your KYC information. The review process will take approximately 1-2 working days post your first transaction. Post-approval, your settlements will be enabled. We will reach out to you on your registered email ID in case we require more information or documents.';
+        return (
+          <>
+            We have received your KYC information. The review process will take
+            approximately 1-2 working days{' '}
+            <strong>post your first transaction</strong>. Post-approval, your
+            settlements will be enabled. We will reach out to you on your
+            registered email ID in case we require more information or
+            documents.
+          </>
+        );
       }
       if (!user.isSubmitted) {
-        return 'Once you have submitted your KYC documents, our team will review and approve the same. Your settlements will be enabled post KYC verification. This process usually takes 1-2 working days post your first transaction.';
+        return (
+          <>
+            Once you have submitted your KYC documents, our team will review and
+            approve the same. Your settlements will be enabled post KYC
+            verification. This process usually takes 1-2 working days{' '}
+            <strong>post your first transaction</strong>.
+          </>
+        );
       }
     }
-    return 'Because of some risk issues with your payments or with your razorpay account, your settlements have been put on hold.';
+    return (
+      <>
+        Because of some risk issues with your payments or with your razorpay
+        account, your settlements have been put on hold.'
+      </>
+    );
   }
 
   get actionButtons() {

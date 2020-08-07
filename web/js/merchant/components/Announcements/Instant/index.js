@@ -156,21 +156,29 @@ export default class InstantActivationAnnouncements extends Component {
           title = 'Account Suspended';
           content =
             'Due to irregularities in documents submitted by you, your account has been suspended. You will not be able to conduct live transactions';
-        } else if(user.kyc_clarification_reasons &&
+        } else if (
+          user.kyc_clarification_reasons &&
           user.kyc_clarification_reasons.additional_details &&
-          user.kyc_clarification_reasons.additional_details.cancelled_cheque ) {
+          user.kyc_clarification_reasons.additional_details.cancelled_cheque
+        ) {
           title = 'Bank Verification Failed';
           content = (
-            <> 
-              We were unable to verify your bank account details. Please upload bank account proof. &nbsp;
+            <>
+              We were unable to verify your bank account details. Please upload
+              bank account proof. &nbsp;
               <Link to="/activation">Upload Now</Link>
             </>
-          )
+          );
         } else {
           title = 'KYC Clarification';
           content = (
             <React.Fragment>
-              Your KYC details require further clarifications. Please check your registered email inbox for a mail with <span style={{"font-weight": "bold"}}>"Razorpay: Activation form update" </span>as subject and complete the requested steps for a quick resolution.
+              Your KYC details require further clarifications. Please check your
+              registered email inbox for a mail with{' '}
+              <span style={{ 'font-weight': 'bold' }}>
+                "Razorpay: Activation form update"{' '}
+              </span>as subject and complete the requested steps for a quick
+              resolution.
             </React.Fragment>
           );
         }
@@ -178,17 +186,26 @@ export default class InstantActivationAnnouncements extends Component {
         title = 'KYC Under Review';
         if (user.instantActivation.isWhitelistFlow) {
           if (payments && payments.items.length > 0 && mode === 'live') {
-            content = `We are reviewing your KYC details. This process usually takes 1-2 days from the date of the first transaction, we will reach out to you on your registered email ID if we need any clarifications.
-                       Your settlements will be enabled after your KYC is reviewed and approved.`;
+            content = (
+              <>
+                We will be reviewing your KYC details after your first
+                transaction. Review process usually takes 1-2 days{' '}
+                <strong>from the date of the first transaction</strong>, we will
+                reach out to you on your registered email ID if we need any
+                clarifications. Your settlements will be enabled after your KYC
+                is reviewed and approved.
+              </>
+            );
           } else {
             title = 'Accept Payments';
             content = (
               <React.Fragment>
                 You can start using our products to accept payments right away,
                 however your settlements will be enabled after your KYC is
-                reviewed. KYC Review process usually takes 1-2 days from the
-                date of the first transaction, we will reach out to you on your
-                registered email ID if we need any clarifications. &nbsp;
+                reviewed. KYC Review process usually takes 1-2 days{' '}
+                <strong>from the date of the first transaction</strong>, we will
+                reach out to you on your registered email ID if we need any
+                clarifications. &nbsp;
                 <a
                   href="https://razorpay.freshdesk.com/support/solutions/articles/11000092582"
                   target="_blank"
@@ -199,7 +216,14 @@ export default class InstantActivationAnnouncements extends Component {
             );
           }
         } else if (user.isUnregisteredBusiness) {
-          content = `We are reviewing your KYC Details. This process usually takes 1-2 working days post your first transaction. If we need any more information, we will reach out to you on your registered email address.`;
+          content = (
+            <>
+              We are reviewing your KYC Details. This process usually takes 1-2
+              working days <strong>post your first transaction</strong>. If we
+              need any more information, we will reach out to you on your
+              registered email address.
+            </>
+          );
         } else {
           content = `We are reviewing your KYC Details. This process usually takes 1-2 working days post your KYC Submission. If we need any more information, we will reach out to you on your registered email address.`;
         }
@@ -209,7 +233,9 @@ export default class InstantActivationAnnouncements extends Component {
       <AnnouncementBanner
         title={title}
         theme={theme}
-        bannerKey={`announcement-banner-${user.activation_status}-${user.current}`}
+        bannerKey={`announcement-banner-${user.activation_status}-${
+          user.current
+        }`}
         canBeClosed={user.isAccepted}
       >
         {content}

@@ -11,8 +11,9 @@ const onHoldBanner = ({ ctaOnClick, user, payments }) => {
       content = (
         <>
           Your Settlements are not being processed currently because your KYC is
-          under review. It generally takes 1-2 working days from the first
-          transaction for the review process to be complete.
+          pending review. It generally takes 1-2 working days{' '}
+          <strong>from the first transaction</strong> for the review process to
+          be complete.
         </>
       );
     } else if (user.isActivated && !user.isSubmitted) {
