@@ -97,7 +97,7 @@ export function showWhenUtil(store) {
 }
 
 export function ShowWhenRoute(store, defaultPath = '/dashboard') {
-  return ({ component: Component, ...rest }) => {
+  return ({ component: Component, ...rest }) => (
     <Route
       {...rest}
       render={props =>
@@ -112,6 +112,6 @@ export function ShowWhenRoute(store, defaultPath = '/dashboard') {
           />
         )
       }
-    />;
-  };
+    />
+  );
 }
