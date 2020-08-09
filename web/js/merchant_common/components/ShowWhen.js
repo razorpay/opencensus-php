@@ -98,24 +98,20 @@ export function showWhenUtil(store) {
 
 export function ShowWhenRoute(store, defaultPath = '/dashboard') {
   return ({ component: Component, ...rest }) => {
-    defaultPath = rest.defaultPath || '/dashboard';
-    delete rest.defaultPath;
-    return (
-      <Route
-        {...rest}
-        render={props =>
-          showWhenUtil(store)(rest) ? (
-            <Component {...rest} />
-          ) : (
-            <Redirect
-              to={{
-                pathname: defaultPath,
-                state: { from: rest.location, was404: true },
-              }}
-            />
-          )
-        }
-      />
-    );
+    <Route
+      {...rest}
+      render={props =>
+        showWhenUtil(store)(rest) ? (
+          <Component {...rest} />
+        ) : (
+          <Redirect
+            to={{
+              pathname: defaultPath,
+              state: { from: rest.location, was404: true },
+            }}
+          />
+        )
+      }
+    />;
   };
 }
