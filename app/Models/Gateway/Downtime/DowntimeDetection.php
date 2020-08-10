@@ -325,6 +325,11 @@ class DowntimeDetection
             //TODO: If $downtimeCreatedSince is more then 5 hour. send slack notification.
             // Because There has never been downtime for this long.
 
+            if ($type === self::PAYMENT_INTERVAL && $method != Method::NETBANKING)
+            {
+                return;
+            }
+
             $resolveSetting = $this->initConfigurationSettings($type, $method, $key, $value, 'resolve')[0];
 
             // valid only in case of payment_interval type
