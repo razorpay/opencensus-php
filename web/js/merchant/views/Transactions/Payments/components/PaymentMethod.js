@@ -228,6 +228,14 @@ export default ({
         </Definition>
       </ContentToggler>
     );
+  } else if (paymentMethod === 'app') {
+    const paymentProvider = payment.provider;
+
+    el = (
+      <Definition>
+        <span>{titleCase(paymentMethod) + '-' + titleCase(paymentProvider)}</span>
+      </Definition>
+    );
   }
 
   return el;
