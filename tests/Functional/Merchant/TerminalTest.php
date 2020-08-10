@@ -2026,4 +2026,14 @@ class TerminalTest extends TestCase
     {
         $this->startTest();
     }
+
+    public function testTerminalModePurchaseForAxisMigs()
+    {
+        $this->startTest();
+    }
+
+    public function testTerminalModeDualForAxisMigs()
+    {
+        $this->startTest();
+    }
 }

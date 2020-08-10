@@ -1606,8 +1606,8 @@ return [
         'request' => [
             'url' => '/merchants/100000Razorpay/terminals',
             'content' => [
-                'gateway'                   => 'axis_migs',
-                'gateway_acquirer'          => 'axis',
+                'gateway'                   => 'amex',
+                'gateway_acquirer'          => 'amex',
                 'gateway_merchant_id'       => 'randommerchantid',
                 'gateway_secure_secret'     => 'randomsecuresecretwhichis32chars',
                 'gateway_access_code'       => 'rndmcode',
@@ -1624,7 +1624,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'axis_migs terminals must be in AuthCapture mode',
+                    'description' => 'amex terminals must be in AuthCapture mode',
                 ]
             ],
             'status_code'   => 400,
@@ -3151,4 +3151,60 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
+
+    'testTerminalModePurchaseForAxisMigs' => [
+        'request' => [
+            'url' => '/merchants/100000Razorpay/terminals',
+            'content' => [
+                'gateway'                   => 'axis_migs',
+                'gateway_acquirer'          => 'axis',
+                'gateway_merchant_id'       => 'randommerchantid',
+                'gateway_secure_secret'     => 'randomsecuresecretwhichis32chars',
+                'gateway_access_code'       => 'rndmcode',
+                'gateway_terminal_id'       => 'randomterminalid',
+                'gateway_terminal_password' => 'randomterminalpassword',
+                'mode'                      => Terminal\Mode::PURCHASE,
+                'type'                      => [
+                    'recurring_non_3ds' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'mode'                      => Terminal\Mode::PURCHASE,
+                'type'                      => [
+                    'recurring_non_3ds'
+                ],
+            ]
+        ],
+    ],
+
+    'testTerminalModeDualForAxisMigs' => [
+        'request' => [
+            'url' => '/merchants/100000Razorpay/terminals',
+            'content' => [
+                'gateway'                   => 'axis_migs',
+                'gateway_acquirer'          => 'axis',
+                'gateway_merchant_id'       => 'randommerchantid',
+                'gateway_secure_secret'     => 'randomsecuresecretwhichis32chars',
+                'gateway_access_code'       => 'rndmcode',
+                'gateway_terminal_id'       => 'randomterminalid',
+                'gateway_terminal_password' => 'randomterminalpassword',
+                'mode'                      => Terminal\Mode::DUAL,
+                'type'                      => [
+                    'recurring_non_3ds' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'mode'                      => Terminal\Mode::DUAL,
+                'type'                      => [
+                    'recurring_non_3ds'
+                ],
+            ]
+        ],
+    ]
 ];

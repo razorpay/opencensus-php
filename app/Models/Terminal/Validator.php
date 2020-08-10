@@ -1500,10 +1500,9 @@ class Validator extends Base\Validator
         $isNonCardNonMockGateway = ((Gateway::isMethodSupported(Payment\Method::CARD, $gateway)) and
                                     (in_array($gateway, $nonCardPurchaseExceptions, true)));
 
-        // Migs, Amex, OpenWallet, CardlessEmi terminals are always in auth-capture mode
+        // Amex, OpenWallet, CardlessEmi terminals are always in auth-capture mode
         //
         $authCaptureOnly = [
-            Gateway::AXIS_MIGS,
             Gateway::AMEX,
             Gateway::WALLET_OPENWALLET,
             Gateway::CARDLESS_EMI,
@@ -1513,8 +1512,10 @@ class Validator extends Base\Validator
             Gateway::WALLET_PAYPAL,
         ];
 
+        //Migs now supports purchase mode as well
         $cardGatewaysWithPurchaseSupport = [
             Gateway::MPGS,
+            Gateway::AXIS_MIGS
         ];
 
         $isPurchaseSupportedCardGateway = ((Gateway::isMethodSupported(Payment\Method::CARD, $gateway)) and
