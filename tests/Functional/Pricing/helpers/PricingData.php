@@ -2282,7 +2282,7 @@ return [
             'content' => [
                 [
                     'plan_name'   => 'Zero banking default plan',
-                    'rules_count' => 2,
+                    'rules_count' => 4,
                     'type'        => 'pricing',
                 ],
                 [
@@ -2307,7 +2307,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'Banking default plan',
-                    'rules_count' => 12,
+                    'rules_count' => 24,
                     'type'        => 'pricing',
                 ],
                 [
@@ -2372,7 +2372,7 @@ return [
             'content' => [
                 [
                     'plan_name'   => 'Zero banking default plan',
-                    'rules_count' => 2,
+                    'rules_count' => 4,
                     'type'        => 'pricing',
                 ],
                 [
@@ -2397,7 +2397,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'Banking default plan',
-                    'rules_count' => 12,
+                    'rules_count' => 24,
                     'type'        => 'pricing',
                 ],
                 [
@@ -3438,6 +3438,247 @@ return [
                 'amount_range_max'    => 1500,
                 'amount_range_min'    => 0,
                 'account_type'        => 'shared',
+            ],
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The new rule matches with an active existing rule',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
+        ],
+    ],
+
+    'testAddPricingPlanRuleForBankingPayoutWithCorrectAuth' => [
+        'request' => [
+            'content' => [
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'percent_rate'        => 0,
+                'international'       => 0,
+                'amount_range_active' => 0,
+                'account_type'        => 'shared',
+                'auth_type'           => 'private',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'fund_transfer',
+                'feature'             => 'payout',
+                'product'             => 'banking',
+                'account_type'        => 'shared',
+                'auth_type'           => 'private',
+                'percent_rate'        => 0,
+                'international'       => false,
+                'amount_range_active' => false,
+            ]
+        ]
+    ],
+
+    'testAddPricingPlanRuleForBankingPayoutWithIncorrectAuth' => [
+        'request'   => [
+            'content' => [
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'percent_rate'        => 0,
+                'international'       => 0,
+                'amount_range_active' => 0,
+                'account_type'        => 'shared',
+                'auth_type'           => 'xyz',
+            ],
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected auth type is invalid'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAddPricingPlanRuleForBankingPayoutWithoutAuth' => [
+        'request'   => [
+            'content' => [
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'percent_rate'        => 0,
+                'international'       => 0,
+                'amount_range_active' => 0,
+                'account_type'        => 'shared',
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'percent_rate'        => 0,
+                'international'       => false,
+                'amount_range_active' => false,
+                'account_type'        => 'shared',
+            ],
+        ],
+    ],
+
+    'testAddPricingPlanRuleForPaymentMethodTypeDebitWithoutAuth' => [
+        'request'  => [
+            'content' => [
+                'payment_method'      => 'card',
+                'payment_method_type' => 'debit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => 0,
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'debit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => false,
+                'amount_range_active' => false,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+            ],
+        ],
+    ],
+
+    'testAddPricingPlanRuleForPaymentMethodTypeDebitWithIncorrectAuth' => [
+        'request'  => [
+            'content' => [
+                'payment_method'      => 'card',
+                'payment_method_type' => 'debit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'auth_type'           => 'private',
+                'percent_rate'        => 1000,
+                'international'       => 0,
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+            ],
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected auth type is invalid'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAddPricingPlanRuleForProductPrimaryAndPaymentMethodTypeCredit' => [
+        'request'  => [
+            'content' => [
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'auth_type'           => 'private',
+                'percent_rate'        => 1000,
+                'international'       => 0,
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+            ],
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The auth type field can be sent only when payment method type is debit or product is banking'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAddPricingPlanRulesForBankingPayoutWithBothSupportedAuths' => [
+        'request' => [
+            'content' => [
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'percent_rate'        => 0,
+                'international'       => 0,
+                'amount_range_active' => 1,
+                'amount_range_max'    => 1500,
+                'amount_range_min'    => 0,
+                'account_type'        => 'shared',
+                'auth_type'           => 'private',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'fund_transfer',
+                'feature'             => 'payout',
+                'product'             => 'banking',
+                'account_type'        => 'shared',
+                'auth_type'           => 'private',
+                'percent_rate'        => 0,
+                'amount_range_max'    => 1500,
+                'amount_range_min'    => 0,
+                'international'       => false,
+                'amount_range_active' => true,
+            ]
+        ]
+    ],
+
+    'testAddDuplicatePricingPlanRulesForBankingProductWithAccountTypeChannelAndAuthType' => [
+        'request'   => [
+            'content' => [
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'percent_rate'        => 0,
+                'international'       => 0,
+                'amount_range_active' => 1,
+                'amount_range_max'    => 1500,
+                'amount_range_min'    => 0,
+                'account_type'        => 'direct',
+                'channel'             => 'rbl'
             ],
             'method'  => 'POST'
         ],

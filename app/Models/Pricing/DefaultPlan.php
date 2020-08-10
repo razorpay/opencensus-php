@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Pricing;
 
+use RZP\Http\BasicAuth;
 use RZP\Models\Admin\Org;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\BankingAccountStatement\Channel;
@@ -690,6 +691,9 @@ class DefaultPlan
     public static function getBankingPlanData(): array
     {
         return [
+            /*
+            Pricing plans for api created payouts.
+            */
             // Rs 5 for payout value < Rs 1k for payouts with method = fund_transfer.
             [
                 'id'                  => 'Bbg7cl6t6I3XA5',
@@ -698,6 +702,7 @@ class DefaultPlan
                 'product'             => 'banking',
                 'feature'             => 'payout',
                 'payment_method'      => 'fund_transfer',
+                'auth_type'           => BasicAuth\Type::PRIVATE_AUTH,
                 'percent_rate'        => 0,
                 'fixed_rate'          => 500,
                 'amount_range_active' => 1,
@@ -717,6 +722,7 @@ class DefaultPlan
                 'product'             => 'banking',
                 'feature'             => 'payout',
                 'payment_method'      => 'fund_transfer',
+                'auth_type'           => BasicAuth\Type::PRIVATE_AUTH,
                 'percent_rate'        => 0,
                 'fixed_rate'          => 900,
                 'amount_range_active' => 1,
@@ -736,6 +742,7 @@ class DefaultPlan
                 'product'             => 'banking',
                 'feature'             => 'payout',
                 'payment_method'      => 'fund_transfer',
+                'auth_type'           => BasicAuth\Type::PRIVATE_AUTH,
                 'percent_rate'        => 0,
                 'fixed_rate'          => 1500,
                 'amount_range_active' => 1,
@@ -755,6 +762,7 @@ class DefaultPlan
                 'product'             => 'banking',
                 'feature'             => 'payout',
                 'payment_method'      => 'upi',
+                'auth_type'           => BasicAuth\Type::PRIVATE_AUTH,
                 'percent_rate'        => 0,
                 'fixed_rate'          => 500,
                 'amount_range_active' => 1,
@@ -774,6 +782,7 @@ class DefaultPlan
                 'product'             => 'banking',
                 'feature'             => 'payout',
                 'payment_method'      => 'upi',
+                'auth_type'           => BasicAuth\Type::PRIVATE_AUTH,
                 'percent_rate'        => 0,
                 'fixed_rate'          => 900,
                 'amount_range_active' => 1,
@@ -793,6 +802,7 @@ class DefaultPlan
                 'product'             => 'banking',
                 'feature'             => 'payout',
                 'payment_method'      => 'upi',
+                'auth_type'           => BasicAuth\Type::PRIVATE_AUTH,
                 'percent_rate'        => 0,
                 'fixed_rate'          => 1500,
                 'amount_range_active' => 1,
@@ -927,12 +937,265 @@ class DefaultPlan
                 'created_at'          => time(),
                 'updated_at'          => time(),
             ],
+
+            /*
+            Pricing plans for dashboard created payouts.
+            */
+            // Rs 5 for payout value < Rs 1k for payouts with method = fund_transfer.
+            [
+                'id'                  => 'Bbg7cl6t6I3XA7',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'auth_type'           => BasicAuth\Type::PROXY_AUTH,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 500,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 100000,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::SHARED,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
+            // Rs 9 for payout value between Rs 1k and 25k for payouts with method = fund_transfer.
+            [
+                'id'                  => 'Bbg7dTcURsOr79',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'auth_type'           => BasicAuth\Type::PROXY_AUTH,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 900,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100000,
+                'amount_range_max'    => 2500000,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::SHARED,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
+            // Rs 15 for payout value > Rs 25k for payouts with method = fund_transfer.
+            [
+                'id'                  => 'Bbg7e4oKCgaubf',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'auth_type'           => BasicAuth\Type::PROXY_AUTH,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1500,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 2500000,
+                'amount_range_max'    => \RZP\Models\Base\ExtendedValidations::MYSQL_UNSIGNED_INT_MAX,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::SHARED,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
+            // Rs 5 for payout value < Rs 1k for payouts with method = upi.
+            [
+                'id'                  => 'Bbg7eYLkxM7sLR',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'upi',
+                'auth_type'           => BasicAuth\Type::PROXY_AUTH,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 500,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 100000,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::SHARED,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
+            // Rs 9 for payout value between Rs 1k and 25k for payouts with method = upi.
+            [
+                'id'                  => 'Bbg7f0FaUJQOvl',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'upi',
+                'auth_type'           => BasicAuth\Type::PROXY_AUTH,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 900,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100000,
+                'amount_range_max'    => 2500000,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::SHARED,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
+            // Rs 15 for payout value > Rs 25k for payouts with method = upi.
+            [
+                'id'                  => 'Bbg7fgaDwax03w',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'upi',
+                'auth_type'           => BasicAuth\Type::PROXY_AUTH,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1500,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 2500000,
+                'amount_range_max'    => \RZP\Models\Base\ExtendedValidations::MYSQL_UNSIGNED_INT_MAX,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::SHARED,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
+            // Rs 5 for payout value < Rs 1k for payouts with method = fund_transfer.
+            [
+                'id'                  => 'Bbg7cl6t6I3XA8',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'auth_type'           => BasicAuth\Type::PROXY_AUTH,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 500,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 100000,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::DIRECT,
+                'channel'             => Channel::RBL,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
+            // Rs 9 for payout value between Rs 1k and 25k for payouts with method = fund_transfer.
+            [
+                'id'                  => 'Bbg7dTcURsOr80',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'auth_type'           => BasicAuth\Type::PROXY_AUTH,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 900,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100000,
+                'amount_range_max'    => 2500000,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::DIRECT,
+                'channel'             => Channel::RBL,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
+            // Rs 15 for payout value > Rs 25k for payouts with method = fund_transfer.
+            [
+                'id'                  => 'Bbg7e4oKCgaubg',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'auth_type'           => BasicAuth\Type::PROXY_AUTH,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1500,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 2500000,
+                'amount_range_max'    => \RZP\Models\Base\ExtendedValidations::MYSQL_UNSIGNED_INT_MAX,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::DIRECT,
+                'channel'             => Channel::RBL,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
+            // Rs 5 for payout value < Rs 1k for payouts with method = upi.
+            // (Currently RBL (Account Type : Direct) doesn't support UPI payouts)
+            [
+                'id'                  => 'Bbg7eYLkxM7sLS',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'upi',
+                'auth_type'           => BasicAuth\Type::PROXY_AUTH,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 500,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 100000,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::DIRECT,
+                'channel'             => Channel::RBL,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
+            // Rs 9 for payout value between Rs 1k and 25k for payouts with method = upi.
+            // (Currently RBL (Account Type : Direct) doesn't support UPI payouts)
+            [
+                'id'                  => 'Bbg7f0FaUJQOvm',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'upi',
+                'auth_type'           => BasicAuth\Type::PROXY_AUTH,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 900,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100000,
+                'amount_range_max'    => 2500000,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::DIRECT,
+                'channel'             => Channel::RBL,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
+            // Rs 15 for payout value > Rs 25k for payouts with method = upi.
+            // (Currently RBL (Account Type : Direct) doesn't support UPI payouts)
+            [
+                'id'                  => 'Bbg7fgaDwax03x',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'upi',
+                'auth_type'           => BasicAuth\Type::PROXY_AUTH,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1500,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 2500000,
+                'amount_range_max'    => \RZP\Models\Base\ExtendedValidations::MYSQL_UNSIGNED_INT_MAX,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::DIRECT,
+                'channel'             => Channel::RBL,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
         ];
     }
 
     public static function getZeroBankingPlanData(): array
     {
         return [
+            /*
+            Pricing plans for api created payouts.
+            */
             // Rs 0 for rbl current account payouts
             [
                 'id'                  => 'Bbg7fgaDwax04u',
@@ -941,6 +1204,7 @@ class DefaultPlan
                 'product'             => 'banking',
                 'feature'             => 'payout',
                 'payment_method'      => 'fund_transfer',
+                'auth_type'           => BasicAuth\Type::PRIVATE_AUTH,
                 'percent_rate'        => 0,
                 'fixed_rate'          => 0,
                 'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
@@ -958,6 +1222,7 @@ class DefaultPlan
                 'product'             => 'banking',
                 'feature'             => 'payout',
                 'payment_method'      => 'upi',
+                'auth_type'           => BasicAuth\Type::PRIVATE_AUTH,
                 'percent_rate'        => 0,
                 'fixed_rate'          => 0,
                 'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
@@ -966,6 +1231,46 @@ class DefaultPlan
                 'expired_at'          => null,
                 'created_at'          => time(),
                 'updated_at'          => time(),
+            ],
+
+            /*
+            Pricing plans for dashboard created payouts.
+            */
+            // Rs 0 for rbl current account payouts
+            [
+                'id'             => 'Bbg7fgaDwax04v',
+                'plan_id'        => 'EDoLfqMMBHVYGR',
+                'plan_name'      => 'Zero banking default plan',
+                'product'        => 'banking',
+                'feature'        => 'payout',
+                'payment_method' => 'fund_transfer',
+                'auth_type'      => BasicAuth\Type::PROXY_AUTH,
+                'percent_rate'   => 0,
+                'fixed_rate'     => 0,
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'   => AccountType::DIRECT,
+                'channel'        => Channel::RBL,
+                'expired_at'     => null,
+                'created_at'     => time(),
+                'updated_at'     => time(),
+            ],
+            // Rs 0 for rbl current account payouts
+            [
+                'id'             => 'Bbg7fgaDwax05v',
+                'plan_id'        => 'EDoLfqMMBHVYGR',
+                'plan_name'      => 'Zero banking default plan',
+                'product'        => 'banking',
+                'feature'        => 'payout',
+                'payment_method' => 'upi',
+                'auth_type'      => BasicAuth\Type::PROXY_AUTH,
+                'percent_rate'   => 0,
+                'fixed_rate'     => 0,
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'   => AccountType::DIRECT,
+                'channel'        => Channel::RBL,
+                'expired_at'     => null,
+                'created_at'     => time(),
+                'updated_at'     => time(),
             ],
         ];
     }

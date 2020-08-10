@@ -3,6 +3,7 @@
 namespace RZP\Models\Pricing\Calculator;
 
 use RZP\Models\Pricing;
+use RZP\Http\BasicAuth;
 use RZP\Models\Merchant\Balance\Type;
 use RZP\Models\Payout as PayoutModel;
 
@@ -71,10 +72,12 @@ class Payout extends Base
 
         $accountType = $balance->getAccountType();
         $channel     = $balance->getChannel();
+        $authType    = ($this->entity->getUserId() === null) ? BasicAuth\Type::PRIVATE_AUTH : BasicAuth\Type::PROXY_AUTH;
 
         $filters = [
             [Pricing\Entity::ACCOUNT_TYPE, $accountType, false, null],
-            [Pricing\Entity::CHANNEL,      $channel,     true, null],
+            [Pricing\Entity::CHANNEL,      $channel,     true,  null],
+            [Pricing\Entity::AUTH_TYPE,    $authType,    true,  null],
         ];
 
         return $this->applyFiltersOnRules($rules, $filters);

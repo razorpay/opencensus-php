@@ -16,6 +16,7 @@ use RZP\Constants;
 use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Models\Feature;
+use RZP\Http\BasicAuth;
 use RZP\Error\ErrorCode;
 use RZP\Models\Card\Type;
 use RZP\Http\RequestHeader;
@@ -5295,5 +5296,65 @@ class PayoutTest extends TestCase
         $this->assertEquals(Status::BATCH_SUBMITTED, $updatedPayouts[0]['status']);
         $this->assertEquals(Status::BATCH_SUBMITTED, $updatedPayouts[1]['status']);
         $this->assertEquals(Status::BATCH_SUBMITTED, $updatedPayouts[2]['status']);
+    }
+
+    public function testPricingRuleAuthTypeForPrivateAuthPayout()
+    {
+        $this->ba->privateAuth();
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $transactionId = $payout->transaction->getId();
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $transactionId], true);
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $transactionId,
+            'pricing_rule_id' => "Bbg7dTcURsOr77",
+            'percentage'      => null,
+            'amount'          => 900,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+
+        $pricingRule = $this->getDbEntityById('pricing', $expectedBreakup['pricing_rule_id']);
+
+        $this->assertEquals(BasicAuth\Type::PRIVATE_AUTH, $pricingRule->getAuthType());
+    }
+
+    public function testPricingRuleAuthTypeForProxyAuthPayout()
+    {
+        $testData = $this->testData['testPricingRuleAuthTypeForProxyAuthPayout'];
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']   = '0007';
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->proxyAuth();
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals("MerchantUser01", $payout->getUserId());
+
+        $transactionId = $payout->transaction->getId();
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $transactionId], true);
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $transactionId,
+            'pricing_rule_id' => "Bbg7dTcURsOr79",
+            'percentage'      => null,
+            'amount'          => 900,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+
+        $pricingRule = $this->getDbEntityById('pricing', $expectedBreakup['pricing_rule_id']);
+
+        $this->assertEquals(BasicAuth\Type::PROXY_AUTH, $pricingRule->getAuthType());
     }
 }

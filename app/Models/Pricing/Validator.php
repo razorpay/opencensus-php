@@ -6,6 +6,7 @@ use RZP\Base;
 use RZP\Constants\Product;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Http\BasicAuth;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\SubType;
@@ -27,6 +28,8 @@ use RZP\Models\BankingAccountStatement\Channel as BASChannel;
 
 class Validator extends Base\Validator
 {
+    const ALLOWED_AUTH_TYPE_FOR_BANKING_PRODUCT = [BasicAuth\Type::PRIVATE_AUTH, BasicAuth\Type::PROXY_AUTH];
+
     protected static $addPlanRuleRules = [
         Entity::PRODUCT                 => 'sometimes|string|custom',
         Entity::FEATURE                 => 'sometimes|alpha_dash',
@@ -39,7 +42,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_NETWORK         => 'sometimes|nullable|string',
         Entity::PAYMENT_ISSUER          => 'sometimes_if:payment_method,card,emi,emandate,cardless_emi,paylater,nach|nullable|alpha|max:255',
         Entity::EMI_DURATION            => 'sometimes|nullable|integer|in:3,6,9,12,18,24',
-        Entity::AUTH_TYPE               => 'sometimes_if:payment_method_type,debit|nullable|in:pin',
+        Entity::AUTH_TYPE               => 'sometimes|nullable',
         Entity::INTERNATIONAL           => 'sometimes|in:0,1',
         Entity::RECEIVER_TYPE           => 'sometimes_if:payment_method,card,upi|nullable|in:qr_code,vpa',
         Entity::AMOUNT_RANGE_ACTIVE     => 'sometimes|in:0,1',
@@ -79,6 +82,7 @@ class Validator extends Base\Validator
         'addPlanRuleMinAndMaxFee',
         'addPlanRulePayoutFundTransfer',
         'addPlanRuleRefund',
+        'addPlanRuleAuthType',
         // Skipped for now as it blocks the creation of 0-pricing rules.
         // 'addPlanRuleBankTransfer',
     ];
@@ -686,7 +690,8 @@ class Validator extends Base\Validator
                 ($rule[Entity::FEATURE] === $newRule[Entity::FEATURE]) and
                 ($rule[Entity::EMI_DURATION] === $newRule[Entity::EMI_DURATION]) and
                 ($rule[Entity::RECEIVER_TYPE] === $newRule[Entity::RECEIVER_TYPE]) and
-                ($this->isAccountTypeAndChannelSameForBothRules($rule, $newRule) === true))
+                ($this->isAccountTypeAndChannelSameForBothRules($rule, $newRule) === true) and
+                ($rule[Entity::AUTH_TYPE] === $newRule[Entity::AUTH_TYPE]))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
@@ -704,6 +709,7 @@ class Validator extends Base\Validator
                 ($rule[Entity::EMI_DURATION] === $newRule[Entity::EMI_DURATION]) and
                 ($rule[Entity::RECEIVER_TYPE] === $newRule[Entity::RECEIVER_TYPE]) and
                 ($this->isAccountTypeAndChannelSameForBothRules($rule, $newRule) === true) and
+                ($rule[Entity::AUTH_TYPE] === $newRule[Entity::AUTH_TYPE]) and
                 (isset($newRule[Entity::AMOUNT_RANGE_ACTIVE]) === true) and
                 (isset($rule[Entity::AMOUNT_RANGE_ACTIVE]) === true))
             {
@@ -722,6 +728,7 @@ class Validator extends Base\Validator
                 ($rule[Entity::EMI_DURATION] === $newRule[Entity::EMI_DURATION]) and
                 ($rule[Entity::RECEIVER_TYPE] === $newRule[Entity::RECEIVER_TYPE]) and
                 ($this->isAccountTypeAndChannelSameForBothRules($rule, $newRule) === true) and
+                ($rule[Entity::AUTH_TYPE] === $newRule[Entity::AUTH_TYPE]) and
                 (empty($newRule[Entity::AMOUNT_RANGE_ACTIVE]) !== empty($rule[Entity::AMOUNT_RANGE_ACTIVE])))
             {
                 throw new Exception\BadRequestException(
@@ -928,9 +935,112 @@ class Validator extends Base\Validator
     {
         if ((isset($rule[Entity::CHANNEL]) === true) and
             (isset($newRule[Entity::CHANNEL]) === true) and
-            ($rule[Entity::CHANNEL] === $newRule[Entity::CHANNEL]))
+            ($rule[Entity::CHANNEL] !== $newRule[Entity::CHANNEL]))
         {
             return false;
+        }
+
+        return true;
+    }
+
+    /*
+    This is to validate that auth_type field in pricing rule with the following conditions-
+    1. The auth_type field is not compulsory.
+    2. If product is banking and auth_type is set, auth_type must be either proxy or private.
+    3. If payment_method_type is debit and auth_type is set, auth_type must be of type pin.
+    */
+    protected function validateAddPlanRuleAuthType($input)
+    {
+        // This ensures if auth_type is not set we allow the rule creation to happen.
+        if (empty($input[Entity::AUTH_TYPE]) === true)
+        {
+            return;
+        }
+
+        // This ensures that apart from product banking or payment method type is debit, auth_type is not sent in any
+        // other condition.
+        if($this->isAuthTypeSetOnlyForProductBankingOrPaymentMethodTypeDebit($input) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The auth type field can be sent only when payment method type is debit or product is banking');
+        }
+
+        // Check if Auth type is valid for product as banking.
+        if ($this->isAuthTypeValidForProductBanking($input) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The selected auth type is invalid');
+        }
+
+        // Check if Auth type is valid for payment_method_type as debit.
+        if ($this->isAuthTypeValidForPaymentMethodTypeDebit($input) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The selected auth type is invalid');
+        }
+    }
+
+    protected function isProductBanking($input) : bool
+    {
+        if ((isset($input[Entity::PRODUCT]) === true) and
+            ($input[Entity::PRODUCT] === Product::BANKING))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isAuthTypeSetOnlyForProductBankingOrPaymentMethodTypeDebit($input) : bool
+    {
+        $isProductBanking = $this->isProductBanking($input);
+
+        $isPaymentMethodTypeDebit = $this->isPaymentMethodTypeDebit($input);
+
+        if ((empty($input[Entity::AUTH_TYPE]) === false) and
+            ($isProductBanking === false) and
+            ($isPaymentMethodTypeDebit === false))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function isPaymentMethodTypeDebit($input)
+    {
+        if ((isset($input[Entity::PAYMENT_METHOD_TYPE]) === true) and
+            ($input[Entity::PAYMENT_METHOD_TYPE] === CardType::DEBIT))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isAuthTypeValidForPaymentMethodTypeDebit($input) : bool
+    {
+
+        if ($this->isPaymentMethodTypeDebit($input) === true)
+        {
+            if ($input[Entity::AUTH_TYPE] !== Payment\AuthType::PIN)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    protected function isAuthTypeValidForProductBanking($input) : bool
+    {
+        if ($this->isProductBanking($input) === true)
+        {
+            if (in_array($input[Entity::AUTH_TYPE],
+                         self::ALLOWED_AUTH_TYPE_FOR_BANKING_PRODUCT) === false)
+            {
+                return false;
+            }
         }
 
         return true;

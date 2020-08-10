@@ -2221,4 +2221,135 @@ class PricingTest extends TestCase
 
         $this->startTest($testData);
     }
+
+    public function testAddPricingPlanRuleForBankingPayoutWithCorrectAuth()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleForBankingPayoutWithIncorrectAuth()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleForBankingPayoutWithoutAuth()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleForPaymentMethodTypeDebitWithoutAuth()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleForPaymentMethodTypeDebitWithIncorrectAuth()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleForProductPrimaryAndPaymentMethodTypeCredit()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRulesForBankingPayoutWithBothSupportedAuths()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/' . $content['id'] . '/rule';
+
+        $this->startTest($testData);
+
+        $privateAuthPricingRule = $this->getDbLastEntity('pricing')->toArray();
+
+        $testData['request']['content']['auth_type']  = 'proxy';
+        $testData['response']['content']['auth_type'] = 'proxy';
+
+        $this->startTest($testData);
+
+        $proxyAuthPricingRule = $this->getDbLastEntity('pricing')->toArray();
+
+        //Reload private auth rule to verify that it wasn't replaced
+        $privateAuthPricingRule = $this->getDbEntityById('pricing', $privateAuthPricingRule['id'])->toArray();
+
+        $differenceBetweenTwoRules = array_diff($privateAuthPricingRule, $proxyAuthPricingRule);
+
+        // Assert that the two new rules have only two fields that have different value
+        $this->assertEquals(2, count($differenceBetweenTwoRules));
+
+        // Assert that the two new rules have their respected auth_types
+        $this->assertEquals('private', $privateAuthPricingRule['auth_type']);
+        $this->assertEquals('proxy', $proxyAuthPricingRule['auth_type']);
+
+        // Assert that the two new rules have different ids
+        $this->assertNotEquals($proxyAuthPricingRule['id'], $privateAuthPricingRule['id']);
+    }
+
+    public function testAddDuplicatePricingPlanRulesForBankingProductWithAccountTypeChannelAndAuthType()
+    {
+        $this->ba->adminAuth();
+
+        $pricingPlan = $this->createPricingPlan();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/pricing/' . $pricingPlan['id'] . '/rule',
+            'content' => [
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'percent_rate'        => 0,
+                'international'       => 0,
+                'amount_range_active' => 1,
+                'amount_range_max'    => 1500,
+                'amount_range_min'    => 0,
+                'account_type'        => 'direct',
+                'channel'             => 'rbl'
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $testData['request']['url'] = '/pricing/' . $pricingPlan['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
 }
