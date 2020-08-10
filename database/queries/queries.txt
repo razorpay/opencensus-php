@@ -5880,5 +5880,8 @@ ALTER TABLE upi_mandates
     ADD `late_confirmed` TINYINT DEFAULT NULL AFTER `used_count`,
     ADD `confirmed_at` INT UNSIGNED DEFAULT NULL AFTER `late_confirmed`;
 
+ALTER TABLE payments
+    ADD COLUMN public_key VARCHAR(100) DEFAULT NULL;
+
 ALTER TABLE merchants
 ADD COLUMN signup_source VARCHAR(32);

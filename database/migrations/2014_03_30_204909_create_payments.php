@@ -296,6 +296,9 @@ class CreatePayments extends Migration
             $table->integer(Payment::CREATED_AT);
             $table->integer(Payment::UPDATED_AT);
 
+            $table->string(Payment::PUBLIC_KEY)
+                  ->nullable();
+
             $table->index(Payment::STATUS);
             $table->index(Payment::WALLET);
             $table->index(Payment::TWO_FACTOR_AUTH);

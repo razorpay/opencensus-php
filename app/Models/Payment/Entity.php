@@ -164,6 +164,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const PREFERRED_AUTH        = 'preferred_auth';
 
+    const PUBLIC_KEY            = 'public_key';
+
     // Used by merchant dashboard to fetch payments based on utr
     const BANK_REFERENCE        = 'bank_reference';
 
@@ -1453,6 +1455,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::BATCH_ID, $batchId);
     }
 
+    public function setPublicKey($publicKey)
+    {
+        $this->setAttribute(self::PUBLIC_KEY, $publicKey);
+    }
     // ----------------------- Setters Ends-----------------------------------------
 
     // ----------------------- Mutator ---------------------------------------------
@@ -1732,6 +1738,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         return $this->getAttribute(self::FEE_BEARER);
+    }
+
+    public function getPublicKey()
+    {
+        return $this->getAttribute(self::PUBLIC_KEY);
     }
 
 // ----------------------- Accessor Ends ---------------------------------------

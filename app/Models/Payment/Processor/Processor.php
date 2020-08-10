@@ -51,6 +51,7 @@ use RZP\Gateway\Base\CardCacheTrait;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\Upi\Base\ProviderCode;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Transfer\Core as TransferCore;
@@ -1624,11 +1625,32 @@ class Processor
 
     protected function getSignature(array $data)
     {
+        $publicKey = null;
+
+        $variant = 'off';
+
+        if (isset($data['razorpay_payment_id']) === true)
+        {
+            $payment = $this->repo->payment->find(Payment\Entity::stripDefaultSign($data['razorpay_payment_id']));
+
+            $publicKey = $payment->getPublicKey();
+
+            $variant = app('razorx')->getTreatment($payment->getMerchantId(),
+                RazorxTreatment::PUBLIC_KEY_SIGNATURE_GENERATION,
+                $this->mode);
+
+            $this->trace->info(TraceCode::PUBLIC_KEY_SIGNATURE_GENERATION_TRACE, [
+                'payment_id'   => $data['razorpay_payment_id'],
+                'merchant_id'  => $payment->getMerchantId(),
+                'variant'      => $variant
+            ]);
+        }
+
         ksort($data);
 
         $str = implode('|', $data);
 
-        return $this->ba->sign($str);
+        return $this->ba->sign($str, $publicKey, $variant);
     }
 
     protected function checkMerchantPermissions()
@@ -2669,6 +2691,8 @@ class Processor
         $payment->merchant()->associate($this->merchant);
 
         $payment->build($input);
+
+        $payment->setPublicKey($this->ba->getPublicKey());
 
         $this->payment = $payment;
 

@@ -155,4 +155,6 @@ final class RazorxTreatment
 
     // Check whether trimming is allowed for merchant or not.
     const TRIM_SPACES = 'trim_spaces';
+
+    const PUBLIC_KEY_SIGNATURE_GENERATION = 'public_key_signature_generation';
 }

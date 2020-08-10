@@ -8,6 +8,7 @@ use ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 
+use Razorpay\OAuth\OAuthServer;
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Models\Key;
@@ -1958,12 +1959,25 @@ class BasicAuth
      *
      * @param  $str
      *
+     * @param null $publicKey
+     * @param string $variant
      * @return string
      *
      * @throws Exception\LogicException
      */
-    public function sign($str)
+    public function sign($str, $publicKey = null, $variant = 'off')
     {
+        if (($publicKey !== null) and
+            (strtolower($variant) === 'on'))
+        {
+            $secret = $this->getSecretForPublicKey($publicKey);
+
+            if ($secret !== null)
+            {
+                return hash_hmac(self::HMAC_ALGO, $str, $secret);
+            }
+        }
+
         $key = $this->getKeyEntity();
 
         if (($key === null) and ($this->isPartnerAuth() === false) and ($this->oauthClientId === null))
@@ -1991,6 +2005,62 @@ class BasicAuth
         }
 
         return hash_hmac(self::HMAC_ALGO, $str, $secret);
+    }
+
+    private function getSecretForPublicKey($publicKey)
+    {
+        $secret = null;
+
+        $partnerKeyRegex = '/^(rzp_(test|live)_partner_([a-zA-Z0-9]{14}))[-~](acc_[a-zA-Z0-9]{14})$/';
+
+        $oauthKeyRegex = '/^(rzp_(test|live)_oauth_[a-zA-Z0-9]{14}).*$/';
+
+        $keyRegex = '/^rzp_(test|live)_([a-zA-Z0-9]{14})$/';
+
+        $found = (preg_match($oauthKeyRegex, $publicKey, $matches) === 1);
+
+        if ($found === true)
+        {
+            $token = (new OAuthServer($this->app['env']))->authenticateWithPublicToken($matches[1]);
+
+            if ((isset($token) === true) and
+                (isset($token['client_id']) === true))
+            {
+                $clientId = $token['client_id'];
+
+                $client = (new OAuthClient\Repository)->findOrFailPublic($clientId);
+
+                $secret = $client->getSecret();
+
+                return $secret;
+            }
+        }
+
+        $found = (preg_match($partnerKeyRegex, $publicKey, $matches) === 1);
+
+        if ($found === true)
+        {
+            $clientId = $matches[3];
+
+            $client = (new OAuthClient\Repository)->findOrFailPublic($clientId);
+
+            $secret = $client->getSecret();
+
+            return $secret;
+        }
+
+        $found = (preg_match($keyRegex, $publicKey, $matches) === 1);
+
+        if ($found === true)
+        {
+            $key = $this->repo->key->findNotExpired($matches[2]);
+
+            $secret = Crypt::decrypt($key->getSecret());
+
+            return $secret;
+        }
+
+        return $secret;
     }
 
     /**
