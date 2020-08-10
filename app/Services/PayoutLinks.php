@@ -48,7 +48,9 @@ class PayoutLinks
     const ON_BOARDING_STATUS                       = 'twirp/payoutlinks.Payoutlinks/OnboardingStatus';
     const SUMMARY                                  = 'twirp/payoutlinks.Payoutlinks/Summary';
     const FUND_ACCOUNT_ID                          = 'fund_account_id';
+    const ACCOUNT_NUMBER                           = 'account_number';
     const CANCELLED_AT                             = 'cancelled_at';
+    const UPDATED_AT                               = 'updated_at';
     const SEND_SMS                                 = 'send_sms';
     const SEND_EMAIL                               = 'send_email';
     const ATTEMPT_COUNT                            = 'attempt_count';
@@ -114,7 +116,9 @@ class PayoutLinks
 
         $response = $this->makeRequest($url, $input);
 
-        $this->addEmptyParameters($response);
+        $expandArray = [0 => self::USER];
+
+        $this->processParameters($response, $expandArray);
 
         return $response;
     }
@@ -171,7 +175,7 @@ class PayoutLinks
 
         $response = $this->makeRequest($url, $request);
 
-        $this->addEmptyParameters($response);
+        $this->processParameters($response);
 
         return $response;
     }
@@ -192,7 +196,7 @@ class PayoutLinks
 
         $response = $this->makeRequest($url, $request);
 
-        $this->addEmptyParameters($response);
+        $this->processParameters($response);
 
         return $response;
     }
@@ -224,7 +228,7 @@ class PayoutLinks
 
         foreach ($payoutlinks as &$value)
         {
-            $this->addEmptyParameters($value, $expandArray);
+            $this->processParameters($value, $expandArray);
         }
 
         return $response;
@@ -568,9 +572,10 @@ class PayoutLinks
 
     /**
      * @param array $payoutLink
-     * @param array $expandArray format : ["0":"payouts","1":"users"...]
+     * @param string $operation
+     * @param array $expandArray format : ["0":"payouts","1":"user"...]
      */
-    protected function addEmptyParameters(array &$payoutLink, array $expandArray = [])
+    protected function processParameters(array &$payoutLink, array $expandArray = [])
     {
         $payoutLink[self::FUND_ACCOUNT_ID] = array_pull($payoutLink, self::FUND_ACCOUNT_ID, null);
 
@@ -602,9 +607,19 @@ class PayoutLinks
             ];
         }
 
+        if ($isPayoutInExpandArray === false)
+        {
+            unset($payoutLink[self::PAYOUTS]);
+        }
+
         if ($isUserInExpandArray === true && sizeof($payoutLink[self::USER]) === 0)
         {
             $payoutLink[self::USER] = null;
+        }
+
+        if ($isUserInExpandArray === false)
+        {
+            unset($payoutLink[self::USER]);
         }
 
         $payoutLink[self::USER_ID] = array_pull($payoutLink, self::USER_ID, null);
@@ -616,6 +631,10 @@ class PayoutLinks
         $payoutLink[self::SEND_SMS] = filter_var($payoutLink[self::SEND_SMS], FILTER_VALIDATE_BOOLEAN);
 
         $payoutLink[self::SEND_EMAIL] = filter_var($payoutLink[self::SEND_EMAIL], FILTER_VALIDATE_BOOLEAN);
+
+        unset($payoutLink[self::ACCOUNT_NUMBER]);
+
+        unset($payoutLink[self::UPDATED_AT]);
     }
 
 }
