@@ -324,14 +324,15 @@ class Plan extends PublicCollection
         return null;
     }
 
-    public function hasBankingSharedAccountPayoutRule(): bool
+    public function hasBankingSharedAccountNonFreePayoutRule(): bool
     {
         /** @var Entity $rule */
         foreach ($this->items as $rule)
         {
             if (($rule->isBankingProduct() === true) and
                 ($rule->getFeature() === Feature::PAYOUT) and
-                ($rule->isAccountTypeShared() === true))
+                ($rule->isAccountTypeShared() === true) and
+                ($rule->isPayoutsFilterFreePayout() === false))
             {
                 return true;
             }
@@ -340,14 +341,49 @@ class Plan extends PublicCollection
         return false;
     }
 
-    public function hasBankingDirectAccountPayoutRule(): bool
+    public function hasBankingDirectAccountNonFreePayoutRule(): bool
     {
         /** @var Entity $rule */
         foreach ($this->items as $rule)
         {
             if (($rule->isBankingProduct() === true) and
                 ($rule->getFeature() === Feature::PAYOUT) and
-                ($rule->isAccountTypeDirect() === true))
+                ($rule->isAccountTypeDirect() === true) and
+                ($rule->isPayoutsFilterFreePayout() === false))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function hasBankingSharedAccountFreePayoutRule(): bool
+    {
+        /** @var Entity $rule */
+        foreach ($this->items as $rule)
+        {
+            if (($rule->isBankingProduct() === true) and
+                ($rule->getFeature() === Feature::PAYOUT) and
+                ($rule->isAccountTypeShared() === true) and
+                ($rule->isPayoutsFilterFreePayout() === true))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function hasBankingDirectAccountFreePayoutRule(): bool
+    {
+        /** @var Entity $rule */
+        foreach ($this->items as $rule)
+        {
+            if (($rule->isBankingProduct() === true) and
+                ($rule->getFeature() === Feature::PAYOUT) and
+                ($rule->isAccountTypeDirect() === true) and
+                ($rule->isPayoutsFilterFreePayout() === true))
             {
                 return true;
             }

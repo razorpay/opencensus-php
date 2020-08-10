@@ -2310,6 +2310,14 @@ class PricingTest extends TestCase
         //Reload private auth rule to verify that it wasn't replaced
         $privateAuthPricingRule = $this->getDbEntityById('pricing', $privateAuthPricingRule['id'])->toArray();
 
+        // Unset created_at and updated_at so that during array_diff, these 2 values are not taken into consideration.
+        // They can be same or different and we aren't concerned about them.
+        unset($privateAuthPricingRule['created_at']);
+        unset($privateAuthPricingRule['updated_at']);
+
+        unset($proxyAuthPricingRule['created_at']);
+        unset($proxyAuthPricingRule['updated_at']);
+
         $differenceBetweenTwoRules = array_diff($privateAuthPricingRule, $proxyAuthPricingRule);
 
         // Assert that the two new rules have only two fields that have different value
@@ -2349,6 +2357,50 @@ class PricingTest extends TestCase
         $this->makeRequestAndGetContent($request);
 
         $testData['request']['url'] = '/pricing/' . $pricingPlan['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleForBankingPayoutWithPayoutsFilter()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleForBankingPayoutWithNullPayoutsFilter()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleForNotBankingPayoutWithNullPayoutsFilter()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleForNotBankingPayoutWithPayoutsFilter()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
 
         $this->startTest($testData);
     }

@@ -75,6 +75,7 @@ class Base
         'cardless_emi'          => \RZP\Gateway\CardlessEmi\Entity::class,
         'options'               => \RZP\Models\Options\Entity::class,
         'config'                => \RZP\Models\Payment\Config\Entity::class,
+        'counter'               => \RZP\Models\Counter\Entity::class,
 
         'settlement.ondemand_fund_account' => \RZP\Models\Settlement\OndemandFundAccount\Entity::class,
         'settlemnt.ondemand'               => \RZP\Models\Settlement\Ondemand\Entity::class,

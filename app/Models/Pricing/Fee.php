@@ -310,13 +310,37 @@ class Fee extends Base\Core
     protected function addBankingPayoutFallbackRules(Plan $pricingPlan, Merchant\Entity $merchant)
     {
         //
+        // Add default pricing rules with payouts_filter = free_payout, only when no such rules are already defined for
+        // Shared accounts.
+        // If ANY custom pricing rules for payouts_filter = free_payout have been added for banking payouts, we do not
+        // attach default pricing rules where payouts_filter = free_payout
+        //
+        if ($pricingPlan->hasBankingSharedAccountFreePayoutRule() === false)
+        {
+            $rules       = $this->repo->getBankingSharedAccountFreePayoutDefaultPricingRules(Feature::PAYOUT, $merchant);
+            $pricingPlan = $pricingPlan->merge($rules);
+        }
+
+        //
         // Add default pricing rules, only when no rules are already defined for Shared accounts.
         // If ANY custom pricing rules have been added for banking payouts, we do not attach
         // default pricing rules
         //
-        if ($pricingPlan->hasBankingSharedAccountPayoutRule() === false)
+        if ($pricingPlan->hasBankingSharedAccountNonFreePayoutRule() === false)
         {
-            $rules       = $this->repo->getBankingSharedAccountDefaultPricingRules(Feature::PAYOUT, $merchant);
+            $rules       = $this->repo->getBankingSharedAccountNonFreePayouDefaultPricingRules(Feature::PAYOUT, $merchant);
+            $pricingPlan = $pricingPlan->merge($rules);
+        }
+
+        //
+        // Add default pricing rules with payouts_filter = free_payout, only when no such rules are already defined for
+        // Direct accounts.
+        // If ANY custom pricing rules for payouts_filter = free_payout have been added for banking payouts, we do not
+        // attach default pricing rules where payouts_filter = free_payout
+        //
+        if ($pricingPlan->hasBankingDirectAccountFreePayoutRule() === false)
+        {
+            $rules       = $this->repo->getBankingDirectAccountFreePayoutDefaultPricingRules(Feature::PAYOUT, $merchant);
             $pricingPlan = $pricingPlan->merge($rules);
         }
 
@@ -325,9 +349,9 @@ class Fee extends Base\Core
         // If ANY custom pricing rules have been added for banking payouts, we do not attach
         // default pricing rules
         //
-        if ($pricingPlan->hasBankingDirectAccountPayoutRule() === false)
+        if ($pricingPlan->hasBankingDirectAccountNonFreePayoutRule() === false)
         {
-            $rules       = $this->repo->getBankingDirectAccountDefaultPricingRules(Feature::PAYOUT, $merchant);
+            $rules       = $this->repo->getBankingDirectAccountNonFreePayoutDefaultPricingRules(Feature::PAYOUT, $merchant);
             $pricingPlan = $pricingPlan->merge($rules);
         }
 

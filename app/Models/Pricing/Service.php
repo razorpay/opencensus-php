@@ -21,7 +21,6 @@ use RZP\Exception\BadRequestException;
 
 class Service extends Base\Service
 {
-    const PAYOUTS_FILTER                        = 'payouts_filter';
     const MERCHANT_PRICING_UPDATE_MUTEX         = 'merchant_pricing_update_%s';
     const MERCHANT_PRICING_UPDATE_MUTEX_TIMEOUT = 30;
 
@@ -232,8 +231,7 @@ class Service extends Base\Service
                               Entity::CREATED_AT,
                               Entity::UPDATED_AT,
                               Entity::DELETED_AT,
-                              Entity::EXPIRED_AT,
-                              self::PAYOUTS_FILTER]);
+                              Entity::EXPIRED_AT]);
 
             $rules[$i][Entity::INTERNATIONAL] = $rules[$i][Entity::INTERNATIONAL] === true ? '1' : '0';
 

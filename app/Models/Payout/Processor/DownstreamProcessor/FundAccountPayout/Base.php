@@ -3,6 +3,9 @@
 namespace RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 
 use RZP\Models\Payout\Entity;
+use RZP\Models\Payout\Purpose;
+use RZP\Models\Merchant\Balance\Type;
+use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Models\Payout\Processor\DownstreamProcessor\Base as DSBase;
 
 class Base extends DSBase
@@ -22,5 +25,28 @@ class Base extends DSBase
         $channel = snake_case(class_basename(get_called_class()));
 
         $payout->setChannel($channel);
+    }
+
+    protected function assignFreePayoutIfApplicable(Entity $payout)
+    {
+        /*
+         * We don't want fee recovery payouts to go through the free payout flow, hence the check here.
+         */
+        if ($payout->getPurpose() === Purpose::RZP_FEES)
+        {
+            return;
+        }
+
+        $balance = $payout->balance;
+
+        $freePayoutSupportedModes = (new FreePayout)->getFreePayoutSupportedModes($balance);
+
+        if ((in_array($payout->getMode(), $freePayoutSupportedModes, true) === true) and
+            ($balance->getType() === Type::BANKING))
+        {
+            $expectedFeeType = $payout->getExpectedFeeType();
+
+            $payout->setFeeType($expectedFeeType);
+        }
     }
 }

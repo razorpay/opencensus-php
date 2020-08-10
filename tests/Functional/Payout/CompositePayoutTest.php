@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Payout;
 
+use RZP\Models\Payout;
 use RZP\Models\Feature;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -212,5 +213,35 @@ class CompositePayoutTest extends TestCase
         // Assert that the response payout, fund_account and contact are also related to each other
         $this->assertEquals($response['fund_account_id'], $response['fund_account']['id']);
         $this->assertEquals($response['fund_account']['contact_id'], $response['fund_account']['contact']['id']);
+    }
+
+    public function testFreeCompositePayoutCreation()
+    {
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $testData = $this->testData['testCreateCompositePayout'];
+
+        $testData['response']['content']['fees'] = 0;
+        $testData['response']['content']['tax']  = 0;
+
+        $this->testData['testCreateCompositePayout'] = $testData;
+
+        $this->testCreateCompositePayout();
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
+
+        // Assert that the free payout was consumed.
+        $this->assertEquals(1, $counter->getFreePayoutsConsumed());
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // Assert that free_payout is assigned as fee_type
+        $this->assertEquals(Payout\Entity::FREE_PAYOUT, $payout->getFeeType());
     }
 }

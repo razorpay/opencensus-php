@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
+use RZP\Models\Payout;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Models\Merchant\FeeBearer;
@@ -31,6 +32,7 @@ class Entity extends Base\PublicEntity
     const PAYMENT_NETWORK               = 'payment_network';
     const INTERNATIONAL                 = 'international';
     const FEE_BEARER                    = 'fee_bearer';
+    const PAYOUTS_FILTER                = 'payouts_filter';
 
     //
     // By default, all the rules are of type pricing
@@ -114,6 +116,7 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::ACCOUNT_TYPE,
         self::FEE_BEARER,
+        self::PAYOUTS_FILTER,
     ];
 
     protected $entity = 'pricing';
@@ -149,6 +152,7 @@ class Entity extends Base\PublicEntity
         self::RECEIVER_TYPE             => null,
         self::TYPE                      => Type::PRICING,
         self::FEE_BEARER                => FeeBearer::PLATFORM,
+        self::PAYOUTS_FILTER            => null,
     ];
 
     protected $proxy = [
@@ -453,6 +457,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEE_BEARER);
     }
 
+    public function getPayoutsFilter()
+    {
+        return $this->getAttribute(self::PAYOUTS_FILTER);
+    }
+
     public function isPrimaryProduct(): bool
     {
         return ($this->getProduct() === Product::PRIMARY);
@@ -471,6 +480,11 @@ class Entity extends Base\PublicEntity
     public function isAccountTypeShared()
     {
         return (($this->getAccountType() === AccountType::SHARED));
+    }
+
+    public function isPayoutsFilterFreePayout()
+    {
+        return (($this->getPayoutsFilter() === Payout\Entity::FREE_PAYOUT));
     }
 
     /**

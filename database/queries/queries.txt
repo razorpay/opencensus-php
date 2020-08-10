@@ -5885,3 +5885,9 @@ ALTER TABLE payments
 
 ALTER TABLE merchants
 ADD COLUMN signup_source VARCHAR(32);
+
+ALTER TABLE pricing
+    ADD COLUMN payouts_filter VARCHAR(255) DEFAULT NULL;
+
+ALTER TABLE payouts
+    ADD COLUMN fee_type VARCHAR(255) DEFAULT NULL;

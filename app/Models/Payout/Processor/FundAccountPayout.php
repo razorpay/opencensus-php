@@ -8,7 +8,9 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Settlement\Channel;
+use RZP\Models\Payout\CounterHelper;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Balance\AccountType;
@@ -22,7 +24,21 @@ class FundAccountPayout extends Base
      */
     public function createPayout(array $input): Payout\Entity
     {
-        $payout = parent::createPayout($input);
+        if (isset($input[Balance\Entity::BALANCE_ID]))
+        {
+            /** @var Balance\Entity $balance */
+            $balance = $this->repo->balance->findOrFailById($input[Balance\Entity::BALANCE_ID]);
+
+            if ($balance->getType() === Balance\Type::BANKING)
+            {
+                $payout = $this->createBankingPayout($input, $balance);
+            }
+        }
+
+        else
+        {
+            $payout = parent::createPayout($input);
+        }
 
         //
         // In case of payouts with status=(queued, pending, scheduled, rejected, failed), we don't create the
@@ -229,6 +245,45 @@ class FundAccountPayout extends Base
                 ],
                 $errorMsg
             );
+        }
+    }
+
+    protected function createBankingPayout(array $input, Balance\Entity $balance)
+    {
+        $isComposite = false;
+
+        $feeType = null;
+
+        if (array_key_exists(Payout\Entity::FEE_TYPE, $input) === true)
+        {
+            $isComposite = true;
+        }
+
+        if ($isComposite === false)
+        {
+            $feeType = (new Payout\Core)->updateFreePayoutsConsumedAndGetFeeType($balance);
+
+            $input = array_merge($input, [Payout\Entity::FEE_TYPE => $feeType]);
+        }
+
+        try
+        {
+            $payout = parent::createPayout($input);
+
+            return $payout;
+        }
+
+        catch (\Throwable $throwable)
+        {
+            if ($isComposite === false)
+            {
+                $balanceId = $input[Balance\Entity::BALANCE_ID];
+
+                (new Payout\Core)->decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable($balanceId,
+                                                                                                     $feeType);
+            }
+
+            throw $throwable;
         }
     }
 }

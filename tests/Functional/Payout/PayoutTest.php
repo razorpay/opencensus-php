@@ -34,6 +34,8 @@ use RZP\Models\Merchant\Webhook\Event;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\BankingAccount\Gateway\Rbl;
+use RZP\Models\Merchant\Balance\FreePayout;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Mail\Transaction\Payout as PayoutMail;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
@@ -1013,6 +1015,14 @@ class PayoutTest extends TestCase
         ];
 
         $secondBankingAccount = $this->createBankingAccount($secondBankingAccountAttributes);
+
+        $this->fixtures->create(
+            'counter',
+            [
+                'balance_id' => $secondBankingBalance->getId(),
+                'account_type' => $secondBankingBalance->getAccountType(),
+            ]
+        );
 
         // Create two queued payouts
 
@@ -4362,6 +4372,32 @@ class PayoutTest extends TestCase
 
     protected function createDirectAccountPayout()
     {
+        $this->setupDirectAccount();
+
+        $directAccountPayoutRequest = [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626906',
+                'amount'          => 2000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->makeRequestAndGetContent($directAccountPayoutRequest);
+    }
+
+    protected function setupDirectAccount()
+    {
         $balanceAttributes = [
             'balance' => 10000000,
             'balanceType' => 'direct',
@@ -4389,29 +4425,14 @@ class PayoutTest extends TestCase
         $virtualAccount->balance()->associate($bankingBalance);
         $virtualAccount->save();
 
+        $this->fixtures->create('counter', [
+            'account_type'          => 'direct',
+            'balance_id'            => $bankingBalance->getId(),
+            'free_payouts_consumed' => FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL,
+        ]);
+
         $bankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
         $bankingBalance->save();
-
-        $directAccountPayoutRequest = [
-            'method'  => 'POST',
-            'url'     => '/payouts',
-            'content' => [
-                'account_number'  => '2224440041626906',
-                'amount'          => 2000,
-                'currency'        => 'INR',
-                'purpose'         => 'refund',
-                'narration'       => 'Batman',
-                'mode'            => 'IMPS',
-                'fund_account_id' => 'fa_100000000000fa',
-                'notes'           => [
-                    'abc' => 'xyz',
-                ],
-            ],
-        ];
-
-        $this->ba->privateAuth();
-
-        $this->makeRequestAndGetContent($directAccountPayoutRequest);
     }
 
         public function testWorkflowActionNotesTransformationForNumericAndEmptyKeys()
@@ -4918,6 +4939,12 @@ class PayoutTest extends TestCase
         $bankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
         $bankingBalance->save();
 
+        $this->fixtures->create('counter', [
+            'account_type'          => 'direct',
+            'balance_id'            => $bankingBalance->getId(),
+            'free_payouts_consumed' => FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL,
+        ]);
+
         $this->ba->privateAuth();
 
         $this->startTest();
@@ -5356,5 +5383,1201 @@ class PayoutTest extends TestCase
         $pricingRule = $this->getDbEntityById('pricing', $expectedBreakup['pricing_rule_id']);
 
         $this->assertEquals(BasicAuth\Type::PROXY_AUTH, $pricingRule->getAuthType());
+    }
+
+    public function testCreateFreePayoutForNEFTModeSharedAccountPrivateAuth()
+    {
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $this->ba->privateAuth();
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(null, $payout->getUserId());
+
+        // Assert 0 fee and tax in payout
+        $this->assertEquals(0, $payout->getFees());
+        $this->assertEquals(0, $payout->getTax());
+
+        // Assert that free_payout is assigned as fee_type for such payouts.
+        $this->assertEquals(Payout\Entity::FREE_PAYOUT, $payout->getFeeType());
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
+
+        // Assert that one free payout has been consumed
+        $this->assertEquals(1, $counter->getFreePayoutsConsumed());
+
+        $transactionId = $payout->transaction->getId();
+
+        $transaction = $this->getDbEntityById('transaction', $transactionId)->toArray();
+
+        // Assert 0 fee and tax in payout
+        $this->assertEquals(0, $transaction['fee']);
+        $this->assertEquals(0, $transaction['tax']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $transactionId], true);
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $transactionId,
+            'pricing_rule_id' => "Bbg7cl6t6I3XA9",
+            'percentage'      => null,
+            'amount'          => 0,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+
+        $pricingRule = $this->getDbEntityById('pricing', $expectedBreakup['pricing_rule_id']);
+
+        $this->assertEquals(BasicAuth\Type::PRIVATE_AUTH, $pricingRule->getAuthType());
+    }
+
+    public function testCreateFreePayoutForUPIModeSharedAccountPrivateAuth()
+    {
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $fundAccountRequest = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                "account_type" => "vpa",
+                "contact_id"   => "cont_1000001contact",
+                "vpa"          => [
+                    "address" => 'yv@upi',
+                ]
+            ]
+        ];
+
+        $this->ba->privateAuth();
+
+        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id'] = $fundAccount['id'];
+        $testData['response']['content']['fund_account_id'] = $fundAccount['id'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $balance = $this->getDbLastEntity('balance');
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '200000000']);
+
+        $this->ba->privateAuth();
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(null, $payout->getUserId());
+
+        // Assert 0 fee and tax in payout
+        $this->assertEquals(0, $payout->getFees());
+        $this->assertEquals(0, $payout->getTax());
+
+        // Assert that free_payout is assigned as fee_type for such payouts.
+        $this->assertEquals(Payout\Entity::FREE_PAYOUT, $payout->getFeeType());
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
+
+        // Assert that one free payout has been consumed
+        $this->assertEquals(1, $counter->getFreePayoutsConsumed());
+
+        $transactionId = $payout->transaction->getId();
+
+        $transaction = $this->getDbEntityById('transaction', $transactionId)->toArray();
+
+        // Assert 0 fee and tax in payout
+        $this->assertEquals(0, $transaction['fee']);
+        $this->assertEquals(0, $transaction['tax']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $transactionId], true);
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $transactionId,
+            'pricing_rule_id' => "Bbg7eYLkxM7sLT",
+            'percentage'      => null,
+            'amount'          => 0,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+
+        $pricingRule = $this->getDbEntityById('pricing', $expectedBreakup['pricing_rule_id']);
+
+        $this->assertEquals(BasicAuth\Type::PRIVATE_AUTH, $pricingRule->getAuthType());
+    }
+
+    public function testCreateFreePayoutForIMPSModeSharedAccountProxyAuth()
+    {
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $testData = $this->testData['testCreateFreePayoutForIMPSModeSharedAccountProxyAuth'];
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']   = '0007';
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->proxyAuth();
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals("MerchantUser01", $payout->getUserId());
+
+        // Assert 0 fee and tax in payout
+        $this->assertEquals(0, $payout->getFees());
+        $this->assertEquals(0, $payout->getTax());
+
+        // Assert that free_payout is assigned as fee_type for such payouts.
+        $this->assertEquals(Payout\Entity::FREE_PAYOUT, $payout->getFeeType());
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
+
+        // Assert that one free payout has been consumed
+        $this->assertEquals(1, $counter->getFreePayoutsConsumed());
+
+        $transactionId = $payout->transaction->getId();
+
+        $transaction = $this->getDbEntityById('transaction', $transactionId)->toArray();
+
+        // Assert 0 fee and tax in payout
+        $this->assertEquals(0, $transaction['fee']);
+        $this->assertEquals(0, $transaction['tax']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $transactionId], true);
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $transactionId,
+            'pricing_rule_id' => "Bbg7cl6t6I3XB1",
+            'percentage'      => null,
+            'amount'          => 0,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+
+        $pricingRule = $this->getDbEntityById('pricing', $expectedBreakup['pricing_rule_id']);
+
+        $this->assertEquals(BasicAuth\Type::PROXY_AUTH, $pricingRule->getAuthType());
+    }
+
+    public function testCreateFreePayoutForNEFTModeDirectAccountProxyAuth()
+    {
+        $testData = $this->testData['testCreateFreePayoutForNEFTModeDirectAccountProxyAuth'];
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']   = '0007';
+
+        $this->setupDirectAccount();
+
+        $balance = $this->getDbEntities('balance',
+                                                   [
+                                                       'merchant_id'  => "10000000000000",
+                                                       'account_type' => 'direct',
+                                                       'channel'      => 'rbl'
+                                                   ])->first();
+
+        $balanceId = $balance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('direct', $balanceId, 'rbl');
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->proxyAuth();
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals("MerchantUser01", $payout->getUserId());
+
+        // Assert 0 fee and tax in payout
+        $this->assertEquals(0, $payout->getFees());
+        $this->assertEquals(0, $payout->getTax());
+
+        // Assert that free_payout is assigned as fee_type for such payouts.
+        $this->assertEquals(Payout\Entity::FREE_PAYOUT, $payout->getFeeType());
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'direct',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
+
+        // Assert that one free payout has been consumed
+        $this->assertEquals(1, $counter->getFreePayoutsConsumed());
+
+        // Assert that pricing rule id in payouts is correct
+        $this->assertEquals('Bbg7cl6t6I3XB2', $payout['pricing_rule_id']);
+
+        $pricingRule = $this->getDbEntityById('pricing', $payout['pricing_rule_id']);
+
+        $this->assertEquals(BasicAuth\Type::PROXY_AUTH, $pricingRule->getAuthType());
+    }
+
+    public function testCreateFreePayoutForUPIModeDirectAccountPrivateAuth()
+    {
+        $this->setupDirectAccount();
+
+        $fundAccountRequest = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                "account_type" => "vpa",
+                "contact_id"   => "cont_1000001contact",
+                "vpa"          => [
+                    "address" => 'yv@upi',
+                ]
+            ]
+        ];
+
+        $this->ba->privateAuth();
+
+        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id'] = $fundAccount['id'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $balance = $this->getDbEntities('balance',
+                                        [
+                                            'merchant_id'  => "10000000000000",
+                                            'account_type' => 'direct',
+                                            'channel'      => 'rbl'
+                                        ])->first();
+
+        $balanceId = $balance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('direct', $balanceId, 'rbl');
+
+        $this->ba->privateAuth();
+        $this->startTest();
+    }
+
+    public function testCreateFreePayoutForIMPSModeDirectAccountProxyAuth()
+    {
+        $testData = $this->testData['testCreateFreePayoutForIMPSModeDirectAccountProxyAuth'];
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']   = '0007';
+
+        $this->setupDirectAccount();
+
+        $balance = $this->getDbEntities('balance',
+                                        [
+                                            'merchant_id'  => "10000000000000",
+                                            'account_type' => 'direct',
+                                            'channel'      => 'rbl'
+                                        ])->first();
+
+        $balanceId = $balance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('direct', $balanceId, 'rbl');
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->proxyAuth();
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals("MerchantUser01", $payout->getUserId());
+
+        // Assert 0 fee and tax in payout
+        $this->assertEquals(0, $payout->getFees());
+        $this->assertEquals(0, $payout->getTax());
+
+        // Assert that free_payout is assigned as fee_type for such payouts
+        $this->assertEquals(Payout\Entity::FREE_PAYOUT, $payout->getFeeType());
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'direct',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
+
+        // Assert that one free payout has been consumed
+        $this->assertEquals(1, $counter->getFreePayoutsConsumed());
+
+        // Assert that pricing rule id in payouts is correct
+        $this->assertEquals('Bbg7cl6t6I3XB2', $payout['pricing_rule_id']);
+
+        $pricingRule = $this->getDbEntityById('pricing', $payout['pricing_rule_id']);
+
+        $this->assertEquals(BasicAuth\Type::PROXY_AUTH, $pricingRule->getAuthType());
+    }
+
+    public function testReverseFreePayoutForNEFTModeSharedAccount()
+    {
+        $this->testCreateFreePayoutForNEFTModeSharedAccountPrivateAuth();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit(
+            'payout',
+            $payout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]);
+
+        $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
+                                             [
+                                                 'source_id'   => $payout->getId(),
+                                                 'source_type' => 'payout',
+                                                 'is_fts'      => true,
+                                             ])->first();
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $ftaForPayout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['source_id'] = $payout->getId();
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->appAuth();
+        $this->startTest();
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $payout->getBalanceId(),
+                                        ])->first();
+
+        // Assert that the free payout that was consumed was reversed.
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
+
+        $payout->reload();
+
+        // Assert that null is assigned as fee_type after failing the payout
+        $this->assertEquals(null, $payout->getFeeType());
+    }
+
+    public function testFailFreePayoutForNEFTModeDirectAccount()
+    {
+        $this->testCreateFreePayoutForNEFTModeDirectAccountProxyAuth();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit(
+            'payout',
+            $payout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]);
+
+        $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
+                                             [
+                                                 'source_id'   => $payout->getId(),
+                                                 'source_type' => 'payout',
+                                                 'is_fts'      => true,
+                                             ])->first();
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $ftaForPayout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['source_id'] = $payout->getId();
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->appAuth();
+        $this->startTest();
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'direct',
+                                            'balance_id'   => $payout->getBalanceId(),
+                                        ])->first();
+
+        // Assert that the free payout that was consumed was reversed.
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
+
+        $payout->reload();
+
+        // Assert that null is assigned as fee_type after failing the payout
+        $this->assertEquals(null, $payout->getFeeType());
+    }
+
+    public function testReverseFreePayoutForIMPSModeSharedAccount()
+    {
+        $this->testCreateFreePayoutForIMPSModeSharedAccountProxyAuth();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit(
+            'payout',
+            $payout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]);
+
+        $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
+                                             [
+                                                 'source_id'   => $payout->getId(),
+                                                 'source_type' => 'payout',
+                                                 'is_fts'      => true,
+                                             ])->first();
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $ftaForPayout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['source_id'] = $payout->getId();
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->appAuth();
+        $this->startTest();
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $payout->getBalanceId(),
+                                        ])->first();
+
+        // Assert that the free payout that was consumed was reversed.
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
+
+        $payout->reload();
+
+        // Assert that null is assigned as fee_type after reversing the payout
+        $this->assertEquals(null, $payout->getFeeType());
+    }
+
+    public function testReverseFreePayoutForIMPSModeDirectAccount()
+    {
+        $this->testCreateFreePayoutForIMPSModeDirectAccountProxyAuth();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit(
+            'payout',
+            $payout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]);
+
+        $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
+                                             [
+                                                 'source_id'   => $payout->getId(),
+                                                 'source_type' => 'payout',
+                                                 'is_fts'      => true,
+                                             ])->first();
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $ftaForPayout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['source_id'] = $payout->getId();
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->appAuth();
+        $this->startTest();
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'direct',
+                                            'balance_id'   => $payout->getBalanceId(),
+                                        ])->first();
+
+        // Assert that the free payout that was consumed was reversed.
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
+
+        $payout->reload();
+
+        // Assert that null is assigned as fee_type after reversing the payout
+        $this->assertEquals(null, $payout->getFeeType());
+    }
+
+    public function testFailFreePayoutForIMPSModeDirectAccount()
+    {
+        $this->testCreateFreePayoutForIMPSModeDirectAccountProxyAuth();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit(
+            'payout',
+            $payout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]);
+
+        $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
+                                             [
+                                                 'source_id'   => $payout->getId(),
+                                                 'source_type' => 'payout',
+                                                 'is_fts'      => true,
+                                             ])->first();
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $ftaForPayout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['source_id'] = $payout->getId();
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->appAuth();
+        $this->startTest();
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'direct',
+                                        ])->first();
+
+        // Assert that the free payout that was consumed was reversed.
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
+
+        $payout->reload();
+
+        // Assert that null is assigned as fee_type after failing the payout
+        $this->assertEquals(null, $payout->getFeeType());
+    }
+
+    public function testCreateFreePayoutAndVerifyUpdationOfFreePayoutConsumedLastResetAt()
+    {
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
+
+        $someOldDate = Carbon::now(Timezone::IST)->addDays(-32)->firstOfMonth()->getTimestamp();
+
+        $this->fixtures->edit(
+            'counter',
+            $counter->getId(),
+            [
+                'free_payouts_consumed_last_reset_at' => $someOldDate,
+            ]);
+
+        $counter->reload();
+
+        // Assert that earlier the free_payouts_consumed_last_reset_at was null.
+        $this->assertEquals($someOldDate, $counter->getFreePayoutsConsumedLastResetAt());
+
+        $testData = $this->testData['testCreateFreePayoutForNEFTModeSharedAccountPrivateAuth'];
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']   = '0007';
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->proxyAuth();
+        $this->startTest();
+
+        $counter->reload();
+
+        $expectedFreePayoutsConsumedLastResetAt = Carbon::now(Timezone::IST)->firstOfMonth()->getTimestamp();
+
+        // Assert that now the free_payouts_consumed_last_reset_at is equal to timestamp of the start of this month.
+        $this->assertEquals($expectedFreePayoutsConsumedLastResetAt, $counter->getFreePayoutsConsumedLastResetAt());
+    }
+
+    public function testSharedAccountPayoutCreationFailedDueToInsufficientBalanceAndCheckCounterAttributes()
+    {
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $this->fixtures->edit(
+            'balance',
+            $balanceId,
+            [
+                'balance' => 2000,
+            ]);
+
+        $this->ba->privateAuth();
+        $this->startTest();
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
+
+        // Assert that zero free payout has been consumed
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
+    }
+
+    public function testQueuedSharedAccountPayoutCreationAndCheckCounterAttributes()
+    {
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $this->fixtures->edit(
+            'balance',
+            $balanceId,
+            [
+                'balance' => 2000,
+            ]);
+
+        $this->ba->privateAuth();
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(null, $payout->getUserId());
+
+        // Assert that null is assigned as fee_type for such payouts.
+        $this->assertNull($payout->getFeeType());
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
+
+        // Assert that zero free payout has been consumed
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
+    }
+
+    public function testFreeQueuedSharedAccountPayoutDispatchAndCheckCounterAttributes()
+    {
+        $this->testQueuedSharedAccountPayoutCreationAndCheckCounterAttributes();
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->fixtures->edit(
+            'balance',
+            $balanceId,
+            [
+                'balance' => 3000000,
+            ]);
+
+        $this->dispatchQueuedPayouts();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // Assert that free_payout is assigned as fee_type for such payouts.
+        $this->assertEquals(Payout\Entity::FREE_PAYOUT, $payout->getFeeType());
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
+
+        // Assert that one free payout has been consumed
+        $this->assertEquals(1, $counter->getFreePayoutsConsumed());
+    }
+
+    public function testCheckHigherPriorityOfSettingsTableEntryAboveConfigKeysForFreePayoutsAttributes()
+    {
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $freePayoutsAttributeUpdateRequest =
+            [
+                'url'     => '/balance/' . $balanceId . '/free_payout',
+                'method'  => 'post',
+                'content' => [
+                    'free_payouts_count'           => 1,
+                    'free_payouts_supported_modes' => ['IMPS']
+                ],
+            ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($freePayoutsAttributeUpdateRequest);
+
+        $payoutCreateRequest = [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 2000000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'mode'                 => 'NEFT',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ];
+
+        //----------------- NEFT Mode Payout --------------
+
+        // Make payout with mode as NEFT
+        $this->ba->privateAuth();
+        $this->makeRequestAndGetContent($payoutCreateRequest);
+
+        $payout1 = $this->getDbLastEntity('payout');
+
+        // Assert non zero fee and tax in payout
+        $this->assertEquals(1062, $payout1->getFees());
+        $this->assertEquals(162, $payout1->getTax());
+
+        // Assert that null is assigned as fee_type for such payouts.
+        $this->assertEquals(null, $payout1->getFeeType());
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
+
+        // Assert that zero free payout has been consumed
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
+
+        $transactionId = $payout1->transaction->getId();
+
+        $transaction = $this->getDbEntityById('transaction', $transactionId)->toArray();
+
+        // Assert non zero fee and tax in payout
+        $this->assertEquals(1062, $transaction['fee']);
+        $this->assertEquals(162, $transaction['tax']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $transactionId], true);
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $transactionId,
+            'pricing_rule_id' => "Bbg7dTcURsOr77",
+            'percentage'      => null,
+            'amount'          => 900,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+
+        $pricingRule = $this->getDbEntityById('pricing', $expectedBreakup['pricing_rule_id']);
+
+        $this->assertEquals(BasicAuth\Type::PRIVATE_AUTH, $pricingRule->getAuthType());
+
+        //----------------- End NEFT Mode Payout --------------
+
+        //----------------- IMPS Mode First Payout --------------
+
+        $payoutCreateRequest['content']['mode'] = 'IMPS';
+
+        // Make payout with mode as IMPS
+        $this->ba->privateAuth();
+        $this->makeRequestAndGetContent($payoutCreateRequest);
+
+        $payout2 = $this->getDbLastEntity('payout');
+
+        // Assert 0 fee and tax in payout
+        $this->assertEquals(0, $payout2->getFees());
+        $this->assertEquals(0, $payout2->getTax());
+
+        // Assert that free_payout is assigned as fee_type for such payouts.
+        $this->assertEquals(Payout\Entity::FREE_PAYOUT, $payout2->getFeeType());
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
+
+        // Assert that one free payout has been consumed
+        $this->assertEquals(1, $counter->getFreePayoutsConsumed());
+
+        $transactionId = $payout2->transaction->getId();
+
+        $transaction = $this->getDbEntityById('transaction', $transactionId)->toArray();
+
+        // Assert 0 fee and tax in payout
+        $this->assertEquals(0, $transaction['fee']);
+        $this->assertEquals(0, $transaction['tax']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $transactionId], true);
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $transactionId,
+            'pricing_rule_id' => "Bbg7cl6t6I3XA9",
+            'percentage'      => null,
+            'amount'          => 0,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+
+        $pricingRule = $this->getDbEntityById('pricing', $expectedBreakup['pricing_rule_id']);
+
+        $this->assertEquals(BasicAuth\Type::PRIVATE_AUTH, $pricingRule->getAuthType());
+
+        //----------------- End IMPS Mode First Payout --------------
+
+        //----------------- IMPS Mode Second Payout --------------
+
+        // Make another payout with mode as IMPS
+        $this->ba->privateAuth();
+        $this->makeRequestAndGetContent($payoutCreateRequest);
+
+        $payout3 = $this->getDbLastEntity('payout');
+
+        // Assert non zero fee and tax in payout
+        $this->assertEquals(1062, $payout3->getFees());
+        $this->assertEquals(162, $payout3->getTax());
+
+        // Assert that null is assigned as fee_type for such payouts.
+        $this->assertEquals(null, $payout3->getFeeType());
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
+
+        // Assert that one free payout has been consumed
+        $this->assertEquals(1, $counter->getFreePayoutsConsumed());
+
+        $transactionId = $payout3->transaction->getId();
+
+        $transaction = $this->getDbEntityById('transaction', $transactionId)->toArray();
+
+        // Assert non zero fee and tax in payout
+        $this->assertEquals(1062, $transaction['fee']);
+        $this->assertEquals(162, $transaction['tax']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $transactionId], true);
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $transactionId,
+            'pricing_rule_id' => "Bbg7dTcURsOr77",
+            'percentage'      => null,
+            'amount'          => 900,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+
+        $pricingRule = $this->getDbEntityById('pricing', $expectedBreakup['pricing_rule_id']);
+
+        $this->assertEquals(BasicAuth\Type::PRIVATE_AUTH, $pricingRule->getAuthType());
+
+        //----------------- End IMPS Mode Second Payout --------------
+    }
+
+    public function testNoDecrementOfCounterIfPayoutReversalIsInAnotherMonth()
+    {
+        $this->testCreateFreePayoutForNEFTModeSharedAccountPrivateAuth();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit(
+            'payout',
+            $payout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]);
+
+        $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
+                                             [
+                                                 'source_id'   => $payout->getId(),
+                                                 'source_type' => 'payout',
+                                                 'is_fts'      => true,
+                                             ])->first();
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $ftaForPayout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]);
+
+        $testData = $this->testData['testReverseFreePayoutForNEFTModeSharedAccount'];
+
+        $testData['request']['content']['source_id'] = $payout->getId();
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $newTime = Carbon::now(Timezone::IST)->addDays(35);
+
+        Carbon::setTestNow($newTime);
+
+        $this->ba->appAuth();
+        $this->startTest();
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $payout->getBalanceId(),
+                                        ])->first();
+
+        // Assert that the free payout that was consumed was NOT reversed.
+        $this->assertEquals(1, $counter->getFreePayoutsConsumed());
+
+        $payout->reload();
+
+        // Assert that free_payout is assigned as fee_type after failing the payout
+        $this->assertEquals(Payout\Entity::FREE_PAYOUT, $payout->getFeeType());
+    }
+
+    public function testFreePayoutFromPendingToCreatedState()
+    {
+        $this->liveSetUp();
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId, null, 'live');
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
+
+        $firstApprovalResponse = $this->startTest();
+
+        // Validating first approval response
+        $firstActionChecker = $this->getDbLastEntity('action_checker', 'live');
+        $this->assertEquals(2, $firstApprovalResponse['workflow_history']['current_level']);
+        $this->assertEquals('pending', $firstApprovalResponse['status']);
+        $this->assertEquals('Approving', $firstActionChecker['user_comment']);
+        $this->assertEquals(true, $firstActionChecker['approved']);
+
+        $this->app['config']->set('database.default', 'live');
+
+        // Make Request to Approve pending payout for second level from Finance L3 role
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->finL3RoleUser->getId());
+        $secondApprovalResponse = $this->startTest();
+
+        // Validating second approval response
+        $secondActionChecker = $this->getDbLastEntity('action_checker', 'live');
+        $this->assertEquals(2, $secondApprovalResponse['workflow_history']['current_level']);
+        $this->assertEquals('processing', $secondApprovalResponse['status']);
+        $this->assertEquals('Approving', $secondActionChecker['user_comment']);
+        $this->assertEquals(true, $secondActionChecker['approved']);
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ],
+                                        'live')->first();
+
+        // Assert that the free payout was consumed.
+        $this->assertEquals(1, $counter->getFreePayoutsConsumed());
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        // Assert that free_payout is assigned as fee_type
+        $this->assertEquals(Payout\Entity::FREE_PAYOUT, $payout->getFeeType());
+    }
+
+    public function testFreeBulkPayouts()
+    {
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $testData = $this->testData['testBulkPayoutWithThrottling'];
+
+        $responseForFirstFreeCreatedBulkPayout = $testData['response']['content']['items'][2];
+
+        $responseForFirstFreeCreatedBulkPayout['transaction']['amount'] = 100;
+        $responseForFirstFreeCreatedBulkPayout['transaction']['debit'] = 100;
+        $responseForFirstFreeCreatedBulkPayout['transaction']['balance'] = 9999900;
+        $responseForFirstFreeCreatedBulkPayout['fees'] = 0;
+        $responseForFirstFreeCreatedBulkPayout['tax'] = 0;
+
+        $testData['response']['content']['items'][2] = $responseForFirstFreeCreatedBulkPayout;
+
+        $responseForSecondFreeCreatedBulkPayout = $testData['response']['content']['items'][3];
+
+        $responseForSecondFreeCreatedBulkPayout['transaction']['amount'] = 100;
+        $responseForSecondFreeCreatedBulkPayout['transaction']['debit'] = 100;
+        $responseForSecondFreeCreatedBulkPayout['transaction']['balance'] = 9999800;
+        $responseForSecondFreeCreatedBulkPayout['fees'] = 0;
+        $responseForSecondFreeCreatedBulkPayout['tax'] = 0;
+
+        $testData['response']['content']['items'][3] = $responseForSecondFreeCreatedBulkPayout;
+
+        $this->testData['testBulkPayoutWithThrottling'] = $testData;
+
+        $this->testProcessBulkPayoutDelayedInitiation();
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
+
+        // Assert that the free payout was consumed.
+        $this->assertEquals(3, $counter->getFreePayoutsConsumed());
+    }
+
+    //
+    // Test that when payout goes from pending to batch_submitted state during bulk approval of bulk payouts, counter is
+    // not increased.
+    //
+    public function testApproveBulkPayoutsDelayedInitiationWithFreePayoutsRemaining()
+    {
+        $this->liveSetUp();
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId, null, 'live');
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->ba->batchAuth('rzp_live_10000000000000');
+
+        $headers = [
+            'HTTP_X_Batch_Id' => 'C0zv9I46W4wiOq',
+        ];
+
+        $testData = $this->testData['testBulkPayoutCreationWithWorkflowActive'];
+        // append headers
+        $testData['request']['server'] = $headers;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $payouts = $this->getDbEntities('payout', [],'live');
+
+        // Assert status of all 3 payouts. All three should go to 'pending' state
+        $this->assertEquals(Payout\Status::PENDING, $payouts[0]['status']);
+        $this->assertEquals(Payout\Status::PENDING, $payouts[1]['status']);
+        $this->assertEquals(Payout\Status::PENDING, $payouts[2]['status']);
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ],
+                                        'live')->first();
+
+        // Assert that zero free payout was consumed.
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
+
+        $this->testData[__FUNCTION__] = $this->testData['testApproveBulkPayoutsDelayedInitiation'];
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $payouts = $this->getDbEntities('payout', [],'live');
+
+        $payoutIds = $payouts->getPublicIds();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['payout_ids'] = $payoutIds;
+
+        $firstApprovalResponse = $this->startTest();
+
+        // Validating first approval response
+        $firstActionChecker = $this->getDbLastEntity('action_checker', 'live');
+        $this->assertEquals(3, $firstApprovalResponse['total_count']);
+        $this->assertEquals(true, $firstActionChecker['approved']);
+
+        $this->app['config']->set('database.default', 'live');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['payout_ids'] = $payoutIds;
+
+        // Make Request to Approve pending payout for second level from Finance L3 role
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->finL3RoleUser->getId());
+        $secondApprovalResponse = $this->startTest();
+
+        // Validating second approval response
+        $secondActionChecker = $this->getDbLastEntity('action_checker', 'live');
+        $this->assertEquals(3, $secondApprovalResponse['total_count']);
+        $this->assertEquals(true, $secondActionChecker['approved']);
+
+        $updatedPayouts = $this->getDbEntities('payout', [],'live');
+
+        $this->assertEquals(Status::BATCH_SUBMITTED, $updatedPayouts[0]['status']);
+        $this->assertEquals(Status::BATCH_SUBMITTED, $updatedPayouts[1]['status']);
+        $this->assertEquals(Status::BATCH_SUBMITTED, $updatedPayouts[2]['status']);
+
+        $counter->reload();
+
+        // Assert that zero free payout was consumed.
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
+    }
+
+    public function testPayoutCreationFailedDueToInsufficientBalanceWhenNoFreePayoutsAvailableAndCheckCounterAttributes()
+    {
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->fixtures->edit(
+            'balance',
+            $balanceId,
+            [
+                'balance' => 2000,
+            ]);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testQueuedSharedAccountPayoutCreationAndCheckCounterAttributes'];
+
+        $this->startTest();
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
+
+        // Assert that zero free payout has been consumed
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
     }
 }

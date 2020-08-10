@@ -5,15 +5,15 @@ namespace RZP\Tests\Functional\Payout;
 use Mail;
 use Carbon\Carbon;
 
-use RZP\Models\Feature;
+use RZP\Models\Admin;
 use RZP\Models\Pricing\Fee;
 use RZP\Constants\Timezone;
 use RZP\Models\Payout\Status;
+use RZP\Models\Payout\Entity;
 use RZP\Mail\Payout\FailedPayout;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Webhook\Event;
 use RZP\Mail\Payout\AutoRejectedPayout;
-use RZP\Models\Merchant\Balance\Channel;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
@@ -934,5 +934,137 @@ class ScheduledPayoutTest extends TestCase
         $this->assertEquals('batch_submitted', $bulkScheduledPayout1['status']);
         $this->assertEquals('batch_submitted', $bulkScheduledPayout2['status']);
         $this->assertEquals('created', $scheduledPayout1['status']);
+    }
+
+    public function testCreateScheduledPayoutWithFreePayoutsRemaining()
+    {
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $this->testCreateScheduledPayout();
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // Assert that the free payout was not consumed.
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
+
+        // Assert that null is assigned as fee_type.
+        $this->assertEquals(null, $payout->getFeeType());
+    }
+
+    public function testScheduledPayoutCreationAndNoIncrementOfCounter()
+    {
+        $this->liveSetUp();
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId, null, 'live');
+
+        // Timestamp of 9 AM, 2 months from current time
+        $scheduledAtTime = Carbon::now(Timezone::IST)->hour(9)->addMonths(2)->getTimestamp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout = $this->createPayoutWithOtpWithWorkflow(
+            [
+                'scheduled_at' => $scheduledAtTime
+            ],
+            'rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
+
+        $firstApprovalResponse = $this->startTest();
+
+        // Validating first approval response
+        $firstActionChecker = $this->getDbLastEntity('action_checker', 'live');
+        $this->assertEquals(2, $firstApprovalResponse['workflow_history']['current_level']);
+        $this->assertEquals('pending', $firstApprovalResponse['status']);
+        $this->assertEquals('Approving', $firstActionChecker['user_comment']);
+        $this->assertEquals(true, $firstActionChecker['approved']);
+
+        $this->app['config']->set('database.default', 'live');
+
+        // Make Request to Approve pending payout for second level from Finance L3 role
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->finL3RoleUser->getId());
+        $this->startTest();
+
+        // Validating second approval response
+        $secondActionChecker = $this->getDbLastEntity('action_checker', 'live');
+        $this->assertEquals('Approving', $secondActionChecker['user_comment']);
+        $this->assertEquals(true, $secondActionChecker['approved']);
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        // Assert
+        $this->assertEquals(Status::SCHEDULED, $payout['status']);
+        $this->assertEquals($this->bankingBalance['id'], $payout['balance_id']);
+
+        $publicPayout = $payout->toArrayPublic();
+        $this->assertEquals(2, $publicPayout['workflow_history']['current_level']);
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ],
+                                        'live')->first();
+
+        // Assert that the free payout was not consumed
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
+
+        // Assert that null is assigned as fee_type
+        $this->assertEquals(null, $payout->getFeeType());
+    }
+
+    public function testProcessingOfFreeScheduledPayout()
+    {
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $this->testScheduledPayoutProcessing();
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // Assert that the free payout was consumed.
+        $this->assertEquals(1, $counter->getFreePayoutsConsumed());
+
+        // Assert that free_payout is assigned as fee_type after failing the payout
+        $this->assertEquals(Entity::FREE_PAYOUT, $payout->getFeeType());
+    }
+
+    public function testFreePayout()
+    {
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $this->testProcessBulkScheduledPayouts();
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
+
+        // Assert that the free payout was consumed.
+        $this->assertEquals(1, $counter->getFreePayoutsConsumed());
     }
 }

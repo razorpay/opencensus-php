@@ -63,7 +63,7 @@ class Service extends Base\Service
         {
             $freePayoutsCount = $input[FreePayout::FREE_PAYOUTS_COUNT];
 
-            (new Counter\Core)->createIfNotExists($balance);
+            (new Counter\Core)->fetchOrCreate($balance);
 
             $freePayoutObj->addNewAttribute($freePayoutsCount,
                 $balance,

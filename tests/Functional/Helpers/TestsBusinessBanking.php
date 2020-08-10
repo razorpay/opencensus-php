@@ -7,6 +7,7 @@ use RZP\Models\Payout;
 use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Settlement\Channel;
+use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Models\Merchant\Balance\AccountType;
 
 /**
@@ -85,6 +86,14 @@ trait TestsBusinessBanking
         $bankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
         $bankingBalance->save();
 
+        $defaultFreePayoutsCount = $this->getDefaultFreePayoutsCount($bankingBalance);
+
+        $this->fixtures->create('counter', [
+            'account_type'          => $balanceType,
+            'balance_id'            => $bankingBalance->getId(),
+            'free_payouts_consumed' => $defaultFreePayoutsCount,
+        ]);
+
         // Enables required features on merchant
         if ($skipFeatureAddition === false)
         {
@@ -136,7 +145,7 @@ trait TestsBusinessBanking
             'banking_account',
             [
                 'id'             => '1000000lcustba',
-                'account_type'   => 'direct',
+                'account_type'   => $balanceType,
                 'merchant_id'    => '10000000000000',
                 'account_number' => '2224440041626905',
                 'account_ifsc'   => 'RAZRB000000',
@@ -145,6 +154,14 @@ trait TestsBusinessBanking
 
         $bankingAccount->balance()->associate($bankingBalance);
         $bankingAccount->save();
+
+        $defaultFreePayoutsCount = $this->getDefaultFreePayoutsCount($bankingBalance);
+
+        $this->fixtures->on('live')->create('counter', [
+            'account_type'          => $balanceType,
+            'balance_id'            => $bankingBalance->getId(),
+            'free_payouts_consumed' => $defaultFreePayoutsCount,
+        ]);
 
         // Updates banking balance's account number after bank account creation.
         $bankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
@@ -366,5 +383,69 @@ trait TestsBusinessBanking
         ]);
 
         return $bankingAccount;
+    }
+
+    protected function getDefaultFreePayoutsCount($balance)
+    {
+        $balanceAccountType = $balance->getAccountType();
+
+        $channel = $balance->getChannel();
+
+        $defaultFreePayoutsCountConstantName = 'DEFAULT_FREE_' . strtoupper($balanceAccountType) . '_ACCOUNT_PAYOUTS_COUNT';
+
+        if (($balanceAccountType === AccountType::DIRECT) and
+            (empty($channel) === false))
+        {
+            $defaultFreePayoutsCountConstantName = $defaultFreePayoutsCountConstantName . '_' . strtoupper($channel);
+        }
+
+        $defaultFreePayoutsCount = constant(FreePayout::class . '::' . $defaultFreePayoutsCountConstantName);
+
+        return $defaultFreePayoutsCount;
+    }
+
+    protected function setUpCounterAndFreePayoutsCount($accountType = AccountType::SHARED,
+                                                       $balanceId =  '10000000000000',
+                                                       $channel = null,
+                                                       $mode = 'test')
+    {
+        $this->setFreePayoutsCountInAdminKey($accountType, $channel);
+
+        $this->setUpCounterForFreePayout($accountType, $balanceId, $mode);
+    }
+
+    protected function setFreePayoutsCountInAdminKey($accountType = AccountType::SHARED, $channel = null)
+    {
+        $freePayoutsCountConstantName = 'FREE_' . strtoupper($accountType) . '_ACCOUNT_PAYOUTS_COUNT';
+
+        if (($accountType === AccountType::DIRECT) and
+            (empty($channel) === false))
+        {
+            $freePayoutsCountConstantName = $freePayoutsCountConstantName . '_' . strtoupper($channel);
+        }
+
+        (new Admin\Service)->setConfigKeys(
+            [
+                constant(Admin\ConfigKey::class . '::' . $freePayoutsCountConstantName) => 300
+            ]);
+    }
+
+    protected function setUpCounterForFreePayout($accountType = AccountType::SHARED,
+                                                 $balanceId =  '10000000000000',
+                                                 $mode = 'test')
+    {
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => $accountType,
+                                            'balance_id'   => $balanceId,
+                                        ],
+                                        $mode)->first();
+
+        $this->fixtures->on($mode)->edit(
+            'counter',
+            $counter->getId(),
+            [
+                'free_payouts_consumed' => 0,
+            ]);
     }
 }

@@ -2307,7 +2307,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'Banking default plan',
-                    'rules_count' => 24,
+                    'rules_count' => 32,
                     'type'        => 'pricing',
                 ],
                 [
@@ -2397,7 +2397,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'Banking default plan',
-                    'rules_count' => 24,
+                    'rules_count' => 32,
                     'type'        => 'pricing',
                 ],
                 [
@@ -3694,6 +3694,132 @@ return [
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
+        ],
+    ],
+
+    'testAddPricingPlanRuleForBankingPayoutWithPayoutsFilter' => [
+        'request' => [
+            'content' => [
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'percent_rate'        => 0,
+                'international'       => 0,
+                'amount_range_active' => 0,
+                'account_type'        => 'shared',
+                'auth_type'           => 'private',
+                'payouts_filter'      => 'xyz',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'fund_transfer',
+                'feature'             => 'payout',
+                'product'             => 'banking',
+                'account_type'        => 'shared',
+                'auth_type'           => 'private',
+                'percent_rate'        => 0,
+                'international'       => false,
+                'amount_range_active' => false,
+                'payouts_filter'      => 'xyz',
+            ]
+        ]
+    ],
+
+    'testAddPricingPlanRuleForBankingPayoutWithNullPayoutsFilter' => [
+        'request' => [
+            'content' => [
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'percent_rate'        => 0,
+                'international'       => 0,
+                'amount_range_active' => 0,
+                'account_type'        => 'shared',
+                'auth_type'           => 'private',
+                'payouts_filter'      => null,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'fund_transfer',
+                'feature'             => 'payout',
+                'product'             => 'banking',
+                'account_type'        => 'shared',
+                'auth_type'           => 'private',
+                'percent_rate'        => 0,
+                'international'       => false,
+                'amount_range_active' => false,
+                'payouts_filter'      => null,
+            ]
+        ]
+    ],
+
+    'testAddPricingPlanRuleForNotBankingPayoutWithNullPayoutsFilter' => [
+        'request'  => [
+            'content' => [
+                'payment_method'      => 'card',
+                'payment_method_type' => 'debit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => 0,
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+                'payouts_filter'      => null,
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'debit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => false,
+                'amount_range_active' => false,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+                'payouts_filter'      => null,
+            ],
+        ],
+    ],
+
+    'testAddPricingPlanRuleForNotBankingPayoutWithPayoutsFilter' => [
+        'request'  => [
+            'content' => [
+                'payment_method'      => 'card',
+                'payment_method_type' => 'debit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => 0,
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+                'payouts_filter'      => 'xyz',
+            ],
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The payouts filter field may be sent only when product is banking'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 ];

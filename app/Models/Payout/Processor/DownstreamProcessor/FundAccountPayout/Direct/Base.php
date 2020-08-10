@@ -5,10 +5,8 @@ namespace RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout\Dire
 use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\Merchant;
 use RZP\Constants\Product;
 use RZP\Models\Payout\Mode;
-use RZP\Models\Payout\Core;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
 use RZP\Models\Base\PublicEntity;
@@ -36,6 +34,8 @@ class Base extends FundAccountPayout\Base
         {
             return;
         }
+
+        $this->assignFreePayoutIfApplicable($payout);
 
         $this->setFeeAndTaxForPayout($payout);
 

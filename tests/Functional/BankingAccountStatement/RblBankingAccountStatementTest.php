@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Services\Mozart;
+use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
 use RZP\Models\BankingAccount;
@@ -1261,13 +1262,13 @@ class RblBankingAccountStatementTest extends TestCase
     {
         $channel = Channel::RBL;
 
-        $this->setupForRblPayout($channel);
+        $this->setupForRblPayout($channel, 20000000, FundTransfer\Mode::RTGS);
 
         $payout = $this->getDbLastEntity('payout');
 
-        $this->assertEquals(590, $payout['fees']);
-        $this->assertEquals(90, $payout['tax']);
-        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+        $this->assertEquals(1770, $payout['fees']);
+        $this->assertEquals(270, $payout['tax']);
+        $this->assertEquals('Bbg7e4oKCgaube', $payout['pricing_rule_id']);
 
         $attempt = $this->getDbLastEntity('fund_transfer_attempt');
 
@@ -1302,10 +1303,10 @@ class RblBankingAccountStatementTest extends TestCase
         $attempt = $this->getDbLastEntity('fund_transfer_attempt');
 
         $this->assertEquals(Payout\Status::PROCESSED, $payout['status']);
-        $this->assertEquals(FundTransfer\Mode::IMPS, $payout['mode']);
+        $this->assertEquals(FundTransfer\Mode::RTGS, $payout['mode']);
         $this->assertEquals('UTIBH20106341692', $payout['utr']);
         $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
-        $this->assertEquals(FundTransfer\Mode::IMPS, $attempt['mode']);
+        $this->assertEquals(FundTransfer\Mode::RTGS, $attempt['mode']);
         $this->assertEquals('S55959', $attempt['cms_ref_no']);
 
         // Fetch account statement from RBL
@@ -1335,10 +1336,10 @@ class RblBankingAccountStatementTest extends TestCase
 
         $feeBreakup = $this->getDbEntities('fee_breakup', ['transaction_id' => $payout['transaction_id']]);
 
-        $this->assertEquals('Bbg7cl6t6I3XA6', $feeBreakup[0]['pricing_rule_id']);
-        $this->assertEquals(500, $feeBreakup[0]['amount']);
+        $this->assertEquals('Bbg7e4oKCgaube', $feeBreakup[0]['pricing_rule_id']);
+        $this->assertEquals(1500, $feeBreakup[0]['amount']);
         $this->assertEquals(EntityConstants::PAYOUT, $feeBreakup[0]['name']);
-        $this->assertEquals(90, $feeBreakup[1]['amount']);
+        $this->assertEquals(270, $feeBreakup[1]['amount']);
         $this->assertEquals(EntityConstants::TAX, $feeBreakup[1]['name']);
     }
 

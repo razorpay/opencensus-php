@@ -181,6 +181,9 @@ class Entity extends Base\PublicEntity
     // Used exclusively for Elasticsearch queries
     const CONTACT_EMAIL_RAW = 'contact_email.raw';
 
+    // Constants for fee_type field
+    const FREE_PAYOUT = 'free_payout';
+
     // Constants used for scheduled payout summary
     const TODAY         = 'today';
     const NEXT_TWO_DAYS = 'next_two_days';
@@ -199,6 +202,13 @@ class Entity extends Base\PublicEntity
     protected $queueFlag = false;
 
     protected $composite = false;
+
+    /*
+    This variable is defined to store the expected fee type during payout create or payout process (for states like
+    queued, pending, scheduled, etc. It is also used to decrement the counter for free payouts in async manner for the
+    payouts where it was increased and then the payout didn't get the fee type as free payout.
+     */
+    protected $expectedFeeType = null;
 
     /**
      * In case of direct banking, we get the transactions directly from the bank. We don't create transactions
@@ -423,6 +433,7 @@ class Entity extends Base\PublicEntity
         self::TAX               => 0,
         self::IDEMPOTENCY_KEY   => null,
         self::PRICING_RULE_ID   => null,
+        self::FEE_TYPE          => null,
     ];
 
     protected $amounts = [
@@ -796,10 +807,6 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::REVERSED);
     }
 
-    public function getFeeType()
-    {
-        return $this->getAttribute(self::FEE_TYPE);
-    }
     /**
      * This is required for the FTA module.
      * FTA requires the sources to implement either `isStatusFailed` or `isStatusReversedOrFailed`
@@ -941,6 +948,16 @@ class Entity extends Base\PublicEntity
         return optional($bankingAccount)->getFtsFundAccountId();
     }
 
+    public function getFeeType()
+    {
+        return $this->getAttribute(self::FEE_TYPE);
+    }
+
+    public function getExpectedFeeType()
+    {
+        return $this->expectedFeeType;
+    }
+
     // ============================= END GETTERS =============================
 
     // ============================= SETTERS =============================
@@ -997,6 +1014,14 @@ class Entity extends Base\PublicEntity
         Status::validate($status);
 
         $currentStatus = $this->getStatus();
+
+        $shouldUnsetExpectedFeeType =
+            (new CounterHelper)->decreaseFreePayoutsConsumedIfApplicable($this, CounterHelper::SET_STATUS);
+
+        if ($shouldUnsetExpectedFeeType === true)
+        {
+            $this->setExpectedFeeType(null);
+        }
 
         //
         // In code, we could call it multiple times for the same status update.
@@ -1169,9 +1194,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT, $amount);
     }
 
-    public function setFeeType($fee)
+    public function setFeeType($feeType)
     {
-        $this->setAttribute(self::FEE_TYPE, $fee);
+        $this->setAttribute(self::FEE_TYPE, $feeType);
+    }
+
+    public function setExpectedFeeType($expectedFeeType)
+    {
+        $this->expectedFeeType = $expectedFeeType;
+
+        return $this;
     }
 
     // ============================= END SETTERS =============================

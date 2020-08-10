@@ -606,7 +606,7 @@ class Activate extends Base\Core
             // Create Banking Account
             $bankingAccount = (new BankingAccount\Core)->createOrFetchSharedBankingAccountFromVA($virtualAccount);
 
-            (new Counter\Core)->createIfNotExists($balance);
+            (new Counter\Core)->fetchOrCreate($balance);
 
             $this->trace->info(
                 TraceCode::MERCHANT_BUSINESS_BANKING_ACCOUNT,

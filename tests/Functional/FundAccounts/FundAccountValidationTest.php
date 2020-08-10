@@ -8,6 +8,7 @@ use RZP\Models\Feature;
 use RZP\Jobs\FaVpaValidation;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Models\Merchant\Balance\Channel;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
@@ -686,7 +687,10 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationBankingFailedAccountTypeDirect()
     {
-        $this->setUpMerchantForBusinessBanking(false, 10000000, AccountType::DIRECT);
+        $this->setUpMerchantForBusinessBanking(false,
+                                               10000000,
+                                               AccountType::DIRECT,
+                                               Channel::RBL);
 
         $this->createFAVBankingPricingPlan();
 

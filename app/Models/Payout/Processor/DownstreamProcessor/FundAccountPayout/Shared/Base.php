@@ -15,6 +15,7 @@ use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Settlement\Channel;
+use RZP\Models\Payout\CounterHelper;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 
@@ -36,6 +37,8 @@ class Base extends FundAccountPayout\Base
             }
 
             $this->checkAllowModeOnIcici($payout, $ftaAccount);
+
+            $this->assignFreePayoutIfApplicable($payout);
 
             $this->createTransaction($payout);
 
@@ -65,6 +68,17 @@ class Base extends FundAccountPayout\Base
 
             if ($ex->getError()->getInternalErrorCode() === $insufficientFundsErrorCode)
             {
+                $shouldUnsetFeeTypeAndExpectedFeeType =
+                    (new CounterHelper)->decreaseFreePayoutsConsumedIfApplicable($payout,
+                                                                                 CounterHelper::INSUFFICIENT_BALANCE);
+
+                if ($shouldUnsetFeeTypeAndExpectedFeeType === true)
+                {
+                    $payout->setFeeType(null);
+
+                    $payout->setExpectedFeeType(null);
+                }
+
                 if ($payout->toBeQueued() === false)
                 {
                     throw $ex;

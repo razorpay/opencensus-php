@@ -105,6 +105,9 @@ class CreatePricing extends Migration
             $table->string(Pricing::CHANNEL)
                   ->nullable();
 
+            $table->string(Pricing::PAYOUTS_FILTER)
+                  ->nullable();
+
             $table->char(Pricing::ORG_ID, Pricing::ID_LENGTH)
                   ->nullable();
 

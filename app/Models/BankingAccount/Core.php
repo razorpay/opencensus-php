@@ -510,7 +510,7 @@ class Core extends Base\Core
 
             $this->createScheduleTaskForFeeRecovery($balance, $merchant);
 
-            (new Counter\Core)->createIfNotExists($balance);
+            (new Counter\Core)->fetchOrCreate($balance);
 
             $stateCore = new State\Core;
 

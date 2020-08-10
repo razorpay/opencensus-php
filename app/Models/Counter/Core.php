@@ -22,11 +22,11 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function createIfNotExists($balance)
+    public function fetchOrCreate($balance)
     {
         $accountType = $balance->getAccountType();
 
-        $counter = $counter = $this->repo->counter->getCounterByAccountTypeAndBalanceId(
+        $counter = $this->repo->counter->getCounterByAccountTypeAndBalanceId(
             $accountType,
             $balance->getId()
         );
@@ -53,5 +53,7 @@ class Core extends Base\Core
                 ]
             );
         }
+
+        return $counter;
     }
 }

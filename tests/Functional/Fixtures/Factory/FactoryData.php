@@ -1441,6 +1441,16 @@ final class FactoryData
 
         ]);
 
+        $factory(\RZP\Models\Counter\Entity::class, [
+            'id'                                  => $faker->uniqueid,
+            'account_type'                        => 'shared',
+            'balance_id'                          => '10000000000000',
+            'free_payouts_consumed_last_reset_at' => Carbon::now(Timezone::IST)->firstOfMonth()->getTimestamp(),
+            'free_payouts_consumed'               => 0,
+            'created_at'                          => $faker->timestamp,
+            'updated_at'                          => $faker->timestamp,
+        ]);
+
         $factory(\RZP\Models\Promotion\Event\Entity::class, [
             'id'                 => $faker->uniqueid,
         ]);

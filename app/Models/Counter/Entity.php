@@ -3,8 +3,10 @@
 namespace RZP\Models\Counter;
 
 use App;
+use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\Traits\HasBalance;
 
@@ -30,6 +32,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::ACCOUNT_TYPE,
         self::FREE_PAYOUTS_CONSUMED,
+        self::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT,
     ];
 
     protected $visible = [
@@ -96,22 +99,18 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT, $freePayoutsConsumedLastResetAt);
     }
 
-    public function incrementFreePayoutsConsumed($freePayoutsConsumed)
-    {
-        $this->increment(self::FREE_PAYOUTS_CONSUMED, $freePayoutsConsumed);
-    }
+    // -------------------- End Setters --------------------------
 
-    public function decrementFreePayoutsConsumed($freePayoutsSaved)
-    {
-        $this->decrement(self::FREE_PAYOUTS_CONSUMED, $freePayoutsSaved);
-    }
+    // -------------------- Helpers ------------------------------
 
     public function resetFreePayoutsConsumed()
     {
-        $this->setAttribute(self::FREE_PAYOUTS_CONSUMED, 0);
+        $this->setFreePayoutsConsumed(0);
 
-        $this->setAttribute(self::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT, $this->freshTimestamp());
+        $freePayoutsConsumedLastResetAt = Carbon::now(Timezone::IST)->firstOfMonth()->getTimestamp();
+
+        $this->setFreePayoutsConsumedLastResetAt($freePayoutsConsumedLastResetAt);
     }
 
-    // -------------------- End Setters --------------------------
+    // -------------------- End Helpers --------------------------
 }

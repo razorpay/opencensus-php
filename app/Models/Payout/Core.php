@@ -45,7 +45,6 @@ use RZP\Jobs\ScheduledPayoutsProcess;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
 use RZP\Models\Merchant\Balance\Channel;
-use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
@@ -70,6 +69,8 @@ class Core extends Base\Core
     const MUTEX_LOCK_TIMEOUT                = 300;
 
     const PAYOUT_MUTEX_LOCK_TIMEOUT         = 180;
+
+    const PAYOUT_FAILURE_MUTEX_LOCK_TIMEOUT = 600;
 
     const PAYOUT_REVERSAL_MUTEX_LOCK_TIMEOUT = 3600;
 
@@ -1739,19 +1740,28 @@ class Core extends Base\Core
         //
         Status::validateStatusUpdate(Status::FAILED, $currentStatus);
 
-        $this->repo->transaction(
-            function() use ($payout, $ftaFailureReason) {
+        // Keeping the mutex TTL high while updating the payout to failed.
+        // This is to ensure that the process that is working on the payout
+        // resource, releases mutex on the payout only once all entities are
+        // saved in the database.
+        $this->mutex->acquireAndRelease(
+            'failure_payout_id_' . $payout->getId(),
+            function () use ($payout, $ftaFailureReason)
+            {
+                // reloading the payout here to ensure if any other process
+                // gets a mutex on payout resource, it gets a fresh copy
+                // of payout to work.
+                $this->repo->reload($payout);
 
-                $previousStatus = $payout->getStatus();
+                $this->repo->transaction(
+                    function() use ($payout, $ftaFailureReason) {
 
-                $payout->setStatus(Status::FAILED);
+                        $previousStatus = $payout->getStatus();
 
-                $payout->setFailureReason($ftaFailureReason);
+                        $payout->setStatus(Status::FAILED);
 
-                $this->mutex->acquireAndRelease(
-                    $payout->getId(),
-                    function () use ($payout)
-                    {
+                        $payout->setFailureReason($ftaFailureReason);
+
                         if ($this->shouldHandleRewardForFailedPayout($payout) === true)
                         {
                             (new Credits\Transaction\Core)->reverseCreditTransactionsForSource(
@@ -1759,15 +1769,26 @@ class Core extends Base\Core
                                 Constants\Entity::PAYOUT,
                                 $payout);
                         }
+
+                        $balance = $payout->balance;
+
+                        if ($balance->getType() === Merchant\Balance\Type::BANKING)
+                        {
+                            $this->decreaseFreePayoutsConsumedAndUnsetFeeTypeIfApplicable($payout);
+
+                        }
+
+                        $this->repo->saveOrFail($payout);
+
+                        if ($payout->isBalanceAccountTypeDirect() === true)
+                        {
+                            (new FeeRecovery\Core)->handlePayoutStatusUpdate($payout, $previousStatus);
+                        }
                     });
-
-                $this->repo->saveOrFail($payout);
-
-                if ($payout->isBalanceAccountTypeDirect() === true)
-                {
-                    (new FeeRecovery\Core)->handlePayoutStatusUpdate($payout, $previousStatus);
-                }
-            });
+            },
+            self::PAYOUT_FAILURE_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+        );
 
         $this->app->events->fire('api.payout.failed', [$payout]);
     }
@@ -1858,6 +1879,13 @@ class Core extends Base\Core
                         }
 
                         $previousStatus = $payout->getStatus();
+
+                        $balance = $payout->balance;
+
+                        if ($balance->getType() === Merchant\Balance\Type::BANKING)
+                        {
+                            $this->decreaseFreePayoutsConsumedAndUnsetFeeTypeIfApplicable($payout);
+                        }
 
                         // For certain cases like  where a payout is being marked
                         // as reversed  through recon flows(as in RBL), the above
@@ -2272,5 +2300,34 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    public function updateFreePayoutsConsumedAndGetFeeType(Merchant\Balance\Entity $balance)
+    {
+        return $this->repo->counter->transaction(
+            function() use ($balance)
+            {
+                return (new CounterHelper)->updateFreePayoutConsumedIfApplicable($balance);
+            });
+    }
+
+    public function decreaseFreePayoutsConsumedAndUnsetFeeTypeIfApplicable(Entity $payout)
+    {
+        $shouldUnsetFeeType =
+            (new CounterHelper)->decreaseFreePayoutsConsumedIfApplicable($payout,
+                                                                         CounterHelper::REVERSAL_OR_FAILURE);
+
+        if ($shouldUnsetFeeType === true)
+        {
+            $payout->setFeeType(null);
+        }
+    }
+
+    public function decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable(string $balanceId, $feeType)
+    {
+        if ($feeType === Entity::FREE_PAYOUT)
+        {
+            (new CounterHelper)->decreaseFreePayoutsConsumedInCaseOfTransactionFailure($balanceId);
+        }
     }
 }

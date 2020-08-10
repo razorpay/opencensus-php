@@ -6,6 +6,7 @@ use App;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Payout;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -281,7 +282,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getBankingSharedAccountDefaultPricingRules(string $feature, Merchant\Entity $merchant)
+    public function getBankingSharedAccountNonFreePayouDefaultPricingRules(string $feature, Merchant\Entity $merchant)
     {
         $orgId = $merchant->getOrgId();
 
@@ -292,10 +293,11 @@ class Repository extends Base\Repository
                     ->where(Pricing\Entity::ACCOUNT_TYPE, AccountType::SHARED)
                     ->where(Pricing\Entity::ORG_ID, '=', $orgId)
                     ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+                    ->whereNull(Pricing\Entity::PAYOUTS_FILTER)
                     ->get();
     }
 
-    public function getBankingDirectAccountDefaultPricingRules(string $feature, Merchant\Entity $merchant)
+    public function getBankingDirectAccountNonFreePayoutDefaultPricingRules(string $feature, Merchant\Entity $merchant)
     {
         $orgId = $merchant->getOrgId();
 
@@ -306,6 +308,37 @@ class Repository extends Base\Repository
                     ->where(Pricing\Entity::ACCOUNT_TYPE, AccountType::DIRECT)
                     ->where(Pricing\Entity::ORG_ID, '=', $orgId)
                     ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+                    ->whereNull(Pricing\Entity::PAYOUTS_FILTER)
+                    ->get();
+    }
+
+    public function getBankingSharedAccountFreePayoutDefaultPricingRules(string $feature, Merchant\Entity $merchant)
+    {
+        $orgId = $merchant->getOrgId();
+
+        return $this->newQuery()
+                    ->product(Product::BANKING)
+                    ->planId(Fee::DEFAULT_BANKING_PLAN_ID)
+                    ->where(Pricing\Entity::FEATURE, '=', $feature)
+                    ->where(Pricing\Entity::ACCOUNT_TYPE, AccountType::SHARED)
+                    ->where(Pricing\Entity::ORG_ID, '=', $orgId)
+                    ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+                    ->where(Pricing\Entity::PAYOUTS_FILTER, '=', Payout\Entity::FREE_PAYOUT)
+                    ->get();
+    }
+
+    public function getBankingDirectAccountFreePayoutDefaultPricingRules(string $feature, Merchant\Entity $merchant)
+    {
+        $orgId = $merchant->getOrgId();
+
+        return $this->newQuery()
+                    ->product(Product::BANKING)
+                    ->planId(Fee::DEFAULT_BANKING_PLAN_ID)
+                    ->where(Pricing\Entity::FEATURE, '=', $feature)
+                    ->where(Pricing\Entity::ACCOUNT_TYPE, AccountType::DIRECT)
+                    ->where(Pricing\Entity::ORG_ID, '=', $orgId)
+                    ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+                    ->where(Pricing\Entity::PAYOUTS_FILTER, '=', Payout\Entity::FREE_PAYOUT)
                     ->get();
     }
 

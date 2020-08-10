@@ -2,7 +2,10 @@
 
 namespace RZP\Models\Merchant\Balance;
 
+use Razorpay\Spine\DataTypes\Dictionary;
+
 use RZP\Models\Settings;
+use RZP\Models\Payout\Mode;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
 use RZP\Exception\BadRequestException;
@@ -16,16 +19,19 @@ class FreePayout
     const FREE_PAYOUTS_SUPPORTED_MODES                  = 'free_payouts_supported_modes';
 
     // Default free shared account payouts allowed per merchant in a month.
-    const DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT     = 300;
+    const DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT     = 0;
 
     // Default free shared account payouts allowed per merchant in a month.
-    const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT     = 500;
+    const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL = 0;
 
     // Count of the number of free shared account payouts allowed per merchant in a month.
     const FREE_SHARED_ACCOUNT_PAYOUTS_COUNT             = 'free_shared_account_payouts_count';
 
     // Count of the number of free direct account payouts allowed per merchant in a month.
     const FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT             = 'free_direct_account_payouts_count';
+
+    // Default free payouts supported modes.
+    const DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES          = [Mode::IMPS, Mode::NEFT, Mode::RTGS, Mode::UPI];
 
     public function getFreePayoutsKeyAndDefaultCount(Balance\Entity $balance)
     {
@@ -45,14 +51,16 @@ class FreePayout
         {
             $channel = $balance->getChannel();
 
-            $trimmedUpperCaseChannel = strtoupper(trim($channel));
+            $channel = strtoupper(trim($channel));
 
             $configKey = constant(
                 ConfigKey::class . '::' .
-                strtoupper(Self::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_CONSTANT_KEY) . '_' .
-                $trimmedUpperCaseChannel);
+                strtoupper(self::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT) . '_' .
+                $channel);
 
-            $defaultCount = self::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT;
+            $defaultCount = constant(
+                self::class . '::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_' .
+                $channel);;
         }
         else
         {
@@ -68,13 +76,20 @@ class FreePayout
         return [$configKey, $defaultCount];
     }
 
-    public function getFreePayoutsCount(Balance\Entity $balance): int
+    /*
+    Priority of fetching the count is as follows -
+    1. Fetch the count from settings table
+    2. If the settings table entry doesn't exist, pick the global count from redis.
+    3. If that too doesn't exist, pick the default fallback count from the code.
+    */
+    public function getFreePayoutsCount(Balance\Entity $balance) : int
     {
         $freePayoutsCount = $this->getSettingsAccessor($balance)->get(self::FREE_PAYOUTS_COUNT);
 
-        if ($freePayoutsCount === null)
+        if (($freePayoutsCount instanceof Dictionary) and
+            (empty($freePayoutsCount->key()) === true))
         {
-            list ($configKey, $defaultCount)  = $this->getFreePayoutsKeyAndDefaultCount($balance);
+            list ($configKey, $defaultCount) = $this->getFreePayoutsKeyAndDefaultCount($balance);
 
             $globalCount = (int) (new AdminService)->getConfigKey(
                 [
@@ -82,7 +97,7 @@ class FreePayout
                 ]
             );
 
-            if (empty($globalCount) === null)
+            if (empty($globalCount) === true)
             {
                 return $defaultCount;
             }
@@ -107,6 +122,33 @@ class FreePayout
         $this->getSettingsAccessor($balance)
              ->upsert($attribute)
              ->save();
+    }
+
+    /*
+    Priority of fetching the modes is as follows -
+    1. Fetch the mode list from settings table
+    2. If the settings table entry doesn't exist, pick the global list of supported modes from redis.
+    3. If that too doesn't exist, pick the default fallback list from the code.
+    */
+    public function getFreePayoutSupportedModes(Balance\Entity $balance)
+    {
+        $freePayoutsSupportedModes = $this->getSettingsAccessor($balance)->get(self::FREE_PAYOUTS_SUPPORTED_MODES);
+
+        if (($freePayoutsSupportedModes instanceof Dictionary) and
+            (empty($freePayoutsSupportedModes->key()) === true))
+        {
+            $freePayoutsSupportedModes = (new AdminService)->getConfigKey(
+                ['key' => ConfigKey::FREE_PAYOUTS_SUPPORTED_MODES]);
+
+            if (empty($freePayoutsSupportedModes) === true)
+            {
+                return self::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
+            }
+
+            return $freePayoutsSupportedModes;
+        }
+
+        return explode(',', $freePayoutsSupportedModes);
     }
 
     protected function getSettingsAccessor(Balance\Entity $balance): Settings\Accessor

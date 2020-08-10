@@ -6,6 +6,7 @@ use RZP\Models\Pricing;
 use RZP\Http\BasicAuth;
 use RZP\Models\Merchant\Balance\Type;
 use RZP\Models\Payout as PayoutModel;
+use RZP\Models\Merchant\Balance\Entity;
 
 /**
  * Class Payout
@@ -68,16 +69,19 @@ class Payout extends Base
      */
     protected function applyBankingAccountsFilters(array $rules)
     {
+        /** @var Entity $balance */
         $balance = $this->entity->balance;
 
-        $accountType = $balance->getAccountType();
-        $channel     = $balance->getChannel();
-        $authType    = ($this->entity->getUserId() === null) ? BasicAuth\Type::PRIVATE_AUTH : BasicAuth\Type::PROXY_AUTH;
+        $accountType   = $balance->getAccountType();
+        $channel       = $balance->getChannel();
+        $authType      = $this->getAuthForPayout();
+        $payoutsFilter = $this->getFreePayoutsFilter();
 
         $filters = [
             [Pricing\Entity::ACCOUNT_TYPE, $accountType, false, null],
-            [Pricing\Entity::CHANNEL,      $channel,     true,  null],
-            [Pricing\Entity::AUTH_TYPE,    $authType,    true,  null],
+            [Pricing\Entity::CHANNEL, $channel, true, null],
+            [Pricing\Entity::PAYOUTS_FILTER, $payoutsFilter, false, null],
+            [Pricing\Entity::AUTH_TYPE, $authType, true, null],
         ];
 
         return $this->applyFiltersOnRules($rules, $filters);
@@ -114,5 +118,16 @@ class Payout extends Base
         $this->getFees();
 
         return $this->feesSplit;
+    }
+
+    protected function getAuthForPayout()
+    {
+        return ($this->entity->getUserId() === null) ? BasicAuth\Type::PRIVATE_AUTH : BasicAuth\Type::PROXY_AUTH;
+    }
+
+    protected function getFreePayoutsFilter()
+    {
+        return ($this->entity->getFeeType() === PayoutModel\Entity::FREE_PAYOUT) ?
+                                                PayoutModel\Entity::FREE_PAYOUT : null;
     }
 }

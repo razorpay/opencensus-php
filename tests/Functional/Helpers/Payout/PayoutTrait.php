@@ -485,7 +485,6 @@ trait PayoutTrait
                                                                          'product'     => 'primary',
                                                                          'role'        => 'owner',
                                                                      ], 'live');
-
     }
 
     protected function validateStorkWebhookFireEvent($event, $testData, $storkPayload, $mode='test')

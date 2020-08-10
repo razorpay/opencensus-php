@@ -8,13 +8,12 @@ use RZP\Models\Payout;
 use RZP\Models\Schedule;
 use RZP\Constants\Timezone;
 use RZP\Models\FeeRecovery;
-use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\BankingAccount\Entity;
 use RZP\Models\BankingAccount\Channel;
+use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Models\Merchant\Balance\AccountType;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
@@ -1398,6 +1397,8 @@ class FeeRecoveryTest extends TestCase
 
         $oldTimeStamp = $oldTime->getTimestamp();
 
+        $this->setUpCounterToNotAffectPayoutFeesAndTaxInFeeRecoveryTests($this->bankingBalance);
+
         // Create first payout
         $this->testCreateFeeRecoveryAtPayoutCreationForRBLPayouts();
 
@@ -1541,6 +1542,16 @@ class FeeRecoveryTest extends TestCase
 
         $bankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
         $bankingBalance->save();
+
+        $defaultFreePayoutsCountConstantName = 'DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT';
+
+        $defaultFreePayoutsCount = constant(FreePayout::class . '::' . $defaultFreePayoutsCountConstantName);
+
+        $this->fixtures->create('counter', [
+            'account_type'          => 'shared',
+            'balance_id'            => $bankingBalance->getId(),
+            'free_payouts_consumed' => $defaultFreePayoutsCount,
+        ]);
 
         return $bankingBalance;
     }
@@ -1743,6 +1754,8 @@ class FeeRecoveryTest extends TestCase
         $newTime =  Carbon::create(2020, 10,3);
 
         Carbon::setTestNow($newTime);
+
+        $this->setUpCounterToNotAffectPayoutFeesAndTaxInFeeRecoveryTests($this->bankingBalance);
 
         $this->createPayoutForFundAccount($this->fundAccount, $this->bankingBalance);
 
@@ -2750,5 +2763,38 @@ class FeeRecoveryTest extends TestCase
 
         $this->assertEquals($feeRecoveryEntity['recovery_payout_id'], $feeRecoveryPayout['id']);
         $this->assertEquals($feeRecoveryEntity['status'], FeeRecovery\Status::RECOVERED);
+    }
+
+    protected function setUpCounterToNotAffectPayoutFeesAndTaxInFeeRecoveryTests($balance)
+    {
+
+        $balanceAccountType = $balance->getAccountType();
+
+        $channel = $balance->getChannel();
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => $balanceAccountType,
+                                            'balance_id'   => $balance->getId(),
+                                        ])->first();
+
+        $defaultFreePayoutsCountConstantName = 'DEFAULT_FREE_' . strtoupper($balanceAccountType) . '_ACCOUNT_PAYOUTS_COUNT';
+
+        if (($balanceAccountType === AccountType::DIRECT) and
+            (empty($channel) === false))
+        {
+            $defaultFreePayoutsCountConstantName = $defaultFreePayoutsCountConstantName . '_' . strtoupper($channel);
+        }
+
+        $defaultFreePayoutsCount = constant(FreePayout::class . '::' . $defaultFreePayoutsCountConstantName);
+
+        $this->fixtures->edit(
+            'counter',
+            $counter->getId(),
+            [
+                'free_payouts_consumed'               => $defaultFreePayoutsCount,
+                'free_payouts_consumed_last_reset_at' => Carbon::now(Timezone::IST)->firstOfMonth()->getTimestamp(),
+            ]
+        );
     }
 }

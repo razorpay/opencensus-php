@@ -56,6 +56,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_TYPE            => 'required_only_if:product,banking|filled|custom',
         Entity::CHANNEL                 => 'required_if:account_type,direct|filled|custom',
         Entity::FEE_BEARER              => 'sometimes|in:platform,customer',
+        Entity::PAYOUTS_FILTER          => 'sometimes_if:product,banking',
     ];
 
     protected static $editPlanRuleRules = [
@@ -691,7 +692,8 @@ class Validator extends Base\Validator
                 ($rule[Entity::EMI_DURATION] === $newRule[Entity::EMI_DURATION]) and
                 ($rule[Entity::RECEIVER_TYPE] === $newRule[Entity::RECEIVER_TYPE]) and
                 ($this->isAccountTypeAndChannelSameForBothRules($rule, $newRule) === true) and
-                ($rule[Entity::AUTH_TYPE] === $newRule[Entity::AUTH_TYPE]))
+                ($rule[Entity::AUTH_TYPE] === $newRule[Entity::AUTH_TYPE]) and
+                ($rule[Entity::PAYOUTS_FILTER] === $newRule[Entity::PAYOUTS_FILTER]))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
@@ -710,6 +712,7 @@ class Validator extends Base\Validator
                 ($rule[Entity::RECEIVER_TYPE] === $newRule[Entity::RECEIVER_TYPE]) and
                 ($this->isAccountTypeAndChannelSameForBothRules($rule, $newRule) === true) and
                 ($rule[Entity::AUTH_TYPE] === $newRule[Entity::AUTH_TYPE]) and
+                ($rule[Entity::PAYOUTS_FILTER] === $newRule[Entity::PAYOUTS_FILTER]) and
                 (isset($newRule[Entity::AMOUNT_RANGE_ACTIVE]) === true) and
                 (isset($rule[Entity::AMOUNT_RANGE_ACTIVE]) === true))
             {
@@ -729,6 +732,7 @@ class Validator extends Base\Validator
                 ($rule[Entity::RECEIVER_TYPE] === $newRule[Entity::RECEIVER_TYPE]) and
                 ($this->isAccountTypeAndChannelSameForBothRules($rule, $newRule) === true) and
                 ($rule[Entity::AUTH_TYPE] === $newRule[Entity::AUTH_TYPE]) and
+                ($rule[Entity::PAYOUTS_FILTER] === $newRule[Entity::PAYOUTS_FILTER]) and
                 (empty($newRule[Entity::AMOUNT_RANGE_ACTIVE]) !== empty($rule[Entity::AMOUNT_RANGE_ACTIVE])))
             {
                 throw new Exception\BadRequestException(
