@@ -28,6 +28,7 @@ class Table
     const REFUND                = 'refunds';
     const REPORT                = 'reports';
     const CONTACT               = 'contacts';
+    const COUNTER               = 'counters';
     const QR_CODE               = 'qr_code';
     const BALANCE               = 'balance';
     const PRICING               = 'pricing';

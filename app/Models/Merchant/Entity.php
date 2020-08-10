@@ -4,7 +4,6 @@ namespace RZP\Models\Merchant;
 
 use App;
 use Config;
-use Carbon\Carbon;
 use Razorpay\Trace\Logger;
 use Conner\Tagging\Taggable;
 

@@ -29,6 +29,7 @@ class Module
     const CONTACT_TYPE          = 'contact_type';
     const D2C_BUREAU_CAMPAIGN   = 'd2c_bureau_campaign';
     const BALANCE               = 'balance';
+    const FREE_PAYOUT           = 'free_payout';
 
     /**
      * @param string $module

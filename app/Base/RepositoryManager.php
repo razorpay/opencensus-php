@@ -92,6 +92,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\PaperMandate\PaperMandateUpload\Repository   $paper_mandate_upload
  * @property Models\PaperMandate\Repository                      $paper_mandate
  * @property Models\VirtualAccountTpv\Repository                 $virtual_account_tpv
+ * @property Models\Counter\Repository                           $counter
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

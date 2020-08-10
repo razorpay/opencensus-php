@@ -10,6 +10,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
 use RZP\Models\Contact;
+use RZP\Models\Counter;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -508,6 +509,8 @@ class Core extends Base\Core
             $this->repo->saveOrFail($bankingAccount);
 
             $this->createScheduleTaskForFeeRecovery($balance, $merchant);
+
+            (new Counter\Core)->createIfNotExists($balance);
 
             $stateCore = new State\Core;
 

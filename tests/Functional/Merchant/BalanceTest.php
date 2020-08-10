@@ -1,0 +1,195 @@
+<?php
+
+namespace Functional\Merchant;
+
+use RZP\Tests\Functional\TestCase;
+use RZP\Models\Counter\Entity as CounterEntity;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Models\Merchant\Balance\Entity as Balance;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Merchant\Balance\AccountType as AccountType;
+
+class BalanceTest extends TestCase
+{
+    use DbEntityFetchTrait;
+    use RequestResponseFlowTrait;
+
+    public function setUp()
+    {
+        $this->testDataFilePath = __DIR__ . '/helpers/BalanceTestData.php';
+
+        parent::setUp();
+
+        $this->ba->appAuth();
+    }
+
+    public function testUpdateFreePayoutsCount()
+    {
+        $balance = $this->fixtures->create('balance',
+            [
+                Balance::ACCOUNT_TYPE            => AccountType::SHARED
+            ]
+        );
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/balance/' . $balance[Balance::ID] . '/free_payout';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $counter = $this->getDbEntity('counter', [
+            CounterEntity::BALANCE_ID   => $balance[Balance::ID],
+            CounterEntity::ACCOUNT_TYPE => AccountType::SHARED
+        ])->toArray();
+
+        $this->assertNotNull($counter);
+    }
+
+    public function testUpdateFreePayoutsCountAndMode()
+    {
+        $balance = $this->fixtures->create('balance',
+            [
+                Balance::ACCOUNT_TYPE            => AccountType::SHARED
+            ]
+        );
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/balance/' . $balance[Balance::ID] . '/free_payout';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $counter = $this->getDbEntity('counter', [
+            CounterEntity::BALANCE_ID   => $balance[Balance::ID],
+            CounterEntity::ACCOUNT_TYPE => AccountType::SHARED
+        ])->toArray();
+
+        $this->assertNotNull($counter);
+    }
+
+    public function testUpdateFreePayoutsMode()
+    {
+        $balance = $this->fixtures->create('balance');
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/balance/' . $balance[Balance::ID] . '/free_payout';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testFailUpdateFreePayoutsWithoutModeAndCount()
+    {
+        $balance = $this->fixtures->create('balance');
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/balance/' . $balance[Balance::ID] . '/free_payout';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testFailUpdateFreePayoutsWithDuplicateModeInArray()
+    {
+        $balance = $this->fixtures->create('balance');
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/balance/' . $balance[Balance::ID] . '/free_payout';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testFailUpdateFreePayoutsWithInvalidModeInArray()
+    {
+        $balance = $this->fixtures->create('balance');
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/balance/' . $balance[Balance::ID] . '/free_payout';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testUpdateFreePayoutsWithModeArrayEmpty()
+    {
+        $balance = $this->fixtures->create('balance');
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/balance/' . $balance[Balance::ID] . '/free_payout';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testUpdateFreePayoutsWithModeArrayNull()
+    {
+        $balance = $this->fixtures->create('balance');
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/balance/' . $balance[Balance::ID] . '/free_payout';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testFailUpdateFreePayoutsWithInvalidCount()
+    {
+        $balance = $this->fixtures->create('balance');
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/balance/' . $balance[Balance::ID] . '/free_payout';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testFailUpdateFreePayoutsWithInvalidBalanceId()
+    {
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/balance/' . 'gsdglddggjlgldjdlg' . '/free_payout';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+}

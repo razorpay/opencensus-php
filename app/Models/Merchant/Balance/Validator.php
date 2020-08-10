@@ -4,11 +4,15 @@ namespace RZP\Models\Merchant\Balance;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\BankingAccount\Channel;
+use RZP\Models\Payout\Mode as PayoutMode;
 
 class Validator extends Base\Validator
 {
     const LOCKED_BALANCE = 'locked_balance';
+
+    const UPDATE_FREE_PAYOUTS_ATTRIBUTES = 'update_free_payouts_attributes';
 
     protected static $createRules = [
         Entity::CURRENCY         => 'required|string|in:INR',
@@ -21,6 +25,56 @@ class Validator extends Base\Validator
     protected static $lockedBalanceRules = [
         Entity::LOCKED_BALANCE => 'required|int|min:0',
     ];
+
+    protected static $updateFreePayoutsAttributesRules = [
+        FreePayout::FREE_PAYOUTS_COUNT                => 'filled|int',
+        FreePayout::FREE_PAYOUTS_SUPPORTED_MODES      => 'sometimes|array|custom',
+    ];
+
+    protected static $updateFreePayoutsAttributesValidators = [
+        'updateFreePayoutsAttributes'
+    ];
+
+    protected function validateUpdateFreePayoutsAttributes($input)
+    {
+        if ((isset($input[FreePayout::FREE_PAYOUTS_COUNT]) === false) and
+            (isset($input[FreePayout::FREE_PAYOUTS_SUPPORTED_MODES]) === false))
+        {
+            $message = sprintf("Either one of %s or %s or both should be given.",
+                               FreePayout::FREE_PAYOUTS_COUNT,
+                               FreePayout::FREE_PAYOUTS_SUPPORTED_MODES);
+
+            throw new Exception\BadRequestValidationFailureException(
+                $message,
+                null,
+                [
+                    'input' => $input,
+                ]);
+        }
+    }
+
+    protected function validateFreePayoutsSupportedModes($attribute, $values)
+    {
+        $uniqueValues = [];
+
+        foreach ($values as $value)
+        {
+            if (in_array($value, $uniqueValues, true) === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_FREE_PAYOUT_SUPPORTED_MODES_ARRAY_DUPLICATE_VALUE,
+                    null,
+                    [
+                        $attribute      => $values,
+                        'duplicate_value' => $value
+                    ]);
+            }
+
+            PayoutMode::validateMode($value);
+
+            array_push($uniqueValues, $value);
+        }
+    }
 
     protected function validateType($attribute, $type)
     {

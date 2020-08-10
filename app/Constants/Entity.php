@@ -39,6 +39,7 @@ class Entity
     const PAYOUT                     = 'payout';
     const REFUND                     = 'refund';
     const REPORT                     = 'report';
+    const COUNTER                    = 'counter';
     const CONTACT                    = 'contact';
     const DISPUTE                    = 'dispute';
     const ADDRESS                    = 'address';
@@ -433,6 +434,7 @@ class Entity
         Entity::TRANSACTION,
         Entity::VIRTUAL_ACCOUNT,
         Entity::PAYOUT,
+        Entity::COUNTER,
         Entity::BANK_TRANSFER,
         Entity::REFUND,
         Entity::FUND_ACCOUNT_VALIDATION,

@@ -451,6 +451,9 @@ class Name
 
     const CORRECT_MERCHANT_OWNER_MISMATCH     = 'correct_merchant_owner_mismatch';
 
+    // Update Free Payout Permission
+    const UPDATE_FREE_PAYOUTS_ATTRIBUTES      = 'update_free_payouts_attributes';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

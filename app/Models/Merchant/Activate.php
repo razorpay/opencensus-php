@@ -8,6 +8,7 @@ use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Admin;
+use RZP\Models\Counter;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -604,6 +605,8 @@ class Activate extends Base\Core
 
             // Create Banking Account
             $bankingAccount = (new BankingAccount\Core)->createOrFetchSharedBankingAccountFromVA($virtualAccount);
+
+            (new Counter\Core)->createIfNotExists($balance);
 
             $this->trace->info(
                 TraceCode::MERCHANT_BUSINESS_BANKING_ACCOUNT,

@@ -888,6 +888,10 @@ return [
                 'description' => 'Copy RX setting from Api to Rx',
                 'assignable'  => true,
             ],
+            Permission::UPDATE_FREE_PAYOUTS_ATTRIBUTES => [
+                'description' => 'Update free payout attributes',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::RAZORPAY_CAPITAL => [

@@ -118,7 +118,10 @@ class Validator extends Base\Validator
         ConfigKey::LOW_BALANCE_CONFIGS_FETCH_LIMIT_IN_ONE_BATCH => 'filled|integer',
         ConfigKey::BATCH_PAYOUTS_FETCH_LIMIT          => 'integer|nullable',
         ConfigKey::RX_PAYOUTS_CUSTOM_BATCH_FILE_LIMIT_MERCHANTS => 'array',
-        ConfigKey::RX_PAYOUTS_DEFAULT_MAX_BATCH_FILE_COUNT      => 'integer|nullable'
+        ConfigKey::RX_PAYOUTS_DEFAULT_MAX_BATCH_FILE_COUNT      => 'integer|nullable',
+        ConfigKey::FREE_SHARED_ACCOUNT_PAYOUTS_COUNT      => 'filled|integer',
+        ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL  => 'filled|integer',
+        ConfigKey::FREE_PAYOUTS_SUPPORTED_MODES           => 'filled|array',
     ];
 
     protected static $setRedisKeysRules = [

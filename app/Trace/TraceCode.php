@@ -3254,6 +3254,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     //                                ==========
 
+    // Update free_payouts_count attribute logs
+    const UPDATE_FREE_PAYOUTS_ATTRIBUTES_REQUEST              = 'UPDATE_FREE_PAYOUTS_ATTRIBUTES_REQUEST';
+    const UPDATE_FREE_PAYOUTS_ATTRIBUTES_SUCCESS              = 'UPDATE_FREE_PAYOUTS_ATTRIBUTES_SUCCESS';
+
+    // Counter
+    const COUNTER_ENTITY_CREATED                              = 'COUNTER_ENTITY_CREATED';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

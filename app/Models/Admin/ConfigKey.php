@@ -4,7 +4,11 @@ namespace RZP\Models\Admin;
 
 use App;
 use Cache;
+
 use RZP\Models\Admin\Permission\Name;
+use RZP\Models\Merchant\Balance\Channel;
+use RZP\Models\Merchant\Balance\FreePayout;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class ConfigKey
 {
@@ -128,6 +132,14 @@ class ConfigKey
 
     const BATCH_PAYOUTS_FETCH_LIMIT                     = self::PREFIX . 'batch_payouts_fetch_limit';
 
+    // Count of the number of free shared account payouts allowed per merchant in a month.
+    const FREE_SHARED_ACCOUNT_PAYOUTS_COUNT = self::PREFIX . FreePayout::FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
+
+    // Count of the number of free direct account payouts allowed per merchant in a month.
+    const FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL = self::PREFIX . FreePayout::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT . '_' . Channel::RBL;
+
+    const FREE_PAYOUTS_SUPPORTED_MODES = self::PREFIX . FreePayout::FREE_PAYOUTS_SUPPORTED_MODES;
+
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
         self::PRICING_RULE_SELECTION_LOG_VERBOSE,
@@ -188,6 +200,9 @@ class ConfigKey
         self::LOW_BALANCE_CONFIGS_FETCH_LIMIT_IN_ONE_BATCH,
         self::BATCH_PAYOUTS_FETCH_LIMIT,
         self::ENABLE_NB_KOTAK_ENCRYPTED_FLOW,
+        self::FREE_SHARED_ACCOUNT_PAYOUTS_COUNT,
+        self::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL,
+        self::FREE_PAYOUTS_SUPPORTED_MODES
     ];
 
     const REDIS_CONFIG_MAP = [

@@ -350,6 +350,12 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($scheduleTask['entity_type'], 'balance');
         $this->assertEquals($scheduleTask['schedule_id'], $schedule['id']);
 
+        $counter = $this->getDbLastEntity('counter')->toArray();
+
+        // Counter creation check
+        $this->assertEquals($counter['balance_id'], $balance['id']);
+        $this->assertEquals($counter['account_type'], $balance['account_type']);
+
         Mail::assertQueued(Activated::class);
     }
 

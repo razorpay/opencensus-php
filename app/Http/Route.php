@@ -1812,6 +1812,7 @@ class Route
         'edit_merchant_balance_config'             => ['patch',    'balance_configs/{id}',                                      'BalanceConfigController@editBalanceConfig'               ],
 
         'merchant_locked_balance_update'           => ['patch',    'balance/{id}/locked-balance',                               'MerchantController@updateLockedBalance'                  ],
+        'update_free_payouts_attributes'           => ['post',     'balance/{id}/free_payout',                                  'BalanceController@postUpdateFreePayout'                  ],
 
         //route to add additional website through admin dashboard
         'add_additional_website'                  => ['put',       'merchant/{id}/websites',                                    'MerchantController@putAdditionalWebsite'                   ],
@@ -1901,7 +1902,6 @@ class Route
 
         'merchant_verify_attributes'              => ['post',    'merchant/verify/{verificationType}',                      'MerchantController@postVerifyMerchantAttributes'              ],
         'checkout_personalisation'                => ['get',     'personalisation',                                         'MerchantController@getPersonalisedMethods'                    ],
-
     ];
 
     public static $public = [
@@ -3591,6 +3591,9 @@ class Route
         'admin_key_migrate_to_credcase',
 
         'admin_access_maps_bootstrap_cache',
+
+        // Update free_payout attributes for balance
+        'update_free_payouts_attributes',
     ];
 
     public static $routePermission = [
@@ -4325,6 +4328,9 @@ class Route
         'admin_key_migrate_to_credcase'            => '*',
 
         'admin_access_maps_bootstrap_cache'        => '*',
+
+        // update free payout attributes
+        'update_free_payouts_attributes'              => Permission::UPDATE_FREE_PAYOUTS_ATTRIBUTES,
     ];
 
     public static $bankingRoutePermissions = [

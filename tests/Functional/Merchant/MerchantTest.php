@@ -5884,6 +5884,13 @@ class MerchantTest extends TestCase
         $this->assertEquals($virtualAccounts->count(), 2);
 
         $this->assertEquals($bankingAccounts->count(), 1);
+
+
+        $counter = $this->getDbLastEntity('counter','live')->toArray();
+
+        // Counter check
+        $this->assertEquals($counter['balance_id'], $bankingAccounts->first()->getBalanceId());
+        $this->assertEquals($counter['account_type'], 'shared');
     }
 
     /**
