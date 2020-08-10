@@ -1187,19 +1187,6 @@ class Service extends Base\Service
             {
                 $data['banking_details']['is_live_payout_created'] = false;
             }
-
-            // check if tax payments is enabled
-            try {
-                if ($data['activation_status'] === 'activated')
-                {
-                    $isTaxPaymentsEnabled = $merchantService->isXTaxPaymentsEnabled();
-                    $data['banking_details']['is_tax_payments_enabled'] = $isTaxPaymentsEnabled;
-                }
-            }
-            catch (\Razorpay\Api\Errors\Error $e)
-            {
-                $data['banking_details']['is_tax_payments_enabled'] = false;
-            }
         }
 
         return $data;

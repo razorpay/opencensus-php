@@ -671,30 +671,4 @@ class Service extends Base\Service
 
         return $data['count'];
     }
-
-    public function isXTaxPaymentsEnabled()
-    {
-        $request = new ApiRequestAny(['client_type' => 'merchant']);
-
-        list($error, $data) = $request->send("tax-payments/settings", 'GET');
-
-        if (empty($error) === false)
-        {
-            throw new BadRequestError(
-                $error[0],
-                ErrorCode::BAD_REQUEST_ERROR,
-                400
-            );
-        }
-
-        if(isset($data['settings']))
-        {
-            return json_decode($data['settings']['tax_payment_enabled']) === true;
-        }
-        else
-        {
-            return false;
-        }
-
-    }
 }
