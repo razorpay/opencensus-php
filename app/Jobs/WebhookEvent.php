@@ -14,6 +14,8 @@ use RZP\Constants\Product;
  */
 class WebhookEvent extends Job
 {
+    const MAX_ALLOWED_ATTEMPTS = 25;
+
     /**
      * Merchant who owns the event.
      * @var Event\Entity
@@ -65,10 +67,13 @@ class WebhookEvent extends Job
         {
             $this->trace->traceException($e);
 
-            // For this job there are no max retries but there is exponential
-            // backoff in terms of when to process next which can maximum be 15m.
-            // 2.5s, 5s, 10s, 20s, 40s, 80s, 160s, 320s, 640s, 900s, 900s, 900s ..
-            $this->release(min(pow(2, $this->attempts())*5/2, 900));
+            if ($this->attempts() < self::MAX_ALLOWED_ATTEMPTS)
+            {
+                // Uses exponential backoff on when to process next which can be 15m
+                // maximum, releases the job maximum 25 times over a duration of ~4h.
+                // 2.5s, 5s, 10s, 20s, 40s, 80s, 160s, 320s, 640s, 900s, 900s, 900s ..
+                $this->release(min(pow(2, $this->attempts())*5/2, 900));
+            }
         }
     }
 }
