@@ -35,6 +35,7 @@ tmp/
 /vendor
 /web/node_modules
 /web/js/dump.rdb
+/web/build
 
 # IDE config
 /jsconfig.json

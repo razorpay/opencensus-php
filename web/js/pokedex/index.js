@@ -1,3 +1,7 @@
+__webpack_public_path__ = (window.cdnDashboardUrl || '') + `/dist/`;
+import 'regenerator-runtime/runtime.js';
+import 'core-js/es/map';
+import 'core-js/es/set';
 import axios from 'axios';
 import { Component } from 'react';
 import moment from 'moment';
@@ -18,6 +22,9 @@ import { tabsOrder, tabsMeta } from 'merchant/containers/Home/KeyMetrics/data';
 import { getQuery as getPaymentMethodsQuery } from 'merchant/containers/Home/PaymentMethods/data';
 import Home from 'merchant/containers/Home/Index';
 
+import css from '../../css/merchant.styl';
+import fontconfig from '../../dashboard.font';
+
 import {
   SUCCESS_RATE,
   PAYMENT_METHODS,
@@ -32,7 +39,7 @@ window.RZP = window.RZP || {};
 
 const merchantId = (pokeConfig.merchantId = window.rzp_user.id);
 
-@connect(state => state.session, {
+@connect((state) => state.session, {
   ...SessionActions,
   ...NotificationActions,
 })
@@ -56,7 +63,7 @@ class App extends Component {
       url: `/admin/api/live_${merchantId}/merchant/analytics`,
       method: 'post',
       data: query,
-    }).then(data => data.data);
+    }).then((data) => data.data);
   }
 
   onFirstTxnDate(firstTxnDate) {
@@ -70,7 +77,7 @@ class App extends Component {
     delete query.filters.default[0].authorized_at;
 
     this.analyticsFetch(query)
-      .then(resp => {
+      .then((resp) => {
         if (!resp.data || !resp.data.agg) {
           return;
         }
@@ -81,7 +88,7 @@ class App extends Component {
           tabsMeta: { ...this.state.tabsMeta },
         });
       })
-      .catch(e => {
+      .catch((e) => {
         console.error('Unable to populate payment methods and sources', e);
       });
   }
@@ -126,7 +133,7 @@ class App extends Component {
         let role = user.userRole;
         return data;
       }),
-    ]).then(response => {
+    ]).then((response) => {
       let user = new User(response[0]);
       user.features = setFeatures([]);
 

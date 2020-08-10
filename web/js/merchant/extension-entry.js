@@ -14,10 +14,7 @@
     var header = d.createElement('div');
     header.setAttribute('class', 'ExtensionPopup-Header');
     var logo = d.createElement('img');
-    logo.setAttribute(
-      'src',
-      'https://razorpay.com/assets/razorpay-logo-white-e1ddfbf7c6.svg'
-    );
+    logo.setAttribute('src', 'https://razorpay.com/assets/razorpay-logo-white-e1ddfbf7c6.svg');
     header.appendChild(logo);
 
     // Body
@@ -50,3 +47,7 @@
   // Inject popup
   injectPopup();
 })(document, document.body);
+
+import '../../css/extension-popup.styl';
+
+export default {};

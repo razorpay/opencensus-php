@@ -1,4 +1,7 @@
+__webpack_public_path__ = (window.cdnDashboardUrl || '') + `/dist/`;
 import 'regenerator-runtime/runtime.js';
+import 'core-js/es/map';
+import 'core-js/es/set';
 import React from 'react';
 import { render } from 'react-dom';
 import Styled, { ThemeProvider } from 'styled-components';
@@ -208,19 +211,13 @@ render(
 
               <MobileOnlyView>
                 <HeaderView>
-                  <FullHeightFlex
-                    justifyContent="space-around"
-                    alignItems="center"
-                  >
+                  <FullHeightFlex justifyContent="space-around" alignItems="center">
                     <View>
                       <Size maxWidth="120px">
                         <img src="/img/logo_full.png" alt="Razorpay" />
                       </Size>
                       <Space margin={[3, 0, 0, 8]}>
-                        <CustomLoginButton
-                          size="small"
-                          onClick={handleLoginClick}
-                        >
+                        <CustomLoginButton size="small" onClick={handleLoginClick}>
                           Log in
                         </CustomLoginButton>
                       </Space>
@@ -236,11 +233,7 @@ render(
                 <DesktopOnlyView>
                   <Space padding={[8, 5.5, 4, 0]}>
                     <View>
-                      <Flex
-                        flexDirection="column"
-                        justifyContent="center"
-                        alignItems="center"
-                      >
+                      <Flex flexDirection="column" justifyContent="center" alignItems="center">
                         <View>
                           <Space margin={[0, 0, 1, 0]}>
                             <Text size="large" weight="bold">
@@ -248,8 +241,7 @@ render(
                             </Text>
                           </Space>
                           <Text size="small" color="shade.960">
-                            8,00,000+ businesses trust their payments with
-                            Razorpay
+                            8,00,000+ businesses trust their payments with Razorpay
                           </Text>
                         </View>
                       </Flex>

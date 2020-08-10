@@ -15,31 +15,33 @@ pipeline:
     group: build
     # TODO: Get the source for this image and push it
     # to razorpay
-    image: pronav/dash
+    image: node:12.18.2
     pull: false
     environment:
       CHROME_BIN: /usr/bin/chromium
     secrets: [ npm_razorpay_token ]
     commands:
+      - apt-get update
+      - apt-get install -y chromium
       # Fix for https://github.com/npm/uid-number/issues/3
       - npm config set unsafe-perm true
       - npm config set cache npm_cache
-      - npm install --global gulp
       # Root directory
       - npm install
-      - npm link gulp
       - node signup.js
       # Web directory
-      - cd web && npm link gulp && npm install && NODE_ENV=production npm run build
+      - cd web && npm install && npm run production:build
     when:
         event: push
   test-js:
-    image: pronav/dash
+    image: node:12.18.2
     pull: false
     environment:
       CHROME_BIN: /usr/bin/chromium
     secrets: [ npm_razorpay_token ]
     commands:
+      - apt-get update
+      - apt-get install -y chromium
       - npm test
     when:
       event: push
@@ -102,6 +104,8 @@ pipeline:
           target: AWS_KEY
         - source: STAGE_S3_AWS_SECRET
           target: AWS_SECRET
+        - source: NPM_RAZORPAY_TOKEN
+          target: NPM_RAZORPAY_TOKEN
     commands:
         # Requirements for running s3sync.js
         - npm install multi-glob aws-sdk
@@ -124,6 +128,8 @@ pipeline:
           target: AWS_KEY
         - source: STAGE_S3_AWS_SECRET
           target: AWS_SECRET
+        - source: NPM_RAZORPAY_TOKEN
+          target: NPM_RAZORPAY_TOKEN
       commands:
           # Requirements for running s3sync.js
           - npm install multi-glob aws-sdk
@@ -146,6 +152,8 @@ pipeline:
         target: AWS_KEY
       - source: STAGE_S3_AWS_SECRET
         target: AWS_SECRET
+      - source: NPM_RAZORPAY_TOKEN
+        target: NPM_RAZORPAY_TOKEN
     commands:
         # Requirements for running s3sync.js
         - npm install multi-glob aws-sdk
@@ -168,6 +176,8 @@ pipeline:
         target: AWS_KEY
       - source: STAGE_S3_AWS_SECRET
         target: AWS_SECRET
+      - source: NPM_RAZORPAY_TOKEN
+        target: NPM_RAZORPAY_TOKEN
     commands:
         # Requirements for running s3sync.js
         - npm install multi-glob aws-sdk
@@ -190,6 +200,8 @@ pipeline:
         target: AWS_KEY
       - source: STAGE_S3_AWS_SECRET
         target: AWS_SECRET
+      - source: NPM_RAZORPAY_TOKEN
+        target: NPM_RAZORPAY_TOKEN
     commands:
         # Requirements for running s3sync.js
         - npm install multi-glob aws-sdk
@@ -213,6 +225,8 @@ pipeline:
         target: AWS_KEY
       - source: STAGE_S3_AWS_SECRET
         target: AWS_SECRET
+      - source: NPM_RAZORPAY_TOKEN
+        target: NPM_RAZORPAY_TOKEN
     commands:
         # Requirements for running s3sync.js
         - npm install multi-glob aws-sdk
@@ -235,6 +249,8 @@ pipeline:
         target: AWS_KEY
       - source: STAGE_S3_AWS_SECRET
         target: AWS_SECRET
+      - source: NPM_RAZORPAY_TOKEN
+        target: NPM_RAZORPAY_TOKEN
     commands:
         # Requirements for running s3sync.js
         - npm install multi-glob aws-sdk
@@ -257,6 +273,8 @@ pipeline:
           target: AWS_KEY
         - source: STAGE_S3_AWS_SECRET
           target: AWS_SECRET
+        - source: NPM_RAZORPAY_TOKEN
+          target: NPM_RAZORPAY_TOKEN
     commands:
         # Requirements for running s3sync.js
         - npm install multi-glob aws-sdk
@@ -279,6 +297,8 @@ pipeline:
         target: AWS_KEY
       - source: STAGE_S3_AWS_SECRET
         target: AWS_SECRET
+      - source: NPM_RAZORPAY_TOKEN
+        target: NPM_RAZORPAY_TOKEN
     commands:
         # Requirements for running s3sync.js
         - npm install multi-glob aws-sdk
@@ -301,6 +321,8 @@ pipeline:
         target: AWS_KEY
       - source: STAGE_S3_AWS_SECRET
         target: AWS_SECRET
+      - source: NPM_RAZORPAY_TOKEN
+        target: NPM_RAZORPAY_TOKEN
     commands:
         # Requirements for running s3sync.js
         - npm install multi-glob aws-sdk
@@ -319,7 +341,7 @@ pipeline:
         - AWS_CLOUDFRONT_DISTRIBUTION_ID=E34MFQ6HI02NUZ
         - CDN_DASHBOARD_URL=https://cdn.razorpay.com/dashboard
         - CDN_BASE_URL=https://cdn.razorpay.com
-    secrets: [AWS_KEY, AWS_SECRET]
+    secrets: [AWS_KEY, AWS_SECRET, npm_razorpay_token]
     commands:
         # Requirements for running s3sync.js
         - npm install multi-glob aws-sdk
@@ -342,6 +364,8 @@ pipeline:
               target: AWS_KEY
           -   source: STAGE_S3_AWS_SECRET
               target: AWS_SECRET
+          -   source: NPM_RAZORPAY_TOKEN
+              target: NPM_RAZORPAY_TOKEN
       commands:
           # Requirements for running s3sync.js
           - npm install multi-glob aws-sdk

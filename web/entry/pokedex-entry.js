@@ -1,4 +1,5 @@
-(function() {
+function executeJS() {
+  var cdnDashboardUrl = window.cdnDashboardUrl || '';
   var base = Array.prototype.slice
     .call(document.querySelectorAll('script[src]'), -1)[0]
     .src.replace(/[^\/]+$/, '');
@@ -10,10 +11,13 @@
     document.documentElement.appendChild(link);
   };
 
-  document.write('<script src="' + base + 'vendor_m.js"></script>');
-  document.write('<script src="' + base + 'pokedex.js"></script>');
-  appendLink(base + 'css/merchant.css');
-  appendLink(
-    'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
-  );
-})();
+  window.websiteAssets.js.forEach(function(src) {
+    document.write('<script src="' + cdnDashboardUrl + src + '"></script>');
+  });
+  window.websiteAssets.css.forEach(function(src) {
+    appendLink(cdnDashboardUrl + src);
+  });
+  appendLink('https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css');
+}
+
+module.exports = `${executeJS.toString()} executeJS()`;

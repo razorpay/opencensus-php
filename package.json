@@ -14,22 +14,33 @@
     "query-string": "^6.8.3"
   },
   "scripts": {
-    "precommit": "lint-staged",
-    "prettier": "prettier",
     "postinstall": "cd web && npm i",
     "start": "node signup.js; cd web && npm start",
-    "build": "node signup.js; cd web && npm run build",
+    "build": "node signup.js; cd web && npm run production:build",
     "test": "node test.js; cd web && npm run test"
   },
-  "lint-staged": {
-    "*.js": [
-      "prettier --write --single-quote --trailing-comma es5",
-      "git add"
-    ]
-  },
   "devDependencies": {
-    "husky": "^0.14.3",
-    "lint-staged": "^6.0.0",
+    "@universe/configs": "^1.0.30",
+    "commitizen": "^4.1.2",
+    "cz-conventional-changelog": "^3.2.0",
+    "husky": "^4.2.5",
+    "lint-staged": "^10.2.11",
     "prettier": "^1.10.2"
+  },
+  "husky": {
+    "hooks": {
+      "prepare-commit-msg": "exec < /dev/tty && git cz --hook || true",
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "/web/js/dashboard_v2/**/*.(js|jsx|ts|tsx)": ["eslint", "stylelint"],
+    "*.(js|json|jsx|ts|tsx)": ["prettier --write --single-quote --trailing-comma es5"]
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog",
+      "disableScopeLowerCase": true
+    }
   }
 }

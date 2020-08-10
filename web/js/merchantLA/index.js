@@ -1,4 +1,9 @@
-import 'babel-polyfill';
+__webpack_public_path__ = (window.cdnDashboardUrl || '') + `/dist/`;
+import 'regenerator-runtime/runtime.js';
+import 'core-js/es/map';
+import 'core-js/es/set';
+import 'core-js/es/map';
+import 'core-js/es/set';
 import React from 'react';
 import 'react-dates/initialize';
 import { Provider } from 'react-redux';
@@ -11,6 +16,8 @@ import store from 'merchantLA/store';
 import ConfirmModalProvider from 'common/ui/ConfirmModal/ConfirmModalProvider';
 
 import App from 'merchantLA/containers/App';
+import css from '../../css/merchant-la.styl';
+import fontconfig from '../../dashboard.font';
 
 render(
   <Provider store={store}>

@@ -1,0 +1,52 @@
+process.env.STAGE = 'development';
+const path = require('path');
+const paths = require('@universe/configs/paths');
+const babelConfig = require(paths.consumer.babelConfig);
+const universeWebpackClientConfig = require(paths.universeConfigs.webpackClientConfig)({
+  babelConfig: babelConfig,
+});
+const webpackClientConfig = require(paths.consumer.webpackClientConfig)({
+  config: universeWebpackClientConfig,
+  project: 'merchant',
+});
+webpackClientConfig.module.rules[0].use.push({
+  loader: require.resolve('react-docgen-typescript-loader'),
+  options: {
+    // Provide the path to your tsconfig.json so that your stories can
+    // display types from outside each individual story.
+    tsconfigPath: path.resolve(__dirname, '../tsconfig.json'),
+  },
+});
+webpackClientConfig.module.rules.push({
+  test: /.css$/,
+  use: [
+    {
+      loader: 'style-loader', // creates style nodes from JS strings
+    },
+    {
+      loader: 'css-loader',
+      options: {
+        url: false,
+        importLoaders: 2,
+      }, // translates CSS into CommonJS
+    },
+  ],
+});
+
+module.exports = {
+  stories: ['../stories/**/*.stories.js', '../js/**/*.stories.[tj]sx'],
+  addons: [
+    '@storybook/addon-actions',
+    '@storybook/addon-links',
+    '@storybook/addon-viewport/register',
+  ],
+  webpackFinal: async (config) => {
+    // do mutation to the config
+
+    return {
+      ...config,
+      module: { ...config.module, rules: webpackClientConfig.module.rules },
+      resolve: webpackClientConfig.resolve,
+    };
+  },
+};

@@ -1,4 +1,5 @@
-(function() {
+function executeJS() {
+  var cdnDashboardUrl = window.cdnDashboardUrl || '';
   var base = Array.prototype.slice
     .call(document.querySelectorAll('script[src]'), -1)[0]
     .src.replace(/[^\/]+$/, '');
@@ -10,7 +11,12 @@
     document.documentElement.appendChild(link);
   };
 
-  document.write('<script src="' + base + 'vendor_a.js"></script>');
-  document.write('<script src="' + base + 'razorx.js"></script>');
-  appendLink(base + 'css/razorx.css');
-})();
+  window.websiteAssets.js.forEach(function(src) {
+    document.write('<script src="' + cdnDashboardUrl + src + '"></script>');
+  });
+  window.websiteAssets.css.forEach(function(src) {
+    appendLink(cdnDashboardUrl + src);
+  });
+}
+
+module.exports = `${executeJS.toString()} executeJS()`;

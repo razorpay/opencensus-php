@@ -1,14 +1,8 @@
-(function() {
-  var base = Array.prototype.slice
-    .call(document.querySelectorAll('script[src]'), -1)[0]
-    .src.replace(/[^\/]+$/, '');
+function executeJS() {
+  var cdnDashboardUrl = window.cdnDashboardUrl || '';
+  window.websiteAssets.js.forEach(function(src) {
+    document.write('<script src="' + cdnDashboardUrl + src + '"></script>');
+  });
+}
 
-  var appendLink = function(src) {
-    var link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = src;
-    document.documentElement.appendChild(link);
-  };
-
-  document.write('<script src="' + base + 'newAuth.js"></script>');
-})();
+module.exports = `${executeJS.toString()} executeJS()`;

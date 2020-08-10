@@ -10,7 +10,7 @@ Builds are done using Drone. See the `.drone.yml` file for details on these.
 #### Pre-requisites
 
 * Install [composer](https://getcomposer.org/download/) PHP package manager
-* Install [`node`](https://github.com/creationix/nvm) (`v8`)
+* Install [`node`](https://github.com/creationix/nvm) (`v12`)
 
 After cloning the repo follow these steps:
 - Login to [registry.razorpay.com](https://registry.razorpay.com/)
@@ -122,18 +122,29 @@ $ brew install nvm
 $ brew services restart redis
 ```
 
-Make sure you are running the node 8 using [`nvm`](https://github.com/nvm-sh/nvm)
+Make sure you are running the node 12 using [`nvm`](https://github.com/nvm-sh/nvm)
 
 ```
-$ nvm install 8
+$ nvm install 12.18.2
 ```
-Start node server (need to be repeated every time code updates)
+Start node server to serve merchant dashboard
 
 ```
-$ npm install
+$ npm start
+
 ```
 
-```$ npm start
+Start node server to serve all dashboards (merchant, merchantLA, pokedex, razorx, newAuth) 
+
+```
+$ cd web && npm run start:all
+
+```
+Start node server to serve a specific dashboard in dev mode
+
+```
+$ cd web && STAGE=development npm run build:{dashboard}
+
 ```
 
 if you don't have api key generated in `.env.dev` file, run following in dashboard folder to generate api key  [more details](https://stackoverflow.com/questions/33700580/laravel-5-application-key)

@@ -1,4 +1,5 @@
-(function() {
+function executeJS() {
+  var cdnDashboardUrl = window.cdnDashboardUrl || '';
   if (typeof Sentry !== 'undefined') {
     Sentry.onLoad(function() {
       Sentry.init({
@@ -22,16 +23,14 @@
     document.documentElement.appendChild(link);
   };
 
-  if (localStorage.referrer === 'chrome-extension') {
-    appendLink(base + 'css/extension-popup.css');
-    document.write('<script src="' + base + 'extension-entry.js"></script>');
-    return;
-  }
+  window.websiteAssets.js.forEach(function(src) {
+    document.write('<script src="' + cdnDashboardUrl + src + '"></script>');
+  });
+  window.websiteAssets.css.forEach(function(src) {
+    appendLink(cdnDashboardUrl + src);
+  });
 
-  document.write('<script src="' + base + 'vendor_m.js"></script>');
-  document.write('<script src="' + base + 'merchant.js"></script>');
-  appendLink(base + 'css/merchant.css');
-  appendLink(
-    'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
-  );
-})();
+  appendLink('https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css');
+}
+
+module.exports = `${executeJS.toString()} executeJS()`;

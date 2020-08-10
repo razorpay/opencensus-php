@@ -1,4 +1,7 @@
-import 'babel-polyfill';
+__webpack_public_path__ = (window.cdnDashboardUrl || '') + `/dist/`;
+import 'regenerator-runtime/runtime.js';
+import 'core-js/es/map';
+import 'core-js/es/set';
 import React from 'react';
 import 'react-dates/initialize';
 import { Provider } from 'react-redux';
@@ -10,6 +13,14 @@ import ConfirmModalProvider from 'common/ui/ConfirmModal/ConfirmModalProvider';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import store from './store';
 import App from './containers/App';
+import '../../css/merchant.styl';
+import '../../dashboard.font';
+
+(async () => {
+  if (localStorage.referrer === 'chrome-extension') {
+    await import(/* webpackChunkName: "extension" */ './extension-entry');
+  }
+})();
 
 render(
   <Provider store={store}>
