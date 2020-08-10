@@ -331,7 +331,7 @@ class FormSectionRenderer extends Component {
         loading: false,
       });
     }
-    this.props.fetchDocumentGroups();
+    this.props.fetchDocumentGroups(this.props.user.business_type == 1);
     this.props.fetchProducts();
   }
 
@@ -794,9 +794,7 @@ class FormSectionRenderer extends Component {
     if (context) {
       return context.activeState
         ? context.activeState
-        : meta.data.application
-        ? meta.data.application.status
-        : defaultState;
+        : meta.data.application ? meta.data.application.status : defaultState;
     } else {
       return meta.data.application
         ? meta.data.application.status

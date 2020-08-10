@@ -436,6 +436,7 @@ class PreVerificationUpload extends Component {
         selectedUploadModes={this.state.selectedUploadModes}
         handleUploadModeChange={this.handleUploadModeChange}
         handleDocumentTypeChange={this.handleDocumentTypeChange}
+        businessType={this.props.user.business_type}
       />
     );
   };

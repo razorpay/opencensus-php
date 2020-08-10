@@ -49,8 +49,10 @@ const OutlineLockIcon = <i class="i i-outline-lock" />;
                 business_email:
                   business_details.data.business.emails[0].email_id,
                 business_pan: business_details.data.business.business_pan,
+                business_type: BUSINESS_TYPES[parseInt(user.business_type)],
               }
             : {
+                business_type: BUSINESS_TYPES[parseInt(user.business_type)],
                 legal_name: user.business_name,
                 business_email: user.email,
                 business_pan: user.company_pan,
@@ -80,6 +82,7 @@ const OutlineLockIcon = <i class="i i-outline-lock" />;
         session: state.session,
         loanApplicationDetails: state.loanApplicationDetails,
         initialValues: {
+          business_type: business_details.data.business.deed_type,
           legal_name: business_details.data.business.legal_name,
           business_email: business_details.data.business.emails[0].email_id,
           business_pan: business_details.data.business.business_pan,
@@ -290,7 +293,6 @@ class BusinessInfoEntity extends Component {
       return <FormLoader />;
 
     const canModify = this.canModify();
-
     return (
       <Form
         layout="tabular"
@@ -320,7 +322,16 @@ class BusinessInfoEntity extends Component {
           size="medium"
           required
         />
-        <Field
+        {this.props.initialValues.business_type === BUSINESS_TYPES[1] ?
+        (<Field
+          key="business_pan"
+          component={TextInputWrapper}
+          label="Business PAN"
+          name="business_pan"
+          placeholder=""
+          size="medium"
+        />) :
+        (<Field
           key="business_pan"
           component={TextInputWrapper}
           addonAfter={OutlineLockIcon}
@@ -330,7 +341,7 @@ class BusinessInfoEntity extends Component {
           placeholder=""
           size="medium"
           required
-        />
+        />)}
         <Input.Group
           label="Monthly Business Value"
           className="InputGroup--inline"

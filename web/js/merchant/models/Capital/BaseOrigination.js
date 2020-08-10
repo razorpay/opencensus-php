@@ -115,10 +115,24 @@ export default class BaseOriginationEntity extends GenericEntity {
     );
   }
 
-  fetchDocumentGroups() {
+  fetchDocumentGroups(isProprietorshipBusiness) {
     return this.request(
       `${this.resourceUrlPrefix('admin', 'DocumentsAPI', 'GetDocumentGroups')}`
-    );
+    ).then(data => {
+      if (isProprietorshipBusiness) {
+        data.data.document_groups.forEach(d => {
+          if (d.document_group.name === 'business_registration_proof') {
+            d.master_documents = d.master_documents.filter(
+              doc =>
+                doc.type !== 'partnership_deed' &&
+                doc.type !== 'llp_certificate' &&
+                doc.type !== 'certificate_of_incorporation'
+            );
+          }
+        });
+      }
+      return data;
+    });
   }
 
   getApplications(data) {

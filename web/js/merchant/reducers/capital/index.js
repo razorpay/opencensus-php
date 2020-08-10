@@ -177,11 +177,11 @@ export const fetchD2cReport = data => {
   };
 };
 
-export const fetchDocumentGroups = () => {
+export const fetchDocumentGroups = isProprietorshipBusiness => {
   const loanApplication = new LoanOrigination();
   return {
     type: FETCH_DOCUMENT_GROUPS,
-    payload: loanApplication.fetchDocumentGroups(),
+    payload: loanApplication.fetchDocumentGroups(isProprietorshipBusiness),
   };
 };
 

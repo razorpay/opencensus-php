@@ -17,89 +17,112 @@ class DocumentsUpload extends React.Component {
       uploadModesMeta,
       handleUploadModeChange,
       handleDocumentTypeChange,
+      businessType,
     } = this.props;
+
+    const isProprietorshipBusiness = parseInt(businessType) === 1;
+    const proprietorshipDescription =
+      'Upload a scanned copy of GST' +
+      ' Certificate / Shop Establishment Act / Registration Certificate';
+
     return (
       <Form layout="tabular" onSubmit={() => {}}>
-        {documents.map(document => (
-          <Input.Group
-            key={document.document_group.id}
-            label={
-              document.document_group.label ||
-              DOCUMENT_GROUP_NAMES_MAP[document.document_group.name] ||
-              document.document_group.name
-            }
-            className="InputGroup--inline"
-            required
-          >
-            <div className="Input-content m-b">
-              {document.master_documents.length > 1 && (
-                <Input.Select
-                  name={document.document_group.id}
-                  required
-                  disabled={!!document.store_id}
-                  onChange={event =>
-                    handleDocumentTypeChange(document, event.target.value)
-                  }
-                  // defaultValue={document.document_masters_id}
-                  value={document.document_masters_id}
-                  options={document.master_documents.map(doc => ({
-                    name: doc.id,
-                    label: doc.name || doc.type,
-                  }))}
-                />
-              )}
-            </div>
-            <div className="Input-content">
-              {document.documentUploadOptions.length > 1 &&
-                canUpload &&
-                !document.store_id && (
-                  <div class="document-upload-options-wrapper">
-                    {document.documentUploadOptions.map(uploadOption => (
-                      <ToggleWithDescription
-                        title={uploadModesMeta[uploadOption].title}
-                        description={uploadModesMeta[uploadOption].description}
-                        selected={
-                          uploadOption === selectedUploadModes[document.id]
-                        }
-                        onClick={() =>
-                          handleUploadModeChange(document, uploadOption)
-                        }
-                        disabled={uploadModesMeta[uploadOption].disabled}
-                        style={{ marginBottom: 12 }}
-                      />
-                    ))}
-                  </div>
+        {documents.map(document => {
+          const isBusinessRegistrationProofDoc =
+            document.document_group.name === 'business_registration_proof';
+          const allowedDocuments = document.master_documents.map(doc => ({
+            name: doc.id,
+            label: doc.name || doc.type,
+          }));
+
+          let selectedDoc = allowedDocuments.find(
+            a => a.name == document.document_masters_id
+          );
+          if (!selectedDoc) {
+            selectedDoc = allowedDocuments[0];
+          }
+          return (
+            <Input.Group
+              key={document.document_group.id}
+              label={
+                document.document_group.label ||
+                DOCUMENT_GROUP_NAMES_MAP[document.document_group.name] ||
+                document.document_group.name
+              }
+              className="InputGroup--inline"
+              required
+            >
+              <div className="Input-content m-b">
+                {document.master_documents.length > 1 && (
+                  <Input.Select
+                    name={document.document_group.id}
+                    required
+                    disabled={!!document.store_id}
+                    onChange={event =>
+                      handleDocumentTypeChange(document, event.target.value)
+                    }
+                    // defaultValue={document.document_masters_id}
+                    value={selectedDoc.name}
+                    options={allowedDocuments}
+                  />
                 )}
-              {(selectedUploadModes[document.id] === 'native_upload' ||
-                selectedUploadModes[document.id] === 'native_xml_upload') && (
-                <FileUpload
-                  showCloseBtn={false}
-                  showFileSize
-                  name={document.id}
-                  stagedFileStatus="error"
-                  showAcceptInfo
-                  // maxSize={document.maxDocumentSize}
-                  accept={document.acceptDocumentTypes}
-                  size="large"
-                  defaultValue={!!document.store_id}
-                  uploadedFileName="Upload File here"
-                  onFileChange={(file, progressTracker) =>
-                    handleFileChange(document.id, file, progressTracker)
-                  }
-                  onCloseClick={() => onRemoveFile(document.id)}
-                  dropZoneCavityClassName={document.id}
-                  id={document.id}
-                  //need not to disable as we are not showing close button.
-                  // as this cannot be modified.
-                  // disabled={!canUpload}
-                />
-              )}
-              <div className="Input-desc">
-                {document.document_group.description}
               </div>
-            </div>
-          </Input.Group>
-        ))}
+              <div className="Input-content">
+                {document.documentUploadOptions.length > 1 &&
+                  canUpload &&
+                  !document.store_id && (
+                    <div class="document-upload-options-wrapper">
+                      {document.documentUploadOptions.map(uploadOption => (
+                        <ToggleWithDescription
+                          title={uploadModesMeta[uploadOption].title}
+                          description={
+                            uploadModesMeta[uploadOption].description
+                          }
+                          selected={
+                            uploadOption === selectedUploadModes[document.id]
+                          }
+                          onClick={() =>
+                            handleUploadModeChange(document, uploadOption)
+                          }
+                          disabled={uploadModesMeta[uploadOption].disabled}
+                          style={{ marginBottom: 12 }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                {(selectedUploadModes[document.id] === 'native_upload' ||
+                  selectedUploadModes[document.id] === 'native_xml_upload') && (
+                  <FileUpload
+                    showCloseBtn={false}
+                    showFileSize
+                    name={document.id}
+                    stagedFileStatus="error"
+                    showAcceptInfo
+                    // maxSize={document.maxDocumentSize}
+                    accept={document.acceptDocumentTypes}
+                    size="large"
+                    defaultValue={!!document.store_id}
+                    uploadedFileName="Upload File here"
+                    onFileChange={(file, progressTracker) =>
+                      handleFileChange(document.id, file, progressTracker)
+                    }
+                    onCloseClick={() => onRemoveFile(document.id)}
+                    dropZoneCavityClassName={document.id}
+                    id={document.id}
+                    //need not to disable as we are not showing close button.
+                    // as this cannot be modified.
+                    // disabled={!canUpload}
+                  />
+                )}
+                <div className="Input-desc">
+                  {!(isProprietorshipBusiness && isBusinessRegistrationProofDoc)
+                    ? document.document_group.description
+                    : proprietorshipDescription}
+                </div>
+              </div>
+            </Input.Group>
+          );
+        })}
       </Form>
     );
   }
