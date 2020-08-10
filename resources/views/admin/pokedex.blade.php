@@ -25,6 +25,7 @@
       "tags": []
     }
   </script>
+  @include('partials/environment')
 </head>
 <body>
 <div id="react-root" class="react-root"></div>

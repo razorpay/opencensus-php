@@ -13,6 +13,7 @@
     var org = {!! json_encode($org) !!};
     var user = {!! json_encode($user) !!};
   </script>
+  @include('partials/environment')
 </head>
 <body>
 <div id="react-root" class="react-root"></div>
