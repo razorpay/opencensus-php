@@ -65,7 +65,7 @@ class BeamJob extends Job
     /**
      * @var int time (in seconds) after which the job is killed.
      */
-    public $timeout = 300;
+    public $timeout = 600;
 
     /**
      * BeamJob constructor.
