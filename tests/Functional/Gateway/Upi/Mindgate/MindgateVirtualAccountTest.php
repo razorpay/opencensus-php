@@ -537,7 +537,7 @@ class MindgateVirtualAccountTest extends TestCase
             ], $qrCode->source->toArray());
     }
 
-    public function testClosedOnCallback()
+    public function testCloseByOnCallback()
     {
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
@@ -550,6 +550,107 @@ class MindgateVirtualAccountTest extends TestCase
         $this->va = $this->getDbLastEntity('virtual_account');
 
         $this->va->setAttribute(Entity::CLOSE_BY, (time() - 1));
+        $this->va->saveOrFail();
+
+        $content = $this->getMockServer()->getAsyncCallbackContent(
+            [
+                // Any random string, why not va id
+                'gateway_payment_id'    => $this->va->getId(),
+                'payment_id'            => $this->va->qrCode->getId(),
+            ],
+            [
+                // This is customer VPA
+                'vpa'                   => 'random@upi',
+                'amount'                => $this->va->getAmountExpected(),
+            ]);
+
+        $content['pgMerchantId'] = $this->terminal->getGatewayMerchantId();
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $this->assertTrue($response['success']);
+
+        $qrCode = $this->getDbLastEntity('qr_code');
+        $this->assertNull($qrCode->getAmount());
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset(
+            [
+                Payment\Entity::MERCHANT_ID         => Merchant\Account::TEST_ACCOUNT,
+                Payment\Entity::AMOUNT              => 12388,
+                Payment\Entity::METHOD              => Payment\Method::UPI,
+                Payment\Entity::STATUS              => Payment\Status::AUTHORIZED,
+                Payment\Entity::RECEIVER_ID         => $qrCode->getId(),
+                Payment\Entity::RECEIVER_TYPE       => Receiver::QR_CODE,
+                Payment\Entity::AMOUNT_AUTHORIZED   => 12388,
+                Payment\Entity::VPA                 => 'random@upi',
+                Payment\Entity::EMAIL               => 'void@razorpay.com',
+                Payment\Entity::CONTACT             => '+919999999999',
+                Payment\Entity::GATEWAY             => Payment\Gateway::UPI_MINDGATE,
+                Payment\Entity::TERMINAL_ID         => $this->terminal->getId(),
+                Payment\Entity::GATEWAY_CAPTURED    => true,
+                Payment\Entity::LATE_AUTHORIZED     => false,
+            ],
+            $payment->toArray());
+
+        $upi = $this->getDbLastEntity(Payment\Method::UPI);
+
+        $this->assertArraySubset(
+            [
+                UpiEntity::GATEWAY                  => Payment\Gateway::UPI_MINDGATE,
+                UpiEntity::PAYMENT_ID               => $payment->getId(),
+                UpiEntity::ACTION                   => Payment\Action::AUTHORIZE,
+                UpiEntity::TYPE                     => 'pay',
+                UpiEntity::AMOUNT                   => 12388,
+                UpiEntity::ACQUIRER                 => 'hdfc',
+                UpiEntity::BANK                     => 'NPCI',
+                UpiEntity::PROVIDER                 => 'upi',
+                UpiEntity::VPA                      => 'random@upi',
+                UpiEntity::ACCOUNT_NUMBER           => '10000000000',
+                UpiEntity::IFSC                     => 'PNBI1111111',
+                UpiEntity::RECEIVED                 => 1,
+                UpiEntity::MERCHANT_REFERENCE       => $this->va->qrCode->getId(),
+                UpiEntity::NPCI_REFERENCE_ID        => '910000123456',
+            ],
+            $upi->toArray());
+
+        $this->va->refresh();
+
+        $this->assertArraySubset(
+            [
+                Entity::AMOUNT_EXPECTED => 12388,
+                Entity::AMOUNT_RECEIVED => 0,
+                Entity::AMOUNT_PAID     => 0,
+            ],
+            $this->va->toArray());
+
+        $this->assertArraySubset(
+            [
+                Entity::ID              => 'ShrdVirtualAcc',
+                Entity::MERCHANT_ID     => Merchant\Account::TEST_ACCOUNT,
+                Entity::AMOUNT_EXPECTED => null,
+                Entity::AMOUNT_RECEIVED => 12388,
+                Entity::AMOUNT_PAID     => 12388,
+            ], $qrCode->source->toArray());
+    }
+
+    public function testClosedOnCallback()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        // For VPA type receiver as the shared sharp terminal is not seeded
+        $this->fixtures->create('terminal:vpa_shared_terminal');
+        $this->fixtures->create('terminal:shared_bank_account_terminal');
+
+        $response = $this->createVirtualAccount($this->input);
+
+        $this->va = $this->getDbLastEntity('virtual_account');
+
+        // Here we are marking VA closed
+        $this->va->setStatus('closed');
+        $this->va->setClosedAt(time() - 1);
+
         $this->va->saveOrFail();
 
         $content = $this->getMockServer()->getAsyncCallbackContent(

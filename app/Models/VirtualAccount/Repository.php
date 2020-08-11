@@ -74,6 +74,13 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getVirtualAccountFromQrCodeId(string $qrCodeId)
+    {
+        return $this->newQuery()
+            ->where(Entity::QR_CODE_ID, '=', $qrCodeId)
+            ->first();
+    }
+
     public function findByPublicIdAndMerchantWithRelations(string $id, Merchant $merchant, array $relations = [])
     {
         Entity::verifyIdAndStripSign($id);

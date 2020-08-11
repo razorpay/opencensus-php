@@ -460,6 +460,11 @@ class Entity extends Base\PublicEntity
         return $this->$func();
     }
 
+    public function isActive(): bool
+    {
+        return $this->getStatus() === Status::ACTIVE;
+    }
+
     public function isClosed()
     {
         return $this->getStatus() === Status::CLOSED;

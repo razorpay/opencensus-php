@@ -12,6 +12,7 @@ use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
 use RZP\Models\VirtualAccount;
+use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\GatewayErrorException;
 
@@ -161,7 +162,17 @@ class Processor extends VirtualAccount\Processor
 
         $virtualAccount = $this->repo
                                ->virtual_account
-                               ->getActiveVirtualAccountFromQrCodeId($qrCode->getId());
+                               ->getVirtualAccountFromQrCodeId($qrCode->getId());
+
+        if (($virtualAccount instanceof VirtualAccount\Entity) === false)
+        {
+            throw new LogicException(
+                'Virtual account can never be empty when qr_code exists',
+                null,
+                [
+                    'qr_code_id'    => $qrCode->getId(),
+                ]);
+        }
 
         return $virtualAccount;
     }
@@ -170,6 +181,14 @@ class Processor extends VirtualAccount\Processor
     {
         // The this is a pending is pending at gateway, we will create on shared VA
         if ($this->isPaymentPendingAtGateway === true)
+        {
+            return true;
+        }
+
+        // Only for active VA we need to create payment on live merchant,
+        // paid and closed VA will not get any more payments and this payment will be
+        // diverted to Shared VA
+        if ($this->virtualAccount->isActive() === false)
         {
             return true;
         }
