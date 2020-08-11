@@ -250,6 +250,7 @@ class Table
     const P2P_BANK              = 'p2p_banks';
     const P2P_HANDLE            = 'p2p_handles';
     const P2P_DEVICE            = 'p2p_devices';
+    const P2P_CLIENT            = 'p2p_clients';
     const P2P_CONCERN           = 'p2p_concerns';
     const P2P_TRANSACTION       = 'p2p_transactions';
     const P2P_DEVICE_TOKEN      = 'p2p_device_tokens';

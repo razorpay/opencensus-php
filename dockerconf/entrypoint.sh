@@ -71,6 +71,8 @@ run_migration_job(){
     php artisan migrate --database=live_migration --force && php artisan migrate --database=test_migration --force
     php artisan migrate --database=payments_upi_live --path=database/migrations/payments_upi --force
     php artisan migrate --database=payments_upi_test --path=database/migrations/payments_upi --force
+    php artisan migrate --database=live_migration --path=database/migrations/p2p --force
+    php artisan migrate --database=test_migration --path=database/migrations/p2p --force
 }
 
 start_apache(){

@@ -5,11 +5,10 @@ namespace RZP\Models\P2p\Vpa\Handle;
 use RZP\Base\BuilderEx;
 use RZP\Models\P2p\Base;
 use RZP\Models\Merchant;
+use RZP\Models\P2p\Client;
 
 class Entity extends Base\Entity
 {
-    use Base\Traits\HasMerchant;
-
     const CODE         = 'code';
     const MERCHANT_ID  = 'merchant_id';
     const BANK         = 'bank';
@@ -26,6 +25,12 @@ class Entity extends Base\Entity
     protected $primaryKey         = self::CODE;
     protected $generateIdOnCreate = false;
     protected static $generators  = [];
+
+    /**
+     * Will be forced attached with setClient,
+     * The default will be null as it is not set.
+     */
+    protected $client             = null;
 
     protected $dates = [
         Entity::CREATED_AT,
@@ -190,8 +195,39 @@ class Entity extends Base\Entity
         return in_array($this->getMerchantId(), [$merchantId, Merchant\Account::SHARED_ACCOUNT], true);
     }
 
-    public function scopeMerchant(BuilderEx $query, Merchant\Entity $merchant)
+    /******************* Relations **************/
+
+    public function clients()
     {
-        return $query->whereIn(self::MERCHANT_ID, [$merchant->getId(), Merchant\Account::SHARED_ACCOUNT]);
+        return $this->hasMany(Client\Entity::class, Client\Entity::HANDLE);
+    }
+
+    /**
+     * @param Client\Entity $client
+     */
+    public function setClient(Client\Entity $client)
+    {
+        $this->client = $client;
+    }
+
+    /**
+     * @return Client\Entity
+     */
+    public function getClient()
+    {
+        return $this->client;
+    }
+
+    /**
+     * @param $clientId
+     */
+    public function merchant(string $clientId)
+    {
+        return $this->clients()->where(
+            [
+               Client\Entity::HANDLE        => $this->getCode(),
+               Client\Entity::CLIENT_TYPE   => Client\Type::MERCHANT,
+               Client\Entity::CLIENT_ID     => $clientId
+            ]);
     }
 }
