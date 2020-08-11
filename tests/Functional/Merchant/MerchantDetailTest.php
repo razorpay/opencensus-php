@@ -757,7 +757,9 @@ class MerchantDetailTest extends OAuthTestCase
             'org_id'         => '100000razorpay',
         ]);
 
-        $this->fixtures->merchant->edit('10000000000000', [
+        $merchant = $this->fixtures->merchant->edit('10000000000000', [
+            'name'             => ' Kill Bill Pandey ',
+            'billing_label'    => ' AB',
             'pricing_plan_id'  => $pricingPlanId['id'],
             'activated'        => false,
             'business_banking' => true,
@@ -787,7 +789,8 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->startTest();
 
-        $bankAccount = DB::table('bank_accounts')->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+        $bankAccount = DB::table('bank_accounts')
+                         ->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
                          ->where('type', '=', 'virtual_account')
                          ->get();
 
@@ -799,7 +802,10 @@ class MerchantDetailTest extends OAuthTestCase
 
         $bankAccountId = $bankAccount[0]->id;
 
-        $virtualAccount = DB::table('virtual_accounts')->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+        $this->assertEquals(trim($merchant->name), $bankAccount[0]->beneficiary_name);
+
+        $virtualAccount = DB::table('virtual_accounts')
+                            ->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
                             ->where('id', '=', $entityId)
                             ->where('bank_account_id', '=', $bankAccountId)
                             ->get();
@@ -808,9 +814,12 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->assertTrue(count($virtualAccount) === 1);
 
+        $this->assertEquals(trim($merchant->name), $virtualAccount[0]->name);
+
         $balanceId = $virtualAccount[0]->balance_id;
 
-        $balance = DB::table('balance')->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+        $balance = DB::table('balance')
+                     ->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
                      ->where('type', '=', 'banking')
                      ->where('account_type', '=', 'shared')
                      ->where('id', '=', $balanceId)
@@ -822,7 +831,8 @@ class MerchantDetailTest extends OAuthTestCase
 
         $accountNumber = $balance[0]->account_number;
 
-        $bankingAccount = DB::table('banking_accounts')->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+        $bankingAccount = DB::table('banking_accounts')
+                            ->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
                             ->where('account_type', '=', 'nodal')
                             ->where('account_number', '=', $accountNumber)
                             ->where('balance_id', '=', $balanceId)
@@ -831,6 +841,8 @@ class MerchantDetailTest extends OAuthTestCase
         $this->assertNotNull($bankingAccount);
 
         $this->assertTrue(count($bankingAccount) === 1);
+
+        $this->assertEquals(trim($merchant->name), $bankingAccount[0]->beneficiary_name);
 
         $bankAccountLiveMode = $this->getDbEntity('bank_account',
                                                   [
@@ -864,6 +876,108 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->assertNull($bankingAccountLiveMode);
 
+    }
+
+    public function testBeneficiaryNameInVirtualBankingAccounts()
+    {
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $pricingPlanId = $this->fixtures->create('pricing', [
+            'product'        => 'banking',
+            'id'             => '1zE31zbybacac1',
+            'plan_id'        => '1hDYlICobzOCYt',
+            'plan_name'      => 'testDefaultPlan',
+            'feature'        => 'fund_account_validation',
+            'payment_method' => 'bank_account',
+            'percent_rate'   => 900,
+            'org_id'         => '100000razorpay',
+        ]);
+
+        $merchant = $this->fixtures->merchant->edit('10000000000000', [
+            'billing_label'    => ' A C ',
+            'pricing_plan_id'  => $pricingPlanId['id'],
+            'activated'        => false,
+            'business_banking' => true,
+            'international'    => 0,
+            'category2'        => null
+        ]);
+
+        $this->verifyOnboardingEvent('banking');
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            Entity::BUSINESS_TYPE => '1',
+            'merchant_id'         => '10000000000000',
+        ]);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchantDetail[MerchantDetails::MERCHANT_ID], [], 'owner', 'live');
+
+        $this->fixtures->user->createUserMerchantMapping([
+                                                             'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                                                             'user_id'     => $user['id'],
+                                                             'product'     => 'banking',
+                                                             'role'        => 'owner',
+                                                         ], 'live');
+
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
+
+        $this->startTest();
+
+        $bankAccount = DB::table('bank_accounts')
+                         ->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+                         ->where('type', '=', 'virtual_account')
+                         ->get();
+
+        $this->assertNotNull($bankAccount);
+
+        $this->assertTrue(count($bankAccount) === 1);
+
+        $entityId = $bankAccount[0]->entity_id;
+
+        $bankAccountId = $bankAccount[0]->id;
+
+        $this->assertEquals(trim($merchant->billing_label), $bankAccount[0]->beneficiary_name);
+
+        $virtualAccount = DB::table('virtual_accounts')
+                            ->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+                            ->where('id', '=', $entityId)
+                            ->where('bank_account_id', '=', $bankAccountId)
+                            ->get();
+
+        $this->assertNotNull($virtualAccount);
+
+        $this->assertTrue(count($virtualAccount) === 1);
+
+        $this->assertEquals(trim($merchant->billing_label), $virtualAccount[0]->name);
+
+        $balanceId = $virtualAccount[0]->balance_id;
+
+        $balance = DB::table('balance')
+                     ->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+                     ->where('type', '=', 'banking')
+                     ->where('account_type', '=', 'shared')
+                     ->where('id', '=', $balanceId)
+                     ->get();
+
+        $this->assertNotNull($balance);
+
+        $this->assertTrue(count($balance) === 1);
+
+        $accountNumber = $balance[0]->account_number;
+
+        $bankingAccount = DB::table('banking_accounts')
+                            ->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+                            ->where('account_type', '=', 'nodal')
+                            ->where('account_number', '=', $accountNumber)
+                            ->where('balance_id', '=', $balanceId)
+                            ->get();
+
+        $this->assertNotNull($bankingAccount);
+
+        $this->assertTrue(count($bankingAccount) === 1);
+
+        $this->assertEquals(trim($merchant->billing_label), $bankingAccount[0]->beneficiary_name);
     }
 
     public function testVaNotCreatedForBusinessBankingDisabledInTestModePreSignup()
@@ -911,25 +1025,29 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->startTest();
 
-        $bankAccount = DB::table('bank_accounts')->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+        $bankAccount = DB::table('bank_accounts')
+                         ->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
                          ->where('type', '=', 'virtual_account')
                          ->get();
 
         $this->assertTrue(count($bankAccount) === 0);
 
-        $virtualAccount = DB::table('virtual_accounts')->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+        $virtualAccount = DB::table('virtual_accounts')
+                            ->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
                             ->get();
 
         $this->assertTrue(count($virtualAccount) === 0);
 
-        $balance = DB::table('balance')->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+        $balance = DB::table('balance')
+                     ->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
                      ->where('type', '=', 'banking')
                      ->where('account_type', '=', 'shared')
                      ->get();
 
         $this->assertTrue(count($balance) === 0);
 
-        $bankingAccount = DB::table('banking_accounts')->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+        $bankingAccount = DB::table('banking_accounts')
+                            ->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
                             ->where('account_type', '=', 'nodal')
                             ->get();
 
@@ -1016,25 +1134,29 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->startTest();
 
-        $bankAccount = DB::table('bank_accounts')->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+        $bankAccount = DB::table('bank_accounts')
+                         ->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
                          ->where('type', '=', 'virtual_account')
                          ->get();
 
         $this->assertTrue(count($bankAccount) === 0);
 
-        $virtualAccount = DB::table('virtual_accounts')->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+        $virtualAccount = DB::table('virtual_accounts')
+                            ->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
                             ->get();
 
         $this->assertTrue(count($virtualAccount) === 0);
 
-        $balance = DB::table('balance')->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+        $balance = DB::table('balance')
+                     ->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
                      ->where('type', '=', 'banking')
                      ->where('account_type', '=', 'shared')
                      ->get();
 
         $this->assertTrue(count($balance) === 0);
 
-        $bankingAccount = DB::table('banking_accounts')->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+        $bankingAccount = DB::table('banking_accounts')
+                            ->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
                             ->where('account_type', '=', 'nodal')
                             ->get();
 

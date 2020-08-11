@@ -795,6 +795,28 @@ return [
             'content' => [
                 'business_type'      => '1',
                 'transaction_volume' => '1',
+                'contact_name'       => ' Kill Bill Pandey ',
+                'contact_mobile'     => '9087654321',
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'business_type'      => '1',
+                'transaction_volume' => '1',
+                'contact_name'       => ' Kill Bill Pandey ',
+                'contact_mobile'     => '9087654321',
+                'role'               => null,
+            ],
+        ],
+    ],
+
+    'testBeneficiaryNameInVirtualBankingAccounts' => [
+        'request'  => [
+            'content' => [
+                'business_type'      => '1',
+                'transaction_volume' => '1',
                 'contact_name'       => 'Razorpay',
                 'contact_mobile'     => '9087654321',
             ],

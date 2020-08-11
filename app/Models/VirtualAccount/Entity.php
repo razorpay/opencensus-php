@@ -192,13 +192,27 @@ class Entity extends Base\PublicEntity
 
     public function modifyName(& $input)
     {
-        if (isset($input[self::NAME]) === false)
+        $priorityOrderHighToLow = [
+            $input[self::NAME] ?? null,
+            $this->merchant->getBillingLabel(),
+            $this->merchant->getName(),
+        ];
+
+        //merchant name is the contact name provided during presignup process. FE has a validation(special characters, spaces).
+        //So it'll have four characters for sure.
+        foreach ($priorityOrderHighToLow as $value)
         {
-            $label = $this->merchant->getBillingLabel();
+            if (empty($value) === false)
+            {
+                $sanitizedValue = trim(substr(preg_replace('/[^a-zA-Z0-9 ]+/', '', $value), 0, 39));
 
-            $label = substr(preg_replace('/[^a-zA-Z0-9 ]+/', '', $label), 0, 39);
+                if (strlen($sanitizedValue) > 2)
+                {
+                    $input[self::NAME] = $sanitizedValue;
 
-            $input[self::NAME] = $label;
+                    break;
+                }
+            }
         }
     }
 
