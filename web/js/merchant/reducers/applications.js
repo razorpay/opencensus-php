@@ -26,8 +26,11 @@ const _makeWebhookPayload = (data, appId) => {
     url: data.url,
     secret: data.secret,
     events: {},
-    application_id: appId,
   };
+
+  if(appId){
+    payload.application_id = appId;
+  }
 
   for (let k in data.events) {
     if (data.events.hasOwnProperty(k)) {
@@ -40,7 +43,7 @@ const _makeWebhookPayload = (data, appId) => {
 
 // mode is explicitly sent by partner->settings->webhook
 export const createAppWebhook = ({ appId, data, mode }) => {
-  let payload = _makeWebhookPayload(data, appId);
+  let payload = _makeWebhookPayload(data);
 
   return merchantFetch({
     url: `oauth/applications/${appId}/webhooks`,
