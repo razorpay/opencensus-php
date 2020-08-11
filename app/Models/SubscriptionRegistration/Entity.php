@@ -9,6 +9,7 @@ use RZP\Models\Invoice;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\PaperMandate;
+use RZP\Models\Payment\AuthType;
 use RZP\Models\Base\Traits\NotesTrait;
 
 /**
@@ -360,6 +361,20 @@ class Entity extends Base\PublicEntity
             if ($subscriptionRegistration->getMethod() === Method::NACH)
             {
                 $maxAmount = PaperMandate\Entity::DEFAULT_AMOUNT;
+            }
+
+            $authType = $this->getAuthType();
+
+            if (($authType === AuthType::DEBITCARD) or
+                ($authType === AuthType::NETBANKING))
+            {
+                $maxAmount = Customer\Token\Entity::DEFAULT_EMANDATE_MAX_AMOUNT;
+            }
+
+            if (($authType === AuthType::AADHAAR) or
+                ($authType === AuthType::AADHAAR_FP))
+            {
+                $maxAmount = Customer\Token\Entity::DEFAULT_AADHAAR_EMANDATE_MAX_AMOUNT;
             }
 
             $subscriptionRegistration->setMaxAmount($maxAmount);

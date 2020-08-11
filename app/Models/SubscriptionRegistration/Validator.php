@@ -17,8 +17,6 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
-    const EMANDATE_MAX_AMOUNT_LIMIT = 9999900;
-
     const UPIMANDATE_AMOUNT_MIN_LIMIT = 100;
 
     const UPIMANDATE_AMOUNT_MAX_LIMIT = 200000;
@@ -106,7 +104,7 @@ class Validator extends Base\Validator
 
         if ($maxAmount !== null)
         {
-            $maxAmountLimit = self::EMANDATE_MAX_AMOUNT_LIMIT;
+            $maxAmountLimit = Token\Entity::DEFAULT_EMANDATE_MAX_AMOUNT;
 
             $authType = $input[Entity::AUTH_TYPE] ?? null;
             $method = $input[Entity::METHOD] ?? null;
@@ -120,6 +118,12 @@ class Validator extends Base\Validator
             if ($method === Payment\Method::UPI)
             {
                 $maxAmountLimit = self::UPIMANDATE_AMOUNT_MAX_LIMIT;
+            }
+
+            if (($authType === Payment\AuthType::AADHAAR) or
+                ($authType === Payment\AuthType::AADHAAR_FP))
+            {
+                $maxAmountLimit = Token\Entity::DEFAULT_AADHAAR_EMANDATE_MAX_AMOUNT;
             }
 
             if ($maxAmount > $maxAmountLimit)

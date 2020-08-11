@@ -341,9 +341,22 @@ class Validator extends Base\Validator
             return;
         }
 
+        if (isset($input[Entity::AUTH_TYPE]) === false)
+        {
+            return;
+        }
+
         $tokenMaxAmount = $input[Entity::RECURRING_TOKEN][Entity::MAX_AMOUNT];
 
-        if ($tokenMaxAmount > Token\Entity::DEFAULT_MAX_AMOUNT)
+        $defaultMaxAmount = Token\Entity::DEFAULT_EMANDATE_MAX_AMOUNT;
+
+        if (($input[Entity::AUTH_TYPE] === AuthType::AADHAAR_FP) or
+            ($input[Entity::AUTH_TYPE] === AuthType::AADHAAR))
+        {
+            $defaultMaxAmount = Token\Entity::DEFAULT_AADHAAR_EMANDATE_MAX_AMOUNT;
+        }
+
+        if ($tokenMaxAmount > $defaultMaxAmount)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'token_max_amount exceeds maximum amount allowed.',

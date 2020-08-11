@@ -91,7 +91,7 @@ trait EmandateTrait
             ResponseFields::BANK_REF_NO     => 9999999999,
             ResponseFields::CURRENCY        => Currency::INR,
             // Amount needs to be set according to whether it's initial recurring payment or auto
-            ResponseFields::AMOUNT          => (string) Token\Entity::DEFAULT_MAX_AMOUNT / 100,
+            ResponseFields::AMOUNT          => (string) Token\Entity::DEFAULT_EMANDATE_MAX_AMOUNT / 100,
             ResponseFields::STATUS_CODE     => StatusCode::SUCCESS,
             ResponseFields::REMARKS         => 'Success',
             ResponseFields::TRANS_REF_NO    => 101714472,
