@@ -215,4 +215,56 @@ return [
             ],
         ],
     ],
+
+    'testMpanTokenizeExistingMpans' => [
+        'request' => [
+            'url'     => '/mpans/tokenize',
+            'method'  => 'POST',
+            'content' => [
+                'count' =>  3,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'tokenization_success_count'=>  3,
+                'tokenization_failed_count' =>  0,
+            ]
+        ]
+    ],
+
+    'testMpanTokenizeExistingMpansInputValidationFailure' => [
+        'request' => [
+            'url'     => '/mpans/tokenize',
+            'method'  => 'POST',
+            'content' => [
+                'count' =>  -3,
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testMpanTokenizeExistingMpansOneCardVaultRequestFails' => [
+        'request' => [
+            'url'     => '/mpans/tokenize',
+            'method'  => 'POST',
+            'content' => [
+                'count' =>  3,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'tokenization_success_count'=>  2,
+                'tokenization_failed_count' =>  1,
+            ]
+        ]
+    ],
 ];

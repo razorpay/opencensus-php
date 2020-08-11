@@ -5,8 +5,10 @@ namespace RZP\Models\Mpan;
 
 use Throwable;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Exception\BaseException;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Batch\Processor\Mpan;
 use RZP\Models\Batch\Processor\AESCrypto;
 
@@ -130,6 +132,59 @@ class Service extends Base\Service
         }
 
         return $result;
+    }
+
+    public function tokenizeExistingMpans($input)
+    {
+        $this->trace->info(
+            TraceCode::TOKENIZE_EXISTING_MPANS_REQUEST,
+            $input
+        );
+
+        $validator = new Validator();
+
+        $validator->validateInput('tokenize_existing_mpans', $input);
+
+        $response = [
+            Constants::TOKENIZATION_SUCCESS_COUNT => 0,
+            Constants::TOKENIZATION_FAILED_COUNT  => 0,
+        ];
+
+        $count = $input['count'] ?? 100;
+
+        $mpans = $this->repo->mpan->fetchMpansForTokenization($count);
+
+        foreach($mpans as $mpan)
+        {    
+            try 
+            {
+                $tokenizedMpan = $this->app['mpan.cardVault']->tokenize(['secret' => $mpan->getMpan()]);
+
+                $editInput[Entity::MPAN] = $tokenizedMpan;
+    
+                (new Core)->edit($mpan, $editInput);    
+
+                $response[Constants::TOKENIZATION_SUCCESS_COUNT]++;
+            } 
+            catch(\Throwable $ex)
+            {
+                $this->trace->traceException($ex,
+                    Trace::ERROR,
+                    TraceCode::MPAN_TOKENIZATION_FAILED,
+                    [
+                        Entity::MPAN   =>  $mpan->getMaskedMpan()
+                    ]);
+
+                $response[Constants::TOKENIZATION_FAILED_COUNT]++;
+            }     
+        }
+
+        $this->trace->info(
+            TraceCode::TOKENIZE_EXISTING_MPANS_RESPONSE,
+            $response
+        );
+
+        return $response;
     }
 
     protected function maskOutputRow(array & $row)

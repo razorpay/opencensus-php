@@ -168,6 +168,18 @@ class ApiServiceProvider extends BaseServiceProvider
             return new CardVault($app);
         });
 
+        $this->app->singleton('mpan.cardVault', function($app)
+        {
+            $cardVaultMock = $app['config']->get('applications.card_vault.mock');
+
+            if ($cardVaultMock === true)
+            {
+                return new Mock\CardVault($app);
+            }
+
+            return new CardVault($app, 'mpan');
+        });
+
         $this->app->singleton('cps', function($app)
         {
             $cpsMock = $app['config']->get('applications.cps.mock');

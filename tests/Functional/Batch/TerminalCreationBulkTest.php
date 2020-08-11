@@ -236,7 +236,7 @@ class TerminalCreationBulkTest extends TestCase
 
         $terminal = $this->getLastEntity('terminal', true);
 
-        $this->assertEquals('4343123412341234', $terminal['mc_mpan']);
+        $this->assertEquals(base64_encode('4343123412341234'), $terminal['mc_mpan']); // mpan stored would be tokenized 
 
         $this->assertEquals(substr($terminal['id'],5), $response['items'][0]['terminal_id']);
     }    

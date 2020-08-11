@@ -186,8 +186,8 @@ return [
                 'items'   => [
                     [
                         'entity'  => 'terminal',
-                        'status'  => 'activated',
-                        'enabled' => true,
+                        'status'  => 'pending',
+                        'enabled' => false,
                         'notes'   => null,
                         'mpan' => [
                             'mc_mpan'    => '5220240401208405',

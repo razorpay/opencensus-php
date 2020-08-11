@@ -288,6 +288,9 @@ return [
                 'gateway_acquirer'    => 'ratn',
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
+                'mc_mpan'             => 'MTIzNDU2Nzg4MDEyMzQ1Ng==', // base64_encode('1234567880123456')
+                'visa_mpan'           => 'MTIzNDU2Nzg5MDEyMzQ1Ng==', // base64_encode('1234567890123456')
+                'rupay_mpan'          => 'MTIzNDU2Nzg5MDEyMzQ1Ng==', // base64_encode('1234567890123456')
                 'category'            => '4567',
                 'enabled'             => true
             ]
@@ -628,9 +631,9 @@ return [
                 'gateway_acquirer'    => 'ratn',
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
-                'mc_mpan'             => '1234567880123456',
-                'visa_mpan'           => '1234567890123456',
-                'rupay_mpan'          => '1234567890123456',
+                'mc_mpan'             => 'MTIzNDU2Nzg4MDEyMzQ1Ng==', // base64_encode('1234567880123456')
+                'visa_mpan'           => 'MTIzNDU2Nzg5MDEyMzQ1Ng==', // base64_encode('1234567890123456')
+                'rupay_mpan'          => 'MTIzNDU2Nzg5MDEyMzQ1Ng==', // base64_encode('1234567890123456')
                 'category'            => '4567',
                 'enabled'             => true
             ]
@@ -1842,9 +1845,9 @@ return [
             'content' => [
                 'gateway_merchant_id' => 'random',
                 'gateway_terminal_id' => '12345678',
-                'mc_mpan'             => '1234567880123456',
-                'visa_mpan'           => '1234567890123456',
-                'rupay_mpan'          => '1234567890123456',
+                'mc_mpan'             => 'MTIzNDU2Nzg4MDEyMzQ1Ng==', // base64_encode('1234567880123456')
+                'visa_mpan'           => 'MTIzNDU2Nzg5MDEyMzQ1Ng==', // base64_encode('1234567890123456')
+                'rupay_mpan'          => 'MTIzNDU2Nzg5MDEyMzQ1Ng==', // base64_encode('1234567890123456')
                 'enabled'             => true
             ]
         ]
@@ -3206,5 +3209,157 @@ return [
                 ],
             ]
         ],
-    ]
+    ],
+    'testTokenizeExistingTerminalMpans' => [
+        'request' => [
+            'url'     => '/terminals/mpans/tokenize',
+            'method'  => 'POST',
+            'content' => [
+                'count' =>  5,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'tokenization_success_count' =>  2,
+                'tokenization_failed_count'  =>  0,
+            ],
+        ],
+    ],
+
+    'testTokenizeExistingTerminalMpansWithTerminalIdInInput' => [
+        'request' => [
+            'url'     => '/terminals/mpans/tokenize',
+            'method'  => 'POST',
+            'content' => [
+                'terminal_ids' =>  ['terminalId'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'tokenization_success_count' =>  1,
+                'tokenization_failed_count'  =>  0,
+            ],
+        ],
+    ],
+
+    'testTokenizeExistingMpansSingleMpanShouldAlsoGetTokenized' => [
+        'request' => [
+            'url'     => '/terminals/mpans/tokenize',
+            'method'  => 'POST',
+            'content' => [
+                'count' =>  5,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'tokenization_success_count' =>  1,
+                'tokenization_failed_count'  =>  0,
+            ],
+        ],
+    ],
+
+    'testTokenizeExistingTerminalMpansInputValidationFailure' => [
+        'request' => [
+            'url'     => '/terminals/mpans/tokenize',
+            'method'  => 'POST',
+            'content' => [
+                'count' =>  -3,
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testTokenizeExistingTerminalMpansSameFields' => [
+        'request' => [
+            'url'     => '/terminals/mpans/tokenize',
+            'method'  => 'POST',
+            'content' => [
+                'count' =>  5,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'tokenization_success_count' =>  2,
+                'tokenization_failed_count'  =>  0,
+            ],
+        ],
+    ],
+
+    'testTokenizeExistingTerminalMpansTransaction' => [
+        'request' => [
+            'url'     => '/terminals/mpans/tokenize',
+            'method'  => 'POST',
+            'content' => [
+                'count' =>  5,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'tokenization_success_count' =>  1,
+                'tokenization_failed_count'  =>  1,
+            ],
+        ],
+    ],
+
+    'testCreateTerminalMpansShouldBeTokenized' => [
+        'request' => [
+            'content' => [
+                'gateway' => 'isg',
+                'gateway_merchant_id' => '123452112',
+                'gateway_terminal_id' => '12345679',
+                "type" => [
+                    "non_recurring" => "1",
+                    "bharat_qr" => "1",
+                ],
+                "mc_mpan"       => "5122600116743268",
+                "visa_mpan"     => "4604901116743090",
+                "rupay_mpan"    => "6100020116743712"           
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway' => "isg",
+                'mc_mpan' =>  "NTEyMjYwMDExNjc0MzI2OA==",
+                'visa_mpan' =>  "NDYwNDkwMTExNjc0MzA5MA==",
+                'rupay_mpan' =>  "NjEwMDAyMDExNjc0MzcxMg==",
+            ]
+        ]
+    ],
+
+    'testCreateTerminalMpansTokenizationFailure' => [
+        'request' => [
+            'content' => [
+                'gateway' => 'isg',
+                'gateway_merchant_id' => '123452112',
+                'gateway_terminal_id' => '12345679',
+                "type" => [
+                    "non_recurring" => "1",
+                    "bharat_qr" => "1",
+                ],
+                "mc_mpan"       => "5122600116743268",
+                "visa_mpan"     => "4604901116743090",
+                "rupay_mpan"    => "6100020116743712"           
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\ServerErrorException::class,
+            'internal_error_code' => 'SERVER_ERROR',
+        ],
+    ],
+
 ];

@@ -29,6 +29,8 @@ class Core extends Base\Core
                 'input'         => $this->removeSecretFieldsForTrace($input),
                 'merchant_id'   => $merchant->getId(),
             ]);
+        
+        $this->validateAndTokenizeMpansIfPresentInInput($input);
 
         $input['merchant_id'] = $merchant->getKey();
 
@@ -55,6 +57,8 @@ class Core extends Base\Core
                 'input'         => $this->removeSecretFieldsForTrace($input),
                 'merchant_id'   => $merchant->getId(),
             ]);
+
+        $this->validateAndTokenizeMpansIfPresentInInput($input);
 
         $input[Entity::MERCHANT_ID] = $merchant->getKey();
 
@@ -207,6 +211,8 @@ class Core extends Base\Core
 
     public function edit(Entity $terminal, array $input)
     {
+        $this->validateAndTokenizeMpansIfPresentInInput($input);
+
         if ((isset($input['restore'])) and
             ($input['restore'] === '1'))
         {
@@ -225,7 +231,14 @@ class Core extends Base\Core
 
             $terminal->edit($input);
 
-            $this->validateExistingTerminal($terminal);
+            // we want to skip the validation for tokenizing mpans, this code can be removed after all the terminal mpans are tokenized by cron
+            if ((count($input) !== 3) 
+                or (isset($input[Entity::MC_MPAN]) === false) 
+                or (isset($input[Entity::VISA_MPAN]) === false) 
+                or (isset($input[Entity::RUPAY_MPAN]) === false))
+                {
+                    $this->validateExistingTerminal($terminal);
+                }
 
             $this->validateDirectSettlementMapping($terminal);
 
@@ -649,6 +662,33 @@ class Core extends Base\Core
                 }
             });
 
+        }
+    }
+
+    protected function validateAndTokenizeMpansIfPresentInInput(array &$input)
+    {
+        // copying mpans into below array, so that they can be passed into validateInput separate from other input params
+        $mpanInput = [];
+
+        foreach([Entity::MC_MPAN, Entity::VISA_MPAN, Entity::RUPAY_MPAN] as $network)
+        {
+            if (isset($input[$network]) === true)
+            {
+                $mpanInput[$network] = $input[$network];
+            }
+        }
+
+        (new Validator())->validateInput('mpans_before_tokenization', $mpanInput);
+
+        // tokenization could have be done in the above loop only, but we want to avoid the call to cardvault if the validations were to fail
+        foreach([Entity::MC_MPAN, Entity::VISA_MPAN, Entity::RUPAY_MPAN] as $network)
+        {
+            if (empty($input[$network]) === false)
+            {
+                $tokenizedMpan = $this->app['mpan.cardVault']->tokenize(['secret' => $input[$network]]);
+
+                $input[$network] = $tokenizedMpan;    
+            }
         }
     }
 }

@@ -19,7 +19,7 @@ class CreateMpan extends Migration
     {
         Schema::create(Table::MPAN, function(Blueprint $table)
         {
-            $table->char(Mpan\Entity::MPAN, 16)->primary();
+            $table->string(Mpan\Entity::MPAN)->primary();
 
             $table->string(Mpan\Entity::NETWORK);
 

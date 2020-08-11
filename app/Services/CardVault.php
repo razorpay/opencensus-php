@@ -18,6 +18,7 @@ class CardVault
     const VALUE             = 'value';
     const SECRET            = 'secret';
     const SUCCESS           = 'success';
+    const NAMESPACE         = 'namespace';
     const SCHEME            = 'scheme';
     const TOKENEX_TOKEN     = 'tokenex_token';
     const TOKENEX_TOKENS    = 'tokenex_tokens';
@@ -28,6 +29,10 @@ class CardVault
 
     const REQUEST_TIMEOUT = 20;
     const MAX_RETRY_COUNT = 1;
+
+    // card-vault namespaces
+    const CARD      =   'card';
+    const MPAN      =   'mpan';
 
     protected $baseUrl;
 
@@ -41,7 +46,9 @@ class CardVault
 
     protected $cardNumberToToken = [];
 
-    public function __construct($app)
+    protected $namespace;
+
+    public function __construct($app, $namespace = 'card')
     {
         $this->app = $app;
 
@@ -53,24 +60,50 @@ class CardVault
 
         $this->baseUrl = $this->config['url'];
 
-        $this->key = $this->config['key'];
-
-        $this->secret = $this->config['secret'];
-
         $this->request = $app['request'];
+
+        $this->namespace = $namespace;
+
+        if ($namespace === self::CARD)
+        {            
+            $this->key = $this->config['key'];
+
+            $this->secret = $this->config['secret'];
+        }
+        else
+        {
+            $keyName = $namespace . '_key';
+
+            $secretName = $namespace . '_secret';
+
+            $this->key = $this->config[$keyName];
+            
+            $this->secret = $this->config[$secretName];    
+        }
     }
 
     public function tokenize($input)
     {
         $key  = '';
 
-        if (array_key_exists('card', $input) === true)
+        if ($this->namespace !== self::CARD)
         {
             $payload = [
-                self::SECRET => $input['card'],
+                self::SECRET => $input['secret']
             ];
 
-            $key = $input['card'];
+            $key = $this->namespace. '_' . $input['secret'];
+        }
+        else
+        {
+            if (array_key_exists('card', $input) === true)
+            {
+                $payload = [
+                    self::SECRET => $input['card'],
+                ];
+
+                $key = $input['card'];
+            }
         }
 
         if (array_key_exists(self::SCHEME, $input) === true)
@@ -163,6 +196,12 @@ class CardVault
 
     public function sendRequest($url, $method, $data = null)
     {
+        // new namespaces(other than 'card') requires namespace to be explicitly mentioned in the requestdata
+        if ($this->namespace !== self::CARD)
+        {
+            $data[self::NAMESPACE]  =  $this->namespace;
+        }
+
         // temporary code to debug
         if (($url === 'tokenize') or
             ($url === 'detokenize'))

@@ -1778,6 +1778,9 @@ class Route
         'mpans_issue'                             => ['post',     'mpans/issue',                                               'MpanController@issueMpans'                                ],
         'mpans_fetch'                             => ['get',      'mpans',                                                     'MpanController@fetchMpans'                                ],
         'mpans_bulk'                              => ['post',     'mpans/bulk',                                                'MpanController@postMpansBulk'                             ],
+        'mpans_tokenize_existing'                 => ['post',     'mpans/tokenize',                                            'MpanController@postTokenizeMpans'                         ],
+        'terminal_mpans_tokenize_existing'        => ['post',     'terminals/mpans/tokenize',                                  'TerminalController@postTokenizeMpans'                     ],
+        
         // Core Payment Service Routes
         'cps_sync_gateway_entities_cron'          => ['post',     'cps/sync_gateway_entities',                                 'CpsController@syncGatewayEntities'                        ],
 
@@ -2529,6 +2532,8 @@ class Route
         'tax_payments_payout_cron',
         'tax_payments_enabled_merchant_settings',
         'vendor_payment_ocr_accuracy_cron',
+        'mpans_tokenize_existing',
+        'terminal_mpans_tokenize_existing',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -4882,6 +4887,8 @@ class Route
             'cps_backfill_entities',
             'tax_payments_payout_cron',
             'vendor_payment_ocr_accuracy_cron',
+            'mpans_tokenize_existing',
+            'terminal_mpans_tokenize_existing',
         ],
 
         'subscriptions' => [

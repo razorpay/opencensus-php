@@ -34,9 +34,9 @@ class Validator extends Base\Validator
         {
             $partnerMerchantId = $app['basicauth']->getPartnerMerchantId();
 
-            $mcMpan     = $input[Constants::MPAN][Constants::MASTERCARD];
-            $visaMpan   = $input[Constants::MPAN][Constants::VISA];
-            $rupayMpan  = $input[Constants::MPAN][Constants::RUPAY];
+            $mcMpan     = $app['mpan.cardVault']->tokenize(['secret' => $input[Constants::MPAN][Constants::MASTERCARD]]);
+            $visaMpan   = $app['mpan.cardVault']->tokenize(['secret' => $input[Constants::MPAN][Constants::VISA]]);
+            $rupayMpan  = $app['mpan.cardVault']->tokenize(['secret' => $input[Constants::MPAN][Constants::RUPAY]]);
 
             $issuedMpans = (new MpanRepo())->findByMerchantIdMpans($partnerMerchantId, [$mcMpan, $visaMpan, $rupayMpan]);
 

@@ -198,4 +198,13 @@ class TerminalController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function postTokenizeMpans()
+    {
+        $input = Request::all();
+
+        $cronResponse = $this->service()->tokenizeExistingMpans($input);
+        
+        return ApiResponse::json($cronResponse);
+    }
 }

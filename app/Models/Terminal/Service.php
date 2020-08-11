@@ -17,6 +17,7 @@ use RZP\Exception\BaseException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\TerminalsServiceMigrateJob;
 use RZP\Models\Gateway\Terminal\Constants;
+use RZP\Models\Mpan\Constants as MpanConstants;
 use RZP\Models\Batch\Processor\TerminalCreation;
 
 
@@ -930,6 +931,68 @@ class Service extends Base\Service
                 throw $exception;
             }
         }
+    }
+
+    // existing means those which were already stored without tokenization
+    public function tokenizeExistingMpans($input)
+    { 
+        $this->trace->info(
+            TraceCode::TERMINAL_TOKENIZE_EXISTING_MPANS_REQUEST,
+            $input
+        );
+
+        $validator = new Validator();
+
+        $validator->validateInput('tokenize_existing_mpans', $input);
+
+        $response = [
+            MpanConstants::TOKENIZATION_SUCCESS_COUNT         => 0,
+            MpanConstants::TOKENIZATION_FAILED_COUNT          => 0,
+            MpanConstants::TOKENIZATION_SUCCESS_TERMINAL_IDS  => [],
+            Mpanconstants::TOKENIZATION_FAILED_TERMINAL_IDS   => [],
+        ];
+
+        $count = $input['count'] ?? 100;
+
+        $terminalIds = $input['terminal_ids'] ?? [];
+
+        $terminals = $this->repo->terminal->fetchTerminalsForTokenization($count, $terminalIds);
+
+        foreach($terminals as $terminal)
+        {
+            try
+            {
+                foreach([Entity::MC_MPAN, Entity::VISA_MPAN, Entity::RUPAY_MPAN] as $network)
+                {                    
+                    // adding same mpans as input params, actual tokenization will happen in core edit function       
+                    $editInput[$network] = isset($terminal[$network]) ? $terminal[$network] : '';
+                }
+
+                (new Core)->edit($terminal, $editInput);    
+
+                $response[MpanConstants::TOKENIZATION_SUCCESS_COUNT]++;    
+                $response[MpanConstants::TOKENIZATION_SUCCESS_TERMINAL_IDS][] = $terminal->getId();
+            }
+            catch(\Throwable $ex)
+            {
+                $this->trace->traceException($ex,
+                    Trace::ERROR,
+                    TraceCode::MPAN_TOKENIZATION_FAILED,
+                    [
+                        'terminal_id'   =>  $terminal->getId()
+                    ]);
+
+                $response[MpanConstants::TOKENIZATION_FAILED_COUNT]++;
+                $response[MpanConstants::TOKENIZATION_FAILED_TERMINAL_IDS][] = $terminal->getId();
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::TERMINAL_TOKENIZE_EXISTING_MPANS_RESPONSE,
+            $response
+        );
+
+        return $response;
     }
 
     public function runGetTerminalsForMerchantComparison($terminals, Merchant\Entity $merchant, bool $submerchantFlag)

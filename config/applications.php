@@ -161,10 +161,12 @@ return [
     ],
 
     'card_vault' => [
-        'mock'      => env('CARD_VAULT_MOCK', false),
-        'key'       => env('CARD_VAULT_KEY'),
-        'secret'    => env('CARD_VAULT_SECRET'),
-        'url'       => env('CARD_VAULT_URL'),
+        'mock'          => env('CARD_VAULT_MOCK', false),
+        'key'           => env('CARD_VAULT_KEY'),
+        'secret'        => env('CARD_VAULT_SECRET'),
+        'mpan_key'      => env('CARD_VAULT_MPAN_KEY'),
+        'mpan_secret'   => env('CARD_VAULT_MPAN_SECRET'),
+        'url'           => env('CARD_VAULT_URL'),
     ],
 
     'cps' => [

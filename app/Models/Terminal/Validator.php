@@ -34,9 +34,9 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET2      => 'sometimes',
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
         Entity::GATEWAY_CLIENT_CERTIFICATE  => 'sometimes',
-        Entity::MC_MPAN                     => 'sometimes|string|size:16',
-        Entity::VISA_MPAN                   => 'sometimes|string|size:16',
-        Entity::RUPAY_MPAN                  => 'sometimes|string|size:16',
+        Entity::MC_MPAN                     => 'sometimes|string',
+        Entity::VISA_MPAN                   => 'sometimes|string',
+        Entity::RUPAY_MPAN                  => 'sometimes|string',
         Entity::VPA                         => 'sometimes|string|max:255',
         Entity::CATEGORY                    => 'sometimes|string|numeric|digits:4',
         Entity::CARD                        => 'sometimes|boolean',
@@ -71,6 +71,12 @@ class Validator extends Base\Validator
         Entity::VIRTUAL_UPI_MERCHANT_PREFIX => 'sometimes_if:type.upi_transfer,1|string',
         Entity::ACCOUNT_TYPE                => 'sometimes|string',
         Entity::CRED                        => 'sometimes|string',
+    ];
+
+    protected static $mpansBeforeTokenizationRules = [
+        Entity::MC_MPAN                     => 'sometimes|string|size:16',
+        Entity::VISA_MPAN                   => 'sometimes|string|size:16',
+        Entity::RUPAY_MPAN                  => 'sometimes|string|size:16',
     ];
 
     protected static $editTerminalGateways = [
@@ -227,9 +233,9 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::CURRENCY                   => 'sometimes',
-        Entity::MC_MPAN                    => 'required_if:type.bharat_qr,1|string|size:16',
-        Entity::VISA_MPAN                  => 'required_if:type.bharat_qr,1|string|size:16',
-        Entity::RUPAY_MPAN                 => 'required_if:type.bharat_qr,1|string|size:16',
+        Entity::MC_MPAN                    => 'required_if:type.bharat_qr,1|string',
+        Entity::VISA_MPAN                  => 'required_if:type.bharat_qr,1|string',
+        Entity::RUPAY_MPAN                 => 'required_if:type.bharat_qr,1|string',
         Entity::EXPECTED                   => 'sometimes_if:type.bharat_qr,1|boolean',
         Entity::ACCOUNT_NUMBER             => 'sometimes_if:type.bharat_qr,1|string|max:50',
         Entity::IFSC_CODE                  => 'sometimes_if:type.bharat_qr,1|string|size:11'
@@ -253,9 +259,9 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'required|array',
         Entity::TYPE . '.bharat_qr'        => 'sometimes|in:1',
         Entity::TYPE . '.non_recurring'    => 'required|in:1',
-        Entity::MC_MPAN                    => 'sometimes_if:type.bharat_qr,1|string|size:16',
-        Entity::VISA_MPAN                  => 'sometimes_if:type.bharat_qr,1|string|size:16',
-        Entity::RUPAY_MPAN                 => 'sometimes_if:type.bharat_qr,1|string|size:16',
+        Entity::MC_MPAN                    => 'sometimes_if:type.bharat_qr,1|string',
+        Entity::VISA_MPAN                  => 'sometimes_if:type.bharat_qr,1|string',
+        Entity::RUPAY_MPAN                 => 'sometimes_if:type.bharat_qr,1|string',
         Entity::EXPECTED                   => 'sometimes|boolean',
         Entity::ACCOUNT_NUMBER             => 'sometimes_if:type.bharat_qr,1|string|max:50',
         Entity::IFSC_CODE                  => 'sometimes_if:type.bharat_qr,1|string|size:11',
@@ -378,10 +384,10 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID        => 'somtimes|string|size:8',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TYPE . '.bharat_qr'        => 'sometimes|in:1',
-        Entity::TYPE . '.non_recurring'    => 'required|in:1',
-        Entity::MC_MPAN                    => 'sometimes_if:type.bharat_qr,1|string|size:16',
-        Entity::VISA_MPAN                  => 'sometimes_if:type.bharat_qr,1|string|size:16',
-        Entity::RUPAY_MPAN                 => 'sometimes_if:type.bharat_qr,1|string|size:16',
+        Entity::TYPE . '.non_recurring'    => 'sometimes|in:1',
+        Entity::MC_MPAN                    => 'sometimes|string',
+        Entity::VISA_MPAN                  => 'sometimes|string',
+        Entity::RUPAY_MPAN                 => 'sometimes|string',
         Entity::EXPECTED                   => 'sometimes|boolean',
         Entity::ACCOUNT_NUMBER             => 'sometimes_if:type.bharat_qr,1|string|max:50',
         Entity::IFSC_CODE                  => 'sometimes_if:type.bharat_qr,1|string|size:11',
@@ -437,9 +443,9 @@ class Validator extends Base\Validator
         Entity::EXPECTED                   => 'sometimes|boolean',
         Entity::GATEWAY_ACQUIRER           => 'sometimes|in:ratn',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
-        Entity::MC_MPAN                    => 'sometimes|string|size:16',
-        Entity::VISA_MPAN                  => 'sometimes|string|size:16',
-        Entity::RUPAY_MPAN                 => 'sometimes|string|size:16',
+        Entity::MC_MPAN                    => 'sometimes|string',
+        Entity::VISA_MPAN                  => 'sometimes|string',
+        Entity::RUPAY_MPAN                 => 'sometimes|string',
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
         Entity::IFSC_CODE                  => 'sometimes|string|size:11',
         Entity::STATUS                     => 'sometimes|string|in:deactivated,activated',
@@ -1372,6 +1378,11 @@ class Validator extends Base\Validator
         Entity::VISA_MPAN,
         Entity::RUPAY_MPAN,
         Entity::ACCOUNT_TYPE,
+    ];
+
+    protected static $tokenizeExistingMpansRules = [
+        'count'         => 'sometimes|numeric|min:1|max:500',  
+        'terminal_ids'  => 'sometimes|array',
     ];
 
     public function validateType()

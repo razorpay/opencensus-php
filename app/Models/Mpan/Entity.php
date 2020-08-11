@@ -3,6 +3,7 @@
 
 namespace RZP\Models\Mpan;
 
+use App;
 use RZP\Models\Base;
 use RZP\Constants;
 class Entity extends Base\PublicEntity
@@ -62,6 +63,12 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
+    // Since, mpan column is also primary_key of the table, we don't want it to be verified as RZP unique id
+    public static function verifyUniqueId($id, $throw = true)
+    {
+        return false;
+    }
+
     public function getMpan()
     {
         return $this->getAttribute(self::MPAN);
@@ -82,8 +89,14 @@ class Entity extends Base\PublicEntity
         return $this->getAssigned() === true;
     }
     
-    public function getMaskedMpan(string $mpan)
+    public function getMaskedMpan(string $mpan = "")
     {
+        // adding below condition so that this function can be called as a method on mpan object as well
+        if ($mpan === "")
+        {
+            $mpan = $this->getMpan();
+        }
+
         // if mpan is not 16 digit, it means its invalid and we can return as is
         if ( (empty($mpan) === true) 
             or (strlen($mpan) !== 16) )
@@ -98,6 +111,15 @@ class Entity extends Base\PublicEntity
 
     public function setPublicMpanAttribute(array &$array)
     {
+        $app = App::getFacadeRoot();
+
+        $cardVaultApp = $app['mpan.cardVault'];
+
+        // if mpan length is not 16, it means it is tokenized and needs to be detokenized
+        if (empty($array[self::MPAN] === false) and (strlen($array[self::MPAN]) !== 16))
+        {
+            $array[self::MPAN] = $cardVaultApp->detokenize($array[self::MPAN]);
+        }
 
     }
 
@@ -115,4 +137,15 @@ class Entity extends Base\PublicEntity
     {
 
     }
+
+    /**
+     * This is being overridden because, we store mpans in db in tokenized form
+     * and merchants(e.g. some aggregators) who are able to access mpans should be able to see mpans in original form
+     * @return array
+     */
+    public function toArrayPublic()
+    {
+        return  parent::toArrayPublic();
+    }
+
 }

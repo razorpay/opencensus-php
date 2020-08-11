@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Terminal;
 
+use App;
 use Crypt;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
@@ -767,10 +768,33 @@ class Entity extends Base\PublicEntity
 
     protected function setPublicMpanAttribute(array & $array)
     {
+        $app = App::getFacadeRoot();
+
+        $cardVaultApp = $app['mpan.cardVault'];
+
+        $mcMpan =  $this->getMCMpan();
+        $rupayMpan =  $this->getRupayMpan();
+        $visaMpan =  $this->getVisaMpan();
+
+        if ((empty($mcMpan) === false) and (strlen($mcMpan) !== 16))
+        {
+            $mcMpan = $cardVaultApp->detokenize($mcMpan);
+        }
+
+        if ((empty($rupayMpan) === false) and (strlen($rupayMpan) !== 16))
+        {
+            $rupayMpan = $cardVaultApp->detokenize($rupayMpan);
+        }
+
+        if ((empty($visaMpan) === false) and (strlen($visaMpan) !== 16))
+        {
+            $visaMpan = $cardVaultApp->detokenize($visaMpan);
+        }
+
         $array[self::MPAN] = [
-            self::MC_MPAN    => $this->getMCMpan(),
-            self::RUPAY_MPAN => $this->getRupayMpan(),
-            self::VISA_MPAN  => $this->getVisaMpan(),
+            self::MC_MPAN    => $mcMpan,
+            self::RUPAY_MPAN => $rupayMpan,
+            self::VISA_MPAN  => $visaMpan,
         ];
 
         return $array;

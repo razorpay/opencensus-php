@@ -5886,6 +5886,14 @@ ALTER TABLE payments
 ALTER TABLE merchants
 ADD COLUMN signup_source VARCHAR(32);
 
+ALTER TABLE mpan 
+    MODIFY COLUMN mpan varchar(50) COLLATE utf8_bin NOT NULL;
+
+ALTER TABLE terminals
+    MODIFY COLUMN mc_mpan varchar(50) COLLATE utf8_bin DEFAULT NULL,
+    MODIFY COLUMN visa_mpan varchar(50) COLLATE utf8_bin DEFAULT NULL,
+    MODIFY COLUMN rupay_mpan varchar(50) COLLATE utf8_bin DEFAULT NULL;
+    
 ALTER TABLE pricing
     ADD COLUMN payouts_filter VARCHAR(255) DEFAULT NULL;
 

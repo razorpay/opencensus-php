@@ -117,6 +117,10 @@ trait MpanTrait
                 'mpan'    => '6100020005006030',
                 'network' => 'RuPay'
             ],
+            [
+                'mpan'    => 'NDEwNDkwMTAwNTAwNTgyMw==', // to test tokenization cron, len != 16 means it is tokenized
+                'network' => 'RuPay'
+            ]
         ];
     }
 }

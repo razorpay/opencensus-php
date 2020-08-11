@@ -25,4 +25,9 @@ class Constants
     const BATCH_SUCCESS               = 'success';
     const BATCH_HTTP_STATUS_CODE      = 'http_status_code';
 
+    // mpan tokenization migration cron
+    const TOKENIZATION_SUCCESS_COUNT            = 'tokenization_success_count';
+    const TOKENIZATION_FAILED_COUNT             = 'tokenization_failed_count';
+    const TOKENIZATION_SUCCESS_TERMINAL_IDS     = 'tokenization_success_terminal_ids';
+    const TOKENIZATION_FAILED_TERMINAL_IDS      = 'tokenization_failed_terminal_ids';
 }

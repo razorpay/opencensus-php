@@ -128,9 +128,19 @@ class Service extends Base\Service
 
                         $gatewayMpan = $gatewayResponse[GatewayResponseParams::MPAN];
 
-                        // if push payment request came, it means terminal is already activated on gateway, we need to find enabled terminal on our end.
-                        // For worldline, only pending or activated terminal can have enabled true
+                        // Till the migration cron runs, we need to find terminal by both original mpan and tokenized mpan
+                        // after all the terminal mpans are migrated, we can just find the terminal by tokenized mpan
                         $terminal = $this->repo->terminal->findEnabledTerminalByMpanAndGatewayMerchantId($gatewayMerchantId, $gateway, $gatewayMpan);
+
+                        // if terminal is not found using original mpan, than it might have been tokenized in the terminal, finding using tokenized mpan below
+                        if ($terminal === null)
+                        {
+                            $tokenizedMpan =  $this->app['mpan.cardVault']->tokenize(['secret' => $gatewayMpan]);
+
+                            // if push payment request came, it means terminal is already activated on gateway, we need to find enabled terminal on our end.
+                            // For worldline, only pending or activated terminal can have enabled true
+                            $terminal = $this->repo->terminal->findEnabledTerminalByMpanAndGatewayMerchantId($gatewayMerchantId, $gateway, $tokenizedMpan);
+                        }
                     }
                 }
                 else
@@ -175,7 +185,18 @@ class Service extends Base\Service
 
         $gatewayMpan = $gatewayResponse[GatewayResponseParams::MPAN];
 
-        return $this->repo->terminal->findByGatewayMpan($gatewayMpan, $gateway);
+        // Till the migration cron runs, we need to find terminal by both original mpan and tokenized mpan
+        // after all the terminal mpans are migrated, we can just find the terminal by tokenized mpan
+        $terminal = $this->repo->terminal->findByGatewayMpan($gatewayMpan, $gateway);
+
+        if ($terminal !== null)
+        {
+            return $terminal;
+        }
+
+        $tokenizedMpan =  $this->app['mpan.cardVault']->tokenize(['secret' => $gatewayMpan]);
+
+        return $this->repo->terminal->findByGatewayMpan($tokenizedMpan, $gateway);
     }
 
     protected function validateGateway(string $gateway)

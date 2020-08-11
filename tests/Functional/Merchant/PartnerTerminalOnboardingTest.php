@@ -39,9 +39,9 @@ class PartnerTerminalOnboardingTest extends TestCase
             'status'      => 'deactivated',
             'merchant_id' => $subMerchantId,
             'gateway'     => 'worldline',
-            'mc_mpan'     => '1234567890123456',
-            'visa_mpan'   => '9876543210123456',
-            'rupay_mpan'  => '1234123412341234',
+            'mc_mpan'     => base64_encode('1234567890123456'),
+            'visa_mpan'   => base64_encode('9876543210123456'),
+            'rupay_mpan'  => base64_encode('1234123412341234'),
             'notes'       => 'some notes'
         ]);
 
@@ -73,9 +73,9 @@ class PartnerTerminalOnboardingTest extends TestCase
             'status'      => 'deactivated',
             'merchant_id' => $subMerchantId,
             'gateway'     => 'worldline',
-            'mc_mpan'     => '1234567890123456',
-            'visa_mpan'   => '9876543210123456',
-            'rupay_mpan'  => '1234123412341234',
+            'mc_mpan'     => base64_encode('1234567890123456'),
+            'visa_mpan'   => base64_encode('9876543210123456'),
+            'rupay_mpan'  => base64_encode('1234123412341234'),
             'notes'       => 'some notes'
         ]);
         
@@ -105,9 +105,9 @@ class PartnerTerminalOnboardingTest extends TestCase
             'status'      => 'deactivated',
             'merchant_id' => $subMerchantId,
             'gateway'     => 'worldline',
-            'mc_mpan'     => '1234567890123456',
-            'visa_mpan'   => '9876543210123456',
-            'rupay_mpan'  => '1234123412341234',
+            'mc_mpan'     => base64_encode('1234567890123456'),
+            'visa_mpan'   => base64_encode('9876543210123456'),
+            'rupay_mpan'  => base64_encode('1234123412341234'),
             'notes'       => 'some notes'
         ]);
 
@@ -135,9 +135,9 @@ class PartnerTerminalOnboardingTest extends TestCase
             'status'      => 'activated',
             'merchant_id' => $subMerchantId,
             'gateway'     => 'worldline',
-            'mc_mpan'     => '1234567890123456',
-            'visa_mpan'   => '9876543210123456',
-            'rupay_mpan'  => '1234123412341234',
+            'mc_mpan'     => base64_encode('1234567890123456'),
+            'visa_mpan'   => base64_encode('9876543210123456'),
+            'rupay_mpan'  => base64_encode('1234123412341234'),
             'notes'       => 'some notes'
         ]);
         
@@ -168,9 +168,9 @@ class PartnerTerminalOnboardingTest extends TestCase
             'status'      => 'pending',
             'merchant_id' => $subMerchantId,
             'gateway'     => 'worldline',
-            'mc_mpan'     => '1234567890123456',
-            'visa_mpan'   => '9876543210123456',
-            'rupay_mpan'  => '1234123412341234',
+            'mc_mpan'     => base64_encode('1234567890123456'),
+            'visa_mpan'   => base64_encode('9876543210123456'),
+            'rupay_mpan'  => base64_encode('1234123412341234'),
             'notes'       => 'some notes'
         ]);
         
@@ -202,9 +202,9 @@ class PartnerTerminalOnboardingTest extends TestCase
             'status'      => 'activated',
             'merchant_id' => $subMerchantId,
             'gateway'     => 'worldline',
-            'mc_mpan'     => '1234567890123456',
-            'visa_mpan'   => '9876543210123456',
-            'rupay_mpan'  => '1234123412341234',
+            'mc_mpan'     => base64_encode('1234567890123456'),
+            'visa_mpan'   => base64_encode('9876543210123456'),
+            'rupay_mpan'  => base64_encode('1234123412341234'),
             'notes'       => 'some notes'
         ]);
 
@@ -236,9 +236,9 @@ class PartnerTerminalOnboardingTest extends TestCase
             'status'      => 'activated',
             'merchant_id' => $subMerchantId,
             'gateway'     => 'worldline',
-            'mc_mpan'     => '1234567890123456',
-            'visa_mpan'   => '9876543210123456',
-            'rupay_mpan'  => '1234123412341234',
+            'mc_mpan'     => base64_encode('1234567890123456'),
+            'visa_mpan'   => base64_encode('9876543210123456'),
+            'rupay_mpan'  => base64_encode('1234123412341234'),
             'notes'       => 'some notes'
         ]);
 
@@ -266,9 +266,9 @@ class PartnerTerminalOnboardingTest extends TestCase
             'status'      => 'pending',
             'gateway'     => 'worldline',
             'merchant_id' => $subMerchantId,
-            'mc_mpan'     => '1234567890123456',
-            'visa_mpan'   => '9876543210123456',
-            'rupay_mpan'  => '1234123412341234',
+            'mc_mpan'     => base64_encode('1234567890123456'),
+            'visa_mpan'   => base64_encode('9876543210123456'),
+            'rupay_mpan'  => base64_encode('1234123412341234'),
             'notes'       => 'some notes'
         ]);
 
@@ -286,9 +286,9 @@ class PartnerTerminalOnboardingTest extends TestCase
         $terminal = $this->fixtures->create('terminal', [
             'enabled'     => true,
             'merchant_id' => '10000000000000',
-            'mc_mpan'     => '1234567890123456',
-            'visa_mpan'   => '9876543210123456',
-            'rupay_mpan'  => '1234123412341234',
+            'mc_mpan'     => base64_encode('1234567890123456'),
+            'visa_mpan'   => base64_encode('9876543210123456'),
+            'rupay_mpan'  => base64_encode('1234123412341234'),
             'notes'       => 'some notes'
         ]);
 
@@ -309,17 +309,24 @@ class PartnerTerminalOnboardingTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $terminal1 = (new TerminalFixture)->createBharatQrTerminal();
+        $this->fixtures->create('terminal', [
+            'enabled'     => true,
+            'status'      => 'activated',
+            'merchant_id' => $subMerchantId,
+            'mc_mpan'     => base64_encode('4287346823986423'),
+            'visa_mpan'   => base64_encode('5287346823986423'),
+            'rupay_mpan'  => base64_encode('6287346823986423'),
+        ]);
 
-        $terminal1['merchant_id'] = $subMerchantId;
+            $this->fixtures->create('terminal', [
+            'enabled'     => false,
+            'status'      => 'pending',
+            'merchant_id' => $subMerchantId,
+            'mc_mpan'     => base64_encode('5220240401208405'),
+            'visa_mpan'   => base64_encode('4403844012084006'),
+            'rupay_mpan'  => base64_encode('6100030401208403'),
+        ]);
 
-        $terminal1->save();
-
-        $terminal2 = (new TerminalFixture)->createBharatQrIsgTerminal();
-
-        $terminal2['merchant_id'] = $subMerchantId;
-
-        $terminal2->save();
 
         $this->startTest();
     }
@@ -370,8 +377,10 @@ class PartnerTerminalOnboardingTest extends TestCase
         $terminal1 = (new Terminal\Repository)->find($tid);
 
         $this->assertEquals($terminal1->getGatewayMerchantId(), 999000000000001);
-
         $this->assertEquals($terminal1->getGatewayTerminalId(), 12380001);
+        $this->assertEquals($terminal1->getMcMpan(), base64_encode('5122600005005789'));
+        $this->assertEquals($terminal1->getVisaMpan(), base64_encode('4604901005005799'));
+        $this->assertEquals($terminal1->getRupayMpan(), base64_encode('6100020005005792'));
 
         $subMerchant = (new Merchant\Repository)->find($subMerchantId);
 
@@ -422,9 +431,9 @@ class PartnerTerminalOnboardingTest extends TestCase
             'enabled'     => true,
             'status'      => 'pending',
             'merchant_id' => $subMerchantId,
-            'mc_mpan'     => '5122600005005789',
-            'visa_mpan'   => '4604901005005799',
-            'rupay_mpan'  => '6100020005005792',
+            'mc_mpan'     => base64_encode('5122600005005789'),
+            'visa_mpan'   => base64_encode('4604901005005799'),
+            'rupay_mpan'  => base64_encode('6100020005005792'),
             'notes'       => 'some notes'
         ]);
 
@@ -456,9 +465,9 @@ class PartnerTerminalOnboardingTest extends TestCase
             'enabled'     => true,
             'status'      => 'failed',
             'merchant_id' => $subMerchantId,
-            'mc_mpan'     => '5122600005005789',
-            'visa_mpan'   => '4604901005005799',
-            'rupay_mpan'  => '6100020005005792',
+            'mc_mpan'     => base64_encode('5122600005005789'),
+            'visa_mpan'   => base64_encode('4604901005005799'),
+            'rupay_mpan'  => base64_encode('6100020005005792'),
             'notes'       => 'some notes'
         ]);
 
@@ -732,6 +741,8 @@ class PartnerTerminalOnboardingTest extends TestCase
         foreach ($mpanData as $mpan)
         {
             $mpan['merchant_id'] = $merchantId;
+
+            $mpan['mpan'] = base64_encode($mpan['mpan']);
 
             $this->fixtures->create('mpan', $mpan);
         }

@@ -165,9 +165,9 @@ class ReminderTest extends TestCase
             'gateway'             => 'worldline',
             'merchant_id'         => '10000000000000',
             'gateway_merchant_id' => '90000000002',
-            'mc_mpan'             => '1234567890123456',
-            'visa_mpan'           => '9876543210123456',
-            'rupay_mpan'          => '1234123412341234',
+            'mc_mpan'             => base64_encode('1234567890123456'),
+            'visa_mpan'           => base64_encode('9876543210123456'),
+            'rupay_mpan'          => base64_encode('1234123412341234'),
             'notes'               => 'some notes'
         ]);
 

@@ -24,7 +24,22 @@ class Core extends Base\Core
 
     public function create(array $input)
     {
+        // using separate validator as default createRules will runs after tokenization 
+        // and we won't be able to validate original length after tokenization
+        (new Validator())->validateInput('before_tokenization_create', $input);
+
+        $this->tokenizeMpans($input);
+
         $mpan = (new Entity)->build($input);
+
+        $this->repo->saveOrFail($mpan);
+
+        return $mpan;
+    }
+
+    public function edit(Entity $mpan, array $input)
+    {
+        $mpan->edit($input);
 
         $this->repo->saveOrFail($mpan);
 
@@ -56,5 +71,12 @@ class Core extends Base\Core
             Constants::MPAN_ISSUE_MUTEX_TTL,
             ErrorCode::BAD_REQUEST_ANOTHER_MPAN_ISSUE_IN_PROGRESS
             );
+    }
+
+    protected function tokenizeMpans(array &$input)
+    {
+        $tokenizedMpan = $this->app['mpan.cardVault']->tokenize(['secret' => $input[Entity::MPAN]]);
+
+        $input[Entity::MPAN] = $tokenizedMpan;
     }
 }

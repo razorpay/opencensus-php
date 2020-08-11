@@ -42,4 +42,13 @@ class MpanController extends Controller
         return ApiResponse::json($response->toArrayWithItems());
     }
 
+    public function postTokenizeMpans()
+    {
+        $input = Request::all();
+
+        $cronResponse = $this->service()->tokenizeExistingMpans($input);
+        
+        return ApiResponse::json($cronResponse);
+    }
+
 }

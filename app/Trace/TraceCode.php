@@ -2866,6 +2866,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SET_MERCHANT_INHERITANCE_PARENT_FAILED                   = 'SET_MERCHANT_INHERITANCE_PARENT_FAILED';
 
+    // mpans tokenization
+    const TOKENIZE_EXISTING_MPANS_REQUEST                          = 'TOKENIZE_EXISTING_MPANS_REQUEST';
+    const TOKENIZE_EXISTING_MPANS_RESPONSE                         = 'TOKENIZE_EXISTING_MPANS_RESPONSE';
+    const MPAN_TOKENIZATION_FAILED                                 = 'MPAN_TOKENIZATION_FAILED';
+    const TERMINAL_TOKENIZE_EXISTING_MPANS_REQUEST                 = 'TERMINAL_TOKENIZE_EXISTING_MPANS_REQUEST';
+    const TERMINAL_TOKENIZE_EXISTING_MPANS_RESPONSE                = 'TERMINAL_TOKENIZE_EXISTING_MPANS_RESPONSE';
+
     // Smart Routing
     const SMART_ROUTING_SERVICE_ERROR                           = 'SMART_ROUTING_SERVICE_ERROR';
     const SMART_ROUTING_RETRY                                   = 'SMART_ROUTING_RETRY';

@@ -2,10 +2,14 @@
 
 namespace RZP\Tests\Functional\Mpan;
 
+use Mockery;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
 use RZP\Models\Feature\Constants;
 use Illuminate\Support\Facades\DB;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Mpan\Repository as MpanRepo;
 use RZP\Models\Batch\Processor\Mpan as MpanBatch;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -22,6 +26,9 @@ class MpanTest extends TestCase
     {
         foreach ($mpanData as $mpan)
         {
+            // this is as per Services\Mock\CardVault::tokenize()
+            $mpan['mpan'] = base64_encode($mpan['mpan']);
+
             $this->fixtures->create('mpan', $mpan);
         }
     }
@@ -54,7 +61,7 @@ class MpanTest extends TestCase
 
         foreach ($issuedMpans as $mpanFromResponse)
         {
-            $mpanFromDatabase = $this->getDbEntityById(Entity::MPAN, $mpanFromResponse[Entity::MPAN]);
+            $mpanFromDatabase = $this->getDbEntityById(Entity::MPAN, base64_encode($mpanFromResponse[Entity::MPAN]));
 
             $this->assertEquals($mpanFromDatabase['merchant_id'], self::DEFAULT_MERCHANT_ID);
 
@@ -110,7 +117,7 @@ class MpanTest extends TestCase
 
         foreach ($fetchedMpans as $fetchedMpan)
         {
-            $mpanFromDatabase = $this->getDbEntityById(Entity::MPAN, $fetchedMpan[Entity::MPAN]);
+            $mpanFromDatabase = $this->getDbEntityById(Entity::MPAN, base64_encode($fetchedMpan[Entity::MPAN]));
 
             $this->assertEquals($mpanFromDatabase[\RZP\Models\Mpan\Entity::MERCHANT_ID], self::DEFAULT_MERCHANT_ID);
 
@@ -130,7 +137,7 @@ class MpanTest extends TestCase
         {
             foreach (MpanBatch::BATCH_HEADER_NETWORK_CODE_MAP  as $header => $network)
             {
-                $mpanFromDatabase = $this->getDbEntityById(Entity::MPAN, $row[$header]);
+                $mpanFromDatabase = $this->getDbEntityById(Entity::MPAN, base64_encode($row[$header]));
 
                 $this->assertNull($mpanFromDatabase->getMerchantId());
 
@@ -163,5 +170,113 @@ class MpanTest extends TestCase
         $row = $response['items']['2'];
 
         $this->assertContains("SQLSTATE[23000]: Integrity constraint violation", $row['error']['description']);
+    }
+
+    public function testMpanTokenizeExistingMpans()
+    {   
+        // adds mpans in table original form(non tokenized) to test mpan migration cron
+        $mpanData = [
+            [
+                'mpan'    => '5114901005005799',
+                'network' => 'MasterCard'
+            ],
+            [
+                'mpan'    => '4114901005005823',
+                'network' => 'Visa'
+            ],
+            [
+                'mpan'    => '6114901005005856',
+                'network' => 'RuPay'
+            ],
+        ];
+
+        foreach ($mpanData as $mpan)
+        {
+            $this->fixtures->create('mpan', $mpan);
+        }
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        foreach($mpanData as $mpan)
+        {
+            $mpanFromDb = $this->getDbEntity('mpan', ['mpan' => base64_encode($mpan['mpan'])]);
+
+            $this->assertNotNull($mpanFromDb);
+        }
+    }
+
+    public function testMpanTokenizeExistingMpansInputValidationFailure()
+    {   
+        $this->ba->cronAuth();
+
+        $res = $this->startTest();
+    }
+
+    public function testMpanTokenizeExistingMpansOneCardVaultRequestFails()
+    {   
+        // adds mpans in table original form(non tokenized) to test mpan migration cron
+        $mpanData = [
+            [
+                'mpan'    => '5114901005005799',
+                'network' => 'MasterCard'
+            ],
+            [
+                'mpan'    => '4114901005005823',
+                'network' => 'Visa'
+            ],
+            [
+                'mpan'    => '6114901005005856',
+                'network' => 'RuPay'
+            ],
+        ];
+
+        foreach ($mpanData as $mpan)
+        {
+            $this->fixtures->create('mpan', $mpan);
+        }
+
+        $cardVault = Mockery::mock('RZP\Services\CardVault');
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $cardVault->shouldReceive('tokenize')
+                ->with(Mockery::type('array'))
+                ->andReturnUsing
+                (function ($input)
+                {
+                    // fail tokenization for one mpan
+                    if ($input['secret'] === '4114901005005823')
+                    {
+                        throw new Exception\ServerErrorException(
+                            'Request timedout at card vault service',
+                            ErrorCode::SERVER_ERROR);
+                    }
+    
+                    $token = base64_encode($input['secret']);
+
+                    return $token;
+                });
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        foreach($mpanData as $mpan)
+        {
+            if ($mpan['mpan'] === '4114901005005823')
+            {
+                $mpanSavedInDb = $mpan['mpan'];
+            }
+            else
+            {
+                $mpanSavedInDb = base64_encode($mpan['mpan']);
+            }
+
+            $mpanFromDb = $this->getDbEntity('mpan', ['mpan' => $mpanSavedInDb]);
+
+            $this->assertNotNull($mpanFromDb);
+        }
     }
 }

@@ -139,6 +139,10 @@ class TestCase extends IlluminateTestCase
 
         $this->app->instance('card.cardVault', $cardVault);
 
+        $mpanVault = Mockery::mock('RZP\Services\CardVault', [$app, 'mpan'])->makePartial();
+
+        $this->app->instance('mpan.cardVault', $mpanVault);
+
         $callable = $callable ?: function ($route, $method, $input)
         {
             $response = [
@@ -173,6 +177,10 @@ class TestCase extends IlluminateTestCase
         };
 
         $cardVault->shouldReceive('sendRequest')
+                  ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+                  ->andReturnUsing($callable);
+
+        $mpanVault->shouldReceive('sendRequest')
                   ->with(Mockery::type('string'), 'post', Mockery::type('array'))
                   ->andReturnUsing($callable);
 

@@ -694,6 +694,23 @@ class Repository extends Base\Repository
         return $query->first();
     }
 
+    public function fetchTerminalsForTokenization(int $count, array $terminalIds = [])
+    {
+        $gatewayHavingMpans = [Payment\Gateway::WORLDLINE, Payment\Gateway::HITACHI, Payment\Gateway::ISG];
+
+        $query = $this->newQuery()
+                        ->take($count)
+                        ->whereIn(Entity::GATEWAY, $gatewayHavingMpans)
+                        ->whereRaw('(LENGTH(mc_mpan) = 16 or LENGTH(visa_mpan) = 16 or LENGTH(rupay_mpan) = 16)');
+
+        if ($terminalIds != [])
+        {
+            $query = $query->whereIn(Entity::ID, $terminalIds);
+        }
+        
+        return $query->get();
+    }
+
     protected function buildFetchByParamsQuery(array $params)
     {
         $params = $this->unsetEmptyParams($params);

@@ -70,4 +70,14 @@ class Repository extends Base\Repository
 
         return $mpansCollection;
     }
+
+    public function fetchMpansForTokenization(int $count)
+    {
+        $mpans = $this->newQuery()
+                      ->take($count)
+                      ->whereRaw('LENGTH(mpan) = 16')
+                      ->get();
+
+        return $mpans;
+    }
 }

@@ -9,7 +9,14 @@ class CardVault extends BaseCardVault
 {
     public function tokenize($input)
     {
-        $token = base64_encode($input['card']);
+        if (isset($input['card']) === true)
+        {
+            $token = base64_encode($input['card']);
+        }
+        else
+        {
+            $token = base64_encode($input['secret']);
+        }
 
         return $token;
     }

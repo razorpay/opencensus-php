@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Event;
+use Mockery;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Cache\Events\CacheMissed;
@@ -2035,5 +2036,274 @@ class TerminalTest extends TestCase
     public function testTerminalModeDualForAxisMigs()
     {
         $this->startTest();
+    }
+
+    // test for cron that migrates existing original mpans to vault (mpan tokenization)
+    public function testTokenizeExistingTerminalMpans()
+    {   
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled'             => true,
+            'gateway'             => 'worldline',
+            'merchant_id'         => '10000000000000',
+            'gateway_merchant_id' => '90000000001',
+            'status'              => 'activated',
+            'mc_mpan'             => '5234567890123456',
+            'visa_mpan'           => '4234567890123456',
+            'rupay_mpan'          => '6234567890123456',
+        ]);
+
+        $terminal2 = $this->fixtures->create('terminal', [
+            'enabled'             => true,
+            'gateway'             => 'worldline',
+            'merchant_id'         => '10000000000000',
+            'gateway_merchant_id' => '90000000001',
+            'status'              => 'activated',
+            'mc_mpan'             => '5334567890123456',
+            'visa_mpan'           => '4334567890123456',
+            'rupay_mpan'          => '6334567890123456',
+        ]);
+
+        $this->ba->cronAuth();
+
+        $res = $this->startTest();
+        $this->assertEquals([$terminal->getId(), $terminal2->getId()], $res['tokenization_success_terminal_ids']);
+        $this->assertEquals([], $res['tokenization_failed_terminal_ids']);
+
+        $terminal->reload();
+        $this->assertEquals(base64_encode('5234567890123456'), $terminal['mc_mpan']);
+        $this->assertEquals(base64_encode('4234567890123456'), $terminal['visa_mpan']);
+        $this->assertEquals(base64_encode('6234567890123456'), $terminal['rupay_mpan']);
+    }
+
+    // test for cron that migrates existing original mpans to vault (mpan tokenization)
+    public function testTokenizeExistingTerminalMpansInputValidationFailure()
+    {   
+        $this->ba->cronAuth();
+
+        $this->startTest();
+    }    
+
+    // test for cron that migrates existing original mpans to vault (mpan tokenization)
+    // tests that even if two terminals have same mpans, then also migration works fine. Although two activated terminala can't have same mpans due to duplicity validations in place but 
+    // a failed terminal can have the same mpans as that of an activated terminal and if activated terminal is picked up before failed one for tokenization,
+    // then "A terminal for this gateway for this merchant already exists" is raised when we tokenize failed terminal, we are bypassing this duplicity check for this scenario
+    public function testTokenizeExistingTerminalMpansSameFields()
+    {   
+
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled'             => true,
+            'gateway'             => 'worldline',
+            'merchant_id'         => '10000000000000',
+            'gateway_merchant_id' => '90000000001',
+            'status'              => 'activated',
+            'mc_mpan'             => '5234567890123456',
+            'visa_mpan'           => '4234567890123456',
+            'rupay_mpan'          => '6234567890123456',
+        ]);
+
+        $terminal2 = $this->fixtures->create('terminal', [
+            'enabled'             => true,
+            'gateway'             => 'worldline',
+            'merchant_id'         => '10000000000000',
+            'gateway_merchant_id' => '90000000001',
+            'status'              => 'activated',
+            'mc_mpan'             => '5234567890123456',
+            'visa_mpan'           => '4234567890123456',
+            'rupay_mpan'          => '6234567890123456',
+        ]);
+
+
+        $this->ba->cronAuth();
+
+        $res = $this->startTest();
+        $this->assertEquals([$terminal->getId(), $terminal2->getId()], $res['tokenization_success_terminal_ids']);
+        $this->assertEquals([], $res['tokenization_failed_terminal_ids']);
+
+        $terminal->reload();
+        $this->assertEquals('NTIzNDU2Nzg5MDEyMzQ1Ng==', $terminal['mc_mpan']);
+        $this->assertEquals('NDIzNDU2Nzg5MDEyMzQ1Ng==', $terminal['visa_mpan']);
+        $this->assertEquals('NjIzNDU2Nzg5MDEyMzQ1Ng==', $terminal['rupay_mpan']);
+
+        $terminal2->reload();
+        $this->assertEquals('NTIzNDU2Nzg5MDEyMzQ1Ng==', $terminal2['mc_mpan']);
+        $this->assertEquals('NDIzNDU2Nzg5MDEyMzQ1Ng==', $terminal2['visa_mpan']);
+        $this->assertEquals('NjIzNDU2Nzg5MDEyMzQ1Ng==', $terminal2['rupay_mpan']);
+
+    }
+    // test tokenize existing mpan cron route should accept terminal_id
+    public function testTokenizeExistingTerminalMpansWithTerminalIdInInput()
+    {   
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled'             => true,
+            'gateway'             => 'worldline',
+            'merchant_id'         => '10000000000000',
+            'gateway_merchant_id' => '90000000001',
+            'status'              => 'activated',
+            'mc_mpan'             => '5234567890123456',
+            'visa_mpan'           => '4234567890123456',
+            'rupay_mpan'          => '6234567890123456',
+        ]);
+
+        $terminal2 = $this->fixtures->create('terminal', [
+            'enabled'             => true,
+            'gateway'             => 'worldline',
+            'merchant_id'         => '10000000000000',
+            'gateway_merchant_id' => '90000000001',
+            'status'              => 'activated',
+            'mc_mpan'             => '5334567890123456',
+            'visa_mpan'           => '4334567890123456',
+            'rupay_mpan'          => '6334567890123456',
+        ]);
+
+        $this->ba->cronAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['terminal_ids'] = [$terminal->getId()];
+
+        $res = $this->startTest();
+        $this->assertEquals([$terminal->getId()], $res['tokenization_success_terminal_ids']);
+        $this->assertEquals([], $res['tokenization_failed_terminal_ids']);
+
+        $terminal->reload();
+        $this->assertEquals(base64_encode('5234567890123456'), $terminal['mc_mpan']);
+        $this->assertEquals(base64_encode('4234567890123456'), $terminal['visa_mpan']);
+        $this->assertEquals(base64_encode('6234567890123456'), $terminal['rupay_mpan']);
+
+        $terminal2->reload();
+        $this->assertEquals('5334567890123456', $terminal2['mc_mpan']);
+        $this->assertEquals('4334567890123456', $terminal2['visa_mpan']);
+        $this->assertEquals('6334567890123456', $terminal2['rupay_mpan']);
+    }
+
+    public function testTokenizeExistingMpansSingleMpanShouldAlsoGetTokenized()
+    {
+        $this->fixtures->create('terminal', [
+            'enabled'             => true,
+            'gateway'             => 'hitachi',
+            'merchant_id'         => '10000000000000',
+            'gateway_merchant_id' => '90000000001',
+            'status'              => 'activated',
+            'visa_mpan'           => '4234564890123456',
+        ]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        $this->assertEquals(base64_encode("4234564890123456"), $terminal['visa_mpan']);
+    }
+
+    // tests that none of the mpan of a terminal should get tokenized even if one fails
+    public function testTokenizeExistingTerminalMpansTransaction()
+    {        
+        $successTerminal = $this->fixtures->create('terminal', [
+            'enabled'             => true,
+            'gateway'             => 'worldline',
+            'merchant_id'         => '10000000000000',
+            'gateway_merchant_id' => '90000000001',
+            'status'              => 'activated',
+            'mc_mpan'             => '5234567890123456',
+            'visa_mpan'           => '4234567890123456',
+            'rupay_mpan'          => '6234567890123456',
+        ]);
+
+        $failureTerminal = $this->fixtures->create('terminal', [
+            'enabled'             => true,
+            'gateway'             => 'worldline',
+            'merchant_id'         => '10000000000000',
+            'gateway_merchant_id' => '90000000002',
+            'status'              => 'activated',
+            'mc_mpan'             => '5334567890123456',
+            'visa_mpan'           => '4334567890123456',
+            'rupay_mpan'          => '6334567890123456',
+        ]);
+
+        $cardVault = Mockery::mock('RZP\Services\CardVault');
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $cardVault->shouldReceive('tokenize')
+                ->with(Mockery::type('array'))
+                ->andReturnUsing
+                (function ($input)
+                {
+                    // fail tokenization for one mpan
+                    if ($input['secret'] === '4334567890123456')
+                    {
+                        throw new Exception\ServerErrorException(
+                            'Request timedout at card vault service',
+                            ErrorCode::SERVER_ERROR);
+                    }
+    
+                    $token = base64_encode($input['secret']);
+
+                    return $token;
+                });
+      
+        
+        $this->ba->cronAuth();
+
+        $res = $this->startTest();
+
+        $this->assertEquals([$successTerminal['id']], $res['tokenization_success_terminal_ids']);
+        $this->assertEquals([$failureTerminal['id']], $res['tokenization_failed_terminal_ids']);
+
+        $successTerminal->reload();
+        $this->assertEquals('NTIzNDU2Nzg5MDEyMzQ1Ng==', $successTerminal['mc_mpan']);
+        $this->assertEquals('NDIzNDU2Nzg5MDEyMzQ1Ng==', $successTerminal['visa_mpan']);
+        $this->assertEquals('NjIzNDU2Nzg5MDEyMzQ1Ng==', $successTerminal['rupay_mpan']);
+
+        $failureTerminal->reload();
+        // asserts that no mpan got tokenized
+        $this->assertEquals('5334567890123456', $failureTerminal['mc_mpan']);
+        $this->assertEquals('4334567890123456', $failureTerminal['visa_mpan']);
+        $this->assertEquals('6334567890123456', $failureTerminal['rupay_mpan']);
+    }
+
+    public function testCreateTerminalMpansShouldBeTokenized()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        $this->assertEquals(base64_encode("5122600116743268"), $terminal['mc_mpan']);
+        $this->assertEquals(base64_encode("4604901116743090"), $terminal['visa_mpan']);
+        $this->assertEquals(base64_encode("6100020116743712"), $terminal['rupay_mpan']);
+    }
+
+    public function testCreateTerminalMpansTokenizationFailure()
+    { 
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $cardVault = Mockery::mock('RZP\Services\CardVault');
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $cardVault->shouldReceive('tokenize')
+                ->with(Mockery::type('array'))
+                ->andReturnUsing
+                (function ($input)
+                {
+                    // fail tokenization for one mpan
+                    if ($input['secret'] === '4604901116743090')
+                    {
+                        throw new Exception\ServerErrorException(
+                            'Request timedout at card vault service',
+                            ErrorCode::SERVER_ERROR);
+                    }
+    
+                    $token = base64_encode($input['secret']);
+
+                    return $token;
+                });
+
+       $this->startTest();
     }
 }
