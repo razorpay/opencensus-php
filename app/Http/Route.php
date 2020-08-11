@@ -2276,6 +2276,13 @@ class Route
         'merchant_instrument_request_get_by_id',
         'merchant_instrument_request_update_by_id',
         'merchant_instrument_request_get_by_merchant_id',
+
+        // payment page routes required for plugin
+        'payment_page_get',
+        'payment_page_get_details',
+        'payment_page_list',
+        'payment_page_deactivate',
+        'payment_page_activate',
     ];
 
     // Only routes defined in internalApps go here
