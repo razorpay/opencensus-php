@@ -118,10 +118,12 @@ class Entity extends Base\PublicEntity
     const OUTSTANDING_AMOUNT = 'outstanding_amount';
 
     // Relation Constants
-    const BANKING_ACCOUNT_DETAILS = 'banking_account_details';
-    const BALANCE                 = 'balance';
-    const REVIEWERS               = 'reviewers';
-    const FEE_RECOVERY_DETAILS    = 'fee_recovery_details';
+    const BANKING_ACCOUNT_DETAILS            = 'banking_account_details';
+    const BANKING_ACCOUNT_ACTIVATION_DETAILS = 'banking_account_activation_details';
+    const BALANCE                            = 'balance';
+    const REVIEWERS                          = 'reviewers';
+    const SPOCS                              = 'spocs';
+    const FEE_RECOVERY_DETAILS               = 'fee_recovery_details';
 
     // Constants for reviewers() relation
     const REVIEWER_ID             = 'reviewer_id';
@@ -136,6 +138,9 @@ class Entity extends Base\PublicEntity
     // Additional attributes to search from admin dashboard
     const MERCHANT_BUSINESS_NAME  = 'merchant_business_name';
     const MERCHANT_EMAIL = 'merchant_email';
+    const MERCHANT_POC_CITY = 'merchant_poc_city';
+    const IS_DOCUMENTS_WALKTHROUGH_COMPLETE = 'is_documents_walkthrough_complete';
+    const BANK_ACCOUNT_TYPE = 'bank_account_type';
 
     // Slack channel for alerts
     const RX_CA_RBL_ALERTS = 'rx_ca_rbl_alerts';
@@ -215,6 +220,7 @@ class Entity extends Base\PublicEntity
         self::INTERNAL_COMMENT,
         self::BALANCE,
         self::BANKING_ACCOUNT_DETAILS,
+        self::BANKING_ACCOUNT_ACTIVATION_DETAILS,
         self::LAST_STATEMENT_ATTEMPT_AT,
         self::GATEWAY_BALANCE,
         self::BALANCE_LAST_FETCHED_AT,
@@ -227,7 +233,9 @@ class Entity extends Base\PublicEntity
         // 'banking_account_details' works fine
         //
         'bankingAccountDetails',
+        'bankingAccountActivationDetails',
         self::REVIEWERS,
+        self::SPOCS,
         self::PASSWORD,
     ];
 
@@ -249,6 +257,7 @@ class Entity extends Base\PublicEntity
         self::BANK_REFERENCE_NUMBER,
         self::PINCODE,
         self::BANKING_ACCOUNT_DETAILS,
+        self::BANKING_ACCOUNT_ACTIVATION_DETAILS,
         self::BALANCE,
         self::FEE_RECOVERY_DETAILS,
         self::ACCOUNT_STATEMENT_LAST_UPDATED_AT,
@@ -256,6 +265,7 @@ class Entity extends Base\PublicEntity
 
     protected $relations = [
         self::BANKING_ACCOUNT_DETAILS,
+        self::BANKING_ACCOUNT_ACTIVATION_DETAILS
     ];
 
     protected $publicSetters = [
@@ -510,7 +520,17 @@ class Entity extends Base\PublicEntity
 
     public function reviewers()
     {
-        return $this->morphToMany(Admin\Entity::class, self::ENTITY, Table::ADMIN_AUDIT_MAP, self::ENTITY_ID, Entity::ADMIN_ID)->withPivot(Entity::AUDITOR_TYPE);
+        return $this->morphToMany(Admin\Entity::class, self::ENTITY, Table::ADMIN_AUDIT_MAP, self::ENTITY_ID, Entity::ADMIN_ID)
+                    ->withPivot(Entity::AUDITOR_TYPE)
+                    ->where(Entity::AUDITOR_TYPE, '=', 'reviewer');
+    }
+
+    // Sales POCs
+    public function spocs()
+    {
+        return $this->morphToMany(Admin\Entity::class, self::ENTITY, Table::ADMIN_AUDIT_MAP, self::ENTITY_ID, Entity::ADMIN_ID)
+                    ->withPivot(Entity::AUDITOR_TYPE)
+                    ->where(Entity::AUDITOR_TYPE, '=', 'spoc');
     }
 
     public function activationStates()
@@ -518,9 +538,15 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('\RZP\Models\BankingAccount\State\Entity');
     }
 
+    public function bankingAccountActivationDetails()
+    {
+        return $this->hasOne(Activation\Detail\Entity::class);
+    }
+
     public function activationComments()
     {
         return $this->hasMany(Comment\Entity::class);
+
     }
 
     /**

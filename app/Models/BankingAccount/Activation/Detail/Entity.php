@@ -1,0 +1,169 @@
+<?php
+
+
+namespace RZP\Models\BankingAccount\Activation\Detail;
+
+use RZP\Constants\Table;
+use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Models\Admin\Admin;
+use RZP\Models\BankingAccount;
+
+/**
+ * This captures the details that Sales POCs enter into the admin dashboard
+ * which need to be exported and sent to RBl.
+ * This  data contains both lead-related and ops-related data.
+ * For example, the GMV, Insignia, etc are lead-related,
+ * and the Merchant POC details are OPs related (for documentation purposes)
+ * In an ideal setup, the lead-related data should be captured on Salesforce
+ * (that is a lead-management software),
+ * and then be pulled to Admin Dashboard for display purposes.
+ * (It's not possible to grant Ops team access to Salesforce dashboard
+ * because it contains confidential information.)
+ *
+ * We would also need filtering to be done on a few lead-related fields
+ * like city, docs_walkthrough_complete?.
+ * This prevents any solution along the lines of using Zapier/sheets, to push and pull data.
+ *
+ * Class Entity
+ * @package RZP\Models\BankingAccount\Activation\Detail
+ */
+class Entity extends Base\PublicEntity
+{
+    const BANKING_ACCOUNT = 'banking_account';
+
+    const BANKING_ACCOUNT_ID = 'banking_account_id';
+
+    // merchant details
+    const MERCHANT_POC_NAME = 'merchant_poc_name';
+
+    const MERCHANT_POC_DESIGNATION = 'merchant_poc_designation';
+
+    // HACK: merchant poc email and phone number can be multiple cardinality
+    // Not validating against it. Ideally, this should be normalized,
+    // but the use-case is purely for information retrieval from admin dashboard.
+    const MERCHANT_POC_EMAIL = 'merchant_poc_email';
+    const MERCHANT_POC_PHONE_NUMBER = 'merchant_poc_phone_number';
+
+    const MERCHANT_CITY = 'merchant_city';
+
+    const MERCHANT_DOCUMENTS_ADDRESS = 'merchant_documents_address';
+
+    // east, west, north, south
+    const MERCHANT_REGION = 'merchant_region';
+
+    // business details
+    const EXPECTED_MONTHLY_GMV = 'expected_monthly_gmv';
+
+    const INITIAL_CHEQUE_VALUE = 'initial_cheque_value';
+
+    // One of https://razorpay.com/docs/razorpayx/current-account
+    const BUSINESS_CATEGORY = 'business_category';
+
+    const AVERAGE_MONTHLY_BALANCE = 'average_monthly_balance';
+
+    // For RBL, this can be Insignia
+    const ACCOUNT_TYPE = 'account_type';
+
+    // internal POC details
+    const SALES_TEAM = 'sales_team';
+
+    // HACK: Ideally this should be handled as part of the admin user (sales_poc_id is basically
+    // the admin_id) . THis information will be redundant.
+    // But since admin entity has no information about phone number, adding it here.
+    const SALES_POC_PHONE_NUMBER = 'sales_poc_phone_number';
+
+    const IS_DOCUMENTS_WALKTHROUGH_COMPLETE = 'is_documents_walkthrough_complete';
+
+    const COMMENT = 'comment';
+
+    // relations
+    // admin_audit_map is used here
+    const SALES_POC_ID = 'sales_poc_id';
+
+    protected $entity = 'banking_account_activation_detail';
+
+    protected $table  = Table::BANKING_ACCOUNT_ACTIVATION_DETAIL;
+
+    protected $generateIdOnCreate = true;
+
+    protected $fillable = [
+        self::ID,
+        self::BANKING_ACCOUNT_ID,
+        self::MERCHANT_POC_NAME,
+        self::MERCHANT_POC_DESIGNATION,
+        self::MERCHANT_POC_EMAIL,
+        self::MERCHANT_POC_PHONE_NUMBER,
+        self::MERCHANT_DOCUMENTS_ADDRESS,
+        self::MERCHANT_CITY,
+        self::MERCHANT_REGION,
+        self::EXPECTED_MONTHLY_GMV,
+        self::INITIAL_CHEQUE_VALUE,
+        self::BUSINESS_CATEGORY,
+        self::AVERAGE_MONTHLY_BALANCE,
+        self::ACCOUNT_TYPE,
+        self::IS_DOCUMENTS_WALKTHROUGH_COMPLETE,
+        self::COMMENT,
+        self::SALES_TEAM,
+        self::SALES_POC_PHONE_NUMBER,
+    ];
+
+    protected $visible = [
+        self::ID,
+        self::BANKING_ACCOUNT_ID,
+        self::MERCHANT_POC_NAME,
+        self::MERCHANT_POC_DESIGNATION,
+        self::MERCHANT_POC_EMAIL,
+        self::MERCHANT_POC_PHONE_NUMBER,
+        self::MERCHANT_DOCUMENTS_ADDRESS,
+        self::MERCHANT_CITY,
+        self::MERCHANT_REGION,
+        self::EXPECTED_MONTHLY_GMV,
+        self::INITIAL_CHEQUE_VALUE,
+        self::BUSINESS_CATEGORY,
+        self::AVERAGE_MONTHLY_BALANCE,
+        self::ACCOUNT_TYPE,
+        self::IS_DOCUMENTS_WALKTHROUGH_COMPLETE,
+        self::SALES_TEAM,
+        self::SALES_POC_PHONE_NUMBER,
+        self::COMMENT,
+        self::CREATED_AT,
+    ];
+
+    public $public = [
+        self::ID,
+        self::BANKING_ACCOUNT_ID,
+        self::MERCHANT_POC_NAME,
+        self::MERCHANT_POC_DESIGNATION,
+        self::MERCHANT_POC_EMAIL,
+        self::MERCHANT_POC_PHONE_NUMBER,
+        self::MERCHANT_DOCUMENTS_ADDRESS,
+        self::MERCHANT_CITY,
+        self::MERCHANT_REGION,
+        self::EXPECTED_MONTHLY_GMV,
+        self::INITIAL_CHEQUE_VALUE,
+        self::BUSINESS_CATEGORY,
+        self::AVERAGE_MONTHLY_BALANCE,
+        self::ACCOUNT_TYPE,
+        self::IS_DOCUMENTS_WALKTHROUGH_COMPLETE,
+        self::SALES_TEAM,
+        self::SALES_POC_PHONE_NUMBER,
+        self::COMMENT,
+        self::CREATED_AT,
+    ];
+
+    protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    ];
+
+    public function getBankingAccountId()
+    {
+        $this->getAttributeValue(self::BANKING_ACCOUNT_ID);
+    }
+
+    public function bankingAccount()
+    {
+        return $this->belongsTo(BankingAccount\Entity::class);
+    }
+}

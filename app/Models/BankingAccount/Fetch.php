@@ -21,11 +21,14 @@ class Fetch extends BaseFetch
             Entity::REVIEWER_ID           => 'sometimes|string',
         ],
         AuthType::PRIVILEGE_AUTH => [
-            self::EXPAND_EACH             => 'filled|string|in:merchant,merchant.merchantDetail,banking_account_details,reviewers',
+            self::EXPAND_EACH             => 'filled|string|in:merchant,merchant.merchantDetail,banking_account_details,reviewers,spocs,banking_account_activation_details',
         ],
         AuthType::ADMIN_AUTH => [
-            Entity::MERCHANT_EMAIL          => 'sometimes|string',
-            Entity::MERCHANT_BUSINESS_NAME  => 'sometimes|string'
+            Entity::MERCHANT_EMAIL                      => 'sometimes|string',
+            Entity::MERCHANT_BUSINESS_NAME              => 'sometimes|string',
+            Entity::MERCHANT_POC_CITY                   => 'sometimes|string',
+            Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE   => 'sometimes|boolean',
+            Entity::BANK_ACCOUNT_TYPE                   => 'sometimes|string',
         ]
     ];
 
@@ -46,6 +49,9 @@ class Fetch extends BaseFetch
         AuthType::ADMIN_AUTH => [
             Entity::MERCHANT_EMAIL,
             Entity::MERCHANT_BUSINESS_NAME,
+            Entity::MERCHANT_POC_CITY,
+            Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE,
+            Entity::BANK_ACCOUNT_TYPE,
         ]
     ];
 

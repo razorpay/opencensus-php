@@ -1,0 +1,92 @@
+<?php
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+use RZP\Constants\Table;
+use RZP\Models\BankingAccount\Activation\Detail\Entity;
+
+class CreateBankingAccountActivationDetailTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create(Table::BANKING_ACCOUNT_ACTIVATION_DETAIL, function (Blueprint $table)
+        {
+            $table->char(Entity::ID, Entity::ID_LENGTH)
+                  ->primary();
+
+            $table->char(Entity::BANKING_ACCOUNT_ID, Entity::ID_LENGTH)
+                  ->unique();
+
+            $table->string(Entity::MERCHANT_POC_NAME)
+                  ->nullable();
+
+            $table->string(Entity::MERCHANT_POC_EMAIL)
+                  ->nullable();
+
+            $table->string(Entity::MERCHANT_POC_DESIGNATION)
+                  ->nullable();
+
+            $table->string(Entity::MERCHANT_POC_PHONE_NUMBER)
+                  ->nullable();
+
+            $table->string(Entity::MERCHANT_DOCUMENTS_ADDRESS)
+                  ->nullable();
+
+            $table->string(Entity::MERCHANT_CITY)
+                  ->nullable();
+
+            $table->string(Entity::MERCHANT_REGION)
+                  ->nullable();
+
+            $table->unsignedBigInteger(Entity::AVERAGE_MONTHLY_BALANCE)
+                  ->nullable();
+
+            $table->unsignedBigInteger(Entity::EXPECTED_MONTHLY_GMV)
+                  ->nullable();
+
+            $table->unsignedBigInteger(Entity::INITIAL_CHEQUE_VALUE)
+                  ->nullable();
+
+            $table->string(Entity::BUSINESS_CATEGORY)
+                  ->nullable();
+
+            $table->string(Entity::ACCOUNT_TYPE)
+                  ->nullable();
+
+            $table->boolean(Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE)
+                  ->default(0);
+
+            $table->string(Entity::SALES_TEAM)
+                  ->nullable();
+
+            $table->string(Entity::SALES_POC_PHONE_NUMBER)
+                ->nullable();
+
+            $table->text(Entity::COMMENT)
+                  ->nullable();
+
+            $table->integer(Entity::CREATED_AT);
+
+            $table->integer(Entity::UPDATED_AT);
+
+            $table->index(Entity::CREATED_AT);
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists(Table::BANKING_ACCOUNT_ACTIVATION_DETAIL);
+    }
+}

@@ -2,11 +2,14 @@
 
 namespace RZP\Models\BankingAccount;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
+use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Admin;
+use RZP\Models\Admin\Permission;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Activation\Comment;
 
@@ -30,10 +33,6 @@ class Service extends Base\Service
             ]);
 
         $account = $this->core->createBankingAccount($input, $this->merchant);
-
-        $this->core->notifyOpsAboutProActivation($account);
-
-        $this->core->notifyMerchantAboutUpdatedStatus($account);
 
         return $account->toArrayPublic();
     }
@@ -213,6 +212,7 @@ class Service extends Base\Service
         return (new Core)->bulkAssignReviewer($reviewerId, $bankingAccountIds);
     }
 
+
     public function prepareInputForCommentCreate(array $input)
     {
         $requiredKeys = [
@@ -279,7 +279,7 @@ class Service extends Base\Service
 
         // Transaction because we want to eiher process the entire batch row, or nothing, so that it
         // is possible to retry.
-        $this->repo->transaction(function() use ($input, $bankingAccount, $admin)
+        $this->repo->transaction(function () use ($input, $bankingAccount, $admin)
         {
             $commentCreateInput = $this->prepareInputForCommentCreate($input);
 
@@ -299,5 +299,43 @@ class Service extends Base\Service
         return [
             'status' => 'success'
         ];
+    }
+
+    public function downloadActivationMis(array $input)
+    {
+        $misProcessor = new Activation\MIS\Leads($input);
+
+        return $misProcessor->generate();
+    }
+
+    public function getBankingAccountSalesPOCs()
+    {
+        $orgId = $this->auth->getOrgId();
+
+        Org\Entity::verifyIdAndStripSign($orgId);
+
+        // Ideally this should be some specific permission that is assigned
+        // to every sales team member. But this is not present right now.
+        // going with a hack to use `view_activation_form` permission instead.
+        $permission = $this->repo
+            ->permission
+            ->findByOrgIdAndPermission($orgId, Permission\Name::VIEW_ACTIVATION_FORM);
+
+        if (empty($permission) === true)
+        {
+            throw new Exception\RuntimeException('Missing Permission');
+        }
+
+        $admins = [];
+
+        foreach ($permission->roles as $role)
+        {
+            foreach ($role->admins as $roleAdmin)
+            {
+                $admins[] = $roleAdmin->toArrayPublic();
+            }
+        }
+
+        return multidim_array_unique($admins, Admin\Entity::ID);
     }
 }

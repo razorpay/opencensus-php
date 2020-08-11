@@ -4,9 +4,11 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+
 use RZP\Models\BankingAccount\Service;
 use RZP\Constants\Entity as E;
 use RZP\Models\BankingAccount;
+
 
 class BankingAccountController extends Controller
 {
@@ -69,6 +71,14 @@ class BankingAccountController extends Controller
         return ApiResponse::json($response);
     }
 
+
+    public function postCreateActivationDetail(string $bankingAccountId)
+    {
+        $response = $this->service(E::BANKING_ACCOUNT_ACTIVATION_DETAIL)->createForBankingAccount($bankingAccountId, $this->input);
+
+        return ApiResponse::json($response);
+    }
+
     public function createActivationComment(string $id)
     {
         $input = Request::all();
@@ -87,11 +97,34 @@ class BankingAccountController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function patchActivationDetail(string $bankingAccountId)
+    {
+        $response = $this->service(E::BANKING_ACCOUNT_ACTIVATION_DETAIL)->updateForBankingAccount($bankingAccountId, $this->input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postUpdateActivationDetailsFromBatchService()
     {
         $input = Request::all();
 
         $response = $this->service()->updateDetailsFromBatchService($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function downloadActivationMis()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->downloadActivationMis($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getBankingAccountSalesPOCs()
+    {
+        $response = $this->service()->getBankingAccountSalesPOCs();
 
         return ApiResponse::json($response);
     }

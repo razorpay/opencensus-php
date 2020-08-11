@@ -75,10 +75,10 @@ class BankingAccountMailTest extends TestCase
             BankingAccountMail\StatusNotifications\Processing::class
         ];
 
+        $bankingAccount = $this->createBankingAccount();
+
         foreach ($mailableClasses as $mailableClass)
         {
-            $bankingAccount = $this->createBankingAccount();
-
             $mailableObj = new SendQueuedMailable(new $mailableClass($bankingAccount['id']));
 
             $this->assertStatusChangeMailableSQSPayloadSize($mailableObj);

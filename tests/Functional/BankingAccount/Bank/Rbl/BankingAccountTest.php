@@ -8,6 +8,7 @@ use RZP\Models\BankingAccount\Status;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Models\BankingAccount\AccountType;
 use RZP\Mail\BankingAccount\XProActivation;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -20,6 +21,7 @@ use RZP\Mail\BankingAccount\StatusNotifications\Cancelled;
 use RZP\Mail\BankingAccount\StatusNotifications\Activated;
 use RZP\Mail\BankingAccount\StatusNotifications\Processing;
 use RZP\Mail\BankingAccount\StatusNotifications\Unserviceable;
+use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 
 class BankingAccountTest extends TestCase
 {
@@ -43,6 +45,8 @@ class BankingAccountTest extends TestCase
 
     public function testCreateBankingAccount()
     {
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
         Mail::fake();
 
         $this->startTest();
@@ -61,6 +65,8 @@ class BankingAccountTest extends TestCase
         $testData = $this->testData['testCreateBankingAccount'];
 
         $bankingAccount = $this->startTest($testData);
+
+        $this->expectException(\RZP\Exception\BadRequestException::class);
 
         $bankingAccountTwo = $this->startTest($testData);
 
@@ -90,6 +96,34 @@ class BankingAccountTest extends TestCase
         {
             $this->createBankingAccount([Entity::PINCODE => '']);
         });
+    }
+
+    public function testCreateBankingAccountWithActivationDetail()
+    {
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        // Turn on the 'allow_all_merchants' feature for admin
+        DB::table('admins')->update(['allow_all_merchants' => 1]);
+
+        Mail::fake();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(AccountType::CURRENT, $bankingAccount->getAccountType());
+
+        $this->assertEquals(null, $bankingAccount['last_statement_attempt_at']);
+
+        $activationDetailEntity = $this->getDbEntity('banking_account_activation_detail', [
+            'banking_account_id' => $bankingAccount->getId()
+        ]);
+
+        $this->assertNotNull($activationDetailEntity);
+
+        Mail::assertQueued(XProActivation::class);
     }
 
     public function testSuccessBankAccountInfoNotification(string $id = null)
@@ -1153,6 +1187,54 @@ class BankingAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testBankingAccountFetchForMerchantPocCity(string $dbName = 'Bangalore', string $searchName = "Bangalore")
+    {
+        $ba = $this->testCreateActivationDetail([
+            ActivationDetail\Entity::MERCHANT_CITY => $dbName
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['merchant_poc_city'] = $searchName;
+
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['id'] = $ba['id'];
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['banking_account_activation_details'][ActivationDetail\Entity::MERCHANT_CITY] = $dbName;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testBankingAccountFetchForDocsWalkthrough(bool $dbValue = true, bool $searchValue = true)
+    {
+        $ba = $this->testCreateActivationDetail([
+            ActivationDetail\Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE => $dbValue
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content'][ActivationDetail\Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE] = $searchValue;
+
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['id'] = $ba['id'];
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['banking_account_activation_details'][ActivationDetail\Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE] = intval($dbValue);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testBankingAccountFetchForBankAccountType(string $dbName = 'insignia', string $searchName = "insignia")
+    {
+        $ba = $this->testCreateActivationDetail([
+            ActivationDetail\Entity::ACCOUNT_TYPE => $dbName
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['bank_account_type'] = $searchName;
+
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['id'] = $ba['id'];
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['banking_account_activation_details'][ActivationDetail\Entity::ACCOUNT_TYPE] = $dbName;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testFetchBankingAccountsOfCreatedStatus()
     {
         Mail::fake();
@@ -1695,6 +1777,57 @@ class BankingAccountTest extends TestCase
 
     }
 
+    public function testCreateActivationDetail(array $input = null)
+    {
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $bankingAccount = $this->createBankingAccount();
+
+        $comment = "Sample comment";
+
+        $adminId = "admin_" . Org::SUPER_ADMIN;
+
+        $dataToReplace  = [
+            'request' => [
+                'url'     => '/banking_accounts/activation/' . $bankingAccount['id'] . '/details',
+                'method'  => 'POST',
+                'content' => [
+                    'sales_poc_id' => $adminId,
+                    'comment'      => $comment
+                ]
+            ],
+        ];
+
+        if ($input !== null)
+        {
+            $dataToReplace['request']['content'] = array_merge($dataToReplace['request']['content'], $input);
+        }
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccountId  = str_replace("bacc_", "", $bankingAccount['id']);
+
+        $commentEntity = $this->getDbEntity('banking_account_comment', [
+            'banking_account_id' => $bankingAccountId
+        ]);
+
+        $this->assertEquals($comment, $commentEntity->comment);
+
+        $commentEntity = $this->getDbEntity('banking_account_comment', [
+            'banking_account_id' => $bankingAccountId
+        ]);
+
+        $this->assertEquals($comment, $commentEntity->comment);
+
+        $spocId  = DB::table('admin_audit_map')->where('entity_id','=',$bankingAccountId)->value('admin_id');
+
+        $this->assertEquals(Org::SUPER_ADMIN, $spocId);
+
+        return $bankingAccount;
+    }
+
     public function testCreateBankingAccountActivationComment()
     {
         $bankingAccount = $this->createBankingAccount();
@@ -1711,6 +1844,23 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
 
         return $bankingAccount;
+    }
+
+
+    public function testUpdateActivationDetail()
+    {
+        $bankingAccount = $this->testCreateActivationDetail();
+
+        $dataToReplace  = [
+            'request' => [
+                'url'     => '/banking_accounts/activation/' . $bankingAccount['id'] . '/details',
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
     }
 
     public function testCreateBankingAccountActivationCommentViaBatch()

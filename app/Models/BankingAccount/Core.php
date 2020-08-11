@@ -235,7 +235,33 @@ class Core extends Base\Core
 
         if ($bankingAccount !== null)
         {
-            return $bankingAccount;
+            // Throwing an error here in case admin dashboard user
+            // attempts to create another BankingAccount for same MID, channel.
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_DUPLICATE_EXTERNAL_ID,
+                Entity::MERCHANT_ID,
+                [
+                    'merchant_id' => $merchant->getPublicId(),
+                    'banking_account_id' => $bankingAccount->getPublicId()
+                ]);
+        }
+
+        // Pulling the activation details out as they are stored as part of
+        // a different entity.
+        // These details are only to be sent from admin auth.
+        $activationDetailInput = null;
+
+        if (isset($input['activation_detail']) === true)
+        {
+            $auth = $this->app['basicauth'];
+
+            if ($auth->isAdminAuth() === false)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_DETAILS_ONLY_ON_ADMIN_AUTH);
+            }
+
+            $activationDetailInput = array_pull($input, 'activation_detail');
         }
 
         $bankingAccount = new Entity;
@@ -269,20 +295,34 @@ class Core extends Base\Core
                 $bankingAccount->toArray(),
             ]);
 
-        $this->repo->saveOrFail($bankingAccount);
+        $this->repo->transaction(function() use ($bankingAccount, $merchant, $bankContent, $activationDetailInput)
+        {
+            $this->repo->saveOrFail($bankingAccount);
 
-        $stateCore = new State\Core;
+            $stateCore = new State\Core;
 
-        $content = [Entity::STATUS => $bankContent[Entity::STATUS]];
+            $content = [Entity::STATUS => $bankContent[Entity::STATUS]];
 
-        $this->trace->info(
-            TraceCode::BANKING_ACCOUNT_UPDATE_ACTIVATION_STATUS,
-            [
-                'id'    => $bankingAccount->getId(),
-                'input' => $content,
-            ]);
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_UPDATE_ACTIVATION_STATUS,
+                [
+                    'id'    => $bankingAccount->getId(),
+                    'input' => $content,
+                ]);
 
-        $stateCore->createForMakerAndEntity($content, $merchant, $bankingAccount);
+            $stateCore->createForMakerAndEntity($content, $merchant, $bankingAccount);
+
+            if ($activationDetailInput !== null)
+            {
+                $activationDetailService = new Activation\Detail\Service;
+
+                $activationDetailService->createForBankingAccount($bankingAccount->getPublicId(), $activationDetailInput);
+            }
+        });
+
+        $this->notifyOpsAboutProActivation($bankingAccount);
+
+        $this->notifyMerchantAboutUpdatedStatus($bankingAccount);
 
         return $bankingAccount;
     }
@@ -984,7 +1024,9 @@ class Core extends Base\Core
     {
         $reviewer = $this->repo->admin->findByPublicId($reviewerId);
 
-        $existingReviewer = $bankingAccount->reviewers()->first();
+        $existingReviewer = $bankingAccount->reviewers()
+                                           ->where(Entity::AUDITOR_TYPE, '=', 'reviewer')
+                                           ->first();
 
         // If banking account already has a reviewer, detach the reviewer from the banking account.
         // The new reviewer will be attached to the banking account below,
@@ -997,6 +1039,29 @@ class Core extends Base\Core
         }
 
         $bankingAccount->reviewers()->attach($reviewer, [Entity::AUDITOR_TYPE => 'reviewer']);
+
+        $this->repo->saveOrFail($bankingAccount);
+    }
+
+    public function addSalesPOCToBankingAccount(Entity $bankingAccount, string $spocId)
+    {
+        $spoc = $this->repo->admin->findByPublicId($spocId);
+
+        $existingSpoc = $bankingAccount->spocs()
+                                       ->where(Entity::AUDITOR_TYPE, '=', 'spoc')
+                                       ->first();
+
+        // If banking account already has a spoc, detach the spoc from the banking account.
+        // The new spoc will be attached to the banking account below,
+        // effectively assigning the banking account the new reviewer.
+        if (empty($existingSpoc) === false)
+        {
+            $spocId = $existingSpoc->pivot->admin_id;
+
+            $bankingAccount->spocs()->detach($spocId);
+        }
+
+        $bankingAccount->spocs()->attach($spoc, [Entity::AUDITOR_TYPE => 'spoc']);
 
         $this->repo->saveOrFail($bankingAccount);
     }

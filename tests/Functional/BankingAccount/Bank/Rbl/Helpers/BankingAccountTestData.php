@@ -4,6 +4,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\BankingAccount;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 
 return [
     'testCreateBankingAccount' => [
@@ -33,6 +34,45 @@ return [
             'content' => [
                 'channel' => 'rbl',
                 'pincode' => '560034',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel'     => 'rbl',
+                'status'      => 'created'
+            ],
+        ],
+    ],
+
+    'testCreateBankingAccountWithActivationDetail' => [
+        'request'  => [
+            'url'     => '/banking_accounts_admin',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [
+                'channel' => 'rbl',
+                'pincode' => '560034',
+                'activation_detail' => [
+                    'merchant_poc_name' => 'Sample Name',
+                    'merchant_poc_designation' => 'Financial Consultant',
+                    'merchant_poc_email' => 'sample@sample.com',
+                    'merchant_poc_phone_number' => '9876556789',
+                    'merchant_documents_address' => 'x, y, z',
+                    'initial_cheque_value' => 100,
+                    'account_type' => 'insignia',
+                    'merchant_city' => 'Bangalore',
+                    'comment' => 'abc',
+                    'is_documents_walkthrough_complete' => true,
+                    'merchant_region' => 'South',
+                    'expected_monthly_gmv' => 10000,
+                    'average_monthly_balance' => 0,
+                    'business_category' => 'partnership',
+                    'sales_team' => 'sme',
+                    'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
+                    'sales_poc_phone_number' => '1234554321'
+                ]
             ],
         ],
         'response' => [
@@ -409,7 +449,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED,
         ],
     ],
-    
+
     'testActivateFailedDueToFtsFundAccountValidationFailure' => [
         'request'  => [
             'url'     => '/banking_accounts/{id}/activate',
@@ -971,6 +1011,60 @@ return [
         ],
     ],
 
+    'testBankingAccountFetchForMerchantPocCity' => [
+        'request' => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    []
+                ]
+            ],
+        ],
+    ],
+
+    'testBankingAccountFetchForDocsWalkthrough' => [
+        'request' => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    []
+                ]
+            ],
+        ],
+    ],
+
+    'testBankingAccountFetchForBankAccountType' => [
+        'request' => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    []
+                ]
+            ],
+        ],
+    ],
+
     'testFetchBankingAccountsOfCreatedStatus'  => [
         'request'  => [
             'url'     => '/admin/banking_account',
@@ -1121,6 +1215,37 @@ return [
         ],
     ],
 
+    'testCreateActivationDetail' => [
+        'request'  => [
+            'url'     => '/banking_accounts/activation/{id}/details',
+            'method'  => 'POST',
+            'content' => [
+                'merchant_poc_name' => 'Sample Name',
+                'merchant_poc_designation' => 'Financial Consultant',
+                'merchant_poc_email' => 'sample@sample.com',
+                'merchant_poc_phone_number' => '9876556789',
+                'merchant_documents_address' => 'x, y, z',
+                'initial_cheque_value' => 100,
+                'account_type' => 'insignia',
+                'merchant_city' => 'Bangalore',
+                'comment' => 'abc',
+                'is_documents_walkthrough_complete' => true,
+                'merchant_region' => 'South',
+                'expected_monthly_gmv' => 10000,
+                'average_monthly_balance' => 0,
+                'business_category' => 'partnership',
+                'sales_team' => 'sme',
+                'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
+                'sales_poc_phone_number' => '1234554321'
+                ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_poc_name' => 'Sample Name'
+                ],
+        ],
+    ],
+
     'testCreateBankingAccountActivationComment' => [
         'request' => [
             'url'     => '/banking_accounts/activation/{id}/comments',
@@ -1141,6 +1266,30 @@ return [
                 'admin'             => [
                     'name' => 'test admin'
                 ]
+            ],
+        ],
+    ],
+
+    'testUpdateActivationDetail' => [
+        'request'  => [
+            'url'     => '/banking_accounts/activation/{id}/details',
+            'method'  => 'POST',
+            'content' => [
+                'merchant_poc_phone_number' => '1234554321',
+                'expected_monthly_gmv' => '10000',
+                'business_category' => 'partnership',
+                'account_type' => 'zero_balance',
+                'is_documents_walkthrough_complete' => true,
+                'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
+                ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_poc_name' => 'Sample Name',
+                'merchant_poc_phone_number' => '1234554321',
+                'expected_monthly_gmv' => '10000',
+                'account_type' => 'zero_balance',
+                "is_documents_walkthrough_complete" => '1',
             ],
         ],
     ],

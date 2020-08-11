@@ -1733,6 +1733,13 @@ class Route
         'banking_account_statement_generate'      => ['post',     'banking_account_statement/generate',                        'BankingAccountStatementController@generate'                ],
         'banking_account_statement_process_cron'  => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
         'banking_account_statement_channel_fetch' => ['post',     'banking_account_statement/process/{channel}',               'BankingAccountStatementController@processAccountStatementForChannel'],
+        'banking_account_activation_detail_create'=> ['post',     'banking_accounts/activation/{id}/details',                   'BankingAccountController@postCreateActivationDetail'       ],
+        'banking_account_activation_detail'
+        .'_update'                                => ['patch',    'banking_accounts/activation/{id}/details',                   'BankingAccountController@patchActivationDetail'            ],
+
+        'banking_account_activation_mis_download' => ['get',      'banking_accounts/activation/mis/download',                  'BankingAccountController@downloadActivationMis'            ],
+
+        'banking_account_activation_spocs'        => ['get',      'banking_accounts/activation/spocs',                          'BankingAccountController@getBankingAccountSalesPOCs'       ],
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
@@ -3292,6 +3299,7 @@ class Route
         'merchant_requests_bulk_update',
         'merchant_activation_bulk_assign_reviewer',
         'merchant_activation_reviewers',
+        'banking_account_activation_spocs',
 
         // batch Service
         'batch_service_route',
@@ -3391,8 +3399,11 @@ class Route
         'banking_account_webhook_account_info_internal',
         'banking_account_activation_status_change_log',
         'banking_account_comments_create',
+        'banking_account_activation_mis_download',
         'banking_account_comments_list',
         'banking_account_bulk_assign_reviewer',
+        'banking_account_activation_detail_create',
+        'banking_account_activation_detail_update',
 
         'governor_create_namespace_v1',
         'governor_get_client_v1',
@@ -3587,9 +3598,8 @@ class Route
         'fix_merchant_data_cron',
         'update_late_auth_config_admin_bulk',
         'create_payment_config_bulk',
-
+        'pincode_get',
         'admin_key_migrate_to_credcase',
-
         'admin_access_maps_bootstrap_cache',
 
         // Update free_payout attributes for balance
@@ -3602,6 +3612,7 @@ class Route
         'paper_nach_approve_failure'               => Permission::VERIFY_NACH_UPLOADS,
         'bulk_create_fund_accounts'                => '*',
         'payout_reject_admin_bulk'                 => Permission::REJECT_PAYOUT_BULK,
+        'pincode_get'                              => '*',
         'loc_service_admin'                        => Permission::LOC,
         'ufh_admin_upload_file'                    => '*',
         'los_service_admin'                        => Permission::LOANS_EDIT,
@@ -4186,7 +4197,11 @@ class Route
         'banking_account_yesb_bulk_create'         => Permission::BANKING_UPDATE_ACCOUNT,
         'banking_account_activation_status_'
         . 'change_log'                             => '*',
+        'banking_account_activation_spocs'         => '*',
+        'banking_account_activation_detail_create' => '*',
+        'banking_account_activation_detail_update' => '*',
         'banking_account_comments_create'          => '*', //TODO: change to the correct permission
+        'banking_account_activation_mis_download'  => '*',
         'banking_account_comments_list'            => '*',
         'banking_account_bulk_assign_reviewer'     => Permission::ASSIGN_BANKING_ACCOUNT_REVIEWER,
         'set_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
@@ -5554,6 +5569,9 @@ class Route
         //'bank_transfer_process_test',
         'banking_account_create',
         'banking_account_create_admin',
+        'banking_account_activation_detail_create',
+        'banking_account_activation_detail_update',
+        'banking_account_activation_mis_download',
         'banking_account_webhook_account_info',
 
         'banking_account_gateway_balance_fetch',

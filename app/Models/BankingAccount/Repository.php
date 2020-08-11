@@ -8,6 +8,7 @@ use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
+use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 use RZP\Models\Base\PublicCollection;
 
 class Repository extends Base\Repository
@@ -16,7 +17,8 @@ class Repository extends Base\Repository
 
     protected $expands = [
         Entity::BANKING_ACCOUNT_DETAILS,
-        Entity::MERCHANT
+        Entity::MERCHANT,
+        Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS
     ];
 
     public function getFromBalanceId(string $balanceId)
@@ -250,6 +252,22 @@ class Repository extends Base\Repository
         $query->join($merchantTable, $bankingAccountMerchantIdColumn, '=', $merchantIdColumn);
     }
 
+    protected function joinQueryActivationDetail(Base\BuilderEx $query)
+    {
+        $activationDetailTable = $this->repo->banking_account_activation_detail->getTableName();
+
+        if ($query->hasJoin($activationDetailTable) === true)
+        {
+            return;
+        }
+
+        $bankingAccountIdForeignColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::BANKING_ACCOUNT_ID);
+
+        $bankingAccountIdColumn = $this->repo->banking_account->dbColumn(Entity::ID);
+
+        $query->join($activationDetailTable, $bankingAccountIdColumn, '=', $bankingAccountIdForeignColumn);
+    }
+
     public function addQueryParamMerchantBusinessName(Base\BuilderEx $query, array $params)
     {
         $this->joinQueryMerchantDetail($query);
@@ -284,6 +302,67 @@ class Repository extends Base\Repository
         $query->where($merchantEmailColumn, '=', $email);
     }
 
+    public function addQueryParamMerchantPocCity(Base\BuilderEx $query, array $params)
+    {
+        $merchantCityColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::MERCHANT_CITY);
+
+        $this->joinQueryActivationDetail($query);
+
+        // selecting only banking_accounts columns so that
+        // clashes between field names do not result in corrputed data
+        // For example, both merchants and banking_accounts have field 'channel'
+        $query->select($this->dbColumn('*'));
+
+        // case insensitive exact match for merchant email
+        $merchantCity = $params[Entity::MERCHANT_POC_CITY];
+
+        // Temporarily the Documentation process (in terms of delivering)
+        // is different for Bangalore and Non-Bangalore. Hence, this temporary provision
+        // to allow not check.
+        // In future, once processes get streamlined, this may be unnecessary.
+        if ($merchantCity[0] === '!')
+        {
+            $query->where($merchantCityColumn, '!=', substr($merchantCity, 1));
+        }
+        else
+        {
+            $query->where($merchantCityColumn, '=', $merchantCity);
+        }
+    }
+
+    public function addQueryParamBankAccountType(Base\BuilderEx $query, array $params)
+    {
+        $bankAccountTypeColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::ACCOUNT_TYPE);
+
+        $this->joinQueryActivationDetail($query);
+
+        // selecting only banking_accounts columns so that
+        // clashes between field names do not result in corrputed data
+        // For example, both merchants and banking_accounts have field 'channel'
+        $query->select($this->dbColumn('*'));
+
+        // case insensitive exact match for merchant email
+        $bankAccountType = $params[Entity::BANK_ACCOUNT_TYPE];
+
+        $query->where($bankAccountTypeColumn, '=', $bankAccountType);
+    }
+
+    public function addQueryParamIsDocumentsWalkthroughComplete(Base\BuilderEx $query, array $params)
+    {
+        $isDocWalkthroughCompleteColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE);
+
+        $this->joinQueryActivationDetail($query);
+
+        // selecting only banking_accounts columns so that
+        // clashes between field names do not result in corrputed data
+        // For example, both merchants and banking_accounts have field 'channel'
+        $query->select($this->dbColumn('*'));
+
+        // case insensitive exact match for merchant email
+        $isDocWalkthroughComplete = $params[Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE];
+
+        $query->where($isDocWalkthroughCompleteColumn, '=', $isDocWalkthroughComplete);
+    }
 
     /**
      *

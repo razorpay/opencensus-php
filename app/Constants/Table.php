@@ -238,12 +238,13 @@ class Table
     const SETTINGS              = 'settings';
 
     // Banking Accounts Tables
-    const EXTERNAL                        = 'external';
-    const BANKING_ACCOUNT                 = 'banking_accounts';
-    const BANKING_ACCOUNT_STATE           = 'banking_account_state';
-    const BANKING_ACCOUNT_DETAIL          = 'banking_account_details';
-    const BANKING_ACCOUNT_STATEMENT       = 'banking_account_statement';
-    const BANKING_ACCOUNT_COMMENT         = 'banking_account_comments';
+    const EXTERNAL                          = 'external';
+    const BANKING_ACCOUNT                   = 'banking_accounts';
+    const BANKING_ACCOUNT_STATE             = 'banking_account_state';
+    const BANKING_ACCOUNT_DETAIL            = 'banking_account_details';
+    const BANKING_ACCOUNT_STATEMENT         = 'banking_account_statement';
+    const BANKING_ACCOUNT_COMMENT           = 'banking_account_comments';
+    const BANKING_ACCOUNT_ACTIVATION_DETAIL = 'banking_account_activation_details';
 
     // P2P Service Tables
     const P2P_VPA               = 'p2p_vpa';
