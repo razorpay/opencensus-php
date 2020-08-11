@@ -229,6 +229,7 @@ class MerchantDocumentTest Extends TestCase
 
         $this->updateUploadDocumentData($testDataKeyName);
 
+        Config::set('applications.kyc.mock', false);
         Config::set('applications.kya.poa_ocr_response_type', Constants::FAILURE);
 
         $testData = &$this->testData[$testDataKeyName];

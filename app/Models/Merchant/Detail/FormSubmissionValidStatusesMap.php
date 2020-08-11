@@ -27,23 +27,39 @@ class FormSubmissionValidStatusesMap
         Constants::GSTIN       => Entity::GSTIN_VERIFICATION_STATUS,
     ];
 
-    const ALLOWED_VERIFICATION_STATUS_MAP = [
-        Constants::POI         => [POIStatus::FAILED, POIStatus::VERIFIED, POIStatus::NOT_MATCHED],
-        Constants::COMPANY_PAN => [CompanyPanStatus::FAILED, CompanyPanStatus::VERIFIED, CompanyPanStatus::NOT_MATCHED],
-        Constants::POA         => [PoaVerificationStatus::VERIFIED, PoaVerificationStatus::FAILED],
-        Constants::GSTIN       => [GSTINVerificationStatus::FAILED, GSTINVerificationStatus::VERIFIED, GSTINVerificationStatus::NOT_MATCHED],
+    /**
+     * here registered refer to Registered Business types
+     */
+    const POI_REGISTERED   = [POIStatus::FAILED, POIStatus::VERIFIED, POIStatus::NOT_MATCHED];
+    const POI_UNREGISTERED = [POIStatus::VERIFIED];
+    const COMPANY_PAN      = [CompanyPanStatus::FAILED, CompanyPanStatus::VERIFIED, CompanyPanStatus::NOT_MATCHED];
+    const POA              = [PoaVerificationStatus::VERIFIED, PoaVerificationStatus::FAILED];
+    const GSTIN            = [GSTINVerificationStatus::FAILED, GSTINVerificationStatus::VERIFIED, GSTINVerificationStatus::NOT_MATCHED];
+
+    const ALLOWED_VERIFICATION_STATUS_MAP_REGISTERED = [
+        Constants::POI         => self::POI_REGISTERED,
+        Constants::COMPANY_PAN => self::COMPANY_PAN,
+        Constants::POA         => self::POA,
+        Constants::GSTIN       => self::GSTIN,
+    ];
+
+    const ALLOWED_VERIFICATION_STATUS_MAP_UNREGISTERED = [
+        Constants::POI         => self::POI_UNREGISTERED,
+        Constants::COMPANY_PAN => self::COMPANY_PAN,
+        Constants::POA         => self::POA,
+        Constants::GSTIN       => self::GSTIN,
     ];
 
     /**
      * checks all documents specified in DOCUMENT_LIST
      *
-     * @param Entity $merchantDetail
+     * @param Entity $merchantDetails
      *
      * @param array  $documentList
      *
      * @return bool
      */
-    public function isDocumentsStatusValidForFormSubmission(Entity $merchantDetail, array $documentList)
+    public function isDocumentsStatusValidForFormSubmission(Entity $merchantDetails, array $documentList)
     {
         $isSubmissionAllowed = true;
 
@@ -51,9 +67,9 @@ class FormSubmissionValidStatusesMap
         {
             $documentVerificationStatusKey = self::DOCUMENT_VERIFICATION_STATUS_MAP[$document];
 
-            $documentVerificationStatus = $merchantDetail->getAttribute($documentVerificationStatusKey);
+            $documentVerificationStatus = $merchantDetails->getAttribute($documentVerificationStatusKey);
 
-            if (self::isFormSubmissionAllowed($document, $documentVerificationStatus) === false)
+            if (self::isFormSubmissionAllowed($merchantDetails, $document, $documentVerificationStatus) === false)
             {
                 $isSubmissionAllowed = false;
 
@@ -69,19 +85,27 @@ class FormSubmissionValidStatusesMap
      *
      * if verification status is empty ie null or empty string etc,then allow merchant to submit form
      *
+     * @param Entity $merchantDetails
      * @param string $verificationDocument
      * @param string $verificationStatus
      *
      * @return bool
      */
-    public function isFormSubmissionAllowed(string $verificationDocument, string $verificationStatus = null)
+    public function isFormSubmissionAllowed(Entity $merchantDetails, string $verificationDocument, string $verificationStatus = null)
     {
         if (empty($verificationStatus) === true)
         {
             return true;
         }
 
-        $allowedStatuses = self::ALLOWED_VERIFICATION_STATUS_MAP[$verificationDocument] ?? [];
+        $allowedVerificationStatuses = self::ALLOWED_VERIFICATION_STATUS_MAP_REGISTERED;
+
+        if ($merchantDetails->isUnregisteredBusiness())
+        {
+            $allowedVerificationStatuses = self::ALLOWED_VERIFICATION_STATUS_MAP_UNREGISTERED;
+        }
+
+        $allowedStatuses = $allowedVerificationStatuses[$verificationDocument] ?? [];
 
         return in_array($verificationStatus, $allowedStatuses) === true;
     }

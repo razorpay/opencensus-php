@@ -625,7 +625,7 @@ return [
             Header::GSTIN                    => '22AAAAA0000A1Z6',
             Header::PROMOTER_PAN             => 'KDOPK0930L',
             Header::WEBSITE_URL              => 'http://www.test.com',
-            Header::PROMOTER_PAN_NAME        => 'sdfds',
+            Header::PROMOTER_PAN_NAME        => 'Test123',
             Header::BANK_ACCOUNT_NUMBER      => '123456789099',
             Header::BANK_BRANCH_IFSC         => 'HDFC0000056',
             Header::BANK_ACCOUNT_NAME        => 'Mr merch',

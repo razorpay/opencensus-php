@@ -781,8 +781,9 @@ class ActivationTest extends OAuthTestCase
         $merchantId = '1cXSLlUU8V9sXl';
 
         $attributes = [
-            'business_type'        => 11,
-            'merchant_id'          => $merchantId,
+            'business_type'           => 11,
+            'merchant_id'             => $merchantId,
+            'poi_verification_status' => 'verified',
         ];
 
         $this->validatePOASubmission([Type::AADHAR_FRONT, Type::AADHAR_BACK], $merchantId, $attributes);
@@ -823,9 +824,10 @@ class ActivationTest extends OAuthTestCase
         $merchantId = '1cXSLlUU8V9sXl';
 
         $attributes = [
-            'business_type'        => 11,
-            'merchant_id'          => $merchantId,
-            'promoter_address_url' => null
+            'business_type'           => 11,
+            'merchant_id'             => $merchantId,
+            'promoter_address_url'    => null,
+            'poi_verification_status' => 'verified',
         ];
 
         $this->validatePOASubmission([Type::VOTER_ID_FRONT, Type::VOTER_ID_BACK], $merchantId, $attributes);
@@ -1712,7 +1714,10 @@ class ActivationTest extends OAuthTestCase
     public function testBankDetailsVerificationStatusForUnRegisteredBusiness()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
-                                                  ['business_type' => 2]);
+                                                  [
+                                                      'business_type'           => 2,
+                                                      'poi_verification_status' => 'verified',
+                                                  ]);
 
         $merchantId = $merchantDetail['merchant_id'];
 
