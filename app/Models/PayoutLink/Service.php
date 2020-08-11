@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Constants\Entity as E;
 use RZP\Models\Feature\Constants;
 use Illuminate\Support\Facades\Mail;
@@ -41,13 +42,43 @@ class Service extends Base\Service
         $this->entityRepo = $this->repo->payout_link;
     }
 
+    public function checkIfPLServiceIsDown()
+    {
+        $mid = $this->merchant->getId();
+
+        $variant = $this->app['razorx']->getTreatment($mid,
+            Merchant\RazorxTreatment::RX_IS_PAYOUT_LINK_SERVICE_DOWN,
+            $this->app['rzp.mode'] ?? 'live');
+
+        if($variant == 'on')
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_LINK_SERVICE_UNDER_MAINTAINENCE,
+                null,
+                [
+                    Entity::MERCHANT_ID     => $this->auth->getMerchantId()
+                ]
+            );
+        }
+    }
+
     public function checkIfMerchantOnAPI() : bool
     {
-        return $this->merchant->isFeatureEnabled(Constants::X_PAYOUT_LINKS_MS) == false;
+        $mid = $this->merchant->getId();
+
+        $variant = $this->app['razorx']->getTreatment($mid,
+            Merchant\RazorxTreatment::RX_PAYOUT_LINK_MICROSERVICE,
+            $this->app['rzp.mode'] ?? 'live');
+
+        return !($variant == 'on');
+
+        //return $this->merchant->isFeatureEnabled(Constants::X_PAYOUT_LINKS_MS) == false;
     }
 
     public function resendNotification(string $payoutLinkId, array $input)
     {
+        $this->checkIfPLServiceIsDown();
+
         if($this->checkIfMerchantOnAPI() == true)
         {
             $payoutLink = $this->repo
@@ -68,6 +99,7 @@ class Service extends Base\Service
 
     public function getStatus(string $payoutLinkId)
     {
+        $this->checkIfPLServiceIsDown();
 
         if($this->checkIfMerchantOnAPI() == true)
         {
@@ -89,6 +121,8 @@ class Service extends Base\Service
      */
     public function onBoardingStatus()
     {
+        $this->checkIfPLServiceIsDown();
+
         if($this->checkIfMerchantOnAPI() == true)
         {
             $data = $this->getPayoutLinkSummary();
@@ -107,6 +141,8 @@ class Service extends Base\Service
 
     public function summary(array $input): array
     {
+        $this->checkIfPLServiceIsDown();
+
         if($this->checkIfMerchantOnAPI() == true)
         {
             $data = $this->getPayoutLinkSummary();
@@ -139,6 +175,8 @@ class Service extends Base\Service
 
     public function create(array $input): array
     {
+        $this->checkIfPLServiceIsDown();
+
         if ($this->auth->isStrictPrivateAuth() === false)
         {
             // if this is not strictly Private, then we enforce OTP verification
@@ -301,6 +339,8 @@ class Service extends Base\Service
             $this->merchant = $this->repo->merchant->findByPublicId($merchantId);
         }
 
+        $this->checkIfPLServiceIsDown();
+
         if($this->checkIfMerchantOnAPI() == true)
         {
             return $this->core->updateSettings($this->merchant, $input);
@@ -318,6 +358,8 @@ class Service extends Base\Service
             $this->merchant = $this->repo->merchant->findByPublicId($merchantId);
         }
 
+        $this->checkIfPLServiceIsDown();
+
         if($this->checkIfMerchantOnAPI() == true)
         {
             return $this->core->getSettings($this->merchant);
@@ -328,6 +370,8 @@ class Service extends Base\Service
 
     public function initiate(string $payoutLinkId, array $input)
     {
+        $this->checkIfPLServiceIsDown();
+
         if($this->checkIfMerchantOnAPI() == true)
         {
             $payoutLink = $this->repo
@@ -349,6 +393,8 @@ class Service extends Base\Service
         $payout = null;
 
         $this->merchant = $merchant;
+
+        $this->checkIfPLServiceIsDown();
 
         if($this->checkIfMerchantOnAPI() == true)
         {
@@ -402,6 +448,8 @@ class Service extends Base\Service
 
     public function getFundAccountsOfContact(string $payoutLinkId, array $input)
     {
+        $this->checkIfPLServiceIsDown();
+
         if($this->checkIfMerchantOnAPI() == true)
         {
             $payoutLink = $this->repo
@@ -453,6 +501,8 @@ class Service extends Base\Service
 
     public function generateAndSendCustomerOtp(string $payoutLinkId, array $input)
     {
+        $this->checkIfPLServiceIsDown();
+
         $this->trace->info(TraceCode::PAYOUT_CUSTOMER_OTP_REQUEST,
                            $input);
 
@@ -472,6 +522,8 @@ class Service extends Base\Service
 
     public function cancel(string $payoutLinkId): array
     {
+        $this->checkIfPLServiceIsDown();
+
         if($this->checkIfMerchantOnAPI() == true)
         {
             $payoutLink = $this->repo
@@ -488,6 +540,15 @@ class Service extends Base\Service
 
     public function viewHostedPage($payoutLinkId)
     {
+        $variant = $this->app['razorx']->getTreatment($this->merchant->getId(),
+            Merchant\RazorxTreatment::RX_IS_PAYOUT_LINK_SERVICE_DOWN,
+            $this->app['rzp.mode'] ?? 'live');
+
+        if($variant == 'on')
+        {
+            return View::make('payout_link.customer_hosted_maintenance');
+        }
+
         if($this->checkIfMerchantOnAPI() == true)
         {
             $payoutLink = $this->repo
@@ -504,6 +565,8 @@ class Service extends Base\Service
 
     public function verifyCustomerOtp(string $payoutLinkId, array $input): array
     {
+        $this->checkIfPLServiceIsDown();
+
         if($this->checkIfMerchantOnAPI() == true)
         {
             $payoutLink = $this->repo
@@ -525,52 +588,46 @@ class Service extends Base\Service
 
         try
         {
-            $entity = $this->entityRepo->findOrFailByPublicIdWithParams($id, $input, true);
-            return $entity->toArrayAdmin();
+            return $this->app['payout-links']->fetch($publicId);
         }
         catch(\Exception $e)
         {
-            return $this->app['payout-links']->fetch($publicId);
+            $entity = $this->entityRepo->findOrFailByPublicIdWithParams($id, $input, true);
+            return $entity->toArrayAdmin();
         }
     }
 
     // used as admin fetchMultiple for admin dashboard
     public function fetchMultiple(string $entityname, array $input): array
     {
-        $originalCount = $input['count'];
-        $originalSkip = $input['skip'];
-        $input['count'] = $originalCount + $originalSkip;
-        $input['skip'] = 0;
+        if(key_exists('merchant_id', $input) === false)
+        {
+            $entities = new Base\PublicCollection();
+            return $entities->toArrayPublic();
+        }
 
-        $entities = $this->entityRepo->fetch(
-            $input,
-            null,
-            false,
-            true);
+        $merchantId = $input['merchant_id'];
+        $this->merchant = $this->repo->merchant->findByPublicId($merchantId);
 
-        $entities = $entities->toArrayPublic();
+        if($this->checkIfMerchantOnAPI() == true)
+        {
+            unset($input['merchant_id']);
 
-        $microserviceEntities = $this->app['payout-links']->fetchMultiple($input);
+            $entities = $this->entityRepo->fetch(
+                $input,
+                $this->merchant->getPublicId(),
+                false,
+                true);
 
-        $mergedEntities = array_merge($entities['items'], $microserviceEntities['items']);
-
-        usort($mergedEntities, function($a, $b) {
-            return $a['created_at'] < $b['created_at'];
-        });
-
-        $mergedEntities = array_slice($mergedEntities, $originalSkip, $originalCount);
-
-//        $mergedEntities = array_unique($mergedEntities, SORT_REGULAR);
-
-        $entities['count'] = $originalCount;
-
-        $entities['items'] = $mergedEntities;
-
-        return $entities;
+            return $entities->toArrayPublic();
+        }
+        return $this->app['payout-links']->fetchMultiple($input);
     }
 
     public function fetchMerchantSpecific(string $id): array
     {
+        $this->checkIfPLServiceIsDown();
+
         if($this->checkIfMerchantOnAPI() == true)
         {
             $entity = $this->entityRepo
@@ -584,6 +641,8 @@ class Service extends Base\Service
 
     public function fetchMultipleMerchantSpecific(array $input): array
     {
+        $this->checkIfPLServiceIsDown();
+
         if($this->checkIfMerchantOnAPI() == true)
         {
             $entities = $this->entityRepo

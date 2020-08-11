@@ -847,10 +847,11 @@ class Base extends BaseCore
 
         if (empty($payoutLinkId) === false)
         {
-            // check if payout link microservice feature flag enabled for this merchant
-            $isFeatureEnabled = $this->merchant->isFeatureEnabled(Features::X_PAYOUT_LINKS_MS);
+            //if payout link service down , do not allow to create payout
+            $this->checkIfPLServiceIsDown();
 
-            if($isFeatureEnabled === false)
+            // check if payout link microservice feature flag enabled for this merchant
+            if($this->checkIfMerchantOnAPI() == true)
             {
                 $payoutLink = $this->repo->payout_link->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
 
@@ -1017,6 +1018,37 @@ class Base extends BaseCore
         $payout->setStatus(Status::SCHEDULED);
 
         $this->repo->saveOrFail($payout);
+    }
+
+    protected function checkIfPLServiceIsDown()
+    {
+        $mid = $this->merchant->getId();
+
+        $variant = $this->app['razorx']->getTreatment($mid,
+                                                      Merchant\RazorxTreatment::RX_IS_PAYOUT_LINK_SERVICE_DOWN,
+                                                      $this->app['rzp.mode'] ?? 'live');
+
+        if($variant == 'on')
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_LINK_SERVICE_UNDER_MAINTAINENCE,
+                null,
+                [
+                    'merchant_id'    => $this->merchant->getId()
+                ]
+            );
+        }
+    }
+
+    protected function checkIfMerchantOnAPI() : bool
+    {
+        $mid = $this->merchant->getId();
+
+        $variant = $this->app['razorx']->getTreatment($mid,
+                                                      Merchant\RazorxTreatment::RX_PAYOUT_LINK_MICROSERVICE,
+                                                      $this->app['rzp.mode'] ?? 'live');
+
+        return !($variant == 'on');
     }
 
     protected function incrementCounterAndSetExpectedFeeTypeForFundAccountPayouts(Payout\Entity $payout)

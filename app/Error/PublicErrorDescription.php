@@ -965,6 +965,7 @@ class PublicErrorDescription
     const BAD_REQUEST_SMS_NOTIFICATION_WITH_EMPTY_PHONE                        = 'send_sms cannot be true when contact does not have an associated phone number ';
     const BAD_REQUEST_INVALID_CONTACT_ID                                       = 'Contact Id provided is invalid';
     const BAD_REQUEST_CONTACT_ID_EMAIL_AND_PHONE_NUMBER_MISSING                = 'Cannot create payout link as the contact_id provided does not have either email or phone number';
+    const BAD_REQUEST_PAYOUT_LINK_SERVICE_UNDER_MAINTAINENCE                   = 'Payout Link service is under maintainence';
 
     // Merchant Config Inheritance
     const BAD_REQUEST_INHERITANCE_PARENT_SHOULD_BE_PARTNER_PARENT_OF_SUBMERCHANT    =  'Inheritance parent should be aggregator or fully-managed partner of the submerchant';

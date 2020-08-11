@@ -4,6 +4,7 @@ namespace RZP\Models\Payout;
 
 use App;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Models\Feature\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\PayoutSourceUpdaterJob;
@@ -82,14 +83,18 @@ class SourceUpdater
     {
         try
         {
+            if (self::checkIfPLServiceIsDown($payout) == true)
+            {
+                // Payout Link Service is DOWN
+                return;
+            }
+
             $payoutLinkId = $payout->getPayoutLinkId();
 
             if($payoutLinkId !== null)
             {
                 // check if payout link microservice feature flag enabled for this merchant
-                $isFeatureEnabled = $payout->merchant->isFeatureEnabled(Constants::X_PAYOUT_LINKS_MS);
-
-                if($isFeatureEnabled === false)
+                if(self::checkIfMerchantOnAPI($payout) == true)
                 {
                     $payoutLink = $payout->payoutLink;
 
@@ -139,5 +144,31 @@ class SourceUpdater
                                        'payout_id' => $payout->getPublicId(),
                                    ]);
         }
+    }
+
+    protected static function checkIfPLServiceIsDown(PayoutEntity $payout) : bool
+    {
+        $app = App::getFacadeRoot();
+
+        $mid = $payout->merchant->getId();
+
+        $variant = $app['razorx']->getTreatment($mid,
+                                                Merchant\RazorxTreatment::RX_IS_PAYOUT_LINK_SERVICE_DOWN,
+                                                $app['rzp.mode'] ?? 'live');
+
+        return $variant == 'on';
+    }
+
+    protected static function checkIfMerchantOnAPI(PayoutEntity $payout) : bool
+    {
+        $app = App::getFacadeRoot();
+
+        $mid = $payout->merchant->getId();
+
+        $variant = $app['razorx']->getTreatment($mid,
+                                                Merchant\RazorxTreatment::RX_PAYOUT_LINK_MICROSERVICE,
+                                                $app['rzp.mode'] ?? 'live');
+
+        return !($variant == 'on');
     }
 }

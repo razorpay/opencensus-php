@@ -186,7 +186,7 @@ class PayoutLinks
         $url = $this->getConstructedUrl(self::FETCH_PAYOUT_LINK_PATH);
 
         $request = [
-            self::PAYOUT_LINK_ID => $payoutLinkId
+            self::PAYOUT_LINK_ID => $this->appendPublicSignForPayoutLink($payoutLinkId)
         ];
 
         if($merchantId != "")
@@ -208,10 +208,8 @@ class PayoutLinks
         if(key_exists('id', $input))
         {
             $payoutlinkid = $input['id'];
-            if(!str_contains($payoutlinkid, 'poutlk_'))
-            {
-                $payoutlinkid = 'poutlk_' . $payoutlinkid;
-            }
+            $payoutlinkid = $this->appendPublicSignForPayoutLink($payoutlinkid);
+
             $input[self::PAYOUT_LINK_ID] = $payoutlinkid;
         }
 
@@ -637,4 +635,15 @@ class PayoutLinks
         unset($payoutLink[self::UPDATED_AT]);
     }
 
+    protected function appendPublicSignForPayoutLink(string $payoutlinkid) : string
+    {
+        if(!str_contains($payoutlinkid, 'poutlk_'))
+        {
+            return 'poutlk_' . $payoutlinkid;
+        }
+        else
+        {
+            return $payoutlinkid;
+        }
+    }
 }

@@ -3,7 +3,8 @@
 namespace RZP\Tests\Unit\PayoutLink;
 
 use Mockery;
-use RZP\Models\Feature\Constants;
+use RZP\Models\Merchant;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\PayoutLink\Service;
 
@@ -33,11 +34,31 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $auth->setMerchant($merchant);
 
-        $this->fixtures->create('feature',
-            [
-                'name'      => Constants::X_PAYOUT_LINKS_MS,
-                'entity_id' => '12345678901234'
-            ]);
+//        $this->fixtures->create('feature',
+//            [
+//                'name'      => Constants::X_PAYOUT_LINKS_MS,
+//                'entity_id' => '12345678901234'
+//            ]);
+
+        // use razorx feature
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === Merchant\RazorxTreatment::RX_PAYOUT_LINK_MICROSERVICE)
+                    {
+                        return 'on';
+                    }
+
+                    return 'off';
+                }));
 
         return [
             'auth' => $auth,

@@ -145,6 +145,15 @@ final class RazorxTreatment
     // which makes request to stork & then dual writes to API.
     const API_WEBHOOK_V2_PATH = 'api_webhook_v2_path';
 
+
+    // Check whether Payout Link Service is up or not.
+    // If the feature is mapped to a merchant, the Service is down for that merchant
+    const RX_IS_PAYOUT_LINK_SERVICE_DOWN = 'rx_payout_links_inactive';
+
+    // Decides if routes should go to Payout Link MicroService or API
+    // If the feature is mapped to a merchant, the routes will go to MicroService
+    const RX_PAYOUT_LINK_MICROSERVICE = 'rx_payout_links_ms';
+
     const BATCH_SERVICE_REFUND_MIGRATION     = 'batch_service_refund_migration';
 
     const CREDCASE_DUAL_WRITE_ENABLED = 'credcase_dual_write_enabled';

@@ -2099,6 +2099,13 @@ class AdminFetch
                 ],
             ],
 
+            Entity::PAYOUT_LINK => [
+                'merchant_id' => [
+                    Fetch::LABEL  => 'Merchant Id (*)',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
             Entity::PAYTM => [
                 'payment_id' => Fetch::FIELD_PAYMENT_ID,
                 'received' => [
