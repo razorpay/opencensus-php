@@ -4,9 +4,13 @@ namespace RZP\Services\Settlements;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\BankAccount\Type;
+use RZP\Models\Currency\Currency;
 
 class Dashboard extends Base
 {
+    //********************* All endpoints for dashboard are configured here ***************************//
+
     const FETCH_URI             = '/twirp/rzp.settlements.dashboard.v1.DashboardService/Fetch';
     const FETCH_MULTIPLE_URI    = '/twirp/rzp.settlements.dashboard.v1.DashboardService/FetchMultiple';
     const SCHEDULE_CREATE_URI   = '/twirp/rzp.settlements.schedule.v1.ScheduleService/Create';
@@ -19,7 +23,7 @@ class Dashboard extends Base
 
     const BANK_ACCOUNT_GET          = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Get';
     const BANK_ACCOUNT_CREATE       = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Create';
-    CONST BANK_ACCOUNT_UPDATE       = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Update';
+    const BANK_ACCOUNT_UPDATE       = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Update';
     const BANK_ACCOUNT_DELETE       = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Delete';
 
     const EXECUTION_TRIGGER         = '/twirp/rzp.settlements.execution.v1.ExecutionService/Trigger';
@@ -191,16 +195,17 @@ class Dashboard extends Base
     /**
      * Bank Account Service Create
      * @param array  $input
+     * @param $mode string
      * @return array
      * @throws Exception\RuntimeException
      * @throws Exception\TwirpException
      * @throws \Throwable
      */
-    public function bankAccountCreate(array $input) : array
+    public function bankAccountCreate(array $input, string $mode = null) : array
     {
         $auth = $this->getAuth(self::SERVICE);
 
-        $response = $this->makeRequest(self::BANK_ACCOUNT_CREATE, $input, $auth);
+        $response = $this->makeRequest(self::BANK_ACCOUNT_CREATE, $input, $auth, $mode);
 
         $this->handleResponseCodes($response);
 
@@ -284,29 +289,72 @@ class Dashboard extends Base
     }
 
     /**
-     * @param array  $response
+     * @param $input
+     * @param $mode
+     * @return array|null
      * @throws Exception\RuntimeException
      * @throws Exception\TwirpException
      * @throws \Throwable
      */
-    protected function handleResponseCodes(array $response)
+    public function createBankAccount($input, $mode)
     {
-        $code = $response[self::CODE];
-        $body = $response[self::BODY];
-
-        if (in_array($code, [200, 400, 401, 500], true) === false)
+        if ($input->getType() === Type::MERCHANT)
         {
-            throw new Exception\RuntimeException(
-                'Unexpected response code received from Settlements.',
-                [
-                    'status_code'   => $code,
-                    'response_body' => $body,
-                ]);
+            $req = $this->getBankAccountCreateRequestForSettlementService($input);
+
+            return $this->bankAccountCreate($req, $mode);
         }
 
-        if ($code !== 200)
+        return null;
+    }
+
+    /**
+     * This is used to update the bank account
+     * @param $newBankAccount
+     * @return mixed
+     * @throws \RZP\Exception\RuntimeException
+     * @throws \RZP\Exception\TwirpException
+     * @throws \Throwable
+     */
+    public function changeBankAccount($newBankAccount)
+    {
+        if ($newBankAccount->getType() === Type::MERCHANT)
         {
-            throw new Exception\TwirpException($body);
+            $input = ['merchant_id' => $newBankAccount->getMerchantId()];
+
+            $old = $this->bankAccountGet($input);
+
+            $request = $this->getBankAccountCreateRequestForSettlementService($newBankAccount);
+
+            $request = array_merge(['id' => $old['bankAccounts'][0]['id']], $request);
+
+            return $this->bankAccountUpdate($request);
         }
+
+        return $newBankAccount;
+    }
+
+
+    /**
+     * this method returns the bank account request
+     * @param $ba
+     * @return array
+     */
+    public function getBankAccountCreateRequestForSettlementService($ba)
+    {
+        return [
+            'merchant_id'         =>  $ba->getMerchantId(),
+            'account_number'      =>  $ba->getAccountNumber(),
+            'account_type'        =>  $ba->getAccountType() !== null ? $ba->getAccountType():'current',
+            'ifsc_code'           =>  $ba->getIfscCode(),
+            'beneficiary_name'    =>  $ba->getBeneficiaryName(),
+            'beneficiary_address' =>  $ba->getBeneficiaryAddress1(),
+            'beneficiary_city'    =>  $ba->getBeneficiaryCity(),
+            'beneficiary_state'   =>  $ba->getBeneficiaryState(),
+            'beneficiary_country' =>  $ba->getBeneficiaryCountry(),
+            'beneficiary_email'   =>  $ba->getBeneficiaryEmail(),
+            'beneficiary_mobile'  =>  $ba->getBeneficiaryMobile(),
+            'accepted_currency'   =>  Currency::INR
+        ];
     }
 }

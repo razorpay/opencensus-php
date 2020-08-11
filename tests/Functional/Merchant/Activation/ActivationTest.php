@@ -1581,7 +1581,15 @@ class ActivationTest extends OAuthTestCase
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
-             ->willReturn($experimentVal);
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'settlement_service_ramp')
+                    {
+                        return 'off';
+                    }
+                    return 'on';
+                }));
     }
 
     public function testGreylistInternationalOnKYC()

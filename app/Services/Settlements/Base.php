@@ -27,6 +27,9 @@ class Base
     const KEY                   = 'key';
     const SECRET                = 'secret';
 
+    const BODY                  = 'body';
+    const CODE                  = 'code';
+
     // Headers
     const ACCEPT        = 'Accept';
     const ADMIN_EMAIL   = 'admin_email';
@@ -59,13 +62,17 @@ class Base
      * @param string $endpoint
      * @param array  $data
      * @param array  $auth
+     * @param string $mode
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function makeRequest(string $endpoint, array $data, array $auth = []): array
+    public function makeRequest(string $endpoint, array $data, array $auth = [], string $mode = null): array
     {
-        $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
+        if ($mode === null)
+        {
+            $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
+        }
 
         $url = $this->baseUrl[$mode] . $endpoint;
 
@@ -197,5 +204,32 @@ class Base
     protected function getAdminEmail(): string
     {
         return $this->auth->getDashboardHeaders()[self::ADMIN_EMAIL] ?? '';
+    }
+
+    /**
+     * @param array  $response
+     * @throws Exception\RuntimeException
+     * @throws Exception\TwirpException
+     * @throws \Throwable
+     */
+    protected function handleResponseCodes(array $response)
+    {
+        $code = $response[self::CODE];
+        $body = $response[self::BODY];
+
+        if (in_array($code, [200, 400, 401, 500], true) === false)
+        {
+            throw new Exception\RuntimeException(
+                'Unexpected response code received from Settlements.',
+                [
+                    'status_code'   => $code,
+                    'response_body' => $body,
+                ]);
+        }
+
+        if ($code !== 200)
+        {
+            throw new Exception\TwirpException($body);
+        }
     }
 }

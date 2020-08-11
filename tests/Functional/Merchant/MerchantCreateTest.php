@@ -178,7 +178,7 @@ class MerchantCreateTest extends TestCase
             'jiomoney'      => true,
             'airtelmoney'   => true,
             'paylater'      => true,
-            'phonepeswitch' => true, 
+            'phonepeswitch' => true,
             'card_subtype'  => 3 // consumer + business
         ];
 
@@ -346,7 +346,15 @@ class MerchantCreateTest extends TestCase
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
-                          ->willReturn('On');
+                          ->will($this->returnCallback(
+                              function ($mid, $feature, $mode)
+                              {
+                                  if ($feature === 'settlement_service_ramp')
+                                  {
+                                      return 'off';
+                                  }
+                                  return 'on';
+                              }));
     }
 
     public function testCreateSubMerchantWithoutFeatureMarketplaceOrPartner()

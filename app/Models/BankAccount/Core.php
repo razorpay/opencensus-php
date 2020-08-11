@@ -30,7 +30,14 @@ class Core extends Base\Core
 
         if ($oldBankAccount === null)
         {
-            return $this->createBankAccount($input, $merchant, $this->mode);
+            $ba = $this->createBankAccount($input, $merchant, $this->mode);
+
+            if ($this->settlementServiceRamp($ba->getMerchantId()) === true)
+            {
+                app('settlements_dashboard')->createBankAccount($ba);
+            }
+
+            return $ba;
         }
 
         $newBankAccount = $this->buildBankAccount($input, $merchant, $this->mode);
@@ -47,7 +54,14 @@ class Core extends Base\Core
             return $oldBankAccount;
         }
 
-        return $this->changeBankAccount($input, $merchant, $oldBankAccount);
+        $ba = $this->changeBankAccount($input, $merchant, $oldBankAccount);
+
+        if ($this->settlementServiceRamp($ba->getMerchantId()) === true)
+        {
+            app('settlements_dashboard')->changeBankAccount($ba);
+        }
+
+        return $ba;
     }
 
     public function addOrUpdateBankAccountForCustomer($input, $customer)
@@ -323,6 +337,13 @@ class Core extends Base\Core
 
         $ba = $this->createBankAccount($input, $merchant, Mode::TEST);
 
+        // this won't be trigger until the ramp up is 100% because when the merchant is signs up then
+        // only this function will call and we can not have the merchant id configured in front
+        if ($this->settlementServiceRamp($merchant->getId()) === true)
+        {
+            app('settlements_dashboard')->createBankAccount($ba, Mode::TEST);
+        }
+
         return $ba;
     }
 
@@ -499,5 +520,14 @@ class Core extends Base\Core
     public function getBankAccountByFtsFundAccountId($ftsFundAccountId)
     {
         return $this->repo->bank_account->getBankAccountByFtsFundAccountId($ftsFundAccountId);
+    }
+
+    public function settlementServiceRamp(string $merchantId)
+    {
+        $variant = $this->app->razorx->getTreatment($merchantId,
+            Merchant\RazorxTreatment::SETTLEMENT_SERVICE_RAMP,
+            $this->mode);
+
+        return (strtolower($variant) === 'on');
     }
 }
