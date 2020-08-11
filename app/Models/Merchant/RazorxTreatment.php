@@ -166,4 +166,8 @@ final class RazorxTreatment
     const TRIM_SPACES = 'trim_spaces';
 
     const PUBLIC_KEY_SIGNATURE_GENERATION = 'public_key_signature_generation';
+
+    const API_EMAIL_DRIVER_CHANGE_DYNAMICALLY = 'api_email_driver_set_dynamically';
+
+    const API_EMAIL_SHOULD_SET_TO_DEFAULT_DRIVER = 'api_email_should_set_default_driver';
 }

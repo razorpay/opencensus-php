@@ -32,7 +32,7 @@ return [
     'ses' => [
         'key'    => env('AWS_KEY_ID'),
         'secret' => env('AWS_KEY_SECRET'),
-        'region' => 'us-east-1',
+        'region' => 'ap-south-1',
     ],
 
     'mutex' => [
