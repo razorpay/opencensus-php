@@ -21,6 +21,13 @@ use RZP\Mail\Merchant\Webhook as WebhookMail;
 
 class Core extends Base\Core
 {
+    // Disallows recon to stork for these p2p webhooks. They have extra events
+    // subscribed in stork which overridden when recon is run.
+    const DISALLOW_RECON_WEBHOOK_IDS = [
+        'D8Df1FK1uMdbqr',
+        'E5Rvw2g3fnhSUO',
+    ];
+
     public function createWebhook(Merchant\Entity $merchant, array $input)
     {
         $entityId = isset($input[Entity::ENTITY_ID]) ? $input[Entity::ENTITY_ID] : null;
@@ -301,6 +308,8 @@ class Core extends Base\Core
             $webhooks = Entity::where(Entity::ID, '>=', $afterId)->orderBy(Entity::ID)->take($limit)->get();
         }
 
+        $webhooks = $webhooks->except(self::DISALLOW_RECON_WEBHOOK_IDS);
+
         $stork = new Stork;
         // Fetch stork webhook entries for all valid webhooks queried.
         foreach ($webhooks as $index => $webhook)
@@ -352,8 +361,8 @@ class Core extends Base\Core
             {
                 $mismatches[] = 'url';
             }
-            $apiSubscriptionsSorted = array_sort(array_keys(array_filter($webhook->getEvents())));
-            $storkSubscriptionsSorted = array_sort(array_pluck($storkWebhook['subscriptions'], 'eventmeta.name'));
+            $apiSubscriptionsSorted = array_values(array_sort(array_keys(array_filter($webhook->getEvents()))));
+            $storkSubscriptionsSorted = array_values(array_sort(array_pluck($storkWebhook['subscriptions'], 'eventmeta.name')));
             if ($apiSubscriptionsSorted != $storkSubscriptionsSorted)
             {
                 $mismatches[] = 'subscriptions';
