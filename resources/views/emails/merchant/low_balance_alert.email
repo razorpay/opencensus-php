@@ -53,7 +53,7 @@
                   <tr>
                     <td class="center welcome">
                       <p>
-                        Your Razorpay Account Balance for Account no. {{ $masked_account_number }} has fallen below your defined threshold of Rs {{ $threshold }}. Your current available balance is Rs {{ $available_balance }}. Please load more funds to avoid queuing of payouts.
+                        Your Razorpay Account Balance for Account no. {{ $masked_account_number }} has fallen below your defined threshold of Rs {{ $threshold }}. Your current available balance is Rs {{ $available_balance }}. Please load more funds to stop the alerts.
                       </p>
 
 
