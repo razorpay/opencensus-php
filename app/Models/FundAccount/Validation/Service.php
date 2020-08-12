@@ -59,28 +59,6 @@ class Service extends Base\Service
         return $entities->toArrayPublic();
     }
 
-    public function retry(array $input): array
-    {
-        $this->trace->info(TraceCode::FUND_ACCOUNT_VALIDATION_RETRY_REQUEST, [
-            'input' => $input
-        ]);
-
-        $response = $this->core->retry($input);
-
-        return $response;
-    }
-
-    public function retryAllFundAccountValidations(array $input): array
-    {
-        $this->trace->info(TraceCode::FUND_ACCOUNT_VALIDATION_RETRY_REQUEST, [
-            'input' => $input
-        ]);
-
-        $response = $this->core->retryAllFundAccountValidations($input);
-
-        return $response;
-    }
-
     /**
      * @param string $favId
      * @param string $merchantId

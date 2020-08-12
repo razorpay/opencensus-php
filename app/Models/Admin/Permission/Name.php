@@ -371,7 +371,6 @@ class Name
     const VIEW_CONTACT_TYPE                   = 'view_contact_type';
     const CREATE_CONTACT_TYPE                 = 'create_contact_type';
     const FUND_ACCOUNT_VALIDATION             = 'fund_account_validation';
-    const RETRY_FUND_ACCOUNT_VALIDATION       = 'retry_fund_account_validation';
     const VIEW_FUND_ACCOUNT_VALIDATION        = 'view_fund_account_validation';
     const VALIDATE_FUND_ACCOUNT               = 'validate_fund_account';
     const RETRY_BULK_FUND_ACCOUNT_VALIDATION  = 'retry_bulk_fund_account_validation';

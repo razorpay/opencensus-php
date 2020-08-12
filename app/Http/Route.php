@@ -1595,10 +1595,8 @@ class Route
 
         // Fund Account Validation
         'fund_account_validate'                    => ['post',     'fund_accounts/validations',                      'FundAccountValidationController@create'                            ],
-        'fund_account_validation_retry'            => ['post',     'fund_accounts/validations/retry',                'FundAccountValidationController@retry'                             ],
         'fund_account_validate_fetch'              => ['get',      'fund_accounts/validations',                      'FundAccountValidationController@list'                              ],
         'fund_account_validate_fetch_by_id'        => ['get',      'fund_accounts/validations/{id}',                 'FundAccountValidationController@get'                               ],
-        'fund_account_validate_retry_all'          => ['post',     'fund_accounts/validations/retry/all',            'FundAccountValidationController@retryAllFundAccountValidations'    ],
 
         //admin dashboard access
         'admin_fetch_fund_account_validate'        => ['get',      'fund_accounts/validations/{merchantId}/{favId}', 'FundAccountValidationController@getFavByMerchantIdAndFavId'        ],
@@ -2458,13 +2456,11 @@ class Route
         'payouts_process_scheduled',
         'migration_multi_va_on_x',
         'update_fts_fund_transfer',
-        'fund_account_validation_retry',
         'setl_initiate_adhoc',
         'scrooge_tagging_backfill',
         'payments_downtime_trigger_cron',
         'payment_card_vault_migrate',
         'batch_send_mail',
-        'fund_account_validate_retry_all',
         'banking_account_webhook_account_info',
         'gateway_downtime_detection_purge_keys',
         'downtime_detection_cron',
@@ -4453,7 +4449,6 @@ class Route
         'contact_types_get'                            => Permission::VIEW_CONTACT_TYPE,
         'contact_types_post'                           => Permission::CREATE_CONTACT_TYPE,
         'fund_account_validate'                        => Permission::FUND_ACCOUNT_VALIDATION,
-        'fund_account_validation_retry'                => Permission::RETRY_FUND_ACCOUNT_VALIDATION,
         'fund_account_validate_fetch'                  => Permission::VIEW_FUND_ACCOUNT_VALIDATION,
         'fund_account_validate_fetch_by_id'            => Permission::VALIDATE_FUND_ACCOUNT,
         'fund_account_get'                             => Permission::VIEW_FUND_ACCOUNT,
@@ -4855,7 +4850,6 @@ class Route
             'scrooge_tagging_backfill',
             'payments_downtime_trigger_cron',
             'payment_card_vault_migrate',
-            'fund_account_validate_retry_all',
             'virtual_account_close_cron',
             'gateway_downtime_detection_purge_keys',
             'downtime_detection_cron',
@@ -5562,7 +5556,6 @@ class Route
         'contact_types_post',
 
         'fund_account_validate',
-        'fund_account_validation_retry',
         'fund_account_validate_fetch',
         'fund_account_validate_fetch_by_id',
         'fund_account_get',

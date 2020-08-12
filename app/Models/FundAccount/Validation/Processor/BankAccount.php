@@ -50,36 +50,6 @@ class BankAccount extends Base
         'IMPS CUSTOMER',
     ];
 
-    /**
-     * @throws Exception\BadRequestException
-     */
-    public function validateRetry()
-    {
-        if ($this->validation->getStatus() !== Status::CREATED)
-        {
-            $e = [
-                'validation'    => $this->validation->getId(),
-                'status'        => $this->validation->getStatus()
-            ];
-
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_ALREADY_PROCESSED, null, $e);
-        }
-
-        $notFailedFTAs = $this->repo->fund_transfer_attempt->getAttemptBySourceIdAndNotFailed($this->validation->getId(), Table::FUND_ACCOUNT_VALIDATION);
-
-        if ($notFailedFTAs->count() !== 0)
-        {
-            $e = [
-                'validation'    => $this->validation->getId(),
-                'active_ftas'   => $notFailedFTAs->toArray(),
-            ];
-
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_HAS_ACTIVE_FTA, null, $e);
-        }
-    }
-
     public function preProcessValidation()
     {
         // TODO: right now we are fetching only completed FAV
@@ -135,7 +105,7 @@ class BankAccount extends Base
         }
         catch (\Throwable $e)
         {
-            // If for any reason we failed to create fund account validation.
+            // If for any reason we failed to create fund transfer attempt.
             // We should not revert the created Fund Account Validation.
             // Rather we should retry creating FTA.
 
@@ -320,29 +290,6 @@ class BankAccount extends Base
         ];
 
         $this->trace->info(TraceCode::FUND_ACCOUNT_VALIDATION_FAILED_CRITICAL_ERROR, $traceArray);
-
-        // We need to retry after some time.
-        // This will be done by creating another FTA from retry CRON.
-        $this->setRetryAt();
-    }
-
-    protected function setRetryAt()
-    {
-        // Calculate Retry At value
-        $nextAttempt = $this->validation->getAttempts() + 1;
-
-        $retryAfter = Arr::get(self::$attemptToRetryAfterSecondsMap, $nextAttempt);
-
-        if ($retryAfter == null)
-        {
-            $retryAfter = self::$attemptToRetryAfterSecondsMap[7];
-        }
-
-        $retryAt = Carbon::now(Timezone::IST)->addSeconds($retryAfter)->getTimestamp();
-
-        $this->validation->setRetryAt($retryAt);
-
-        $this->repo->saveOrFail($this->validation);
     }
 
     public function validateFundAccountBeforeCreating()

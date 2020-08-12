@@ -15,14 +15,6 @@ class Vpa extends Base
         parent::__construct($validation);
     }
 
-    /**
-     * @throws Exception\LogicException
-     */
-    public function validateRetry()
-    {
-        throw new Exception\LogicException('Not supported for source type: Vpa');
-    }
-
     public function preProcessValidation()
     {
         FaVpaValidation::dispatch($this->mode, $this->validation->getId());
