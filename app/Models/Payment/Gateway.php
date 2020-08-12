@@ -405,6 +405,7 @@ class Gateway
         IFSC::IOBA,
         IFSC::KARB,
         IFSC::KKBK,
+        IFSC::KVBL,
         IFSC::MAHB,
         IFSC::ORBC,
         Netbanking::PUNB_R,
@@ -429,6 +430,7 @@ class Gateway
     const ENACH_NPCI_NB_AUTH_CARD_BANKS = [
         IFSC::ANDB,
         IFSC::AUBL,
+        Netbanking::BARB_R,
         IFSC::CITI,
         IFSC::DBSS,
         IFSC::DCBL,
@@ -451,6 +453,7 @@ class Gateway
         IFSC::TMBL,
         IFSC::USFB,
         IFSC::UTBI,
+        IFSC::UTIB,
         IFSC::YESB,
     ];
 
