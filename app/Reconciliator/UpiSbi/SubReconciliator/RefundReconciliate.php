@@ -7,7 +7,7 @@ use RZP\Reconciliator\Base;
 
 class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
-    const RRN                     = 'refreqno';
+    const RRN                     = 'transrefno';
     const BANK_REMARK             = 'bankremark';
     const COLUMN_REFUND_ID        = ['refreqno', 'refundreqno'];
     const COLUMN_REFUND_AMOUNT    = 'refundreqamt';
