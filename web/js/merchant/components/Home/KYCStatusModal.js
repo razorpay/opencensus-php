@@ -6,18 +6,17 @@ function getKycActivationSubmitBody(args) {
   if (args.isWhitelistFlow || args.isUnregisteredBusiness) {
     return (
       <div>
-        We will reach out on your contact email for further clarifications if
-        needed. The review process usually takes 1-2 working days{' '}
-        <strong>after your first transaction</strong>. Your settlements will be
-        enabled post KYC is reviewed and approved.
+        We will reach out on your contact email for further clarifications if needed. The review
+        process usually takes 1-2 working days <strong>after your first transaction</strong>. Your
+        settlements will be enabled post KYC is reviewed and approved.
       </div>
     );
   }
 
   return (
     <div>
-      We will reach out on your contact email for further clarifications if
-      needed. The review process usually takes 1-2 working days.
+      We will reach out on your contact email for further clarifications if needed. The review
+      process usually takes 1-2 working days.
     </div>
   );
 }
@@ -30,20 +29,18 @@ const MODAL_CONTENT = {
         KYC will be processed <strong>post your first transaction</strong>
       </>
     ),
-    body: args => <div>{getKycActivationSubmitBody(args)}</div>,
+    body: (args) => <div>{getKycActivationSubmitBody(args)}</div>,
     background: 'pending',
   },
   KYC_CLARIFICATION_SUBMIT_MODAL: {
-    title: args => 'KYC under review',
-    subtitle: args => 'Clarifications successfully submitted',
-    body: args => (
+    title: (args) => 'KYC under review',
+    subtitle: (args) => 'Clarifications successfully submitted',
+    body: (args) => (
       <div>
         <p>Great, thank you for providing requested clarifications!</p>
         <p>
           We’ll review the form and get back to you in {activationDuration}.{' '}
-          {args.isWhitelistFlow
-            ? 'Meanwhile, you can continue accepting payments.'
-            : ''}
+          {args.isWhitelistFlow ? 'Meanwhile, you can continue accepting payments.' : ''}
         </p>
       </div>
     ),

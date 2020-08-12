@@ -28,7 +28,7 @@ const _makeWebhookPayload = (data, appId) => {
     events: {},
   };
 
-  if(appId){
+  if (appId) {
     payload.application_id = appId;
   }
 
@@ -66,7 +66,7 @@ export const editAppWebhook = ({ appId, data, mode }) => {
   });
 };
 
-export const fetchApplications = params => {
+export const fetchApplications = (params) => {
   let application = new Application();
 
   return {
@@ -83,7 +83,7 @@ export const fetchPartnerApplication = () => {
   };
 };
 
-export const fetchConnectedApplications = params => {
+export const fetchConnectedApplications = (params) => {
   let application = new Application();
 
   return {
@@ -92,7 +92,7 @@ export const fetchConnectedApplications = params => {
   };
 };
 
-export const fetchApplication = params => {
+export const fetchApplication = (params) => {
   let application = new Application();
 
   return {
@@ -101,7 +101,7 @@ export const fetchApplication = params => {
   };
 };
 
-export const deleteApplication = id => {
+export const deleteApplication = (id) => {
   let application = new Application({ id });
 
   return {
@@ -110,7 +110,7 @@ export const deleteApplication = id => {
   };
 };
 
-export const revokeAccess = id => {
+export const revokeAccess = (id) => {
   let application = new Application({ id });
 
   return {
@@ -196,13 +196,13 @@ export default function(state = initialState, action) {
 
     case `${DELETE_APPLICATION}::SUCCESS`:
       return merge(state, {
-        items: remove(state.items, item => item.id === action.payload.id),
+        items: remove(state.items, (item) => item.id === action.payload.id),
         loading: false,
       });
 
     case `${REVOKE_ACCESS_TOKEN}::SUCCESS`:
       return merge(state, {
-        tokens: remove(state.tokens, item => item.id === action.payload.id),
+        tokens: remove(state.tokens, (item) => item.id === action.payload.id),
         loading: false,
       });
 

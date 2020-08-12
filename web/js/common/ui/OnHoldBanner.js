@@ -2,25 +2,22 @@ import React from 'react';
 import Banner from 'common/ui/Banner';
 
 const onHoldBanner = ({ ctaOnClick, user, payments }) => {
-  let content = (
-    <>Your settlements are not being processed. They have been put on hold.</>
-  );
+  let content = <>Your settlements are not being processed. They have been put on hold.</>;
 
   if (user.instantActivation.isWhitelistFlow || user.isUnregisteredBusiness) {
     if (user.activation_status === 'under_review') {
       content = (
         <>
-          Your Settlements are not being processed currently because your KYC is
-          pending review. It generally takes 1-2 working days{' '}
-          <strong>from the first transaction</strong> for the review process to
-          be complete.
+          Your Settlements are not being processed currently because your KYC is pending review. It
+          generally takes 1-2 working days <strong>from the first transaction</strong> for the
+          review process to be complete.
         </>
       );
     } else if (user.isActivated && !user.isSubmitted) {
       content = (
         <>
-          Your Settlements are not being processed currently. Once your KYC is
-          submitted and approved, settlements will be processed.
+          Your Settlements are not being processed currently. Once your KYC is submitted and
+          approved, settlements will be processed.
         </>
       );
     }

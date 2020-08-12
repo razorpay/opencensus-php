@@ -2,7 +2,7 @@
   "compilerOptions": {
     "jsx": "react",
     "experimentalDecorators": true,
-    "baseUrl":"web/js"
+    "baseUrl": "web/js"
   },
   "include": ["web/**/*"]
 }

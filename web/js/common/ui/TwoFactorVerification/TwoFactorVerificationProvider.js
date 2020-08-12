@@ -14,7 +14,7 @@ import TwoFactorVerificationOTP from './TwoFactorVerificationOTP';
 import TwoFaVerificationContext from './TwoFactorVerificationContext';
 
 @connect(
-  state => ({
+  (state) => ({
     twoFactorVerified: state.twoFactor.data.twoFactorVerified,
     user: state.session.user,
     modeOfApp: state.session.mode,
@@ -29,7 +29,7 @@ import TwoFaVerificationContext from './TwoFactorVerificationContext';
 )
 @RTracking(() => window.rzpQ.component('TwoFaVerificationContextProvider'))
 export default class TwoFaVerificationContextProvider extends React.Component {
-  onOtpConfirm = data => {
+  onOtpConfirm = (data) => {
     return this.props.verifyTwoFactorOtp(
       {
         otp: data.otp,
@@ -38,11 +38,11 @@ export default class TwoFaVerificationContextProvider extends React.Component {
     );
   };
 
-  onContactMobileSubmit = data => {
+  onContactMobileSubmit = (data) => {
     return this.props.updateContactMobile(data, this.props.merchantFetch);
   };
 
-  onContactMobileUpdated = ({ onUserTwoFaVerified }) => userData => {
+  onContactMobileUpdated = ({ onUserTwoFaVerified }) => (userData) => {
     this.emitTwoFactorSetupSuccessEvent();
     this.props.updateUser(userData);
     // After contact mobile is updated
@@ -52,11 +52,9 @@ export default class TwoFaVerificationContextProvider extends React.Component {
 
   onUserTwoFaVerified = ({ onUserTwoFaVerified }) => () => {
     this.props.tracking.trackEvent(
-      window.rzpQ
-        .merchantActions()
-        .success('critical_actions.2fa_verification', {
-          action: this.props.action,
-        })
+      window.rzpQ.merchantActions().success('critical_actions.2fa_verification', {
+        action: this.props.action,
+      })
     );
 
     onUserTwoFaVerified();
@@ -64,11 +62,9 @@ export default class TwoFaVerificationContextProvider extends React.Component {
 
   onWrongOtp = () => {
     this.props.tracking.trackEvent(
-      window.rzpQ
-        .merchantActions()
-        .failed('critical_actions.2fa_verification_wrong_otp', {
-          action: this.props.action,
-        })
+      window.rzpQ.merchantActions().failed('critical_actions.2fa_verification_wrong_otp', {
+        action: this.props.action,
+      })
     );
   };
 
@@ -76,13 +72,11 @@ export default class TwoFaVerificationContextProvider extends React.Component {
     return triggerTwoFactorVerificationOtp(this.props.merchantFetch);
   };
 
-  @RTracking(props => {
+  @RTracking((props) => {
     return props.tracking.trackEvent(
-      window.rzpQ
-        .merchantActions()
-        .initiated('critical_action.2fa_verification', {
-          action: props.action,
-        })
+      window.rzpQ.merchantActions().initiated('critical_action.2fa_verification', {
+        action: props.action,
+      })
     );
   })
   criticalFlow = ({ onUserTwoFaVerified, modes = ['test', 'live'] }) => {
@@ -156,21 +150,17 @@ export default class TwoFaVerificationContextProvider extends React.Component {
 
   emitTwoFaSkippedEvent = () => {
     this.props.tracking.trackEvent(
-      window.rzpQ
-        .merchantActions()
-        .success('critical_actions.2fa_verification_skipped', {
-          action: this.props.action,
-        })
+      window.rzpQ.merchantActions().success('critical_actions.2fa_verification_skipped', {
+        action: this.props.action,
+      })
     );
   };
 
   emitTwoFactorSetupSuccessEvent = () => {
     this.props.tracking.trackEvent(
-      window.rzpQ
-        .merchantActions()
-        .success('critical_actions.2fa_setup_success', {
-          action: this.props.action,
-        })
+      window.rzpQ.merchantActions().success('critical_actions.2fa_setup_success', {
+        action: this.props.action,
+      })
     );
   };
 }

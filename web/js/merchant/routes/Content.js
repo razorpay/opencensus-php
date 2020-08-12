@@ -208,93 +208,91 @@ export default class Content extends Component {
             <ShowWhenRoute
               path="/partners"
               component={PartnerDashboard}
-              additionalCondition={user => user.isPartner()}
+              additionalCondition={(user) => user.isPartner()}
             />
 
             <ShowWhenRoute
               path="/payments"
               component={Transactions}
-              additionalCondition={user => user.isAllowedView('payments')}
+              additionalCondition={(user) => user.isAllowedView('payments')}
             />
             <ShowWhenRoute
               path="/refunds"
               component={Transactions}
-              additionalCondition={user => user.isAllowedView('refunds')}
+              additionalCondition={(user) => user.isAllowedView('refunds')}
             />
             <ShowWhenRoute
               path="/orders"
               component={Transactions}
-              additionalCondition={user => user.isAllowedView('orders')}
+              additionalCondition={(user) => user.isAllowedView('orders')}
             />
             <Route path="/disputes" component={Transactions} />
 
             <ShowWhenRoute
               path="/settlements"
               component={Settlements}
-              additionalCondition={user => user.isAllowedView('settlements')}
+              additionalCondition={(user) => user.isAllowedView('settlements')}
             />
 
             <ShowWhenRoute
               path="/invoices"
               exact
               component={InvoicesContainer}
-              additionalCondition={user => user.isAllowedView('invoices')}
+              additionalCondition={(user) => user.isAllowedView('invoices')}
             />
             <ShowWhenRoute
               path="/invoices/:id(inv_.+)"
               component={InvoicesNew}
-              additionalCondition={user => user.isAllowedView('invoices')}
+              additionalCondition={(user) => user.isAllowedView('invoices')}
             />
             <ShowWhenRoute
               path="/invoices/new"
               component={InvoicesNew}
-              additionalCondition={user => user.isAllowedEdit('invoices')}
+              additionalCondition={(user) => user.isAllowedEdit('invoices')}
             />
             <ShowWhenRoute
               path="/items"
               component={InvoicesContainer}
-              additionalCondition={user => user.isAllowedView('invoices')}
+              additionalCondition={(user) => user.isAllowedView('invoices')}
             />
 
             <ShowWhenRoute
               path="/paymentlinks"
               component={PaymentLinks}
-              additionalCondition={user => user.isAllowedView('payment_links')}
+              additionalCondition={(user) => user.isAllowedView('payment_links')}
             />
 
             <ShowWhenRoute
               path="/paymentpages/:id(pl_.+)/:entity_name(payments)"
               component={PaymentPagesDetails}
-              additionalCondition={user => user.isAllowedView('payment_pages')}
+              additionalCondition={(user) => user.isAllowedView('payment_pages')}
             />
 
             <ShowWhenRoute
               path="/paymentpages"
               component={PaymentPages}
-              additionalCondition={user => user.isAllowedView('payment_pages')}
+              additionalCondition={(user) => user.isAllowedView('payment_pages')}
             />
 
             <ShowWhenRoute
               path="/paymentbuttons/:id(pl_.+)/:entity_name(payments)"
               component={PaymentButtonsDetails}
-              additionalCondition={user =>
-                user.isAllowedView('payment_buttons') &&
-                user.isPaymentButtonEnabledByRazorX
+              additionalCondition={(user) =>
+                user.isAllowedView('payment_buttons') && user.isPaymentButtonEnabledByRazorX
               }
             />
 
             <ShowWhenRoute
               path="/paymentbuttons"
               component={PaymentButton}
-              additionalCondition={user =>
-                user.isAllowedView('payment_buttons') &&
-                user.isPaymentButtonEnabledByRazorX
+              additionalCondition={(user) =>
+                user.isAllowedView('payment_buttons') && user.isPaymentButtonEnabledByRazorX
               }
             />
             <ShowWhenRoute
               path="/subscription_buttons"
               component={PaymentButton}
-              additionalCondition={user =>
+              additionalCondition={(user) =>
                 user.isAllowedView('subscription_buttons') &&
                 user.isSubscriptionButtonEnabledByRazorX
               }
@@ -303,21 +301,20 @@ export default class Content extends Component {
             <ShowWhenRoute
               path="/subscription_buttons/:id(pl_.+)/:entity_name(payments)"
               component={SubscriptionButtonDetails}
-              additionalCondition={user =>
-                user.isAllowedView('payment_buttons') &&
-                user.isSubscriptionButtonEnabledByRazorX
+              additionalCondition={(user) =>
+                user.isAllowedView('payment_buttons') && user.isSubscriptionButtonEnabledByRazorX
               }
             />
 
             <ShowWhenRoute
               path="/subscriptions"
               component={Subscriptions}
-              additionalCondition={user => user.isAllowedView('subscriptions')}
+              additionalCondition={(user) => user.isAllowedView('subscriptions')}
             />
             <ShowWhenRoute
               path="/plans"
               component={Subscriptions}
-              additionalCondition={user =>
+              additionalCondition={(user) =>
                 user.isAllowedView('subscriptions') && !user.isChargeAtWillEnabled
               }
             />
@@ -325,7 +322,7 @@ export default class Content extends Component {
             <ShowWhenRoute
               path="/recurring_payments"
               component={Subscriptions}
-              additionalCondition={user =>
+              additionalCondition={(user) =>
                 user.isAllowedView('subscriptions') &&
                 user.isChargeAtWillEnabled &&
                 user.isRegistrationLinkTokenAndPaymentsEnabled
@@ -335,7 +332,7 @@ export default class Content extends Component {
             <ShowWhenRoute
               path="/tokens"
               component={Subscriptions}
-              additionalCondition={user =>
+              additionalCondition={(user) =>
                 user.isAllowedView('subscriptions') &&
                 user.isChargeAtWillEnabled &&
                 user.isRegistrationLinkTokenAndPaymentsEnabled
@@ -344,7 +341,7 @@ export default class Content extends Component {
             <ShowWhenRoute
               path="/registration_links"
               component={Subscriptions}
-              additionalCondition={user =>
+              additionalCondition={(user) =>
                 user.isAllowedView('subscriptions') && user.isChargeAtWillEnabled
               }
             />
@@ -364,94 +361,86 @@ export default class Content extends Component {
             <ShowWhenRoute
               path="/route"
               component={Marketplace}
-              additionalCondition={user => user.isAllowedView('marketplace')}
+              additionalCondition={(user) => user.isAllowedView('marketplace')}
             />
 
             <ShowWhenRoute
               path={['/smartcollect', '/virtualaccounts']}
               component={SmartCollect}
-              additionalCondition={user => user.isAllowedView('virtual_accounts')}
+              additionalCondition={(user) => user.isAllowedView('virtual_accounts')}
             />
 
             <ShowWhenRoute
               path="/reports"
               component={user.isAsyncReportsEnabled ? ReportsAsync : Reports}
-              additionalCondition={user => user.isAllowedView('reports')}
+              additionalCondition={(user) => user.isAllowedView('reports')}
             />
 
             <ShowWhenRoute
               path="/reports-async"
               component={ReportsAsync}
-              additionalCondition={user => user.isAllowedView('reports')}
+              additionalCondition={(user) => user.isAllowedView('reports')}
             />
 
             <ShowWhenRoute
               path="/profile"
               component={MyAccount}
-              additionalCondition={user =>
-                user.isAllowedView('profile') || !user.userRole
-              }
+              additionalCondition={(user) => user.isAllowedView('profile') || !user.userRole}
             />
             <ShowWhenRoute
               path="/addfunds"
               component={MyAccount}
-              additionalCondition={user => user.isAllowedView('add_funds')}
+              additionalCondition={(user) => user.isAllowedView('add_funds')}
             />
             <ShowWhenRoute
               path="/credits"
               component={MyAccount}
-              additionalCondition={user => user.isAllowedView('credits')}
+              additionalCondition={(user) => user.isAllowedView('credits')}
             />
             <ShowWhenRoute
               path="/referrals"
               component={MyAccount}
-              additionalCondition={user => user.isAllowedView('referrals')}
+              additionalCondition={(user) => user.isAllowedView('referrals')}
             />
             <ShowWhenRoute
               path="/team"
               component={MyAccount}
-              additionalCondition={user => user.isAllowedView('team')}
+              additionalCondition={(user) => user.isAllowedView('team')}
             />
 
             <ShowWhenRoute
               path="/config"
               component={Settings}
-              additionalCondition={user => user.isAllowedView('configuration')}
+              additionalCondition={(user) => user.isAllowedView('configuration')}
             />
             <ShowWhenRoute
               path="/keys"
               component={Settings}
-              additionalCondition={user => user.isAllowedView('api_keys')}
+              additionalCondition={(user) => user.isAllowedView('api_keys')}
             />
             <ShowWhenRoute
               path="/webhooks"
               component={Settings}
-              additionalCondition={user => user.isAllowedView('webhooks')}
+              additionalCondition={(user) => user.isAllowedView('webhooks')}
             />
             <ShowWhenRoute path="/reminders" component={Settings} />
             <ShowWhenRoute
               path="/applications"
               component={Settings}
-              additionalCondition={user => user.isAllowedView('applications')}
+              additionalCondition={(user) => user.isAllowedView('applications')}
             />
             <ShowWhenRoute
               path="/offers"
               component={Offers}
-              additionalCondition={user => user.isAllowedView('offers')}
+              additionalCondition={(user) => user.isAllowedView('offers')}
             />
-            <ShowWhenRoute
-              path="/paypal_onboard_redirect"
-              component={PaypalOnboardRedirect}
-            />
+            <ShowWhenRoute path="/paypal_onboard_redirect" component={PaypalOnboardRedirect} />
             <ShowWhenRoute path="/capital/loans" component={LoanDetails} />
             <ShowWhenRoute
               path="/capital/cash-advance/withdrawals"
               component={FlashCreditWithdrawals}
             />
-            <ShowWhenRoute
-              path="/capital/cash-advance"
-              component={FlashCreditLandingPage}
-            />
+            <ShowWhenRoute path="/capital/cash-advance" component={FlashCreditLandingPage} />
             <Route exact path="/" component={HandleIndex} />
           </Switch>
         </Suspense>

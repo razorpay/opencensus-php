@@ -2,11 +2,7 @@ import Input from 'common/new-ui/Input';
 import { states } from 'merchant/helpers/data';
 import { WarningSvg } from 'merchant/components/Home/GenericPanel';
 
-import {
-  isValidGSTIN,
-  getDetailsForIFSC,
-  isPresent,
-} from 'common/utils/rzp-utils';
+import { isValidGSTIN, getDetailsForIFSC, isPresent } from 'common/utils/rzp-utils';
 import {
   validateCIN,
   validateIFSC,
@@ -28,7 +24,7 @@ import {
   displayCompanyPAN,
   requiredForNGO,
   showForOrgs,
-  isActivatedUnreg,
+  isPANVerified,
   checkValidityFromAPI,
   getPANDescription,
   getBeneficiaryInfo,
@@ -40,7 +36,7 @@ import {
   getAdditionalDocCount,
   isAdditonalDocRequired,
   isRXV2Onboarding,
-  showSubcategory
+  showSubcategory,
 } from './ActivationUtils';
 
 import { ADDITIONAL_DOCS_LABEL_VALUE_MAP } from './Constants';
@@ -130,9 +126,7 @@ const RegisteredBusinessTypeOptions = [
   { label: 'NGO', name: NGO },
 ];
 
-const UnregisteredBusinessTypeOptions = [
-  { label: 'Not Registered', name: NOT_REGISTERED },
-];
+const UnregisteredBusinessTypeOptions = [{ label: 'Not Registered', name: NOT_REGISTERED }];
 
 const DefaultBusinessTypeOptions = [
   { label: '--Select--', name: '' },
@@ -143,12 +137,9 @@ const DefaultBusinessTypeOptions = [
 const BlacklistedErr = () => (
   <div class="warning-svg red">
     {WarningSvg()}
-    <span>
-      We do not have the support for your business category selected
-      as of now.
-    </span>
+    <span>We do not have the support for your business category selected as of now.</span>
   </div>
-)
+);
 const businessModel = [
   {
     label: 'Business Type',
@@ -167,15 +158,12 @@ const businessModel = [
           const { activated, activation_flow } = activation.props.user;
           return activated || !!activation_flow;
         } else {
-          return (
-            isL1Completed(activation) &&
-            !!activation.props.user.showInstantActivation
-          );
+          return isL1Completed(activation) && !!activation.props.user.showInstantActivation;
         }
       },
-      description: activation => {
+      description: (activation) => {
         if (!showSubcategory(activation) && hasSelectedBlacklistedCategory(activation)) {
-          return <BlacklistedErr />
+          return <BlacklistedErr />;
         }
         return '';
       },
@@ -186,12 +174,12 @@ const businessModel = [
       info:
         "Business model description should be at least 50 characters. Please select others only if you can't find your category and sub-category, as this will delay your account activation by a few days.",
       _cmp: Input.Textarea,
-      validator: val => {
+      validator: (val) => {
         if (val && val.length < 50) {
           return 'Please enter business model description with at least 50 characters.';
         }
       },
-      _when: activation => {
+      _when: (activation) => {
         let { state, props } = activation;
 
         let businessCategory =
@@ -214,14 +202,13 @@ const businessModel = [
       _optionsFn: function(activation, categories) {
         // For setting options dynamically on basis some condition or other field selection
         const userSelection =
-          activation.state.dirty.business_category ||
-          activation.props.data.business_category;
+          activation.state.dirty.business_category || activation.props.data.business_category;
 
         if (userSelection && categories[userSelection]) {
           const subCategories = categories[userSelection].subcategories;
 
           this.options = ['--Select--'].concat(
-            Object.keys(subCategories).map(c => {
+            Object.keys(subCategories).map((c) => {
               const label = subCategories[c];
 
               return {
@@ -234,22 +221,19 @@ const businessModel = [
 
         return this.options;
       },
-      description: activation => {
+      description: (activation) => {
         if (hasSelectedBlacklistedCategory(activation)) {
-          return <BlacklistedErr />
+          return <BlacklistedErr />;
         }
         return '';
       },
       _when: showSubcategory,
-      _disabledWhen: activation => {
+      _disabledWhen: (activation) => {
         if (isRXV2Onboarding(activation)) {
           const { activated, activation_flow } = activation.props.user;
           return activated || !!activation_flow;
         } else {
-          return (
-            isL1Completed(activation) &&
-            !!activation.props.user.showInstantActivation
-          );
+          return isL1Completed(activation) && !!activation.props.user.showInstantActivation;
         }
       },
     },
@@ -259,7 +243,7 @@ const businessModel = [
     name: 'business_dba',
     required: true,
     info: getBillingLabelInfo,
-    validator: val => {
+    validator: (val) => {
       if (val && val.length < 3) {
         return 'Please enter billing label with at least 3 characters.';
       }
@@ -278,8 +262,7 @@ const businessModel = [
           description: (
             <ul class="Input-desc-list">
               <li>
-                You can accept payments by sending out Payment Links and
-                Invoices from Dashboard.
+                You can accept payments by sending out Payment Links and Invoices from Dashboard.
               </li>
               <li>You will not get access to live APIs.</li>
               <li>You can upgrade anytime later by adding your website/app.</li>
@@ -287,9 +270,8 @@ const businessModel = [
           ),
         },
       ],
-      _disabledWhen: activation =>
-        isL1Completed(activation) &&
-        isPresent(activation.props.data.business_website),
+      _disabledWhen: (activation) =>
+        isL1Completed(activation) && isPresent(activation.props.data.business_website),
     },
     {
       label: '',
@@ -297,7 +279,7 @@ const businessModel = [
       placeholder: 'Enter URL',
       type: 'url',
       className: 'Input--Website-Url',
-      validator: value => {
+      validator: (value) => {
         if (!isUrlLenient(value)) {
           return 'Please enter a valid url';
         }
@@ -341,10 +323,9 @@ const businessModel = [
         </React.Fragment>
       ),
       info: 'Payments will be enabled for the website/App after KYC approval.',
-      _when: activation => activation.state.has_url === '0',
-      _disabledWhen: activation =>
-        isL1Completed(activation) &&
-        isPresent(activation.props.data.business_website),
+      _when: (activation) => activation.state.has_url === '0',
+      _disabledWhen: (activation) =>
+        isL1Completed(activation) && isPresent(activation.props.data.business_website),
     },
   ],
 ];
@@ -356,10 +337,9 @@ const businessDetails = [
       name: 'company_pan',
       placeholder: 'PAN of the company',
       className: 'Input--capitalize',
-      info:
-        'Mandatory for Companies. PAN details should be of the mentioned business only.',
+      info: 'Mandatory for Companies. PAN details should be of the mentioned business only.',
       validator: validateCompanyPAN,
-      checkValidityFromAPI: activation => {
+      checkValidityFromAPI: (activation) => {
         const errMsg =
           'The number entered doesn’t exist in the PAN database. Please verify and enter again';
         return checkValidityFromAPI(
@@ -369,7 +349,7 @@ const businessDetails = [
           errMsg
         );
       },
-      _when: activation => displayCompanyPAN(activation),
+      _when: (activation) => displayCompanyPAN(activation),
     },
     {
       label: 'Business Name',
@@ -377,8 +357,7 @@ const businessDetails = [
       info: getBusinessNameInfo,
       placeholder: 'Registered name',
       validator: function(value) {
-        let contactName =
-            this.state.dirty['contact_name'] || this.props.data['contact_name'],
+        let contactName = this.state.dirty['contact_name'] || this.props.data['contact_name'],
           showCompanyName = this.props.user.isCompanyNameHiddenRazorX;
         return isUnregisteredBusiness(this)
           ? false
@@ -392,18 +371,15 @@ const businessDetails = [
       name: 'promoter_pan',
       placeholder: 'PAN Number',
       className: 'Input--capitalize',
-      getPlaceholder: activation =>
-        isUnregisteredBusiness(activation)
-          ? 'Business owner’s PAN'
-          : 'PAN of one of the directors',
+      getPlaceholder: (activation) =>
+        isUnregisteredBusiness(activation) ? 'Business owner’s PAN' : 'PAN of one of the directors',
       validator: function(value) {
         const isUnregBusiness = isUnregisteredBusiness(this);
         return validatePersonalPAN(value, isUnregBusiness);
       },
-      getLabel: activation =>
+      getLabel: (activation) =>
         isUnregisteredBusiness(activation) ? 'PAN' : 'Authorised Signatory PAN',
-      _disabledWhen: isActivatedUnreg,
-      checkValidityFromAPI: activation => {
+      checkValidityFromAPI: (activation) => {
         const errMsg =
           'The number entered doesn’t exist in the PAN database. Please verify and enter again';
         return checkValidityFromAPI(
@@ -413,31 +389,26 @@ const businessDetails = [
           errMsg
         );
       },
+      _disabledWhen: isPANVerified,
     },
     {
-      getLabel: activation => {
-        return isUnregisteredBusiness(activation)
-          ? 'PAN Holder’s Name'
-          : 'PAN Owner’s Name';
+      getLabel: (activation) => {
+        return isUnregisteredBusiness(activation) ? 'PAN Holder’s Name' : 'PAN Owner’s Name';
       },
       name: 'promoter_pan_name',
       placeholder: 'Name as per PAN',
       info: function() {
-        return isUnregisteredBusiness(this) ||
-          !this.props.user.isRegAutoKYCEnabled
+        return isUnregisteredBusiness(this) || !this.props.user.isRegAutoKYCEnabled
           ? ''
           : 'We verify the details with the central PAN database. Please ensure you enter the correct PAN details';
       },
-      description: activation =>
-        isUnregisteredBusiness(activation)
-          ? getPANDescription(activation.props.data)
-          : '',
-      checkValidityFromAPI: activation => {
+      description: (activation) =>
+        isUnregisteredBusiness(activation) ? getPANDescription(activation.props.data) : '',
+      checkValidityFromAPI: (activation) => {
         if (!isUnregisteredBusiness(activation)) {
           return null;
         }
-        const errMsg =
-          'Please ensure you are entering the same spelling as on your PAN card';
+        const errMsg = 'Please ensure you are entering the same spelling as on your PAN card';
         return checkValidityFromAPI(
           activation.props.data,
           'poi_verification_status',
@@ -445,7 +416,7 @@ const businessDetails = [
           errMsg
         );
       },
-      _disabledWhen: isActivatedUnreg,
+      _disabledWhen: isPANVerified,
     },
   ],
   ...AddressFields, // check ./AddressFieldsMap.js for address fields
@@ -457,10 +428,9 @@ const businessDetails = [
     maxLength: '21',
     className: 'Input--capitalize',
     info: 'Example : U67190TN2014PTC096978',
-    _when: activation => {
+    _when: (activation) => {
       const currentBusinessType =
-        activation.state.dirty.business_type ||
-        activation.props.data.business_type;
+        activation.state.dirty.business_type || activation.props.data.business_type;
       return (
         isL1Completed(activation) &&
         currentBusinessType &&
@@ -474,12 +444,10 @@ const businessDetails = [
     required: true, // It's mandatory only for LLP
     info: 'Example : AAB-2933',
     className: 'Input--capitalize',
-    validator: value => validateCIN(value, 'LLPIN'),
-    _when: activation =>
+    validator: (value) => validateCIN(value, 'LLPIN'),
+    _when: (activation) =>
       activation.props.data.business_type &&
-      LLPIN_BusinessTypes.indexOf(
-        Number(activation.props.data.business_type)
-      ) !== -1,
+      LLPIN_BusinessTypes.indexOf(Number(activation.props.data.business_type)) !== -1,
   },
   [
     {
@@ -488,14 +456,13 @@ const businessDetails = [
       options: ['We have a registered GSTIN', "We don't have a GSTIN"],
       className: 'Input--vTop Input--capitalize',
       _cmp: Input.Radio,
-      _when: activation =>
-        excludeFor_Indiv(activation) && isL1Completed(activation),
-      description: activation => {
+      _when: (activation) => excludeFor_Indiv(activation) && isL1Completed(activation),
+      description: (activation) => {
         if (activation.state.has_gstin == '1') {
           return 'You can add your GST details later once you are registered';
         }
       },
-      onChange: e => {
+      onChange: (e) => {
         if (e.target.value == '0') {
           // setTimeout to skip render cycle when GSTIN is being rendered in DOM
           setTimeout(() => document.getElementsByName('gstin')[0].focus(), 10); // Auto-select input box
@@ -504,7 +471,7 @@ const businessDetails = [
     },
     {
       name: 'gstin',
-      _when: activation => {
+      _when: (activation) => {
         return (
           excludeFor_Indiv(activation) &&
           activation.state.has_gstin === '0' &&
@@ -514,14 +481,13 @@ const businessDetails = [
       _autoRenderImpure: true, // Re-render to show the error
       placeholder: 'Enter GSTIN',
       size: 'small',
-      info:
-        'The entered GST Number should match either of the Address given above.',
-      validator: value => {
+      info: 'The entered GST Number should match either of the Address given above.',
+      validator: (value) => {
         if (!isValidGSTIN(value)) {
           return 'Please provide valid GSTIN';
         }
       },
-      checkValidityFromAPI: activation => {
+      checkValidityFromAPI: (activation) => {
         if (activation.state.has_gstin === '1') {
           return null;
         }
@@ -543,14 +509,13 @@ const bankAccountFields = [
     info: getBeneficiaryInfo,
     maxLength: '120',
     minLength: '4',
-    validator: val => {
+    validator: (val) => {
       if (val && !/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]{3,119}$/.test(val)) {
         return 'Invalid name format';
       }
     },
-    description: activation =>
-      isUnregisteredBusiness(activation) ||
-      activation.props.user.isRegAutoKYCEnabled
+    description: (activation) =>
+      isUnregisteredBusiness(activation) || activation.props.user.isRegAutoKYCEnabled
         ? 'We will deposit a small amount of money in your account to verify the account.'
         : '',
     linkedfields: ['cancelled_cheque'],
@@ -574,7 +539,7 @@ const bankAccountFields = [
       info: getAccountNumberInfo,
       autoComplete: 'new-password',
       type: 'password',
-      onFocus: e => {
+      onFocus: (e) => {
         document.getElementsByName('bank_account_number')[0].type = 'text';
       },
       onBlur: function(e) {
@@ -609,7 +574,7 @@ const bankAccountFields = [
           return 'Account no. does not match';
         }
       },
-      _when: activation => {
+      _when: (activation) => {
         const isLocked = activation.props.data.locked;
 
         return !isLocked;
@@ -621,13 +586,13 @@ const bankAccountFields = [
 const uploadFields = [
   {
     label: 'Address Proof',
-    getLabel: activation => {
+    getLabel: (activation) => {
       if (isUnregisteredBusiness(activation)) {
         return 'Address Proof';
       }
       return "Authorized Signatory's Address Proof";
     },
-    className: activation => {
+    className: (activation) => {
       if (!isUnregisteredBusiness(activation)) {
         return 'Input--vTop';
       }
@@ -635,49 +600,43 @@ const uploadFields = [
     },
     _name: 'address_proof',
     _cmp: Input.Select,
-    options: Object.keys(ADDRESS_PROOF_TYPES).map(type => {
+    options: Object.keys(ADDRESS_PROOF_TYPES).map((type) => {
       return { label: ADDRESS_PROOF_TYPES[type].label, name: type };
     }),
-    _when: activation => {
-      return (
-        _showForIndiv(activation) || activation.props.user.isRegAutoKYCEnabled
-      );
+    _when: (activation) => {
+      return _showForIndiv(activation) || activation.props.user.isRegAutoKYCEnabled;
     },
   },
   {
     label: 'First Page',
     name: 'address_proof_front',
-    getLabel: activation => {
+    getLabel: (activation) => {
       const { address_proof } = activation.state;
       const addressProofType = ADDRESS_PROOF_TYPES[address_proof];
       return addressProofType.label + ' ' + addressProofType.frontView;
     },
-    getName: activation => activation.state.address_proof + '_' + 'front',
+    getName: (activation) => activation.state.address_proof + '_' + 'front',
     _cmp: Input.File,
     className: 'AddressProof-upload',
     _type: 'address_proof_doc_upload',
-    _when: activation => {
-      return (
-        _showForIndiv(activation) || activation.props.user.isRegAutoKYCEnabled
-      );
+    _when: (activation) => {
+      return _showForIndiv(activation) || activation.props.user.isRegAutoKYCEnabled;
     },
   },
   {
     label: 'Last Page',
     name: 'address_proof_back',
-    getLabel: activation => {
+    getLabel: (activation) => {
       const { address_proof } = activation.state;
       const addressProofType = ADDRESS_PROOF_TYPES[address_proof];
       return addressProofType.label + ' ' + addressProofType.backView;
     },
-    getName: activation => activation.state.address_proof + '_' + 'back',
+    getName: (activation) => activation.state.address_proof + '_' + 'back',
     _cmp: Input.File,
     className: 'AddressProof-upload',
     _type: 'address_proof_doc_upload',
-    _when: activation => {
-      return (
-        _showForIndiv(activation) || activation.props.user.isRegAutoKYCEnabled
-      );
+    _when: (activation) => {
+      return _showForIndiv(activation) || activation.props.user.isRegAutoKYCEnabled;
     },
   },
   {
@@ -685,14 +644,13 @@ const uploadFields = [
     label: 'Business Registration Proof',
     _autoRenderImpure: true, // Here, Description on other field while render.
     _cmp: Input.File,
-    description: activation => {
+    description: (activation) => {
       const currentBusinessType =
         activation.state.dirty.business_type != null
           ? activation.state.dirty.business_type
           : activation.props.data.business_type;
 
-      const li1 =
-        'GST Certificate / Shop Establishment Act Certificate / Registration Certificate';
+      const li1 = 'GST Certificate / Shop Establishment Act Certificate / Registration Certificate';
       const li2 = 'Partnership Deed';
       const li3 = 'Certificate of Incorporation';
       const li4 = 'Registration Proof or Certificate';
@@ -742,10 +700,9 @@ const uploadFields = [
   {
     name: 'business_pan_url',
     label: 'Company PAN',
-    getLabel: activation => {
+    getLabel: (activation) => {
       const currentBusinessType =
-        Number(activation.state.dirty.business_type) ||
-        Number(activation.props.data.business_type);
+        Number(activation.state.dirty.business_type) || Number(activation.props.data.business_type);
       if (
         DOC_UPLOAD_LABELS[currentBusinessType] &&
         DOC_UPLOAD_LABELS[currentBusinessType]['business_pan_url']
@@ -778,11 +735,11 @@ const uploadFields = [
     _cmp: Input.File,
     description: (
       <>
-        Please ensure your <b>Name, Account Number & Branch IFSC</b> are clearly
-        visible on the document{' '}
+        Please ensure your <b>Name, Account Number & Branch IFSC</b> are clearly visible on the
+        document{' '}
       </>
     ),
-    _when: activation => {
+    _when: (activation) => {
       /* when we ramp up the experiement, merchants who didn't fall 
         under the experiment shouldn't face any issue under needs clarfication flow */
       return (
@@ -798,8 +755,8 @@ const uploadFields = [
     _cmp: Input.File,
     description: (
       <span>
-        Upload<b> both sides </b>of the government issued photo ID (Passport /
-        Driving License / Election Card). You can use{' '}
+        Upload<b> both sides </b>of the government issued photo ID (Passport / Driving License /
+        Election Card). You can use{' '}
         <a
           href="http://www.pdfjoiner.com"
           target="_blank"
@@ -810,7 +767,7 @@ const uploadFields = [
         to join 2 different photos.
       </span>
     ),
-    _when: activation => {
+    _when: (activation) => {
       /* when we ramp up the experiement, merchants who didn't fall 
         under the experiment shouldn't face any issue under needs clarfication flow */
       return (
@@ -825,37 +782,31 @@ const uploadFields = [
     _name: 'additional_doc',
     _cmp: Input.Select,
     options: [],
-    _when: activation =>
+    _when: (activation) =>
       doesHaveAdditionalDocs(activation) &&
       getAdditionalDocCount(activation.state, activation.props) > 1,
-    required: activation =>
-      isAdditonalDocRequired(activation.state, activation.props),
+    required: (activation) => isAdditonalDocRequired(activation.state, activation.props),
   },
   {
-    getLabel: activation => {
+    getLabel: (activation) => {
       const additionalDocKey =
-        activation.state.dirty.additional_doc ||
-        activation.state.additional_doc;
+        activation.state.dirty.additional_doc || activation.state.additional_doc;
 
       const userSelectedCategory =
-        activation.state.dirty.business_category ||
-        activation.props.data.business_category;
+        activation.state.dirty.business_category || activation.props.data.business_category;
       const userSelectedSubcategory =
-        activation.state.dirty.business_subcategory ||
-        activation.props.data.business_subcategory;
+        activation.state.dirty.business_subcategory || activation.props.data.business_subcategory;
 
       const additionalDocMapKey = `${userSelectedCategory}-${userSelectedSubcategory}`;
-      const additionalDoc =
-        ADDITIONAL_DOCS_LABEL_VALUE_MAP[additionalDocMapKey][additionalDocKey];
+      const additionalDoc = ADDITIONAL_DOCS_LABEL_VALUE_MAP[additionalDocMapKey][additionalDocKey];
 
       return additionalDoc.label;
     },
-    getName: activation => activation.state.additional_doc,
+    getName: (activation) => activation.state.additional_doc,
     _cmp: Input.File,
     className: 'AddressProof-upload',
     _when: doesHaveAdditionalDocs,
-    required: activation =>
-      isAdditonalDocRequired(activation.state, activation.props),
+    required: (activation) => isAdditonalDocRequired(activation.state, activation.props),
   },
 ];
 
@@ -869,7 +820,7 @@ export const ndcFields = [
     description: 'Please upload a copy of cancelled cheque.',
     _cmp: Input.File,
     className: 'AddressProof-upload',
-    _when: activation => {
+    _when: (activation) => {
       return activation.isNeedsClarificationMode() && activation.isOnKYCTab(); //Some improvements are possible here regarding placement of this field
     },
     isNotDeletable: true,
@@ -895,16 +846,10 @@ export const tabToEventNames = [
 ];
 
 // Tabs content
-const tabsData = [
-  contactFields,
-  businessModel,
-  businessDetails,
-  bankAccountFields,
-  uploadFields,
-];
+const tabsData = [contactFields, businessModel, businessDetails, bankAccountFields, uploadFields];
 
 /* Handles not allowing changing Biz Type cross Reg -> Unreg / Unreg -> Reg after L1 Completion */
-export const getBusinessTypeOptions = activation => {
+export const getBusinessTypeOptions = (activation) => {
   if (!isL1Completed(activation)) return DefaultBusinessTypeOptions;
 
   return isUnregisteredBusiness(activation)
@@ -921,9 +866,9 @@ export const mainFormFieldNamesMeta = (function() {
 
   for (let t = 0; t < tabsData.length; t++) {
     const tabNames = [];
-    tabsData[t].forEach(f => {
+    tabsData[t].forEach((f) => {
       if (Array.isArray(f)) {
-        return f.forEach(gf => {
+        return f.forEach((gf) => {
           // groups fields are array.
           if (gf.name) {
             tabNames.push(gf.name); // Check if this field has name attribute

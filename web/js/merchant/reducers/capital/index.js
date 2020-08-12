@@ -83,14 +83,14 @@ export const registerNewLoanApplication = () => {
   };
 };
 
-export const registerBusiness = businessDetails => {
+export const registerBusiness = (businessDetails) => {
   return {
     type: REGISTER_BUSINESS,
     data: businessDetails,
   };
 };
 
-export const fetchLoanApplicationMeta = applicationId => {
+export const fetchLoanApplicationMeta = (applicationId) => {
   const loanApplication = new LoanOrigination();
 
   return {
@@ -99,7 +99,7 @@ export const fetchLoanApplicationMeta = applicationId => {
   };
 };
 
-export const saveApplicationDetails = data => {
+export const saveApplicationDetails = (data) => {
   const loanApplication = new LoanOrigination();
   return {
     type: SAVE_APPLICATION_DETAILS,
@@ -107,7 +107,7 @@ export const saveApplicationDetails = data => {
   };
 };
 
-export const fetchBusinessDetails = data => {
+export const fetchBusinessDetails = (data) => {
   const loanApplication = new LoanOrigination();
   return {
     type: FETCH_BUSINESS_DETAILS,
@@ -115,7 +115,7 @@ export const fetchBusinessDetails = data => {
   };
 };
 
-export const getBusinessByMerchantId = data => {
+export const getBusinessByMerchantId = (data) => {
   const loanApplication = new LoanOrigination();
   return {
     type: FETCH_BUSINESS_DETAILS,
@@ -123,7 +123,7 @@ export const getBusinessByMerchantId = data => {
   };
 };
 
-export const saveBusinessDetails = data => {
+export const saveBusinessDetails = (data) => {
   const loanApplication = new LoanOrigination();
   return {
     type: SAVE_BUSINESS_DETAILS,
@@ -131,14 +131,14 @@ export const saveBusinessDetails = data => {
   };
 };
 
-export const saveRequestedLoanAttributes = data => {
+export const saveRequestedLoanAttributes = (data) => {
   return {
     type: REGISTER_LOAN_ATTRIBUTES,
     data,
   };
 };
 
-export const fetchApplicantDetails = applicantId => {
+export const fetchApplicantDetails = (applicantId) => {
   const loanApplication = new LoanOrigination();
   return {
     type: FETCH_APPLICANT_DETAILS,
@@ -146,7 +146,7 @@ export const fetchApplicantDetails = applicantId => {
   };
 };
 
-export const saveApplicantDetails = data => {
+export const saveApplicantDetails = (data) => {
   const loanApplication = new LoanOrigination();
   return {
     type: SAVE_APPLICANT_DETAILS,
@@ -154,7 +154,7 @@ export const saveApplicantDetails = data => {
   };
 };
 
-export const submitOtp = data => {
+export const submitOtp = (data) => {
   const loanApplication = new LoanOrigination();
   return {
     type: SUBMIT_OTP,
@@ -162,14 +162,14 @@ export const submitOtp = data => {
   };
 };
 
-export const saveD2cReportDetails = data => {
+export const saveD2cReportDetails = (data) => {
   return {
     type: SAVE_D2C_REPORT_DATA,
     payload: data,
   };
 };
 
-export const fetchD2cReport = data => {
+export const fetchD2cReport = (data) => {
   const loanApplication = new LoanOrigination();
   return {
     type: FETCH_D2C_REPORT_DATA,
@@ -177,7 +177,7 @@ export const fetchD2cReport = data => {
   };
 };
 
-export const fetchDocumentGroups = isProprietorshipBusiness => {
+export const fetchDocumentGroups = (isProprietorshipBusiness) => {
   const loanApplication = new LoanOrigination();
   return {
     type: FETCH_DOCUMENT_GROUPS,
@@ -185,7 +185,7 @@ export const fetchDocumentGroups = isProprietorshipBusiness => {
   };
 };
 
-export const uploadPreVerificationDocuments = data => {
+export const uploadPreVerificationDocuments = (data) => {
   const loanApplication = new LoanOrigination();
   return {
     type: UPLOAD_PRE_VERIFICATION_DOCUMENTS,
@@ -201,12 +201,12 @@ export const uploadBankStatement = (data, progressTracker) => {
   };
 };
 
-export const getNetBankingLink = data => {
+export const getNetBankingLink = (data) => {
   const loanApplication = new LoanOrigination();
   return loanApplication.getNetBankingLink(data);
 };
 
-export const fetchCreditOffers = data => {
+export const fetchCreditOffers = (data) => {
   const loanApplication = new LoanOrigination();
   return {
     type: FETCH_CREDIT_OFFERS,
@@ -214,7 +214,7 @@ export const fetchCreditOffers = data => {
   };
 };
 
-export const acceptCreditOffer = data => {
+export const acceptCreditOffer = (data) => {
   const loanApplication = new LoanOrigination();
   return {
     type: ACCEPT_CREDIT_OFFER,
@@ -222,7 +222,7 @@ export const acceptCreditOffer = data => {
   };
 };
 
-export const getAcceptedOffer = data => {
+export const getAcceptedOffer = (data) => {
   const loanApplication = new LoanOrigination();
   return {
     type: FETCH_ACCEPTED_CREDIT_OFFER,
@@ -230,7 +230,7 @@ export const getAcceptedOffer = data => {
   };
 };
 
-export const getAgreementStatus = data => {
+export const getAgreementStatus = (data) => {
   const loanApplication = new LoanOrigination();
   return {
     type: GET_AGREEMENT_STATUS,
@@ -238,12 +238,12 @@ export const getAgreementStatus = data => {
   };
 };
 
-export const getLegalAgreementUrl = data => {
+export const getLegalAgreementUrl = (data) => {
   const loanApplication = new LoanOrigination();
   return loanApplication.getLegalAgreementUrl(data);
 };
 
-export const getNach = data => {
+export const getNach = (data) => {
   const loanApplication = new LoanOrigination();
   return {
     type: GET_NACH_DETAILS,
@@ -251,29 +251,29 @@ export const getNach = data => {
   };
 };
 
-export const uploadNach = data => {
+export const uploadNach = (data) => {
   const loanApplication = new LoanOrigination();
   return loanApplication.uploadNach(data);
 };
 
-export const createNach = payload => {
+export const createNach = (payload) => {
   const loanApplication = new LoanOrigination();
   return loanApplication.createNach(payload);
 };
 
-export const changeActiveState = state => {
+export const changeActiveState = (state) => {
   return {
     type: 'CHANGE_ACTIVE_STATE',
     state,
   };
 };
 
-export const scheduleVerification = data => {
+export const scheduleVerification = (data) => {
   const loanApplication = new LoanOrigination();
   return loanApplication.scheduleVerification(data);
 };
 
-export const getLenderDetails = data => {
+export const getLenderDetails = (data) => {
   const loanApplication = new LoanOrigination();
   return {
     type: GET_LENDER_DETAILS,
@@ -281,7 +281,7 @@ export const getLenderDetails = data => {
   };
 };
 
-export const getDisbursalDetails = data => {
+export const getDisbursalDetails = (data) => {
   const loanApplication = new LoanOrigination();
   return {
     type: GET_DISBURSAL_DETAILS,
@@ -289,7 +289,7 @@ export const getDisbursalDetails = data => {
   };
 };
 
-export const getApplications = data => {
+export const getApplications = (data) => {
   const loanApplication = new LoanOrigination();
   return {
     type: GET_APPLICATIONS,
@@ -297,7 +297,7 @@ export const getApplications = data => {
   };
 };
 
-export const getScheduleDetails = data => {
+export const getScheduleDetails = (data) => {
   const loanApplication = new LoanOrigination();
   return {
     type: GET_SCHEDULED_VERIFICATION_DETAILS,
@@ -305,7 +305,7 @@ export const getScheduleDetails = data => {
   };
 };
 
-export const getOfferVerificationTasks = data => {
+export const getOfferVerificationTasks = (data) => {
   const loanApplication = new LoanOrigination();
   return {
     type: GET_OFFER_VERIFICATION_TASKS,

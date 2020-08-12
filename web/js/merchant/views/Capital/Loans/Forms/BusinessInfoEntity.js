@@ -26,13 +26,10 @@ const TextAreaWrapper = ({ input, ...rest }) => {
 const OutlineLockIcon = <i class="i i-outline-lock" />;
 
 @connect(
-  state => {
+  (state) => {
     if (state.loanApplicationDetails.meta.data.application.id === 'new') {
       const { session: { user } } = state;
-      const {
-        loan_attributes: loanAttributes,
-        business_details,
-      } = state.loanApplicationDetails;
+      const { loan_attributes: loanAttributes, business_details } = state.loanApplicationDetails;
       return {
         session: state.session,
         loanApplicationDetails: state.loanApplicationDetails,
@@ -46,8 +43,7 @@ const OutlineLockIcon = <i class="i i-outline-lock" />;
           ...(business_details.data.business
             ? {
                 legal_name: business_details.data.business.legal_name,
-                business_email:
-                  business_details.data.business.emails[0].email_id,
+                business_email: business_details.data.business.emails[0].email_id,
                 business_pan: business_details.data.business.business_pan,
                 business_type: BUSINESS_TYPES[parseInt(user.business_type)],
               }
@@ -73,10 +69,7 @@ const OutlineLockIcon = <i class="i i-outline-lock" />;
         },
       };
     }
-    const {
-      business_details,
-      meta: { data: { application } },
-    } = state.loanApplicationDetails;
+    const { business_details, meta: { data: { application } } } = state.loanApplicationDetails;
     if (business_details.data.business) {
       return {
         session: state.session,
@@ -86,11 +79,9 @@ const OutlineLockIcon = <i class="i i-outline-lock" />;
           legal_name: business_details.data.business.legal_name,
           business_email: business_details.data.business.emails[0].email_id,
           business_pan: business_details.data.business.business_pan,
-          monthly_volume:
-            application.requested_product_attributes.monthly_volume,
+          monthly_volume: application.requested_product_attributes.monthly_volume,
           amount: application.requested_product_attributes.amount,
-          credit_request_purpose:
-            application.requested_product_attributes.credit_request_purpose,
+          credit_request_purpose: application.requested_product_attributes.credit_request_purpose,
           expected_tenure: application.requested_product_attributes.tenure,
         },
         hasLoanAttributesChanged: isDirty('loanee-business-details')(state, [
@@ -141,12 +132,12 @@ class BusinessInfoEntity extends Component {
         (acc, [optionsKey, seedDataKey]) => {
           return {
             ...acc,
-            [optionsKey]: Object.entries(
-              loanApplicationDetails.seed_data.data[seedDataKey]
-            ).map(([volume, volume_label]) => ({
-              label: volume_label,
-              name: volume,
-            })),
+            [optionsKey]: Object.entries(loanApplicationDetails.seed_data.data[seedDataKey]).map(
+              ([volume, volume_label]) => ({
+                label: volume_label,
+                name: volume,
+              })
+            ),
           };
         },
         {}
@@ -160,7 +151,7 @@ class BusinessInfoEntity extends Component {
       APPLICATION_STATES.CONTRACT_PENDING
     );
 
-  handleSubmit = async formData => {
+  handleSubmit = async (formData) => {
     const {
       legal_name,
       business_email,
@@ -181,8 +172,7 @@ class BusinessInfoEntity extends Component {
       loanApplicationDetails.business_details.data.business &&
         loanApplicationDetails.business_details.data.business.id
     );
-    const businessDetails =
-      loanApplicationDetails.business_details.data.business;
+    const businessDetails = loanApplicationDetails.business_details.data.business;
     const payload = {
       business: {
         ...(businessExists
@@ -273,8 +263,8 @@ class BusinessInfoEntity extends Component {
       };
       return this.props
         .saveApplicationDetails(applicationPayload)
-        .then(_ => this.props.changeActiveState('PROMOTER_INFO_PENDING'))
-        .catch(err => {
+        .then((_) => this.props.changeActiveState('PROMOTER_INFO_PENDING'))
+        .catch((err) => {
           this.props.showNotification({
             type: 'error',
             message: 'Data cannot be updated at this time.',
@@ -289,8 +279,7 @@ class BusinessInfoEntity extends Component {
   };
 
   render() {
-    if (this.props.loanApplicationDetails.business_details.loading)
-      return <FormLoader />;
+    if (this.props.loanApplicationDetails.business_details.loading) return <FormLoader />;
 
     const canModify = this.canModify();
     return (
@@ -322,31 +311,29 @@ class BusinessInfoEntity extends Component {
           size="medium"
           required
         />
-        {this.props.initialValues.business_type === BUSINESS_TYPES[1] ?
-        (<Field
-          key="business_pan"
-          component={TextInputWrapper}
-          label="Business PAN"
-          name="business_pan"
-          placeholder=""
-          size="medium"
-        />) :
-        (<Field
-          key="business_pan"
-          component={TextInputWrapper}
-          addonAfter={OutlineLockIcon}
-          disabled={true}
-          label="Business PAN"
-          name="business_pan"
-          placeholder=""
-          size="medium"
-          required
-        />)}
-        <Input.Group
-          label="Monthly Business Value"
-          className="InputGroup--inline"
-          required
-        >
+        {this.props.initialValues.business_type === BUSINESS_TYPES[1] ? (
+          <Field
+            key="business_pan"
+            component={TextInputWrapper}
+            label="Business PAN"
+            name="business_pan"
+            placeholder=""
+            size="medium"
+          />
+        ) : (
+          <Field
+            key="business_pan"
+            component={TextInputWrapper}
+            addonAfter={OutlineLockIcon}
+            disabled={true}
+            label="Business PAN"
+            name="business_pan"
+            placeholder=""
+            size="medium"
+            required
+          />
+        )}
+        <Input.Group label="Monthly Business Value" className="InputGroup--inline" required>
           <div className="Input-content">
             <Input.CurrencySelect name="inrs" defaultValue="INR" disabled />
             <Field
@@ -361,11 +348,7 @@ class BusinessInfoEntity extends Component {
             />
           </div>
         </Input.Group>
-        <Input.Group
-          label="Expected Loan Amount"
-          className="InputGroup--inline"
-          required
-        >
+        <Input.Group label="Expected Loan Amount" className="InputGroup--inline" required>
           <div className="Input-content">
             <Input.CurrencySelect name="curr" defaultValue="INR" disabled />
             <Field

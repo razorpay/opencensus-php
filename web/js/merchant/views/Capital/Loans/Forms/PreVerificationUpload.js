@@ -18,22 +18,22 @@ import { isPreceedingState } from '../../utils';
 const createFormData = (form = {}) => {
   let formData = new FormData();
 
-  Object.keys(form).map(key => {
+  Object.keys(form).map((key) => {
     formData.append(key, form[key]);
   });
   return formData;
 };
 
-export const toBase64 = file =>
+export const toBase64 = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
+    reader.onerror = (error) => reject(error);
   });
 
 @connect(
-  state => ({
+  (state) => ({
     user: state.session.user,
     loanApplicationDetails: state.loanApplicationDetails,
   }),
@@ -106,12 +106,12 @@ class PreVerificationUpload extends Component {
   }
 
   handleFooterActions = (indexChangeBy = 1) => {
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       activeTabIndex: prevState.activeTabIndex + indexChangeBy,
     }));
   };
 
-  handleTabChange = targetTab => {
+  handleTabChange = (targetTab) => {
     this.setState({
       activeTabIndex: targetTab,
     });
@@ -120,15 +120,14 @@ class PreVerificationUpload extends Component {
   getDocumentProperty = (documentId, master_document_id, property) => {
     const { meta, document_groups } = this.props.loanApplicationDetails;
     const documentGroups = document_groups.data.document_groups;
-    const documentGroupId = meta.data.application.documents.find(
-      doc => doc.id === documentId
-    ).document_group_id;
+    const documentGroupId = meta.data.application.documents.find((doc) => doc.id === documentId)
+      .document_group_id;
     if (documentGroupId) {
       const selectedDocGroup = documentGroups.find(
-        docGroup => docGroup.document_group.id === documentGroupId
+        (docGroup) => docGroup.document_group.id === documentGroupId
       );
       return selectedDocGroup.master_documents.find(
-        master_doc => master_doc.id === master_document_id
+        (master_doc) => master_doc.id === master_document_id
       )[property];
     }
   };
@@ -148,26 +147,16 @@ class PreVerificationUpload extends Component {
         // return 'FDS';
         return 'UFH';
       default:
-        console.error(
-          'Unknown external service type detected: ',
-          externalServiceType
-        );
+        console.error('Unknown external service type detected: ', externalServiceType);
     }
   };
 
   uploadToUfh = (documentId, file, progressTracker) => {
-    const document = this.state.documents.find(doc => doc.id === documentId);
+    const document = this.state.documents.find((doc) => doc.id === documentId);
 
-    const documentType = this.getDocumentProperty(
-      documentId,
-      document.document_masters_id,
-      'type'
-    );
+    const documentType = this.getDocumentProperty(documentId, document.document_masters_id, 'type');
 
-    const {
-      promoter_details,
-      business_details,
-    } = this.props.loanApplicationDetails;
+    const { promoter_details, business_details } = this.props.loanApplicationDetails;
 
     const isAadhaarDocument = documentType === 'aadhaar';
 
@@ -192,17 +181,13 @@ class PreVerificationUpload extends Component {
         data: createFormData(data),
         onUploadProgress: progressTracker,
       })
-        .then(response => {
+        .then((response) => {
           if (response.errors) {
             reject(response);
           }
-          const storeType = this.getStoreType(
-            documentId,
-            document.document_masters_id
-          );
+          const storeType = this.getStoreType(documentId, document.document_masters_id);
           this.props.uploadPreVerificationDocuments({
-            application_id: this.props.loanApplicationDetails.meta.data
-              .application.id,
+            application_id: this.props.loanApplicationDetails.meta.data.application.id,
             documents: [
               {
                 document_masters_id: document.document_masters_id,
@@ -215,7 +200,7 @@ class PreVerificationUpload extends Component {
           });
           resolve(response);
         })
-        .catch(e => {
+        .catch((e) => {
           this.props.showNotification({
             type: 'error',
             message: 'Occurred a problem while uploading the document.',
@@ -247,14 +232,14 @@ class PreVerificationUpload extends Component {
     };
     return this.props
       .uploadBankStatement(data, progressTracker)
-      .then(response => {
+      .then((response) => {
         if (!response.errors) {
           return this.props.fetchLoanApplicationMeta(
             this.props.loanApplicationDetails.meta.data.application.id
           );
         }
       })
-      .catch(e => {
+      .catch((e) => {
         this.props.showNotification({
           type: 'error',
           message: 'Occurred a problem while uploading the document.',
@@ -265,7 +250,7 @@ class PreVerificationUpload extends Component {
   };
 
   handleFileChange = (documentId, file, progressTracker) => {
-    const document = this.state.documents.find(doc => doc.id === documentId);
+    const document = this.state.documents.find((doc) => doc.id === documentId);
     const externalServiceType = this.getDocumentProperty(
       document.id,
       document.document_masters_id,
@@ -285,16 +270,13 @@ class PreVerificationUpload extends Component {
       //     progressTracker
       //   );
       default:
-        console.error(
-          'Unknown external service type detected: ',
-          externalServiceType
-        );
+        console.error('Unknown external service type detected: ', externalServiceType);
     }
   };
 
-  handleRemoveFile = documentId => {
-    this.setState(prevState => ({
-      documents: prevState.documents.map(doc => {
+  handleRemoveFile = (documentId) => {
+    this.setState((prevState) => ({
+      documents: prevState.documents.map((doc) => {
         if (doc.id === documentId) {
           return {
             ...doc,
@@ -306,20 +288,18 @@ class PreVerificationUpload extends Component {
     }));
   };
 
-  isValidTab = tabIndex => {
+  isValidTab = (tabIndex) => {
     const documents = this.getEntityDocuments(tabIndex);
-    return documents
-      .map(doc => doc.store_id)
-      .every(valid_store_id => !!valid_store_id);
+    return documents.map((doc) => doc.store_id).every((valid_store_id) => !!valid_store_id);
   };
 
-  getEntityDocuments = tabIndex => {
-    switch (this.tabs.find(tab => tab.index === tabIndex).value) {
+  getEntityDocuments = (tabIndex) => {
+    switch (this.tabs.find((tab) => tab.index === tabIndex).value) {
       case 'address_proof':
-        return this.state.documents.filter(document => {
+        return this.state.documents.filter((document) => {
           if (
             document.master_documents
-              .map(masterDoc => masterDoc.external_service_name)
+              .map((masterDoc) => masterDoc.external_service_name)
               .includes('KYC')
           ) {
             return document.entity_type === 'APPLICANT';
@@ -328,10 +308,10 @@ class PreVerificationUpload extends Component {
           }
         });
       case 'business_proof':
-        return this.state.documents.filter(document => {
+        return this.state.documents.filter((document) => {
           if (
             document.master_documents
-              .map(masterDoc => masterDoc.external_service_name)
+              .map((masterDoc) => masterDoc.external_service_name)
               .includes('KYC')
           ) {
             return document.entity_type === 'BUSINESS';
@@ -340,68 +320,53 @@ class PreVerificationUpload extends Component {
           }
         });
       case 'financial_proof':
-        return this.state.documents.filter(document =>
+        return this.state.documents.filter((document) =>
           document.master_documents
-            .map(masterDoc => masterDoc.external_service_name)
+            .map((masterDoc) => masterDoc.external_service_name)
             .includes('FDS')
         );
     }
   };
 
   deriveFormData = () => {
-    if (!this.props.loanApplicationDetails.document_groups.data.document_groups)
-      return;
+    if (!this.props.loanApplicationDetails.document_groups.data.document_groups) return;
 
-    if (!this.props.loanApplicationDetails.meta.data.application.documents)
-      return;
+    if (!this.props.loanApplicationDetails.meta.data.application.documents) return;
 
-    const {
-      document_groups,
-    } = this.props.loanApplicationDetails.document_groups.data;
+    const { document_groups } = this.props.loanApplicationDetails.document_groups.data;
 
-    const applicationDocuments = this.props.loanApplicationDetails.meta.data
-      .application.documents;
-    const documents = applicationDocuments.reduce(
-      (acc, applicationDocument) => {
-        const documentGroup = document_groups.find(
-          docGroup =>
-            docGroup.document_group.id === applicationDocument.document_group_id
-        );
-        if (
-          documentGroup.master_documents &&
-          documentGroup.master_documents.length > 0 &&
-          !documentGroup.master_documents
-            .map(d => d.external_service_name)
-            .includes('BUREAU')
-        ) {
-          const isFDSDocument = documentGroup.master_documents
-            .map(d => d.external_service_name)
-            .includes('FDS');
-          return [
-            ...acc,
-            {
-              store_id: applicationDocument.store_id,
-              document_masters_id: applicationDocument.document_masters_id
-                ? applicationDocument.document_masters_id
-                : documentGroup.master_documents[0].id,
-              id: applicationDocument.id,
-              acceptDocumentTypes: isFDSDocument
-                ? ['pdf']
-                : ['png', 'jpg', 'jpeg', 'pdf'],
-              maxDocumentSize: isFDSDocument ? '5242880' : null,
-              entity_type: applicationDocument.entity_type,
-              document_group: documentGroup.document_group,
-              master_documents: documentGroup.master_documents,
-              documentUploadOptions: isFDSDocument
-                ? ['perfios', 'native_upload']
-                : ['native_upload'],
-            },
-          ];
-        }
-        return acc;
-      },
-      []
-    );
+    const applicationDocuments = this.props.loanApplicationDetails.meta.data.application.documents;
+    const documents = applicationDocuments.reduce((acc, applicationDocument) => {
+      const documentGroup = document_groups.find(
+        (docGroup) => docGroup.document_group.id === applicationDocument.document_group_id
+      );
+      if (
+        documentGroup.master_documents &&
+        documentGroup.master_documents.length > 0 &&
+        !documentGroup.master_documents.map((d) => d.external_service_name).includes('BUREAU')
+      ) {
+        const isFDSDocument = documentGroup.master_documents
+          .map((d) => d.external_service_name)
+          .includes('FDS');
+        return [
+          ...acc,
+          {
+            store_id: applicationDocument.store_id,
+            document_masters_id: applicationDocument.document_masters_id
+              ? applicationDocument.document_masters_id
+              : documentGroup.master_documents[0].id,
+            id: applicationDocument.id,
+            acceptDocumentTypes: isFDSDocument ? ['pdf'] : ['png', 'jpg', 'jpeg', 'pdf'],
+            maxDocumentSize: isFDSDocument ? '5242880' : null,
+            entity_type: applicationDocument.entity_type,
+            document_group: documentGroup.document_group,
+            master_documents: documentGroup.master_documents,
+            documentUploadOptions: isFDSDocument ? ['perfios', 'native_upload'] : ['native_upload'],
+          },
+        ];
+      }
+      return acc;
+    }, []);
     this.setState({
       documents,
       selectedUploadModes: documents.reduce((acc, curr) => {
@@ -422,7 +387,7 @@ class PreVerificationUpload extends Component {
     );
   };
 
-  getTabContent = tabIndex => {
+  getTabContent = (tabIndex) => {
     const entityDocuments = this.getEntityDocuments(tabIndex);
 
     return (
@@ -442,8 +407,8 @@ class PreVerificationUpload extends Component {
   };
 
   handleDocumentTypeChange = (verificationDocument, masterDocumentType) => {
-    this.setState(prevState => ({
-      documents: prevState.documents.map(document => {
+    this.setState((prevState) => ({
+      documents: prevState.documents.map((document) => {
         if (document.id === verificationDocument.id) {
           return {
             ...document,
@@ -457,7 +422,7 @@ class PreVerificationUpload extends Component {
 
   handleUploadModeChange = (document, selectedMode) => {
     this.setState(
-      prevState => ({
+      (prevState) => ({
         selectedUploadModes: {
           ...prevState.selectedUploadModes,
           [document.id]: selectedMode,
@@ -482,7 +447,7 @@ class PreVerificationUpload extends Component {
             document_master_id: document.master_documents[0].id,
             document_group_id: document.document_group.id,
           })
-            .then(response => {
+            .then((response) => {
               if (response && !response.errors) {
                 // ajax(
                 //   {
@@ -499,7 +464,7 @@ class PreVerificationUpload extends Component {
                 window.open(response.data.location, '_blank');
               }
             })
-            .catch(e => {
+            .catch((e) => {
               //TODO: handle errors
             });
         }
@@ -524,7 +489,7 @@ class PreVerificationUpload extends Component {
       <tabbed-container class="documents-upload-container">
         <span class="title">Documents Upload</span>
         <header>
-          {this.tabs.map(tab => (
+          {this.tabs.map((tab) => (
             <a
               className={activeTabIndex === tab.index && 'active'}
               onClick={() => this.handleTabChange(tab.index)}
@@ -539,7 +504,7 @@ class PreVerificationUpload extends Component {
           ))}
         </header>
         <div class="documents-upload-tabs-wrapper">
-          {this.tabs.map(tab => (
+          {this.tabs.map((tab) => (
             <div
               className={`documents-upload-tab ${
                 this.state.activeTabIndex === tab.index ? 'active' : 'inactive'
@@ -561,9 +526,7 @@ class PreVerificationUpload extends Component {
                     'BACK',
                     APPLICATION_STATES.CREDIT_PULL_PENDING
                   );
-                  this.props.changeActiveState(
-                    APPLICATION_STATES.CREDIT_PULL_PENDING
-                  );
+                  this.props.changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING);
                 }}
               >
                 <i className="i i-chevron-left" />
@@ -581,17 +544,12 @@ class PreVerificationUpload extends Component {
               </AsyncBtn.Primary>
             )}
             {this.state.activeTabIndex === this.tabs.length - 1 &&
-              !isPreceedingState(
-                status,
-                APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS
-              ) && (
+              !isPreceedingState(status, APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS) && (
                 <AsyncBtn.Primary
                   type="submit"
                   class="m-l"
                   onClick={() => {
-                    this.props.changeActiveState(
-                      APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS
-                    );
+                    this.props.changeActiveState(APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS);
                     this.props._trackNavigationActions(
                       'NEXT',
                       APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS

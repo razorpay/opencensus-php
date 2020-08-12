@@ -22,12 +22,7 @@ import { titleCase, getEMI } from 'common/utils/rzp-utils';
  * `bankTransfer` as fetch bank transfer api,
  * the content will be shown according to the Design^
  */
-export default ({
-  payment,
-  card = {},
-  bankTransfer = {},
-  upiTransfer = {},
-}) => {
+export default ({ payment, card = {}, bankTransfer = {}, upiTransfer = {} }) => {
   const paymentMethod = payment.method;
 
   const methodKeyMap = {
@@ -47,9 +42,7 @@ export default ({
     let paymentMethodText = payment[methodKeyMap[paymentMethod]];
 
     paymentMethodText =
-      paymentMethod !== 'netbanking'
-        ? titleCase(paymentMethodText)
-        : paymentMethodText;
+      paymentMethod !== 'netbanking' ? titleCase(paymentMethodText) : paymentMethodText;
     el = (
       <Definition>
         <span>{paymentMethodText + ' ' + titleCase(paymentMethod)}</span>
@@ -61,9 +54,7 @@ export default ({
     }
 
     const emiPlan = payment.emi_plan,
-      emi =
-        !!emiPlan &&
-        getEMI(payment.amount, emiPlan.duration, emiPlan.rate / 100);
+      emi = !!emiPlan && getEMI(payment.amount, emiPlan.duration, emiPlan.rate / 100);
 
     const subTypeMap = {
       consumer: 'Consumer',
@@ -141,9 +132,7 @@ export default ({
               {upiTransfer && (
                 <div class="row m-b">
                   <div class="col-sm-12">
-                    <Link
-                      to={`/virtualaccounts/${upiTransfer.virtual_account_id}`}
-                    >
+                    <Link to={`/virtualaccounts/${upiTransfer.virtual_account_id}`}>
                       <code>{upiTransfer.virtual_account_id}</code>
                     </Link>
                   </div>
@@ -172,8 +161,7 @@ export default ({
       </ContentToggler>
     );
   } else if (paymentMethod === 'bank_transfer') {
-    const isDetailsLoading =
-      Object.keys(bankTransfer.details).length === 0 || bankTransfer.loading;
+    const isDetailsLoading = Object.keys(bankTransfer.details).length === 0 || bankTransfer.loading;
 
     bankTransfer = bankTransfer.details;
 
@@ -182,19 +170,16 @@ export default ({
         <span>Bank Transfer</span>
         <Definition allowEmptyTitle={true}>
           {null}
-          {!!(
-            bankTransfer.virtual_account &&
-            bankTransfer.virtual_account.description
-          ) && <span>{bankTransfer.virtual_account.description}</span>}
+          {!!(bankTransfer.virtual_account && bankTransfer.virtual_account.description) && (
+            <span>{bankTransfer.virtual_account.description}</span>
+          )}
           {isDetailsLoading ? (
             <PlaceholderLoader />
           ) : (
             <div>
               <div class="row m-b">
                 <div class="col-sm-12">
-                  <Link
-                    to={`/virtualaccounts/${bankTransfer.virtual_account_id}`}
-                  >
+                  <Link to={`/virtualaccounts/${bankTransfer.virtual_account_id}`}>
                     <code>{bankTransfer.virtual_account_id}</code>
                   </Link>
                 </div>
@@ -204,9 +189,7 @@ export default ({
                   <div class="col-sm-12">
                     <div class="row">
                       <div class="col-sm-4 col-xs-5">Payer Name:</div>
-                      <div class="col-sm-8 col-xs-7">
-                        {bankTransfer.payer_bank_account.name}
-                      </div>
+                      <div class="col-sm-8 col-xs-7">{bankTransfer.payer_bank_account.name}</div>
                     </div>
                     <div class="row">
                       <div class="col-sm-4 col-xs-5">Payer a/c:</div>
@@ -216,9 +199,7 @@ export default ({
                     </div>
                     <div class="row">
                       <div class="col-sm-4 col-xs-5">Payer IFSC:</div>
-                      <div class="col-sm-8 col-xs-7">
-                        {bankTransfer.payer_bank_account.ifsc}
-                      </div>
+                      <div class="col-sm-8 col-xs-7">{bankTransfer.payer_bank_account.ifsc}</div>
                     </div>
                   </div>
                 </div>

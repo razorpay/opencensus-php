@@ -46,27 +46,27 @@ import getApplicationProgressPercentage from '../utils/ProgressPercentageCalcula
 const StateMessageMap = {
   [APPLICATION_STATES.SCORE_GENERATION_PENDING]: (
     <span>
-      The process takes around 24 hours. We will update you once all the
-      parameters are verified and revert with the offer status.
+      The process takes around 24 hours. We will update you once all the parameters are verified and
+      revert with the offer status.
     </span>
   ),
   CONTRACT_GENERATION_PENDING: (
     <span>
-      The loan agreement will contain the commercials around the offer and the
-      collection process. The process takes around 10-15 mins. Razorpay will
-      update you once the agreement is ready to be signed through the mail.
+      The loan agreement will contain the commercials around the offer and the collection process.
+      The process takes around 10-15 mins. Razorpay will update you once the agreement is ready to
+      be signed through the mail.
     </span>
   ),
   [APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED]: (
     <span>
-      Your loan application has been rejected due to the repeated failure of the
-      document collection.
+      Your loan application has been rejected due to the repeated failure of the document
+      collection.
     </span>
   ),
   [APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW]: (
     <span>
-      We usually confirm the document review within 1-2 working days. We’ll let
-      you know once the Review is completed.
+      We usually confirm the document review within 1-2 working days. We’ll let you know once the
+      Review is completed.
     </span>
   ),
 };
@@ -128,9 +128,7 @@ const stateTitleMap = {
   },
   BUSINESS_INFO_PENDING_LOCKED: {
     title: 'Confirm your Business Details & Needs',
-    description:
-      'Sorry, Loan details cannot be modified after the loan' +
-      ' offer is accepted',
+    description: 'Sorry, Loan details cannot be modified after the loan' + ' offer is accepted',
     lockedNote: true,
   },
   PROMOTER_INFO_PENDING: {
@@ -140,8 +138,7 @@ const stateTitleMap = {
   },
   PROMOTER_INFO_PENDING_LOCKED: {
     title: 'Confirm your Individual info',
-    description:
-      'Sorry, You cannot edit the below information after Credit Enquiry is done',
+    description: 'Sorry, You cannot edit the below information after Credit Enquiry is done',
     lockedNote: true,
   },
   MOBILE_VERIFICATION_PENDING: {
@@ -155,34 +152,27 @@ const stateTitleMap = {
     rightComponent: (
       <div className="right-component">
         <span className="exp-logo-text">Powered by</span>
-        <img
-          className="exp-logo"
-          src="https://cdn.razorpay.com/static/assets/experian_logo.png"
-        />
+        <img className="exp-logo" src="https://cdn.razorpay.com/static/assets/experian_logo.png" />
       </div>
     ),
   },
   [APPLICATION_STATES.SCORE_GENERATION_PENDING]: {
     title: 'Evaluating Loan Offer',
-    description:
-      'We will now review your documents and calculate the loan offer.',
+    description: 'We will now review your documents and calculate the loan offer.',
     type: 'pending',
   },
   [APPLICATION_STATES.CREDIT_OFFER_PENDING]: {
     title: 'Evaluating Loan Offer',
-    description:
-      'We will now review your documents and calculate the loan offer.',
+    description: 'We will now review your documents and calculate the loan offer.',
     type: 'pending',
   },
   [APPLICATION_STATES.CREDIT_OFFER_GENERATED]: {
     title: 'Loan Offer',
-    description:
-      'Accept the following loan offer to get the loan amount disbursed to your account',
+    description: 'Accept the following loan offer to get the loan amount disbursed to your account',
   },
   CREDIT_OFFER_ACCEPTED: {
     title: 'Accepted Loan offer',
-    description:
-      'Check the accepted loan offer details with repayment details here.',
+    description: 'Check the accepted loan offer details with repayment details here.',
     type: 'success',
   },
   CONTRACT_GENERATION_PENDING: {
@@ -193,8 +183,7 @@ const stateTitleMap = {
   },
   [APPLICATION_STATES.CONTRACT_PENDING]: {
     title: 'E-Sign Loan Agreement',
-    description:
-      'Please E-Sign the loan agreement by going to the leegality page.',
+    description: 'Please E-Sign the loan agreement by going to the leegality page.',
   },
   CONTRACT_SIGNED: {
     title: 'Loan Agreement',
@@ -219,14 +208,12 @@ const stateTitleMap = {
   },
   [APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED]: {
     title: 'Document Collection Failed',
-    description:
-      'Oops! It seems like we have not been able to collect your documents.',
+    description: 'Oops! It seems like we have not been able to collect your documents.',
     type: 'error',
   },
   [APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW]: {
     title: 'Documents Under Review',
-    description:
-      'We’re reviewing your documents internally and with our vendor.',
+    description: 'We’re reviewing your documents internally and with our vendor.',
     type: 'pending',
   },
   [APPLICATION_STATES.RZP_APPROVED]: {
@@ -239,18 +226,17 @@ const stateTitleMap = {
   [APPLICATION_STATES.CREDIT_DISBURSED]: {
     title: 'Hurray! Disbursed Successfully',
     description:
-      'The following loan amount has been successfully disbursed' +
-      ' to your bank account.',
+      'The following loan amount has been successfully disbursed' + ' to your bank account.',
     type: 'success',
   },
 };
 
-const getTitleInformation = info => {
+const getTitleInformation = (info) => {
   return <Banner {...info} isFormHeader={true} />;
 };
 
 @connect(
-  state => ({
+  (state) => ({
     user: state.session.user,
   }),
   {
@@ -279,8 +265,7 @@ class FormSectionRenderer extends Component {
 
     if (
       this.props.loanApplicationDetails.meta.data.application &&
-      prevProps.loanApplicationDetails.context.activeState !==
-        context.activeState &&
+      prevProps.loanApplicationDetails.context.activeState !== context.activeState &&
       !meta.loading
     ) {
       this.props.changeActiveState(context.activeState);
@@ -299,12 +284,9 @@ class FormSectionRenderer extends Component {
     if (this.formContainer) {
       //TODO:Find a better way to set this. As top status banner is far in dom,
       // forwarding ref is tedious task
-      const messageBanner = document.querySelector(
-        '.application-status-banner'
-      );
+      const messageBanner = document.querySelector('.application-status-banner');
       if (messageBanner && this.formContainer.style) {
-        this.formContainer.style.height = `calc(100% - ${messageBanner.clientHeight +
-          12}px)`;
+        this.formContainer.style.height = `calc(100% - ${messageBanner.clientHeight + 12}px)`;
       } else {
         if (this.formContainer.style) {
           this.formContainer.style.height = '100%';
@@ -335,7 +317,7 @@ class FormSectionRenderer extends Component {
     this.props.fetchProducts();
   }
 
-  fetchStateDetails = async state => {
+  fetchStateDetails = async (state) => {
     this.setState({
       loading: true,
     });
@@ -501,11 +483,7 @@ class FormSectionRenderer extends Component {
     }
 
     if (state === APPLICATION_STATES.SLOT_SELECTION_PENDING) {
-      const {
-        meta,
-        business_details,
-        promoter_details,
-      } = this.props.loanApplicationDetails;
+      const { meta, business_details, promoter_details } = this.props.loanApplicationDetails;
 
       try {
         const acceptedOfferDetails = await this.props.getAcceptedOffer({
@@ -543,7 +521,7 @@ class FormSectionRenderer extends Component {
 
       const acceptedCreditOfferId = acceptedOfferDetails.data.credit_offer_id;
       const acceptedOffer = creditOffers.data.credit_offers.find(
-        credit_offer => credit_offer.id === acceptedCreditOfferId
+        (credit_offer) => credit_offer.id === acceptedCreditOfferId
       );
 
       if (acceptedOffer) {
@@ -589,7 +567,7 @@ class FormSectionRenderer extends Component {
       ]).then(([acceptedOfferDetails, allOffers, _]) => {
         const acceptedCreditOfferId = acceptedOfferDetails.data.credit_offer_id;
         const creditOffer = allOffers.data.credit_offers.find(
-          credit_offer => credit_offer.id === acceptedCreditOfferId
+          (credit_offer) => credit_offer.id === acceptedCreditOfferId
         );
         return this.props.getLenderDetails({
           lender_id: creditOffer.lender_id,
@@ -602,22 +580,15 @@ class FormSectionRenderer extends Component {
     });
   };
 
-  getHeader = activeState => {
+  getHeader = (activeState) => {
     const { meta } = this.props.loanApplicationDetails;
 
     switch (activeState) {
       case 'BUSINESS_INFO_PENDING':
-        if (
-          isPreceedingState(
-            meta.data.application.status,
-            APPLICATION_STATES.CONTRACT_PENDING
-          )
-        ) {
+        if (isPreceedingState(meta.data.application.status, APPLICATION_STATES.CONTRACT_PENDING)) {
           return getTitleInformation(stateTitleMap['BUSINESS_INFO_PENDING']);
         } else {
-          return getTitleInformation(
-            stateTitleMap['BUSINESS_INFO_PENDING_LOCKED']
-          );
+          return getTitleInformation(stateTitleMap['BUSINESS_INFO_PENDING_LOCKED']);
         }
       case 'PROMOTER_INFO_PENDING':
         if (
@@ -628,9 +599,7 @@ class FormSectionRenderer extends Component {
         ) {
           return getTitleInformation(stateTitleMap['PROMOTER_INFO_PENDING']);
         } else {
-          return getTitleInformation(
-            stateTitleMap['PROMOTER_INFO_PENDING_LOCKED']
-          );
+          return getTitleInformation(stateTitleMap['PROMOTER_INFO_PENDING_LOCKED']);
         }
       case APPLICATION_STATES.CREDIT_PULL_PENDING:
         const { bureau_report_details } = this.props.loanApplicationDetails;
@@ -640,26 +609,15 @@ class FormSectionRenderer extends Component {
         if (bureau_report_details.data.bureau_report) {
           return getTitleInformation(stateTitleMap['CREDIT_PULL_COMPLETED']);
         }
-        return getTitleInformation(
-          stateTitleMap['MOBILE_VERIFICATION_PENDING']
-        );
+        return getTitleInformation(stateTitleMap['MOBILE_VERIFICATION_PENDING']);
       case APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS:
       case APPLICATION_STATES.SCORE_GENERATION_PENDING:
       case APPLICATION_STATES.CREDIT_OFFER_PENDING:
-        return getTitleInformation(
-          stateTitleMap[APPLICATION_STATES.SCORE_GENERATION_PENDING]
-        );
+        return getTitleInformation(stateTitleMap[APPLICATION_STATES.SCORE_GENERATION_PENDING]);
       case APPLICATION_STATES.CREDIT_OFFER_GENERATED:
         const { accepted_offer_details } = this.props.loanApplicationDetails;
-        if (
-          !(
-            accepted_offer_details.data &&
-            accepted_offer_details.data.credit_offer_id
-          )
-        ) {
-          return getTitleInformation(
-            stateTitleMap[APPLICATION_STATES.CREDIT_OFFER_GENERATED]
-          );
+        if (!(accepted_offer_details.data && accepted_offer_details.data.credit_offer_id)) {
+          return getTitleInformation(stateTitleMap[APPLICATION_STATES.CREDIT_OFFER_GENERATED]);
         } else {
           return getTitleInformation(stateTitleMap['CREDIT_OFFER_ACCEPTED']);
         }
@@ -669,49 +627,31 @@ class FormSectionRenderer extends Component {
           if (agreement_details.data.sign_status === 'SIGNED') {
             return getTitleInformation(stateTitleMap['CONTRACT_SIGNED']);
           } else {
-            return getTitleInformation(
-              stateTitleMap[APPLICATION_STATES.CONTRACT_PENDING]
-            );
+            return getTitleInformation(stateTitleMap[APPLICATION_STATES.CONTRACT_PENDING]);
           }
         } else {
           //invitation not yet generated
-          return getTitleInformation(
-            stateTitleMap['CONTRACT_GENERATION_PENDING']
-          );
+          return getTitleInformation(stateTitleMap['CONTRACT_GENERATION_PENDING']);
         }
       case APPLICATION_STATES.NACH_CREATION_PENDING:
       case APPLICATION_STATES.NACH_UPLOAD_PENDING:
-        return getTitleInformation(
-          stateTitleMap[APPLICATION_STATES.NACH_UPLOAD_PENDING]
-        );
+        return getTitleInformation(stateTitleMap[APPLICATION_STATES.NACH_UPLOAD_PENDING]);
       case APPLICATION_STATES.SLOT_SELECTION_PENDING:
-        return getTitleInformation(
-          stateTitleMap[APPLICATION_STATES.SLOT_SELECTION_PENDING]
-        );
+        return getTitleInformation(stateTitleMap[APPLICATION_STATES.SLOT_SELECTION_PENDING]);
       case APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED:
-        return getTitleInformation(
-          stateTitleMap[APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED]
-        );
+        return getTitleInformation(stateTitleMap[APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED]);
       case APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED:
-        return getTitleInformation(
-          stateTitleMap[APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED]
-        );
+        return getTitleInformation(stateTitleMap[APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED]);
       case APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW:
-        return getTitleInformation(
-          stateTitleMap[APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW]
-        );
+        return getTitleInformation(stateTitleMap[APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW]);
       case APPLICATION_STATES.RZP_APPROVED:
-        return getTitleInformation(
-          stateTitleMap[APPLICATION_STATES.RZP_APPROVED]
-        );
+        return getTitleInformation(stateTitleMap[APPLICATION_STATES.RZP_APPROVED]);
       case APPLICATION_STATES.CREDIT_DISBURSED:
-        return getTitleInformation(
-          stateTitleMap[APPLICATION_STATES.CREDIT_DISBURSED]
-        );
+        return getTitleInformation(stateTitleMap[APPLICATION_STATES.CREDIT_DISBURSED]);
     }
   };
 
-  getTobeRenderedForm = activeState => {
+  getTobeRenderedForm = (activeState) => {
     let TobeRenderedFormComponent;
     switch (activeState) {
       case APPLICATION_STATES.CREATED:
@@ -723,31 +663,24 @@ class FormSectionRenderer extends Component {
           promoter_details,
           bureau_report_details,
         } = this.props.loanApplicationDetails;
-        if (
-          promoter_details.loading ||
-          business_details.loading ||
-          bureau_report_details.loading
-        ) {
+        if (promoter_details.loading || business_details.loading || bureau_report_details.loading) {
           return <FormSectionLoadingSkeleton />;
         } else {
           if (bureau_report_details.data.bureau_report) {
             TobeRenderedFormComponent = stateFormMap['CREDIT_PULL_COMPLETED'];
           } else {
-            TobeRenderedFormComponent =
-              stateFormMap['MOBILE_VERIFICATION_PENDING'];
+            TobeRenderedFormComponent = stateFormMap['MOBILE_VERIFICATION_PENDING'];
           }
         }
         break;
       case APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING:
       case APPLICATION_STATES.PREVERIFICATION_FAILED:
-        TobeRenderedFormComponent =
-          stateFormMap[APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING];
+        TobeRenderedFormComponent = stateFormMap[APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING];
         break;
       case APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS:
       case APPLICATION_STATES.SCORE_GENERATION_PENDING:
       case APPLICATION_STATES.CREDIT_OFFER_PENDING:
-        TobeRenderedFormComponent =
-          stateFormMap[APPLICATION_STATES.SCORE_GENERATION_PENDING];
+        TobeRenderedFormComponent = stateFormMap[APPLICATION_STATES.SCORE_GENERATION_PENDING];
         break;
       case APPLICATION_STATES.CONTRACT_PENDING:
         const { agreement_details } = this.props.loanApplicationDetails;
@@ -758,14 +691,12 @@ class FormSectionRenderer extends Component {
             TobeRenderedFormComponent = stateFormMap['CONTRACT_PENDING'];
           }
         } else {
-          TobeRenderedFormComponent =
-            stateFormMap['CONTRACT_GENERATION_PENDING'];
+          TobeRenderedFormComponent = stateFormMap['CONTRACT_GENERATION_PENDING'];
         }
         break;
       case APPLICATION_STATES.NACH_CREATION_PENDING:
       case APPLICATION_STATES.NACH_UPLOAD_PENDING:
-        TobeRenderedFormComponent =
-          stateFormMap[APPLICATION_STATES.NACH_UPLOAD_PENDING];
+        TobeRenderedFormComponent = stateFormMap[APPLICATION_STATES.NACH_UPLOAD_PENDING];
         break;
 
       case 'BUSINESS_INFO_PENDING':
@@ -796,19 +727,17 @@ class FormSectionRenderer extends Component {
         ? context.activeState
         : meta.data.application ? meta.data.application.status : defaultState;
     } else {
-      return meta.data.application
-        ? meta.data.application.status
-        : defaultState;
+      return meta.data.application ? meta.data.application.status : defaultState;
     }
   };
 
-  gaEventDispatcher = eventObject => {
+  gaEventDispatcher = (eventObject) => {
     eventObject['eventCategory'] = 'Dashboard - WCL LOS';
     window.rzpAnalytics(eventObject);
   };
 
-  _getParentStepLabel = step => {
-    return Object.values(SIDE_NAVIGATION_STATE_GROUPS).filter(meta =>
+  _getParentStepLabel = (step) => {
+    return Object.values(SIDE_NAVIGATION_STATE_GROUPS).filter((meta) =>
       Object.values(meta.steps)
         .reduce((acc, curr) => [...acc, ...curr], [])
         .includes(step)
@@ -838,10 +767,7 @@ class FormSectionRenderer extends Component {
     return (
       <div className="application-forms-wrapper">
         <div className="hero-image-wrapper">
-          <img
-            src={'/dist/css/assets/capital/los_onboarding_hero.svg'}
-            alt="landing-image"
-          />
+          <img src={'/dist/css/assets/capital/los_onboarding_hero.svg'} alt="landing-image" />
         </div>
         {this.state.loading || seed_data.loading ? (
           <FormSectionLoadingSkeleton />
@@ -852,10 +778,7 @@ class FormSectionRenderer extends Component {
               ref={this.bannerMessageContainer}
               changeActiveState={this.props.changeActiveState}
             />
-            <div
-              className="application-form-container"
-              ref={node => (this.formContainer = node)}
-            >
+            <div className="application-form-container" ref={(node) => (this.formContainer = node)}>
               <div className="loan-application-form-section">
                 <div className="loan-application-form-header-section">
                   {this.getHeader(tobeRenderedState) ? (

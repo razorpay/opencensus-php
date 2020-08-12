@@ -82,5 +82,5 @@ async.eachSeries(
     if (err) {
       throw err;
     }
-  },
+  }
 );

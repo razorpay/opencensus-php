@@ -35,7 +35,7 @@ const APPROVED = 'approved';
 const REJECTED = 'rejected';
 
 @connect(
-  state => ({
+  (state) => ({
     user: state.session.user,
   }),
   {
@@ -108,7 +108,7 @@ class InternationalConfig extends Component {
           isWebsiteInWorkflow: data,
         });
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: 'Could not fetch website workflow status.',
@@ -116,7 +116,7 @@ class InternationalConfig extends Component {
       });
   }
 
-  setInternationalFlowStatusForProducts = internationalWorkflowStatus => {
+  setInternationalFlowStatusForProducts = (internationalWorkflowStatus) => {
     const currentMID = this.props.user.current;
 
     const isPGStatusSetInLocalStorage = !!LocalStorageService.getItem(
@@ -137,17 +137,14 @@ class InternationalConfig extends Component {
 
     otherProductsStatus = internationalWorkflowStatus['payment_links'];
 
-    if (
-      otherProductsStatus === NO_ACTION_RECEIVED &&
-      isOtherProductsStatusInLocalStorage
-    ) {
+    if (otherProductsStatus === NO_ACTION_RECEIVED && isOtherProductsStatusInLocalStorage) {
       otherProductsStatus = IN_REVIEW;
     }
 
     this.setState({ pgProductStatus, otherProductsStatus });
   };
 
-  analytics = action => {
+  analytics = (action) => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Settings',
       eventAction: `${action} - International card payments`,
@@ -172,12 +169,10 @@ class InternationalConfig extends Component {
     });
   };
 
-  openTypeForm = triggerSource => {
+  openTypeForm = (triggerSource) => {
     this.setState(
       {
-        requestedAccessFrom: triggerSource
-          ? triggerSource
-          : 'requestedFromHeader',
+        requestedAccessFrom: triggerSource ? triggerSource : 'requestedFromHeader',
       },
       () => {
         this.IntlEnableTypeForm.open();
@@ -190,15 +185,9 @@ class InternationalConfig extends Component {
     const currentMID = this.props.user.current;
 
     if (requestedAccessFrom === 'requestedFromHeader') {
-      LocalStorageService.setItem(
-        `international-access-requested-${currentMID}`,
-        true
-      );
+      LocalStorageService.setItem(`international-access-requested-${currentMID}`, true);
     } else {
-      LocalStorageService.setItem(
-        `international-${requestedAccessFrom}-${currentMID}`,
-        true
-      );
+      LocalStorageService.setItem(`international-${requestedAccessFrom}-${currentMID}`, true);
     }
 
     let stateKeyToUpdate = '';
@@ -237,7 +226,7 @@ class InternationalConfig extends Component {
         international: enableInternational ? 1 : 0,
       },
     })
-      .then(resp => {
+      .then((resp) => {
         // Check if the response sets international as intended in this request
         if (resp.data.international === !!enableInternational) {
           postActionCB(true);
@@ -254,7 +243,7 @@ class InternationalConfig extends Component {
           ); // This code is ideally unreachable as per business logic. However, since Api silently fails here, hence handling explicitly.
         }
       })
-      .catch(err => {
+      .catch((err) => {
         postActionCB(false);
         let error = 'Something went wrong!';
 
@@ -273,26 +262,20 @@ class InternationalConfig extends Component {
       });
   };
 
-  hasRequestedAccessForProduct = product => {
+  hasRequestedAccessForProduct = (product) => {
     const currentMID = this.props.user.current;
 
     const isProductAccessRequested = LocalStorageService.getItem(
       `international-${product}-${currentMID}`
     );
 
-    return (
-      this.isStatusUpdatedForProduct(product) ||
-      isPresent(isProductAccessRequested)
-    );
+    return this.isStatusUpdatedForProduct(product) || isPresent(isProductAccessRequested);
   };
 
   get currentStatusOnHeader() {
     const { pgProductStatus, otherProductsStatus } = this.state;
 
-    if (
-      !(pgProductStatus || otherProductsStatus) ||
-      this.isAnyProductIntlApproved
-    ) {
+    if (!(pgProductStatus || otherProductsStatus) || this.isAnyProductIntlApproved) {
       return null;
     }
 
@@ -300,15 +283,13 @@ class InternationalConfig extends Component {
       return IN_REVIEW;
     }
 
-    const isAnyProductInReview =
-      pgProductStatus === IN_REVIEW || otherProductsStatus === IN_REVIEW;
+    const isAnyProductInReview = pgProductStatus === IN_REVIEW || otherProductsStatus === IN_REVIEW;
 
     if (isAnyProductInReview) {
       return IN_REVIEW;
     }
 
-    const allProductsRejected =
-      pgProductStatus === REJECTED && otherProductsStatus === REJECTED;
+    const allProductsRejected = pgProductStatus === REJECTED && otherProductsStatus === REJECTED;
 
     if (allProductsRejected) {
       return REJECTED;
@@ -317,7 +298,7 @@ class InternationalConfig extends Component {
     return null;
   }
 
-  isStatusUpdatedForProduct = product => {
+  isStatusUpdatedForProduct = (product) => {
     const { pgProductStatus, otherProductsStatus } = this.state;
 
     if (!pgProductStatus && !otherProductsStatus) return false;
@@ -326,10 +307,7 @@ class InternationalConfig extends Component {
       return true;
     }
 
-    if (
-      product === 'otherProducts' &&
-      otherProductsStatus !== NO_ACTION_RECEIVED
-    ) {
+    if (product === 'otherProducts' && otherProductsStatus !== NO_ACTION_RECEIVED) {
       return true;
     }
 
@@ -339,20 +317,13 @@ class InternationalConfig extends Component {
   get isStatusUpdatedForAnyProduct() {
     const { pgProductStatus, otherProductsStatus } = this.state;
 
-    return (
-      pgProductStatus !== NO_ACTION_RECEIVED ||
-      otherProductsStatus !== NO_ACTION_RECEIVED
-    );
+    return pgProductStatus !== NO_ACTION_RECEIVED || otherProductsStatus !== NO_ACTION_RECEIVED;
   }
 
   get isRequestAccessAllowed() {
     const { isAccessRequested } = this.state;
 
-    return (
-      this.isInternationalGreyList &&
-      !isAccessRequested &&
-      !this.isStatusUpdatedForAnyProduct
-    );
+    return this.isInternationalGreyList && !isAccessRequested && !this.isStatusUpdatedForAnyProduct;
   }
 
   get isInternationalPaymentsAllowed() {
@@ -377,10 +348,7 @@ class InternationalConfig extends Component {
   }
 
   get isAnyProductIntlApproved() {
-    return (
-      this.state.pgProductStatus === APPROVED ||
-      this.state.otherProductsStatus === APPROVED
-    );
+    return this.state.pgProductStatus === APPROVED || this.state.otherProductsStatus === APPROVED;
   }
 
   get isInternationalWhiteList() {
@@ -424,18 +392,14 @@ class InternationalConfig extends Component {
         if (this.isInternationalWhiteList) {
           line2 = 'Add a website to enable international payments.';
         } else if (this.isInternationalGreyList) {
-          line2 =
-            'You need to add your website to request access for international payments.';
+          line2 = 'You need to add your website to request access for international payments.';
         }
       } else {
         // Intl. whitelist but added website after L1 completion
         if (this.isInternationalWhiteList && user.isAccepted) {
           line2 =
             'Your website is currently in review. International payments will be enabled once website is approved.';
-        } else if (
-          this.isInternationalWhiteList &&
-          user.instantActivation.isL1Submitted
-        ) {
+        } else if (this.isInternationalWhiteList && user.instantActivation.isL1Submitted) {
           line2 = 'Please complete your KYC to enable international payments.';
         }
       }
@@ -451,9 +415,7 @@ class InternationalConfig extends Component {
       );
     }
 
-    return (
-      <>International card payments is not supported for your business model.</>
-    );
+    return <>International card payments is not supported for your business model.</>;
   }
 
   get isWebsiteAdded() {
@@ -474,7 +436,7 @@ class InternationalConfig extends Component {
           description="API & SDK & Plugin integrations"
           status={StatusMap[pgProductStatus]}
           showRequestAccessBtn={!this.hasRequestedAccessForProduct('pg')}
-          onRequestAccessClick={e => {
+          onRequestAccessClick={(e) => {
             e.preventDefault();
             this.openRequestInitiateModal({ triggerSource: 'pg' });
           }}
@@ -489,10 +451,8 @@ class InternationalConfig extends Component {
           title="On Other Products"
           description="Payment Pages, Payment Links & Invoices"
           status={StatusMap[otherProductsStatus]}
-          showRequestAccessBtn={
-            !this.hasRequestedAccessForProduct('otherProducts')
-          }
-          onRequestAccessClick={e => {
+          showRequestAccessBtn={!this.hasRequestedAccessForProduct('otherProducts')}
+          onRequestAccessClick={(e) => {
             e.preventDefault();
             this.openRequestInitiateModal({ triggerSource: 'otherProducts' });
           }}
@@ -569,9 +529,7 @@ class InternationalConfig extends Component {
             <div class="description">{this.renderProductsSection()}</div>
             <div class="form-group">
               <ShowWhen
-                additionalCondition={user =>
-                  user.isOrgAllowedFunctionality('external_links')
-                }
+                additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
               >
                 <div class="col-sm-10">
                   <a
@@ -580,10 +538,7 @@ class InternationalConfig extends Component {
                     href="https://razorpay.com/payment-gateway/#go-international"
                   >
                     Know more
-                    <i
-                      class="i i-external-link"
-                      style={{ marginLeft: '5px' }}
-                    />
+                    <i class="i i-external-link" style={{ marginLeft: '5px' }} />
                   </a>
                 </div>
               </ShowWhen>

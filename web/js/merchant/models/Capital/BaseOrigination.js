@@ -21,29 +21,18 @@ export default class BaseOriginationEntity extends GenericEntity {
 
   fetchSeedData() {
     return this.request(
-      `${this.resourceUrlPrefix(
-        'origination',
-        'ApplicationAPI',
-        'GetSeedInfo'
-      )}`,
+      `${this.resourceUrlPrefix('origination', 'ApplicationAPI', 'GetSeedInfo')}`,
       {}
     );
   }
 
   fetchProducts() {
-    return this.request(
-      `${this.resourceUrlPrefix('admin', 'ProductAPI', 'GetProducts')}`,
-      {}
-    );
+    return this.request(`${this.resourceUrlPrefix('admin', 'ProductAPI', 'GetProducts')}`, {});
   }
 
   fetchLoanApplicationMeta(applicationId) {
     return this.request(
-      `${this.resourceUrlPrefix(
-        'origination',
-        'ApplicationAPI',
-        'GetApplication'
-      )}`,
+      `${this.resourceUrlPrefix('origination', 'ApplicationAPI', 'GetApplication')}`,
       {
         application_id: applicationId,
       }
@@ -64,22 +53,14 @@ export default class BaseOriginationEntity extends GenericEntity {
 
   fetchBusinessDetails(data) {
     return this.request(
-      `${this.resourceUrlPrefix(
-        'client',
-        'BusinessAPI',
-        'GetBusinessDetails'
-      )}`,
+      `${this.resourceUrlPrefix('client', 'BusinessAPI', 'GetBusinessDetails')}`,
       data
     );
   }
 
   getBusinessDetailsByMerchantId(data) {
     return this.request(
-      `${this.resourceUrlPrefix(
-        'client',
-        'BusinessAPI',
-        'GetBusinessDetailsByReferenceID'
-      )}`,
+      `${this.resourceUrlPrefix('client', 'BusinessAPI', 'GetBusinessDetailsByReferenceID')}`,
       data
     );
   }
@@ -118,12 +99,12 @@ export default class BaseOriginationEntity extends GenericEntity {
   fetchDocumentGroups(isProprietorshipBusiness) {
     return this.request(
       `${this.resourceUrlPrefix('admin', 'DocumentsAPI', 'GetDocumentGroups')}`
-    ).then(data => {
+    ).then((data) => {
       if (isProprietorshipBusiness) {
-        data.data.document_groups.forEach(d => {
+        data.data.document_groups.forEach((d) => {
           if (d.document_group.name === 'business_registration_proof') {
             d.master_documents = d.master_documents.filter(
-              doc =>
+              (doc) =>
                 doc.type !== 'partnership_deed' &&
                 doc.type !== 'llp_certificate' &&
                 doc.type !== 'certificate_of_incorporation'
@@ -137,11 +118,7 @@ export default class BaseOriginationEntity extends GenericEntity {
 
   getApplications(data) {
     return this.request(
-      `${this.resourceUrlPrefix(
-        'origination',
-        'ApplicationAPI',
-        'ListOrSearch'
-      )}`,
+      `${this.resourceUrlPrefix('origination', 'ApplicationAPI', 'ListOrSearch')}`,
       {
         limit: 10,
         ...data,
@@ -151,11 +128,7 @@ export default class BaseOriginationEntity extends GenericEntity {
 
   uploadPreVerificationDocuments(data) {
     return this.request(
-      `${this.resourceUrlPrefix(
-        'origination',
-        'ApplicationAPI',
-        'UploadDocuments'
-      )}`,
+      `${this.resourceUrlPrefix('origination', 'ApplicationAPI', 'UploadDocuments')}`,
       data
     );
   }
@@ -175,76 +148,54 @@ export default class BaseOriginationEntity extends GenericEntity {
     );
   }
 
-  acceptCreditOffer = data => {
+  acceptCreditOffer = (data) => {
     return this.request(
       `${this.resourceUrlPrefix('admin', 'CreditOfferAPI', 'AcceptOffer')}`,
       data
     );
   };
 
-  getAcceptedOffer = data => {
+  getAcceptedOffer = (data) => {
     return this.request(
-      `${this.resourceUrlPrefix(
-        'contracts',
-        'ContractsAPI',
-        'GetApplicationContracts'
-      )}`,
+      `${this.resourceUrlPrefix('contracts', 'ContractsAPI', 'GetApplicationContracts')}`,
       data
     );
   };
 
-  getAgreementStatus = data => {
+  getAgreementStatus = (data) => {
     return this.request(
-      `${this.resourceUrlPrefix(
-        'contracts',
-        'DocSignAPI',
-        'CheckAgreementStatus'
-      )}`,
+      `${this.resourceUrlPrefix('contracts', 'DocSignAPI', 'CheckAgreementStatus')}`,
       data
     );
   };
 
-  getLegalAgreementUrl = data => {
+  getLegalAgreementUrl = (data) => {
     return this.request(
-      `${this.resourceUrlPrefix(
-        'contracts',
-        'DocSignAPI',
-        'FetchLegalAgreement'
-      )}`,
+      `${this.resourceUrlPrefix('contracts', 'DocSignAPI', 'FetchLegalAgreement')}`,
       data
     );
   };
 
-  getNach = data => {
+  getNach = (data) => {
     return this.request(
       `${this.resourceUrlPrefix('nach', 'NachAPI', 'GetNachByApplication')}`,
       data
     );
   };
 
-  uploadNach = payload => {
-    return this.request(
-      `${this.resourceUrlPrefix('nach', 'NachAPI', 'UploadNachForm')}`,
-      payload
-    );
+  uploadNach = (payload) => {
+    return this.request(`${this.resourceUrlPrefix('nach', 'NachAPI', 'UploadNachForm')}`, payload);
   };
 
   getNetBankingLink(data) {
     return this.request(
-      `${this.resourceUrlPrefix(
-        'fds',
-        'FDSBankStatementAPI',
-        'GetNetBankingLink'
-      )}`,
+      `${this.resourceUrlPrefix('fds', 'FDSBankStatementAPI', 'GetNetBankingLink')}`,
       data
     );
   }
 
   submitOtp(data) {
-    return this.request(
-      `${this.resourceUrlPrefix('d2c', 'D2CBureauAPI', 'SubmitOtp')}`,
-      data
-    );
+    return this.request(`${this.resourceUrlPrefix('d2c', 'D2CBureauAPI', 'SubmitOtp')}`, data);
   }
 
   fetchD2cReport(data) {
@@ -255,55 +206,34 @@ export default class BaseOriginationEntity extends GenericEntity {
   }
 
   createNach(payload) {
-    return this.request(
-      `${this.resourceUrlPrefix('nach', 'NachAPI', 'CreateNach')}`,
-      payload
-    );
+    return this.request(`${this.resourceUrlPrefix('nach', 'NachAPI', 'CreateNach')}`, payload);
   }
 
-  scheduleVerification = payload => {
+  scheduleVerification = (payload) => {
     return this.request(
-      `${this.resourceUrlPrefix(
-        'admin',
-        'OfferVerificationAPI',
-        'ScheduleMerchantVerification'
-      )}`,
+      `${this.resourceUrlPrefix('admin', 'OfferVerificationAPI', 'ScheduleMerchantVerification')}`,
       payload
     );
   };
 
-  getLender = data => {
+  getLender = (data) => {
+    return this.request(`${this.resourceUrlPrefix('admin', 'LenderAPI', 'GetLender')}`, data);
+  };
+
+  getDisbursalDetails = (data) => {
+    return this.request(`${this.resourceUrlPrefix('admin', 'DisbursalAPI', 'GetDisbursal')}`, data);
+  };
+
+  getScheduleDetails = (data) => {
     return this.request(
-      `${this.resourceUrlPrefix('admin', 'LenderAPI', 'GetLender')}`,
+      `${this.resourceUrlPrefix('admin', 'OfferVerificationAPI', 'GetScheduleDetail')}`,
       data
     );
   };
 
-  getDisbursalDetails = data => {
+  getOfferVerificationTasks = (data) => {
     return this.request(
-      `${this.resourceUrlPrefix('admin', 'DisbursalAPI', 'GetDisbursal')}`,
-      data
-    );
-  };
-
-  getScheduleDetails = data => {
-    return this.request(
-      `${this.resourceUrlPrefix(
-        'admin',
-        'OfferVerificationAPI',
-        'GetScheduleDetail'
-      )}`,
-      data
-    );
-  };
-
-  getOfferVerificationTasks = data => {
-    return this.request(
-      `${this.resourceUrlPrefix(
-        'admin',
-        'OfferVerificationAPI',
-        'GetOfferVerificationTasks'
-      )}`,
+      `${this.resourceUrlPrefix('admin', 'OfferVerificationAPI', 'GetOfferVerificationTasks')}`,
       data
     );
   };

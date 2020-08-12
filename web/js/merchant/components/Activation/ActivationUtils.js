@@ -29,8 +29,7 @@ function differentAddress(activation) {
 
 function isUnregisteredBusiness(activation) {
   const currentBusinessType =
-    activation.state.dirty['business_type'] ||
-    activation.props.data['business_type'];
+    activation.state.dirty['business_type'] || activation.props.data['business_type'];
   return UNREGISTERED_TYPES[Number(currentBusinessType)];
 }
 
@@ -58,11 +57,7 @@ function isL1Completed(activation) {
 function displayCompanyPAN(activation) {
   const currentBusinessType =
     activation.state.dirty.business_type || activation.props.data.business_type;
-  return (
-    [INDIVIDUAL, NOT_REGISTERED, PROPRIETORSHIP].indexOf(
-      Number(currentBusinessType)
-    ) === -1
-  );
+  return [INDIVIDUAL, NOT_REGISTERED, PROPRIETORSHIP].indexOf(Number(currentBusinessType)) === -1;
 }
 
 function requiredForNGO(activation) {
@@ -76,14 +71,14 @@ function showForOrgs(activation) {
   const selectedBusinessType =
     activation.state.dirty.business_type || activation.props.data.business_type;
 
-  return (
-    selectedBusinessType &&
-    ORG_BusinessTypes.indexOf(Number(selectedBusinessType)) !== -1
-  );
+  return selectedBusinessType && ORG_BusinessTypes.indexOf(Number(selectedBusinessType)) !== -1;
 }
 
-function isActivatedUnreg(activation) {
-  return isUnregisteredBusiness(activation) && activation.props.user.activated;
+function isPANVerified(activation) {
+  return (
+    isUnregisteredBusiness(activation) &&
+    activation.props.data.poi_verification_status === 'verified'
+  );
 }
 
 function checkValidityFromAPI(data, key, errValue, errorMsg) {
@@ -94,15 +89,13 @@ function getPANDescription(data) {
   const { poi_verification_status } = data;
   const description =
     'We verify the details with the central PAN database. Please ensure you enter the correct details';
-  return poi_verification_status == 'incorrect_details' ||
-    poi_verification_status == 'not_matched'
+  return poi_verification_status == 'incorrect_details' || poi_verification_status == 'not_matched'
     ? ''
     : description;
 }
 
 function getBeneficiaryInfo(value) {
-  const currentBusinessType =
-    this.state.dirty.business_type || this.props.data.business_type;
+  const currentBusinessType = this.state.dirty.business_type || this.props.data.business_type;
 
   if (currentBusinessType == PROPRIETORSHIP) {
     return 'Please ensure that the bank details shared belongs to the business or the owner of the company';
@@ -117,8 +110,7 @@ function getBeneficiaryInfo(value) {
 function getBillingLabelInfo() {
   let text = '';
   if (isUnregisteredBusiness(this)) {
-    text =
-      'Enter the brand name your customers are familiar with or you want to use in future.';
+    text = 'Enter the brand name your customers are familiar with or you want to use in future.';
   } else {
     text =
       'The brand name that your customers are familiar with. It should either be similar to your registered business name or website name.';
@@ -129,8 +121,7 @@ function getBillingLabelInfo() {
 function getAccountNumberInfo() {
   let text = '';
   if (isUnregisteredBusiness(this)) {
-    text =
-      'Please ensure the Bank details you are entering are of the same person as the PAN.';
+    text = 'Please ensure the Bank details you are entering are of the same person as the PAN.';
   } else {
     text =
       'Should be a current bank account of the company to which your payments will be settled.';
@@ -150,21 +141,16 @@ function hasSelectedBlacklistedCategory(activation) {
   const { props, state } = activation;
   const categories = props.categories;
   if (isPresent(categories)) {
-    const selectedCategory =
-      state.dirty.business_category || props.data.business_category;
-    const subcategories =
-      selectedCategory && categories[selectedCategory]['subcategories'];
+    const selectedCategory = state.dirty.business_category || props.data.business_category;
+    const subcategories = selectedCategory && categories[selectedCategory]['subcategories'];
     if (isPresent(subcategories)) {
       const selectedSubcategory =
         state.dirty.business_subcategory || props.data.business_subcategory;
       return (
         subcategories[selectedSubcategory] &&
         (isUnregisteredBusiness(activation)
-          ? subcategories[selectedSubcategory][
-              'non_registered_activation_flow'
-            ] === 'blacklist'
-          : subcategories[selectedSubcategory]['activation_flow'] ===
-            'blacklist')
+          ? subcategories[selectedSubcategory]['non_registered_activation_flow'] === 'blacklist'
+          : subcategories[selectedSubcategory]['activation_flow'] === 'blacklist')
       );
     }
   }
@@ -177,10 +163,7 @@ function doesHaveAdditionalDocs(activation, bizCatSubCatPair) {
     bizCatSubCatPair = getBizCatSubCatPair(activation.state, activation.props);
   }
 
-  const additionalDocReqMapKey = getValuesSeparatedBySymbol(
-    bizCatSubCatPair,
-    '-'
-  );
+  const additionalDocReqMapKey = getValuesSeparatedBySymbol(bizCatSubCatPair, '-');
 
   if (
     !!ADDITIONAL_DOCS_REQUIRED_REG_BIZ[additionalDocReqMapKey] &&
@@ -197,18 +180,13 @@ function getDefaultAdditionalDoc(activation, bizCatSubCatPair) {
     bizCatSubCatPair = getBizCatSubCatPair(activation.state, activation.props);
   }
 
-  const defaultAdditionalDocMapKey = getValuesSeparatedBySymbol(
-    bizCatSubCatPair,
-    '-'
-  );
+  const defaultAdditionalDocMapKey = getValuesSeparatedBySymbol(bizCatSubCatPair, '-');
 
   const allDocs = Object.keys(activation.props.data.documents);
   const allAdditionalDocs = Object.keys(
     ADDITIONAL_DOCS_LABEL_VALUE_MAP[defaultAdditionalDocMapKey]
   );
-  const hasUploadedAdditionalDocs = allAdditionalDocs.filter(doc =>
-    allDocs.includes(doc)
-  );
+  const hasUploadedAdditionalDocs = allAdditionalDocs.filter((doc) => allDocs.includes(doc));
 
   if (hasUploadedAdditionalDocs.length > 0) return hasUploadedAdditionalDocs[0];
 
@@ -220,13 +198,10 @@ function getAdditionalDocOptions(activation, bizCatSubCatPair) {
     bizCatSubCatPair = getBizCatSubCatPair(activation.state, activation.props);
   }
 
-  const additionalDocsMapKey = getValuesSeparatedBySymbol(
-    bizCatSubCatPair,
-    '-'
-  );
+  const additionalDocsMapKey = getValuesSeparatedBySymbol(bizCatSubCatPair, '-');
   const additionalDoc = ADDITIONAL_DOCS_LABEL_VALUE_MAP[additionalDocsMapKey];
 
-  return Object.keys(additionalDoc).map(c => {
+  return Object.keys(additionalDoc).map((c) => {
     const doc = additionalDoc[c];
     return {
       name: c,
@@ -240,8 +215,7 @@ function getValuesSeparatedBySymbol(values = [], symbol = '-') {
 }
 
 function getBizCatSubCatPair(state, props) {
-  const selectedBizCategory =
-    state.dirty.business_category || props.data.business_category;
+  const selectedBizCategory = state.dirty.business_category || props.data.business_category;
   const selectedBizSubCategory =
     state.dirty.business_subcategory || props.data.business_subcategory;
 
@@ -250,14 +224,10 @@ function getBizCatSubCatPair(state, props) {
 
 function getAdditionalDocCount(state, props) {
   const bizCatSubCatPair = getBizCatSubCatPair(state, props);
-  const additionalDocsMapKey = getValuesSeparatedBySymbol(
-    bizCatSubCatPair,
-    '-'
-  );
+  const additionalDocsMapKey = getValuesSeparatedBySymbol(bizCatSubCatPair, '-');
 
   if (ADDITIONAL_DOCS_LABEL_VALUE_MAP[additionalDocsMapKey])
-    return Object.keys(ADDITIONAL_DOCS_LABEL_VALUE_MAP[additionalDocsMapKey])
-      .length;
+    return Object.keys(ADDITIONAL_DOCS_LABEL_VALUE_MAP[additionalDocsMapKey]).length;
 
   return 0;
 }
@@ -277,15 +247,10 @@ function isAdditonalDocRequired(state, props) {
   return !isOptionalAdditionalDoc(additional_doc, bizCatSubCatKey);
 }
 
-function hasAPIL1Error({
-  poi_verification_status,
-  company_pan_verification_status,
-  is_unreg,
-}) {
+function hasAPIL1Error({ poi_verification_status, company_pan_verification_status, is_unreg }) {
   if (
     is_unreg &&
-    (poi_verification_status === 'incorrect_details' ||
-      poi_verification_status === 'not_matched')
+    (poi_verification_status === 'incorrect_details' || poi_verification_status === 'not_matched')
   ) {
     return true;
   } else if (
@@ -335,7 +300,7 @@ export {
   displayCompanyPAN,
   requiredForNGO,
   showForOrgs,
-  isActivatedUnreg,
+  isPANVerified,
   checkValidityFromAPI,
   getPANDescription,
   getBeneficiaryInfo,
@@ -350,5 +315,5 @@ export {
   isAdditonalDocRequired,
   hasAPIL1Error,
   isRXV2Onboarding,
-  showSubcategory
+  showSubcategory,
 };

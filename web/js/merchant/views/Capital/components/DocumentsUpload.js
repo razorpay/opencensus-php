@@ -27,17 +27,15 @@ class DocumentsUpload extends React.Component {
 
     return (
       <Form layout="tabular" onSubmit={() => {}}>
-        {documents.map(document => {
+        {documents.map((document) => {
           const isBusinessRegistrationProofDoc =
             document.document_group.name === 'business_registration_proof';
-          const allowedDocuments = document.master_documents.map(doc => ({
+          const allowedDocuments = document.master_documents.map((doc) => ({
             name: doc.id,
             label: doc.name || doc.type,
           }));
 
-          let selectedDoc = allowedDocuments.find(
-            a => a.name == document.document_masters_id
-          );
+          let selectedDoc = allowedDocuments.find((a) => a.name == document.document_masters_id);
           if (!selectedDoc) {
             selectedDoc = allowedDocuments[0];
           }
@@ -58,9 +56,7 @@ class DocumentsUpload extends React.Component {
                     name={document.document_group.id}
                     required
                     disabled={!!document.store_id}
-                    onChange={event =>
-                      handleDocumentTypeChange(document, event.target.value)
-                    }
+                    onChange={(event) => handleDocumentTypeChange(document, event.target.value)}
                     // defaultValue={document.document_masters_id}
                     value={selectedDoc.name}
                     options={allowedDocuments}
@@ -72,18 +68,12 @@ class DocumentsUpload extends React.Component {
                   canUpload &&
                   !document.store_id && (
                     <div class="document-upload-options-wrapper">
-                      {document.documentUploadOptions.map(uploadOption => (
+                      {document.documentUploadOptions.map((uploadOption) => (
                         <ToggleWithDescription
                           title={uploadModesMeta[uploadOption].title}
-                          description={
-                            uploadModesMeta[uploadOption].description
-                          }
-                          selected={
-                            uploadOption === selectedUploadModes[document.id]
-                          }
-                          onClick={() =>
-                            handleUploadModeChange(document, uploadOption)
-                          }
+                          description={uploadModesMeta[uploadOption].description}
+                          selected={uploadOption === selectedUploadModes[document.id]}
+                          onClick={() => handleUploadModeChange(document, uploadOption)}
                           disabled={uploadModesMeta[uploadOption].disabled}
                           style={{ marginBottom: 12 }}
                         />

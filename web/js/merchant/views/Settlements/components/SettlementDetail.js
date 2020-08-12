@@ -5,7 +5,7 @@ import ModalHeader from 'common/ui/ModalHeader';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
 import { closeModal } from 'merchant_common/reducers/modals';
-@connect(state => state, {
+@connect((state) => state, {
   closeModal,
 })
 export default class SettlementDetail extends Component {
@@ -24,10 +24,7 @@ export default class SettlementDetail extends Component {
 
     if (window.rzpTicketSystem) {
       const rzpTicketSystem = window.rzpTicketSystem;
-      rzpTicketSystem.setPrefill('#request', [
-        'merchant',
-        'settlement-related',
-      ]);
+      rzpTicketSystem.setPrefill('#request', ['merchant', 'settlement-related']);
       rzpTicketSystem.openModal('#ticket');
       setTimeout(() => {
         rzpTicketSystem.modal.next();
@@ -83,30 +80,27 @@ export default class SettlementDetail extends Component {
       if (user.activation_status === 'under_review') {
         return (
           <>
-            We have received your KYC information. The review process will take
-            approximately 1-2 working days{' '}
-            <strong>post your first transaction</strong>. Post-approval, your
-            settlements will be enabled. We will reach out to you on your
-            registered email ID in case we require more information or
-            documents.
+            We have received your KYC information. The review process will take approximately 1-2
+            working days <strong>post your first transaction</strong>. Post-approval, your
+            settlements will be enabled. We will reach out to you on your registered email ID in
+            case we require more information or documents.
           </>
         );
       }
       if (!user.isSubmitted) {
         return (
           <>
-            Once you have submitted your KYC documents, our team will review and
-            approve the same. Your settlements will be enabled post KYC
-            verification. This process usually takes 1-2 working days{' '}
-            <strong>post your first transaction</strong>.
+            Once you have submitted your KYC documents, our team will review and approve the same.
+            Your settlements will be enabled post KYC verification. This process usually takes 1-2
+            working days <strong>post your first transaction</strong>.
           </>
         );
       }
     }
     return (
       <>
-        Because of some risk issues with your payments or with your razorpay
-        account, your settlements have been put on hold.'
+        Because of some risk issues with your payments or with your razorpay account, your
+        settlements have been put on hold.'
       </>
     );
   }
@@ -176,10 +170,7 @@ export default class SettlementDetail extends Component {
         />
         <div class="modal-body">
           <Fragment>
-            <div
-              class="settlement-details-overflow-box"
-              style={{ paddingBottom: '0' }}
-            >
+            <div class="settlement-details-overflow-box" style={{ paddingBottom: '0' }}>
               <div class="emphzd" style={{ paddingTop: 0 }}>
                 <div class="settlement-alert-warning">
                   <span style={{ fontWeight: 'bold', fontSize: '15px' }}>
@@ -189,17 +180,13 @@ export default class SettlementDetail extends Component {
                       <Fragment>
                         <strong>
                           <Amount
-                            value={
-                              this.props.settlementAmount.settlement_amount
-                            }
+                            value={this.props.settlementAmount.settlement_amount}
                             currency={'INR'}
                           />
                         </strong>{' '}
                         will be settled by
                         <Time
-                          value={
-                            this.props.settlementAmount.next_settlement_time
-                          }
+                          value={this.props.settlementAmount.next_settlement_time}
                           format={'DD MMM YYYY, hh:mm:ss a'}
                         />
                       </Fragment>
@@ -210,9 +197,8 @@ export default class SettlementDetail extends Component {
                       <span>{this.onHoldSubtitle}</span>
                     ) : (
                       <Fragment>
-                        The actual time taken for the settled amount to reflect
-                        in your bank account depends on the bank’s processing
-                        time.
+                        The actual time taken for the settled amount to reflect in your bank account
+                        depends on the bank’s processing time.
                       </Fragment>
                     )}
                   </p>
@@ -232,9 +218,8 @@ export default class SettlementDetail extends Component {
                   </p>
                 ) : (
                   <p class="grey" style={{ opacity: '.7' }}>
-                    This is an estimate of the settlement amount and the actual
-                    settled amount may vary based on the latest transactions in
-                    your account.
+                    This is an estimate of the settlement amount and the actual settled amount may
+                    vary based on the latest transactions in your account.
                   </p>
                 )}
               </div>

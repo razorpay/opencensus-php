@@ -9,7 +9,7 @@ import { useTwoFactorVerificationContext } from 'common/ui/TwoFactorVerification
 
 import EditWebsiteDetailsModal from 'merchant/views/Account/Profile/components/EditWebsiteDetailsModal';
 
-const KeysListItem = props => {
+const KeysListItem = (props) => {
   let mode = props.mode;
   let { id, created_at, expired_at } = props.apiKey;
 
@@ -31,11 +31,7 @@ const KeysListItem = props => {
         <Time value={created_at} format={'MMM Do, YYYY hh:mm:ss A'} />
       </td>
       <td>
-        {expired_at ? (
-          <Time value={expired_at} format={'MMM Do, YYYY hh:mm:ss A'} />
-        ) : (
-          'Never'
-        )}
+        {expired_at ? <Time value={expired_at} format={'MMM Do, YYYY hh:mm:ss A'} /> : 'Never'}
       </td>
       <td>
         {expired_at ? (
@@ -53,7 +49,7 @@ const KeysListItem = props => {
   );
 };
 
-export default connect(null, { openModal, closeModal })(props => {
+export default connect(null, { openModal, closeModal })((props) => {
   let {
     mode,
     keys,
@@ -96,9 +92,8 @@ export default connect(null, { openModal, closeModal })(props => {
                         <p>
                           You can generate API keys in Test Mode.
                           <br />
-                          For generating keys in Live Mode, you need to provide
-                          your business website/app details while filling the
-                          activation form.
+                          For generating keys in Live Mode, you need to provide your business
+                          website/app details while filling the activation form.
                         </p>
                       )}
                       <button
@@ -133,16 +128,15 @@ export default connect(null, { openModal, closeModal })(props => {
                     </div>
                   ) : (
                     <div>
-                      The website/app details that you have provided are under
-                      review. You can generate API keys once the details are
-                      approved.
+                      The website/app details that you have provided are under review. You can
+                      generate API keys once the details are approved.
                     </div>
                   )}
                 </td>
               </tr>
             }
           >
-            {keys.map(key => (
+            {keys.map((key) => (
               <KeysListItem
                 key={key.id}
                 apiKey={key}

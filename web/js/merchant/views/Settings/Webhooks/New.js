@@ -9,10 +9,7 @@ import { required, lenientUrl } from 'common/utils/validators';
 import { saveWebhook } from 'merchant/reducers/webhooks';
 import { merchantFetch } from 'merchant/utils/ajax';
 import Spinner from 'common/ui/Spinner';
-import {
-  createAppWebhook,
-  editAppWebhook,
-} from 'merchant/reducers/applications';
+import { createAppWebhook, editAppWebhook } from 'merchant/reducers/applications';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -22,11 +19,7 @@ const WebhookEventCheckbox = ({ eventName }) => {
   return (
     <div class="checkbox">
       <label>
-        <Field
-          name={`events['${eventName}']`}
-          component="input"
-          type="checkbox"
-        />
+        <Field name={`events['${eventName}']`} component="input" type="checkbox" />
         {eventName}
       </label>
     </div>
@@ -50,14 +43,14 @@ export default class AddWebhook extends Component {
     }
 
     merchantFetch('webhooks/events/all')
-      .then(resp => {
+      .then((resp) => {
         if (resp.success && resp.data) {
           this.setState({ availableWebhooks: resp.data });
         } else {
           this.setState({ availableWebhooks: [] });
         }
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err,
@@ -65,7 +58,7 @@ export default class AddWebhook extends Component {
       });
   }
 
-  save = data => {
+  save = (data) => {
     const { appId, mode } = this.props;
     let saveWebhook;
     if (appId) {
@@ -77,21 +70,21 @@ export default class AddWebhook extends Component {
     }
 
     return saveWebhook
-      .then(webhook => {
+      .then((webhook) => {
         this.props.onSave(webhook);
         this.props.showNotification({
           type: 'success',
           message: 'Webhook saved successfully',
         });
       })
-      .catch(err => {
+      .catch((err) => {
         this.setState({
           errors: err.errors,
         });
       });
   };
 
-  toggleVisibility = e => {
+  toggleVisibility = (e) => {
     this.setState({ showSecret: !this.state.showSecret });
   };
 
@@ -111,9 +104,7 @@ export default class AddWebhook extends Component {
             <Alert type="error" message={this.state.errors} />
 
             <div class="form-group">
-              <label class="col-md-3 control-label label-required">
-                Webhook URL
-              </label>
+              <label class="col-md-3 control-label label-required">Webhook URL</label>
               <div class="col-md-9">
                 <Field
                   name="url"
@@ -135,9 +126,8 @@ export default class AddWebhook extends Component {
                     </label>
                     <div class="help-block">
                       <small>
-                        Whether the webhook is enabled or not. You can enable
-                        the webhook here if it was disabled due to multiple
-                        errors.
+                        Whether the webhook is enabled or not. You can enable the webhook here if it
+                        was disabled due to multiple errors.
                       </small>
                     </div>
                   </div>
@@ -166,9 +156,7 @@ export default class AddWebhook extends Component {
                 </button>
                 {isEdit && (
                   <div class="help-block">
-                    <small>
-                      You can leave the secret blank to leave it unedited.
-                    </small>
+                    <small>You can leave the secret blank to leave it unedited.</small>
                   </div>
                 )}
               </div>
@@ -193,11 +181,7 @@ export default class AddWebhook extends Component {
           </div>
 
           <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-default"
-              onClick={this.props.closeModal}
-            >
+            <button type="button" class="btn btn-default" onClick={this.props.closeModal}>
               Cancel
             </button>
 

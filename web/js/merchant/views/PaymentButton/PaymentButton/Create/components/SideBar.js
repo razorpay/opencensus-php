@@ -6,16 +6,14 @@ import track from '../track';
 export default class SideBar extends React.Component {
   get isQuickPayTemplate() {
     const { paymentButtonEntity } = this.props;
-    const templateType =
-      paymentButtonEntity.settings.payment_button_template_type;
+    const templateType = paymentButtonEntity.settings.payment_button_template_type;
 
     return templateType === templateTypes.quickPay.key;
   }
 
   get isDonationsTemplate() {
     const { paymentButtonEntity } = this.props;
-    const templateType =
-      paymentButtonEntity.settings.payment_button_template_type;
+    const templateType = paymentButtonEntity.settings.payment_button_template_type;
 
     return templateType === templateTypes.donation.key;
   }
@@ -29,8 +27,7 @@ export default class SideBar extends React.Component {
     let hasButtonDetails = hasTitle && hasButtonText;
 
     if (this.isQuickPayTemplate) {
-      hasButtonDetails =
-        hasButtonDetails && amountFields && !!amountFields.length;
+      hasButtonDetails = hasButtonDetails && amountFields && !!amountFields.length;
     }
 
     return hasButtonDetails && stepsProgress.isButtonDetailsReviewed;
@@ -39,19 +36,13 @@ export default class SideBar extends React.Component {
   get isAmountDetailsDone() {
     const { amountFields, stepsProgress } = this.props;
 
-    return (
-      amountFields &&
-      !!amountFields.length &&
-      stepsProgress.isAmountDetailsReviewed
-    );
+    return amountFields && !!amountFields.length && stepsProgress.isAmountDetailsReviewed;
   }
 
   get isCustomerDetailsDone() {
     const { udfFields, stepsProgress } = this.props;
 
-    return (
-      udfFields && !!udfFields.length && stepsProgress.isCustomerDetailsReviewed
-    );
+    return udfFields && !!udfFields.length && stepsProgress.isCustomerDetailsReviewed;
   }
 
   get totalTabsDone() {
@@ -80,14 +71,16 @@ export default class SideBar extends React.Component {
 
   render() {
     const { isSuccessViewOpened, isSuccessViewOpenedForExistingId } = this.props;
-    const progressPercentage = (this.totalTabsDone * 100) / this.totalTabs;
+    const progressPercentage = this.totalTabsDone * 100 / this.totalTabs;
 
     return (
       <div class="PaymentButton-Create-SideBar">
         <img src="/dist/css/assets/payment_button/sidebar-display.svg" />
 
         <div class="SideBar-title">
-          {this.props.paymentButtonId && (!isSuccessViewOpened || isSuccessViewOpenedForExistingId) ? 'Edit Progress' : 'Creation Progress'}
+          {this.props.paymentButtonId && (!isSuccessViewOpened || isSuccessViewOpenedForExistingId)
+            ? 'Edit Progress'
+            : 'Creation Progress'}
         </div>
 
         <ProgressBar
@@ -105,32 +98,20 @@ export default class SideBar extends React.Component {
 
           {!this.isQuickPayTemplate && (
             <Step
-              title={
-                this.isDonationsTemplate ? 'Donation Amount' : 'Amount Details'
-              }
+              title={this.isDonationsTemplate ? 'Donation Amount' : 'Amount Details'}
               isDone={this.isAmountDetailsDone}
               onClick={() =>
                 track.lj.trackOnClickProgressStep(
-                  this.isDonationsTemplate
-                    ? 'donation_amount'
-                    : 'amount_details'
+                  this.isDonationsTemplate ? 'donation_amount' : 'amount_details'
                 )
               }
             />
           )}
 
           <Step
-            title={
-              this.isDonationsTemplate ? 'Donor Details' : 'Customer Details'
-            }
-            description={
-              this.isDonationsTemplate
-                ? 'Ask email, contact, etc. before payment'
-                : ''
-            }
-            onClick={() =>
-              track.lj.trackOnClickProgressStep('customer_details')
-            }
+            title={this.isDonationsTemplate ? 'Donor Details' : 'Customer Details'}
+            description={this.isDonationsTemplate ? 'Ask email, contact, etc. before payment' : ''}
+            onClick={() => track.lj.trackOnClickProgressStep('customer_details')}
             isDone={this.isCustomerDetailsDone}
           />
 
@@ -153,11 +134,7 @@ export default class SideBar extends React.Component {
 
 const Step = ({ title, description, isDone, isDisabled, onClick }) => (
   <li
-    class={classList(
-      'step',
-      isDone && 'step--done',
-      isDisabled && 'step--disabled'
-    )}
+    class={classList('step', isDone && 'step--done', isDisabled && 'step--disabled')}
     onClick={onClick}
   >
     <span class="step-dot">
