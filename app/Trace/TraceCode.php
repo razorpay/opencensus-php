@@ -3218,6 +3218,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Logs for tracing payout to amex failures
     const PAYOUT_TO_AMEX_FAILURE = 'PAYOUT_TO_AMEX_FAILURE';
 
+    // Log admin fetch queries
+    const ADMIN_FETCH_QUERY_LOG = 'ADMIN_FETCH_QUERY_LOG';
+
     // Low Balance Config
     const LOW_BALANCE_CONFIG_CREATE_REQUEST                      = 'LOW_BALANCE_CONFIG_CREATE_REQUEST';
     const LOW_BALANCE_CONFIG_CREATE_RESPONSE                     = 'LOW_BALANCE_CONFIG_CREATE_RESPONSE';
