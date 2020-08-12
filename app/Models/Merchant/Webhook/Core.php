@@ -210,9 +210,13 @@ class Core extends Base\Core
 
         $resp = [
             'url'       => $input['url'],
-            'secret'    => $input['secret'] ?? '',
             'events'    => $events,
         ];
+
+        if (isset($input['secret']))
+        {
+            $resp['secret'] = $input['secret'];
+        }
 
         if ($input['owner_type'] === Entity::APPLICATION)
         {
