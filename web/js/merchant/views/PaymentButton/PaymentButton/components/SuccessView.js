@@ -101,23 +101,29 @@ export default class SuccessModal extends React.Component {
 
             {/* Other integration methods */}
             <div className="Form-buttonIntegration-others">
-              <b>Plan on using this on platforms like WordPress?</b>
+              <b>Plan on using this on platforms like Wix, Weebly?</b>
 
+              {/*
               <div className="help-text">
                 Check out our integration guide for{' '}
                 <a
-                  href="https://razorpay.com/docs/payment-button/supported-platforms/wordpress"
+                  href="https://betasite.razorpay.com/docs/pb-index-true/payment-button/supported-platforms#wordpress"
                   target="_blank"
                 >
                   Wordpress <i className="i i-external-link m-l" />
                 </a>
               </div>
+*/}
 
-              {/*
               <div class="help-text">
-                Integration guide for <a href="" target="_blank">other platforms<i class="i i-external-link m-l" /></a>
+                Integration guide for{' '}
+                <a
+                  href="https://betasite.razorpay.com/docs/pb-index-true/payment-button/supported-platforms/"
+                  target="_blank"
+                >
+                  Platforms<i class="i i-external-link m-l" />
+                </a>
               </div>
-            */}
             </div>
           </div>
 

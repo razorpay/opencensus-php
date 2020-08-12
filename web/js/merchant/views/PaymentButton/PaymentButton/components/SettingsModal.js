@@ -18,8 +18,7 @@ export default class SettingsModal extends React.Component {
     super(props);
 
     this.state = {
-      isSending: false,
-      isUpdated: false,
+      isUpdating: false,
       paymentSuccessMessage: props.paymentSuccessMessage || '',
       paymentSuccessRedirectUrl: props.paymentSuccessRedirectUrl || '',
       showCustomMessage: !!props.paymentSuccessMessage,
@@ -30,14 +29,12 @@ export default class SettingsModal extends React.Component {
   handleCustomMessage = (event) => {
     this.setState({
       paymentSuccessMessage: event.target.value,
-      isUpdated: true,
     });
   };
 
   handleRedirectUrl = (event) => {
     this.setState({
       paymentSuccessRedirectUrl: event.target.value,
-      isUpdated: true,
     });
   };
 
@@ -55,8 +52,7 @@ export default class SettingsModal extends React.Component {
 
   onClickSave = () => {
     this.setState({
-      isSending: true,
-      isUpdated: false,
+      isUpdating: true,
     });
 
     const paymentSuccessMessage = this.state.showCustomMessage
@@ -75,18 +71,20 @@ export default class SettingsModal extends React.Component {
       })
       .then((resp) => {
         this.setState({
-          isSending: false,
+          isUpdating: false,
         });
 
-        const track = this.props.track;
+        if (resp && resp.data) {
+          const track = this.props.track;
 
-        track && track.save();
+          track && track.save();
 
-        this.props.closeModal();
+          this.props.closeModal();
+        }
       })
       .catch((err) => {
         this.setState({
-          isSending: false,
+          isUpdating: false,
         });
 
         track && track.saveFail(err);
@@ -105,15 +103,12 @@ export default class SettingsModal extends React.Component {
 
   render() {
     const {
-      isSending,
-      isUpdated,
+      isUpdating,
       paymentSuccessMessage,
       paymentSuccessRedirectUrl,
       showCustomMessage,
       showRedirectUrl,
     } = this.state;
-
-    const isDisabled = !isUpdated || isSending || paymentSuccessMessage.length < 5;
 
     return (
       <div class="ButtonSettingsModal">
@@ -174,7 +169,7 @@ export default class SettingsModal extends React.Component {
           <button class="btn btn-link m-r" onClick={this.closeModal}>
             Cancel
           </button>
-          <button class="btn btn-primary" disabled={isDisabled} onClick={this.onClickSave}>
+          <button class="btn btn-primary" disabled={isUpdating} onClick={this.onClickSave}>
             Save
           </button>
         </div>

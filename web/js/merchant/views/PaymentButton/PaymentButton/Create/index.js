@@ -267,6 +267,8 @@ export default class PaymentButtonCreate extends React.Component {
         } else {
           throw new Error(resp.errors);
         }
+
+        return resp;
       })
       .catch(({ errors }) => {
         let err = errors;
