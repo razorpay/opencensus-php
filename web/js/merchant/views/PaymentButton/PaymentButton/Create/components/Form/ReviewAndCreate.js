@@ -8,16 +8,39 @@ import { templateTypes } from 'merchant/views/PaymentButton/PaymentButton/Create
 import track from '../../track';
 
 export default class ReviewAndCreate extends React.Component {
+  state = {
+    isInProgress: false,
+  };
+
   get isQuickPayTemplate() {
     const { paymentButtonEntity } = this.props;
-    const templateType =
-      paymentButtonEntity.settings.payment_button_template_type;
+    const templateType = paymentButtonEntity.settings.payment_button_template_type;
 
     return templateType === templateTypes.quickPay.key;
   }
 
+  handleCreate = () => {
+    this.setState({
+      isInProgress: true,
+    });
+
+    this.props
+      .submitPaymentButtonForm()
+      .then(() => {
+        this.setState({
+          isInProgress: false,
+        });
+      })
+      .catch(() => {
+        this.setState({
+          isInProgress: false,
+        });
+      });
+  };
+
   render() {
-    const { paymentButtonEntity, udfFields, amountFields } = this.props;
+    const { isEditExistingId, paymentButtonEntity, udfFields, amountFields } = this.props;
+    const { isInProgress } = this.state;
 
     return (
       <div class="Form" style={{ display: this.props.isHidden ? 'none' : '' }}>
@@ -41,8 +64,10 @@ export default class ReviewAndCreate extends React.Component {
             Back
           </Button.Transparent>
 
-          <Button.Primary onClick={this.props.submitPaymentButtonForm}>
-            Create Button
+          <Button.Primary onClick={this.handleCreate} disabled={isInProgress}>
+            {isEditExistingId
+              ? isInProgress ? 'Updating...' : 'Update Button'
+              : isInProgress ? 'Creating...' : 'Create Button'}
           </Button.Primary>
         </div>
       </div>

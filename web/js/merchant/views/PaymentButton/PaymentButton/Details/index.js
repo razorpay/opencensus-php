@@ -49,6 +49,7 @@ export default class PaymentButtonDetails extends React.Component {
   }
 
   componentDidMount() {
+    // @avinash Should be payment_button_id. To be same as Create/index.js
     track.lj.init({
       track: this.props.tracking.trackEvent,
       button_id: this.entityId,
@@ -70,15 +71,13 @@ export default class PaymentButtonDetails extends React.Component {
     }
   }
 
-  sanitizePaymentButtonEntity = data => {
+  sanitizePaymentButtonEntity = (data) => {
     const paymentButtonEntity = data;
 
     let formItems;
     const udfSchema = JSON.parse(paymentButtonEntity.settings.udf_schema);
 
-    formItems = []
-      .concat(udfSchema)
-      .concat(paymentButtonEntity.payment_page_items);
+    formItems = [].concat(udfSchema).concat(paymentButtonEntity.payment_page_items);
 
     formItems.sort(function(a, b) {
       const positionA = a.settings.position;
@@ -91,10 +90,8 @@ export default class PaymentButtonDetails extends React.Component {
     const receiptSettings = {
       enable_receipt: paymentButtonEntity.settings.enable_receipt || '1',
       selected_udf_field: paymentButtonEntity.settings.selected_udf_field || '',
-      enable_custom_serial_number:
-        paymentButtonEntity.settings.enable_custom_serial_number || '0',
-      enable_80g_details:
-        paymentButtonEntity.settings.enable_80g_details || '0',
+      enable_custom_serial_number: paymentButtonEntity.settings.enable_custom_serial_number || '0',
+      enable_80g_details: paymentButtonEntity.settings.enable_80g_details || '0',
     };
 
     paymentButtonEntity.receipt = receiptSettings;
@@ -116,12 +113,9 @@ export default class PaymentButtonDetails extends React.Component {
     });
 
     return fetchPaymentButtonEntity(id)
-      .then(resp => {
+      .then((resp) => {
         if (resp) {
-          const {
-            paymentButtonEntity,
-            formItems,
-          } = this.sanitizePaymentButtonEntity(resp.data);
+          const { paymentButtonEntity, formItems } = this.sanitizePaymentButtonEntity(resp.data);
           this.setState({
             paymentButtonEntity,
             formItems,
@@ -133,7 +127,7 @@ export default class PaymentButtonDetails extends React.Component {
 
         return resp;
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -145,7 +139,7 @@ export default class PaymentButtonDetails extends React.Component {
 
   fetchEntityPayments(id) {
     return fetchPaymentsListForPaymentButton(id)
-      .then(resp => {
+      .then((resp) => {
         if (resp) {
           this.setState({ paymentButtonPayments: resp.data.items });
         }
@@ -154,7 +148,7 @@ export default class PaymentButtonDetails extends React.Component {
 
         return resp;
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -175,8 +169,7 @@ export default class PaymentButtonDetails extends React.Component {
     const reactivationTimeGap = 15 * 60;
     const hasExpiredInCompletedState =
       this.state.paymentButtonEntity.expire_by &&
-      this.state.paymentButtonEntity.expire_by <
-        currentTimeStamp + reactivationTimeGap; // within 15 minutes
+      this.state.paymentButtonEntity.expire_by < currentTimeStamp + reactivationTimeGap; // within 15 minutes
 
     this.props.openModal({
       size: 'medium',
@@ -192,12 +185,9 @@ export default class PaymentButtonDetails extends React.Component {
           }
           isCompleted={isCompleted}
           handleClose={this.props.closeModal}
-          handleClick={data => {
-            return activatePaymentButton(
-              this.state.paymentButtonEntity.id,
-              data
-            )
-              .then(resp => {
+          handleClick={(data) => {
+            return activatePaymentButton(this.state.paymentButtonEntity.id, data)
+              .then((resp) => {
                 if (resp.data) {
                   this.props.updatePBInReduxList(resp.data, false);
 
@@ -222,7 +212,7 @@ export default class PaymentButtonDetails extends React.Component {
                   err = [];
 
                   errors.length &&
-                    errors.forEach(e => {
+                    errors.forEach((e) => {
                       if (e && e.toLowerCase().indexOf('status code') === -1) {
                         err.push(e);
                       }
@@ -251,16 +241,12 @@ export default class PaymentButtonDetails extends React.Component {
   editPaymentButton = (data, paymentButtonItemId) => {
     const isEntityPaymentButtonItem = !!paymentButtonItemId;
 
-    const _updateFn = isEntityPaymentButtonItem
-      ? editPaymentButtonItem
-      : editPaymentButton;
+    const _updateFn = isEntityPaymentButtonItem ? editPaymentButtonItem : editPaymentButton;
 
-    const id = isEntityPaymentButtonItem
-      ? paymentButtonItemId
-      : this.state.paymentButtonEntity.id;
+    const id = isEntityPaymentButtonItem ? paymentButtonItemId : this.state.paymentButtonEntity.id;
 
     return _updateFn(id, data)
-      .then(resp => {
+      .then((resp) => {
         if (resp.data) {
           const keys = { ...data };
 
@@ -271,8 +257,7 @@ export default class PaymentButtonDetails extends React.Component {
 
           let newPaymentButtonEntity;
           if (isEntityPaymentButtonItem) {
-            let paymentPageItems = this.state.paymentButtonEntity
-              .payment_page_items;
+            let paymentPageItems = this.state.paymentButtonEntity.payment_page_items;
             let itemIndexInArray;
 
             paymentPageItems.find((pi, ix) => {
@@ -324,7 +309,7 @@ export default class PaymentButtonDetails extends React.Component {
           err = [];
 
           errors.length &&
-            errors.forEach(e => {
+            errors.forEach((e) => {
               if (e && e.toLowerCase().indexOf('status code') === -1) {
                 err.push(e);
               }
@@ -344,7 +329,7 @@ export default class PaymentButtonDetails extends React.Component {
       });
   };
 
-  updatePaymentButtonEntity = newChanges => {
+  updatePaymentButtonEntity = (newChanges) => {
     this.setState({
       paymentButtonEntity: {
         ...this.state.paymentButtonEntity,
@@ -358,15 +343,9 @@ export default class PaymentButtonDetails extends React.Component {
     const statusReason = this.state.paymentButtonEntity.status_reason;
 
     const isActive = status === 'active';
-    const isDeactivated =
-      statusReason && statusReason.toLowerCase() === 'deactivated';
+    const isDeactivated = statusReason && statusReason.toLowerCase() === 'deactivated';
 
-    let apiAction,
-      header,
-      message,
-      affirmativeLabel,
-      affirmativePendingLabel,
-      successMsg;
+    let apiAction, header, message, affirmativeLabel, affirmativePendingLabel, successMsg;
 
     if (isActive) {
       /* Wants manual deactivation */
@@ -382,8 +361,7 @@ export default class PaymentButtonDetails extends React.Component {
 
       apiAction = activatePaymentButton;
       header = 'Activate Page?';
-      message =
-        'Once you activate the page, you will be able to accept payments.';
+      message = 'Once you activate the page, you will be able to accept payments.';
       affirmativeLabel = 'Yes, activate';
       affirmativePendingLabel = 'Activating..';
       successMsg = `${this.state.paymentButtonEntity.id} is now Active`;
@@ -401,7 +379,7 @@ export default class PaymentButtonDetails extends React.Component {
       abortLabel: "No, don't!",
       action: () => {
         return apiAction(this.state.paymentButtonEntity.id)
-          .then(resp => {
+          .then((resp) => {
             if (resp.data) {
               this.props.showNotification({
                 type: 'success',
@@ -425,7 +403,7 @@ export default class PaymentButtonDetails extends React.Component {
               err = [];
 
               errors.length &&
-                errors.forEach(e => {
+                errors.forEach((e) => {
                   if (e && e.toLowerCase().indexOf('status code') === -1) {
                     err.push(e);
                   }

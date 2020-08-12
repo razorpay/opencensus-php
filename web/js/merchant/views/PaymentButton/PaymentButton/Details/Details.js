@@ -19,10 +19,7 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { addPollInstance, saveReportConfigs } from 'merchant/reducers/reports';
 import { updateHighlightButtonSettings } from 'merchant/reducers/paymentbuttons/create';
-import {
-  setReceiptDetails,
-  exportReportCSV,
-} from 'merchant/views/PaymentPages/PaymentPages/model';
+import { setReceiptDetails, exportReportCSV } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 import PaymentsList from './PaymentsList';
@@ -42,7 +39,7 @@ const inActiveStatusReasonMap = {
 };
 
 @connect(
-  state => {
+  (state) => {
     return {
       user: state.session.user,
       isTestMode: state.session.mode === 'test',
@@ -133,7 +130,7 @@ export default class PaymentButtonEntity extends React.Component {
         message: 'Your report will download shortly',
       });
 
-      promise.then(data => {
+      promise.then((data) => {
         this.setState({
           isExportInProgress: false,
         });
@@ -184,8 +181,9 @@ export default class PaymentButtonEntity extends React.Component {
       size: 'medium',
       component: (
         <SettingsModal
-          paymentSuccessMessage={
-            this.props.paymentButtonEntity.settings.payment_success_message
+          paymentSuccessMessage={this.props.paymentButtonEntity.settings.payment_success_message}
+          paymentSuccessRedirectUrl={
+            this.props.paymentButtonEntity.settings.payment_success_redirect_url
           }
           editPaymentButton={this.props.editPaymentButton}
           track={{
@@ -209,7 +207,7 @@ export default class PaymentButtonEntity extends React.Component {
     });
   };
 
-  handleSavePaymentReceipt = receipt => {
+  handleSavePaymentReceipt = (receipt) => {
     return setReceiptDetails(this.props.paymentButtonEntity.id, receipt)
       .then(() => {
         this.props.showNotification({
@@ -221,7 +219,7 @@ export default class PaymentButtonEntity extends React.Component {
 
         this.props.updatePaymentButtonEntity({ receipt });
       })
-      .catch(errors => {
+      .catch((errors) => {
         this.props.showNotification({
           type: 'error',
           message: errors[1],
@@ -249,8 +247,7 @@ export default class PaymentButtonEntity extends React.Component {
     } = this.props;
     const { isPageReceiptModalOpened } = this.state;
 
-    const highlightButtonSettings =
-      currentHighlightedButtonSettings === paymentButtonEntity.id;
+    const highlightButtonSettings = currentHighlightedButtonSettings === paymentButtonEntity.id;
 
     const isActive = paymentButtonEntity.status === 'active';
 
@@ -300,8 +297,7 @@ export default class PaymentButtonEntity extends React.Component {
                     {highlightButtonSettings && (
                       <Popover align="top" theme="dark" persistent={true}>
                         <PopoverBody>
-                          Configure payment receipts, post payment message from
-                          options here.
+                          Configure payment receipts, post payment message from options here.
                         </PopoverBody>
                       </Popover>
                     )}
@@ -313,49 +309,36 @@ export default class PaymentButtonEntity extends React.Component {
                       </li>
                       <li onClick={this.openSettingsModal}>
                         {/* TODO:  Compress the i-checked-document svg icon */}
-                        <i class="i i-checked-document" /> Post Payment Message
+                        <i class="i i-checked-document" /> Post Payment Actions
                       </li>
                     </ul>
                   </DropdownContent>
                 </Dropdown>
 
-                <Button.Primary onClick={this.openGetCodeModal}>
-                  Get Code
-                </Button.Primary>
+                <Button.Primary onClick={this.openGetCodeModal}>Get Code</Button.Primary>
               </div>
             </div>
 
             <div class="panel-body">
               <div class="entity-details">
-                <EntityDetailRow
-                  label="Button ID"
-                  value={paymentButtonEntity.id}
-                />
+                <EntityDetailRow label="Button ID" value={paymentButtonEntity.id} />
 
                 <EntityDetailRow
                   label="Button Status"
                   value={() => (
                     <div>
-                      <PaymentPagesStatusLabel
-                        status={paymentButtonEntity.status}
-                      />
+                      <PaymentPagesStatusLabel status={paymentButtonEntity.status} />
 
                       <Button.Transparent
                         class="Button--Link"
                         style={{ marginLeft: 12 }}
-                        onClick={
-                          isActive ? toggleManualActivation : reActivateLink
-                        }
+                        onClick={isActive ? toggleManualActivation : reActivateLink}
                       >
                         {isActive ? 'Deactivate' : 'Activate'}
                       </Button.Transparent>
 
                       <div style={{ marginTop: 4, color: '#8991ae' }}>
-                        {
-                          inActiveStatusReasonMap[
-                            paymentButtonEntity.status_reason
-                          ]
-                        }
+                        {inActiveStatusReasonMap[paymentButtonEntity.status_reason]}
                       </div>
                     </div>
                   )}
@@ -429,9 +412,7 @@ export default class PaymentButtonEntity extends React.Component {
           <button
             type="button"
             class="btn-primary btn-sm panel-collapser collapsable-btn"
-            onClick={_ =>
-              this.setState({ detailsCollapse: !this.state.detailsCollapse })
-            }
+            onClick={(_) => this.setState({ detailsCollapse: !this.state.detailsCollapse })}
           >
             {this.state.detailsCollapse ? (
               <span>

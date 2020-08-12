@@ -13,11 +13,13 @@ import TemplatesMask from './components/Templates';
 import SideBar from './components/SideBar';
 import Form from './components/Form';
 import Preview from './components/Preview';
-import SuccessModal from '../components/SuccessModal';
+import SettingsModal from '../components/SettingsModal';
+import SuccessView from '../components/SuccessView';
 
 import {
   fetchPaymentButtonDetails,
   updateReceiptDetails,
+  updatePaymentButtonData,
   updateTemplateType,
   resetPageData,
   updateHighlightButtonSettings,
@@ -35,10 +37,11 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { getURLQueryParams, rupeesToPaise } from 'common/utils/rzp-utils';
 
 import track from './track';
+import track_details from '../Details/track';
 
 @withRouter
 @connect(
-  state => ({
+  (state) => ({
     user: state.session.user,
     mode: state.session.mode,
     payment_button: state.payment_button_create,
@@ -48,6 +51,7 @@ import track from './track';
     fetchPaymentButtonDetails,
     updateTemplateType,
     updateReceiptDetails,
+    updatePaymentButtonData,
     closeModal,
     openModal,
     showNotification,
@@ -65,6 +69,8 @@ export default class PaymentButtonCreate extends React.Component {
   state = {
     isTemplatesSelectionOpened: !this.paymentButtonId,
     isPageReceiptModalOpened: false,
+    isSuccessViewOpened: false,
+    isSuccessViewOpenedForExistingId: false,
     activeTabIndex: 0,
   };
 
@@ -142,13 +148,20 @@ export default class PaymentButtonCreate extends React.Component {
 
     const isNew = !(id || searchQuery.duplicate_id);
 
+    const paymentButtonId = id || searchQuery.duplicate_id;
+
     const config = {
       is_new: isNew,
-      payment_button_id: id || searchQuery.duplicate_id,
+      payment_button_id: paymentButtonId,
       is_intent_edit: !!id,
       is_intent_duplicate: !!searchQuery.duplicate_id,
     };
+
     track.lj.init(tracking.trackEvent, config);
+    track_details.lj.init({
+      track: tracking.trackEvent,
+      button_id: paymentButtonId,
+    });
   };
 
   /*
@@ -157,11 +170,8 @@ export default class PaymentButtonCreate extends React.Component {
    *
    * */
 
-  fetchDetails = id => {
-    const promise = this.props.fetchPaymentButtonDetails(
-      id,
-      this.isIntentDuplicate
-    ); // Auto reinitialise store if id doesn't exist.
+  fetchDetails = (id) => {
+    const promise = this.props.fetchPaymentButtonDetails(id, this.isIntentDuplicate); // Auto reinitialise store if id doesn't exist.
 
     if (promise instanceof Promise) {
       promise
@@ -196,14 +206,14 @@ export default class PaymentButtonCreate extends React.Component {
     const requestAPIPromiseForReceipt = setReceiptDetails(entityId, receipt);
 
     return requestAPIPromiseForReceipt
-      .then(res => {
+      .then((res) => {
         if (!res || !res.success) {
           throw new Error(resp.errors);
         }
 
         return res;
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: 'Receipt settings could not be saved. Please try again.',
@@ -241,7 +251,38 @@ export default class PaymentButtonCreate extends React.Component {
     });
   };
 
-  handleSavePaymentReceipt = data => {
+  // Update settings in store
+  handleSaveSettings = (formData) => {
+    const requestAPIPromise = editPaymentButton(this.paymentButtonId, formData);
+
+    return requestAPIPromise
+      .then((resp) => {
+        if (resp.data) {
+          this.props.showNotification({
+            type: 'success',
+            message: 'Button settings are updated successfully',
+          });
+
+          this.props.updatePaymentButtonData(formData);
+        } else {
+          throw new Error(resp.errors);
+        }
+      })
+      .catch(({ errors }) => {
+        let err = errors;
+
+        if (!err) {
+          err = 'Some network error has occured';
+        }
+
+        this.props.showNotification({
+          type: 'error',
+          message: err,
+        });
+      });
+  };
+
+  handleSavePaymentReceipt = (data) => {
     const { payment_button } = this.props;
     const isEditExistingId = !!this.paymentButtonId;
 
@@ -251,10 +292,10 @@ export default class PaymentButtonCreate extends React.Component {
       return this.saveReceiptSettings(
         this.paymentButtonId,
         payment_button.paymentButtonEntity.receipt
-      ).then(resp => {
+      ).then((resp) => {
         this.props.showNotification({
           type: 'success',
-          message: 'Receipt settings are updated.',
+          message: 'Receipt settings are updated successfully',
         });
       });
     }
@@ -262,11 +303,7 @@ export default class PaymentButtonCreate extends React.Component {
 
   handleSavePaymentButton = () => {
     const isEditExistingId = !!this.paymentButtonId;
-    const {
-      paymentButtonEntity,
-      amountFields,
-      udfFields,
-    } = this.props.payment_button;
+    const { paymentButtonEntity, amountFields, udfFields } = this.props.payment_button;
     const currency = paymentButtonEntity.currency;
 
     let udfSchema = [],
@@ -371,8 +408,7 @@ export default class PaymentButtonCreate extends React.Component {
         payment_button_label: '',
         theme: 'light', // Should be empty, but api not supporting
         allow_social_share: '0',
-        payment_success_message:
-          paymentButtonEntity.settings.payment_success_message,
+        payment_success_message: paymentButtonEntity.settings.payment_success_message,
         payment_success_redirect_url: '', // settings.payment_success_redirect_url,
         udf_schema: JSON.stringify(udfSchema),
         checkout_options: {
@@ -398,7 +434,7 @@ export default class PaymentButtonCreate extends React.Component {
     // Note: Receipt call is made after main api call, bcoz they modify same entity in DB table which gets locked, so parallel calls might fail.
 
     return requestAPIPromise
-      .then(resp => {
+      .then((resp) => {
         if (resp.data) {
           const entityId = resp.data.id;
 
@@ -410,7 +446,7 @@ export default class PaymentButtonCreate extends React.Component {
               .then(() => {
                 this.onSaveSuccessActions(resp, isEditExistingId);
               })
-              .catch(err => {
+              .catch((err) => {
                 this.onSaveSuccessActions(resp, isEditExistingId);
               });
           } else {
@@ -429,7 +465,7 @@ export default class PaymentButtonCreate extends React.Component {
           err = [];
 
           errors.length &&
-            errors.forEach(e => {
+            errors.forEach((e) => {
               if (e && e.toLowerCase().indexOf('status code') === -1) {
                 err.push(e);
               }
@@ -482,7 +518,35 @@ export default class PaymentButtonCreate extends React.Component {
       activeTabIndex: 0,
     });
 
-    this.openSuccessView(isEditExistingId, entity);
+    this.setState({
+      isSuccessViewOpened: true,
+      isSuccessViewOpenedForExistingId: isEditExistingId,
+    });
+
+    // this.openSuccessView(isEditExistingId, entity);
+  };
+
+  openSettingsModal = () => {
+    track_details.lj.trackOptionsOpenSettings();
+
+    const paymentButtonEntity = this.props.payment_button.paymentButtonEntity;
+
+    this.props.openModal({
+      size: 'medium',
+      component: (
+        <SettingsModal
+          paymentSuccessMessage={paymentButtonEntity.settings.payment_success_message}
+          paymentSuccessRedirectUrl={paymentButtonEntity.settings.payment_success_redirect_url}
+          editPaymentButton={this.handleSaveSettings}
+          track={{
+            customMessage: track_details.lj.trackSettingsCustomMessage,
+            closeModal: track_details.lj.trackSettingsCancel,
+            save: track_details.lj.trackSettingsSave,
+            saveFail: track_details.lj.trackSettingsSaveFail,
+          }}
+        />
+      ),
+    });
   };
 
   openSuccessView = (isEditExistingId, paymentButtonEntity) => {
@@ -494,9 +558,7 @@ export default class PaymentButtonCreate extends React.Component {
         paymentButton={paymentButtonEntity}
         updateHighlightButtonSettings={this.props.updateHighlightButtonSettings}
         onCodeCopy={() => track.lj.trackCodeCopy(paymentButtonEntity.id)}
-        onClickSeeDocumentation={() =>
-          track.lj.trackOpenDocs(paymentButtonEntity.id)
-        }
+        onClickSeeDocumentation={() => track.lj.trackOpenDocs(paymentButtonEntity.id)}
         onClickButtonSettings={() => {
           track.lj.trackOnClickButtonSettings();
         }}
@@ -510,12 +572,12 @@ export default class PaymentButtonCreate extends React.Component {
     });
   };
 
-  onChangeButtonTemplate = templateType => {
+  onChangeButtonTemplate = (templateType) => {
     this.resetPageData();
     this.props.updateTemplateType(null, templateType);
   };
 
-  onChangeActiveTabIndex = newIndex => {
+  onChangeActiveTabIndex = (newIndex) => {
     this.setState({ activeTabIndex: newIndex });
   };
 
@@ -595,7 +657,7 @@ export default class PaymentButtonCreate extends React.Component {
     return (
       <TemplatesMask
         onClose={this.handleCloseTemplateSelection}
-        selectTemplate={templateKey => {
+        selectTemplate={(templateKey) => {
           this.props.updateTemplateType(null, templateKey);
 
           track.lj.trackTemplateSelect(templateKey);
@@ -615,19 +677,16 @@ export default class PaymentButtonCreate extends React.Component {
   }
 
   get NoTemplateSelectedView() {
-    return (
-      <div class="page-center">
-        No template was selected! Please reload the page.
-      </div>
-    );
+    return <div class="page-center">No template was selected! Please reload the page.</div>;
   }
 
   get ContentView() {
     const { payment_button } = this.props;
-    const { activeTabIndex } = this.state;
+    const { activeTabIndex, isSuccessViewOpened, isSuccessViewOpenedForExistingId } = this.state;
 
-    const isPageLoading =
-      this.paymentButtonId && !payment_button.paymentButtonEntity.title;
+    const isPageLoading = this.paymentButtonId && !payment_button.paymentButtonEntity.title;
+
+    const isEditExistingId = !!this.paymentButtonId;
 
     return (
       <div class="PaymentButton-Create-Content">
@@ -639,20 +698,42 @@ export default class PaymentButtonCreate extends React.Component {
           ) : (
             <React.Fragment
               key={`${
-                payment_button.paymentButtonEntity.settings
-                  .payment_button_template_type
+                payment_button.paymentButtonEntity.settings.payment_button_template_type
               }-${this.paymentButtonId || 'new'}`}
             >
-              <SideBar {...payment_button} activeTabIndex={activeTabIndex} />
-              <Form
+              <SideBar
                 {...payment_button}
                 activeTabIndex={activeTabIndex}
-                onChangeActiveTabIndex={this.onChangeActiveTabIndex}
-                submitPaymentButtonForm={this.handleSavePaymentButton}
-                onChangeButtonTemplate={this.onChangeButtonTemplate}
-                isEditExistingId={!!this.paymentButtonId}
+                isSuccessViewOpened={isSuccessViewOpened}
+                isSuccessViewOpenedForExistingId={isSuccessViewOpenedForExistingId}
               />
-              <Preview {...payment_button} activeTabIndex={activeTabIndex} />
+              {isSuccessViewOpened ? (
+                <SuccessView
+                  paymentButton={payment_button.paymentButtonEntity}
+                  openSettingsModal={this.openSettingsModal}
+                  openPageReceiptModal={this.handleTogglePageReceiptModal}
+                  updateHighlightButtonSettings={this.props.updateHighlightButtonSettings}
+                  onCodeCopy={() => track.lj.trackCodeCopy(payment_button.paymentButtonEntity.id)}
+                  onClickSeeDocumentation={() =>
+                    track.lj.trackOpenDocs(payment_button.paymentButtonEntity.id)
+                  }
+                  onClickButtonSettings={() => {
+                    track.lj.trackOnClickButtonSettings();
+                  }}
+                />
+              ) : (
+                <React.Fragment>
+                  <Form
+                    {...payment_button}
+                    activeTabIndex={activeTabIndex}
+                    onChangeActiveTabIndex={this.onChangeActiveTabIndex}
+                    submitPaymentButtonForm={this.handleSavePaymentButton}
+                    onChangeButtonTemplate={this.onChangeButtonTemplate}
+                    isEditExistingId={!!this.paymentButtonId}
+                  />
+                  <Preview {...payment_button} activeTabIndex={activeTabIndex} />
+                </React.Fragment>
+              )}
             </React.Fragment>
           )}
         </div>
@@ -696,9 +777,7 @@ export default class PaymentButtonCreate extends React.Component {
 
         {this.TopBar}
 
-        <ErrorBoundary key={this.paymentButtonId || 'new'}>
-          {this.PageContent}
-        </ErrorBoundary>
+        <ErrorBoundary key={this.paymentButtonId || 'new'}>{this.PageContent}</ErrorBoundary>
       </div>
     );
   }

@@ -39,7 +39,7 @@ export default class ButtonDetails extends React.Component {
       disableSubmit: false,
     };
 
-    this.buttonTypesList = META.map(templateType => ({
+    this.buttonTypesList = META.map((templateType) => ({
       label: templateType.card.title,
       value: templateType.key,
     }));
@@ -49,7 +49,7 @@ export default class ButtonDetails extends React.Component {
     this.toggleDisableSubmit();
   }
 
-  handleSubmit = formData => {
+  handleSubmit = (formData) => {
     const { title, button_text, button_theme, currency, amount } = formData;
 
     const data = {
@@ -80,8 +80,7 @@ export default class ButtonDetails extends React.Component {
 
   get isQuickPayTemplate() {
     const { paymentButtonEntity } = this.props;
-    const templateType =
-      paymentButtonEntity.settings.payment_button_template_type;
+    const templateType = paymentButtonEntity.settings.payment_button_template_type;
 
     return templateType === templateTypes.quickPay.key;
   }
@@ -103,10 +102,9 @@ export default class ButtonDetails extends React.Component {
     return amountField;
   }
 
-  handleChangeButtonType = option => {
+  handleChangeButtonType = (option) => {
     const { paymentButtonEntity } = this.props;
-    const currentTemplateType =
-      paymentButtonEntity.settings.payment_button_template_type;
+    const currentTemplateType = paymentButtonEntity.settings.payment_button_template_type;
 
     if (option.value === currentTemplateType) {
       return;
@@ -134,7 +132,7 @@ export default class ButtonDetails extends React.Component {
     });
   };
 
-  handleChangeButtonLabel = e => {
+  handleChangeButtonLabel = (e) => {
     const data = {
       settings: {
         payment_button_text: e.target.value,
@@ -145,7 +143,7 @@ export default class ButtonDetails extends React.Component {
     this.props.updatePaymentButtonData(data);
   };
 
-  handleChangeButtonTheme = option => {
+  handleChangeButtonTheme = (option) => {
     const data = {
       settings: {
         payment_button_theme: option.value,
@@ -160,7 +158,7 @@ export default class ButtonDetails extends React.Component {
     track.lj.trackButtonTheme(option);
   };
 
-  toggleDisableSubmit = e => {
+  toggleDisableSubmit = (e) => {
     const isFormChanged = e && e.hasOwnProperty('type');
     // Not required in first time bcoz it's already marked as per in store. Otherwise, behavior would be unexpexted in Edit Mode
     if (isFormChanged) {
@@ -177,23 +175,18 @@ export default class ButtonDetails extends React.Component {
     });
   };
 
-  markReviewDone = isDone => {
+  markReviewDone = (isDone) => {
     this.props.updateStepReviewProgress({
       isButtonDetailsReviewed: isDone,
     });
   };
 
-  setRefFormEl = el => (this.formEl = el);
+  setRefFormEl = (el) => (this.formEl = el);
 
   render() {
-    const {
-      paymentButtonId,
-      paymentButtonEntity,
-      isEditExistingId,
-    } = this.props;
+    const { paymentButtonId, paymentButtonEntity, isEditExistingId } = this.props;
 
-    const templateType =
-        paymentButtonEntity.settings.payment_button_template_type,
+    const templateType = paymentButtonEntity.settings.payment_button_template_type,
       currency = paymentButtonEntity.currency;
 
     return (
@@ -210,11 +203,14 @@ export default class ButtonDetails extends React.Component {
             class="Input--vTop"
             defaultValue={paymentButtonEntity.title}
             description="For dashboard use, not visible to customers"
-            validator={val => {
+            validator={(val) => {
               if (!val) {
                 return 'Please fill out this field';
               }
-              if (val.length > 40) {
+
+              if (val.length < 3) {
+                return 'Title must be atleast 3 characters';
+              } else if (val.length > 40) {
                 return 'Title cannot be more than 40 characters';
               }
             }}
@@ -244,9 +240,7 @@ export default class ButtonDetails extends React.Component {
               class="Input--vTop Input--CurrencyAmount"
               placeholder="Add your amount"
               defaultValueCurrency={currency}
-              defaultValueAmount={
-                this.amountFieldForQuickPayTemplate.item.amount || ''
-              }
+              defaultValueAmount={this.amountFieldForQuickPayTemplate.item.amount || ''}
               required
               disabledCurrency={isEditExistingId}
               onBlur={track.lj.trackButtonAmount}
@@ -261,7 +255,7 @@ export default class ButtonDetails extends React.Component {
             defaultValue={paymentButtonEntity.settings.payment_button_text}
             required
             onChange={this.handleChangeButtonLabel}
-            validator={val => {
+            validator={(val) => {
               if (!val) {
                 return 'Please fill out this field';
               }

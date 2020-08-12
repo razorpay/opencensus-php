@@ -67,6 +67,10 @@ export default class SideBar extends React.Component {
       totalStepsDone++;
     }
 
+    if (this.props.isSuccessViewOpened) {
+      totalStepsDone++;
+    }
+
     return totalStepsDone;
   }
 
@@ -75,6 +79,7 @@ export default class SideBar extends React.Component {
   }
 
   render() {
+    const { isSuccessViewOpened, isSuccessViewOpenedForExistingId } = this.props;
     const progressPercentage = (this.totalTabsDone * 100) / this.totalTabs;
 
     return (
@@ -82,7 +87,7 @@ export default class SideBar extends React.Component {
         <img src="/dist/css/assets/payment_button/sidebar-display.svg" />
 
         <div class="SideBar-title">
-          {this.props.paymentButtonId ? 'Edit Progress' : 'Creation Progress'}
+          {this.props.paymentButtonId && (!isSuccessViewOpened || isSuccessViewOpenedForExistingId) ? 'Edit Progress' : 'Creation Progress'}
         </div>
 
         <ProgressBar
@@ -132,7 +137,7 @@ export default class SideBar extends React.Component {
           <Step
             title="Review and Create"
             description="Finalise configuration and create button"
-            isDone={false}
+            isDone={isSuccessViewOpened}
             onClick={() => track.lj.trackOnClickProgressStep('review_create')}
             isDisabled={
               !this.isButtonDetailsDone ||
