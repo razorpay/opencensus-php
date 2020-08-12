@@ -5123,6 +5123,87 @@ class PayoutTest extends TestCase
         $this->assertEquals(0, $batchProcessingPayouts->count());
     }
 
+    public function testUpdatePayoutStatusToProcessedManually()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $request = [
+            'url'       => '/payouts/' . $payout['id'] . '/manual/status',
+            'method'    => 'PATCH',
+            'content'   => [
+                'status' => 'processed',
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('processed', $payout['status']);
+    }
+
+    public function testUpdatePayoutToSomeIntermediateStatus()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . $payout['id'] . '/manual/status';
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdatePayoutStatusManuallyToReversed()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $request = [
+            'url'     => '/payouts/' . $payout['id'] . '/manual/status',
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'processed',
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('processed', $payout['status']);
+
+        $request = [
+            'url'     => '/payouts/' . $payout['id'] . '/manual/status',
+            'method'  => 'PATCH',
+            'content' => [
+                'status'         => 'reversed',
+                'failure_reason' => 'payout reversed at bank'
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('reversed', $payout['status']);
+
+        $this->assertEquals('payout reversed at bank', $payout['failure_reason']);
+    }
     // check trimming in payout creation when experiment is on for merchant.
     public function testCreatePayoutWithUnnecessarySpacesTrimmedInPurpose()
     {

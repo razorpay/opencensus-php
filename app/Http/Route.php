@@ -1910,6 +1910,7 @@ class Route
 
         'merchant_verify_attributes'              => ['post',    'merchant/verify/{verificationType}',                      'MerchantController@postVerifyMerchantAttributes'              ],
         'checkout_personalisation'                => ['get',     'personalisation',                                         'MerchantController@getPersonalisedMethods'                    ],
+        'update_payout_status'                    => ['patch',   'payouts/{id}/manual/status',                               'PayoutController@updatePayoutStatusManually'                          ],
     ];
 
     public static $public = [
@@ -3606,6 +3607,7 @@ class Route
         'fix_merchant_data_cron',
         'update_late_auth_config_admin_bulk',
         'create_payment_config_bulk',
+        'update_payout_status',
         'pincode_get',
         'admin_key_migrate_to_credcase',
         'admin_access_maps_bootstrap_cache',
@@ -4347,6 +4349,7 @@ class Route
         'get_irctc_settlement_file_admin'             => '*',
 
         'fix_merchant_data_cron'                   => Permission::UPDATE_CONFIG_KEY,
+        'update_payout_status'                     => Permission::PAYOUT_STATUS_UPDATE_MANUALLY,
 
         'admin_key_migrate_to_credcase'            => '*',
 

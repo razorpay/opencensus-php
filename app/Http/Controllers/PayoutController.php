@@ -246,4 +246,13 @@ class PayoutController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function updatePayoutStatusManually(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updatePayoutStatusManually($id, $input);
+
+        return ApiResponse::json($response);
+    }
 }

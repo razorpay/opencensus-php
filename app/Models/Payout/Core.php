@@ -2111,6 +2111,35 @@ class Core extends Base\Core
         }
     }
 
+    public function updatePayoutStatusManually(Entity $payout, array $input)
+    {
+        $status = $input[Entity::STATUS];
+
+        $ftaFailureReason  = $input[Attempt\Constants::FAILURE_REASON] ?? null;
+
+        switch ( $status )
+        {
+            case Status::PROCESSED:
+                $this->handlePayoutProcessed($payout);
+                break;
+
+            case Status::REVERSED:
+                $this->handlePayoutReversed($payout, $ftaFailureReason);
+                break;
+
+            case Status::FAILED:
+                $this->handlePayoutFailed($payout, $ftaFailureReason);
+                break;
+
+            default:
+                $this->trace->warning(
+                    TraceCode::UNKNOWN_STATUS_SENT_TO_PAYOUT,
+                    $input);
+        }
+
+        return $payout;
+    }
+
     protected function processPendingPayout(Entity $payout, bool $queueFlag): Entity
     {
         $payoutId = $payout->getId();

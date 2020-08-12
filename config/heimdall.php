@@ -956,6 +956,9 @@ return [
             Permission::ASSIGN_FEE_RECOVERY_SCHEDULE => [
                 'assignable' => true,
             ],
+            Permission::PAYOUT_STATUS_UPDATE_MANUALLY => [
+                'assignable' => true,
+            ]
         ],
 
         PermissionCategory::REDIS_CONFIG_PERIMSSIONS => [

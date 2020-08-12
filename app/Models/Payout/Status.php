@@ -41,6 +41,11 @@ class Status
         self::FAILED
     ];
 
+    public static $failureStatus = [
+        self::REVERSED,
+        self::FAILED,
+    ];
+
     public static $internalToPublicStatusMap = [
         self::PENDING           => self::PENDING,
         self::CREATED           => self::PROCESSING,
@@ -263,6 +268,13 @@ class Status
                     'previous_status' => $previousStatus,
                 ]);
         }
+    }
+
+    public static function isFailureState($status): bool
+    {
+        return in_array($status,
+                        self::$failureStatus,
+                        true);
     }
 
     public static function isFinalState($status): bool

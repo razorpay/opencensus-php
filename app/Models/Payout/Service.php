@@ -1286,6 +1286,16 @@ class Service extends Base\Service
         }
     }
 
+    public function updatePayoutStatusManually(string $id, array $input)
+    {
+        $payout = $this->repo->payout->findOrFail($id);
+
+        (new Validator)->validateInput(Validator::PAYOUT_STATUS_MANUAL, $input);
+
+        $payout = $this->core->updatePayoutStatusManually($payout, $input);
+
+        return $payout->toArrayPublic();
+    }
 
     /**
      * @param $item

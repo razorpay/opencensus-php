@@ -51,6 +51,8 @@ class Validator extends Base\Validator
     // Scheduled Payouts Initiate
     const PROCESS_SCHEDULED_PAYOUTS = 'process_scheduled_payouts';
 
+    const PAYOUT_STATUS_MANUAL = 'payout_status_manual';
+
     //
     // This is required for build. Currently, build does not
     // accept ruleName as a parameter. Hence, this list needs
@@ -207,6 +209,15 @@ class Validator extends Base\Validator
     protected static $processScheduledPayoutsRules = [
         Entity::BALANCE_IDS     => 'sometimes|array',
         Entity::BALANCE_IDS_NOT => 'sometimes|array',
+    ];
+
+    protected static $payoutStatusManualRules = [
+        Entity::STATUS              => 'required|string',
+        Entity::FAILURE_REASON      => 'sometimes|string',
+    ];
+
+    protected static $payoutStatusManualValidators = [
+        'final_status',
     ];
 
     protected function validateMethod($attribute, $method)
@@ -653,6 +664,19 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateFinalStatus(array $input)
+    {
+        $status = $input[Entity::STATUS];
+
+        $isValid = Status::isFinalState($status);
+
+        if ($isValid === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Payout can be updated to only a final status'
+            );
+        }
+    }
     /**
      * @param Entity $payout
      *

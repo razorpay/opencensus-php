@@ -4182,4 +4182,32 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testRblPayoutManuallyMarkedAsFailed()
+    {
+        $channel = Channel::RBL;
+
+        $this->setupForRblPayout($channel);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $request = [
+            'url'       => '/payouts/' . $payout['id'] . '/manual/status',
+            'method'    => 'PATCH',
+            'content'   => [
+                'status'         => 'failed',
+                'failure_reason' => 'payout failed at bank'
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('failed', $payout['status']);
+    }
 }

@@ -181,6 +181,29 @@ return [
         ],
     ],
 
+    'testUpdatePayoutToSomeIntermediateStatus' => [
+        'request' => [
+            'method'    => 'PATCH',
+            'content'   => [
+                'status' => 'initiated',
+            ],
+            'url' => ''
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payout can be updated to only a final status',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreatePayoutWithoutFundAccountId' => [
         'request'  => [
             'method'  => 'POST',
