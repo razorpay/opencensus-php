@@ -54,7 +54,6 @@ class Validator extends Base\Validator
         Entity::TO_EMAIL    => 'required|email',
         'payoutlinkresponse'=> 'required|array',
         'settings'          => 'required|array',
-        'payout_utr'        => 'required|string',
     ];
 
     protected static $sendFailureEmailInternalRules = [

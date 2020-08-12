@@ -304,7 +304,6 @@ class Service extends Base\Service
         $sendLinkEmail = new SuccessInternal(
             $input['payoutlinkresponse'],
             $input['settings'],
-            $input['payout_utr'],
             $input[Entity::MERCHANT_ID],
             $input[Entity::TO_EMAIL]
         );

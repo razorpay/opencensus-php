@@ -3,15 +3,15 @@
 namespace RZP\Mail\PayoutLink;
 
 use App;
-use RZP\Models\BankAccount\Entity as BankAccountEntity;
-use RZP\Models\Settings;
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
 use RZP\Models\PayoutLink\Entity;
 use RZP\Models\Merchant\Logo as MerchantLogo;
 use RZP\Models\Merchant\Entity as MerchantEntity;
-use RZP\Models\PayoutLink\Entity as PayoutLinkEntity;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
+use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\Vpa\Entity as VpaEntity;
 
 class SuccessInternal extends Mailable
@@ -19,6 +19,8 @@ class SuccessInternal extends Mailable
     const EMAIL_TEMPLATE = 'emails.payout_link.success';
 
     const SUBJECT = '%s %s is Successful';
+
+    const DATE_TIME_FORMAT = "d M 'y h:i A";
 
     protected $payoutLinkInfo;
 
@@ -30,17 +32,13 @@ class SuccessInternal extends Mailable
 
     protected $merchant = null;
 
-    protected $payoutUTR;
-
-    public function __construct(array $payoutLinkInfo, array $settings, string $payoutUTR, string $merchantId, string $toEmail)
+    public function __construct(array $payoutLinkInfo, array $settings, string $merchantId, string $toEmail)
     {
         parent::__construct();
 
         $this->payoutLinkInfo = $payoutLinkInfo;
 
         $this->settings = $settings;
-
-        $this->payoutUTR = $payoutUTR;
 
         $this->merchantId = $merchantId;
 
@@ -64,6 +62,21 @@ class SuccessInternal extends Mailable
     protected function getPayoutLinkInfo() : array
     {
         return $this->payoutLinkInfo;
+    }
+
+    protected function getPayoutInfo($payoutLinkInfo) : array
+    {
+        if (key_exists('payouts', $payoutLinkInfo)
+            && key_exists('count', $payoutLinkInfo['payouts']))
+        {
+            $payoutsCount = $payoutLinkInfo['payouts']['count'];
+
+            if ($payoutsCount > 0)
+            {
+                return $payoutLinkInfo['payouts']['items'][0];
+            }
+        }
+        return [];
     }
 
     protected function getMerchant(): MerchantEntity
@@ -118,16 +131,43 @@ class SuccessInternal extends Mailable
     {
         $payoutLinkInfo = $this->getPayoutLinkInfo();
 
+        $payoutInfo = $this->getPayoutInfo($payoutLinkInfo);
+
         $merchant = $this->getMerchant();
 
         $displayName = $merchant->getBillingLabel();
 
         /** @var \RZP\Models\Vpa\Entity|\RZP\Models\BankAccount\Entity $account */
+        /** @var \RZP\Models\PayoutLink\Entity $payoutLink */
         $repo = App::getFacadeRoot()['repo'];
-        try{
-            $account = $repo->fund_account->findByPublicIdAndMerchant($payoutLinkInfo['fund_account_id'] ?? '', $merchant);
-        }catch (\Exception $e){
-            $account = null;
+
+        try
+        {
+            $fundAccount = $repo->fund_account->findByPublicIdAndMerchant($payoutLinkInfo['fund_account_id'] ?? '', $merchant);
+
+            $account = optional($fundAccount)->account;
+        }
+        catch (\Exception $e)
+        {
+            $fundAccount = null;
+        }
+
+        $payoutProcessedAt = null;
+
+        $payoutUtr = null;
+
+        if(key_exists('processed_at', $payoutInfo))
+        {
+            $payoutProcessedAt = $payoutInfo['processed_at'];
+
+            $payoutProcessedAt = ($payoutProcessedAt != null ?
+                $this->format($payoutProcessedAt, self::DATE_TIME_FORMAT) :
+                null);
+        }
+
+        if(key_exists('utr', $payoutInfo))
+        {
+            $payoutUtr = $payoutInfo['utr'];
         }
 
         $settings = $this->getSettings();
@@ -144,29 +184,29 @@ class SuccessInternal extends Mailable
             'contact_name'          => $payoutLinkInfo['contact_name'] ?? null,
             'contact_email'         => $payoutLinkInfo['contact_email'] ?? null,
             'contact_phone'         => $payoutLinkInfo['contact_phone_number'] ?? null,
-            'utr'                           => $this->payoutUTR,
-            'payout_link_success_date'      => $payoutLinkInfo['updated_at'] ?? null,
+            'utr'                           => $payoutUtr,
+            'payout_link_success_date'      => $payoutProcessedAt,
             'support_contact'               => $settings[Entity::SUPPORT_CONTACT] ?? null,
             'support_email'                 => $settings[Entity::SUPPORT_EMAIL] ?? null,
             'support_url'                   => $settings[Entity::SUPPORT_URL] ?? null
         ];
 
-        if($account != null)
+        if($fundAccount != null)
         {
-            if ($account->getAccountType() === FundAccountEntity::BANK_ACCOUNT)
+            if ($fundAccount->getAccountType() === FundAccountEntity::BANK_ACCOUNT)
             {
                 $data = array_merge($data,[
-                    'fund_account_number'   => $account->toArrayPublic()[FundAccountEntity::BANK_ACCOUNT][BankAccountEntity::ACCOUNT_NUMBER] ?? '',
-                    'fund_account_name'     => $account->toArrayPublic()[FundAccountEntity::BANK_ACCOUNT][BankAccountEntity::BENEFICIARY_NAME] ?? '',
-                    'fund_account_ifsc'     => $account->toArrayPublic()[FundAccountEntity::BANK_ACCOUNT][BankAccountEntity::IFSC_CODE] ?? '',
-                    'fund_account_bank_name'=> $account->toArrayPublic()[FundAccountEntity::BANK_ACCOUNT][BankAccountEntity::BANK_NAME] ?? '',
+                    'fund_account_number'   => $account->getAccountNumber(),
+                    'fund_account_name'     => $account->getBeneficiaryName(),
+                    'fund_account_ifsc'     => $account->getIfscCode(),
+                    'fund_account_bank_name'=> $account->getBankName(),
                 ]);
             }
-            else if ($account->getAccountType() === FundAccountEntity::VPA)
+            else if ($fundAccount->getAccountType() === FundAccountEntity::VPA)
             {
                 $data = array_merge($data,[
-                    'fund_account_vpa'      => $account->toArrayPublic()[FundAccountEntity::VPA][VpaEntity::ADDRESS] ?? '',
-                    'fund_account_name'     => $account->toArrayPublic()[FundAccountEntity::VPA][VpaEntity::USERNAME] ?? '',
+                    'fund_account_vpa'      => $account->getAddress(),
+                    'fund_account_name'     => $account->getUsername(),
                 ]);
             }
         }
@@ -174,5 +214,11 @@ class SuccessInternal extends Mailable
         $this->with($data);
 
         return $this;
+    }
+
+    protected function format($timestamp, $format)
+    {
+        return Carbon::createFromTimestamp($timestamp, Timezone::IST)
+            ->format($format);
     }
 }

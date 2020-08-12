@@ -120,10 +120,15 @@ class FailedInternal extends Mailable
 
         /** @var \RZP\Models\Vpa\Entity|\RZP\Models\BankAccount\Entity $account */
         $repo = App::getFacadeRoot()['repo'];
-        try{
-            $account = $repo->fund_account->findByPublicIdAndMerchant($payoutLinkInfo['fund_account_id'] ?? '', $merchant);
-        }catch (\Exception $e){
-            $account = null;
+        try
+        {
+            $fundAccount = $repo->fund_account->findByPublicIdAndMerchant($payoutLinkInfo['fund_account_id'] ?? '', $merchant);
+
+            $account = optional($fundAccount)->account;
+        }
+        catch (\Exception $e)
+        {
+            $fundAccount = null;
         }
 
         $settings = $this->getSettings();
@@ -145,22 +150,22 @@ class FailedInternal extends Mailable
             'support_url'           => $settings[Entity::SUPPORT_URL] ?? null
         ];
 
-        if($account != null)
+        if($fundAccount != null)
         {
-            if ($account->getAccountType() === FundAccountEntity::BANK_ACCOUNT)
+            if ($fundAccount->getAccountType() === FundAccountEntity::BANK_ACCOUNT)
             {
                 $data = array_merge($data,[
-                    'fund_account_number'   => $account->toArrayPublic()[FundAccountEntity::BANK_ACCOUNT][BankAccountEntity::ACCOUNT_NUMBER] ?? '',
-                    'fund_account_name'     => $account->toArrayPublic()[FundAccountEntity::BANK_ACCOUNT][BankAccountEntity::BENEFICIARY_NAME] ?? '',
-                    'fund_account_ifsc'     => $account->toArrayPublic()[FundAccountEntity::BANK_ACCOUNT][BankAccountEntity::IFSC_CODE] ?? '',
-                    'fund_account_bank_name'=> $account->toArrayPublic()[FundAccountEntity::BANK_ACCOUNT][BankAccountEntity::BANK_NAME] ?? '',
+                    'fund_account_name'     => $account->getBeneficiaryName(),
+                    'fund_account_number'   => $account->getAccountNumber(),
+                    'fund_account_ifsc'     => $account->getIfscCode(),
+                    'fund_account_bank_name'=> $account->getBankName(),
                 ]);
             }
-            else if ($account->getAccountType() === FundAccountEntity::VPA)
+            else if ($fundAccount->getAccountType() === FundAccountEntity::VPA)
             {
                 $data = array_merge($data,[
-                    'fund_account_vpa'      => $account->toArrayPublic()[FundAccountEntity::VPA][VpaEntity::ADDRESS] ?? '',
-                    'fund_account_name'     => $account->toArrayPublic()[FundAccountEntity::VPA][VpaEntity::USERNAME] ?? '',
+                    'fund_account_vpa'      => $account->getAddress(),
+                    'fund_account_name'     => $account->getUsername(),
                 ]);
             }
         }

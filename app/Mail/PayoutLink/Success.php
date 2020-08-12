@@ -3,8 +3,10 @@
 namespace RZP\Mail\PayoutLink;
 
 use App;
+use Carbon\Carbon;
 use RZP\Models\Settings;
 use RZP\Mail\Base\Mailable;
+use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
 use RZP\Models\PayoutLink\Entity;
 use RZP\Models\Merchant\Logo as MerchantLogo;
@@ -17,6 +19,8 @@ class Success extends Mailable
     const EMAIL_TEMPLATE = 'emails.payout_link.success';
 
     const SUBJECT = '%s %s is Successful';
+
+    const DATE_TIME_FORMAT = "d M 'y h:i A";
 
     protected $payoutLinkId;
 
@@ -112,6 +116,22 @@ class Success extends Mailable
         /** @var \RZP\Models\Vpa\Entity|\RZP\Models\BankAccount\Entity $account */
         $account = optional($payoutLink->fundAccount)->account;
 
+        $payoutProcessedAt = null;
+
+        if ($payoutLink != null)
+        {
+            $payout = $payoutLink->payout();
+
+            if ($payout !== null)
+            {
+                $payoutProcessedAt = $payout->getProcessedAt();
+            }
+        }
+
+        $payoutProcessedAt = ($payoutProcessedAt != null ?
+            $this->format($payoutProcessedAt, self::DATE_TIME_FORMAT) :
+            null);
+
         $settings = $this->getSettings($merchant);
 
         $data = [
@@ -127,7 +147,7 @@ class Success extends Mailable
             'contact_email'                 => $payoutLink->getContactEmail(),
             'contact_phone'                 => $payoutLink->getContactPhoneNumber(),
             'utr'                           => $payoutLink->payout()->getUtr(),
-            'payout_link_success_date'      => $payoutLink->getUpdatedAt(),
+            'payout_link_success_date'      => $payoutProcessedAt,
             'support_contact'               => $settings[Entity::SUPPORT_CONTACT] ?? null,
             'support_email'                 => $settings[Entity::SUPPORT_EMAIL] ?? null,
             'support_url'                   => $settings[Entity::SUPPORT_URL] ?? null
@@ -153,5 +173,11 @@ class Success extends Mailable
         $this->with($data);
 
         return $this;
+    }
+
+    protected function format($timestamp, $format)
+    {
+        return Carbon::createFromTimestamp($timestamp, Timezone::IST)
+            ->format($format);
     }
 }
