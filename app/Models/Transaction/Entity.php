@@ -473,6 +473,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::API_FEE);
     }
 
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
+    }
+
     public function getChannel()
     {
         return $this->getAttribute(self::CHANNEL);

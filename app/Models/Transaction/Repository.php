@@ -2034,4 +2034,50 @@ class Repository extends Base\Repository
         }
         return $query->get();
     }
+
+    public function verifySettlementTransactions(array $txnIds)
+    {
+        $selectedColumns = [];
+
+        $columns = [
+            Transaction\Entity::ID,
+            Transaction\Entity::TAX,
+            Transaction\Entity::FEE,
+            Transaction\Entity::DEBIT,
+            Transaction\Entity::CREDIT,
+            Transaction\Entity::CURRENCY,
+        ];
+
+        $transactionId          = $this->dbColumn(Entity::ID);
+        $transactionSettled     = $this->dbColumn(Entity::SETTLED);
+        $transactionSourceId    = $this->dbColumn(Entity::ENTITY_ID);
+        $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
+        $transactionSourceType  = $this->dbColumn(Entity::TYPE);
+
+        $balanceId              = $this->repo->balance->dbColumn(Balance\Entity::ID);
+        $balanceTypeColumn      = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
+
+        foreach ($columns as $col)
+        {
+            $selectedColumns[] = $this->dbColumn($col);
+        }
+
+        $selectedColumns[] = $transactionSourceId.' as source_id';
+        $selectedColumns[] = $balanceTypeColumn.' as balance_type';
+        $selectedColumns[] = $transactionSourceType.' as source_type';
+
+        return $this->newQuery()
+            ->select($selectedColumns)
+            ->whereIn($transactionId, $txnIds)
+            ->leftJoin(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
+            ->where(function ($query) use ($transactionBalanceId, $balanceTypeColumn)
+            {
+                $query->whereNull($transactionBalanceId)
+                    ->orWhereIn($balanceTypeColumn, [Balance\Type::PRIMARY, Balance\Type::COMMISSION]);
+            })
+            ->where($transactionSettled, 0)
+            ->where($transactionSourceType, '!=', Type::SETTLEMENT)
+            ->get()
+            ->keyBy(Transaction\Entity::ID);
+    }
 }

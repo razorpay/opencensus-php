@@ -459,4 +459,13 @@ class SettlementController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function settlementTransactionsVerify()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->settlementTransactionsVerify($input);
+
+        return ApiResponse::json($data);
+    }
 }

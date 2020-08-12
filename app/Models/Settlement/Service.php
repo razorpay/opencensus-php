@@ -618,6 +618,42 @@ class Service extends Base\Service
         return (new Processor)->settlementStatusUpdate($input);
     }
 
+    public function settlementTransactionsVerify(array $input)
+    {
+        (new Validator)->validateInput('settlement_transactions_verify', $input);
+
+        $txnIds = $input['transaction_ids'];
+
+        $txns = $this->repo->transaction->verifySettlementTransactions($txnIds);
+
+        $verifyFailedTxnIds = [];
+
+        foreach ($txnIds as $txnId)
+        {
+            if (isset($txns[$txnId]) === false)
+            {
+                $verifyFailedTxnIds[] = $txnId;
+            }
+        }
+
+        $verifiedTxnCount = sizeof($txns);
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_TRANSACTIONS_VERIFY,
+            [
+                'request_txn_count' => sizeof($input['transaction_ids']),
+                'verified_txn_count'  => $verifiedTxnCount,
+                'unverified_txns_ids'   => $verifyFailedTxnIds,
+            ]);
+
+        if ($verifiedTxnCount === 0)
+        {
+            return null;
+        }
+
+        return $txns;
+    }
+
     public function serviceFetch(array $input) : array
     {
         return app('settlements_dashboard')->fetch($input);

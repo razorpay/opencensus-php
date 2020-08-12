@@ -127,6 +127,11 @@ class Validator extends Base\Validator
         'remarks' => 'sometimes|string',
     ];
 
+    protected static $settlementTransactionsVerifyRules = [
+        'transaction_ids'   => 'required|array',
+        'transaction_ids.*' => 'required|string|size:14',
+    ];
+
     protected function validateBalanceType($attribute, $value)
     {
         Balance\Type::validateSettlementBalanceType($value);
