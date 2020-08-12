@@ -1113,7 +1113,7 @@ class Checkout
 
             if (isset($contact) === true)
             {
-                $data['preferred_methods'][$contact] = $preferences;
+                $data['preferred_methods'][$contact]['instruments'] = $preferences;
 
                 $data['preferred_methods'][$contact]['is_customer_identified'] = $responseBody['is_customer_identified'];
 
@@ -1121,7 +1121,7 @@ class Checkout
             }
             else
             {
-                $data['preferred_methods']['default'] = $preferences;
+                $data['preferred_methods']['default']['instruments'] = $preferences;
 
                 $data['preferred_methods']['default']['is_customer_identified'] = $responseBody['is_customer_identified'];
 

@@ -6379,16 +6379,20 @@ return [
             'content' => [
                 'preferred_methods' => [
                     'default' => [
-                        [
-                            'instrument' => 'abcd@okhdfc',
-                            'method'     => 'upi',
-                            'score'      =>  0.54,
+                        'instruments' =>[
+                            [
+                                'instrument' => 'abcd@okhdfc',
+                                'method'     => 'upi',
+                                'score'      =>  0.54,
+                            ],
+                            [
+                                'instrument' => 'phonepay',
+                                'method'     => 'wallet',
+                                'score'      =>  0.54,
+                            ],
                         ],
-                        [
-                            'instrument' => 'phonepay',
-                            'method'     => 'wallet',
-                            'score'      =>  0.54,
-                        ],
+                        "is_customer_identified"    => true,
+                        "user_aggregates_available" => false
                     ],
                 ]
             ],
@@ -6407,16 +6411,20 @@ return [
             'content' => [
                 'preferred_methods' => [
                     'default' => [
-                        [
-                            'instrument' => 'abcd@okhdfc',
-                            'method'     => 'upi',
-                            'score'      =>  0.54,
+                        'instruments' => [
+                            [
+                                'instrument' => 'abcd@okhdfc',
+                                'method'     => 'upi',
+                                'score'      =>  0.54,
+                            ],
+                            [
+                                'instrument' => 'phonepay',
+                                'method'     => 'wallet',
+                                'score'      =>  0.54,
+                            ],
                         ],
-                        [
-                            'instrument' => 'phonepay',
-                            'method'     => 'wallet',
-                            'score'      =>  0.54,
-                        ],
+                        "is_customer_identified"    => true,
+                        "user_aggregates_available" => false
                     ],
                 ]
             ],
