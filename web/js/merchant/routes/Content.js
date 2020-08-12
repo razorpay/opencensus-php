@@ -50,7 +50,6 @@ const SubscriptionButtonDetails = lazy(() =>
   import(/* webpackChunkName: "PaymentButton" */ 'merchant/views/PaymentButton/SubscriptionButton/Details')
 );
 
-const Reports = lazy(() => import(/* webpackChunkName: "Reports" */ 'merchant/views/Reports'));
 const ReportsAsync = lazy(() =>
   import(/* webpackChunkName: "ReportsAsync" */ 'merchant/views/ReportsAsync/Home')
 );
@@ -372,14 +371,8 @@ export default class Content extends Component {
 
             <ShowWhenRoute
               path="/reports"
-              component={user.isAsyncReportsEnabled ? ReportsAsync : Reports}
-              additionalCondition={(user) => user.isAllowedView('reports')}
-            />
-
-            <ShowWhenRoute
-              path="/reports-async"
               component={ReportsAsync}
-              additionalCondition={(user) => user.isAllowedView('reports')}
+              additionalCondition={user => user.isAllowedView('reports')}
             />
 
             <ShowWhenRoute

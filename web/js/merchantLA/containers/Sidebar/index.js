@@ -11,7 +11,6 @@ const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
 @connect(
   state => ({
     showMobileMenu: state.app.showMobileMenu,
-    currentReportList: state.reports.currentReportList,
   }),
   { toggleMobileMenu }
 )
