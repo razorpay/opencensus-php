@@ -120,6 +120,8 @@ class Base extends Core
     const HDFC_DEBIT_EMI         = 'HdfcDebitEmi';
     const UPI_JUSPAY             = 'UpiJuspay';
 
+    const BT_RBL                 = 'BtRbl';
+
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
      * The banks send their MIS files through this sender address.

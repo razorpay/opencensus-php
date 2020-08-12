@@ -956,6 +956,44 @@ return [
         ],
     ],
 
+    'testEcollectRblBatchCreate' => [
+        'request' => [
+            'url' => '/ecollect/validate/file/rbl',
+            'method' => 'post',
+            'content' => [
+                'source' => 'lambda',
+                'key' => 'BtRbl/filename.xlsx',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'type' => 'ecollect_rbl',
+                'status' => 'created',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'ecollectRblBatchData' => [
+        [
+            'TRANSACTION_TYPE'                  => 'IMPS',
+            'AMOUNT'                            => '100',
+            'UTR NUMBER'                        => null,
+            'RRN_NUMBER'                        => 'IMPS 12345ABCDE01 FROM BHARATPE',
+            'SENDER_IFSC'                       => 'SBIN0000002',
+            'SENDER_ACCOUNT_NUMBER'             => '999988887777',
+            'SENDER_ACCOUNT_TYPE'               => 'Current Account',
+            'SENDER_NAME'                       => 'BharatPe',
+            'BENEFICIARY_ACCOUNT_TYPE'          => 'Current Account',
+            'BENEFICIARY_ACCOUNT_NUMBER'        => '2223330005148068',
+            'BENENAME'                          => null,
+            'CREDIT_DATE'                       => '14-02-2020 201500',
+            'CREDIT_ACCOUNT_NUMBER'             => '409000694314',
+            'CORPORATE_CODE'                    => null,
+            'SENDER_INFORMATION'                => null,
+        ]
+    ],
+
     'testProcessBankTransferInvalidPayerIfsc' => [
         'url'     => '/ecollect/validate',
         'method'  => 'post',

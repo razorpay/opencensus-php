@@ -129,9 +129,9 @@ class Service extends Base\Service
 
         Batch\Type::validateType($batchType);
 
-        $batchCore = new Batch\Core;
+        $source = $this->getRequestSource();
 
-        $requestProcessor = new RequestProcessor\Mailgun;
+        $requestProcessor = $this->getRequestProcessor($source);
 
         $fileDetails = $requestProcessor->processForVa($input);
 
@@ -141,6 +141,8 @@ class Service extends Base\Service
                 'file details'    => $fileDetails,
             ]
         );
+
+        $batchCore = new Batch\Core;
 
         if (isset($fileDetails['file_details']) === true)
         {
@@ -425,5 +427,36 @@ class Service extends Base\Service
         }
 
         return $block;
+    }
+
+    protected function getRequestSource() : string
+    {
+        if ($this->isLambdaRequest() === true)
+        {
+            return RequestProcessor\Base::LAMBDA;
+        }
+        else
+        {
+            return RequestProcessor\Base::MAILGUN;
+        }
+    }
+
+    /**
+     * Checks if the request originated via an AWS Lambda trigger.
+     *
+     * @return bool
+     */
+    protected function isLambdaRequest() : bool
+    {
+        return ($this->auth->isLambda());
+    }
+
+    protected function getRequestProcessor(string $source)
+    {
+        $source = studly_case($source);
+
+        $requestProcessor = 'RZP\\Reconciliator\\RequestProcessor\\' . $source;
+
+        return new $requestProcessor();
     }
 }

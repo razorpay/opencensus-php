@@ -28,6 +28,7 @@ class Lambda extends Base
     const SFTP_BUCKET_GATEWAYS = [
         Base::VAS_AXIS,
         Base::UPI_AXIS,
+        Base::BT_RBL,
     ];
 
     public function process(array $input): array
@@ -61,6 +62,41 @@ class Lambda extends Base
             self::ATTACHMENT_COUNT => 1,
             self::GATEWAY          => $this->gateway,
             self::SOURCE           => self::LAMBDA,
+        ];
+
+        $allFilesDetails = $this->getFileDetailsFromInput($inputDetails, $input, FileProcessor::STORAGE);
+
+        return [
+            self::FILE_DETAILS  => $allFilesDetails,
+            self::INPUT_DETAILS => $inputDetails,
+        ];
+    }
+
+    public function processForVa(array $input) : array
+    {
+        $key = $input[self::KEY] ?? null;
+
+        if (blank($key) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'File key not present in request.',
+                self::KEY,
+                $input
+            );
+        }
+
+        $this->gateway = $this->getGatewayFromKey($key);
+
+        $file = $this->downloadFileFromAws($key);
+
+        $input = [
+            self::ATTACHMENT_HYPHEN_ONE => $file
+        ];
+
+        $inputDetails = [
+            self::ATTACHMENT_COUNT  => 1,
+            self::GATEWAY           => $this->gateway,
+            self::SOURCE            => self::LAMBDA,
         ];
 
         $allFilesDetails = $this->getFileDetailsFromInput($inputDetails, $input, FileProcessor::STORAGE);

@@ -1975,6 +1975,17 @@ class BankTransferTest extends TestCase
         $this->startTest();
     }
 
+    public function testEcollectRblBatchCreate()
+    {
+        $data = $this->testData['ecollectRblBatchData'];
+
+        $this->createExcelFile($data, 'filename', 'files/filestore');
+
+        $this->ba->h2hAuth();
+
+        $this->startTest();
+    }
+
     public function testBankTransferRblImps()
     {
         $testData = $this->testData[__FUNCTION__];
