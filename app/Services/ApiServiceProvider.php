@@ -401,6 +401,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerSettlementsDashboard();
 
+        $this->registerSettlementsReminder();
+
         $this->registerHttpClients();
     }
 
@@ -1036,6 +1038,14 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('settlements_dashboard', function($app)
         {
             return new Settlements\Dashboard($app);
+        });
+    }
+
+    protected function registerSettlementsReminder()
+    {
+        $this->app->singleton('settlements_reminder', function($app)
+        {
+            return new Settlements\Reminder($app);
         });
     }
 

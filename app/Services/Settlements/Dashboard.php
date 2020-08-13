@@ -26,8 +26,6 @@ class Dashboard extends Base
     const BANK_ACCOUNT_UPDATE       = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Update';
     const BANK_ACCOUNT_DELETE       = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Delete';
 
-    const EXECUTION_TRIGGER         = '/twirp/rzp.settlements.execution.v1.ExecutionService/Trigger';
-
     const BODY                  = 'body';
     const CODE                  = 'code';
 

@@ -38,6 +38,8 @@ class Base
 
     const REQUEST_TIMEOUT = 60;
 
+    const EXECUTION_TRIGGER         = '/twirp/rzp.settlements.execution.v1.ExecutionService/Trigger';
+
     /**
      * Settlements Base constructor.
      *

@@ -325,6 +325,10 @@ return [
             'key'       => env('SETTLEMENTS_DASHBOARD_KEY'),
             'secret'    => env('SETTLEMENTS_DASHBOARD_SECRET'),
         ],
+        'reminder' => [
+            'key'       => env('SETTLEMENTS_REMINDER_KEY'),
+            'secret'    => env('SETTLEMENTS_REMINDER_SECRET'),
+        ],
         'secret'            => env('SETTLEMENTS_SERVICE_SECRET'),
     ],
 

@@ -716,7 +716,7 @@ class Service extends Base\Service
 
     public function executionReminder(array $input) : array
     {
-        return app('settlements_dashboard')->executionReminder($input);
+        return app('settlements_reminder')->executionReminder($input);
     }
 
     public function getIrctcSettlementFile(string $date, $input)
