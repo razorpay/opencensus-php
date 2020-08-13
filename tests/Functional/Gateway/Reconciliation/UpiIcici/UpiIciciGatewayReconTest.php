@@ -313,6 +313,58 @@ class UpiIciciGatewayReconTest extends TestCase
         $this->assertEquals($upi['npci_reference_id'], $payment['reference16']);
     }
 
+    public function testUpiIciciRrnMismatchPayment()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $rrn = '734122607521';
+
+        $this->makeUpiIciciPaymentsSince($createdAt, $rrn, 1);
+
+        $upiEntity = $this->getDbLastEntityToArray('upi');
+
+        $this->fixtures->payment->edit($upiEntity['payment_id'],
+            [
+                'status' => 'failed',
+                'authorized_at' => null,
+                'error_code' => 'BAD_REQUEST_ERROR',
+                'internal_error_code' => 'BAD_REQUEST_PAYMENT_TIMED_OUT',
+                'error_description' => 'Payment was not completed on time.',
+            ]);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $entries[] = $this->overrideUpiIciciPayment($upiEntity, '123456789');
+
+        $file = $this->writeToExcelFile($entries, 'mis_report', 'files/settlement', 'Recon MIS');
+
+        $uploadedFile = $this->createUploadedFile($file);
+
+        $this->reconcile($uploadedFile, 'UpiIcici');
+
+        $payments = $this->getEntities('payment', [], true);
+
+        $payment = $payments['items'][0];
+
+        $transactionId = $payment['transaction_id'];
+
+        $transaction = $this->getEntityById('transaction', $transactionId, true);
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertNotNull($upi['npci_reference_id']);
+
+        $this->assertEquals($upi['npci_reference_id'], '000123456789');
+
+        $this->assertNotNull($payment['reference16']);
+
+        $this->assertEquals($upi['npci_reference_id'], $payment['reference16']);
+    }
+
     public function testUpiIciciUnexpectedBqrPaymentCreateViaRecon()
     {
         $reconRow = $this->testData['upiIcici'];
@@ -415,13 +467,9 @@ class UpiIciciGatewayReconTest extends TestCase
         //reconciled for RRN 734122607521, Failed to reconcile for RRN 734122607522
         $this->assertEquals(2, $batch['total_count']);
 
-        $this->assertEquals(1, $batch['success_count']);
+        $this->assertEquals(2, $batch['success_count']);
 
-        $this->assertEquals(1, $batch['failure_count']);
-
-        $this->assertEquals('{"PAYMENT_ID_NOT_FOUND":1}', $batch['failure_reason']);
-
-        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     protected function overrideUpiIciciPayment(array $upiEntity, $gatewayPaymentId = null)
@@ -619,7 +667,8 @@ class UpiIciciGatewayReconTest extends TestCase
             'base_amount'       => $this->payment['amount'],
             'amount_authorized' => $this->payment['amount'],
             'status'            => 'captured',
-            'gateway'           => $this->gateway
+            'gateway'           => $this->gateway,
+            'authorized_at'     => time(),
         ];
 
         $payment = $this->fixtures->create('payment', $attributes);

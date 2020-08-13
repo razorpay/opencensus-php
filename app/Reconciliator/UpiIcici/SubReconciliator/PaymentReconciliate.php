@@ -258,11 +258,9 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'gateway'              => $this->gateway,
                     'batch_id'             => $this->batchId
                 ]);
-
-            return null;
         }
 
-        return $upiEntity->getPaymentId();
+        return ($upiEntity === null) ? $paymentId : $upiEntity->getPaymentId();
     }
 
     protected function getReconPaymentStatus(array $row)
@@ -330,11 +328,20 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
     }
 
+    /**
+     * Modifying this function to update the rrn from mis,
+     * despite mismatch. Changed coz of cases where db had
+     * different rrn than the one in mis, and such cases kept increasing.
+     *
+     * @param string $referenceNumber
+     * @param PublicEntity $gatewayPayment
+     */
     protected function setReferenceNumberInGateway(string $referenceNumber, PublicEntity $gatewayPayment)
     {
         $npciRefId = $gatewayPayment->getNpciReferenceId();
 
         $this->formatUpiRrn($npciRefId);
+        $this->formatUpiRrn($referenceNumber);
 
         if ((empty($npciRefId) === false) and
             ($npciRefId !== $referenceNumber))
@@ -353,12 +360,14 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'recon_reference_number'    => $referenceNumber,
                     'gateway'                   => $this->gateway
                 ]);
-
-            return;
         }
 
-        // We will only update the RRN if it is empty
-        $gatewayPayment->setNpciReferenceId($referenceNumber);
+        // We will only update the RRN if it is empty and if payment isn't authorized yet
+        if (($this->payment->hasNotBeenAuthorized() === true) or
+            (empty($npciRefId) === true))
+        {
+            $gatewayPayment->setNpciReferenceId($referenceNumber);
+        }
     }
 
     protected function getInputForForceAuthorize($row)
