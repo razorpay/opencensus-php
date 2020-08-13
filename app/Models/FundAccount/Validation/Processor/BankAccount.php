@@ -6,16 +6,13 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use Monolog\Logger;
-use RZP\Exception\BadRequestException;
-use RZP\Models\Bank\BankCodes;
-use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use Illuminate\Support\Arr;
-use RZP\Constants\Timezone;
-use RZP\Constants\Entity as Table;
+use RZP\Trace\TraceCode;
+use RZP\Models\Reversal;
 use RZP\Models\FundTransfer\Attempt;
-use RZP\Models\FundAccount\Validation\Entity;
+use RZP\Exception\BadRequestException;
 use RZP\Models\FundAccount\Validation\Status;
+use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\FundAccount\Validation\Constants;
 use RZP\Models\Feature\Constants as MerchantFeature;
 use RZP\Models\FundAccount\Validation\AccountStatus;
@@ -218,6 +215,17 @@ class BankAccount extends Base
      */
     public function updateStatusAfterFtaRecon(array $input)
     {
+        if (Status::hasFinalStatus($this->validation) === true)
+        {
+            $this->trace->info(
+                TraceCode::FUND_ACCOUNT_VALIDATION_ALREADY_PROCESSED,
+                [
+                    'fav_id' => $this->validation->getId(),
+                ]);
+
+            return;
+        }
+
         $ftaStatus = $input['fta_status'];
 
         switch ($ftaStatus)
@@ -290,6 +298,10 @@ class BankAccount extends Base
         ];
 
         $this->trace->info(TraceCode::FUND_ACCOUNT_VALIDATION_FAILED_CRITICAL_ERROR, $traceArray);
+
+        $this->markValidationAsFailed();
+
+        (new Reversal\Core)->reverseForFundAccountValidation($this->validation);
     }
 
     public function validateFundAccountBeforeCreating()

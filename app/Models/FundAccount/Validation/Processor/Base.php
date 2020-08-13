@@ -91,6 +91,15 @@ abstract class Base extends Core
         $this->triggerValidationCompletedWebhook();
     }
 
+    public function markValidationAsFailed()
+    {
+        $this->validation->setStatus(Status::FAILED);
+
+        $this->repo->saveOrFail($this->validation);
+
+        $this->triggerValidationFailedWebhook();
+    }
+
     /**
      * @return Transaction\Entity
      * @throws Exception\LogicException
@@ -108,13 +117,20 @@ abstract class Base extends Core
 
     protected function triggerValidationCompletedWebhook()
     {
-        // TODO: Webhook should never be fired inside a Transaction.
-
         $eventPayload = [
             ApiEventSubscriber::MAIN => $this->validation
         ];
 
         $this->app['events']->fire('api.fund_account.validation.completed', $eventPayload);
+    }
+
+    protected function triggerValidationFailedWebhook()
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $this->validation
+        ];
+
+        $this->app['events']->fire('api.fund_account.validation.failed', $eventPayload);
     }
 
     /**

@@ -229,9 +229,11 @@ class Core extends Base\Core
      * @param Entity $validation
      * @param Attempt\Entity $fta
      * @throws Exception\LogicException, If account Type not supported
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function updateStatusAfterFtaInitiated(Entity $validation, Attempt\Entity $fta)
     {
+        // todo: mutex
         $this->trace->info(TraceCode::UPDATE_STATUS_AFTER_FTA_INITIATED, [
             'validation_id' => $validation->getId(),
             'fta_id'        => $fta->getId(),
@@ -248,9 +250,11 @@ class Core extends Base\Core
      * @param Entity $validation
      * @param array $input
      * @throws Exception\LogicException, If account Type not supported
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function updateWithDetailsBeforeFtaRecon(Entity $validation, array $input)
     {
+        // todo: mutex
         $this->trace->info(TraceCode::UPDATE_WITH_DETAILS_BEFORE_FTA_RECON, [
             'input' => $input,
             'validation_status' => $validation->getStatus(),
@@ -266,9 +270,12 @@ class Core extends Base\Core
      *
      * @param Entity $validation
      * @param array $input
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\LogicException
      */
     public function updateStatusAfterFtaRecon(Entity $validation, array $input)
     {
+        // todo: mutex
         $this->trace->info(TraceCode::UPDATE_STATUS_AFTER_FTA_RECON, [
             'input' => $input,
             'validation_status' => $validation->getStatus(),

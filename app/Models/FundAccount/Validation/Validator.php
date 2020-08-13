@@ -27,6 +27,7 @@ class Validator extends Base\Validator
         Entity::CURRENCY                        => 'filled|string|in:INR',
         Entity::BALANCE_ID                      => 'required|custom',
         Entity::FUND_ACCOUNT                    => 'required|associative_array',
+        Entity::RECEIPT                         => 'sometimes|string|min:1|max:40',
         Entity::FUND_ACCOUNT . '.' . Entity::ID => 'required|unsigned_id',
     ];
 

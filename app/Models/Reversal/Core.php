@@ -22,6 +22,7 @@ use RZP\Models\Settlement\Ondemand;
 use RZP\Models\Settlement\OndemandPayout;
 use RZP\Models\BankingAccountStatement\Channel;
 use RZP\Models\Adjustment\Core as AdjustmentCore;
+use RZP\Models\FundAccount\Validation as FundAccountValidation;
 
 class Core extends Base\Core
 {
@@ -229,6 +230,57 @@ class Core extends Base\Core
             ]);
 
         return $reversal;
+    }
+
+    /**
+     * Create a full reversal for a fund account validation
+     *
+     * @param FundAccountValidation\Entity $fav
+     */
+    public function reverseForFundAccountValidation(FundAccountValidation\Entity $fav)
+    {
+        if ($fav->getFees() === 0)
+        {
+            return;
+        }
+
+        $reversalInput = [
+            Entity::AMOUNT   => 0,
+            Entity::FEE      => $fav->getFees(),
+            Entity::TAX      => $fav->getTax(),
+            Entity::CURRENCY => $fav->getCurrency(),
+        ];
+
+        $reversal = $this->create($reversalInput);
+
+        $reversal->merchant()->associate($fav->merchant);
+        $reversal->entity()->associate($fav);
+
+        $reversal->balance()->associate($fav->balance);
+
+        $reversal = $this->repo->transaction(function() use ($reversal)
+        {
+            $txnCore = new Transaction\Core;
+
+            list($txn, $feesSplit) = $txnCore->createFromReversal($reversal);
+
+            $this->repo->saveOrFail($txn);
+
+            $this->repo->saveOrFail($reversal);
+
+            $txnCore->saveFeeDetails($txn, $feesSplit);
+
+            return $reversal;
+        });
+
+        $this->trace->info(
+            TraceCode::FUND_ACCOUNT_VALIDATION_REVERSAL_CREATED,
+            [
+                'fav_id' => $fav->getId(),
+                'reversal_id' => $reversal->getId(),
+            ]);
+
+        return;
     }
 
     /**

@@ -608,6 +608,15 @@ class Core extends Base\Core
         return [$txn, $feesSplit];
     }
 
+    public function createFromReversal(Reversal\Entity $reversal)
+    {
+        $txnProcessor = (new TransactionProcessor\Reversal($reversal));
+
+        list($txn, $feesSplit) = $txnProcessor->createTransaction();
+
+        return [$txn, $feesSplit];
+    }
+
     public function createFromAdjustment(Adjustment\Entity $adj)
     {
         list($txn, $feeSplit) = $this->createTransactionForSource($adj);

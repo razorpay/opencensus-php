@@ -293,6 +293,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEES);
     }
 
+    public function getFee()
+    {
+        return $this->getFees();
+    }
+
     public function getAccountStatus()
     {
         return $this->getAttribute(self::ACCOUNT_STATUS);
