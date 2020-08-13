@@ -778,7 +778,7 @@ class Core extends Base\Core
             $internationalProducts
         ) {
 
-            $this->handleEnableProductInternationalAction($action, $merchant, $internationalProducts);
+            $this->handleInternationalAction($action, $merchant, $internationalProducts);
 
             $merchant->$function();
 
@@ -788,12 +788,6 @@ class Core extends Base\Core
             }
 
             $this->repo->saveOrFail($merchant);
-
-            if ($action === \RZP\Models\Merchant\Action::DISABLE_INTERNATIONAL)
-            {
-                (new Detail\Core())->adminUpdateInternationalActivationFlow($merchant,
-                                                                            Constants::$internationalActionMapping[$action]);
-            }
         });
 
         if ($action === Merchant\Action::RELEASE_FUNDS)
@@ -2731,7 +2725,6 @@ class Core extends Base\Core
         return (int) ($accessor->get(Merchant\Constants::PAYMENT_TIMEOUT_WINDOW));
     }
 
-
     /**
      * Activates/Deactivates (international) as applicable
      *
@@ -2739,11 +2732,11 @@ class Core extends Base\Core
      * As international activation flow is function of business type,
      * So disable international if  not allowed
      *
-     *
      * @param Entity        $merchant
      * @param Detail\Entity $merchantDetails
      *
      * @throws BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\LogicException
      */
     public function updateInternationalIfApplicable(Entity $merchant, Detail\Entity $merchantDetails)
@@ -2758,6 +2751,7 @@ class Core extends Base\Core
         {
             (new Detail\InternationalCore())->deactivateInternational($merchant);
         }
+
     }
 
     /**
@@ -2894,13 +2888,11 @@ class Core extends Base\Core
     }
 
     /**
-     * Check if merchant is eligible for international payments
-     *
      * @param Entity        $merchant
      * @param Detail\Entity $merchantDetails
      *
      * @return bool
-     * @throws BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\LogicException
      */
     protected function shouldActivateInternational(Entity $merchant, Detail\Entity $merchantDetails): bool
@@ -3630,7 +3622,6 @@ class Core extends Base\Core
         }
     }
 
-
     /**
      * @param $action
      * @param $merchant
@@ -3640,13 +3631,17 @@ class Core extends Base\Core
      * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\LogicException
      */
-    private function handleEnableProductInternationalAction($action, $merchant, $internationalProducts)
+    private function handleInternationalAction($action, $merchant, $internationalProducts)
     {
         if ($action === \RZP\Models\Merchant\Action::ENABLE_INTERNATIONAL)
         {
             (new Validator)->validateEnableProductInternational($internationalProducts);
 
             $this->enableProductInternational($internationalProducts, $merchant);
+        }
+        elseif ($action === \RZP\Models\Merchant\Action::DISABLE_INTERNATIONAL)
+        {
+            $this->disableProductInternationalAction($merchant, $internationalProducts);
         }
     }
 
@@ -3679,8 +3674,42 @@ class Core extends Base\Core
         $productInternationalField->setMultipleProductStatus($productNameStatus);
 
         (new Detail\Core())->adminUpdateInternationalActivationFlow(
-            $merchant, \RZP\Models\Merchant\Action::ENABLE_INTERNATIONAL_VALUE);
-
-        $this->repo->saveOrFail($merchant);
+            $merchant, Constants::$internationalActionMapping[\RZP\Models\Merchant\Action::ENABLE_INTERNATIONAL]);
     }
+
+    /**
+     * @param Entity     $merchant
+     * @param array|null $internationalProducts
+     *
+     * @throws BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\LogicException
+     *
+     * In the admin flow, when international is disabled, then product_international
+     * field is also disabled unlike merchant flow.
+     * THIS APPROACH IS STRICTLY FOR ADMIN FLOW
+     */
+    private function disableProductInternationalAction(Entity $merchant, array $internationalProducts = null)
+    {
+        if (empty($internationalProducts) === true)
+        {
+            $internationalProducts = ProductInternationalMapper::LIVE_PRODUCTS;
+        }
+        else
+        {
+            $internationalProducts =
+                ProductInternationalField::updateProductNamesThroughCategory($internationalProducts);
+        }
+
+        $productNameStatus = array_fill_keys($internationalProducts, ProductInternationalMapper::DISABLED);
+
+        $productInternationalField = new ProductInternationalField($merchant);
+
+        $productInternationalField->setMultipleProductStatus($productNameStatus);
+
+        (new Detail\Core())->adminUpdateInternationalActivationFlow(
+            $merchant,
+            Constants::$internationalActionMapping[\RZP\Models\Merchant\Action::DISABLE_INTERNATIONAL]);
+    }
+
 }

@@ -5974,12 +5974,38 @@ return [
             'content' => [
                 'entity'          => 'merchant',
                 'international'   => false,
+                'product_international' => '0000000000',
                 'merchant_detail' => [
                     'international_activation_flow' => 'blacklist',
                 ]
             ]
         ]
     ],
+
+    'testMerchantInternationalDisableActionFailure' => [
+        'request'   => [
+            'content' => [
+                'action' => 'disable_international'
+            ],
+            'url'     => '/merchants/10000000000000/action',
+            'method'  => 'PUT',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INTERNATIONAL_ALREADY_DISABLED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNATIONAL_ALREADY_DISABLED,
+        ],
+
+    ],
+
 
     'testMerchantInternationalPGEnableAction' => [
         'request'  => [

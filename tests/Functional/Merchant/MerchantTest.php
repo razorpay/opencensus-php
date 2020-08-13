@@ -7310,7 +7310,20 @@ class MerchantTest extends TestCase
 
     public function testMerchantInternationalDisableAction()
     {
-        $this->fixtures->edit('merchant', '10000000000000', ['international' => true]);
+        $this->fixtures->edit('merchant', '10000000000000',
+                              ['international' => true, 'product_international' => '1111000000']);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'international_activation_flow' => 'whitelist']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantInternationalDisableActionFailure()
+    {
+        $this->fixtures->edit('merchant', '10000000000000',
+                              ['international' => false, 'product_international' => '0000000000']);
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'international_activation_flow' => 'whitelist']);
 
@@ -7402,6 +7415,8 @@ class MerchantTest extends TestCase
     {
         $this->setMerchantMerchantDetailsAndPricing(true, 'whitelist');
 
+        $this->fixtures->edit('merchant', '10000000000000', ['product_international' => '1100000000']);
+
         $this->ba->adminAuth();
 
         $this->startTest();
@@ -7411,6 +7426,8 @@ class MerchantTest extends TestCase
         $merchantDetail = $this->getDbEntityById('merchant_detail', 10000000000000);
 
         $this->assertEquals($merchant['international'], false);
+
+        $this->assertEquals('0000000000', $merchant['product_international']);
 
         $this->assertEquals($merchantDetail['international_activation_flow'], 'blacklist');
     }

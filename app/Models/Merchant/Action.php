@@ -28,8 +28,6 @@ class Action
     const SET_RECEIPT_EMAIL_EVENT_AUTHORIZED  = 'set_receipt_email_event_authorized';
     const SET_RECEIPT_EMAIL_EVENT_CAPTURED    = 'set_receipt_email_event_captured';
 
-    const ENABLE_INTERNATIONAL_VALUE          = 1;
-
     public static function exists($action)
     {
         return defined(get_class() . '::' . strtoupper($action));

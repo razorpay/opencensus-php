@@ -12,10 +12,11 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Payment\Event;
-use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Detail;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\ActivationFlow as ActivationFlow;
+use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 use RZP\Models\Merchant\Detail\InternationalActivationFlow\InternationalActivationFlow;
 
@@ -1065,11 +1066,14 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateDisableInternational()
+    public function validateDisableInternational()
     {
         $merchant = $this->entity;
 
-        if ($merchant->isInternational() === false)
+        $productInternational = new ProductInternationalField($merchant);
+
+        if ($merchant->isInternational() === false and
+        $merchant->getProductInternational() === $productInternational->getDisabledValueForLiveProducts())
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INTERNATIONAL_ALREADY_DISABLED);

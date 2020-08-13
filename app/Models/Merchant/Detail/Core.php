@@ -2131,17 +2131,17 @@ class Core extends Base\Core
 
         $internationalActivationFlow = null;
 
-        if ($international === Action::ENABLE_INTERNATIONAL_VALUE and
+        if ($international === Constants::$internationalActionMapping[Action::ENABLE_INTERNATIONAL] and
             empty($merchantDetail->getInternationalActivationFlow() === false))
         {
             return;
         }
-        elseif ($international === Action::ENABLE_INTERNATIONAL_VALUE
+        elseif ($international === Constants::$internationalActionMapping[Action::ENABLE_INTERNATIONAL]
                 and empty($merchantDetail->getInternationalActivationFlow()) === true)
         {
             $internationalActivationFlow = (new Detail\InternationalCore)->getInternationalActivationFlow($merchant);
         }
-        elseif ($international !== Action::ENABLE_INTERNATIONAL_VALUE)
+        elseif ($international !== Constants::$internationalActionMapping[Action::ENABLE_INTERNATIONAL])
         {
             $internationalActivationFlow = Detail\InternationalActivationFlow\InternationalActivationFlow::BLACKLIST;
         }

@@ -123,24 +123,25 @@ class ProductInternationalField
         // and then has to be enabled again.
         $this->handleProductEnabling($status);
 
+        $this->handleProductDisabling($status);
+
         if ($currentStatus !== $status)
         {
             $newProductInternational =
                 $this->fetchUpdatedProductInternationalValue($productName, $productInternational, $status);
 
             $this->merchant->setProductInternational((string) $newProductInternational);
-
-            $this->handleProductDisabling();
         }
     }
 
     /**
-     * @param $productNames
+     * @param array  $productNames
+     * @param string $status
      *
      * @return string
      * @throws Exception\BadRequestException
      */
-    public function fetchEnabledProductInternationalValue($productNames): string
+    public function fetchProductInternationalValue(array $productNames, string $status): string
     {
         $productInternational = $this->merchant->getProductInternational();
 
@@ -151,7 +152,7 @@ class ProductInternationalField
             $productInternational =
                 $this->fetchUpdatedProductInternationalValue($productName,
                                                              $productInternational,
-                                                             ProductInternationalMapper::ENABLED);
+                                                             $status);
         }
 
         return $productInternational;
@@ -206,10 +207,14 @@ class ProductInternationalField
         }
     }
 
-    private function handleProductDisabling()
+    /**
+     * @throws Exception\BadRequestException
+     */
+    private function handleProductDisabling($newStatus)
     {
-        if (((int) $this->merchant->getProductInternational() === 0) and
-            ($this->merchant->getInternationalAttribute() === true))
+        if ($this->merchant->getProductInternational() === $this->getDisabledValueForLiveProducts() and
+            ($this->merchant->getInternationalAttribute() === true) and
+            $newStatus === ProductInternationalMapper::DISABLED)
         {
             $merchantCore = new MerchantCore();
 
@@ -249,9 +254,23 @@ class ProductInternationalField
     {
         $productNames = ProductInternationalMapper::LIVE_PRODUCTS;
 
-        $enabledValue = $this->fetchEnabledProductInternationalValue($productNames);
+        $enabledValue = $this->fetchProductInternationalValue($productNames,
+                                                              ProductInternationalMapper::ENABLED);
 
         return $enabledValue;
+    }
+
+    /**
+     * @return string
+     * @throws Exception\BadRequestException
+     */
+    public function getDisabledValueForLiveProducts(): string
+    {
+        $productNames = ProductInternationalMapper::LIVE_PRODUCTS;
+
+        $disabledValue = $this->fetchProductInternationalValue($productNames,
+                                                              ProductInternationalMapper::DISABLED);
+        return $disabledValue;
     }
 }
 
