@@ -40,7 +40,7 @@ class Sib extends Base
                 self::REFUND_MODE       => self::REFUND_MODE,
                 self::PAYEE_ID          => $row['terminal']['gateway_merchant_id'],
                 self::REFUND_AMOUNT     => number_format($row['refund']['amount'] / 100, 2, '.', ''),
-                self::BANK_REFERENCE_ID => $this->fetchBankPaymentId($row['gateway']['raw'])
+                self::BANK_REFERENCE_ID => $this->fetchBankPaymentId($row)
             ];
         }
 
@@ -56,10 +56,13 @@ class Sib extends Base
         return static::FILE_NAME . $time;
     }
 
-    protected function fetchBankPaymentId($data)
+    protected function fetchBankPaymentId($row)
     {
-        $dataArray = json_decode($data, true);
+        if ($row['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $row['gateway']['bank_transaction_id']; // payment through nbplus service
+        }
 
-        return $dataArray['bank_payment_id'];
+        return $row['gateway']['data']['bank_payment_id'];
     }
 }
