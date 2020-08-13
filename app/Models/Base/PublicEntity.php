@@ -853,7 +853,7 @@ class PublicEntity extends UniqueIdEntity
 
         $rupeesInAmount = money_format_IN((integer)($amount / $denominationFactor));
 
-        $paiseInAmount = str_pad($amount % $denominationFactor, 2, 0);
+        $paiseInAmount = str_pad($amount % $denominationFactor, 2, 0, STR_PAD_LEFT);
 
         return [$currencySymbol, $rupeesInAmount, $paiseInAmount];
     }
