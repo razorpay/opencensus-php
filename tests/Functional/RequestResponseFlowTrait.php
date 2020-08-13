@@ -307,6 +307,11 @@ trait RequestResponseFlowTrait
             $request['server'] += $this->transformHeadersToServerVars($proxyHeaders);
         }
 
+        if (empty($request['headers']) === false)
+        {
+            $request['server'] += $this->transformHeadersToServerVars($request['headers']);
+        }
+
         /**
          * This is the function signature
          *

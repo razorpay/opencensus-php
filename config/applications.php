@@ -150,6 +150,19 @@ return [
         'scrooge_secret'    => env('SCROOGE_SECRET'),
     ],
 
+    'razorflow' => [
+        'mock'              => env('RAZORFLOW_MOCK', false),
+        'url'               => env('RAZORFLOW_URL'),
+        'secret'            => env('APP_RAZORFLOW_SECRET'),
+
+        // Key and secret through which api will call Razorflow
+        'razorflow_key'     => env('RAZORFLOW_KEY'),
+        'razorflow_secret'  => env('RAZORFLOW_SECRET'),
+
+        // For verifying requests from slack
+        'razorflow_slack_signing_secret' => env('RAZORFLOW_SLACK_SIGNING_SECRET'),
+    ],
+
     'redisdualwrite' => [
         'redislab_cache_read'      => env('REDISLABS_CACHE_READ'),
         'skip_dual_write'          => env('SKIP_DUAL_WRITE'),

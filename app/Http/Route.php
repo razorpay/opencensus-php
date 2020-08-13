@@ -582,8 +582,10 @@ class Route
         'admin_fetch_report'                       => ['get',      'admin/reports/{type}',                           'AdminController@getOpsReport'                                      ],
         'admin_fetch_all_entities'                 => ['get',      'admin/entities/all',                             'AdminController@getEntities'                                       ],
         'admin_fetch_entity_multiple'              => ['get',      'admin/{type}',                                   'AdminController@getEntityMultiple'                                 ],
+        'razorflow_admin_fetch_entity_multiple'    => ['get',      'rf/admin/{type}',                                'AdminController@getEntityMultiple'                                 ],
         'admin_fetch_terminal_by_id'               => ['get',      'admin/terminal/{id}',                            'AdminController@getTerminalById'                                   ],
         'admin_fetch_entity_by_id'                 => ['get',      'admin/{type}/{id}',                              'AdminController@getEntityById'                                     ],
+        'razorflow_admin_fetch_entity_by_id'       => ['get',      'rf/admin/{type}/{id}',                           'AdminController@getEntityById'                                     ],
         'entity_tax_update'                        => ['put',      'admin/{entity}/tax_update',                      'AdminController@updateEntityTax'                                   ],
         'entity_balance_id_update'                 => ['post',     'admin/{entity}/balance_id_update',               'AdminController@updateEntityBalanceIdInBulk'                       ],
         'admin_get_file'                           => ['get',      'files/{fileId}/signed-url',                      'FileStoreController@getFile'                                       ],
@@ -1312,7 +1314,9 @@ class Route
         'scrooge_refunds_bulk_reference1_update'     => ['post',     'scrooge/refunds/bulk-reference1-update',              'ScroogeController@bulkReference1Update'                     ],
         'scrooge_reports_get_multiple'               => ['post',     'scrooge/reports',                                     'ScroogeController@listReports'                              ],
         'scrooge_refunds_get_multiple'               => ['post',     'scrooge/refunds',                                     'ScroogeController@listRefunds'                              ],
+        'scrooge_refunds_get_multiple_razorflow'     => ['post',     'rf/scrooge/refunds',                                  'ScroogeController@listRefunds'                              ],
         'scrooge_refunds_get'                        => ['get',      'scrooge/refunds/{id}',                                'ScroogeController@get'                                      ],
+        'scrooge_refunds_get_razorflow'              => ['get',      'rf/scrooge/refunds/{id}',                             'ScroogeController@get'                                      ],
         'scrooge_refunds_update'                     => ['post',     'scrooge/refunds/{id}/status-update',                  'ScroogeController@statusUpdate'                             ],
         'scrooge_refunds_download'                   => ['post',     'scrooge/refunds/download',                            'ScroogeController@downloadRefunds'                          ],
         'scrooge_refunds_enqueue'                    => ['post',     'scrooge/refunds/enqueue',                             'ScroogeController@enqueue'                                  ],
@@ -1327,6 +1331,9 @@ class Route
         'scrooge_set_merchant_mode_config'           => ['post',     'scrooge/merchants/{mid}/instant_refunds_mode',              'ScroogeController@setInstantRefundsModeForMerchant'          ],
         'scrooge_expire_merchant_mode_config'        => ['put',      'scrooge/merchants/{mid}/instant_refunds_mode/{id}/expire',  'ScroogeController@expireInstantRefundsModeConfigForMerchant' ],
         'scrooge_fetch_merchant_mode_configs'        => ['post',     'scrooge/merchants/{mid}/fetch/instant_refund_mode_configs', 'ScroogeController@fetchInstantRefundsModeConfigsForMerchant' ],
+
+        // Razorflow routes
+        'razorflow_post_slash_command'             => ['post',     'razorflow',                                      'RazorflowController@postSlashCommand'                              ],
 
         // Dispute routes
         'payment_dispute_create'                   => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
@@ -2542,6 +2549,10 @@ class Route
         'vendor_payment_ocr_accuracy_cron',
         'mpans_tokenize_existing',
         'terminal_mpans_tokenize_existing',
+        'scrooge_refunds_get_razorflow',
+        'razorflow_admin_fetch_entity_by_id',
+        'razorflow_admin_fetch_entity_multiple',
+        'scrooge_refunds_get_multiple_razorflow',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -4641,6 +4652,9 @@ class Route
         'offline_qr_poll_live_order_status',
         'consume_typeform_webhook',
         'update_wait_timeout',
+
+        // Razorflow
+        'razorflow_post_slash_command',
     ];
 
     /**
@@ -5018,6 +5032,13 @@ class Route
             'scrooge_entities',
             'fund_transfer_attempt_modes',
             'scrooge_refund_reference1_bulk_update',
+        ],
+
+        'razorflow' => [
+            'scrooge_refunds_get_razorflow',
+            'razorflow_admin_fetch_entity_by_id',
+            'razorflow_admin_fetch_entity_multiple',
+            'scrooge_refunds_get_multiple_razorflow',
         ],
 
         'hosted' => [
@@ -5482,6 +5503,8 @@ class Route
     const ROUTES_THROUGH_MASTER_REPLICA = [
         'admin_fetch_entity_multiple',
         'admin_fetch_entity_by_id',
+        'razorflow_admin_fetch_entity_multiple',
+        'razorflow_admin_fetch_entity_by_id',
     ];
 
     const TYPEFORM_SECURITY = [

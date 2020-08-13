@@ -351,6 +351,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerScrooge();
 
+        $this->registerRazorflow();
+
         $this->registerElfin();
 
         $this->registerExchange();
@@ -428,6 +430,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'batchService',
             'hyperVerge',
             'scrooge',
+            'razorflow',
             'repo',
             'elfin',
             'segment',
@@ -593,6 +596,18 @@ class ApiServiceProvider extends BaseServiceProvider
             $mock = $app['config']->get('applications.scrooge.mock');
 
             $implementation = $mock ? Mock\Scrooge::class : Scrooge::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerRazorflow()
+    {
+        $this->app->bind('razorflow', function($app)
+        {
+            $mock = $app['config']->get('applications.razorflow.mock');
+
+            $implementation = $mock ? Mock\Razorflow::class : Razorflow::class;
 
             return new $implementation($app);
         });

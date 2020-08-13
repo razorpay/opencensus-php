@@ -1440,6 +1440,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LUMBERJACK_ASYNC_REQUEST_FAILED                       = 'LUMBERJACK_ASYNC_REQUEST_FAILED';
     const SCROOGE_REQUEST                                       = 'SCROOGE_REQUEST';
     const SCROOGE_RESPONSE                                      = 'SCROOGE_RESPONSE';
+    const RAZORFLOW_REQUEST                                     = 'RAZORFLOW_REQUEST';
+    const RAZORFLOW_RESPONSE                                    = 'RAZORFLOW_RESPONSE';
+    const RAZORFLOW_SLACK_REQUEST                               = 'RAZORFLOW_SLACK_REQUEST';
+    const RAZORFLOW_SLACK_RESPONSE                              = 'RAZORFLOW_SLACK_RESPONSE';
+    const RAZORFLOW_SLACK_FAILURE                               = 'RAZORFLOW_SLACK_FAILURE';
+    const RAZORFLOW_FAILURE_EXCEPTION                           = 'RAZORFLOW_FAILURE_EXCEPTION';
     const REMINDERS_RESPONSE                                    = 'REMINDERS_RESPONSE';
     const REMINDERS_REQUEST                                     = 'REMINDERS_REQUEST';
 

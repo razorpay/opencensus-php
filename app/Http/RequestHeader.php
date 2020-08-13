@@ -60,6 +60,9 @@ class RequestHeader
 
     const X_Batch_Id                    = 'x-batch-id';
 
+    const X_SLACK_REQUEST_TIMESTAMP     = 'X-Slack-Request-Timestamp';
+    const X_SLACK_SIGNATURE             = 'X-Slack-Signature';
+
     //UserId is passed through X_Creator_Id from batch service
     const X_Creator_Id                  = 'x-creator-id';
     const X_Creator_Type                = 'x-creator-type';
