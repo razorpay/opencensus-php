@@ -149,6 +149,7 @@ class Netbanking
         IFSC::SBIN,
         self::BARB_R,
         IFSC::SVCB,
+        IFSC::IBKL,
     ];
 
     protected static $defaultGatewayDisabledBanks = [
@@ -539,6 +540,9 @@ class Netbanking
             'retail' => [
                 IFSC::IBKL,
             ],
+            'tpv' => [
+                IFSC::IBKL,
+            ]
         ],
         Gateway::NETBANKING_FEDERAL => [
             'retail' => [

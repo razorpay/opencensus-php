@@ -752,6 +752,7 @@ class Gateway
         Payment\Gateway::NETBANKING_IBK,
         Payment\Gateway::NETBANKING_CSB,
         Payment\Gateway::NETBANKING_SVC,
+        Payment\Gateway::NETBANKING_IDBI,
         Payment\Gateway::UPI_SBI,
         Payment\Gateway::NETBANKING_HDFC,
         Payment\Gateway::PAYSECURE,
@@ -806,6 +807,7 @@ class Gateway
         Payment\Gateway::NETBANKING_CSB         => 1588694400,
         Payment\Gateway::NETBANKING_SVC         => 1578479400,
         Payment\Gateway::PAYLATER_ICICI         => 1593685800,
+        Payment\Gateway::NETBANKING_IDBI        => 1578479400,
     ];
 
     public static $channels = [
@@ -1383,6 +1385,7 @@ class Gateway
         self::HDFC_DEBIT_EMI,
         self::NETBANKING_SVC,
         self::NETBANKING_JSB,
+        self::NETBANKING_IDBI,
     ];
 
     public static $captureVerifyEnabled = [
@@ -2742,6 +2745,7 @@ class Gateway
     {
         $gateways = [
             self::NETBANKING_SVC,
+            self::NETBANKING_IDBI,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -2762,6 +2766,7 @@ class Gateway
             self::BILLDESK,
             self::NETBANKING_YESB,
             self::NETBANKING_SIB,
+            self::NETBANKING_IDBI,
         ];
 
         return (in_array($gateway, $gateways, true));

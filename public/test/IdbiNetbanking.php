@@ -2,7 +2,7 @@
 <html>
 <?php
 $baseurl = $_SERVER['HTTP_HOST'] . '/v1';
-$key_id = $_GET['key'] ?? 'rzp_test_bBE6DB6CGwOmQA';
+$key_id = $_GET['key'] ?? 'rzp_test_goj0HzNaQyPHWc';
 $secret = 'thisissupersecret';
 $public_url = $baseurl;
 $private_url = $key_id.':'.$secret.'@'.$baseurl;
