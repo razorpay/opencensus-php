@@ -566,7 +566,35 @@ app
       function hideSpinner() {
         $('.loading-animation').removeClass('active');
       }
-
+  
+      
+      // @TODO: Remove this after launching google oauth
+      /**
+       * Function to fire datalake events
+       * This metrics is required to know how many users logs in via incognito
+       * As google oauth doesnt work in incognito, its decision metrics
+       * for the launch
+       */
+      function fireIncognitoEvent() {
+        if ('storage' in navigator && 'estimate' in navigator.storage) {
+          navigator.storage.estimate().then(function(res) {
+            if (res.quota < 1200000000){
+              window.rzpQ.push(
+                window.rzpQ
+                  .now()
+                  .onbr()
+                  .success('login.incognito_session', {
+                    source: 'sign_in',
+                    sessionId: window.session_id,
+                    emailId: $scope.login.data.email,
+                    mode: $scope.eventsMode,
+                  })
+              );
+            }
+          });
+        }
+      }
+      
       $scope.goToDashboard = function() {
         window.rzpQ.push(
           window.rzpQ
@@ -579,6 +607,9 @@ app
               mode: $scope.eventsMode,
             })
         );
+  
+        fireIncognitoEvent();
+        
         location.hash = '';
         location.pathname = '/app';
         location.reload();
