@@ -412,6 +412,7 @@ class CardPaymentService
                 'action'                            => 'content.action',
                 'payment.id'                        => 'content.input.payment.id',
                 'payment.auth_type'                 => 'content.input.payment.auth_type',
+                'payment.notes'                     => 'content.input.payment.notes',
                 'merchant.id'                       => 'content.input.merchant.id',
                 'merchant.name'                     => 'content.input.merchant.name',
                 'merchant.features'                 => 'content.input.merchant.features',
