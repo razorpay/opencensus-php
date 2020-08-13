@@ -94,4 +94,16 @@ class WebhookController extends Controller
 
         return ApiResponse::json([]);
     }
+
+    /**
+     * @return mixed
+     */
+    public function webhookEmailStorkRecon()
+    {
+        $input = Request::all();
+
+        $summary = $this->service()->webhookEmailStorkRecon($input);
+
+        return ApiResponse::json($summary);
+    }
 }
