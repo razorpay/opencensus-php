@@ -69,7 +69,7 @@ class BankAccount extends Base
             ($result != null) and
             ($result->getAccountStatus() === AccountStatus::ACTIVE))
         {
-            $beneficiaryName = $result->getRegisteredName();
+            $beneficiaryName = $result->getRegisteredName() ?? '';
 
             // if beneficiary Name exist then only copy details
             // Also, not checking for empty because older beneficiary Names
