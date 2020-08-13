@@ -780,7 +780,7 @@ class FundTransfer extends Base
             $this->fta->setMode($mode);
         }
 
-        if (in_array($this->fta->getMode(), [Mode::NEFT, Mode::RTGS], true) === true)
+        if (in_array($this->fta->getMode(), [Mode::NEFT], true) === true)
         {
             $modeChanged = $this->modifyModeIfRequired();
         }
