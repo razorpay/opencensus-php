@@ -7,8 +7,10 @@ use Throwable;
 use Requests_Hooks;
 use Requests_Session;
 use Requests_Response;
+
 use RZP\Error\ErrorCode;
 use RZP\Http\Request\Hooks;
+use RZP\Exception\TwirpException;
 use RZP\Exception\ServerErrorException;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -201,13 +203,22 @@ class Stork
             break;
         }
 
-        if (($exception !== null) or ($res->success !== true))
+        // An exception is thrown by lib in cases of network errors e.g. timeout etc.
+        if ($exception !== null)
         {
             throw new ServerErrorException(
                 "Failed to complete request",
                 ErrorCode::SERVER_ERROR_STORK_FAILURE,
-                ['req_path' => $path] + ($res ? ['resp_status_code' => $res->status_code, 'resp_body' => $res->body] : []),
-                $exception);
+                ['path' => $path],
+                $exception
+            );
+        }
+
+        // If response was received but was not a success e.g. 4XX, 5XX, etc then
+        // throws a wrapped exception so api renders it in response properly.
+        if ($res->success === false)
+        {
+            throw new TwirpException(json_decode($res->body, true));
         }
 
         return $res;
