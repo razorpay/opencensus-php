@@ -92,6 +92,7 @@ import {
 } from 'merchant/reducers/subscriptions';
 import { plansReducer, planReducer } from 'merchant/reducers/plans';
 import { addOnsReducer } from 'merchant/reducers/addons';
+import { reportsReducer } from 'merchant/reducers/reports';
 import LoanApplicationReducer from 'merchant/reducers/capital';
 
 import wysiwygReducer from 'merchant/reducers/wysiwyg';
@@ -157,6 +158,7 @@ export default combineReducers({
   virtualaccount: virtualAccountReducer,
   states: statesReducer,
   taxes: taxesReducer,
+  reports: reportsReducer,
   merchantReports: merchantReportsReducer,
   partnerReports: partnerReportsReducer,
   submerchants: submerchantsReducer,
