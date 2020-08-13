@@ -871,7 +871,7 @@ class OtpPaymentTest extends TestCase
 
         $this->assertArrayHasKey('action', $content['next'][1]);
         $this->assertEquals('otp_resend', $content['next'][1]['action']);
-        $this->assertTrue($this->isOtpResendUrlPublic($content['next'][1]['url']));
+        $this->assertTrue($this->isOtpResendUrlJson($content['next'][1]['url']));
 
         $url = $this->getUri($content['next'][0]['url']);
 
@@ -1211,7 +1211,7 @@ class OtpPaymentTest extends TestCase
         $this->assertArrayHasKey('action', $content['next'][1]);
         $this->assertEquals('otp_resend', $content['next'][1]['action']);
 
-        $this->assertTrue($this->isOtpResendUrlPublic($content['next'][1]['url']));
+        $this->assertTrue($this->isOtpResendUrlJson($content['next'][1]['url']));
 
         $url = $this->getUri($content['next'][1]['url']);
 
@@ -1235,7 +1235,7 @@ class OtpPaymentTest extends TestCase
 
         $this->assertArrayHasKey('action', $content['next'][1]);
         $this->assertEquals('otp_resend', $content['next'][1]['action']);
-        $this->assertTrue($this->isOtpResendUrlPublic($content['next'][1]['url']));
+        $this->assertTrue($this->isOtpResendUrlJson($content['next'][1]['url']));
 
         $url = $this->getUri($content['next'][0]['url']);
 

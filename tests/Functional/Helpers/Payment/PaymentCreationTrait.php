@@ -131,6 +131,13 @@ trait PaymentCreationTrait
         return (preg_match($pattern, $uri) === 1);
     }
 
+    protected function isOtpResendUrlJson($uri)
+    {
+        $pattern = '/payments\/pay_[\w]+\/otp_resend\/json\?key_id=rzp_[\w]+/';
+
+        return (preg_match($pattern, $uri) === 1);
+    }
+
     protected function isOtpGenerateUrlPublic($uri)
     {
         $pattern = '/payments\/pay_[\w]+\/otp_generate\?track_id=[\w]+\&key_id=rzp_[\w]+/';

@@ -895,6 +895,7 @@ trait Authorize
                 'redirect'   => $redirectUrl,
             ];
 
+            $response['resend_url_json']    = $this->getOtpResendUrlJson();
             $response['submit_url_private'] = $this->getOtpSubmitUrlPrivate();
             $response['resend_url_private'] = $resendUrlPrivate;
         }
@@ -6782,6 +6783,17 @@ trait Authorize
         ];
 
         $otpResendUrl = $this->route->getUrl('payment_otp_resend_private', $params);
+
+        return $otpResendUrl;
+    }
+
+    protected function getOtpResendUrlJson(): string
+    {
+        $params = [
+            'id' => $this->payment->getPublicId()
+        ];
+
+        $otpResendUrl = $this->route->getUrlWithPublicAuth('payment_otp_resend_json', $params);
 
         return $otpResendUrl;
     }

@@ -349,15 +349,18 @@ class PaymentCreateController extends Controller
 
         $data = $this->service(E::PAYMENT)->otpResend($id, $input);
 
-         $merchant = $this->app['basicauth']->getMerchant();
-
-        if (($merchant->isFeatureEnabled(Feature::JSON_V2) === true) or
-            ($merchant->isFeatureEnabled(Feature::S2S_JSON) === true))
-        {
-            return $this->processCoprotoJsonData($data);
-        }
-
         return ApiResponse::json($data);
+    }
+
+    public function postOtpResendS2SJson($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::PAYMENT)->otpResend($id, $input);
+
+        $response = $this->processCoprotoJsonData($data);
+
+        return ApiResponse::json($response);
     }
 
     /**
@@ -844,7 +847,7 @@ class PaymentCreateController extends Controller
         {
             $response['next'][] = [
                 'action' => $otpResend,
-                'url'    => $data['resend_url'],
+                'url'    => $data['resend_url_json'],
             ];
         }
 

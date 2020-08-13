@@ -406,6 +406,7 @@ class Response
             'payment_create_ajax',
             'payment_otp_submit',
             'payment_otp_resend',
+            'payment_otp_resend_json',
             'payment_topup_ajax',
             'merchant_methods_downtime',
             'customer_create_token_public',
