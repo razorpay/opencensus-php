@@ -1361,6 +1361,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const WEBHOOK_PRIVATE_IP_FOUND                              = 'WEBHOOK_PRIVATE_IP_FOUND';
     const WEBHOOK_EVENT_JOB_RECEIVED                            = 'WEBHOOK_EVENT_JOB_RECEIVED';
+    // Helps with pre-checks to removing webhooks table.
+    const WEBHOOK_ENTITY_ACCESSED                               = 'WEBHOOK_ENTITY_ACCESSED';
 
     const AWS_INSTANCE_DATA_RECORD_FAILURE                      = 'AWS_INSTANCE_DATA_RECORD_FAILURE';
     const AWS_INSTANCE_DATA_WRITE_FAILURE                       = 'AWS_INSTANCE_DATA_WRITE_FAILURE';

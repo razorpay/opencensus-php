@@ -833,6 +833,11 @@ class Entity
 
     public static function getEntityNamespace(string $entity)
     {
+        if (strtolower($entity) === self::WEBHOOK)
+        {
+            app('trace')->debug(TraceCode::WEBHOOK_ENTITY_ACCESSED);
+        }
+
         self::validateIsEntity($entity);
 
         if (array_key_exists($entity, self::$namespace))
