@@ -366,6 +366,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return [
             'vpa'                   => $row[self::PAYER_VPA],
             'gateway_payment_id'    => $row[self::BANK_TRANS_ID],
+            'acquirer' => [
+                Payment\Entity::VPA         => $row[self::PAYER_VPA],
+                Payment\Entity::REFERENCE16 => $this->payment->getReference16(),
+            ]
         ];
     }
 

@@ -1081,7 +1081,7 @@ trait Authorize
             {
                 $this->forceAuthorizeFailedOnGateway($payment, $input);
 
-                $this->authorizeFailedPaymentOnApi($payment, []);
+                $this->authorizeFailedPaymentOnApi($payment, $input);
             });
 
         });
