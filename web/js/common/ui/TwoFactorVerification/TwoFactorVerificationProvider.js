@@ -106,7 +106,7 @@ export default class TwoFaVerificationContextProvider extends React.Component {
       size: 'small',
       component: (
         <UpdateContactMobile
-          contactMobile={user.contact_mobile}
+          contactMobile={user.user.contact_mobile}
           onComplete={onContactMobileUpdated}
           onSubmit={this.onContactMobileSubmit}
           onOtpConfirm={this.onOtpConfirm}
@@ -122,7 +122,7 @@ export default class TwoFaVerificationContextProvider extends React.Component {
         size: 'small',
         component: (
           <TwoFactorVerificationOTP
-            contactMobile={user.contact_mobile}
+            contactMobile={user.user.contact_mobile}
             onConfirm={this.onOtpConfirm}
             onResend={this.onOtpResend}
             onClose={this.props.closeModal}
