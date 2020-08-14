@@ -5,6 +5,7 @@ namespace RZP\Models\Transaction\Processor;
 use RZP\Diag\EventCode;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Method;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Gateway;
@@ -273,12 +274,23 @@ class Payment extends Base
             default:
                 $netAmount = $amount - $this->fees;
         }
+        // READ THIS TO UNDERSTAND THE CRED DISCOUNT LOGIC
+        // Transaction for cred case is created after payment is captured.
+        // We receive discount data in callback step.
+        // Net amount for a transaction is the amount after fees calculation(which is based on Pricing module logic).
+        // For Cred, the coin discount will be subtracted from the base amount directly.
+        // THe benefit here is that, the pricing of total charge of amount(P1 * 0.05), does not include coins. So RZP, Cred etc wont bear coins tax
+        // On the other hand, if we set a fixed pricing(P1 * 0.15), the possible coin spent by customer is also taxed as per pricing.
+        $payment = $this->source;
+        $discountAmount = $this->getDiscountIfApplicable($payment);
+        $netAmount -= $discountAmount;
 
         $this->trace->debug(TraceCode::NET_AMOUNT_FOR_TRANSACTION,
             [
                 'credit'        => $this->credit,
                 'debit'         => $this->debit,
                 'amount'        => $amount,
+                'discount'      => $discountAmount,
                 'fee'           => $this->fees,
                 'net_amount'    => $netAmount,
             ]
@@ -286,6 +298,17 @@ class Payment extends Base
 
         return $netAmount;
     }
+
+    protected function getDiscountIfApplicable($payment)
+    {
+        if (($payment->isAppCred() === true) and
+            ($payment->discount !== null))
+        {
+            return $payment->discount->getAmount();
+        }
+        return 0;
+    }
+
 
     protected function getSettledAtTimestamp()
     {

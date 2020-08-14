@@ -9,10 +9,13 @@ use RZP\Error;
 use Carbon\Carbon;
 use RZP\Diag\EventCode;
 use RZP\Exception;
+use RZP\Models\Discount;
+use RZP\Models\Offer;
 use RZP\Models\Emi;
 use RZP\Models\Card;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal;
 use RZP\Models\Customer;
 use RZP\Error\ErrorCode;
@@ -339,6 +342,9 @@ trait Callback
         try
         {
             $data = $this->callGatewayCallback($input);
+
+            //For Cred we receive the discount in the callback event.
+            $this->addDiscountToPaymentIfApplicable($payment, $data);
 
             if (isset($data[Payment\Entity::TWO_FACTOR_AUTH]) === true)
             {
@@ -745,6 +751,38 @@ trait Callback
 
             $this->runFraudChecksIfApplicable($payment);
         }
+    }
+
+    protected function addDiscountToPaymentIfApplicable($payment, $callbackData)
+    {
+        if ($payment->isAppCred() === true)
+        {
+            $this->addDiscountToCred($payment, $callbackData);
+        }
+    }
+
+    protected function addDiscountToCred($payment, $callbackData)
+    {
+        if ((isset($callbackData['data']['credCoins']) === true) and
+            ($callbackData['data']['credCoins'] !== 0))
+        {
+            $discountAmount = $this->getValidatedCredCoins($callbackData['data']['credCoins'], $payment);
+            $discountInput = [Discount\Entity::AMOUNT => $discountAmount,];
+            (new Discount\Service)->create($discountInput, $payment, null);
+        }
+    }
+
+    protected function getValidatedCredCoins($coins, $payment)
+    {
+        //1 coin = 1 Re, in the CRED API response
+        $coins *= 100;
+        if ($payment->getAmount() < $coins)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_DISCOUNT_GREATER_THAN_BASE_AMOUNT);
+        }
+
+        return $coins;
     }
 
     protected function createAndAssociateCard($data, $payment)

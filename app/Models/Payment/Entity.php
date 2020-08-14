@@ -1630,9 +1630,29 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                     $acquirerData['upi_transaction_id'] = $upiTransactionId;
                 }
                 break;
+
+            case Method::APP:
+
+                $discount = $this->getDiscountIfApplicable();
+                if ($discount !== null)
+                {
+                    $acquirerData['discount'] = $discount / 100;
+                    $acquirerData['amount'] = ($this->getAmount() - $discount) / 100;
+                }
+                break;
         }
 
         return (new Dictionary($acquirerData));
+    }
+
+    protected function getDiscountIfApplicable()
+    {
+        if (($this->isAppCred() === true) and
+            ($this->discount !== null))
+        {
+            return $this->discount->getAmount();
+        }
+        return null;
     }
 
     protected function getGatewayProviderAttribute()

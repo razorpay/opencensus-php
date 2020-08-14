@@ -8,7 +8,7 @@ use RZP\Models\Offer;
 
 class Service extends Base\Service
 {
-    public function create(array $input, Payment\Entity $payment, Offer\Entity $offer)
+    public function create(array $input, Payment\Entity $payment, $offer)
     {
         $discount = $this->core()->create($input, $payment, $offer);
 

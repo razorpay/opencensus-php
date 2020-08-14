@@ -1197,4 +1197,5 @@ class PublicErrorDescription
     const BAD_REQUEST_CRED_INACTIVE_USER                                            = 'Join CRED and pay your credit card bill. Win assured Amazon gift card worth INR 250.';
     const BAD_REQUEST_CRED_BLOCKED_USER                                             = 'Your CRED account is blocked. Please contact support@cred.club.';
     const GATEWAY_ERROR_CRED_RESERVED_ERROR                                         = 'Download CRED app and activate your membership to unlock this payment option and avail exclusive discounts.';
+    const BAD_REQUEST_DISCOUNT_GREATER_THAN_BASE_AMOUNT                             = 'Discount amount greater than base amount';
 }

@@ -9,15 +9,21 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function create(array $input, Payment\Entity $payment, Offer\Entity $offer)
+    public function create(array $input, Payment\Entity $payment, $offer)
     {
         $discount = (new Entity)->build($input);
 
         $discount->payment()->associate($payment);
 
-        $discount->order()->associate($payment->order);
+        if ($this->checkIfOrderValid($payment->order) === true)
+        {
+            $discount->order()->associate($payment->order);
+        }
 
-        $discount->offer()->associate($offer);
+        if ($this->checkIfOfferValid($offer) === true)
+        {
+            $discount->offer()->associate($offer);
+        }
 
         $this->repo->saveOrFail($discount);
 
@@ -26,5 +32,29 @@ class Core extends Base\Core
         ]);
 
         return $discount;
+    }
+
+    protected function checkIfOrderValid($order)
+    {
+        if (empty($order) === true)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    protected function checkIfOfferValid($offer)
+    {
+        if (empty($offer) === true)
+        {
+            return false;
+        }
+
+        if ($offer instanceof Offer\Entity)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

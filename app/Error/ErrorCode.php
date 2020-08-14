@@ -1851,4 +1851,5 @@ class ErrorCode
 
     // Error code if no counter is found for that merchant
     const SERVER_ERROR_COUNTER_ABSENT                                               = 'SERVER_ERROR_COUNTER_ABSENT';
+    const BAD_REQUEST_DISCOUNT_GREATER_THAN_BASE_AMOUNT                             = 'BAD_REQUEST_DISCOUNT_GREATER_THAN_BASE_AMOUNT';
 }

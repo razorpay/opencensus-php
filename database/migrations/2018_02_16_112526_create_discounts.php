@@ -28,9 +28,13 @@ class CreateDiscounts extends Migration
 
             $table->char(Discount::PAYMENT_ID, Discount::ID_LENGTH);
 
-            $table->char(Discount::ORDER_ID, Discount::ID_LENGTH);
+            $table->char(Discount::ORDER_ID, Discount::ID_LENGTH)
+                  ->nullable()
+                  ->default(null);
 
-            $table->char(Discount::OFFER_ID, Discount::ID_LENGTH);
+            $table->char(Discount::OFFER_ID, Discount::ID_LENGTH)
+                  ->nullable()
+                  ->default(null);
 
             $table->integer(Discount::AMOUNT);
 

@@ -333,6 +333,7 @@ class Core extends Base\Core
         $txn->setFeeBearer($payment->getFeeBearer());
 
         $amount = $payment->getBaseAmount();
+
         $txn->setAmount($amount);
 
         $feesSplit = new Base\PublicCollection;

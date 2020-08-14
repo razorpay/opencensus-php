@@ -415,6 +415,8 @@ class PayVerifyData extends Base\Mock\Server
                     [
                         'paymentId' => $entities['payment']['id'],
                         'gatewayTransactionId' => '123ase!234',
+                        'credCoins' => 0,
+                        'inrCash' =>  $entities['payment']['amount']/100,
                         'amount'  => $entities['payment']['amount']/100,
                         'status' => 'BLOCKED',
                         '_raw' => '{"response": {"tracking_id": "<PARTNER_ORDER_ID\/MERCHANT_ORDER_ID>","reference_id": "<CRED_REF_ID>","state": "<ORDER_STATE>","expiry_time": "<TIME_IN_EPOCH>","amount": {"currency": "INR","value": 1000},"refunds": [{"tracking_id": "<REFUND_ID>","reference_id": "<CRED_REF_ID>","state": "<REFUND_STATE>","amount": {"value": 1000,"currency": "INR"}}]},"metadata": {"key": "value"},"status": "200","error_code": "","error_message": "","error_description": ""}',
@@ -430,6 +432,12 @@ class PayVerifyData extends Base\Mock\Server
                 ],
                 'success' => true,
         ];
+        if($entities['payment']['amount'] === 200000)
+        {
+            // cred coins is in rupees
+            $response['data']['credCoins'] = 200000 * 0.20 / 100;
+            $response['data']['inrCash'] = 200000 * 0.80 / 100;
+        }
 
         return $response;
     }
