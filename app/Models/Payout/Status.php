@@ -84,6 +84,7 @@ class Status
             self::QUEUED,
             self::CREATED,
             self::SCHEDULED,
+            self::BATCH_SUBMITTED,
         ],
         self::CREATED => [
             self::INITIATED,
@@ -114,6 +115,7 @@ class Status
             self::CREATED,
             self::CANCELLED,
             self::FAILED,
+            self::BATCH_SUBMITTED,
         ],
     ];
 
