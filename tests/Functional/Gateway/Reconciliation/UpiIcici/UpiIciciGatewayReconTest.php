@@ -275,6 +275,7 @@ class UpiIciciGatewayReconTest extends TestCase
         $this->fixtures->payment->edit($upiEntity['payment_id'],
             [
                 'status'                => 'failed',
+                'authorized_at'         =>  null,
                 'error_code'            => 'BAD_REQUEST_ERROR',
                 'internal_error_code'   => 'BAD_REQUEST_PAYMENT_TIMED_OUT',
                 'error_description'     => 'Payment was not completed on time.',
