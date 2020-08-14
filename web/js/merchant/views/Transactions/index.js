@@ -22,7 +22,7 @@ import Time from 'common/ui/Time';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
 @connect(
-  state => {
+  (state) => {
     return {
       ...state.session,
       settlement_amount: state.home.settlement_amount,
@@ -45,12 +45,9 @@ export default class TransactionsContainer extends Component {
     const { user, mode } = this.props,
       { showInstantActivation, isSubmitted } = user;
 
-    const nextSettlement = !this.props.settlement_amount.data
-      .next_settlement_time;
+    const nextSettlement = !this.props.settlement_amount.data.next_settlement_time;
 
     const { no_settlement } = this.props.settlement_amount.data;
-
-    const { settlement_ux_revamp } = this.props.config;
 
     const pathname = this.props.location.pathname;
 
@@ -62,44 +59,37 @@ export default class TransactionsContainer extends Component {
           </NavLink>
           <ShowWhen
             featureEnabled="direct_debit"
-            additionalCondition={user =>
-              user.isAllowedView('payments_batch_uploads')
-            }
+            additionalCondition={(user) => user.isAllowedView('payments_batch_uploads')}
           >
             <NavLink to="/payments/batchuploads">Batch Payments</NavLink>
           </ShowWhen>
-          <ShowWhen additionalCondition={user => user.isAllowedView('refunds')}>
+          <ShowWhen additionalCondition={(user) => user.isAllowedView('refunds')}>
             <NavLink to="/refunds" exact>
               Refunds
             </NavLink>
           </ShowWhen>
           <ShowWhen
             featureEnabled="Batchrefunds"
-            additionalCondition={user =>
-              user.isAllowedView('refunds_batch_uploads')
-            }
+            additionalCondition={(user) => user.isAllowedView('refunds_batch_uploads')}
           >
             <NavLink
               to="/refunds/batchuploads"
               isActive={(match, { pathname }) =>
-                pathname === '/refunds/batchupload' ||
-                pathname === '/refunds/batchuploads'
+                pathname === '/refunds/batchupload' || pathname === '/refunds/batchuploads'
               }
             >
               Batch Refunds
             </NavLink>
           </ShowWhen>
-          <ShowWhen additionalCondition={user => user.isAllowedView('orders')}>
+          <ShowWhen additionalCondition={(user) => user.isAllowedView('orders')}>
             <NavLink to="/orders">Orders</NavLink>
           </ShowWhen>
           <NavLink to="/disputes">Disputes</NavLink>
           {no_settlement &&
-          (pathname === '/payments' ||
-            pathname === '/refunds' ||
-            pathname === '/orders') &&
+          (pathname === '/payments' || pathname === '/refunds' || pathname === '/orders') &&
           mode === 'live' &&
-            this.props.payments &&
-            this.props.payments.items.length > 0 ? (
+          this.props.payments &&
+          this.props.payments.items.length > 0 ? (
             <div class="text-right settlement-caption">
               {no_settlement.caption}
               {no_settlement.reason && (
@@ -116,12 +106,9 @@ export default class TransactionsContainer extends Component {
               )}
             </div>
           ) : null}
-          {settlement_ux_revamp &&
-          !no_settlement &&
+          {!no_settlement &&
           !nextSettlement &&
-          (pathname === '/payments' ||
-            pathname === '/refunds' ||
-            pathname === '/orders') ? (
+          (pathname === '/payments' || pathname === '/refunds' || pathname === '/orders') ? (
             <div class="text-right" style={{ width: '100%' }}>
               <strong>
                 <Amount
@@ -140,9 +127,7 @@ export default class TransactionsContainer extends Component {
                     <i class="i i-info-circle" />
                     <Popover theme="dark" align="left">
                       <PopoverBody>
-                        <div>
-                          {this.props.settlement_amount.data.reason_for_delay}
-                        </div>
+                        <div>{this.props.settlement_amount.data.reason_for_delay}</div>
                       </PopoverBody>
                     </Popover>
                   </div>
@@ -177,10 +162,7 @@ export default class TransactionsContainer extends Component {
 
         <TestModeBanner />
 
-        {mode === 'live' &&
-        nextSettlement &&
-        no_settlement &&
-        no_settlement.on_hold === true ? (
+        {mode === 'live' && nextSettlement && no_settlement && no_settlement.on_hold === true ? (
           <OnHoldBanner
             payments={this.props.payments}
             user={user}
@@ -212,16 +194,10 @@ export default class TransactionsContainer extends Component {
             <ShowWhenRoute
               path="/orders"
               component={OrdersList}
-              additionalCondition={user => user.isAllowedView('orders')}
+              additionalCondition={(user) => user.isAllowedView('orders')}
             />
-            <Route
-              path="/payments/batchuploads/:mode"
-              component={BatchPaymentsList}
-            />
-            <Route
-              path="/payments/batchuploads"
-              component={BatchPaymentsList}
-            />
+            <Route path="/payments/batchuploads/:mode" component={BatchPaymentsList} />
+            <Route path="/payments/batchuploads" component={BatchPaymentsList} />
             <Route path="/payments" component={PaymentsList} />
             <Route path="/disputes" component={DisputesList} />
           </Switch>

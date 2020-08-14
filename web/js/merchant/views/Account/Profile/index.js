@@ -33,7 +33,7 @@ import UpdateSelfContactMobile from 'merchant/views/Account/Profile/components/U
 import User2FASettings from './components/User2FASettings';
 
 @connect(
-  state => {
+  (state) => {
     return {
       user: state.session.user,
       profile: state.profile,
@@ -62,7 +62,7 @@ export default class Profile extends Component {
   };
 
   componentWillMount() {
-    this.props.fetchUser().then(reponse => {
+    this.props.fetchUser().then((reponse) => {
       let user = reponse.data;
       if (!user.current) {
         this.setState({
@@ -85,7 +85,7 @@ export default class Profile extends Component {
             isBankAccountChangeAllowed: !data,
           });
         })
-        .catch(errors => {
+        .catch((errors) => {
           console.log('ERROR: Failed to fetch bank account change status');
         });
     }
@@ -97,13 +97,11 @@ export default class Profile extends Component {
           isWebsiteInWorkflow: data,
         });
       })
-      .catch(err => {});
+      .catch((err) => {});
   }
 
   isAdminOrOwner() {
-    return (
-      [rolesList.ADMIN, rolesList.OWNER].indexOf(this.props.user.role) > -1
-    );
+    return [rolesList.ADMIN, rolesList.OWNER].indexOf(this.props.user.role) > -1;
   }
 
   componentWillReceiveProps(nextProps) {
@@ -120,10 +118,7 @@ export default class Profile extends Component {
     // Does the user have an associated merchant account
     for (let i in user.user.merchants) {
       var merchant = user.user.merchants[i];
-      if (
-        merchant.email &&
-        merchant.email.toLowerCase() === user.user.email.toLowerCase()
-      ) {
+      if (merchant.email && merchant.email.toLowerCase() === user.user.email.toLowerCase()) {
         hasMerchant = true;
       }
     }
@@ -136,20 +131,20 @@ export default class Profile extends Component {
     });
   }
 
-  onUpdateContactMobileSubmit = data => {
+  onUpdateContactMobileSubmit = (data) => {
     return this.props.updateContactMobile(data, merchantFetch);
   };
 
-  onContactMobileOtpConfirm = data => {
+  onContactMobileOtpConfirm = (data) => {
     return this.props.verifyTwoFactorOtp(data, ajax);
   };
 
-  onUpdateContactMobileComplete = userData => {
+  onUpdateContactMobileComplete = (userData) => {
     this.props.updateUser(userData);
     this.props.closeModal();
   };
 
-  acceptInvitation = invite => {
+  acceptInvitation = (invite) => {
     let message = 'You have accepted the invite.';
 
     return this.props
@@ -163,7 +158,7 @@ export default class Profile extends Component {
           location.reload();
         }, 400);
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -171,7 +166,7 @@ export default class Profile extends Component {
       });
   };
 
-  rejectInvitation = invite => {
+  rejectInvitation = (invite) => {
     let message = 'You have rejected the invite.';
 
     return this.props
@@ -183,7 +178,7 @@ export default class Profile extends Component {
         });
         this.props.fetchUser();
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -203,10 +198,10 @@ export default class Profile extends Component {
     });
   };
 
-  updateDisplayName = props => {
+  updateDisplayName = (props) => {
     return this.props
       .updateDisplayName(props)
-      .then(resp => {
+      .then((resp) => {
         if (resp.success) {
           this.props.showNotification({
             type: 'success',
@@ -225,7 +220,7 @@ export default class Profile extends Component {
 
         return resp;
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -272,7 +267,7 @@ export default class Profile extends Component {
     });
   };
 
-  saveBankAccountChanges = data => {
+  saveBankAccountChanges = (data) => {
     const { user } = this.props;
     let body = { ...data };
     let formdata = new FormData();
@@ -292,7 +287,7 @@ export default class Profile extends Component {
 
     return this.props
       .saveBankAccountChanges(user.id, formdata) //user.id is merchant_id not user_id
-      .then(response => {
+      .then((response) => {
         this.props.closeModal();
         this.props.showNotification({
           type: 'success',
@@ -318,8 +313,6 @@ export default class Profile extends Component {
     let { user, profile } = this.props;
     let { bankAccount } = profile;
     let invitations = user.user.invitations;
-
-    const { settlement_ux_revamp } = this.props.config;
 
     if (!user.isAuthenticated) {
       return (
@@ -349,9 +342,7 @@ export default class Profile extends Component {
             {user && user.current ? (
               <MerchantDetails
                 user={user}
-                changeDisplayName={
-                  !!this.isAdminOrOwner() && this.openChangeDisplayName
-                }
+                changeDisplayName={!!this.isAdminOrOwner() && this.openChangeDisplayName}
                 changeContactMobile={this.openChangeContactMobile}
                 isWebsiteInWorkflow={this.state.isWebsiteInWorkflow}
                 onWebsiteAdd={this.onWebsiteAdd}
@@ -360,7 +351,7 @@ export default class Profile extends Component {
           </div>
 
           <ShowWhen
-            additionalCondition={user =>
+            additionalCondition={(user) =>
               user.isAllowedView('profile_gst') && !user.isUnregisteredBusiness
             }
           >
@@ -375,8 +366,7 @@ export default class Profile extends Component {
             />
           ) : null}
 
-          {this.state.merchantCount > 1 ||
-          this.state.loggedInUser.email !== user.email ? (
+          {this.state.merchantCount > 1 || this.state.loggedInUser.email !== user.email ? (
             <LoggedInUserDetails
               loggedInUser={this.state.loggedInUser}
               loggedInUserRole={this.state.loggedInUserRole}
@@ -391,9 +381,7 @@ export default class Profile extends Component {
             />
           ) : null}
 
-          {!user.isMerchantRestricted && !this.state.hasMerchant ? (
-            <UpgradeMerchantForm />
-          ) : null}
+          {!user.isMerchantRestricted && !this.state.hasMerchant ? <UpgradeMerchantForm /> : null}
           {<SettlementDetails />}
         </div>
       </div>

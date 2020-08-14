@@ -18,7 +18,7 @@ import PaymentReceipt from './PaymentReceipt';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import SettlementOverview from './SettlementOverview';
 
-export default props => {
+export default (props) => {
   let {
     payment,
     card,
@@ -48,11 +48,7 @@ export default props => {
         <div class="panel panel-default SliderPanel">
           <div class="panel-heading">
             {props.onClose && (
-              <button
-                type="button"
-                class="close close-secondary"
-                onClick={props.onClose}
-              >
+              <button type="button" class="close close-secondary" onClick={props.onClose}>
                 <i class="i i-close" />
               </button>
             )}
@@ -91,10 +87,7 @@ export default props => {
               <div class="list-group pair-row-container">
                 <EntityDetailRow label="Amount">
                   <b>
-                    <Amount
-                      value={payment.amount}
-                      currency={payment.currency}
-                    />
+                    <Amount value={payment.amount} currency={payment.currency} />
                   </b>
                 </EntityDetailRow>
 
@@ -106,9 +99,7 @@ export default props => {
                   <EntityDetailRow label="Error">
                     <Definition>
                       <span>{payment.error_code}</span>
-                      {payment.error_description && (
-                        <span>{payment.error_description}</span>
-                      )}
+                      {payment.error_description && <span>{payment.error_description}</span>}
                     </Definition>
                   </EntityDetailRow>
                 )}
@@ -166,15 +157,10 @@ export default props => {
                 </EntityDetailRow>
 
                 <EntityDetailRow label="Created At">
-                  <Time
-                    value={payment.created_at}
-                    format="DD MMM YYYY, hh:mm:ss a"
-                  />
+                  <Time value={payment.created_at} format="DD MMM YYYY, hh:mm:ss a" />
                 </EntityDetailRow>
 
-                <EntityDetailRow label="Description">
-                  {payment.description}
-                </EntityDetailRow>
+                <EntityDetailRow label="Description">{payment.description}</EntityDetailRow>
 
                 <EntityDetailRow label="Disputes">
                   {payment.disputes && payment.disputes.count ? (
@@ -195,11 +181,7 @@ export default props => {
                   <Definition>
                     <Amount value={payment.fee} />
                     <span>
-                      Razorpay Fee -{' '}
-                      <Amount
-                        value={payment.fee - payment.tax}
-                        currency={'INR'}
-                      />
+                      Razorpay Fee - <Amount value={payment.fee - payment.tax} currency={'INR'} />
                     </span>
                     <span>
                       GST - <Amount value={payment.tax} currency={'INR'} />
@@ -237,39 +219,29 @@ export default props => {
                 </EntityDetailRow>
 
                 {user.isPaymentPageReceiptsEnabled && (
-                  <PaymentReceipt
-                    payment={payment}
-                    onUpdateReferenceId={onUpdateReferenceId}
-                  />
+                  <PaymentReceipt payment={payment} onUpdateReferenceId={onUpdateReferenceId} />
                 )}
 
-                {config.settlement_ux_revamp &&
-                  payment.transaction && (
-                    <EntityDetailRow label="Settlement Details">
-                      {payment.transaction.settlement ? (
-                        <ContentToggler onToggleClick={viewSettlementOverview}>
-                          <span>
-                            Settled on{' '}
-                            <Time
-                              value={payment.transaction.settled_at}
-                              format="DD MMM YYYY"
-                            />
-                          </span>
-                          <SettlementOverview payment={payment} />
-                        </ContentToggler>
-                      ) : payment.transaction.settled_at ? (
-                        <span class="link">
-                          To be settled on{' '}
-                          <Time
-                            value={payment.transaction.settled_at}
-                            format="DD MMM YYYY"
-                          />
+                {payment.transaction && (
+                  <EntityDetailRow label="Settlement Details">
+                    {payment.transaction.settlement ? (
+                      <ContentToggler onToggleClick={viewSettlementOverview}>
+                        <span>
+                          Settled on{' '}
+                          <Time value={payment.transaction.settled_at} format="DD MMM YYYY" />
                         </span>
-                      ) : (
-                        '--'
-                      )}
-                    </EntityDetailRow>
-                  )}
+                        <SettlementOverview payment={payment} />
+                      </ContentToggler>
+                    ) : payment.transaction.settled_at ? (
+                      <span class="link">
+                        To be settled on{' '}
+                        <Time value={payment.transaction.settled_at} format="DD MMM YYYY" />
+                      </span>
+                    ) : (
+                      '--'
+                    )}
+                  </EntityDetailRow>
+                )}
               </div>
             </div>
           </div>
