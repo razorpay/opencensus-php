@@ -1005,7 +1005,11 @@ trait PaymentTrait
         $input = $this->getDefaultScroogeInputArray();
 
         $input['gateway'] = $this->gateway;
-        $input['id'] = substr($refund['id'], strlen('rfnd_'));
+        //
+        // Support for internal id - PR https://github.com/razorpay/api/pull/18132
+        //
+        $input['id'] = $this->formatRefundId($refund['id']);
+
         $input['payment_id'] = substr($refund['payment_id'], strlen('pay_'));
         $input['attempts'] = $refund['attempts'] ?? 0;
         $input['amount'] = $refund['amount'] ?? $input['amount'];
@@ -1123,7 +1127,10 @@ trait PaymentTrait
     {
         $input = $this->getDefaultScroogeInputArray();
 
-        $input['id'] = substr($refund['id'], strlen('rfnd_'));
+        //
+        // Support for internal id - PR https://github.com/razorpay/api/pull/18132
+        //
+        $input['id'] = $this->formatRefundId($refund['id']);
 
         if (($this->gateway === Payment\Gateway::UPI_MINDGATE) or ($this->gateway === Payment\Gateway::UPI_ICICI))
         {
@@ -2715,5 +2722,12 @@ trait PaymentTrait
         $data = $this->makeRequestAndGetContent($request);
 
         return $data;
+    }
+
+    public function formatRefundId(string $refundId): string
+    {
+        $refundId = (strpos($refundId, 'rfnd_') === false) ? $refundId : substr($refundId, strlen('rfnd_'));
+
+        return $refundId;
     }
 }

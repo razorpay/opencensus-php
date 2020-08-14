@@ -876,9 +876,14 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('create_scrooge_refund_bulk', $input);
 
-        $this->trace->info(TraceCode::REFUND_SCROOGE_CREATE_BULK_INITIATED, $input);
+        $refundIds = $input[RefundConstants::REFUND_IDS];
 
-        $refundIds = $input['refund_ids'];
+        Entity::verifyIdAndSilentlyStripSignMultiple($refundIds);
+
+        $this->trace->info(TraceCode::REFUND_SCROOGE_CREATE_BULK_INITIATED,
+            [
+                RefundConstants::REFUND_IDS => $refundIds,
+            ]);
 
         $successes = $failures = 0;
 
@@ -886,7 +891,6 @@ class Service extends Base\Service
 
         $total = count($refundIds);
 
-        Entity::verifyIdAndStripSignMultiple($refundIds);
 
         foreach ($refundIds as $refundId)
         {
@@ -1357,7 +1361,18 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('retry', $input);
 
-        $refund = $this->repo->refund->findByPublicId($id);
+        $this->trace->info(
+            TraceCode::REFUND_RETRY_INITIATED,
+            [
+                'refund_id' => $id
+            ]
+        );
+
+        $internalId = $id;
+
+        Entity::verifyIdAndSilentlyStripSign($internalId);
+
+        $refund = $this->repo->refund->findOrFail($internalId);
 
         $refundStatus = $this->getNewProcessor($refund->merchant)->processRefundRetry($refund, $input);
 
@@ -1371,13 +1386,16 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('retry_bulk', $input);
 
-        $this->trace->info(TraceCode::REFUND_RETRY_BULK_INITIATED, $input);
-
         $refundIds = $input['refund_ids'];
 
-        $total = count($refundIds);
+        Entity::verifyIdAndSilentlyStripSignMultiple($refundIds);
 
-        Entity::verifyIdAndStripSignMultiple($refundIds);
+        $this->trace->info(TraceCode::REFUND_RETRY_BULK_INITIATED,
+            [
+                RefundConstants::REFUND_IDS => $refundIds,
+            ]);
+
+        $total = count($refundIds);
 
         foreach ($refundIds as $refundId)
         {
@@ -1505,13 +1523,16 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('direct_retry_bulk', $input);
 
-        $this->trace->info(TraceCode::REFUND_DIRECT_RETRY_BULK_INITIATED, $input);
-
         $refundIds = $input['refund_ids'];
 
-        $total = count($refundIds);
+        Entity::verifyIdAndSilentlyStripSignMultiple($refundIds);
 
-        Entity::verifyIdAndStripSignMultiple($refundIds);
+        $this->trace->info(TraceCode::REFUND_DIRECT_RETRY_BULK_INITIATED,
+            [
+                RefundConstants::REFUND_IDS => $refundIds,
+            ]);
+
+        $total = count($refundIds);
 
         foreach ($refundIds as $refundId)
         {
@@ -1533,7 +1554,11 @@ class Service extends Base\Service
 
     public function verify(string $id)
     {
-        $refund = $this->repo->refund->findByPublicId($id);
+        $internalId = $id;
+
+        Entity::verifyIdAndSilentlyStripSign($internalId);
+
+        $refund = $this->repo->refund->findOrFailPublic($internalId);
 
         if ($refund->isScrooge() === true)
         {
@@ -1552,7 +1577,7 @@ class Service extends Base\Service
 
     public function editStatus($refundId, array $input)
     {
-        Refund\Entity::verifyIdAndStripSign($refundId);
+        Entity::verifyIdAndSilentlyStripSign($refundId);
 
         $refund = $this->repo->refund->findOrFailPublic($refundId);
 
@@ -2376,7 +2401,11 @@ class Service extends Base\Service
 
             try
             {
-                $refundEntity = $this->repo->refund->findOrFail($refund[Refund\Entity::ID]);
+                $internalId = $refund[Refund\Entity::ID];
+
+                Entity::verifyIdAndSilentlyStripSign($internalId);
+
+                $refundEntity = $this->repo->refund->findOrFail($internalId);
 
                 if ($refund[Refund\Entity::REFERENCE1] === 'NA')
                 {
@@ -2634,9 +2663,11 @@ class Service extends Base\Service
 
             try
             {
-                Refund\Entity::verifyIdAndStripSign($refundId);
+                $internalId = $refundId;
 
-                $refund = $this->repo->refund->findOrFailPublic($refundId);
+                Refund\Entity::verifyIdAndSilentlyStripSign($internalId);
+
+                $refund = $this->repo->refund->findOrFailPublic($internalId);
 
                 $payment = $refund->payment;
 

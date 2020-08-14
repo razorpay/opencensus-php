@@ -2135,6 +2135,61 @@ class RefundTest extends TestCase
         $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
     }
 
+    public function testRefundRetryWithUnsignedId()
+    {
+        $this->defaultAuthPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'authorized');
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'capture')
+            {
+                $content['result']          = '!ERROR!-GW00177-Failed capture greater than auth check';
+                $content['error_code_tag']  = 'GW00177';
+            }
+
+            return $content;
+        });
+
+        $this->makeRequestAndCatchException(function () use ($payment) {
+            $this->capturePayment($payment['public_id'], $payment['amount']);
+        });
+
+        $this->fixtures->edit('payment', $payment['id'], ['status' => 'captured', 'gateway_captured' => true]);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+            }
+
+            return $content;
+        });
+
+        $this->refundPayment($payment['id'], $payment['amount']);
+
+        $refund = $this->getLastEntity('refund', 'true');
+
+        $this->assertEquals($refund['status'], 'processed');
+
+        $this->fixtures->edit('refund', $refund['id'], ['status' => 'created']);
+
+        $internalRefundId = $this->formatRefundId($refund['id']);
+
+        $this->retryFailedRefund($internalRefundId, $refund['payment_id']);
+
+        $refund = $this->getLastEntity('refund', 'true');
+
+        $this->assertEquals($refund['status'], 'processed');
+    }
+
     public function testRefundOnHdfcPaymentCaptureTimedOut()
     {
         $this->defaultAuthPayment();

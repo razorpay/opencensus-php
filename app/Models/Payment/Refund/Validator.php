@@ -78,12 +78,12 @@ class Validator extends Base\Validator
 
     protected static $retryBulkRules = [
         'refund_ids'    => 'required|sequential_array|max:1000',
-        'refund_ids.*'  => 'required|public_id',
+        'refund_ids.*'  => 'required|filled',
     ];
 
     protected static $directRetryBulkRules = [
         'refund_ids'    => 'required|sequential_array|max:1000',
-        'refund_ids.*'  => 'required|public_id',
+        'refund_ids.*'  => 'required|filled',
     ];
 
     protected static $markProcessedBulkRules = [
@@ -148,7 +148,7 @@ class Validator extends Base\Validator
 
     protected static $createScroogeRefundBulkRules = [
         'refund_ids'    => 'required|sequential_array|max:1000',
-        'refund_ids.*'  => 'required|public_id',
+        'refund_ids.*'  => 'required|filled',
     ];
 
     protected static $getFeeRules = [
