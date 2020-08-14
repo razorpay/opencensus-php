@@ -1091,6 +1091,7 @@ class Service extends Base\Service
             'rx_bulk_approvals',
             'rx_payout_links_onboarding_revamp',
             'rx_tax_payments_payout',
+            'capital_loans_announcement_aug2020',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
