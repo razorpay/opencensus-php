@@ -11,20 +11,8 @@ use RZP\Trace\TraceCode;
 
 class MigrateTarget implements \RZP\Modules\Migrate\Target
 {
-
-    /**
-     * @var \RZP\Services\Stork
-     */
-    protected $stork;
-
     const WK_LIST_ROUTE   = '/twirp/rzp.stork.webhook.v1.WebhookAPI/List';
     const WK_UPDATE_ROUTE = '/twirp/rzp.stork.webhook.v1.WebhookAPI/Update';
-
-    public function __construct()
-    {
-        $this->stork = app('stork_service');
-        $this->stork->init(app('rzp.mode'));
-    }
 
     /**
      * @inheritDoc
@@ -49,12 +37,18 @@ class MigrateTarget implements \RZP\Modules\Migrate\Target
      */
     public function migrate(Record $sourceRecord, bool $dryRun): Response
     {
+        /**
+         * @var \RZP\Services\Stork
+         */
+        $stork = app('stork_service');
+        $stork->init(app('rzp.mode'));
+
         $ownerId = $sourceRecord->key;
         $alertEmail = $sourceRecord->value;
         $paramsForListWebhook = ['offset' => 0, 'limit' => 100, 'owner_id' => $ownerId];
 
         // get all webhooks
-        $webhooksListResp = $this->stork->request(self::WK_LIST_ROUTE, $paramsForListWebhook);
+        $webhooksListResp = $stork->request(self::WK_LIST_ROUTE, $paramsForListWebhook);
         $webhooksList = json_decode($webhooksListResp->body, true);
 
         $webhooks = $webhooksList['webhooks'];
@@ -76,7 +70,7 @@ class MigrateTarget implements \RZP\Modules\Migrate\Target
             }
 
             $this->traceBeforeUpdateRequestMadeToStork($webhook);
-            $resp = $this->stork->request(self::WK_UPDATE_ROUTE, ['webhook' => $webhook]);
+            $resp = $stork->request(self::WK_UPDATE_ROUTE, ['webhook' => $webhook]);
             $this->traceAfterUpdateRequestMadeToStork($resp);
         }
 
