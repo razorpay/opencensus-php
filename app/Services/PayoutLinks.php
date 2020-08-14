@@ -118,7 +118,7 @@ class PayoutLinks
 
         $expandArray = [0 => self::USER];
 
-        $this->processParameters($response, $expandArray);
+        $this->processParameters($response, false, $expandArray);
 
         return $response;
     }
@@ -182,6 +182,7 @@ class PayoutLinks
 
     public function fetch(string $payoutLinkId, string $merchantId = "")
     {
+        $forAdminResponse = true;
 
         $url = $this->getConstructedUrl(self::FETCH_PAYOUT_LINK_PATH);
 
@@ -191,12 +192,13 @@ class PayoutLinks
 
         if($merchantId != "")
         {
+            $forAdminResponse = false;
             $request[self::MERCHANT_ID] = $merchantId;
         }
 
         $response = $this->makeRequest($url, $request);
 
-        $this->processParameters($response);
+        $this->processParameters($response, $forAdminResponse);
 
         return $response;
     }
@@ -226,7 +228,7 @@ class PayoutLinks
 
         foreach ($payoutlinks as &$value)
         {
-            $this->processParameters($value, $expandArray);
+            $this->processParameters($value, false, $expandArray);
         }
 
         return $response;
@@ -573,7 +575,7 @@ class PayoutLinks
      * @param string $operation
      * @param array $expandArray format : ["0":"payouts","1":"user"...]
      */
-    protected function processParameters(array &$payoutLink, array $expandArray = [])
+    protected function processParameters(array &$payoutLink, bool $forAdminResponse = false, array $expandArray = [])
     {
         $payoutLink[self::FUND_ACCOUNT_ID] = array_pull($payoutLink, self::FUND_ACCOUNT_ID, null);
 
@@ -632,7 +634,29 @@ class PayoutLinks
 
         unset($payoutLink[self::ACCOUNT_NUMBER]);
 
-        unset($payoutLink[self::UPDATED_AT]);
+        $payoutLink[Entity::CONTACT][Entity::NAME] = $payoutLink[Entity::CONTACT][Entity::NAME] ?? null;
+
+        $payoutLink[Entity::CONTACT][Entity::EMAIL] = $payoutLink[Entity::CONTACT][Entity::EMAIL] ?? null;
+
+        $payoutLink[Entity::CONTACT][Entity::CONTACT] = $payoutLink[Entity::CONTACT][Entity::CONTACT] ?? null;
+
+        if ($forAdminResponse === false)
+        {
+            unset($payoutLink[self::UPDATED_AT]);
+
+            unset($payoutLink[self::MERCHANT_ID]);
+        }
+        else
+        {
+            $payoutLink[Entity::CONTACT_NAME] = $payoutLink[Entity::CONTACT][Entity::NAME];
+
+            $payoutLink[Entity::CONTACT_EMAIL] = $payoutLink[Entity::CONTACT][Entity::EMAIL];
+
+            $payoutLink[Entity::CONTACT_PHONE_NUMBER] = $payoutLink[Entity::CONTACT][Entity::CONTACT];
+
+            $payoutLink[Entity::ADMIN] = true;
+        }
+
     }
 
     protected function appendPublicSignForPayoutLink(string $payoutlinkid) : string
