@@ -15,7 +15,7 @@ function _isUnreadNotification(startTS, endTS, lastReadTS) {
 }
 
 @withRouter
-@connect(state => {
+@connect((state) => {
   return {
     ...state.session,
     ...state.config.config,
@@ -31,9 +31,7 @@ export default class NotificationsDropdown extends Component {
 
     //sort notifications in most recent order using start_timestamp
     if (notifications.length > 1) {
-      notifications = notifications.sort(
-        (first, second) => second.start_ts - first.start_ts
-      );
+      notifications = notifications.sort((first, second) => second.start_ts - first.start_ts);
     }
 
     this.setState({
@@ -75,9 +73,7 @@ export default class NotificationsDropdown extends Component {
 
     if (totalUnread) {
       const tracking = this.props.tracking;
-      tracking.trackEvent(
-        window.rzpQ.merchantActions().success('display.notification.bubble')
-      );
+      tracking.trackEvent(window.rzpQ.merchantActions().success('display.notification.bubble'));
     }
   }
 
@@ -96,7 +92,7 @@ export default class NotificationsDropdown extends Component {
     );
   };
 
-  handleHbForm = e => {
+  handleHbForm = (e) => {
     e.preventDefault();
     this.setState({ shouldShowHubspotForm: true });
     const tracking = this.props.tracking;
@@ -106,9 +102,7 @@ export default class NotificationsDropdown extends Component {
         formId: 'd5f93905-4a4a-4d69-ba5f-d838ed1f5be4',
         target: '#hubspotForm',
         onFormSubmit: function() {
-          tracking.trackEvent(
-            window.rzpQ.merchantActions().success('click.modal.cta')
-          );
+          tracking.trackEvent(window.rzpQ.merchantActions().success('click.modal.cta'));
         },
       });
     }
@@ -117,9 +111,7 @@ export default class NotificationsDropdown extends Component {
   onShow = () => {
     const tracking = this.props.tracking;
     tracking.trackEvent(
-      window.rzpQ
-        .merchantActions()
-        .initiated('dashboard.click.notification.tab')
+      window.rzpQ.merchantActions().initiated('dashboard.click.notification.tab')
     );
 
     trackExpand(this.state.totalUnread);
@@ -127,14 +119,9 @@ export default class NotificationsDropdown extends Component {
     this.setState({ totalUnread: 0 });
 
     const newLastReadTS = moment().unix();
-    LocalStorageService.setItem(
-      'notifications-dropdown-' + this.id,
-      String(newLastReadTS)
-    );
+    LocalStorageService.setItem('notifications-dropdown-' + this.id, String(newLastReadTS));
 
-    const ele = document.getElementsByClassName(
-      'Dropdown--Notifications-content'
-    )[0];
+    const ele = document.getElementsByClassName('Dropdown--Notifications-content')[0];
 
     if (ele && ele.scrollHeight > ele.offsetHeight) {
       this.setState({
@@ -143,19 +130,12 @@ export default class NotificationsDropdown extends Component {
     }
 
     // Mark all notifications as read
-    this.state.notifications.forEach(notif => {
-      const gaAction =
-        notif.ga && notif.ga.action ? notif.ga.action : notif.title;
+    this.state.notifications.forEach((notif) => {
+      const gaAction = notif.ga && notif.ga.action ? notif.ga.action : notif.title;
 
       trackAnnouncement(gaAction, 'Marked as read');
 
-      if (
-        _isUnreadNotification(
-          notif.start_ts,
-          notif.end_ts,
-          this.state.lastReadTS
-        )
-      ) {
+      if (_isUnreadNotification(notif.start_ts, notif.end_ts, this.state.lastReadTS)) {
         trackAnnouncement(gaAction, 'Unread announcement load');
       }
     });
@@ -163,8 +143,7 @@ export default class NotificationsDropdown extends Component {
 
   setLastReadTS() {
     this.setState({
-      lastReadTS:
-        LocalStorageService.getItem('notifications-dropdown-' + this.id) || 0,
+      lastReadTS: LocalStorageService.getItem('notifications-dropdown-' + this.id) || 0,
     });
   }
 
@@ -172,7 +151,7 @@ export default class NotificationsDropdown extends Component {
     this.setLastReadTS();
   };
 
-  onScrollContent = target => {
+  onScrollContent = (target) => {
     let canScrollDown;
 
     if (target.offsetHeight + target.scrollTop + 30 >= target.scrollHeight) {
@@ -199,7 +178,7 @@ export default class NotificationsDropdown extends Component {
           user={user}
           lastReadTS={this.state.lastReadTS}
           trackAnnouncement={trackAnnouncement}
-          trackEvents={n.id && n.id === 'upiAutopay' ? this.trackEvents : null}
+          trackEvents={n.track_event ? this.trackEvents : null}
           handleHbForm={this.handleHbForm}
         />
       </div>
@@ -216,12 +195,8 @@ export default class NotificationsDropdown extends Component {
             </React.Fragment>
           ) : (
             <React.Fragment>
-              <span class={classList(hasUnread && 'highlight')}>
-                Announcements
-              </span>
-              {hasUnread && (
-                <span class="bubble">{this.state.totalUnread}</span>
-              )}
+              <span class={classList(hasUnread && 'highlight')}>Announcements</span>
+              {hasUnread && <span class="bubble">{this.state.totalUnread}</span>}
             </React.Fragment>
           )}
         </DropdownTrigger>
@@ -250,10 +225,7 @@ export default class NotificationsDropdown extends Component {
                 cardsList
               ) : (
                 <div class="Notifications-content-empty">
-                  <img
-                    src="/img/notifications/no-notification.png"
-                    width="72px"
-                  />
+                  <img src="/img/notifications/no-notification.png" width="72px" />
                   <div class="title">No announcements right now</div>
                 </div>
               )}
@@ -300,8 +272,7 @@ function getAgoLabel(ts) {
   } else if (days < 30) {
     tsLabel = Math.floor(days) + ' day' + (days > 2 ? 's' : '') + ' ago';
   } else if (days > 30 && days < 365) {
-    tsLabel =
-      Math.floor(days / 30) + ' month' + (days > 60 ? 's' : '') + ' ago';
+    tsLabel = Math.floor(days / 30) + ' month' + (days > 60 ? 's' : '') + ' ago';
   } else if (years > 1) {
     tsLabel = Math.floor(years) + 'year ago';
   }
@@ -333,9 +304,7 @@ const NotificationCard = ({
     >
       <span class="NotificationCard-icon">
         {iconMap[icon] ? (
-          <i class={`ico i ${iconMap[icon]}`}>
-            {isUnread && <span class="red-bubble" />}
-          </i>
+          <i class={`ico i ${iconMap[icon]}`}>{isUnread && <span class="red-bubble" />}</i>
         ) : (
           <span class="ico">
             <img src={icon} width="32px" />
@@ -381,7 +350,7 @@ const NotificationCard = ({
               <a
                 key={idx}
                 class={classList('btn', getButtonClass(btn.type))}
-                onClick={e => {
+                onClick={(e) => {
                   trackAnnouncement(
                     ga ? ga.action : title,
                     `CTA Click - ${btn.label} - ${isUnread ? 'unread' : 'read'}`
@@ -411,7 +380,7 @@ const BUTTON_CLASSES = {
   'primary-inverted': 'btn-primary--invert',
 };
 
-const getButtonClass = type => {
+const getButtonClass = (type) => {
   return !!BUTTON_CLASSES[type] ? BUTTON_CLASSES[type] : 'btn-link';
 };
 

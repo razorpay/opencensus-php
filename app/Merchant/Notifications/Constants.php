@@ -322,24 +322,24 @@ class Constants
                 ]
             ],
         ],
-        [	
-            'title'       => 'Payments Capture',	
-            'description' => 'Enable auto capturing of your payments and have a better control of your payment system.',	
-            'start_ts'    => 1593581451,	
-            'end_ts'      => 1606800651,	
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/Capture_Settings.svg',	
-            'buttons'     => [	
-                [	
-                    'type'  => 'button',	
-                    'label' => 'Configure Now',	
-                    'url'   => '/config',	
-                ],	
-                [	
-                    'type'  => 'primary-inverted',	
-                    'label' => 'Know More',	
-                    'url'   => 'https://razorpay.com/docs/payment-gateway/payments/capture-settings/',	
-                ]	
-            ],	
+        [
+            'title'       => 'Payments Capture',
+            'description' => 'Enable auto capturing of your payments and have a better control of your payment system.',
+            'start_ts'    => 1593581451,
+            'end_ts'      => 1606800651,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/Capture_Settings.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Configure Now',
+                    'url'   => '/config',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Know More',
+                    'url'   => 'https://razorpay.com/docs/payment-gateway/payments/capture-settings/',
+                ]
+            ],
         ],
         [
             'title'       => 'RazorpayX Payout Link',
@@ -367,7 +367,7 @@ class Constants
             'title'       => 'Introducing UPI AutoPay',
             'description' => 'Powered by Razorpay Subscriptions, your customers can now set up recurring payments using their UPI App.',
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/autopay.svg',
-            'id'          => 'upiAutopay',
+            'track_event' => true,
             'buttons'     => [
                 [
                     'type'  => 'button',
@@ -380,8 +380,26 @@ class Constants
                     'url'   => 'https://razorpay.com/upi-autopay/#dshbrdntf',
                 ],
             ],
-            'start_ts'    => 1595935137,	
-            'end_ts'      => 1600940643, 
+            'start_ts'    => 1595935137,
+            'end_ts'      => 1600940643,
+        ],
+        [
+            'title'       => 'Yes! You\'re pre-approved for a loan.',
+            'description' => 'Get Working Capital Loans from top NBFCs within 2 days!',
+            'start_ts'    => 1597343400,
+            'end_ts'      => 1602700200,
+            'track_event' => true,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/capital-loans.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Apply for your offer',
+                    'url'   => '/capital/loans',
+                ],
+            ],
+            'filters'     => [
+                'experiments'         => ['capital_loans_announcement_aug2020'],
+            ]
         ],
     ];
 
