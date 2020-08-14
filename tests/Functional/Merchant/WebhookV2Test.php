@@ -264,11 +264,7 @@ class WebhookV2Test extends TestCase
         $this->addOAuthTag();
         $this->ba->hostedAuth();
 
-        $this->testData[__FUNCTION__]['response']['content'] = [
-            'entity' => 'collection',
-            'count'  => 2,
-            'items'  => array_map(function ($v) { return $this->convertAllToUnixTimestamp($v); }, $this->getApiListResponseBodyWithSecret()),
-        ];
+        $this->testData[__FUNCTION__]['response']['content'] = array_map(function ($v) { return $this->convertAllToUnixTimestamp($v); }, $this->getApiListResponseBodyWithSecret());
 
         $expected  = $this->getStorkListPayloadForPrimary();
         $mockeryOn = $this->getArgsMatcherForWebhook($expected);

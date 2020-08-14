@@ -243,6 +243,16 @@ class Service extends Base\Service
 
         $this->traceOperationExit('list');
 
+        // Hack: When toArrayHosted happens on a collection, it just returns
+        // array of entities e.g. [{}, {}]. It is not consistent with toArrayPublic
+        // where it returns same wrapped in collection entity
+        // e.g. ["entity": "collection", "count": 2, "items": {}, {}].
+        if (($this->app['basicauth']->isHosted() === true) or
+            ($this->app['basicauth']->isExpress() === true))
+        {
+            return $res['items'];
+        }
+
         return $res;
     }
 
