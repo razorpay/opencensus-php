@@ -252,6 +252,8 @@ class Processor
 
     protected $secureCacheDriver;
 
+    protected $sendDopplerFeedback = true;
+
     public function __construct(Merchant\Entity $merchant)
     {
         $this->app  = App::getFacadeRoot();
@@ -2064,21 +2066,24 @@ class Processor
             $offer->lockDecrementCurrentOfferUsage($payment);
         }
 
-        try
+        if ($this->sendDopplerFeedback === true)
         {
-            $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->info(
-                TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
-                [
-                    'payment'             => $this->payment->toArray(),
-                    'code'                => $code,
-                    'internal_code'       => $internalCode,
-                    'error'               => $e->getMessage()
-                ]
-            );
+            try
+            {
+                $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->info(
+                    TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+                    [
+                        'payment'             => $this->payment->toArray(),
+                        'code'                => $code,
+                        'internal_code'       => $internalCode,
+                        'error'               => $e->getMessage()
+                    ]
+                );
+            }
         }
     }
 

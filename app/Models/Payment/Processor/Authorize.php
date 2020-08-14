@@ -554,6 +554,9 @@ trait Authorize
 
                 $this->logRiskFailureForGateway($payment, $internalErrorCode);
 
+                // Setting this flag false to stop multiple feedback sent to doppler
+                $this->sendDopplerFeedback = false;
+
                 $this->updatePaymentOnExceptionAndThrow($e);
             }
             finally
