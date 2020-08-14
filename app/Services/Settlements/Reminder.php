@@ -6,7 +6,7 @@ use RZP\Exception;
 
 class Reminder extends Base
 {
-    const SERVICE_REMINDER = 'reminder';
+    const EXECUTION_TRIGGER         = '/twirp/rzp.settlements.execution.v1.ExecutionService/Trigger';
 
     public function __construct($app)
     {
@@ -25,11 +25,6 @@ class Reminder extends Base
     {
         $auth = $this->getAuth(self::SERVICE_REMINDER);
 
-        $response = $this->makeRequest(self::EXECUTION_TRIGGER, $input, $auth);
-
-        $this->handleResponseCodes($response);
-
-        return $response[self::BODY];
+        return $this->makeRequest(self::EXECUTION_TRIGGER, $input, $auth);
     }
-
 }

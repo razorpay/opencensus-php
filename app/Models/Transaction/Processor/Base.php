@@ -144,6 +144,16 @@ abstract class Base extends BaseCore
             );
         }
 
+        //
+        // payment type transaction are dispatched on capture explicitly
+        // there are cases where transaction is create before payment capture
+        // such transaction shouldn't be settled
+        //
+        if ($this->txn->getType() != Transaction\Type::PAYMENT)
+        {
+            (new Transaction\Core)->dispatchForSettlementBucketing($this->txn);
+        }
+
         return [$this->txn, $this->feesSplit];
     }
 
@@ -688,40 +698,6 @@ abstract class Base extends BaseCore
 
         (new Balance\Core)->postProcessingForNegativeBalance($oldBalance, Balance\Entity::BALANCE,
                                                             $this->txn->getType(), $merchantBalance);
-    }
-
-    /**
-     * It'll dispatch the job to update settlement bucket for merchant
-     * This will also suppress the any error occurred at this stage
-     * if settled at is null then it wont dispatch the job
-     *
-     * @param Transaction\Entity $txn
-     * @param null               $settledAt
-     */
-    public function dispatchForSettlementBucketing(Transaction\Entity $txn, $settledAt = null)
-    {
-        //
-        // in case the transaction is not eligible for settlement then
-        // settled_at will have some number else it will be null
-        //
-        if (($settledAt === null) or
-            ($txn->isOnHold() === true))
-        {
-            return;
-        }
-
-        try
-        {
-            Bucket::dispatch($this->mode, $txn->getId(), $txn->getMerchantId(), $settledAt);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Logger::ERROR,
-                TraceCode::FAILED_TO_ENQUEUE_MERCHANT_FOR_SETTLEMENT
-            );
-        }
     }
 
     public function updatePostedDate(int $postedDate = null)

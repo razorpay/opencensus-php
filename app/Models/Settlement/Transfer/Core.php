@@ -60,7 +60,9 @@ class Core extends Base\Core
                 'source and destination balance id should not be same');
         }
 
-        return $this->transaction(function () use ($settlement, $destinationBalance)
+        $txnCore = (new Transaction\Core);
+
+        $settlementTransfer = $this->transaction(function () use ($settlement, $destinationBalance, $txnCore)
         {
             $settlementTransfer = $this->buildSettlementTransferEntity(
                 $settlement,
@@ -71,7 +73,7 @@ class Core extends Base\Core
             //
             $settlement->setStatus(Status::PROCESSED);
 
-            $transaction = (new Transaction\Core)->createFromSettlementTransfer($settlementTransfer);
+            $transaction = $txnCore->createFromSettlementTransfer($settlementTransfer);
 
             $this->repo->saveOrFail($settlementTransfer);
 
@@ -91,6 +93,8 @@ class Core extends Base\Core
 
             return $settlementTransfer;
         });
+
+        return $settlementTransfer;
     }
 
     /**

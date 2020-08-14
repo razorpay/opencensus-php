@@ -5,10 +5,10 @@ namespace RZP\Jobs;
 use Razorpay\Trace\Logger as Trace;
 
 use Carbon\Carbon;
-
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Models\Settlement\Bucket;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Partner\Commission\Invoice;
 use RZP\Models\Partner\Commission\Constants;
@@ -71,6 +71,7 @@ class CommissionOnHoldClear extends Job
             $afterId                = null;
             $totalTax               = 0;
             $totalCommissionWithTax = 0;
+            $successTxnIds          = [];
 
             $partner = $this->repoManager->merchant->findOrFail($this->partnerId);
 
@@ -115,6 +116,9 @@ class CommissionOnHoldClear extends Job
                         $totalCommissionWithTax += ($source->getCredit() - $source->getDebit());
 
                         $summary['success_count']++;
+
+                        $successTxnIds[] = $transaction->getId();
+
                     }
                     catch (\Throwable $e)
                     {
@@ -161,7 +165,13 @@ class CommissionOnHoldClear extends Job
             {
                 $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
 
-                (new Transaction\Core)->dispatchForSettlementBucketing($txn, $settledAt);
+                $txn->setSettledAt($settledAt);
+
+                $bucketCore = new Bucket\Core;
+
+                $status = $bucketCore->shouldProcessViaNewService($txn->getMerchantId());
+
+                $bucketCore->dispatchForBucketingOnTransactionHoldToggle($txn, $successTxnIds, $status, null);
             }
 
             $this->delete();

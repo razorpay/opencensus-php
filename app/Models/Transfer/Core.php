@@ -16,6 +16,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Jobs\TransferProcess;
+use RZP\Models\Settlement\Bucket;
 use RZP\Models\Merchant\RazorxTreatment;
 class Core extends Base\Core
 {
@@ -55,7 +56,7 @@ class Core extends Base\Core
 
         $validator->validateTransferMaxAmount($input[Entity::AMOUNT], $merchant);
 
-        return $this->repo->transaction(function () use ($input, $merchant, $validator)
+        $transfer = $this->repo->transaction(function () use ($input, $merchant, $validator)
         {
             $transfer = $this->makeTransfer($input, $merchant, $merchant);
 
@@ -65,6 +66,8 @@ class Core extends Base\Core
 
             return $transfer;
         });
+
+        return $transfer;
     }
 
     /**
@@ -186,9 +189,9 @@ class Core extends Base\Core
             $transfer->setOnHoldUntil(null);
         }
 
-        return $this->repo->transaction(function () use ($transfer, $input)
+        list($transfer, $payment) = $this->repo->transaction(function () use ($transfer, $input)
         {
-            $this->updatePaymentHold($transfer);
+            $payment = $this->updatePaymentHold($transfer);
 
             $this->repo->saveOrFail($transfer);
 
@@ -196,8 +199,12 @@ class Core extends Base\Core
                 TraceCode::TRANSFER_EDIT_SUCCESS,
                 ['transfer_id' => $transfer->getId()]);
 
-            return $transfer;
+            return [$transfer, $payment];
         });
+
+        $this->dispatchForSettlementService($payment);
+
+        return $transfer;
     }
 
     /**
@@ -280,7 +287,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($txn);
 
-        $txnCore->dispatchForSettlementBucketing($txn, $txn->getSettledAt());
+        return $payment;
     }
 
     /**
@@ -325,6 +332,8 @@ class Core extends Base\Core
 
         $validator->validateInput('create', $input);
 
+        $transfer = null;
+
         if (isset($input[ToType::CUSTOMER]) === true)
         {
             $id = $input[ToType::CUSTOMER];
@@ -339,8 +348,10 @@ class Core extends Base\Core
 
             $input[Entity::STATUS] = Status::CREATED;
 
-            return $this->accountTransfer($id, $source, $input, $merchant,$asyncTransfer);
+            $transfer = $this->accountTransfer($id, $source, $input, $merchant, $asyncTransfer);
         }
+
+        return $transfer;
     }
 
     /**
@@ -577,5 +588,27 @@ class Core extends Base\Core
         $this->repo->saveOrFail($transferPayment);
 
         return $transfer;
+    }
+
+    /**
+     * Used to analyse while dispatching it to settlement service
+     * @param $payment
+     */
+    public function dispatchForSettlementService($payment)
+    {
+        $txn = $payment->transaction;
+
+        $bucketCore = new Bucket\Core;
+
+        $status = $bucketCore->shouldProcessViaNewService($txn->getMerchantId());
+
+        $reason = null;
+
+        if($payment->getOnHold() === true)
+        {
+            $reason = 'transfer put on hold';
+        }
+
+        (new Bucket\Core)->dispatchForBucketingOnTransactionHoldToggle($txn, [$txn->getId()], $status, $reason);
     }
 }

@@ -73,7 +73,9 @@ class Core extends Base\Core
 
         $reversal->initiator()->associate($initiator);
 
-        $txn = (new Transaction\Core)->createFromTransferReversal($reversal);
+        $txnCore = (new Transaction\Core);
+
+        $txn = $txnCore->createFromTransferReversal($reversal);
 
         $this->repo->saveOrFail($txn);
 
@@ -129,7 +131,7 @@ class Core extends Base\Core
 
                 (new Validator)->validateReversalAmount($transfer, $input);
 
-                return $this->repo->transaction(function () use ($transfer, $input, $merchant, $initiator)
+                $reversal = $this->repo->transaction(function () use ($transfer, $input, $merchant, $initiator)
                 {
                     $reversal = (new Payment\Processor\Processor($merchant))
                                     ->refundPaymentAndReverseTransfer($transfer, $input, $initiator);
@@ -142,6 +144,8 @@ class Core extends Base\Core
 
                     return $reversal;
                 });
+
+                return $reversal;
             });
     }
 
@@ -192,9 +196,11 @@ class Core extends Base\Core
                 ]);
         }
 
-        return $this->repo->transaction(function() use ($reversal)
+        $txnCore = (new Transaction\Core);
+
+        $reversal = $this->repo->transaction(function() use ($reversal, $txnCore)
         {
-            $txn = (new Transaction\Core)->createFromPayoutReversal($reversal);
+            $txn = $txnCore->createFromPayoutReversal($reversal);
 
             $this->repo->saveOrFail($txn);
 
@@ -202,6 +208,8 @@ class Core extends Base\Core
 
             return $reversal;
         });
+
+        return $reversal;
     }
 
     /**
@@ -310,10 +318,10 @@ class Core extends Base\Core
         // Todo: remove null balance check after backfilling is done
         $reversal->balance()->associate($refund->balance ?? $refund->merchant->primaryBalance);
 
-        $reversal = $this->repo->transaction(function() use ($reversal)
-        {
-            $txnCore = new Transaction\Core;
+        $txnCore = new Transaction\Core;
 
+        $reversal = $this->repo->transaction(function() use ($reversal, $txnCore)
+        {
             list($txn, $feesSplit) = $txnCore->createFromRefundReversal($reversal);
 
             $this->repo->saveOrFail($txn);

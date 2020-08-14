@@ -517,6 +517,7 @@ class Route
         'setl_combined_recon'                      => ['get',      'settlements/recon/combined',                     'SettlementController@getSettlementCombinedReconReport'             ],
         'setl_update_channel_bulk'                 => ['put',      'settlements/channel/bulk',                       'SettlementController@updateChannelForMultipleSettlements'          ],
         'setl_holidays'                            => ['get',      'settlement/holidays',                            'SettlementController@getHolidayListForYear',                       ],
+        'setl_transaction_replay'                  => ['post',     'settlement/transactions/replay',                 'SettlementController@replaySettlementTransactions',                ],
         'nodal_get_account_balance'                => ['get',      'nodal/balance/{channel}',                        'SettlementController@getAccountBalance'                            ],
         'nodal_initiate_transfer'                  => ['post',     'nodal/transfer',                                 'SettlementController@postInitiateTransfer'                         ],
         'nodal_initiate_transfer_admin'            => ['post',     'nodal/transfer/admin',                           'SettlementController@postInitiateTransfer'                         ],

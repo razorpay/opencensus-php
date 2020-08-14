@@ -39,8 +39,6 @@ class Payment extends Base
 
         $this->txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
 
-        $this->dispatchForSettlementBucketing($this->txn, $settledAt);
-
         $this->raiseTxnSettledAtUpdateEvent($this->txn);
     }
 

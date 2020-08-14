@@ -50,8 +50,6 @@ class Adjustment extends Base
         $this->updatePostedDate();
 
         $this->repo->saveOrFail($this->txn);
-
-        $this->dispatchForSettlementBucketing($this->txn, $settledAt);
     }
 
     public function setMerchantBalanceLockForUpdate()

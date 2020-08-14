@@ -15,6 +15,7 @@ use Razorpay\Trace\Logger;
 use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
 use RZP\Constants\Timezone;
+use RZP\Models\Transaction;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;

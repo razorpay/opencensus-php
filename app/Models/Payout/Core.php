@@ -1867,7 +1867,7 @@ class Core extends Base\Core
                     return;
                 }
 
-                $this->repo->transaction(
+                $reversal = $this->repo->transaction(
                     function() use ($payout, $reverseReason) {
                         $reversal = (new Reversal\Core)->reverseForPayout($payout);
 
@@ -1905,6 +1905,8 @@ class Core extends Base\Core
                         }
 
                         $this->repo->saveOrFail($payout);
+
+                        return $reversal;
                     });
             },
             self::PAYOUT_REVERSAL_MUTEX_LOCK_TIMEOUT,

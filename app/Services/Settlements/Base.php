@@ -12,6 +12,12 @@ use Razorpay\Trace\Logger as Trace;
 
 class Base
 {
+
+    //******************* common endpoints for dashboard/api/reminder are listed here ************************//
+
+    const Hold             = '/twirp/rzp.settlements.transaction.v1.TransactionService/Hold';
+    const Release          = '/twirp/rzp.settlements.transaction.v1.TransactionService/Release';
+
     protected $trace;
 
     protected $config;
@@ -31,14 +37,15 @@ class Base
     const CODE                  = 'code';
 
     // Headers
-    const ACCEPT        = 'Accept';
-    const ADMIN_EMAIL   = 'admin_email';
-    const CONTENT_TYPE  = 'Content-Type';
-    const X_REQUEST_ID  = 'X-Request-ID';
+    const ACCEPT                = 'Accept';
+    const ADMIN_EMAIL           = 'admin_email';
+    const CONTENT_TYPE          = 'Content-Type';
+    const X_REQUEST_ID          = 'X-Request-ID';
+    const REQUEST_TIMEOUT       = 60;
 
-    const REQUEST_TIMEOUT = 60;
-
-    const EXECUTION_TRIGGER         = '/twirp/rzp.settlements.execution.v1.ExecutionService/Trigger';
+    const SERVICE_DASHBOARD     = 'dashboard';
+    const SERVICE_REMINDER      = 'reminder';
+    const SERVICE_API           = 'api';
 
     /**
      * Settlements Base constructor.
@@ -125,7 +132,9 @@ class Base
 
         $resp = $this->parseResponse($response);
 
-        return $resp;
+        $this->handleResponseCodes($resp);
+
+        return $resp['body'];
     }
 
     /**
@@ -133,9 +142,6 @@ class Base
      *
      * @param  $response
      * @return array
-     * @throws Exception\RuntimeException
-     * @throws Exception\BadRequestException
-     * @throws Exception\ServerErrorException
      */
     protected function parseResponse(Requests_Response $response): array
     {
@@ -231,6 +237,11 @@ class Base
 
         if ($code !== 200)
         {
+            $this->trace->warn(TraceCode::SETTLEMENTS_REQUEST_EXCEPTION, [
+                'status_code'   => $code,
+                'response_body' => $body,
+            ]);
+
             throw new Exception\TwirpException($body);
         }
     }

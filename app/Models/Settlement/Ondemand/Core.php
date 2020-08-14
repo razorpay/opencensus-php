@@ -78,13 +78,13 @@ class Core extends Base\Core
         $settlementOndemandPayouts = (new OndemandPayout\Service)
                                         ->createSettlementOndemandPayout($settlementOndemand);
 
-        $settlementOndemand = $this->createTransaction($settlementOndemand);
+        $txn = $this->createTransaction($settlementOndemand);
 
         $settlementOndemand->setTotalAmountPending($settlementOndemand->getAmountToBeSettled());
 
         $this->repo->saveOrFail($settlementOndemand);
 
-        return [$settlementOndemand, $settlementOndemandPayouts];
+        return [$settlementOndemand, $settlementOndemandPayouts, $txn];
     }
 
     public function createTransaction($settlementOndemand)
@@ -98,7 +98,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($txn);
 
-        return $settlementOndemand;
+        return $txn;
     }
 
     public function getFeesSplit($input, $merchant , $user)

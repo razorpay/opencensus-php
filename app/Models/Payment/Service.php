@@ -37,6 +37,7 @@ use RZP\Constants;
 use RZP\Constants\MailTags;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Settlement\Bucket;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Verify\Verify;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
@@ -2086,15 +2087,33 @@ class Service extends Base\Service
             'failed_ids'  => []
         ];
 
+        $mapForSettlementService = [];
+
         foreach ($paymentsToUpdate as $payment)
         {
             try
             {
-                $this->repo->transaction(
+                $txn = $this->repo->transaction(
                     function() use ($payment)
                     {
-                        $this->setHoldFalse($payment);
+                       return $this->setHoldFalse($payment);
                     });
+
+                $mid = $txn->getMerchantId();
+
+                $bucketCore = New Bucket\Core;
+
+                if(isset($mapForSettlementService[$mid]) === false)
+                {
+                    $mapForSettlementService[$mid] = false;
+
+                    if($bucketCore->shouldProcessViaNewService($mid) === true)
+                    {
+                        $mapForSettlementService[$mid] = true;
+                    }
+                }
+
+               $bucketCore->dispatchForBucketingOnTransactionHoldToggle($txn, [$txn->getId()], $mapForSettlementService[$mid], null);
             }
             catch (\Exception $e)
             {
@@ -2261,8 +2280,6 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($txn);
 
-        (new Transaction\Core)->dispatchForSettlementBucketing($txn, $txn->getSettledAt());
-
         //
         // If the payment has a transfer, update the
         // on_hold flag for the transfer as well
@@ -2289,6 +2306,8 @@ class Service extends Base\Service
                     'payment_id'        => $payment->getId(),
                 ]);
         }
+
+        return $txn;
     }
 
     /**

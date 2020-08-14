@@ -14,9 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Adjustment;
-use RZP\Base\JitValidator;
-use RZP\Models\FundAccount;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Transaction;
 use RZP\Models\Settlement\OndemandPayout;
 use RZP\Jobs\SettlementOndemand\MockPayoutOndemandWebhook;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutJobs;
@@ -56,7 +54,7 @@ class Service extends Base\Service
 
         $this->validateIfOndemandMerchant();
 
-        [$settlementOndemand, $settlementOndemandPayouts] = $this->repo->transaction(function() use ($input)
+        [$settlementOndemand, $settlementOndemandPayouts, $txn] = $this->repo->transaction(function() use ($input)
         {
             return $this->core()->createSettlementOndemand($input, $this->merchant , $this->user);
         });

@@ -3,20 +3,26 @@
 namespace RZP\Models\Settlement\Bucket;
 
 use Cache;
+use Config;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Models\Feature;
+use RZP\Models\Settlement\SlackNotification;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant as ME;
 use RZP\Models\Merchant\Balance;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class Core extends Base\Core
 {
+    const SETTLEMENT_TRANSACTION = 'settlement_transaction';
+
     protected $preference;
 
     public function __construct()
@@ -187,7 +193,7 @@ class Core extends Base\Core
             return false;
         }
 
-        $status = $this->skipForNewService($merchantId);
+        $status = $this->shouldProcessViaNewService($merchantId);
 
         if ($status === true)
         {
@@ -223,6 +229,73 @@ class Core extends Base\Core
             Preference::getNextBucket($settlementTime->getTimestamp());
 
         return $this->addToBucket($merchantId, $bucketTimestamp, $balanceType, $settlementTime);
+    }
+
+    /**
+     * It will fetch the relevant data from transaction and publish it for settlement processing
+     *
+     * @param Transaction\Entity $txn
+     * @param Balance\Entity|null $balance
+     */
+    public function publishForSettlement(Transaction\Entity $txn, Balance\Entity $balance = null)
+    {
+        $meta         = null;
+        $balance      = $txn->accountBalance;
+        $balanceType  = ($balance === null) ? Balance\Type::PRIMARY : $balance->getType();
+
+        // Only primary and commission balance are eligible for settlement
+        if (Balance\Type::isSettleableBalanceType($balanceType) === false)
+        {
+            return;
+        }
+
+        // currently meta details present only for payment type
+        if ($txn->isTypePayment() === true)
+        {
+            $payment = $txn->source;
+
+            // Only transactions settlable by razorpay are considered
+            if ($payment->getSettledBy() !== 'Razorpay')
+            {
+                return;
+            }
+
+            $meta = [
+                'method'        => $payment->getMethod(),
+                'international' => $payment->isInternational(),
+            ];
+        }
+
+        $onHoldReason = ($txn->getOnHold() === true) ? 'created with transaction on hold' : '';
+
+        $payload = [
+            'id'                => $txn->getId(),
+            'merchant_id'       => $txn->getMerchantId(),
+            'source_id'         => $txn->getEntityId(),
+            'source_type'       => $txn->getType(),
+            'balance_type'      => strtoupper($balanceType),
+            'currency'          => $txn->getCurrency(),
+            'credit'            => $txn->getCredit(),
+            'debit'             => $txn->getDebit(),
+            'fee'               => $txn->getFee(),
+            'tax'               => $txn->getTax(),
+            'on_hold'           => $txn->getOnHold(),
+            'on_hold_reason'    => $onHoldReason,
+            'meta'              => $meta,
+        ];
+
+        try
+        {
+            $this->app['sns']->publish(json_encode($payload), self::SETTLEMENT_TRANSACTION);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SETTLEMENT_TRANSACTION_STREAMING_FAILED,
+                $payload);
+        }
     }
 
     /**
@@ -306,7 +379,7 @@ class Core extends Base\Core
      * @param string $merchantId
      * @return bool
      */
-    public function skipForNewService(string $merchantId)
+    public function shouldProcessViaNewService(string $merchantId)
     {
         $variant = $this->app->razorx->getTreatment($merchantId,
             ME\RazorxTreatment::SETTLEMENT_SERVICE_RAMP,
@@ -325,5 +398,92 @@ class Core extends Base\Core
         }
 
         return $result;
+    }
+
+    public function migrateSettlableTransactions(string $merchantId, array $opt)
+    {
+        $batch = 0;
+        $batchSize = 1000;
+        $stat = [];
+
+        $balance = $this->repo->balance->getMerchantBalanceByType($merchantId, $opt['balance_type']);
+
+        do
+        {
+            $transactions = $this->repo->transaction->getSettlableTransactions($merchantId, $opt, $balance, [
+                'limit'  => $batchSize,
+                'offset' => $batch * $batchSize,
+            ]);
+
+            foreach($transactions as $txn)
+            {
+                if (isset($stat[$txn->getType()]) === false) {
+                    $stat[$txn->getType()] = [
+                        'count'  => 0,
+                        'amount' => 0,
+                    ];
+                }
+
+                $stat[$txn->getType()]['count']++;
+                $stat[$txn->getType()]['amount'] += $txn->getCredit() - $txn->getDebit();
+
+                $this->publishForSettlement($txn, $balance);
+            }
+
+            $batch++;
+        } while ($transactions->count() === $batchSize);
+
+        return $stat;
+    }
+
+    /**
+     * this is being used to decide weather after the transaction Hold Release What needs to be done
+     * weather to call the settlement service transaction Hold release or dispatch for settlement
+     * bucketing based on the razorx flag
+     * @param $txn
+     * @param array $txnIds
+     * @param bool $newService
+     * @param string $reason
+     */
+    public function dispatchForBucketingOnTransactionHoldToggle($txn, $txnIds = [], $newService = false, $reason = null)
+    {
+        try
+        {
+            if ($newService === true)
+            {
+                if ($reason != null)
+                {
+                    app('settlements_api')->Hold([$txn->getId()], $reason);
+                }
+                else
+                {
+                    app('settlements_api')->Release($txnIds);
+                }
+            }
+            else
+            {
+                (new Transaction\Core)->dispatchForSettlementBucketing($txn);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SETTLEMENT_DISPATCH_FOR_ON_HOLD_CLEAR_FAILED,
+                [
+                    'merchant_id'    => $txn->getMerchantId(),
+                    'is_new_service' => $newService,
+                ]);
+
+            $operation = 'Transactions on hold toggle failed to update in new settlement service';
+
+            (new SlackNotification)->send(
+                $operation,
+                $txnIds,
+                $e,
+                1,
+                Config::get('slack.channels.settlement_alerts'));
+        }
     }
 }

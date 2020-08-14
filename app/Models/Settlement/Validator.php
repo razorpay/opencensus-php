@@ -120,6 +120,16 @@ class Validator extends Base\Validator
         'year'  =>  'sometimes|digits:4',
     ];
 
+    protected static $settlementTransactionsReplayRules = [
+        'merchant_ids'        => 'required|array',
+        'merchant_ids.*'      => 'required|string|size:14',
+        'balance_type'        => 'required|string|in:primary,commission',
+        'from'                => 'sometimes|epoch',
+        'to'                  => 'sometimes|epoch|with:from',
+        'transaction_ids'     => 'sometimes|array',
+        'transaction_ids.*'   => 'required|string|size:14'
+    ];
+
     protected static $settlementStatusUpdateRules = [
         'id'      => 'required|string|size:14',
         'utr'     => 'sometimes|string',

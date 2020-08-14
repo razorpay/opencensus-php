@@ -4,22 +4,21 @@ namespace RZP\Jobs\Settlement;
 
 use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
 use Razorpay\Trace\Logger as Trace;
+use Jitendra\Lqext\TransactionAware;
 use RZP\Models\Settlement\Bucket\Core;
 
 class Bucket extends Job
 {
+    use TransactionAware;
+
     const MAX_ATTEMPTS = 5;
 
     /**
      * @var string
      */
      protected $queueConfigKey = 'settlement_bucket';
-
-    /**
-     * @var string
-     */
-     protected $merchantId;
 
     /**
      * @var mixed|null
@@ -32,20 +31,31 @@ class Bucket extends Job
      protected $transactionId;
 
     /**
+     * @var string
+     */
+    protected $merchantId;
+
+    protected $allowedTypeForBucketing = [
+         Transaction\Type::PAYMENT,
+         Transaction\Type::ADJUSTMENT,
+         Transaction\Type::SETTLEMENT_TRANSFER,
+     ];
+
+    /**
      * @param string $mode
      * @param string $txnId
-     * @param string $merchantId
-     * @param null   $settledAt
+     * @param string|null $merchantId
+     * @param null $settledAt
      */
-    public function __construct(string $mode, string $txnId, string $merchantId, $settledAt)
+    public function __construct(string $mode, string $txnId, string $merchantId = null, $settledAt = null)
     {
         parent::__construct($mode);
 
         $this->transactionId = $txnId;
 
-        $this->merchantId    = $merchantId;
+        $this->merchantId = $merchantId;
 
-        $this->settledAt     = $settledAt;
+        $this->settledAt = $settledAt;
     }
 
     /**
@@ -57,7 +67,19 @@ class Bucket extends Job
 
         try
         {
-            (new Core)->addMerchantToSettlementBucket($this->transactionId, $this->merchantId, $this->settledAt);
+            $txn = $this->repoManager->transaction->findOrFail($this->transactionId);
+
+            $core = new Core;
+
+            $status = $core->shouldProcessViaNewService($txn->getMerchantId());
+            if ($status === true)
+            {
+                 $core->publishForSettlement($txn);
+            }
+            else if (in_array($txn->getType(), $this->allowedTypeForBucketing) === true)
+            {
+                $core->addMerchantToSettlementBucket($txn->getId(), $txn->getMerchantId(), $txn->getSettledAt());
+            }
         }
         catch (\Throwable $e)
         {

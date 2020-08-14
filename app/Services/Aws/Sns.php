@@ -5,6 +5,7 @@ namespace RZP\Services\Aws;
 use Aws;
 
 use RZP\Services\Aws\Credentials;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 
 class Sns
@@ -48,10 +49,14 @@ class Sns
     {
         $this->trace->info(TraceCode::AWS_SNS_PUBLISH_REQUEST);
 
+        $arn = $this->awsConfig['sns_target_arn'][$messageTarget];
+
+        $mode = app('rzp.mode') ?? Mode::LIVE;
+
         $result = $this->client->publish(
             [
                 'Message'   => $message,
-                'TargetArn' => $this->awsConfig['sns_target_arn'][$messageTarget],
+                'TargetArn' => $arn[$mode],
             ])->toArray();
 
         $this->trace->info(TraceCode::AWS_SNS_PUBLISH_RESPONSE, $result);

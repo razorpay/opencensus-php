@@ -6,6 +6,7 @@ use Mail;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger;
 
+use RZP\Constants\Environment;
 use RZP\Exception;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
@@ -135,31 +136,10 @@ class Core extends Base\Core
 
     public function createOrUpdateFromPaymentCaptured(Payment\Entity $payment)
     {
-        return $this->createTransactionForSource($payment);
+        list($txn, $feesSplit) = $this->createTransactionForSource($payment);
 
-        // old code, will delete it post refactoring of all the entities
-        $merchant = $payment->merchant;
-
-        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
-
-        $this->trace->info(
-            TraceCode::PAYMENT_CAPTURE_CREATE_TRANSACTION,
-            [
-                'payment_id'     => $payment->getId(),
-                'transaction_id' => $txn->getId()
-            ]);
-
-        $this->repo->saveOrFail($txn);
-
-        $settledAt = $this->getSettledAtTimestamp($payment);
-
-        $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
-
-        $this->updateCredits($txn, $payment);
-
-        $this->updateBalances($txn);
-
-        $this->dispatchForSettlementBucketing($txn, $settledAt);
+        // dispatch this transaction for settlement.
+        $this->dispatchForSettlementBucketing($txn);
 
         return [$txn, $feesSplit];
     }
@@ -199,7 +179,7 @@ class Core extends Base\Core
 
         $this->updateBalances($txn, false);
 
-        $this->dispatchForSettlementBucketing($txn, $settledAt);
+        $this->dispatchForSettlementBucketing($txn);
 
         return [$txn, $feesSplit];
     }
@@ -712,11 +692,11 @@ class Core extends Base\Core
         //
         $this->repo->saveOrFail($txn);
 
-        $this->dispatchForSettlementBucketing($txn, $settledAt);
-
         $this->updateCredits($txn, $transfer);
 
         $this->updateBalances($txn, false);
+
+        $this->dispatchForSettlementBucketing($txn);
 
         return [$txn, $feesSplit];
     }
@@ -762,7 +742,7 @@ class Core extends Base\Core
 
         $this->updateBalances($txn, false);
 
-        $this->dispatchForSettlementBucketing($txn, $settleTimestamp);
+        $this->dispatchForSettlementBucketing($txn);
 
         return $txn;
     }
@@ -797,6 +777,8 @@ class Core extends Base\Core
         $txn->sourceAssociate($reversal);
 
         $this->updateBalances($txn, false);
+
+        $this->dispatchForSettlementBucketing($txn);
 
         return $txn;
     }
@@ -838,6 +820,8 @@ class Core extends Base\Core
         $txn->sourceAssociate($dispute);
 
         $this->updateBalances($txn);
+
+        $this->dispatchForSettlementBucketing($txn);
 
         return $txn;
     }
@@ -1604,20 +1588,25 @@ class Core extends Base\Core
      * if settled at is null then it wont dispatch the job
      *
      * @param Entity $txn
-     * @param null   $settledAt
+     * @throws \Throwable
      */
-    public function dispatchForSettlementBucketing(Entity $txn, $settledAt = null)
+    public function dispatchForSettlementBucketing(Entity $txn)
     {
-        if (($settledAt === null) or
-            ($txn->isOnHold() === true))
+        //
+        // in case the transaction is eligible for settlement then
+        // settled_at will have some number else it will be null
+        //
+        if ($txn->getSettledAt() === null)
         {
             return;
         }
 
         try
         {
-            // Dispatch for bucket creation for settlement
-            Bucket::dispatch($this->mode, $txn->getId(), $txn->getMerchantId(), $settledAt);
+            //
+            // if not sent settledAt will be null in job as this entire thing is in a transaction
+            //
+            Bucket::dispatch($this->mode, $txn->getId());
         }
         catch (\Throwable $e)
         {

@@ -11,6 +11,7 @@ use phpseclib\Net\SFTP;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
+use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
@@ -604,10 +605,39 @@ class Service extends Base\Service
         return $txns->toArrayPublic();
     }
 
+    public function replayTransactions(array $input): array
+    {
+        $this->trace->info(
+            TraceCode::SETTLEMENT_TRANSACTION_REPLAY_REQUEST,
+            $input
+        );
+
+        (new Validator)->validateInput('settlement_transactions_replay', $input);
+
+        $ignoreMids = $this->repo->feature->getMerchantIdsHavingFeature(
+            Constants::BLOCK_SETTLEMENTS, $input['merchant_ids']);
+
+        $ignoreMids = array_merge($ignoreMids, Merchant\Preferences::NO_SETTLEMENT_MIDS);
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_TRANSACTION_REPLAY_SKIP,
+            $ignoreMids
+        );
+
+        $input['merchant_ids'] = array_diff($input['merchant_ids'], $ignoreMids);
+
+        $this->core()->enqueueForReplay($input);
+
+        return [
+            'replayed_mids' => $input['merchant_ids'],
+        ];
+    }
+
     /**
      * This function used to update the settlement details back from the settlement service
      *
      * @param array $input
+     * @return array|null[]
      */
     public function postSettlementCreateStatusUpdate(array $input)
     {

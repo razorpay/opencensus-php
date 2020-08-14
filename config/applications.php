@@ -342,6 +342,10 @@ return [
             'key'       => env('SETTLEMENTS_REMINDER_KEY'),
             'secret'    => env('SETTLEMENTS_REMINDER_SECRET'),
         ],
+        'api' => [
+            'key'       => env('SETTLEMENTS_API_KEY'),
+            'secret'    => env('SETTLEMENTS_API_SECRET'),
+        ],
         'secret'            => env('SETTLEMENTS_SERVICE_SECRET'),
     ],
 

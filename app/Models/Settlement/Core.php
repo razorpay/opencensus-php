@@ -9,7 +9,6 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Diag\EventCode;
 use RZP\Models\Payment;
-use RZP\Models\Settlement\Bucket\Preference;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
@@ -19,6 +18,8 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Merchant as MerchantModel;
+use RZP\Models\Settlement\Bucket\Preference;
+use RZP\Jobs\Settlement\TransactionMigration;
 
 class Core extends Base\Core
 {
@@ -419,5 +420,20 @@ class Core extends Base\Core
         }
 
         return $timestamp;
+    }
+
+    public function enqueueForReplay(array $input)
+    {
+        $opt = [
+            'from'                => $input['from'] ?? null,
+            'to'                  => $input['to'] ?? null,
+            'balance_type'        => $input['balance_type'],
+            'transaction_ids'     => $input['transaction_ids'] ?? [],
+        ];
+
+        foreach ($input['merchant_ids'] as $mid)
+        {
+            TransactionMigration::dispatch($this->mode, $mid, $opt);
+        }
     }
 }

@@ -1920,6 +1920,56 @@ class Repository extends Base\Repository
                     ->value(Entity::TYPE);
     }
 
+    public function getSettlableTransactions(
+        string $merchantId,
+        array $opt,
+        Balance\Entity $balance,
+        array $limits): Base\PublicCollection {
+
+        $txnId              = $this->dbColumn(Entity::ID);
+        $txnBalanceId       = $this->dbColumn(Entity::BALANCE_ID);
+        $txnMerchantId      = $this->dbColumn(Entity::MERCHANT_ID);
+        $txnEntityId        = $this->dbColumn(Entity::ENTITY_ID);
+        $txnType            = $this->dbColumn(Entity::TYPE);
+        $txnCurrency        = $this->dbColumn(Entity::CURRENCY);
+        $txnCredit          = $this->dbColumn(Entity::CREDIT);
+        $txnDebit           = $this->dbColumn(Entity::DEBIT);
+        $txnFee             = $this->dbColumn(Entity::FEE);
+        $txnTax             = $this->dbColumn(Entity::TAX);
+        $txnOnHold          = $this->dbColumn(Entity::ON_HOLD);
+        $txnSettledAt       = $this->dbColumn(Entity::SETTLED_AT);
+        $txnSettled         = $this->dbColumn(Entity::SETTLED);
+        $txnCreatedAt       = $this->dbColumn(Entity::CREATED_AT);
+
+        $query = $this->newQuery()
+            ->select($txnId, $txnBalanceId, $txnMerchantId, $txnEntityId, $txnType,
+                $txnCurrency, $txnCredit, $txnDebit, $txnFee, $txnTax, $txnOnHold)
+            ->where($txnBalanceId, $balance->getId())
+            ->whereNotNull($txnSettledAt)
+            ->where($txnSettled, 0)
+            ->where($txnMerchantId, $merchantId)
+            ->where($txnType, '!=', Type::SETTLEMENT)
+            ->offset($limits['offset'])
+            ->limit($limits['limit']);
+
+        if (empty($opt['transaction_ids']) === false)
+        {
+            $query->whereIn($txnId, $opt['transaction_ids']);
+        }
+
+        if ($opt['from'] !== null)
+        {
+            if ($opt['to'] !== null)
+            {
+                $query->whereBetween($txnCreatedAt, [$opt['from'], $opt['to']]);
+            } else {
+                $query->where($txnId, '>=', $opt['from']);
+            }
+        }
+
+        return $query->get();
+    }
+
     /**
      * {@inheritDoc}
      */

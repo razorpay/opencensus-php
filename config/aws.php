@@ -41,10 +41,26 @@ return [
     'recon_sftp_input_bucket'    => env('AWS_S3_RECON_SFTP_INPUT_BUCKET'),
 
     'sns_target_arn'        => [
-        'sms'               => env('AWS_RAVEN_TARGET_ARN'),
-        'lumberjack'        => env('AWS_LUMBERJACK_TARGET_ARN'),
-        'stage-doppler'     => env('AWS_DOPPLER_TARGET_ARN'),
-        'stork'             => env('AWS_STORK_TARGET_ARN'),
+        'sms'                    => [
+            'live' => env('AWS_RAVEN_TARGET_ARN'),
+            'test' => env('AWS_RAVEN_TARGET_ARN'),
+        ],
+        'lumberjack'             => [
+            'live' => env('AWS_LUMBERJACK_TARGET_ARN'),
+            'test' => env('AWS_LUMBERJACK_TARGET_ARN'),
+        ],
+        'stage-doppler'          => [
+            'live' => env('AWS_DOPPLER_TARGET_ARN'),
+            'test' => env('AWS_DOPPLER_TARGET_ARN'),
+        ],
+        'settlement_transaction' => [
+            'live' => env('SETTLEMENTS_TRANSACTION_LIVE'),
+            'test' => env('SETTLEMENTS_TRANSACTION_TEST'),
+        ],
+        'stork'             => [
+            'live' => env('AWS_STORK_TARGET_ARN'),
+            'test' => env('AWS_STORK_TARGET_ARN'),
+        ],
     ],
 
     'mock' => env('AWS_S3_MOCK')
