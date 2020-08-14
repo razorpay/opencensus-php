@@ -853,16 +853,20 @@ class TerminalTest extends TestCase
                 'merchant_id'          => '10000000000000',
                 'gateway'              => 'card_fss',
                 'gateway_acquirer'     => 'dummy',
+                'procurer'             => 'razorpay'
             ]);
 
 
         $tid = $terminal['id'];
 
-        $data = ['gateway_acquirer' => 'random', 'gateway_merchant_id' => '123'];
+        $data = ['gateway_acquirer' => 'random', 'gateway_merchant_id' => '123', 'procurer' => 'merchant'];
 
         $content = $this->editTerminal($tid, $data);
 
         $this->assertEquals('random', $content['gateway_acquirer']);
+
+        $this->assertEquals('merchant', $content['procurer']);
+
     }
 
     public function testEditCybersourceTerminal()
@@ -2040,7 +2044,7 @@ class TerminalTest extends TestCase
 
     // test for cron that migrates existing original mpans to vault (mpan tokenization)
     public function testTokenizeExistingTerminalMpans()
-    {   
+    {
         $terminal = $this->fixtures->create('terminal', [
             'enabled'             => true,
             'gateway'             => 'worldline',
@@ -2077,18 +2081,18 @@ class TerminalTest extends TestCase
 
     // test for cron that migrates existing original mpans to vault (mpan tokenization)
     public function testTokenizeExistingTerminalMpansInputValidationFailure()
-    {   
+    {
         $this->ba->cronAuth();
 
         $this->startTest();
-    }    
+    }
 
     // test for cron that migrates existing original mpans to vault (mpan tokenization)
-    // tests that even if two terminals have same mpans, then also migration works fine. Although two activated terminala can't have same mpans due to duplicity validations in place but 
+    // tests that even if two terminals have same mpans, then also migration works fine. Although two activated terminala can't have same mpans due to duplicity validations in place but
     // a failed terminal can have the same mpans as that of an activated terminal and if activated terminal is picked up before failed one for tokenization,
     // then "A terminal for this gateway for this merchant already exists" is raised when we tokenize failed terminal, we are bypassing this duplicity check for this scenario
     public function testTokenizeExistingTerminalMpansSameFields()
-    {   
+    {
 
         $terminal = $this->fixtures->create('terminal', [
             'enabled'             => true,
@@ -2132,7 +2136,7 @@ class TerminalTest extends TestCase
     }
     // test tokenize existing mpan cron route should accept terminal_id
     public function testTokenizeExistingTerminalMpansWithTerminalIdInInput()
-    {   
+    {
         $terminal = $this->fixtures->create('terminal', [
             'enabled'             => true,
             'gateway'             => 'worldline',
@@ -2196,7 +2200,7 @@ class TerminalTest extends TestCase
 
     // tests that none of the mpan of a terminal should get tokenized even if one fails
     public function testTokenizeExistingTerminalMpansTransaction()
-    {        
+    {
         $successTerminal = $this->fixtures->create('terminal', [
             'enabled'             => true,
             'gateway'             => 'worldline',
@@ -2235,13 +2239,13 @@ class TerminalTest extends TestCase
                             'Request timedout at card vault service',
                             ErrorCode::SERVER_ERROR);
                     }
-    
+
                     $token = base64_encode($input['secret']);
 
                     return $token;
                 });
-      
-        
+
+
         $this->ba->cronAuth();
 
         $res = $this->startTest();
@@ -2277,7 +2281,7 @@ class TerminalTest extends TestCase
     }
 
     public function testCreateTerminalMpansTokenizationFailure()
-    { 
+    {
         $url = '/merchants/100000Razorpay/terminals';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
@@ -2298,7 +2302,7 @@ class TerminalTest extends TestCase
                             'Request timedout at card vault service',
                             ErrorCode::SERVER_ERROR);
                     }
-    
+
                     $token = base64_encode($input['secret']);
 
                     return $token;
