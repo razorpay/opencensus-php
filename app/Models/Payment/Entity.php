@@ -1633,12 +1633,18 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
             case Method::APP:
 
+                $acquirerData['discount'] = 0;
+
+                $acquirerData['amount'] = ($this->getAmount() / 100);
+
                 $discount = $this->getDiscountIfApplicable();
+
                 if ($discount !== null)
                 {
                     $acquirerData['discount'] = $discount / 100;
                     $acquirerData['amount'] = ($this->getAmount() - $discount) / 100;
                 }
+
                 break;
         }
 

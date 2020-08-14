@@ -301,11 +301,16 @@ class Payment extends Base
 
     protected function getDiscountIfApplicable($payment)
     {
-        if (($payment->isAppCred() === true) and
-            ($payment->discount !== null))
+        if ($payment->isAppCred() === true)
         {
-            return $payment->discount->getAmount();
+            $discount = $this->repo->discount->fetchForPayment($payment);
+
+            if ($discount !== null)
+            {
+                return $discount->getAmount();
+            }
         }
+
         return 0;
     }
 
