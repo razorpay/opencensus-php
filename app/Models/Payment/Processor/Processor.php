@@ -1627,22 +1627,15 @@ class Processor
     {
         $publicKey = null;
 
-        $variant = 'off';
-
         if (isset($data['razorpay_payment_id']) === true)
         {
             $payment = $this->repo->payment->find(Payment\Entity::stripDefaultSign($data['razorpay_payment_id']));
 
             $publicKey = $payment->getPublicKey();
 
-            $variant = app('razorx')->getTreatment($payment->getMerchantId(),
-                RazorxTreatment::PUBLIC_KEY_SIGNATURE_GENERATION,
-                $this->mode);
-
             $this->trace->info(TraceCode::PUBLIC_KEY_SIGNATURE_GENERATION_TRACE, [
                 'payment_id'   => $data['razorpay_payment_id'],
                 'merchant_id'  => $payment->getMerchantId(),
-                'variant'      => $variant
             ]);
         }
 
@@ -1650,7 +1643,7 @@ class Processor
 
         $str = implode('|', $data);
 
-        return $this->ba->sign($str, $publicKey, $variant);
+        return $this->ba->sign($str, $publicKey);
     }
 
     protected function checkMerchantPermissions()

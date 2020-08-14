@@ -1965,10 +1965,9 @@ class BasicAuth
      *
      * @throws Exception\LogicException
      */
-    public function sign($str, $publicKey = null, $variant = 'off')
+    public function sign($str, $publicKey = null)
     {
-        if (($publicKey !== null) and
-            (strtolower($variant) === 'on'))
+        if ($publicKey !== null)
         {
             $secret = $this->getSecretForPublicKey($publicKey);
 
