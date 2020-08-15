@@ -19,6 +19,7 @@ use RZP\Constants\Environment;
 use RZP\Jobs\Settlement\Create;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Settlement\Bucket;
+use RZP\Jobs\Transfers\TransferRecon;
 use RZP\Models\Merchant as MerchantModel;
 use RZP\Models\Settlement\Merchant as SetlMerchant;
 
@@ -1138,19 +1139,12 @@ class Processor extends Base\Core
         {
             $setl = $this->repo->settlement->findOrFail($input['id']);
 
-            $oldStatus = $setl->getStatus();
+            $currentStatus = $setl->getStatus();
 
-            if ($oldStatus === Status::PROCESSED)
+            if ($currentStatus !== Status::CREATED)
             {
                 return [
-                    'error' => null
-                ];
-            }
-
-            if ($oldStatus !== Status::CREATED)
-            {
-                return [
-                    'error' => sprintf("current settlement status %s can not be updated to processed state", $oldStatus)
+                    'error' => sprintf("current settlement status %s can not be updated to processed state", $currentStatus)
                 ];
             }
 
@@ -1171,6 +1165,8 @@ class Processor extends Base\Core
                 ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_SETTLEMENT_UPDATE_IN_PROGRESS);
 
             (new Core)->triggerSettlementWebhook($setl);
+
+            TransferRecon::dispatch([$setl->getId()], $this->mode);
         }
         catch (\Throwable $e)
         {

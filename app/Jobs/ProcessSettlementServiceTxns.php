@@ -65,7 +65,6 @@ class ProcessSettlementServiceTxns extends Job
                 $this->data[self::TRANSACTION_IDS],
                 $values,
                 true);
-
         }
         catch (\Throwable $e)
         {
