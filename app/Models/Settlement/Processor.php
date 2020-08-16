@@ -1137,11 +1137,16 @@ class Processor extends Base\Core
     {
         try
         {
+            $updateStatusAllowed = [
+                Status::PROCESSED,
+                Status::CREATED,
+            ];
+
             $setl = $this->repo->settlement->findOrFail($input['id']);
 
             $currentStatus = $setl->getStatus();
 
-            if ($currentStatus !== Status::CREATED)
+            if (in_array($currentStatus, $updateStatusAllowed) === false)
             {
                 return [
                     'error' => sprintf("current settlement status %s can not be updated to processed state", $currentStatus)
@@ -1159,7 +1164,9 @@ class Processor extends Base\Core
                     $setl->setStatus($input['status']);
                     $setl->setRemarks($input['remarks']);
 
-                   return $this->repo->saveOrFail($setl);
+                    $this->repo->saveOrFail($setl);
+
+                    return $setl;
                 },
                 30,
                 ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_SETTLEMENT_UPDATE_IN_PROGRESS);
