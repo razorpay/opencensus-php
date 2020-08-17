@@ -118,8 +118,6 @@ class Service extends Base\Service
                                      ->webhook
                                      ->getWebhooksByEventEnabled(Event::PAYMENT_DOWNTIME_STARTED);
 
-        $sendToOnlyTestMerchant = $this->sendDowntimeToMerchant($downtime, Status::STARTED);
-
         foreach ($eventEnabledWebhooks as $webhook)
         {
             $eventPayload = [
@@ -127,19 +125,7 @@ class Service extends Base\Service
                 ApiEventSubscriber::MERCHANT_ID => $webhook->merchant->getId(),
             ];
 
-            if($sendToOnlyTestMerchant === true)
-            {
-                $variant = $this->app->razorx->getTreatment($webhook->merchant->getId(), self::RAZORX_DOWNTIME_V2, $this->mode);
-
-                if (strtolower($variant) === 'on')
-                {
-                    $this->app['events']->fire('api.payment.downtime.started', $eventPayload);
-                }
-            }
-            else
-            {
-                $this->app['events']->fire('api.payment.downtime.started', $eventPayload);
-            }
+            $this->app['events']->fire('api.payment.downtime.started', $eventPayload);
         }
 
         $this->emailDowntime(Constants::CREATED, $downtime);
@@ -151,8 +137,6 @@ class Service extends Base\Service
                                      ->webhook
                                      ->getWebhooksByEventEnabled(Event::PAYMENT_DOWNTIME_RESOLVED);
 
-        $sendToOnlyTestMerchant = $this->sendDowntimeToMerchant($downtime, Status::RESOLVED);
-
         foreach ($eventEnabledWebhooks as $webhook)
         {
             $eventPayload = [
@@ -160,19 +144,7 @@ class Service extends Base\Service
                 ApiEventSubscriber::MERCHANT_ID => $webhook->merchant->getId(),
             ];
 
-            if($sendToOnlyTestMerchant === true)
-            {
-                $variant = $this->app->razorx->getTreatment($webhook->merchant->getId(), self::RAZORX_DOWNTIME_V2, $this->mode);
-
-                if (strtolower($variant) === 'on')
-                {
-                    $this->app['events']->fire('api.payment.downtime.resolved', $eventPayload);
-                }
-            }
-            else
-            {
-                $this->app['events']->fire('api.payment.downtime.resolved', $eventPayload);
-            }
+            $this->app['events']->fire('api.payment.downtime.resolved', $eventPayload);
         }
 
         $this->emailDowntime(Constants::RESOLVED, $downtime);
@@ -181,61 +153,6 @@ class Service extends Base\Service
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setTimeLimit(300);
-    }
-
-    protected function sendDowntimeToMerchant($downtime, $status)
-    {
-        $downtimeArray = $downtime->toArray();
-
-        $param =[
-            GatewayEntity::METHOD => $downtimeArray[Entity::METHOD],
-            GatewayEntity::BEGIN => $downtimeArray[Entity::BEGIN],
-        ];
-
-        if (isset($downtimeArray[Entity::ISSUER]) === true)
-        {
-            $param[GatewayEntity::ISSUER] = $downtimeArray[Entity::ISSUER];
-        }
-        if (isset($downtimeArray[Entity::NETWORK]) === true)
-        {
-            $param[GatewayEntity::NETWORK] = $downtimeArray[Entity::NETWORK];
-        }
-
-        if ($downtimeArray[Entity::METHOD] === Method::UPI)
-        {
-            // As Downtime V2 will be making upi downtimes for VPA Handles,
-            // If VPA handle is not present we can assume that it was made by another source
-            if (isset($downtimeArray[Entity::VPA_HANDLE]) === true)
-            {
-                $param[GatewayEntity::VPA_HANDLE] = $downtimeArray[Entity::VPA_HANDLE];
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        $gatewayDowntime = null;
-
-        if ($status === Status::STARTED)
-        {
-            $gatewayDowntime = $this->repo->gateway_downtime->fetchActiveDowntime($param);
-        }
-        else if ($status === Status::RESOLVED)
-        {
-            $gatewayDowntime = $this->repo->gateway_downtime->fetchResolvedDowntime($param);
-        }
-
-        $gatewayDowntime = $gatewayDowntime->unique(GatewayEntity::SOURCE);
-
-        $source = $gatewayDowntime->pluck(GatewayEntity::SOURCE)->toArray();
-
-        if (count($source) === 1 && (in_array(Source::DOWNTIME_V2, $source) === true))
-        {
-            return true;
-        }
-
-        return false;
     }
 
     public function emailDowntime(string $status, Entity $downtime)
