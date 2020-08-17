@@ -13,8 +13,8 @@ local fixed_window_script   = require("fixed_window")()
 -- https://docs.google.com/document/d/1y6pg6S4ofkspLiLTaOYJFbUdDu4EpdNWZ-FBXvflxu0/edit
 
 -- Settings Key Prefix
-local route_setting_prefix      = "throttle:{route}:"
-local merchant_setting_prefix   = "throttle:{merchant}:"
+local route_setting_prefix      = "throttle:route:"
+local merchant_setting_prefix   = "throttle:merchant:"
 
 -- Prefix for keys used as rate limit identifiers.
 local route_identifier_prefix       = "throttle:ri:"
@@ -229,6 +229,11 @@ function M.rate_limit_ngx(ngx)
     if err then
         ngx.log(ngx.ERR, "failed to rate_limit: ", err)
         return
+    end
+
+    err = utility.release_redis_conn(redis)
+    if err then
+        ngx.log(ngx.ERR, "failed to release redis conn: ", err)
     end
 
     if rate_limit_res ~= nil and rate_limit_res.allowed ~= 1 then

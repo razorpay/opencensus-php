@@ -917,10 +917,6 @@ class SharpGatewayTest extends TestCase
     {
         $key = 'payment:upi.polling.' . $paymentId . '.status';
 
-        $store = Cache::store();
-
-        Cache::shouldReceive('store')->andReturn($store);
-
         Cache::shouldReceive('get')
             ->once()
             ->with($key)

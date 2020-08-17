@@ -24,12 +24,12 @@ final class Constant
     /**
      * Redis key for global settings
      */
-    const GLOBAL_SETTINGS_KEY        = '{throttle:t}';
+    const GLOBAL_SETTINGS_KEY        = 'throttle:t';
 
     /**
      * Redis key prefix for identifier level settings
      */
-    const ID_SETTINGS_KEY_PREFIX     = '{throttle:t}:i:';
+    const ID_SETTINGS_KEY_PREFIX     = 'throttle:t:i:';
 
     /**
      * Redis key to store the set which contains all the custom level settings
