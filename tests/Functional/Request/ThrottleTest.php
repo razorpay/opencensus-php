@@ -116,9 +116,6 @@ class ThrottleTest extends TestCase
 
         $redisMockThrottle->method('hmset')->will($this->returnValueMap($map));
 
-        $redisMockOld->method('get')
-            ->will($this->returnValue(array("CONF1")));
-
 
         $this->makeRequestAndGetContent($this->testData['testMigrateThrottleKeysFromRedisLabs']['request']);
     }
@@ -172,7 +169,7 @@ class ThrottleTest extends TestCase
         // verify that custom settings are added in the set
         $members = $this->redis->smembers(K::CUSTOM_SETTINGS_SET);
 
-        $this->assertArraySelectiveEquals(['throttle:t:i:10000000000000'], $members);
+        $this->assertArraySelectiveEquals(['{throttle:t}:i:10000000000000'], $members);
 
         $this->startTest();
     }

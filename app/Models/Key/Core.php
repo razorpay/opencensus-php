@@ -144,7 +144,7 @@ class Core extends Base\Core
 
         try
         {
-           Redis::connection()->client()->set(Throttle::KEYID_MID_KEY_PREFIX . $keyId, $merchantId);
+           Redis::connection('throttle')->client()->set(Throttle::KEYID_MID_KEY_PREFIX . $keyId, $merchantId);
         }
         catch (\Throwable $e)
         {
