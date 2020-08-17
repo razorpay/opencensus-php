@@ -114,15 +114,14 @@ class Service extends Base\Service
 
     public function eventDowntimeStarted(Entity $downtime)
     {
-        $eventEnabledWebhooks = $this->repo
-                                     ->webhook
-                                     ->getWebhooksByEventEnabled(Event::PAYMENT_DOWNTIME_STARTED);
+        // @see getMerchantsSubscribingToWebhookEvent method.
+        $merchantIds = $this->getMerchantsSubscribingToWebhookEvent(Event::PAYMENT_DOWNTIME_STARTED);
 
-        foreach ($eventEnabledWebhooks as $webhook)
+        foreach ($merchantIds as $merchantId)
         {
             $eventPayload = [
                 ApiEventSubscriber::MAIN        => $downtime,
-                ApiEventSubscriber::MERCHANT_ID => $webhook->merchant->getId(),
+                ApiEventSubscriber::MERCHANT_ID => $merchantId,
             ];
 
             $this->app['events']->fire('api.payment.downtime.started', $eventPayload);
@@ -133,21 +132,58 @@ class Service extends Base\Service
 
     public function eventDowntimeResolved(Entity $downtime)
     {
-        $eventEnabledWebhooks = $this->repo
-                                     ->webhook
-                                     ->getWebhooksByEventEnabled(Event::PAYMENT_DOWNTIME_RESOLVED);
+        // @see getMerchantsSubscribingToWebhookEvent method.
+        $merchantIds = $this->getMerchantsSubscribingToWebhookEvent(Event::PAYMENT_DOWNTIME_RESOLVED);
 
-        foreach ($eventEnabledWebhooks as $webhook)
+        foreach ($merchantIds as $merchantId)
         {
             $eventPayload = [
                 ApiEventSubscriber::MAIN        => $downtime,
-                ApiEventSubscriber::MERCHANT_ID => $webhook->merchant->getId(),
+                ApiEventSubscriber::MERCHANT_ID => $merchantId,
             ];
 
             $this->app['events']->fire('api.payment.downtime.resolved', $eventPayload);
         }
 
         $this->emailDowntime(Constants::RESOLVED, $downtime);
+    }
+
+    /**
+     * Stork does not have multi-casting support yet. It expects webhook event
+     * on behalf of a merchant/owner.
+     *
+     * This function returns maximum of 5k merchant subscribing to given event.
+     * The callee then processes general events like payment.downtime.started
+     * on behalf of each merchant, one by one.
+     *
+     * Gets merchant ids subscribing to given webhook event.
+     * @param  string $event
+     * @return array An array of merchant ids.
+     * @throws \RZP\Exception\ServerErrorException
+     */
+    protected function getMerchantsSubscribingToWebhookEvent(string $event): array
+    {
+        /** @var \RZP\Services\Stork */
+        $service = $this->app->stork_service;
+
+        $service->init($this->mode);
+
+        // Attempts twice before throwing exception.
+        $response = $service->request(
+            '/twirp/rzp.stork.webhook.v1.WebhookAPI/List',
+            [
+                'service'    => $service->service,
+                'owner_type' => 'merchant',
+                'limit'      => 5000,
+                'active'     => true,
+                'event'      => $event,
+            ]
+        );
+
+        $body = json_decode($response->body, true) ?: [];
+        $webhooks = $body['webhooks'] ?? [];
+
+        return  array_values(array_unique(array_pluck($webhooks, 'owner_id')));
     }
 
     protected function increaseAllowedSystemLimits()

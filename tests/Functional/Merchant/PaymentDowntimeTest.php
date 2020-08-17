@@ -3,7 +3,9 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Mail;
+use Mockery;
 use Carbon\Carbon;
+use Requests_Response;
 
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
@@ -683,9 +685,6 @@ class PaymentDowntimeTest extends TestCase
     {
         Carbon::setTestNow(Carbon::create(2019, 14, 01));
 
-        $this->createWebhook(['events' => ['payment.downtime.started' => '1',
-                                           'payment.downtime.resolved' => '1']]);
-
         $this->ba->adminAuth();
 
         $addDowntimeRequest = [
@@ -702,6 +701,10 @@ class PaymentDowntimeTest extends TestCase
             'url' => '/gateway/downtimes'
         ];
 
+        $this->setExpectationForGetMerchantsSubscribingToWebhookEvent('payment.downtime.started');
+        // Expects webhook events for all merchants.
+        $this->expectWebhookEventWithContents('payment.downtime.started', 'testPaymentDowntimeStartedWebhook');
+        $this->testData['testPaymentDowntimeStartedWebhook']['account_id'] = 'acc_10000000000011';
         $this->expectWebhookEventWithContents('payment.downtime.started', 'testPaymentDowntimeStartedWebhook');
 
         $this->makeRequestAndGetContent($addDowntimeRequest);
@@ -719,9 +722,6 @@ class PaymentDowntimeTest extends TestCase
     {
         Carbon::setTestNow(Carbon::create(2019, 14, 01));
 
-        $this->createWebhook(['events' => ['payment.downtime.started' => '1',
-                                           'payment.downtime.resolved' => '1']]);
-
         $this->ba->adminAuth();
 
         $addDowntimeRequest = [
@@ -748,6 +748,10 @@ class PaymentDowntimeTest extends TestCase
 
         $this->activateDowntimes('started');
 
+        $this->setExpectationForGetMerchantsSubscribingToWebhookEvent('payment.downtime.resolved');
+        // Expects webhook events for all merchants.
+        $this->expectWebhookEventWithContents('payment.downtime.resolved', 'testPaymentDowntimeResolvedWebhook');
+        $this->testData['testPaymentDowntimeResolvedWebhook']['account_id'] = 'acc_10000000000011';
         $this->expectWebhookEventWithContents('payment.downtime.resolved', 'testPaymentDowntimeResolvedWebhook');
 
         // 90 minutes elapsed
@@ -1343,5 +1347,28 @@ class PaymentDowntimeTest extends TestCase
         ];
 
         return $this->makeRequestAndGetContent($fetchDowntimeRequest);
+    }
+
+    /**
+     * Mocks request args expectation for getMerchantsSubscribingToWebhookEvent method.
+     * Also returns mocked response with total 3 merchant ids, containing 2 uniques.
+     *
+     * @param string $event
+     */
+    protected function setExpectationForGetMerchantsSubscribingToWebhookEvent(string $event)
+    {
+        $this->createStorkMock();
+
+        $expectedReqArgs = ['service' => 'api-test', 'owner_type' => 'merchant', 'limit' => 5000, 'active' => true, 'event' => $event];
+
+        $mockedRes = new Requests_Response;
+        $mockedRes->success = true;
+        $mockedRes->body = json_encode(["webhooks" => [['owner_id' => '10000000000000'], ['owner_id' => '10000000000000'], ['owner_id' => '10000000000011']]]);
+
+        $this->storkMock
+            ->shouldReceive('request')
+            ->once()
+            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/List', Mockery::subset($expectedReqArgs))
+            ->andReturn($mockedRes);
     }
 }

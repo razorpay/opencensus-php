@@ -359,6 +359,7 @@ return [
     'testPaymentDowntimeStartedWebhook' => [
         'entity'   => 'event',
         'event'    => 'payment.downtime.started',
+        'account_id' => 'acc_10000000000000',
         'contains' => [
             'payment.downtime',
         ],
@@ -381,6 +382,7 @@ return [
     'testPaymentDowntimeResolvedWebhook' => [
         'entity'   => 'event',
         'event'    => 'payment.downtime.resolved',
+        'account_id' => 'acc_10000000000000',
         'contains' => [
             'payment.downtime',
         ],

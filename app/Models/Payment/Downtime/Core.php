@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Jobs\PaymentDowntimeEvent;
 use RZP\Models\Gateway\Downtime\Source;
 use RZP\Models\Payment\Downtime\Service;
 use Illuminate\Database\Eloquent\Collection;
@@ -27,7 +28,7 @@ class Core extends Base\Core
 
         if($downtime->isScheduled() === false)
         {
-            (new Service())->eventDowntimeStarted($downtime);
+            PaymentDowntimeEvent::dispatch($this->mode, Status::STARTED, serialize($downtime));
         }
 
         return $downtime;
