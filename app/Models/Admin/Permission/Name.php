@@ -293,6 +293,7 @@ class Name
     const USER_ACCOUNT_LOCK_UNLOCK            = 'user_account_lock_unlock';
     const UPDATE_USER_CONTACT_MOBILE          = 'update_user_contact_mobile';
     const FTS_TRANSFER_ATTEMPT_BULK_UPDATE    = 'fts_transfer_attempt_bulk_update';
+    const FTS_ROUTING_RULES_UPDATE            = 'fts_routing_rules_update';
     const MANAGE_RENDERING_PREFERENCES  	  = 'manage_rendering_preferences';
     const UPDATE_DOWNTIME_CONFIG              = 'update_downtime_config';
     const LIST_DOWNTIME_CONFIG                = 'list_downtime_config';
