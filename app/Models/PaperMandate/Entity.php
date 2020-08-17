@@ -257,6 +257,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FREQUENCY);
     }
 
+    public function isFormUploadedSuccessfully(): bool
+    {
+        return $this->getStatus() === Status::AUTHENTICATED;
+    }
+
     public function setStatus(string $status)
     {
         $this->setAttribute(self::STATUS, $status);

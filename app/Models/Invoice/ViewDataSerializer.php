@@ -625,7 +625,7 @@ class ViewDataSerializer extends Base\Core
                 $serialized
                 [E::SUBSCRIPTION_REGISTRATION]
                 [SubscriptionRegistration\Entity::NACH]
-                [PaperMandate\Entity::IS_NACH_FORM_UPLOADED] = empty($paperMandate->getUploadedFileID()) === false;
+                [PaperMandate\Entity::IS_NACH_FORM_UPLOADED] = $paperMandate->isFormUploadedSuccessfully();
             }
         }
         elseif ($this->invoice->isPaymentPageInvoice() === true)
