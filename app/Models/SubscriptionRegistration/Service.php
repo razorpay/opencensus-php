@@ -324,78 +324,96 @@ class Service extends Base\Service
      */
     public function fetchPaperMandateUpload(array $input): array
     {
-        $invoiceId = $input[Entity::AUTH_LINK_ID];
+        $data = [];
 
-        $invoice = $this->repo
-                        ->invoice
-                        ->findByPublicId($invoiceId);
-
-        (new Validator)->validateInvoiceCreatedForTokenRegistration($invoice);
-
-        $subscriptionRegistration = $invoice->tokenRegistration;
-
-        $paperMandate = $subscriptionRegistration->paperMandate;
-
-        $paperMandateUploads =
-            $this->repo->paper_mandate_upload->findLatestByMandateId($paperMandate->getId())->toArrayAdmin();
-
-        if ($paperMandateUploads['count'] === 0)
+        try
         {
-            return [
-                "comments"  => "No uploads found",
-                "canManual" => false
+            $invoiceId = $input[Entity::AUTH_LINK_ID];
+
+            $invoice = $this->repo
+                            ->invoice
+                            ->findByPublicId($invoiceId);
+
+            (new Validator)->validateInvoiceCreatedForTokenRegistration($invoice);
+
+            $subscriptionRegistration = $invoice->tokenRegistration;
+
+            $paperMandate = $subscriptionRegistration->paperMandate;
+
+            $paperMandateUploads =
+                $this->repo->paper_mandate_upload->findLatestByMandateId($paperMandate->getId())->toArrayAdmin();
+
+            if ($paperMandateUploads['count'] === 0)
+            {
+                return [
+                    'comments'  => 'No uploads found',
+                    'canManual' => false
+                ];
+            }
+
+            $paperMandateUploads = $paperMandateUploads['items'][0];
+
+            if ($paperMandateUploads[PaperMandateUploadEntity::STATUS] !== PaperMandateUploadStatus::REJECTED)
+            {
+                return [
+                    'status'    => $paperMandateUploads[PaperMandateUploadEntity::STATUS],
+                    'comments'  => $paperMandateUploads[PaperMandateUploadEntity::STATUS_REASON] ?? 'No Reason found',
+                    'canManual' => false
+                ];
+            }
+
+            if (($paperMandateUploads[PaperMandateUploadEntity::NOT_MATCHING] === null) or
+                (empty($paperMandateUploads[PaperMandateUploadEntity::NOT_MATCHING]) === true))
+            {
+                return [
+                    'status'    => $paperMandateUploads[PaperMandateUploadEntity::STATUS],
+                    'comments'  => $paperMandateUploads[PaperMandateUploadEntity::STATUS_REASON] ?? 'No Reason found',
+                    'canManual' => false
+                ];
+            }
+
+            $mismatchArr = [];
+            foreach ($paperMandateUploads[PaperMandateUploadEntity::NOT_MATCHING] as $key => $val)
+            {
+                $mismatchArr = array_merge($mismatchArr, [$val => $paperMandateUploads[$val]]);
+            }
+
+            $imageUri = (new FileUploader($paperMandate))
+                            ->getSignedShortUrl($paperMandateUploads[PaperMandateUploadEntity::ENHANCED_FILE_ID]);
+
+            $data = [
+                'auth_link_id'     => $invoiceId,
+                'paper_mandate_id' => $paperMandate->getId(),
+                'enhanced_file_id' => $paperMandateUploads[PaperMandateUploadEntity::ENHANCED_FILE_ID],
+                'status'           => $paperMandateUploads[PaperMandateUploadEntity::STATUS],
+                'canManual'        => true,
+                'mismatch'         => $mismatchArr,
+                'imageUri'         => $imageUri,
+                'ideal'            => [
+                    PaperMandateEntity::UTILITY_CODE         => $paperMandate->getUtilityCode(),
+                    PaperMandateEntity::AMOUNT               => $paperMandate->getAmount(),
+                    PaperMandateEntity::SPONSOR_BANK_CODE    => strtoupper($paperMandate->getSponsorBankCode()),
+                    PaperMandateEntity::FORM_CHECKSUM        => $paperMandate->getFormChecksum(),
+                    PaperMandateUploadEntity::ACCOUNT_NUMBER => $paperMandate->bankAccount->getAccountNumber(),
+                    PaperMandateUploadEntity::IFSC_CODE      => $paperMandate->bankAccount->getIfscCode(),
+                    PaperMandateUploadEntity::ACCOUNT_TYPE   => $paperMandate->bankAccount->getAccountType(),
+                ]
             ];
+
         }
-
-        $paperMandateUploads = $paperMandateUploads['items'][0];
-
-        if ($paperMandateUploads[PaperMandateUploadEntity::STATUS] !== PaperMandateUploadStatus::REJECTED)
+        catch (\Throwable $ex)
         {
-            return [
-                "status"    => $paperMandateUploads[PaperMandateUploadEntity::STATUS],
-                "comments"  => $paperMandateUploads[PaperMandateUploadEntity::STATUS_REASON],
-                "canManual" => false
-            ];
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::NACH_MANUAL_SUBMIT_FAILED,
+                [
+                    'invoice_id' => $input[Entity::AUTH_LINK_ID],
+                ]
+            );
+
+            throw $ex;
         }
-
-        if ($paperMandateUploads[PaperMandateUploadEntity::NOT_MATCHING] === null or
-            empty($paperMandateUploads[PaperMandateUploadEntity::NOT_MATCHING]) === true)
-        {
-            return [
-                "status"    => $paperMandateUploads[PaperMandateUploadEntity::STATUS],
-                "comments"  => $paperMandateUploads[PaperMandateUploadEntity::STATUS_REASON],
-                "canManual" => false
-            ];
-        }
-
-        $mismatchArr = [];
-        foreach ($paperMandateUploads[PaperMandateUploadEntity::NOT_MATCHING] as $key => $val) {
-            $mismatchArr = array_merge($mismatchArr, [$val => $paperMandateUploads[$val]]);
-        }
-
-        $imageUri = (new FileUploader($paperMandate))
-                        ->getSignedShortUrl($paperMandateUploads[PaperMandateUploadEntity::ENHANCED_FILE_ID]);
-
-        $data = [
-            "auth_link_id"      => $invoiceId,
-            "paper_mandate_id"  => $paperMandate->getId(),
-            "enhanced_file_id"  => $paperMandateUploads[PaperMandateUploadEntity::ENHANCED_FILE_ID],
-
-            "status"    => $paperMandateUploads[PaperMandateUploadEntity::STATUS],
-            "canManual" => true,
-            "mismatch"  => $mismatchArr,
-            "imageUri"  => $imageUri,
-            "ideal"     => [
-                PaperMandateEntity::UTILITY_CODE      => $paperMandate->getUtilityCode(),
-                PaperMandateEntity::AMOUNT            => $paperMandate->getAmount(),
-                PaperMandateEntity::SPONSOR_BANK_CODE => strtoupper($paperMandate->getSponsorBankCode()),
-                PaperMandateEntity::FORM_CHECKSUM     => $paperMandate->getFormChecksum(),
-
-                PaperMandateUploadEntity::ACCOUNT_NUMBER => $paperMandate->bankAccount->getAccountNumber(),
-                PaperMandateUploadEntity::IFSC_CODE      => $paperMandate->bankAccount->getIfscCode(),
-                PaperMandateUploadEntity::ACCOUNT_TYPE   => $paperMandate->bankAccount->getAccountType(),
-            ]
-        ];
 
         return $data;
     }
@@ -405,58 +423,75 @@ class Service extends Base\Service
      */
     public function approvePaperMandateIssues(array $input): array
     {
-        $invoiceId        = $input[Entity::AUTH_LINK_ID];
-        $enhancedImgId    = $input[PaperMandateUploadEntity::ENHANCED_FILE_ID];
-        $approverEmail    = $input["approver_email_id"];
-        $approverComments = $input["notes"];
-
-        $invoice = $this->repo
-            ->invoice
-            ->findByPublicId($invoiceId);
-
-        (new Validator)->validateInvoiceCreatedForTokenRegistration($invoice);
-
-        $subscriptionRegistration = $invoice->tokenRegistration;
-
-        $paperMandate = $subscriptionRegistration->paperMandate;
-
-        // recheck again as UI may hold for minutes before submitting
-        $paperMandateUploads =
-            $this->repo->paper_mandate_upload->findLatestByMandateId($paperMandate->getId())->toArrayAdmin();
-
-        $paperMandateUploads = $paperMandateUploads['items'][0];
-
-        if ($paperMandateUploads[PaperMandateUploadEntity::STATUS] !== PaperMandateUploadStatus::REJECTED)
+        try
         {
-            return [
-                "status"    => $paperMandateUploads[PaperMandateUploadEntity::STATUS],
-                "comments"  => $paperMandateUploads[PaperMandateUploadEntity::STATUS_REASON],
-                "canManual" => false
-            ];
+            $invoiceId        = $input[Entity::AUTH_LINK_ID];
+            $enhancedImgId    = $input[PaperMandateUploadEntity::ENHANCED_FILE_ID];
+            $approverEmail    = $input['approver_email_id'];
+            $approverComments = $input['notes'];
+
+            $invoice = $this->repo
+                            ->invoice
+                            ->findByPublicId($invoiceId);
+
+            (new Validator)->validateInvoiceCreatedForTokenRegistration($invoice);
+
+            $subscriptionRegistration = $invoice->tokenRegistration;
+
+            $paperMandate = $subscriptionRegistration->paperMandate;
+
+            // recheck again as UI may hold for minutes before submitting
+            $paperMandateUploads =
+                $this->repo->paper_mandate_upload->findLatestByMandateId($paperMandate->getId())->toArrayAdmin();
+
+            $paperMandateUploads = $paperMandateUploads['items'][0];
+
+            if ($paperMandateUploads[PaperMandateUploadEntity::STATUS] !== PaperMandateUploadStatus::REJECTED)
+            {
+                return [
+                    'status'    => $paperMandateUploads[PaperMandateUploadEntity::STATUS],
+                    'comments'  => $paperMandateUploads[PaperMandateUploadEntity::STATUS_REASON],
+                    'canManual' => false
+                ];
+            }
+
+            $paperMandateUpload = $this->repo
+                                        ->paper_mandate_upload
+                                        ->findByPublicId($paperMandateUploads[PaperMandateUploadEntity::ID]);
+
+            $paperMandateUpload->setStatus(PaperMandateUploadStatus::ACCEPTED);
+            $paperMandateUpload->setStatusReason('Approved by ' . $approverEmail . ' '  . $approverComments);
+            $this->repo->paper_mandate_upload->saveOrFail($paperMandateUpload);
+
+            // save paper mandate uploaded file id
+            $paperMandate->setUploadedFileId($enhancedImgId);
+
+            $this->repo->paper_mandate->saveOrFail($paperMandate);
+
+            // assign the merchant for further processing
+            // this route is called from admin
+            $this->merchant = $this->repo->merchant->findOrFail($paperMandateUpload->merchant->getId());;
+            $this->app['basicauth']->setMerchant( $this->merchant);
+
+            // create payment
+            $this->createPaymentForPaperMandate($input);
+
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::NACH_MANUAL_SUBMIT_FAILED,
+                [
+                    'invoice_id' => $input[Entity::AUTH_LINK_ID],
+                ]
+            );
+
+            throw $ex;
         }
 
-        $paperMandateUpload = $this->repo
-                                    ->paper_mandate_upload
-                                    ->findByPublicId($paperMandateUploads[PaperMandateUploadEntity::ID]);
-
-        $paperMandateUpload->setStatus(PaperMandateUploadStatus::ACCEPTED);
-        $paperMandateUpload->setStatusReason("Approved by " . $approverEmail . " " . $approverComments);
-        $this->repo->paper_mandate_upload->saveOrFail($paperMandateUpload);
-
-        // save paper mandate uploaded file id
-        $paperMandate->setUploadedFileId($enhancedImgId);
-
-        $this->repo->paper_mandate->saveOrFail($paperMandate);
-
-        // assign the merchant for further processing
-        // this route is called from admin
-        $this->merchant = $this->repo->merchant->findOrFail($paperMandateUpload->merchant->getId());;
-        $this->app['basicauth']->setMerchant( $this->merchant);
-
-        // create payment
-        $this->createPaymentForPaperMandate($input);
-
-        return ["status" => "success"];
+        return ['status' => 'success'];
     }
 
     public function paperMandateAuthenticate(array $input): array

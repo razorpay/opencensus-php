@@ -82,10 +82,7 @@ class HyperVerge
     const IMAGE_FORMAT_INVALID           = 'Image not one of the supported types (jpg/tiff/png)';
     const MARKERS_NOT_DETECTED           = 'Reclick image - Unable to detect the markers';
     const FORM_NOT_DETECTED              = 'No NACH detected';
-    const MARKERS_NOT_FOUND_BOTTOM_LEFT  = 'Markers not found : Bottom Left';
-    const MARKERS_NOT_FOUND_BOTTOM_RIGHT = 'Markers not found : Bottom Right';
-    const MARKERS_NOT_FOUND_TOP_RIGHT    = 'Markers not found : Top Right';
-    const MARKERS_NOT_FOUND_TOP_LEFT     = 'Markers not found : Top Left';
+    const MARKERS_NOT_FOUND              = 'Markers not found';
 
     protected $errorCodes = [
         self::MISSING_OR_INVALID_CREDENTIALS,
@@ -94,19 +91,13 @@ class HyperVerge
         self::IMAGE_FORMAT_INVALID,
         self::MARKERS_NOT_DETECTED,
         self::FORM_NOT_DETECTED,
-        self::MARKERS_NOT_FOUND_BOTTOM_LEFT,
-        self::MARKERS_NOT_FOUND_BOTTOM_RIGHT,
-        self::MARKERS_NOT_FOUND_TOP_LEFT,
-        self::MARKERS_NOT_FOUND_TOP_RIGHT,
+        self::MARKERS_NOT_FOUND,
     ];
 
     protected $errorCodes4XX = [
         self::FORM_NOT_DETECTED,
         self::MARKERS_NOT_DETECTED,
-        self::MARKERS_NOT_FOUND_BOTTOM_LEFT,
-        self::MARKERS_NOT_FOUND_BOTTOM_RIGHT,
-        self::MARKERS_NOT_FOUND_TOP_LEFT,
-        self::MARKERS_NOT_FOUND_TOP_RIGHT,
+        self::MARKERS_NOT_FOUND,
     ];
 
     public function __construct($app)
@@ -252,8 +243,25 @@ class HyperVerge
         $errorCode = $e->getCode();
 
         if (($errorCode < 400) or
-            ($errorCode >= 500) or
-            (in_array($errorMessage, $this->errorCodes4XX) === false))
+            ($errorCode >= 500))
+        {
+            return false;
+        }
+
+        // check if any of the hyperverge error message is of these category
+        // if not return false
+        $matches = array ();
+
+        foreach ($this->errorCodes4XX as $str)
+        {
+            if (strpos($errorMessage, $str) !== false)
+            {
+                $matches[] = $errorMessage;
+                break;
+            }
+        }
+
+        if (empty($matches) === true)
         {
             return false;
         }

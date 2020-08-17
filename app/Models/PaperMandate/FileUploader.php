@@ -5,6 +5,7 @@ namespace RZP\Models\PaperMandate;
 use Config;
 use Storage;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use Illuminate\Http\UploadedFile;
 use RZP\Models\Base\UniqueIdEntity;
 
@@ -37,6 +38,7 @@ class FileUploader extends Base\Core
 
     const GENERATED_IMAGE_FOLDER = 'generated';
     const ENHANCED_IMAGE_FOLDER  = 'enhanced';
+    const UPLOADED_IMAGE_FOLDER  = 'uploaded';
 
     const PAPER_MANDATE = 'paper_mandate';
 
@@ -67,6 +69,31 @@ class FileUploader extends Base\Core
         return $this->saveToUfh($uploadFile, self::ENHANCED_IMAGE_FOLDER);
     }
 
+    public function uploadUploadedForm($image)
+    {
+        $timeStarted = microtime(true);
+
+        $fileName = $this->paperMandate->getPublicId() . self::JPEG_EXTENSION;
+
+        $filePath = $this->compressUploadedImage($fileName, $image);
+
+        $uploadFile = $this->createUploadedFile($filePath, $fileName, self::JPEG_MIME);
+
+        $uploadFileId = $this->saveToUfh($uploadFile, self::UPLOADED_IMAGE_FOLDER);
+
+        $timeTaken = microtime(true) - $timeStarted;
+
+        $this->trace->info(
+            TraceCode::PAPER_MANDATE_STORE_UPLOADED_FILE,
+            [
+                'paper_mandate_id' => $this->paperMandate->getPublicId(),
+                'time_taken'       => $timeTaken
+            ]
+        );
+
+        return $uploadFileId;
+    }
+
     public function saveToUfh($file, $folder)
     {
         $filenameWithoutExt = str_before($file->getClientOriginalName(), '.' . $file->getClientOriginalExtension());
@@ -89,6 +116,11 @@ class FileUploader extends Base\Core
 
     public function getSignedUrl($fileId, $duration = 15)
     {
+        if (empty($fileId) === true)
+        {
+            return null;
+        }
+
         $file = $this->app['ufh.service']->getSignedUrl(
             'file_' . $fileId,
             ['duration' => $duration],
@@ -129,5 +161,35 @@ class FileUploader extends Base\Core
         $path = Storage::disk('local')->getAdapter()->getPathPrefix();
 
         return $path;
+    }
+
+    protected function compressUploadedImage($fileName, $image)
+    {
+        $info = getimagesize($image);
+
+        $imageCompressed = null;
+
+        switch ($info['mime'])
+        {
+            case 'image/jpeg':
+                $imageCompressed = imagecreatefromjpeg($image);
+                break;
+            case 'image/jpg':
+                $imageCompressed = imagecreatefromjpeg($image);
+                break;
+            case 'image/png':
+                $imageCompressed = imagecreatefrompng($image);
+                break;
+        }
+
+        ob_start();
+        imagejpeg($imageCompressed, null, 50);
+        $imagedata = ob_get_clean();
+
+        Storage::put($fileName, $imagedata);
+
+        $filePath = $this->getStorageDir() . $fileName;
+
+        return $filePath;
     }
 }

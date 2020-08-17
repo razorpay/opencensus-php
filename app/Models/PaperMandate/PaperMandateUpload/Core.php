@@ -17,7 +17,11 @@ class Core extends Base\Core
 
         $paperMandateUpload->merchant()->associate($paperMandate->merchant);
 
-        $paperMandateUpload->build([]);
+        $uploadFileId = (new PaperMandate\FileUploader($paperMandate))->uploadUploadedForm($input[PaperMandate\Entity::FORM_UPLOADED]);
+
+        $paperMandateUpload->build([
+            Entity::UPLOADED_FILE_ID => $uploadFileId
+        ]);
 
         $this->repo->saveOrFail($paperMandateUpload);
 
@@ -53,6 +57,8 @@ class Core extends Base\Core
         catch (ServerErrorException $e)
         {
             $paperMandateUpload->setStatus(Status::FAILED);
+
+            $paperMandateUpload->setStatusReason($e->getCode());
 
             throw $e;
         }

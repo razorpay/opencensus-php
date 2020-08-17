@@ -58,10 +58,12 @@ class Entity extends Base\PublicEntity
 
     const SUCCESS                     = 'success';
     const ENHANCED_IMAGE              = 'enhanced_image';
+    const UPLOADED_IMAGE              = 'uploaded_image';
 
     protected $entity                 = 'paper_mandate_upload';
 
     protected $fillable = [
+        self::UPLOADED_FILE_ID,
         self::EMAIL_ID,
         self::AMOUNT_IN_WORDS,
         self::UTILITY_CODE,
@@ -228,6 +230,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENHANCED_FILE_ID);
     }
 
+    public function getUploadedFileId()
+    {
+        return $this->getAttribute(self::UPLOADED_FILE_ID);
+    }
+
     public function getUtilityCode()
     {
         return $this->getAttribute(self::UTILITY_CODE);
@@ -361,6 +368,8 @@ class Entity extends Base\PublicEntity
         $adminArray[self::NOT_MATCHING] = json_decode($adminArray[self::NOT_MATCHING], 1);
 
         $adminArray[self::ENHANCED_IMAGE] = (new PaperMandate\FileUploader($this->paperMandate))->getSignedUrl($this->getEnhancedFileId());
+
+        $adminArray[self::UPLOADED_IMAGE] = (new PaperMandate\FileUploader($this->paperMandate))->getSignedUrl($this->getUploadedFileId());
 
         $adminArray[PaperMandate\Entity::GENERATED_IMAGE] = $this->paperMandate->getGeneratedFormUrl();
 

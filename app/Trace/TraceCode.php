@@ -682,6 +682,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMANDATE_RECON_FORCE_AUTH_RESPONSE                    = 'EMANDATE_RECON_FORCE_AUTH_RESPONSE';
 
 
+    const NACH_MANUAL_SUBMIT_FAILED                             = 'NACH_MANUAL_SUBMIT_FAILED';
     const NACH_DEBIT_REQUEST                                    = 'NACH_DEBIT_REQUEST';
     const NACH_DEBIT_RESPONSE                                   = 'NACH_DEBIT_RESPONSE';
     const NACH_FUNCTION_NOT_IMPLEMENTED                         = 'NACH_FUNCTION_NOT_IMPLEMENTED';
@@ -2282,6 +2283,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAPER_MANDATE_FORM_ENHANCED                           = 'PAPER_MANDATE_FORM_ENHANCED';
     const PAPER_MANDATE_AUTHENTICATE_REQUEST                    = 'PAPER_MANDATE_AUTHENTICATE_REQUEST';
     const PAPER_MANDATE_VALIDATE_REQUEST                        = 'PAPER_MANDATE_VALIDATE_REQUEST';
+    const PAPER_MANDATE_STORE_UPLOADED_FILE                     = 'PAPER_MANDATE_STORE_UPLOADED_FILE';
     const PAPER_MANDATE_CREATE_REQUEST                          = 'PAPER_MANDATE_CREATE_REQUEST';
     const PAPER_MANDATE_CREATED                                 = 'PAPER_MANDATE_CREATED';
     const PAPER_MANDATE_CREATE_FORM_REQUEST_TO_HYPERVERGE       = 'PAPER_MANDATE_CREATE_FORM_REQUEST_TO_HYPERVERGE';
