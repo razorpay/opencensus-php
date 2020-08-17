@@ -52,7 +52,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         UpiIciciFields::TXN_COMPLETION_DATE => self::TIME,
     ];
 
-    const UPI_TRANSFER_MERCHANT_ID      = '403343';
+    const UPI_TRANSFER_MERCHANT_ID = '403343';
 
     protected function getPaymentId(array $row)
     {
@@ -176,11 +176,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 $this->trace->info(
                     TraceCode::RECON_INFO_ALERT,
                     [
-                        'info_code' => Base\InfoCode::RECON_INSUFFICIENT_DATA_FOR_ENTITY_CREATION,
-                        'message'   => 'Data missing to create Payment via Recon',
-                        'rrn'       => $this->getReferenceNumber($row),
-                        'gateway'   => $this->gateway,
-                        'batch_id'  => $this->batchId,
+                        'info_code'    => Base\InfoCode::RECON_INSUFFICIENT_DATA_FOR_ENTITY_CREATION,
+                        'message'      => 'Data missing to create Payment via Recon',
+                        'rrn'          => $this->getReferenceNumber($row),
+                        'empty_column' => $reconColumn,
+                        'gateway'      => $this->gateway,
+                        'batch_id'     => $this->batchId,
                     ]
                 );
 
