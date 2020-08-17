@@ -290,6 +290,8 @@ class Table
     //Payout downtimes table
     const PAYOUT_DOWNTIMES     = 'payout_downtimes';
 
+    const BVS_VALIDATION = 'bvs_validation';
+
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS                        => self::MIGS,
         Entity::AXIS_GENIUS                      => self::MIGS,

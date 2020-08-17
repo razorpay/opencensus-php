@@ -94,6 +94,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\PaperMandate\Repository                      $paper_mandate
  * @property Models\VirtualAccountTpv\Repository                 $virtual_account_tpv
  * @property Models\Counter\Repository                           $counter
+ * @property Models\Merchant\BvsValidation\Repository            $bvs_validation
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

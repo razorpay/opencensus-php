@@ -108,7 +108,6 @@ class Entity
     const IDEMPOTENCY_KEY            = 'idempotency_key';
     const NODAL_STATEMENT            = 'nodal_statement';
     const VIRTUAL_ACCOUNT            = 'virtual_account';
-    const MERCHANT_DETAIL            = 'merchant_detail';
     const TERMINAL_ACTION            = 'terminal_action';
     const PAYMENT_DOWNTIME           = 'payment.downtime';
     const MERCHANT_REQUEST           = 'merchant_request';
@@ -123,7 +122,6 @@ class Entity
     const D2C_BUREAU_DETAIL          = 'd2c_bureau_detail';
     const D2C_BUREAU_REPORT          = 'd2c_bureau_report';
     const SETTLEMENT_BUCKET          = 'settlement_bucket';
-    const MERCHANT_DOCUMENT          = 'merchant_document';
     const SETTLEMENT_DETAILS         = 'settlement_details';
     const CREDITNOTE_INVOICE         = 'creditnote_invoice';
     const MERCHANT_PROMOTION         = 'merchant_promotion';
@@ -371,6 +369,11 @@ class Entity
     //payout downtime
     const PAYOUT_DOWNTIMES              = Table::PAYOUT_DOWNTIMES;
 
+    //merchant on-boarding
+    const MERCHANT_DETAIL   = 'merchant_detail';
+    const MERCHANT_DOCUMENT = 'merchant_document';
+    const BVS_VALIDATION    = 'bvs_validation';
+
     /**
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes
@@ -498,7 +501,6 @@ class Entity
         self::ENTITY_ORIGIN             => \RZP\Models\EntityOrigin::class,
         self::SCHEDULE_TASK             => \RZP\Models\Schedule\Task::class,
         self::DISPUTE_REASON            => \RZP\Models\Dispute\Reason::class,
-        self::MERCHANT_DETAIL           => \RZP\Models\Merchant\Detail::class,
         self::TERMINAL_ACTION           => \RZP\Models\Terminal\Action::class,
         self::BANKING_ACCOUNT           => \RZP\Models\BankingAccount::class,
         self::BANKING_ACCOUNT_STATE     => \RZP\Models\BankingAccount\State::class,
@@ -541,7 +543,6 @@ class Entity
         self::CREDITNOTE_INVOICE        => \RZP\Models\CreditNote\Invoice::class,
         self::INVOICE_REMINDER          => \RZP\Models\Invoice\Reminder::class,
         self::MERCHANT_REMINDERS        => \RZP\Models\Merchant\Reminders::class,
-        self::MERCHANT_DOCUMENT         => \RZP\Models\Merchant\Document::class,
         self::D2C_BUREAU_DETAIL         => \RZP\Models\D2cBureauDetail::class,
         self::D2C_BUREAU_REPORT         => \RZP\Models\D2cBureauReport::class,
         self::ADDON                     => \RZP\Models\Plan\Subscription\Addon::class,
@@ -706,6 +707,10 @@ class Entity
         self::CONFIG                        => \RZP\Models\Payment\Config::class,
         self::PROMOTION_EVENT               => \RZP\Models\Promotion\Event::class,
         self::PAYOUT_DOWNTIMES              => \RZP\Models\PayoutDowntime::class,
+
+        self::MERCHANT_DETAIL   => \RZP\Models\Merchant\Detail::class,
+        self::MERCHANT_DOCUMENT => \RZP\Models\Merchant\Document::class,
+        self::BVS_VALIDATION    => \RZP\Models\Merchant\BvsValidation::class,
     ];
 
     protected static $repository = [
