@@ -52,15 +52,7 @@ class Core extends Base\Core
                     (new Processor($gatewayResponse, $terminal))->process($upiTransfer);
                 },
                 $ttl = 30,
-                $errorCode = ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS,
-                // A process will generally not need to do multiple retries at
-                // all, since the retry times are adequate for the previous
-                // process to complete. Still setting to 3 for freak occurrences.
-                $retryCount = 3,
-                // 2x and 4x of avg response time for this entire route
-                // (not just the process within the lock)
-                $minRetryDelay = 600,
-                $maxRetryDelay = 1200
+                $errorCode = ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS
             );
 
             $paymentSuccess = true;
