@@ -5903,3 +5903,15 @@ ALTER TABLE payouts
 ALTER TABLE discounts
     MODIFY COLUMN offer_id char(14) default NULL,
     MODIFY COLUMN order_id char(14) default NULL;
+
+UPDATE fund_transfer_attempts
+    SET status = "initiated",
+    remarks = NULL,
+    updated_at = UNIX_TIMESTAMP(NOW())
+    WHERE source_id IN ('FHKYmHGekbic03', 'FIOuIze6sRDcGD', 'FIzUqdEPkaa032', 'FJ4W9tvbBk0zxq', 'FJQlp0zFPpCWt5', 'FJUURD5n6TWaKw', 'FMbayQU6PwuQyH', 'FMbh3nP121xxsV', 'FMcLen9NCrTThy');
+
+UPDATE fund_transfer_attempts
+	SET status="initiated",
+	bank_status_code=NULL,
+	updated_at=UNIX_TIMESTAMP(NOW())
+	WHERE source_id IN ('FHqJt5cGPPhAw3', 'FHqJp2X05SN3fv', 'FHqJfb28W7tj0i', 'FHqJOEPV2SbIVZ', 'FHqJAhlyR2jPZP', 'FHqJ1V3Gh5CIEs', 'FFNaQ6jXmVaVpY', 'FFNaNERoYYz5iK', 'FIJdGfgjOcDQA0', 'FHRUoxyltBxB6i');
