@@ -88,6 +88,10 @@ class Validator extends Base\Validator
         ConfigKey::FTS_PAYOUT_CARD                    => 'filled|string',
         ConfigKey::FTS_PAYOUT_BANK_ACCOUNT            => 'filled|string',
         ConfigKey::CARD_PAYMENT_SERVICE_EMI_FETCH     => 'filled|boolean',
+        ConfigKey::ENABLE_PAYMENT_DOWNTIME_CARD      => 'filled|boolean',
+        ConfigKey::ENABLE_PAYMENT_DOWNTIME_NETBANKING=> 'filled|boolean',
+        ConfigKey::ENABLE_PAYMENT_DOWNTIME_UPI       => 'filled|boolean',
+        ConfigKey::ENABLE_PAYMENT_DOWNTIME_WALLET    => 'filled|boolean',
 
 
         ConfigKey::WORLDLINE_TID_RANGE_LIST           => 'filled|array',

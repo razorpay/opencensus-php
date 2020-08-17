@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Downtime;
 
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\Downtime\Source;
@@ -16,6 +17,15 @@ class WalletProcessor extends BaseProcessor
     public function process(Collection $gatewayDowntimes)
     {
         $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::METHOD, '=', $this->method);
+
+        $paymentDowntimesEnabled = (bool) ConfigKey::get(ConfigKey::ENABLE_PAYMENT_DOWNTIME_WALLET, false);
+
+        if ($paymentDowntimesEnabled === false)
+        {
+            $this->endOngoingDowntimes();
+
+            return;
+        }
 
         $unavailableWallets = [];
 

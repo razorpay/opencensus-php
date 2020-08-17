@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Downtime;
 
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\Downtime\Source;
@@ -17,6 +18,15 @@ class NetbankingProcessor extends BaseProcessor
         $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::METHOD, '=', $this->method);
 
         $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::STATUSCAKE);
+
+        $paymentDowntimesEnabled = (bool) ConfigKey::get(ConfigKey::ENABLE_PAYMENT_DOWNTIME_NETBANKING, false);
+
+        if ($paymentDowntimesEnabled === false)
+        {
+            $this->endOngoingDowntimes();
+
+            return;
+        }
 
         $unavailableBanks = $this->calculateUnavailableBanks($gatewayDowntimes);
 

@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Downtime;
 use Illuminate\Database\Eloquent\Collection;
 
 use RZP\Gateway\Upi\Base\ProviderCode;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Payment\Method;
 use RZP\Models\Gateway\Downtime\Source;
 use RZP\Gateway\Upi\Base\ProviderPsp;
@@ -17,6 +18,15 @@ class UpiProcessor extends BaseProcessor
     public function process(Collection $gatewayDowntimes)
     {
         $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::METHOD, '=', $this->method);
+
+        $paymentDowntimesEnabled = (bool) ConfigKey::get(ConfigKey::ENABLE_PAYMENT_DOWNTIME_UPI, false);
+
+        if ($paymentDowntimesEnabled === false)
+        {
+            $this->endOngoingDowntimes();
+
+            return;
+        }
 
         $vpaList = $this->getUnavailableVpaList($gatewayDowntimes);
 

@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Downtime;
 
 use RZP\Models\Payment\Method;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\Downtime\Source;
 use Illuminate\Database\Eloquent\Collection;
@@ -17,6 +18,15 @@ class CardProcessor extends BaseProcessor
         $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::METHOD, '=', $this->method);
 
         $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::STATUSCAKE);
+
+        $paymentDowntimesEnabled = (bool) ConfigKey::get(ConfigKey::ENABLE_PAYMENT_DOWNTIME_CARD, false);
+
+        if ($paymentDowntimesEnabled === false)
+        {
+            $this->endOngoingDowntimes();
+
+            return;
+        }
 
         $unavailableNetworks = $this->calculateUnavailableNetworks($gatewayDowntimes);
         $unavailableIssuer = $this->calculateUnavailableIssuer($gatewayDowntimes);
