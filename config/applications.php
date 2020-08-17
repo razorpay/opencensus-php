@@ -140,6 +140,10 @@ return [
         'reminder_secret'  => env('REMINDERS_SERVICE_SECRET')
     ],
 
+    'thirdwatch_reports' => [
+        'secret'  => env('THIRDWATCH_REPORTS_SERVICE_SECRET')
+    ],
+
     'scrooge' => [
         'mock'              => env('SCROOGE_MOCK', false),
         'url'               => env('SCROOGE_URL'),

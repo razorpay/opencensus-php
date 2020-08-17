@@ -906,7 +906,7 @@ class Route
         'currency_update_rates_multiple'           => ['post',     'currency/rates',                                 'CurrencyController@postCurrencyRatesMultiple'                      ],
         'currency_fetch_rates'                     => ['get',      'currency/{currency}/rates',                      'CurrencyController@getCurrencyRates'                               ],
         'currency_fetch_rates_proxy'               => ['get',      'currency/{currency}/rates/proxy',                'CurrencyController@getCurrencyRates'                               ],
-
+        'currency_fetch_rates_internal'            => ['get',      'currency/{currency}/rates/internal',             'CurrencyController@getCurrencyRates'                               ],
         'reports_fetch_multiple'                   => ['get',      'reports',                                        'ReportController@getReports'                                       ],
         'reports_generate'                         => ['post',     'reports/{entity}/generate',                      'ReportController@generateReport'                                   ],
         'file_get_signed_url'                      => ['get',      '{entity}/{entityId}/signed-url',                 'FileStoreController@getSignedUrlForEntity'                         ],
@@ -2310,6 +2310,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'currency_fetch_rates_internal',
         'loc_mail',
         'cps_backfill_entities',
         'vendor_payment_composite_expands_helper',
@@ -5069,6 +5070,10 @@ class Route
             'scrooge_entities',
             'fund_transfer_attempt_modes',
             'scrooge_refund_reference1_bulk_update',
+        ],
+
+        'thirdwatch_reports' => [
+            'currency_fetch_rates_internal'
         ],
 
         'razorflow' => [
