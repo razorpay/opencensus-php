@@ -90,8 +90,9 @@ class Entity extends Base\PublicEntity
      * By default, we have chosen ₹ 1,00,000 for emandate with aadhaar authtype and
      * ₹ 10,00,000 for emandate with Netbanking and DebitCard authtype
      */
-    const DEFAULT_AADHAAR_EMANDATE_MAX_AMOUNT = 10000000;
-    const DEFAULT_EMANDATE_MAX_AMOUNT         = 100000000;
+    const AADHAAR_EMANDATE_MAX_AMOUNT_LIMIT = 10000000;
+    const EMANDATE_MAX_AMOUNT_LIMIT         = 100000000;
+    const DEFAULT_MAX_AMOUNT                = 9999900;
 
     /**
      * We use this to set the number of years after which the
@@ -554,16 +555,7 @@ class Entity extends Base\PublicEntity
         if ((empty($maxAmount) === true) and
             ($this->getMethod() === Payment\Method::EMANDATE))
         {
-            if (($authType === Payment\AuthType::DEBITCARD) or
-                ($authType === Payment\AuthType::NETBANKING))
-            {
-                $maxAmount = self::DEFAULT_EMANDATE_MAX_AMOUNT;
-            }
-            if (($authType === Payment\AuthType::AADHAAR) or
-                ($authType === Payment\AuthType::AADHAAR_FP))
-            {
-                $maxAmount = self::DEFAULT_AADHAAR_EMANDATE_MAX_AMOUNT;
-            }
+            $maxAmount = self::DEFAULT_MAX_AMOUNT;
         }
 
         $this->attributes[self::MAX_AMOUNT] = $maxAmount;

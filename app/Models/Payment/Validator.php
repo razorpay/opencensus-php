@@ -348,12 +348,12 @@ class Validator extends Base\Validator
 
         $tokenMaxAmount = $input[Entity::RECURRING_TOKEN][Entity::MAX_AMOUNT];
 
-        $defaultMaxAmount = Token\Entity::DEFAULT_EMANDATE_MAX_AMOUNT;
+        $defaultMaxAmount = Token\Entity::EMANDATE_MAX_AMOUNT_LIMIT;
 
         if (($input[Entity::AUTH_TYPE] === AuthType::AADHAAR_FP) or
             ($input[Entity::AUTH_TYPE] === AuthType::AADHAAR))
         {
-            $defaultMaxAmount = Token\Entity::DEFAULT_AADHAAR_EMANDATE_MAX_AMOUNT;
+            $defaultMaxAmount = Token\Entity::AADHAAR_EMANDATE_MAX_AMOUNT_LIMIT;
         }
 
         if ($tokenMaxAmount > $defaultMaxAmount)

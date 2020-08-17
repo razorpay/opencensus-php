@@ -104,7 +104,7 @@ class Validator extends Base\Validator
 
         if ($maxAmount !== null)
         {
-            $maxAmountLimit = Token\Entity::DEFAULT_EMANDATE_MAX_AMOUNT;
+            $maxAmountLimit = Token\Entity::EMANDATE_MAX_AMOUNT_LIMIT;
 
             $authType = $input[Entity::AUTH_TYPE] ?? null;
             $method = $input[Entity::METHOD] ?? null;
@@ -123,7 +123,7 @@ class Validator extends Base\Validator
             if (($authType === Payment\AuthType::AADHAAR) or
                 ($authType === Payment\AuthType::AADHAAR_FP))
             {
-                $maxAmountLimit = Token\Entity::DEFAULT_AADHAAR_EMANDATE_MAX_AMOUNT;
+                $maxAmountLimit = Token\Entity::AADHAAR_EMANDATE_MAX_AMOUNT_LIMIT;
             }
 
             if ($maxAmount > $maxAmountLimit)
