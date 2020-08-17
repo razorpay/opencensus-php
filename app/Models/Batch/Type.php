@@ -320,6 +320,7 @@ class Type
         self::NACH_MIGRATION,
         self::MPAN,
         self::REFUND,
+        self::ADJUSTMENT,
     ];
 
     /**
@@ -348,6 +349,7 @@ class Type
         self::NACH_MIGRATION,
         self::MPAN,
         self::MERCHANT_ACTIVATION,
+        self::ADJUSTMENT,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
@@ -362,6 +364,10 @@ class Type
         self::ADJUSTMENT    => Name::ADJUSTMENT_BATCH_UPLOAD,
         self::REPORT        => Name::REPORTING_BATCH_UPLOAD,
         self::CREDIT        => Name::CREDITS_BATCH_UPLOAD,
+    ];
+
+    public static $workflowApplicableBatchTypes = [
+        self::ADJUSTMENT     => Name::CREATE_BULK_ADJUSTMENT,
     ];
 
     public static function exists(string $type)

@@ -1608,6 +1608,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const KUBERNETES_INVOICE_JOB_IN_PROCESS                     = 'KUBERNETES_INVOICE_JOB_IN_PROCESS';
     const KUBERNETES_INVOICE_JOB_NAMESPACE                      = 'KUBERNETES_INVOICE_JOB_NAMESPACE';
 
+    const BATCH_WORKFLOW                                        = 'BATCH_WORKFLOW';
+
     const BATCH_FILE_DELETE_ERROR                               = 'BATCH_FILE_DELETE_ERROR';
 
     const GATEWAY_NACH_FILE_DELETE_ERROR                        = 'GATEWAY_NACH_FILE_DELETE_ERROR';

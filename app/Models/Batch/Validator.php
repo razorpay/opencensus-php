@@ -250,6 +250,14 @@ class Validator extends Base\Validator
         Entity::SCHEDULE                => 'sometimes|numeric',
     ];
 
+    protected static $adjustmentCreateRules = [	
+        Entity::TYPE         => 'required|in:adjustment',	
+        Entity::FILE         => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,	
+        Entity::FILE_ID      => 'required_without:file',
+        Entity::NAME         => 'filled|string|max:255',
+        Entity::SCHEDULE     => 'sometimes|numeric',
+    ];
+
     protected static $iinNpciRupayCreateRules = [
         Entity::TYPE                 => 'required|custom',
         Entity::NAME                 => 'filled|string|max:255',

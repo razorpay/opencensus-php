@@ -3,6 +3,7 @@
 namespace RZP\Models\Batch\Processor;
 
 use Mail;
+use Config;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
@@ -22,6 +23,7 @@ use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
 use RZP\Models\Base as BaseModel;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Batch\Type as BatchType;
 use Symfony\Component\HttpFoundation\File\File;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -44,8 +46,8 @@ class Base extends BaseModel\Core
     const MAX_PARSED_ROWS    = 3;
 
     /**
-     * Max number of parsed rows, 
-     * specifically for batch refund validate API, 
+     * Max number of parsed rows,
+     * specifically for batch refund validate API,
      * that should be shown to merchant for reference
      */
     const MAX_PARSED_ROWS_FOR_REFUND = 10;
@@ -222,6 +224,8 @@ class Base extends BaseModel\Core
         // gets associated with this batch
         list($ufhFile, $entries) = $this->saveInputFileAndValidateEntries($input);
 
+        $this->startworkflowIfApplicable($input['type'], $ufhFile);
+
         // if batch is migrated to new batch service
         // just return the ufhFile and do not save batches and files entity.
         if ($this->shouldSendToBatchService())
@@ -286,6 +290,23 @@ class Base extends BaseModel\Core
         // Do nothing from Base class. This is handled in Reconciliation.php
 
         return;
+    }
+    private function startWorkflowIfApplicable($batchType, $ufhFile)
+    {
+        $fileId = $ufhFile->getPublicId();
+
+        if (in_array($batchType, array_keys(BatchType::$workflowApplicableBatchTypes)) === true)
+        {
+            $this->app['request']->merge(['file_id' => $fileId]);
+
+            $this->trace->info(TraceCode::BATCH_WORKFLOW, ['file_id' => $fileId]);
+
+            $signedUrl = (new FileStore\Service)->fetchFileSignedUrlById($fileId);
+
+            $this->app['workflow']->setEntityAndId('file_store', 'file_' . $fileId)
+                 ->setPermission(BatchType::$workflowApplicableBatchTypes[$batchType])
+                 ->handle([], ['status' => $signedUrl]);
+        }
     }
 
     /**
@@ -404,15 +425,15 @@ class Base extends BaseModel\Core
             Batch\Constants::PARSED_ENTRIES    => $previewData,
         ];
 
-        // 
+        //
         // only if speed column exist, return the respone for it,
         // speed column is only introduced in batch refunds
-        // 
+        //
         if(array_key_exists(Batch\Header::SPEED, $entries[0]) === true)
         {
-            // 
+            //
             // add speed related details in the response
-            // 
+            //
             $normalSpeedCount = $this->getSpeedCount($correctEntries, Refund\Constants::NORMAL);
             $optimumSpeedCount = $this->getSpeedCount($correctEntries, Refund\Constants::OPTIMUM);
             $defaultSpeedCount = count($correctEntries) - ($normalSpeedCount + $optimumSpeedCount);
@@ -1432,9 +1453,9 @@ class Base extends BaseModel\Core
         // In case of notes, the diff would be just 'notes' or 'speed'(for batch refunds), as the actual row will have values like notes[<key>].
         // Todo: This is because of allowing(early bad decision) optional header row in CSV.
         //
-        if ((empty($diff) === true) or 
-            ($diff === [Batch\Header::NOTES]) or 
-            ($diff === [Batch\Header::SPEED]) or 
+        if ((empty($diff) === true) or
+            ($diff === [Batch\Header::NOTES]) or
+            ($diff === [Batch\Header::SPEED]) or
             ($diff === [Batch\Header::NOTES, Batch\Header::SPEED]))
         {
             array_shift($rows);

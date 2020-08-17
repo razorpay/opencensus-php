@@ -830,6 +830,11 @@ return [
                 'description' => 'Upload batch file to create adjustments in bulk',
                 'assignable'  => true,
             ],
+            Permission::CREATE_BULK_ADJUSTMENT => [
+                'description' => 'Upload batch file to create adjustments in bulk',
+                'assignable'  => true,
+                'workflow'    => true,
+            ],
             Permission::REPORTING_BATCH_UPLOAD => [
                 'description' => 'Upload batch file to create large reports from reporting',
                 'assignable'  => true,
