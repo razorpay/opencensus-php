@@ -21,10 +21,12 @@ use RZP\Models\PaperMandate;
 use RZP\Services\UfhService;
 use RZP\Constants\Entity as E;
 use RZP\Models\Customer\Token;
-use RZP\Models\Customer\GatewayToken\Core as GatewayToken;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\Processor\Processor;
+use \RZP\Models\UpiMandate\Frequency as UpiFrequency;
+use \RZP\Models\UpiMandate\Validator as UpiValidator;
+use RZP\Models\Customer\GatewayToken\Core as GatewayToken;
 
 class Core extends Base\Core
 {
@@ -137,6 +139,14 @@ class Core extends Base\Core
             throw new Exception\BadRequestValidationFailureException( $msg, 'amount');
         }
 
+        // Set default values for frequency and max amount for upi
+        $frequency = $input['subscription_registration']['frequency'] ?? UpiFrequency::MONTHLY;
+        $maxAmount = $input['subscription_registration']['max_amount'] ?? UpiValidator::MAX_AMOUNT_LIMIT;
+
+        // re arrange the input
+        $input['subscription_registration']['frequency']  = $frequency;
+        $input['subscription_registration']['max_amount'] = $maxAmount;
+
         $orderPayLoad =
             [
                 'amount'          => $input['amount'],
@@ -146,10 +156,10 @@ class Core extends Base\Core
                 'payment_capture' => 1,
                 'token'           =>
                     [
-                        'max_amount'      => $input['subscription_registration']['max_amount'] ?? null,
-                        'frequency'       => $input['subscription_registration']['frequency'] ?? null,
+                        'max_amount'      => $maxAmount,
+                        'frequency'       => $frequency,
                         'recurring_type'  => \RZP\Models\UpiMandate\RecurringType::BEFORE,
-                        'recurring_value' => 31,
+                        'recurring_value' => \RZP\Models\UpiMandate\Frequency::$frequencyToRecurringValueMap[$frequency],
                         'start_time'      => Carbon::now()->addDay(1)->getTimestamp(),
                         'end_time'        => isset($input['subscription_registration']['end_time'])
                                                 ? $input['subscription_registration']['end_time']
@@ -280,6 +290,11 @@ class Core extends Base\Core
         }
 
         $subscriptionRegistration = $this->create($subrInput, $merchant, $customer);
+
+        if (isset($subrInput[Entity::METHOD]) === true && $subrInput[Entity::METHOD] === Method::UPI)
+        {
+            return $subscriptionRegistration;
+        }
 
         if (empty($bankInput) === false)
         {
