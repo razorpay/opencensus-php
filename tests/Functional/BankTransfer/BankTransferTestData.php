@@ -1207,17 +1207,14 @@ return [
         ],
     ],
 
-    'adminFetchBankTransferRequests' => [
+    'adminFetchBankTransferRequest' => [
         'request' => [
-            'url'       => '/admin/bank_transfer_request',
+            'url'       => '/admin/bank_transfer_request/',
             'method'    => 'get',
             'content'   => [],
         ],
         'response' => [
-            'content' => [
-                'count'     => 1,
-                'entity'    => 'collection',
-            ],
+            'content' => [],
         ],
     ],
 ];

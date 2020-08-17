@@ -6,6 +6,7 @@ namespace RZP\Models\BankTransferRequest;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\VirtualAccount;
+use RZP\Models\Payment\Entity as Payment;
 
 class Repository extends Base\Repository
 {
@@ -16,32 +17,6 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::UTR, $utr)
                     ->update($data);
-    }
-
-    public function fetch(
-        array $params,
-        string $merchantId = null,
-        bool $useSlave = false,
-        bool $useMasterEsReplica = false
-    ): Base\PublicCollection
-    {
-        $entities = parent::fetch($params, $merchantId, $useSlave, $useMasterEsReplica);
-
-        if ($this->app['basicauth']->isAdminAuth() === false)
-        {
-            return $entities;
-        }
-
-        $bankTransferRequests = new Base\PublicCollection();
-
-        foreach ($entities as $bankTransferRequest)
-        {
-            $this->addAttributesForAdminDashboard($bankTransferRequest);
-
-            $bankTransferRequests->push($bankTransferRequest);
-        }
-
-        return $bankTransferRequests;
     }
 
     public function findOrFailByPublicIdWithParams(
@@ -93,13 +68,16 @@ class Repository extends Base\Repository
 
                 $data[Entity::MERCHANT_ID]      = (isset($merchant)) ? $merchant->getId() : null;
                 $data[Entity::MERCHANT_NAME]    = (isset($merchant)) ? $merchant->getName() : null;
-
-                $this->setOrderDetailsIfApplicable($data, $virtualAccount);
             }
 
             $payment = isset($bankTransfer) ? $bankTransfer->payment : null;
 
-            $data[Entity::PAYMENT_ID] = (isset($payment)) ? $payment->getPublicId() : null;
+            if (isset($payment) === true)
+            {
+                $data[Entity::PAYMENT_ID] = $payment->getPublicId();
+
+                $this->setOrderDetailsIfApplicable($data, $payment);
+            }
         }
         catch (\Exception $ex)
         {
@@ -136,12 +114,12 @@ class Repository extends Base\Repository
         return (isset($bankAccount)) ? $bankAccount->source : null;
     }
 
-    private function setOrderDetailsIfApplicable(array & $data, VirtualAccount\Entity $virtualAccount)
+    private function setOrderDetailsIfApplicable(array & $data, Payment $payment)
     {
-        if ($virtualAccount->hasOrder() === true)
-        {
-            $order = $virtualAccount->entity;
+        $order = $payment->order;
 
+        if (isset($order) === true)
+        {
             $data[Entity::ORDER_ID]     = $order->getPublicId();
             $data[Entity::PRODUCT_TYPE] = $order->getProductType();
             $data[Entity::PRODUCT_ID]   = $order->getProductId();

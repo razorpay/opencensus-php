@@ -3147,8 +3147,9 @@ class BankTransferTest extends TestCase
         }
 
         $this->ba->adminAuth();
-        $response = $this->startTest($this->testData['adminFetchBankTransferRequests']);
-        $bankTransferRequest = $response['items'][0];
+        $testData = $this->testData['adminFetchBankTransferRequest'];
+        $testData['request']['url'] .= $bankTransferRequest->getPublicId();
+        $bankTransferRequest = $this->startTest($testData);
 
         $this->assertArraySelectiveEquals($expectedValues, $bankTransferRequest);
     }
