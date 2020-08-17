@@ -3,6 +3,7 @@
 namespace RZP\Models\Transaction;
 
 use Mail;
+use Config;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger;
 
@@ -22,6 +23,7 @@ use RZP\Models\Payment;
 use RZP\Models\Payout;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Pricing;
+use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
 use RZP\Models\Adjustment;
@@ -1623,24 +1625,50 @@ class Core extends Base\Core
      * it will update the on_hold status of the transaction with respect to holdFlag
      * @param array $transactionIds
      * @param bool $holdFlag
+     * @param string $reason
      * @return array
      */
-    public function toggleTransactionOnHold(array $transactionIds, bool $holdFlag)
+    public function toggleTransactionOnHold(array $transactionIds, bool $holdFlag, $reason = null)
     {
         $failedTransactionUpdate = [];
+
+        $mapForSettlementService = [];
+
+        $txnMapForSettlementService = [];
 
         foreach($transactionIds as $transactionId)
         {
             try
             {
-                $this->repo->transaction(function() use ($transactionId, $holdFlag)
-                {
-                    $txn = $this->repo->transaction->lockForUpdate($transactionId);
+                $txn = $this->repo->transaction(function() use ($transactionId, $holdFlag)
+                    {
+                        $txn = $this->repo->transaction->lockForUpdate($transactionId);
 
-                    $txn->setOnHold($holdFlag);
+                        $txn->setOnHold($holdFlag);
 
-                    $this->repo->saveOrFail($txn);
+                        $this->repo->saveOrFail($txn);
+
+                        return $txn;
                 });
+
+                $bucketCore = new Settlement\Bucket\Core;
+
+                if (isset($mapForSettlementService[$txn->getMerchantId()]) === false)
+                {
+                    if($bucketCore->shouldProcessViaNewService($txn->getMerchantId()) === true)
+                    {
+                        $mapForSettlementService[$txn->getMerchantId()] = true;
+                    }
+                    else
+                    {
+                        $mapForSettlementService[$txn->getMerchantId()] = false;
+                    }
+                }
+
+                if($mapForSettlementService[$txn->getMerchantId()] === true)
+                {
+                    $txnMapForSettlementService[] = $transactionId;
+                }
             }
             catch(\Throwable $e)
             {
@@ -1653,6 +1681,47 @@ class Core extends Base\Core
                     [
                         'failed_transaction_id' => $transactionId,
                     ]);
+            }
+        }
+
+        if(sizeof($txnMapForSettlementService) > 0)
+        {
+            try
+            {
+                if ($holdFlag === true)
+                {
+                    app('settlements_dashboard')->transactionHold([
+                        "ids" => $txnMapForSettlementService,
+                        "reason" => $reason,
+                    ]);
+                }
+                else
+                {
+                    app('settlements_dashboard')->transactionRelease([
+                        "ids" => $txnMapForSettlementService,
+                    ]);
+                }
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::SETTLEMENT_SERVICE_CALL_FOR_TXN_ON_HOLD_CLEAR_FAILED,
+                    [
+                        'transaction_ids' => $txnMapForSettlementService,
+                        'reason' => $reason,
+                        'toggle_flag' => $holdFlag,
+                    ]);
+
+                $operation = 'Transactions on hold toggle failed to update in new settlement service';
+
+                (new SlackNotification)->send(
+                    $operation,
+                    $txnMapForSettlementService,
+                    $e,
+                    1,
+                    Config::get('slack.channels.settlement_alerts'));
             }
         }
 

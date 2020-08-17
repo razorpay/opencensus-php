@@ -648,6 +648,34 @@ class Service extends Base\Service
         return (new Processor)->settlementStatusUpdate($input);
     }
 
+    public function getIrctcSettlementFile(string $date, $input)
+    {
+        $sftp = new SFTP('sftp.razorpay.com');
+
+        $privateKey = new RSA();
+
+        $secretKey = Config::get('applications.rzp_sftp.rzp_sftp_secret_key');
+
+        $secretKey = trim(str_replace('\n', "\n", $secretKey));
+
+        $privateKey->loadKey($secretKey, RSA::PRIVATE_FORMAT_PKCS1);
+
+        $privateKey->setEncryptionMode(RSA::ENCRYPTION_PKCS1);
+
+        $fileBasePath = Config::get('applications.rzp_sftp.rzp_sftp_file_path');
+
+        $username = Config::get('applications.rzp_sftp.rzp_sftp_sftp_username');
+
+        if (!$sftp->login($username, $privateKey)) {
+            throw new Exception\ServerErrorException(
+                'sftp connection failed', ErrorCode::SERVER_ERROR_SFTP_CONNECTION_FAILED);
+        }
+
+        $filename = $fileBasePath."RZPX_Settlement_".$input['merchant_id']."_".$date.".csv";
+
+        return ['data' => $sftp->get($filename)];
+    }
+
     public function settlementTransactionsVerify(array $input)
     {
         (new Validator)->validateInput('settlement_transactions_verify', $input);
@@ -683,6 +711,8 @@ class Service extends Base\Service
 
         return $txns;
     }
+
+    //********************* All proxy routes are Listed Here *********************//
 
     public function serviceFetch(array $input) : array
     {
@@ -749,31 +779,43 @@ class Service extends Base\Service
         return app('settlements_reminder')->executionReminder($input);
     }
 
-    public function getIrctcSettlementFile(string $date, $input)
+    public function executionRegister(array $input) : array
     {
-        $sftp = new SFTP('sftp.razorpay.com');
+        return app('settlements_dashboard')->executionRegister($input);
+    }
 
-        $privateKey = new RSA();
+    public function executionTriggerMultiple(array $input) : array
+    {
+        return app('settlements_dashboard')->executionTriggerMultiple($input);
+    }
 
-        $secretKey = Config::get('applications.rzp_sftp.rzp_sftp_secret_key');
+    public function executionResume(array $input) : array
+    {
+        return app('settlements_dashboard')->executionResume($input);
+    }
 
-        $secretKey = trim(str_replace('\n', "\n", $secretKey));
+    public function transactionHold(array $input) : array
+    {
+        return app('settlements_dashboard')->transactionHold($input);
+    }
 
-        $privateKey->loadKey($secretKey, RSA::PRIVATE_FORMAT_PKCS1);
+    public function transactionRelease(array $input) : array
+    {
+        return app('settlements_dashboard')->transactionRelease($input);
+    }
 
-        $privateKey->setEncryptionMode(RSA::ENCRYPTION_PKCS1);
+    public function channelStatusUpdate(array $input) : array
+    {
+        return app('settlements_dashboard')->channelStatusUpdate($input);
+    }
 
-        $fileBasePath = Config::get('applications.rzp_sftp.rzp_sftp_file_path');
+    public function settlementRetry(array $input) : array
+    {
+        return app('settlements_dashboard')->settlementRetry($input);
+    }
 
-        $username = Config::get('applications.rzp_sftp.rzp_sftp_sftp_username');
-
-        if (!$sftp->login($username, $privateKey)) {
-            throw new Exception\ServerErrorException(
-                'sftp connection failed', ErrorCode::SERVER_ERROR_SFTP_CONNECTION_FAILED);
-        }
-
-        $filename = $fileBasePath."RZPX_Settlement_".$input['merchant_id']."_".$date.".csv";
-
-        return ['data' => $sftp->get($filename)];
+    public function getChannelState() : array
+    {
+        return app('settlements_dashboard')->getChannelState();
     }
 }

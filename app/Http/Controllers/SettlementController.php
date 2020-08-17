@@ -469,6 +469,76 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function executionRegister()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->executionRegister($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function executionTriggerMultiple()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->executionTriggerMultiple($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function executionResume()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->executionResume($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function transactionHold()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->transactionHold($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function transactionRelease()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->transactionRelease($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function channelStatusUpdate()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->channelStatusUpdate($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function settlementRetry()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->settlementRetry($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getChannelState()
+    {
+        $data = $this->service()->getChannelState();
+
+        return ApiResponse::json($data);
+    }
+
     public function settlementTransactionsVerify()
     {
         $input = Request::all();

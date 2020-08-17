@@ -600,15 +600,22 @@ class Core extends Base\Core
 
         $bucketCore = new Bucket\Core;
 
-        $status = $bucketCore->shouldProcessViaNewService($txn->getMerchantId());
+        $newService = $bucketCore->shouldProcessViaNewService($txn->getMerchantId());
 
-        $reason = null;
-
-        if($payment->getOnHold() === true)
+        if ($newService === true)
         {
-            $reason = 'transfer put on hold';
-        }
+            $reason = null;
 
-        (new Bucket\Core)->dispatchForBucketingOnTransactionHoldToggle($txn, [$txn->getId()], $status, $reason);
+            if($payment->getOnHold() === true)
+            {
+                $reason = 'transfer put on hold';
+            }
+
+            (new Bucket\Core)->settlementServiceToggleTransactionHold([$txn->getId()], $reason);
+        }
+        else
+        {
+            (new Transaction\Core)->dispatchForSettlementBucketing($txn);
+        }
     }
 }

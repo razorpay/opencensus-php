@@ -15,10 +15,9 @@ class Reminder extends Base
 
     /**
      * Trigger execution upon receiving reminder
-     * @param array  $input
+     * @param array $input
      * @return array
      * @throws Exception\RuntimeException
-     * @throws Exception\TwirpException
      * @throws \Throwable
      */
     public function executionReminder(array $input) : array

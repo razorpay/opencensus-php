@@ -18,11 +18,11 @@ class Api extends Base
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function Release(array $txnIds) : array
+    public function transactionRelease(array $txnIds) : array
     {
         $auth = $this->getAuth(self::SERVICE_API);
 
-        return $this->makeRequest(self::Release, [
+        return $this->makeRequest(self::TRANSACTION_RELEASE, [
             "ids" => $txnIds,
         ], $auth);
     }
@@ -35,11 +35,11 @@ class Api extends Base
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function Hold(array $txnIds, string $reason) : array
+    public function transactionHold(array $txnIds, string $reason) : array
     {
         $auth = $this->getAuth(self::SERVICE_API);
 
-        return $this->makeRequest(self::Hold, [
+        return $this->makeRequest(self::TRANSACTION_HOLD, [
             "ids"    => $txnIds,
             "reason" => $reason,
         ], $auth);

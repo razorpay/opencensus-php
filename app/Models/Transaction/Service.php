@@ -127,7 +127,7 @@ class Service extends Base\Service
                 'reason_for_hold' => $input['reason'],
           ]);
 
-        return $this->toggleTransactionFlag($input['transaction_ids'], true);
+        return $this->toggleTransactionFlag($input['transaction_ids'], true, $input['reason']);
     }
 
     /**
@@ -145,20 +145,21 @@ class Service extends Base\Service
                 'transaction_ids' => $input['transaction_ids'],
             ]);
 
-        return $this->toggleTransactionFlag($input['transaction_ids'], false);
+        return $this->toggleTransactionFlag($input['transaction_ids'], false, null);
     }
 
     /**
      * This methods basically used to toggle the on_hold flag of the transaction Ids
      * @param array $transactionIds
      * @param bool $toggleFlag
+     * @param string $reason
      * @return array
      */
-    public function toggleTransactionFlag(array $transactionIds, bool $toggleFlag)
+    public function toggleTransactionFlag(array $transactionIds, bool $toggleFlag, $reason = null)
     {
         $requestCount = sizeof($transactionIds);
 
-        $failedTransactionUpdate = (new Transaction\Core)->toggleTransactionOnHold($transactionIds, $toggleFlag);
+        $failedTransactionUpdate = (new Transaction\Core)->toggleTransactionOnHold($transactionIds, $toggleFlag, $reason);
 
         $failedCount = sizeof($failedTransactionUpdate);
 

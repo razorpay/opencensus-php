@@ -2113,7 +2113,14 @@ class Service extends Base\Service
                     }
                 }
 
-               $bucketCore->dispatchForBucketingOnTransactionHoldToggle($txn, [$txn->getId()], $mapForSettlementService[$mid], null);
+                if ($mapForSettlementService[$mid] === true)
+                {
+                    $bucketCore->settlementServiceToggleTransactionHold([$txn->getId()], null);
+                }
+                else
+                {
+                    (new Transaction\Core)->dispatchForSettlementBucketing($txn);
+                }
             }
             catch (\Exception $e)
             {

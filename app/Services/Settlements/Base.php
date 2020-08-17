@@ -15,8 +15,8 @@ class Base
 
     //******************* common endpoints for dashboard/api/reminder are listed here ************************//
 
-    const Hold             = '/twirp/rzp.settlements.transaction.v1.TransactionService/Hold';
-    const Release          = '/twirp/rzp.settlements.transaction.v1.TransactionService/Release';
+    const TRANSACTION_HOLD           = '/twirp/rzp.settlements.transaction.v1.TransactionService/Hold';
+    const TRANSACTION_RELEASE        = '/twirp/rzp.settlements.transaction.v1.TransactionService/Release';
 
     protected $trace;
 

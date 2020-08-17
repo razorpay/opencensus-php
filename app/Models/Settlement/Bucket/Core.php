@@ -437,32 +437,21 @@ class Core extends Base\Core
     }
 
     /**
-     * this is being used to decide weather after the transaction Hold Release What needs to be done
-     * weather to call the settlement service transaction Hold release or dispatch for settlement
-     * bucketing based on the razorx flag
-     * @param $txn
+     * This is used to call the settlements api based on the transaction hold and release
      * @param array $txnIds
-     * @param bool $newService
      * @param string $reason
      */
-    public function dispatchForBucketingOnTransactionHoldToggle($txn, $txnIds = [], $newService = false, $reason = null)
+    public function settlementServiceToggleTransactionHold($txnIds = [], $reason = null)
     {
         try
         {
-            if ($newService === true)
+            if ($reason != null)
             {
-                if ($reason != null)
-                {
-                    app('settlements_api')->Hold([$txn->getId()], $reason);
-                }
-                else
-                {
-                    app('settlements_api')->Release($txnIds);
-                }
+                app('settlements_api')->transactionHold($txnIds, $reason);
             }
             else
             {
-                (new Transaction\Core)->dispatchForSettlementBucketing($txn);
+                app('settlements_api')->transactionRelease($txnIds);
             }
         }
         catch (\Throwable $e)
@@ -470,10 +459,10 @@ class Core extends Base\Core
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::SETTLEMENT_DISPATCH_FOR_ON_HOLD_CLEAR_FAILED,
+                TraceCode::SETTLEMENT_SERVICE_CALL_FOR_TXN_ON_HOLD_CLEAR_FAILED,
                 [
-                    'merchant_id'    => $txn->getMerchantId(),
-                    'is_new_service' => $newService,
+                    'transaction_ids'    => $txnIds,
+                    'reason_for_hold'    => $reason,
                 ]);
 
             $operation = 'Transactions on hold toggle failed to update in new settlement service';

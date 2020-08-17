@@ -169,9 +169,16 @@ class CommissionOnHoldClear extends Job
 
                 $bucketCore = new Bucket\Core;
 
-                $status = $bucketCore->shouldProcessViaNewService($txn->getMerchantId());
+                $newService = $bucketCore->shouldProcessViaNewService($txn->getMerchantId());
 
-                $bucketCore->dispatchForBucketingOnTransactionHoldToggle($txn, $successTxnIds, $status, null);
+                if ($newService === true)
+                {
+                    $bucketCore->settlementServiceToggleTransactionHold($successTxnIds, null);
+                }
+                else
+                {
+                    (new Transaction\Core)->dispatchForSettlementBucketing($txn);
+                }
             }
 
             $this->delete();
