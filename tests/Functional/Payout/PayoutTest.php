@@ -6637,7 +6637,9 @@ class PayoutTest extends TestCase
 
     public function testPayoutCreationFailedDueToInsufficientBalanceWhenNoFreePayoutsAvailableAndCheckCounterAttributes()
     {
-        $balanceId = $this->bankingBalance->getId();
+        $balance = $this->bankingBalance;
+
+        $balanceId = $balance->getId();
 
         $this->fixtures->edit(
             'balance',
@@ -6659,6 +6661,6 @@ class PayoutTest extends TestCase
                                         ])->first();
 
         // Assert that zero free payout has been consumed
-        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
+        $this->assertEquals($this->getDefaultFreePayoutsCount($balance), $counter->getFreePayoutsConsumed());
     }
 }

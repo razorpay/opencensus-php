@@ -2,8 +2,11 @@
 
 namespace RZP\Tests\Functional\Helpers;
 
+use Carbon\Carbon;
+
 use RZP\Models\Admin;
 use RZP\Models\Payout;
+use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Settlement\Channel;
@@ -447,5 +450,38 @@ trait TestsBusinessBanking
             [
                 'free_payouts_consumed' => 0,
             ]);
+    }
+
+    protected function setUpCounterToNotAffectPayoutFeesAndTaxInManualTimeChangeTests($balance)
+    {
+
+        $balanceAccountType = $balance->getAccountType();
+
+        $channel = $balance->getChannel();
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => $balanceAccountType,
+                                            'balance_id'   => $balance->getId(),
+                                        ])->first();
+
+        $defaultFreePayoutsCountConstantName = 'DEFAULT_FREE_' . strtoupper($balanceAccountType) . '_ACCOUNT_PAYOUTS_COUNT';
+
+        if (($balanceAccountType === AccountType::DIRECT) and
+            (empty($channel) === false))
+        {
+            $defaultFreePayoutsCountConstantName = $defaultFreePayoutsCountConstantName . '_' . strtoupper($channel);
+        }
+
+        $defaultFreePayoutsCount = constant(FreePayout::class . '::' . $defaultFreePayoutsCountConstantName);
+
+        $this->fixtures->edit(
+            'counter',
+            $counter->getId(),
+            [
+                'free_payouts_consumed'               => $defaultFreePayoutsCount,
+                'free_payouts_consumed_last_reset_at' => Carbon::now(Timezone::IST)->firstOfMonth()->getTimestamp(),
+            ]
+        );
     }
 }

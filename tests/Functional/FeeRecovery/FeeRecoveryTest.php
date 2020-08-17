@@ -299,6 +299,8 @@ class FeeRecoveryTest extends TestCase
 
         $oldTimeStamp = $oldTime->getTimestamp();
 
+        $this->setUpCounterToNotAffectPayoutFeesAndTaxInManualTimeChangeTests($this->balance);
+
         // Create first payout
         $this->testCreateFeeRecoveryAtPayoutCreationForRBLPayouts();
 
@@ -523,6 +525,8 @@ class FeeRecoveryTest extends TestCase
         $oldTime = Carbon::create(2020, 1,3);
 
         Carbon::setTestNow($oldTime);
+
+        $this->setUpCounterToNotAffectPayoutFeesAndTaxInManualTimeChangeTests($this->balance);
 
         $this->setupScheduleAndScheduleTaskForMerchant();
 
@@ -1397,7 +1401,7 @@ class FeeRecoveryTest extends TestCase
 
         $oldTimeStamp = $oldTime->getTimestamp();
 
-        $this->setUpCounterToNotAffectPayoutFeesAndTaxInFeeRecoveryTests($this->bankingBalance);
+        $this->setUpCounterToNotAffectPayoutFeesAndTaxInManualTimeChangeTests($this->bankingBalance);
 
         // Create first payout
         $this->testCreateFeeRecoveryAtPayoutCreationForRBLPayouts();
@@ -1755,7 +1759,7 @@ class FeeRecoveryTest extends TestCase
 
         Carbon::setTestNow($newTime);
 
-        $this->setUpCounterToNotAffectPayoutFeesAndTaxInFeeRecoveryTests($this->bankingBalance);
+        $this->setUpCounterToNotAffectPayoutFeesAndTaxInManualTimeChangeTests($this->bankingBalance);
 
         $this->createPayoutForFundAccount($this->fundAccount, $this->bankingBalance);
 
@@ -2722,6 +2726,8 @@ class FeeRecoveryTest extends TestCase
 
         $oldTimeStamp = $oldTime->getTimestamp();
 
+        $this->setUpCounterToNotAffectPayoutFeesAndTaxInManualTimeChangeTests($this->balance);
+
         $fundAccount = $this->getDbLastEntity('fund_account');
 
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 500 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
@@ -2763,38 +2769,5 @@ class FeeRecoveryTest extends TestCase
 
         $this->assertEquals($feeRecoveryEntity['recovery_payout_id'], $feeRecoveryPayout['id']);
         $this->assertEquals($feeRecoveryEntity['status'], FeeRecovery\Status::RECOVERED);
-    }
-
-    protected function setUpCounterToNotAffectPayoutFeesAndTaxInFeeRecoveryTests($balance)
-    {
-
-        $balanceAccountType = $balance->getAccountType();
-
-        $channel = $balance->getChannel();
-
-        $counter = $this->getDbEntities('counter',
-                                        [
-                                            'account_type' => $balanceAccountType,
-                                            'balance_id'   => $balance->getId(),
-                                        ])->first();
-
-        $defaultFreePayoutsCountConstantName = 'DEFAULT_FREE_' . strtoupper($balanceAccountType) . '_ACCOUNT_PAYOUTS_COUNT';
-
-        if (($balanceAccountType === AccountType::DIRECT) and
-            (empty($channel) === false))
-        {
-            $defaultFreePayoutsCountConstantName = $defaultFreePayoutsCountConstantName . '_' . strtoupper($channel);
-        }
-
-        $defaultFreePayoutsCount = constant(FreePayout::class . '::' . $defaultFreePayoutsCountConstantName);
-
-        $this->fixtures->edit(
-            'counter',
-            $counter->getId(),
-            [
-                'free_payouts_consumed'               => $defaultFreePayoutsCount,
-                'free_payouts_consumed_last_reset_at' => Carbon::now(Timezone::IST)->firstOfMonth()->getTimestamp(),
-            ]
-        );
     }
 }

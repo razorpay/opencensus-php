@@ -3087,6 +3087,8 @@ class RblBankingAccountStatementTest extends TestCase
     {
         $this->testLatestBalanceWhenBalanceFetchCronRunsBeforeBankingAccountStatementCron();
 
+        $this->setUpCounterToNotAffectPayoutFeesAndTaxInManualTimeChangeTests($this->bankingBalance);
+
         $this->ba->privateAuth();
 
         $this->startTest();
@@ -3187,6 +3189,8 @@ class RblBankingAccountStatementTest extends TestCase
     {
         $this->testLatestBalanceWhenBalanceFetchCronRunsAfterBankingAccountStatementCron();
 
+        $this->setUpCounterToNotAffectPayoutFeesAndTaxInManualTimeChangeTests($this->bankingBalance);
+
         $this->ba->privateAuth();
 
         $this->startTest();
@@ -3199,6 +3203,8 @@ class RblBankingAccountStatementTest extends TestCase
     {
         $this->testLatestBalanceWhenBalanceFetchCronRunsAfterBankingAccountStatementCron(50);
 
+        $this->setUpCounterToNotAffectPayoutFeesAndTaxInManualTimeChangeTests($this->bankingBalance);
+
         $this->ba->privateAuth();
 
         $this->startTest();
@@ -3210,6 +3216,8 @@ class RblBankingAccountStatementTest extends TestCase
     public function testCreateRblPayoutWhenBalanceFetchCronRunsBeforeBankingAccountStatementCronWithLowBalance()
     {
         $this->testLatestBalanceWhenBalanceFetchCronRunsBeforeBankingAccountStatementCron(50);
+
+        $this->setUpCounterToNotAffectPayoutFeesAndTaxInManualTimeChangeTests($this->bankingBalance);
 
         $this->ba->privateAuth();
 

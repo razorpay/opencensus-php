@@ -19,10 +19,10 @@ class FreePayout
     const FREE_PAYOUTS_SUPPORTED_MODES                  = 'free_payouts_supported_modes';
 
     // Default free shared account payouts allowed per merchant in a month.
-    const DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT     = 0;
+    const DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT     = 300;
 
     // Default free shared account payouts allowed per merchant in a month.
-    const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL = 0;
+    const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL = 500;
 
     // Count of the number of free shared account payouts allowed per merchant in a month.
     const FREE_SHARED_ACCOUNT_PAYOUTS_COUNT             = 'free_shared_account_payouts_count';
