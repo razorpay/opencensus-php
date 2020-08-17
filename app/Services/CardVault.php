@@ -240,7 +240,8 @@ class CardVault
         ];
 
         $this->trace->info(TraceCode::CARD_VAULT_REQUEST, [
-            'url' => $url,
+            'url'       => $url,
+            'namespace' => $this->namespace,
         ]);
 
         $response = $this->sendCardVaultRequest($request);
@@ -346,7 +347,8 @@ class CardVault
         $this->trace->info(
             TraceCode::CARD_VAULT_RESPONSE,
             [
-                'response' => $responseBody
+                'response'  => $responseBody,
+                'namespace' => $this->namespace,
             ]);
 
         if ($response->status_code >= 500)
