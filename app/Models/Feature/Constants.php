@@ -398,6 +398,16 @@ class Constants
 
     const BEPG  = 'bepg';
 
+    //NPS FEATURES
+
+    const NPS_SURVEY_PAYMENT_LINKS       = 'nps_survey_payment_links';
+    const NPS_SURVEY_PAYMENT_PAGES       = 'nps_survey_payment_pages';
+    const NPS_SURVEY_PAYMENT_GATEWAY_1M  = 'nps_survey_pg_1m';
+    const NPS_SURVEY_PAYMENT_GATEWAY_6M  = 'nps_survey_pg_6m';
+    const NPS_SURVEY_PAYMENT_GATEWAY_12M = 'nps_survey_pg_12m';
+    const NPS_SURVEY_OTHER_PRODUCTS      = 'nps_survey_other_products';
+
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -624,6 +634,12 @@ class Constants
         self::WITHDRAW_LOC                    => true,
         self::LOC_STAGE_1                     => true,
         self::LOC_STAGE_2                     => true,
+        self::NPS_SURVEY_PAYMENT_PAGES        => true,
+        self::NPS_SURVEY_PAYMENT_LINKS        => true,
+        self::NPS_SURVEY_PAYMENT_GATEWAY_1M   => true,
+        self::NPS_SURVEY_PAYMENT_GATEWAY_6M   => true,
+        self::NPS_SURVEY_PAYMENT_GATEWAY_12M  => true,
+        self::NPS_SURVEY_OTHER_PRODUCTS       => true,
     ];
 
     // Entity type constants
@@ -826,6 +842,36 @@ class Constants
         self::USE_SETTLEMENT_ONDEMAND  => [
             'feature'       => self::USE_SETTLEMENT_ONDEMAND,
             'display_name'  => 'Use the settlement/ondemand route for ondemand settlement',
+            'documentation' => '',
+        ],
+        self::NPS_SURVEY_OTHER_PRODUCTS  => [
+            'feature'       => self::NPS_SURVEY_OTHER_PRODUCTS,
+            'display_name'  => 'NPS Survey for Other Products',
+            'documentation' => '',
+        ],
+        self::NPS_SURVEY_PAYMENT_GATEWAY_12M  => [
+            'feature'       => self::NPS_SURVEY_PAYMENT_GATEWAY_12M,
+            'display_name'  => 'NPS Survey for Payment Gateway 12M',
+            'documentation' => '',
+        ],
+        self::NPS_SURVEY_PAYMENT_GATEWAY_6M  => [
+            'feature'       => self::NPS_SURVEY_PAYMENT_GATEWAY_6M,
+            'display_name'  => 'NPS Survey for Payment Gateway 6M',
+            'documentation' => '',
+        ],
+        self::NPS_SURVEY_PAYMENT_GATEWAY_1M  => [
+            'feature'       => self::NPS_SURVEY_PAYMENT_GATEWAY_1M,
+            'display_name'  => 'NPS Survey for Payment Gateway 1M',
+            'documentation' => '',
+        ],
+        self::NPS_SURVEY_PAYMENT_LINKS  => [
+            'feature'       => self::NPS_SURVEY_PAYMENT_LINKS,
+            'display_name'  => 'NPS Survey for Payment Links',
+            'documentation' => '',
+        ],
+        self::NPS_SURVEY_PAYMENT_PAGES  => [
+            'feature'       => self::NPS_SURVEY_PAYMENT_PAGES,
+            'display_name'  => 'NPS Survey for Payment Pages',
             'documentation' => '',
         ],
     ];
