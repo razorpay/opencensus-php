@@ -1061,6 +1061,38 @@ class Gateway extends Base\Gateway
         return $response[Fields::MERCHANT_TRAN_ID];
     }
 
+    public function redirectCallbackIfRequired(array $response)
+    {
+        $actual = $this->getPaymentIdFromServerCallback($response);
+
+        $paymentId  = substr($actual, 0, 14);
+        $env        = substr($actual, 14, 1);
+        $action     = substr($actual, 15, 6);
+
+        // First the action must be one of the allowed one
+        if (in_array($action, $this->gatewayDataIdToActionMap, true) === true)
+        {
+            // Env=1 signifies its a dark payment
+            if ((int) $env === 1)
+            {
+                // Only if we are not on dark, we need to redirect
+                if ($this->isRunningOnDark() === false)
+                {
+                    $url = 'https://api-dark.razorpay.com/v1/callback/upi_icici';
+
+                    $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+                        'message'       => 'callback redirected',
+                        'actual'        => $actual,
+                        'payment_id'    => $paymentId,
+                        'url'           => $url,
+                    ]);
+
+                    return redirect($url);
+                }
+            }
+        }
+    }
+
     /**
      * Takes in S2S request as a body string
      * and returns the parsed response as an array

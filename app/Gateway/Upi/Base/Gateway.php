@@ -30,6 +30,18 @@ class Gateway extends Base\Gateway
 
     protected $shouldMapLateAuthorized = true;
 
+    public function isRunningOnDark(): bool
+    {
+        $url = $this->app['config']->get('applications.mozart.live.url');
+
+        return starts_with($url, 'https://mozart-dark.razorpay.com');
+    }
+
+    public function redirectCallbackIfRequired(array $response)
+    {
+        false;
+    }
+
     protected function createGatewayPaymentEntity($attributes, $action = null, $shouldMap = true)
     {
         $attr = $attributes;

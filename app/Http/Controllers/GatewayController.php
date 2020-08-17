@@ -86,6 +86,16 @@ class GatewayController extends Controller
             return $this->processMandateServerCallback($input, $gatewayDriver);
         }
 
+        if (Gateway::isUpiRecurringSupportedGateway($gatewayDriver) === true)
+        {
+            $redirect = $gateway->redirectCallbackIfRequired($input);
+
+            if (empty($redirect) === false)
+            {
+                return $redirect;
+            }
+        }
+
         // TODO: this should also utilize callGatewayFunction, although we should have
         // used preProcessServerCallback itself to return it in some way
         $paymentId = $gateway->getPaymentIdFromServerCallback($input, $gatewayDriver);

@@ -9,6 +9,7 @@ use RZP\Constants\Timezone;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Models\Payment\Gateway;
+use RZP\Gateway\Upi\Icici\Mock;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Tests\Functional\TestCase;
@@ -18,6 +19,7 @@ use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
+use Symfony\Component\Debug\Exception\FatalThrowableError;
 
 class UpiIciciGatewayTest extends TestCase
 {
@@ -1312,5 +1314,35 @@ EOT;
         $this->ba->privateAuth();
 
         $this->startTest();
+    }
+
+    public function testCallbackRedirectToDark()
+    {
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $upi     = $this->getDbLastEntity('upi');
+
+        $upiEntity = $upi->toArray();
+        // This is to force the dark redirection, Making it similar to recurring payments
+        // Using notify action because actual callback will never expect this and the test will remain same
+        $upiEntity['payment_id'] = $payment->getId() . '1' . 'notify' . '0';
+
+        $content = $this->getMockServer()->getAsyncCallbackContent($upiEntity, $payment->toArray());
+
+        $response = $this->makeS2sCallbackAndGetContent($content);
+
+        $this->assertTrue($payment->refresh()->isCreated());
+
+        config()->set('applications.mozart.live.url', 'https://mozart-dark.razorpay.com');
+
+        $this->makeRequestAndCatchException(
+            function() use ($content)
+            {
+                $this->makeS2sCallbackAndGetContent($content);
+            },
+            FatalThrowableError::class,
+            'Call to undefined method RZP\Gateway\Upi\Icici\Mock\Gateway::getParsedDataFromUnexpectedCallback()');
     }
 }
