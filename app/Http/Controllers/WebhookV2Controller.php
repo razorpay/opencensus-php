@@ -70,4 +70,15 @@ class WebhookV2Controller extends Controller
 
         return ApiResponse::json([]);
     }
+
+    /**
+     * @see WebhookV2\Service's processWebhookEventsFromCsv method.
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function processWebhookEventsFromCsv()
+    {
+        (new Service)->processWebhookEventsFromCsv($this->input);
+
+        return ApiResponse::json([]);
+    }
 }

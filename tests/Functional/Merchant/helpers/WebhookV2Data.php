@@ -376,4 +376,36 @@ return [
         'url'         => 'http://www.test.webhook.razorpay.com',
         'alert_email' => 'alert_email@dummy.razorpay.com',
     ],
+
+    'testProcessWebhookEventsFromCsv' => [
+        'request' => [
+            'url'     => '/admin/webhooks/process_events_csv',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testProcessWebhookEventsFromCsvWhenInvalidPayload' => [
+        'request' => [
+            'url'     => '/admin/webhooks/process_events_csv',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid event name: unknown.event',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

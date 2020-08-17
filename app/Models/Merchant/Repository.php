@@ -1039,4 +1039,13 @@ class Repository extends Base\Repository
         return $childMerchantIds;
     }
 
+    /**
+     * @param  array  $ids
+     * @return Base\PublicCollection
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public function findManyOrFailPublic(array $ids): Base\PublicCollection
+    {
+        return $this->newQuery()->findManyOrFailPublic($ids);
+    }
 }

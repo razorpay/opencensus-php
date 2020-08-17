@@ -35,6 +35,8 @@ class Validator extends \RZP\Base\Validator
     // valid email types which can be sent.
     const VALID_EMAIL_TYPES = [self::EMAIL_DEACTIVATE];
 
+    const MAX_ALLOWED_WEBHOOK_EVENTS_PER_CSV_FILE = 1000;
+
     // validation rules for the webhook array which needs to be passed to send a webhook disable email.
     protected static $deactivateEmailRules = [
         self::ID          => 'required|string|size:14',
@@ -42,6 +44,10 @@ class Validator extends \RZP\Base\Validator
         self::OWNER_ID    => 'required|string|size:14',
         self::OWNER_TYPE  => 'required|string|in:merchant',
         self::ALERT_EMAIL => 'sometimes|email',
+    ];
+
+    protected static $processWebhookEventsFromCsvRules = [
+        Constant::FILE => 'required|file|max:2048|mime_types:text/csv,text/plain|mimes:csv,txt',
     ];
 
     /**
@@ -172,5 +178,20 @@ class Validator extends \RZP\Base\Validator
         }
 
         (new JitValidator)->setStrictFalse()->rules(self::$deactivateEmailRules)->input($data[self::WEBHOOK])->validate();
+    }
+
+    public function validateProcessWebhookEventsFromCsvInput(array $input)
+    {
+        (new JitValidator)->rules(self::$processWebhookEventsFromCsvRules)->input($input)->validate();
+
+        // File size is relatively small so not worrying about reading twice.
+        // Also subtracts by 1 assuming first line is header.
+        $numRows = count(file($input[Constant::FILE])) - 1;
+        if ($numRows > self::MAX_ALLOWED_WEBHOOK_EVENTS_PER_CSV_FILE)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Number of webhook events in file exceed max allowed limit: {$numRows}"
+            );
+        }
     }
 }

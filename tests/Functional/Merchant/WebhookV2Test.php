@@ -1,12 +1,16 @@
 <?php
 
 namespace RZP\Tests\Functional\Merchant;
+
+use Illuminate\Http\UploadedFile;
+
 use Mail;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\ServerErrorException;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
@@ -22,6 +26,7 @@ class WebhookV2Test extends TestCase
     use MocksDnsTrait;
     use OAuthTrait;
     use TestsBusinessBanking;
+    use TestsWebhookEvents;
 
     // Used in webhook trait
     protected $storkMock;
@@ -510,6 +515,37 @@ class WebhookV2Test extends TestCase
 
             return ($mail->hasFrom('alerts@razorpay.com') and ($mail->hasTo($testData['alert_email'])));
         });
+    }
+
+    public function testProcessWebhookEventsFromCsv()
+    {
+        $filepath = __DIR__.'/helpers/webhook_events.csv';
+        $file = new UploadedFile($filepath, 'webhook_events.csv', 'text/csv', filesize($filepath), null, true);
+        $this->testData[__FUNCTION__]['request']['files']['file'] = $file;
+
+        $this->expectWebhookEvent('payment.created');
+        $this->expectWebhookEvent('payment.failed');
+        $this->expectWebhookEvent('payment.captured');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testProcessWebhookEventsFromCsvWhenInvalidPayload()
+    {
+        $contents = file_get_contents(__DIR__.'/helpers/webhook_events.csv');
+        $contents = str_replace('payment.failed', 'unknown.event', $contents);
+        $filepath = '/tmp/webhook_events.csv';
+        file_put_contents($filepath, $contents);
+        $file = new UploadedFile($filepath, 'webhook_events.csv', 'text/csv', filesize($filepath), null, true);
+        $this->testData[__FUNCTION__]['request']['files']['file'] = $file;
+
+        $this->dontExpectAnyWebhookEvent();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
     }
 
     protected function addOAuthTag(string $merchantId = '10000000000000')

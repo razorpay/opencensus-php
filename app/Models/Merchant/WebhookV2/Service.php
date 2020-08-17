@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\WebhookV2;
 use Mail;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Event;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -605,5 +606,55 @@ class Service extends Base\Service
     {
         unset($wk['secret']);
         return $wk;
+    }
+
+    /**
+     * Reads each line of uploaded csv file expecting json encoded webhook event
+     * payload, and sends to stork as a new webhook event. The first line of csv
+     * file is ignored assuming header. It runs in sync, max file size expected
+     * is 1MB, and max lines in the file must not exceed 1000.
+     *
+     * Sample csv file looks like:
+     * "ownerid","payload"
+     * "CBcPtPwFgpjdUp","{""entity"":""event"",""account_id"":""acc_CBcPtPwFgpjdUp"",""event"":""payment.authorized"",""contains"":[""payment""],""payload"":{""payment"":{""entity"":{""id"":""pay_FNSEUwYGlx6uEc"",""entity"":""payment"",""created_at"":1596711949}}},""created_at"":1596711963}"
+     *
+     * @param  array  $input
+     * @return void
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function processWebhookEventsFromCsv(array $input)
+    {
+        $this->trace->info(TraceCode::PROCESS_WEBHOOK_EVENTS_FROM_CSV_REQUEST);
+
+        $this->validator->validateProcessWebhookEventsFromCsvInput($input);
+
+        $rows = array_map('str_getcsv', file($input[Constant::FILE]));
+        // Ignores header line.
+        array_shift($rows);
+
+        $merchantIds = array_values(array_unique(array_pluck($rows, 0)));
+        $merchantsById = $this->repo->merchant->findManyOrFailPublic($merchantIds)->keyBy(Constant::ID);
+
+        // Validates and builds all event objects in one iteration.
+        $events = [];
+        foreach ($rows as $row)
+        {
+            $merchantId = $row[0];
+            $eventAttrs = json_decode($row[1], true);
+            // Because this attribute is derived and is not expected while building entity.
+            unset($eventAttrs['entity']);
+
+            $event = (new Event\Entity)->build($eventAttrs);
+            $event->merchant()->associate($merchantsById->get($merchantId));
+
+            $events[] = $event;
+        }
+
+        // Dispatches all events to stork.
+        $stork = new Merchant\Webhook\Stork($this->product);
+        foreach ($events as $event)
+        {
+            $stork->processEventSafe($event, $this->mode);
+        }
     }
 }
