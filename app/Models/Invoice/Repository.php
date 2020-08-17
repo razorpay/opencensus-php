@@ -213,9 +213,11 @@ class Repository extends Base\Repository
     {
         $now = Carbon::now(Timezone::IST)->getTimestamp();
 
+        $nowMinus14days = Carbon::now(Timezone::IST)->addDays(-14)->getTimestamp();
+
         return $this->newQuery()
                     ->where(Entity::STATUS, '=', Status::ISSUED)
-                    ->where(Entity::EXPIRE_BY, '<', $now)
+                    ->whereBetween(Entity::EXPIRE_BY, array($nowMinus14days, $now))
                     ->limit($limit)
                     ->get();
     }

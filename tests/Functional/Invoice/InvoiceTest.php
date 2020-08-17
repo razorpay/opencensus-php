@@ -2689,6 +2689,8 @@ class InvoiceTest extends TestCase
     {
         $metrics = $this->createMetricsMock();
 
+        $now = Carbon::now(Timezone::IST)->getTimestamp();
+
         // Issued invoice
         $this->createOrder();
         $this->fixtures->create('invoice');
@@ -2699,7 +2701,7 @@ class InvoiceTest extends TestCase
             [
                 'id'         => '1000001invoice',
                 'order_id'   => '100000001order',
-                'expire_by'  => 1484519217,
+                'expire_by'  => $now,
             ]);
 
         // Not picked: Cancelled invoice, can be past expire_by if cancelled in
@@ -2709,13 +2711,13 @@ class InvoiceTest extends TestCase
             [
                 'id'           => '1000002invoice',
                 'order_id'     => '100000002order',
-                'expire_by'    => 1484519217,
+                'expire_by'    => $now,
                 'status'       => 'cancelled',
                 'cancelled_at' => 1484519200,
             ]);
 
         // Not picked: Draft invoice
-        $this->createDraftInvoice(['id' => '1000003invoice']);
+        $this->createDraftInvoice(['id' => '1000003invoice', 'created_at' => $now]);
 
         // Not picked: Past expire_by but paid invoice
         $this->createOrder(['id' => '100000004order']);
@@ -2723,7 +2725,7 @@ class InvoiceTest extends TestCase
             [
                 'id'         => '1000004invoice',
                 'order_id'   => '100000004order',
-                'expire_by'  => 1484519217,
+                'expire_by'  => $now,
                 'status'     => 'paid',
             ]);
 
@@ -2734,7 +2736,7 @@ class InvoiceTest extends TestCase
             [
                 'id'         => '1000005invoice',
                 'order_id'   => '100000005order',
-                'expire_by'  => 1484519217,
+                'expire_by'  => $now,
                 'status'     => 'issued',
             ]);
         $this->fixtures->payment->createAuthorized(
@@ -2750,7 +2752,7 @@ class InvoiceTest extends TestCase
             [
                 'id'         => '1000006invoice',
                 'order_id'   => '100000006order',
-                'expire_by'  => 1484519217,
+                'expire_by'  => $now,
                 'status'     => 'issued',
             ]);
         $payment = $this->fixtures->payment->createAuthorized(
@@ -2758,6 +2760,7 @@ class InvoiceTest extends TestCase
                             'order_id'   => '100000006order',
                             'invoice_id' => '1000006invoice',
                         ]);
+
         $this->refundAuthorizedPayment($payment->getPublicId());
 
         $this->ba->appAuth();
