@@ -39,14 +39,9 @@ class Core extends Base\Core
             $this->mode
         );
 
-        //
-        // Required to trim check for non treatment merchant
-        //
-        $trimmedInput = $this->trimSpaces($input);
-
         if ($treatment === 'on')
         {
-            $input = $trimmedInput;
+            $input = $this->trimSpaces($input);
         }
 
         if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
@@ -71,9 +66,10 @@ class Core extends Base\Core
         {
             $contact = $this->repo->contact->getContactWithSimilarDetails($input, $merchant);
 
-            if ($contact === null)
+            if (($treatment === 'on') and
+                ($contact === null))
             {
-                $contact = $this->repo->contact->getContactWithTrimmedSimilarDetails($trimmedInput, $merchant);
+                $contact = $this->repo->contact->getContactWithTrimmedSimilarDetails($input, $merchant);
             }
 
             if ($contact !== null)
