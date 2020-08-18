@@ -7006,6 +7006,11 @@ trait Authorize
             return false;
         }
 
+        if ($payment->isAppCred() === true)
+        {
+            return false;
+        }
+
         return true;
     }
 
@@ -7030,6 +7035,7 @@ trait Authorize
             ($payment->isUpi() === true) or
             ($payment->isBharatQr() === true) or
             ($payment->isUpiTransfer() === true) or
+            ($payment->isAppCred() === true) or
             ($payment->isNach() === true))
         {
             return false;
