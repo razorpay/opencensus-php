@@ -3,37 +3,48 @@
 -- This is the exposed module.
 local M = {}
 
+local redis_lib = require "resty.redis"
 local sha1 = require "resty.sha1"
 local sha256 = require "resty.sha256"
 local str = require "resty.string"
 local jwt = require "resty.jwt"
-local redis_cluster = require "resty-redis-cluster"
 
 -- Cache Key prefix to fetch mid from merchant key
 local merchant_key_prefix = "throttle:t:km:"
 
 -- The environment variables below are made available via nginx's env
 local redis_conf = {
-    name = "redis-cluster",
-
-    serv_list = {
-        { ip =  os.getenv("RESTY_REDIS_CLUSTER_HOST") or "127.0.0.1",
-          port = os.getenv("RESTY_REDIS_CLUSTER_PORT") or 6379
-        }
-     },
-    connection_timeout  = os.getenv("RESTY_REDIS_TIMEOUT_MS") or 100,
-    keepalive_timeout = os.getenv("RESTY_REDIS_MAX_IDLE_MS") or 10000,
-    keepalive_cons   = os.getenv("RESTY_REDIS_POOL_SIZE") or 100,
-    max_redirection = 5,
-    auth = os.getenv("RESTY_REDIS_CLUSTER_PASSWORD") or nil
+    timeout_ms  = os.getenv("RESTY_REDIS_TIMEOUT_MS") or 100,
+    host        = os.getenv("RESTY_REDIS_HOST") or "127.0.0.1",
+    port        = os.getenv("RESTY_REDIS_PORT") or 6379,
+    password    = os.getenv("RESTY_REDIS_PASSWORD") or nil,
+    max_idle_ms = os.getenv("RESTY_REDIS_MAX_IDLE_MS") or 10000,
+    pool_size   = os.getenv("RESTY_REDIS_POOL_SIZE") or 100,
 }
 
 -- get_redis_conn gets a new connection from redis pool of connections.
 function M.get_redis_conn(ngx)
-    local redis = redis_cluster:new(redis_conf)
-    return redis, nil
+    local redis = redis_lib:new()
+    redis:set_timeout(redis_conf.timeout_ms)
+    ngx.log(ngx.DEBUG, "Lua Redis Host : ", redis_conf.host, redis_conf.port)
+    local ok, err = redis:connect(redis_conf.host, redis_conf.port)
+    if err then
+        return nil, "failed to connect to redis host: " .. err
+    end
+    if redis_conf.password ~= nil then
+        local res, err = redis:auth(redis_conf.password)
+        if err then
+            return nil, "failed to authenticate to redis host: " .. err
+        end
+    end
+    return redis, err
 end
 
+-- release_redis_conn releases redis connection. Hehe.
+function M.release_redis_conn(redis)
+    local ok, err = redis:set_keepalive(redis_conf.max_idle_ms, redis_conf.pool_size)
+    return err
+end
 
 -- get_details_by_bearer_token method basically gets jwt Oauth Token details using jwt decode
 function M.get_details_by_bearer_token(token, ngx)

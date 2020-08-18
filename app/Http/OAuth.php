@@ -57,9 +57,7 @@ class OAuth
         $this->router  = $app['router'];
         $this->request = $app['request'];
         $this->trace   = $app['trace'];
-        // use the throttle cache for storing the tokens data
-        $cacheStore    = $this->app['config']->get('cache.throttle');
-        $this->cache   = $app['cache']->store($cacheStore);
+        $this->cache   = $app['cache'];
     }
 
     /**
@@ -147,6 +145,7 @@ class OAuth
     {
         $response = [];
         $storeCache = false;
+        $driver = $this->getCacheDriverForTokens();
 
         try
         {
@@ -157,7 +156,7 @@ class OAuth
             // So the cacheTag needs to be the hash of the bearer token itself.
             //
             $cacheTags = $this->getCacheTagsForToken($token);
-            $response  = $this->cache->tags($cacheTags)->get($cacheKey) ?? [];
+            $response  = $this->cache->driver($driver)->tags($cacheTags)->get($cacheKey) ?? [];
         }
         catch (\Exception $exception)
         {
@@ -198,12 +197,12 @@ class OAuth
             {
                 list($ttl, $key) = $this->getCacheInfo($token);
 
-                $this->cache->tags($cacheTags)->put($key, $response, $ttl);
+                $this->cache->driver($driver)->tags($cacheTags)->put($key, $response, $ttl);
 
                 // Similarly, when a token is being revoked the only attribute available is the ID of the token.
                 // Hence we use the ID as key to cache the tokentag
                 $tokenTag = $this->getCacheTagsForTokenId($response['id']);
-                $this->cache->tags($tokenTag)->put($response['id'], $key);
+                $this->cache->driver($driver)->tags($tokenTag)->put($response['id'], $key);
             }
         }
         catch (\Exception $exception)
@@ -238,6 +237,7 @@ class OAuth
 
         $response = [];
         $storeCache = false;
+        $driver = $this->getCacheDriverForTokens();
 
         try
         {
@@ -247,7 +247,7 @@ class OAuth
             // When a request is authenticated, only bearer token is available
             // So the cacheTag needs to be the hash of the bearer token itself.
             $cacheTags = $this->getCacheTagsForToken($token);
-            $response = $this->cache->tags($cacheTags)->get($cacheKey) ?? [];
+            $response = $this->cache->driver($driver)->tags($cacheTags)->get($cacheKey) ?? [];
         }
         catch (\Exception $exception)
         {
@@ -289,12 +289,12 @@ class OAuth
             {
                 list($ttl, $key) = $this->getCacheInfo($this->publicToken);
 
-                $this->cache->tags($cacheTags)->put($key, $response, $ttl);
+                $this->cache->driver($driver)->tags($cacheTags)->put($key, $response, $ttl);
 
                 // Similarly, when a token is being revoked the only attribute available is the ID of the token.
                 // Hence we use the ID as key to cache the tokentag
                 $tokenTag = $this->getCacheTagsForTokenId($response['id']);
-                $this->cache->tags($tokenTag)->put($response['id'], $key);
+                $this->cache->driver($driver)->tags($tokenTag)->put($response['id'], $key);
             }
 
         }

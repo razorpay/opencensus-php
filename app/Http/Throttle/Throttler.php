@@ -116,7 +116,7 @@ class Throttler
 
     protected function initRedisConnection()
     {
-        $this->redis = Redis::connection('throttle')->client();
+        $this->redis = Redis::connection()->client();
     }
 
     protected function initThrottleSettings()
@@ -134,12 +134,13 @@ class Throttler
 
     protected function loadSettingsFromRedis(): array
     {
-        $settings = array();
-
-        array_push($settings, $this->redis->hgetall(K::GLOBAL_SETTINGS_KEY));
-        array_push($settings, $this->redis->hgetall(K::ID_SETTINGS_KEY_PREFIX . $this->getIdSettingsKey()));
-
-        return $settings;
+        return $this->redis->pipeline(
+            function ($pipe)
+            {
+                /** @var $pipe Pipeline */
+                $pipe->hgetall(K::GLOBAL_SETTINGS_KEY);
+                $pipe->hgetall(K::ID_SETTINGS_KEY_PREFIX . $this->getIdSettingsKey());
+            });
     }
 
     protected function blockIfApplicable()

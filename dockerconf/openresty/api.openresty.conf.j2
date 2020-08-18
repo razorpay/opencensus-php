@@ -1,8 +1,4 @@
-lua_package_path "/usr/local/openresty/nginx/lua/?.lua;/usr/local/openresty/lualib/?.lua;/usr/local/openresty/luajit/share/lua/5.1/?.lua;/lua/src/?.lua";
-lua_package_cpath "/usr/local/openresty/lualib/?.so;/usr/local/openresty/luajit/lib/lua/5.1/?.so;";
-
-lua_shared_dict redis_cluster_slot_locks 100k;
-
+lua_package_path "/usr/local/openresty/nginx/lua/?.lua;;";
 
 log_format openresty-api escape=json
   '{'
