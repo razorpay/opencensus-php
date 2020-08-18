@@ -1,5 +1,7 @@
 <?php
 
+namespace RZP\Tests\Functional\Gateway\Enach\Nach;
+
 use Excel;
 
 use Carbon\Carbon;
