@@ -142,6 +142,11 @@ class Validator extends Base\Validator
         'transaction_ids.*' => 'required|string|size:14',
     ];
 
+    protected static $settlementsServiceMigrationRules = [
+        'merchant_ids'        => 'sometimes|array',
+        'merchant_ids.*'      => 'required|string|size:14',
+    ];
+
     protected function validateBalanceType($attribute, $value)
     {
         Balance\Type::validateSettlementBalanceType($value);

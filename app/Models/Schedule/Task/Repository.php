@@ -114,4 +114,12 @@ class Repository extends Base\Repository
                     ->where(Entity::NEXT_RUN_AT, '<', $timestamp)
                     ->get();
     }
+
+    public function fetchByMerchantOnConnection($merchant, $type, $mode)
+    {
+        return $this->newQueryWithConnection($mode)
+                    ->merchantId($merchant->getId())
+                    ->where(Entity::TYPE, '=', $type)
+                    ->get();
+    }
 }

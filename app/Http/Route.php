@@ -539,6 +539,7 @@ class Route
         'setl_schedule_create'                     => ['post',     'settlements/schedule/create',                    'SettlementController@scheduleCreate'                               ],
         'setl_schedule_get'                        => ['post',     'settlements/schedule/get',                       'SettlementController@scheduleGet'                                  ],
         'setl_schedule_get_ids'                    => ['get',      'settlements/schedule/get_ids',                   'SettlementController@scheduleGetIds'                               ],
+        'setl_service_migration'                   => ['post',     'settlements/service/migration',                  'SettlementController@migrateConfigurations'                        ],
         'setl_execution_reminder'                  => ['post',     'settlements/reminder/execution',                 'SettlementController@executionReminder'                            ],
         'setl_retry_new_service'                   => ['post',     'settlements/service/retry',                      'SettlementController@settlementRetry'                              ],
         'setl_channel_state_get'                   => ['get',      'settlements/channel/state',                      'SettlementController@getChannelState'                              ],
@@ -3665,6 +3666,8 @@ class Route
 
         // Get free_payout attributes for balance
         'admin_get_free_payouts_attributes',
+
+        'setl_service_migration',
     ];
 
     public static $routePermission = [
@@ -4422,6 +4425,8 @@ class Route
 
         // Get free_payout attributes for balance
         'admin_get_free_payouts_attributes'           => Permission::VIEW_FREE_PAYOUTS_ATTRIBUTES,
+
+        'setl_service_migration'                      => '*',
     ];
 
     public static $bankingRoutePermissions = [
@@ -4961,6 +4966,7 @@ class Route
             'vendor_payment_ocr_accuracy_cron',
             'mpans_tokenize_existing',
             'terminal_mpans_tokenize_existing',
+            'setl_service_migration',
         ],
 
         'subscriptions' => [

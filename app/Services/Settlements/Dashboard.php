@@ -131,35 +131,37 @@ class Dashboard extends Base
     /**
      * Merchant Config Service Create
      * @param array  $input
+     * @param null $mode
      * @return array
      * @throws RuntimeException
      * @throws \Throwable
      */
-    public function merchantConfigCreate(array $input) : array
+    public function merchantConfigCreate(array $input, $mode = null) : array
     {
         $auth = $this->getAuth(self::SERVICE_DASHBOARD);
 
-        return $this->makeRequest(self::MERCHANT_CONFIG_CREATE, $input, $auth);
+        return $this->makeRequest(self::MERCHANT_CONFIG_CREATE, $input, $auth, $mode);
     }
 
     /**
      * Merchant Config Service Update
      * @param array  $input
+     * @param null $mode
      * @return array
      * @throws RuntimeException
      * @throws \Throwable
      */
-    public function merchantConfigUpdate(array $input) : array
+    public function merchantConfigUpdate(array $input, $mode = null) : array
     {
         $auth = $this->getAuth(self::SERVICE_DASHBOARD);
 
-        return $this->makeRequest(self::MERCHANT_CONFIG_UPDATE, $input, $auth);
+        return $this->makeRequest(self::MERCHANT_CONFIG_UPDATE, $input, $auth, $mode);
     }
 
     /**
      * Bank Account Service Create
      * @param array  $input
-     * @param $mode
+     * @param null $mode
      * @return array
      * @throws RuntimeException
      * @throws \Throwable
@@ -277,7 +279,6 @@ class Dashboard extends Base
         return $this->bankAccountUpdate($request);
     }
 
-
     /**
      * used to trigger multiple executions at once
      * @param array $input
@@ -388,18 +389,18 @@ class Dashboard extends Base
     public function getBankAccountCreateRequestForSettlementService($ba)
     {
         return [
-            'merchant_id'         =>  $ba->getMerchantId(),
-            'account_number'      =>  $ba->getAccountNumber(),
-            'account_type'        =>  $ba->getAccountType() !== null ? $ba->getAccountType():'current',
-            'ifsc_code'           =>  $ba->getIfscCode(),
-            'beneficiary_name'    =>  $ba->getBeneficiaryName(),
-            'beneficiary_address' =>  $ba->getBeneficiaryAddress1(),
-            'beneficiary_city'    =>  $ba->getBeneficiaryCity(),
-            'beneficiary_state'   =>  $ba->getBeneficiaryState(),
-            'beneficiary_country' =>  $ba->getBeneficiaryCountry(),
-            'beneficiary_email'   =>  $ba->getBeneficiaryEmail(),
-            'beneficiary_mobile'  =>  $ba->getBeneficiaryMobile(),
-            'accepted_currency'   =>  Currency::INR
+            'merchant_id'         => $ba->getMerchantId(),
+            'account_number'      => $ba->getAccountNumber(),
+            'account_type'        => $ba->getAccountType() !== null ? $ba->getAccountType() : 'current',
+            'ifsc_code'           => $ba->getIfscCode(),
+            'beneficiary_name'    => $ba->getBeneficiaryName(),
+            'beneficiary_address' => $ba->getBeneficiaryAddress1(),
+            'beneficiary_city'    => $ba->getBeneficiaryCity(),
+            'beneficiary_state'   => $ba->getBeneficiaryState(),
+            'beneficiary_country' => $ba->getBeneficiaryCountry(),
+            'beneficiary_email'   => $ba->getBeneficiaryEmail(),
+            'beneficiary_mobile'  => $ba->getBeneficiaryMobile(),
+            'accepted_currency'   => Currency::INR
         ];
     }
 

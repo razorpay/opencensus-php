@@ -15,11 +15,15 @@ use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
 use RZP\Jobs\Settlement\Bucket;
 use RZP\Models\Merchant\Balance;
+use RZP\Jobs\Settlement\migration;
+use RZP\Models\Merchant\Preferences;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Merchant as MerchantModel;
 use RZP\Models\Settlement\Bucket\Preference;
+use RZP\Models\Schedule\Task as scheduleTask;
 use RZP\Jobs\Settlement\TransactionMigration;
+use RZP\Models\Settlement\Bucket as BucketModel;
 
 class Core extends Base\Core
 {
@@ -420,6 +424,200 @@ class Core extends Base\Core
         }
 
         return $timestamp;
+    }
+
+    public function MigrateMerchantConfiguration($merchantId, $mode)
+    {
+        $merchant = $this->repo->merchant->fetchMerchantOnConnection($merchantId, $mode);
+
+        $req = [
+            'merchant_id' => $merchant->getId(),
+        ];
+
+        $response = app('settlements_dashboard')->merchantConfigCreate($req, $mode);
+
+        unset($response['config']['active']);
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_SERVICE_MC_MIGRATION_DEFAULT_CREATE_SUCCESS,
+            [
+                'merchant_id' => $merchant->getId(),
+                'response'    => $response,
+                'mode'        => $mode,
+            ]);
+
+
+        if (in_array($merchant->getId(), Preferences::NO_SETTLEMENT_MIDS, true) === true)
+        {
+            $response['config']['features']['block']['status'] = true;
+            $response['config']['features']['block']['reason'] = 'merchants opted out on settlement';
+        }
+
+        if ($merchant->isFundsOnHold() === true)
+        {
+            $response['config']['features']['disable']['status'] = true;
+            $response['config']['features']['disable']['reason'] =
+                $merchant->getHoldFundsReason() != null ? $merchant->getHoldFundsReason() : 'funds are on hold';
+        }
+
+        $settlementServiceSupportedChannels = [
+            Channel::AXIS,
+            Channel::CITI,
+            Channel::RBL,
+            Channel::ICICI,
+            Channel::YESBANK,
+        ];
+
+        if (in_array($merchant->getChannel(), $settlementServiceSupportedChannels) === true)
+        {
+            $response['config']['preferences']['channel'] = strtoupper($merchant->getChannel());
+        }
+
+        if (in_array($merchant->getId(), Preferences::ONLY_NEFT_SETTLEMENT_MIDS, true) === true)
+        {
+            $response['config']['preferences']['mode'] = 'NEFT';
+        }
+
+        $scheduleMapping = $this->getScheduleMappingForMethodNewService($response['config']['schedules'], $merchant, $mode);
+
+        $response['config']['schedules'] = $scheduleMapping;
+
+        $destinationMerchantId = (new Processor)->settlementToPartner($merchant->getId());
+
+        $isAggregateSettlement = (bool) $destinationMerchantId;
+
+        if ($isAggregateSettlement === true)
+        {
+            $response['config']['types']['aggregate']['enable'] = true;
+            $response['config']['types']['default']['enable'] = false;
+        }
+
+        $request = array_merge($req, $response);
+
+        $result = app('settlements_dashboard')->merchantConfigUpdate($request, $mode);
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_SERVICE_MC_MIGRATION_UPDATE_SUCCESS,
+            [
+                'merchant' => $merchant->getId(),
+                'request'  => $request,
+                'mode'     => $mode,
+                'result'   => $result,
+            ]);
+    }
+
+    public function getScheduleMappingForMethodNewService($newSettlementSchedules, $merchant, $mode)
+    {
+        $schedules = $this->repo
+                          ->schedule_task
+                          ->fetchByMerchantOnConnection($merchant, scheduleTask\Type::SETTLEMENT, $mode);
+
+        // todo add the schedule mappings from settlement service and existing schedules
+        $scheduleIdMapping = [
+            'abc' => 'def',
+        ];
+
+        $methodOfPayments = [
+            null,
+            Payment\Method::EMANDATE,
+            Payment\Method::EMI,
+            Payment\Method::CARD,
+            Payment\Method::UPI,
+            Payment\Method::BANK_TRANSFER,
+            Payment\Method::WALLET,
+            Payment\Method::NETBANKING,
+        ];
+
+        foreach ($schedules as $schedule)
+        {
+            $scheduleMethod = $schedule['method'];
+
+            if(in_array($scheduleMethod, $methodOfPayments) === true)
+            {
+                if($schedule['international'] === 0)
+                {
+                    if($scheduleMethod === null)
+                    {
+                        $method = 'domestic:default';
+                    }
+                    else
+                    {
+                        $method = 'domestic:' . $scheduleMethod ;
+                    }
+
+                    $newSettlementSchedules['payment'][$method] = $scheduleIdMapping[$schedule['schedule_id']];
+                }
+                else
+                {
+                    if($scheduleMethod === null)
+                    {
+                        $method = 'international:default';
+                    }
+                    else
+                    {
+                        $method = 'international:' . $scheduleMethod ;
+                    }
+
+                    $newSettlementSchedules['payment'][$method] = $scheduleIdMapping[$schedule['schedule_id']];
+                }
+                continue;
+            }
+
+            // this is if the settlement_transfer_schedule is there then
+            $newSettlementSchedules[$scheduleMethod]['default'] = $scheduleIdMapping[$schedule['schedule_id']];
+        }
+
+        return $newSettlementSchedules;
+    }
+
+    public function migrateConfigurations(array $input)
+    {
+        $this->trace->info(
+            TraceCode::SETTLEMENT_SERVICE_MIGRATION_REQUEST,
+            [
+                'input' => $input
+            ]);
+
+        $response = [
+            'total'         => count($input['merchant_ids']),
+            'skipped_count' => 0,
+            'failed_count'  => 0,
+        ];
+
+        foreach ($input['merchant_ids'] as $merchantId)
+        {
+            try
+            {
+                if ((new BucketModel\Core)->shouldProcessViaNewService($merchantId) === true)
+                {
+                    migration::dispatch($this->mode, $merchantId);
+                }
+                else
+                {
+                    $this->trace->info(
+                        TraceCode::SETTLEMENT_SERVICE_MIGRATION_SKIPPED,
+                        [
+                            'merchant_id' => $merchantId,
+                        ]);
+
+                    $response['skipped_count'] += 1;
+                }
+            }
+            catch (\Throwable $e)
+            {
+                $response['failed_count'] += 1;
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::SETTLEMENT_SERVICE_QUEUE_DISPATCH_FAILED,
+                    [
+                        'merchant_id' => $merchantId
+                    ]);
+            }
+        }
+
+        return $response;
     }
 
     public function enqueueForReplay(array $input)

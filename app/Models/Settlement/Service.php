@@ -818,4 +818,11 @@ class Service extends Base\Service
     {
         return app('settlements_dashboard')->getChannelState();
     }
+
+    public function migrateConfigurations(array $input)
+    {
+        (new Validator)->validateInput('settlements_service_migration', $input);
+
+        return (new Core)->migrateConfigurations($input);
+    }
 }

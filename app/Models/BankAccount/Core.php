@@ -530,4 +530,32 @@ class Core extends Base\Core
 
         return (strtolower($variant) === 'on');
     }
+
+    public function MigrateBankAccountsToSettlementService($merchantId, $mode)
+    {
+        $merchant = $this->repo->merchant->fetchMerchantOnConnection($merchantId, $mode);
+
+        $ba  = $this->repo->bank_account->getBankAccountOnConnection($merchant, $mode);
+
+        if($ba === null)
+        {
+            $this->trace->info(
+                TraceCode::SETTLEMENT_SERVICE_BA_MIGRATION_SKIPPED,
+                [
+                    'merchant_id' => $merchant->getId(),
+                    'mode'        => $mode,
+                ]);
+
+            return;
+        }
+
+        app('settlements_dashboard')->createBankAccount($ba, $mode);
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_SERVICE_BA_MIGRATION_SUCCESS,
+            [
+                'merchant_id' => $merchant->getId(),
+                'mode'        => $mode,
+            ]);
+    }
 }

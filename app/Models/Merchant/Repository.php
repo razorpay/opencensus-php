@@ -331,6 +331,12 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchMerchantOnConnection($merchantId, $mode)
+    {
+        return $this->newQueryWithConnection($mode)
+                    ->findOrFail($merchantId);
+    }
+
     public function fetchAllLiveMerchants()
     {
         return $this->newQuery()
