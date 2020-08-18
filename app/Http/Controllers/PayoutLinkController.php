@@ -182,7 +182,7 @@ class PayoutLinkController extends Controller
 
     public function get(string $id)
     {
-        $entity = $this->service()->fetchMerchantSpecific($id);
+        $entity = $this->service()->fetchMerchantSpecific($id, $this->input);
 
         return ApiResponse::json($entity);
     }

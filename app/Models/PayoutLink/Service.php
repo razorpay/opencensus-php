@@ -587,11 +587,12 @@ class Service extends Base\Service
 
         try
         {
-            return $this->app['payout-links']->fetch($publicId);
+            return $this->app['payout-links']->fetch($publicId, $input);
         }
         catch(\Exception $e)
         {
             $entity = $this->entityRepo->findOrFailByPublicIdWithParams($id, $input, true);
+
             return $entity->toArrayAdmin();
         }
     }
@@ -623,7 +624,7 @@ class Service extends Base\Service
         return $this->app['payout-links']->fetchMultiple($input);
     }
 
-    public function fetchMerchantSpecific(string $id): array
+    public function fetchMerchantSpecific(string $id, array $input): array
     {
         $this->checkIfPLServiceIsDown();
 
@@ -635,7 +636,7 @@ class Service extends Base\Service
             return $entity->toArrayPublic();
         }
 
-        return $this->app['payout-links']->fetch($id, $this->merchant->getMerchantId());
+        return $this->app['payout-links']->fetch($id, $input, $this->merchant->getMerchantId());
     }
 
     public function fetchMultipleMerchantSpecific(array $input): array

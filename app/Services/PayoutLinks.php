@@ -180,7 +180,7 @@ class PayoutLinks
         return $response;
     }
 
-    public function fetch(string $payoutLinkId, string $merchantId = "")
+    public function fetch(string $payoutLinkId, array $input, string $merchantId = "")
     {
         $forAdminResponse = true;
 
@@ -196,9 +196,13 @@ class PayoutLinks
             $request[self::MERCHANT_ID] = $merchantId;
         }
 
+        $expandArray = array_pull($input, 'expand', []);
+
+        $request['expand'] = $expandArray;
+
         $response = $this->makeRequest($url, $request);
 
-        $this->processParameters($response, $forAdminResponse);
+        $this->processParameters($response, $forAdminResponse, $expandArray);
 
         return $response;
     }
