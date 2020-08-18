@@ -26,6 +26,7 @@ class Format
     const IN        = 'in';
     const NONE      = null;
     const SEVEN_Z   = '7z';
+    const GPG       = 'gpg';
 
     const EXCEL_COLUMN_TEXT = '@';
 
@@ -48,6 +49,7 @@ class Format
         self::XML,
         self::IN,
         self::SEVEN_Z,
+        self::GPG
     ];
 
     const VALID_EXTENSION_MIME_MAP = [
@@ -83,6 +85,7 @@ class Format
         self::DAT     => ['text/plain', 'application/octet-stream'],
         self::NONE    => ['text/plain'],
         self::SEVEN_Z => ['application/x-7z-compressed'],
+        self::GPG     => ['application/pgp', 'application/octet-stream']
     ];
 
     const VALID_LOCAL_EXTENSIONS = [

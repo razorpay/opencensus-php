@@ -775,9 +775,10 @@ return [
         'test_merchant_id'       => env('NETBANKING_PNB_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'       => env('NETBANKING_PNB_GATEWAY_TEST_HASH_SECRET'),
         'live_hash_secret'       => env('NETBANKING_PNB_GATEWAY_LIVE_HASH_SECRET'),
-        'test_salt'              => env('NETBANKING_PNB_GATEWAY_TEST_SALT'),
         'test_terminal_password' => env('NETBANKING_PNB_GATEWAY_TEST_TERMINAL_PASSWORD'),
         'live_terminal_password' => env('NETBANKING_PNB_GATEWAY_LIVE_TERMINAL_PASSWORD'),
+        'recon_key'              => env('NETBANKING_PNB_RECON_DECRYPTION_KEY'),
+        'recon_passphrase'       => env('NETBANKING_PNB_RECON_DECRYPTION_PASSPHRASE'),
     ],
 
     'netbanking_csb' => [

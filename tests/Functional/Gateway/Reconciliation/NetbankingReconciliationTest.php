@@ -291,6 +291,8 @@ class NetbankingReconciliationTest extends TestCase
 
         $netbankingEntity = $this->getLastEntity('netbanking', true);
 
+        $this->assertEquals($netbankingEntity['account_number'], "9999999999");
+
         $this->assertEquals($netbankingEntity['bank_payment_id'], 99999);
 
         $batch = $this->getDbLastEntity('batch');
@@ -311,7 +313,7 @@ class NetbankingReconciliationTest extends TestCase
         $this->mockReconContentFunction(
             function(& $content, $action = null)
             {
-                $content[0]['amount'] = '50.00';
+                $content["Amount"] = '50.00';
             });
 
         $fileContents = $this->generateFile('pnb', []);

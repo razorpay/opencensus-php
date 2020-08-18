@@ -27,6 +27,7 @@ class Validator extends Base\Core
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip',
             'application/octet-stream', 'application/vnd.oasis.opendocument.spreadsheet',
         ],
+        'gpg'  => ['application/octet-stream', 'application/pgp'],
         'rpt'  => ['text/plain'],
         'dat'  => ['text/plain'],
         '7z'   => ['application/x-7z-compressed'],

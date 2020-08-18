@@ -3,7 +3,8 @@
 namespace RZP\Reconciliator\NetbankingPnb;
 
 use RZP\Reconciliator\Base;
-use RZP\Gateway\Netbanking\Pnb\ReconFields;
+use RZP\Encryption\PGPEncryption;
+use RZP\Reconciliator\FileProcessor;
 
 class Reconciliate extends Base\Reconciliate
 {
@@ -12,13 +13,28 @@ class Reconciliate extends Base\Reconciliate
         return self::PAYMENT;
     }
 
-    public function getColumnHeadersForType($type)
+    public function getFileType(string $mimeType): string
     {
-        return ReconFields::getPaymentColumnHeaders();
+        return FileProcessor::EXCEL;
     }
 
-    public function getDelimiter()
+    public function getDecryptedFile(array & $fileDetails)
     {
-        return '|';
+        $filePath = $fileDetails[FileProcessor::FILE_PATH];
+
+        $config = $this->config['gateway.netbanking_pnb'];
+
+        $pgpConfig = [
+            PGPEncryption::PRIVATE_KEY  => trim(str_replace('\n', "\n", $config['recon_key'])),
+            PGPEncryption::PASSPHRASE   => $config['recon_passphrase']
+        ];
+
+        $encryptedText = file_get_contents($filePath);
+
+        $res = new PGPEncryption($pgpConfig);
+
+        $decryptedText = $res->decrypt($encryptedText);
+
+        file_put_contents($filePath, $decryptedText);
     }
 }

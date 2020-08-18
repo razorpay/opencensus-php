@@ -31,4 +31,6 @@ class Constants
     const CITIBANK_NACH_FILE_JOB_NAME  = 'citibank_nach';
 
     const FIRST_DATA_PARES_FILE_JOB_NAME = 'firstdata_pares_data_push';
+
+    const PNB_NB_COMBINED_FILE_JOB_NAME  = 'pnb_net_banking';
 }

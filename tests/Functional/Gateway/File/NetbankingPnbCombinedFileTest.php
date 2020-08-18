@@ -1,0 +1,285 @@
+<?php
+
+namespace RZP\Tests\Functional\Gateway\File;
+
+use Mail;
+use Excel;
+use Queue;
+
+use Carbon\Carbon;
+
+use RZP\Encryption\PGPEncryption;
+use RZP\Gateway\Netbanking\Pnb\ReconFields;
+use RZP\Jobs\BeamJob;
+use RZP\Constants\Timezone;
+use RZP\Models\Gateway\File;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+
+class NetbankingPnbCombinedFileTest extends TestCase
+{
+    use PaymentTrait;
+    use DbEntityFetchTrait;
+
+    protected $terminal;
+
+    public function setUp()
+    {
+        $this->testDataFilePath = __DIR__ . '/helpers/NetbankingPnbCombinedFileTestData.php';
+
+        parent::setUp();
+
+        $this->bank = 'PUNB_R';
+
+        $this->terminal = $this->fixtures->create('terminal:shared_netbanking_pnb_terminal');
+    }
+
+    public function testNetbankingPnbCombinedFile()
+    {
+        Mail::fake();
+
+        Queue::fake();
+
+        $paymentArray = $this->getDefaultNetbankingPaymentArray($this->bank);
+
+        // Payment to fully refunded
+        $payment1 = $this->doAuthAndCapturePayment($paymentArray);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->edit('transaction', $transaction['id'], [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $this->fixtures->edit('netbanking', $netbanking['id'], [
+            'account_number' => '1'
+        ]);
+
+        //Payment to be refunded completely with 2 partial refunds on same day of payment
+        $payment2 = $this->doAuthAndCapturePayment($paymentArray);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->edit('transaction', $transaction['id'], [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $this->fixtures->edit('netbanking', $netbanking['id'], [
+            'account_number' => '2'
+        ]);
+
+        //Payment refunded partially on same day of payment and partially the next day before file generation
+        $payment3 = $this->doAuthAndCapturePayment($paymentArray);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->edit('transaction', $transaction['id'], [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $this->fixtures->edit('netbanking', $netbanking['id'], [
+            'account_number' => '3'
+        ]);
+
+        //Partial refund payment on same day of payment
+        $payment4 = $this->doAuthAndCapturePayment($paymentArray);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->edit('transaction', $transaction['id'], [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $this->fixtures->edit('netbanking', $netbanking['id'], [
+            'account_number' => '4'
+        ]);
+
+        //Payment created 6 days ago but refunded today
+        $payment5 = $this->doAuthAndCapturePayment($paymentArray);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->edit('transaction', $transaction['id'], [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->subDays(4)->timestamp
+        ]);
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $this->fixtures->edit('netbanking', $netbanking['id'], [
+            'account_number' => '5'
+        ]);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->fixtures->edit('payment', $payment['id'], [
+            'authorized_at' => Carbon::yesterday(Timezone::IST)->subDays(5)->timestamp
+        ]);
+
+        // full refund
+        $refundFull = $this->refundPayment($payment1['id']);
+
+        //partial refund
+        $refundPartial1 = $this->refundPayment($payment2['id'], 25000);
+
+        $refundPartial2 = $this->refundPayment($payment2['id'], 25000);
+
+        $refundPartial3 = $this->refundPayment($payment3['id'], 25000);
+
+        $refundPartial4 = $this->refundPayment($payment3['id'], 25000);
+
+        $refundEntity2 = $this->getDbLastEntity('refund');
+
+        $createdAt = Carbon::tomorrow(Timezone::IST)->addHours(6)->timestamp;
+
+        $this->fixtures->edit('refund', $refundEntity2['id'], ['created_at' => $createdAt]);
+
+        $refundPartial5 = $this->refundPayment($payment4['id'], 25000);
+
+        $refundFullOld = $this->refundPayment($payment5['id']);
+
+        $this->ba->adminAuth();
+
+        $claimsToBeAsserted = [
+            str_replace('pay_','',$payment1['id']) => [
+                'status' =>'failed',
+                'amount' =>$payment1['amount'],
+                ],
+            str_replace('pay_','',$payment2['id']) => [
+                'status' =>'failed',
+                'amount' =>$payment2['amount'],
+            ],
+            str_replace('pay_','',$payment3['id'])  => [
+                'status' =>'successful',
+                'amount' =>$payment3['amount'],
+            ],
+            str_replace('pay_','',$payment4['id'])  => [
+                'status' =>'successful',
+                'amount' =>$payment4['amount'],
+            ],
+        ];
+
+        $refundsToBeAsserted = [
+            str_replace('rfnd_','',$refundPartial3['id']) => [
+                'payment_id' =>str_replace('pay_','',$refundPartial3['payment_id']),
+                'amount' =>$refundPartial3['amount'],
+            ],
+            str_replace('rfnd_','',$refundPartial5['id']) => [
+                'payment_id' =>str_replace('pay_','',$refundPartial5['payment_id']),
+                'amount' =>$refundPartial5['amount'],
+            ],
+            str_replace('rfnd_','',$refundFullOld['id']) => [
+                'payment_id' =>str_replace('pay_','',$refundFullOld['payment_id']),
+                'amount' =>$refundFullOld['amount'],
+            ],
+        ];
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+
+        $this->assertNotNull($content[File\Entity::SENT_AT]);
+
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $files = $this->getEntities('file_store', [
+            'count' => 2
+        ], true);
+
+        $claimfilePath = storage_path('files/filestore') . '/' . $files['items']['0']['location'];
+
+        $refundfilePath = storage_path('files/filestore') . '/' . $files['items']['1']['location'];
+
+        $this->assertClaimFileContents($claimfilePath, $claimsToBeAsserted);
+
+        $this->assertRefundFileContents($refundfilePath, $refundsToBeAsserted);
+
+        $expectedFilesContent = [
+            'entity' => 'collection',
+            'count' => 2,
+            'items' => [
+                [
+                    'type' => 'pnb_netbanking_claims',
+                ],
+                [
+                    'type' => 'pnb_netbanking_refund',
+                ],
+            ],
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFilesContent, $files);
+
+        $refundTransaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNotNull($refundTransaction['reconciled_at']);
+
+        Queue::assertPushed(BeamJob::class, 1);
+
+        Queue::assertPushedOn('beam_test', BeamJob::class);
+    }
+
+    protected function assertRefundFileContents($filePath, $refundsToBeAsserted)
+    {
+        $this->assertTrue(file_exists($filePath));
+
+        $fileData = file_get_contents($filePath);
+
+        $str = explode("\r\n", $fileData);
+
+        for ($i = 0; $i < 3; $i++)
+        {
+            $row = str_getcsv($str[$i], '|');
+
+            $this->assertTrue(array_key_exists($row[6],$refundsToBeAsserted));
+            $this->assertEquals((int)number_format($row[2] * 100, 0, '', ''), $refundsToBeAsserted[$row[6]]['amount']);
+            $this->assertEquals($row[0], $refundsToBeAsserted[$row[6]]['payment_id']);
+        }
+    }
+
+    protected function assertClaimFileContents($filePath, $paymentsInClaimsWithStatus)
+    {
+        $this->assertTrue(file_exists($filePath));
+
+        $fileData = file_get_contents($filePath);
+
+        $config = $this->config['gateway.netbanking_pnb'];
+
+        $pgpConfig = [
+            PGPEncryption::PRIVATE_KEY  => trim(str_replace('\n', "\n", $config['recon_key'])),
+            PGPEncryption::PASSPHRASE  => $config['recon_passphrase'],
+        ];
+
+        $res = new PGPEncryption($pgpConfig);
+
+        $decryptedText = $res->decrypt($fileData);
+
+        file_put_contents($filePath, $decryptedText);
+
+        $claimSheet = Excel::load($filePath)->all()->toArray();
+
+        foreach ($claimSheet as $claim)
+        {
+            $this->assertTrue(array_key_exists($claim[ReconFields::PAYMENT_ID],$paymentsInClaimsWithStatus));
+
+            $dbPaymentAmount = $paymentsInClaimsWithStatus[$claim[ReconFields::PAYMENT_ID]][ReconFields::AMOUNT];
+            $statusInFile = $paymentsInClaimsWithStatus[$claim[ReconFields::PAYMENT_ID]][ReconFields::STATUS];
+            $claimAmountInFile = $claim['amount'] * 100;
+
+            $this->assertEquals($claimAmountInFile, $dbPaymentAmount);
+
+            $this->assertEquals($statusInFile, $claim[ReconFields::STATUS]);
+        }
+    }
+}

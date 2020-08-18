@@ -49,6 +49,7 @@ class Constants
     const KVB              = 'kvb';
     const SVC              = 'svc';
     const JSB              = 'jsb';
+    const PNB              = 'pnb';
 
     const ENACH_NPCI_NETBANKING = 'enach_npci_netbanking';
     const ENACH_NB_ICICI        = 'enach_nb_icici';
@@ -114,6 +115,7 @@ class Constants
             self::SCBL,
             self::SVC,
             self::JSB,
+            self::PNB,
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -202,6 +204,7 @@ class Constants
             self::SCBL        => ['scb.netbanking.claims@razorpay.com'],
             self::SVC         => ['svc-netbanking-refunds@razorpay.com'],
             self::JSB         => ['jsb-netbanking.refunds@razorpay.com'],
+            self::PNB         => [],
         ],
 
         Type::EMANDATE_REGISTER => [

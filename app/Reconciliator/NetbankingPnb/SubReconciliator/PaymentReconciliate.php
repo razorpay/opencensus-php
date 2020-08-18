@@ -5,6 +5,7 @@ namespace RZP\Reconciliator\NetbankingPnb\SubReconciliator;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Pnb\ReconFields;
+use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
@@ -32,6 +33,18 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         return null;
+    }
+
+    protected function getGatewayPaymentDate($row)
+    {
+        return $row[ReconFields::DATE] ?? null;
+    }
+
+    protected function getAccountDetails($row)
+    {
+        return [
+            BaseReconciliate::ACCOUNT_NUMBER => $row[ReconFields::ACCOUNT_NO],
+        ];
     }
 
     public function getGatewayPayment($paymentId)
