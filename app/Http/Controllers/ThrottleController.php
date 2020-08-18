@@ -34,11 +34,12 @@ class ThrottleController extends Controller
 
         Key\Entity::select('id', 'merchant_id')
             ->orderBy(Key\Entity::ID)
-            ->chunk($chunkSize, function($keys) use (&$totalIteration, &$failedIteration) {
+            ->chunk($chunkSize, function ($keys) use (&$totalIteration, &$failedIteration)
+            {
                 foreach ($keys as $key)
                 {
                     ++$totalIteration;
-                    $mkey = Constant::KEYID_MID_KEY_PREFIX.$key->getPublicId();
+                    $mkey = Constant::KEYID_MID_KEY_PREFIX . $key->getPublicId();
                     $mvalue = $key->getMerchantId();
                     try
                     {
@@ -70,36 +71,33 @@ class ThrottleController extends Controller
 
     protected function getRedisOldKey($input): string
     {
-        if (empty($input['merchant_id']) === true)
-        {
+        if (empty($input['merchant_id']) === true) {
 
-            return K::THROTTLE_PREFIX . K::CONFIGURATION_TYPE_ROUTE  . ':' .  $input['route'];
+            return K::THROTTLE_PREFIX . K::CONFIGURATION_TYPE_ROUTE . ':' . $input['route'];
         }
 
-        return K::THROTTLE_PREFIX  . K::CONFIGURATION_TYPE_MERCHANT  . ':'.  $input['merchant_id'];
+        return K::THROTTLE_PREFIX . K::CONFIGURATION_TYPE_MERCHANT . ':' . $input['merchant_id'];
     }
 
     protected function getRedisNewKey($input): string
     {
-        if (empty($input['merchant_id']) === true)
-        {
+        if (empty($input['merchant_id']) === true) {
 
-            return K::THROTTLE_PREFIX . '{' . K::CONFIGURATION_TYPE_ROUTE  . '}:' .  $input['route'];
+            return K::THROTTLE_PREFIX . '{' . K::CONFIGURATION_TYPE_ROUTE . '}:' . $input['route'];
         }
 
-        return K::THROTTLE_PREFIX . '{' . K::CONFIGURATION_TYPE_MERCHANT  . '}:'.  $input['merchant_id'];
+        return K::THROTTLE_PREFIX . '{' . K::CONFIGURATION_TYPE_MERCHANT . '}:' . $input['merchant_id'];
     }
 
 
     public function migrateThrottleKeysFromRedisLabs()
     {
         $redisLabs = Redis::connection();
+
         $throttleEC = Redis::connection('throttle');
-        $configRedis = Redis::connection('query_cache_redis');
 
         // Merchant
-        $merchants = $redisLabs->smembers(K::CUSTOM_MERCHANT_SET);
-
+        $merchants = $redisLabs->smembers('throttle:custom:merchant');
         $totalIteration = 0;
         $failedIteration = 0;
 
@@ -112,7 +110,10 @@ class ThrottleController extends Controller
             {
                 $rules = $redisLabs->hgetall($key);
                 $key = $this->getRedisNewKey(['merchant_id' => $merchantId]);
+
                 $throttleEC->hmset($key, $rules);
+
+                $throttleEC->sadd(K::CUSTOM_MERCHANT_SET, $merchantId);
             }
             catch (\Throwable $e)
             {
@@ -128,7 +129,7 @@ class ThrottleController extends Controller
         $totalIteration = 0;
         $failedIteration = 0;
 
-        $routes    = $redisLabs->smembers(K::CUSTOM_ROUTE_SET);
+        $routes = $redisLabs->smembers('throttle:custom:route');
 
         foreach ($routes as $route)
         {
@@ -140,6 +141,8 @@ class ThrottleController extends Controller
                 $rules = $redisLabs->hgetall($key);
                 $key = $this->getRedisNewKey(['route' => $route]);
                 $throttleEC->hmset($key, $rules);
+
+                $throttleEC->sadd(K::CUSTOM_ROUTE_SET, $route);
             }
             catch (\Throwable $e)
             {
@@ -151,19 +154,30 @@ class ThrottleController extends Controller
 
         $this->trace->info(TraceCode::THROTTLE_REDIS_KEY_MIGRATE, compact('totalIteration', 'failedIteration'));
 
-
-        // Config
+        //Old settings
         $totalIteration = 0;
         $failedIteration = 0;
 
-        foreach (ConfigKey::PUBLIC_KEYS as $key)
+        $customSettings = $redisLabs->smembers('throttle:custom');
+
+        foreach ($customSettings as $setting)
         {
             ++$totalIteration;
+            $key = $setting;
+
             try
             {
-                $key = "laravel:".$key;
-                $value = $redisLabs->get($key);
-                $configRedis->set($key, $value);
+                $rules = $redisLabs->hgetall($key);
+
+                $key = str_replace("throttle:t:i:", "{throttle:t}:i:", $key);
+
+                if ($rules != null && !empty($rules))
+                {
+                    $throttleEC->hmset($key, $rules);
+                }
+
+                $throttleEC->sadd(K::CUSTOM_SETTINGS_SET, $key);
+
             }
             catch (\Throwable $e)
             {
@@ -174,6 +188,14 @@ class ThrottleController extends Controller
         }
 
         $this->trace->info(TraceCode::THROTTLE_REDIS_KEY_MIGRATE, compact('totalIteration', 'failedIteration'));
+
+        // Migrate global settings
+        $rules = $redisLabs->hgetall("throttle:t");
+
+        if ($rules != null && !empty($rules))
+        {
+            $throttleEC->hmset(K::GLOBAL_SETTINGS_KEY, $rules);
+        }
 
         return ApiResponse::json([]);
 

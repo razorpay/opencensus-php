@@ -22,10 +22,23 @@ RUN set -eu && \
     php artisan optimize && \
     php artisan rzp:write_routes_meta
 
+
 # Usage specific image which has luarocks compiled.
 FROM openresty/openresty:1.17.8.2-0-alpine-fat-nosse42
 
-RUN /usr/local/openresty/luajit/bin/luarocks install lua-resty-jwt
+RUN apk update && \
+    apk upgrade && \
+    apk add git
+
+RUN /usr/local/openresty/luajit/bin/luarocks install lua-resty-jwt \
+    && /usr/local/openresty/luajit/bin/luarocks install lua-resty-redis \
+    && /usr/local/openresty/luajit/bin/luarocks install lua-resty-lock \
+    && git clone https://github.com/steve0511/resty-redis-cluster.git \
+    && cd resty-redis-cluster/ \
+    && git checkout 8d7b96d002337c38d71859e5f04f76b413aa5c29 \
+    && luarocks make \
+    && gcc -fPIC -shared -I/usr/local/openresty/luajit -o /usr/local/openresty/luajit/lib/lua/5.1/librestyredisslot.so src/redis_slot.c \
+    && rm -Rf /src
 
 RUN echo "* Installing deps" && \
     apk add --no-cache \

@@ -40,7 +40,8 @@ class AuthService
         $this->config  = $app['config']->get('applications.auth_service');
         $this->baseUrl = $this->config['url'];
         $this->secret  = $this->config['secret'];
-        $this->cache   = $app['cache'];
+        $cacheStore    = $app['config']->get('cache.throttle');
+        $this->cache   = $app['cache']->store($cacheStore);
     }
 
     public function createApplication(array $input, string $merchantId, string $type = null) : array
@@ -142,11 +143,10 @@ class AuthService
         $input[Token\Entity::MERCHANT_ID] = $merchantId;
 
         $tokenTag = $this->getCacheTagsForTokenId($id);
-        $driver   = $this->getCacheDriverForTokens();
-        $cacheTag = $this->cache->driver($driver)->tags($tokenTag)->get($id);
+        $cacheTag = $this->cache->tags($tokenTag)->get($id);
 
-        $this->cache->driver($driver)->tags($cacheTag)->flush();
-        $this->cache->driver($driver)->tags($tokenTag)->flush();
+        $this->cache->tags($cacheTag)->flush();
+        $this->cache->tags($tokenTag)->flush();
 
         return $this->sendRequest('tokens/' . $id, Requests::PUT, $input);
     }

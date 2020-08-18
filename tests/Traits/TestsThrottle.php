@@ -48,7 +48,7 @@ trait TestsThrottle
 
     protected function initRedisConnection()
     {
-        $this->redis = Redis::connection()->client();
+        $this->redis = Redis::connection('throttle')->client();
     }
 
     protected function setRedisGlobalSettings(array $parameters = [K::SKIP => 0, K::MOCK => 0])
@@ -76,7 +76,11 @@ trait TestsThrottle
 
     protected function flushRedis()
     {
-        $this->redis->flushall();
+        $flushDbCommand = new \Predis\Command\ServerFlushDatabase();
+
+        foreach ($this->redis->getConnection() as $node) {
+            $node->executeCommand($flushDbCommand);
+        }
     }
 
     protected function mockTraceAndExpectCriticalError(string $code)

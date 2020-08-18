@@ -24,17 +24,17 @@ final class Constant
     /**
      * Redis key for global settings
      */
-    const GLOBAL_SETTINGS_KEY        = 'throttle:t';
+    const GLOBAL_SETTINGS_KEY        = '{throttle:t}';
 
     /**
      * Redis key prefix for identifier level settings
      */
-    const ID_SETTINGS_KEY_PREFIX     = 'throttle:t:i:';
+    const ID_SETTINGS_KEY_PREFIX     = '{throttle:t}:i:';
 
     /**
      * Redis key to store the set which contains all the custom level settings
      */
-    const CUSTOM_SETTINGS_SET        = 'throttle:custom';
+    const CUSTOM_SETTINGS_SET        = '{throttle:custom}';
 
     /**
      * Key id -> Mid is kept in cache for faster access
@@ -71,6 +71,6 @@ final class Constant
     const THROTTLE_REQUEST_WINDOW     = 'request_count_window';
     const THROTTLE_TYPE               = 'throttle_type';
 
-    const CUSTOM_MERCHANT_SET        = 'throttle:custom:merchant';
-    const CUSTOM_ROUTE_SET           = 'throttle:custom:route';
+    const CUSTOM_MERCHANT_SET        = '{throttle:custom}:merchant';
+    const CUSTOM_ROUTE_SET           = '{throttle:custom}:route';
 }
