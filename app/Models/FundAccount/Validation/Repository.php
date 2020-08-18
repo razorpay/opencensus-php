@@ -15,16 +15,13 @@ class Repository extends Base\Repository
         Entity::FUND_ACCOUNT,
     ];
 
-    public function getFundAccountValidationsToRetry($time, $count)
+    public function getFundAccountValidationsToFail(array $favIds): Base\PublicCollection
     {
         return $this->newQuery()
-            ->select(Entity::ID)
-            ->where(Entity::RETRY_AT, '<', $time)
+            ->whereIn(Entity::ID, $favIds)
             ->where(Entity::STATUS, "=" , Status::CREATED)
             ->where(Entity::FUND_ACCOUNT_TYPE, "=", Type::BANK_ACCOUNT)
-            ->take($count)
-            ->orderBy(Entity::RETRY_AT, 'asc')
-            ->get()->pluck('id')->all();
+            ->get();
     }
 
     /**

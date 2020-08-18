@@ -163,6 +163,21 @@ class BankAccount extends Base
      */
     public function updateStatusAfterFtaInitiated(Attempt\Entity $fta)
     {
+        if (Status::hasFinalStatus($this->validation) === true)
+        {
+            // We should not have reached here
+            // but it is possible that we manually
+            // marked FAV as failed and later FTA succeeded
+            // or, FTS webhooks were being called multiple times.
+            $this->trace->info(
+                TraceCode::FUND_ACCOUNT_VALIDATION_ALREADY_PROCESSED,
+                [
+                    'fav_id' => $this->validation->getId(),
+                ]);
+
+            return;
+        }
+
         $this->validation->batchFundTransfer()->associate($fta->batchFundTransfer);
 
         $this->repo->saveOrFail($this->validation);
@@ -217,10 +232,16 @@ class BankAccount extends Base
     {
         if (Status::hasFinalStatus($this->validation) === true)
         {
+            // We should not have reached here
+            // but it is possible that we manually
+            // marked FAV as failed and later FTA succeeded
+            // or, AfterFtaRecon is being called multiple times.
             $this->trace->info(
                 TraceCode::FUND_ACCOUNT_VALIDATION_ALREADY_PROCESSED,
                 [
                     'fav_id' => $this->validation->getId(),
+                    'fta_status' => $input['fta_status'],
+                    'fav_status' => $this->validation->getStatus(),
                 ]);
 
             return;

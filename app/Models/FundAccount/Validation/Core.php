@@ -2,8 +2,6 @@
 
 namespace RZP\Models\FundAccount\Validation;
 
-use Carbon\Carbon;
-
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Admin;
@@ -11,20 +9,18 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
-use Razorpay\Trace\Logger;
 use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
-use RZP\Constants\Timezone;
-use RZP\Models\Transaction;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
-use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Core extends Base\Core
 {
     protected $fundAccountCore;
     private $mutex;
+
+    const VALIDATION_UPDATE_MUTEX = "FUND_ACCOUNT_VALIDATION_BEING_UPDATED";
 
     public function __construct()
     {
@@ -229,20 +225,38 @@ class Core extends Base\Core
     /**
      * @param Entity $validation
      * @param Attempt\Entity $fta
-     * @throws Exception\LogicException, If account Type not supported
-     * @throws Exception\BadRequestValidationFailureException
+     * @throws \Throwable
      */
     public function updateStatusAfterFtaInitiated(Entity $validation, Attempt\Entity $fta)
     {
-        // todo: mutex
         $this->trace->info(TraceCode::UPDATE_STATUS_AFTER_FTA_INITIATED, [
             'validation_id' => $validation->getId(),
             'fta_id'        => $fta->getId(),
         ]);
 
-        $processor = Processor\Factory::get($validation);
+        try
+        {
+            $this->mutex->acquireAndRelease(
+                self::VALIDATION_UPDATE_MUTEX . $validation->getId(),
+                function () use ($validation, $fta)
+                {
+                    $processor = Processor\Factory::get($validation);
 
-        $processor->updateStatusAfterFtaInitiated($fta);
+                    $processor->updateStatusAfterFtaInitiated($fta);
+
+                    return;
+                },
+                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+                20);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::FUND_ACCOUNT_VALIDATION_FTA_HOOK_FAILED, [
+                'fav_id' => $validation->getId()
+            ]);
+
+            throw $e;
+        }
     }
 
     /**
@@ -250,20 +264,38 @@ class Core extends Base\Core
      *
      * @param Entity $validation
      * @param array $input
-     * @throws Exception\LogicException, If account Type not supported
-     * @throws Exception\BadRequestValidationFailureException
+     * @throws \Throwable
      */
     public function updateWithDetailsBeforeFtaRecon(Entity $validation, array $input)
     {
-        // todo: mutex
         $this->trace->info(TraceCode::UPDATE_WITH_DETAILS_BEFORE_FTA_RECON, [
             'input' => $input,
             'validation_status' => $validation->getStatus(),
         ]);
 
-        $processor = Processor\Factory::get($validation);
+        try
+        {
+            $this->mutex->acquireAndRelease(
+                self::VALIDATION_UPDATE_MUTEX . $validation->getId(),
+                function () use ($validation, $input)
+                {
+                    $processor = Processor\Factory::get($validation);
 
-        $processor->updateWithDetailsBeforeFtaRecon($input);
+                    $processor->updateWithDetailsBeforeFtaRecon($input);
+
+                    return;
+                },
+                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+                20);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::FUND_ACCOUNT_VALIDATION_FTA_HOOK_FAILED, [
+                'fav_id' => $validation->getId()
+            ]);
+
+            throw $e;
+        }
     }
 
     /**
@@ -271,20 +303,38 @@ class Core extends Base\Core
      *
      * @param Entity $validation
      * @param array $input
-     * @throws Exception\BadRequestValidationFailureException
-     * @throws Exception\LogicException
+     * @throws \Throwable
      */
     public function updateStatusAfterFtaRecon(Entity $validation, array $input)
     {
-        // todo: mutex
         $this->trace->info(TraceCode::UPDATE_STATUS_AFTER_FTA_RECON, [
             'input' => $input,
             'validation_status' => $validation->getStatus(),
         ]);
 
-        $processor = Processor\Factory::get($validation);
+        try
+        {
+            $this->mutex->acquireAndRelease(
+                self::VALIDATION_UPDATE_MUTEX . $validation->getId(),
+                function () use ($validation, $input)
+                {
+                    $processor = Processor\Factory::get($validation);
 
-        $processor->updateStatusAfterFtaRecon($input);
+                    $processor->updateStatusAfterFtaRecon($input);
+
+                    return;
+                },
+                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+                20);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::FUND_ACCOUNT_VALIDATION_FTA_HOOK_FAILED, [
+                'fav_id' => $validation->getId()
+            ]);
+
+            throw $e;
+        }
     }
 
     /**
@@ -391,5 +441,63 @@ class Core extends Base\Core
             ->findByPublicIdAndMerchant($favId, $merchant);
 
         return $entity->toArrayPublic();
+    }
+
+    public function bulkPatchFavAsFailed(array $input): array
+    {
+        (new Validator())->validateInput('bulk_patch_fav', $input);
+
+        $favIds = $input[Entity::FUND_ACCOUNT_VALIDATION_IDS];
+
+        foreach ($favIds as $i => $favId)
+        {
+            $favIds[$i] =  Entity::stripSignWithoutValidation($favId);
+        }
+
+        $validations = $this->repo->fund_account_validation->getFundAccountValidationsToFail($favIds);
+
+        $recordsReceived = count($favIds);
+
+        if ($recordsReceived !== $validations->count())
+        {
+            $this->trace->info(TraceCode::FUND_ACCOUNT_VALIDATION_BULK_PATCH_FAILED, [
+                'input' => $input
+            ]);
+
+            return [
+                'processed'         => 0,
+                'failed'            => $recordsReceived,
+            ];
+        }
+
+        $processed = 0;
+        foreach ($validations as $validation)
+        {
+            try
+            {
+                $this->mutex->acquireAndRelease(
+                    self::VALIDATION_UPDATE_MUTEX . $validation->getId(),
+                    function () use ($validation)
+                    {
+                        $processor = Processor\Factory::get($validation);
+
+                        $processor->markValidationAsFailed();
+
+                        return;
+                    });
+                $processed++;
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->error(TraceCode::FUND_ACCOUNT_VALIDATION_STATUS_CHANGE_FAILED, [
+                    'fav_id' => $validation->getId()
+                ]);
+            }
+        }
+
+        return [
+            'processed'         => $processed,
+            'failed'            => $recordsReceived - $processed,
+        ];
     }
 }

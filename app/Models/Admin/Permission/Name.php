@@ -378,7 +378,7 @@ class Name
     const FUND_ACCOUNT_VALIDATION             = 'fund_account_validation';
     const VIEW_FUND_ACCOUNT_VALIDATION        = 'view_fund_account_validation';
     const VALIDATE_FUND_ACCOUNT               = 'validate_fund_account';
-    const RETRY_BULK_FUND_ACCOUNT_VALIDATION  = 'retry_bulk_fund_account_validation';
+    const BULK_PATCH_FUND_ACCOUNT_VALIDATION  = 'bulk_patch_fund_account_validation';
     const VIEW_FUND_ACCOUNT                   = 'view_fund_account';
     const CREATE_FUND_ACCOUNT                 = 'create_fund_account';
     const UPDATE_FUND_ACCOUNT                 = 'update_fund_account';

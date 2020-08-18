@@ -1619,6 +1619,7 @@ class Route
         'fund_account_validate'                    => ['post',     'fund_accounts/validations',                      'FundAccountValidationController@create'                            ],
         'fund_account_validate_fetch'              => ['get',      'fund_accounts/validations',                      'FundAccountValidationController@list'                              ],
         'fund_account_validate_fetch_by_id'        => ['get',      'fund_accounts/validations/{id}',                 'FundAccountValidationController@get'                               ],
+        'fund_account_validate_bulk_patch_status'  => ['patch',    'fund_accounts/validations/bulk/fail',            'FundAccountValidationController@bulkPatchFavAsFailed'              ],
 
         //admin dashboard access
         'admin_fetch_fund_account_validate'        => ['get',      'fund_accounts/validations/{merchantId}/{favId}', 'FundAccountValidationController@getFavByMerchantIdAndFavId'        ],
@@ -3656,6 +3657,9 @@ class Route
         'fix_merchant_data_cron',
         'update_late_auth_config_admin_bulk',
         'create_payment_config_bulk',
+
+        'fund_account_validate_bulk_patch_status',
+
         'update_payout_status',
         'pincode_get',
         'admin_key_migrate_to_credcase',
@@ -4378,6 +4382,8 @@ class Route
         'create_promotions_events'                  => Permission::CREATE_PROMOTION_EVENT,
         'fee_recovery_payout_admin'                 => Permission::PROCESS_FEE_RECOVERY,
         'fee_recovery_payout_schedule_task'         => Permission::ASSIGN_FEE_RECOVERY_SCHEDULE,
+
+        'fund_account_validate_bulk_patch_status'   => Permission::BULK_PATCH_FUND_ACCOUNT_VALIDATION,
 
         'fee_recovery_manual_update'                => Permission::PROCESS_FEE_RECOVERY,
 

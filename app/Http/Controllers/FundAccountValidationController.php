@@ -15,4 +15,13 @@ class FundAccountValidationController extends Controller
 
         return ApiResponse::json($entity);
     }
+
+    public function bulkPatchFavAsFailed()
+    {
+        $input = Request::all();
+
+        $entity = $this->service()->bulkPatchFavAsFailed($input);
+
+        return ApiResponse::json($entity);
+    }
 }

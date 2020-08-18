@@ -69,4 +69,19 @@ class Service extends Base\Service
     {
         return $this->core->getFavByMerchantIdAndFavId($favId, $merchantId);
     }
+
+    public function bulkPatchFavAsFailed(array $input): array
+    {
+        $this->trace->info(TraceCode::FUND_ACCOUNT_VALIDATION_BULK_PATCH_REQUEST, [
+            'input' => $input
+        ]);
+
+        $response = $this->core->bulkPatchFavAsFailed($input);
+
+        $this->trace->info(TraceCode::FUND_ACCOUNT_VALIDATION_BULK_PATCH_RESPONSE, [
+            'response' => $response
+        ]);
+
+        return $response;
+    }
 }

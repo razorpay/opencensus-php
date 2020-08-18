@@ -1025,6 +1025,13 @@ return [
                 'assignable'    => true,
             ],
         ],
+
+        PermissionCategory::FUND_ACCOUNT_VALIDATION => [
+            Permission::BULK_PATCH_FUND_ACCOUNT_VALIDATION => [
+                'description'   => 'Bulk patch FAV requests',
+                'assignable'    => true,
+            ],
+        ],
     ],
 
     'workflows' => [

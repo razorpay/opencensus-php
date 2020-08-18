@@ -34,6 +34,7 @@ class Category
     const RAZORPAYX_BANKING 			= 'razorpayx_banking';
     const RAZORPAY_CAPITAL              = 'razorpay_capital';
     const PAYOUTS           			= 'payouts';
+    const FUND_ACCOUNT_VALIDATION       = 'fund_account_validation';
     const P2P             			    = 'p2p';
     const RENDERING_PREFERENCES         = 'rendering_preferences';
     const DOWNTIME_CONFIG               = 'downtime_config';

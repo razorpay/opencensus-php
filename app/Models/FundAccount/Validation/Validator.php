@@ -39,9 +39,9 @@ class Validator extends Base\Validator
         Entity::FUND_ACCOUNT . '.' . Entity::ID => 'required|unsigned_id',
     ];
 
-    protected static $retryRules = [
+    protected static $bulkPatchFavRules = [
         Entity::FUND_ACCOUNT_VALIDATION_IDS      => 'required|array|min:1',
-        Entity::FUND_ACCOUNT_VALIDATION_IDS.".*" => 'required|string',
+        Entity::FUND_ACCOUNT_VALIDATION_IDS.".*" => 'required|public_id',
     ];
 
     /**

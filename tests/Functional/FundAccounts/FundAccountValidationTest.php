@@ -559,9 +559,9 @@ class FundAccountValidationTest extends TestCase
     public function testFundAccValidationBankingFailedAccountTypeDirect()
     {
         $this->setUpMerchantForBusinessBanking(false,
-                                               10000000,
-                                               AccountType::DIRECT,
-                                               Channel::RBL);
+            10000000,
+            AccountType::DIRECT,
+            Channel::RBL);
 
         $this->createFAVBankingPricingPlan();
 
@@ -808,5 +808,37 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals(1000000, $txn['balance']);
         $this->assertEquals(0, $txn['fee_credits']);
         $this->assertEquals('default', $txn['credit_type']);
+    }
+
+    public function testFundAccValidationMarkAsFailed()
+    {
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $this->assertEquals('created', $fav['status']);
+        $this->assertEquals(null, $fav['results']['account_status']);
+
+        $request = [
+            'method'  => 'PATCH',
+            'url'     => '/fund_accounts/validations/bulk/fail',
+            'content' => [
+                Validation::FUND_ACCOUNT_VALIDATION_IDS => [
+                    $fav['id']
+                ],
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        // Queue will be processed by now.
+        $this->assertEquals('failed', $fav['status']);
     }
 }
