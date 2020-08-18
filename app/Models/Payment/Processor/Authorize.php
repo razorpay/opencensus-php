@@ -788,6 +788,21 @@ trait Authorize
 
         $this->repo->save($payment);
 
+        $merchant = $payment->merchant;
+
+        $terminal = $payment->terminal;
+
+        // In case of cred merchant, they will be using transacting merchant's terminal
+        // so we need to display transacting merchant details instead of cred
+        // TODO: Need to come up with a better approach
+        if (($payment->getMerchantId() != $terminal->getMerchantId()) and
+            ($terminal->isShared() == false) and
+            ($merchant->isFeatureEnabled(Feature\Constants::CHARGE_ACCOUNT) === true))
+        {
+            $merchant = $terminal->merchant;
+        }
+
+
         // TODO: Return metadata in a better format
         $response = [
             'type'                  => 'otp',
@@ -799,10 +814,10 @@ trait Authorize
             'amount'                => number_format(($payment->getAmount() / 100), 2),
             'formatted_amount'      => $payment->getFormattedAmount(),
             'wallet'                => $payment->getWallet(),
-            'merchant'              => $payment->merchant->getBillingLabel(),
-            'merchant_id'           => $payment->merchant->getId(),
-            'theme_color'           => $payment->merchant->getBrandColorElseDefault(),
-            'nobranding'            => $payment->merchant->isFeatureEnabled(Feature\Constants::PAYMENT_NOBRANDING),
+            'merchant'              => $merchant->getBillingLabel(),
+            'merchant_id'           => $merchant->getId(),
+            'theme_color'           => $merchant->getBrandColorElseDefault(),
+            'nobranding'            => $merchant->isFeatureEnabled(Feature\Constants::PAYMENT_NOBRANDING),
         ];
 
         // This is a hack to return direct method for IVR payments
