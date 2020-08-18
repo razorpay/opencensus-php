@@ -13,6 +13,7 @@ import Time from 'common/ui/Time';
 import Pager from 'common/ui/Pager';
 import Alert from 'common/ui/Forms/Alert';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import Banner from 'common/ui/Banner';
 import ProcessInvoice from './ProcessInvoice';
 
 import { fetchCommissionInvoices } from 'merchant/reducers/commissionInvoices/list';
@@ -20,19 +21,17 @@ import { fetchCommissionInvoices } from 'merchant/reducers/commissionInvoices/li
 const Columns = {
   invoiceId: {
     title: 'Invoice ID',
-    value: item => (
-      <Link to={`/partners/earnings/invoices/${item.id}`}>{item.id}</Link>
-    ),
+    value: (item) => <Link to={`/partners/earnings/invoices/${item.id}`}>{item.id}</Link>,
   },
 
   createdDate: {
     title: 'Created Date',
-    value: item => <Time value={item.created_at} />,
+    value: (item) => <Time value={item.created_at} />,
   },
 
   status: {
     title: 'Status',
-    value: item => <CommissionInvoiceStatusLabel status={item.status} />,
+    value: (item) => <CommissionInvoiceStatusLabel status={item.status} />,
   },
 
   amount: {
@@ -49,19 +48,17 @@ const Columns = {
         </small>
       </>
     ),
-    value: item => <Amount value={item.gross_amount} currency={'INR'} />,
+    value: (item) => <Amount value={item.gross_amount} currency={'INR'} />,
   },
 
   ProcessInvoice: {
     title: '',
-    value: item =>
-      item.status === 'issued' && (
-        <ProcessInvoice commissionInvoice={item} className="btn-xs" />
-      ),
+    value: (item) =>
+      item.status === 'issued' && <ProcessInvoice commissionInvoice={item} className="btn-xs" />,
   },
 };
 
-@connect(state => ({ ...state.commissionInvoices }), {
+@connect((state) => ({ ...state.commissionInvoices }), {
   fetchCommissionInvoices,
 })
 class CommissionInvoicesList extends ListContainer {
@@ -74,56 +71,57 @@ class CommissionInvoicesList extends ListContainer {
     const { loading, commissionInvoices } = this.props;
 
     return (
-      <div class="content-wrapper">
-        <ListFilter
-          form="CommissionInvoicesListFilter"
-          count={this.state.count}
-        >
-          <div class="form-group list-filter-item">
-            <label>Invoice Status</label>
-            <Field
-              name="status"
-              component="select"
-              class="form-control input-sm"
-            >
-              <option value="">All</option>
-              <option value="issued">Issued</option>
-              <option value="under_review">Under Review</option>
-              <option value="processed">Processed</option>
-            </Field>
-          </div>
+      <>
+        <div className="TestModeBanner">
+          <Banner>
+            <i className="i i-info-outline" />&nbsp; Invoices are generated only if the monthly
+            commission is greater than 1 Rupee
+          </Banner>
+        </div>
+        <div class="content-wrapper">
+          <ListFilter form="CommissionInvoicesListFilter" count={this.state.count}>
+            <div class="form-group list-filter-item">
+              <label>Invoice Status</label>
+              <Field name="status" component="select" class="form-control input-sm">
+                <option value="">All</option>
+                <option value="issued">Issued</option>
+                <option value="under_review">Under Review</option>
+                <option value="processed">Processed</option>
+              </Field>
+            </div>
 
-          <div class="form-group list-filter-item">
-            <label>Invoice Id</label>
-            <Field name="id" component="input" class="form-control input-sm" />
-          </div>
-        </ListFilter>
+            <div class="form-group list-filter-item">
+              <label>Invoice Id</label>
+              <Field name="id" component="input" class="form-control input-sm" />
+            </div>
+          </ListFilter>
 
-        <Alert type={status.type} message={status.message} />
+          <Alert type={status.type} message={status.message} />
 
-        <DataTable
-          loading={loading}
-          items={commissionInvoices}
-          title="CommissionInvoicesList"
-          columns={[
-            Columns.invoiceId,
-            Columns.amount,
-            Columns.createdDate,
-            Columns.status,
-            Columns.ProcessInvoice,
-          ]}
-          EmptyComponent={EmptyListComponent}
-        />
+          <DataTable
+            loading={loading}
+            items={commissionInvoices}
+            title="CommissionInvoicesList"
+            columns={[
+              Columns.invoiceId,
+              Columns.amount,
+              Columns.createdDate,
+              Columns.status,
+              Columns.ProcessInvoice,
+            ]}
+            EmptyComponent={EmptyListComponent}
+          />
 
-        <Pager
-          count={this.state.count}
-          skip={this.state.skip}
-          length={this.props.commissionInvoices.length}
-          onClick={params => {
-            this.paginate(params);
-          }}
-        />
-      </div>
+          <Pager
+            count={this.state.count}
+            skip={this.state.skip}
+            length={this.props.commissionInvoices.length}
+            onClick={(params) => {
+              this.paginate(params);
+            }}
+          />
+        </div>
+      </>
     );
   }
 }
@@ -134,10 +132,7 @@ function EmptyListComponent() {
       description={
         <React.Fragment>
           <div>You don't have any invoices yet!</div>
-          <div>
-            Invoices for your commissions will show up here on 3rd of every
-            month!
-          </div>
+          <div>Invoices for your commissions will show up here on 3rd of every month!</div>
         </React.Fragment>
       }
     />
