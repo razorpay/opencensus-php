@@ -7,13 +7,7 @@ import InputField from 'common/ui/Forms/InputField';
 import { RadioGroup } from 'common/ui/Forms/RadioGroup';
 import ModalHeader from 'common/ui/ModalHeader';
 import Alert from 'common/ui/Forms/Alert';
-import {
-  required,
-  mobile,
-  pinCode,
-  maxLength,
-  name,
-} from 'common/utils/validators';
+import { required, mobile, pinCode, maxLength, name } from 'common/utils/validators';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { states } from 'merchant/helpers/data';
 import * as MerchantActions from 'merchant/reducers/b-merchants';
@@ -30,7 +24,7 @@ import ajax from 'merchant/utils/ajax';
 import User from 'merchant/models/User';
 import { updateSession } from 'merchant/reducers/session';
 
-const validate = values => {
+const validate = (values) => {
   const errors = {};
   if (!values.hasOwnProperty('gender')) {
     errors.gender = 'Please select a gender';
@@ -42,7 +36,7 @@ const validate = values => {
 };
 
 @connect(
-  state => {
+  (state) => {
     return {
       initialValues: state.bMerchant.merchantData,
       user: state.session.user,
@@ -71,8 +65,7 @@ export default class CreditPullModal extends Component {
         'Looks like your phone number could not be found in our existing database. Please check your phone number',
       error_wrong_merchant:
         'Sorry We could not find a match for the given details. Please try again later with correct details. Please note that your phone number should be correct and name & date of birth should be as given in your PAN.',
-      error_max_attempts:
-        'OTP verification failed because attempt threshold has been reached',
+      error_max_attempts: 'OTP verification failed because attempt threshold has been reached',
       error_otp_required: 'The otp field is required.',
       error_otp_length: 'The otp must be at least 4 characters.',
     };
@@ -93,23 +86,21 @@ export default class CreditPullModal extends Component {
     });
   }
 
-  fireGAEvent = eventPayload => {
+  fireGAEvent = (eventPayload) => {
     eventPayload['eventCategory'] = 'Dashboard - D2C';
     window.rzpAnalytics(eventPayload);
   };
 
-  savePhone = newNumber => {
+  savePhone = (newNumber) => {
     let saveProps = { ...this.state.merchantData };
     saveProps['contact_mobile'] = newNumber;
     this.saveAndProceed(saveProps, newNumber);
   };
 
-  save = props => {
+  save = (props) => {
     let saveProps = { ...props };
     if (props.date_of_birth.hasOwnProperty('_isAMomentObject')) {
-      saveProps['date_of_birth'] = props.date_of_birth.format(
-        this.dateFormatType
-      );
+      saveProps['date_of_birth'] = props.date_of_birth.format(this.dateFormatType);
     }
     this.setState({
       merchantData: saveProps,
@@ -118,23 +109,21 @@ export default class CreditPullModal extends Component {
     this.saveAndProceed(saveProps, props.contact_mobile);
   };
 
-  isValidDate = current => {
-    let yearsBefore = window.moment().subtract(18, 'years');
+  isValidDate = (current) => {
+    let yearsBefore = moment().subtract(18, 'years');
     return current.isBefore(yearsBefore);
   };
 
   saveAndProceed = (saveProps, mobile) => {
     this.props
       .saveBMerchant(saveProps)
-      .then(merchant => {
+      .then((merchant) => {
         return Promise.all([this.sendReqForOtp(mobile), merchant]);
       })
-      .then(
-        ([{ data: { token } }, { id: merchantId, contact_mobile: mobile }]) => {
-          this.openVerify(token, merchantId, mobile);
-        }
-      )
-      .catch(error => {
+      .then(([{ data: { token } }, { id: merchantId, contact_mobile: mobile }]) => {
+        this.openVerify(token, merchantId, mobile);
+      })
+      .catch((error) => {
         this.props.showNotification({
           type: 'error',
           message: 'Something went wrong',
@@ -144,7 +133,7 @@ export default class CreditPullModal extends Component {
       });
   };
 
-  verifyMobile = token => {
+  verifyMobile = (token) => {
     this.props.openModal({
       component: (
         <AskMobileNumber
@@ -153,7 +142,7 @@ export default class CreditPullModal extends Component {
           customTitle="Enter OTP Number"
           mobileValidation={true}
           customMessage="Update the phone number for OTP verification. The phone number should exist in the PAN database."
-          onSubmit={data => {
+          onSubmit={(data) => {
             this.savePhone(data.contact_mobile);
           }}
         />
@@ -185,17 +174,9 @@ export default class CreditPullModal extends Component {
             this.props.closeModal();
           }}
           customClass={'credit-otp'}
-          onSubmit={data => {
-            return this.sendReqForOtpConfirmation(
-              data,
-              mobile,
-              tokenStuff,
-              merchantId
-            ).then(
-              ([
-                { report, score, max_loan_amount, id: reportId, ntc_score},
-                userResponse,
-              ]) => {
+          onSubmit={(data) => {
+            return this.sendReqForOtpConfirmation(data, mobile, tokenStuff, merchantId).then(
+              ([{ report, score, max_loan_amount, id: reportId, ntc_score }, userResponse]) => {
                 this.props.updateSession({ user: userResponse.data });
                 this.openReportScreen(report, score, max_loan_amount, reportId, ntc_score);
               }
@@ -221,7 +202,7 @@ export default class CreditPullModal extends Component {
     });
   };
 
-  openErrorScreen = message => {
+  openErrorScreen = (message) => {
     this.props.openModal({
       component: <CreditPullClose message={message} />,
       size: this.SMALL_MODAL,
@@ -263,12 +244,12 @@ export default class CreditPullModal extends Component {
         let updatedUser = new User(this.props.user);
         return Promise.all([data, updatedUser.fetch()]);
       })
-      .catch(errorResponse => {
+      .catch((errorResponse) => {
         this.handleOTPError(errorResponse);
       });
   };
 
-  handleOTPError = errorResponse => {
+  handleOTPError = (errorResponse) => {
     let {
       error_wrong_otp,
       error_wrong_phone,
@@ -283,11 +264,7 @@ export default class CreditPullModal extends Component {
       eventLabel: `${error} ? ${error} : "Some unexpected error occurred"`,
     };
     this.fireGAEvent(gaPayload);
-    if (
-      error === error_wrong_otp ||
-      error === error_otp_required ||
-      error === error_otp_length
-    ) {
+    if (error === error_wrong_otp || error === error_otp_required || error === error_otp_length) {
       throw errorResponse;
     } else if (error === error_wrong_phone) {
       this.props.showNotification({
@@ -312,10 +289,7 @@ export default class CreditPullModal extends Component {
 
   initialAlign = () => {
     //Hate doing this unfortunately the library doesn't provide any other way to do this.
-    if (
-      this.props.initialValues['date_of_birth'] == null &&
-      this.dateContainer
-    ) {
+    if (this.props.initialValues['date_of_birth'] == null && this.dateContainer) {
       this.dateContainer.current.querySelector('div .rdtPrev span').click();
       setTimeout(() => {
         this.dateContainer.current.querySelector('div .rdtPrev span').click();
@@ -353,25 +327,15 @@ export default class CreditPullModal extends Component {
           <div className="modal-body">
             <Alert type="error" message={this.state.errors} />
             <div className="form-group">
-              <label className="col-md-3 control-label help-label label-required">
-                Name
-              </label>
+              <label className="col-md-3 control-label help-label label-required">Name</label>
               <div className="col-md-4">
-                <Field
-                  name="id"
-                  component={InputField}
-                  required={true}
-                  className="hidden"
-                />
+                <Field name="id" component={InputField} required={true} className="hidden" />
                 <Field
                   name="first_name"
                   component={InputField}
                   class="form-control"
                   placeholder="First Name"
-                  validate={[
-                    required('Please enter a name'),
-                    name('Please enter a valid name'),
-                  ]}
+                  validate={[required('Please enter a name'), name('Please enter a valid name')]}
                 />
               </div>
 
@@ -381,18 +345,13 @@ export default class CreditPullModal extends Component {
                   component={InputField}
                   class="form-control"
                   placeholder="Last Name"
-                  validate={[
-                    required('Please enter a name'),
-                    name('Please enter a valid name'),
-                  ]}
+                  validate={[required('Please enter a name'), name('Please enter a valid name')]}
                 />
               </div>
             </div>
 
             <div className="form-group">
-              <label className="col-md-3 control-label label-required">
-                Contact Details
-              </label>
+              <label className="col-md-3 control-label label-required">Contact Details</label>
               <div className="col-md-4">
                 <Field
                   name="contact_mobile"
@@ -423,15 +382,13 @@ export default class CreditPullModal extends Component {
             <div className="form-group">
               <div className="col-md-3" />
               <div className="col-md-8">
-                <i className="i-warning warning" /> Please Use the Mobile No.
-                Registered with your Credit Card/Loan account
+                <i className="i-warning warning" /> Please Use the Mobile No. Registered with your
+                Credit Card/Loan account
               </div>
             </div>
 
             <div className="form-group">
-              <label className="col-md-3 control-label label-required">
-                PAN Number
-              </label>
+              <label className="col-md-3 control-label label-required">PAN Number</label>
               <div className="col-md-4">
                 <Field
                   name="pan"
@@ -444,26 +401,19 @@ export default class CreditPullModal extends Component {
             </div>
 
             <div className="form-group">
-              <label className="col-md-3 control-label label-required">
-                Gender
-              </label>
+              <label className="col-md-3 control-label label-required">Gender</label>
               <div className="col-md-4">
                 <Field
                   component={RadioGroup}
                   name="gender"
                   required={true}
-                  options={[
-                    { title: 'Male', value: 'male' },
-                    { title: 'Female', value: 'female' },
-                  ]}
+                  options={[{ title: 'Male', value: 'male' }, { title: 'Female', value: 'female' }]}
                 />
               </div>
             </div>
 
             <div className="form-group">
-              <label className="col-md-3 control-label label-required">
-                Date of Birth
-              </label>
+              <label className="col-md-3 control-label label-required">Date of Birth</label>
               <div className="col-md-4 red-cal-date" ref={this.dateContainer}>
                 <Field
                   name="date_of_birth"
@@ -480,9 +430,7 @@ export default class CreditPullModal extends Component {
             </div>
 
             <div className="form-group">
-              <label className="col-md-3 control-label label-required">
-                Residential Address
-              </label>
+              <label className="col-md-3 control-label label-required">Residential Address</label>
 
               <div className="col-md-8">
                 <Field
@@ -519,7 +467,7 @@ export default class CreditPullModal extends Component {
                   class="form-control"
                   placeholder="State"
                 >
-                  {Object.keys(states).map(stateCode => (
+                  {Object.keys(states).map((stateCode) => (
                     <option value={stateCode} key={stateCode}>
                       {states[stateCode]}
                     </option>
@@ -529,9 +477,7 @@ export default class CreditPullModal extends Component {
             </div>
 
             <div className="form-group">
-              <label className="col-md-3 control-label label-required">
-                Pin Code
-              </label>
+              <label className="col-md-3 control-label label-required">Pin Code</label>
               <div className="col-md-4">
                 <Field
                   name="pincode"
@@ -549,8 +495,8 @@ export default class CreditPullModal extends Component {
             <div className="form-group">
               <div className="col-md-3" />
               <div className="col-md-8 orange-pad">
-                We verify the details with the PAN database. Please ensure you
-                enter the correct details.
+                We verify the details with the PAN database. Please ensure you enter the correct
+                details.
               </div>
             </div>
           </div>
@@ -566,13 +512,9 @@ export default class CreditPullModal extends Component {
                 />
               </div>
               <label htmlFor="consent" className="cap-consent col-md-9">
-                You hereby consent to Razorpay being appointed as your
-                authorised representative to receive your Credit Information
-                from Experian for the purpose of Lending products
-                <a
-                  target="_blank"
-                  href="https://razorpay.com/capital/credit-report-terms"
-                >
+                You hereby consent to Razorpay being appointed as your authorised representative to
+                receive your Credit Information from Experian for the purpose of Lending products
+                <a target="_blank" href="https://razorpay.com/capital/credit-report-terms">
                   {' Terms & Conditions.'}
                 </a>
               </label>
@@ -593,11 +535,7 @@ export default class CreditPullModal extends Component {
               src="https://cdn.razorpay.com/static/assets/experian_logo.png"
             />
 
-            <button
-              type="button"
-              className="btn btn-default"
-              onClick={this.close}
-            >
+            <button type="button" className="btn btn-default" onClick={this.close}>
               Cancel
             </button>
 
@@ -618,11 +556,9 @@ export default class CreditPullModal extends Component {
     let eventAction = 'Close';
     let eventLabel = '';
     if (this.addressChanged || this.mobileChanged || this.consentChanged) {
-      eventLabel = `Closed after modifying: ${
-        this.addressChanged ? 'address, ' : ''
-      } ${this.mobileChanged ? 'mobile, ' : ''} ${
-        this.consentChanged ? 'consent' : ''
-      }`;
+      eventLabel = `Closed after modifying: ${this.addressChanged ? 'address, ' : ''} ${
+        this.mobileChanged ? 'mobile, ' : ''
+      } ${this.consentChanged ? 'consent' : ''}`;
     } else {
       eventLabel = 'No changes';
     }
@@ -633,7 +569,7 @@ export default class CreditPullModal extends Component {
     this.props.closeModal();
   };
 
-  handleCheckboxChange = event => {
+  handleCheckboxChange = (event) => {
     this.consentChanged = true;
     this.setState({
       hasAcceptedTerms: !this.state.hasAcceptedTerms,
@@ -641,10 +577,6 @@ export default class CreditPullModal extends Component {
   };
 
   render() {
-    return (
-      <div className="container-cred-pull-modal">
-        {this.renderPreEnablement()}
-      </div>
-    );
+    return <div className="container-cred-pull-modal">{this.renderPreEnablement()}</div>;
   }
 }

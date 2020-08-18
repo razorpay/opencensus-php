@@ -2,10 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import Tooltip from 'common/ui/Tooltip';
-import {
-  getFormattedNumber,
-  getFormattedAmountNew,
-} from 'common/utils/rzp-utils';
+import { getFormattedNumber, getFormattedAmountNew } from 'common/utils/rzp-utils';
 import { globalGroupTitleMap as groupTitleMap } from 'common/utils/pokedex';
 
 import { bankNames } from '../data';
@@ -85,7 +82,7 @@ export default class Treemap extends Component {
       this.node,
       data,
       isCurrency,
-      window.d3,
+      d3,
       this.onTransition,
       this.onShowTooltip,
       this.onHideTooltip,
@@ -93,10 +90,7 @@ export default class Treemap extends Component {
       bankNames
     );
 
-    return (
-      typeof this.props.onCSVData === 'function' &&
-      this.props.onCSVData(this.treemapApi.csv)
-    );
+    return typeof this.props.onCSVData === 'function' && this.props.onCSVData(this.treemapApi.csv);
   }
 
   handleResize() {
@@ -116,10 +110,7 @@ export default class Treemap extends Component {
 
     window.addEventListener('resize', this.handleResize);
 
-    return (
-      this.props.data &&
-      this.renderTreemap(this.props.data, this.props.isCurrency)
-    );
+    return this.props.data && this.renderTreemap(this.props.data, this.props.isCurrency);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -127,11 +118,7 @@ export default class Treemap extends Component {
 
     if (data !== nextProps.data) {
       return this.renderTreemap(nextProps.data, nextProps.isCurrency);
-    } else if (
-      !this.isNewData &&
-      currentLevel &&
-      nextProps.currentLevel !== currentLevel
-    ) {
+    } else if (!this.isNewData && currentLevel && nextProps.currentLevel !== currentLevel) {
       this.treemapApi.transition(nextProps.currentLevel);
     }
   }
@@ -143,14 +130,11 @@ export default class Treemap extends Component {
   render() {
     const { tooltip } = this.state,
       { isCurrency } = this.props,
-      amount = (isCurrency ? getFormattedAmountNew : getFormattedNumber)(
-        tooltip.data.amount,
-        true
-      );
+      amount = (isCurrency ? getFormattedAmountNew : getFormattedNumber)(tooltip.data.amount, true);
 
     return (
       <div>
-        <div id="payment-methods-treemap" ref={node => (this.node = node)} />
+        <div id="payment-methods-treemap" ref={(node) => (this.node = node)} />
 
         <Tooltip followPointer={true} delay={50}>
           <div>
