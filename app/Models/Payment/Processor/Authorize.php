@@ -851,6 +851,9 @@ trait Authorize
                 );
             }
 
+            //Process gateway specific parameters
+            $response = $this->buildGatewayOtpResponse($response, $payment);
+
             $templateData = [
                'data'       => $response,
                'cdn'        => $this->app['config']->get('url.cdn.production'),
@@ -901,9 +904,33 @@ trait Authorize
             $response['resend_url_json']    = $this->getOtpResendUrlJson();
             $response['submit_url_private'] = $this->getOtpSubmitUrlPrivate();
             $response['resend_url_private'] = $resendUrlPrivate;
+
+            //Process gateway specific parameters
+            $response = $this->buildGatewayOtpResponse($response, $payment);
         }
 
         $this->segment->trackPayment($payment, TraceCode::OTP_GENERATE, $response);
+
+        return $response;
+    }
+
+    protected function buildGatewayOtpResponse(& $response, $payment)
+    {
+        //BEPG - Native OTP Page
+        if (($payment->getGateway() === Payment\Gateway::PAYSECURE) and
+            ($payment->getAuthType() === Payment\AuthType::OTP))
+        {
+            //Disable Go to Bank's Page
+            unset($response['redirect']);
+
+            $response['metadata'] = array_merge(
+                $response['metadata'],
+                [
+                    'ip' => $this->app['request']->ip(),
+                    'contact' => $payment->getContact(),
+                    'resend_timeout' => 30  //Seconds
+                ]);
+        }
 
         return $response;
     }
@@ -5672,6 +5699,11 @@ trait Authorize
                     }
                 }
 
+                if($this->canRunPaysecureOTP($payment) === true)
+                {
+                    return true;
+                }
+
                 if ((in_array($payment->getGateway(), Payment\Gateway::$otpPostFormSubmitGateways, true) === true) and
                     ($payment->isEmi() === true))
                 {
@@ -5740,6 +5772,17 @@ trait Authorize
         // TODO: Figure out a way to do this for other power wallets
 
         return true;
+    }
+
+    protected function canRunPaysecureOTP(Payment\Entity $payment)
+    {
+        if (($payment->getGateway() === Payment\Gateway::PAYSECURE) and
+            ($payment->getAuthType() === Payment\AuthType::OTP))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function canRunAxisExpressPay(Payment\Entity $payment)

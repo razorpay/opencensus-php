@@ -27,7 +27,7 @@ trait OtpResend
             $payment = $this->retrieve($id);
 
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_OTP_RESEND_INITIATED, $payment);
-        
+
             $this->validatePaymentStatus($payment);
 
             $gatewayInput = [];
@@ -39,7 +39,7 @@ trait OtpResend
                 $data = $this->runOtpResendFlow($gatewayInput, $payment);
 
                 $payment->resetOtpAttempts();
-                
+
                 $this->repo->saveOrFail($payment);
 
                 $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_OTP_RESEND_PROCESSED, $payment);
@@ -59,7 +59,7 @@ trait OtpResend
         catch (\Throwable $ex)
         {
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_OTP_RESEND_PROCESSED, $payment, $ex);
-         
+
             $this->app['segment']->trackPayment($payment, TraceCode::OTP_RESEND_EXCEPTION);
 
             throw $ex;
@@ -71,14 +71,13 @@ trait OtpResend
         // Checking if the resend is called for headless otp
         if (($payment->isMethodCardOrEmi() === true) and
             (($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP) or
-             ($payment->getAuthType() === Payment\AuthType::IVR)))
+             ($payment->getAuthType() === Payment\AuthType::IVR) or
+                (($payment->getGateway() === Payment\Gateway::PAYSECURE) and
+                    ($payment->getAuthType() === Payment\AuthType::OTP))))
         {
             if ($payment->getCpsRoute() === Payment\Entity::CARD_PAYMENT_SERVICE)
             {
-                $request = $this->callCpsAction($payment,
-                    $payment->getGateway(),
-                    Payment\Action::OTP_RESEND,
-                    $gatewayInput);
+                $request = $this->callGatewayFunction(Payment\Action::OTP_RESEND, $gatewayInput);
             }
             else
             {
@@ -116,8 +115,6 @@ trait OtpResend
         $input['card']['expiry_year']   = $card->getExpiryYear();
         $input['card']['network_code']  = $card->getNetworkCode();
 
-        unset($input['card']['cvv']);
-
         //set merchant
         $input['merchant'] = $payment->merchant;
 
@@ -141,8 +138,9 @@ trait OtpResend
 
         $gatewayInput['payment'] = $payment->toArray();
 
-        //Otpresend for Ivr requires the card details
-        if ($payment->getAuthType() === Payment\AuthType::IVR)
+        //Otpresend for Ivr, paysecures requires the card details
+        if (($payment->getAuthType() === Payment\AuthType::IVR) or
+            ($payment->getGateway() === Payment\Gateway::PAYSECURE))
         {
             $this->setCardAndMerchantDetails($payment,$gatewayInput);
         }

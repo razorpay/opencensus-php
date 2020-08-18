@@ -47,5 +47,6 @@ class Action
         self::CAPTURE,
         self::VERIFY,
         self::DEBIT,
+        self::OTP_RESEND
     ];
 }
