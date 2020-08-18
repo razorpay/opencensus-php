@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Gateway\File\Processor\Nach\Debit;
+namespace RZP\Models\Gateway\File\Processor\Emandate\Debit;
 
 use Mail;
 use Carbon\Carbon;
@@ -15,32 +15,28 @@ use RZP\Models\Gateway\File\Status;
 use RZP\Models\FundTransfer\Holidays;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
-use RZP\Gateway\Enach\Citi\FieldsLength;
-use RZP\Gateway\Enach\Citi\HeadingsLength;
-use RZP\Mail\Gateway\Nach\Base as NachMail;
-use RZP\Gateway\Enach\Citi\Fields as Fields;
-use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Service as BeamService;
-use RZP\Models\Gateway\File\Processor\Nach\Debit;
 use RZP\Services\Beam\Constants as BeamConstants;
-use RZP\Gateway\Enach\Citi\NachDebitFileHeadings as Headings;
+use RZP\Models\Gateway\File\Processor\Emandate\Debit;
+use RZP\Gateway\Enach\Npci\Netbanking\IciciSponsorBank\FieldsLength;
+use RZP\Gateway\Enach\Npci\Netbanking\IciciSponsorBank\HeadingsLength;
+use RZP\Gateway\Enach\Npci\Netbanking\IciciSponsorBank\Fields as Fields;
+use RZP\Gateway\Enach\Npci\Netbanking\IciciSponsorBank\DebitFileHeadings as Headings;
 
-class PaperNachCiti extends Debit\Base
+class EnachNbIcici extends Debit\Base
 {
     const EXTENSION         = FileStore\Format::TXT;
-    const FILE_TYPE         = FileStore\Type::CITI_NACH_DEBIT;
-    const SUMMARY_FILE_TYPE = FileStore\Type::CITI_NACH_DEBIT_SUMMARY;
-    const FILE_NAME         = 'citi/nach/RAZORP_COLLECT_{$utilityCode}_{$date}';
-    const SUMMARY_FILE_NAME = 'citi/nach/RAZORP_SUMMARY_{$date}';
-    const SUMMARY_EXTENSION = FileStore\Format::XLS;
+    const FILE_TYPE         = FileStore\Type::ENACH_NPCI_NB_DEBIT_ICICI;
+    const FILE_NAME         = 'icici/nach/debit/ACH-DR-ICIC-ICIC401790-{$date}-{$batchCode}-INP';
     const STEP              = 'debit';
-    const REFERENCE_PREFIX  = 'CTTATAAIAA';
-    const GATEWAY           = Payment\Gateway::NACH_CITI;
-    const USER_NAME         = 'CTRAZORPAY';
-    const FILE_METADATA     = [
+    const GATEWAY           = Payment\Gateway::ENACH_NPCI_NETBANKING;
+    const USER_NAME         = 'RAZORPAY';
+
+    // not required anymore. keeping for historical reasons
+    const FILE_METADATA = [
         'gid'   => '10000',
-        'uid'   => '10006',
+        'uid'   => '10002',
         'mode'  => '33188'
     ];
 
@@ -49,6 +45,8 @@ class PaperNachCiti extends Debit\Base
     public function __construct()
     {
         parent::__construct();
+
+        $this->gatewayRepo = $this->repo->enach;
     }
 
     public function createFile($data)
@@ -60,43 +58,21 @@ class PaperNachCiti extends Debit\Base
         }
         try
         {
-            $summaryData = [];
-
             $allFilesData = $this->formatDataForFile($data);
 
             $fileStoreIds = [];
 
             foreach ($allFilesData as $key => $fileData)
             {
-                $fileHeader = $this->getFileHeader($key, $fileData);
+                $fileHeader = $this->getFileHeader($fileData);
 
                 $fileHeaderText = $this->getTextData($fileHeader, "", "");
 
                 $fileDataText   = $this->getTextData($fileData, $fileHeaderText, "");
 
-                $fileName = $this->getFileToWriteNameWithoutExt(['fileName' =>static::FILE_NAME, 'utilityCode' => $key]);
+                $fileName = $this->getFileToWriteNameWithoutExt(['fileName' => static::FILE_NAME, 'batchCode' => $key]);
 
                 $creator = new FileStore\Creator;
-
-                $amount = 0;
-
-                foreach ($fileData as $data)
-                {
-                    $amount = $amount + $data[Headings::AMOUNT];
-                }
-
-                $size = count($fileData);
-
-                $date = Carbon::now(Timezone::IST)->format('dmY');
-
-                $row =[
-                    Headings::UTILITY_CODE                  => $key,
-                    Headings::NO_OF_RECORDS                 => $size,
-                    Headings::TOTAL_AMOUNT                  => $amount,
-                    Headings::SETTLEMENT_DATE               => $date,
-                ];
-
-                $summaryData[] = $row;
 
                 $creator->extension(static::EXTENSION)
                         ->content($fileDataText)
@@ -110,26 +86,9 @@ class PaperNachCiti extends Debit\Base
                 $file = $creator->getFileInstance();
 
                 $fileStoreIds[] = $file->getId();
+
+                $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
             }
-
-            $creatorSummary = new FileStore\Creator;
-
-            $summaryFileName = $this->getFileToWriteNameWithoutExt(['fileName' =>static::SUMMARY_FILE_NAME]);
-
-            $creatorSummary->extension(static::SUMMARY_EXTENSION)
-                           ->content($summaryData)
-                           ->name($summaryFileName)
-                           ->store(FileStore\Store::S3)
-                           ->type(static::SUMMARY_FILE_TYPE)
-                           ->entity($this->gatewayFile)
-                           ->metadata(static::FILE_METADATA)
-                           ->save();
-
-            $file = $creatorSummary->getFileInstance();
-
-            $fileStoreIds[] = $file->getId();
-
-            $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
 
             $this->fileStore = $fileStoreIds;
 
@@ -150,15 +109,18 @@ class PaperNachCiti extends Debit\Base
     {
         $rows = [] ;
 
+        $index = 0;
+
         foreach ($tokens as $token)
         {
             $paymentId = $token['payment_id'];
 
-            $utilityCode = $token->terminal->getGatewayMerchantId2();
-
             $data = $this->getNachDebitData($token, $paymentId);
 
-             $row=[
+            // intentionally using index here as this may be replaced by utility code in the future
+            $index++;
+
+            $row = [
                 Headings::ACH_TRANSACTION_CODE             => Fields::ACH_TRANSACTION_CODE,
                 Headings::CONTROL_9S                       => Fields::CONTROL_9,
                 Headings::DESTINATION_ACCOUNT_TYPE         => $data[Fields::ACCOUNT_TYPE_VALUE],
@@ -185,7 +147,7 @@ class PaperNachCiti extends Debit\Base
                 Headings::FILLER                           => Fields::FILLER,
             ];
 
-            $rows[$utilityCode][] = $row;
+            $rows[$index][] = $row;
         }
 
         return $rows;
@@ -207,16 +169,9 @@ class PaperNachCiti extends Debit\Base
             $fileInfo[] = $fullFileName;
         }
 
-        $mailData = $this->formatDataForMail($files);
-
-        $type = static::GATEWAY . '_' . static::STEP;
-        $mailable = new NachMail($mailData, $type, $this->gatewayFile->getRecipients());
-
-        Mail::queue($mailable);
-
         $data = [
             BeamService::BEAM_PUSH_FILES   => $fileInfo,
-            BeamService::BEAM_PUSH_JOBNAME => BeamConstants::CITIBANK_NACH_FILE_JOB_NAME
+            BeamService::BEAM_PUSH_JOBNAME => BeamConstants::ICICI_ENACH_NB_JOB_NAME
         ];
 
         // In seconds
@@ -224,10 +179,10 @@ class PaperNachCiti extends Debit\Base
 
         $mailInfo = [
             'fileInfo'  => $fileInfo,
-            'channel'   => 'nach',
-            'filetype'  => FileStore\Type::CITI_NACH_DEBIT,
+            'channel'   => 'emandate',
+            'filetype'  => FileStore\Type::ENACH_NPCI_NB_DEBIT_ICICI,
             'subject'   => 'File Send failure',
-            'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::NACH]
+            'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE]
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
@@ -238,43 +193,38 @@ class PaperNachCiti extends Debit\Base
     {
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
-         if (isset($data['utilityCode']) === true)
-         {
-            $fileName = strtr($data['fileName'], ['{$date}' => $date, '{$utilityCode}' => $data['utilityCode']]);
-         }
-         else
-         {
-             $fileName = strtr($data['fileName'], ['{$date}' => $date]);
-         }
+        $batchNo = $this->getPaddedValue($data['batchCode'], 4, '0', STR_PAD_LEFT);
 
-        if ($this->isTestMode() === true)
-        {
-            return $fileName . '_' . $this->mode;
-        }
+        $batchCode = 'RZ' . $batchNo;
+
+        $fileName = strtr($data['fileName'], ['{$date}' => $date, '{$batchCode}' => $batchCode]);
 
         return $fileName;
     }
 
-    protected function getFileHeader(string $key, array $fileData)
+    protected function getFileHeader(array $fileData)
     {
         $rows = [];
 
         $amount = 0;
+
         foreach ($fileData as $data)
         {
-            $amount = $amount + $data['Amount'];
+            $amount = $amount + $data[Headings::AMOUNT];
 
             $sponsorBank = $data[Headings::SPONSOR_BANK_IFSC];
+
+            $utilityCode = $data[Headings::USER_NUMBER];
         }
 
         $fieldLength = FieldsLength::AMOUNT;
-        $amount = $this->getPaddedValue($amount, $fieldLength, '0', STR_PAD_LEFT);
+        $amount      = $this->getPaddedValue($amount, $fieldLength, '0', STR_PAD_LEFT);
 
         $size = count($fileData);
         $size = $this->getPaddedValue($size, HeadingsLength::TOTAL_ITEMS, '0', STR_PAD_LEFT);
 
         $length         = FieldsLength::USER_NUMBER;
-        $utilityCode  = $this->getPaddedValue($key, $length, ' ', STR_PAD_RIGHT);
+        $utilityCode    = $this->getPaddedValue($utilityCode, $length, ' ', STR_PAD_RIGHT);
 
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
@@ -335,19 +285,17 @@ class PaperNachCiti extends Debit\Base
         $fieldLength = FieldsLength::BENEFICIARY_BANK_ACCOUNT_NUMBER;
         $accountNumber = $this->getPaddedValue($accountNumber, $fieldLength, ' ', STR_PAD_RIGHT);
 
-        $UMRN = $token->getGatewayToken();
+        $umrn = $token->getGatewayToken();
         $size = FieldsLength::UMRN;
-        $UMRN = $this->getPaddedValue($UMRN, $size, ' ', STR_PAD_RIGHT);
+        $umrn = $this->getPaddedValue($umrn, $size, ' ', STR_PAD_RIGHT);
 
 
         $utilityCode  = $token->terminal->getGatewayMerchantId2();
         $size = FieldsLength::USER_NUMBER;
         $utilityCode = $this->getPaddedValue($utilityCode, $size, ' ', STR_PAD_RIGHT);
 
-        $transactionReference = implode("", [self::REFERENCE_PREFIX, $paymentId]);
         $size = FieldsLength::TRANSACTION_REFERENCE;
-        $transactionReference = $this->getPaddedValue($transactionReference, $size,
-                                                 ' ', STR_PAD_RIGHT);
+        $transactionReference = $this->getPaddedValue($paymentId, $size, ' ', STR_PAD_RIGHT);
 
         $sponserBank = $token->terminal->getGatewayAccessCode();
         $size = FieldsLength::SPONSER_BANK_IFSC;
@@ -361,7 +309,7 @@ class PaperNachCiti extends Debit\Base
             Fields::AMOUNT                   => $amount,
             Fields::IFSC                     => $ifsc,
             Fields::ACCOUNT_NUMBER           => $accountNumber,
-            Fields::UMRN                     => $UMRN,
+            Fields::UMRN                     => $umrn,
             Fields::UTILITY_CODE             => $utilityCode,
             Fields::TRANSACTION_REFERENCE    => $transactionReference,
             Fields::SPONSER_BANK             => $sponserBank,
@@ -382,7 +330,7 @@ class PaperNachCiti extends Debit\Base
         $row = [
             Fields::SAVINGS => '10',
             Fields::CURRENT => '11',
-            ];
+        ];
 
         $accountType  = $token->getAccountType() ?? 'savings' ;
 
@@ -437,15 +385,15 @@ class PaperNachCiti extends Debit\Base
         $begin = $this->getLastWorkingDay($begin);
 
         $end = Carbon::createFromTimestamp($this->gatewayFile->getEnd(), Timezone::IST)
-                      ->addHours(9)
-                      ->getTimestamp();
+                       ->addHours(9)
+                       ->getTimestamp();
 
-        $tokens = $this->repo->token->fetchPendingNachOrMandateDebit(
-                                             [Payment\Gateway::ENACH_NPCI_NETBANKING, Payment\Gateway::NACH_CITI],
-                                             $begin,
-                                             $end,
-                                             Payment\Gateway::ACQUIRER_CITI
-                                            );
+        $tokens = $this->repo->token->fetchPendingEMandateDebitWithGatewayAcquirer(
+            static::GATEWAY,
+            $begin,
+            $end,
+            Payment\Gateway::ACQUIRER_ICIC
+        );
 
         $paymentIds = $tokens->pluck('payment_id')->toArray();
 
@@ -461,77 +409,6 @@ class PaperNachCiti extends Debit\Base
         return $tokens;
     }
 
-
-    public function generateData(PublicCollection $tokens)
-    {
-        try
-        {
-            $data = $tokens;
-
-            // Create gateway entities
-            $this->createGatewayEntities($tokens);
-
-            return $data;
-        }
-        catch (\Throwable $e)
-        {
-            throw new GatewayFileException(
-                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_DATA,
-                [
-                    'id' => $this->gatewayFile->getId(),
-                ],
-                $e);
-        }
-    }
-
-    protected function createGatewayEntities(PublicCollection $tokens)
-    {
-        foreach ($tokens as $token)
-        {
-            if ($token['terminal']->getGateway() === Payment\Gateway::ENACH_NPCI_NETBANKING)
-            {
-                $paymentId = $token['payment_id'];
-
-                $gatewayPayment = $this->repo->enach->findByPaymentIdAndAction(
-                    $paymentId, GatewayAction::AUTHORIZE);
-
-                //
-                // If gatewayPayment already exists then skip its creation.
-                // This case will arise when we retry sending some payments to the bank
-                //
-                if ($gatewayPayment !== null)
-                {
-                    continue;
-                }
-
-                $this->createGatewayEntity($token);
-            }
-        }
-    }
-
-    protected function createGatewayEntity($token)
-    {
-        $paymentId = $token['payment_id'];
-
-        $gatewayPayment = $this->getNewGatewayPaymentEntity();
-
-        $gatewayPayment->setPaymentId($paymentId);
-
-        $gatewayPayment->setAction(GatewayAction::AUTHORIZE);
-
-        $gatewayPayment->setBank($token['bank']);
-
-        $gatewayPayment->setAmount($token['payment_amount']);
-
-        $attributes = $this->getGatewayAttributes($token);
-
-        $gatewayPayment->fill($attributes);
-
-        $this->repo->saveOrFail($gatewayPayment);
-
-        return $gatewayPayment;
-    }
-
     protected function getNewGatewayPaymentEntity()
     {
         return new Enach\Base\Entity;
@@ -540,8 +417,20 @@ class PaperNachCiti extends Debit\Base
     protected function getGatewayAttributes($token): array
     {
         return [
-            Enach\Base\Entity::ACQUIRER => Payment\Gateway::ACQUIRER_CITI,
+            Enach\Base\Entity::ACQUIRER => Payment\Gateway::ACQUIRER_ICIC,
             Enach\Base\Entity::UMRN     => $token['gateway_token'],
         ];
+    }
+
+    protected function getLastWorkingDay($timestamp)
+    {
+        $date = (new Carbon())->timestamp($timestamp);
+
+        while (Holidays::isWorkingDay($date) === false)
+        {
+            $date = $date->subDay();
+        }
+
+        return $date->timestamp;
     }
 }

@@ -593,8 +593,9 @@ class Terminal extends Base
                 Type::RECURRING_NON_3DS => '1',
             ],
             'shared'                    => 1,
-            'gateway_merchant_id'       => 'shared_utility_code',
-            'gateway_merchant_id2'      => 'true',
+            'gateway_merchant_id'       => 'dummy_gateway_mid',
+            'gateway_merchant_id2'      => 'shared_utility_code',
+            'gateway_access_code'       => 'CITI000PIGW',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -621,7 +622,7 @@ class Terminal extends Base
             ],
             'shared'                    => 1,
             'gateway_merchant_id'       => 'shared_utility_code',
-            'gateway_merchant_id2'      => 'false',
+            'gateway_merchant_id2'      => 'shared_utility_code',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -637,6 +638,7 @@ class Terminal extends Base
             'id'                        => 'EnachNbNpciTnl',
             'merchant_id'               => '10000000000000',
             'gateway_merchant_id'       => 'direct_utility_code',
+            'gateway_merchant_id2'      => 'direct_utility_code'
         ];
 
         $attributes = array_merge($default, $attributes);
@@ -3507,6 +3509,7 @@ class Terminal extends Base
             'gateway'                   => Gateway::NACH_CITI,
             'nach'                      => 1,
             'gateway_merchant_id'       => 'NACH00000000013149',
+            'gateway_merchant_id2'      => 'NACH00000000013149',
             'gateway_access_code'       => 'CITI000PIGW',
             'gateway_acquirer'          => 'citi',
             'recurring'                 => 1,

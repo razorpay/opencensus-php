@@ -21,12 +21,13 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Order\Entity as Order;
 use RZP\Models\Payment\Entity as Payment;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use Illuminate\Http\Testing\File as TestingFile;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
-use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Gateway\Enach\Citi\NachDebitFileHeadings as Headings;
 
 class EnachNetbankingNpciGatewayTest extends TestCase
 {
@@ -417,6 +418,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'xls',
+            'name'        => 'citi/nach/RAZORP_SUMMARY_07032020_test'
         ];
 
         $expectedFileContentDebit = [
@@ -424,6 +426,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'txt',
+            'name'        => 'citi/nach/RAZORP_COLLECT_shared_utility_code_07032020_test',
         ];
 
         $this->assertArraySelectiveEquals($expectedFileContentSummary, $summary);
@@ -440,6 +443,32 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             ],
             $enach
         );
+
+        $fileContent = explode("\n", file_get_contents('storage/files/filestore/' . $debit['location']));
+
+        // since date and amount is fixed for this test header is a constant
+        $expectedHeader = '56       RAZORPAY SOFTWARE PVT LTD                                                                 0000050000000000000030000007032020                       shared_utility_cod000000000000000000CITI000PIGW000018003                          000000001                                                           ';
+
+        $this->assertEquals($expectedHeader, $fileContent[0]);
+
+        $debitRow = array_map('trim', $this->parseTextRow($fileContent[1], 0, ''));
+
+        $expectedDebitRow = [
+            'ACH Transaction Code' => '67',
+            'Destination Account Type' => '10',
+            'Beneficiary Account Holder\'s Name' => 'Test account',
+            'User Name' => 'CTRAZORPAY',
+            'Amount' => '0000000300000',
+            'Destination Bank IFSC / MICR / IIN' => 'UTIB0000123',
+            'Beneficiary\'s Bank Account number' => '1111111111111',
+            'Sponsor Bank IFSC / MICR / IIN' => 'CITI000PIGW',
+            'User Number' => 'shared_utility_cod',
+            'Transaction Reference' => 'CTTATAAIAA' . $response['razorpay_payment_id'],
+            'Product Type' => '10',
+            'UMRN' => 'UTIB6000000005844847'
+        ];
+
+        $this->assertArraySelectiveEquals($expectedDebitRow, $debitRow);
 
         Queue::assertPushed(BeamJob::class, 1);
 
@@ -470,9 +499,6 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $directTerminalFile = $files['items'][1];
         $sharedTerminalFile = $files['items'][2];
-
-        $fileNamingConvention = 'yesbank/nach/input_file/NACH_DR_{$date}_{$utilityCode}_RAZORPAY_001';
-        $date = Carbon::now(Timezone::IST)->format('dmY');
 
         // TODO add assertion for file name
         $expectedFileContentForDirectTerminal = [
@@ -513,7 +539,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->startTest();
     }
 
-    public function testDebitFileGenerationCitiAndYesbPayment()
+    public function testDebitFileGenerationMultipleSponsorBanks()
     {
         $citiTerminalPaymentResponse = $this->makeDebitPayment();
 
@@ -1017,5 +1043,37 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->runRequestResponseFlow($testData, function() use ($payment) {
             $this->doAuthPayment($payment);
         });
+    }
+
+    protected function parseTextRow(string $row, int $ix, string $delimiter, array $headings = null)
+    {
+        $values=[
+            Headings::ACH_TRANSACTION_CODE             =>  substr($row, 0, 2),
+            Headings::CONTROL_9S                       =>  substr($row, 2, 9),
+            Headings::DESTINATION_ACCOUNT_TYPE         =>  substr($row, 11, 2),
+            Headings::LEDGER_FOLIO_NUMBER              =>  substr($row, 13, 3),
+            Headings::CONTROL_15S                      =>  substr($row, 16, 15),
+            Headings::BENEFICIARY_ACCOUNT_HOLDER_NAME  =>  substr($row, 31, 40),
+            Headings::CONTROL_9SS                      =>  substr($row, 71, 9),
+            Headings::CONTROL_7S                       =>  substr($row, 80, 7),
+            Headings::USER_NAME                        =>  substr($row, 87, 20),
+            Headings::CONTROL_13S                      =>  substr($row, 107, 13),
+            Headings::AMOUNT                           =>  substr($row, 120, 13),
+            Headings::ACH_ITEM_SEQ_NO                  =>  substr($row, 133, 10),
+            Headings::CHECKSUM                         =>  substr($row, 143, 10),
+            Headings::FLAG                             =>  substr($row, 153, 1),
+            Headings::REASON_CODE                      =>  substr($row, 154, 2),
+            Headings::DESTINATION_BANK_IFSC            =>  substr($row, 156, 11),
+            Headings::BENEFICIARY_BANK_ACCOUNT_NUMBER  =>  substr($row, 167, 35),
+            Headings::SPONSOR_BANK_IFSC                =>  substr($row, 202, 11),
+            Headings::USER_NUMBER                      =>  substr($row, 213, 18),
+            Headings::TRANSACTION_REFERENCE            =>  substr($row, 231, 30),
+            Headings::PRODUCT_TYPE                     =>  substr($row, 261, 3),
+            Headings::BENEFICIARY_AADHAR_NUMBER        =>  substr($row, 264, 15),
+            Headings::UMRN                             =>  substr($row, 279, 20),
+            Headings::FILLER                           =>  substr($row, 299, 7),
+        ];
+
+        return $values;
     }
 }

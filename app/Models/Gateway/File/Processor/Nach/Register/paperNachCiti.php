@@ -180,7 +180,7 @@ class PaperNachCiti extends Base
         {
             $paymentId = $token['payment_id'];
 
-            $utilityCode = $token->terminal->getGatewayMerchantId();
+            $utilityCode = $token->terminal->getGatewayMerchantId2();
 
             $subscriptionRegistration = $this->repo
                                              ->subscription_registration
@@ -399,7 +399,7 @@ class PaperNachCiti extends Base
         {
             $paymentId = $token['payment_id'];
 
-            $utilityCode = $token->terminal->getGatewayMerchantId();
+            $utilityCode = $token->terminal->getGatewayMerchantId2();
 
             $payment = $this->repo->payment->find($paymentId);
 

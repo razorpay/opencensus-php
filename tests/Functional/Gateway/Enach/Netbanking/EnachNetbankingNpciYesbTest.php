@@ -131,7 +131,7 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
         Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
-    public function testDebitFileGenerationCitiAndYesbPayment()
+    public function testDebitFileGenerationMultipleSponsorBanks()
     {
         $yesbTerminalPaymentResponse = $this->makeDebitPayment();
 

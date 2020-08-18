@@ -51,6 +51,7 @@ class Constants
     const JSB              = 'jsb';
 
     const ENACH_NPCI_NETBANKING = 'enach_npci_netbanking';
+    const ENACH_NB_ICICI        = 'enach_nb_icici';
 
     const PAPER_NACH_CITI       = 'paper_nach_citi';
 
@@ -124,6 +125,7 @@ class Constants
             self::ENACH_RBL,
             self::SBI,
             self::ENACH_NPCI_NETBANKING,
+            self::ENACH_NB_ICICI,
         ],
         Type::NACH_DEBIT => [
             self::PAPER_NACH_CITI,
@@ -213,6 +215,7 @@ class Constants
             self::ENACH_RBL             => ['rbl.emandate@razorpay.com'],
             //TODO
             self::ENACH_NPCI_NETBANKING => [''],
+            self::ENACH_NB_ICICI        => [''],
             self::SBI                   => [''],
         ],
 

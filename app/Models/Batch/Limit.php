@@ -34,6 +34,7 @@ class Limit
         'emandate_debit_axis'                       => 10000,
         'emandate_debit_enach_rbl'                  => 10000,
         'emandate_debit_enach_npci_netbanking'      => 10000,
+        'emandate_debit_enach_nb_icici'             => 50000,
         'emandate_debit_sbi'                        => 10000,
         Type::ELFIN                                 => 5000,
         Type::PARTNER_SUBMERCHANTS                  => 5000,

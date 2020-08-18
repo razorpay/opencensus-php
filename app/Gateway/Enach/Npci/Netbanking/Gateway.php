@@ -407,7 +407,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $credAccount = $this->getLiveMerchantId();
+            $credAccount = $this->getLiveMerchantId2();
         }
 
         return $credAccount;
@@ -699,7 +699,7 @@ class Gateway extends Base\Gateway
         $input = $verify->input;
 
         $mandateReqBlock = [
-            RequestFields::MERCHANT_ID   => $this->getMerchantId(),
+            RequestFields::MERCHANT_ID   => $this->getMerchantId2(),
             RequestFields::MANDATE_ID    => $input['payment']['id'],
             RequestFields::REQ_INIT_DATE => Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST)
                                                     ->format('Y-m-d')

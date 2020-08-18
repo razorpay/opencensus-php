@@ -23,6 +23,7 @@ class Type
     const RBL_ENACH_REGISTER                = 'rbl_enach_register';
 
     const ENACH_NPCI_NB_DEBIT               = 'enach_npci_nb_debit';
+    const ENACH_NPCI_NB_DEBIT_ICICI         = 'enach_npci_nb_debit_icici';
 
     const CORPORATION_NETBANKING_REFUND     = 'corporation_netbanking_refund';
 
@@ -213,6 +214,7 @@ class Type
             self::RBL_ENACH_DEBIT,
             self::RBL_ENACH_REGISTER,
             self::ENACH_NPCI_NB_DEBIT,
+            self::ENACH_NPCI_NB_DEBIT_ICICI,
             self::CITI_NACH_REGISTER,
             self::CITI_NACH_DEBIT,
             self::CITI_NACH_DEBIT_SUMMARY,
@@ -364,6 +366,7 @@ class Type
         self::RBL_ENACH_DEBIT,
         self::RBL_ENACH_REGISTER,
         self::ENACH_NPCI_NB_DEBIT,
+        self::ENACH_NPCI_NB_DEBIT_ICICI,
         self::SBI_EMANDATE_DEBIT,
         self::BOB_NETBANKING_REFUND,
         self::BOB_NETBANKING_CLAIMS,
@@ -497,6 +500,7 @@ class Type
             self::RBL_ENACH_DEBIT,
             self::RBL_ENACH_REGISTER,
             self::ENACH_NPCI_NB_DEBIT,
+            self::ENACH_NPCI_NB_DEBIT_ICICI,
             self::CITI_NACH_REGISTER,
             self::CITI_NACH_DEBIT,
             self::CITI_NACH_DEBIT_SUMMARY,

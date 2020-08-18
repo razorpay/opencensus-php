@@ -1,5 +1,7 @@
 <?php
 
+use Excel;
+
 use Carbon\Carbon;
 use RZP\Models\PaperMandate;
 use RZP\Constants\Entity as E;
@@ -13,6 +15,7 @@ use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
+use RZP\Gateway\Enach\Citi\NachDebitFileHeadings as Headings;
 
 class NachGatewayTest extends TestCase
 {
@@ -95,11 +98,58 @@ class NachGatewayTest extends TestCase
 
     public function testGatewayFileRegister()
     {
-        $this->createDummyRegisterToken();
+        $payment = $this->createDummyRegisterToken();
+
+        $this->fixtures->stripSign($payment['id']);
 
         $this->ba->cronAuth();
 
-        $this->startTest();
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $files = $this->getEntities('file_store', [], true);
+
+        $zipFile = $files['items'][0];
+        $registerFile = $files['items'][1];
+
+        $expectedFileContentZip = [
+            'type'        => 'citi_nach_register',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'zip',
+            'name'        => 'RAZORP_EMANDATE_NACH00000000013149_10022020_test'
+        ];
+
+        $expectedFileContentRegister = [
+            'type'        => 'citi_nach_register',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'xls',
+            'name'        => 'RAZORP_EMANDATE_NACH00000000013149_11022020_test',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContentZip, $zipFile);
+        $this->assertArraySelectiveEquals($expectedFileContentRegister, $registerFile);
+
+        $registerFileRows = Excel::load('storage/files/filestore/' . $registerFile['location'])->all()->toArray();
+
+        $expectedRegisterFileContent = [
+            'category_code'        => "U099",
+            'category_description' => "Others",
+            'start_date'           => "16/02/2020",
+            'end_date'             => "Until cancelled",
+            'client_code'          => "CTRAZORPAY",
+            'unique_reference_no'  => $payment['id'],
+            'account_no'           => "1111111111111",
+            'account_holder_name'  => "dead pool",
+            'account_type'         => "savings",
+            'bank_name'            => "HDFC",
+            'bank_micr_ifsc'       => "HDFC0001233",
+            'amount'               => "10000",
+        ];
+
+        $this->assertArraySelectiveEquals($expectedRegisterFileContent, $registerFileRows[0]);
     }
 
     public function testGatewayFileRegisterOnNonWorkingDay()
@@ -134,11 +184,65 @@ class NachGatewayTest extends TestCase
 
     public function testGatewayFileDebit()
     {
-        $this->createRecurringNachPayment();
+        $response = $this->createRecurringNachPayment();
+
+        $this->fixtures->stripSign($response['razorpay_payment_id']);
 
         $this->ba->cronAuth();
 
-        $this->startTest();
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $files = $this->getEntities('file_store', ['count' => 2], true);
+
+        $summary = $files['items'][0];
+        $debit = $files['items'][1];
+
+        $expectedFileContentSummary = [
+            'type'        => 'citi_nach_debit_summary',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'xls',
+            'name'        => 'citi/nach/RAZORP_SUMMARY_11022020_test'
+        ];
+
+        $expectedFileContentDebit = [
+            'type'        => 'citi_nach_debit',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'txt',
+            'name'        => 'citi/nach/RAZORP_COLLECT_NACH00000000013149_11022020_test',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContentSummary, $summary);
+        $this->assertArraySelectiveEquals($expectedFileContentDebit, $debit);
+
+        $fileContent = explode("\n", file_get_contents('storage/files/filestore/' . $debit['location']));
+
+        // since date and amount is fixed for this test header is a constant
+        $expectedHeader = '56       RAZORPAY SOFTWARE PVT LTD                                                                 0000050000000000000030000011022020                       NACH00000000013149000000000000000000CITI000PIGW000018003                          000000001                                                           ';
+
+        $this->assertEquals($expectedHeader, $fileContent[0]);
+
+        $debitRow = array_map('trim', $this->parseTextRow($fileContent[1], 0, ''));
+
+        $expectedDebitRow = [
+            'ACH Transaction Code' => '67',
+            'Destination Account Type' => '10',
+            'Beneficiary Account Holder\'s Name' => 'dead pool',
+            'User Name' => 'CTRAZORPAY',
+            'Amount' => '0000000300000',
+            'Destination Bank IFSC / MICR / IIN' => 'HDFC0001233',
+            'Beneficiary\'s Bank Account number' => '1111111111111',
+            'Sponsor Bank IFSC / MICR / IIN' => 'CITI000PIGW',
+            'User Number' => 'NACH00000000013149',
+            'Transaction Reference' => 'CTTATAAIAA' . $response['razorpay_payment_id'],
+            'Product Type' => '10',
+            'UMRN' => 'UTIB6000000005844847'
+        ];
+
+        $this->assertArraySelectiveEquals($expectedDebitRow, $debitRow);
     }
 
     public function testGatewayFileDebitOnNonWorkingDay()
@@ -720,5 +824,37 @@ class NachGatewayTest extends TestCase
             );
 
         return $bankAccount;
+    }
+
+    protected function parseTextRow(string $row, int $ix, string $delimiter, array $headings = null)
+    {
+        $values=[
+            Headings::ACH_TRANSACTION_CODE             =>  substr($row, 0, 2),
+            Headings::CONTROL_9S                       =>  substr($row, 2, 9),
+            Headings::DESTINATION_ACCOUNT_TYPE         =>  substr($row, 11, 2),
+            Headings::LEDGER_FOLIO_NUMBER              =>  substr($row, 13, 3),
+            Headings::CONTROL_15S                      =>  substr($row, 16, 15),
+            Headings::BENEFICIARY_ACCOUNT_HOLDER_NAME  =>  substr($row, 31, 40),
+            Headings::CONTROL_9SS                      =>  substr($row, 71, 9),
+            Headings::CONTROL_7S                       =>  substr($row, 80, 7),
+            Headings::USER_NAME                        =>  substr($row, 87, 20),
+            Headings::CONTROL_13S                      =>  substr($row, 107, 13),
+            Headings::AMOUNT                           =>  substr($row, 120, 13),
+            Headings::ACH_ITEM_SEQ_NO                  =>  substr($row, 133, 10),
+            Headings::CHECKSUM                         =>  substr($row, 143, 10),
+            Headings::FLAG                             =>  substr($row, 153, 1),
+            Headings::REASON_CODE                      =>  substr($row, 154, 2),
+            Headings::DESTINATION_BANK_IFSC            =>  substr($row, 156, 11),
+            Headings::BENEFICIARY_BANK_ACCOUNT_NUMBER  =>  substr($row, 167, 35),
+            Headings::SPONSOR_BANK_IFSC                =>  substr($row, 202, 11),
+            Headings::USER_NUMBER                      =>  substr($row, 213, 18),
+            Headings::TRANSACTION_REFERENCE            =>  substr($row, 231, 30),
+            Headings::PRODUCT_TYPE                     =>  substr($row, 261, 3),
+            Headings::BENEFICIARY_AADHAR_NUMBER        =>  substr($row, 264, 15),
+            Headings::UMRN                             =>  substr($row, 279, 20),
+            Headings::FILLER                           =>  substr($row, 299, 7),
+        ];
+
+        return $values;
     }
 }

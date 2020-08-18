@@ -146,6 +146,42 @@ return [
         ]
     ],
 
+    'testDebitFileGenerationIcici' => [
+        'request' => [
+            'content' => [
+                'type'    => 'emandate_debit',
+                'targets' => ['enach_nb_icici'],
+                'begin'   => Carbon::yesterday(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::today(Timezone::IST)->getTimestamp() - 1,
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'recipients'          => [
+                            ''
+                        ],
+                        'status'              => 'file_generated',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'emandate@razorpay.com',
+                        'type'                => 'emandate_debit',
+                        'target'              => 'enach_nb_icici',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ],
+                ],
+            ]
+        ]
+    ],
+
     'testPaymentFailedVerifySuccess' => [
         'response'  => [
             'content'     => [

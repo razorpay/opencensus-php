@@ -17,6 +17,7 @@ use RZP\Gateway\Netbanking\Sbi\Emandate\RegisterFileHeadings as SbiEMRegisterHea
 use RZP\Gateway\Netbanking\Sbi\Emandate\DebitFileHeadings as SbiEMDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
 use RZP\Models\Batch\Processor\Nach\Migration\NachMigrationFileHeadings as NachMigrationHeadings;
+use RZP\Gateway\Enach\Npci\Netbanking\IciciSponsorBank\DebitFileHeadings as IciciENachDebitHeadings;
 
 class Header
 {
@@ -221,6 +222,35 @@ class Header
     const HDFC_EM_DEBIT_STATUS              = HdfcEMDebitHeadings::STATUS;
     const HDFC_EM_DEBIT_REJECTION_REMARKS   = HdfcEMDebitHeadings::REJECTION_REMARKS;
     const HDFC_EM_DEBIT_NARRATION           = HdfcEMDebitHeadings::NARRATION;
+
+    //
+    // emandate npci - icici sponsore bank debit Response File Headers
+    //
+    const ICICI_NPCI_ENACH_DEBIT_ACH_TRANSACTION_CODE             = IciciENachDebitHeadings::ACH_TRANSACTION_CODE;
+    const ICICI_NPCI_ENACH_DEBIT_CONTROL_9S                       = IciciENachDebitHeadings::CONTROL_9S;
+    const ICICI_NPCI_ENACH_DEBIT_DESTINATION_ACCOUNT_TYPE         = IciciENachDebitHeadings::DESTINATION_ACCOUNT_TYPE;
+    const ICICI_NPCI_ENACH_DEBIT_LEDGER_FOLIO_NUMBER              = IciciENachDebitHeadings::LEDGER_FOLIO_NUMBER;
+    const ICICI_NPCI_ENACH_DEBIT_CONTROL_15S                      = IciciENachDebitHeadings::CONTROL_15S;
+    const ICICI_NPCI_ENACH_DEBIT_BENEFICIARY_ACCOUNT_HOLDER_NAME  = IciciENachDebitHeadings::BENEFICIARY_ACCOUNT_HOLDER_NAME;
+    const ICICI_NPCI_ENACH_DEBIT_CONTROL_9SS                      = IciciENachDebitHeadings::CONTROL_9SS;
+    const ICICI_NPCI_ENACH_DEBIT_CONTROL_7S                       = IciciENachDebitHeadings::CONTROL_7S;
+    const ICICI_NPCI_ENACH_DEBIT_USER_NAME                        = IciciENachDebitHeadings::USER_NAME;
+    const ICICI_NPCI_ENACH_DEBIT_CONTROL_13S                      = IciciENachDebitHeadings::CONTROL_13S;
+    const ICICI_NPCI_ENACH_DEBIT_AMOUNT                           = IciciENachDebitHeadings::AMOUNT;
+    const ICICI_NPCI_ENACH_DEBIT_ACH_ITEM_SEQ_NO                  = IciciENachDebitHeadings::ACH_ITEM_SEQ_NO;
+    const ICICI_NPCI_ENACH_DEBIT_CHECKSUM                         = IciciENachDebitHeadings::CHECKSUM;
+    const ICICI_NPCI_ENACH_DEBIT_FLAG                             = IciciENachDebitHeadings::FLAG;
+    const ICICI_NPCI_ENACH_DEBIT_REASON_CODE                      = IciciENachDebitHeadings::REASON_CODE;
+    const ICICI_NPCI_ENACH_DEBIT_DESTINATION_BANK_IFSC            = IciciENachDebitHeadings::DESTINATION_BANK_IFSC;
+    const ICICI_NPCI_ENACH_DEBIT_BENEFICIARY_BANK_ACCOUNT_NUMBER  = IciciENachDebitHeadings::BENEFICIARY_BANK_ACCOUNT_NUMBER;
+    const ICICI_NPCI_ENACH_DEBIT_SPONSOR_BANK_IFSC                = IciciENachDebitHeadings::SPONSOR_BANK_IFSC;
+    const ICICI_NPCI_ENACH_DEBIT_USER_NUMBER                      = IciciENachDebitHeadings::USER_NUMBER;
+    const ICICI_NPCI_ENACH_DEBIT_TRANSACTION_REFERENCE            = IciciENachDebitHeadings::TRANSACTION_REFERENCE;
+    const ICICI_NPCI_ENACH_DEBIT_PRODUCT_TYPE                     = IciciENachDebitHeadings::PRODUCT_TYPE;
+    const ICICI_NPCI_ENACH_DEBIT_BENEFICIARY_AADHAR_NUMBER        = IciciENachDebitHeadings::BENEFICIARY_AADHAR_NUMBER;
+    const ICICI_NPCI_ENACH_DEBIT_UMRN                             = IciciENachDebitHeadings::UMRN;
+    const ICICI_NPCI_ENACH_DEBIT_FILLER                           = IciciENachDebitHeadings::FILLER;
+
     //
     // Citi Nach Register Response File Headers
     //
@@ -1465,6 +1495,61 @@ class Header
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        'emandate_debit_enach_nb_icici' => [
+            self::INPUT => [
+                self::ICICI_NPCI_ENACH_DEBIT_ACH_TRANSACTION_CODE,
+                self::ICICI_NPCI_ENACH_DEBIT_CONTROL_9S,
+                self::ICICI_NPCI_ENACH_DEBIT_DESTINATION_ACCOUNT_TYPE,
+                self::ICICI_NPCI_ENACH_DEBIT_LEDGER_FOLIO_NUMBER,
+                self::ICICI_NPCI_ENACH_DEBIT_CONTROL_15S,
+                self::ICICI_NPCI_ENACH_DEBIT_BENEFICIARY_ACCOUNT_HOLDER_NAME,
+                self::ICICI_NPCI_ENACH_DEBIT_CONTROL_9SS,
+                self::ICICI_NPCI_ENACH_DEBIT_CONTROL_7S,
+                self::ICICI_NPCI_ENACH_DEBIT_USER_NAME,
+                self::ICICI_NPCI_ENACH_DEBIT_CONTROL_13S,
+                self::ICICI_NPCI_ENACH_DEBIT_AMOUNT,
+                self::ICICI_NPCI_ENACH_DEBIT_ACH_ITEM_SEQ_NO,
+                self::ICICI_NPCI_ENACH_DEBIT_CHECKSUM,
+                self::ICICI_NPCI_ENACH_DEBIT_FLAG,
+                self::ICICI_NPCI_ENACH_DEBIT_REASON_CODE,
+                self::ICICI_NPCI_ENACH_DEBIT_DESTINATION_BANK_IFSC,
+                self::ICICI_NPCI_ENACH_DEBIT_BENEFICIARY_BANK_ACCOUNT_NUMBER,
+                self::ICICI_NPCI_ENACH_DEBIT_SPONSOR_BANK_IFSC,
+                self::ICICI_NPCI_ENACH_DEBIT_USER_NUMBER,
+                self::ICICI_NPCI_ENACH_DEBIT_TRANSACTION_REFERENCE,
+                self::ICICI_NPCI_ENACH_DEBIT_PRODUCT_TYPE,
+                self::ICICI_NPCI_ENACH_DEBIT_BENEFICIARY_AADHAR_NUMBER,
+                self::ICICI_NPCI_ENACH_DEBIT_UMRN,
+                self::ICICI_NPCI_ENACH_DEBIT_FILLER,
+            ],
+            self::OUTPUT => [
+                self::ICICI_NPCI_ENACH_DEBIT_ACH_TRANSACTION_CODE,
+                self::ICICI_NPCI_ENACH_DEBIT_CONTROL_9S,
+                self::ICICI_NPCI_ENACH_DEBIT_DESTINATION_ACCOUNT_TYPE,
+                self::ICICI_NPCI_ENACH_DEBIT_LEDGER_FOLIO_NUMBER,
+                self::ICICI_NPCI_ENACH_DEBIT_CONTROL_15S,
+                self::ICICI_NPCI_ENACH_DEBIT_BENEFICIARY_ACCOUNT_HOLDER_NAME,
+                self::ICICI_NPCI_ENACH_DEBIT_CONTROL_9SS,
+                self::ICICI_NPCI_ENACH_DEBIT_CONTROL_7S,
+                self::ICICI_NPCI_ENACH_DEBIT_USER_NAME,
+                self::ICICI_NPCI_ENACH_DEBIT_CONTROL_13S,
+                self::ICICI_NPCI_ENACH_DEBIT_AMOUNT,
+                self::ICICI_NPCI_ENACH_DEBIT_ACH_ITEM_SEQ_NO,
+                self::ICICI_NPCI_ENACH_DEBIT_CHECKSUM,
+                self::ICICI_NPCI_ENACH_DEBIT_FLAG,
+                self::ICICI_NPCI_ENACH_DEBIT_REASON_CODE,
+                self::ICICI_NPCI_ENACH_DEBIT_DESTINATION_BANK_IFSC,
+                self::ICICI_NPCI_ENACH_DEBIT_BENEFICIARY_BANK_ACCOUNT_NUMBER,
+                self::ICICI_NPCI_ENACH_DEBIT_SPONSOR_BANK_IFSC,
+                self::ICICI_NPCI_ENACH_DEBIT_USER_NUMBER,
+                self::ICICI_NPCI_ENACH_DEBIT_TRANSACTION_REFERENCE,
+                self::ICICI_NPCI_ENACH_DEBIT_PRODUCT_TYPE,
+                self::ICICI_NPCI_ENACH_DEBIT_BENEFICIARY_AADHAR_NUMBER,
+                self::ICICI_NPCI_ENACH_DEBIT_UMRN,
+                self::ICICI_NPCI_ENACH_DEBIT_FILLER,
             ],
         ],
 
