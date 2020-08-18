@@ -690,6 +690,29 @@ $isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'
 
     toggleTrimDescription(true);
 
+
+    // This fn. must be called only when status is partially paid  / issued
+    function safeRefreshPageAfterInterval() {
+        var PAGE_REFRESH_TIMER = 15 * 60 * 1000; // 15 min
+
+        window.setTimeout(function() {
+          window.location.reload();
+        }, PAGE_REFRESH_TIMER);
+    }
+
+
+    // This fn. must be called only when status is non-expired. If the status is already expired, then intent to pay must never occur, hence no point of calling this fn in that scenario.
+    function redirectIfPageExpiredBeforeIntentToPay() {
+      var curTimeStamp = Math.floor(new Date().getTime() / 1000);
+      var isPageOpenedBeyondExpireBy = data.invoice.max_expire_by && data.invoice.max_expire_by <= curTimeStamp;
+
+      if (isPageOpenedBeyondExpireBy) {
+        window.location.reload(); // Reload the page
+      }
+
+      return isPageOpenedBeyondExpireBy;
+    }
+
     function fullPaid() {
         var $hostedpage_options = data.options.hosted_page;
         var amount = data.invoice.amount;
@@ -777,6 +800,8 @@ $isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'
 @endif
 @if ($invoice_status !== 'paid' and ($invoice_status !== 'expired' and $invoice_status !== 'cancelled'))
     <script>
+        safeRefreshPageAfterInterval(); // Add check to run after every interval
+
         if (checkIsDesktop()) {
             document.getElementById('chkout-box').addEventListener('mouseover', showOverlay);
             document.getElementById('chkout-box').addEventListener('mouseout', hideOverlay);
@@ -917,9 +942,17 @@ $isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'
                 }
 
                 ele.addEventListener('click', function() {
-                    const hostedCheckoutURL = 'https://api.razorpay.com/v1/checkout/embedded';
+                    // Check if valid expiry
+                    var isPageExpiredBeforeIntentToPay = redirectIfPageExpiredBeforeIntentToPay();
+
+                    if (isPageExpiredBeforeIntentToPay) {
+                        return;
+                    }
+
+                    // Open hosted checkout
+                    var hostedCheckoutURL = 'https://api.razorpay.com/v1/checkout/embedded';
                     window.invokeHostedCheckout(options, 'post', hostedCheckoutURL); // Redirects to Hosted checkout page, so handler not needed
-                })
+                });
 
             } else {
                 var razorpay;
@@ -928,7 +961,16 @@ $isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'
                     options.parent = '#chkout-box';
                     razorpay = window.razorpay = Razorpay(options);
                 } else {
+
                     document.getElementById('mob-payment-btn').addEventListener('click', function() {
+                        // Check if valid expiry
+                        var isPageExpiredBeforeIntentToPay = redirectIfPageExpiredBeforeIntentToPay();
+
+                        if (isPageExpiredBeforeIntentToPay) {
+                            return;
+                        }
+
+                        // Open checkout
                         razorpay = window.razorpay = Razorpay(options);
                         razorpay.open();
 
