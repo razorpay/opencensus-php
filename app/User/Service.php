@@ -1110,9 +1110,10 @@ class Service extends Base\Service
     protected function updateRXOnboardingV2Experiment(array $merchant, array $data): array
     {
         $merchantService = new Merchant\Service;
+        $isBankingRequest = ApiUrl::isBankingOriginRequest();
 
         // Timestamp - "13 Jul 2020, 01:00:00 PM"
-        if ($merchant['created_at'] > 1594625400)
+        if ($isBankingRequest && $merchant['created_at'] > 1594625400)
         {
             $data['experiments']['rx_onboarding_v2'] = $merchantService->getTreatment('rx_onboarding_v2');
         }
