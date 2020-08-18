@@ -12,29 +12,30 @@ class Dashboard extends Base
 {
     //********************* All endpoints for dashboard are configured here ***************************//
 
-    const FETCH_URI                  = '/twirp/rzp.settlements.dashboard.v1.DashboardService/Fetch';
-    const FETCH_MULTIPLE_URI         = '/twirp/rzp.settlements.dashboard.v1.DashboardService/FetchMultiple';
-    const SCHEDULE_CREATE_URI        = '/twirp/rzp.settlements.schedule.v1.ScheduleService/Create';
-    const SCHEDULE_GET_URI           = '/twirp/rzp.settlements.schedule.v1.ScheduleService/Get';
-    const SCHEDULE_GET_IDS_URI       = '/twirp/rzp.settlements.schedule.v1.ScheduleService/GetAllIds';
+    const FETCH_URI                    = '/twirp/rzp.settlements.dashboard.v1.DashboardService/Fetch';
+    const FETCH_MULTIPLE_URI           = '/twirp/rzp.settlements.dashboard.v1.DashboardService/FetchMultiple';
+    const SCHEDULE_CREATE_URI          = '/twirp/rzp.settlements.schedule.v1.ScheduleService/Create';
+    const SCHEDULE_GET_URI             = '/twirp/rzp.settlements.schedule.v1.ScheduleService/Get';
+    const SCHEDULE_GET_IDS_URI         = '/twirp/rzp.settlements.schedule.v1.ScheduleService/GetAllIds';
 
-    const MERCHANT_CONFIG_GET        = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Get';
-    const MERCHANT_CONFIG_CREATE     = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Create';
-    const MERCHANT_CONFIG_UPDATE     = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Update';
+    const MERCHANT_CONFIG_GET          = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Get';
+    const MERCHANT_CONFIG_CREATE       = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Create';
+    const MERCHANT_CONFIG_UPDATE       = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Update';
+    const MERCHANT_CONFIG_EDIT_FEATURE = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/UpdateFeature';
 
-    const BANK_ACCOUNT_GET           = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Get';
-    const BANK_ACCOUNT_CREATE        = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Create';
-    const BANK_ACCOUNT_UPDATE        = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Update';
-    const BANK_ACCOUNT_DELETE        = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Delete';
+    const BANK_ACCOUNT_GET             = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Get';
+    const BANK_ACCOUNT_CREATE          = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Create';
+    const BANK_ACCOUNT_UPDATE          = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Update';
+    const BANK_ACCOUNT_DELETE          = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Delete';
 
-    const EXECUTION_REGISTER         = '/twirp/rzp.settlements.execution.v1.ExecutionService/Register';
-    const EXECUTION_TRIGGER_MULTIPLE = '/twirp/rzp.settlements.execution.v1.ExecutionService/TriggerMultiple';
-    const EXECUTION_RESUME           = '/twirp/rzp.settlements.execution.v1.ExecutionService/Resume';
+    const EXECUTION_REGISTER           = '/twirp/rzp.settlements.execution.v1.ExecutionService/Register';
+    const EXECUTION_TRIGGER_MULTIPLE   = '/twirp/rzp.settlements.execution.v1.ExecutionService/TriggerMultiple';
+    const EXECUTION_RESUME             = '/twirp/rzp.settlements.execution.v1.ExecutionService/Resume';
 
-    const CHANNEL_STATUS_UPDATE      = '/twirp/rzp.settlements.transfer.v1.TransferService/SetChannelState';
-    const CHANNEL_STATUS_GET         = '/twirp/rzp.settlements.transfer.v1.TransferService/GetChannelState';
+    const CHANNEL_STATUS_UPDATE        = '/twirp/rzp.settlements.transfer.v1.TransferService/SetChannelState';
+    const CHANNEL_STATUS_GET           = '/twirp/rzp.settlements.transfer.v1.TransferService/GetChannelState';
 
-    const SETTLEMENT_RETRY           = '/twirp/rzp.settlements.settlement.v1.SettlementService/Retry';
+    const SETTLEMENT_RETRY             = '/twirp/rzp.settlements.settlement.v1.SettlementService/Retry';
 
     public function __construct($app)
     {
@@ -400,5 +401,28 @@ class Dashboard extends Base
             'beneficiary_mobile'  =>  $ba->getBeneficiaryMobile(),
             'accepted_currency'   =>  Currency::INR
         ];
+    }
+
+    /**
+     * This is used to update the disable feature from the admin dashboard
+     * @param $merchantId
+     * @param $reason
+     * @param null $mode
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function toggleMerchantHold($merchantId, $reason, $mode = null) : array
+    {
+        $input = [
+            'merchant_id'  => $merchantId,
+            'feature_name' => 'disable',
+            'status'       => $reason == null ? false : true,
+            'reason'       => $reason
+        ];
+
+        $auth = $this->getAuth(self::SERVICE_DASHBOARD);
+
+        return $this->makeRequest(self::MERCHANT_CONFIG_EDIT_FEATURE, $input, $auth, $mode);
     }
 }

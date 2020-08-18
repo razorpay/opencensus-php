@@ -41,6 +41,7 @@ use RZP\Models\Admin\Permission;
 use RZP\Models\Settlement\Bucket;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Settlement\Channel;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\LegalEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant\Balance\Type;
@@ -48,6 +49,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Mail\Merchant\PartnerOnBoarded;
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Mail\Payout\Payout as PayoutMail;
+use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use Razorpay\OAuth\Exception\DBQueryException;
 use RZP\Models\Partner\Config as PartnerConfig;
@@ -788,7 +790,24 @@ class Core extends Base\Core
             }
 
             $this->repo->saveOrFail($merchant);
+
         });
+
+        $fundsHoldToggleActions = [
+            Merchant\Action::HOLD_FUNDS,
+            Merchant\Action::RELEASE_FUNDS,
+        ];
+
+        $newSettlementService = (new Bucket\Core)->shouldProcessViaNewService($merchant->getId());
+
+        if ((in_array($action, $fundsHoldToggleActions) === true) and ($newSettlementService === true))
+        {
+            // since the merchant hold is updated in both the mode thus added this to have consistency
+            // in api and settlement service
+            $this->toggleMerchantHoldInNewSettlementService($merchant, $action, Mode::TEST);
+
+            $this->toggleMerchantHoldInNewSettlementService($merchant, $action, Mode::LIVE);
+        }
 
         if ($action === Merchant\Action::RELEASE_FUNDS)
         {
@@ -893,13 +912,60 @@ class Core extends Base\Core
     {
         $settlementTime = Carbon::now(Timezone::IST)->getTimestamp();
 
-        (new Bucket\Core())->addMerchantToSettlementBucket('', $merchant->getId(), $settlementTime);
+        (new Bucket\Core)->addMerchantToSettlementBucket('', $merchant->getId(), $settlementTime);
 
         $this->trace->info(
             TraceCode::MERCHANT_ADDED_TO_BUCKET_ON_RELEASE_FUNDS,
             [
                 'merchant_id' => $merchant->getId(),
+                'mode'        => $this->mode,
             ]);
+    }
+
+    /**
+     * This is used to change the features of the merchant in the new settlement service
+     * @param Entity $merchant
+     * @param $action
+     * @param $mode
+     */
+    protected function toggleMerchantHoldInNewSettlementService(Merchant\Entity $merchant, $action, $mode)
+    {
+        try
+        {
+            $holdFunds = $action === Merchant\Action::HOLD_FUNDS ;
+
+            $holdFundsReason = null;
+
+            if ($holdFunds === true)
+            {
+                $holdFundsReason = $merchant->getHoldFundsReason() ?? 'merchant funds are on hold';
+            }
+
+            app('settlements_dashboard')->toggleMerchantHold($merchant->getId(), $holdFundsReason, $mode);
+        }
+        catch (\Throwable $e)
+        {
+            $data = [
+                'merchant_id'    => $merchant->getId(),
+                'action'         => $action,
+                'mode'           => $mode,
+            ];
+
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SETTLEMENT_SERVICE_ON_MERCHANT_HOLD_TOGGLE_FAILED,
+                $data);
+
+            $operation = 'Merchant on hold toggle failed to update in new settlement service';
+
+            (new SlackNotification)->send(
+                $operation,
+                $data,
+                $e,
+                1,
+                Config::get('slack.channels.settlement_alerts'));
+        }
     }
 
     /**
