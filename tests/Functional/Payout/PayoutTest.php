@@ -33,8 +33,8 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Webhook\Event;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\RazorxTreatment;
-use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Models\Merchant\Balance\FreePayout;
+use RZP\Models\Merchant\Balance as Balance;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Mail\Transaction\Payout as PayoutMail;
@@ -6662,5 +6662,81 @@ class PayoutTest extends TestCase
 
         // Assert that zero free payout has been consumed
         $this->assertEquals($this->getDefaultFreePayoutsCount($balance), $counter->getFreePayoutsConsumed());
+    }
+
+    public function testGetFreePayoutsAttributesOnProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $testData['request']['url'] = '/payouts/' . $balanceId . '/free_payout';
+
+        $testData['response']['content']['free_payouts_count'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
+
+        $testData['response']['content']['free_payouts_consumed'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
+
+        $testData['response']['content']['free_payouts_supported_modes'] = FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testGetFreePayoutsAttributesOnAdminAuth()
+    {
+        $this->ba->adminAuth();
+
+        $testData = $this->testData['testGetFreePayoutsAttributesOnProxyAuth'];
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $testData['request']['url'] = '/admin/payouts/' . $balanceId . '/free_payout';
+
+        $testData['response']['content']['free_payouts_count'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
+
+        $testData['response']['content']['free_payouts_consumed'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
+
+        $testData['response']['content']['free_payouts_supported_modes'] = FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testGetFreePayoutsAttributesOnAdminAuthWithIncorrectBalanceType()
+    {
+        $this->ba->adminAuth();
+
+        $balance = $this->fixtures->create('balance',
+                                           [
+                                               Balance\Entity::ACCOUNT_TYPE => AccountType::SHARED,
+                                               Balance\Entity::TYPE         => Balance\Type::PRIMARY,
+                                           ]);
+
+        $balanceId = $balance->getId();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/admin/payouts/' . $balanceId . '/free_payout';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testGetFreePayoutsAttributesOnAdminAuthWithBalanceIdNotPresentInDb()
+    {
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/admin/payouts/FIF0eRkA4FVj8H/free_payout';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
     }
 }

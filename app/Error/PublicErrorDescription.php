@@ -1198,4 +1198,7 @@ class PublicErrorDescription
     const BAD_REQUEST_CRED_BLOCKED_USER                                             = 'Your CRED account is blocked. Please contact support@cred.club.';
     const GATEWAY_ERROR_CRED_RESERVED_ERROR                                         = 'Download CRED app and activate your membership to unlock this payment option and avail exclusive discounts.';
     const BAD_REQUEST_DISCOUNT_GREATER_THAN_BASE_AMOUNT                             = 'Discount amount greater than base amount';
+
+    const BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INCORRECT_BALANCE_TYPE                = 'Only Banking type balance is allowed.';
+    const BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INVALID_BALANCE_ID                    = 'Invalid balance id, no db records found.';
 }

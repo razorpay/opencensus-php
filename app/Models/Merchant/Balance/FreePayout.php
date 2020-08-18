@@ -130,7 +130,7 @@ class FreePayout
     2. If the settings table entry doesn't exist, pick the global list of supported modes from redis.
     3. If that too doesn't exist, pick the default fallback list from the code.
     */
-    public function getFreePayoutSupportedModes(Balance\Entity $balance)
+    public function getFreePayoutsSupportedModes(Balance\Entity $balance)
     {
         $freePayoutsSupportedModes = $this->getSettingsAccessor($balance)->get(self::FREE_PAYOUTS_SUPPORTED_MODES);
 

@@ -255,4 +255,11 @@ class PayoutController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getFreePayoutsAttributes($balanceId)
+    {
+        $response = $this->service()->getFreePayoutsAttributes($balanceId);
+
+        return ApiResponse::json($response);
+    }
 }

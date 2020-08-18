@@ -1842,6 +1842,9 @@ class Route
 
         'merchant_locked_balance_update'           => ['patch',    'balance/{id}/locked-balance',                               'MerchantController@updateLockedBalance'                  ],
         'update_free_payouts_attributes'           => ['post',     'balance/{id}/free_payout',                                  'BalanceController@postUpdateFreePayout'                  ],
+        'get_free_payouts_attributes'              => ['get',      'payouts/{balance_id}/free_payout',                          'PayoutController@getFreePayoutsAttributes'               ],
+        'admin_get_free_payouts_attributes'        => ['get',      'admin/payouts/{balance_id}/free_payout',                    'PayoutController@getFreePayoutsAttributes'               ],
+
 
         //route to add additional website through admin dashboard
         'add_additional_website'                  => ['put',       'merchant/{id}/websites',                                    'MerchantController@putAdditionalWebsite'                   ],
@@ -2983,6 +2986,9 @@ class Route
         'proxy_merchant_get_pricing',
         'payment_links_sign_payload',
         'currency_fetch_rates_proxy',
+
+        // Get free_payout attributes for balance
+        'get_free_payouts_attributes',
     ];
 
     //
@@ -3656,6 +3662,9 @@ class Route
 
         // Update free_payout attributes for balance
         'update_free_payouts_attributes',
+
+        // Get free_payout attributes for balance
+        'admin_get_free_payouts_attributes',
     ];
 
     public static $routePermission = [
@@ -4410,6 +4419,9 @@ class Route
 
         // update free payout attributes
         'update_free_payouts_attributes'              => Permission::UPDATE_FREE_PAYOUTS_ATTRIBUTES,
+
+        // Get free_payout attributes for balance
+        'admin_get_free_payouts_attributes'           => Permission::VIEW_FREE_PAYOUTS_ATTRIBUTES,
     ];
 
     public static $bankingRoutePermissions = [

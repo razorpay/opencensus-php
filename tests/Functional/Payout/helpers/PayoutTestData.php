@@ -7285,4 +7285,54 @@ return [
             'content' => [],
         ],
     ],
+
+    'testGetFreePayoutsAttributesOnProxyAuth' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/{balance_id}/free_payout',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testGetFreePayoutsAttributesOnAdminAuthWithIncorrectBalanceType' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/{balance_id}/free_payout',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Only Banking type balance is allowed.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INCORRECT_BALANCE_TYPE,
+        ],
+    ],
+
+    'testGetFreePayoutsAttributesOnAdminAuthWithBalanceIdNotPresentInDb' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/{balance_id}/free_payout',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid balance id, no db records found.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INVALID_BALANCE_ID,
+        ],
+    ]
 ];

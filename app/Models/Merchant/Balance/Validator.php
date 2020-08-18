@@ -27,7 +27,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $updateFreePayoutsAttributesRules = [
-        FreePayout::FREE_PAYOUTS_COUNT                => 'filled|int',
+        FreePayout::FREE_PAYOUTS_COUNT                => 'filled|int|min:0',
         FreePayout::FREE_PAYOUTS_SUPPORTED_MODES      => 'sometimes|array|custom',
     ];
 

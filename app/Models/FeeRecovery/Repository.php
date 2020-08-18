@@ -107,7 +107,7 @@ class Repository extends Base\Repository
     {
         $statusColumn           = $this->dbColumn(Entity::STATUS);
         $recoveryPayoutIdColumn = $this->dbColumn(Entity::RECOVERY_PAYOUT_ID);
-        $attemptNumberColumn = $this->dbColumn(Entity::ATTEMPT_NUMBER);
+        $attemptNumberColumn    = $this->dbColumn(Entity::ATTEMPT_NUMBER);
 
         return $this->newQuery()
                     ->where($recoveryPayoutIdColumn, '=', $recoveryPayoutId)

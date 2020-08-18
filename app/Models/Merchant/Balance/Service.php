@@ -6,7 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Counter;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant\Entity;
+use RZP\Exception\BadRequestException;
 
 class Service extends Base\Service
 {
@@ -16,17 +16,43 @@ class Service extends Base\Service
     {
         Base\UniqueIdEntity::verifyUniqueId($id, true);
 
+        try
+        {
+            /** @var Entity $balance */
+            $balance = $this->repo->balance->findOrFailById($id);
+        }
+
+        catch (\Exception $exception)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INVALID_BALANCE_ID,
+                Entity::BALANCE_ID,
+                [
+                    Entity::BALANCE_ID => $id,
+                ]);
+        }
+
+        $balanceType = $balance->getType();
+
+        if ($balanceType !== Type::BANKING)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INCORRECT_BALANCE_TYPE,
+                Entity::BALANCE_ID,
+                [
+                    Entity::BALANCE_ID => $balance->getId(),
+                    Entity::TYPE       => $balanceType,
+                ]);
+        }
+
         $mutexResource = sprintf('UPDATE_FREE_PAYOUT_%s_%s',
             $id,
             $this->mode);
 
         return $this->app['api.mutex']->acquireAndRelease(
             $mutexResource,
-            function() use ($id, $input) {
-
-                /** @var Entity $balance */
-                $balance = $this->repo->balance->findOrFailById($id);
-
+            function() use ($balance, $input)
+            {
                 (new Validator)->validateInput(Validator::UPDATE_FREE_PAYOUTS_ATTRIBUTES, $input);
 
                 $this->trace->info(

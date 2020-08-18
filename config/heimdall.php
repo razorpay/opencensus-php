@@ -902,6 +902,10 @@ return [
                 'description' => 'Update free payout attributes',
                 'assignable'  => true,
             ],
+            Permission::VIEW_FREE_PAYOUTS_ATTRIBUTES => [
+                'description' => 'View free payout attributes',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::RAZORPAY_CAPITAL => [

@@ -1379,4 +1379,13 @@ class Service extends Base\Service
             throw $throwable;
         }
     }
+
+    public function getFreePayoutsAttributes(string $balanceId)
+    {
+        Base\UniqueIdEntity::verifyUniqueId($balanceId, true);
+
+        $response = $this->core->getFreePayoutsAttributes($balanceId);
+
+        return $response;
+    }
 }

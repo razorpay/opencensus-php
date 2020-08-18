@@ -39,9 +39,9 @@ class Base extends DSBase
 
         $balance = $payout->balance;
 
-        $freePayoutSupportedModes = (new FreePayout)->getFreePayoutSupportedModes($balance);
+        $freePayoutsSupportedModes = (new FreePayout)->getFreePayoutsSupportedModes($balance);
 
-        if ((in_array($payout->getMode(), $freePayoutSupportedModes, true) === true) and
+        if ((in_array($payout->getMode(), $freePayoutsSupportedModes, true) === true) and
             ($balance->getType() === Type::BANKING))
         {
             $expectedFeeType = $payout->getExpectedFeeType();

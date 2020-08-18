@@ -212,9 +212,9 @@ class CounterHelper extends Base\Core
 
         $shouldDecreaseFreePayoutConsumedForPayout = false;
 
-        $freePayoutSupportedModes = (new Balance\FreePayout)->getFreePayoutSupportedModes($balance);
+        $freePayoutsSupportedModes = (new Balance\FreePayout)->getFreePayoutsSupportedModes($balance);
 
-        if ((in_array($payout->getMode(), $freePayoutSupportedModes, true) === true) and
+        if ((in_array($payout->getMode(), $freePayoutsSupportedModes, true) === true) and
             ($payout->getFeeType() === Entity::FREE_PAYOUT))
         {
             $counter = $this->getCounterForBalance($balance, $payout);

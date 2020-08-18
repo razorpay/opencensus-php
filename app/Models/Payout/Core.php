@@ -12,6 +12,7 @@ use RZP\Models\Card;
 use RZP\Models\Admin;
 use RZP\Models\State;
 use DeepCopy\DeepCopy;
+use RZP\Models\Counter;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Services\Mutex;
@@ -2360,5 +2361,55 @@ class Core extends Base\Core
         {
             (new CounterHelper)->decreaseFreePayoutsConsumedInCaseOfTransactionFailure($balanceId);
         }
+    }
+
+    public function getFreePayoutsAttributes(string $balanceId)
+    {
+        try
+        {
+            /** @var Entity $balance */
+            $balance = $this->repo->balance->findOrFailById($balanceId);
+        }
+
+        catch (\Exception $exception)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INVALID_BALANCE_ID,
+                Entity::BALANCE_ID,
+                [
+                    Entity::BALANCE_ID => $balanceId,
+                ]);
+        }
+
+        $balanceType = $balance->getType();
+
+        if ($balanceType !== Merchant\Balance\Type::BANKING)
+        {
+            throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INCORRECT_BALANCE_TYPE,
+            Merchant\Balance\Entity::BALANCE_ID,
+            [
+                Merchant\Balance\Entity::BALANCE_ID => $balanceId,
+                Merchant\Balance\Entity::TYPE       => $balanceType,
+            ]);
+        }
+
+        $freePayoutsCount = (new Merchant\Balance\FreePayout)->getFreePayoutsCount($balance);
+
+        $freePayoutsSupportedModes = (new Merchant\Balance\FreePayout)->getFreePayoutsSupportedModes($balance);
+
+        /** @var Counter\Entity $counter */
+        $counter = (new Counter\Repository)->getCounterByAccountTypeAndBalanceId($balance->getAccountType(),
+                                                                                 $balanceId);
+
+        $freePayoutsConsumed = ($counter === null) ? 0 : $counter->getFreePayoutsConsumed();
+
+        $response = [
+            Merchant\Balance\FreePayout::FREE_PAYOUTS_COUNT           => $freePayoutsCount,
+            Counter\Entity::FREE_PAYOUTS_CONSUMED                     => $freePayoutsConsumed,
+            Merchant\Balance\FreePayout::FREE_PAYOUTS_SUPPORTED_MODES => $freePayoutsSupportedModes,
+        ];
+
+        return $response;
     }
 }

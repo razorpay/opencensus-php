@@ -179,7 +179,7 @@ return [
             'url'     => '/balance/gsdglddggjlgldjdlg/free_payout',
             'method'  => 'post',
             'content' => [
-                'free_payouts_count'   => "ier"
+                'free_payouts_count'   => 12
             ]
         ],
         'response'  => [
@@ -194,6 +194,75 @@ return [
         'exception' => [
             'class'               => BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testFailUpdateFreePayoutsWithInvalidBalanceType' => [
+        'request'  => [
+            'url'     => '/balance/{id}/free_payout',
+            'method'  => 'post',
+            'content' => [
+                'free_payouts_count'   => 12
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Only Banking type balance is allowed.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INCORRECT_BALANCE_TYPE,
+        ],
+    ],
+
+    'testFailUpdateFreePayoutsWithNegativeCount' => [
+        'request'  => [
+            'url'     => '/balance/{id}/free_payout',
+            'method'  => 'post',
+            'content' => [
+                'free_payouts_count'   => -20,
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The free payouts count must be at least 0.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testFailUpdateFreePayoutsWithBalanceIdNotPresentInDb' => [
+        'request'  => [
+            'url'     => '/balance/{id}/free_payout',
+            'method'  => 'post',
+            'content' => [
+                'free_payouts_count'   => 12
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid balance id, no db records found.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INVALID_BALANCE_ID,
         ],
     ],
 ];

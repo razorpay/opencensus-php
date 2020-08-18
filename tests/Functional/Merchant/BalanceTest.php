@@ -3,6 +3,7 @@
 namespace Functional\Merchant;
 
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\Balance\Type as Type;
 use RZP\Models\Counter\Entity as CounterEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Models\Merchant\Balance\Entity as Balance;
@@ -26,10 +27,10 @@ class BalanceTest extends TestCase
     public function testUpdateFreePayoutsCount()
     {
         $balance = $this->fixtures->create('balance',
-            [
-                Balance::ACCOUNT_TYPE            => AccountType::SHARED
-            ]
-        );
+                                           [
+                                               Balance::ACCOUNT_TYPE => AccountType::SHARED,
+                                               Balance::TYPE         => Type::BANKING,
+                                           ]);
 
         $this->ba->adminAuth();
 
@@ -52,10 +53,10 @@ class BalanceTest extends TestCase
     public function testUpdateFreePayoutsCountAndMode()
     {
         $balance = $this->fixtures->create('balance',
-            [
-                Balance::ACCOUNT_TYPE            => AccountType::SHARED
-            ]
-        );
+                                           [
+                                               Balance::ACCOUNT_TYPE => AccountType::SHARED,
+                                               Balance::TYPE         => Type::BANKING,
+                                           ]);
 
         $this->ba->adminAuth();
 
@@ -77,7 +78,11 @@ class BalanceTest extends TestCase
 
     public function testUpdateFreePayoutsMode()
     {
-        $balance = $this->fixtures->create('balance');
+        $balance = $this->fixtures->create('balance',
+                                           [
+                                               Balance::ACCOUNT_TYPE => AccountType::SHARED,
+                                               Balance::TYPE         => Type::BANKING,
+                                           ]);
 
         $this->ba->adminAuth();
 
@@ -92,7 +97,11 @@ class BalanceTest extends TestCase
 
     public function testFailUpdateFreePayoutsWithoutModeAndCount()
     {
-        $balance = $this->fixtures->create('balance');
+        $balance = $this->fixtures->create('balance',
+                                           [
+                                               Balance::ACCOUNT_TYPE => AccountType::SHARED,
+                                               Balance::TYPE         => Type::BANKING,
+                                           ]);
 
         $this->ba->adminAuth();
 
@@ -107,7 +116,11 @@ class BalanceTest extends TestCase
 
     public function testFailUpdateFreePayoutsWithDuplicateModeInArray()
     {
-        $balance = $this->fixtures->create('balance');
+        $balance = $this->fixtures->create('balance',
+                                           [
+                                               Balance::ACCOUNT_TYPE => AccountType::SHARED,
+                                               Balance::TYPE         => Type::BANKING,
+                                           ]);
 
         $this->ba->adminAuth();
 
@@ -122,7 +135,11 @@ class BalanceTest extends TestCase
 
     public function testFailUpdateFreePayoutsWithInvalidModeInArray()
     {
-        $balance = $this->fixtures->create('balance');
+        $balance = $this->fixtures->create('balance',
+                                           [
+                                               Balance::ACCOUNT_TYPE => AccountType::SHARED,
+                                               Balance::TYPE         => Type::BANKING,
+                                           ]);
 
         $this->ba->adminAuth();
 
@@ -137,7 +154,11 @@ class BalanceTest extends TestCase
 
     public function testUpdateFreePayoutsWithModeArrayEmpty()
     {
-        $balance = $this->fixtures->create('balance');
+        $balance = $this->fixtures->create('balance',
+                                           [
+                                               Balance::ACCOUNT_TYPE => AccountType::SHARED,
+                                               Balance::TYPE         => Type::BANKING,
+                                           ]);
 
         $this->ba->adminAuth();
 
@@ -152,7 +173,11 @@ class BalanceTest extends TestCase
 
     public function testUpdateFreePayoutsWithModeArrayNull()
     {
-        $balance = $this->fixtures->create('balance');
+        $balance = $this->fixtures->create('balance',
+                                           [
+                                               Balance::ACCOUNT_TYPE => AccountType::SHARED,
+                                               Balance::TYPE         => Type::BANKING,
+                                           ]);
 
         $this->ba->adminAuth();
 
@@ -167,7 +192,11 @@ class BalanceTest extends TestCase
 
     public function testFailUpdateFreePayoutsWithInvalidCount()
     {
-        $balance = $this->fixtures->create('balance');
+        $balance = $this->fixtures->create('balance',
+                                           [
+                                               Balance::ACCOUNT_TYPE => AccountType::SHARED,
+                                               Balance::TYPE         => Type::BANKING,
+                                           ]);
 
         $this->ba->adminAuth();
 
@@ -187,6 +216,57 @@ class BalanceTest extends TestCase
         $testData = $this->testData[__FUNCTION__];
 
         $testData['request']['url'] = '/balance/' . 'gsdglddggjlgldjdlg' . '/free_payout';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testFailUpdateFreePayoutsWithInvalidBalanceType()
+    {
+        $balance = $this->fixtures->create('balance',
+                                           [
+                                               Balance::ACCOUNT_TYPE => AccountType::SHARED,
+                                               Balance::TYPE         => Type::PRIMARY,
+                                           ]);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/balance/' . $balance->getId() . '/free_payout';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testFailUpdateFreePayoutsWithNegativeCount()
+    {
+        $balance = $this->fixtures->create('balance',
+                                           [
+                                               Balance::ACCOUNT_TYPE => AccountType::SHARED,
+                                               Balance::TYPE         => Type::BANKING,
+                                           ]);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/balance/' . $balance->getId() . '/free_payout';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testFailUpdateFreePayoutsWithBalanceIdNotPresentInDb()
+    {
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/balance/FIF0eRkA4FVj8H/free_payout';
 
         $this->testData[__FUNCTION__] = $testData;
 
