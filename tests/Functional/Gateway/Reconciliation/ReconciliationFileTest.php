@@ -257,11 +257,15 @@ class ReconciliationFileTest extends TestCase
         $refund2 = $this->refundPayment($payment2['id']);
         $this->assertNull($refund2['acquirer_data']['arn']);
 
+        $this->payment['amount'] = 500000;
+        $payment3 = $this->getNewPaymentEntity(false, true);
+
         // Add these 2 payments and 2 refunds in entries array
         $entries[] = $this->overrideFirstDataPayment($payment1);
         $entries[] = $this->overrideFirstDataRefund($payment1);
         $entries[] = $this->overrideFirstDataPayment($payment2);
         $entries[] = $this->overrideFirstDataRefund($payment2);
+        $entries[] = $this->overrideFirstDataPayment($payment3, ['transaction_amt' => 5000]);
 
         $scroogeResponse = [
             'body' => [
@@ -310,11 +314,22 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[2][FDPaymentRecon::COLUMN_ARN], $updatedPayment2['reference1']);
         $this->assertTrue($updatedPayment2['gateway_captured']);
 
+        $updatedPayment3 = $this->getDbEntityById('payment' ,$payment3['id']);
+        $this->assertEquals($entries[4][FDPaymentRecon::COLUMN_ARN], $updatedPayment3['reference1']);
+        $this->assertTrue($updatedPayment3['gateway_captured']);
+
         $paymentTransaction1 = $this->getDbEntityById('transaction', $updatedPayment1['transaction_id'])->toArrayAdmin();
         $this->assertNotNull($paymentTransaction1['reconciled_at']);
+        $this->assertEquals(0, $updatedPayment1['gateway_service_tax']);
 
         $paymentTransaction2 = $this->getDbEntityById('transaction', $updatedPayment2['transaction_id'])->toArrayAdmin();
         $this->assertNotNull($paymentTransaction2['reconciled_at']);
+        $this->assertEquals(0, $updatedPayment2['gateway_service_tax']);
+
+        $paymentTransaction3 = $this->getDbEntityById('transaction', $updatedPayment3['transaction_id'])->toArrayAdmin();
+        $this->assertNotNull($paymentTransaction3['reconciled_at']);
+        // Commission amount is 50, so gst is 9
+        $this->assertEquals(900, $paymentTransaction3['gateway_service_tax']);
 
         // Assert that refunds got reconciled
         $refundTransaction1 = $this->getDbEntity(

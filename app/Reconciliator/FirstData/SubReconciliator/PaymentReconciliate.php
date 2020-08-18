@@ -73,12 +73,30 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      * We don't get service tax for First Data in the MIS files,
      * it is considered as zero
      *
-     * @param  array $row
-     * @return int 0
+     * @param array $row
+     * @return int
      */
     protected function getGatewayServiceTax($row)
     {
-        return 0;
+        $serviceTax = 0;
+
+        // If total transaction amount is greater than 2000 then
+        // gst is 18% of commission
+
+        $formattedAmount = str_replace(',', '', $row[self::COLUMN_PAYMENT_AMOUNT]);
+
+        $transactionAmt = floatval($formattedAmount) * 100;
+
+        $transactionAmt = intval(number_format($transactionAmt, 2, '.', ''));
+
+        if ($transactionAmt > 200000)
+        {
+            $gatewayFee = $this->getGatewayFee($row);
+
+            $serviceTax = (18 / 100) * $gatewayFee;
+        }
+
+       return $serviceTax;
     }
 
     /**
