@@ -103,6 +103,8 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $e)
     {
+        $app = \App::getFacadeRoot();
+
         $data = [
             'success' => false,
             'errors'  => [self::SERVER_ERROR]
@@ -131,14 +133,10 @@ class Handler extends ExceptionHandler
         {
             $routeName = $request->route()->getName();
 
-            $app = \App::getFacadeRoot();
-
-            $trace = $app['trace'];
-
             $context = $this->getExceptionDetails($e);
 
             // Debugging Unauthorized exception
-            $trace->info(TraceCode::USER_UNAUTHORIZED_EXCEPTION, ['context' => $context]);
+            $app['trace']->info(TraceCode::USER_UNAUTHORIZED_EXCEPTION, ['context' => $context]);
 
             return AppResponse::unauthorizedResponse('Unauthorized.', $routeName);
         }
@@ -161,6 +159,11 @@ class Handler extends ExceptionHandler
             {
                 $data['details'] = $this->getExceptionDetails($e);
             }
+
+            $context = $this->getExceptionDetails($e);
+
+            // Debugging Unauthorized exception
+            $app['trace']->info(TraceCode::ERROR_EXCEPTION, ['context' => $context]);
 
             $response = Response::json($data);
         }
@@ -288,7 +291,7 @@ class Handler extends ExceptionHandler
 
     /**
      * isInfo will classify weather a exception should be traced as info/not
-     * @param  Exception $e 
+     * @param  Exception $e
      * @return boolean      true/false
      */
     protected function isInfo(Exception $e)
