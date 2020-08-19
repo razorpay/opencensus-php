@@ -140,6 +140,13 @@ class Service extends Base\Service
 
         $this->traceStorkOperationSuccess('create', ['webhook_id' => $res[self::ID] ?? '', 'webhook' => $this->getStorkWebhookForTracing($res)]);
 
+        //TODO: this will be removed once it's all stork
+        if ((isset($res[self::ID]) === true) and
+            ($this->auth->isProductBanking() === false))
+        {
+            (new Merchant\Webhook\Core)->createWebhookForStork($input, $this->merchant, $res[self::ID], $res[self::CREATED_AT] ?? 0);
+        }
+
         return $this->storkToApiFormat($res);
     }
 
@@ -178,6 +185,13 @@ class Service extends Base\Service
         $res = (new Stork($this->product))->edit($input);
 
         $this->traceStorkOperationSuccess('update', ['webhook_id' => $res[self::ID] ?? '', 'webhook' => $this->getStorkWebhookForTracing($res)]);
+
+        //TODO: this will be removed once it's all stork
+        if ((isset($res[self::ID]) === true) and
+            ($this->auth->isProductBanking() === false))
+        {
+            (new Merchant\Webhook\Core)->updateWebhookForStork($input, $this->merchant, $res[self::ID], $res[self::CREATED_AT] ?? 0);
+        }
 
         $this->traceOperationExit('update', ['webhook_id' => $res[self::ID] ?? '']);
 
@@ -254,6 +268,27 @@ class Service extends Base\Service
         (new Stork($this->product))->delete($webhookId, $this->merchant->getId());
 
         $this->traceStorkOperationSuccess('delete', ['webhook_id' => $webhookId ?? '']);
+
+        // since product banking webhooks are only present on stork.
+        if ($this->auth->isProductBanking() === false)
+        {
+            try
+            {
+                // soft deleting the webhook enity in API.
+                $webhook = $this->repo->webhook->findByIdAndMerchant($webhookId, $this->merchant);
+                $this->repo->deleteOrFail($webhook);
+
+                $this->traceOperation(TraceCode::WEBHOOK_V2_PATH_API_OPERATION_SUCCESS, 'delete');
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e, Trace::CRITICAL,
+                    TraceCode::DELETE_WEBHOOK_FOR_STORK_FAILED,
+                    [
+                        'stork_wk_id' => $webhookId,
+                    ]);
+            }
+        }
 
         $this->traceOperationExit('delete', ['webhook_id' => $webhookId ?? '']);
     }
@@ -480,6 +515,9 @@ class Service extends Base\Service
                 'stork_wk_id' => $webhook[self::ID],
             ]);
 
+        //will be removed later
+        $this->disableWebhookOnApi($webhook[self::ID]);
+
         if (isset($webhook[self::ALERT_EMAIL]) === true)
         {
             // if present email sent to this instead of transaction_report_email of the merchant
@@ -500,6 +538,37 @@ class Service extends Base\Service
         $webhookMail = new WebhookMail($webhook, $merchantEntity, $options);
 
         Mail::queue($webhookMail);
+    }
+
+    protected function disableWebhookOnApi(string $wkID)
+    {
+        try
+        {
+            $wkEntity = $this->repo->webhook->findOrFailPublic($wkID);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::WARNING,
+                TraceCode::DISABLE_WEBHOOK_ON_API_FIND_ENTITY_FAILED,
+                [
+                    'stork_wk_id' => $wkID,
+                ]);
+            return;
+        }
+
+        try
+        {
+            $wkEntity->deactivate();
+            $this->repo->saveOrFail($wkEntity);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::CRITICAL,
+                TraceCode::DISABLE_WEBHOOK_ON_API_FOR_STORK_FAILED,
+                [
+                    'stork_wk_id' => $wkID,
+                ]);
+        }
     }
 
     protected function traceOperationEntry(string $operation,  array $extraParams = [])
