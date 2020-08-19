@@ -1788,7 +1788,12 @@ class Service extends Base\Service
 
         $toTimestamp = $now - Payment\Entity::PAYMENT_TIMEOUT_DEFAULT_OLD;
 
-        $fromTimestamp = Carbon::createFromTimestamp($now, Timezone::IST)->subDays(60)->getTimestamp();
+        $fromTimestamp = $this->repo->payment->fetchOldPaymentsMinCreatedForMethodForTimeout($method);
+
+        if (isset($fromTimestamp) === false)
+        {
+            return;
+        }
 
         $payments = $this->repo->payment->fetchOldCreatedPaymentsForMethodForTimeout($fromTimestamp, $toTimestamp, $limit, $method);
 

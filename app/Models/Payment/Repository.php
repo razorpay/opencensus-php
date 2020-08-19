@@ -314,6 +314,20 @@ class Repository extends Base\Repository
     }
 
     /**
+     * Fetches min created_at for particular method in created state.
+     * @param string $method
+     * @return int
+     */
+    public function fetchOldPaymentsMinCreatedForMethodForTimeout(string $method)
+    {
+        return  $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
+                    ->status(Payment\Status::CREATED)
+                    ->where(Payment\Entity::METHOD, '=', $method)
+                    ->min(Entity::CREATED_AT);
+    }
+
+    /**
      * This function is used to fetch the authorized payments where
      * Merchant auto refund delay is null.
      *
