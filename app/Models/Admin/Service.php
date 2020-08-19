@@ -261,7 +261,7 @@ class Service extends Base\Service
 
         $entities = $this->handleExternalEntity($entity, $input);
 
-        if (empty($entities) === false)
+        if ($entities !== null)
         {
             return $entities;
         }

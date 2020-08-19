@@ -6,7 +6,7 @@ use Mockery;
 use Requests_Response;
 use PHPUnit\Framework\ExpectationFailedException;
 
-use RZP\Services\Stork;
+use RZP\Services\Mock\Stork;
 
 trait TestsWebhookEvents
 {

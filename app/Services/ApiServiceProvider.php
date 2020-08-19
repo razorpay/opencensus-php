@@ -1038,7 +1038,12 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton('stork_service', function ($app)
         {
-            return new Stork();
+            if ($app['config']->get('stork.mock') === true)
+            {
+                return new Mock\Stork;
+            }
+
+            return new Stork;
         });
     }
 

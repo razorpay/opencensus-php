@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\WebhookV2;
 
+use RZP\Constants\Product;
+
 /**
  * Class Stork
  *
@@ -27,7 +29,7 @@ class Stork
     const WK_LIST_WITH_SECRET_ROUTE   = '/twirp/rzp.stork.webhook.v1.WebhookAPI/ListWithSecret';
     const WK_GET_ANALYTICS_ROUTE      = '/twirp/rzp.stork.webhook.v1.WebhookAPI/GetAnalytics';
 
-    public function __construct(string $product)
+    public function __construct(string $product = Product::PRIMARY)
     {
         $this->service = app('stork_service');
         $this->service->init(app('rzp.mode'), $product);

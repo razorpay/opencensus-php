@@ -9,6 +9,7 @@ use Requests_Session;
 use Requests_Response;
 
 use RZP\Error\ErrorCode;
+use RZP\Constants\Product;
 use RZP\Http\Request\Hooks;
 use RZP\Exception\TwirpException;
 use RZP\Exception\ServerErrorException;
@@ -16,23 +17,11 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Stork
 {
-
     // Request timeout in milliseconds for all HTTP requests to stork.
     const REQUEST_TIMEOUT = 350;
     // Request connect timeout in milliseconds for all HTTP requests to stork.
     // Request timeout parameter applies after connection is established.
     const REQUEST_CONNECT_TIMEOUT = 350;
-
-    const WEBHOOK = 'webhook';
-
-    const SERVICE = 'service';
-
-    /**
-     * If actual http requests should be made.
-     * Dual write is mocked in unit tests.
-     * @var boolean
-     */
-    public $mock;
 
     /**
      * Name of owning service for requests to stork.
@@ -62,15 +51,13 @@ class Stork
     }
 
     /**
-     * This method is implements supporting listing requests for admin
-     * dashboard via stork external service.
+     * This method implements method for admin dashboard via stork service.
+     * See \RZP\Constants\Entity's $externalServiceClass.
      *
-     * @param string $entity - Name of entity e.g. webhooks, messages.
-     * @param array  $input  - Request query/input.
-     *
+     * @param  string $entity - Name of entity e.g. webhooks, messages.
+     * @param  array  $input  - Request query/input.
      * @return array
      * @throws BadRequestValidationFailureException
-     * @throws ServerErrorException
      */
     public function fetchMultiple(string $entity, array $input): array
     {
@@ -78,30 +65,29 @@ class Stork
 
         switch ($entity)
         {
-            case self::WEBHOOK:
-                $path ='/twirp/rzp.stork.webhook.v1.WebhookAPI/List';
-                break;
+            case 'webhook':
+                $storkInput = array_only($input, ['owner_id']);
+                $storkInput['limit'] = $input['count'] ?? 10;
+                $storkInput['offset'] = $input['skip'] ?? 0;
+
+                $res = $this->requestAndGetParsedBody('/twirp/rzp.stork.webhook.v1.WebhookAPI/List', $storkInput);
+
+                return $res['webhooks'] ?? [];
+
             default:
-                throw new BadRequestValidationFailureException('Invalid entity name');
+                throw new BadRequestValidationFailureException("Invalid entity name: {$entity}");
         }
-
-        $res = $this->request($path, $input);
-        $res = json_decode($res->body, true) ?: [];
-
-        return $this->formatListResponse($entity, $res);
     }
 
     /**
-     * This method is implements supporting get requests for admin
-     * dashboard via stork external service.
+     * This method implements method for admin dashboard via stork service.
+     * See \RZP\Constants\Entity's $externalServiceClass.
      *
-     * @param string $entity - Name of entity e.g. webhooks, messages.
-     * @param string $id     - Entity id.
-     * @param array  $input  - Request query/input.
-     *
+     * @param  string $entity - Name of entity e.g. webhooks, messages.
+     * @param  string $id     - Entity id.
+     * @param  array  $input  - Request query/input.
      * @return array
      * @throws BadRequestValidationFailureException
-     * @throws ServerErrorException
      */
     public function fetch(string $entity, string $id, array $input): array
     {
@@ -109,51 +95,48 @@ class Stork
 
         switch ($entity)
         {
-            case self::WEBHOOK:
-                $path ='/twirp/rzp.stork.webhook.v1.WebhookAPI/Get';
-                $input['webhook_id'] = $id;
-                $input[self::SERVICE] = $this->service;
-                break;
+            case 'webhook':
+                $storkInput = [];
+                $storkInput['webhook_id'] = $id;
+
+                $res = $this->requestAndGetParsedBody('/twirp/rzp.stork.webhook.v1.WebhookAPI/Get', $storkInput);
+
+                return $res['webhook'] ?? [];
+
             default:
-                throw new BadRequestValidationFailureException('Invalid entity name');
+                throw new BadRequestValidationFailureException("Invalid entity name: {$entity}");
         }
-
-        $res = $this->request($path, $input);
-        $res = json_decode($res->body, true);
-
-        return $this->formatGetResponse($entity, $res);
     }
 
-    public function init(string $mode, string $product = \RZP\Constants\Product::PRIMARY)
+    public function init(string $mode, string $product = Product::PRIMARY)
     {
         $config = config('stork');
 
-        $this->mock = $config['mock'];
+        // E.g. api-live, beta-api-live, rx-test, omega-rx-test etc.
         $this->service = $config['service_prefix'] . $config['auth'][$product][$mode]['user'];
 
-        // Using primary service for auth
-        $defaultAuthService = \RZP\Constants\Product::PRIMARY;
+        // For api i.e. pg and rx both, same user and password is used to authenticate request.
+        $auth = [
+            $config['auth'][Product::PRIMARY][$mode]['user'],
+            $config['auth'][Product::PRIMARY][$mode]['pass']
+        ];
 
         // Options and authentication for requests.
         $options = [
             'timeout'         => self::REQUEST_TIMEOUT,
             'connect_timeout' => self::REQUEST_CONNECT_TIMEOUT,
-            'auth'            => [
-                                    $config['auth'][$defaultAuthService][$mode]['user'],
-                                    $config['auth'][$defaultAuthService][$mode]['pass']
-                                 ],
+            'auth'            => $auth,
             'hooks'           => new Requests_Hooks(),
         ];
 
         // This will add extra hook onto options[hooks] for dns resolution to
         // ipV4 only. Doing this for internal services only.
         $hooks = new Hooks($config['url']);
-
         $hooks->addCurlProperties($options);
-
         // Sets request timeout in milliseconds via curl options.
         $options['hooks']->register('curl.before_send', [$this, 'setCurlOptions']);
 
+        // Instantiate a request instance.
         $this->request = new Requests_Session(
             $config['url'],
             // Common headers for requests.
@@ -166,21 +149,50 @@ class Stork
         );
     }
 
+    /**
+     * @param object $curl
+     */
     public function setCurlOptions($curl)
     {
         curl_setopt($curl, CURLOPT_TIMEOUT_MS, self::REQUEST_TIMEOUT);
-
         curl_setopt($curl, CURLOPT_CONNECTTIMEOUT_MS, self::REQUEST_CONNECT_TIMEOUT);
     }
 
-    public function request(string $path, array $payload): Requests_Response
+    /**
+     * @param  string $path
+     * @param  array  $payload
+     * @return array
+     * @throws ServerErrorException
+     * @throws TwirpException
+     */
+    public function requestAndGetParsedBody(string $path, array $payload): array
     {
-        // Just for tests!
-        if ($this->mock === true)
+        $res = $this->request($path, $payload);
+
+        // Returns parsed body..
+        $parsedBody = json_decode($res->body, true);
+        if (json_last_error() === JSON_ERROR_NONE)
         {
-            return new Requests_Response;
+            return $parsedBody;
         }
 
+        // Else throws exception.
+        throw new ServerErrorException(
+            'Received invalid response body',
+            ErrorCode::SERVER_ERROR_STORK_FAILURE,
+            ['path' => $path, 'body' => $res->body]
+        );
+    }
+
+    /**
+     * @param  string $path
+     * @param  array  $payload
+     * @return Requests_Response
+     * @throws ServerErrorException
+     * @throws TwirpException
+     */
+    public function request(string $path, array $payload): Requests_Response
+    {
         $res = null;
         $exception = null;
         $maxAttempts = 2;
@@ -224,43 +236,15 @@ class Stork
         return $res;
     }
 
+    /**
+     * Publishes payload to a sns topic which stork has subscribed to. Note that
+     * stork expects payload to be a cache invalidation request and nothing else.
+     *
+     * @param  array  $payload
+     * @return void
+     */
     public function publishOnSns(array $payload)
     {
         $this->sns->publish(json_encode($payload), 'stork');
-    }
-
-    protected function formatListResponse(string $entity, array $res): array
-    {
-        switch ($entity)
-        {
-            case self::WEBHOOK:
-                $items = array_map(function ($v) { return $this->formatWebhook($v); }, $res['webhooks'] ?? []);
-                break;
-            default:
-                $items = [];
-                break;
-        }
-
-        return [
-            'entity' => 'collection',
-            'count'  => count($items),
-            'items'  => $items,
-        ];
-    }
-
-    protected function formatGetResponse(string $entity, array $res): array
-    {
-        switch ($entity)
-        {
-            case self::WEBHOOK:
-                return $this->formatWebhook($res['webhook']);
-            default:
-                return [];
-        }
-    }
-
-    public function formatWebhook(array $res): array
-    {
-        return array_except($res, ['secret']);
     }
 }

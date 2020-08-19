@@ -6,7 +6,7 @@ trait WebhookV2Trait
 {
     protected function mockStorkService()
     {
-        $this->storkMock = \Mockery::mock('RZP\Services\Stork')->makePartial();
+        $this->storkMock = \Mockery::mock('RZP\Services\Mock\Stork')->makePartial();
 
         $this->app->instance('stork_service', $this->storkMock);
     }
