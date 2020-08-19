@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Vpa\Handle;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
+use RZP\Models\P2p\Client;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
 
 /**
@@ -25,10 +26,20 @@ class Core extends Base\Core
 
     public function update(Entity $handle, array $input): Entity
     {
-        $handle->edit($input);
+        return $this->repo->transaction(function () use ($handle, $input)
+        {
+            $handle->edit($input);
 
-        $this->repo->saveOrFail($handle);
+            $this->repo->saveOrFail($handle);
 
-        return $handle;
+            if (isset($input[Entity::CLIENT]) === true)
+            {
+                $input[Entity::CLIENT][Client\Entity::HANDLE] = $handle->getCode();
+
+                $client = (new Client\Core())->createOrUpdate($handle, $input[Entity::CLIENT]);
+            }
+
+            return $handle;
+        });
     }
 }

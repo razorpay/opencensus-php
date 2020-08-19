@@ -112,4 +112,9 @@ trait DbEntityFetchTrait
         return $this->getDbEntities(Entity::P2P_TRANSACTION, $where, $this->dbEntityFetchMode);
     }
 
+    /******************************* Client ****************************************/
+    public function getDbLastClient(): P2p\Client\Entity
+    {
+        return $this->getDbLastEntity(Entity::P2P_CLIENT, $this->dbEntityFetchMode);
+    }
 }

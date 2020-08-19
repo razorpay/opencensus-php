@@ -61,10 +61,7 @@ class Entity extends Base\Entity
     protected $casts = [
         self::CONFIG        => 'array',
         self::GATEWAY_DATA  => 'array',
-    ];
-
-    protected $hidden = [
-        self::SECRETS,
+        self::SECRETS       => 'array',
     ];
 
     protected $defaults = [
@@ -90,13 +87,24 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::CLIENT_TYPE);
     }
 
+    /**
+     * @return Config
+     */
     public function getConfig()
     {
         return $this->getAttribute(self::CONFIG);
     }
 
     /**
-     * @return $this
+     * @return Secrets
+     */
+    public function getSecrets()
+    {
+        return $this->getAttribute(self::SECRETS);
+    }
+
+    /**
+     * @return GatewayData
      */
     public function getGatewayData()
     {
@@ -150,23 +158,32 @@ class Entity extends Base\Entity
     {
         $client = $this->toArray();
 
-        $client[self::SECRETS] = $this->getSecretsAttribute();
+        $client[self::SECRETS] = $this->getSecretsAttribute()->toArrayDecrypted();
 
         return $client;
     }
 
     /********** Protected ****************/
 
+    protected function getGatewayDataAttribute()
+    {
+        $gatewayData = $this->attributes[self::GATEWAY_DATA];
+
+        return GatewayData::fromJson($gatewayData);
+    }
+
+    protected function getConfigAttribute()
+    {
+        $config = $this->attributes[self::CONFIG];
+
+        return Config::fromJson($config);
+    }
+
     protected function getSecretsAttribute()
     {
         $secrets = $this->attributes[self::SECRETS];
 
-        if ($secrets === null)
-        {
-            return $secrets;
-        }
-
-        return Crypt::decrypt($secrets);
+        return Secrets::fromJson($secrets);
     }
 
     protected function setSecretsAttribute($data)
@@ -176,6 +193,8 @@ class Entity extends Base\Entity
             $data = [];
         }
 
-        $this->attributes[self::SECRETS] = Crypt::encrypt($data);
+        $secrets = (new Secrets($data))->encrypt();
+
+        $this->attributes[self::SECRETS] = $secrets->toJson();
     }
 }

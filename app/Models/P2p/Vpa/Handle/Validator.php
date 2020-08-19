@@ -44,6 +44,7 @@ class Validator extends Base\Validator
             Entity::ACQUIRER     => 'sometimes',
             Entity::ACTIVE       => 'sometimes',
             Entity::BANK         => 'sometimes',
+            Entity::CLIENT       => 'sometimes',
         ]);
 
         return $rules;
@@ -77,6 +78,7 @@ class Validator extends Base\Validator
             Entity::ACQUIRER     => 'sometimes',
             Entity::BANK         => 'sometimes',
             Entity::ACTIVE       => 'sometimes',
+            Entity::CLIENT       => 'sometimes',
         ]);
 
         return $rules;

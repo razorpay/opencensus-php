@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\P2p;
 
+use RZP\Models\P2p\Client;
+use RZP\Models\P2p\Vpa\Handle;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\P2p\Service\Base\Constants;
@@ -151,5 +153,94 @@ class AdminTest extends TestCase
         $bank->refresh();
 
         $this->assertSame('RSRT', $bank->getIfsc());
+    }
+
+    public function testAdminP2pHandleUpdateWithClient()
+    {
+        $handle = $this->createHandle();
+
+        $client = $this->getClientInput($handle['code']);
+
+        // Updating the handle, Creating the client
+        $updateHandle = [
+            Handle\Entity::CLIENT => $client
+        ];
+
+        $handle = $this->updateHandle($handle['code'], $updateHandle);
+
+        $client = $this->getDbLastEntity('p2p_client');
+        $clientCount = $this->getDbEntities('p2p_client')->count();
+
+        // Assert that the new client is created
+        $this->assertArraySubset($this->getClientInput($handle['code']), $client->toArrayWithSecrets());
+
+        // Now update the client
+        $clientInput = $this->getClientInput($handle['code'], [
+            Client\Entity::GATEWAY_DATA  => [
+                'updated_key'  => 'updated_value',
+            ],
+        ]);
+
+        $updateHandle = [
+            Handle\Entity::CLIENT => $clientInput
+        ];
+
+        $this->updateHandle($handle['code'], $updateHandle);
+
+        $client = $this->getDbLastEntity('p2p_client');
+
+        $this->assertArraySubset($clientInput, $client->toArrayWithSecrets());
+    }
+
+    protected function createHandle($attributes = [])
+    {
+        $handle = [
+            'code'          => 'random',
+            'bank'          => 'UTIB',
+            'active'        => 1,
+            'merchant_id'   => Account::TEST_ACCOUNT,
+            'acquirer'      => Constants::P2P_UPI_SHARP,
+        ];
+
+        $request = [
+            'url'       => '/p2p/handles',
+            'method'    => 'POST',
+            'content'   => array_merge($handle, $attributes),
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
+    protected function updateHandle($code, $attributes)
+    {
+        $request = [
+            'url'       => '/p2p/handles/' . $code,
+            'method'    => 'put',
+            'content'   => $attributes,
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
+    protected function getClientInput($code, $attributes = [])
+    {
+        $client = [
+            Client\Entity::SECRETS      => [ 'private_key' => 'data',],
+            Client\Entity::CONFIG       => [ 'vpa_suffix' => 'suffix',],
+            Client\Entity::GATEWAY_DATA => [ 'some' => 'data'],
+            Client\Entity::HANDLE       => $code,
+            Client\Entity::CLIENT_TYPE  => Client\Type::MERCHANT,
+            Client\Entity::CLIENT_ID    => Account::SHARED_ACCOUNT,
+        ];
+
+        return array_merge($client, $attributes);
     }
 }

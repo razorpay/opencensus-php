@@ -18,6 +18,7 @@ class Entity extends Base\Entity
     /****************** Input Keys ***************/
     const BANK_NAME    = 'bank_name';
     const TXN_PREFIX   = 'txn_prefix';
+    const CLIENT       = 'client';
 
     /************** Entity Properties ************/
 
@@ -228,6 +229,6 @@ class Entity extends Base\Entity
                Client\Entity::HANDLE        => $this->getCode(),
                Client\Entity::CLIENT_TYPE   => Client\Type::MERCHANT,
                Client\Entity::CLIENT_ID     => $clientId
-            ]);
+            ])->first();
     }
 }
