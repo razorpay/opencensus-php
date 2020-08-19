@@ -76,6 +76,7 @@ class Gateway
     const NETBANKING_KVB         = 'netbanking_kvb';
     const NETBANKING_SVC         = 'netbanking_svc';
     const NETBANKING_JSB         = 'netbanking_jsb';
+    const NETBANKING_IOB         = 'netbanking_iob';
     const NACH_CITI              = 'nach_citi';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
@@ -778,6 +779,7 @@ class Gateway
         Payment\Gateway::PAYLATER,
         Payment\Gateway::PAYLATER_ICICI,
         Payment\Gateway::UPI_JUSPAY,
+        Payment\Gateway::NETBANKING_IOB,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
@@ -808,6 +810,7 @@ class Gateway
         Payment\Gateway::NETBANKING_SVC         => 1578479400,
         Payment\Gateway::PAYLATER_ICICI         => 1593685800,
         Payment\Gateway::NETBANKING_IDBI        => 1578479400,
+        Payment\Gateway::NETBANKING_IOB         => 1578479400,
     ];
 
     public static $channels = [
@@ -911,6 +914,7 @@ class Gateway
             self::NETBANKING_KVB,
             self::NETBANKING_SVC,
             self::NETBANKING_JSB,
+            self::NETBANKING_IOB,
         ],
 
         //
@@ -1794,6 +1798,7 @@ class Gateway
         IFSC::SBMY         => Gateway::NETBANKING_SBI,
         IFSC::STBP         => Gateway::NETBANKING_SBI,
         IFSC::SBTR         => Gateway::NETBANKING_SBI,
+        IFSC::IOBA         => Gateway::NETBANKING_IOB,
     ];
 
     /**
@@ -1851,6 +1856,7 @@ class Gateway
         IFSC::KVBL => Gateway::NETBANKING_KVB,
         IFSC::SCBL => Gateway::NETBANKING_SCB,
         IFSC::SVCB => Gateway::NETBANKING_SVC,
+        IFSC::IOBA => Gateway::NETBANKING_IOB,
     ];
 
     /**
@@ -2746,6 +2752,7 @@ class Gateway
         $gateways = [
             self::NETBANKING_SVC,
             self::NETBANKING_IDBI,
+            self::NETBANKING_IOB,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -2767,6 +2774,7 @@ class Gateway
             self::NETBANKING_YESB,
             self::NETBANKING_SIB,
             self::NETBANKING_IDBI,
+            self::NETBANKING_IOB,
         ];
 
         return (in_array($gateway, $gateways, true));

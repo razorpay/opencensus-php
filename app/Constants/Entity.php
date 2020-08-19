@@ -257,6 +257,7 @@ class Entity
     const NETBANKING_KVB         = 'netbanking_kvb';
     const NETBANKING_SVC         = 'netbanking_svc';
     const NETBANKING_JSB         = 'netbanking_jsb';
+    const NETBANKING_IOB         = 'netbanking_iob';
     const WALLET_PHONEPE         = 'wallet_phonepe';
     const WALLET_PHONEPESWITCH   = 'wallet_phonepeswitch';
     const NETBANKING_CSB         = 'netbanking_csb';

@@ -36,6 +36,7 @@ class Base extends BaseProcessor
         Constants::JSB,
         Constants::SVC,
         Constants::PNB,
+        Constants::IOB,
     ];
 
     public function fetchEntities(): PublicCollection
