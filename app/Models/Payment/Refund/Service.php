@@ -125,7 +125,9 @@ class Service extends Base\Service
 
     public function create(array $input)
     {
-        (new Validator)->validateInput('direct', $input);
+        $inputForValidation = [Entity::PAYMENT_ID => $input[Entity::PAYMENT_ID] ?? null];
+
+        (new Validator)->validateInput('direct', $inputForValidation);
 
         $paymentId = $input[Entity::PAYMENT_ID];
 

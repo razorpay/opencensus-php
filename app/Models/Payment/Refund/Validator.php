@@ -12,6 +12,7 @@ use RZP\Models\Base\PublicCollection;
 
 class Validator extends Base\Validator
 {
+    // Refund request related validations should be added here and not in $directRules.
     protected static $createRules = [
         'amount'                => 'sometimes|integer',
         'notes'                 => 'sometimes|notes',
@@ -33,12 +34,12 @@ class Validator extends Base\Validator
         Entity::NOTES => 'sometimes|notes',
     ];
 
+    //
+    // Validating only payment_id here. Rest of the validations will be handled by $createRules
+    // No other validation should be added here.
+    //
     protected static $directRules = [
-        'payment_id'    => 'required',
-        'notes'         => 'sometimes|notes',
-        'amount'        => 'sometimes|integer',
-        'receipt'       => 'sometimes|string|max:40',
-        'speed'         => 'sometimes|filled|in:optimum,normal',
+        'payment_id'    => 'required|public_id',
     ];
 
     protected static $minAmountCheckRules = [
