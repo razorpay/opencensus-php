@@ -10,6 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer\Token;
 use RZP\Gateway\Enach\Citi\Status;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\Processor\Processor;
@@ -45,32 +46,47 @@ abstract class Base extends BaseProcessor
         // 'remark'           : Corresponds to Token\Entity::RECURRING_FAILURE_REASON
         // 'gateway_token'    : Corresponds to Token\Entity::GATEWAY_TOKEN
         //
-
-        $parsedData = $this->getDataFromRow($entry);
-
-        $payment = $this->fetchPaymentEntity($parsedData);
-
-        if($parsedData[self::TOKEN_STATUS] === Token\RecurringStatus::INITIATED)
+        try
         {
-            return;
+            $parsedData = $this->getDataFromRow($entry);
+
+            $payment = $this->fetchPaymentEntity($parsedData);
+
+            if ($parsedData[self::TOKEN_STATUS] === Token\RecurringStatus::INITIATED)
+            {
+                return;
+            }
+
+            $token = $payment->getGlobalOrLocalTokenEntity();
+
+            $oldRecurringStatus = $token->getRecurringStatus();
+
+            $this->paymentProcessor = (new Payment\Processor\Processor($payment->merchant));
+
+            $this->repo->transaction(function () use ($payment, $token, $parsedData) {
+                $this->updateTokenEntity($token, $parsedData);
+
+                $this->updateTokenRegistrationAndUpdatePayment($payment, $parsedData);
+            });
+
+            $this->paymentProcessor->eventTokenStatus($token, $oldRecurringStatus);
+
+            $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
         }
-
-        $token = $payment->getGlobalOrLocalTokenEntity();
-
-        $oldRecurringStatus = $token->getRecurringStatus();
-
-        $this->paymentProcessor = (new Payment\Processor\Processor($payment->merchant));
-
-        $this->repo->transaction(function () use ($payment, $token, $parsedData)
+        catch (\Throwable $ex)
         {
-            $this->updateTokenEntity($token, $parsedData);
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::NACH_REGISTER_RESPONSE_ERROR,
+                [
+                    'payment_id' => $entry[Batch\Header::CITI_NACH_REGISTER_MERCHANT_UNIQUE_REFERENCE_NO],
+                    'mode'       => $this->mode,
+                ]
+            );
 
-            $this->updateTokenRegistrationAndUpdatePayment($payment, $parsedData);
-        });
-
-        $this->paymentProcessor->eventTokenStatus($token, $oldRecurringStatus);
-
-        $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
+            throw $ex;
+        }
     }
 
     abstract protected function getDataFromRow(array $entry): array;

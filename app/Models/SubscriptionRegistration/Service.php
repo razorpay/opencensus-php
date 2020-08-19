@@ -536,6 +536,13 @@ class Service extends Base\Service
 
     protected function createPaymentForPaperMandate(array $input)
     {
+        $this->trace->info(TraceCode::NACH_REGISTER_PAYMENT_CREATION,
+            [
+                'order_id'   => $input[Entity::ORDER_ID] ?? '',
+                'invoice_id' => $input[Entity::AUTH_LINK_ID] ?? '',
+                'mode'       => $this->mode
+            ]);
+
         $paymentInput = [];
 
         $orderId = null;
@@ -553,35 +560,52 @@ class Service extends Base\Service
             $orderId = Order\Entity::getSignedId($invoice->getOrderId());
         }
 
-        $subscriptionRegistration = $this->getSubscriptionRegistrationForOrder($orderId);
+        try
+        {
+            $subscriptionRegistration = $this->getSubscriptionRegistrationForOrder($orderId);
 
-        $paperMandate = $subscriptionRegistration->paperMandate;
+            $paperMandate = $subscriptionRegistration->paperMandate;
 
-        $customer = $paperMandate->customer;
+            $customer = $paperMandate->customer;
 
-        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
+            $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
 
-        $paymentInput[Payment\Entity::AMOUNT]      = $order->getAmount();
+            $paymentInput[Payment\Entity::AMOUNT]      = $order->getAmount();
 
-        $paymentInput[Payment\Entity::CURRENCY]    = $order->getCurrency();
+            $paymentInput[Payment\Entity::CURRENCY]    = $order->getCurrency();
 
-        $paymentInput[Payment\Entity::METHOD]      = $order->getMethod();
+            $paymentInput[Payment\Entity::METHOD]      = $order->getMethod();
 
-        $paymentInput[Payment\Entity::RECURRING]   = true;
+            $paymentInput[Payment\Entity::RECURRING]   = true;
 
-        $paymentInput[Payment\Entity::ORDER_ID]    = $orderId;
+            $paymentInput[Payment\Entity::ORDER_ID]    = $orderId;
 
-        $paymentInput[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
+            $paymentInput[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
 
-        $paymentInput[Payment\Entity::CONTACT]     = $customer->getContact();
+            $paymentInput[Payment\Entity::CONTACT]     = $customer->getContact();
 
-        $paymentInput[Payment\Entity::EMAIL]       = $customer->getEmail();
+            $paymentInput[Payment\Entity::EMAIL]       = $customer->getEmail();
 
-        $paymentInput[Payment\Entity::AUTH_TYPE]   = $subscriptionRegistration->getAuthType();
+            $paymentInput[Payment\Entity::AUTH_TYPE]   = $subscriptionRegistration->getAuthType();
 
-        $paymentService = new Payment\Service();
+            $paymentService = new Payment\Service();
 
-        return $paymentService->process($paymentInput);
+            $payment = $paymentService->process($paymentInput);
+        }
+        catch (Exception\BadRequestValidationFailureException | \Throwable $ex) {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::NACH_REGISTER_PAYMENT_CREATION_ERROR,
+                [
+                    'order_id' => $orderId,
+                    'mode'     => $this->mode
+                ]
+            );
+            throw $ex;
+        }
+
+        return $payment;
     }
 
     public function paperMandateValidate(array $input): array

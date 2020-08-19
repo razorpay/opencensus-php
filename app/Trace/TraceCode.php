@@ -688,6 +688,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NACH_FUNCTION_NOT_IMPLEMENTED                         = 'NACH_FUNCTION_NOT_IMPLEMENTED';
 
     const NACH_REGISTER_REQUEST                                 = 'NACH_REGISTER_REQUEST';
+    const NACH_REGISTER_RESPONSE_ERROR                          = 'NACH_REGISTER_RESPONSE_ERROR';
+    const NACH_REGISTER_AUTHENTICATION                          = 'NACH_REGISTER_AUTHENTICATION';
+    const NACH_REGISTER_PAYMENT_CREATION                        = 'NACH_REGISTER_PAYMENT_CREATION';
+    const NACH_REGISTER_PAYMENT_CREATION_ERROR                  = 'NACH_REGISTER_PAYMENT_CREATION_ERROR';
     const NACH_REGISTER_REQUEST_ROW                             = 'NACH_REGISTER_REQUEST_ROW';
     const NACH_REGISTER_ROW_FAILED                              = 'NACH_REGISTER_ROW_FAILED';
     const NACH_RECON_ROW_FAILED                                 = 'NACH_RECON_ROW_FAILED';
