@@ -215,7 +215,6 @@ class Entity extends Base\PublicEntity
     protected $fieldsToBeValidated = [
         self::UTILITY_CODE,
         self::AMOUNT_IN_NUMBER,
-        self::SPONSOR_CODE,
         self::FORM_CHECKSUM,
         self::SIGNATURE_PRESENT_PRIMARY,
         self::SIGNATURE_PRESENT_SECONDARY,
