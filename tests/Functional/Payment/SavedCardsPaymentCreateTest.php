@@ -276,6 +276,10 @@ class SavedCardsPaymentCreateTest extends TestCase
             'HTTP_X_RAZORPAY_SESSIONID' => $content['session_id'],
         ];
 
+        $store = \Cache::store();
+
+        \Cache::shouldReceive('store')->andReturn($store);
+
         \Cache::shouldReceive('get')
                 ->once()
                 ->with('temp_session:' . $content['session_id'])

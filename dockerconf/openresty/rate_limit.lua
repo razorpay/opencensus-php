@@ -3,8 +3,8 @@
 -- This is the exposed module.
 local M = {}
 
-local redis_lib = require "resty.redis"
 local rm_lib = require 'routes_meta'
+local redis_cluster = require "resty-redis-cluster"
 
 -- See get_redis_script_sha.
 local redis_script_sha
@@ -13,29 +13,24 @@ local redis_key_prefix = "throttle:t:"
 local leaky_bucket_script = require("leaky_bucket")()
 -- The environment variables below are made available via nginx's env
 -- directive in http block.
+
 local redis_conf = {
-    timeout_ms  = os.getenv("RESTY_REDIS_TIMEOUT_MS") or 100,
-    host        = os.getenv("RESTY_REDIS_HOST") or "127.0.0.1",
-    port        = os.getenv("RESTY_REDIS_PORT") or 6379,
-    password    = os.getenv("RESTY_REDIS_PASSWORD") or nil,
-    max_idle_ms = os.getenv("RESTY_REDIS_MAX_IDLE_MS") or 10000,
-    pool_size   = os.getenv("RESTY_REDIS_POOL_SIZE") or 100,
+    name = "redis-cluster",
+    serv_list = {
+       { ip =  os.getenv("RESTY_REDIS_CLUSTER_HOST") or "127.0.0.1",
+         port = os.getenv("RESTY_REDIS_CLUSTER_PORT") or 6379
+       }
+     },
+    connection_timeout  = os.getenv("RESTY_REDIS_TIMEOUT_MS") or 100,
+    keepalive_timeout = os.getenv("RESTY_REDIS_MAX_IDLE_MS") or 10000,
+    keepalive_cons   = os.getenv("RESTY_REDIS_POOL_SIZE") or 100,
+    max_redirection = 5,
+    auth = os.getenv("RESTY_REDIS_CLUSTER_PASSWORD") or nil
 }
 
 -- get_redis_conn gets a new connection from redis pool of connections.
 local function get_redis_conn()
-    local redis = redis_lib:new()
-    redis:set_timeout(redis_conf.timeout_ms)
-    local ok, err = redis:connect(redis_conf.host, redis_conf.port)
-    if err then
-        return nil, "failed to connect to redis host: " .. err
-    end
-    if redis_conf.password ~= nil then
-        local res, err = redis:auth(redis_conf.password)
-        if err then
-            return nil, "failed to authenticate to redis host: " .. err
-        end
-    end
+    local redis = redis_cluster:new(redis_conf)
     return redis, err
 end
 
@@ -218,12 +213,6 @@ local function rate_limit(redis, rate_limit_args, now)
     }
 end
 
--- release_redis_conn releases redis connection. Hehe.
-local function release_redis_conn(redis)
-    local ok, err = redis:set_keepalive(redis_conf.max_idle_ms, redis_conf.pool_size)
-    return err
-end
-
 -- rate_limit_ngx is the exposed method via module and it gets nginx context
 -- and either terminates the request with 429 or does nothing and lets it proxy
 -- pass to upstream.
@@ -254,11 +243,6 @@ function M.rate_limit_ngx(ngx)
     if err then
         ngx.log(ngx.ERR, "failed to rate_limit: ", err)
         return
-    end
-
-    err = release_redis_conn(redis)
-    if err then
-        ngx.log(ngx.ERR, "failed to release redis conn: ", err)
     end
 
     if rate_limit_res.allowed ~= 1 then
