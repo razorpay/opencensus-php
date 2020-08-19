@@ -107,6 +107,13 @@ class PaperMandateTest extends TestCase
         $this->assertEquals(PaperMandate\Status::CREATED, $paperMandate->getStatus());
     }
 
+    public function testCreatePaperMandateSpecialCharsInName()
+    {
+        $this->mockGenerateNACH();
+
+        $this->startTest();
+    }
+
     protected function mockExtractNACHWithWrongAccountNumber($merchant)
     {
         $this->testData['hyperVergeExtractNACHOutput']['account_number'] = '000';

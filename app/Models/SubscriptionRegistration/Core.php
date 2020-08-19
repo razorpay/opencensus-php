@@ -300,6 +300,8 @@ class Core extends Base\Core
         {
             $this->setDefaultValuesForBank($bankInput, $customer);
 
+            $this->parseBankAccountDetails($bankInput);
+
             $bankAccountCore = new BankAccount\Core();
 
             $bankAccount = $bankAccountCore->addOrUpdateBankAccountForCustomer($bankInput, $customer);
@@ -357,6 +359,8 @@ class Core extends Base\Core
         }
 
         $paperMandateInput[PaperMandate\Entity::BANK_ACCOUNT] = array_pull($subrInput, Entity::BANK_ACCOUNT);
+
+        $this->parseBankAccountDetails($paperMandateInput[PaperMandate\Entity::BANK_ACCOUNT]);
 
         if (array_key_exists(BankAccount\Entity::BANK_NAME, $paperMandateInput[PaperMandate\Entity::BANK_ACCOUNT]))
         {
@@ -951,6 +955,27 @@ class Core extends Base\Core
         if (array_key_exists(BankAccount\Entity::BENEFICIARY_MOBILE, $bankInput) == false)
         {
             $bankInput[BankAccount\Entity::BENEFICIARY_MOBILE] = $customer->getContact();
+        }
+    }
+
+    /**
+     * @param array $bankInput
+     * Replaces special characters with space
+     * Replaces muiltiple spaces with one
+     */
+    public function parseBankAccountDetails(array & $bankInput): void
+    {
+        if (array_key_exists(BankAccount\Entity::BENEFICIARY_NAME, $bankInput) === true)
+        {
+            $beneficiaryName = $bankInput[BankAccount\Entity::BENEFICIARY_NAME];
+
+            //replace special chars with spaces
+            $beneficiaryName = preg_replace('/[^A-Za-z0-9 ]/', ' ', $beneficiaryName);
+
+            // remove multiple spaces
+            $beneficiaryName = preg_replace('/ +/', ' ', $beneficiaryName);
+
+            $bankInput[BankAccount\Entity::BENEFICIARY_NAME] = $beneficiaryName;
         }
     }
 }

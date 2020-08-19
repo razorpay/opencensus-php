@@ -365,4 +365,48 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testCreatePaperMandateSpecialCharsInName' => [
+        'request' => [
+            'content' => [
+                'amount' => 0,
+                'currency' => 'INR',
+                'method' => 'nach',
+                'receipt' => 'rcptid #1',
+                'payment_capture' => 1,
+                'customer_id' => 'cust_100000customer',
+                'token' =>
+                    [
+                        'auth_type' => 'physical',
+                        'first_payment_amount' => '5000',
+                        'max_amount' => '500000',
+                        'expire_at' => '2047483647',
+                        'nach' => [
+                            'create_form' => true,
+                            'form_reference1' => 'ttt',
+                            'form_reference2' => 'qqq',
+                        ],
+                        'bank_account' =>
+                            [
+                                'bank_name' => 'HDFC',
+                                'account_number' => '1111111111111',
+                                'ifsc_code' => 'HDFC0001233',
+                                'beneficiary_name' => 'Gaurav.Kumar@ something  else',
+                                'beneficiary_mobile' => '9483159238'
+                            ]
+                    ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'token'          =>   [
+                    'bank_account' => [
+                        'name'     => 'Gaurav Kumar something else',
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];
