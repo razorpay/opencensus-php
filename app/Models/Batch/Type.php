@@ -116,7 +116,11 @@ class Type
 
     const BANKING_ACCOUNT_ACTIVATION_COMMENTS  = 'banking_account_activation_comments';
 
+
+    const INTERNAL_INSTRUMENT_REQUEST = 'internal_instrument_request';
+
     const PAYOUT_APPROVAL = 'payout_approval';
+
 
     public static $disabledTypes = [
         //
@@ -157,6 +161,7 @@ class Type
         self::BANKING_ACCOUNT_ACTIVATION_COMMENTS,
         self::NACH_MIGRATION,
         self::MERCHANT_ACTIVATION,
+        self::INTERNAL_INSTRUMENT_REQUEST,
     ];
 
     /**
@@ -349,6 +354,7 @@ class Type
         self::NACH_MIGRATION,
         self::MPAN,
         self::MERCHANT_ACTIVATION,
+        self::INTERNAL_INSTRUMENT_REQUEST,
         self::ADJUSTMENT,
     ];
 

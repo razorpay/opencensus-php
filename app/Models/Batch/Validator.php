@@ -557,6 +557,13 @@ class Validator extends Base\Validator
         Entity::FILE_ID => 'required_without:file|public_id',
     ];
 
+    protected static $internalInstrumentRequestCreateRules = [
+        Entity::TYPE        => 'required|in:internal_instrument_request',
+        Entity::FILE        => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::CONFIG      => 'filled|array',
+    ];
+
+
     public function validateConfig($attribute, $value)
     {
         (new Validator())->validateInput('entityUpdateActionConfig', $value);

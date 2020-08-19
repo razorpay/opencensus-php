@@ -925,6 +925,10 @@ class Header
     const COMMENT                   = 'Comment';
     const NEW_STATUS                = 'New Status';
 
+
+    // Internal Instrument Request
+    const INTERNAL_INSTRUMENT_REQUEST_ID = 'internal_instrument_request_id';
+
     // Payout Approval
     const APPROVE_REJECT_PAYOUT     = 'Approve (A) / Reject (R) payout';
     const P_A_AMOUNT                = 'amount(Rupees) (do not edit)';
@@ -942,6 +946,7 @@ class Header
     const P_A_FEES                  = 'fees (tax inclusive) (do not edit)';
     const P_A_TAX                   = 'tax (do not edit)';
     const P_A_SCHEDULED_AT          = 'scheduled_at (do not edit)';
+
 
     /**
      * Input and output file headers
@@ -2947,6 +2952,13 @@ class Header
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ]
+        ],
+
+
+        Type::INTERNAL_INSTRUMENT_REQUEST => [
+            self::INPUT => [
+                self::INTERNAL_INSTRUMENT_REQUEST_ID,
+            ],
         ],
 
         'payout_approval' => [
