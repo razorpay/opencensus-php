@@ -10,6 +10,7 @@ use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Account;
 use RZP\Gateway\Upi\Icici\Fields;
+use RZP\Models\UpiTransferRequest;
 
 class Service extends Base\Service
 {
@@ -44,9 +45,13 @@ class Service extends Base\Service
 
             $gatewayResponse = $gatewayClass->preProcessServerCallback($input, false, true);
 
+            $requestPayload = $gatewayResponse;
+
             $terminal = $this->terminal ?: $this->getTerminalFromGatewayResponse($gatewayResponse, $gateway, $gatewayClass);
 
             $gatewayResponse = $gatewayClass->getUpiTransferData($gatewayResponse);
+
+            (new UpiTransferRequest\Service())->create($gatewayResponse['upi_transfer_data'], $requestPayload);
 
             $valid = $this->core->processPayment($gatewayResponse, $terminal);
         }

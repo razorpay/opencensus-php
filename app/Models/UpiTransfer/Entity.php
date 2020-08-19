@@ -257,6 +257,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY);
     }
 
+    public function getUnexpectedReason()
+    {
+        return $this->getAttribute(self::UNEXPECTED_REASON);
+    }
+
     public function getPii()
     {
         return $this->pii;

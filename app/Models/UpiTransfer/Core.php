@@ -10,6 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\VirtualAccount;
 use RZP\Exception\LogicException;
+use RZP\Models\UpiTransferRequest;
 use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
@@ -41,6 +42,8 @@ class Core extends Base\Core
 
         $paymentSuccess = false;
 
+        $errorMessage = null;
+
         try
         {
             $upiTransfer = (new Entity)->build($upiTransferInput);
@@ -63,6 +66,8 @@ class Core extends Base\Core
         {
             $paymentSuccess = false;
 
+            $errorMessage = $e->getMessage();
+
             $this->alertException($e, $upiTransferInput);
 
             return false;
@@ -74,7 +79,11 @@ class Core extends Base\Core
             if ($upiTransfer !== null)
             {
                 $isExpected = $upiTransfer->isExpected();
+
+                $errorMessage = $errorMessage ?? $upiTransfer->getUnexpectedReason();
             }
+
+            $this->updateUpiTransferRequest($upiTransferInput, $paymentSuccess, $errorMessage);
 
             (new VirtualAccount\Metric())->pushPaymentMetrics(Constants\Entity::UPI_TRANSFER, $isExpected, $paymentSuccess);
 
@@ -170,5 +179,37 @@ class Core extends Base\Core
         }
 
         return $array;
+    }
+
+    protected function updateUpiTransferRequest(array $upiTransferInput, bool $isCreated, string $errorMessage = null)
+    {
+        $data = [
+            UpiTransferRequest\Entity::IS_CREATED       => $isCreated,
+            UpiTransferRequest\Entity::ERROR_MESSAGE    => $errorMessage,
+        ];
+
+        $gateway = $upiTransferInput[Entity::GATEWAY];
+        $npciReferenceId = $upiTransferInput[Entity::NPCI_REFERENCE_ID];
+
+        try
+        {
+            $this->repo
+                 ->upi_transfer_request
+                 ->updateByGatewayAndNpciRefId($gateway, $npciReferenceId, $data);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::UPI_TRANSFER_REQUEST_ADD_ERROR_MSG_FAILED,
+                [
+                    'gateway'           => $gateway,
+                    'npci_reference_id' => $npciReferenceId,
+                    'is_created'        => $isCreated,
+                    'error_message'     => $errorMessage,
+                ]
+            );
+        }
     }
 }

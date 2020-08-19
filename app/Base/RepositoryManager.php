@@ -92,6 +92,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Merchant\Balance\LowBalanceConfig\Repository $low_balance_config
  * @property Models\PaperMandate\PaperMandateUpload\Repository   $paper_mandate_upload
  * @property Models\PaperMandate\Repository                      $paper_mandate
+ * @property Models\UpiTransferRequest\Repository                $upi_transfer_request
  * @property Models\VirtualAccountTpv\Repository                 $virtual_account_tpv
  * @property Models\Counter\Repository                           $counter
  * @property Models\Merchant\BvsValidation\Repository            $bvs_validation

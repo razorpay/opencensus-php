@@ -38,6 +38,15 @@ return [
         ],
     ],
 
+    'processMindgateUpiTransferWithSmallPaymentAmount' => [
+        'url'     => '/test/upi/callback/hdfc/upi_mindgate',
+        'method'  => 'post',
+        'content' => [
+            'pgMerchantId' => 'HDFCVPATEST',
+            'meRes'        => '1861365268|paysucc123|1.50|2018:09:18 03:02:15|SUCCESS|Transaction success|00|NA|7013562166@okhdfcbank|826115528405|NA|null|null|null|null|null|State Bank Of India!00000020261329233!SBIN0014823!917013562166|PAY!http://www.npci.co.in!NA!YESB762207F7C3CC5D93E05400144FF8FAF!NA!|rzpy.test000000virtualvpa@hdfcbank!NA!NA|NA|NA'
+        ],
+    ],
+
     'testProcessFailedMindgateUpiTransferPayment' => [
         'url'     => '/test/upi/callback/hdfc/upi_mindgate',
         'method'  => 'post',
@@ -67,7 +76,7 @@ return [
             Fields::MERCHANT_TRAN_ID    => 'payto00000vpVpaIcici',
             Fields::PAYER_NAME          => 'Ria Garg',
             Fields::PAYER_VA            => 'random@icici',
-            Fields::PAYER_AMOUNT        => '100.00',
+            Fields::PAYER_AMOUNT        => '40.00',
             Fields::TXN_STATUS          => 'SUCCESS',
             Fields::TXN_INIT_DATE       => '20200601085714',
             Fields::TXN_COMPLETION_DATE => '20200601085715',
@@ -75,7 +84,7 @@ return [
         ],
     ],
 
-    'testProcessMindgateUpiTransferToDueToBeClosedVa' => [
+    'testProcessMindgateUpiTransferToVaWithPastCloseBy' => [
         'url'     => '/test/upi/callback/hdfc/upi_mindgate',
         'method'  => 'post',
         'content' => [

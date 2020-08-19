@@ -91,7 +91,6 @@ class Processor extends VirtualAccount\Processor
 
             throw $ex;
         }
-
     }
 
     protected function getVirtualAccountFromEntity(Base\PublicEntity $entity)
