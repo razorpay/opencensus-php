@@ -1331,7 +1331,14 @@ EOT;
 
         $content = $this->getMockServer()->getAsyncCallbackContent($upiEntity, $payment->toArray());
 
-        $response = $this->makeS2sCallbackAndGetContent($content);
+        $request = [
+            'url'       => '/callback/recurring/upi_icici',
+            'method'    => 'post',
+            'raw'       => $content,
+        ];
+        $response = $this->makeRequestParent($request);
+
+        $response->assertRedirect('https://api-dark.razorpay.com/v1/callback/recurring/upi_icici');
 
         $this->assertTrue($payment->refresh()->isCreated());
 

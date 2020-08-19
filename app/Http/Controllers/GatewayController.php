@@ -25,6 +25,7 @@ use RZP\Gateway\Mozart as Mozart;
 use RZP\Models\UpiMandate\Entity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Upi\Base as BaseUpi;
+use Illuminate\Http\RedirectResponse;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Jobs\DynamicNetBankingUrlUpdater;
 use RZP\Gateway\Netbanking\Base\Repository;
@@ -417,6 +418,12 @@ class GatewayController extends Controller
                 $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);
                 break;
 
+        }
+
+        // UPI Gateways might send redirection headers
+        if ($data instanceof RedirectResponse)
+        {
+            return $data;
         }
 
         // $input['gateway'] = $gateway;

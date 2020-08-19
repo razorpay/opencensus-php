@@ -1063,7 +1063,7 @@ class Gateway extends Base\Gateway
 
     public function redirectCallbackIfRequired(array $response)
     {
-        $actual = $this->getPaymentIdFromServerCallback($response);
+        $actual = $response[Fields::MERCHANT_TRAN_ID];
 
         $paymentId  = substr($actual, 0, 14);
         $env        = substr($actual, 14, 1);
@@ -1078,7 +1078,9 @@ class Gateway extends Base\Gateway
                 // Only if we are not on dark, we need to redirect
                 if ($this->isRunningOnDark() === false)
                 {
-                    $url = 'https://api-dark.razorpay.com/v1/callback/upi_icici';
+                    $uri = $this->app['request']->getRequestUri();
+
+                    $url = 'https://api-dark.razorpay.com' . $uri;
 
                     $this->trace->info(TraceCode::MISC_TRACE_CODE, [
                         'message'       => 'callback redirected',
