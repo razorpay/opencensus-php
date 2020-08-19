@@ -2,43 +2,66 @@ import React from 'react';
 
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
-const getAnnouncement = user => {
-  let title = 'Your Feedback Matters',
-    theme = 'success';
-  let content = (
-    <React.Fragment>
-      {user.business_dba}, your opinion is important to us. Please fill this
-      short survey to let us know how we’re doing.
-      <span class="big-dot-separator" />
-      <a
-        href={`https://razorpay.typeform.com/to/RUn0DJ?mid=${
-          user.current
-        }&email=${user.contact_email}`}
-        target="_blank"
-      >
-        Click here
-      </a>
-    </React.Fragment>
-  );
-  return {
-    title,
-    content,
-    theme,
-  };
+const SURVEY_LINKS = {
+  PL: 'https://razorpay.typeform.com/to/qPGwujSe',
+  PP: 'https://razorpay.typeform.com/to/ZghqnkPS',
+  PG_1m: 'https://razorpay.typeform.com/to/cUdoZFUr',
+  PG_6m: 'https://razorpay.typeform.com/to/FesnWnOS',
+  PG_12m: 'https://razorpay.typeform.com/to/UGGYrwwF',
+  other_products: 'https://razorpay.typeform.com/to/ot3Hcuel',
+};
+
+const getLink = (user) => {
+  if (user.isFeatureEnabled('nps_survey_payment_links')) {
+    return { link: SURVEY_LINKS['PL'], cohort: 'pl' };
+  }
+
+  if (user.isFeatureEnabled('nps_survey_payment_pages')) {
+    return { link: SURVEY_LINKS['PP'], cohort: 'pp' };
+  }
+
+  if (user.isFeatureEnabled('nps_survey_pg_1m')) {
+    return { link: SURVEY_LINKS['PG_1m'], cohort: 'pg_1m' };
+  }
+
+  if (user.isFeatureEnabled('nps_survey_pg_6m')) {
+    return { link: SURVEY_LINKS['PG_6m'], cohort: 'pg_6m' };
+  }
+
+  if (user.isFeatureEnabled('nps_survey_pg_12m')) {
+    return { link: SURVEY_LINKS['PG_12m'], cohort: 'pg_12m' };
+  }
+
+  if (user.isFeatureEnabled('nps_survey_other_products')) {
+    return { link: SURVEY_LINKS['other_products'], cohort: 'other_products' };
+  }
+
+  return null;
 };
 
 const NPSAnnouncement = ({ user }) => {
-  const announcement = getAnnouncement(user);
+  const survey = getLink(user);
+
+  if (!survey) {
+    return null;
+  }
+
   return (
     <AnnouncementBanner
-      title={announcement.title}
-      theme={announcement.theme}
-      bannerKey={`nps-announcement-banner-${user.activation_status}-${
-        user.current
-      }`}
-      canBeClosed={user.isAccepted}
+      title="Your Feedback Matters"
+      theme="success"
+      bannerKey={`nps-banner-${survey.cohort}-${user.current}`}
+      canBeClosed={true}
     >
-      {announcement.content}
+      Hello! Request you to fill in this quick feedback survey about your experience with Razorpay.
+      <span className="big-dot-separator" />
+      <a
+        href={`${survey.link}?mid=${user.current}&source=dashboard`}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Click here
+      </a>
     </AnnouncementBanner>
   );
 };

@@ -34,16 +34,14 @@ import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
 import Time from 'common/ui/Time';
 
 @withRouter
-@connect(state => ({ user: state.session.user, config: state.config }), {
+@connect((state) => ({ user: state.session.user, config: state.config }), {
   openModal,
 })
 class AnalyticsDesktop extends Component {
   constructor(props) {
     super(props);
 
-    this.showOndemandSettlementForm = this.showOndemandSettlementForm.bind(
-      this
-    );
+    this.showOndemandSettlementForm = this.showOndemandSettlementForm.bind(this);
   }
 
   popupCredit = () => {
@@ -77,7 +75,7 @@ class AnalyticsDesktop extends Component {
     });
   }
 
-  isCaptureSettingsDefault = items => {
+  isCaptureSettingsDefault = (items) => {
     if (!items) return false;
     else {
       if (items[0]) {
@@ -126,9 +124,7 @@ class AnalyticsDesktop extends Component {
       lateAuthConfig,
     } = this.props;
 
-    const {
-      data: { items },
-    } = lateAuthConfig;
+    const { data: { items } } = lateAuthConfig;
 
     const hasSecondaryBanner =
       showInstantActivation && config.config && !config.config.hasPersonalised;
@@ -147,33 +143,20 @@ class AnalyticsDesktop extends Component {
     return (
       <div className="home-analytics-desktop">
         <div
-          ref={node => onExtraContentMount(node)}
-          className={`extra-content${
-            showOnboardingBanner ? ' has-ob-banner' : ''
-          }${
-            !showOnboardingBanner && hasSecondaryBanner
-              ? ' has-secondary-banner'
-              : ''
+          ref={(node) => onExtraContentMount(node)}
+          className={`extra-content${showOnboardingBanner ? ' has-ob-banner' : ''}${
+            !showOnboardingBanner && hasSecondaryBanner ? ' has-secondary-banner' : ''
           }`}
         >
           {/* nps banner */}
-          {user.isNPSSurveyBannerEnabled && user.isAccepted && (
-            <NPSAnnouncement user={user} />
-          )}
+          {user.isAccepted && <NPSAnnouncement user={user} />}
 
-          {showInstantActivation && (
-            <Announcement mode={mode} user={user} payments={payments} />
-          )}
+          {showInstantActivation && <Announcement mode={mode} user={user} payments={payments} />}
 
           {this.isCaptureSettingsDefault(items) &&
             user.instantActivation.isWhitelistFlow === true && (
-              <AnnouncementBanner
-                title="Capture Settings"
-                theme="success"
-                canBeClosed={true}
-              >
-                Currently all payments with order id are being captured by
-                default, click{' '}
+              <AnnouncementBanner title="Capture Settings" theme="success" canBeClosed={true}>
+                Currently all payments with order id are being captured by default, click{' '}
                 <Link to={'/config'} target="_blank">
                   here
                 </Link>{' '}
@@ -182,13 +165,8 @@ class AnalyticsDesktop extends Component {
             )}
 
           {current_balance.data.balance < 0 && (
-            <AnnouncementBanner
-              title="Add Funds"
-              theme="warning"
-              canBeClosed={true}
-            >
-              Your balance went into negative value. Add funds to avoid the
-              transaction failures.{' '}
+            <AnnouncementBanner title="Add Funds" theme="warning" canBeClosed={true}>
+              Your balance went into negative value. Add funds to avoid the transaction failures.{' '}
               <Link to={'/addfunds'} target="_blank">
                 {' '}
                 Add Funds
@@ -196,18 +174,10 @@ class AnalyticsDesktop extends Component {
             </AnnouncementBanner>
           )}
 
-          {handleNegativeBalanceLimit(
-            merchantBalanceConfigs,
-            current_balance.data.balance
-          ) && (
-            <AnnouncementBanner
-              title="On Hold!"
-              theme="danger"
-              canBeClosed={true}
-            >
-              Your current balance had reached the maximum negative limit.
-              Transactions will start to fail now. Please add funds to avoid
-              transaction failures.{' '}
+          {handleNegativeBalanceLimit(merchantBalanceConfigs, current_balance.data.balance) && (
+            <AnnouncementBanner title="On Hold!" theme="danger" canBeClosed={true}>
+              Your current balance had reached the maximum negative limit. Transactions will start
+              to fail now. Please add funds to avoid transaction failures.{' '}
               <Link to={'/addfunds'} target="_blank">
                 {' '}
                 Add Funds
@@ -216,19 +186,11 @@ class AnalyticsDesktop extends Component {
           )}
 
           {/* capital banner*/}
-          {user.isCapitalBannerEnabled && (
-            <CapitalAnnouncement userId={user.current} />
-          )}
+          {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}
 
-          {user.isCovidFeatureEnabled && (
-            <CovidCampaignAnnouncement userId={user.current} />
-          )}
+          {user.isCovidFeatureEnabled && <CovidCampaignAnnouncement userId={user.current} />}
 
-          <div
-            className={`v2-onboarding-card${
-              expandOnboardingBanner ? ' expand' : ''
-            }`}
-          >
+          <div className={`v2-onboarding-card${expandOnboardingBanner ? ' expand' : ''}`}>
             {showOnboardingBanner && (
               <NewUserOnboardingCard
                 payments={payments}
@@ -248,10 +210,7 @@ class AnalyticsDesktop extends Component {
         </div>
         {/* <Sticky stickWhen={scrollAmountToStickHeader} stickAt={50}> */}
         <Header className="clearfix" title="" showMode={false}>
-          <div
-            id="analytics-daterange-picker"
-            className="pull-left date-range-container"
-          >
+          <div id="analytics-daterange-picker" className="pull-left date-range-container">
             <DateRangePicker
               presets={dateRangePresets}
               onDatesChange={onDatesChange}
@@ -261,9 +220,7 @@ class AnalyticsDesktop extends Component {
           </div>
           <div
             className={`pull-right ${
-              this.props.user.isOndemandSettlementEnabled
-                ? 'ondemand-enabled'
-                : ''
+              this.props.user.isOndemandSettlementEnabled ? 'ondemand-enabled' : ''
             }`}
           >
             <Group>
@@ -281,10 +238,7 @@ class AnalyticsDesktop extends Component {
                       )}
                     </span>
                     <br />
-                    {no_settlement &&
-                    payments &&
-                    payments.items.length > 0 &&
-                    mode === 'live' ? (
+                    {no_settlement && payments && payments.items.length > 0 && mode === 'live' ? (
                       <div class="text-right" style={{ width: '100%' }}>
                         {no_settlement.caption}
                         {no_settlement.reason && (
@@ -320,9 +274,7 @@ class AnalyticsDesktop extends Component {
                               <i class="i i-info-circle" />
                               <Popover theme="dark" align="left">
                                 <PopoverBody>
-                                  <div>
-                                    {settlement_amount.data.reason_for_delay}
-                                  </div>
+                                  <div>{settlement_amount.data.reason_for_delay}</div>
                                 </PopoverBody>
                               </Popover>
                             </div>
@@ -361,19 +313,13 @@ class AnalyticsDesktop extends Component {
                   <Button.Secondary
                     class="settle-btn btn-outline"
                     onClick={this.showOndemandSettlementForm}
-                    disabled={
-                      current_balance.loading ||
-                      current_balance.data.balance < 100
-                    }
+                    disabled={current_balance.loading || current_balance.data.balance < 100}
                   >
                     Settle Now
                   </Button.Secondary>
                 ) : (
                   <Link className="pull-right" to="/settlements">
-                    <span
-                      className="text-no-wrap"
-                      onClick={trackSettlementsClick}
-                    >
+                    <span className="text-no-wrap" onClick={trackSettlementsClick}>
                       View Settlements
                     </span>
                   </Link>
@@ -410,17 +356,16 @@ class AnalyticsDesktop extends Component {
                   <Popover align="top">
                     <PopoverBody>
                       <p>
-                        This graph helps you gain insights into your overall
-                        payments by seeing how different payment methods stack
-                        up against each other in your revenue pool.
+                        This graph helps you gain insights into your overall payments by seeing how
+                        different payment methods stack up against each other in your revenue pool.
                       </p>
                       <div>
-                        <span className="popover-highlight">Click tiles</span>{' '}
-                        to drill-down into the hierarchy.
+                        <span className="popover-highlight">Click tiles</span> to drill-down into
+                        the hierarchy.
                       </div>
                       <div>
-                        <span className="popover-highlight">Hover</span> to view
-                        information for smaller tiles.
+                        <span className="popover-highlight">Hover</span> to view information for
+                        smaller tiles.
                       </div>
                     </PopoverBody>
                   </Popover>
@@ -446,9 +391,7 @@ class AnalyticsDesktop extends Component {
             >
               {showGroupingByPtfm && (
                 <div className="traffic-container">
-                  <p className="content-title section-title">
-                    {trafficSectionTitle}
-                  </p>
+                  <p className="content-title section-title">{trafficSectionTitle}</p>
                   <div className="content">
                     <Traffic
                       startDate={startDate}
@@ -462,9 +405,7 @@ class AnalyticsDesktop extends Component {
               )}
               {!isAdmin && (
                 <div className="activity-container">
-                  <p className="content-title section-title">
-                    {recentActivityTitle}
-                  </p>
+                  <p className="content-title section-title">{recentActivityTitle}</p>
                   <div className="content">
                     <RecentActivity
                       sectionTitle={recentActivityTitle}
