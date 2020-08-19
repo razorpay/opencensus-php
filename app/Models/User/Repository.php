@@ -3,6 +3,7 @@
 namespace RZP\Models\User;
 
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 
 class Repository extends Base\Repository
 {
@@ -16,7 +17,9 @@ class Repository extends Base\Repository
 
     public function findByEmail(string $email)
     {
-        return $this->newQuery()
+        $liveMode = $this->auth->getLiveConnection();
+
+        return $this->newQueryWithConnection($liveMode)
                     ->where(Entity::EMAIL, '=', strtolower($email))
                     ->firstOrFailPublic();
     }
