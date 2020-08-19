@@ -20,6 +20,7 @@ use RZP\Constants\Environment;
 use RZP\Models\Base\Collection;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Base\UniqueIdEntity;
 
 class Repository extends \Razorpay\Spine\Repository
 {
@@ -974,6 +975,25 @@ class Repository extends \Razorpay\Spine\Repository
         $connection = ($mode === Mode::TEST) ? Connection::MASTER_REPLICA_TEST : Connection::MASTER_REPLICA_LIVE;
 
         return $connection;
+    }
+
+    protected function useDataWarehouse(): bool
+    {
+        if (in_array($this->entity, E::ENTITIES_FETCH_FROM_DATA_WAREHOUSE) === true)
+        {
+            $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+            $dataWarehouseEnabled = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), "data_warehouse_enabled", $mode);
+
+            return (($dataWarehouseEnabled === 'enable') and ($mode === Mode::LIVE) and ($this->auth->isAdminAuth() === true));
+        }
+
+        return false;
+    }
+
+    protected function getDataWarehouseConnection()
+    {
+        return Connection::DATA_WAREHOUSE;
     }
 
     protected function getSlaveConnection(string $mode = null)

@@ -153,6 +153,21 @@ return array(
             'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
         ],
 
+        'data-warehouse' => [
+            'driver'    => env('DB_WAREHOUSE_DRIVER'),
+            'host'      => env('DB_WAREHOUSE_HOST'),
+            'port'      => env('DB_WAREHOUSE_PORT'),
+            'database'  => env('DB_WAREHOUSE_DATABASE'),
+            'username'  => env('DB_WAREHOUSE_USERNAME'),
+            'password'  => env('DB_WAREHOUSE_PASSWORD'),
+            'charset'   => 'utf8',
+            'collation' => 'utf8_bin',
+            'prefix'    => '',
+            'strict'    => true,
+            'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
+            'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
+        ],
+
         'master-replica-live' => [
             'driver'    => env('DB_LIVE_DRIVER'),
             'host'      => env('ES_DB_LIVE_HOST'),

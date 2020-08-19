@@ -3268,6 +3268,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Log admin fetch queries
     const ADMIN_FETCH_QUERY_LOG = 'ADMIN_FETCH_QUERY_LOG';
 
+    // Trace DataWarehouse fetch duration
+    const DATA_WAREHOUSE_RESPONSE_DURATION                       = 'DATA_WAREHOUSE_RESPONSE_DURATION';
+
     // Low Balance Config
     const LOW_BALANCE_CONFIG_CREATE_REQUEST                      = 'LOW_BALANCE_CONFIG_CREATE_REQUEST';
     const LOW_BALANCE_CONFIG_CREATE_RESPONSE                     = 'LOW_BALANCE_CONFIG_CREATE_RESPONSE';

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Constants\Es;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use Database\Connection;
 use RZP\Constants\Environment;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\EsRepository;
@@ -144,6 +145,8 @@ trait RepositoryFetch
 
         $routeThroughMasterReplica = false;
 
+        $routeThroughDataWarehouse = false;
+
         if ($useMasterEsReplica === true)
         {
             $routeThroughMasterReplica = $this->app['api.route']->routeThroughMasterReplica();
@@ -154,6 +157,13 @@ trait RepositoryFetch
             ($this->app['env'] !== Environment::TESTING))
         {
             $query = $this->newQueryWithConnection($this->getMasterReplicaConnection());
+
+            if ($this->useDataWarehouse() === true)
+            {
+                $routeThroughDataWarehouse = true;
+
+                $query = $this->newQueryWithConnection($this->getDataWarehouseConnection());
+            }
         }
 
         if ($useSlave === true)
@@ -211,7 +221,19 @@ trait RepositoryFetch
             }
         }
 
-        return $query->get();
+        $startTimeMs = round(microtime(true) * 1000);
+
+        $entities = $query->get();
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $this->trace->info(TraceCode::DATA_WAREHOUSE_RESPONSE_DURATION, [
+            'data_warehouse' => $routeThroughDataWarehouse,
+            'duration_ms'    => $endTimeMs - $startTimeMs,
+            'query'          => $query->toSql(),
+        ]);
+
+        return $entities;
     }
 
     protected function getPaginated(BuilderEx $query, array $params = [])
@@ -908,8 +930,12 @@ trait RepositoryFetch
 
     protected function addQueryOrder($query)
     {
-        $query->orderBy($this->dbColumn(Common::CREATED_AT), 'desc')
-              ->orderBy($this->dbColumn(Common::ID), 'desc');
+        if ($query->getConnection()->getName() !== Connection::DATA_WAREHOUSE)
+        {
+            $query->orderBy($this->dbColumn(Common::CREATED_AT), 'desc');
+        }
+
+        $query->orderBy($this->dbColumn(Common::ID), 'desc');
     }
 
     protected function addQueryParamCount($query, $params)

@@ -87,6 +87,7 @@ trait TestsThrottle
     {
         Trace::shouldReceive('critical')->once()->with($code);
         Trace::shouldReceive('count', 'histogram')->zeroOrMoreTimes();
+        Trace::shouldReceive('info', 'debug', 'addRecord')->zeroOrMoreTimes();
     }
 
     protected function mockTraceAndExpectNoError()

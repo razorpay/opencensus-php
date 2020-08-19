@@ -452,6 +452,10 @@ class Entity
         Entity::SETTLEMENT,
     ];
 
+    const ENTITIES_FETCH_FROM_DATA_WAREHOUSE = [
+        Entity::PAYMENT,
+    ];
+
     public static $namespace = [
         self::IIN                       => \RZP\Models\Card\IIN::class,
         self::P2P                       => \RZP\Models\P2p::class,
