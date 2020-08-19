@@ -692,6 +692,13 @@ class Service extends Base\Service
             {
                 $verifyFailedTxnIds[] = $txnId;
             }
+            else
+            {
+                if(isset($txns[$txnId]['balance_type']) === false)
+                {
+                    $txns[$txnId]['balance_type'] = Balance\Type::PRIMARY;
+                }
+            }
         }
 
         $verifiedTxnCount = sizeof($txns);
