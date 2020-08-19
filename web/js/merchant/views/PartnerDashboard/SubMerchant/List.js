@@ -117,7 +117,7 @@ const settlementStatus = {
   ),
   value: submerchant => (
     <SubmerchantSettlementLabel
-      status={submerchant.hold_funds ? 'inactive' : 'active'}
+      status={submerchant.details && submerchant.details.activation_status === 'activated' && submerchant.hold_funds === false ? 'active' : 'inactive'}
     />
   ),
 };
