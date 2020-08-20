@@ -3,49 +3,30 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use DB;
-use Mail;
-use Closure;
-use Mockery;
 use Carbon\Carbon;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Models\Feature;
 use RZP\Constants\Timezone;
-use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use Illuminate\Database\Eloquent\Factory;
-use Http\Discovery\MessageFactoryDiscovery;
-use RZP\Mail\Merchant\Webhook as WebhookMail;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
-use RZP\Tests\Functional\Helpers\MocksDnsTrait;
-use RZP\Models\Partner\Config as PartnerConfig;
-use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use Http\Client\Common\Exception\ClientErrorException;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
-use RZP\Tests\Functional\Fixtures\Entity\Base as BaseFixture;
-use RZP\Mail\Merchant\CreateSubMerchantPartner as CreateSubMerchantPartnerMail;
-use RZP\Mail\Merchant\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateMail;
 
-/**
- * @group dns-sensitive
- */
 class WebhookTest extends TestCase
 {
     use AttemptTrait;
     use AttemptReconcileTrait;
-    use MocksDnsTrait;
     use WebhookTrait;
     use TestsWebhookEvents;
     use DbEntityFetchTrait;
@@ -69,110 +50,7 @@ class WebhookTest extends TestCase
 
         $this->ba->proxyAuth();
 
-        $this->setupMockDns();
-
         $this->mockStorkService();
-    }
-
-    public function testCreateWebhook()
-    {
-        $response = $this->startTest();
-
-        // Events of other products (e.g. banking) should not come in response.
-        $this->assertArrayNotHasKey('transaction.created', $response['events']);
-        $this->assertArrayNotHasKey('payout.created', $response['events']);
-        $this->assertArrayNotHasKey('payout.processed', $response['events']);
-        $this->assertArrayNotHasKey('payout.reversed', $response['events']);
-
-        $webhook = $this->getDbLastEntity('webhook');
-
-        $this->assertEquals(true, $webhook['disable_on_failure']);
-    }
-
-    public function testCreateWebhookWithTerminalEvents()
-    {
-        // Sets expectation for request to stork.
-        $expectedPayloadToStork = $this->testData[__FUNCTION__.'ExpectedPayloadToStork'];
-        // Todo: Double check if mockServiceStorkRequest func works. Test seems to be passing even with assertion failures.
-        $this->mockServiceStorkRequest(
-            function ($path, $payload) use ($expectedPayloadToStork)
-            {
-                $this->assertSame('/twirp/rzp.stork.webhook.v1.WebhookAPI/Update', $path);
-                $this->assertArraySelectiveEquals($expectedPayloadToStork, $payload);
-                return new \Requests_Response;
-            }
-        )->once();
-
-        // Creates webhooks with events around terminal module.
-        // These events are stored in events2 column of webhooks table.
-        // The api interface is same but logic behind is bit different and so having test for this specific scenario.
-        $this->fixtures->merchant->addFeatures(['terminal_onboarding']);
-        $response = $this->startTest();
-
-        // Todo: Because of some bug posted events are not returned and hence asserting like below.
-        $webhook = $this->getDbEntityById('webhook', $response['id']);
-        $this->assertTrue($webhook->getEvents()['terminal.created']);
-    }
-
-    public function testCreateWebhookWhenAlreadyCreated()
-    {
-        $this->fixtures->create('webhook');
-
-        $this->startTest();
-    }
-
-    /*
-     * Partner type fully managed, can create webhook
-     */
-    public function testCreateAppWebhook()
-    {
-        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
-        $this->startTest();
-    }
-
-    public function testCreateWebhookWithInternalIp()
-    {
-        $this->markTestSkipped();
-
-        $this->startTest();
-    }
-
-    public function testCreateWebhookWithReservedIp()
-    {
-        $this->markTestSkipped();
-
-        $this->startTest();
-    }
-
-    public function testCreateWebhookWithoutHost()
-    {
-        $this->startTest();
-    }
-
-    public function testCreateWebhookWithLargerSecret()
-    {
-        $this->startTest();
-    }
-
-    public function testCreateWebhookWithDisallowedPort()
-    {
-        $this->startTest();
-    }
-
-    public function testRecreateWebhook()
-    {
-        $this->createWebhook();
-
-        $this->startTest();
-    }
-
-    /*
-     * Invalid app id, cannot create webhook
-     */
-    public function testCreateAppWebhookInvalidAppId()
-    {
-        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
-        $this->startTest();
     }
 
     /*
@@ -181,6 +59,7 @@ class WebhookTest extends TestCase
     public function testCreateAppWebhookInvalidPartnerType()
     {
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'reseller']);
+
         $this->startTest();
     }
 
@@ -190,6 +69,9 @@ class WebhookTest extends TestCase
     public function testCreateAppWebhookPurePlatform()
     {
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'pure_platform']);
+        $this->addOAuthTag();
+        $this->createOAuthApplication(['id' => '10000000000App', 'merchant_id' => '10000000000000']);
+
         $this->startTest();
     }
 
@@ -199,6 +81,8 @@ class WebhookTest extends TestCase
     public function testCreateAppWebhookOAuthTag()
     {
         $this->addOAuthTag();
+        $this->createOAuthApplication(['id' => '10000000000App', 'merchant_id' => '10000000000000']);
+
         $this->startTest();
     }
 
@@ -208,8 +92,10 @@ class WebhookTest extends TestCase
      */
     public function testCreateAppWebhookBankWithOAuthTag()
     {
-        $this->addOAuthTag();
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'bank']);
+        $this->addOAuthTag();
+        $this->createOAuthApplication(['id' => '10000000000App', 'merchant_id' => '10000000000000']);
+
         $this->startTest();
     }
 
@@ -219,78 +105,9 @@ class WebhookTest extends TestCase
      */
     public function testCreateAppWebhookFullyManagedWithOAuthTag()
     {
-        $this->addOAuthTag();
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
-        $this->startTest();
-    }
-
-    public function testCreateWebhookForProductBanking()
-    {
-        $this->markTestSkipped("Duplicate of testCreateWebhookForProductBankingWithStork");
-
-        // This is required, because this is going to on board the merchant on X on the test mode
-        // which requires the terminal entity to be present
-        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
-            ['merchant_id' => '100000Razorpay']);
-
-        $this->fixtures->merchant->addFeatures(['payout']);
-
-        $response = $this->startTest();
-
-        $this->assertNotNull($response['id']);
-    }
-
-    public function testCreateWebhookWithStork()
-    {
-        $createExpectedPayload = $this->testData['createRequestStorkProductPrimaryFeatureOn'];
-
-        $this->mockServiceStorkRequest(
-            function ($path, $payload) use ($createExpectedPayload)
-            {
-                $this->assertArraySelectiveEquals($createExpectedPayload, $payload);
-                return $this->getStorkGetResponseProductPrimary();
-            })->once();
-
-        $this->startTest();
-    }
-
-    public function testEditWebhookWithStork()
-    {
-        $webhook = $this->createWebhook();
-
-        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'];
-
-        $updateExpectedPayload = $this->testData['editRequestStorkProductPrimaryFeatureOn'];
-
-        $this->mockServiceStorkRequest(
-            function ($path, $payload) use ($updateExpectedPayload)
-            {
-                $this->assertArraySelectiveEquals($updateExpectedPayload, $payload);
-            })->once();
-
-        $this->startTest();
-    }
-
-    public function testCreateWebhookForProductBankingWithStork()
-    {
-        $this->fixtures->merchant->addFeatures(['payout']);
-
-        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
-
-        $this->mockServiceStorkRequest(
-            function ($path, $payload)
-            {
-                if ($path === "/twirp/rzp.stork.webhook.v1.WebhookAPI/List") {
-                    return $this->getStorkListResponseEmpty();
-                }
-
-                if ($path === "/twirp/rzp.stork.webhook.v1.WebhookAPI/Create")
-                {
-                    return $this->getStorkCreateResponse('rx-live', 'http://webhook.com/v1/dummy/route', ['payout.created']);
-                }
-
-                return new \Requests_Response();
-            });
+        $this->addOAuthTag();
+        $this->createOAuthApplication(['id' => '10000000000App', 'merchant_id' => '10000000000000']);
 
         $this->startTest();
     }
@@ -305,103 +122,13 @@ class WebhookTest extends TestCase
             function ($path, $payload)
             {
                 return $this->getStorkListResponseEmpty();
-            })->times(2);
-
-        $this->startTest();
-    }
-
-    public function testEditWebhookForProductBankingWithStork()
-    {
-        $this->fixtures->merchant->addFeatures(['payout']);
-
-        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
-
-        $this->mockServiceStorkRequest(
-            function ($path, $payload)
-            {
-                if ($path === "/twirp/rzp.stork.webhook.v1.WebhookAPI/Get") {
-                    return $this->getStorkGetResponse();
-                }
-
-                if ($path === "/twirp/rzp.stork.webhook.v1.WebhookAPI/Update")
-                {
-                    return $this->getStorkUpdateResponse();
-                }
-            });
-
-        $this->startTest();
-    }
-
-    public function testGetWebhooksProductBankingWithStork()
-    {
-        $this->fixtures->merchant->addFeatures(['payout']);
-
-        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
-
-        $this->mockServiceStorkRequest(
-            function ($path, $payload)
-            {
-                return $this->getStorkListResponse();
-            });
-
-        $this->startTest();
-    }
-
-    public function testCopyWebhookInBulkForBanking()
-    {
-        $this->createWebhook();
-        $createExpectedPayloadBanking = $this->testData['testEditWebhookStorkCreateRequestBanking'];
-
-        $this->fixtures->merchant->edit('10000000000000', ['business_banking' => 1]);
-
-        $this->mockServiceStorkRequest(
-            function ($path, $payload) use ($createExpectedPayloadBanking)
-            {
-                if ($path === "/twirp/rzp.stork.webhook.v1.WebhookAPI/Get") {
-                    return $this->getStorkListResponseEmpty();
-                }
-                else if ($path === "/twirp/rzp.stork.webhook.v1.WebhookAPI/Create")
-                {
-                    $this->assertArraySelectiveEquals($createExpectedPayloadBanking, $payload);
-
-                    return $this->getStorkCreateResponse('rx-live', 'http://webhook.com/v1/dummy/route', []);
-                }
-
-                return new \Requests_Response();
-            })->twice();
-
-        $this->ba->adminAuth();
-
-        $this->startTest();
-    }
-
-    public function testCreateWebhookForProductBankingWithInvalidEvents()
-    {
-        $this->markTestSkipped("Duplicate of testCreateWebhookForProductBankingWithInvalidEventsWithStork");
-
-        // This is required, because this is going to on board the merchant on X on the test mode
-        // which requires the terminal entity to be present
-        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
-            ['merchant_id' => '100000Razorpay']);
-
-        $this->fixtures->merchant->addFeatures(['payout']);
-
-        $this->startTest();
-    }
-
-    public function testEditWebhook()
-    {
-        $webhook = $this->createWebhook();
-
-        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'];
+            })->times(1);
 
         $this->startTest();
     }
 
     public function testEditWebhookByNonOwnerUser()
     {
-        $webhook = $this->createWebhook();
-
         $user = $this->fixtures->create('user');
 
         $this->fixtures->user->createUserMerchantMapping([
@@ -412,116 +139,12 @@ class WebhookTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $user->toArrayPublic(), 'support');
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'];
-
         $this->startTest();
-    }
-
-    public function testEditDisableWebhookOnPrivateAuth()
-    {
-        $webhook = $this->createWebhook();
-
-        $this->ba->privateAuth();
-
-        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'];
-
-        $this->startTest();
-    }
-
-    public function testEditDisableWebhookOnAdminProxyAuth()
-    {
-        $webhook = $this->createWebhook();
-
-        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'];
-
-        $this->ba->addAdminProxyAuthHeaders('10000000000000');
-
-        $this->startTest();
-
-        $webhook = $this->getDbEntityById('webhook', $webhook['id']);
-
-        $this->assertFalse($webhook->isDisableOnFailure());
     }
 
     public function testEditWebhookForProductBankingWithInvalidEvents()
     {
-        $this->testCreateWebhookForProductBanking();
-
-        $webhookId = $this->getDbLastEntity('webhook')->getPublicId();
-        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/' . $webhookId;
-
         $this->startTest();
-    }
-
-    public function testGetWebhooks()
-    {
-        $this->createWebhook();
-
-        // Adding this to ensure only merchant webhooks are returned and no
-        // application webhooks.
-        $this->createApplicationWebhook('10000000000App');
-
-        $response = $this->startTest();
-
-        $this->assertNotContains('application_id', $response);
-    }
-
-    public function testGetWebhookWithSecret()
-    {
-        $webhook = $this->fixtures->create('webhook',
-            [
-                'merchant_id' => '10NodalAccount',
-                'url'         => 'http://www.testUrl.com',
-                'secret'      => 'BestTestSecretEver',
-                'events'      => ['payment.authorized' => '1']
-            ]);
-
-        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'];
-
-        $this->ba->hostedAuth('rzp_test_10NodalAccount');
-
-        $response = $this->startTest();
-
-        $webhook = $this->fixtures->create('webhook',
-            [
-                'merchant_id' => '10NodalAccount',
-                'url'         => 'http://www.testUrl.com',
-                'secret'      => 'BestTestSecretEver',
-                'events'      => ['payment.authorized' => '1']
-            ]);
-
-        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'];
-
-        $this->ba->expressAuth('test', 'rzp_test_10NodalAccount');
-
-        $response = $this->startTest();
-    }
-
-    public function testGetWebhooksWithSecret()
-    {
-        $this->fixtures->create('webhook',
-            [
-                'merchant_id' => '10NodalAccount',
-                'url'         => 'http://www.testUrl.com',
-                'secret'      => 'BestTestSecretEver',
-                'events'      => ['payment.authorized' => '1']
-            ]);
-
-        $this->ba->hostedAuth('rzp_test_10NodalAccount');
-
-        $response = $this->startTest();
-
-        $this->fixtures->create('webhook',
-            [
-                'merchant_id' => '10NodalAccount',
-                'url'         => 'http://www.testUrl.com',
-                'secret'      => 'BestTestSecretEver',
-                'events'      => ['payment.authorized' => '1']
-            ]);
-
-        $this->ba->expressAuth('test', 'rzp_test_10NodalAccount');
-
-        $response = $this->startTest();
     }
 
     public function testGetWebhookEvents()
@@ -541,17 +164,6 @@ class WebhookTest extends TestCase
         $this->assertNotContains('payout.reversed', $response);
     }
 
-    public function testGetAppWebhooks()
-    {
-        $this->createWebhook();
-
-        $this->createApplicationWebhook('10000000000App');
-
-        $this->createApplicationWebhook('1000000000App2');
-
-        $this->startTest();
-    }
-
     public function testGetWebhookEventsForProductBanking()
     {
         // This is required, because this is going to on board the merchant on X on the test mode
@@ -561,11 +173,6 @@ class WebhookTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['payout']);
 
-        $this->startTest();
-    }
-
-    public function testCreateWebhookWrongUrl()
-    {
         $this->startTest();
     }
 
@@ -715,50 +322,15 @@ class WebhookTest extends TestCase
 
     public function testCreateWebhookWithEventWhenFeatureNotEnabled()
     {
-        // Subscribing to subscription.charged requires subscription feature to be enabled and hence expected failure.
-        $this->expectException(BadRequestValidationFailureException::class);
-        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
-        $this->expectExceptionMessage('Invalid event name/names: subscription.charged');
-
-        $this->createWebhook(
-            [
-                'events' => [
-                    'payment.authorized'   => '1',
-                    'subscription.charged' => '1',
-                ],
-            ]);
+        $this->startTest();
     }
 
     public function testWebhooksFeatureBasedEvents()
     {
         // Adds feature and creates webhook with subscriptions.charged even and asserts the same in next get call.
-
         $this->fixtures->merchant->addFeatures(['subscriptions']);
 
-        $this->createWebhook(['events' => ['payment.authorized' => '1', 'subscription.charged' => '1']]);
-
-        $testData = $this->testData['testGetWebhooks'];
-
-        $response = $this->startTest($testData);
-
-        $events = $response['items'][0]['events'];
-
-        $this->assertArrayHasKey('subscription.charged', $events);
-
-        //
-        // Hypothetically, for backward compatibility, if the events were added by mistake or via some other unknown flow,
-        // the same must not be exposed still in get/list requests.
-        //
-
-        $this->fixtures->merchant->removeFeatures(['subscriptions']);
-
-        $testData = $this->testData['testGetWebhooks'];
-
-        $response = $this->startTest($testData);
-
-        $events = $response['items'][0]['events'];
-
-        $this->assertArrayNotHasKey('subscription.charged', $events);
+        $this->startTest();
     }
 
     public function testWebhookEventWithExpressTranslationEnabled()
@@ -822,8 +394,6 @@ class WebhookTest extends TestCase
     {
         $this->ba->privateAuth();
 
-        $this->createMerchantWebhook(['events' => ['payment.captured' => "1"]]);
-
         $this->mockMozartWebhookTranslateRequest(null, 0);
 
         $payment = $this->getDefaultPaymentArray();
@@ -847,20 +417,6 @@ class WebhookTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
 
         $this->doAuthPayment($payment);
-    }
-
-    public function testWebhookPaymentCreatedForAuthFeatureNotEnabled()
-    {
-        $this->expectException(BadRequestValidationFailureException::class);
-        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
-        $this->expectExceptionMessage('Invalid event name/names: payment.created');
-
-        $this->createWebhook(
-            [
-                'events' => [
-                    'payment.created'   => '1',
-                ],
-            ]);
     }
 
     public function testWebhookPaymentCreatedForAjax()
@@ -1279,71 +835,6 @@ class WebhookTest extends TestCase
         $this->startTest();
     }
 
-    public function testWebhookDeactivate()
-    {
-        Mail::fake();
-
-        $this->createMerchantWebhook();
-
-        $webhook = $this->getLastEntity('webhook', false);
-
-        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'] . '/deactivate';
-
-        $this->startTest();
-
-        // test webhook deactivate
-        $webhookExpected = $this->getEntityById('webhook',$webhook['id']);
-
-        $this->assertEquals($webhookExpected['active'],false);
-
-        $testData = $this->testData[__FUNCTION__.'Data'];
-
-        // test mail sent
-        Mail::assertQueued(WebhookMail::class, function ($mail) use ($testData)
-        {
-            $this->assertEquals($mail->viewData['url'], $testData['url']);
-
-            $this->assertEquals($mail->viewData['mode'], $testData['mode']);
-
-            $this->assertEquals($mail->viewData['subject'], $testData['subject']);
-
-            return ($mail->hasFrom('alerts@razorpay.com') and ($mail->hasTo('test@razorpay.com')));
-        });
-    }
-
-    public function testWebhookDeactivateWithEmail()
-    {
-        Mail::fake();
-
-        $this->createMerchantWebhook();
-
-        $webhook = $this->getLastEntity('webhook', false);
-
-        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'] . '/deactivate';
-
-        $this->startTest();
-
-        // test webhook deactivate
-        $webhookExpected = $this->getEntityById('webhook',$webhook['id']);
-
-        $this->assertEquals($webhookExpected['active'],false);
-
-        $testData = $this->testData[__FUNCTION__.'Data'];
-
-        // test mail sent
-        Mail::assertQueued(WebhookMail::class, function ($mail) use ($testData)
-        {
-            $this->assertEquals($mail->viewData['url'], $testData['url']);
-
-            $this->assertEquals($mail->viewData['mode'], $testData['mode']);
-
-            $this->assertEquals($mail->viewData['subject'], $testData['subject']);
-
-            return ($mail->hasFrom('alerts@razorpay.com') and ($mail->hasTo($testData['alert_email'])));
-        });
-    }
-
-
     protected function createTransferEntity($payment, $account)
     {
         $createdAt = Carbon::today(Timezone::IST)->subDays(20)->timestamp + 5;
@@ -1360,36 +851,6 @@ class WebhookTest extends TestCase
                 'created_at'    => $createdAt,
                 'updated_at'    => $createdAt + 10
             ]);
-    }
-
-    protected function createApplicationWebhook(
-        string $appId,
-        bool $defaultMerchant = true,
-        array $params = [])
-    {
-        $input = [
-            'entity_type' => 'application',
-            'entity_id'   => $appId,
-            'url'         => 'http://webhook.com/v1/dummy/route',
-        ];
-
-        if ($defaultMerchant === false)
-        {
-            $input['merchant_id'] = '100000Razorpay';
-        }
-
-        $input = array_merge($input, $params);
-
-        $this->fixtures->create('webhook', $input);
-    }
-
-    protected function createMerchantWebhook(array $params = [])
-    {
-        $input = ['url' => 'http://webhook.com/v1/dummy/route'];
-
-        $input = array_merge($input, $params);
-
-        $this->fixtures->create('webhook', $input);
     }
 
     protected function addOAuthTag(string $merchantId = '10000000000000')

@@ -141,11 +141,6 @@ final class RazorxTreatment
     // the new default pricing applied
     const INSTANT_REFUNDS_DEFAULT_PRICING_V2 = 'instant_refunds_default_pricing_v2';
 
-    // Added to gradually route the webhook requests to the new path
-    // which makes request to stork & then dual writes to API.
-    const API_WEBHOOK_V2_PATH = 'api_webhook_v2_path';
-
-
     // Check whether Payout Link Service is up or not.
     // If the feature is mapped to a merchant, the Service is down for that merchant
     const RX_IS_PAYOUT_LINK_SERVICE_DOWN = 'rx_payout_links_inactive';

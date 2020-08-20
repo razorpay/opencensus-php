@@ -47,55 +47,6 @@ class WebhookController extends Controller
     }
 
     /**
-     * @see Webhook\Service::webhookStorkMigrate()
-     *
-     * @return mixed
-     */
-    public function webhookStorkMigrate()
-    {
-        $data = $this->service()->webhookStorkMigrate($this->input);
-
-        return ApiResponse::json($data);
-    }
-
-    /**
-     * @see Webhook\Service::webhookStorkRecon()
-     * @return mixed
-     */
-    public function webhookStorkRecon()
-    {
-        $data = $this->service()->webhookStorkRecon($this->input);
-
-        return ApiResponse::json($data);
-    }
-
-    /**
-     *
-     * @return mixed
-     */
-    public function webhookStorkCreateBankingBulk()
-    {
-        $data = $this->service()->webhookStorkCreateBankingBulk($this->input);
-
-        return ApiResponse::json($data);
-    }
-
-    /**
-     * @see Webhook\Service::webhookDeactivate()
-     *
-     * @param string $id
-     * @return mixed
-     */
-    public function webhookDeactivate(string $id)
-    {
-        $input = Request::all();
-
-        $this->service()->webhookDeactivate($id, $input);
-
-        return ApiResponse::json([]);
-    }
-
-    /**
      * @return mixed
      */
     public function webhookEmailStorkRecon()

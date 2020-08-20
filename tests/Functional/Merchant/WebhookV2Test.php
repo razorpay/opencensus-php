@@ -392,24 +392,8 @@ class WebhookV2Test extends TestCase
 
                 return new \Requests_Response();
 
-            })->times(3);
+            })->times(2);
 
-        $this->startTest();
-    }
-
-    public function testUpdateWebhookForBankingNotExistsFailure()
-    {
-        $this->fixtures->merchant->addFeatures(['payout']);
-
-        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
-
-        $this->testData[__FUNCTION__]['request']['content'] = $this->getApiUpdatePayloadForBanking();
-
-        $this->mockServiceStorkRequest(
-            function ($path, $payload)
-            {
-                return new \Requests_Response();
-            });
         $this->startTest();
     }
 

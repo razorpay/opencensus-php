@@ -242,7 +242,6 @@ class Route
         'merchant_edit_email_la'                   => ['put',      'la-merchants/email',                             'MerchantController@updateLinkedAccountMerchantEmail'               ],
         'merchant_edit_config_la'                  => ['post',     'la-merchants/config',                            'MerchantController@updateLinkedAccountConfig'                      ],
         'merchant_fetch_multiple'                  => ['get',      'merchants',                                      'MerchantController@getMerchants'                                   ],
-        'merchant_fetch_webhooks'                  => ['get',      'merchants/{id}/webhooks',                        'MerchantController@getMerchantWebhooks'                            ],
         'merchant_assign_pricing'                  => ['post',     'merchants/{id}/pricing',                         'MerchantController@postAssignPricingPlan'                          ],
         'merchant_get_pricing'                     => ['get',      'merchants/{id}/pricing',                         'MerchantController@getPricingPlan'                                 ],
         'proxy_merchant_get_pricing'               => ['get',      'proxy/merchants/pricing',                        'MerchantController@proxyGetPricingPlan'                            ],
@@ -415,20 +414,16 @@ class Route
         'payment_upi_transfer_fetch'               => ['get',      'payments/{id}/upi_transfer',                     'UpiTransferController@fetchForPayment'                             ],
         'virtual_vpa_prefix_validate'              => ['get',      'virtual_vpa_prefixes/validate',                  'VirtualVpaPrefixController@validatePrefix'                         ],
         'virtual_vpa_prefix_save'                  => ['post',     'virtual_vpa_prefixes',                           'VirtualVpaPrefixController@savePrefix'                             ],
-        'webhook_create'                           => ['post',     'webhooks',                                       'MerchantController@postWebhook'                                    ],
-        'webhook_delete'                           => ['delete',   'webhooks/{id}',                                  'MerchantController@deleteWebhook'                                  ],
-        'webhook_edit'                             => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
-        'webhook_fetch'                            => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],
+        'webhook_create'                           => ['post',     'webhooks',                                       'WebhookV2Controller@create'                                        ],
+        'webhook_delete'                           => ['delete',   'webhooks/{id}',                                  'WebhookV2Controller@delete'                                        ],
+        'webhook_edit'                             => ['put',      'webhooks/{id}',                                  'WebhookV2Controller@update'                                        ],
+        'webhook_fetch'                            => ['get',      'webhooks/{id}',                                  'WebhookV2Controller@get'                                           ],
         'webhook_fetch_events'                     => ['get',      'webhooks/events/all',                            'MerchantController@getWebhookEvents'                               ],
-        'webhook_fetch_multiple'                   => ['get',      'webhooks',                                       'MerchantController@getWebhooks'                                    ],
-        'webhook_analytics'                        => ['get',      'webhooks/{id}/analytics',                        'MerchantController@getWebhookAnalytics'                            ],
-        'oauth_app_webhook_create'                 => ['post',     'oauth/applications/{id}/webhooks',               'MerchantController@postOAuthApplicationWebhook'                    ],
-        'webhook_stork_migrate'                    => ['post',     'webhooks/migrate/stork',                         'WebhookController@webhookStorkMigrate'                             ],
-        'webhook_stork_create_banking_bulk'        => ['post',     'webhooks/create/stork/banking/bulk',             'WebhookController@webhookStorkCreateBankingBulk'                   ],
-        'webhook_deactivate'                       => ['post',     'webhooks/{id}/deactivate',                       'WebhookController@webhookDeactivate'                               ],
+        'webhook_fetch_multiple'                   => ['get',      'webhooks',                                       'WebhookV2Controller@list'                                          ],
+        'webhook_analytics'                        => ['get',      'webhooks/{id}/analytics',                        'WebhookV2Controller@getAnalytics'                                  ],
+        'oauth_app_webhook_create'                 => ['post',     'oauth/applications/{id}/webhooks',               'WebhookV2Controller@createForOAuthApp'                             ],
         'webhook_send_email'                       => ['post',     'webhooks-email/{emailType}',                     'WebhookV2Controller@sendEmail'                                     ],
         'admin_webhook_email_stork_recon'          => ['post',     'admin/webhooks/email/recon',                     'WebhookController@webhookEmailStorkRecon'                          ],
-        'admin_webhook_recon'                      => ['post',     'admin/webhooks/recon',                           'WebhookController@webhookStorkRecon'                               ],
         'admin_process_webhook_events_csv'         => ['post',     'admin/webhooks/process_events_csv',              'WebhookV2Controller@processWebhookEventsFromCsv'                   ],
         'merchant_create_key'                      => ['post',     'keys',                                           'KeyController@postCreateKeys'                                      ],
         'merchant_fetch_keys'                      => ['get',      'keys',                                           'KeyController@getKeys'                                             ],
@@ -2513,7 +2508,6 @@ class Route
         'transfer_settlements_update',
         'transfer_failed_process',
         'merchant_mtu_update',
-        'webhook_deactivate',
         'webhook_send_email',
         'transaction_settled_data_fix',
         'contact_get_internal',
@@ -3246,7 +3240,6 @@ class Route
         'merchant_fetch',
         'merchant_fetch_bank_account',
         'merchant_fetch_multiple',
-        'merchant_fetch_webhooks',
         'merchant_generate_test_bank_acnt',
         'merchant_get_banks',
         'merchant_live_disable',
@@ -3509,8 +3502,6 @@ class Route
         'offer_create_bulk',
         'banking_account_yesb_bulk_create',
 
-        'webhook_stork_migrate',
-
         // action on dashboard
         'set_channel_action',
         'get_channel_action',
@@ -3610,17 +3601,12 @@ class Route
         'admin_fetch_fund_account_validate',
         'create_promotions_events',
 
-       // Banking webhook Stork
-        'webhook_stork_create_banking_bulk',
-
         //payout downtime
         'create_payout_downtime',
         'update_payout_downtime_by_id',
         'fetch_payout_downtime_by_id',
         'fetch_payout_downtimes',
 
-        // API<->Stork webhook recon route
-        'admin_webhook_recon',
         // Recon for alert_email field of stork
         'admin_webhook_email_stork_recon',
 
@@ -3842,7 +3828,6 @@ class Route
         'admin_change_password'                    => '*',
         'admin_get_file'                           => '*',
         'admin_post_stork'                         => Permission::STORK_WRITE_OPERATION,
-        'admin_webhook_recon'                      => Permission::STORK_WRITE_OPERATION,
         'admin_webhook_email_stork_recon'          => Permission::STORK_WRITE_OPERATION,
         'admin_process_webhook_events_csv'         => Permission::STORK_SUPPORT_OPERATION,
         'invitation_fetch'                         => '*',
@@ -4009,7 +3994,6 @@ class Route
         'merchant_delete_terminal'                 => Permission::DELETE_TERMINAL,
         'merchant_edit_free_credits'               => '*',
         'merchant_fetch_multiple'                  => '*',
-        'merchant_fetch_webhooks'                  => '*',
         'webhook_edit'                             => '*',
         'webhook_delete'                           => '*',
         'merchant_generate_test_bank_acnt'         => '*',
@@ -4274,7 +4258,6 @@ class Route
         'excel_store_update_records'               => Permission::ACCESS_EXCEL_STORE,
         'excel_store_delete_records'               => Permission::ACCESS_EXCEL_STORE,
         'excel_store_page_by_url'                  => Permission::ACCESS_EXCEL_STORE,
-        'webhook_stork_migrate'                    => Permission::STORK_WRITE_OPERATION,
 
         'banking_account_yesb_bulk_create'         => Permission::BANKING_UPDATE_ACCOUNT,
         'banking_account_activation_status_'
@@ -4389,10 +4372,6 @@ class Route
         'fund_account_validate_bulk_patch_status'   => Permission::BULK_PATCH_FUND_ACCOUNT_VALIDATION,
 
         'fee_recovery_manual_update'                => Permission::PROCESS_FEE_RECOVERY,
-
-        // copy API setting to RX on stork
-        'webhook_stork_create_banking_bulk'        => Permission::CREATE_WEBHOOK_STORK_BANKING_BULK,
-
 
         //payout downtime
         'create_payout_downtime'                   => Permission::MANAGE_PAYOUT_DOWNTIME,
@@ -4963,7 +4942,6 @@ class Route
             'retry_penny_testing_cron',
             'payment_links_bulk_expire',
             'fee_recovery_payout_process',
-            'webhook_stork_create_banking_bulk',
             'fts_bulk_attempts_initiate',
             'merchants_update_onboarding_category_to_normal_cron',
             'tokens_upi_vpa_bulk_cron',
@@ -5195,7 +5173,6 @@ class Route
             // Storks needs connected applications against a merchant to fan
             // out the same event to former entities as well.
             'merchant_get_app_access_mapping',
-            'webhook_deactivate',
             'webhook_send_email',
         ],
 

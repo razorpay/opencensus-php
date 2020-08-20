@@ -497,97 +497,9 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getMerchantWebhooks($id)
-    {
-        $data = $this->service()->getMerchantWebhooks($id);
-
-        return ApiResponse::json($data);
-    }
-
-    /**
-     * Creates a new webhook. We have two possible paths for creating
-     * webhook. The old path writes to API and dual writes to stork.
-     * The new path - WebhookV2/Controller path writes to Stork & dual
-     * writes to API. Soon the dual write to API will be removed. We
-     * are gradually ramping to the new path.
-     */
-    public function postWebhook()
-    {
-        if ($this->shouldUseWebhookV2Path() === true)
-        {
-            return (new WebhookV2Controller)->create();
-        }
-
-        $input = Request::all();
-
-        $data = $this->service()->createWebhook($input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function putWebhook($id)
-    {
-        if ($this->shouldUseWebhookV2Path() === true)
-        {
-            return (new WebhookV2Controller)->update($id);
-        }
-
-        $input = Request::all();
-
-        $data = $this->service()->editWebhook($id, $input);
-
-        return ApiResponse::json($data);
-    }
-
     public function getWebhookEvents()
     {
         $data = $this->service()->fetchWebhookEvents();
-
-        return ApiResponse::json($data);
-    }
-
-    public function getWebhook($id)
-    {
-        if ($this->shouldUseWebhookV2Path() === true)
-        {
-            return (new WebhookV2Controller)->get($id);
-        }
-
-        $data = $this->service()->getWebhook($id);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getWebhookAnalytics($id)
-    {
-        return (new WebhookV2Controller)->getAnalytics($id);
-    }
-
-    public function getWebhooks()
-    {
-        if ($this->shouldUseWebhookV2Path() === true)
-        {
-            return (new WebhookV2Controller)->list();
-        }
-
-        $data = $this->service()->getWebhooks($this->input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function deleteWebhook($id)
-    {
-        return (new WebhookV2Controller)->delete($id);
-    }
-
-    public function postOAuthApplicationWebhook(string $appId)
-    {
-        if ($this->shouldUseWebhookV2Path() === true)
-        {
-            return (new WebhookV2Controller)->createForOAuthApp($appId);
-        }
-
-        $data = $this->service()->createOAuthAppWebhook($appId, $this->input);
 
         return ApiResponse::json($data);
     }
@@ -1762,25 +1674,6 @@ class MerchantController extends Controller
         $response = $this->service(E::MERCHANT_DETAIL)->verifyMerchantAttributes($input, $verificationType);
 
         return ApiResponse::json($response);
-    }
-
-    /**
-     * It returns whether the webhook v2 path should be used or not.
-     * It makes a RazorX calls for evaluation of a feature flag
-     * and the merchant id.
-     *
-     * @return bool
-     */
-    protected function shouldUseWebhookV2Path(): bool
-    {
-        $mid = $this->ba->getMerchant()->getId();
-
-        $variant = $this->app['razorx']->getTreatment(
-            $mid,
-            Merchant\RazorxTreatment::API_WEBHOOK_V2_PATH,
-            $this->app['rzp.mode'] ?? 'live');
-
-        return $variant === 'on';
     }
 
     public function trimSpacesForMerchant()

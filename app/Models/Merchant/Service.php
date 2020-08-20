@@ -14,7 +14,6 @@ use Razorpay\OAuth\Token as OAuthToken;
 use Razorpay\Spine\DataTypes\Dictionary;
 use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Application as OAuthApplication;
-use RZP\Models\Merchant\Webhook\Entity as WebhookEntity;
 
 use RZP\Exception;
 use RZP\Models\Base;
@@ -1450,92 +1449,11 @@ class Service extends Base\Service
         return (new Methods\Core)->editMethods($input, $merchant);
     }
 
-    public function getMerchantWebhooks($id)
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
-
-        $webhooks = (new Webhook\Core)->getWebhooks($merchant);
-
-        return $webhooks->toArray();
-    }
-
-    public function createWebhook($input)
-    {
-        $webhook = (new Merchant\Webhook\Service())->createWebhook($this->merchant, $input);
-
-        return $webhook->toArrayPublic();
-    }
-
-    public function editWebhook($webhookId, $input)
-    {
-        // This is a hack. For oauth - merchant dashboard is sending
-        // application_id for the new webhook path (v2 path). Since
-        // this path of webhook update doesn't require application_id
-        // it throws a validation error. Slack reference:
-        // https://razorpay.slack.com/archives/CD1AVRJBX/p1596630046092700?thread_ts=1596462723.044400&cid=CD1AVRJBX
-        unset($input[WebhookEntity::APPLICATION_ID]);
-
-        $this->traceWebhookEditRequest($webhookId, $input);
-
-        $webhook = (new Merchant\Webhook\Service())->editWebhook($this->merchant, $webhookId, $input);
-
-        return $webhook->toArrayPublic();
-    }
-
-    protected function traceWebhookEditRequest($webhookId, $input)
-    {
-        if (array_key_exists(Webhook\Entity::SECRET, $input) === true)
-        {
-            $input[Webhook\Entity::SECRET] = "SECRET_REDACTED";
-
-            if (empty($input[Webhook\Entity::SECRET]) === true)
-            {
-                $input[Webhook\Entity::SECRET] = "EMPTY_SECRET_REDACTED";
-            }
-        }
-
-        $this->trace->info(
-            TraceCode::WEBHOOK_EDIT,
-            [
-                'webhook_id' => $webhookId,
-                'input'      => $input,
-            ]);
-    }
-
     public function fetchWebhookEvents()
     {
         $events = (new Webhook\Core)->fetchApplicableWebhookEvents($this->merchant);
 
         return $events;
-    }
-
-    public function getWebhook($id)
-    {
-        $webhook = $this->repo->webhook->findByIdAndMerchant($id, $this->merchant);
-
-        if (($this->app['basicauth']->isHosted() === true) ||
-            ($this->app['basicauth']->isExpress() === true))
-        {
-            return $webhook->toArrayHosted();
-        }
-
-        return $webhook->toArrayPublic();
-    }
-
-    public function getWebhooks(array $params)
-    {
-        return (new Merchant\Webhook\Service)->fetchWebhooks($params);
-    }
-
-    public function createOAuthAppWebhook(string $appId, array $input): array
-    {
-        $input[Webhook\Entity::ENTITY_TYPE] = AccessMap\Entity::APPLICATION;
-
-        $input[Webhook\Entity::ENTITY_ID] = $appId;
-
-        $webhook = (new Webhook\Core)->createWebhook($this->merchant, $input);
-
-        return $webhook->toArrayPublic();
     }
 
     public function patchMerchantBeneficiaryCode()

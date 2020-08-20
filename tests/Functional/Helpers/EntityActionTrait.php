@@ -70,29 +70,6 @@ trait EntityActionTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function createWebhook(array $input = array(), array $headers = [], $mode = 'test')
-    {
-        $this->setupMockDns();
-
-        $defaultInput = array(
-            'url' => 'http://webhook.com/v1/dummy/route',
-            'events' => [
-                'payment.authorized' => '1',
-            ]);
-
-        $input = array_merge($defaultInput, $input);
-
-        $request = array(
-            'url' => '/webhooks',
-            'method' => 'post',
-            'content' => $input,
-            'server' => $headers);
-
-        $this->ba->proxyAuth("rzp_{$mode}_10000000000000");
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
     protected function addAmountCredits(array $input = array(), $mid = Account::TEST_ACCOUNT)
     {
         $input['type'] = 'amount';
@@ -141,18 +118,6 @@ trait EntityActionTrait
             'content' => $input);
 
         $this->ba->adminAuth();
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function editWebhook($wid, $input)
-    {
-        $request = array(
-            'url' => '/webhooks/'.$wid,
-            'method' => 'put',
-            'content' => $input);
-
-        $this->ba->proxyAuth();
 
         return $this->makeRequestAndGetContent($request);
     }

@@ -1,127 +1,13 @@
 <?php
 
-use RZP\Gateway\Hdfc;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
-    'testCreateWebhook' => [
-        'request' => [
-            'url' => '/webhooks',
-            'content' => [
-                'url' => 'http://webhook.com',
-                'events' => [
-                    'payment.authorized' => '1',
-                ],
-            ],
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'url' => 'http://webhook.com',
-                'events' => [
-                    'payment.authorized' => true,
-                ],
-                'active' => true,
-            ]
-        ]
-    ],
-
-    'testCreateWebhookWithTerminalEvents' => [
-        'request' => [
-            'method'  => 'POST',
-            'url'     => '/webhooks',
-            'content' => [
-                'url'    => 'http://webhook.com',
-                'events' => [
-                    'terminal.created' => '1',
-                ],
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'url'    => 'http://webhook.com',
-                'active' => true,
-                'events' => [
-                    // Todo: Because of some bug following is not returned after post request.
-                    // 'terminal.created' => true,
-                ],
-            ],
-        ],
-    ],
-
-    'testCreateWebhookWithTerminalEventsExpectedPayloadToStork' => [
-        'webhook' => [
-            'service'       => "api-test",
-            'owner_id'      => "10000000000000",
-            'owner_type'    => "merchant",
-            'disabled'      => false,
-            'url'           => "http://webhook.com",
-            'secret'        => null,
-            'subscriptions' => [
-                [
-                    'eventmeta' => [
-                        'name' => "terminal.created",
-                    ],
-                ],
-            ],
-        ],
-    ],
-
-    'testEditDisableWebhookOnPrivateAuth' => [
-        'request' => [
-            'url' => '/webhooks',
-            'content' => [
-                'url' => 'http://webhook.com',
-                'events' => [
-                    'payment.authorized' => '1',
-                ],
-                'disable_on_failure' => '0',
-            ],
-            'method' => 'PUT'
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'disable on failure is/are not required and should not be sent',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
-    'testEditDisableWebhookOnAdminProxyAuth' => [
-        'request' => [
-            'url' => '/webhooks',
-            'content' => [
-                'url' => 'http://webhook.com',
-                'events' => [
-                    'payment.authorized' => '1',
-                ],
-                'disable_on_failure' => '0',
-            ],
-            'method' => 'PUT'
-        ],
-        'response' => [
-            'content' => [
-                'url' => 'http://webhook.com',
-                'events' => [
-                    'payment.authorized' => true,
-                ],
-                'active' => true,
-            ]
-        ]
-    ],
-
     'testEditWebhookForProductBankingWithInvalidEvents' => [
         'request' => [
-            'url'       => '/webhooks/10000000000000',
+            'url'       => '/webhooks/webhook0000001',
             'server' => [
                 'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
             ],
@@ -138,82 +24,6 @@ return [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Invalid event name/names: payment.authorized'
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
-    'testCreateWebhookWhenAlreadyCreated' => [
-        'request' => [
-            'url' => '/webhooks',
-            'content' => [
-                'url' => 'http://webhook.com',
-                'events' => [
-                    'payment.authorized' => '1',
-                ],
-            ],
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Webhook already created.'
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
-    'testCreateAppWebhook' => [
-        'request' => [
-            'url' => '/oauth/applications/10000000000App/webhooks',
-            'content' => [
-                'url' => 'http://webhook.com',
-                'events' => [
-                    'payment.authorized' => '1',
-                ],
-            ],
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'url'            => 'http://webhook.com',
-                'events'         => [
-                    'payment.authorized' => true,
-                ],
-                'active'         => true,
-                'application_id' => '10000000000App'
-            ]
-        ],
-    ],
-
-    'testCreateWebhookWithLargerSecret' => [
-        'request' => [
-            'url' => '/webhooks',
-            'content' => [
-                'url' => 'http://webhook.com',
-                'secret' => 'cef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1c',
-                'events' => [
-                    'payment.authorized' => '1',
-                ],
-            ],
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The secret may not be greater than 255 characters.'
                 ],
             ],
             'status_code' => 400,
@@ -262,14 +72,8 @@ return [
             'method' => 'POST'
         ],
         'response' => [
-            'content' => [
-                'url'            => 'http://webhook.com',
-                'events'         => [
-                    'payment.authorized' => true,
-                ],
-                'active'         => true,
-                'application_id' => '10000000000App'
-            ]
+            // This test just validates success response and skips contents(which requires mocking and covered elsewhere).
+            'content' => [],
         ],
     ],
 
@@ -285,14 +89,8 @@ return [
             'method' => 'POST'
         ],
         'response' => [
-            'content' => [
-                'url'            => 'http://webhook.com',
-                'events'         => [
-                    'payment.authorized' => true,
-                ],
-                'active'         => true,
-                'application_id' => '10000000000App'
-            ]
+            // This test just validates success response and skips contents(which requires mocking and covered elsewhere).
+            'content' => [],
         ],
     ],
 
@@ -334,319 +132,8 @@ return [
             'method' => 'POST'
         ],
         'response' => [
-            'content' => [
-                'url'            => 'http://webhook.com',
-                'events'         => [
-                    'payment.authorized' => true,
-                ],
-                'active'         => true,
-                'application_id' => '10000000000App'
-            ]
-        ],
-    ],
-
-    'testCreateWebhookForProductBanking' => [
-        'request' => [
-            'url'       => '/webhooks',
-            'server' => [
-                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
-            ],
-            'content'   => [
-                'url'       => 'http://webhook.com/v1/dummy/route',
-                'events'    => [
-                    'transaction.created' => '1',
-                ],
-            ],
-            'method'    => 'POST',
-        ],
-        'response' => [
-            'content' => [
-                'url'       => 'http://webhook.com/v1/dummy/route',
-                'events'    => [
-                    'transaction.created'   => true,
-                    'payout.created'        => false,
-                    'payout.processed'      => false,
-                    'payout.reversed'       => false,
-                ],
-                'active'    => true,
-            ],
-        ],
-    ],
-
-    'testCreateWebhookWithStork' => [
-        'request' => [
-            'url'     => '/webhooks',
-            'content' => [
-                'url' => 'http://webhook.com',
-                'events' => [
-                    'payment.authorized' => '1',
-                ],
-            ],
-            'method' => 'POST',
-        ],
-        'response' => [
-            'content' => [
-                'url' => 'http://webhook.com',
-                'events' => [
-                    'payment.authorized' => true,
-                ],
-                'active' => true,
-            ],
-        ]
-    ],
-
-    'testEditWebhookWithStork' => [
-        'request' => [
-            'url'       => '/webhooks',
-            'content' => [
-                'url' => 'http://webhook.com',
-                'events' => [
-                    'payment.authorized' => '0',
-                ],
-                'active' => true,
-            ],
-            'method' => 'put',
-        ],
-        'response' => [
-            'content' => [
-                'url' => 'http://webhook.com',
-                'events' => [
-                    'payment.authorized' => false,
-                ],
-                'active' => true,
-            ],
-        ]
-    ],
-
-    'testCreateWebhookForProductBankingWithStork' => [
-        'request' => [
-            'url'       => '/webhooks',
-            'server' => [
-                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
-            ],
-            'content'   => [
-                'url'       => 'http://webhook.com/v1/dummy/route',
-                'events'    => [
-                    'payout.created' => '1',
-                ],
-            ],
-            'method'    => 'POST',
-        ],
-        'response' => [
-            'content' => [
-                'url'       => 'http://webhook.com/v1/dummy/route',
-                'events'    => [
-                    'payout.created'        => true,
-                    'payout.processed'      => false,
-                    'payout.reversed'       => false,
-                ],
-                'active'    => true,
-            ],
-        ],
-    ],
-
-    'createRequestStorkProductPrimaryFeatureOn' => [
-        'webhook' => [
-            'id' => NULL,
-            'service' => "api-test",
-            'owner_id' => "10000000000000",
-            'owner_type' => "merchant",
-            'disabled' => FALSE,
-            'url' => "http://webhook.com",
-            'secret' => NULL,
-            'subscriptions' => [
-                [
-                    'eventmeta' => [
-                        'name' => "payment.authorized",
-                    ]
-                ]
-            ]
-        ]
-    ],
-
-    'editRequestStorkProductPrimaryFeatureOn' => [
-        'webhook' => [
-            'service' => "api-test",
-            'owner_id' => "10000000000000",
-            'owner_type' => "merchant",
-            'disabled' => FALSE,
-            'url' => "http://webhook.com",
-            'secret' => NULL,
-            'subscriptions' => [
-            ]
-        ]
-    ],
-
-    'storkCreateRequestBanking' => [
-        'webhook' => [
-            'id' => NULL,
-            'service' => "rx-test",
-            'owner_id' => "10000000000000",
-            'owner_type' => "merchant",
-            'disabled' => FALSE,
-            'url' => "http://webhook.com/v1/dummy/route",
-            'secret' => NULL,
-            'subscriptions' => [
-                [
-                    'eventmeta' => [
-                        'name' => "transaction.created",
-                    ]
-                ]
-            ]
-        ]
-    ],
-
-    'storkUpdateRequestPrimary' => [
-        'webhook' => [
-            'service' => "api-test",
-            'owner_id' => "10000000000000",
-            'owner_type' => "merchant",
-            'disabled' => FALSE,
-            'url' => "http://webhook.com/v1/dummy/route",
-            'secret' => NULL,
-            'subscriptions' => [
-                [
-                    'eventmeta' => [
-                        'name' => "transaction.created",
-                    ]
-                ]
-            ]
-        ]
-    ],
-
-    'testEditWebhookStorkCreateRequestBanking' => [
-        'webhook' => [
-            'id' => NULL,
-            'service' => "rx-test",
-            'owner_id' => "10000000000000",
-            'owner_type' => "merchant",
-            'disabled' => FALSE,
-            'url' => "http://webhook.com/v1/dummy/route",
-            'secret' => NULL,
-            'subscriptions' => []
-        ]
-    ],
-
-    'testEditWebhookStorkUpdateRequestPrimary' => [
-        'webhook' => [
-            'service' => "api-test",
-            'owner_id' => "10000000000000",
-            'owner_type' => "merchant",
-            'disabled' => FALSE,
-            'url' => "http://webhook.com/v1/dummy/route",
-            'secret' => NULL,
-            'subscriptions' => [
-                [
-                    'eventmeta' => [
-                        'name' => "payment.authorized",
-                    ]
-                ],
-                [
-                    'eventmeta' => [
-                        'name' => "payment.failed",
-                    ]
-                ]
-            ]
-        ]
-    ],
-
-    'testCopyWebhookInBulkForBanking' => [
-        'request' => [
-            'url' => '/webhooks/create/stork/banking/bulk',
-            'method' => 'post',
-            'content' => [
-                "merchant_ids" => ["10000000000000", "10000000000001"]
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'successful_mids'  => ['10000000000000'],
-                'failed_mids'  => ['10000000000001'],
-                'no_setting_mids'  => [],
-            ],
-        ],
-    ],
-
-    'testEditWebhookForProductBankingWithStork' => [
-        'request' => [
-            'url'       => '/webhooks/EZ4ezgl4124qKu',
-            'server' => [
-                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
-            ],
-            'content'   => [
-                'url'       => 'http://webhook.com/v1/dummy/route',
-                "active"    => 1,
-                'events'    => [
-                    'payout.initiated' => '1',
-                    'payout.reversed' => '1',
-                ],
-            ],
-            'method'    => 'PUT',
-        ],
-        'response' => [
-            'content' => [
-                'url'       => 'http://webhook.com/v1/dummy/route',
-                'events'    => [
-                    'payout.initiated' => true,
-                    'payout.created'   => false,
-                    'payout.reversed'  => true,
-                ],
-                'active'    => true,
-            ],
-        ],
-    ],
-
-    'testGetWebhooksProductBankingWithStork' => [
-        'request' => [
-            'url' => '/webhooks',
-            'server'    => [
-                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
-            ],
-            'method' => 'GET'
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'count' => 1,
-                'items' => [
-                    [
-                        'url' => 'http://webhook.com/v1/dummy/route',
-                        'events' => [
-                            'payout.created' => true
-                        ],
-                        'active' => true
-                    ]
-                ]
-            ]
-        ]
-    ],
-
-    'testCreateWebhookForProductBankingWithInvalidEvents' => [
-        'request' => [
-            'url'       => '/webhooks',
-            'server' => [
-                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
-            ],
-            'content'   => [
-                'url'       => 'http://webhook.com',
-                'events'    => [
-                    'payment.authorized' => '1',
-                ],
-            ],
-            'method'    => 'POST',
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid event name/names: payment.authorized'
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            // This test just validates success response and skips contents(which requires mocking and covered elsewhere).
+            'content' => [],
         ],
     ],
 
@@ -679,162 +166,6 @@ return [
         ],
     ],
 
-    'testCreateWebhookWithDisallowedPort' => [
-        'request' => [
-            'url' => '/webhooks',
-            'content' => [
-                'url' => 'http://example.com:6000',
-                'events' => [
-                    'payment.authorized' => '1',
-                ],
-            ],
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The provided port is restricted and cannot be used in a webhook URL.'
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
-    'testCreateWebhookWithInternalIp' => [
-        'request' => [
-            'url' => '/webhooks',
-            'content' => [
-                'url' => 'http://10.0.0.1.xip.io',
-                'events' => [
-                    'payment.authorized' => '1',
-                ],
-            ],
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'URL must point to a public IP address: http://10.0.0.1.xip.io'
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
-    'testCreateWebhookWithReservedIp' => [
-        'request' => [
-            'url' => '/webhooks',
-            'content' => [
-                'url' => 'http://169.254.169.254.xip.io',
-                'events' => [
-                    'payment.authorized' => '1',
-                ],
-            ],
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'URL must point to a public IP address: http://169.254.169.254.xip.io'
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
-    'testCreateWebhookWithoutHost' => [
-        'request' => [
-            'url' => '/webhooks',
-            'content' => [
-                // Valid public IP address
-                'url' => 'http://1.2.3.4/hello',
-                'events' => [
-                    'payment.authorized' => '1',
-                ],
-            ],
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'url' => 'http://1.2.3.4/hello',
-                'events' => [
-                    'payment.authorized' => true,
-                ],
-                'active' => true,
-            ]
-        ]
-    ],
-
-    'testGetWebhooks' => [
-        'request' => [
-            'url' => '/webhooks',
-            'method' => 'GET'
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'count' => 1,
-                'items' => [
-                    [
-                        'url' => 'http://webhook.com/v1/dummy/route',
-                        'events' => [
-                            'payment.authorized' => true
-                        ],
-                        'active' => true
-                    ]
-                ]
-            ]
-        ]
-    ],
-
-    'testGetWebhookWithSecret' => [
-        'request' => [
-            'method' => 'GET',
-        ],
-        'response' => [
-            'content' => [
-                'url'         => 'http://www.testUrl.com',
-                'secret'      => 'BestTestSecretEver',
-                'events'      => [
-                    'payment.authorized' => true,
-                ]
-            ]
-        ]
-    ],
-
-    'testGetWebhooksWithSecret' => [
-        'request' => [
-            'url' => '/webhooks',
-            'method' => 'GET',
-        ],
-        'response' => [
-            'content' => [
-                [
-                    'url'         => 'http://www.testUrl.com',
-                    'secret'      => 'BestTestSecretEver',
-                    'events'      => [
-                        'payment.authorized' => true,
-                    ]
-                ]
-            ]
-        ]
-    ],
-
     'testGetWebhookEvents' => [
         'request' => [
             'url'   => '/webhooks/events/all',
@@ -850,29 +181,6 @@ return [
                 'invoice.paid',
                 'invoice.partially_paid',
                 'invoice.expired',
-            ]
-        ]
-    ],
-
-    'testGetAppWebhooks' => [
-        'request' => [
-            'url'    => '/webhooks?application_id=10000000000App',
-            'method' => 'GET'
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'count'  => 1,
-                'items'  => [
-                    [
-                        'url'            => 'http://webhook.com/v1/dummy/route',
-                        'events'         => [
-                            'payment.authorized' => true
-                        ],
-                        'active'         => true,
-                        'application_id' => '10000000000App',
-                    ]
-                ]
             ]
         ]
     ],
@@ -895,81 +203,9 @@ return [
         ],
     ],
 
-    'testRecreateWebhook' => [
-        'request' => [
-            'url' => '/webhooks',
-            'content' => [
-                'url' => 'random2com',
-                'events' => [
-                    'payment.authorized' => '0',
-                ],
-            ],
-            'method' => 'post',
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
-    'testCreateAppWebhookInvalidAppId' => [
-        'request'  => [
-            'url'     => '/oauth/applications/10000000000Appp/webhooks',
-            'content' => [
-                'url'    => 'http://webhook.com',
-                'events' => [
-                    'payment.authorized' => '1',
-                ],
-            ],
-            'method'  => 'POST'
-        ],
-        'response' => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The entity id must be 14 characters.'
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
-    'testEditWebhook' => [
-        'request' => [
-            'content' => [
-                'url' => 'https://example.com',
-                'events' => [
-                    'payment.authorized' => '0',
-                ],
-                'active' => '0',
-            ],
-            'method' => 'put',
-        ],
-        'response' => [
-            'content' => [
-                'url' => 'https://example.com',
-                'events' => [
-                    'payment.authorized' => false,
-                ],
-                'active' => false,
-            ],
-        ]
-    ],
-
     'testEditWebhookByNonOwnerUser' => [
         'request' => [
+            'url' => '/webhooks/webhook0000001',
             'content' => [
                 'url' => 'https://example.com',
                 'events' => [
@@ -987,31 +223,6 @@ return [
                 ],
             ],
             'status_code' => 400,
-        ],
-    ],
-
-    'testCreateWebhookWrongUrl' => [
-        'request' => [
-            'url' => '/webhooks',
-            'content' => [
-                'url' => 'random2com',
-                'events' => [
-                    'payment.authorized' => '0',
-                ],
-            ],
-            'method' => 'post',
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -1206,6 +417,51 @@ return [
                         'error_description' => null,
                     ],
                 ],
+            ],
+        ],
+    ],
+
+    'testCreateWebhookWithEventWhenFeatureNotEnabled' => [
+        'request' => [
+            'url'       => '/webhooks',
+            'content'   => [
+                'url'       => 'http://webhook.com',
+                'events'    => [
+                    'payment.authorized'   => '1',
+                    'subscription.charged' => '1',
+                ],
+            ],
+            'method'    => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid event name/names: subscription.charged'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testWebhooksFeatureBasedEvents' => [
+        'request' => [
+            'url'       => '/webhooks',
+            'content'   => [
+                'url'       => 'http://webhook.com',
+                'events'    => [
+                    'payment.authorized'   => '1',
+                    'subscription.charged' => '1',
+                ],
+            ],
+            'method'    => 'POST',
+        ],
+        'response' => [
+            'content' => [
             ],
         ],
     ],
@@ -1787,47 +1043,6 @@ return [
                 ],
             ],
         ],
-    ],
-
-    'testWebhookDeactivate' => [
-        'request' => [
-            'url' => '',
-            'content' => [
-                'mode' => 'test'
-            ],
-            'method' => 'POST',
-        ],
-        'response' => [
-            'content' => [],
-            'status_code' => 200,
-        ],
-    ],
-
-    'testWebhookDeactivateData' => [
-        'subject' => 'Razorpay | Webhook deactivated after 24 hours from last successful delivery for Test Merchant',
-        'mode' => 'test',
-        'url' => 'http://webhook.com/v1/dummy/route',
-    ],
-
-    'testWebhookDeactivateWithEmail' => [
-        'request' => [
-            'url' => '',
-            'content' => [
-                'alert_email' => 'stork-external@razorpay.com',
-            ],
-            'method' => 'POST',
-        ],
-        'response' => [
-            'content' => [],
-            'status_code' => 200,
-        ],
-    ],
-
-    'testWebhookDeactivateWithEmailData' => [
-        'subject' => 'Razorpay | Webhook deactivated after 24 hours from last successful delivery for Test Merchant',
-        'mode' => 'test',
-        'url' => 'http://webhook.com/v1/dummy/route',
-        'alert_email' => 'stork-external@razorpay.com',
     ],
 
     'createSettingsForWebhookTranslateUrl' => [

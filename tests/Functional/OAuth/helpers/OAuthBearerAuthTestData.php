@@ -185,14 +185,14 @@ return [
             'url'     => '/webhooks',
             'method'  => 'POST',
             'content' => [
-                'url'    => 'https://www.example.com',
+                'url'    => 'http://webhook.com/v1/dummy/route',
                 'events' => ['payment.authorized' => '1'],
             ],
         ],
         'response' => [
             'content' => [
                 'entity'   => 'webhook',
-                'url' => 'https://www.example.com',
+                'url' => 'http://webhook.com/v1/dummy/route',
                 'events' => [
                     'payment.authorized' => true,
                 ],
