@@ -51,7 +51,7 @@ class RzpDbRefresh extends RefreshCommand
             $this->call(
                 'migrate:refresh',
                 [
-                    '--database' => 'test',
+                    '--database' => 'test_migration',
                     '--force' => $force
                 ]);
 
@@ -60,7 +60,7 @@ class RzpDbRefresh extends RefreshCommand
             $this->call(
                 'migrate:refresh',
                 [
-                    '--database' => 'live',
+                    '--database' => 'live_migration',
                     '--force' => $force
                 ]);
         }

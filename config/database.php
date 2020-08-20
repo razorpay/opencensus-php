@@ -97,6 +97,7 @@ return array(
             'collation' => 'utf8_bin',
             'prefix'    => '',
             'strict'    => true,
+            'view_db'   => env('DB_LIVE_VIEW_DATABASE'),
         ],
 
         'test' => [
@@ -194,6 +195,7 @@ return array(
             'collation' => 'utf8_bin',
             'prefix'    => '',
             'strict'    => true,
+            'view_db'   => env('DB_TEST_VIEW_DATABASE'),
         ],
 
         'slave-live' => [

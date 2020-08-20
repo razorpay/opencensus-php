@@ -990,3 +990,15 @@ if (!function_exists('mask_vpa'))
         return mask_except_last4($username, '*') . '@' . ($exploded[1] ?? '');
     }
 }
+
+if (!function_exists('wrap_db_table'))
+{
+    function wrap_db_table(string $table)
+    {
+        $segments = explode('.', $table);
+
+        return collect($segments)->map(function ($segment, $key) use ($segments) {
+            return '`'. $segment .'`';
+        })->implode('.');
+    }
+}

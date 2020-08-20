@@ -145,15 +145,15 @@ class Database
     {
         $this->createDatabases();
 
-        \Artisan::call('migrate', ['--database' => 'live']);
-        \Artisan::call('migrate', ['--database' => 'test']);
+        \Artisan::call('migrate', ['--database' => 'live_migration']);
+        \Artisan::call('migrate', ['--database' => 'test_migration']);
 
         // Run Auth DB migrations from the oauth package
         \Artisan::call('migrate', ['--database' => 'auth', '--path' => '/vendor/razorpay/oauth/database/migrations']);
 
         // Run P2P DB migrations from the P2p Service
-        Artisan::call('migrate', ['--database' => 'live', '--path' => 'database/migrations/p2p']);
-        Artisan::call('migrate', ['--database' => 'test', '--path' => 'database/migrations/p2p']);
+        Artisan::call('migrate', ['--database' => 'live_migration', '--path' => 'database/migrations/p2p']);
+        Artisan::call('migrate', ['--database' => 'test_migration', '--path' => 'database/migrations/p2p']);
 
         if ($this->isPaymentUpiMocked() === false)
         {
