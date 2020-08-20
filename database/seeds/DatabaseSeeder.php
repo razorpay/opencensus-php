@@ -1228,6 +1228,7 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingAxisTerminal();
         $this->createNetbankingUbiTerminal();
         $this->createNetbankingScbTerminal();
+        $this->createNetbankingJkbTerminal();
         $this->createNetbankingEquitasTerminal();
         $this->createNetbankingFederalTerminal();
         $this->createNetbankingIndusindTerminal();
@@ -1866,6 +1867,23 @@ class DatabaseSeeder extends Seeder
                 'gateway_secure_secret2'    => Crypt::encrypt('test_netbanking_scb_decryption_key'),
                 'gateway_terminal_password' => Crypt::encrypt('test_netbanking_scb_hash_salt'),
                 'recurring'                 => 1,
+                'created_at'                => time(),
+                'updated_at'                => time(),
+            ]
+        );
+    }
+
+    protected function createNetbankingJkbTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                        => Terminal\Shared::NETBANKING_JKB_TERMINAL,
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::NETBANKING_JKB,
+                'card'                      => '0',
+                'netbanking'                => '1',
+                'gateway_merchant_id'       => 'test_netbanking_jkb_merchant_id',
+                'recurring'                 => 0,
                 'created_at'                => time(),
                 'updated_at'                => time(),
             ]

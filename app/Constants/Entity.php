@@ -264,6 +264,7 @@ class Entity
     const NETBANKING_IBK         = 'netbanking_ibk';
     const NETBANKING_UBI         = 'netbanking_ubi';
     const NETBANKING_SCB         = 'netbanking_scb';
+    const NETBANKING_JKB         = 'netbanking_jkb';
     const NETBANKING_PNB         = 'netbanking_pnb';
     const WALLET_PAYZAPP         = 'wallet_payzapp';
     const NETBANKING_BOB         = 'netbanking_bob';

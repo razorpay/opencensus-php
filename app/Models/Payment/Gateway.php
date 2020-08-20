@@ -52,6 +52,7 @@ class Gateway
     const NETBANKING_IDFC        = 'netbanking_idfc';
     const NETBANKING_UBI         = 'netbanking_ubi';
     const NETBANKING_SCB         = 'netbanking_scb';
+    const NETBANKING_JKB         = 'netbanking_jkb';
     const NETBANKING_FEDERAL     = 'netbanking_federal';
     const NETBANKING_EQUITAS     = 'netbanking_equitas';
     const NETBANKING_BOB         = 'netbanking_bob';
@@ -898,6 +899,7 @@ class Gateway
             self::NETBANKING_AIRTEL,
             self::NETBANKING_UBI,
             self::NETBANKING_SCB,
+            self::NETBANKING_JKB,
             self::NETBANKING_AXIS,
             self::NETBANKING_FEDERAL,
             self::NETBANKING_RBL,
@@ -1770,6 +1772,7 @@ class Gateway
         IFSC::AIRP         => Gateway::NETBANKING_AIRTEL,
         IFSC::UBIN         => Gateway::NETBANKING_UBI,
         IFSC::SCBL         => Gateway::NETBANKING_SCB,
+        IFSC::JAKA         => Gateway::NETBANKING_JKB,
         IFSC::SIBL         => Gateway::NETBANKING_SIB,
         IFSC::CBIN         => Gateway::NETBANKING_CBI,
         IFSC::FDRL         => Gateway::NETBANKING_FEDERAL,
@@ -2752,6 +2755,7 @@ class Gateway
         $gateways = [
             self::NETBANKING_SVC,
             self::NETBANKING_IDBI,
+            self::NETBANKING_JKB,
             self::NETBANKING_IOB,
         ];
 
@@ -2774,6 +2778,7 @@ class Gateway
             self::NETBANKING_YESB,
             self::NETBANKING_SIB,
             self::NETBANKING_IDBI,
+            self::NETBANKING_JKB,
             self::NETBANKING_IOB,
         ];
 

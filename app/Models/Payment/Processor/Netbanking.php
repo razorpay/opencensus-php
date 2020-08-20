@@ -97,6 +97,7 @@ class Netbanking
         IFSC::RATN,
         IFSC::UBIN,
         IFSC::SCBL,
+        IFSC::JAKA,
         IFSC::INDB,
         IFSC::ORBC,
         IFSC::CSBK,
@@ -151,6 +152,7 @@ class Netbanking
         self::BARB_R,
         IFSC::SVCB,
         IFSC::IBKL,
+        IFSC::JAKA,
         IFSC::IOBA,
     ];
 
@@ -472,6 +474,14 @@ class Netbanking
             'retail' => [
                 IFSC::SCBL,
             ],
+        ],
+        Gateway::NETBANKING_JKB => [
+            'retail' => [
+                IFSC::JAKA,
+            ],
+            'tpv' => [
+                IFSC::JAKA,
+            ]
         ],
         Gateway::NETBANKING_CBI => [
             'retail' => [
