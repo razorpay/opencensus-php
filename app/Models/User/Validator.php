@@ -28,16 +28,17 @@ class Validator extends Base\Validator
         Entity::ID                              => 'sometimes|max:14',
         Entity::NAME                            => 'sometimes|string|max:200',
         Entity::EMAIL                           => 'required|email|unique:users,email',
-        Entity::PASSWORD                        => 'required|between:8,50|confirmed|numbers|letters',
-        Entity::PASSWORD_CONFIRMATION           => 'required|between:8,50',
+        Entity::PASSWORD                        => 'required_without:oauth_provider|between:8,50|confirmed|numbers|letters',
+        Entity::PASSWORD_CONFIRMATION           => 'required_without:oauth_provider|between:8,50',
         Entity::CONTACT_MOBILE                  => 'sometimes|nullable|max:15|contact_syntax',
         Entity::REMEMBER_TOKEN                  => 'sometimes',
         Entity::CONFIRM_TOKEN                   => 'sometimes',
-        Entity::CAPTCHA                         => 'required_without:captcha_disable',
+        Entity::CAPTCHA                         => 'required_without_all:captcha_disable,oauth_provider',
         Entity::CAPTCHA_DISABLE                 => 'sometimes|string',
         Entity::SETTINGS                        => 'nullable|associative_array',
         Merchant\Constants::PARTNER_INTENT      => 'sometimes|boolean',
         Entity::APP                             => 'sometimes|string',
+        Entity::OAUTH_PROVIDER                  => 'sometimes|string|custom',
     ];
 
     protected static $editRules = [
@@ -65,10 +66,11 @@ class Validator extends Base\Validator
 
     protected static $loginRules = [
         Entity::EMAIL                 => 'required|email',
-        Entity::PASSWORD              => 'required|between:6,50',
-        Entity::CAPTCHA               => 'required_without:captcha_disable',
+        Entity::PASSWORD              => 'required_without:oauth_provider|between:6,50|numbers|letters',
+        Entity::CAPTCHA               => 'required_without_all:captcha_disable,oauth_provider',
         Entity::CAPTCHA_DISABLE       => 'sometimes|string',
         Entity::APP                   => 'sometimes|string',
+        Entity::OAUTH_PROVIDER        => 'sometimes|string|custom',
     ];
 
     protected static $verifyUserSecondFactorRules = [
@@ -298,6 +300,26 @@ class Validator extends Base\Validator
     }
 
     /**
+     * Validate Json Encoded oauth Provider
+     * @param string $attribute
+     * @param string $oauthProvider
+     *
+     * @throws BadRequestException
+     */
+    protected function validateOauthProvider(string $attribute, string $oauthProvider)
+    {
+        $decodedOauthProvider = json_decode($oauthProvider);
+
+        if ((sizeof($decodedOauthProvider)!==1) or (OauthProvider::exists($decodedOauthProvider[0]) === false))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_USER_OAUTH_PROVIDER_INVALID,
+                Entity::OAUTH_PROVIDER,
+                [Entity::OAUTH_PROVIDER => $oauthProvider]);
+        }
+    }
+
+    /**
      * Google captcha validation.
      *
      * @param array $input
@@ -482,11 +504,13 @@ class Validator extends Base\Validator
 
     public function validatePasswordIsNotSameAsLastThree(string $newPassword)
     {
-        $oldPassword = $this->entity->getAttribute(Entity::PASSWORD);
+        $oldPassword  = $this->entity->getAttribute(Entity::PASSWORD);
         $oldPassword1 = $this->entity->getAttribute(Entity::OLD_PASSWORD_1);
         $oldPassword2 = $this->entity->getAttribute(Entity::OLD_PASSWORD_2);
 
-        assertTrue($oldPassword);
+        $oauthProvider = $this->entity->getAttribute(Entity::OAUTH_PROVIDER);
+
+        assertTrue((empty($oldPassword) === false) or (empty($oauthProvider) === false));
 
         foreach (array_filter([$oldPassword, $oldPassword1, $oldPassword2]) as $old)
         {

@@ -245,6 +245,106 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testOauthCreate()
+    {
+        Mail::fake();
+
+        $adminId = Org::MAKER_ADMIN;
+
+        $formData = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"leademail@razorpay.com",
+                "dba_name":"dbaname"
+            }',
+            true
+        );
+
+        $adminLead = $this->fixtures->create('admin_lead', ['admin_id' => $adminId, 'form_data' => $formData]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_invitation'] = $adminLead['token'];
+
+        $this->ba->appAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $this->startTest();
+
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $row = DB::table('merchant_map')
+                 ->where('merchant_id', '=', $merchant['id'])
+                 ->where('entity_id', '=', $adminId)
+                 ->where('entity_type', '=', 'admin')
+                 ->first();
+
+        $this->assertNotNull($row);
+    }
+
+    public function testOauthLogin()
+    {
+        $user = $this->fixtures->create('user', [
+            'id'    => "FL0nl7kME8j3Dd",
+            'email' => 'hello123@gmail.com',
+            'password' => 'hello123']);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testOauthLoginFail()
+    {
+        $user = $this->fixtures->create('user', [
+            'id'    => "FL0nl7kME8j3Dd",
+            'email' => 'hello123@gmail.com',
+            'password' => 'hello123']);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testOauthLoginFailPasswordOauthNotPresent()
+    {
+        $user = $this->fixtures->create('user', [
+            'id'    => "FL0nl7kME8j3Dd",
+            'email' => 'hello123@gmail.com',
+            'password' => 'hello123']);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testMultipleOauthProviderLogin()
+    {
+        $user = $this->fixtures->create('user', [
+            'id'             => "FL0nl7kME8j3Dd",
+            'email'          => 'hello123@gmail.com',
+            'password'       => 'hello123',
+            'oauth_provider' => "[\"google\"]"]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', "FL0nl7kME8j3Dd");
+
+        $this->assertEquals($user['oauth_provider'], "[\"google\"]");
+    }
+
     public function testUserAccessWithProductPrimary()
     {
         $user = $this->fixtures->create('user');

@@ -26,7 +26,7 @@ class CreateUsersTable extends Migration
 
             $table->string(User::EMAIL, 255)->unique();
 
-            $table->string(User::PASSWORD, 100);
+            $table->string(User::PASSWORD, 100)->nullable();
             $table->string(User::OLD_PASSWORD_1, 100)->nullable();
             $table->string(User::OLD_PASSWORD_2, 100)->nullable();
 
@@ -55,6 +55,9 @@ class CreateUsersTable extends Migration
             $table->integer(User::CREATED_AT);
 
             $table->integer(User::UPDATED_AT);
+
+            $table->json(User::OAUTH_PROVIDER)
+                  ->nullable();
 
             $table->index(User::CONFIRM_TOKEN);
 

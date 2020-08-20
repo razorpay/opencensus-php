@@ -60,6 +60,8 @@ class Entity extends Base\PublicEntity
 
     const APP                           = 'app';
 
+    const OAUTH_PROVIDER                = 'oauth_provider';
+
     const PASSWORD_TOKEN_LENGTH         = 50;
 
     // Boolean attribute is true if contact mobile is verified via OTP
@@ -91,6 +93,7 @@ class Entity extends Base\PublicEntity
         self::CONTACT_MOBILE,
         self::REMEMBER_TOKEN,
         self::CONFIRM_TOKEN,
+        self::OAUTH_PROVIDER,
         self::PASSWORD_RESET_TOKEN,
         self::PASSWORD_RESET_EXPIRY,
     ];
@@ -117,6 +120,7 @@ class Entity extends Base\PublicEntity
         self::PASSWORD_RESET_TOKEN,
         self::OLD_PASSWORD_1,
         self::OLD_PASSWORD_2,
+        self::OAUTH_PROVIDER,
     ];
 
     protected static $generators = [
@@ -232,9 +236,19 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PASSWORD_RESET_TOKEN, $token);
     }
 
+    public function setOauthProvider(string $oauthProvider = null)
+    {
+        $this->setAttribute(self::OAUTH_PROVIDER, $oauthProvider);
+    }
+
     public function setPasswordResetExpiry(int $expiry)
     {
         $this->setAttribute(self::PASSWORD_RESET_EXPIRY, $expiry);
+    }
+
+    public function getOauthProvider()
+    {
+        return $this->getAttribute(self::OAUTH_PROVIDER);
     }
 
     public function getPasswordResetToken()

@@ -24,6 +24,13 @@ class Repository extends Base\Repository
                     ->firstOrFailPublic();
     }
 
+    public function getUserFromEmailOrFail(string $email)
+    {
+        return $this->newQuery()
+                    ->where(Entity::EMAIL, '=', $email)
+                    ->firstOrFailPublic();
+    }
+
     public function findByToken(string $token)
     {
         return $this->newQuery()

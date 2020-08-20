@@ -419,6 +419,16 @@ class EventCode
         'name'  => 'signup.create_account.success',
     ];
 
+    const SIGNUP_CREATE_ACCOUNT_SUCCESS_WITH_GOOGLE = [
+        'group' => 'onboarding',
+        'name'  => 'signup.create_account.success.with.google',
+    ];
+
+    const LOGIN_SUCCESS_WITH_GOOGLE = [
+        'group' => 'onboarding',
+        'name'  => 'login.success.with.google',
+    ];
+
     const SIGNUP_CREATE_ACCOUNT_FAILED = [
         'group' => 'onboarding',
         'name'  => 'signup.create_account.failed',

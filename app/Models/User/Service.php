@@ -91,7 +91,10 @@ class Service extends Base\Service
          */
         if (empty($user) === true)
         {
-            $input[Entity::PASSWORD_CONFIRMATION] = $input[Entity::PASSWORD];
+            if (empty($input[Entity::OAUTH_PROVIDER]) === true)
+            {
+                $input[Entity::PASSWORD_CONFIRMATION] = $input[Entity::PASSWORD];
+            }
 
             $input[Entity::NAME] = $input[Entity::NAME] ?? '';
 
@@ -100,6 +103,15 @@ class Service extends Base\Service
             unset($input['business_name']);
 
             $user = $this->create($input);
+        }
+
+        /**
+         * User Email wil be confirmed as it is coming from oauth
+         *  which is already confirmed by oauth provider
+         */
+        if (empty($input[Entity::OAUTH_PROVIDER]) === false)
+        {
+            $this->confirm($user[Entity::ID]);
         }
 
         /**
@@ -1067,6 +1079,24 @@ class Service extends Base\Service
         $user = $this->auth->getUser();
 
         return $this->core()->verifyUserThroughEmail($input, $merchant, $user);
+    }
+
+    public function oAuthSignup($input, $validate2fa = true): array
+    {
+        $data = $this->register($input);
+
+        (new Core)->trackOnboardingEvent($input[Entity::EMAIL], EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS_WITH_GOOGLE);
+
+        return $data;
+    }
+
+    public function oAuthLogin($input,$validate2fa = true): array
+    {
+        $data = (new Core)->login($input, $validate2fa);
+
+        (new Core)->trackOnboardingEvent($input[Entity::EMAIL], EventCode::LOGIN_SUCCESS_WITH_GOOGLE);
+
+        return $data;
     }
 
     public function getUserForMerchant(string $userId)

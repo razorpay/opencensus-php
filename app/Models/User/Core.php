@@ -139,6 +139,50 @@ class Core extends Base\Core
         return $user;
     }
 
+    /**
+     * In case of null saves the new value, in case of non existing oauth provider
+     * update with new the oauth provider
+     * @param Entity $user
+     * @param string $newOauthProvider
+     *
+     * @return Entity
+     */
+    public function saveOauthProvider(Entity $user, string $newOauthProvider)
+    {
+        $decodedNewOauthProvider = json_decode($newOauthProvider);
+
+        $currentOauthProvider = $user->getOauthProvider();
+
+        if ($currentOauthProvider !== null)
+        {
+            $decodedCurrentOauthProvider = json_decode($currentOauthProvider);
+
+            if (in_array($decodedNewOauthProvider[0], $decodedCurrentOauthProvider) === false)
+            {
+                array_push($decodedCurrentOauthProvider, $decodedNewOauthProvider[0]);
+
+                $this->encodeOauthProviderAndSave($user, $decodedCurrentOauthProvider);
+            }
+        }
+        else
+        {
+            $decodedCurrentOauthProvider = $decodedNewOauthProvider;
+
+            $this->encodeOauthProviderAndSave($user, $decodedCurrentOauthProvider);
+        }
+
+        return $user;
+    }
+
+    private function encodeOauthProviderAndSave(Entity $user, array $decodedCurrentOauthProvider)
+    {
+        $currentOauthProvider = json_encode($decodedCurrentOauthProvider);
+
+        $user->setOauthProvider($currentOauthProvider);
+
+        $this->repo->saveOrFail($user);
+    }
+
     public function updateUserMerchantMapping(Entity $user, array $input)
     {
         $user->getValidator()->validateInput('action', $input);
@@ -305,7 +349,26 @@ class Core extends Base\Core
     {
         (new Entity)->getValidator()->validateInput('login', $input);
 
-        $user = $this->getUserByEmailAndVerifyPassword($input[Entity::EMAIL], $input[Entity::PASSWORD]);
+        if (empty($input[Entity::OAUTH_PROVIDER]) === true)
+        {
+            $user = $this->getUserByEmailAndVerifyPassword($input[Entity::EMAIL], $input[Entity::PASSWORD]);
+        }
+        else
+        {
+            $user = $this->repo->user->getUserFromEmailOrFail($input[Entity::EMAIL]);
+
+            if ($user !== null)
+            {
+                $this->saveOauthProvider($user, $input[Entity::OAUTH_PROVIDER]);
+
+                // For this User signs up via email/password and drops off in the middle
+                // comes back and logs in via Google OAUth
+                if ($user->getConfirmedAttribute() === false)
+                {
+                    $this->confirm($user);
+                }
+            }
+        }
 
         if ($validate2fa === false or
             ((empty($input[Entity::APP]) === false) and ($input[Entity::APP] === 'android')))
@@ -992,7 +1055,7 @@ class Core extends Base\Core
         ];
 
         $payload['params'] += $this->getExtraRavenSmsPayload($input, $merchant);
-        
+
         $this->app->raven->sendSms($payload);
 
         return array_only($otp, 'token');
