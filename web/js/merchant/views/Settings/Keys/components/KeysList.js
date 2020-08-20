@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 
 import TableBody from 'common/ui/TableBody';
 import Time from 'common/ui/Time';
-import Key from 'merchant/models/Key';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { useTwoFactorVerificationContext } from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 

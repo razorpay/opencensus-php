@@ -62,7 +62,7 @@ export default class UpdateContactMobile extends React.Component {
             <TwoFactorVerificationOTP
               contactMobile={this.state.contactMobile}
               onSuccess={this.onComplete}
-              onClose={this.props.onClose}
+              onClose={this.onCloseClick}
               onConfirm={this.props.onOtpConfirm}
               onWrongOtp={this.onWrongOtp}
               onResend={this.onSubmit}

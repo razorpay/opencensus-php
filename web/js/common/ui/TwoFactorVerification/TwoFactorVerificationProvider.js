@@ -57,7 +57,7 @@ export default class TwoFaVerificationContextProvider extends React.Component {
       })
     );
 
-    onUserTwoFaVerified();
+    return onUserTwoFaVerified();
   };
 
   onWrongOtp = () => {
@@ -72,6 +72,14 @@ export default class TwoFaVerificationContextProvider extends React.Component {
     return triggerTwoFactorVerificationOtp(this.props.merchantFetch);
   };
 
+  onClose = () => {
+    if (this.onCloseCallback && typeof this.onCloseCallback === 'function') {
+      this.onCloseCallback();
+    }
+
+    this.props.closeModal();
+  }
+
   @RTracking((props) => {
     return props.tracking.trackEvent(
       window.rzpQ.merchantActions().initiated('critical_action.2fa_verification', {
@@ -79,7 +87,9 @@ export default class TwoFaVerificationContextProvider extends React.Component {
       })
     );
   })
-  criticalFlow = ({ onUserTwoFaVerified, modes = ['test', 'live'] }) => {
+  criticalFlow = ({ onUserTwoFaVerified, onFlowTermination, modes = ['test', 'live'] }) => {
+    this.onCloseCallback = onFlowTermination;
+
     const { user, twoFactorVerified, modeOfApp } = this.props;
 
     if (user.isCriticalRouteExperimentEnabled && modes.includes(modeOfApp)) {
@@ -110,6 +120,7 @@ export default class TwoFaVerificationContextProvider extends React.Component {
           onComplete={onContactMobileUpdated}
           onSubmit={this.onContactMobileSubmit}
           onOtpConfirm={this.onOtpConfirm}
+          onClose={this.onClose}
         />
       ),
     });
@@ -125,7 +136,7 @@ export default class TwoFaVerificationContextProvider extends React.Component {
             contactMobile={user.user.contact_mobile}
             onConfirm={this.onOtpConfirm}
             onResend={this.onOtpResend}
-            onClose={this.props.closeModal}
+            onClose={this.onClose}
             onSuccess={this.onUserTwoFaVerified({ onUserTwoFaVerified })}
             onWrongOtp={this.onWrongOtp}
           />

@@ -1,5 +1,7 @@
 import { connect } from 'react-redux';
 
+import TwoFactorVerificaionContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
+
 import { toggleMerchant2FaEnforcement } from 'merchant/reducers/team';
 import { updateSession } from 'merchant/reducers/session';
 
@@ -12,6 +14,8 @@ import Toggle2FA from '../../components/TwoFAVerification/Toggle2FA';
   updateSession,
 })
 export default class Merchant2FASettings extends React.PureComponent {
+  static contextType = TwoFactorVerificaionContext;
+
   onToggleComplete = twoFaEnabled => {
     const { user: currentUser } = this.props.user;
     const user = new User({
@@ -22,6 +26,22 @@ export default class Merchant2FASettings extends React.PureComponent {
       },
     });
     this.props.updateSession({ user });
+  };
+
+  handleTwoFactorVerificationOnLoginToggle = onToggleChange => (flag, callback) => {
+    return this.context.criticalFlow({
+      mode: ['live', 'test'],
+      onUserTwoFaVerified: () => {
+        // Tempory implementation
+        // to avoid requirement of both new and old context
+        // In <Toggle2Fa/>
+        return onToggleChange(flag, callback);
+      },
+
+      onFlowTermination: () => {
+        return callback(false);
+      }
+    });
   };
 
   render() {
@@ -38,6 +58,7 @@ export default class Merchant2FASettings extends React.PureComponent {
         getToggle2FaSuccessMsg={getToggle2FaSuccessMsg}
         confirmDisableMessage="Are you sure you want to disable 2-step verification to all your team members?"
         confirmEnableMessage="Are you sure you want to enable 2-step verification to all your team members?"
+        onToggleChange={this.handleTwoFactorVerificationOnLoginToggle}
       />
     );
   }

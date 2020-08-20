@@ -18,7 +18,6 @@ import PasswordVerification from './PasswordVerification';
 @connect(state => ({ user: state.session.user }), {
   openModal,
   closeModal,
-  // toggleMerchant2FaEnforcement,
   updateSelfContact,
   updateSession,
   showNotification,
@@ -36,17 +35,24 @@ class Toggle2FA extends Component {
   };
 
   verifyPassword = flag => {
-    this.showModal(
-      <PasswordVerification
-        closeModal={this.abort}
-        onSubmit={this.onPasswordSubmit}
-        dataSentWithPassword={{ second_factor_auth: flag }}
-        enable={flag}
-      />
-    );
+    const user = this.props.user;
+    const secondFactorAuthPayload = { second_factor_auth: flag };
+
+    if (user.isCriticalRouteExperimentEnabled) {
+      return this.sendUpdateSecondFactorAuthRequest(secondFactorAuthPayload);
+    } else {
+      this.showModal(
+        <PasswordVerification
+          closeModal={this.abort}
+          onSubmit={this.sendUpdateSecondFactorAuthRequest}
+          dataSentWithPassword={secondFactorAuthPayload}
+          enable={flag}
+        />
+      );
+    }
   };
 
-  onPasswordSubmit = data => {
+  sendUpdateSecondFactorAuthRequest = data => {
     const { toggle2FaEnforcement, getToggle2FaSuccessMsg } = this.props;
     return toggle2FaEnforcement(data)
       .then(response => {
@@ -168,7 +174,10 @@ class Toggle2FA extends Component {
           <span class="toggler-btn">
             <SwitchField
               defaultChecked={twoFaEnabled}
-              onChange={this.onToggleChange}
+              // temporarily using onChange callback from props
+              // otherwise this component will require access to both
+              // new and old context
+              onChange={this.props.onToggleChange(this.onToggleChange)}
               type="prime"
             />
             <strong
