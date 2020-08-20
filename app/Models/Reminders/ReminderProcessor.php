@@ -29,12 +29,14 @@ abstract class ReminderProcessor
     const NEGATIVE_BALANCE          = 'negative_balance';
     const TERMINAL_CREATED_WEBHOOK  = 'terminal_created_webhook';
     const UPI_AUTO_RECURRING        = 'upi_auto_recurring';
+    const SETTLEMENTS               = 'settlements';
 
     const REMINDERS_API_NAMESPACE_PROCESSORS = [
         self::PAYMENT_LINK              => 'InvoiceReminderProcessor',
         self::NEGATIVE_BALANCE          => 'NegativeBalanceReminderProcessor',
         self::TERMINAL_CREATED_WEBHOOK  => 'TerminalCreatedWebhookReminderProcessor',
         self::UPI_AUTO_RECURRING        => 'UpiAutoRecurringReminderProcessor',
+        self::SETTLEMENTS               => 'SettlementReminderProcessor',
     ];
 
     public function __construct()
