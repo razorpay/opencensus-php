@@ -957,6 +957,44 @@ return [
         ],
     ],
 
+    'testMerchant2faEnableAsCriticalAction'     => [
+        'request'       => [
+            'url'       => '/merchants/2fa',
+            'method'    => 'PATCH',
+            'content'   => [
+                'second_factor_auth'    => true,
+            ],
+            'server'    => [
+                'HTTP_X-Dashboard-User-2FA-Verified'    => 'true',
+            ]
+        ],
+
+        'response'      => [
+            'content'       => [
+                'second_factor_auth'    => true,
+            ],
+        ],
+    ],
+
+    'testMerchant2faDisableAsCriticalAction'     => [
+        'request'       => [
+            'url'       => '/merchants/2fa',
+            'method'    => 'PATCH',
+            'content'   => [
+                'second_factor_auth'    => 0,
+            ],
+            'server'    => [
+                'HTTP_X-Dashboard-User-2FA-Verified'    => 'true',
+            ]
+        ],
+
+        'response'      => [
+            'content'       => [
+                'second_factor_auth'    => false,
+            ],
+        ],
+    ],
+
     'testMerchant2faDisable' => [
         'request' => [
             'url'     => '/merchants/2fa',

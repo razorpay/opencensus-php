@@ -681,6 +681,60 @@ class MerchantTest extends TestCase
         $this->assertFalse($userEntity->isSecondFactorAuthEnforced());
     }
 
+    public function testMerchant2faEnableAsCriticalAction()
+    {
+        $merchant = $this->fixtures->create('merchant', [
+            MerchantEntity::SECOND_FACTOR_AUTH      => 0,
+        ]);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id'], [
+            UserEntity::SECOND_FACTOR_AUTH      => 0,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+            UserEntity::CONTACT_MOBILE          => '9999999999',
+            UserEntity::PASSWORD                => 'hello123',
+        ], 'owner');
+
+        $this->enableRazorXTreatmentForFeature(
+            Merchant\RazorxTreatment::VALIDATE_USER_2FA_STATUS, 'on');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+
+        $this->startTest();
+
+        $userEntity = $this->getDbEntityById('user', $user['id']);
+        $merchantEntity = $this->getDbEntityById('merchant', $merchant['id']);
+
+        $this->assertTrue($merchantEntity->isSecondFactorAuth());
+        $this->assertTrue($userEntity->isSecondFactorAuthEnforced());
+    }
+
+    public function testMerchant2faDisableAsCriticalAction()
+    {
+        $merchant = $this->fixtures->create('merchant', [
+            MerchantEntity::SECOND_FACTOR_AUTH      => 1,
+        ]);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id'], [
+            UserEntity::SECOND_FACTOR_AUTH      => 0,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+            UserEntity::CONTACT_MOBILE          => '9999999999',
+            UserEntity::PASSWORD                => 'hello123',
+        ], 'owner');
+
+        $this->enableRazorXTreatmentForFeature(
+            Merchant\RazorxTreatment::VALIDATE_USER_2FA_STATUS, 'on');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+
+        $this->startTest();
+
+        $userEntity = $this->getDbEntityById('user', $user['id']);
+        $merchantEntity = $this->getDbEntityById('merchant', $merchant['id']);
+
+        $this->assertFalse($merchantEntity->isSecondFactorAuth());
+        $this->assertFalse($userEntity->isSecondFactorAuthEnforced());
+    }
+
     public function testMerchant2faDisable()
     {
         $merchant = $this->fixtures->create('merchant', [
@@ -7306,6 +7360,25 @@ class MerchantTest extends TestCase
                     }));
 
         $this->app->instance('razorx', $mock);
+    }
+
+    protected function enableRazorXTreatmentForFeature($featureUnderTest, $value = 'on')
+    {
+        $mock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $mock->method('getTreatment')
+            ->will(
+                $this->returnCallback(
+                    function (string $mid, string $feature, string $mode) use ($featureUnderTest, $value)
+                    {
+                        return $feature === $featureUnderTest ? $value : 'control';
+                    }));
+
+        $this->app->instance('razorx', $mock);
+
     }
 
     public function testMerchantInternationalDisableAction()

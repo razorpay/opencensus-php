@@ -2441,7 +2441,6 @@ class Route
         'tokens_upi_vpa_bulk_cron',
         'payment_page_items_migrate',
         'user_change_password',
-        'user_2fa_change_setting',
         'user_confirm_by_data',
         'user_access',
         'user_fetch',
@@ -2589,7 +2588,6 @@ class Route
         'user_merchant_upgrade',
         'user_edit_self',
         'user_otp_create',
-        'user_2fa_change_setting',
         'user_verify_contact',
         'user_verify_email',
         'user_verify_through_email',
@@ -2893,6 +2891,7 @@ class Route
         'reports_monthly_banking_invoice',
         'workflow_payout_amount_rules',
         'merchant_2fa_change_setting',
+        'user_2fa_change_setting',
         'user_update_contact',
         'user_verify_through_email',
         'user_update_contact_merchant',
@@ -4555,6 +4554,7 @@ class Route
         'merchant_bank_account_change_status'          => Permission::UPDATE_MERCHANT_BANK_ACCOUNT_STATUS,
         'merchant_2fa_change_setting'                  => Permission::UPDATE_MERCHANT_2FA_SETTING,
         'user_account_unlock'                          => Permission::UPDATE_MERCHANT_2FA_SETTING,
+        'user_2fa_change_setting'                      => '*',
         'banking_account_create'                       => '*',
         'merchant_activation_upload_file'              => '*',
         'user_verify_contact'                          => '*',
@@ -4579,6 +4579,7 @@ class Route
         'merchant_bank_account_change_status'          => '*',
         'reporting_consumer_restrictions'              => '*',
         'payouts_scheduled_time_slots'                 => '*',
+        'user_trigger_2fa_otp'                         => '*',
 
         // This should go away after the fix
         // https://razorpay.atlassian.net/browse/RX-1701
@@ -4796,7 +4797,6 @@ class Route
             'user_merchant_upgrade',
             'user_change_password',
             'user_access',
-            'user_2fa_change_setting',
             'user_fetch',
             'invitation_action',
             'invitation_fetch_by_token',
@@ -5692,6 +5692,8 @@ class Route
     // so add only proxy auth routes which have merchant Id
     public static $twoFactorAuthRequiredRoutes = [
         'merchant_replace_key'                  => [Mode::LIVE],
+        'user_2fa_change_setting'               => [Mode::LIVE, Mode::TEST],
+        'merchant_2fa_change_setting'           => [Mode::LIVE, Mode::TEST],
     ];
 
     /**

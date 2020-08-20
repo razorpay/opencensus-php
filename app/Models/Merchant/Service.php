@@ -4,7 +4,6 @@ namespace RZP\Models\Merchant;
 
 use DB;
 use Mail;
-use Hash;
 use Cache;
 use Config;
 use Request;
@@ -190,12 +189,11 @@ class Service extends Base\Service
     {
         $this->merchant->getValidator()->validateInput('change2faSetting', $input);
 
-        if (Hash::check($input[User\Entity::PASSWORD], $this->user->getPassword()))
-        {
-            return $this->core()->change2faSetting($this->user, $this->merchant, $input);
-        }
+        return $this->core()->change2faSetting(
+            $this->user,
+            $this->merchant,
+            $input);
 
-        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PASSWORD);
     }
 
     /**

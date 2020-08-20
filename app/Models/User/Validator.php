@@ -4,12 +4,14 @@ namespace RZP\Models\User;
 
 use App;
 use Hash;
+use Illuminate\Hashing\BcryptHasher;
 
 use RZP\Base;
 use RZP\Exception;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Constants\Product;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -88,8 +90,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $change2faSettingRules = [
-        Entity::PASSWORD              => 'required|between:6,50',
+        Entity::PASSWORD              => 'sometimes|between:6,50',
         Entity::SECOND_FACTOR_AUTH    => 'required|boolean',
+    ];
+
+    protected static $change2faSettingValidators = [
+        Entity::PASSWORD,
     ];
 
     protected static $confirmRules = [
@@ -520,5 +526,49 @@ class Validator extends Base\Validator
                     ErrorCode::BAD_REQUEST_NEW_PASSWORD_SAME_AS_OLD_PASSWORD);
             }
         }
+    }
+
+    protected static function validatePassword($input)
+    {
+        $app = App::getFacadeRoot();
+        $razorx = $app['razorx'];
+        $ba = $app['basicauth'];
+
+        $merchantId = $ba->getMerchantId();
+        $mode = $ba->getMode();
+        $requestOriginProduct = $ba->getRequestOriginProduct();
+
+        $user2FaCheckExperimentVariant = $razorx->getTreatment(
+            $merchantId,
+            Merchant\RazorxTreatment::VALIDATE_USER_2FA_STATUS,
+            $mode);
+
+        if (strtolower($user2FaCheckExperimentVariant) !== 'on' or
+            $requestOriginProduct === Product::BANKING)
+        {
+            if (isset($input[Entity::PASSWORD]) === true)
+            {
+                $inputPassword = $input[Entity::PASSWORD];
+                $userPassword = $ba->getUser()->getPassword();
+                $isPasswordEqual = (new BcryptHasher)
+                                    ->check($inputPassword, $userPassword);
+
+                if ($isPasswordEqual === false)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_INVALID_PASSWORD);
+                }
+
+                return;
+            }
+            else
+            {
+                throw new BadRequestValidationFailureException(
+                    'The password fields is required');
+            }
+        }
+
+        return;
+
     }
 }

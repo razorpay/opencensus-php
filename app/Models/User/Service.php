@@ -972,14 +972,6 @@ class Service extends Base\Service
     {
         $this->user->getValidator()->validateInput('change2faSetting', $input);
 
-        $isPasswordEqual = (new BcryptHasher)->check($input[Entity::PASSWORD], $this->user->getPassword());
-
-        if ($isPasswordEqual === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_PASSWORD);
-        }
-
         return $this->core()->change2faSetting($this->user, $input);
     }
 

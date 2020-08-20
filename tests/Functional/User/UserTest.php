@@ -578,9 +578,7 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = UserFixture::MERCHANT_USER_ID;
-
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $this->startTest();
 
@@ -610,15 +608,86 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = UserFixture::MERCHANT_USER_ID;
-
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $this->startTest();
 
         $user = $this->getDbEntityById('user', UserFixture::MERCHANT_USER_ID);
 
         $this->assertTrue($user->isSecondFactorAuth());
+    }
+
+    public function testUserEnable2FaAsCriticalAction()
+    {
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+        [
+            UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+            UserEntity::CONTACT_MOBILE          => '9999999999',
+            UserEntity::SECOND_FACTOR_AUTH      => 0,
+        ]);
+
+        $this->fixtures->edit('merchant', '10000000000000',
+        [
+            MerchantEntity::SECOND_FACTOR_AUTH => 0
+        ]);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setCOnstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
+        $this->ba->proxyAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = [
+            UserEntity::SECOND_FACTOR_AUTH  => true,
+        ];
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', UserFixture::MERCHANT_USER_ID);
+
+        $this->assertTrue($user->isSecondFactorAuth());
+
+    }
+
+    public function testUserDisable2FaAsCriticalAction()
+    {
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+        [
+            UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+            UserEntity::CONTACT_MOBILE          => '9999999999',
+            UserEntity::SECOND_FACTOR_AUTH      => 1,
+        ]);
+
+        $this->fixtures->edit('merchant', '10000000000000',
+        [
+            MerchantEntity::SECOND_FACTOR_AUTH => 0
+        ]);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setCOnstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', UserFixture::MERCHANT_USER_ID);
+
+        $this->assertFalse($user->isSecondFactorAuth());
     }
 
     public function testFailedUserEnable2faIncorrectPass()
@@ -642,9 +711,7 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = UserFixture::MERCHANT_USER_ID;
-
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $this->startTest();
 
@@ -674,9 +741,7 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = UserFixture::MERCHANT_USER_ID;
-
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $this->startTest();
 
@@ -706,9 +771,7 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = UserFixture::MERCHANT_USER_ID;
-
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $this->startTest();
 
@@ -738,9 +801,7 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = UserFixture::MERCHANT_USER_ID;
-
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $this->startTest();
 

@@ -3,6 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\User\Entity as UserEntity;
 
 return [
 
@@ -439,6 +440,44 @@ return [
         'response' => [
             'content' => [
                 'second_factor_auth' => false,
+            ],
+        ],
+    ],
+
+    'testUserEnable2FaAsCriticalAction'     => [
+        'request'   => [
+            'url'       => '/users/2fa',
+            'method'    => 'PATCH',
+            'content'   => [
+                UserEntity::SECOND_FACTOR_AUTH      => true,
+            ],
+            'server'    => [
+                'HTTP_X-Dashboard-User-2FA-Verified'    => 'true',
+            ],
+        ],
+
+        'response'  => [
+            'content'       => [
+                UserEntity::SECOND_FACTOR_AUTH      => true,
+            ],
+        ],
+    ],
+
+    'testUserDisable2FaAsCriticalAction'     => [
+        'request'   => [
+            'url'       => '/users/2fa',
+            'method'    => 'PATCH',
+            'content'   => [
+                UserEntity::SECOND_FACTOR_AUTH      => 0,
+            ],
+            'server'    => [
+                'HTTP_X-Dashboard-User-2FA-Verified'    => 'true',
+            ],
+        ],
+
+        'response'  => [
+            'content'       => [
+                UserEntity::SECOND_FACTOR_AUTH      => false,
             ],
         ],
     ],
