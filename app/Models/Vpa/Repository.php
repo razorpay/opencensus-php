@@ -9,11 +9,17 @@ class Repository extends Base\Repository
 {
     protected $entity = 'vpa';
 
-    public function findByAddress($address)
+    public function findByAddress($address, bool $withTrashed = false)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-                    ->address($address)
-                    ->first();
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                      ->address($address);
+
+        if ($withTrashed === true)
+        {
+            $query = $query->withTrashed();
+        }
+
+        return $query->first();
     }
 
     /**

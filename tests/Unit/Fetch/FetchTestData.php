@@ -614,6 +614,8 @@ return [
 
     E::BANK_TRANSFER_REQUEST => [],
 
+    E::UPI_TRANSFER_REQUEST => [],
+
     E::VIRTUAL_ACCOUNT_TPV => [],
 
     E::BANK_TRANSFER_HISTORY => [],

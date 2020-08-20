@@ -20,11 +20,20 @@ class Service extends Base\Service
     {
         try
         {
+            $this->convertPayeeVpaToLower($input);
+
             return $this->core->create($input, $requestPayload);
         }
         catch (\Exception $ex)
         {
             $this->trace->traceException($ex);
         }
+    }
+
+    protected function convertPayeeVpaToLower(array & $input)
+    {
+        $payeeVpa = $input['payee_vpa'];
+
+        $input['payee_vpa'] = strtolower($payeeVpa);
     }
 }

@@ -2720,6 +2720,29 @@ class AdminFetch
                 ],
             ],
 
+            Entity::UPI_TRANSFER_REQUEST => [
+                'is_created' => [
+                    Fetch::LABEL => 'UPI Transfer Created',
+                    Fetch::TYPE => Fetch::TYPE_BOOLEAN,
+                ],
+                'npci_reference_id' => [
+                    Fetch::LABEL => 'NPCI Reference ID',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+                'payee_vpa' => [
+                    Fetch::LABEL => 'Payee VPA',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+                'gateway' => [
+                    Fetch::LABEL => 'Gateway',
+                    Fetch::TYPE => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'upi_mindgate',
+                        'upi_icici',
+                    ],
+                ],
+            ],
+
             Entity::VIRTUAL_ACCOUNT_TPV => [
                 'virtual_account_id' => [
                     Fetch::LABEL => 'Virtual Account ID',

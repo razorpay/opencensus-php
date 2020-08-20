@@ -166,8 +166,8 @@ class UpiTransferTest extends TestCase
     {
         $this->processUpiTransfer(__FUNCTION__);
 
-        $upiTransfer = $this->getLastEntity('upi_transfer', true);
-        $payment     = $this->getLastEntity('payment', true);
+        $upiTransfer = $this->getDbLastEntity('upi_transfer');
+        $payment     = $this->getDbLastEntity('payment');
 
         $this->assertEquals('authorized', $payment['status']);
         $this->assertEquals(10000, $payment['amount']);
@@ -180,7 +180,14 @@ class UpiTransferTest extends TestCase
         $this->runUpiTransferRequestAssertions(
             'upi_mindgate',
             true,
-            'VIRTUAL_ACCOUNT_NOT_FOUND'
+            'VIRTUAL_ACCOUNT_NOT_FOUND',
+            [
+                'intended_virtual_account_id'   => null,
+                'actual_virtual_account_id'     => 'va_ShrdVirtualAcc',
+                'merchant_id'                   => null,
+                'upi_transfer_id'               => $upiTransfer->getPublicId(),
+                'payment_id'                    => $payment->getPublicId(),
+            ]
         );
     }
 
@@ -298,8 +305,8 @@ class UpiTransferTest extends TestCase
 
         $this->processUpiTransfer(__FUNCTION__, true, Gateway::UPI_ICICI);
 
-        $upiTransfer = $this->getLastEntity('upi_transfer', true);
-        $payment     = $this->getLastEntity('payment', true);
+        $upiTransfer = $this->getDbLastEntity('upi_transfer');
+        $payment     = $this->getDbLastEntity('payment');
         $upi         = $this->getLastEntity('upi', true);
 
         $this->assertEquals('upi', $payment['method']);
@@ -319,7 +326,15 @@ class UpiTransferTest extends TestCase
 
         $this->runUpiTransferRequestAssertions(
             'upi_icici',
-            true
+            true,
+            null,
+            [
+                'intended_virtual_account_id'   => $this->virtualAccountId,
+                'actual_virtual_account_id'     => $this->virtualAccountId,
+                'merchant_id'                   => '10000000000000',
+                'upi_transfer_id'               => $upiTransfer->getPublicId(),
+                'payment_id'                    => $payment->getPublicId(),
+            ]
         );
     }
     public function testProcessIciciUpiTransferUnexpectedPayment()
@@ -328,8 +343,8 @@ class UpiTransferTest extends TestCase
 
         $this->processUpiTransfer('testProcessIciciUpiTransferPayment', true, Gateway::UPI_ICICI);
 
-        $upiTransfer = $this->getLastEntity('upi_transfer', true);
-        $payment     = $this->getLastEntity('payment', true);
+        $upiTransfer = $this->getDbLastEntity('upi_transfer');
+        $payment     = $this->getDbLastEntity('payment');
 
         $this->assertEquals('authorized', $payment['status']);
         $this->assertEquals(4000, $payment['amount']);
@@ -342,7 +357,14 @@ class UpiTransferTest extends TestCase
         $this->runUpiTransferRequestAssertions(
             'upi_icici',
             true,
-            'VIRTUAL_ACCOUNT_NOT_FOUND'
+            'VIRTUAL_ACCOUNT_NOT_FOUND',
+            [
+                'intended_virtual_account_id'   => null,
+                'actual_virtual_account_id'     => 'va_ShrdVirtualAcc',
+                'merchant_id'                   => null,
+                'upi_transfer_id'               => $upiTransfer->getPublicId(),
+                'payment_id'                    => $payment->getPublicId(),
+            ]
         );
     }
 
@@ -374,14 +396,25 @@ class UpiTransferTest extends TestCase
         $response = $this->processUpiTransfer();
         $this->assertNull($response['message']);
 
-        $upiTransfer = $this->getLastEntity('upi_transfer', true);
+        $upiTransfer = $this->getDbLastEntity('upi_transfer');
         $this->assertEquals(false, $upiTransfer['expected']);
         $this->assertEquals('VIRTUAL_ACCOUNT_NOT_FOUND', $upiTransfer['unexpected_reason']);
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals($upiTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('authorized', $payment['status']);
 
         $this->runUpiTransferRequestAssertions(
             'upi_mindgate',
             true,
-            'VIRTUAL_ACCOUNT_NOT_FOUND'
+            'VIRTUAL_ACCOUNT_NOT_FOUND',
+            [
+                'intended_virtual_account_id'   => $this->virtualAccountId,
+                'actual_virtual_account_id'     => 'va_ShrdVirtualAcc',
+                'merchant_id'                   => '10000000000000',
+                'upi_transfer_id'               => $upiTransfer->getPublicId(),
+                'payment_id'                    => $payment->getPublicId(),
+            ]
         );
     }
 
@@ -402,14 +435,25 @@ class UpiTransferTest extends TestCase
         $response = $this->processUpiTransfer('testProcessMindgateUpiTransferToVaWithPastCloseBy');
         $this->assertNull($response['message']);
 
-        $upiTransfer = $this->getLastEntity('upi_transfer', true);
+        $upiTransfer = $this->getDbLastEntity('upi_transfer');
         $this->assertEquals(false, $upiTransfer['expected']);
         $this->assertEquals('VIRTUAL_ACCOUNT_DUE_TO_BE_CLOSED', $upiTransfer['unexpected_reason']);
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals($upiTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('authorized', $payment['status']);
 
         $this->runUpiTransferRequestAssertions(
             'upi_mindgate',
             true,
-            'VIRTUAL_ACCOUNT_DUE_TO_BE_CLOSED'
+            'VIRTUAL_ACCOUNT_DUE_TO_BE_CLOSED',
+            [
+                'intended_virtual_account_id'   => $this->virtualAccountId,
+                'actual_virtual_account_id'     => 'va_ShrdVirtualAcc',
+                'merchant_id'                   => '10000000000000',
+                'upi_transfer_id'               => $upiTransfer->getPublicId(),
+                'payment_id'                    => $payment->getPublicId(),
+            ]
         );
     }
 
@@ -431,7 +475,14 @@ class UpiTransferTest extends TestCase
         $this->runUpiTransferRequestAssertions(
             'upi_mindgate',
             false,
-            'The fees calculated for payment is greater than the payment amount. Please provide a higher amount'
+            'The fees calculated for payment is greater than the payment amount. Please provide a higher amount',
+            [
+                'intended_virtual_account_id'   => $this->virtualAccountId,
+                'actual_virtual_account_id'     => null,
+                'merchant_id'                   => '10000000000000',
+                'upi_transfer_id'               => null,
+                'payment_id'                    => null,
+            ]
         );
     }
 
@@ -447,7 +498,14 @@ class UpiTransferTest extends TestCase
         $this->runUpiTransferRequestAssertions(
             'upi_mindgate',
             false,
-            'Payment failed because fees or tax was tampered'
+            'Payment failed because fees or tax was tampered',
+            [
+                'intended_virtual_account_id'   => $this->virtualAccountId,
+                'actual_virtual_account_id'     => null,
+                'merchant_id'                   => '10000000000000',
+                'upi_transfer_id'               => null,
+                'payment_id'                    => null,
+            ]
         );
     }
 
@@ -472,7 +530,14 @@ class UpiTransferTest extends TestCase
         $this->runUpiTransferRequestAssertions(
             'upi_icici',
             false,
-            'The fees calculated for payment is greater than the payment amount. Please provide a higher amount'
+            'The fees calculated for payment is greater than the payment amount. Please provide a higher amount',
+            [
+                'intended_virtual_account_id'   => $this->virtualAccountId,
+                'actual_virtual_account_id'     => null,
+                'merchant_id'                   => '10000000000000',
+                'upi_transfer_id'               => null,
+                'payment_id'                    => null,
+            ]
         );
     }
 
@@ -494,11 +559,18 @@ class UpiTransferTest extends TestCase
         $this->runUpiTransferRequestAssertions(
             'upi_icici',
             false,
-            'Payment failed because fees or tax was tampered'
+            'Payment failed because fees or tax was tampered',
+            [
+                'intended_virtual_account_id'   => $this->virtualAccountId,
+                'actual_virtual_account_id'     => null,
+                'merchant_id'                   => '10000000000000',
+                'upi_transfer_id'               => null,
+                'payment_id'                    => null,
+            ]
         );
     }
 
-    protected function runUpiTransferRequestAssertions(string $gateway, bool $isCreated, $errorMessage = null)
+    protected function runUpiTransferRequestAssertions(string $gateway, bool $isCreated, $errorMessage = null, $expectedValues = [])
     {
         $upiTransferRequest = $this->getDbLastEntity('upi_transfer_request');
 
@@ -506,6 +578,18 @@ class UpiTransferTest extends TestCase
         $this->assertNotNull($upiTransferRequest['request_payload']);
         $this->assertEquals($isCreated, $upiTransferRequest['is_created']);
         $this->assertEquals($errorMessage, $upiTransferRequest['error_message']);
+
+        if (empty($expectedValues) === true)
+        {
+            return;
+        }
+
+        $this->ba->adminAuth();
+        $testData = $this->testData['adminFetchUpiTransferRequest'];
+        $testData['request']['url'] .= $upiTransferRequest->getPublicId();
+        $upiTransferRequest = $this->startTest($testData);
+
+        $this->assertArraySelectiveEquals($expectedValues, $upiTransferRequest);
     }
 
     public function testUpiTransferValidateTpvWithValidPayerDetails()

@@ -24,6 +24,12 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_TIME          = 'transaction_time';
     const REQUEST_PAYLOAD           = 'request_payload';
 
+    const INTENDED_VIRTUAL_ACCOUNT_ID   = 'intended_virtual_account_id';
+    const ACTUAL_VIRTUAL_ACCOUNT_ID     = 'actual_virtual_account_id';
+    const UPI_TRANSFER_ID               = 'upi_transfer_id';
+    const PAYMENT_ID                    = 'payment_id';
+    const MERCHANT_NAME                 = 'merchant_name';
+
     protected static $sign = 'utr';
 
     protected $entity = Constants\Entity::UPI_TRANSFER_REQUEST;
@@ -46,6 +52,12 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_REFERENCE,
         self::TRANSACTION_TIME,
         self::REQUEST_PAYLOAD,
+        self::INTENDED_VIRTUAL_ACCOUNT_ID,
+        self::ACTUAL_VIRTUAL_ACCOUNT_ID,
+        self::UPI_TRANSFER_ID,
+        self::PAYMENT_ID,
+        self::MERCHANT_ID,
+        self::MERCHANT_NAME,
     ];
 
     protected $visible = [
@@ -64,13 +76,41 @@ class Entity extends Base\PublicEntity
         self::PROVIDER_REFERENCE_ID,
         self::TRANSACTION_REFERENCE,
         self::TRANSACTION_TIME,
-        self::REQUEST_PAYLOAD,
+        self::INTENDED_VIRTUAL_ACCOUNT_ID,
+        self::ACTUAL_VIRTUAL_ACCOUNT_ID,
+        self::UPI_TRANSFER_ID,
+        self::PAYMENT_ID,
+        self::MERCHANT_ID,
+        self::MERCHANT_NAME,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $casts = [
         self::IS_CREATED    => 'bool',
         self::AMOUNT        => 'int',
     ];
+
+    // -------------------- Getters --------------------
+
+    public function getGateway()
+    {
+        return $this->getAttribute(self::GATEWAY);
+    }
+
+    public function getNpciReferenceId()
+    {
+        return $this->getAttribute(self::NPCI_REFERENCE_ID);
+    }
+
+    public function getPayeeVpa()
+    {
+        return $this->getAttribute(self::PAYEE_VPA);
+    }
+
+    // -------------------- End Getters --------------------
+
+    // -------------------- Setters --------------------
 
     public function setGateway(string $gateway)
     {
@@ -86,4 +126,6 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::REQUEST_PAYLOAD, $requestPayload);
     }
+
+    // -------------------- End Setters --------------------
 }
