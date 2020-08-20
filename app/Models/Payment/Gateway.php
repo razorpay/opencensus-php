@@ -401,7 +401,7 @@ class Gateway
         IFSC::FDRL,
         IFSC::HDFC,
         IFSC::HSBC,
-        IFSC::IBKL,
+        //IFSC::IBKL, // disabling IDBI for now as there is some issue from gateways end
         IFSC::ICIC,
         IFSC::IDFB,
         IFSC::INDB,
