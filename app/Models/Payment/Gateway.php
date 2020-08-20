@@ -328,6 +328,7 @@ class Gateway
         self::UPI_MINDGATE,
         self::UPI_AXIS,
         self::NETBANKING_SVC,
+        self::ATOM,
     ];
 
     /**
