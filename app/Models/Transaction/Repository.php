@@ -2096,6 +2096,7 @@ class Repository extends Base\Repository
             Transaction\Entity::DEBIT,
             Transaction\Entity::CREDIT,
             Transaction\Entity::CURRENCY,
+            Transaction\Entity::MERCHANT_ID,
         ];
 
         $transactionId          = $this->dbColumn(Entity::ID);
@@ -2119,7 +2120,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
             ->select($selectedColumns)
             ->whereIn($transactionId, $txnIds)
-            ->leftJoin(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
+            ->join(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
             ->where(function ($query) use ($transactionBalanceId, $balanceTypeColumn)
             {
                 $query->whereNull($transactionBalanceId)
