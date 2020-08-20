@@ -20,11 +20,9 @@ class Api extends Base
      */
     public function transactionRelease(array $txnIds) : array
     {
-        $auth = $this->getAuth(self::SERVICE_API);
-
         return $this->makeRequest(self::TRANSACTION_RELEASE, [
             "ids" => $txnIds,
-        ], $auth);
+        ], self::SERVICE_API);
     }
 
     /**
@@ -37,11 +35,9 @@ class Api extends Base
      */
     public function transactionHold(array $txnIds, string $reason) : array
     {
-        $auth = $this->getAuth(self::SERVICE_API);
-
         return $this->makeRequest(self::TRANSACTION_HOLD, [
             "ids"    => $txnIds,
             "reason" => $reason,
-        ], $auth);
+        ], self::SERVICE_API);
     }
 }

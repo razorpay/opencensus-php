@@ -70,13 +70,13 @@ class Base
     /**
      * @param string $endpoint
      * @param array  $data
-     * @param array  $auth
+     * @param string $service
      * @param string $mode
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function makeRequest(string $endpoint, array $data, array $auth = [], string $mode = null): array
+    public function makeRequest(string $endpoint, array $data, string $service, string $mode = null): array
     {
         if ($mode === null)
         {
@@ -84,6 +84,8 @@ class Base
         }
 
         $url = $this->baseUrl[$mode] . $endpoint;
+
+        $auth = $this->getAuth($service, $mode);
 
         $options = [
             'timeout' => self::REQUEST_TIMEOUT,
@@ -175,11 +177,12 @@ class Base
      * Method to set auth in the request
      *
      * @param string $service
+     * @param string $mode
      * @return array
      */
-    protected function getAuth(string $service) : array
+    protected function getAuth(string $service, string $mode) : array
     {
-        $service = $this->config[$service];
+        $service = $this->config[$service][$mode];
 
         return [
             $service[self::KEY],

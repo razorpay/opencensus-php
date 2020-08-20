@@ -22,8 +22,6 @@ class Reminder extends Base
      */
     public function executionReminder(array $input) : array
     {
-        $auth = $this->getAuth(self::SERVICE_REMINDER);
-
-        return $this->makeRequest(self::EXECUTION_TRIGGER, $input, $auth);
+        return $this->makeRequest(self::EXECUTION_TRIGGER, $input, self::SERVICE_REMINDER);
     }
 }

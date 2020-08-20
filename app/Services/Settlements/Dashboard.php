@@ -53,9 +53,7 @@ class Dashboard extends Base
      */
     public function fetch(array $input) : array
     {
-        $auth = $this->getAuth(self::SERVICE_DASHBOARD);
-
-        return $this->makeRequest(self::FETCH_URI, $input, $auth);
+        return $this->makeRequest(self::FETCH_URI, $input, self::SERVICE_DASHBOARD);
     }
 
     /**
@@ -67,9 +65,7 @@ class Dashboard extends Base
      */
     public function fetchMultiple(array $input) : array
     {
-        $auth = $this->getAuth(self::SERVICE_DASHBOARD);
-
-        return $this->makeRequest(self::FETCH_MULTIPLE_URI, $input, $auth);
+        return $this->makeRequest(self::FETCH_MULTIPLE_URI, $input, self::SERVICE_DASHBOARD);
     }
 
     /**
@@ -81,9 +77,7 @@ class Dashboard extends Base
      */
     public function scheduleCreate(array $input) : array
     {
-        $auth = $this->getAuth(self::SERVICE_DASHBOARD);
-
-        return $this->makeRequest(self::SCHEDULE_CREATE_URI, $input, $auth);
+        return $this->makeRequest(self::SCHEDULE_CREATE_URI, $input, self::SERVICE_DASHBOARD);
     }
 
     /**
@@ -95,9 +89,7 @@ class Dashboard extends Base
      */
     public function scheduleGet(array $input) : array
     {
-        $auth = $this->getAuth(self::SERVICE_DASHBOARD);
-
-        return $this->makeRequest(self::SCHEDULE_GET_URI, $input, $auth);
+        return $this->makeRequest(self::SCHEDULE_GET_URI, $input, self::SERVICE_DASHBOARD);
     }
 
     /**
@@ -109,9 +101,7 @@ class Dashboard extends Base
      */
     public function scheduleGetIds(array $input) : array
     {
-        $auth = $this->getAuth(self::SERVICE_DASHBOARD);
-
-        return $this->makeRequest(self::SCHEDULE_GET_IDS_URI, $input, $auth);
+        return $this->makeRequest(self::SCHEDULE_GET_IDS_URI, $input, self::SERVICE_DASHBOARD);
     }
 
     /**
@@ -123,9 +113,7 @@ class Dashboard extends Base
      */
     public function merchantConfigGet(array $input) : array
     {
-        $auth = $this->getAuth(self::SERVICE_DASHBOARD);
-
-        return $this->makeRequest(self::MERCHANT_CONFIG_GET, $input, $auth);
+        return $this->makeRequest(self::MERCHANT_CONFIG_GET, $input, self::SERVICE_DASHBOARD);
     }
 
     /**
@@ -138,9 +126,7 @@ class Dashboard extends Base
      */
     public function merchantConfigCreate(array $input, $mode = null) : array
     {
-        $auth = $this->getAuth(self::SERVICE_DASHBOARD);
-
-        return $this->makeRequest(self::MERCHANT_CONFIG_CREATE, $input, $auth, $mode);
+        return $this->makeRequest(self::MERCHANT_CONFIG_CREATE, $input, self::SERVICE_DASHBOARD, $mode);
     }
 
     /**
@@ -153,9 +139,7 @@ class Dashboard extends Base
      */
     public function merchantConfigUpdate(array $input, $mode = null) : array
     {
-        $auth = $this->getAuth(self::SERVICE_DASHBOARD);
-
-        return $this->makeRequest(self::MERCHANT_CONFIG_UPDATE, $input, $auth, $mode);
+        return $this->makeRequest(self::MERCHANT_CONFIG_UPDATE, $input, self::SERVICE_DASHBOARD, $mode);
     }
 
     /**
@@ -168,9 +152,7 @@ class Dashboard extends Base
      */
     public function bankAccountCreate(array $input, $mode = null) : array
     {
-        $auth = $this->getAuth(self::SERVICE_DASHBOARD);
-
-        return $this->makeRequest(self::BANK_ACCOUNT_CREATE, $input, $auth, $mode);
+        return $this->makeRequest(self::BANK_ACCOUNT_CREATE, $input, self::SERVICE_DASHBOARD, $mode);
     }
 
     /**
@@ -182,9 +164,7 @@ class Dashboard extends Base
      */
     public function bankAccountUpdate(array $input) : array
     {
-        $auth = $this->getAuth(self::SERVICE_DASHBOARD);
-
-        return $this->makeRequest(self::BANK_ACCOUNT_UPDATE, $input, $auth);
+        return $this->makeRequest(self::BANK_ACCOUNT_UPDATE, $input, self::SERVICE_DASHBOARD);
     }
 
     /**
@@ -196,9 +176,7 @@ class Dashboard extends Base
      */
     public function bankAccountGet(array $input) : array
     {
-        $auth = $this->getAuth(self::SERVICE_DASHBOARD);
-
-        return $this->makeRequest(self::BANK_ACCOUNT_GET, $input, $auth);
+        return $this->makeRequest(self::BANK_ACCOUNT_GET, $input, self::SERVICE_DASHBOARD);
     }
 
     /**
@@ -210,9 +188,7 @@ class Dashboard extends Base
      */
     public function bankAccountDelete(array $input) : array
     {
-        $auth = $this->getAuth(self::SERVICE_DASHBOARD);
-
-        return $this->makeRequest(self::BANK_ACCOUNT_DELETE, $input, $auth);
+        return $this->makeRequest(self::BANK_ACCOUNT_DELETE, $input, self::SERVICE_DASHBOARD);
     }
 
     /**
@@ -249,9 +225,7 @@ class Dashboard extends Base
             $input['options']['force'] = ($input['options']['force'] == '1');
         }
 
-        $auth = $this->getAuth(self::SERVICE_DASHBOARD);
-
-        return $this->makeRequest(self::EXECUTION_REGISTER, $input, $auth);
+        return $this->makeRequest(self::EXECUTION_REGISTER, $input, self::SERVICE_DASHBOARD);
     }
 
     /**
@@ -293,9 +267,7 @@ class Dashboard extends Base
             $input['force'] = ($input['force'] == '1');
         }
 
-        $auth = $this->getAuth(self::SERVICE_DASHBOARD);
-
-        return $this->makeRequest(self::EXECUTION_TRIGGER_MULTIPLE, $input, $auth);
+        return $this->makeRequest(self::EXECUTION_TRIGGER_MULTIPLE, $input, self::SERVICE_DASHBOARD);
     }
 
     /**
@@ -307,9 +279,7 @@ class Dashboard extends Base
      */
     public function executionResume(array $input) : array
     {
-        $auth = $this->getAuth(self::SERVICE_DASHBOARD);
-
-        return $this->makeRequest(self::EXECUTION_RESUME, $input, $auth);
+        return $this->makeRequest(self::EXECUTION_RESUME, $input, self::SERVICE_DASHBOARD);
     }
 
     /**
@@ -321,9 +291,7 @@ class Dashboard extends Base
      */
     public function transactionHold(array $input) : array
     {
-        $auth = $this->getAuth(self::SERVICE_DASHBOARD);
-
-        return $this->makeRequest(self::TRANSACTION_HOLD, $input, $auth);
+        return $this->makeRequest(self::TRANSACTION_HOLD, $input, self::SERVICE_DASHBOARD);
     }
 
     /**
@@ -335,9 +303,7 @@ class Dashboard extends Base
      */
     public function transactionRelease(array $input) : array
     {
-        $auth = $this->getAuth(self::SERVICE_DASHBOARD);
-
-        return $this->makeRequest(self::TRANSACTION_RELEASE, $input, $auth);
+        return $this->makeRequest(self::TRANSACTION_RELEASE, $input, self::SERVICE_DASHBOARD);
     }
 
     /**
@@ -349,9 +315,7 @@ class Dashboard extends Base
      */
     public function channelStatusUpdate(array $input) : array
     {
-        $auth = $this->getAuth(self::SERVICE_DASHBOARD);
-
-        return $this->makeRequest(self::CHANNEL_STATUS_UPDATE, $input, $auth);
+        return $this->makeRequest(self::CHANNEL_STATUS_UPDATE, $input, self::SERVICE_DASHBOARD);
     }
 
     /**
@@ -363,9 +327,7 @@ class Dashboard extends Base
      */
     public function settlementRetry(array $input) : array
     {
-        $auth = $this->getAuth(self::SERVICE_DASHBOARD);
-
-        return $this->makeRequest(self::SETTLEMENT_RETRY, $input, $auth);
+        return $this->makeRequest(self::SETTLEMENT_RETRY, $input, self::SERVICE_DASHBOARD);
     }
 
     /**
@@ -376,9 +338,7 @@ class Dashboard extends Base
      */
     public function getChannelState() : array
     {
-        $auth = $this->getAuth(self::SERVICE_DASHBOARD);
-
-        return $this->makeRequest(self::CHANNEL_STATUS_GET, [], $auth);
+        return $this->makeRequest(self::CHANNEL_STATUS_GET, [], self::SERVICE_DASHBOARD);
     }
 
     /**
@@ -422,8 +382,6 @@ class Dashboard extends Base
             'reason'       => $reason
         ];
 
-        $auth = $this->getAuth(self::SERVICE_DASHBOARD);
-
-        return $this->makeRequest(self::MERCHANT_CONFIG_EDIT_FEATURE, $input, $auth, $mode);
+        return $this->makeRequest(self::MERCHANT_CONFIG_EDIT_FEATURE, $input, self::SERVICE_DASHBOARD, $mode);
     }
 }

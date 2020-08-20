@@ -339,16 +339,34 @@ return [
           'test'    =>   env('SETTLEMENTS_TEST_URL'),
         ],
         'dashboard' => [
-            'key'       => env('SETTLEMENTS_DASHBOARD_KEY'),
-            'secret'    => env('SETTLEMENTS_DASHBOARD_SECRET'),
+            'live' => [
+                'key'       => env('SETTLEMENTS_DASHBOARD_LIVE_KEY'),
+                'secret'    => env('SETTLEMENTS_DASHBOARD_LIVE_SECRET'),
+            ],
+            'test' => [
+                'key'       => env('SETTLEMENTS_DASHBOARD_TEST_KEY'),
+                'secret'    => env('SETTLEMENTS_DASHBOARD_TEST_SECRET'),
+            ],
         ],
         'reminder' => [
-            'key'       => env('SETTLEMENTS_REMINDER_KEY'),
-            'secret'    => env('SETTLEMENTS_REMINDER_SECRET'),
+            'live' => [
+                'key'       => env('SETTLEMENTS_REMINDER_LIVE_KEY'),
+                'secret'    => env('SETTLEMENTS_REMINDER_LIVE_SECRET'),
+            ],
+            'test' => [
+                'key'       => env('SETTLEMENTS_REMINDER_TEST_KEY'),
+                'secret'    => env('SETTLEMENTS_REMINDER_TEST_SECRET'),
+            ],
         ],
         'api' => [
-            'key'       => env('SETTLEMENTS_API_KEY'),
-            'secret'    => env('SETTLEMENTS_API_SECRET'),
+            'live' => [
+                'key'       => env('SETTLEMENTS_API_LIVE_KEY'),
+                'secret'    => env('SETTLEMENTS_API_LIVE_SECRET'),
+            ],
+            'test' => [
+                'key'       => env('SETTLEMENTS_API_TEST_KEY'),
+                'secret'    => env('SETTLEMENTS_API_TEST_SECRET'),
+            ],
         ],
         'secret'            => env('SETTLEMENTS_SERVICE_SECRET'),
     ],
