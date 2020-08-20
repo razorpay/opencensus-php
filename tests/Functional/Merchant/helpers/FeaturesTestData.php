@@ -1198,4 +1198,82 @@ return [
             'status_code' => 200
         ]
     ],
+
+    'testAddFeatureSkipWorkflowPayoutSpecificAsMerchantTreatmentNotEnabled' => [
+        'request' => [
+            'content' => [
+                'features'      => [
+                    'skip_wf_at_payouts' => 1
+                ],
+            ],
+            'url' => '/merchants/me/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The requested feature is unavailable.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
+        ],
+    ],
+
+    'testAddFeatureSkipWorkflowPayoutSpecificAsMerchantTreatmentEnabled' => [
+        'request' => [
+            'content' => [
+                'features'      => [
+                    'skip_wf_at_payouts' => 1
+                ],
+            ],
+            'url' => '/merchants/me/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'features' => [
+
+                ]
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testAddSkipWorkflowPayoutSpecificFeatureToMerchant' => [
+        'request'   => [
+            'content' => [
+                'names'       => ['skip_wf_at_payouts'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ],
+            'url'     => '/features',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+                'HTTP_X-Dashboard-User-Email'     => 'user@rzp.dev',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                [
+                    "name"      => "skip_wf_at_payouts"
+                ],
+            ],
+        ],
+        'status_code' => 200,
+    ],
 ];

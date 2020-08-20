@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Feature;
 
+use App;
+
 use RZP\Base;
 use RZP\Exception;
 use RZP\Base\Fetch;
@@ -16,6 +18,10 @@ class Validator extends Base\Validator
         Entity::ENTITY_ID   => 'required|string|max:20',
         Entity::ENTITY_TYPE => 'required|string|max:255|in:merchant,application',
         Entity::NAME        => 'required|string|max:25|custom'
+    ];
+
+    protected static $createValidators = [
+        'skipWorkflowPayoutSpecific'
     ];
 
     protected static $onboardingSubmissionsUpsertRules = [
@@ -115,6 +121,40 @@ class Validator extends Base\Validator
            throw new Exception\BadRequestValidationFailureException(
               "Invalid product: $value",
               $attribute);
+       }
+   }
+
+   public function validateSkipWorkflowPayoutSpecific($input)
+   {
+
+       if ($input[Entity::NAME] === Constants::SKIP_WF_AT_PAYOUTS)
+       {
+           $app = App::getFacadeRoot();
+
+           $merchantId = null;
+
+           $treatment = null;
+
+           if ($input[Entity::ENTITY_TYPE] === Constants::MERCHANT)
+           {
+               $merchantId = $input[Entity::ENTITY_ID];
+
+               $treatment = $app->razorx->getTreatment(
+                   $merchantId,
+                   Merchant\RazorxTreatment::SKIP_WORKFLOW_PAYOUT_SPECIFIC_FEATURE,
+                   $this->getMode()
+               );
+           }
+
+           if (($treatment === null) or
+               ($treatment !== 'on'))
+           {
+               throw new Exception\BadRequestException(
+                   ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
+                   Entity::NAME,
+                   Constants::SKIP_WF_AT_PAYOUTS
+               );
+           }
        }
    }
 }

@@ -5916,6 +5916,8 @@ UPDATE fund_transfer_attempts
 	updated_at=UNIX_TIMESTAMP(NOW())
 	WHERE source_id IN ('FHqJt5cGPPhAw3', 'FHqJp2X05SN3fv', 'FHqJfb28W7tj0i', 'FHqJOEPV2SbIVZ', 'FHqJAhlyR2jPZP', 'FHqJ1V3Gh5CIEs', 'FFNaQ6jXmVaVpY', 'FFNaNERoYYz5iK', 'FIJdGfgjOcDQA0', 'FHRUoxyltBxB6i');
 
+ALTER TABLE payouts ADD COLUMN workflow_feature TINYINT(1) default NULL;
+
 ALTER TABLE users
     MODIFY COLUMN password VARCHAR(100) COLLATE utf8_bin NULL,
     ADD COLUMN oauth_provider json DEFAULT NULL;

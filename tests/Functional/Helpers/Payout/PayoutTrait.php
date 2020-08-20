@@ -9,9 +9,11 @@ use RZP\Models\Admin;
 use RZP\Models\Merchant;
 use RZP\Models\Pricing\Fee;
 use RZP\Services\Mock\Mozart;
+use RZP\Services\RazorXClient;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Workflow\Step\Entity;
 use RZP\Models\Merchant\Balance\Channel;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -545,4 +547,32 @@ trait PayoutTrait
         $this->makeRequestAndGetContent($request);
     }
 
+    public function createSkipWorkflowForPayoutFeature()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if ($featureFlag === (RazorxTreatment::IMPS_MODE_PAYOUT_FILTER))
+                {
+                    return 'yesbank';
+                }
+                return 'on';
+            });
+
+        //
+        // Here workflows are enabled for create payouts,
+        // However user wants to disable the workflow for API request
+        //
+        $this->fixtures->merchant->addFeatures([Constants::SKIP_WF_AT_PAYOUTS]);
+
+        $this->liveSetUp();
+        $this->setupWorkflowForLiveMode();
+        $this->disableWorkflowMocks();
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+    }
 }

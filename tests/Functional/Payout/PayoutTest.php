@@ -29,6 +29,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base\PublicCollection;
 use RZP\Mail\Banking\LowBalanceAlert;
+use RZP\Models\Payout\WorkflowFeature;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Webhook\Event;
 use RZP\Tests\Traits\TestsWebhookEvents;
@@ -50,16 +51,16 @@ use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class PayoutTest extends TestCase
 {
+    use PayoutTrait;
+    use WebhookTrait;
     use PaymentTrait;
     use HeimdallTrait;
     use WorkflowTrait;
+    use MocksDnsTrait;
     use SettlementTrait;
+    use TestsWebhookEvents;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
-    use PayoutTrait;
-    use WebhookTrait;
-    use MocksDnsTrait;
-    use TestsWebhookEvents;
 
     private $checkerRoleUser;
 
@@ -6737,6 +6738,61 @@ class PayoutTest extends TestCase
 
         $this->testData[__FUNCTION__] = $testData;
 
+        $this->startTest();
+    }
+
+    public function testSkipWorkflowForPayoutEnabledRequestValueTrue()
+    {
+        $this->createSkipWorkflowForPayoutFeature();
+
+        $response = $this->startTest();
+
+        $payout = $this->getDbEntityById('payout', $response['id'])->toArray();
+
+        $this->assertEquals(WorkflowFeature::WORKFLOW_FEATURES[Feature\Constants::SKIP_WF_AT_PAYOUTS],
+            $payout[Payout\Entity::WORKFLOW_FEATURE]);    }
+
+    public function testSkipWorkflowForPayoutEnabledRequestValueFalse()
+    {
+        $this->startTest();
+    }
+
+    public function testSkipWorkflowForPayoutEnabledRequestValueTrueAndSkipWorkflowForApiEnabled()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::SKIP_WORKFLOWS_FOR_API]);
+
+        $this->createSkipWorkflowForPayoutFeature();
+
+        $response = $this->startTest();
+
+        $payout = $this->getDbEntityById('payout', $response['id'])->toArray();
+
+        $this->assertEquals(WorkflowFeature::WORKFLOW_FEATURES[Feature\Constants::SKIP_WF_AT_PAYOUTS],
+                            $payout[Payout\Entity::WORKFLOW_FEATURE]);
+    }
+
+    public function testSkipWorkflowForPayoutDisablesRequestWithSkipWorkflowKey()
+    {
+        $this->liveSetUp();
+        $this->setupWorkflowForLiveMode();
+        $this->disableWorkflowMocks();
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testWorkflowFeatureWithoutSkip()
+    {
+        $response = $this->startTest();
+
+        $payout = $this->getDbEntityById('payout', $response['id'])->toArray();
+
+        $this->assertEquals(null, $payout[Payout\Entity::WORKFLOW_FEATURE]);
+    }
+
+    public function testSkipWorkflowKeyWithoutBoolean()
+    {
         $this->startTest();
     }
 }

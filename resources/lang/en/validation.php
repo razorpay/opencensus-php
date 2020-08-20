@@ -133,6 +133,9 @@ return [
         'iins.*' => [
             'digits' => 'The IIN elements must be of :digits digit.'
         ],
+        'skip_workflow' => [
+            'boolean' => 'Only true is valid for skip_workflow key.'
+        ],
     ],
 
     /*

@@ -5,26 +5,27 @@ namespace RZP\Tests\Functional\Merchant;
 use Mail;
 use Event;
 
-
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
-use RZP\Mail\Loc\CashAdvanceEligible;
 use RZP\Models\Feature\Entity;
+use RZP\Services\RazorXClient;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
+use RZP\Mail\Loc\CashAdvanceEligible;
 use RZP\Error\PublicErrorDescription;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Cache\Events\CacheMissed;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\FileUploadTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Mail\Merchant\EsEligible as EsEligibleMail;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Base\QueryCache\Constants as CacheConstants;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
-use RZP\Mail\Merchant\EsEligible as EsEligibleMail;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 class FeaturesTest extends TestCase
@@ -1725,4 +1726,71 @@ class FeaturesTest extends TestCase
         });
     }
 
+    public function testAddFeatureSkipWorkflowPayoutSpecificAsMerchantTreatmentNotEnabled()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testAddFeatureSkipWorkflowPayoutSpecificAsMerchantTreatmentEnabled()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+               ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+               {
+                   if ($featureFlag === (RazorxTreatment::SKIP_WORKFLOW_PAYOUT_SPECIFIC_FEATURE))
+                   {
+                       return 'on';
+                   }
+                   return 'control';
+               });
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $response = $this->startTest();
+
+        $features = $response['features'];
+
+        $check = false;
+
+        foreach ($features as $feature)
+        {
+            if ($feature['feature'] === Constants::SKIP_WF_AT_PAYOUTS)
+            {
+                $this->assertTrue($feature['value']);
+
+                $this->assertEquals(
+                    Constants::$visibleFeaturesMap[Constants::SKIP_WF_AT_PAYOUTS]['display_name'],
+                    $feature['display_name']
+                );
+
+                $check = true;
+            }
+        }
+
+        $this->assertTrue($check);
+    }
+
+    public function testAddSkipWorkflowPayoutSpecificFeatureToMerchant()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if ($featureFlag === (RazorxTreatment::SKIP_WORKFLOW_PAYOUT_SPECIFIC_FEATURE))
+                {
+                    return 'on';
+                }
+                return 'control';
+            });
+
+        $this->startTest();
+    }
 }

@@ -18,6 +18,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Payout\Status;
+use RZP\Models\Payout\Entity;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Payout\Notifications;
@@ -92,6 +93,11 @@ class Base extends BaseCore
      */
     protected $fundTransferDestination;
 
+    /**
+     * @var string
+     */
+    protected $workflowFeature = null;
+
     const KEY_SUFFIX = '_payout_workflow';
 
     /**
@@ -109,13 +115,23 @@ class Base extends BaseCore
 
         $this->setPayoutBalance($input);
 
+        $skipWorkflow = null;
+
+        if (array_key_exists(Payout\Entity::SKIP_WORKFLOW, $input) === true)
+        {
+            (new Payout\Validator)->setStrictFalse()
+                ->validateInput('skip_workflow', $input);
+
+            $skipWorkflow = (bool) array_pull($input, Entity::SKIP_WORKFLOW);
+        }
+
         /** @var Payout\Entity $payout */
-        $payout = $this->repo->transaction(function () use ($input)
+        $payout = $this->repo->transaction(function () use ($input, $skipWorkflow)
         {
             $payout = $this->handleWorkflowsIfApplicable(function() use ($input)
             {
                 return $this->createPayoutEntity($input);
-            });
+            }, $skipWorkflow);
 
             if ($this->workflowActivated === true)
             {
@@ -586,26 +602,32 @@ class Base extends BaseCore
     /**
      * @param callable $createPayoutCallback The callable is expected to create and return a payout entity.
      *
+     * @param null $skipWorkflow
      * @return Payout\Entity|null
-     * @throws Exception\BadRequestException
+     * @throws BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      */
-    protected function handleWorkflowsIfApplicable(callable $createPayoutCallback)
+    protected function handleWorkflowsIfApplicable(callable $createPayoutCallback, $skipWorkflow = null)
     {
         //
-        // Skip workflow if its not enabled for the merchant or
+        // Skip workflow for internally created payouts
+        //
+        if ($this->isInternal === true)
+        {
+            $this->workflowFeature = Payout\WorkflowFeature::SKIP_FOR_INTERNAL_PAYOUT;
+
+            return $createPayoutCallback();
+        }
+
+        //
+        // Skip workflow is payout specific skip is enabled and key skip_workflow is true in request
+        // Skip workflow if skip_workflow is null and
         // if the workflow is enabled, check if the request if from API and merchant wants to
         // skip workflow for requests through API
         // also skip workflow for test mode
-        // We also want to skip workflow for internally created payouts
         //
-        if (($this->isWorkflowApplicable() === false) or
-            ($this->isInternal === true))
+        if ($this->isWorkflowApplicable($skipWorkflow) === false)
         {
-            //
-            // Workflows feature was not enabled.
-            // The callback will create a payout entity, which we return back from here,
-            // which will progressed on to DownstreamProcessor
-            //
             return $createPayoutCallback();
         }
 
@@ -680,37 +702,86 @@ class Base extends BaseCore
      * Check if workflow is enabled for merchant
      * Additionally check if the call is from API and merchant has disabled the workflow for API request
      *
+     * @param $skipWorkflow
      * @return bool
+     * @throws Exception\BadRequestValidationFailureException
      */
-    protected function isWorkflowApplicable()
+    protected function isWorkflowApplicable($skipWorkflow)
     {
-        $areWorkflowsEnabled = $this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS);
-
-        $hasSkipWorkflowFeature = $this->merchant->isFeatureEnabled(Features::SKIP_WORKFLOWS_FOR_API);
-
-        $isApiRequest = $this->app['basicauth']->isStrictPrivateAuth();
+        //
+        // Skip workflow if:
+        // test mode
+        //
+        if ($this->isTestMode() === true)
+        {
+            return false;
+        }
 
         $isPayoutFromPGBalance = ($this->balance->getType() === Balance\Type::PRIMARY);
 
         //
         // Skip workflow if:
-        // test mode
-        // workflow is not enabled for the merchant or
-        // if the workflow is enabled, check if the request if from API and merchant wants to
-        // skip workflow for requests through API
+        // Payout is from pg
         //
-        if (($this->isTestMode() === true) or
-            ($isPayoutFromPGBalance === true) or
-            ($areWorkflowsEnabled === false) or
-            (($isApiRequest === true) and
-             ($hasSkipWorkflowFeature === true)))
+        if ($isPayoutFromPGBalance === true)
+        {
+            $this->workflowFeature = Payout\WorkflowFeature::SKIP_FOR_PG_PAYOUT;
+
+            return false;
+        }
+
+        $areWorkflowsEnabled = $this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS);
+
+        //
+        // Skip workflow if:
+        // workflow is not enabled for the merchant
+        //
+        if ($areWorkflowsEnabled === false)
         {
             return false;
         }
         else
         {
-            return true;
+            $this->workflowFeature = Features::PAYOUT_WORKFLOWS;
         }
+
+        if ($skipWorkflow !== null)
+        {
+            $hasSkipWorkflowPayoutSpecificFeature = $this->merchant->isFeatureEnabled(Features::SKIP_WF_AT_PAYOUTS);
+
+            if ($hasSkipWorkflowPayoutSpecificFeature === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "Skip workflow is not  enabled.",
+                    'skip_workflow');
+            }
+
+            if ($skipWorkflow === true)
+            {
+                $this->workflowFeature = Features::SKIP_WF_AT_PAYOUTS;
+
+                return false;
+            }
+        }
+
+        $hasSkipWorkflowFeature = $this->merchant->isFeatureEnabled(Features::SKIP_WORKFLOWS_FOR_API);
+
+        $isApiRequest = $this->app['basicauth']->isStrictPrivateAuth();
+
+        //
+        // Skip workflow if:
+        // if the workflow is enabled, if the request if from API and merchant wants to
+        // skip workflow for requests through API
+        //
+        if (($isApiRequest === true) and
+            ($hasSkipWorkflowFeature === true))
+        {
+            $this->workflowFeature = Features::SKIP_WORKFLOWS_FOR_API;
+
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -818,6 +889,8 @@ class Base extends BaseCore
         // NOTE: Not sure why it does not happen with FundAccount. (todo: check)
         //
         $this->associateUserIfApplicable($payout);
+
+        $payout->setWorkflowFeature($this->workflowFeature);
 
         $this->batchId ? ($payout->setBatchId($this->batchId)) : ($payout->batch()->associate($this->batch));
 

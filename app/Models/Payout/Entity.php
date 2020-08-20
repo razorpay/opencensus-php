@@ -96,6 +96,7 @@ class Entity extends Base\PublicEntity
     const PAYOUT_LINK_ID         = 'payout_link_id';
     const PRICING_RULE_ID        = 'pricing_rule_id';
     const FEE_TYPE               = 'fee_type';
+    const WORKFLOW_FEATURE       = 'workflow_feature';
 
     // scheduled_at is the timestamp for when the merchant schedules the payout to be processed
     const SCHEDULED_AT           = 'scheduled_at';
@@ -140,6 +141,7 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_NUMBER       = 'account_number';
     const QUEUE_IF_LOW_BALANCE = 'queue_if_low_balance';
     const PAYOUT_IDS           = 'payout_ids';
+    const SKIP_WORKFLOW        = 'skip_workflow';
 
     // Output keys
     const WORKFLOW_HISTORY   = 'workflow_history';
@@ -313,6 +315,7 @@ class Entity extends Base\PublicEntity
         self::PRICING_RULE_ID,
         self::BATCH_SUBMITTED_AT,
         self::FEE_TYPE,
+        self::WORKFLOW_FEATURE,
         self::SCHEDULED_AT,
         self::SCHEDULED_ON,
     ];
@@ -434,6 +437,7 @@ class Entity extends Base\PublicEntity
         self::IDEMPOTENCY_KEY   => null,
         self::PRICING_RULE_ID   => null,
         self::FEE_TYPE          => null,
+        self::WORKFLOW_FEATURE  => null,
     ];
 
     protected $amounts = [
@@ -1204,6 +1208,16 @@ class Entity extends Base\PublicEntity
         $this->expectedFeeType = $expectedFeeType;
 
         return $this;
+    }
+
+    public function setWorkflowFeature($workflowFeature)
+    {
+        if ($workflowFeature !== null)
+        {
+            $tinyIntForFeature = WorkflowFeature::getIntValueFromWorkflowFeature($workflowFeature);
+
+            $this->setAttribute(self::WORKFLOW_FEATURE, $tinyIntForFeature);
+        }
     }
 
     // ============================= END SETTERS =============================

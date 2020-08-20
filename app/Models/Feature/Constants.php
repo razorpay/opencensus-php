@@ -281,13 +281,21 @@ class Constants
 
     /**
      * Enables workflow feature on Payout for Business Banking (RazorpayX)
+     * Please check WorkflowFeature.php before modifying this value
      */
     const PAYOUT_WORKFLOWS              = 'payout_workflows';
 
     /**
      * Skips workflow for API requests for creating payouts for Business Banking (RazorpayX)
+     * Please check WorkflowFeature.php before modifying this value
      */
     const SKIP_WORKFLOWS_FOR_API        = 'skip_workflow_for_api';
+
+    /**
+     * Skips workflow payout specific requests for creating payouts for Business Banking (RazorpayX)
+     * Please check WorkflowFeature.php before modifying this value
+     */
+    const SKIP_WF_AT_PAYOUTS            = 'skip_wf_at_payouts';
 
     /**
      * Aggregator Partner + OAuth Client access
@@ -610,6 +618,7 @@ class Constants
         self::OFFLINE_PAYMENTS                => true,
         self::SKIP_HITACHI_AUTO_ONBOARD       => true,
         self::SKIP_WORKFLOWS_FOR_API          => true,
+        self::SKIP_WF_AT_PAYOUTS              => true,
         self::DISPLAY_LA_PARENT_PAYMENT_ID    => true,
         self::REDIRECTION_ONHOLD              => true,
         self::DCC                             => true,
@@ -811,6 +820,11 @@ class Constants
             'display_name'  => 'Razorpay X - Skip workflows for API requests',
             'documentation' => '',
         ],
+        self::SKIP_WF_AT_PAYOUTS             => [
+            'feature'       => self::SKIP_WF_AT_PAYOUTS,
+            'display_name'  => 'Razorpay X - Skip workflows payout specific',
+            'documentation' => '',
+        ],
         self::DISABLE_INSTANT_REFUNDS     => [
             'feature'       => self::DISABLE_INSTANT_REFUNDS,
             'display_name'  => 'Disable Instant Refunds',
@@ -906,6 +920,7 @@ class Constants
         self::ES_AUTOMATIC,
         self::SHOW_CREDIT_SCORE,
         self::SKIP_WORKFLOWS_FOR_API,
+        self::SKIP_WF_AT_PAYOUTS,
         self::LOC_STAGE_2,
     ];
 

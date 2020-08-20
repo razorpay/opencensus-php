@@ -157,6 +157,9 @@ final class RazorxTreatment
     // helps in ramping up to ses for those templates
     const API_EMAIL_SES_DRIVER = 'api_email_ses_driver';
 
+    // Check whether skip_workflow_payout_specific feature is allowed for merchant or not.
+    const SKIP_WORKFLOW_PAYOUT_SPECIFIC_FEATURE = 'skip_workflow_payout_specific_feature';
+
     const PUBLIC_KEY_SIGNATURE_GENERATION = 'public_key_signature_generation';
 
     const API_EMAIL_DRIVER_CHANGE_DYNAMICALLY = 'api_email_driver_set_dynamically';

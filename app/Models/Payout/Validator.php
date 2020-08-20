@@ -88,6 +88,7 @@ class Validator extends Base\Validator
         Entity::NARRATION                            => 'sometimes|nullable|string|max:30|alpha_space_num',
         Entity::PAYOUT_LINK_ID                       => 'sometimes|filled|public_id',
         Entity::QUEUE_IF_LOW_BALANCE                 => 'sometimes|filled|boolean',
+        Entity::SKIP_WORKFLOW                        => 'filled|boolean',
         Entity::FUND_ACCOUNT                         => 'required|filled|array|custom',
         Entity::FUND_ACCOUNT . "." . Entity::CONTACT => 'required|filled|array',
     ];
@@ -218,6 +219,14 @@ class Validator extends Base\Validator
 
     protected static $payoutStatusManualValidators = [
         'final_status',
+    ];
+
+    protected static $skipWorkflowRules = [
+        Entity::SKIP_WORKFLOW   => 'filled|boolean'
+    ];
+
+    protected static $skipWorkflowValidators = [
+        'skip_workflow'
     ];
 
     protected function validateMethod($attribute, $method)
@@ -692,4 +701,15 @@ class Validator extends Base\Validator
         Schedule::validateCancelOrApproveOrRejectRequest($payout);
     }
 
+    protected function validateSkipWorkflow($input)
+    {
+        $skipWorkflow = (bool) $input[Entity::SKIP_WORKFLOW];
+
+        if ($skipWorkflow === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Only true is valid for skip_workflow key.",
+                'skip_workflow');
+        }
+    }
 }

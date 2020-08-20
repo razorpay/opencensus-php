@@ -15,6 +15,7 @@ use RZP\Models\FundAccount;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Payout\Entity as Payout;
 use RZP\Models\FundTransfer\Batch as BatchFundTransfer;
+use RZP\Models\Payout\WorkflowFeature as WorkflowFeature;
 
 class CreatePayoutsTable extends Migration
 {
@@ -173,6 +174,9 @@ class CreatePayoutsTable extends Migration
                   ->nullable();
 
             $table->string(Payout::FEE_TYPE, 255)
+                  ->nullable();
+
+            $table->tinyInteger(Payout::WORKFLOW_FEATURE)
                   ->nullable();
 
             $table->integer(Payout::CREATED_AT);

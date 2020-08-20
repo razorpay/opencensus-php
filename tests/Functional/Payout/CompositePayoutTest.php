@@ -5,12 +5,17 @@ namespace RZP\Tests\Functional\Payout;
 use RZP\Models\Payout;
 use RZP\Models\Feature;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payout\WorkflowFeature;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 
 class CompositePayoutTest extends TestCase
 {
+    use PayoutTrait;
+    use WorkflowTrait;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
     use RequestResponseFlowTrait;
@@ -243,5 +248,34 @@ class CompositePayoutTest extends TestCase
 
         // Assert that free_payout is assigned as fee_type
         $this->assertEquals(Payout\Entity::FREE_PAYOUT, $payout->getFeeType());
+    }
+
+    public function testCreateCompositePayoutWithSkipWfAtPayoutAndSkipWorkflowTrue()
+    {
+        $this->createSkipWorkflowForPayoutFeature();
+
+        $response = $this->startTest();
+
+        $payout = $this->getDbEntityById('payout', $response['id']);
+
+        $fundAccount = $this->getDbEntityById('fund_account', $response['fund_account_id']);
+
+        $contact = $this->getDbEntityById('contact', $response['fund_account']['contact_id']);
+
+
+        // Assert that contact, fund_account and payout in db are related to each other
+        $this->assertEquals($payout['fund_account_id'], $fundAccount['id']);
+        $this->assertEquals($fundAccount['source_id'], $contact['id']);
+        $this->assertEquals(WorkflowFeature::WORKFLOW_FEATURES[Feature\Constants::SKIP_WF_AT_PAYOUTS],
+            $payout[Payout\Entity::WORKFLOW_FEATURE]);
+
+        // Assert that the response payout, fund_account and contact are also related to each other
+        $this->assertEquals($response['fund_account_id'], $response['fund_account']['id']);
+        $this->assertEquals($response['fund_account']['contact_id'], $response['fund_account']['contact']['id']);
+    }
+
+    public function testCreateCompositePayoutWithSkipWfAtPayoutAndSkipWorkflowFalse()
+    {
+        $this->startTest();
     }
 }
