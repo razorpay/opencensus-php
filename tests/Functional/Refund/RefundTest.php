@@ -1711,11 +1711,81 @@ class RefundTest extends TestCase
         $actual['acquirer_data'] = $rfnd->getAcquirerData()->toArray();
     }
 
+    public function testPaymentOrderAccountDetailsAvailableNonTpvBankTransferRefundNetbanking()
+    {
+        list($payment, $order) = $this->paymentOrderAccountDetailsAvailable();
+
+        $this->fixtures->merchant->addFeatures(['non_tpv_bt_refund']);
+
+        $response = $this->refundPayment($payment['id'], $payment['amount'], ['is_fta' => true]);
+
+        $refund  = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($response['id'], $refund['id']);
+
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+
+        // Atom has been on boarded to Scrooge,
+        // Changing this since in scrooge flow it will remain in created until cron picks up FTA for processing
+        $this->assertEquals('created', $refund['status']);
+
+        $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fundTransferAttempt['source'], $refund['id']);
+
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fundTransferAttempt['narration']);
+
+        $this->assertEquals('yesbank', $fundTransferAttempt['channel']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $this->assertEquals('SBIN0010411', $bankAccount['ifsc_code']);
+
+        $this->assertEquals($order['account_number'], $bankAccount['account_number']);
+
+        $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
+        $this->assertEquals('test', $bankAccount['beneficiary_name']);
+        $this->assertEquals('refund', $bankAccount['type']);
+
+        $rfnd = $this->getDbEntityById('refund', $refund['id']);
+
+        $actual = $rfnd->toArrayPublic();
+        $actual['acquirer_data'] = $rfnd->getAcquirerData()->toArray();
+    }
+
     public function testTpvPaymentRefundNetbankingForDirectSettlementRefund()
     {
         list($payment, $order) = $this->tpvPayment();
 
         $this->fixtures->merchant->addFeatures(['bank_transfer_refund']);
+
+        $this->fixtures->terminal->edit($payment['terminal_id'], [
+            'type' => [
+                'direct_settlement_with_refund' => '1',
+                'recurring_3ds' => '1'
+            ],
+        ]);
+
+        $response = $this->refundPayment($payment['id'], $payment['amount'], ['is_fta' => true]);
+
+        $refund  = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($response['id'], $refund['id']);
+
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+
+        $this->assertEquals('created', $refund['status']);
+
+        $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fundTransferAttempt['source'], null);
+    }
+
+    public function testPaymentOrderAccountDetailsAvailableNonTpvBankTransferRefundNetbankingForDirectSettlementRefund()
+    {
+        list($payment, $order) = $this->paymentOrderAccountDetailsAvailable();
+
+        $this->fixtures->merchant->addFeatures(['non_tpv_bt_refund']);
 
         $this->fixtures->terminal->edit($payment['terminal_id'], [
             'type' => [
@@ -1870,6 +1940,46 @@ class RefundTest extends TestCase
 
         $this->assertEquals($gatewayEntity['account_number'],
                             $data['request']['content']['account_number']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertArraySelectiveEquals($data['request']['content'], $order);
+
+        return [$payment, $order];
+    }
+
+    public function paymentOrderAccountDetailsAvailable()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
+
+        $this->gateway = 'atom';
+
+        $terminal = $this->fixtures->create('terminal:shared_atom_terminal');
+
+        $this->ba->privateAuth();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $order =  $this->runRequestResponseFlow($data);
+
+        $payment['order_id'] = $order['id'];
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['bank_txn'] = '99999999';
+            $content['bank_name'] = 'SBIN';
+        });
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['terminal_id'], $terminal->getId());
+
+        $gatewayEntity = $this->getLastEntity('atom', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['nonTpvPaymentNetbankingEntity'], $gatewayEntity);
 
         $order = $this->getLastEntity('order', true);
 

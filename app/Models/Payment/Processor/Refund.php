@@ -2702,6 +2702,21 @@ trait Refund
         return false;
     }
 
+    protected function isPaymentNetbankingOrderAccountDetailsAvailableAndNonTpvBankTransferRefund(Payment\Entity $payment): bool
+    {
+        if (($payment->isNetbanking() === true) and
+            ($payment->isGatewayCaptured() === true) and
+            ($payment->hasOrder() === true) and
+            (empty($payment->order->getAccountNumber()) === false) and
+            (empty($payment->order->getBank()) === false) and
+            ($this->merchant->isFeatureEnabled(Feature::NON_TPV_BT_REFUND) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * @param Payment\Entity $payment
      * @return bool
@@ -2972,7 +2987,8 @@ trait Refund
 
                 $input = (new BankTransfer\Core)->getAccountForRefund($bankTransfer);
             }
-            else if ($this->isPaymentTpvAndBankTransferRefund($payment) === true)
+            else if (($this->isPaymentTpvAndBankTransferRefund($payment) === true) or
+                     ($this->isPaymentNetbankingOrderAccountDetailsAvailableAndNonTpvBankTransferRefund($payment) === true))
             {
                 $order = $payment->order;
 
@@ -3006,6 +3022,7 @@ trait Refund
     {
         return (($payment->isBankTransfer() === true) or
             ($this->isPaymentTpvAndBankTransferRefund($payment) === true) or
+            ($this->isPaymentNetbankingOrderAccountDetailsAvailableAndNonTpvBankTransferRefund($payment) === true) or
             ($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true) or
             ($this->isPaymentNachAndNachRefundGateway($payment) === true));
     }

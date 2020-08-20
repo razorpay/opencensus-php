@@ -934,6 +934,7 @@ return [
                     'axis_express_pay',
                     'pre_auth_shield_intg',
                     'bank_transfer_refund',
+                    'non_tpv_bt_refund',
                     'card_transfer_refund',
                     'disable_instant_refunds',
                     'log_response',

@@ -639,6 +639,13 @@ return [
         'status'          => 'Ok',
     ],
 
+    'nonTpvPaymentNetbankingEntity' => [
+        'bank_payment_id' => '99999999',
+        'received'        => true,
+        'bank_name'       => 'SBIN',
+        'status'          => 'Ok',
+    ],
+
     'testFetchRefundReversal' => [
         'request' => [
             'method'  => 'get',
@@ -662,6 +669,29 @@ return [
     ],
 
     'tpvPayment' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'netbanking',
+                'bank'           => 'SBIN',
+                'account_number' => '04030403040304',
+                'payer_name'     => 'test',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+
+    'paymentOrderAccountDetailsAvailable' => [
         'request' => [
             'content' => [
                 'amount'         => 50000,
