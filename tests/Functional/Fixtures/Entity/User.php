@@ -8,10 +8,11 @@ use DB;
 class User extends Base
 {
     const MERCHANT_USER_ID = 'MerchantUser01';
+    const MERCHANT_USER_EMAIL = 'merchantuser01@razorpay.com';
 
     public function setup()
     {
-        $user = $this->fixtures->create('user', ['id' => self::MERCHANT_USER_ID]);
+        $user = $this->fixtures->create('user', ['id' => self::MERCHANT_USER_ID, 'email' => self::MERCHANT_USER_EMAIL]);
 
         $mappingData = [
             'user_id'     => $user['id'],
