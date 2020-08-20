@@ -24,6 +24,9 @@ use RZP\Constants\Entity as E;
  */
 class Stork
 {
+    // Calls to stork defaults to 2s timeout, but for process event it is overridden to 350ms.
+    const PROCESS_EVENT_REQUEST_TIMEOUT_MS = 350;
+
     /**
      * @var \RZP\Services\Stork
      */
@@ -181,7 +184,9 @@ class Stork
                     'name'       => $event->event,
                     'payload'    => $payload,
                 ],
-            ]);
+            ],
+            self::PROCESS_EVENT_REQUEST_TIMEOUT_MS
+        );
     }
 
     /**

@@ -18,10 +18,10 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Stork
 {
     // Request timeout in milliseconds for all HTTP requests to stork.
-    const REQUEST_TIMEOUT = 350;
+    const REQUEST_TIMEOUT = 2000;
     // Request connect timeout in milliseconds for all HTTP requests to stork.
     // Request timeout parameter applies after connection is established.
-    const REQUEST_CONNECT_TIMEOUT = 350;
+    const REQUEST_CONNECT_TIMEOUT = 2000;
 
     /**
      * Name of owning service for requests to stork.
@@ -123,18 +123,17 @@ class Stork
 
         // Options and authentication for requests.
         $options = [
-            'timeout'         => self::REQUEST_TIMEOUT,
-            'connect_timeout' => self::REQUEST_CONNECT_TIMEOUT,
-            'auth'            => $auth,
-            'hooks'           => new Requests_Hooks(),
+            'auth'  => $auth,
+            'hooks' => new Requests_Hooks(),
         ];
 
         // This will add extra hook onto options[hooks] for dns resolution to
         // ipV4 only. Doing this for internal services only.
         $hooks = new Hooks($config['url']);
         $hooks->addCurlProperties($options);
+
         // Sets request timeout in milliseconds via curl options.
-        $options['hooks']->register('curl.before_send', [$this, 'setCurlOptions']);
+        $this->setRequestTimeoutOpts($options, self::REQUEST_TIMEOUT, self::REQUEST_CONNECT_TIMEOUT);
 
         // Instantiate a request instance.
         $this->request = new Requests_Session(
@@ -150,12 +149,25 @@ class Stork
     }
 
     /**
-     * @param object $curl
+     * @param array $options
+     * @param int   $timeoutMs
+     * @param int   $connectTimeoutMs
      */
-    public function setCurlOptions($curl)
+    public function setRequestTimeoutOpts(array &$options, int $timeoutMs, int $connectTimeoutMs)
     {
-        curl_setopt($curl, CURLOPT_TIMEOUT_MS, self::REQUEST_TIMEOUT);
-        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT_MS, self::REQUEST_CONNECT_TIMEOUT);
+        $options += [
+            'timeout'         => $timeoutMs,
+            'connect_timeout' => $connectTimeoutMs,
+        ];
+
+        // Additionally sets request timeout in milliseconds via curl options.
+        $options['hooks']->register(
+            'curl.before_send',
+            function ($curl) use ($timeoutMs, $connectTimeoutMs)
+            {
+                curl_setopt($curl, CURLOPT_TIMEOUT_MS, $timeoutMs);
+                curl_setopt($curl, CURLOPT_CONNECTTIMEOUT_MS, $connectTimeoutMs);
+            });
     }
 
     /**
@@ -191,8 +203,15 @@ class Stork
      * @throws ServerErrorException
      * @throws TwirpException
      */
-    public function request(string $path, array $payload): Requests_Response
+    public function request(string $path, array $payload, int $timeoutMs = null): Requests_Response
     {
+        $options = [];
+        if ($timeoutMs !== null)
+        {
+            $options = ['hooks' => new Requests_Hooks()];
+            $this->setRequestTimeoutOpts($options, $timeoutMs, $timeoutMs);
+        }
+
         $res = null;
         $exception = null;
         $maxAttempts = 2;
@@ -201,7 +220,7 @@ class Stork
         {
             try
             {
-                $res = $this->request->post($path, [], empty($payload) ? '{}' : json_encode($payload));
+                $res = $this->request->post($path, [], empty($payload) ? '{}' : json_encode($payload), $options);
             }
             catch (Throwable $e)
             {

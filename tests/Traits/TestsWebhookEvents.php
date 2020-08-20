@@ -83,7 +83,7 @@ trait TestsWebhookEvents
         $this->storkMock
             ->shouldReceive('request')
             ->once()
-            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent', Mockery::on($argMatcher))
+            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent', Mockery::on($argMatcher), 350)
             ->andReturn(new Requests_Response);
     }
 
@@ -114,7 +114,7 @@ trait TestsWebhookEvents
 
         $this->storkMock
             ->shouldNotReceive('request')
-            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent', Mockery::any());
+            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent', Mockery::any(), 350);
     }
 
     /**
@@ -132,6 +132,6 @@ trait TestsWebhookEvents
 
         $this->storkMock
             ->shouldNotReceive('request')
-            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent', Mockery::on($argMatcher));
+            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent', Mockery::on($argMatcher), 350);
     }
 }
