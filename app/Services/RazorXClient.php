@@ -37,6 +37,8 @@ class RazorXClient
     const CACHED_TREATMENT_PREFIX = "razorx:";
     const CACHED_TREATMENT_TTL = 1; // In minutes.
 
+    const RETRY_COUNT_KEY = 'retry_count';
+
     protected $baseUrl;
 
     /**
@@ -129,7 +131,7 @@ class RazorXClient
         return $treatment;
     }
 
-    public function getTreatment(string $id, string $featureFlag, string $mode): string
+    public function getTreatment(string $id, string $featureFlag, string $mode, $retryCount = 0): string
     {
         $variant = $this->checkWhitelistedExperimentsForCardPs($featureFlag);
 
@@ -156,7 +158,7 @@ class RazorXClient
             return $storedVariant;
         }
 
-        return $this->getVariantFromRazorXService($id, $featureFlag, $mode);
+        return $this->getVariantFromRazorXService($id, $featureFlag, $mode, $retryCount);
     }
 
     protected function checkWhitelistedExperimentsForCardPs($feature)
@@ -211,13 +213,18 @@ class RazorXClient
         return json_encode($currCookieArr);
     }
 
-    protected function getVariantFromRazorXService(string $id, string $featureFlag, string $mode)
+    protected function getVariantFromRazorXService(
+                                    string $id,
+                                    string $featureFlag,
+                                    string $mode,
+                                    int $retryCount = 0)
     {
         $data = [
-            self::ID           => $id,
-            self::FEATURE_FLAG => $featureFlag,
-            self::ENVIRONMENT  => $this->env,
-            self::MODE         => $mode
+            self::ID               => $id,
+            self::FEATURE_FLAG     => $featureFlag,
+            self::ENVIRONMENT      => $this->env,
+            self::MODE             => $mode,
+            self::RETRY_COUNT_KEY  => $retryCount,
         ];
 
         $variant = $this->sendRequest(self::EVALUATE_URI, Requests::GET, $data);
@@ -257,6 +264,13 @@ class RazorXClient
 
         $request = $this->getRequestParams($url, $method, $data);
 
+        $retryCount = $data[self::RETRY_COUNT_KEY] ?? 0;
+
+        return $this->makeRequestAndGetResponse($request, $retryCount, $retryCount);
+    }
+
+    protected function makeRequestAndGetResponse(array $request, int $retryOriginalCount, int $retryCount)
+    {
         try
         {
             $response = Requests::request(
@@ -268,19 +282,37 @@ class RazorXClient
 
             return $this->parseAndReturnResponse($response, $request);
         }
-        catch(\Throwable $e)
+        catch (\Throwable $e)
         {
-            unset($request['options']['auth']);
+            if (($e instanceof \Requests_Exception) and
+                (checkRequestTimeout($e) === true) and
+                ($retryCount > 0))
+            {
+                $this->trace->info(
+                    TraceCode::RAZORX_SERVICE_RETRY,
+                    [
+                        'message'       => $e->getMessage(),
+                        'data'          => $e->getData(),
+                    ]);
 
-            $this->trace->traceException(
-                $e,
-                Trace::CRITICAL,
-                TraceCode::RAZORX_REQUEST_FAILED,
-                [
-                    'request'   => $request,
-                ]);
+                $retryCount--;
 
-            return self::DEFAULT_CASE;
+                return  $this->makeRequestAndGetResponse($request, $retryOriginalCount, $retryCount);
+            }
+            {
+                unset($request['options']['auth']);
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::CRITICAL,
+                    TraceCode::RAZORX_REQUEST_FAILED,
+                    [
+                        'request'       => $request,
+                        'retries'       => $retryOriginalCount - $retryCount
+                    ]);
+
+                return self::DEFAULT_CASE;
+            }
         }
     }
 

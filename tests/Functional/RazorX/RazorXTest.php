@@ -65,6 +65,7 @@ class RazorXTest extends TestCase
             'feature_flag' => 'reportsV3',
             'environment'  => 'testing',
             'mode'         => 'test',
+            'retry_count'  => 0
         ];
 
         $this->razorX->expects($this->once())

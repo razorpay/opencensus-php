@@ -2543,6 +2543,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTS_SOURCE_ACCOUNT_MAPPING_CREATION_EXCEPTION         = 'FTS_SOURCE_ACCOUNT_MAPPING_CREATION_EXCEPTION';
     const FTS_BENEFICIARY_REGISTER_RAZORX_INIT                  = 'FTS_BENEFICIARY_REGISTER_RAZORX_INIT';
     const FTS_BENEFICIARY_REGISTER_RAZORX_COMPLETE              = 'FTS_BENEFICIARY_REGISTER_RAZORX_COMPLETE';
+    const RAZORX_SERVICE_RETRY                                  = 'RAZORX_SERVICE_RETRY';
 
     // Origin trace codes
     const ORIGIN_CREATED                                        = 'ORIGIN_CREATED';

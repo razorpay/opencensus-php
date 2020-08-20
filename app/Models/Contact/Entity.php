@@ -49,6 +49,7 @@ class Entity extends Base\PublicEntity
 
     // Raw Email used exclusively for ES
     const EMAIL_RAW = 'email.raw';
+    const CONTACT_RX_RETRY_COUNT = '2';
 
     protected $generateIdOnCreate = true;
 

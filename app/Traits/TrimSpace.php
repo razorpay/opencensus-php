@@ -9,6 +9,8 @@ use RZP\Models\Merchant\RazorxTreatment;
 
 trait TrimSpace
 {
+    protected static $trimSpacesRazorxRetryCount = 2;
+
     public function trimSpacesIfMerchantEnabled($data, $merchantId)
     {
         $this->app = App::getFacadeRoot();
@@ -16,7 +18,8 @@ trait TrimSpace
         $treatment = $this->app->razorx->getTreatment(
             $merchantId,
             RazorxTreatment::TRIM_SPACES,
-            Mode::LIVE
+            Mode::LIVE,
+            self::$trimSpacesRazorxRetryCount
         );
 
         if ($treatment === 'on')

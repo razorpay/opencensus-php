@@ -7,10 +7,10 @@ use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 use RZP\Traits\TrimSpace;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Contact\BatchHelper as ContactBatchHelper;
 
 /**
@@ -36,7 +36,8 @@ class Core extends Base\Core
         $treatment = $this->app->razorx->getTreatment(
             $merchant->getId(),
             RazorxTreatment::TRIM_SPACES,
-            $this->mode
+            $this->mode,
+            Entity::CONTACT_RX_RETRY_COUNT
         );
 
         //
