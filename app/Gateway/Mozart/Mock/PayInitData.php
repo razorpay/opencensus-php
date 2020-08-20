@@ -709,9 +709,11 @@ class PayInitData extends Base\Mock\Server
         $response = [
             'data' =>
                 [
-                    'errCode'               => "MD200",                               // UPI Switch/NPCI Error code
-                    'gateway_payment_id'    => "HDFA3D2FF1416365154E0535DB2E20A9668", // txnId
-                    'npci_reference_id'     => "011300040570",                        // custRefNo
+                    'status_code'           => '0',
+                    'errCode'               => 'MD200',                               // UPI Switch/NPCI Error code
+                    'npci_txn_id'           => 'HDF542de25ds56ad9896ac96cef89475623', // txnId
+                    'npci_reference_id'     => '011300040570',                        // custRefNo
+                    'gateway_payment_id'    => 'GatewayPaymentIdDebit',
                     'vpa'                   => $entities['payment']['vpa'] ?? 'some@hdfcbank',           // payerVPA
                     'mandateStatus'         => 'PENDING',
                     'reqStatus'             => 'S',
@@ -754,8 +756,9 @@ class PayInitData extends Base\Mock\Server
                 [
                     'status_code'           => '0',
                     'errCode'               => 'MD200',                               // UPI Switch/NPCI Error code
-                    'gateway_payment_id'    => 'HDFA3D2FF1416365154E0535DB2E20A9668', // txnId
+                    'npci_txn_id'           => 'HDF542de25ds56ad9896ac96cef89475623', // txnId
                     'npci_reference_id'     => '011300040570',                        // custRefNo
+                    'gateway_payment_id'    => 'GatewayPaymentIdDebit',
                     'vpa'                   => $entities['payment']['vpa'] ?? 'some@hdfcbank',           // payerVPA
                     'mandateStatus'         => 'PENDING',
                     'reqStatus'             => 'S',

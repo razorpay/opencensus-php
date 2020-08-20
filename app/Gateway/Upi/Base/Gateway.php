@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Axis;
 use Razorpay\Trace\Logger;
 use RZP\Gateway\Base\Action;
+use RZP\Exception\RuntimeException;
 
 class Gateway extends Base\Gateway
 {
@@ -200,5 +201,20 @@ class Gateway extends Base\Gateway
         }
 
         return $request;
+    }
+
+    public function traceAnomalies(string $message, Anomalies $anomalies)
+    {
+        if ($anomalies->hasAnomalies() === false)
+        {
+            return;
+        }
+
+        $this->trace->traceException(
+            new RuntimeException($message),
+            $anomalies->getLevel(),
+            // Can be passed as 3rd parameter is needed
+            TraceCode::PAYMENT_UPI_RECURRING_ANOMALY,
+            $anomalies->toArray());
     }
 }

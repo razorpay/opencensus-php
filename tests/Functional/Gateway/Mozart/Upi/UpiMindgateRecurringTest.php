@@ -1,0 +1,40 @@
+<?php
+
+namespace RZP\Tests\Functional\Gateway\Mozart\Upi;
+
+class UpiMindgateRecurringTest extends UpiInitialRecurringTestCase
+{
+    public function setUp()
+    {
+        parent::setUp();
+
+        $this->gateway = 'mozart';
+
+        $this->terminal = $this->fixtures->create('terminal:shared_mindgate_recurring_terminal');
+
+        $this->fixtures->create('customer');
+
+        $this->fixtures->merchant->enableUpi('10000000000000');
+
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
+
+        $this->payment = $this->getDefaultUpiRecurringPaymentArray();
+
+        $this->setMockGatewayTrue();
+    }
+
+    public function testRevokeMandate()
+    {
+        $this->markTestSkipped();
+    }
+
+    public function testPauseMandate()
+    {
+        $this->markTestSkipped();
+    }
+
+    public function testRevokeMandateViaCallback()
+    {
+        $this->markTestSkipped();
+    }
+}

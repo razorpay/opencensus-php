@@ -12,7 +12,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
-class UpiMindgateRecurringTest extends TestCase
+class UpiMindgateRecurringTestOld extends TestCase
 {
     use PaymentTrait;
     use DbEntityFetchTrait;

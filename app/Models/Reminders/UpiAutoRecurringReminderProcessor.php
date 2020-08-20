@@ -39,7 +39,7 @@ class UpiAutoRecurringReminderProcessor extends ReminderProcessor
             $processor = (new Payment\Processor\Processor($payment->merchant));
             $processor->setPayment($payment);
 
-            $processor->processAutoRecurringAuthorizeForUpi($payment);
+            $processor->processRecurringDebitForUpi($payment);
             $processed = true;
         }
 

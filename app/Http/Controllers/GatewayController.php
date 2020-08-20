@@ -169,6 +169,16 @@ class GatewayController extends Controller
 
         $input = $this->preProcessServerCallback($gateway, $input, $gatewayDriver);
 
+        if (Gateway::isUpiRecurringSupportedGateway($gatewayDriver) === true)
+        {
+            $redirect = $gateway->redirectCallbackIfRequired($input);
+
+            if (empty($redirect) === false)
+            {
+                return $redirect;
+            }
+        }
+
         $paymentId = $gateway->getPaymentIdFromServerCallback($input);
 
         $paymentRepo = $this->app['repo']->payment;

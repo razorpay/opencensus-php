@@ -12,6 +12,7 @@ class NotifyData
             'data' => [
                 'status_code'       => '0',
                 'npci_reference_id' => '615519221396', // Bank RRN
+                'umn'               => $entities['upi_mandate']['umn'],
                 'merchantId'        => '106161',
                 'subMerchantId'     => '12234',
                 'terminalId'        => '5411',

@@ -17,9 +17,60 @@ use RZP\Models\Payment\UpiMetadata;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Reminders\ReminderProcessor;
 use RZP\Models\UpiMandate\Entity as Mandate;
+use RZP\Models\Payment\UpiMetadata\Entity as Metadata;
+use RZP\Models\Payment\UpiMetadata\InternalStatus as InternalStatus;
 
 trait UpiRecurring
 {
+    public function processRecurringDebitForUpi(Payment\Entity $payment)
+    {
+        $input = [
+            'action'        => Payment\Action::DEBIT,
+            'gateway'       => $payment->getGateway(),
+            'terminal'      => $payment->terminal,
+            'payment'       => $payment,
+            'merchant'      => $payment->merchant,
+        ];
+
+        $this->modifyGatewayInputForUpi($payment, $input);
+
+        $this->mutex->acquireAndRelease('debit_' . $payment->getId(),
+            function() use ($input, $payment) {
+                try
+                {
+                    $response = $this->callGatewayFunction(Payment\Action::DEBIT, $input);
+
+                    return $this->processDebitGatewaySuccess($payment, $response);
+                }
+                catch (Exception\GatewayErrorException $exception)
+                {
+                    $this->trace->traceException(
+                        $exception,
+                        Trace::INFO,
+                        TraceCode::GATEWAY_PAYMENT_ERROR,
+                        [
+                            'payment_id'    => $input['payment']->getId(),
+                            'gateway'       => $input['gateway'],
+                            'action'        => $input['action'],
+                            'terminal_id'   => $input['terminal']->getId(),
+                        ]);
+
+                    $this->processDebitGatewayFailure($payment, $exception);
+
+                    // Since the debit for auto recurring is called by reminder service
+                    // we do not need to throw exception back as
+                    // 1. This is gateway failure and already handled
+                    // 2. Reminder service will retry for 5xx and that's not needed
+                    if ($payment->isUpiAutoRecurring() === true)
+                    {
+                        return;
+                    }
+
+                    throw $exception;
+                }
+            });
+    }
+
     public function processAutoRecurringPreDebitForUpi(Payment\Entity $payment)
     {
         $mandate = $this->repo->upi_mandate->findByTokenId($payment->getTokenId());
@@ -30,10 +81,8 @@ trait UpiRecurring
             'action'        => Payment\Action::PRE_DEBIT,
             'gateway'       => $payment->getGateway(),
             'terminal'      => $payment->terminal,
-            'upi_mandate'   => $mandate,
             'payment'       => $payment,
             'merchant'      => $payment->merchant,
-            'upi'           => $payment->getUpiMetadata()->toArray(),
         ];
 
         $this->mutex->acquireAndRelease($payment->getId(),
@@ -44,6 +93,8 @@ trait UpiRecurring
                     $metadata = $payment->getUpiMetadata();
                     $metadata->setInternalStatus(UpiMetadata\InternalStatus::PRE_DEBIT_INITIATED);
                     (new UpiMetadata\Core)->update($metadata);
+
+                    $this->modifyGatewayInputForUpi($payment, $input);
 
                     $gatewayResponse = $this->app['gateway']->call(
                         $input['gateway'],
@@ -81,13 +132,11 @@ trait UpiRecurring
     {
         $mandate = $this->repo->upi_mandate->findByTokenId($payment->getTokenId());
 
-        $input = [];
         $gatewayInput = [
             'selected_terminal_ids' => [$payment->getTerminalId()],
-            'upi_mandate'           => $mandate->toArray(),
         ];
 
-        $this->modifyAutoRecurringForUpiIfApplicable($payment, $input, $gatewayInput);
+        $this->modifyGatewayInputForUpi($payment, $gatewayInput);
 
         return $this->gatewayRelatedProcessing($payment, [], $gatewayInput);
     }
@@ -272,57 +321,6 @@ trait UpiRecurring
         return 'mandate_update_' . $upiMandate->getId();
     }
 
-    protected function updateTokenOnAuthorizedForUpiRecurring(
-        Token\Entity $token, array $gatewayData, Payment\Entity $payment)
-    {
-        if ($payment->isSecondRecurring() === true)
-        {
-            $this->updateTokenOnAuthorizedForUpiSecondRecurring($token, $payment);
-        }
-
-        if ($token->getRecurringStatus() !== 'initiated' and ($token->getRecurringStatus() !== 'not_applicable'))
-        {
-            //
-            // We don't throw an exception here because this flow
-            // is called while marking the payment as authorized.
-            // We don't want to mess with payment being authorized!
-            //
-            $this->trace->critical(
-                TraceCode::TOKEN_RECURRING_STATUS_ALREADY_SET,
-                [
-                    'token'        => $token->toArray(),
-                    'gateway_data' => $gatewayData
-                ]);
-
-            return;
-        }
-
-        (new Token\Core)->updateTokenForUpi($token, $gatewayData);
-    }
-
-    protected function updateTokenOnAuthorizedForUpiSecondRecurring(Token\Entity $token, Payment\Entity $payment)
-    {
-        if ($token->getRecurringStatus() !== Token\RecurringStatus::CONFIRMED)
-        {
-            //
-            // We don't throw an exception here because this flow
-            // is called while marking the payment as authorized.
-            // We don't want to mess with payment being authorized!
-            //
-            $this->trace->critical(
-                TraceCode::TOKEN_RECURRING_STATUS_ALREADY_SET,
-                [
-                    'token'        => $token->toArray(),
-                ]);
-
-            return;
-        }
-
-        $token->setRecurringStatus(Token\RecurringStatus::PAID);
-
-        return;
-    }
-
     public function mandateUpdateCallback(Payment\Entity $payment, $input)
     {
         $token = $this->repo->token->findByIdAndMerchant($payment->getTokenId(), $this->merchant);
@@ -472,16 +470,21 @@ trait UpiRecurring
         // TODO: Add predebit validation, these will go as logic exception for now
     }
 
-    protected function modifyAutoRecurringForUpiIfApplicable(Entity $payment, array & $input, array & $gatewayInput)
+    /**
+     * Only called from Payment::runPaymentMethodRelatedPreProcessing, when even the payment is not commited to DB
+     */
+    protected function modifyRecurringForUpiIfApplicable(Entity $payment, array & $input, array & $gatewayInput)
     {
         // Do nothing for other payments
-        if ($payment->isUpiAutoRecurring() === false)
+        if ($payment->isUpiRecurring() === false)
         {
             return;
         }
 
-        // If payment does not exists, basic check no need to set verifiable
-        if ($payment->exists === false)
+        // We need to disable verify for auto recurring payments as these will be left in
+        // created state for at least 24 hours, Authorize call on this payment will enable verify again
+        if (($payment->isUpiAutoRecurring() === true) and
+            ($payment->exists === false))
         {
             $payment->setNonVerifiable();
         }
@@ -490,19 +493,37 @@ trait UpiRecurring
 
         if ($metadata->exists === false)
         {
-            $metadata->setMode(UpiMetadata\Mode::AUTO);
-            $metadata->setType(UpiMetadata\Type::RECURRING);
+            if ($payment->isUpiAutoRecurring() === true)
+            {
+                $metadata->setMode(UpiMetadata\Mode::AUTO);
+                $metadata->setType(UpiMetadata\Type::RECURRING);
 
-            // Adding 30 seconds as buffer
-            $metadata->setRemindAt($metadata->freshTimestamp() + 30);
-            $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_PENDING_FOR_PRE_DEBIT);
+                // Adding 30 seconds as buffer
+                $metadata->setRemindAt($metadata->freshTimestamp() + 30);
+                $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_PENDING_FOR_PRE_DEBIT);
+            }
+            // Else it is initial recurring
+            else
+            {
+                $metadata->setMode(UpiMetadata\Mode::INITIAL);
+                $metadata->setType(UpiMetadata\Type::RECURRING);
+
+                // reminder not needed for initial recurring
+                $metadata->setRemindAt(null);
+                $metadata->setInternalStatus(UpiMetadata\InternalStatus::PENDING_FOR_AUTHENTICATE);
+            }
         }
 
         // Now for gateway input part, we need to attack extra fields to the upi block
         $gatewayInput['upi'] = $metadata->toArray();
     }
 
-    protected function shouldHitGatewayForAutoRecurringForUpi(Entity $payment, array $gatewayInput)
+    /**
+     * Only for auto recurring payment we can skip the authorize flow,
+     * Authenticate on Initial needs to hit authorize for terminal selection
+     * First Debit on Initial needs to hit authorize for
+     */
+    protected function shouldHitAuthorizeOnRecurringForUpi(Entity $payment, array $gatewayInput)
     {
         if ($payment->isUpiAutoRecurring() === false)
         {
@@ -519,61 +540,87 @@ trait UpiRecurring
         return false;
     }
 
-    protected function shouldAutoReccuringSkipAuthorizeForUpi(Entity $payment, array $data): bool
+    // This method will be called where ever Debit request is needed to gateway
+    protected function shouldHitDebitOnRecurringForUpi(Entity $payment)
     {
-        // Any payment which is not UPI Auto Recurring can be authorized
-        if (($payment->isUpiAutoRecurring()) === false)
-        {
-            return false;
-        }
+        $metadata = $payment->getUpiMetadata();
 
-        // Data will be empty when gateway call is not made, or there is some issue with gateway integration
-        // In both cases we can leave the payment in created state, it can be picked again by cron
-        $metadata = $this->getUpiMetadataForPayment($payment);
-
-        // When the metadata status is ReminderInProgressForAuthorized or AuthorizeInitiated
-        // Then we will check for internal status if any sent from gateway
-        if (($metadata->isInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_AUTHORIZE)) or
-            ($metadata->isInternalStatus(UpiMetadata\InternalStatus::AUTHORIZE_INITIATED)))
-        {
-            $internalStatus = $data['upi']['internal_status'] ?? null;
-
-            // If gateway is explicitly telling that the payment is authorized at gateways end
-            // We will not skip authorize for those cases
-            if ($internalStatus === UpiMetadata\InternalStatus::AUTHORIZED)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    protected function shouldInitialReccuringSkipAuthorizeForUpi(Entity $payment, array $data): bool
-    {
-        if ($this->isFirstUpiRecurringPayment($payment) === false)
-        {
-            return false;
-        }
-
-        // Even if this is first recurring payment, for sharp we do not play two callback attempts
-        // thus we will have make the payment authorized in the first callback itself.
-        if ($payment->isGateway(Payment\Gateway::SHARP) === true)
-        {
-            return false;
-        }
-
-        $mandate = array_get($data, 'mandate');
-
-        // If the first debit never ran for this payment, we have to skip the authorize
-        if ((isset($mandate['status'])) and
-            ($mandate['status'] === UpiMandate\Status::CONFIRMED))
+        // Only if the Upi Metadata status is marked PENDING_FOR_AUTHORIZE we can hit the debit on gateway
+        // Note: updateRecurringEntitiesForUpiIfApplicable method will mark it only when mandate is confirmed
+        if ($metadata->isInternalStatus(UpiMetadata\InternalStatus::PENDING_FOR_AUTHORIZE) === true)
         {
             return true;
         }
 
-        // If the first debit is completed then we can authorize the payment and also update the token
         return false;
+    }
+
+    /**
+     * Called from updateAndNotifyPaymentAuthorized which is called after
+     * Payment::authorize
+     * Payment::processPaymentCallback
+     *
+     * @param Entity $payment
+     * @param array $data
+     * @return bool
+     */
+    protected function shouldSkipAuthorizeOnRecurringForUpi(Entity $payment, array $data): bool
+    {
+        // Only for UPI Recurring payments
+        if ($payment->isUpiRecurring() === false)
+        {
+            return false;
+        }
+
+        $metadata       = $this->getUpiMetadataForPayment($payment);
+        $internalStatus = $data['upi']['internal_status'] ?? null;
+
+        // For Auto Recurring
+        if ($payment->isUpiAutoRecurring() === true)
+        {
+            // When the metadata status is ReminderInProgressForAuthorized or AuthorizeInitiated
+            // Then we will check for internal status if any sent from gateway
+            if (($metadata->isInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_AUTHORIZE)) or
+                ($metadata->isInternalStatus(UpiMetadata\InternalStatus::AUTHORIZE_INITIATED)))
+            {
+                // If gateway is explicitly telling that the payment is authorized at gateways end
+                // We will not skip authorize for those cases
+                if ($internalStatus === UpiMetadata\InternalStatus::AUTHORIZED)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        // For Initial Recurring
+
+        // If gateway suggests that the payment is authorized, we do not need to skip the authorization
+        if ($internalStatus === UpiMetadata\InternalStatus::AUTHORIZED)
+        {
+            return false;
+        }
+
+        // Gateway is not marking the upi initial payment as authorized, thus we can not authorize the payment
+        return true;
+    }
+
+    /**
+     * This method is called where we have not hit the gateway for authorize
+     * That is when merchant makes the request for auto recurring payments.
+     * Note: If we decide to hit the gateway for performance or optimisation
+     *       We need to use self::updateRecurringEntitiesForUpiIfApplicable
+     */
+    protected function processRecurringCreatedForUpi(Entity $payment, array $data)
+    {
+        if ($payment->isUpiAutoRecurring() === true)
+        {
+            $this->updateAutoRecurringEntitiesForUpi($payment, $data);
+
+            return ['razorpay_payment_id' => $payment->getPublicId()];
+        }
+
+        throw new Exception\LogicException('Should not be called for any payment other than Upi Auto Recurring');
     }
 
     // This function will be called in two cases where Authorize is called.
@@ -582,7 +629,7 @@ trait UpiRecurring
     // 1. First we will have payment created
     // 2. We will make a RS call and get the reminder_id
     // In Second case where RS calls for authorization and a callback is expected from gateway
-    protected function processAutoRecurringCreatedForUpi(Entity $payment, array $data)
+    protected function updateAutoRecurringEntitiesForUpi(Entity $payment, array $data)
     {
         $metadata = $payment->getUpiMetadata();
 
@@ -601,13 +648,26 @@ trait UpiRecurring
             }
             // If reminder fails, the payment is already in pending state
         }
-        // Second case where the response is coming from gateway
-        else if ($metadata->isInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_AUTHORIZE))
+        // Second case where the response is coming from gateway, Gateway might also send Authorize initiated
+        else if (($metadata->isInternalStatus(InternalStatus::REMINDER_IN_PROGRESS_FOR_AUTHORIZE) === true) or
+                 ($metadata->isInternalStatus(InternalStatus::AUTHORIZE_INITIATED)))
         {
             $upiEdit = array_only($data['upi'], $metadata->getFillable());
 
+            $internalStatus = $data['upi'][Metadata::INTERNAL_STATUS];
+
             $metadata->edit($upiEdit);
-            $metadata->setInternalStatus(UpiMetadata\InternalStatus::AUTHORIZE_INITIATED);
+
+            // If gateway suggesting that internal status is authorized
+            if ($internalStatus === InternalStatus::AUTHORIZED)
+            {
+                $metadata->setInternalStatus(InternalStatus::AUTHORIZED);
+            }
+            else
+            {
+                $metadata->setInternalStatus(InternalStatus::AUTHORIZE_INITIATED);
+            }
+
             $metadata->setRemindAt(null);
 
             (new UpiMetadata\Core)->update($metadata);
@@ -615,9 +675,12 @@ trait UpiRecurring
             // Now since we are expecting a callback from gateway, we can enable the verify for payment
             // But since it is auto recurring payment and neither customer not merchant is blocked on this
             // We can later increase the verify for the payment.
-            $payment->setVerifyAt(Carbon::now()->addMinutes(2)->getTimestamp());
+            if ($payment->isCreated() === true)
+            {
+                $payment->setVerifyAt(Carbon::now()->addMinutes(2)->getTimestamp());
 
-            $this->repo->saveOrFail($payment);
+                $this->repo->saveOrFail($payment);
+            }
         }
         else
         {
@@ -631,8 +694,6 @@ trait UpiRecurring
                     'data'              => $data,
                 ]);
         }
-
-        return ['razorpay_payment_id' => $payment->getPublicId()];
     }
 
     protected function processPreDebitGatewaySuccess(Entity $payment, Mandate $mandate, array $response)
@@ -702,6 +763,83 @@ trait UpiRecurring
         else
         {
             $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_PENDING_FOR_PRE_DEBIT);
+        }
+
+        (new UpiMetadata\Core)->update($metadata);
+
+        return true;
+    }
+
+    protected function processDebitGatewaySuccess(Entity $payment, array $response, bool $wasFailed = false)
+    {
+        // Here the response is mostly that the debit is initiated at gateway and now
+        // we will need to wait for callback
+        if ($this->shouldSkipAuthorizeOnRecurringForUpi($payment, $response) === true)
+        {
+            // Here we can mark the internal_status as AUTHORIZE INITIATED
+            $response['upi'][Metadata::INTERNAL_STATUS] = UpiMetadata\InternalStatus::AUTHORIZE_INITIATED;
+
+            $this->updateRecurringEntitiesForUpiIfApplicable($payment, $response);
+
+            return true;
+        }
+
+        // Gateway Success is suggesting to mark payment authorized, it can happen for these reasons.
+        // 1. For S2S request, Gateway is telling that payment is already authorized at gateway and
+        //    there is no need to wait for callback.
+        // 2. For callback, Gateway has verified the callback request and found payment to be successful.
+
+        $this->payment = $payment;
+
+        $this->updateAndNotifyPaymentAuthorized($response, $wasFailed);
+
+        $this->postPaymentAuthorizeOfferProcessing($payment);
+
+        $this->autoCapturePaymentIfApplicable($payment);
+
+        return true;
+    }
+
+    protected function processDebitGatewayFailure(
+        Entity $payment,
+        Exception\GatewayErrorException $exception)
+    {
+        $response = $exception->getData();
+
+        $metadata = $payment->getUpiMetadata();
+
+        $upiEdit = array_only($response['upi'], $metadata->getFillable());
+        $metadata->edit($upiEdit);
+
+        // For exception, where retries are exhausted gateway will send remind at null
+        if ($metadata->getRemindAt() === null)
+        {
+            $this->repo->transaction(
+                function() use ($payment, $metadata, $exception)
+                {
+                    $this->payment = $payment;
+
+                    $this->lockForUpdateAndReload($payment);
+
+                    $metadata->setInternalStatus(UpiMetadata\InternalStatus::FAILED);
+                    (new UpiMetadata\Core)->update($metadata);
+
+                    $this->updatePaymentAuthFailed($exception);
+                });
+
+            return true;
+        }
+
+        $reminderId = $this->setUpiAutoRecurringReminder($metadata);
+
+        if (empty($reminderId) === false)
+        {
+            $metadata->setReminderId($reminderId);
+            $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_AUTHORIZE);
+        }
+        else
+        {
+            $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_PENDING_FOR_AUTHORIZE);
         }
 
         (new UpiMetadata\Core)->update($metadata);
@@ -803,15 +941,48 @@ trait UpiRecurring
         return array_get($response, Entity::ID);
     }
 
+    // Not used
     protected function shouldDebitRecurringPaymentForUpi(array $input, array $data)
     {
         return (($this->isFirstUpiRecurringPayment($input['payment']) === true) and
                 ($this->isMandateCreateCallback($data) === true));
     }
 
+    // Not used
     protected function isFirstUpiRecurringPayment($payment): bool
     {
         return ($payment['method'] === 'upi' and $payment['recurring_type'] === 'initial');
+    }
+
+    /**
+     * This method updates the gateway input for all gateway calls except for Authorize
+     * Because there is a different method which does extra processing on these entities
+     * Payment::modifyRecurringForUpiIfApplicable will update the metadata before setting
+     */
+    protected function modifyGatewayInputForUpi(Entity $payment, array & $input)
+    {
+        if ($payment->isUpiOtm() === true)
+        {
+            $input['upi'] = $payment->getUpiMetadata()->toArray();
+        }
+
+        //Adding data for upi mandate.
+        if ($payment->isUpiRecurring() === true)
+        {
+            if ($payment->isRecurringTypeAuto())
+            {
+                // UPI Mandate is linked with Payment Local Token and not always with payment order
+                $upiMandate = $payment->getGlobalOrLocalTokenEntity()->upiMandate;
+            }
+            else
+            {
+                // TODO: Need to check and fix this to a central approach
+                $upiMandate = $this->repo->upi_mandate->findByOrderId($payment['order_id']);
+            }
+
+            $input['upi_mandate'] = $upiMandate->toArray();
+            $input['upi']         = $payment->getUpiMetadata()->toArray();
+        }
     }
 
     protected function isMandateCreateCallback(array $data)
@@ -824,14 +995,109 @@ trait UpiRecurring
         return false;
     }
 
-    protected function updateRecurringMandateForUpiIfApplicable($payment, array $data)
+    protected function updateRecurringRequestForUpiIfApplicable(Entity $payment, & $request)
     {
-        $orderId = array_pull($data['mandate'], 'order_id');
+        // Request could be anything bool, null or array
+        if (is_array($request) === false)
+        {
+            return;
+        }
 
-        $upiMandate = $this->repo->upi_mandate->findByOrderId($orderId);
+        if ($payment->isUpiRecurring() === false)
+        {
+            return;
+        }
 
-        // Mandate Status must be confirmed at this stage
-        return $this->updateUpiMandateOnCallback($upiMandate, $data['mandate']);
+        $data = array_only($request, 'data');
+
+        $this->updateRecurringEntitiesForUpiIfApplicable($payment, $request);
+
+        // Now the request will only have data block
+        $request = $data;
+    }
+
+    /**
+     * Called from
+     * @param Entity $payment
+     * @param array $data
+     */
+    protected function updateRecurringEntitiesForUpiIfApplicable(Entity $payment, array $data, bool $wasFailed = false)
+    {
+        if ($payment->isUpiRecurring() === false)
+        {
+            return;
+        }
+
+        if ($payment->isUpiAutoRecurring() === true)
+        {
+            $this->updateAutoRecurringEntitiesForUpi($payment, $data);
+
+            return;
+        }
+
+        // As this is made sure that the payment will be created only for local token
+        $upiMandate = $payment->getGlobalOrLocalTokenEntity()->upiMandate;
+        $prevStatus = $upiMandate->getStatus();
+        $confirmed  = false;
+
+        $attributes = $data['upi_mandate'];
+
+        $status = array_pull($attributes, 'status');
+
+        $upiMandate->edit($attributes);
+
+        if ($status !== null)
+        {
+            $upiMandate->setStatus($status);
+
+            // Only if when the mandate was in created status and now it's getting to confirmed
+            if (($prevStatus === UpiMandate\Status::CREATED) and
+                ($status === UpiMandate\Status::CONFIRMED))
+            {
+                $upiMandate->setVpa($data['upi'][UpiMetadata\Entity::VPA] ?? null);
+                $upiMandate->setLateConfirmed($wasFailed);
+                $confirmed = true;
+            }
+        }
+
+        (new UpiMandate\Core)->update($upiMandate);
+
+        $internalStatus = $data['upi'][UpiMetadata\Entity::INTERNAL_STATUS] ?? null;
+        $newStatus      = null;
+        $tokenInitiated = false;
+
+        // Mandate just got recently confirmed from created state
+        // this is rather critical check which is why we are not directly relying to gateway status
+        if ($confirmed === true)
+        {
+            $newStatus = UpiMetadata\InternalStatus::PENDING_FOR_AUTHORIZE;
+        }
+        // This is the case where request is send to customer and we are waiting for callback of Mandate Create
+        else if ($internalStatus === UpiMetadata\InternalStatus::AUTHENTICATE_INITIATED)
+        {
+            $newStatus = UpiMetadata\InternalStatus::AUTHENTICATE_INITIATED;
+            $tokenInitiated = true;
+        }
+        else if ($internalStatus === UpiMetadata\InternalStatus::AUTHORIZE_INITIATED)
+        {
+            $newStatus = UpiMetadata\InternalStatus::AUTHORIZE_INITIATED;
+        }
+
+        if ($tokenInitiated === true)
+        {
+            (new Token\Core)->updateTokenForUpi($payment->getGlobalOrLocalTokenEntity(), [
+                Token\Entity::RECURRING_STATUS  => Token\RecurringStatus::INITIATED,
+            ]);
+        }
+
+        if (is_null($newStatus) === false)
+        {
+            $metadata = $payment->getUpiMetadata();
+
+            $metadata->setInternalStatus($newStatus);
+
+            (new UpiMetadata\Core)->update($metadata);
+        }
     }
 
     protected function modifyRecurringDebitInputForUpi($mandate, array & $input, array $data)
@@ -843,21 +1109,5 @@ trait UpiRecurring
         }
 
         $input['upi']['expiry_time'] = 5;
-    }
-
-    protected function updateUpiMandateOnCallback(Mandate $upiMandate, $attributes)
-    {
-        $status = array_pull($attributes, 'status');
-
-        $upiMandate->edit($attributes);
-
-        if ($status !== null)
-        {
-            $upiMandate->setStatus($status);
-        }
-
-        (new UpiMandate\Core)->update($upiMandate);
-
-        return $upiMandate;
     }
 }

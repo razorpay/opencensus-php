@@ -9,4 +9,6 @@ class Mode
 
     // For auto recurring payments
     const AUTO      = 'auto';
+    // For normal initial payments
+    const INITIAL   = 'initial';
 }

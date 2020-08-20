@@ -59,36 +59,7 @@ class Gateway extends Base\Gateway
             }
             else if ($input['payment']['method'] === 'upi')
             {
-                if (($input['upi']['internal_status'] === 'authorize_initiated') or
-                    ($input['upi']['internal_status'] === 'reminder_in_progress_for_authorize'))
-                {
-                    // Handle failure here
-                    $response = [
-                        'acquirer' => [
-                            'vpa'           => $input['payment']['vpa'],
-                            'reference16'   => '001000100001',
-                        ],
-                        'upi'   => [
-                            'rrn'               => '001000100001',
-                            'npci_txn_id'       => 'npci_txn_id_for_' . $input['payment']['id'],
-                            'internal_status'   => 'authorized',
-                        ],
-                    ];
-
-                    // This is the scenario where the gateway callback is needed to authorize the auto recurring
-                    // payments, On live gateways it will default behavior of UPI AutoPay
-                    if ($input['payment']['description'] === 'authorize_on_callback')
-                    {
-                        $response['upi'] = [
-                            'rrn'               => '001000100000',
-                            'npci_txn_id'       => 'expecting_from_callback',
-                        ];
-                        $response['acquirer'] = [];
-                    }
-
-                    return $response;
-                }
-                throw new Exception\LogicException('No gateway call for upi second recurring');
+                throw new Exception\LogicException('Authorize should not be called for UPI auto recurring');
             }
 
             return;
@@ -143,6 +114,50 @@ class Gateway extends Base\Gateway
 
         if ($input['payment']['method'] === Payment\Method::UPI)
         {
+            if ($this->isUpiRecurringCreateRequest($input) === true)
+            {
+                // For live gateways we actually wait for callback to mark the upi_mandate status confirmed
+                // But for sharp we are forcing the mandate status directly.
+                // And for metadata we are suggesting the authorization(first debit) is initiated
+                $response = [
+                    'data' => [
+                        'vpa' => $input['terminal']['vpa'],
+                    ],
+                    'upi_mandate' => [
+                        'status'        => 'created',
+                        'umn'           => sprintf('%s@razorpay', $input['payment']['id']),
+                        'npci_txn_id'   => 'RZP12345678910111213141516',
+                        'rrn'           => '001000100001',
+                        'gateway_data'  => [
+                            'id'        => 'ID001000100001',
+                        ],
+                    ],
+                    'upi' => [
+                        'umn'               => sprintf('%s@razorpay', $input['payment']['id']),
+                        'npci_txn_id'       => 'RZP12345678910111213141516',
+                        'rrn'               => '001000100001',
+                        'internal_status'   => 'authenticate_initiated',
+                    ],
+                ];
+
+                $case = explode('@', $input['upi']['vpa'])[0];
+
+                if ($case === 'failure')
+                {
+                    $exception = new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_BANK_OFFLINE);
+
+                    $response['upi_mandate']['status'] = 'created';
+
+                    $exception->setData($response);
+
+                    throw $exception;
+                }
+
+                $this->processTestUpiPaymentCallback($input, $case);
+
+                return $response;
+            }
+
             $this->processTestUpiPayment($input['payment']);
 
             if ((isset($input['upi']['flow']) === true) and
@@ -155,6 +170,36 @@ class Gateway extends Base\Gateway
         }
 
         return $request;
+    }
+
+    protected function processTestUpiPaymentCallback($input, $case)
+    {
+        // This is a hack which force callback when current request is processed
+        // Better way would have been adding a middleware and maintaining a stack
+        \Event::listen('Illuminate\Database\Events\QueryExecuted',
+            function ($query) use ($input, $case)
+            {
+                // Now this code will be called when the UPI Metadata will be successfully marked
+                // This will not get called if we throw exception from authorize function
+                if (array_get($query->bindings, 0) === 'authenticate_initiated')
+                {
+                    $payment = $input['payment'];
+
+                    try
+                    {
+                        (new Payment\Service)->s2scallback($payment['public_id'], [
+                            'case'          => $case,
+                            'status'        => 'authorized',
+                            'rrn'           => '001000100002',
+                            'npci_txn_id'   => 'npci_txn_id_for_' . $payment['id'],
+                        ]);
+                    }
+                    catch (Exception\GatewayErrorException $exception)
+                    {
+                        // No need to throw callback exceptions
+                    }
+                }
+            });
     }
 
     /**
@@ -384,15 +429,41 @@ class Gateway extends Base\Gateway
 
         if ($this->isUpiRecurringCreateRequest($input) === true)
         {
-            if ($input['gateway']['status'] === 'rejected')
+            if ($input['gateway']['case'] === 'rejected')
             {
                 throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED);
             }
 
             $acquirerData = [
+                'acquirer' => [
+                    'vpa'               => $input['payment']['vpa'],
+                    'reference16'       => $input['gateway']['rrn'],
+                    'reference1'        => $input['gateway']['npci_txn_id']
+                ],
+                'upi_mandate' => [
+                    'status'        => 'confirmed',
+                    'umn'           => sprintf('%s@razorpay', $input['payment']['id']),
+                    'npci_txn_id'   => 'RZP12345678910111213141516',
+                    'rrn'           => '001000100001',
+                    'gateway_data'  => [
+                        'id'        => 'ID001000100001',
+                    ]
+                ],
+                'upi'   => [
+                    'rrn'               => $input['gateway']['rrn'],
+                    'npci_txn_id'       => $input['gateway']['npci_txn_id'],
+                    'internal_status'   => 'authorized',
+                ],
+            ];
+        }
+
+        if (($this->isSecondRecurringPaymentRequest($input) === true) and
+            ($input['payment']['method'] === Payment\Method::UPI))
+        {
+            $acquirerData = [
                 'acquirer' => $acquirerData['acquirer'],
-                'mandate' => [
+                'upi_mandate' => [
                     'order_id'      => $input['payment']['order_id'],
                     'status'        => 'confirmed',
                     'umn'           => sprintf('%s@razorpay', $input['payment']['id']),
@@ -402,17 +473,10 @@ class Gateway extends Base\Gateway
                         'id'        => 'ID001000100001',
                     ]
                 ],
-            ];
-        }
-
-        if (($this->isSecondRecurringPaymentRequest($input) === true) and
-            ($input['payment']['method'] === 'upi'))
-        {
-            $acquirerData = [
-                'acquirer' => $acquirerData['acquirer'],
                 'upi'      => [
-                    'rrn'           => $input['gateway']['rrn'],
-                    'npci_txn_id'   => $input['gateway']['npci_txn_id'],
+                    'rrn'               => $input['gateway']['rrn'],
+                    'npci_txn_id'       => $input['gateway']['npci_txn_id'],
+                    'internal_status'   => 'authorized',
                 ],
             ];
         }
@@ -583,6 +647,90 @@ class Gateway extends Base\Gateway
         $exception->setAction('pre_debit');
 
         throw $exception;
+    }
+
+    public function debit(array $input)
+    {
+        parent::action($input, 'debit');
+
+        if (($input['payment']['recurring'] === false) or
+            ($input['payment']['method'] !== Payment\Method::UPI))
+        {
+            return parent::debit($input);
+        }
+
+        $descripion  = $input['payment']['description'];
+        $attempt     = (int)(substr($input['upi']['reference'], 15)) + 1;
+        $errorCode   = null;
+        $remindAt    = null;
+        $status      = $input['upi']['internal_status'];
+
+        if (in_array($status, ['authorize_initiated', 'reminder_in_progress_for_authorize']) === false)
+        {
+            throw new Exception\LogicException('UPI recurring metadata status not applicable for debit');
+        }
+
+        switch ($descripion)
+        {
+            case 'authorize_fails_twice':
+                if ($attempt < 3)
+                {
+                    $errorCode = ErrorCode::GATEWAY_ERROR_BANK_OFFLINE;
+                    $remindAt  = Carbon::now()->addSeconds(3600)->getTimestamp();
+                }
+                break;
+
+            case 'authorize_fails':
+                if ($attempt < 3)
+                {
+                    $errorCode = ErrorCode::GATEWAY_ERROR_BANK_OFFLINE;
+                    $remindAt  = Carbon::now()->addSeconds(3600)->getTimestamp();
+                }
+                else if ($attempt === 3)
+                {
+                    $errorCode = ErrorCode::GATEWAY_ERROR_BANK_OFFLINE;
+                    // Just fail the retries completely
+                    $remindAt  = null;
+                }
+                break;
+        }
+
+        // Handle failure here
+        $response = [
+            'acquirer' => [
+                'vpa'           => $input['payment']['vpa'],
+                'reference16'   => '001000100001',
+            ],
+            'upi'   => [
+                'rrn'               => '001000100001',
+                'npci_txn_id'       => 'npci_txn_id_for_' . $input['payment']['id'],
+                'internal_status'   => 'authorized',
+                'reference'         => 'DebitReference:' . $attempt,
+                'remind_at'         => $remindAt,
+            ],
+        ];
+
+        // This is the scenario where the gateway callback is needed to authorize the auto recurring
+        // payments, On live gateways it will default behavior of UPI AutoPay
+        if ($input['payment']['description'] === 'authorize_on_callback')
+        {
+            $response['upi'] = [
+                'rrn'               => '001000100000',
+                'npci_txn_id'       => 'expecting_from_callback',
+            ];
+            $response['acquirer'] = [];
+        }
+
+        if (is_null($errorCode) === false)
+        {
+            $exception = new Exception\GatewayErrorException($errorCode);
+
+            $exception->setData($response);
+
+            throw $exception;
+        }
+
+        return $response;
     }
 
     protected function verifyPaymentCreateResponse($input)

@@ -88,7 +88,7 @@ class UpiIciciAutoRecurringTest extends TestCase
                     'ano'   => 1,
                     'ext'   => $paymentCreatedAt + 86400,
                     'sno'   => 2,
-                    'id'    => $paymentId . 'notify' . 1,
+                    'id'    => $paymentId . '0notify' . 1,
                 ], $content['upi']['gateway_data']);
 
                 // All the entities sent to mozart
@@ -96,9 +96,9 @@ class UpiIciciAutoRecurringTest extends TestCase
                     'action',
                     'gateway',
                     'terminal',
-                    'upi_mandate',
                     'payment',
                     'merchant',
+                    'upi_mandate',
                     'upi',
                 ], array_keys($content));
 
@@ -162,16 +162,16 @@ class UpiIciciAutoRecurringTest extends TestCase
 
         $this->assertUpiDbLastEntity('payment', [
             'status'        => 'captured',
-            'reference1'    => null,
+            'reference1'    => 'HDFC00001124',
             'reference16'   => '011300040570',
         ], false);
 
         $this->assertUpiDbLastEntity('upi', [
-            'contact'               => '9876543210',
-            'name'                  => 'payer',
-            'merchant_reference'    => $payment->getId() . 'execte0',
-            'gateway_payment_id'    => '019721040510',
-            'status_code'           => 'SUCCESS'
+            'action'                => 'authorize',
+            'merchant_reference'    => $this->upiMandate->getId(),
+            'gateway_payment_id'    => 'GatewayPaymentIdDebit',
+            'status_code'           => '0',
+            'npci_txn_id'           => 'HDFC00001124',
         ]);
     }
 

@@ -4,10 +4,14 @@ namespace RZP\Gateway\Upi\Base;
 
 use Carbon\Carbon;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger;
 use RZP\Models\UpiMandate;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Exception\BaseException;
+use RZP\Exception\LogicException;
+use RZP\Models\Payment\UpiMetadata;
 use RZP\Exception\GatewayErrorException;
 
 trait RecurringTrait
@@ -20,8 +24,75 @@ trait RecurringTrait
         Action::PRE_DEBIT       => 'notify',
     ];
 
+    protected $entityActionMapFromGateway = [
+        'create'                => Action::AUTHENTICATE,
+        'execte'                => Action::AUTHORIZE,
+        'notify'                => Action::PRE_DEBIT,
+    ];
+
     // 24 hours in second
     protected $defaultExecuteBuffer = 86400;
+
+    public function redirectCallbackIfRequired(array $response)
+    {
+        $details = $this->getRecurringDetailsFromServerCallback($response);
+        $env     = $details[Constants::ENVIRONMENT] ?? 0;
+
+        // Env=1 signifies its a dark payment
+        if ((int) $env === 1)
+        {
+            // Only if we are not on dark, we need to redirect
+            if ($this->isRunningOnDark() === false)
+            {
+                $uri = $this->app['request']->getRequestUri();
+
+                $url = 'https://api-dark.razorpay.com' . $uri;
+
+                $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+                    'message'       => 'callback redirected',
+                    'details'       => $details,
+                    'url'           => $url,
+                ]);
+
+                return redirect($url);
+            }
+        }
+    }
+
+    public function debit(array $input)
+    {
+        parent::action($input, Action::DEBIT);
+
+        $debit = $this->firstOrCreateEntityForRecurring($input, Action::AUTHORIZE, true);
+
+        $this->setRequestDataForUpiRecurring($input, $debit);
+
+        $response = $this->sendDebitRequest($input, $debit);
+
+        return $response;
+    }
+
+    public function preDebit(array $input)
+    {
+        parent::action($input, Action::PRE_DEBIT);
+
+        // PreDebit action for gateway requires a notification
+        // First we need check if there is already notify attempted.
+        $preDebit = $this->firstOrCreateEntityForRecurring($input, Action::PRE_DEBIT, true);
+
+        // Even if we have to skip the pre debit on gateway, we need to
+        // create an entity for that, it will help with consistency and recon
+        if ($this->shouldSkipNotityForAutoRecurring($input) === true)
+        {
+            return $this->getResponseForAutoRecurring($input, [], $preDebit);
+        }
+
+        $this->setRequestDataForUpiRecurring($input, $preDebit);
+
+        $response = $this->sendPreDebitRequest($input, $preDebit);
+
+        return $response;
+    }
 
     protected function getGatewayDataBlockForUpiRecurring($input, $action)
     {
@@ -53,8 +124,10 @@ trait RecurringTrait
         $gatewayData    = $upi->getGatewayData();
         $action         = $gatewayData[Constants::ACTION];
         $attempt        = $gatewayData[Constants::ATTEMPT];
+        $env            = $gatewayData[Constants::ENVIRONMENT] ?? 0;
 
-        $id = $input[Entity::PAYMENT][Entity::ID] . $action . $attempt;
+        // For already created payment we can trace if there is any anomaly
+        $id = $input[Entity::PAYMENT][Entity::ID] . $env . $action . $attempt;
         $gatewayData[Constants::ID] = $id;
 
         // First set the correct gateway data
@@ -63,6 +136,9 @@ trait RecurringTrait
         // Since Gateway Upi entity has VPA taken, UPI in input does.
         // Need to fix that too
         $input[Constants::UPI][Entity::VPA] = $upi->getVpa();
+
+        // Action is mostly needed to process the response
+        $input[Constants::UPI][Entity::ACTION] = $upi->getAction();
     }
 
     protected function isFirstRecurringPayment(array $input): bool
@@ -77,13 +153,7 @@ trait RecurringTrait
             ($input[Entity::PAYMENT][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::AUTO));
     }
 
-    protected function authorizeRecurring(array $input)
-    {
-        $gateway = $this->getMozartGatewayWithModeSet();
-
-        return $gateway->authorizeRecurring($input);
-    }
-
+    // Not Used
     protected function recurringMandateCreateCallback(array $input)
     {
         $gateway = $this->getMozartGatewayWithModeSet();
@@ -105,15 +175,24 @@ trait RecurringTrait
         return $gateway->debit($input);
     }
 
-    protected function sendDebitRequest(array $input, Entity $upi)
+    protected function authenticate(array $input)
+    {
+        $authenticate = $this->firstOrCreateEntityForRecurring($input, Action::AUTHENTICATE, true);
+
+        $this->setRequestDataForUpiRecurring($input, $authenticate);
+
+        $response = $this->sendMandateCreateRequest($input, $authenticate);
+
+        return $response;
+    }
+
+    protected function sendMandateCreateRequest(array $input, Entity $upi)
     {
         $gateway = $this->getMozartGatewayWithModeSet();
 
-        $response = $gateway->debit($input);
+        $response = $gateway->mandateCreate($input);
 
-        $attributes = array_only($response['data'], (new Entity)->getFillable());
-
-        $this->updateGatewayPaymentResponse($upi, $attributes, false);
+        $this->updateRecurringEntityWithGatewayResponse($upi, $response['data']);
 
         if ($response['success'] !==  true)
         {
@@ -125,16 +204,40 @@ trait RecurringTrait
                 null,
                 $this->action);
 
-            $remindAt = $this->getNextRemindAtForRecurring($upi, $response, $exception);
-
-            $exception->setData($this->getResponseForAutoRecurring($input, $remindAt, $upi));
+            $exception->setData($this->getResponseForAutoRecurring($input, $response['data'], $upi, $exception));
 
             throw $exception;
         }
 
-        $remindAt = $this->getNextRemindAtForRecurring($upi, $response);
+        return $this->getResponseForAutoRecurring($input, $response['data'], $upi);
+    }
 
-        return $this->getResponseForAutoRecurring($input, $remindAt, $upi);
+    protected function sendDebitRequest(array $input, Entity $upi)
+    {
+        $gateway = $this->getMozartGatewayWithModeSet();
+
+        $response = $gateway->debit($input);
+
+        $attributes = array_only($response['data'], (new Entity)->getFillable());
+
+        $this->updateRecurringEntityWithGatewayResponse($upi, $attributes, false);
+
+        if ($response['success'] !==  true)
+        {
+            $exception = new GatewayErrorException(
+                $response['error']['internal_error_code'] ?? 'BAD_REQUEST_PAYMENT_FAILED',
+                $response['error']['gateway_error_code'] ?? null,
+                $response['error']['gateway_error_description'] ?? null,
+                null,
+                null,
+                $this->action);
+
+            $exception->setData($this->getResponseForAutoRecurring($input, $response['data'], $upi, $exception));
+
+            throw $exception;
+        }
+
+        return $this->getResponseForAutoRecurring($input, $response['data'], $upi);
     }
 
     protected function sendPreDebitRequest(array $input, Entity $upi)
@@ -145,7 +248,7 @@ trait RecurringTrait
 
         $attributes = array_only($response['data'], (new Entity)->getFillable());
 
-        $this->updateGatewayPaymentResponse($upi, $attributes, false);
+        $this->updateRecurringEntityWithGatewayResponse($upi, $attributes, false);
 
         if ($response['success'] !==  true)
         {
@@ -157,16 +260,79 @@ trait RecurringTrait
                 null,
                 $this->action);
 
-            $remindAt = $this->getNextRemindAtForRecurring($upi, $response, $exception);
-
-            $exception->setData($this->getResponseForAutoRecurring($input, $remindAt, $upi));
+            $exception->setData($this->getResponseForAutoRecurring($input, $response['data'], $upi, $exception));
 
             throw $exception;
         }
 
-        $remindAt = $this->getNextRemindAtForRecurring($upi, $response);
+        return $this->getResponseForAutoRecurring($input, $response['data'], $upi);
+    }
 
-        return $this->getResponseForAutoRecurring($input, $remindAt, $upi);
+    protected function processRecurringCallback(array $input)
+    {
+        $details = $this->getRecurringDetailsFromServerCallback($input['gateway']);
+
+        $upi = $this->repo->findByPaymentIdAndActionOrFail($details[Entity::PAYMENT_ID], $details[Entity::ACTION]);
+
+        $this->setRequestDataForUpiRecurring($input, $upi);
+
+        $gateway = $this->getMozartGatewayWithModeSet();
+
+        $response = $gateway->upiRecurringCallback($input);
+
+        $this->updateRecurringEntityWithGatewayResponse($upi, $response['data']);
+
+        if ($response['success'] !==  true)
+        {
+            $exception = new GatewayErrorException(
+                $response['error']['internal_error_code'] ?? 'BAD_REQUEST_PAYMENT_FAILED',
+                $response['error']['gateway_error_code'] ?? null,
+                $response['error']['gateway_error_description'] ?? null,
+                null,
+                null,
+                $this->action);
+
+            $exception->setData($this->getResponseForAutoRecurring($input, $response['data'], $upi, $exception));
+
+            throw $exception;
+        }
+
+        return $this->getResponseForAutoRecurring($input, $response['data'], $upi);
+    }
+
+    protected function getRecurringDetailsFromServerCallback(array $response): array
+    {
+        $actualId       = $this->getActualPaymentIdFromServerCallback($response);
+
+        $paymentId      = substr($actualId, 0, 14);
+        $env            = substr($actualId, 14, 1);
+        $action         = substr($actualId, 15, 6);
+        $attempt        = substr($actualId, 21);
+
+        // Now we will validate if this is correct recurring callback
+        $entityAction   = $this->entityActionMapFromGateway[$action] ?? null;
+
+        // If API action is not empty, it is valid recurring payment
+        if (empty($entityAction) === false)
+        {
+            // We can also add checks like $attempt > 0, but this much is fine for now
+            // If we see even a single case where the Unexpected payment is taken as recurring
+            // payment, we can add more checks, And the best check is just a DB call here
+            // which can check for paymentId+entityAction. We will need to trace the anomaly then.
+            return [
+                Entity::PAYMENT_ID      => $paymentId,
+                Entity::ACTION          => $entityAction,
+                Constants::ENVIRONMENT  => $env,
+                Constants::ATTEMPT      => $attempt,
+            ];
+        }
+
+        return [
+            Entity::PAYMENT_ID      => null,
+            Entity::ACTION          => null,
+            Constants::ENVIRONMENT  => null,
+            Constants::ATTEMPT      => null,
+        ];
     }
 
     protected function isFirstUpiRecurringPayment($payment): bool
@@ -221,7 +387,7 @@ trait RecurringTrait
 
         $attr = [
             Entity::VPA           => $input['payment']['vpa'] ?? null,
-            Entity::TYPE          => $input['upi']['fow'] ?? null,
+            Entity::TYPE          => $input['upi']['flow'] ?? null,
             Entity::STATUS_CODE   => 'pending',
             Entity::GATEWAY_DATA  => [
                 // Action which mozart will send in request id
@@ -234,7 +400,16 @@ trait RecurringTrait
                 Constants::SEQUENCE   => $sequenceNo,
             ],
             Entity::GATEWAY_MERCHANT_ID     => $input['terminal']['gateway_merchant_id'],
+            // Merchant reference is the only option where we can save mandate id in UPI entity.
+            // Its in fact the mandate id which will be point of reference UPI Recurring like For BQR and UpiQR
+            Entity::MERCHANT_REFERENCE      => $input['upi_mandate']['id'],
         ];
+
+        if ($this->isRunningOnDark() === true)
+        {
+            // Env=1 is set for dark
+            $attr[Entity::GATEWAY_DATA][Constants::ENVIRONMENT] = 1;
+        }
 
         return $this->createGatewayPaymentEntity($attr, $action, false);
     }
@@ -245,81 +420,78 @@ trait RecurringTrait
         return UpiMandate\Frequency::shouldSkipNotify($this->gateway, $input['upi_mandate']['frequency']);
     }
 
-    protected function getNextRemindAtForRecurring(Entity $upi, array $response, BaseException $exception = null)
+    protected function getResponseForAutoRecurring(
+        array $input,
+        array $response,
+        Entity $upi,
+        BaseException $exception = null)
     {
-        $action         = $upi->getAction();
-        $attempt        = $upi->getGatewayData()[Constants::ATTEMPT];
-        $remindAfter    = null;
-        $success        = is_null($exception);
+        $anomalies = new Anomalies($this);
 
-        // Three attempt for notification, next action is authorization when success
-        if ($action === Action::PRE_DEBIT)
-        {
-            if ($success === false)
-            {
-                if ($attempt >= 3)
-                {
-                    return null;
-                }
+        $mandateTransformer = (new UpiMandateTransformer($this, $anomalies));
+        $mandate = $mandateTransformer->from($input, $response, $upi, $exception)->transform();
 
-                // Starting with retries at 10 and 20 minutes
-                $remindAfter = (pow(2, $attempt) * 5);
-            }
-            else
-            {
-                // 24 hours in minutes to be set for authorization
-                $remindAfter = 1440;
-            }
-        }
+        $metadataTransformer = (new UpiMetadataTransformer($this, $anomalies));
+        $metadata = $metadataTransformer->from($input, $response, $upi, $exception)->transform();
 
-        // Three attempt for authorize, no next reminder needed when success
-        if ($action === Action::DEBIT)
-        {
-            if ($attempt >= 3)
-            {
-                return null;
-            }
-
-            // Starting with retries at 30 and 60 minutes
-            $remindAfter =  (pow(2, $attempt) * 15);
-        }
-
-        return Carbon::now()->addMinutes($remindAfter)->getTimestamp();
-    }
-
-    protected function getResponseForAutoRecurring(array $input, int $remindAt = null, Entity $upi = null)
-    {
-        $response = [
+        $processed = [
             // Data which is needed for mandate
-            'upi_mandate'   => [],
+            'upi_mandate'                       => $mandateTransformer->toArray(),
             // Data which is needed for UPI Metadata
-            'upi'           => [
-                'vpa'               => $input['payment']['vpa'],
-                'umn'               => $input['upi_mandate']['umn'],
-                // For Sharp Gateway, webhook will be almost instantaneous
-                'remind_at'         => $remindAt,
+            'upi'                               => $metadataTransformer->toArray(),
+            // Acquirer data which is needed to be saved in payment entity
+            'acquirer'                          => [
+                Payment\Entity::VPA             => $upi->getVpa(),
+                Payment\Entity::REFERENCE1      => $upi->getNpciTransactionId(),
+                Payment\Entity::REFERENCE16     => $upi->getNpciReferenceId(),
             ],
         ];
 
-        if ($upi instanceof Entity)
+        // Data Block take preference over all other entities as this means some action is needed from customer
+        $dataBlock = $metadataTransformer->getDataBlock();
+
+        if (empty($dataBlock) === false)
         {
-            $details = [
-                'rrn'             => $upi->getNpciReferenceId(),
-                'npci_txn_id'     => $upi->getNpciTransactionId(),
-                'reference'       => $upi->getMerchantReference(),
-            ];
+            // Data block and acquired can not go together
+            unset($processed['acquirer']);
 
-            // Details can be considered nullable, but for API side validation we need to remove nulls
-            $response['upi'] = array_merge($response['upi'], array_filter($details));
-
-            // Will only be used if we mark payment authorized and that is done by
-            // sending upi.internal_status=authorized, thus this data will be ignored
-            $response['acquirer'] = [
-                Payment\Entity::REFERENCE1  => $upi->getNpciTransactionId(),
-                Payment\Entity::REFERENCE16 => $upi->getNpciReferenceId(),
-            ];
+            $processed['data'] = $dataBlock;
         }
 
-        return $response;
+        $this->traceAnomalies('Anomalies found with upi recurring response', $anomalies);
+
+        $this->trace->info(TraceCode::PAYMENT_UPI_RECURRING_GATEWAY_RESPONSE, [
+            'payment_id'    => $upi->getPaymentId(),
+            'action'        => $upi->getAction(),
+            'mandate_id'    => $upi->getMerchantReference(),
+            'mode'          => $input[Entity::UPI][UpiMetadata\Entity::MODE],
+            'response'      => $response,
+            'processed'     => $processed,
+        ]);
+
+        return $processed;
+    }
+
+    protected function updateRecurringEntityWithGatewayResponse(Entity $upi, array $data)
+    {
+        $attributes = array_only($data, $upi->getFillable());
+
+        // First pull the gateway data from update call
+        $new = array_pull($attributes, Entity::GATEWAY_DATA);
+
+        // Only if mozart sends gateway data in the request
+        if (is_array($new) === true)
+        {
+            $current = $upi->getGatewayData();
+
+            // In fact, we should not allow gateway data to be updated from mozart response
+            // But, as of now merging this in case it seems useful from mozart's side
+            $updated = array_merge($current, $new);
+
+            $attributes[Entity::GATEWAY_DATA] = $updated;
+        }
+
+        // fields like npci_reference_id, npci_txn_id must be checked against mismatch for anomalies
+        $this->updateGatewayPaymentResponse($upi, $attributes, false);
     }
 }

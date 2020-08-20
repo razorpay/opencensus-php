@@ -150,8 +150,6 @@ trait Authorize
 
         $this->validateAndSaveInputDetailsIfRequired($payment, $input, $gatewayInput, $ret);
 
-        $this->updateTokenOnCreatedIfRequired($payment, $ret);
-
         $data = [];
 
         // For those payments which does auth in a single step, we need to store the acquirer data
@@ -339,6 +337,10 @@ trait Authorize
             }
             else
             {
+                // For UPI recurring Gateway will send mandate and metadata information along with the just the
+                // data block, This method will use and remove all this extra information and leave the data.
+                $this->updateRecurringRequestForUpiIfApplicable($payment, $request);
+
                 //
                 // If $request is not null, then payment is two-step process
                 // where client needs to provide additional info via his browser.
@@ -768,9 +770,9 @@ trait Authorize
             return $this->processNachPaymentCreated($payment);
         }
 
-        if ($this->shouldAutoReccuringSkipAuthorizeForUpi($payment, $data) === true)
+        if ($this->shouldSkipAuthorizeOnRecurringForUpi($payment, $data) === true)
         {
-            return $this->processAutoRecurringCreatedForUpi($payment, $data);
+            return $this->processRecurringCreatedForUpi($payment, $data);
         }
 
         return $this->processAuth($payment, $data);
@@ -3264,7 +3266,7 @@ trait Authorize
         $this->setChargeAccountMerchantIfApplicable($input, $gatewayInput);
 
         // Not doing inside above mentioned UPI condition because Recurring data is set after that logic
-        $this->modifyAutoRecurringForUpiIfApplicable($payment, $input, $gatewayInput);
+        $this->modifyRecurringForUpiIfApplicable($payment, $input, $gatewayInput);
     }
 
     protected function setChargeAccountMerchantIfApplicable($input, & $gatewayInput)
@@ -4489,6 +4491,7 @@ trait Authorize
         $this->eventTokenStatus($token, $oldRecurringStatus);
     }
 
+    // Not Used
     protected function updateTokenOnCreatedIfRequired($payment, $response)
     {
         if ($payment->isUpiRecurring() === true)
@@ -4767,8 +4770,11 @@ trait Authorize
         // The first callback will trigger the debit function on gateway
         // in that case, we can not mark the payment authorized.
         // Only when we receive the callback for debit call, we will authorize.
-        if ($this->shouldInitialReccuringSkipAuthorizeForUpi($this->payment, $data) === true)
+        if ($this->shouldSkipAuthorizeOnRecurringForUpi($this->payment, $data) === true)
         {
+            // We need to update the mandate status if applicable
+            $this->updateRecurringEntitiesForUpiIfApplicable($this->payment, $data, $wasFailed);
+
             return;
         }
 
@@ -6690,7 +6696,7 @@ trait Authorize
         $this->updateAuthorizedOrderStatus($payment);
 
         // We will be updating the details in upi_mandate too.
-        $this->updateUpiMetadataOnAuthorized($payment, $data);
+        $this->updateRecurringEntitiesForUpiIfApplicable($payment, $data);
     }
 
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment): bool

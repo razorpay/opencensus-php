@@ -62,6 +62,9 @@ class AuthInitData extends Base\Mock\Server
         $response = [
             'data' =>
                 [
+                    'terminal'  => [
+                        'vpa'   => 'merchant@hdfcbank',
+                    ],
                     'referenceNumber' => 'IFPO039F3940343',
                     'pgMerchantId' => 'HDFC000006002278',
                     'ref_url' => 'https://mer.invoice.com/upi/3ddsfsdg',
@@ -97,6 +100,9 @@ class AuthInitData extends Base\Mock\Server
         $response = [
             'data' =>
                 [
+                    'terminal'  => [
+                        'vpa'   => 'merchant@icici',
+                    ],
                     'referenceNumber' => 'IFPO039F3940343',
                     'pgMerchantId' => 'HDFC000006002278',
                     'ref_url' => 'https://mer.invoice.com/upi/3ddsfsdg',

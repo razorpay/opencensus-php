@@ -14,12 +14,12 @@ use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\RuntimeException;
+use RZP\Exception\AssertionException;
 use RZP\Exception\ServerErrorException;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
-use Symfony\Component\Debug\Exception\FatalThrowableError;
 
 class UpiIciciGatewayTest extends TestCase
 {
@@ -1344,12 +1344,13 @@ EOT;
 
         config()->set('applications.mozart.live.url', 'https://mozart-dark.razorpay.com');
 
+        // Now the callback will throw assertion error as the callback payment id is not same as actual payment id
         $this->makeRequestAndCatchException(
             function() use ($content)
             {
                 $this->makeS2sCallbackAndGetContent($content);
             },
-            FatalThrowableError::class,
-            'Call to undefined method RZP\Gateway\Upi\Icici\Mock\Gateway::getParsedDataFromUnexpectedCallback()');
+            AssertionException::class,
+            'Assert error occurred');
     }
 }

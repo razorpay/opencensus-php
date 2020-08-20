@@ -56,7 +56,7 @@ class UpiRecurringPaymentSharpTest extends TestCase
             'npci_txn_id'       => null,
             'gateway_data'      => null,
             'late_confirmed'    => false,
-            'used_count'        => null,
+            'used_count'        => 0,
             'confirmed_at'      => null,
         ]);
 
@@ -64,7 +64,15 @@ class UpiRecurringPaymentSharpTest extends TestCase
         $payment['order_id'] = $orderId;
         $payment['customer_id'] = 'cust_100000customer';
 
-        $this->doAuthPayment($payment);
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertArraySubset([
+            'type'          => 'async',
+            'method'        => 'upi',
+            'data'          => [
+                'vpa'       => 'random@razorpay',
+            ],
+        ], $response);
 
         $payment = $this->getDbLastPayment();
         $token = $this->getDbLastEntity('token');
@@ -81,11 +89,11 @@ class UpiRecurringPaymentSharpTest extends TestCase
             'late_confirmed'    => false,
             'used_count'        => 1,
         ]);
-
         $this->assertGreaterThanOrEqual(Carbon::now()->subMinute()->getTimestamp(), $mandate->getConfirmedAt());
 
-        $order = $order->refresh();
-        $upiMandate = $upiMandate->refresh();
+        $order->refresh();
+        $token->refresh();
+        $upiMandate->refresh();
 
         $this->assertEquals($upiMandate['token_id'], $token['id']);
         $this->assertEquals($upiMandate['customer_id'], $token['customer_id']);
@@ -121,7 +129,11 @@ class UpiRecurringPaymentSharpTest extends TestCase
 
         $payment['vpa'] = 'failure@razorpay';
 
-        $this->doAuthPayment($payment);
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
 
         $upiMandate = $this->getDbLastEntity('upi_mandate');
 
@@ -171,16 +183,9 @@ class UpiRecurringPaymentSharpTest extends TestCase
 
     public function testCreateMonthlyAutoRecurringPaymentSuccess()
     {
-        $mandate = $this->createFirstUpiRecurringPayment();
+        $this->createDbUpiMandate();
 
-        $payment = $this->getDefaultUpiRecurringPaymentArray();
-
-        $payment['token'] = $mandate->token->getPublicId();
-
-        $orderId = $this->createUpiOrder();
-
-        $payment['order_id'] = $orderId;
-        unset($payment['vpa']);
+        $this->createDbUpiToken();
 
         // The request which we have sent to create the reminder
         $createReminder = null;
@@ -201,7 +206,7 @@ class UpiRecurringPaymentSharpTest extends TestCase
 
             });
 
-        $response = $this->doS2SRecurringPayment($payment);
+        $response = $this->doS2SRecurringPayment($this->getDbUpiAutoRecurringPayment());
 
         $this->assertArrayHasKey('razorpay_payment_id', $response);
 
@@ -274,7 +279,7 @@ class UpiRecurringPaymentSharpTest extends TestCase
             'mode'              => 'auto',
             'reference'         => 'preDebitReference:1',
             'rrn'               => null,
-            'umn'               => $mandate->umn,
+            'umn'               => $this->upiMandate->umn,
             'npci_txn_id'       => null,
             'internal_status'   => 'reminder_in_progress_for_authorize',
             'reminder_id'       => 'TestReminderId',
@@ -291,7 +296,7 @@ class UpiRecurringPaymentSharpTest extends TestCase
             'verify_at'     => null,
             'refund_at'     => null,
             'reference16'   => '001000100001',
-            'vpa'           => 'success@razorpay',
+            'vpa'           => 'localuser@icici',
         ], $payment->toArray(), true);
 
         $metadata->refresh();
@@ -300,9 +305,9 @@ class UpiRecurringPaymentSharpTest extends TestCase
             'type'              => 'recurring',
             'flow'              => 'collect',
             'mode'              => 'auto',
-            'reference'         => 'preDebitReference:1',
+            'reference'         => 'DebitReference:1',
             'rrn'               => '001000100001',
-            'umn'               => $mandate->umn,
+            'umn'               => $this->upiMandate->umn,
             'npci_txn_id'       => 'npci_txn_id_for_' . $payment->getId(),
             'internal_status'   => 'authorized',
             'reminder_id'       => 'TestReminderId',
@@ -393,7 +398,7 @@ class UpiRecurringPaymentSharpTest extends TestCase
 
         $this->assertUpiDbLastEntity('upi_metadata', [
             'vpa'               => 'localuser@icici',
-            'reference'         => 'preDebitReference:1',
+            'reference'         => 'DebitReference:1',
             'rrn'               => '001000100001',
             'umn'               => $this->upiMandate->umn,
             'npci_txn_id'       => 'npci_txn_id_for_' . $payment->getId(),
@@ -561,6 +566,127 @@ class UpiRecurringPaymentSharpTest extends TestCase
         ], false);
     }
 
+    public function testCreateMonthlyAutoRecurringPaymentAuthorizeFailsTwice()
+    {
+        $this->createDbUpiMandate();
+        $this->createDbUpiToken();
+
+        $input = $this->getDbUpiAutoRecurringPayment([
+            'description' => 'authorize_fails_twice',
+        ]);
+
+        // The request which we have sent to create the reminder
+        $this->assertReminderRequest('createReminder', $createReminder, $pending);
+
+        $this->doS2SRecurringPayment($input);
+
+        $this->assertUpiMetadataStatus('reminder_pending_for_pre_debit', $pending);
+        // Now waiting for first reminder from RS
+        $this->assertUpiMetadataStatus('reminder_in_progress_for_pre_debit');
+        // The first reminder call will trigger an update reminder
+        $this->assertReminderRequest('updateReminder', $updateReminder, $pending);
+        // Making first call from RS
+        $this->sendReminderRequest($createReminder);
+
+        $this->assertUpiMetadataStatus('pre_debit_initiated', $pending);
+        // Because of notify succeed, status moved to reminder in progress
+        $this->assertUpiMetadataStatus('reminder_in_progress_for_authorize');
+        // Now making first call to authorize from RS
+        $this->sendReminderRequest($updateReminder);
+
+        $this->assertUpiMetadataStatus('reminder_in_progress_for_authorize', $pending);
+        // Because of first failure status still is reminder progress
+        $this->assertUpiMetadataStatus('reminder_in_progress_for_authorize');
+
+        $this->assertUpiDbLastEntity('upi_metadata', [
+            'reference'  => 'DebitReference:1',
+        ]);
+
+        // Second attempt for recurring authorize
+        $this->sendReminderRequest($updateReminder);
+        // Because of Second failure status still in reminder progress
+        $this->assertUpiMetadataStatus('reminder_in_progress_for_authorize');
+
+        // Third attempt for recurring authorize
+        $this->sendReminderRequest($updateReminder);
+
+        $this->assertUpiMetadataStatus('authorized');
+
+        $this->assertUpiDbLastEntity('payment', [
+            'status'    => 'captured',
+        ]);
+
+        // Mandate is still showing two used count
+        $this->assertUpiDbLastEntity('upi_mandate', [
+            'used_count'    => 2,
+        ]);
+    }
+
+    public function testCreateMonthlyAutoRecurringPaymentAuthorizeFailsCompletely()
+    {
+        $this->createDbUpiMandate();
+        $this->createDbUpiToken();
+
+        $input = $this->getDbUpiAutoRecurringPayment([
+            'description' => 'authorize_fails',
+        ]);
+
+        // The request which we have sent to create the reminder
+        $this->assertReminderRequest('createReminder', $createReminder, $pending);
+
+        $this->doS2SRecurringPayment($input);
+
+        $this->assertUpiMetadataStatus('reminder_pending_for_pre_debit', $pending);
+        // Now waiting for first reminder from RS
+        $this->assertUpiMetadataStatus('reminder_in_progress_for_pre_debit');
+        // The first reminder call will trigger an update reminder
+        $this->assertReminderRequest('updateReminder', $updateReminder, $pending);
+        // Making first call from RS
+        $this->sendReminderRequest($createReminder);
+
+        $this->assertUpiMetadataStatus('pre_debit_initiated', $pending);
+        // Because of notify succeed, status moved to reminder in progress
+        $this->assertUpiMetadataStatus('reminder_in_progress_for_authorize');
+        // Now making first call to authorize from RS
+        $this->sendReminderRequest($updateReminder);
+
+        $this->assertUpiMetadataStatus('reminder_in_progress_for_authorize', $pending);
+        // Because of first failure status still is reminder progress
+        $this->assertUpiMetadataStatus('reminder_in_progress_for_authorize');
+
+        $this->assertUpiDbLastEntity('upi_metadata', [
+            'reference'  => 'DebitReference:1',
+        ]);
+
+        // Second attempt for recurring authorize
+        $this->sendReminderRequest($updateReminder);
+        // Because of Second failure status still in reminder progress
+        $this->assertUpiMetadataStatus('reminder_in_progress_for_authorize');
+
+        $this->assertUpiDbLastEntity('payment', [
+            'status'        => 'created',
+            'verify_at'     => null,
+        ]);
+
+        // Third attempt for recurring authorize
+        $this->sendReminderRequest($updateReminder);
+
+        $this->assertUpiMetadataStatus('failed');
+
+        $payment = $this->assertUpiDbLastEntity('payment', [
+            'status'            => 'failed',
+            'verify_bucket'     => 0,
+        ], false);
+
+        // Verify is set to be in 2 minutes in future
+        $this->assertGreaterThanOrEqual(Carbon::now()->getTimestamp(), $payment->getVerifyAt());
+
+        // Mandate is still showing two used count
+        $this->assertUpiDbLastEntity('upi_mandate', [
+            'used_count'    => 2,
+        ]);
+    }
+
     public function testRevokeMandate()
     {
         $mandate = $this->createFirstUpiRecurringPayment();
@@ -583,7 +709,11 @@ class UpiRecurringPaymentSharpTest extends TestCase
         $payment['customer_id'] = 'cust_100000customer';
         $payment['vpa'] = 'failure@razorpay';
 
-        $this->doAuthPayment($payment);
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
 
         $mandate = $this->getDbLastEntity('upi_mandate');
 

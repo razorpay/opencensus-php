@@ -29,6 +29,9 @@ class Entity extends Base\PublicEntity
     const LATE_CONFIRMED       = 'late_confirmed';
     const CONFIRMED_AT         = 'confirmed_at';
 
+    // Input keys
+    const VPA                  = 'vpa';
+
     protected $entity = 'upi_mandate';
 
     protected $generateIdOnCreate = true;
@@ -98,6 +101,7 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::STATUS            => 'created',
         self::LATE_CONFIRMED    => false,
+        self::USED_COUNT        => 0,
     ];
 
     protected $dates = [
@@ -109,6 +113,7 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::GATEWAY_DATA      => 'array',
         self::LATE_CONFIRMED    => 'boolean',
+        self::USED_COUNT        => 'integer',
     ];
 
     // Relations
@@ -155,11 +160,51 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    public function setLateConfirmed(bool $value)
+    {
+        return $this->setAttribute(self::LATE_CONFIRMED, $value);
+    }
+
+    public function setUmn($value)
+    {
+        return $this->setAttribute(self::UMN, $value);
+    }
+
+    public function setRrn($value)
+    {
+        return $this->setAttribute(self::RRN, $value);
+    }
+
+    public function setNpciTxnId($value)
+    {
+        return $this->setAttribute(self::NPCI_TXN_ID, $value);
+    }
+
+    public function setGatewayData($value)
+    {
+        return $this->setAttribute(self::GATEWAY_DATA, $value);
+    }
+
+    public function setVpa($value)
+    {
+        if (is_null($value) === true)
+        {
+            return;
+        }
+        // As of now we do not have any other field to same VPA for Mandate, which is very
+        // important for future use cases, thus we will get vpa saved in Gateway Data for now
+        $gatewayData = $this->getGatewayData();
+
+        $gatewayData[self::VPA] = $value;
+
+        return $this->setGatewayData($gatewayData);
+    }
+
     public function incrementUsedCount()
     {
         $current = (int) $this->getUsedCount();
 
-        $this->setAttribute(self::USED_COUNT, ($current + 1));
+        return $this->setAttribute(self::USED_COUNT, ($current + 1));
     }
 
     // Getters
@@ -206,5 +251,10 @@ class Entity extends Base\PublicEntity
     public function getConfirmedAt()
     {
         return $this->getAttribute(self::CONFIRMED_AT);
+    }
+
+    public function getUmn()
+    {
+        return $this->getAttribute(self::UMN);
     }
 }

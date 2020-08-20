@@ -94,30 +94,7 @@ class Gateway extends Base\Gateway
 
         if ($this->isFirstRecurringPayment($input) === true)
         {
-            $this->setGatewayDataBlockForUpiRecurring($input);
-
-            $data = $this->getGatewayEntityAttributes($input);
-
-            $gatewayPayment = $this->createGatewayPaymentEntity($data, Action::AUTHENTICATE);
-
-            $response = $this->authorizeRecurring($input);
-
-            $this->updateGatewayPaymentResponse($gatewayPayment, $response['upi']);
-
-            return $response;
-        }
-
-        if ($this->isSecondRecurringPayment($input) === true)
-        {
-            parent::action($input, Action::AUTHORIZE);
-
-            $debit = $this->firstOrCreateEntityForRecurring($input, Action::AUTHORIZE, true);
-
-            $this->setRequestDataForUpiRecurring($input, $debit);
-
-            $response = $this->sendDebitRequest($input, $debit);
-
-            return $response;
+            return $this->authenticate($input);
         }
 
         if (($this->isBharatQrPayment() === true) or
@@ -737,7 +714,6 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-
     protected function getPaymentVerifyRequestArray(array $input)
     {
         $repo = $this->getRepository();
@@ -1053,46 +1029,19 @@ class Gateway extends Base\Gateway
      */
     public function getPaymentIdFromServerCallback(array $response): string
     {
-        if (isset($response[Fields::UMN]) === true)
+        $details = $this->getRecurringDetailsFromServerCallback($response);
+
+        if (empty($details[Entity::PAYMENT_ID]) === false)
         {
-            return substr($response[Fields::MERCHANT_TRAN_ID], 0, 14);
+            return $details[Entity::PAYMENT_ID];
         }
 
-        return $response[Fields::MERCHANT_TRAN_ID];
+        return $this->getActualPaymentIdFromServerCallback($response);
     }
 
-    public function redirectCallbackIfRequired(array $response)
+    protected function getActualPaymentIdFromServerCallback(array $response)
     {
-        $actual = $response[Fields::MERCHANT_TRAN_ID];
-
-        $paymentId  = substr($actual, 0, 14);
-        $env        = substr($actual, 14, 1);
-        $action     = substr($actual, 15, 6);
-
-        // First the action must be one of the allowed one
-        if (in_array($action, $this->gatewayDataIdToActionMap, true) === true)
-        {
-            // Env=1 signifies its a dark payment
-            if ((int) $env === 1)
-            {
-                // Only if we are not on dark, we need to redirect
-                if ($this->isRunningOnDark() === false)
-                {
-                    $uri = $this->app['request']->getRequestUri();
-
-                    $url = 'https://api-dark.razorpay.com' . $uri;
-
-                    $this->trace->info(TraceCode::MISC_TRACE_CODE, [
-                        'message'       => 'callback redirected',
-                        'actual'        => $actual,
-                        'payment_id'    => $paymentId,
-                        'url'           => $url,
-                    ]);
-
-                    return redirect($url);
-                }
-            }
-        }
+        return $response[Fields::MERCHANT_TRAN_ID];
     }
 
     /**
@@ -1270,25 +1219,9 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        if ($this->isFirstUpiRecurringPayment($input['payment']) === true)
+        if ($input['payment']['recurring'] === true)
         {
-            $response = $this->recurringMandateCreateCallback($input);
-
-            $action = Action::AUTHENTICATE;
-
-            // If we get mandate block in the response, that means that the callback is for mandate create. In that
-            // case, we need to update the authenticate entity. If we dont get the mandate block, that means
-            // that the callback is for first debit and we need to update the authorize entity.
-            if (isset($response['mandate']) === false)
-            {
-                $action = Action::AUTHORIZE;
-            }
-
-            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], $action);
-
-            $this->updateGatewayPaymentResponse($gatewayPayment, $response['upi']);
-
-            return $response;
+            return $this->processRecurringCallback($input);
         }
 
         $content = $input['gateway'];
@@ -1347,45 +1280,6 @@ class Gateway extends Base\Gateway
         {
             $response = array_merge($response, $this->getResponseForAutoRecurring($input, null, $gatewayPayment));
         }
-
-        return $response;
-    }
-
-    public function debit(array $input)
-    {
-        parent::debit($input);
-
-        $this->action = Action::DEBIT;
-
-        $this->setGatewayDataBlockForUpiRecurring($input);
-
-        $data = $this->getGatewayEntityAttributes($input);
-
-        $gatewayPayment = $this->createGatewayPaymentEntity($data, Action::AUTHORIZE);
-
-        $response = $this->firstDebit($input);
-
-        $this->updateGatewayPaymentResponse($gatewayPayment, $response['upi']);
-
-        return $response;
-    }
-
-    public function preDebit(array $input)
-    {
-        parent::action($input, Action::PRE_DEBIT);
-
-        if ($this->shouldSkipNotityForAutoRecurring($input) === true)
-        {
-            return $this->getResponseForAutoRecurring($input, null);
-        }
-
-        // PreDebit action for UPI ICICI requires a notification
-        // First we need check if there is already notify attempted
-        $preDebit = $this->firstOrCreateEntityForRecurring($input, Action::PRE_DEBIT, true);
-
-        $this->setRequestDataForUpiRecurring($input, $preDebit);
-
-        $response = $this->sendPreDebitRequest($input, $preDebit);
 
         return $response;
     }

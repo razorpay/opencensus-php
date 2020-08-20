@@ -5,11 +5,14 @@ namespace RZP\Tests\Functional\Helpers;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Models\Order;
+use RZP\Models\Payment;
 use RZP\Models\UpiMandate;
 use RZP\Models\Base\Entity;
 use RZP\Models\Customer\Token;
 use RZP\Services\Mock\Reminders;
 use RZP\Models\Payment\UpiMetadata;
+use RZP\Gateway\Mozart\Mock\Server;
+use RZP\Exception\GatewayErrorException;
 
 trait PaymentsUpiRecurringTrait
 {
@@ -110,10 +113,18 @@ trait PaymentsUpiRecurringTrait
         $payment['customer_id'] = 'cust_100000customer';
         $payment['vpa'] = 'success@razorpay';
 
+
         $this->doAuthPayment(array_merge($payment, $paymentData));
 
-        // Basic Assertions, helpful for second recurring
         $payment = $this->getDbLastPayment();
+
+        (new Payment\Service)->s2scallback($payment->getPublicId(), [
+            'status'        => 'authorized',
+            'rrn'           => '001000100002',
+            'npci_txn_id'   => 'npci_txn_id_for_' . $payment->getId(),
+        ]);
+
+        // Basic Assertions, helpful for second recurring
         $mandate = $this->getDbLastEntity('upi_mandate');
         $token = $this->getDbLastEntity('token');
 
@@ -341,4 +352,36 @@ trait PaymentsUpiRecurringTrait
             });
     }
 
+    protected function buildGatewayErrorDescription($message = null, $code = null, $description = null)
+    {
+        return implode("\n", [
+            $message ?? 'Payment processing failed due to error at bank or wallet gateway',
+            'Gateway Error Code: ' . $code,
+            'Gateway Error Desc: ' . $description,
+        ]);
+    }
+
+    protected function makeS2sCallbackAndGetContentSilently($content, $gateway = null)
+    {
+        try
+        {
+            return $this->makeS2SCallbackAndGetContent($content, $gateway);
+        }
+        catch (GatewayErrorException $exception)
+        {
+            $this->assertTrue(in_array(
+                $gateway,
+                [
+                    Payment\Gateway::UPI_ICICI,
+                ],
+                'Exception should not be thrown in callback for ' . $gateway));
+
+            return $exception;
+        }
+    }
+
+    protected function mockMozartServer(): Server
+    {
+        return $this->getMockServer();
+    }
 }

@@ -1,0 +1,25 @@
+<?php
+
+namespace RZP\Tests\Functional\Gateway\Mozart\Upi;
+
+class UpiIciciRecurringTest extends UpiInitialRecurringTestCase
+{
+    public function setUp()
+    {
+        parent::setUp();
+
+        $this->gateway = 'mozart';
+
+        $this->terminal = $this->fixtures->create('terminal:shared_icici_recurring_terminal');
+
+        $this->fixtures->create('customer');
+
+        $this->fixtures->merchant->enableUpi('10000000000000');
+
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
+
+        $this->payment = $this->getDefaultUpiRecurringPaymentArray();
+
+        $this->setMockGatewayTrue();
+    }
+}

@@ -148,9 +148,16 @@ trait Callback
                     // We will not follow the further steps.
                     // We do not just want to rely on payment status being authorized
                     // Note: Later if needed, one can add another payment check
-                    if (($this->isFirstUpiRecurringPayment($payment) === true) and
+                    if (($payment->isUpiRecurring() === true) and
                         ($payment->hasBeenAuthorized() === false))
                     {
+                        if ($this->shouldHitDebitOnRecurringForUpi($payment) === true)
+                        {
+                            $this->processRecurringDebitForUpi($payment);
+                        }
+
+                        // Since the payment is UPI recurring and not authorized, we can
+                        // skip the further steps on offers and auto capture
                         return;
                     }
 
@@ -293,28 +300,8 @@ trait Callback
             $input['card'] = $card->toArray();
         }
 
-        // Adding data for upi one time mandate. It can be used for all upi payments
-        // in future.
-        if ($payment->isUpiOtm() === true)
-        {
-            $input['upi'] = $payment->getUpiMetadata()->toArray();
-        }
-
-        //Adding data for upi mandate.
-        if ($payment->isUpiRecurring() === true)
-        {
-            if ($payment->isRecurringTypeAuto())
-            {
-                // UPI Mandate is linked with Payment Local Token and not always with payment order
-                $upiMandate = $payment->localToken->upiMandate;
-            }
-            else
-            {
-                $upiMandate = $this->repo->upi_mandate->findByOrderId($payment['order_id']);
-            }
-
-            $input['upi_mandate'] = $upiMandate;
-        }
+        // Upi for OTM and Recurring need to send extra information in callback
+        $this->modifyGatewayInputForUpi($payment, $input);
 
         // In case of axis corporate payments, the s2s call back return unencrypted
         // data, however, the normal callback return parameters which are encrypted.
@@ -457,23 +444,8 @@ trait Callback
             $data = $this->callGatewayFunction(Payment\Action::CALLBACK, $input);
         }
 
-        // For First UPI Recurring, we are supposed to hit First debit right away
-        // If first debit fails for the payment an exception will be thrown here
-        // Or we will receive failure in callback, in both cases payment is marked failed.
-        if ($input['payment']['method'] === Payment\Method::UPI)
-        {
-            if ($this->shouldDebitRecurringPaymentForUpi($input, $data) === false)
-            {
-                return $data;
-            }
-
-            $upiMandate = $this->updateRecurringMandateForUpiIfApplicable($this->payment, $data);
-
-            $this->modifyRecurringDebitInputForUpi($upiMandate, $input, $data);
-
-            $this->callGatewayFunction(Payment\Action::DEBIT, $input);
-        }
-        else
+        // Debit for UPI will be called separately and not from here
+        if ($input['payment']['method'] !== Payment\Method::UPI)
         {
             $this->callGatewayFunction(Payment\Action::DEBIT, $input);
         }

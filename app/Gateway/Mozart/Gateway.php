@@ -29,8 +29,6 @@ class Gateway extends Base\Gateway
         extractPaymentsProperties as extractPaymentsPropertiesAuthorizedFailedTrait;
     }
 
-    use RecurringTrait;
-
     protected $gateway = 'mozart';
 
     const CACHE_KEY    = 'gateway:cache_key_%s';
@@ -330,6 +328,18 @@ class Gateway extends Base\Gateway
 
     public function mandateCreate($input)
     {
+        if ($this->isUpiRecurringPayment($input['payment']) === true)
+        {
+            parent::action($input, Action::AUTH_INIT);
+
+            $traceReq = TraceCode::GATEWAY_MANDATE_CREATE_REQUEST;
+            $traceRes = TraceCode::GATEWAY_MANDATE_CREATE_RESPONSE;
+
+            list($response) = $this->sendMozartRequestAndGetResponse($input, $traceReq, $traceRes, false);
+
+            return $response;
+        }
+
         parent::action($input, Action::PAY_INIT);
 
         $request = $this->getMozartRequestArray($input);
@@ -367,6 +377,7 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    // Not Used
     public function authorizeRecurring($input)
     {
         parent::action($input, Action::AUTH_INIT);
@@ -588,34 +599,7 @@ class Gateway extends Base\Gateway
 
             $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
         }
-
-        else if ($this->isFirstUpiRecurringPayment($input['payment']) === true)
-        {
-            parent::action($input, Action::PAY_INIT);
-
-            $request = $this->getMozartRequestArray($input);
-
-            $traceReq = [
-                'method' => $request['method'],
-                'url' => $request['url'],
-            ];
-
-            $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_PAYMENT_DEBIT_REQUEST);
-
-            $response = $this->sendGatewayRequest($request);
-
-            $traceRes = $this->getRedactedData($response);
-
-            $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_PAYMENT_DEBIT_RESPONSE);
-
-            $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
-
-            return [
-                'upi' => array_only($response['data'], (new UpiEntity())->getFillable()),
-            ];
-        }
-        else if (($input['payment']['method'] === Payment\Method::UPI) and
-                 ($this->isSecondRecurringPaymentRequest($input)))
+        else if ($this->isUpiRecurringPayment($input['payment']) === true)
         {
             parent::action($input, Action::PAY_INIT);
 
@@ -705,7 +689,7 @@ class Gateway extends Base\Gateway
 
         else if ($this->fullyEncryptedFlow($input['payment']['gateway']) === false)
         {
-            if (($this->isFirstUpiRecurringPayment($input['payment']) === true) and
+            if (($this->isUpiRecurringPayment($input['payment']) === true) and
                 ($this->isMandateCreateCallback($input['gateway'], $input['payment']['gateway']) === true))
             {
                 parent::action($input, Action::AUTH_VERIFY);
@@ -794,6 +778,42 @@ class Gateway extends Base\Gateway
         }
 
         return $this->getResponseData($input, $response, $gatewayPayment);
+    }
+
+    public function upiRecurringCallback(array $input)
+    {
+        parent::action($input, Action::PAY_VERIFY);
+
+        // Mandate create request has action Authenticate, first and auto recurring have action Authorize
+        $isMandateCreate = ($input[UpiEntity::UPI][UpiEntity::ACTION] === Base\Action::AUTHENTICATE);
+
+        if ($isMandateCreate === true)
+        {
+            parent::action($input, Action::AUTH_VERIFY);
+        }
+
+        // Some how auth verify is expecting the gateway data in redirect field
+        $input['gateway']['redirect'] = array_pull($input, 'gateway');
+
+        $traceReq = TraceCode::GATEWAY_SUPPORT_REQUEST;
+        $traceRes = TraceCode::GATEWAY_SUPPORT_RESPONSE;
+
+        list($response) = $this->sendMozartRequestAndGetResponse($input, $traceReq, $traceRes, false);
+
+        if ($response['success'] === true)
+        {
+            // These validations will throw Logic Exceptions, which we do not need to suppress
+            if ($isMandateCreate === true)
+            {
+                $this->runMandateCreateCallbackValidations($input, $response);
+            }
+            else
+            {
+                $this->runCallbackValidationsIfApplicable($input, $response);
+            }
+        }
+
+        return $response;
     }
 
     public function omniPay(array $input)
@@ -2099,7 +2119,7 @@ class Gateway extends Base\Gateway
         {
             // For upi recurring payments, we get mandate create callback first. We get the mandate amount in the
             // mandate create callback and not the payment amount. So adding condition for that here.
-            if (($this->isFirstUpiRecurringPayment($input['payment']) === true) and
+            if (($this->isUpiRecurringPayment($input['payment']) === true) and
                 ($this->isUpiRecurringApplicableGateway($input['payment']['gateway']) === true) and
                 ($this->isMandateCreateCallback($input['gateway']['redirect'], $input['payment']['gateway']) === true))
             {
@@ -2280,7 +2300,7 @@ class Gateway extends Base\Gateway
 
            return $response;
         }
-        if ($this->isFirstUpiRecurringPayment($input['payment']) === true)
+        if ($this->isUpiRecurringPayment($input['payment']) === true)
         {
             if ($this->isMandateCreateCallback($input['gateway']['redirect'], $input['payment']['gateway']) === true)
             {
@@ -2347,6 +2367,13 @@ class Gateway extends Base\Gateway
 
     protected function checkTpvAndModifyOrder(& $content, $input)
     {
+        // We do not need to add TPV support on UPI Recurring Debit calls
+        if ((isset($input['payment']['method']) === true) and
+            ($this->isUpiRecurringPayment($input['payment']) === true))
+        {
+            return;
+        }
+
         if ($this->action === Action::PAY_INIT and $this->getGateway($input) !== Payment\Gateway::GOOGLE_PAY)
         {
             $isTpvEnabled = $input['merchant']->isTPVRequired();
@@ -2634,6 +2661,12 @@ class Gateway extends Base\Gateway
         }
 
         return false;
+    }
+
+    private function isUpiRecurringPayment($payment): bool
+    {
+        return (($payment['method'] === Payment\Method::UPI) and
+                ($payment['recurring'] === true));
     }
 
     public static function isDebitWallet($wallet)

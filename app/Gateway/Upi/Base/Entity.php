@@ -35,6 +35,7 @@ class Entity extends Base\Entity
 
     // Input Keys
     const PAYMENT               = 'payment';
+    const UPI                   = 'upi';
 
     public $incrementing = true;
 

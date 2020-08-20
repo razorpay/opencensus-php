@@ -359,13 +359,21 @@ class Core extends Base\Core
         }
     }
 
-    public function updateTokenForUpi(Entity $token, array $gatewayData)
+    public function updateTokenForUpi(Entity $token, array $input)
     {
-        $token->setRecurringStatus($gatewayData['recurring_status']);
-
-        if ($gatewayData['recurring_status'] === RecurringStatus::CONFIRMED)
+        if ($input[Entity::RECURRING_STATUS] === RecurringStatus::CONFIRMED)
         {
+            $token->setRecurringStatus(RecurringStatus::CONFIRMED);
             $token->setRecurring(true);
+        }
+        else if ($input[Entity::RECURRING_STATUS] === RecurringStatus::INITIATED)
+        {
+            $allowed = [null, RecurringStatus::INITIATED, RecurringStatus::NOT_APPLICABLE];
+
+            if (in_array($token->getRecurringStatus(), $allowed, true) === true)
+            {
+                $token->setRecurringStatus(RecurringStatus::INITIATED);
+            }
         }
 
         $this->repo->saveOrFail($token);
@@ -742,9 +750,9 @@ class Core extends Base\Core
         $token->setRecurringStatus(RecurringStatus::CANCELLED);
 
         $token->saveOrFail();
-      
+
         $this->eventUpiRecurringTokenStatus($token, $oldRecurringStatus);
-      
+
         $this->notifyAppsTokenStatus($token, RecurringStatus::CANCELLED);
     }
 

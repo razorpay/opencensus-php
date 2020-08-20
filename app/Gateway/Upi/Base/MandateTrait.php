@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Upi\Base;
 
 use RZP\Models\Payment;
+use RZP\Gateway\Mozart;
 use RZP\Exception\LogicException;
 use RZP\Models\Payment\UpiMetadata;
 

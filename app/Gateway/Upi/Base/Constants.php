@@ -10,5 +10,6 @@ class Constants
     const ATTEMPT       = 'ano';
     const SEQUENCE      = 'sno';
     const EXECUTE_AT    = 'ext';
+    const ENVIRONMENT   = 'env';
     const EXCEPTION     = 'exception';
 }
