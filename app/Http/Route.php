@@ -675,6 +675,8 @@ class Route
         'order_payments'                           => ['get',      'orders/{id}/payments',                           'OrderController@fetchPayments'                                     ],
         'order_refund_multiple_authorized'         => ['post',     'orders/payments/refund',                         'PaymentController@postRefundAuthorizedPaymentsOfPaidOrders'        ],
         'order_edit'                               => ['patch',    'orders/{id}',                                    'OrderController@update'                                            ],
+        'fetch_order_line_items'                   => ['get',      'orders/{id}/line_items',                         'OrderController@fetchLineItems'                                     ],
+
         'reports_transaction_broking'              => ['get',      'reports/transaction/broking',                    'MerchantController@getBrokerTransactionReport'                     ],
         'reports_transaction_dsp'                  => ['get',      'reports/transaction/dsp',                        'MerchantController@getDSPTransactionReport'                        ],
         'reports_order_rpp'                        => ['get',      'reports/order/rpp',                              'MerchantController@getRPPOrderReport'                              ],
@@ -2641,6 +2643,7 @@ class Route
     ];
 
     public static $proxy = [
+        'fetch_order_line_items',
         'fetch_product_status',
         'settlement_ondemand_create_dashboard',
         'settlement_ondemand_fees_dashboard',

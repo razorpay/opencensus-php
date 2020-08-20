@@ -44,4 +44,11 @@ class OrderController extends Controller
 
         return ApiResponse::json($payments);
     }
+
+    public function fetchLineItems($id)
+    {
+        $lineItems = $this->service()->fetchLineItemsFor($id);
+
+        return ApiResponse::json($lineItems);
+    }
 }

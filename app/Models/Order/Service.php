@@ -295,6 +295,13 @@ class Service extends Base\Service
         return $payments->toArrayPublic();
     }
 
+    public function fetchLineItemsFor(string $id): array
+    {
+        $order = $this->repo->order->findByPublicIdAndMerchant($id, $this->merchant);
+
+        return $order->lineItems->toArrayPublic();
+    }
+
     public function update(string $id, array $input): array
     {
         $orderId = Entity::verifyIdAndStripSign($id);
