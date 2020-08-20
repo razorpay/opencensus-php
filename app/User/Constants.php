@@ -10,5 +10,5 @@ class Constants
      */
     const TWO_FA_VERIFIED = 'two_fa_verified';
 
-    const USER_ID_DEBUG_ACTIVATION_ISSUE = 'EWMan8bVCMfY4e';
+    const USER_ID_DEBUG_ACTIVATION_ISSUE = 'DqVrGiqepp5gxF';
 }
