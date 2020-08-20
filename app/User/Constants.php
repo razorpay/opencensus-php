@@ -9,4 +9,6 @@ class Constants
      * If true, means routes requiring 2fa in API will pass
      */
     const TWO_FA_VERIFIED = 'two_fa_verified';
+
+    const USER_ID_DEBUG_ACTIVATION_ISSUE = 'EWMan8bVCMfY4e';
 }

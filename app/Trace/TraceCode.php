@@ -42,6 +42,10 @@ class TraceCode
     const ADMIN_LOGOUT                              = 'ADMIN_LOGOUT';
     const ADMIN_AS_MERCHANT                         = 'ADMIN_AS_MERCHANT';
 
+    const USER_ID_DEBUG                             = 'USER_ID_DEBUG';
+    const USER_FROM_API_DEBUG                       = 'USER_FROM_API_DEBUG';
+    const USER_AFTER_UPDATE_DEBUG                   = 'USER_AFTER_UPDATE_DEBUG';
+
     const MISMATCHED_VERIFY_TOKEN                   = 'MISMATCHED_VERIFY_TOKEN';
 
 

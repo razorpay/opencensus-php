@@ -323,6 +323,17 @@ class UserController extends Controller
     {
         list($error, $data) = (new User\Service)->getUserDetails();
 
+        if (empty($error) === true)
+        {
+            // Debug logs for Specific UserId. Will be removed once issue is fixed.
+            $userId = $data['user']['id'] ?? null;
+
+            if ($userId === User\Constants::USER_ID_DEBUG_ACTIVATION_ISSUE)
+            {
+                $this->trace->info(TraceCode::USER_ID_DEBUG, ['userId' => $userId, 'data' => $data]);
+            }
+        }
+
         return AppResponse::jsonResponse($error, $data);
     }
 
