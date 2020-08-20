@@ -693,7 +693,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals('created', $payment['status']);
     }
 
-    protected function makeDebitPayment()
+    protected function makeDebitPayment($amount = 300000)
     {
         $payment                 = $this->getEmandatePaymentArray('UTIB', 'netbanking', 0);
 
@@ -715,7 +715,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $tokenId = $paymentEntity[Payment::TOKEN_ID];
 
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => 300000]);
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $amount]);
 
         $this->fixtures->edit(
             'token',
@@ -726,7 +726,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
                 Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED,
             ]);
 
-        $payment             = $this->getEmandatePaymentArray('UTIB', null, 300000);
+        $payment             = $this->getEmandatePaymentArray('UTIB', null, $amount);
 
         $payment['token']    = $tokenId;
 

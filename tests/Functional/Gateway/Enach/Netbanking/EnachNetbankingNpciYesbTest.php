@@ -335,50 +335,6 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
         $this->assertEquals('refund', $bankAccount['type']);
     }
 
-    protected function makeDebitPayment()
-    {
-        $payment                 = $this->getEmandatePaymentArray('UTIB', 'netbanking', 0);
-
-        $payment['bank_account'] = [
-            'account_number' => '1111111111111',
-            'ifsc'           => 'UTIB0000123',
-            'name'           => 'Test account',
-        ];
-
-        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
-
-        $payment['order_id'] = $order->getPublicId();
-
-        $response = $this->doAuthPayment($payment);
-
-        $this->fixtures->stripSign($response['razorpay_payment_id']);
-
-        $paymentEntity = $this->getEntityById('payment', $response['razorpay_payment_id'],true);
-
-        $tokenId = $paymentEntity[Payment\Entity::TOKEN_ID];
-
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => 3000]);
-
-        $this->fixtures->edit(
-            'token',
-            $tokenId,
-            [
-                Token\Entity::GATEWAY_TOKEN    => 'UTIB6000000005844847',
-                Token\Entity::RECURRING        => 1,
-                Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED,
-            ]);
-
-        $payment             = $this->getEmandatePaymentArray('UTIB', null, 3000);
-
-        $payment['token']    = $tokenId;
-
-        $payment['order_id'] = $order->getPublicId();
-
-        unset($payment['auth_type']);
-
-        return $this->doS2SRecurringPayment($payment);
-    }
-
     protected function runPaymentCallbackFlowNetbanking($response, &$callback = null)
     {
         $mock = $this->isGatewayMocked();

@@ -32,9 +32,13 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
 
     public function testDebitFileGeneration()
     {
-        $response = $this->makeDebitPayment();
+        $payment1 = $this->makeDebitPayment();
 
-        $this->fixtures->stripSign($response['razorpay_payment_id']);
+        $this->fixtures->stripSign($payment1['razorpay_payment_id']);
+
+        $payment2 = $this->makeDebitPayment(40000);
+
+        $this->fixtures->stripSign($payment2['razorpay_payment_id']);
 
         $this->ba->adminAuth();
 
@@ -63,7 +67,7 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
 
         $this->assertArraySelectiveEquals(
             [
-                'payment_id' => $response['razorpay_payment_id'],
+                'payment_id' => $payment2['razorpay_payment_id'],
                 'action'     => 'authorize',
                 'bank'       => 'UTIB',
                 'status'     => null,
@@ -74,13 +78,13 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
         $fileContent = explode("\n", file_get_contents('storage/files/filestore/' . $debit['location']));
 
         // since date and amount is fixed for this test header is a constant
-        $expectedHeader = '56       RAZORPAY                                                                                  0000050000000000000030000007032020                       shared_utility_cod000000000000000000ICIC0TREA00000205025290                       000000001                                                           ';
+        $expectedHeader = '56       RAZORPAY                                                                                  0000050000000000000034000007032020                       shared_utility_cod000000000000000000ICIC0TREA00000205025290                       000000002                                                           ';
 
         $this->assertEquals($expectedHeader, $fileContent[0]);
 
-        $debitRow = array_map('trim', $this->parseTextRow($fileContent[1], 0, ''));
+        $debit1 = array_map('trim', $this->parseTextRow($fileContent[1], 0, ''));
 
-        $expectedDebitRow = [
+        $expectedDebitRow1 = [
             'ACH Transaction Code' => '67',
             'Destination Account Type' => '10',
             'Beneficiary Account Holder\'s Name' => 'Test account',
@@ -90,12 +94,31 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
             'Beneficiary\'s Bank Account number' => '1111111111111',
             'Sponsor Bank IFSC / MICR / IIN' => 'ICIC0TREA00',
             'User Number' => 'shared_utility_cod',
-            'Transaction Reference' => $response['razorpay_payment_id'],
+            'Transaction Reference' => $payment1['razorpay_payment_id'],
             'Product Type' => '10',
             'UMRN' => 'UTIB6000000005844847'
         ];
 
-        $this->assertArraySelectiveEquals($expectedDebitRow, $debitRow);
+        $debit2 = array_map('trim', $this->parseTextRow($fileContent[2], 0, ''));
+
+        $expectedDebitRow2 = [
+            'ACH Transaction Code' => '67',
+            'Destination Account Type' => '10',
+            'Beneficiary Account Holder\'s Name' => 'Test account',
+            'User Name' => 'RAZORPAY',
+            'Amount' => '0000000040000',
+            'Destination Bank IFSC / MICR / IIN' => 'UTIB0000123',
+            'Beneficiary\'s Bank Account number' => '1111111111111',
+            'Sponsor Bank IFSC / MICR / IIN' => 'ICIC0TREA00',
+            'User Number' => 'shared_utility_cod',
+            'Transaction Reference' => $payment2['razorpay_payment_id'],
+            'Product Type' => '10',
+            'UMRN' => 'UTIB6000000005844847'
+        ];
+
+        $this->assertArraySelectiveEquals($expectedDebitRow1, $debit1);
+        $this->assertArraySelectiveEquals($expectedDebitRow2, $debit2);
+
 
         Queue::assertPushed(BeamJob::class, 1);
 

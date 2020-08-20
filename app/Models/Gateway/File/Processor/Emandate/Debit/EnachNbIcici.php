@@ -62,15 +62,19 @@ class EnachNbIcici extends Debit\Base
 
             $fileStoreIds = [];
 
+            $index = 0;
+
             foreach ($allFilesData as $key => $fileData)
             {
+                $index++;
+
                 $fileHeader = $this->getFileHeader($fileData);
 
                 $fileHeaderText = $this->getTextData($fileHeader, "", "");
 
                 $fileDataText   = $this->getTextData($fileData, $fileHeaderText, "");
 
-                $fileName = $this->getFileToWriteNameWithoutExt(['fileName' => static::FILE_NAME, 'batchCode' => $key]);
+                $fileName = $this->getFileToWriteNameWithoutExt(['fileName' => static::FILE_NAME, 'batchCode' => $index]);
 
                 $creator = new FileStore\Creator;
 
@@ -109,16 +113,14 @@ class EnachNbIcici extends Debit\Base
     {
         $rows = [] ;
 
-        $index = 0;
 
         foreach ($tokens as $token)
         {
             $paymentId = $token['payment_id'];
 
-            $data = $this->getNachDebitData($token, $paymentId);
+            $utilityCode = $token->terminal->getGatewayMerchantId2();
 
-            // intentionally using index here as this may be replaced by utility code in the future
-            $index++;
+            $data = $this->getNachDebitData($token, $paymentId);
 
             $row = [
                 Headings::ACH_TRANSACTION_CODE             => Fields::ACH_TRANSACTION_CODE,
@@ -147,7 +149,7 @@ class EnachNbIcici extends Debit\Base
                 Headings::FILLER                           => Fields::FILLER,
             ];
 
-            $rows[$index][] = $row;
+            $rows[$utilityCode][] = $row;
         }
 
         return $rows;
