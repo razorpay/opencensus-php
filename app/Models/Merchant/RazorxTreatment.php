@@ -124,7 +124,7 @@ final class RazorxTreatment
     // Block external transaction webhooks for RBL CA
     const BLOCK_EXTERNAL_TRANSACTION_CREATED_WEBHOOK_RBL = 'block_external_transaction_created_webhook_rbl';
 
-    // Trim space in merchants data
+    // Check whether trimming is allowed for merchant or not.
     const TRIM_SPACE_FOR_MERCHANT = 'trim_space_for_merchant';
 
     const VIRTUAL_VPA_ICICI = 'virtual_vpa_icici';
@@ -157,12 +157,12 @@ final class RazorxTreatment
     // helps in ramping up to ses for those templates
     const API_EMAIL_SES_DRIVER = 'api_email_ses_driver';
 
-    // Check whether trimming is allowed for merchant or not.
-    const TRIM_SPACES = 'trim_spaces';
-
     const PUBLIC_KEY_SIGNATURE_GENERATION = 'public_key_signature_generation';
 
     const API_EMAIL_DRIVER_CHANGE_DYNAMICALLY = 'api_email_driver_set_dynamically';
 
     const API_EMAIL_SHOULD_SET_TO_DEFAULT_DRIVER = 'api_email_should_set_default_driver';
+
+    // experiment for merchant with trim migration completed
+    const TRIM_MIGRATION_COMPLETED = 'trim_migration_completed';
 }

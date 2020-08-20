@@ -17,7 +17,7 @@ trait TrimSpace
 
         $treatment = $this->app->razorx->getTreatment(
             $merchantId,
-            RazorxTreatment::TRIM_SPACES,
+            RazorxTreatment::TRIM_SPACE_FOR_MERCHANT,
             Mode::LIVE,
             self::$trimSpacesRazorxRetryCount
         );

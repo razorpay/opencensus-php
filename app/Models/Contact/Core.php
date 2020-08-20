@@ -33,21 +33,18 @@ class Core extends Base\Core
 
         (new Validator)->validateInput('create', $input);
 
+        $merchantId = $merchant->getId();
+
         $treatment = $this->app->razorx->getTreatment(
-            $merchant->getId(),
-            RazorxTreatment::TRIM_SPACES,
+            $merchantId,
+            RazorxTreatment::TRIM_SPACE_FOR_MERCHANT,
             $this->mode,
             Entity::CONTACT_RX_RETRY_COUNT
         );
 
-        //
-        // Required to trim check for non treatment merchant
-        //
-        $trimmedInput = $this->trimSpaces($input);
-
         if ($treatment === 'on')
         {
-            $input = $trimmedInput;
+            $input = $this->trimSpaces($input);
         }
 
         if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
@@ -72,9 +69,20 @@ class Core extends Base\Core
         {
             $contact = $this->repo->contact->getContactWithSimilarDetails($input, $merchant);
 
-            if ($contact === null)
+            if (($treatment === 'on') and
+                ($contact === null))
             {
-                $contact = $this->repo->contact->getContactWithTrimmedSimilarDetails($trimmedInput, $merchant);
+                $treatmentTrimMigrationCompleted = $this->app->razorx->getTreatment(
+                    $merchantId,
+                    RazorxTreatment::TRIM_MIGRATION_COMPLETED,
+                    $this->mode,
+                    Entity::CONTACT_RX_RETRY_COUNT
+                );
+
+                if ($treatmentTrimMigrationCompleted !== 'on')
+                {
+                    $contact = $this->repo->contact->getContactWithTrimmedSimilarDetails($input, $merchant);
+                }
             }
 
             if ($contact !== null)
