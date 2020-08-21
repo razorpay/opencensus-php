@@ -13,6 +13,8 @@ class Fetch extends BaseFetch
             Entity::TYPE             => 'sometimes|in:customer,merchant',
             Entity::ENTITY_ID        => 'sometimes|alpha_num',
             Entity::BENEFICIARY_CODE => 'sometimes|alpha_num',
+            Entity::IFSC_CODE        => 'sometimes|alpha_num|size:11',
+            Entity::ACCOUNT_NUMBER   => 'sometimes|string',
         ],
     ];
 
@@ -22,6 +24,8 @@ class Fetch extends BaseFetch
             Entity::TYPE,
             Entity::ENTITY_ID,
             Entity::BENEFICIARY_CODE,
+            Entity::IFSC_CODE,
+            Entity::ACCOUNT_NUMBER,
         ],
     ];
 }

@@ -732,6 +732,14 @@ class AdminFetch
                         'merchant',
                     ],
                 ],
+                'ifsc_code' => [
+                    Fetch::LABEL => 'IFSC',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+                'account_number' => [
+                    Fetch::LABEL => 'Account Number',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
             ],
 
             Entity::BANKING_ACCOUNT => [
