@@ -489,34 +489,53 @@ class CreateAccount extends Base
 
         try
         {
-            $this->initialize($input['id'], $input['type'], $input['product']);
+            $bank_account_id = "";
+
+            $fund_account_id = "";
+
+            if (isset($input['id']) === true) {
+                $bank_account_id = $input['id'];
+            }
+
+            if (isset($input['fund_account_id']) === true) {
+                $fund_account_id = $input['fund_account_id'];
+            }
+
+            $this->initialize($bank_account_id, $input['type'], $input['product']);
 
             $this->channel = $input['channel'];
 
             $this->sourceAccountType = $input['sourceAccountType'];
 
-            $response = $this->createFundAccount();
+            if (empty($fund_account_id) === true) {
 
-            if (empty($response[Constants::BODY][Constants::FUND_ACCOUNT_ID]) === true)
-            {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_ERROR_SOURCE_ACCOUNT_FUND_ACCOUNT_CREATION_FAILED,
-                    null,
-                    ['response' => $response],
-                    'FTS fund Account Id could not stored, Please try again!'
-                );
+                $response = $this->createFundAccount();
+
+                if (empty($response[Constants::BODY][Constants::FUND_ACCOUNT_ID]) === true)
+                {
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR_SOURCE_ACCOUNT_FUND_ACCOUNT_CREATION_FAILED,
+                        null,
+                        ['response' => $response],
+                        'FTS fund Account Id could not stored, Please try again!'
+                    );
+                }
+
+                $fund_account_id = $response[Constants::BODY][Constants::FUND_ACCOUNT_ID];
+
+                $result += $response;
             }
 
             $content = $this->generateRequestForSourceAccount($input);
 
             $data = $this->createSourceAccount(
-                $input['id'],
-                $response[Constants::BODY][Constants::FUND_ACCOUNT_ID],
+                $bank_account_id,
+                $fund_account_id,
                 $content,
                 $input['product'],
                 $input['channel']);
 
-            $result = $response + $data;
+            $result += $data;
         }
         catch (\Throwable $exception)
         {

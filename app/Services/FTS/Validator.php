@@ -15,6 +15,7 @@ class Validator extends Base\Validator
         'product'          => 'filled|string|required|in:payout,refund,payout_refund,settlement,penny_testing,ca_payout,es_on_demand',
         'channel'          => 'filled|string|required|in:yesbank,icici,citi,m2p',
         'credentials'      => 'required|array',
+        'fund_account_id'  => 'sometimes|integer',
         'mozartIdentifier' => 'filled|string|required|in:V1,V2',
         'sourceAccountType'=> 'filled|string|required|in:current,nodal'
     ];
