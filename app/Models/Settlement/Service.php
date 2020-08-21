@@ -746,6 +746,11 @@ class Service extends Base\Service
         return app('settlements_dashboard')->merchantConfigUpdate($input);
     }
 
+    public function merchantConfigGetScheduleableEntities(): array
+    {
+        return app('settlements_dashboard')->merchantConfigGetScheduleableEntities();
+    }
+
     public function bankAccountCreate(array $input) : array
     {
         return app('settlements_dashboard')->bankAccountCreate($input);

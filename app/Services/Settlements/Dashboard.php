@@ -18,11 +18,6 @@ class Dashboard extends Base
     const SCHEDULE_GET_URI             = '/twirp/rzp.settlements.schedule.v1.ScheduleService/Get';
     const SCHEDULE_GET_IDS_URI         = '/twirp/rzp.settlements.schedule.v1.ScheduleService/GetAllIds';
 
-    const MERCHANT_CONFIG_GET          = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Get';
-    const MERCHANT_CONFIG_CREATE       = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Create';
-    const MERCHANT_CONFIG_UPDATE       = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Update';
-    const MERCHANT_CONFIG_EDIT_FEATURE = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/UpdateFeature';
-
     const BANK_ACCOUNT_GET             = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Get';
     const BANK_ACCOUNT_CREATE          = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Create';
     const BANK_ACCOUNT_UPDATE          = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Update';
@@ -36,6 +31,12 @@ class Dashboard extends Base
     const CHANNEL_STATUS_GET           = '/twirp/rzp.settlements.transfer.v1.TransferService/GetChannelState';
 
     const SETTLEMENT_RETRY             = '/twirp/rzp.settlements.settlement.v1.SettlementService/Retry';
+
+    const MERCHANT_CONFIG_GET                      = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Get';
+    const MERCHANT_CONFIG_CREATE                   = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Create';
+    const MERCHANT_CONFIG_UPDATE                   = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Update';
+    const MERCHANT_CONFIG_EDIT_FEATURE             = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/UpdateFeature';
+    const MERCHANT_CONFIG_GET_SCHEDULABLE_ENTITIES = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/SchedulableEntities';
 
     public function __construct($app)
     {
@@ -140,6 +141,18 @@ class Dashboard extends Base
     public function merchantConfigUpdate(array $input, $mode = null) : array
     {
         return $this->makeRequest(self::MERCHANT_CONFIG_UPDATE, $input, self::SERVICE_DASHBOARD, $mode);
+    }
+
+    /**
+     * Merchant Config Service GetAll Scheduliable Entities
+     * @param null $mode
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function merchantConfigGetScheduleableEntities($mode = null): array
+    {
+        return $this->makeRequest(self::MERCHANT_CONFIG_GET_SCHEDULABLE_ENTITIES, [], self::SERVICE_DASHBOARD, $mode);
     }
 
     /**

@@ -370,6 +370,13 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function merchantConfigGetScheduleableEntities()
+    {
+        $data = $this->service()->merchantConfigGetScheduleableEntities();
+
+        return ApiResponse::json($data);
+    }
+
     public function bankAccountCreate()
     {
         $input = Request::all();
