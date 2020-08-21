@@ -4,18 +4,19 @@ namespace RZP\Models\SubscriptionRegistration;
 
 use Queue;
 use RZP\Constants;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
-use RZP\Models\Customer\Entity as CustomerEntity;
-use RZP\Models\BankAccount;
+use RZP\Http\BasicAuth;
 use RZP\Models\Invoice;
+use RZP\Error\ErrorCode;
+use RZP\Models\BankAccount;
 use RZP\Http\RequestHeader;
 use RZP\Models\Customer\Token;
 use RZP\Jobs\TokenRegistrationAutoCharge;
 use RZP\Models\PaperMandate\FileUploader;
+use RZP\Models\Customer\Entity as CustomerEntity;
 use RZP\Models\PaperMandate\Entity as PaperMandateEntity;
 use RZP\Models\PaperMandate\PaperMandateUpload\Entity as PaperMandateUploadEntity;
 use RZP\Models\PaperMandate\PaperMandateUpload\Status as PaperMandateUploadStatus;
@@ -420,6 +421,7 @@ class Service extends Base\Service
 
     /*
      * Manually approve paper mandate upload and create payment
+     * Only to be called from admin dashboard. Don't call from other without auth changes
      */
     public function approvePaperMandateIssues(array $input): array
     {
@@ -468,10 +470,11 @@ class Service extends Base\Service
 
             $this->repo->paper_mandate->saveOrFail($paperMandate);
 
-            // assign the merchant for further processing
+            // assign the merchant with private auth for further processing
             // this route is called from admin
             $this->merchant = $this->repo->merchant->findOrFail($paperMandateUpload->merchant->getId());;
             $this->app['basicauth']->setMerchant( $this->merchant);
+            $this->app['basicauth']->setBasicType(BasicAuth\Type::PUBLIC_AUTH);
 
             // create payment
             $this->createPaymentForPaperMandate($input);
