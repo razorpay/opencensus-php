@@ -183,4 +183,9 @@ class VendorPaymentController extends Controller
     {
         return $this->service->ocrAccuracyCheck();
     }
+
+    public function markAsPaid()
+    {
+        return $this->service->markAsPaid($this->ba->getMerchant(), $this->input, $this->ba->getUser());
+    }
 }

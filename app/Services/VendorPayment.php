@@ -40,6 +40,7 @@ class VendorPayment
     const VP_SUMMARY_API            = 'SummaryApi';
     const GET_OCR_DATA              = 'GetOcrData';
     const OCR_ACCURACY_CHECK        = 'GetOcrAccuracy';
+    const MARK_AS_PAID              = 'MarkAsPaid';
     const BASE_PATH                 = 'twirp/vendorpayments.Vendorpayments';
 
     protected $app;
@@ -362,6 +363,22 @@ class VendorPayment
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::OCR_ACCURACY_CHECK);
 
         return $this->makeRequest(null, $url, ['time' => now()]);
+    }
+
+    public function markAsPaid(MerchantEntity $merchant,
+                               array $input,
+                               Entity $user = null)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::MARK_AS_PAID);
+
+        if ($user === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST);
+        }
+
+        $input['manually_paid_user_id'] = $user->getPublicId();
+
+        return $this->makeRequest($merchant, $url, $input);
     }
 
     protected function makeRequest(MerchantEntity $merchant = null,

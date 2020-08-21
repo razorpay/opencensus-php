@@ -1067,6 +1067,7 @@ class Route
         'vendor_payment_bulk_cancel'               => ['post',     'vendor-payments/bulk-cancel',                    'VendorPaymentController@bulkCancel'                                ],
         'vendor_payment_get_ocr_data'              => ['get',      'vendor-payments/get-ocr-data/{ocr_reference_id}','VendorPaymentController@getOcrData'                                ],
         'vendor_payment_ocr_accuracy_cron'         => ['post',     'vendor-payments/_meta/ocr-accuracy-check',       'VendorPaymentController@ocrAccuracyCheck'                          ],
+        'vendor_payment_mark_as_paid'              => ['post',     'vendor-payments/mark-as-paid',                   'VendorPaymentController@markAsPaid'                                ],
 
 
         // Tax Payments
@@ -1076,8 +1077,11 @@ class Route
         'tax_payments_bulk_pay'                    => ['post',    'tax-payments/bulk-pay',                           'TaxPaymentController@bulkPayTaxPayment'                            ],
         'tax_payments_get_all_settings'            => ['get',     'tax-payments/settings/',                          'TaxPaymentController@getAllSettings'                               ],
         'tax_payments_add_or_update_settings'      => ['post',    'tax-payments/settings/',                          'TaxPaymentController@addOrUpdateSettings'                          ],
-        'tax_payments_list'                        => ['get',     'tax-payments/',                                    'TaxPaymentController@listTaxPayments'                             ],
-        'tax_payments_get_by_id'                   => ['get',     'tax-payments/{id}',                                'TaxPaymentController@getTaxPayment'                               ],
+        'tax_payments_list'                        => ['get',     'tax-payments/',                                   'TaxPaymentController@listTaxPayments'                              ],
+        'tax_payments_get_by_id'                   => ['get',     'tax-payments/{id}',                               'TaxPaymentController@getTaxPayment'                                ],
+        'tax_payments_mark_as_paid'                => ['post',    'tax-payments/mark-as-paid',                       'TaxPaymentController@markAsPaid'                                   ],
+        'tax_payments_challan_upload'              => ['post',    'tax-payments/upload-challan',                     'TaxPaymentController@uploadChallan'                                ],
+        'tax_payments_edit'                        => ['post',    'tax-payments/{id}/edit',                          'TaxPaymentController@edit'                                         ],
 
 
         // Payout Links
@@ -2957,6 +2961,7 @@ class Route
         'vendor_payment_bulk_cancel',
         'vendor_payment_execute',
         'vendor_payment_get_ocr_data',
+        'vendor_payment_mark_as_paid',
 
         // Virtual VPA Prefix
         'virtual_vpa_prefix_validate',
@@ -2985,6 +2990,9 @@ class Route
         'tax_payments_bulk_pay',
         'tax_payments_get_all_settings',
         'tax_payments_add_or_update_settings',
+        'tax_payments_mark_as_paid',
+        'tax_payments_challan_upload',
+        'tax_payments_edit',
         'merchant_credits_balance_fetch',
         'tax_payments_list',
         'tax_payments_get_by_id',
@@ -4509,6 +4517,7 @@ class Route
         'vendor_payment_edit'                          => Permission::EDIT_VENDOR_PAYMENTS,
         'vendor_payment_cancel'                        => Permission::CANCEL_VENDOR_PAYMENTS,
         'vendor_payment_bulk_cancel'                   => Permission::CANCEL_VENDOR_PAYMENTS,
+        'vendor_payment_mark_as_paid'                  => Permission::EDIT_VENDOR_PAYMENTS,
         'merchant_edit_config_logo'                    => Permission::MERCHANT_CONFIG_LOGO,
         'contact_get'                                  => Permission::VIEW_CONTACT,
         'contact_list'                                 => Permission::VIEW_CONTACT,
@@ -4611,6 +4620,9 @@ class Route
         'tax_payments_add_or_update_settings'          => Permission::UPDATE_TAX_PAYMENT_SETTINGS,
         'tax_payments_list'                            => Permission::VIEW_TAX_PAYMENTS,
         'tax_payments_get_by_id'                       => Permission::VIEW_TAX_PAYMENTS,
+        'tax_payments_mark_as_paid'                    => Permission::PAY_TAX_PAYMENTS,
+        'tax_payments_challan_upload'                  => Permission::PAY_TAX_PAYMENTS,
+        'tax_payments_edit'                            => Permission::PAY_TAX_PAYMENTS,
     ];
 
     public static $direct = [
@@ -5627,6 +5639,7 @@ class Route
         'vendor_payment_cancel',
         'vendor_payment_bulk_cancel',
         'vendor_payment_get_ocr_data',
+        'vendor_payment_mark_as_paid',
 
         'payout_links_added_fund_accounts',
         'payout_links_added_fund_accounts_cors',
@@ -5686,6 +5699,9 @@ class Route
         'tax_payments_add_or_update_settings',
         'tax_payments_list',
         'tax_payments_get_by_id',
+        'tax_payments_mark_as_paid',
+        'tax_payments_challan_upload',
+        'tax_payments_edit',
     ];
 
     public static $routesWithV2Prefix = [];

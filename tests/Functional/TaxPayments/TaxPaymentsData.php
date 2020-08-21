@@ -451,4 +451,72 @@ return [
             ]
         ]
     ],
+    'testTaxPaymentMarkAsPaid'                                                => [
+        'request'  => [
+            'method' => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'    => '/tax-payments/mark-as-paid',
+            'content' => [
+                'tax_payment_id' => ['txpy_F2qwMZe97QTGG1'],
+                "manually_paid_metadata" => [
+                    "notes1"=> "smoething"
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testTaxPaymentUploadChallan'                                                => [
+        'request'  => [
+            'method' => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'    => '/tax-payments/upload-challan',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testTaxPaymentEditTp'                                       => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/tax-payments/txpy_1234/edit',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testTaxPaymentMarkAsPaidNegative'                                                => [
+        'request'  => [
+            'method' => 'POST',
+            'server'  => [
+            ],
+            'url'    => '/tax-payments/mark-as-paid',
+            'content' => [
+                'tax_payment_id' => ['txpy_F2qwMZe97QTGG1'],
+                "manually_paid_metadata" => [
+                    "notes1"=> "smoething"
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST,
+        ]
+    ],
 ];

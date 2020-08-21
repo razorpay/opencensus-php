@@ -170,6 +170,10 @@ class Authorization
         ];
     }
 
+    public function setProxyHeader($headers){
+        $this->proxyHeaders = [];
+    }
+
     public function getProxyHeaders()
     {
         return $this->proxyHeaders;

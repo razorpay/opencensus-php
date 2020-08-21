@@ -62,4 +62,19 @@ class TaxPaymentController extends Controller
         return $this->service->getTaxPayment($this->ba->getMerchant(), $taxPaymentId, $this->input);
     }
 
+    public function markAsPaid()
+    {
+        return $this->service->markAsPaid($this->ba->getMerchant(), $this->input, $this->ba->getUser());
+    }
+
+    public function uploadChallan()
+    {
+        return $this->service->uploadChallan($this->ba->getMerchant(),$this->input);
+    }
+
+    public function edit(string $taxPaymentId)
+    {
+        return $this->service->edit($this->ba->getMerchant(),$taxPaymentId, $this->input);
+    }
+
 }

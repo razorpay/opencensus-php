@@ -144,5 +144,30 @@ class VendorPaymentTest extends TestCase
         $vpMock->shouldHaveReceived('ocrAccuracyCheck');
     }
 
+    public function testVendorPaymentMarkAsPaid()
+    {
+        $this->ba->proxyAuth();
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('markAsPaid')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('markAsPaid');
+    }
+
+    public function testVendorPaymentMarkAsPaidNegative()
+    {
+        $this->ba->proxyAuth();
+
+        $this->ba->setProxyHeader(null);
+
+        $this->startTest();
+    }
+
+
 
 }

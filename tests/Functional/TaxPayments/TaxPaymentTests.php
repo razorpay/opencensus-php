@@ -383,4 +383,58 @@ class TaxPaymentTests extends TestCase
         $this->startTest();
     }
 
+    public function testTaxPaymentMarkAsPaid()
+    {
+        $this->ba->proxyAuth();
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+
+        $tpMock->shouldReceive('markAsPaid')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('markAsPaid');
+    }
+
+    public function testTaxPaymentUploadChallan()
+    {
+        $this->ba->proxyAuth();
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+
+        $tpMock->shouldReceive('uploadChallan')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('uploadChallan');
+    }
+
+    public function testTaxPaymentEditTp()
+    {
+        $this->ba->proxyAuth();
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+
+        $tpMock->shouldReceive('edit')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('edit');
+    }
+
+    public function testTaxPaymentMarkAsPaidNegative()
+    {
+        $this->ba->proxyAuth();
+
+        $this->ba->setProxyHeader(null);
+
+        $this->startTest();
+    }
+
 }

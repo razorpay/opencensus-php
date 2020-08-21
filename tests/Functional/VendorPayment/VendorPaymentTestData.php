@@ -1,5 +1,8 @@
 <?php
 
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 return [
     'testCompositeExpands' => [
@@ -153,6 +156,53 @@ return [
         ],
         'response' => [
             'content' => []
+        ]
+    ],
+
+    'testVendorPaymentMarkAsPaid' => [
+        'request'  => [
+            'method' => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'    => '/vendor-payments/mark-as-paid',
+            'content' => [
+                'vendor_payment_id' => ['vdpm_F2qwMZe97QTGG1'],
+                "manually_paid_metadata" => [
+                    "notes1"=> "smoething"
+                    ],
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testVendorPaymentMarkAsPaidNegative' => [
+        'request'  => [
+            'method' => 'POST',
+            'server'  => [
+            ],
+            'url'    => '/vendor-payments/mark-as-paid',
+            'content' => [
+                'vendor_payment_id' => ['vdpm_F2qwMZe97QTGG1'],
+                "manually_paid_metadata" => [
+                    "notes1"=> "smoething"
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST,
         ]
     ],
 

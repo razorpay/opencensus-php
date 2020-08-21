@@ -5,6 +5,7 @@ namespace RZP\Services;
 use Requests;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\User\Entity;
 use RZP\Models\Settings\Module;
 use RZP\Models\Settings\Service;
 use RZP\Http\Response\StatusCode;
@@ -31,6 +32,9 @@ class TaxPayments
     const BULK_PAY_TAX_PAYMENTS    = 'BulkPayTaxPayments';
     const INITIATE_MONTHLY_PAYOUTS = 'InitiateMonthlyPayouts';
     const TAX_PAYMENT_ENABLED_KEY  = 'tax_payment_enabled';
+    const MARK_AS_PAID             = 'MarkAsPaid';
+    const UPLOAD_CHALLAN           = 'UploadChallan';
+    const EDIT_TP                  = 'EditTp';
 
     protected $app;
 
@@ -149,6 +153,48 @@ class TaxPayments
     public function getTaxPayment(MerchantEntity $merchant, string $taxPaymentId, array $input)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_TAX_PAYMENT_BY_ID);
+
+        $input['tax_payment_id'] = $taxPaymentId;
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function markAsPaid(MerchantEntity $merchant,
+                               array $input,
+                               Entity $user = null)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::MARK_AS_PAID);
+
+        if ($user === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST);
+        }
+
+        $input['manually_paid_user_id'] = $user->getPublicId();
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function uploadChallan(MerchantEntity $merchant,array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::UPLOAD_CHALLAN);
+        // The MS we are calling, expects JSON content,
+        // so we are sending the contents of the file in
+        // base_64 encoded byte array
+
+        $input['file'] = base64_encode(file_get_contents($_FILES['file']['tmp_name']));
+        $input['file_name'] = $_FILES['file']['name'];
+
+
+        return $this->makeRequest($merchant, $url, $input);
+
+    }
+
+    public function edit(MerchantEntity $merchant,
+                         string $taxPaymentId,
+                         array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::EDIT_TP);
 
         $input['tax_payment_id'] = $taxPaymentId;
 
