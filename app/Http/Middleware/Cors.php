@@ -29,11 +29,13 @@ class Cors
             'auth'       => parse_url(config('oauth.auth_service_url'), PHP_URL_HOST),
             'banking'    => parse_url(config('app.banking_service_url'), PHP_URL_HOST),
             'auth_cde'   => parse_url(config('oauth.auth_service_url_cde'), PHP_URL_HOST),
+            'docs'       => parse_url(config('app.docs_url'), PHP_URL_HOST),
         ];
 
         $crossOriginPolicy = false;
 
         if (($originHost === $crossOriginDomains['banking']) or
+            ($originHost === $crossOriginDomains['docs']) or
             (($originHost === $crossOriginDomains['auth']) and
                 (in_array($request->getPathInfo(), $this->authRoutes, true) === true)))
         {

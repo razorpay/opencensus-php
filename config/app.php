@@ -254,4 +254,5 @@ return array(
     'cdn_base_url'        => env('CDN_BASE_URL'),
     'lj_key'              => env('LJ_KEY'),
     'banking_service_url' => env('BANKING_SERVICE_URL'),
+    'docs_url'            => env('DOCS_URL'),
 );
