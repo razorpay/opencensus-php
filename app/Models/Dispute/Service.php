@@ -178,6 +178,9 @@ class Service extends Base\Service
                     $merchantData[$disputeEntity[Entity::MERCHANT_ID]][Constants::DISPUTES][$disputeEntity[Entity::PHASE]][] = $disputeEntity[Entity::ID];
 
                     $disputeData[$disputeEntity[Entity::ID]] = $this->getDisputeDataForMail($disputeEntity, $disputeReason);
+
+                    // add payment notes field
+                    $disputeData[$disputeEntity[Entity::ID]]['payment_notes'] = $payment->getNotes()->toArray();
                 }
 
                 $row[] = $disputeEntity[Entity::ID];

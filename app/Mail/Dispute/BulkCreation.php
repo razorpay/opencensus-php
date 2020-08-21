@@ -28,6 +28,7 @@ class BulkCreation extends Base
                 $tableRow['respond_by']          = date('d F Y', $dispute['respond_by']);
                 $tableRow['gateway_code']        = $dispute['gateway_code'];
                 $tableRow['gateway_description'] = $dispute['gateway_description'];
+                $tableRow['notes']               = json_encode($dispute['payment_notes']);
 
                 $tableData[] = $tableRow;
             }
