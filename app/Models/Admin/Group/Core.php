@@ -82,14 +82,7 @@ class Core extends Base\Core
         // there's a hierarchy (or actually a graph)
         $nodes = $this->getAllNodes($admin);
 
-        $merchantIds = $this->getMerchantIdsOfNodes($nodes);
-
-        if (in_array($merchant->id, $merchantIds))
-        {
-            return true;
-        }
-
-        return false;
+        return $this->checkAdminAccessToMerchantIds($nodes, $merchant->id);
     }
 
     private function getAllNodes($admin)
@@ -99,6 +92,10 @@ class Core extends Base\Core
         $groups = $admin->groups->toArray();
 
         $parentGroupIds = [];
+
+        $allSubAdminAssociativeIds = [];
+
+        $allSubGroupAssociativeIds = [];
 
         foreach ($groups as $group)
         {
@@ -125,9 +122,9 @@ class Core extends Base\Core
         while (!$exit)
         {
             $subGroups = \DB::table('group_map')
-                ->whereIn('group_id', $groupIds)
-                ->where('entity_type', 'group')
-                ->get();
+                            ->whereIn('group_id', $groupIds)
+                            ->where('entity_type', 'group')
+                            ->get();
 
             $groupIds = [];
 
@@ -146,9 +143,9 @@ class Core extends Base\Core
             // Also get all the admins
 
             $subAdmins = \DB::table('group_map')
-                ->whereIn('group_id', $groupIds)
-                ->where('entity_type', 'admin')
-                ->get();
+                            ->whereIn('group_id', $groupIds)
+                            ->where('entity_type', 'admin')
+                            ->get();
 
             foreach ($subAdmins as $subAdmin)
             {
@@ -156,45 +153,55 @@ class Core extends Base\Core
             }
         }
 
+        foreach ($allSubAdminIds as $subAdminId)
+        {
+            $allSubAdminAssociativeIds[$subAdminId] = $subAdminId;
+        }
+
+        foreach ($allSubGroupIds as $subGroupId)
+        {
+            $allSubGroupAssociativeIds[$subGroupId] = $subGroupId;
+        }
+
         // We have all the subgroups (recursively) in $allSubGroupIds now
         return [
-            'groups' => $allSubGroupIds,
-            'admins' => $allSubAdminIds
+            'groups' => $allSubGroupAssociativeIds,
+            'admins' => $allSubAdminAssociativeIds,
         ];
     }
 
-    private function getMerchantIdsOfNodes($nodes)
+    private function checkAdminAccessToMerchantIds($nodes, $merchantId): bool
     {
         $groups = $nodes['groups'];
 
         $admins = $nodes['admins'];
 
-        $allMerchantIds = [];
+        $associativeEntities = array_merge($groups, $admins);
 
-        // TODO: I think we can merge these 2 queries
-        // because ENTITY_IDs are unique across
+        //
+        // This is un setting as this is default for all claimed merchants will give return record
+        // In case any admin access to SF_CLAIMED_MERCHANTS_GROUP_ID will give access to all merchants
+        //
+        unset($associativeEntities[Constant::SF_CLAIMED_MERCHANTS_GROUP_ID]);
 
-        $merchants = \DB::table('merchant_map')
-            ->whereIn('entity_id', $groups)
-            ->where('entity_type', 'group')
-            ->get();
+        $entities = array_values($associativeEntities);
 
-        foreach ($merchants as $merchant)
+        //
+        // Query Has been Merged for separate 2
+        // queries for groups and admins
+        // because ENTITY_IDs are unique across Entity
+        //
+        $record = \DB::table('merchant_map')
+                     ->whereIn('entity_id', $entities)
+                     ->where('merchant_id', $merchantId)
+                     ->count();
+
+        if ($record > 0)
         {
-            $allMerchantIds[] = $merchant->merchant_id;
+            return true;
         }
 
-        $merchants = \DB::table('merchant_map')
-            ->whereIn('entity_id', $admins)
-            ->where('entity_type', 'admin')
-            ->get();
-
-        foreach ($merchants as $merchant)
-        {
-            $allMerchantIds[] = $merchant->merchant_id;
-        }
-
-        return $allMerchantIds;
+        return false;
     }
 
     /**
