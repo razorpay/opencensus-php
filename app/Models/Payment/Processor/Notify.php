@@ -400,6 +400,7 @@ class Notify
                 'brand_color'       => $this->merchant->getBrandColorOrDefault(),
                 'contrast_color'    => $this->merchant->getContrastOfBrandColor(),
                 'brand_logo'        => $this->merchant->getFullLogoUrlWithSize(),
+                'name'              => $this->merchant->getName(),
             ],
             'payment'   => [
                 'id'                   => $this->payment->getId(),
