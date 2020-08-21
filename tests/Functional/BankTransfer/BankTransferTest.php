@@ -135,10 +135,11 @@ class BankTransferTest extends TestCase
             true,
             '',
             [
-                'virtual_account_id'    => $bankTransfer['virtual_account_id'],
-                'merchant_id'           => $bankTransfer['merchant_id'],
-                'bank_transfer_id'      => $bankTransfer['id'],
-                'payment_id'            => $bankTransfer['payment_id'],
+                'intended_virtual_account_id'   => $bankTransfer['virtual_account_id'],
+                'actual_virtual_account_id'     => $bankTransfer['virtual_account_id'],
+                'merchant_id'                   => $bankTransfer['merchant_id'],
+                'bank_transfer_id'              => $bankTransfer['id'],
+                'payment_id'                    => $bankTransfer['payment_id'],
             ]
         );
     }
@@ -1621,10 +1622,11 @@ class BankTransferTest extends TestCase
             true,
             'VIRTUAL_ACCOUNT_NOT_FOUND',
             [
-                'virtual_account_id'    => $bankTransfer['virtual_account_id'],
-                'merchant_id'           => $bankTransfer['merchant_id'],
-                'bank_transfer_id'      => $bankTransfer['id'],
-                'payment_id'            => $payment['id'],
+                'intended_virtual_account_id'   => null,
+                'actual_virtual_account_id'     => $bankTransfer['virtual_account_id'],
+                'merchant_id'                   => null,
+                'bank_transfer_id'              => $bankTransfer['id'],
+                'payment_id'                    => $payment['id'],
             ]
         );
     }
@@ -2952,9 +2954,10 @@ class BankTransferTest extends TestCase
             true,
             'VIRTUAL_ACCOUNT_NOT_FOUND',
             [
-                'virtual_account_id'    => $bankTransfer['virtual_account_id'],
-                'merchant_id'           => $bankTransfer['merchant_id'],
-                'bank_transfer_id'      => $bankTransfer['id'],
+                'intended_virtual_account_id'   => $this->virtualAccountId,
+                'actual_virtual_account_id'     => $bankTransfer['virtual_account_id'],
+                'merchant_id'                   => '10000000000000',
+                'bank_transfer_id'              => $bankTransfer['id'],
             ]
         );
     }
@@ -3009,7 +3012,13 @@ class BankTransferTest extends TestCase
 
         $this->runBankTransferRequestAssertions(
             true,
-            'Payment failed because fees or tax was tampered'
+            'Payment failed because fees or tax was tampered',
+            [
+                'intended_virtual_account_id'   => $virtualAccount->getPublicId(),
+                'actual_virtual_account_id'     => 'va_ShrdVirtualAcc',
+                'merchant_id'                   => '20000000000000',
+                'bank_transfer_id'              => $bankTransfer->getPublicId(),
+            ]
         );
     }
 
@@ -3099,6 +3108,8 @@ class BankTransferTest extends TestCase
 
         $response = $this->createVirtualAccountForOrder($order);
 
+        $intendedVirtualAccountId = $response['id'];
+
         $accountNumber = $response['receivers'][0]['account_number'];
         $ifsc = $response['receivers'][0]['ifsc'];
 
@@ -3125,10 +3136,11 @@ class BankTransferTest extends TestCase
             true,
             'Invoice is not payable in cancelled status.',
             [
-                'virtual_account_id'    => 'va_ShrdVirtualAcc',
-                'merchant_id'           => '10000000000000',
-                'bank_transfer_id'      => $bankTransfer->getPublicId(),
-                'order_id'              => null,
+                'intended_virtual_account_id'   => $intendedVirtualAccountId,
+                'actual_virtual_account_id'     => 'va_ShrdVirtualAcc',
+                'merchant_id'                   => '10000000000000',
+                'bank_transfer_id'              => $bankTransfer->getPublicId(),
+                'order_id'                      => null,
             ]
         );
     }

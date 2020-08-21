@@ -33,13 +33,14 @@ class Entity extends Base\PublicEntity
     const CURRENCY              = 'currency';
     const ATTEMPT               = 'attempt';
 
-    const VIRTUAL_ACCOUNT_ID        = 'virtual_account_id';
-    const BANK_TRANSFER_ID          = 'bank_transfer_id';
-    const PAYMENT_ID                = 'payment_id';
-    const ORDER_ID                  = 'order_id';
-    const PRODUCT_TYPE              = 'product_type';
-    const PRODUCT_ID                = 'product_id';
-    const MERCHANT_NAME             = 'merchant_name';
+    const INTENDED_VIRTUAL_ACCOUNT_ID   = 'intended_virtual_account_id';
+    const ACTUAL_VIRTUAL_ACCOUNT_ID     = 'actual_virtual_account_id';
+    const BANK_TRANSFER_ID              = 'bank_transfer_id';
+    const PAYMENT_ID                    = 'payment_id';
+    const ORDER_ID                      = 'order_id';
+    const PRODUCT_TYPE                  = 'product_type';
+    const PRODUCT_ID                    = 'product_id';
+    const MERCHANT_NAME                 = 'merchant_name';
 
     // Input keys
     const FIRST_TIME_ON_TEST_MODE = 'first_time_on_test_mode';
@@ -67,7 +68,8 @@ class Entity extends Base\PublicEntity
         self::NARRATION,
         self::TIME,
         self::REQUEST_PAYLOAD,
-        self::VIRTUAL_ACCOUNT_ID,
+        self::INTENDED_VIRTUAL_ACCOUNT_ID,
+        self::ACTUAL_VIRTUAL_ACCOUNT_ID,
         self::BANK_TRANSFER_ID,
         self::PAYMENT_ID,
         self::ORDER_ID,
@@ -94,8 +96,8 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::NARRATION,
         self::TIME,
-        self::REQUEST_PAYLOAD,
-        self::VIRTUAL_ACCOUNT_ID,
+        self::INTENDED_VIRTUAL_ACCOUNT_ID,
+        self::ACTUAL_VIRTUAL_ACCOUNT_ID,
         self::BANK_TRANSFER_ID,
         self::PAYMENT_ID,
         self::ORDER_ID,
@@ -103,6 +105,8 @@ class Entity extends Base\PublicEntity
         self::PRODUCT_ID,
         self::MERCHANT_ID,
         self::MERCHANT_NAME,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected static $generators = [

@@ -359,6 +359,11 @@ class Entity extends Base\PublicEntity
         return Payment\Method::BANK_TRANSFER;
     }
 
+    public function getVirtualAccountId()
+    {
+        return $this->getAttribute(self::VIRTUAL_ACCOUNT_ID);
+    }
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);

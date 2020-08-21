@@ -5,8 +5,8 @@ namespace RZP\Models\BankTransferRequest;
 
 use RZP\Constants;
 use RZP\Models\Base;
-use RZP\Models\VirtualAccount;
 use RZP\Models\Payment\Entity as Payment;
+use RZP\Models\VirtualAccount\Entity as VirtualAccount;
 
 class Repository extends Base\Repository
 {
@@ -40,14 +40,15 @@ class Repository extends Base\Repository
     protected function addAttributesForAdminDashboard($bankTransferRequest)
     {
         $data = [
-            Entity::VIRTUAL_ACCOUNT_ID    => null,
-            Entity::MERCHANT_ID           => null,
-            Entity::MERCHANT_NAME         => null,
-            Entity::BANK_TRANSFER_ID      => null,
-            Entity::PAYMENT_ID            => null,
-            Entity::ORDER_ID              => null,
-            Entity::PRODUCT_TYPE          => null,
-            Entity::PRODUCT_ID            => null,
+            Entity::INTENDED_VIRTUAL_ACCOUNT_ID => null,
+            Entity::ACTUAL_VIRTUAL_ACCOUNT_ID   => null,
+            Entity::MERCHANT_ID                 => null,
+            Entity::MERCHANT_NAME               => null,
+            Entity::BANK_TRANSFER_ID            => null,
+            Entity::PAYMENT_ID                  => null,
+            Entity::ORDER_ID                    => null,
+            Entity::PRODUCT_TYPE                => null,
+            Entity::PRODUCT_ID                  => null,
         ];
 
         try
@@ -56,27 +57,32 @@ class Repository extends Base\Repository
                                  ->bank_transfer
                                  ->findByUtrAndPayeeAccount($bankTransferRequest->getUtr(), $bankTransferRequest->getPayeeAccount());
 
-            $data[Entity::BANK_TRANSFER_ID] = isset($bankTransfer) ? $bankTransfer->getPublicId() : null;
-
-            $virtualAccount = $this->getVirtualAccount($bankTransferRequest, $bankTransfer);
-
-            if (isset($virtualAccount) === true)
+            if (isset($bankTransfer) === true)
             {
-                $data[Entity::VIRTUAL_ACCOUNT_ID] = $virtualAccount->getPublicId();
+                $data[Entity::BANK_TRANSFER_ID] = $bankTransfer->getPublicId();
 
-                $merchant = $virtualAccount->merchant;
+                $data[Entity::ACTUAL_VIRTUAL_ACCOUNT_ID] = VirtualAccount::getSignedId($bankTransfer->getVirtualAccountId());
+
+                $payment = $bankTransfer->payment;
+
+                if (isset($payment) === true)
+                {
+                    $data[Entity::PAYMENT_ID] = $payment->getPublicId();
+
+                    $this->setOrderDetailsIfApplicable($data, $payment);
+                }
+            }
+
+            $intendedVirtualAccount = $this->getIntendedVirtualAccount($bankTransferRequest, $bankTransfer);
+
+            if (isset($intendedVirtualAccount) === true)
+            {
+                $data[Entity::INTENDED_VIRTUAL_ACCOUNT_ID] = $intendedVirtualAccount->getPublicId();
+
+                $merchant = $intendedVirtualAccount->merchant;
 
                 $data[Entity::MERCHANT_ID]      = (isset($merchant)) ? $merchant->getId() : null;
                 $data[Entity::MERCHANT_NAME]    = (isset($merchant)) ? $merchant->getName() : null;
-            }
-
-            $payment = isset($bankTransfer) ? $bankTransfer->payment : null;
-
-            if (isset($payment) === true)
-            {
-                $data[Entity::PAYMENT_ID] = $payment->getPublicId();
-
-                $this->setOrderDetailsIfApplicable($data, $payment);
             }
         }
         catch (\Exception $ex)
@@ -92,24 +98,17 @@ class Repository extends Base\Repository
         $bankTransferRequest->fill($data);
     }
 
-    /**
-     * If bank_transfer entity is not created, we still have a virtual_account entity,
-     * which can be fetched from the bank_account entity.
-     *
-     * @param Entity $bankTransferRequest
-     * @param null $bankTransfer
-     * @return VirtualAccount\Entity|null
-     */
-    private function getVirtualAccount(Entity $bankTransferRequest, $bankTransfer = null)
+    private function getIntendedVirtualAccount(Entity $bankTransferRequest, $bankTransfer)
     {
-        if ($bankTransfer !== null)
+        if ((isset($bankTransfer) === true) and
+            ($bankTransfer->getVirtualAccountId() !== VirtualAccount::SHARED_ID))
         {
             return $bankTransfer->virtualAccount;
         }
 
         $bankAccount = $this->repo
                             ->bank_account
-                            ->findVirtualBankAccountByAccountNumberAndBankCode($bankTransferRequest->getPayeeAccount());
+                            ->findVirtualBankAccountByAccountNumberAndBankCode($bankTransferRequest->getPayeeAccount(), null, true);
 
         return (isset($bankAccount)) ? $bankAccount->source : null;
     }

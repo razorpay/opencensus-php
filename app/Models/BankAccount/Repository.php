@@ -97,7 +97,7 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode = null)
+    public function findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode = null, bool $withTrashed = false)
     {
         $virtualAccountId     = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::ID);
 
@@ -113,6 +113,11 @@ class Repository extends Base\Repository
         if ($bankCode !== null)
         {
             $query->where(Entity::IFSC_CODE, 'like', $bankCode.'%');
+        }
+
+        if ($withTrashed === true)
+        {
+            $query = $query->withTrashed();
         }
 
         return $query->first();
