@@ -373,7 +373,10 @@ class Service extends Base\Service
         //for all events which are enabled, set the event to 1
         foreach ($storkWk[self::SUBSCRIPTIONS] as $value)
         {
-            $events[$value['eventmeta']['name']] = true;
+            if (array_key_exists($value['eventmeta']['name'], $events) === true)
+            {
+                $events[$value['eventmeta']['name']] = true;
+            }
         }
 
         if (isset($storkWk[self::DISABLED]) === true)

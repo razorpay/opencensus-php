@@ -41,7 +41,7 @@ trait WebhookV2Trait
             'created_by'    => 'MerchantUser01',
             'subscriptions' => [
                 [
-                    'eventmeta'  => ['name' => 'payout.created',],
+                    'eventmeta'  => ['name' => 'payout.failed'],
                 ],
             ],
         ];
@@ -52,7 +52,7 @@ trait WebhookV2Trait
         return [
             'url'     => 'http://webhook.com/v1/dummy/route',
             'secret'  => 'secret',
-            'events'  => [ 'payout.created' => '1' ],
+            'events'  => ['payout.failed' => '1'],
         ];
     }
 
@@ -93,7 +93,7 @@ trait WebhookV2Trait
                 [
                     'id'         => 'EZ4ezhzqgKNjxI',
                     'created_at' => '2020-04-01T03:32:10Z',
-                    'eventmeta'  => ['name' => 'payout.created',],
+                    'eventmeta'  => ['name' => 'payout.failed'],
                 ],
             ],
         ];
@@ -111,7 +111,7 @@ trait WebhookV2Trait
             'context'       =>  [],
             'disabled_at'   => '1970-01-01T00:00:00Z',
             'url'           => 'http://webhook.com/v1/dummy/route',
-            'events'        => [ 'payout.created'  => true ],
+            'events'        => ['payout.failed' => true],
         ];
     }
 

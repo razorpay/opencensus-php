@@ -50,6 +50,8 @@ class WebhookV2Test extends TestCase
         // this is required so that traffic to webhook APIs can be routed to
         // the v2 path.
         $this->mockRazorxToReturnOn();
+
+        $this->fixtures->merchant->addFeatures(['payout']);
     }
 
     public function testCreateWebhookForPartner()
@@ -111,8 +113,6 @@ class WebhookV2Test extends TestCase
 
     public function testCreateWebhookForBanking()
     {
-        $this->fixtures->merchant->addFeatures(['payout']);
-
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
         $this->testData[__FUNCTION__]['request']['content']  = $this->getApiCreatePayloadForBanking();
@@ -139,8 +139,6 @@ class WebhookV2Test extends TestCase
 
     public function testCreateWebhookForBankingAlreadyExistsFailure()
     {
-        $this->fixtures->merchant->addFeatures(['payout']);
-
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
         $this->testData[__FUNCTION__]['request']['content']  = $this->getApiCreatePayloadForBanking();
@@ -365,8 +363,6 @@ class WebhookV2Test extends TestCase
 
     public function testUpdateWebhookForBanking()
     {
-        $this->fixtures->merchant->addFeatures(['payout']);
-
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
         $this->testData[__FUNCTION__]['request']['content'] = $this->getApiUpdatePayloadForBanking();
@@ -476,8 +472,6 @@ class WebhookV2Test extends TestCase
     //event is not valid for the product
     public function testUpdateWebhookInvalidProductEventFailure()
     {
-        $this->testData[__FUNCTION__]['request']['content']  = $this->getApiUpdatePayloadForBanking();
-
         $this->startTest();
     }
 

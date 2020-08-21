@@ -117,7 +117,7 @@ return [
             'content'  => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid event name/names: payout.created'
+                    'description' => 'Invalid event name/names: payout.failed'
                 ],
             ],
             'status_code' => 400,
@@ -332,14 +332,18 @@ return [
     'testUpdateWebhookInvalidProductEventFailure' => [
         'request' => [
             'url' => '/v1/webhooks/primaryWebhookId',
-            'content' => [],
+            'content' => [
+                'url'    => 'http://webhook.com/v1/dummy/route',
+                'secret' => 'secret',
+                'events' => ['payout.failed' => '1'],
+            ],
             'method' => 'PUT',
         ],
         'response' => [
             'content'  => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid event name/names: payout.processed'
+                    'description' => 'Invalid event name/names: payout.failed'
                 ],
             ],
             'status_code' => 400,
