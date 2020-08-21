@@ -68,7 +68,7 @@ class Validator extends Base\Validator
 
     protected static $loginRules = [
         Entity::EMAIL                 => 'required|email',
-        Entity::PASSWORD              => 'required_without:oauth_provider|between:6,50|numbers|letters',
+        Entity::PASSWORD              => 'required_without:oauth_provider|between:6,50',
         Entity::CAPTCHA               => 'required_without_all:captcha_disable,oauth_provider',
         Entity::CAPTCHA_DISABLE       => 'sometimes|string',
         Entity::APP                   => 'sometimes|string',
