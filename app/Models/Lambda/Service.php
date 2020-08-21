@@ -26,6 +26,10 @@ class Service extends Base\Service
 
     protected $mutex;
 
+    const SFTP_BUCKET_TARGETS = [
+        Batch\Constants::ENACH_NB_ICICI
+    ];
+
     public function __construct()
     {
         parent::__construct();
@@ -72,7 +76,10 @@ class Service extends Base\Service
             // TODO: add validation for key
             $key = urldecode($input['key']);
 
-            if ($type === Batch\Type::NACH)
+            $target = $input['gateway'] ?? null;
+
+            if (($type === Batch\Type::NACH) or
+                (in_array($target, self::SFTP_BUCKET_TARGETS, true)))
             {
                 $filePath = $this->getH2HFileFromAws($key, true, 'sftp_bucket', 'ap-south-1');
             }

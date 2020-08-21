@@ -22,4 +22,7 @@ class Constants
     const IDEMPOTENCY_KEY                = 'idempotency_key';
     const TYPE                           = 'type';
     const SCHEDULE                       = 'schedule';
+
+    // Batch targets that are not actual gateways
+    const ENACH_NB_ICICI                 = 'enach_nb_icici';
 }
