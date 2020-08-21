@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Upi\Sbi;
 
 use App;
+use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
@@ -54,6 +55,7 @@ class Gateway extends Base\Gateway
         Base\Entity::TYPE                      => Base\Entity::TYPE,
         ResponseFields::NPCI_TRANSACTION_ID    => Base\Entity::NPCI_TXN_ID,
         ResponseFields::ADDITIONAL_INFO        => Base\Entity::GATEWAY_DATA,
+        Base\Entity::MERCHANT_REFERENCE        => Base\Entity::MERCHANT_REFERENCE,
     ];
 
     protected $allowedAdditionalInfo = [
@@ -170,7 +172,7 @@ class Gateway extends Base\Gateway
         parent::action($input, Action::VALIDATE_VPA);
 
         $request = [
-            'terminal' =>  $this->terminal,
+            'terminal' => $this->terminal,
             'payment' => [
                 'id' => random_alpha_string(10),
                 'vpa' => $input['vpa'],
@@ -197,7 +199,7 @@ class Gateway extends Base\Gateway
                 $this->action);
         }
 
-        $response = $response["data"]["gateway_response"];
+        $response = $response['data']['gateway_response'];
 
         $this->trace->info(TraceCode::GATEWAY_VALIDATE_VPA_RESPONSE,
             [
@@ -230,7 +232,6 @@ class Gateway extends Base\Gateway
 
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
-
         $response = $this->verifyRequest($verify);
 
         $verify->verifyResponseBody = $response;
@@ -532,6 +533,8 @@ class Gateway extends Base\Gateway
     {
         $response = $this->preProcessServerCallbackRequest($input);
 
+        $response['pgMerchantId'] = json_decode($input['msg'], true)['pgMerchantId'];
+
         $callback = $response['data']['gateway_response'];
 
         $callback = [ResponseFields::API_RESPONSE => $callback];
@@ -698,11 +701,136 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $info = $content[ResponseFields::ADDITIONAL_INFO] ;
+            $info = $content[ResponseFields::ADDITIONAL_INFO];
 
             $content[ResponseFields::ADDITIONAL_INFO] = array_only($info, array_keys($this->allowedAdditionalInfo));
         }
 
         return $content;
+    }
+
+    public function getParsedDataFromUnexpectedCallback($callbackData)
+    {
+        $payment = [
+            'method'   => 'upi',
+            'amount'   => (int) ($callbackData['data']['amount'] * 100),
+            'currency' => 'INR',
+            'vpa'      => $callbackData['data']['gateway_response']['payerVPA'],
+            'contact'  => '+919999999999',
+            'email'    => 'void@razorpay.com',
+        ];
+
+        $terminal = $this->getTerminalDetailsFromCallback($callbackData);
+
+        return [
+            'payment'  => $payment,
+            'terminal' => $terminal
+        ];
+    }
+
+    public function getTerminalDetailsFromCallback($callbackData)
+    {
+        return [
+            'gateway_merchant_id' => $callbackData['pgMerchantId'],
+        ];
+    }
+
+    public function validatePush($input)
+    {
+        parent::action($input, Action::VALIDATE_PUSH);
+
+        $this->isDuplicateUnexpectedPayment($input);
+
+        $this->isValidUnexpectedPayment($input);
+    }
+
+    protected function isDuplicateUnexpectedPayment($callbackData)
+    {
+        $merchantReference = $callbackData['data']['gateway_response']['pspRefNo'];
+
+        $gatewayPayment = $this->repo->fetchByMerchantReference($merchantReference);
+
+        if ($gatewayPayment !== null)
+        {
+            throw new Exception\LogicException(
+                'Duplicate Gateway payment found',
+                null,
+                [
+                    'callbackData' => $callbackData
+                ]
+            );
+        }
+    }
+
+    protected function isValidUnexpectedPayment($callbackData)
+    {
+        //
+        // Verifies if the payload specified in the server callback is valid.
+        //
+        $input = [
+            'payment' => [
+                'id'      => $callbackData['data']['gateway_response']['pspRefNo'],
+                'gateway' => 'upi_sbi',
+                'vpa'     => $callbackData['data']['gateway_response']['vpa'],
+                'amount'  => (int) ($callbackData['data']['amount'] * 100),
+            ],
+            'terminal' => $this->terminal,
+        ];
+
+        $this->action = Action::VERIFY;
+
+        $verify = new Verify($this->gateway, $input);
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $paymentAmount = $this->formatAmount($verify->input);
+
+        $content = $verify->verifyResponseContent;
+
+        $actualAmount = number_format($content[ResponseFields::AMOUNT], 2, '.', '');
+
+        $this->assertAmount($paymentAmount, $actualAmount);
+
+        $status = $content[ResponseFields::STATUS];
+
+        $this->checkResponseStatus($status);
+    }
+
+    public function authorizePush($input)
+    {
+        list($paymentId , $callbackData) = $input;
+
+        $gatewayInput = [
+            'payment' => [
+                'id'     => $paymentId,
+                'vpa'    => $callbackData['data']['gateway_response']['payerVPA'],
+                'amount' => $this->getIntegerFormattedAmount($callbackData['data']['amount']),
+            ],
+        ];
+
+        parent::action($gatewayInput, Action::AUTHORIZE);
+
+        $attributes = [
+            Entity::TYPE                    => Base\Type::PAY,
+            Entity::MERCHANT_REFERENCE      => $callbackData['data']['paymentId'],
+            Entity::RECEIVED                => 1,
+            Entity::VPA                     => $callbackData['data']['gateway_response']['payerVPA'],
+        ];
+
+        $attributes = array_merge($callbackData['data']['gateway_response'], $attributes);
+
+        $entityData = $this->processGatewayData($attributes);
+
+        $gatewayPayment = $this->createGatewayPaymentEntity($entityData);
+
+        $result = $callbackData['data']['gateway_response']['status'];
+
+        $this->checkResponseStatus($result);
+
+        return [
+            'acquirer' => [
+                Payment\Entity::VPA => $gatewayPayment->getVpa()
+            ]
+        ];
     }
 }

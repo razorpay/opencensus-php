@@ -55,10 +55,41 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($response);
     }
 
-    public function getAsyncCallbackContent(array $upiEntity)
+    public function getAsyncCallbackContent($upiEntity)
     {
         $response = $this->getAsyncCallbackResponseArray($upiEntity);
 
+        $response = $this->encryptAndGetCallbackContent($response);
+
+       return [
+        ResponseFields::MESSAGE => $response->content(),
+        //We don't get this in call back actually, but for test as we dont actually hit mozart
+        //hence wont be able to decrypt the response sent from here.
+        'payment_id' => $upiEntity[Entity::PAYMENT_ID],
+        'vpa' => $upiEntity['vpa'],
+    ];
+    }
+
+    public function getUnexpectedAsyncCallbackContent(string $status)
+    {
+        $response = $this->getUnexpectedAsyncCallbackResponseArray($status);
+
+        $paymentId =  $response['apiResp']['pspRefNo'];
+        $vpa = $response['apiResp']['payerVPA'];
+
+        $response = $this->encryptAndGetCallbackContent($response);
+
+        return [
+            ResponseFields::MESSAGE => $response->content(),
+            //We don't get this in call back actually, but for test as we dont actually hit mozart
+            //hence wont be able to decrypt the response sent from here.
+            'payment_id' => $upiEntity[Entity::PAYMENT_ID] ?? $paymentId,
+            'vpa' => $vpa,
+        ];
+    }
+
+    protected function encryptAndGetCallbackContent($response)
+    {
         $content = [
             ResponseFields::RESPONSE       => $this->encrypt($response),
             ResponseFields::PG_MERCHANT_ID => $this->getGatewayInstance()->getMerchantId(),
@@ -66,13 +97,7 @@ class Server extends Base\Mock\Server
 
         $response = $this->makeResponse($content);
 
-        return [
-            ResponseFields::MESSAGE => $response->content(),
-            //We don't get this in call back actually, but for test as we dont actually hit mozart
-            //hence wont be able to decrypt the response sent from here.
-            'payment_id' => $upiEntity[Entity::PAYMENT_ID],
-            'vpa' => $upiEntity['vpa'],
-        ];
+        return $response;
     }
 
     public function verify($input)
@@ -246,6 +271,35 @@ class Server extends Base\Mock\Server
             $response[ResponseFields::STATUS] = Status::CBS_DOWN;
             $response[ResponseFields::STATUS_DESCRIPTION] = 'CBS transaction processing timed out';
         }
+
+        return [ResponseFields::API_RESPONSE => $response];
+    }
+
+    private function getUnexpectedAsyncCallbackResponseArray($status)
+    {
+        $response = [
+            ResponseFields::PSP_REFERENCE_NO       => str_random(12),
+            ResponseFields::UPI_TRANS_REFERENCE_NO => 99999,
+            ResponseFields::NPCI_TRANSACTION_ID    => 99999999999,
+            ResponseFields::CUSTOMER_REFERENCE_NO  => '99999999999',
+            ResponseFields::AMOUNT                 => 2500,
+            ResponseFields::TRANSACTION_AUTH_DATE  => Carbon::now(Timezone::IST)->toDateTimeString(),
+            ResponseFields::RESPONSE_CODE          => '00',
+            ResponseFields::APPROVAL_NUMBER        => random_int(100000, 999999),
+            ResponseFields::STATUS                 => Status::SUCCESS,
+            ResponseFields::STATUS_DESCRIPTION     => 'Payment Successful',
+            ResponseFields::ADDITIONAL_INFO        => [
+                ResponseFields::ADDITIONAL_INFO2   => '7971807546',
+                ResponseFields::STATUS_DESCRIPTION => 'status description in addInfo not expected from gateway, but we
+                                                       still need to remove before making database call, because our
+                                                       poor database can only take 255 characters and gateway can still
+                                                       send a very large data in addInfo, Off course same applies
+                                                       for addInfo2, but since this contract is different story we are
+                                                       fine with db failure'
+            ],
+            ResponseFields::PAYER_VPA              => $status === 'success' ? 'success@sbi' : 'failedverify@sbi',
+            ResponseFields::PAYEE_VPA              => self::DEFAULT_PAYEE_VPA,
+        ];
 
         return [ResponseFields::API_RESPONSE => $response];
     }

@@ -53,9 +53,13 @@ class UpiSbiGatewayTest extends TestCase
 
         $this->sharedTerminal = $this->fixtures->create(Constants::SHARED_UPI_SBI_MIDGATE_TERMINAL);
 
+        $this->fixtures->merchant->createAccount(Account::DEMO_ACCOUNT);
+
         $this->gateway = Gateway::UPI_SBI;
 
         $this->fixtures->merchant->enableMethod(Account::TEST_ACCOUNT, Method::UPI);
+
+        $this->fixtures->merchant->enableMethod(Account::DEMO_ACCOUNT, Method::UPI);
 
         $this->payment = $this->getDefaultUpiPaymentArray();
     }
@@ -769,6 +773,51 @@ class UpiSbiGatewayTest extends TestCase
         return $payment;
     }
 
+    public function testUnexpectedPaymentSuccess()
+    {
+        $content = $this->mockServer()->getUnexpectedAsyncCallbackContent('success');
+
+        $this->makeS2SCallbackAndGetContent($content);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $authorizeUpiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertNotNull($authorizeUpiEntity['merchant_reference']);
+
+        $paymentTransactionEntity = $this->getLastEntity('transaction', true);
+
+        $assertEqualsMap = [
+            'authorized'                           => $paymentEntity['status'],
+            'authorize'                            => $authorizeUpiEntity['action'],
+            'pay'                                  => $authorizeUpiEntity['type'],
+            $paymentEntity['id']                   => 'pay_' . $authorizeUpiEntity['payment_id'],
+            $paymentTransactionEntity['id']        => 'txn_' . $paymentEntity['transaction_id'],
+            $paymentTransactionEntity['entity_id'] => $paymentEntity['id'],
+            $paymentTransactionEntity['type']      => 'payment',
+            $paymentTransactionEntity['amount']    => $paymentEntity['amount'],
+            Account::DEMO_ACCOUNT                  => $paymentEntity['merchant_id'],
+        ];
+
+        foreach ($assertEqualsMap as $matchLeft => $matchRight)
+        {
+            $this->assertEquals($matchLeft, $matchRight);
+        }
+    }
+
+    public function testUnexpectedPaymentFail()
+    {
+        $content = $this->mockServer()->getUnexpectedAsyncCallbackContent('failure');
+
+        $this->mockVerifyFailed();
+
+        $this->makeS2SCallbackAndGetContent($content);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertNull($paymentEntity);
+    }
+
     protected function createCapturedWithVpaPayment(string $vpa)
     {
         $this->payment[Payment\Entity::VPA] = $vpa;
@@ -806,8 +855,11 @@ class UpiSbiGatewayTest extends TestCase
         $this->mockServerContentFunction(
             function(& $content, $action = null)
             {
-                $content[ResponseFields::API_RESPONSE][ResponseFields::STATUS] = SbiStatus::FAILED;
-                $content[ResponseFields::ADDITIONAL_INFO] = [];
+                if ($action === 'verify')
+                {
+                    $content[ResponseFields::API_RESPONSE][ResponseFields::STATUS] = SbiStatus::FAILED;
+                    $content[ResponseFields::ADDITIONAL_INFO] = [];
+                }
             }
         );
     }
@@ -852,7 +904,10 @@ class UpiSbiGatewayTest extends TestCase
 
         $decryptedResp[ResponseFields::API_RESPONSE][ResponseFields::UPI_TRANS_REFERENCE_NO] = 'Random';
 
-        $encryptedResp = [ResponseFields::RESPONSE => $mockServer->encrypt($decryptedResp)];
+        $encryptedResp = [
+            ResponseFields::RESPONSE       => $mockServer->encrypt($decryptedResp),
+            ResponseFields::PG_MERCHANT_ID => $mockServer->getGatewayInstance()->getMerchantId(),
+        ];
 
         $response = \Response::make($encryptedResp);
 
@@ -879,7 +934,10 @@ class UpiSbiGatewayTest extends TestCase
 
         $decryptedResp[ResponseFields::API_RESPONSE][ResponseFields::AMOUNT] = 1;
 
-        $encryptedResp = [ResponseFields::RESPONSE => $mockServer->encrypt($decryptedResp)];
+        $encryptedResp = [
+            ResponseFields::RESPONSE       => $mockServer->encrypt($decryptedResp),
+            ResponseFields::PG_MERCHANT_ID => $mockServer->getGatewayInstance()->getMerchantId(),
+        ];
 
         $response = \Response::make($encryptedResp);
 
