@@ -3270,9 +3270,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Logs for tracing payout to amex failures
     const PAYOUT_TO_AMEX_FAILURE = 'PAYOUT_TO_AMEX_FAILURE';
 
-    // Log admin fetch queries
-    const ADMIN_FETCH_QUERY_LOG = 'ADMIN_FETCH_QUERY_LOG';
-
     // Trace DataWarehouse fetch duration
     const DATA_WAREHOUSE_RESPONSE_DURATION                       = 'DATA_WAREHOUSE_RESPONSE_DURATION';
 

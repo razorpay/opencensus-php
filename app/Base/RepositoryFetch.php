@@ -207,20 +207,6 @@ trait RepositoryFetch
             return $this->getPaginated($query, $params);
         }
 
-        if (($routeThroughMasterReplica === true) and ($this->entity === E::PAYMENT))
-        {
-            try
-            {
-                $this->trace->info(TraceCode::ADMIN_FETCH_QUERY_LOG, [
-                    'query'  => $query->toSql(),
-                ]);
-            }
-            catch (\Exception $e)
-            {
-                // Ignore exception
-            }
-        }
-
         $startTimeMs = round(microtime(true) * 1000);
 
         $entities = $query->get();
