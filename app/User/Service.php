@@ -536,7 +536,9 @@ class Service extends Base\Service
 
         if ($userId === Constants::USER_ID_DEBUG_ACTIVATION_ISSUE)
         {
-            $this->trace->info($traceCode, ['userId' => $userId, 'data' => $data]);
+            $activated = $data['activated'] ?? null;
+
+            $this->trace->info($traceCode, ['userId' => $userId, 'activated' => $activated]);
         }
     }
 

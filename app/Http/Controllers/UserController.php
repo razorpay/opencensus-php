@@ -330,7 +330,9 @@ class UserController extends Controller
 
             if ($userId === User\Constants::USER_ID_DEBUG_ACTIVATION_ISSUE)
             {
-                $this->trace->info(TraceCode::USER_ID_DEBUG, ['userId' => $userId, 'data' => $data]);
+                $activated = $data['activated'] ?? null;
+
+                $this->trace->info(TraceCode::USER_ID_DEBUG, ['userId' => $userId, 'activated' => $activated]);
             }
         }
 
