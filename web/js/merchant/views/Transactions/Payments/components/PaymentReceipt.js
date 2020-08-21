@@ -16,7 +16,7 @@ import { getURLQueryParams } from 'common/utils/rzp-utils';
 @connect(null, {
   showNotification,
 })
-@RTracking(() => window.rzpQ.component('PaymentReceiptModal'))
+@RTracking(() => window.rzpQ.component('PaymentReceiptDetails'))
 export default class PaymentReceipt extends React.Component {
   state = {
     isActionInProgress: false,
@@ -25,22 +25,17 @@ export default class PaymentReceipt extends React.Component {
     showCustomReceiptInput: false,
   };
 
-  constructor(props) {
-    super(props);
-
-    const queryParams = getURLQueryParams(this.props.location.search);
-    this.sourceType = queryParams.source_type;
-  }
-
   componentDidMount() {
-    getReceiptDetails(this.props.payment.id).then(res => {
-      if (res && res.data) {
-        this.setState({
-          receipt: res.data.receipt,
-          invoiceId: res.data.invoice_id,
-        });
-      }
-    });
+    if (this.isSectionAllowed) {
+      getReceiptDetails(this.props.payment.id).then(res => {
+        if (res && res.data) {
+          this.setState({
+            receipt: res.data.receipt,
+            invoiceId: res.data.invoice_id,
+          });
+        }
+      });
+    }
   }
 
   sendReceipt = receipt => {
@@ -163,11 +158,19 @@ export default class PaymentReceipt extends React.Component {
     );
   };
 
+  get isSectionAllowed() {
+    const
+      queryParams = getURLQueryParams(this.props.location.search),
+      sourceType = queryParams.source_type;
+    const allowedModules = ['paymentpages', 'paymentbuttons'];
+
+    return allowedModules.indexOf(sourceType) > -1;
+  }
+
   render() {
     const { payment } = this.props;
     const showReceiptActions =
-      !!this.state.invoiceId &&
-      ['paymentpages', 'paymentbuttons'].indexOf(this.sourceType) > -1; // TODO: Must add support for product names as constants in dashboard
+      !!this.state.invoiceId && this.isSectionAllowed; // TODO: Must add support for product names as constants in dashboard
 
     // Payment Receipt Actions only to be shown for payment pages for which invoice id exists in GET /receipt call
     if (!showReceiptActions) {

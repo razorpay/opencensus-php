@@ -181,6 +181,15 @@ export function _prepareTemplate(paymentPageEntity) {
   return templateOverrides;
 }
 
+export function getPaymentSplitAmongstItems(orderId) {
+  return merchantFetch({
+    url: `orders/${orderId}/line_items`,
+    headers: {
+      'content-type': 'application/json',
+    },
+  });
+}
+
 /**************/
 
 export function setReceiptDetails(id, params) {
