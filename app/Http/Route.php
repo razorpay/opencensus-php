@@ -1913,6 +1913,7 @@ class Route
 
         'get_internal_instrument_request_by_id'   => ['get',       'internal_instrument_request/{id}',                          'InstrumentRequestController@getInternalInstrumentRequestById'   ],
         'patch_internal_instrument_request_by_id' => ['patch',     'internal_instrument_request/{id}',                          'InstrumentRequestController@patchInternalInstrumentRequestById' ],
+        'bulk_copy_internal_instrument_request'   => ['post',      'internal_instrument_request',                               'InstrumentRequestController@bulkCopyInternalInstrumentRequest' ],
         'delete_internal_instrument_request_by_id'=> ['delete',    'internal_instrument_request/{id}',                          'InstrumentRequestController@deleteInternalInstrumentRequestById'],
         'fetch_internal_instrument_requests'      => ['post',      'internal_instrument_request_fetch',                         'InstrumentRequestController@fetchInternalInstrumentRequests'    ],
         'patch_internal_instrument_requests'      => ['patch',     'internal_instrument_request',                               'InstrumentRequestController@patchInternalInstrumentRequests'    ],
@@ -3632,6 +3633,7 @@ class Route
         // instrument requests
         'get_internal_instrument_request_by_id',
         'patch_internal_instrument_request_by_id',
+        'bulk_copy_internal_instrument_request',
         'delete_internal_instrument_request_by_id',
         'fetch_internal_instrument_requests',
         'patch_internal_instrument_requests',
@@ -4405,6 +4407,7 @@ class Route
         // Instrument requests
         'get_internal_instrument_request_by_id'       => Permission::VIEW_INTERNAL_INSTRUMENT_REQUESTS,
         'patch_internal_instrument_request_by_id'     => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUESTS,
+        'bulk_copy_internal_instrument_request'       => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUESTS,
         'delete_internal_instrument_request_by_id'    => Permission::DELETE_INTERNAL_INSTRUMENT_REQUESTS,
         'fetch_internal_instrument_requests'          => Permission::VIEW_INTERNAL_INSTRUMENT_REQUESTS,
         'patch_internal_instrument_requests'          => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUESTS,

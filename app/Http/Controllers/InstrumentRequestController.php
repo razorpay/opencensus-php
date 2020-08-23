@@ -74,7 +74,6 @@ class InstrumentRequestController extends BaseController
 
         $query = $query . '&' . http_build_query($input);
 
-
         $response = $this->app['terminals_service']->proxyTerminalService(
             [],
             \Requests::GET,
@@ -96,6 +95,22 @@ class InstrumentRequestController extends BaseController
         $response = $this->app['terminals_service']->proxyTerminalService(
             $body,
             \Requests::PATCH,
+            'v2/internal_instrument_request?' . $query,
+            [],
+            $this->getAdminHeadersForInstrumentRequest());
+
+        return ApiResponse::json($response);
+    }
+
+    public function bulkCopyInternalInstrumentRequest()
+    {
+        $input = Request::all();
+
+        $query = $input['query'];
+
+        $response = $this->app['terminals_service']->proxyTerminalService(
+            null,
+            \Requests::POST,
             'v2/internal_instrument_request?' . $query,
             [],
             $this->getAdminHeadersForInstrumentRequest());
