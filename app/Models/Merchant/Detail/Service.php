@@ -40,6 +40,13 @@ class Service extends Base\Service
         return (new Core)->createResponse($merchantDetails);
     }
 
+    public function getDisabledBanks()
+    {
+        $methods = (new Merchant\Methods\Core)->getEnabledAndDisabledBanks($this->merchant);
+
+        return $methods['disabled'];
+    }
+
     public function fetchActivationFiles(string $id)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);

@@ -15,6 +15,7 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\AccessMap;
 use RZP\Models\Merchant\InheritanceMap;
+use RZP\Trace\TraceCode;
 
 class MerchantController extends Controller
 {
@@ -357,6 +358,13 @@ class MerchantController extends Controller
     public function getBanksPublic()
     {
         $data = $this->service()->getEnabledBanks();
+
+        return ApiResponse::json($data);
+    }
+
+    public function getDisabledBanks()
+    {
+        $data = $this->service(E::MERCHANT_DETAIL)->getDisabledBanks();
 
         return ApiResponse::json($data);
     }
