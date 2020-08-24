@@ -44,24 +44,22 @@ export default class User {
         url: '/user',
         appendModeInURL: false,
       })
-        .then(response => {
+        .then((response) => {
           // Risky. fetchFeaturesAjax can make the request always in 'test'mode.
           // But hopefully, it will happen after cycle of App.js fetch User where it updatesSession with correct mode
           fetchFeaturesAjax(response.data.current)
-            .catch(_ => _)
-            .then(data => {
+            .catch((_) => _)
+            .then((data) => {
               let newUser = new User(response.data);
-              newUser.features = setFeatures(
-                data.success ? data.data.features : []
-              );
+              newUser.features = setFeatures(data.success ? data.data.features : []);
               response.data = newUser;
               resolve(response);
             })
-            .catch(err => {
+            .catch((err) => {
               reject(err);
             });
         })
-        .catch(err => reject(err));
+        .catch((err) => reject(err));
     });
 
     return promise;
@@ -102,8 +100,7 @@ export default class User {
     const restrictedFeaturesForOrg = antiOrgsFeatures[getOrg().custom_code];
 
     if (restrictedFeaturesForOrg) {
-      const isFeatureAllowed =
-        restrictedFeaturesForOrg.indexOf(featureName) === -1;
+      const isFeatureAllowed = restrictedFeaturesForOrg.indexOf(featureName) === -1;
 
       return isFeatureAllowed;
     }
@@ -112,11 +109,7 @@ export default class User {
   }
 
   isAllowedEdit(moduleName) {
-    let isEditAllowed = _isAllowed(
-      this.userRole,
-      moduleName,
-      roleEditPermissions
-    );
+    let isEditAllowed = _isAllowed(this.userRole, moduleName, roleEditPermissions);
 
     if (this.isEditRestrictedByRazorX(moduleName)) {
       isEditAllowed = false;
@@ -126,11 +119,7 @@ export default class User {
   }
 
   isAllowedView(moduleName) {
-    let isViewAllowed = _isAllowed(
-      this.userRole,
-      moduleName,
-      roleViewPermissions
-    );
+    let isViewAllowed = _isAllowed(this.userRole, moduleName, roleViewPermissions);
 
     if (this.isViewRestrictedByRazorX(moduleName)) {
       isViewAllowed = false;
@@ -162,13 +151,11 @@ export default class User {
   get isContactMobileChangeAllowed() {
     // in case of restricted merchants
     // only owner and admin are alllowed to changed self contact_mobile
-    return (
-      !this.isMerchantRestricted || ['owner', 'admin'].indexOf(this.role) > -1
-    );
+    return !this.isMerchantRestricted || ['owner', 'admin'].indexOf(this.role) > -1;
   }
 
   get isActivated() {
-    return !!parseInt(this.activated);
+    return !!this.activated;
   }
 
   get instantActivation() {
@@ -193,11 +180,7 @@ export default class User {
 
       get isL1Submitted() {
         const query = QueryString.parse(window.location.search);
-        const isSourceRX = !!(
-          query &&
-          query.merchant &&
-          query.merchant === 'x'
-        );
+        const isSourceRX = !!(query && query.merchant && query.merchant === 'x');
         const isRXV2Onboarding = this.isRXV2OnboardingEnabled && isSourceRX;
 
         // Assume L1 is submitted if activation form is inside RX and V2 onboarding experiment is enabled
@@ -362,15 +345,13 @@ export default class User {
   get enabledFeatures() {
     let pluckKey = 'feature';
 
-    return (this.features || []).map(object => {
+    return (this.features || []).map((object) => {
       return object[pluckKey];
     });
   }
 
   get showInstantActivation() {
-    return (
-      this.isOrgRZP && (!!this.activation_flow || this.instant_activations)
-    );
+    return this.isOrgRZP && (!!this.activation_flow || this.instant_activations);
   }
 
   get isMinimumFirstPaymentEnabled() {
@@ -379,7 +360,7 @@ export default class User {
 
   /* Check case-insensitive tag check existence */
   findTag(tag) {
-    return this.tags.some(t => t.toLowerCase() === tag.toLowerCase());
+    return this.tags.some((t) => t.toLowerCase() === tag.toLowerCase());
   }
 
   /**
@@ -401,25 +382,17 @@ export default class User {
 
   isSignUpPartnerIntent() {
     return (
-      this.partner_type === null &&
-      this.partner_intent &&
-      this.merchant_partner_intent === false
+      this.partner_type === null && this.partner_intent && this.merchant_partner_intent === false
     );
   }
   get isHavingPartnerConfigs() {
     const currentMerchant = (this.merchants || {})[this.current];
-    return (
-      !!currentMerchant.partner_type &&
-      (currentMerchant.partner || {}).has_commission_configs
-    );
+    return !!currentMerchant.partner_type && (currentMerchant.partner || {}).has_commission_configs;
   }
 
   get isHavingSubventionConfigs() {
     const currentMerchant = (this.merchants || {})[this.current];
-    return (
-      !!currentMerchant.partner_type &&
-      (currentMerchant.partner || {}).has_subvention_configs
-    );
+    return !!currentMerchant.partner_type && (currentMerchant.partner || {}).has_subvention_configs;
   }
 
   get isTwoFactorVerified() {
@@ -475,9 +448,7 @@ export default class User {
   get isInttCurrenciesEnabled() {
     return true;
 
-    return (
-      !!this.international && this.getExpStatus('international_currencies')
-    );
+    return !!this.international && this.getExpStatus('international_currencies');
   }
 
   get isDefaultPLBatchRemindersEnabled() {
@@ -529,9 +500,7 @@ export default class User {
   }
 
   get isAllowedTeamManagement() {
-    return this.isMerchantRestricted
-      ? this.isAllowedView('team')
-      : this.isAllowedEdit('team');
+    return this.isMerchantRestricted ? this.isAllowedView('team') : this.isAllowedEdit('team');
   }
 
   get isCustomNotesDropdownEnabled() {
@@ -594,9 +563,7 @@ export default class User {
 
   get isSellerAppRole() {
     const userRole = this.userRole;
-    return (
-      [rolesList.SELLERAPP, rolesList.SELLERAPP_PLUS].indexOf(userRole) > -1
-    );
+    return [rolesList.SELLERAPP, rolesList.SELLERAPP_PLUS].indexOf(userRole) > -1;
   }
 
   get isSupportCallEnabled() {
