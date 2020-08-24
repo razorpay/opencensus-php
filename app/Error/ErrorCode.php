@@ -1093,6 +1093,8 @@ class ErrorCode
     const BAD_REQUEST_KYC_ID_MISSING                                                = 'BAD_REQUEST_KYC_ID_MISSING';
     const BAD_REQUEST_INVALID_RESPONSE_BODY                                         = 'BAD_REQUEST_INVALID_RESPONSE_BODY';
 
+    const UNSUPPORTED_ARTEFACT_TYPE                                                 = 'UNSUPPORTED_ARTEFACT_TYPE';
+
     const SERVER_ERROR_JSON_ENCODE_FALSE                                            = 'SERVER_ERROR_JSON_ENCODE_FALSE';
     const SERVER_ERROR_IDEM_KEY_ROUTE_ENTITY_MAPPING_ABSENT                         = 'SERVER_ERROR_IDEM_KEY_ROUTE_ENTITY_MAPPING_ABSENT';
     const SERVER_ERROR_BANKING_ACCOUNT_GATEWAY_PROCESSOR_CLASS_ABSENCE              = 'SERVER_ERROR_BANKING_ACCOUNT_GATEWAY_PROCESSOR_CLASS_ABSENCE';

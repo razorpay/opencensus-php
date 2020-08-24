@@ -6,9 +6,9 @@
 # 2. Install protoc-gen-twirp_php plugin
 #       Run `go get github.com/twirphp/twirp/protoc-gen-twirp_php`
 #       Refer https://twirphp.readthedocs.io/en/latest/getting-started/installation.html
-
-# during twirphp installation blease use this command -> curl -Ls https://git.io/twirphp
-
+#   alternate approach for TwirPHP protoc plugin:
+#       `curl -Ls https://git.io/twirphp | bash`
+#
 # Generates php client code.
 # Expects proto directory exists in parallel to this repository.
 # Expects protoc and protoc-gen-twirp_php bin setup on system.

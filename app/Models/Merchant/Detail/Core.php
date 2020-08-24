@@ -2718,6 +2718,11 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * @param string $merchantId
+     *
+     * @return array
+     */
     public function getMerchantAndSetBasicAuth(string $merchantId)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);

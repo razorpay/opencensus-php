@@ -30,6 +30,8 @@ final class RazorxTreatment
 
     const REGISTERED_ONBOARDING_AUTO_KYC = 'registered_onboarding_auto_kyc';
 
+    const BVS_AUTO_KYC = 'bvs_auto_kyc';
+
     // Decides if increased cap for allowed line items in invoice to be used for merchant's invoice.
     const INV_INCREASED_LINE_ITEMS_CAP = 'inv_increased_line_items_cap';
 

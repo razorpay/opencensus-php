@@ -6,6 +6,8 @@ use RZP\Models\Base;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\AutoKyc\Verifiers\CinVerifier;
 use RZP\Models\Merchant\AutoKyc\Verifiers\POAVerifier;
 use RZP\Models\Merchant\AutoKyc\Verifiers\POIVerifier;
@@ -62,6 +64,11 @@ class Core extends Base\Core
             DEConstants::ENTITY_ID  => $entity->getEntityId(),
             DEConstants::KYC_ID     => $entity->getKycId(),
         ];
+
+        if ($this->shouldTriggerBvsVerification() === true)
+        {
+            (new Bvs\Core())->Verify($entity->getEntityId(), Constant::POI, $input);
+        }
 
         $response = $this->process($poiInput, DEConstants::POI);
 
@@ -314,5 +321,20 @@ class Core extends Base\Core
                     DEConstants::PROCESSOR_TYPE => $processorType
                 ]);
         }
+    }
+
+    /**
+     * razorx experiment to control traffic to BVS
+     *
+     * @return bool
+     */
+    private function shouldTriggerBvsVerification(): bool
+    {
+        $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
+                                                    RazorxTreatment::BVS_AUTO_KYC,
+                                                    $this->mode
+        );
+
+        return (strtolower($variant) === 'on');
     }
 }

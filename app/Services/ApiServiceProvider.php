@@ -408,6 +408,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerSettlementsReminder();
 
         $this->registerHttpClients();
+
+        $this->registerBvsHttpClients();
     }
 
     /**
@@ -462,6 +464,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'terminals_service',
             'paymentlinkservice',
             'credcase_http_client',
+            'bvs_http_client',
         ];
     }
 
@@ -1096,6 +1099,27 @@ class ApiServiceProvider extends BaseServiceProvider
             $responseFactory = Psr17FactoryDiscovery::findResponseFactory();
             $options = ['timeout' => 1];
             $client = new MultiCurl($responseFactory, $options);
+            return $client;
+        });
+    }
+
+    /**
+     * register bvs http client
+     *
+     * @return void
+     */
+    protected function registerBvsHttpClients()
+    {
+        $this->app->singleton('bvs_http_client', function($app) {
+            if ($app->runningUnitTests() === true)
+            {
+                return new Psr18ClientMock;
+            }
+
+            $responseFactory = Psr17FactoryDiscovery::findResponseFactory();
+            $options         = ['timeout' => 5];
+            $client          = new MultiCurl($responseFactory, $options);
+
             return $client;
         });
     }
