@@ -682,7 +682,11 @@ class Validator extends Base\Validator
         if ($isValid === false)
         {
             throw new BadRequestValidationFailureException(
-                'Payout can be updated to only a final status'
+                'Payout can be updated to only a final status',
+                null,
+                [
+                    'status' => $status
+                ]
             );
         }
     }
