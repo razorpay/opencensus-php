@@ -230,6 +230,25 @@ class GatewayProcessor extends BaseGatewayProcessor
 
     public function getGatewayRequestArrayForEnableOrDisable($terminal)
     {
+        $cardVaultApp = $this->app['mpan.cardVault'];
+
+        $mcMpan =  $terminal->getMCMpan();
+        $visaMpan =  $terminal->getVisaMpan();
+        $rupayMpan =  $terminal->getRupayMpan();
+
+        if ((empty($mcMpan) === false) and (strlen($mcMpan) !== 16))
+        {
+            $mcMpan = $cardVaultApp->detokenize($mcMpan);
+        }
+        if ((empty($visaMpan) === false) and (strlen($visaMpan) !== 16))
+        {
+            $visaMpan = $cardVaultApp->detokenize($visaMpan);
+        }
+        if ((empty($rupayMpan) === false) and (strlen($rupayMpan) !== 16))
+        {
+            $rupayMpan = $cardVaultApp->detokenize($rupayMpan);
+        }
+
         $uniqueRrn = UniqueIdEntity::generateUniqueId();
 
         $gatewayRequestArray = [
@@ -237,9 +256,9 @@ class GatewayProcessor extends BaseGatewayProcessor
             'gateway'               =>  $terminal->gateway,
             'mid'                   =>  $terminal->getGatewayMerchantId(),
             'tid'                   =>  $terminal->getGatewayTerminalId(),
-            'mc_mpan'               =>  $terminal->getMCMpan(),
-            'visa_mpan'             =>  $terminal->getVisaMpan(),
-            'rupay_mpan'            =>  $terminal->getRupayMpan(),
+            'mc_mpan'               =>  $mcMpan,
+            'visa_mpan'             =>  $visaMpan,
+            'rupay_mpan'            =>  $rupayMpan,
         ];
 
         return $gatewayRequestArray;
