@@ -1034,13 +1034,9 @@ class Repository extends Base\Repository
     }
 
     /**
-     * When card related attributes are present, we want to join with a subquery
-     * on cards, so that MySQL is able to use the proper indices on cards table.
+     * When card related attributes are present, we want do inner join on cards.
      * The method generates a query like
-     * SELECT * FROM payments INNER JOIN
-     *     (SELECT * FROM cards WHERE iin = ? AND last4 = ?) AS cards
-     * ON payments.card_id = cards.id
-     *
+     * SELECT * FROM `payments` INNER JOIN `cards` ON `payments`.`card_id` = `cards`.`id` WHERE `cards`.`iin` = ? AND `cards`.`last4` = ? ORDER BY `payments`.`created_at` DESC, `payments`.`id` DESC LIMIT 1000;
      * @param  array $params
      * @param  \Illuminate\Database\Query\Builder $query
      */
@@ -1052,9 +1048,12 @@ class Repository extends Base\Repository
 
         $cardQueryParams = array_only($params, $this->cardQueryKeys);
 
-        $cardQuery = $this->repo->card->buildCardFetchSubQuery($cardQueryParams);
+        $joinQuery = $query->join($cardTableName, $paymentCardIdColumn, '=', $cardIdColumn);
 
-        $query->joinSub($cardQuery, $cardTableName, $paymentCardIdColumn, '=', $cardIdColumn);
+        foreach ($cardQueryParams as $key => $value)
+        {
+           $joinQuery->where($cardTableName . '.' . $key, $value);
+        }
     }
 
     public function getYesterdayVolume()
