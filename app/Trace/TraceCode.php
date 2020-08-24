@@ -2725,6 +2725,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SALESFORCE_X_ONBOARDING_CATEGORY_UPDATE_REQUEST       = 'SALESFORCE_X_ONBOARDING_CATEGORY_UPDATE_REQUEST';
     const SALESFORCE_X_ONBOARDING_CATEGORY_UPDATE_RESPONSE      = 'SALESFORCE_X_ONBOARDING_CATEGORY_UPDATE_RESPONSE';
     const SALESFORCE_X_ONBOARDING_CATEGORY_UPDATE_ERROR         = 'SALESFORCE_X_ONBOARDING_CATEGORY_UPDATE_ERROR';
+    const SALESFORCE_EVENT_REQUEST                              = 'SALESFORCE_EVENT_REQUEST';
+    const SALESFORCE_EVENT_RESPONSE                             = 'SALESFORCE_EVENT_RESPONSE';
+    const SALESFORCE_EVENT_ERROR                                = 'SALESFORCE_EVENT_ERROR';
+    // This is for tracing any other error that happens during the event raise request to salesforce
+    const SALESFORCE_EVENT_REQUEST_FAILED                       = 'SALESFORCE_EVENT_REQUEST_FAILED';
 
 
     // Banking account

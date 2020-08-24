@@ -30,4 +30,8 @@ class SalesForceClient extends BaseSalesForceClient
     {
         return '123';
     }
+
+    public function sendEventToSalesForce(array $payload) {
+        return;
+    }
 }

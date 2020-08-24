@@ -2,18 +2,17 @@
 
 namespace RZP\Services;
 
-use Requests;
-
-use RZP\Exception;
 use Carbon\Carbon;
-use Requests_Response;
+use Razorpay\Trace\Logger as Trace;
+use Requests;
 use Requests_Exception;
+use Requests_Response;
+use RZP\Exception;
+use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Http\RequestHeader;
+use RZP\Jobs\SalesforceRequestJob;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Http\RequestHeader;
-use RZP\Http\BasicAuth\BasicAuth;
-use RZP\Jobs\SalesforceRequestJob;
-use Razorpay\Trace\Logger as Trace;
 
 class SalesForceClient
 {
@@ -250,6 +249,15 @@ class SalesForceClient
                                   TraceCode::SALESFORCE_INTEREST_IN_X_REQUEST,
                                   TraceCode::SALESFORCE_INTEREST_IN_X_RESPONSE,
                                   TraceCode::SALESFORCE_INTEREST_IN_X_ERROR);
+    }
+
+    public function sendEventToSalesForce(array $eventPayload) {
+        $this->dispatchRequestJob(
+            $this->generateUrlForMerchantUpsert(),
+            $eventPayload,
+            TraceCode::SALESFORCE_EVENT_REQUEST,
+            TraceCode::SALESFORCE_EVENT_RESPONSE,
+            TraceCode::SALESFORCE_EVENT_ERROR);
     }
 
     public function updateChangeInBankingMerchantOnboardingCategory(array $merchantEntities, string $newValue)

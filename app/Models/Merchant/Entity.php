@@ -4,41 +4,40 @@ namespace RZP\Models\Merchant;
 
 use App;
 use Config;
-use Razorpay\Trace\Logger;
 use Conner\Tagging\Taggable;
-
-use RZP\Models\Emi;
-use RZP\Models\Base;
-use RZP\Models\User;
-use RZP\Models\Card;
-use RZP\Models\State;
-use RZP\Models\Feature;
-use RZP\Models\Card\IIN;
+use Razorpay\Trace\Logger;
+use RZP\Constants\Product;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant;
-use RZP\Models\Terminal;
-use RZP\Trace\TraceCode;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\LogicException;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Admin\Org;
 use RZP\Models\Bank\IFSC;
-use RZP\Constants\Product;
-use RZP\Models\Invitation;
-use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
-use RZP\Models\Payment\Event;
 use RZP\Models\BankingAccount;
-use RZP\Models\Workflow\Action;
-use RZP\Models\Merchant\Detail;
-use RZP\Models\Merchant\Balance;
-use RZP\Exception\LogicException;
-use RZP\Models\Partner\Commission;
-use RZP\Listeners\ApiEventSubscriber;
-use RZP\Exception\BadRequestException;
-use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Base;
 use RZP\Models\Base\QueryCache\Cacheable;
-use RZP\Models\Payment\Refund\Speed as RefundSpeed;
+use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Card;
+use RZP\Models\Card\IIN;
+use RZP\Models\Emi;
+use RZP\Models\Feature;
+use RZP\Models\Invitation;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Balance;
+use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
+use RZP\Models\Partner\Commission;
+use RZP\Models\Payment\Event;
+use RZP\Models\Payment\Refund\Speed as RefundSpeed;
+use RZP\Models\Settlement;
+use RZP\Models\State;
+use RZP\Models\Terminal;
+use RZP\Models\User;
+use RZP\Models\Workflow\Action;
+use RZP\Trace\TraceCode;
 
 /**
  * @property Org\Entity         $org
@@ -1491,6 +1490,10 @@ class Entity extends Base\PublicEntity
         }
 
         return $autoRefundDelay;
+    }
+
+    public function getMerchantDetail() {
+        return $this->getAttribute(self::MERCHANT_DETAIL);
     }
 
     public function getDefaultRefundSpeed()
