@@ -484,6 +484,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getInternalCheckoutPreferences($merchantId)
+    {
+        $data = $this->service()->getInternalCheckoutPreferences($merchantId);
+
+        return ApiResponse::json($data);
+    }
+
     public function patchMerchantBeneficiaryCode()
     {
         $data = $this->service()->patchMerchantBeneficiaryCode();

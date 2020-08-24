@@ -48,6 +48,7 @@ class Route
         'merchant_methods'                         => ['get',      'methods',                                        'MerchantController@getPaymentMethods'                              ],
         'merchant_methods_downtime'                => ['get',      'methods/downtime',                               'MerchantController@getPublicGatewayDowntimeData'                   ],
         'merchant_checkout_preferences'            => ['get',      'preferences',                                    'MerchantController@getCheckoutPreferences'                         ],
+        'internal_merchant_checkout_preferences'   => ['get',      'internal/preferences/{merchant_id}',             'MerchantController@getInternalCheckoutPreferences'                 ],
         'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
         // @todo: Require feature S2S for payment_create_private route.
         'payment_create_private'                   => ['post',     'payments/create',                                'PaymentCreateController@postCreateS2SPayment'                      ],
@@ -1923,6 +1924,7 @@ class Route
         // merchant_instrument_requests
         'merchant_instrument_request_create'                =>  ['post',    'merchant_instrument_request',                      'InstrumentRequestController@createMerchantInstrumentRequest'    ],
         'merchant_instrument_request_get_by_merchant_id'    =>  ['get',     'merchant_instrument_request',                      'InstrumentRequestController@getMerchantInstrumentRequest'       ],
+        'merchant_instrument_status_get_by_merchant_id'     =>  ['get',     'merchant_instrument_status',                       'InstrumentRequestController@getMerchantInstrumentStatus'        ],
         'merchant_instrument_request_get_by_id'             =>  ['get',     'merchant_instrument_request/{id}',                 'InstrumentRequestController@getMerchantInstrumentRequestById'   ],
         'merchant_instrument_request_update_by_id'          =>  ['patch',   'merchant_instrument_request/{id}',                 'InstrumentRequestController@patchMerchantInstrumentRequestById' ],
 
@@ -2309,6 +2311,7 @@ class Route
         'merchant_instrument_request_get_by_id',
         'merchant_instrument_request_update_by_id',
         'merchant_instrument_request_get_by_merchant_id',
+        'merchant_instrument_status_get_by_merchant_id',
 
         // payment page routes required for plugin
         'payment_page_get',
@@ -2543,6 +2546,7 @@ class Route
         'financial_data_service_perfios_webhook',
 
         'internal_merchant_fetch',
+        'internal_merchant_checkout_preferences',
         'terminal_fetch_by_id_internal',
         'terminal_migrate_cron',
         'terminal_service_sync_delete',
@@ -4413,12 +4417,6 @@ class Route
         'patch_internal_instrument_requests'          => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUESTS,
         'instrument_request_razorx_admin'             => '*',
 
-        // merchant instrument requests
-        'merchant_instrument_request_create'             => '*',
-        'merchant_instrument_request_get_by_id'          => '*',
-        'merchant_instrument_request_update_by_id'       => '*',
-        'merchant_instrument_request_get_by_merchant_id' => '*',
-
         //payout downtime fetch from X dashboard
         'fetch_payout_downtimes_enabled'              => '*',
         'get_irctc_settlement_file_admin'             => '*',
@@ -4734,6 +4732,7 @@ class Route
     public static $session = [
         'checkout',
         'merchant_checkout_preferences',
+        'internal_merchant_checkout_preferences',
         'otp_verify',
         'customer_get_saved_status',
         'payment_create',
@@ -5239,7 +5238,8 @@ class Route
             'merchant_create_terminal_internal',
             'pricing_add_plan_rule_bulk',
             'merchant_methods_edit_internal',
-            'terminal_fetch_by_id_internal'
+            'terminal_fetch_by_id_internal',
+            'internal_merchant_checkout_preferences',
         ],
 
         'mozart' => [

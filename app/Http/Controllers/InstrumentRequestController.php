@@ -13,6 +13,7 @@ use Illuminate\Routing\Controller as BaseController;
 class InstrumentRequestController extends BaseController
 {
     const X_DASHBOARD_ADMIN_EMAIL   = 'X-Dashboard-Admin-Email';
+    const X_DASHBOARD_MERCHANT_ID   = "X-Dashboard-Merchant-Id";
 
     protected $app;
 
@@ -148,12 +149,13 @@ class InstrumentRequestController extends BaseController
         return $this->app['basicauth']->getDashboardHeaders()['admin_email'] ?? '';
     }
 
-    public function createMerchantInstrumentRequest() 
+    // Below methods are for merchant dashboard
+    public function createMerchantInstrumentRequest()
     {
         $input = Request::all();
-        
+
         $merchant = $this->app['basicauth']->getMerchant();
-                
+
         $this->trace->info(
             TraceCode::CREATE_MERCHANT_INSTRUMENT_REQUEST,
             [
@@ -166,8 +168,9 @@ class InstrumentRequestController extends BaseController
         $response = $this->app['terminals_service']->proxyTerminalService(
             $input,
             \Requests::POST,
-            'v2/merchant_instrument_request'
-            );
+            'v2/merchant_instrument_request',
+            [],
+            $this->getMerchantHeadersForInstrumentRequest());
 
         return ApiResponse::json($response);
     }
@@ -185,8 +188,29 @@ class InstrumentRequestController extends BaseController
         $response = $this->app['terminals_service']->proxyTerminalService(
             [],
             \Requests::GET,
-            'v2/merchant_instrument_request?merchant_id=' . $merchant->getId()
-            );
+            'v2/merchant_instrument_request?merchant_id=' . $merchant->getId(),
+            [],
+            $this->getMerchantHeadersForInstrumentRequest());
+
+        return ApiResponse::json($response);
+    }
+
+    public function getMerchantInstrumentStatus()
+    {
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $this->trace->info(
+            TraceCode::GET_MERCHANT_INSTRUMENT_STATUS,
+            [
+                'merchant_id'          => $merchant->getId(),
+            ]);
+
+        $response = $this->app['terminals_service']->proxyTerminalService(
+            [],
+            \Requests::GET,
+            'v2/merchant_instrument_status?merchant_id=' . $merchant->getId(),
+            [],
+            $this->getMerchantHeadersForInstrumentRequest());
 
         return ApiResponse::json($response);
     }
@@ -202,7 +226,9 @@ class InstrumentRequestController extends BaseController
         $response = $this->app['terminals_service']->proxyTerminalService(
             [],
             \Requests::GET,
-            'v2/merchant_instrument_request/' . $id
+            'v2/merchant_instrument_request/' . $id,
+            [],
+            $this->getMerchantHeadersForInstrumentRequest()
             );
 
         return ApiResponse::json($response);
@@ -222,9 +248,22 @@ class InstrumentRequestController extends BaseController
         $response = $this->app['terminals_service']->proxyTerminalService(
             $input,
             \Requests::PATCH,
-            'v2/merchant_instrument_request/' . $id
+            'v2/merchant_instrument_request/' . $id,
+            [],
+            $this->getMerchantHeadersForInstrumentRequest()
             );
 
         return ApiResponse::json($response);
     }
+
+
+    protected function getMerchantHeadersForInstrumentRequest() : array
+    {
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        return [
+            self::X_DASHBOARD_MERCHANT_ID => $merchant->getId(),
+        ];
+    }
+
 }

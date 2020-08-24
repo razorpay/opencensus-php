@@ -7810,6 +7810,13 @@ class MerchantTest extends TestCase
 
     }
 
+    public function testGetPreferencesInternal()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function testGetCheckoutPersonalisation()
     {
         $this->ba->publicAuth();

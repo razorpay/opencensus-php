@@ -1505,6 +1505,15 @@ class Service extends Base\Service
         return $preferences;
     }
 
+    public function getInternalCheckoutPreferences($merchantId)
+    {
+       $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+
+       $this->app['basicauth']->setMerchant($this->merchant);
+
+       return $this->getCheckoutPreferences([]);
+    }
+
     public function getGSTDetails(): array
     {
         return $this->merchant->merchantDetail->toArrayGST();

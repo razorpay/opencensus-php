@@ -6463,6 +6463,21 @@ return [
         ],
     ],
 
+    'testGetPreferencesInternal' => [
+        'request' => [
+            'url'      => '/internal/preferences/10000000000000',
+            'method'   => 'get',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'methods' => [
+
+                ],
+            ],
+        ],
+    ],
+
     'testGetCheckoutPersonalisation' => [
         'request' => [
             'url'     => '/personalisation',

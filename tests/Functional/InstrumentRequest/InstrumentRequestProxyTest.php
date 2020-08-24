@@ -247,6 +247,15 @@ class InstrumentRequestProxyTest extends TestCase
             ],
             [
                 self::REQUEST                              => [
+                    'url'      => '/merchant_instrument_status',
+                    'method'   => \Requests::GET,
+                ],
+                self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/merchant_instrument_status?merchant_id=10000000000000',
+                self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::GET,
+                self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   =>  '',
+            ],
+            [
+                self::REQUEST                              => [
                     'url'      => '/merchant_instrument_request/mir_1234567',
                     'method'   => \Requests::GET,
                 ],
@@ -283,6 +292,11 @@ class InstrumentRequestProxyTest extends TestCase
                 $this->assertEquals($testCase[self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE], $method);
 
                 $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], json_decode($content, true));
+
+                $this->assertArrayHasKey('X-Dashboard-Merchant-Id', $additionalHeaders);
+
+                $this->assertEquals('10000000000000', $additionalHeaders['X-Dashboard-Merchant-Id']);
+
 
                 $response = new \Requests_Response;
 
