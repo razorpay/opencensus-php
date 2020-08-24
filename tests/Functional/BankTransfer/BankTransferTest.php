@@ -2825,6 +2825,37 @@ class BankTransferTest extends TestCase
         $this->assertArrayHasKey('bank_transfer', $methods);;
     }
 
+    public function testRblFallbackTerminal()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $terminalAttributes = [
+            'id'                    =>'RblBtFlbkTrmnl',
+            'gateway'               => Gateway::BT_RBL,
+            'gateway_merchant_id'   => '1112',
+            'gateway_merchant_id2'  => '',
+        ];
+
+        $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+
+        $this->ba->directAuth();
+
+        $this->startTest($testData);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('va_ShrdVirtualAcc', $bankTransfer['virtual_account_id']);
+
+        $this->assertEquals('bt_rbl', $payment['gateway']);
+
+        $this->assertEquals('RblBtFlbkTrmnl', $payment['terminal_id']);
+
+        $this->assertEquals(100000, $payment['amount']);
+    }
+
     protected function getRblVaBankAccount()
     {
         $terminalAttributes = [ 'id' =>'GENERICBANKRBL', 'gateway' => Gateway::BT_RBL, 'gateway_merchant_id' => '0001046' ];
