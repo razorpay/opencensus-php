@@ -51,10 +51,10 @@ class LegaldeskGatewayTest extends TestCase
 
     public function testEsignGeneration()
     {
-        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment = $this->getEmandatePaymentArray('SVCB', 'aadhaar', 0);
         $payment['bank_account'] = [
             'account_number'    => '914010009305862',
-            'ifsc'              => 'UTIB0000123',
+            'ifsc'              => 'SVCB0010015',
             'name'              => 'Test account',
         ];
 
@@ -69,10 +69,10 @@ class LegaldeskGatewayTest extends TestCase
 
     public function testBiometricEsignGeneration()
     {
-        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar_fp', 0);
+        $payment = $this->getEmandatePaymentArray('SVCB', 'aadhaar_fp', 0);
         $payment['bank_account'] = [
             'account_number'    => '914010009305862',
-            'ifsc'              => 'UTIB0000123',
+            'ifsc'              => 'SVCB0010015',
             'name'              => 'Test account',
         ];
 
@@ -89,10 +89,10 @@ class LegaldeskGatewayTest extends TestCase
     // Mandate fails at the S2S request before we redirect the user to Legaldesk page
     public function testMandateGenerationFailure()
     {
-        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment = $this->getEmandatePaymentArray('SVCB', 'aadhaar', 0);
         $payment['bank_account'] = [
             'account_number'    => '914010009305862',
-            'ifsc'              => 'UTIB0000123',
+            'ifsc'              => 'SVCB0010015',
             'name'              => 'Test account',
         ];
 
@@ -121,10 +121,10 @@ class LegaldeskGatewayTest extends TestCase
 
     public function testMandateSigningFailure()
     {
-        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment = $this->getEmandatePaymentArray('SVCB', 'aadhaar', 0);
         $payment['bank_account'] = [
             'account_number'    => '914010009305862',
-            'ifsc'              => 'UTIB0000123',
+            'ifsc'              => 'SVCB0010015',
             'name'              => 'Test account',
         ];
 
@@ -152,10 +152,10 @@ class LegaldeskGatewayTest extends TestCase
 
     public function testMandateSigningTimeout()
     {
-        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment = $this->getEmandatePaymentArray('SVCB', 'aadhaar', 0);
         $payment['bank_account'] = [
             'account_number'    => '914010009305862',
-            'ifsc'              => 'UTIB0000123',
+            'ifsc'              => 'SVCB0010015',
             'name'              => 'Test account',
         ];
 
