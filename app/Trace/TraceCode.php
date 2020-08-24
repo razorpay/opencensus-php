@@ -2700,6 +2700,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ONBOARDING_KYC_VERIFICATION_JOB_DELETE                = 'ONBOARDING_KYC_VERIFICATION_JOB_DELETE';
     const ONBOARDING_KYC_VERIFICATION_JOB_ERROR                 = 'ONBOARDING_KYC_VERIFICATION_JOB_ERROR';
 
+    // Merchant Business Verification Notification
+    const ONBOARDING_BVS_VERIFICATION_JOB_REQUEST               = 'ONBOARDING_BVS_VERIFICATION_JOB_REQUEST';
+    const ONBOARDING_BVS_VERIFICATION_JOB_ERROR                 = 'ONBOARDING_BVS_VERIFICATION_JOB_ERROR';
+
     // Salesforce integration
     const SALESFORCE_ACCESS_TOKEN_ERROR                         = 'SALESFORCE_ACCESS_TOKEN_ERROR';
     const SALESFORCE_INTEGRATION_ERROR                          = 'SALESFORCE_INTEGRATION_ERROR';

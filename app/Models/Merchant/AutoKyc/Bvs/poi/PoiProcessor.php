@@ -62,8 +62,9 @@ class PoiProcessor extends BaseProcessor
                             ],
                             [
                                 'var' => 'enrichments.online_provider.details.name.value'
-                            ]
-                        ]
+                            ],
+                            100,
+                        ],
                     ],
                 ],
             ],

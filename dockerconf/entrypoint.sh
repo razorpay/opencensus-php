@@ -160,6 +160,14 @@ main() {
     year=$4
     month=$5
     php artisan "${command}" "${mode}" "${year}" "${month}"
+  elif [[ "${app_type}" == "kafka-consumer" ]]; then
+    echo "Starting Kafka Consumer Job"
+    command=$2
+    mode=$3
+    topics=$4
+    mkdir -p /opt/razorpay/certs/kafka
+    chown 0775 /opt/razorpay/certs/kafka
+    php artisan "${command}" "${mode}" "${topics}"
   elif [[ "${app_type}" == "sqs" ]]; then
     change_db_user_for_workers
     sleep_time=$2
