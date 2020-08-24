@@ -394,17 +394,17 @@ class Merchant
 
         $setl->balance()->associate($balance);
 
-        // in case of test mode set settlement status to initiated
-        if ($this->doMockAttemptProcessed() === true)
-        {
-            $setl->setStatus(Status::INITIATED);
-        }
-
         if ($this->isNewService === true)
         {
             $this->setl = $setl;
 
             return;
+        }
+
+        // in case of test mode set settlement status to initiated
+        if ($this->doMockAttemptProcessed() === true)
+        {
+            $setl->setStatus(Status::INITIATED);
         }
 
         $mid = $this->merchant->getId();
