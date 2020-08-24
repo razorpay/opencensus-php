@@ -215,6 +215,59 @@
     .btn-link
       font-size: 12px;
 
+.webhooks-secret-container {
+  position: relative;
+
+  .form-control {
+    font-size: 12px;
+    background: #FAFAFA;
+    color: #838383;
+  }
+
+  .secret-label {
+    position: absolute;
+    font-size: 12px;
+    z-index: 1;
+    right: 0;
+    top: 1px;
+  }
+}
+
+.webhooks-collapsible-container {
+  .Collapsible--title {
+    display: flex;
+  }
+
+  .i-arrow-down, .i-arrow-up {
+    margin-top: -8px;
+    color: #5F90E9;
+  }
+}
+
+.webhooks-events-container {
+  .Input {
+    margin: 0;
+  }
+
+  .eventGroup {
+    label {
+      font-weight: bold;
+      text-transform: capitalize;
+    }
+  }
+
+  .event {
+    padding-left: 20px;
+  }
+
+  .eventGroup-divider {
+    border-bottom: 1px solid #F1F1F1;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    width: 108%;
+    transform: translateX(-20px);
+  }
+}
   .international__Product
     margin: 10px 0
     display: flex

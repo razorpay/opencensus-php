@@ -83,7 +83,7 @@
             _fbqChckr = setInterval(emptyRzpAQ_fbq, 500);
 
         /**
-         * Method to track Google Analytics
+         * Method to track Analytics
          * @param {Object} eventData Data of the event
          */
         window.rzpAnalytics = function (data) {

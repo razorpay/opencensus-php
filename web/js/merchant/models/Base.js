@@ -20,7 +20,6 @@ export default class BaseModel {
 
   constructor(props = {}) {
     Object.assign(this, props);
-
     // Stash the raw payload which can be used to diff the request body on PATCH requests
     this._stashPayload(props);
   }

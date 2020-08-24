@@ -1,16 +1,30 @@
 import Webhook from 'merchant/models/Webhook';
 import { set, merge, unshift } from 'common/utils/immutable';
 
-const WEBHOOKS_FETCH = 'WEBHOOKS_FETCH';
+const WEBHOOKS_FETCH_ALL = 'WEBHOOKS_FETCH_ALL';
+const WEBHOOK_FETCH = 'WEBHOOK_FETCH';
 const WEBHOOK_CREATE = 'WEBHOOK_CREATE';
 const WEBHOOK_EDIT = 'WEBHOOK_EDIT';
+const WEBHOOK_DELETE = 'WEBHOOK_DELETE';
 
 export const fetchWebhooks = params => {
   let webhook = new Webhook(params);
 
   return {
-    type: WEBHOOKS_FETCH,
+    type: WEBHOOKS_FETCH_ALL,
     payload: webhook.fetchAll(params),
+  };
+};
+
+export const fetchWebhook = params => {
+  const nextParams = {
+    webhook_id: params.id,
+  };
+  let webhook = new Webhook(nextParams);
+
+  return {
+    type: WEBHOOK_FETCH,
+    payload: webhook.fetch(nextParams.webhook_id, nextParams),
   };
 };
 
@@ -23,8 +37,17 @@ export const saveWebhook = params => {
   };
 };
 
+export const deleteWebhook = params => {
+  let webhook = new Webhook(params);
+  return {
+    type: WEBHOOK_DELETE,
+    payload: webhook.delete(),
+  };
+};
+
 let initialState = {
-  loading: true,
+  loadingAllWebhooks: true,
+  loadingWebhook: false,
   webhooks: [],
   count: 0,
   error: null,
@@ -32,20 +55,52 @@ let initialState = {
 
 export default function(state = initialState, action) {
   switch (action.type) {
-    case `${WEBHOOKS_FETCH}::PENDING`:
-      return set(state, 'loading', true);
+    case `${WEBHOOKS_FETCH_ALL}::PENDING`:
+      return set(state, 'loadingAllWebhooks', true);
 
-    case `${WEBHOOKS_FETCH}::SUCCESS`:
+    case `${WEBHOOK_FETCH}::PENDING`:
+      return set(state, 'loadingWebhook', true);
+
+    case `${WEBHOOK_FETCH}::SUCCESS`:
+      const webhookPayload = action.payload;
+      let webhookUpdated = false;
+      let newWebhooksState = [];
+      if (state.webhooks.length) {
+        newWebhooksState = state.webhooks.map(webhook => {
+          if (webhook.id === webhookPayload.id) {
+            webhookUpdated = true;
+            return {
+              ...webhook,
+              ...webhookPayload,
+            };
+          } else {
+            return webhook;
+          }
+        });
+      }
+      if (!webhookUpdated) {
+        newWebhooksState = [...state.webhooks, webhookPayload];
+      }
+
       return merge(state, {
-        loading: false,
+        loadingWebhook: false,
+        webhooks: newWebhooksState,
+        count: newWebhooksState.length,
+        error: null,
+      });
+      break;
+
+    case `${WEBHOOKS_FETCH_ALL}::SUCCESS`:
+      return merge(state, {
+        loadingAllWebhooks: false,
         webhooks: action.payload.data.items,
-        count: action.payload.data.count,
+        count: action.payload.data.items.length,
         error: null,
       });
 
-    case `${WEBHOOKS_FETCH}::ERROR`:
+    case `${WEBHOOKS_FETCH_ALL}::ERROR`:
       return merge(state, {
-        loading: false,
+        loadingAllWebhooks: false,
         error: action.payload.errors,
       });
 

@@ -1,11 +1,11 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 import HeaderAction from 'common/ui/HeaderAction';
 import Alert from 'common/ui/Forms/Alert';
 import ListContainer from 'merchant/containers/ListContainer';
 import WebhooksList from 'merchant/views/Settings/Webhooks/components/List';
-import WebhookCreation from 'merchant/views/Settings/Webhooks/New';
+import AddEditWebhook from 'merchant/views/Settings/Webhooks/AddEditWebhook';
 import * as WebhookActions from 'merchant/reducers/webhooks';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { luminateRow } from 'merchant/reducers/app';
@@ -31,10 +31,23 @@ export default class WebhooksContainer extends ListContainer {
       action: 'Initiate_Webhook_Setup',
     })
   )
-  showWebhookModal = (webhook = null) => {
+  showNewWebhookModal = () => {
+    const tracking = this.props.tracking;
+    const {
+      webhooks: { webhooks },
+    } = this.props;
+    tracking.trackEvent(
+      window.rzpQ.merchantActions().initiated('Webhook.setup', {
+        webhook_count: webhooks.length,
+      })
+    );
+
     this.props.openModal({
       component: (
-        <WebhookCreation webhook={webhook} onSave={this.highlightRowAndClose} />
+        <AddEditWebhook
+          onSave={this.highlightRowAndClose}
+          webhookList={webhooks}
+        />
       ),
     });
   };
@@ -50,24 +63,30 @@ export default class WebhooksContainer extends ListContainer {
   };
 
   render() {
-    let webhooksState = this.props.webhooks;
-    let modeFormatted = this.props.modeFormatted;
-    let { loading, webhooks, error } = webhooksState;
+    const webhooksState = this.props.webhooks;
+    const modeFormatted = this.props.modeFormatted;
+    const { loadingAllWebhooks, webhooks, error } = webhooksState;
 
     return (
-      <div class="content-wrapper">
+      <div className="content-wrapper" style={{ minHeight: '350px' }}>
         <HeaderAction>
           <div class="btn-toolbar pull-right">
             <DocsLink url="https://razorpay.com/docs/webhooks/" />
+            <button
+              className="btn btn-primary"
+              onClick={this.showNewWebhookModal}
+            >
+              + Add New Webhook
+            </button>
           </div>
         </HeaderAction>
 
-        {error && <Alert type="error" message={error} />}
+        {error ? <Alert type="error" message={error} /> : null}
 
         <WebhooksList
           webhooks={webhooks}
-          isLoading={loading}
-          onSetupWebhookClick={this.showWebhookModal}
+          isLoading={loadingAllWebhooks}
+          onNewWebhookClick={this.showNewWebhookModal}
           modeFormatted={modeFormatted}
         />
       </div>

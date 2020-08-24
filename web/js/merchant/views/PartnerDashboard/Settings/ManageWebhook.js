@@ -2,7 +2,7 @@ import { Component } from 'react';
 
 import { fetchAppWebhooks } from 'merchant/reducers/applications';
 
-import CreateWebhook from 'merchant/views/Settings/Webhooks/New';
+import AddEditWebhook from 'merchant/views/Settings/Webhooks/AddEditWebhook';
 
 import Spinner from 'common/ui/Spinner';
 
@@ -28,7 +28,7 @@ export default class ManageWebhook extends Component {
             <Spinner />
           </div>
         ) : (
-          <CreateWebhook webhook={this.state.webhook} {...this.props} />
+          <AddEditWebhook webhook={this.state.webhook} {...this.props} />
         )}
       </>
     );

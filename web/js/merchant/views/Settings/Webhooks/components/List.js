@@ -1,87 +1,103 @@
+import React from 'react';
+import { withRouter, NavLink } from 'react-router-dom';
 import Time from 'common/ui/Time';
 import TableBody from 'common/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
+import { pluralize } from 'common/utils/rzp-utils';
 
-const WebhooksListItem = ({ webhook }) => {
-  let activeEventsCount = Object.keys(webhook.events).filter(
-    key => webhook.events[key] === true
-  ).length;
+@withRouter
+export default class WebhooksList extends React.Component {
+  render() {
+    const { webhooks, isLoading, onNewWebhookClick } = this.props;
 
-  return (
-    <EntityItemRow id={webhook.id}>
-      <td>
-        <code>{webhook.url}</code>
-      </td>
-      <td>
-        <Time value={webhook.created_at} format="DD MMM YYYY, hh:mm:ss a" />
-      </td>
-      <td>
-        <i
-          class={`fa ${
-            webhook.active ? 'fa-check text-success' : 'fa-times text-danger'
-          }`}
-        />
-      </td>
-      <td>
-        {activeEventsCount} {activeEventsCount > 1 ? 'events' : 'event'} enabled
-      </td>
-    </EntityItemRow>
-  );
-};
+    const WebhooksListItem = ({ webhook }) => {
+      let activeEventsCount = [];
 
-const WebhooksList = props => {
-  let { webhooks, isLoading, modeFormatted } = props;
-  let tableRowComponent;
+      Object.keys(webhook.events).forEach(function(key) {
+        if (webhook.events[key] === true) {
+          activeEventsCount.push(key);
+        }
+      });
 
-  return (
-    <div class="table-responsive">
-      <table class="table table-hover">
-        <thead>
-          <tr>
-            <th>URL</th>
-            <th>Created At</th>
-            <th>Active</th>
-            <th>Events</th>
-          </tr>
-        </thead>
-        <TableBody
-          isLoading={isLoading}
-          colSpan={4}
-          rows={webhooks}
-          emptyTableRow={
+      return (
+        <EntityItemRow id={webhook.id}>
+          <td>
+            <NavLink to={`/webhooks/${webhook.id}`}>
+              <code>{webhook.url}</code>
+            </NavLink>
+          </td>
+          <td>
+            <span
+              className={
+                'status-label label ' +
+                (webhook.active ? 'label-info' : 'label-disabled')
+              }
+            >
+              {webhook.active ? 'Enabled' : 'Disabled'}
+            </span>
+          </td>
+          <td>
+            {activeEventsCount.length}
+            {pluralize(' event', activeEventsCount.length)}
+          </td>
+          <td>
+            <Time value={webhook.updated_at} format="DD MMM YYYY, hh:mm:ss a" />
+          </td>
+        </EntityItemRow>
+      );
+    };
+
+    return (
+      <div className="table-responsive">
+        <table className="table table-hover">
+          <thead>
             <tr>
-              <td class="text-center empty-table" colSpan={4}>
-                <button
-                  class="btn btn-primary"
-                  onClick={() => props.onSetupWebhookClick()}
-                >
-                  Setup your {modeFormatted} Webhook
-                </button>
-              </td>
+              <th>URL</th>
+              <th>Status</th>
+              <th>Events</th>
+              <th>Last Updated</th>
             </tr>
-          }
-        >
-          {webhooks.map(webhook => (
-            <WebhooksListItem key={webhook.id} webhook={webhook} />
-          ))}
-          {!isLoading && (
-            <tr class="action-row">
-              <td class="text-center" colSpan="4">
-                <button
-                  class="btn btn-primary m-t"
-                  onClick={() => props.onSetupWebhookClick(webhooks[0])}
-                >
-                  {webhooks.length
-                    ? `Edit your ${modeFormatted} Webhook`
-                    : `Setup your ${modeFormatted} Webhook`}
-                </button>
-              </td>
-            </tr>
-          )}
-        </TableBody>
-      </table>
-    </div>
-  );
-};
-
-export default WebhooksList;
+          </thead>
+          <TableBody
+            isLoading={isLoading}
+            colSpan={4}
+            rows={webhooks}
+            emptyTableRow={
+              <tr>
+                <td className="text-center empty-table" colSpan={4}>
+                  <div
+                    className="empty-table-message"
+                    style={{ fontSize: '16px' }}
+                  >
+                    You have not setup any webhook
+                    <div
+                      style={{
+                        fontSize: '14px',
+                        color: '#528ff0',
+                        cursor: 'pointer',
+                      }}
+                      onClick={onNewWebhookClick}
+                    >
+                      Add new Webhook
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            }
+          >
+            {webhooks
+              ? webhooks.map(webhook => (
+                  <WebhooksListItem key={webhook.id} webhook={webhook} />
+                ))
+              : null}
+          </TableBody>
+        </table>
+        {!webhooks.length ? (
+          <div className="text-center description">
+            List of all your webhook setup will show up here.
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+}

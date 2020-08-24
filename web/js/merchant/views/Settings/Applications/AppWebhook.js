@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import Spinner from 'common/ui/Spinner';
-import WebhookCreation from 'merchant/views/Settings/Webhooks/New';
+import AddEditWebhook from 'merchant/views/Settings/Webhooks/AddEditWebhook';
 
 export default class AppWebhook extends Component {
   render() {
@@ -15,7 +15,7 @@ export default class AppWebhook extends Component {
       );
     } else {
       return (
-        <WebhookCreation
+        <AddEditWebhook
           webhook={this.props.webhook}
           appId={this.props.appId}
           onSave={this.props.onSave}

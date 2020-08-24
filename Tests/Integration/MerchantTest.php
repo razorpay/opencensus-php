@@ -191,7 +191,7 @@ class MerchantTest extends TestCase
 
         $this->clickById('createWebook');
         $this->waitUntilDisplayedByClassName('new-webhook-modal');
-        $this->waitUntilContainsByCss('body', 'New Webhook');
+        $this->waitUntilContainsByCss('body', 'Setup Webhook');
 
         // Check if display includes new webhook
         $this->setValueById('new_webhook_url', 'http://googleeee.com');

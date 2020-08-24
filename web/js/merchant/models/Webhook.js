@@ -3,7 +3,7 @@ import { normalizeBoolean } from 'common/utils/rzp-utils';
 
 export default class Webhook extends GenericEntity {
   resourceUrl = 'webhooks';
-  resourceFields = ['url', 'secret', 'events', 'active'];
+  resourceFields = ['url', 'secret', 'events', 'active', 'alert_email'];
 
   getRouteName() {
     return this.isNew ? 'webhook_create' : 'webhook_edit';

@@ -1,0 +1,277 @@
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
+import RTracking from 'react-tracking';
+import moment from 'moment';
+import Spinner from 'common/ui/Spinner';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import DocsLink from 'merchant/components/DocsLink';
+import * as WebhookActions from 'merchant/reducers/webhooks';
+import AddEditWebhook from 'merchant/views/Settings/Webhooks/AddEditWebhook';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import SwitchField from 'common/ui/Forms/SwitchField';
+import Definition from 'common/ui/Definition';
+import Button from 'common/new-ui/Button';
+import Alert from 'common/new-ui/Alert';
+import Collapsible from 'merchant/components/Collapsible';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+
+@withRouter
+@connect(
+  state => {
+    return {
+      userData: state.session.user,
+      webhooks: state.webhooks,
+      modeFormatted: state.session.modeFormatted,
+    };
+  },
+  { ...WebhookActions, ...ModalActions, ...NotificationsActions }
+)
+@RTracking(() => window.rzpQ.component('WebhooksContainer'))
+export default class WebhookDetails extends Component {
+  state = {};
+
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
+
+  showWebhookModal = (webhook = null) => {
+    const tracking = this.props.tracking;
+
+    tracking.trackEvent(
+      window.rzpQ.merchantActions().initiated('Webhook.editIntiated', {
+        webhook_id: webhook.id,
+      })
+    );
+    this.props.openModal({
+      component: <AddEditWebhook webhook={webhook} />,
+    });
+  };
+
+  componentWillMount() {
+    this.props.fetchWebhook({
+      id: this.props.id,
+    });
+  }
+
+  toggleActive = (isChecked, cb) => {
+    const { webhooks } = this.props.webhooks;
+    const webhook = webhooks.find(webhook => webhook.id === this.props.id);
+    const newWebhookData = {
+      ...webhook,
+      active: isChecked,
+    };
+
+    return this.props
+      .saveWebhook(newWebhookData)
+      .then(webhook => {
+        cb(true);
+        this.props.onSave(webhook);
+      })
+      .catch(err => {
+        this.setState({
+          errors: err.errors,
+        });
+      });
+  };
+
+  handleDelete = webhooks => {
+    const webhook = webhooks.find(webhook => webhook.id === this.props.id);
+    this.context
+      .confirm({
+        header: 'Are you sure?',
+        message: () => (
+          <div class="text-semi-muted">
+            You are about to permanently delete the webhook URL.
+            <br />
+            <br />
+            <Alert.Warning>
+              <b>Note: </b>
+              You can try temporarily disabling a webhook.
+            </Alert.Warning>
+          </div>
+        ),
+        affirmativeLabel: 'Yes, Delete',
+        affirmativePendingLabel: 'Deleting...',
+        abortLabel: "No, don't!",
+        action: () => {
+          const webhookData = {
+            id: webhook.id,
+          };
+          const tracking = this.props.tracking;
+          return this.props
+            .deleteWebhook(webhookData)
+            .then(() => {
+              this.props.fetchWebhooks();
+              this.props.showNotification({
+                type: 'success',
+                message: 'Webhook deleted successfully',
+              });
+              this.props.history.goBack();
+              tracking.trackEvent(
+                window.rzpQ.merchantActions().success('Webhook.delete', {
+                  webhook_id: webhook.id,
+                  webhook_count: webhooks.length,
+                })
+              );
+            })
+            .catch(err => {
+              this.setState({
+                errors: err.errors,
+              });
+            });
+        },
+      })
+      .catch(() => {});
+  };
+
+  render() {
+    const webhooksState = this.props.webhooks;
+    const { loadingWebhook, webhooks, error } = webhooksState;
+    const { userData } = this.props;
+    const webhook = webhooks.find(webhook => webhook.id === this.props.id);
+
+    if (loadingWebhook || !webhook) {
+      return (
+        <div className="content-wrapper content-sm txn-details">
+          <div className="page-spinner-container">
+            <Spinner />
+          </div>
+        </div>
+      );
+    }
+
+    let activeEvents = [];
+
+    Object.keys(webhook.events).forEach(function(key) {
+      if (webhook.events[key] === true) {
+        activeEvents.push(key);
+      }
+    });
+
+    return (
+      <div className="content-wrapper content-sm txn-details">
+        <div className="panel panel-default SliderPanel">
+          <div className="panel-heading">
+            <strong>Webhook Details</strong>
+            <div style={{ float: 'right', paddingRight: '10px' }}>
+              <button
+                type="button"
+                className="btn Button--primary--invert btn-lg"
+                style={{
+                  borderRadius: '0px',
+                  padding: '8px 20px',
+                  marginRight: '8px',
+                  color: '#497fd6',
+                }}
+                onClick={() => this.handleDelete(webhooks)}
+              >
+                Delete
+              </button>
+              <Button.Primary
+                onClick={() => this.showWebhookModal(webhook)}
+                type="button"
+              >
+                Edit
+              </Button.Primary>
+            </div>
+          </div>
+          <div className="SliderPanel__Body">
+            <div className="panel-body">
+              <div className="list-group details-row-container">
+                <EntityDetailRow label="Webhook URL" value={webhook.url} />
+                <EntityDetailRow label="Status">
+                  <span className="toggler-btn">
+                    <SwitchField
+                      defaultChecked={webhook.active}
+                      onChange={(isChecked, cb) =>
+                        this.toggleActive(isChecked, cb)
+                      }
+                      type="prime"
+                    />
+                    {webhook.active ? (
+                      <b className="text-primary" style={{ marginLeft: '4px' }}>
+                        Enabled
+                      </b>
+                    ) : (
+                      <b className="text-faded" style={{ marginLeft: '4px' }}>
+                        Disabled
+                      </b>
+                    )}
+                  </span>
+                </EntityDetailRow>
+                <EntityDetailRow label="Secret">
+                  {webhook.secret_exists ? (
+                    <p>Secret was provided during webhook setup</p>
+                  ) : (
+                    <p>Not provided</p>
+                  )}
+                  <DocsLink
+                    title="Learn more about Webhook secrets"
+                    url="https://razorpay.com/docs/webhooks/"
+                    style={{ padding: '0', fontSize: '12px' }}
+                  />
+                </EntityDetailRow>
+                <EntityDetailRow label="Active Events">
+                  <Definition>
+                    <p>{activeEvents.length} Active Events</p>
+                    {activeEvents
+                      .slice(0, 7)
+                      .map(event => <p key={event}>{event}</p>)}
+                    {activeEvents.length > 7 ? (
+                      <div className="webhooks-collapsible-container">
+                        <Collapsible
+                          title={collapsibleOpen => (
+                            <span className="text-primary">
+                              {collapsibleOpen ? 'Hide some' : 'Show all'}{' '}
+                              active events
+                            </span>
+                          )}
+                          childrenPosition="top"
+                          class="CollapsibleFields"
+                        >
+                          {activeEvents.slice(7).map(event => <p>{event}</p>)}
+                        </Collapsible>
+                      </div>
+                    ) : null}
+                  </Definition>
+                </EntityDetailRow>
+                <EntityDetailRow
+                  label="Alert Email"
+                  value={
+                    webhook.alert_email ? webhook.alert_email : userData.email
+                  }
+                />
+                {webhook.updated_at && webhook.updated_by_email ? (
+                  <EntityDetailRow label="Last Updated By">
+                    <Definition>
+                      <p>{webhook.updated_by_email}</p>
+                      <p>
+                        {moment(webhook.updated_at, 'X').format(
+                          'DD MMM YYYY, hh:mm A'
+                        )}
+                      </p>
+                    </Definition>
+                  </EntityDetailRow>
+                ) : null}
+
+                {webhook.created_at && webhook.created_by_email ? (
+                  <EntityDetailRow label="Created By">
+                    <Definition>
+                      <p>{webhook.created_by_email}</p>
+                      <p>
+                        {moment(webhook.created_at, 'X').format(
+                          'DD MMM YYYY, hh:mm A'
+                        )}
+                      </p>
+                    </Definition>
+                  </EntityDetailRow>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}

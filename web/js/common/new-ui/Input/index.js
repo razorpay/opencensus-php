@@ -158,7 +158,7 @@ export class Label extends React.Component {
     const text = this.props.text;
     if (text) {
       return (
-        <div class={this.props.className || 'Input-label'}>
+        <div class={this.props.className || 'Input-label'} {...this.props}>
           {typeof text === 'function' ? text() : text}
         </div>
       );
@@ -462,7 +462,11 @@ class Check extends Field {
               ) : (
                 <React.Fragment>
                   <div className="Input-checkbox" />
-                  <Label class="Input-inlineLabel" text={fieldLabel} />
+                  <Label
+                    class="Input-inlineLabel"
+                    text={fieldLabel}
+                    {...this.props.labelProps}
+                  />
                 </React.Fragment>
               )}
             </label>

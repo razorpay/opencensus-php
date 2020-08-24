@@ -13,7 +13,6 @@ export default function ajax(params = {}) {
     headers['X-Requested-With'] = 'XMLHttpRequest';
     headers['Accept'] = 'application/json, text/plain, */*';
     params.headers = headers;
-
     if (
       (!params.method || String(params.method).toLowerCase() === 'get') &&
       params.data
@@ -30,7 +29,6 @@ export default function ajax(params = {}) {
     axios(params).then(
       resp => {
         const { data } = resp;
-
         // Error code is verified to handle api resolution to HTML doc / raw text.
         // Eg: For downloading csv file for api key-secret comes as raw text.
         if (!data.hasOwnProperty('success') || data.success == true) {
