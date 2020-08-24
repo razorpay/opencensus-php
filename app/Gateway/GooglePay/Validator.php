@@ -15,7 +15,7 @@ class Validator extends JitValidator
 
     protected static $googlePayCardAuthorizationRules = [
         RequestFields::PAYMENT_ID                 => 'required',
-        RequestFields::CARD_TYPE                  => 'required|in:DEBIT,CREDIT',
+        RequestFields::CARD_TYPE                  => 'required|in:DEBIT,CREDIT,UNKNOWN',
         RequestFields::CARD_NETWORK               => 'required|in:VISA,MASTERCARD',
         RequestFields::AMOUNT                     => 'required',
         RequestFields::TOKEN                      => 'required',

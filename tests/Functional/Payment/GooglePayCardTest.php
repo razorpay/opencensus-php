@@ -51,7 +51,7 @@ class GooglePayCardTest extends TestCase
 
         $googlePayMessage = [
             'pgTransactionRefId' => 'pay_' . $payment['id'],
-            'cardType'           => 'CREDIT',
+            'cardType'           => 'UNKNOWN',
             'network'            => 'VISA',
             'amount'             => '12.34',
             'token'              => $this->paymentDataToken,
@@ -75,6 +75,7 @@ class GooglePayCardTest extends TestCase
         $this->assertEquals($card['iin'], '444433');
         $this->assertEquals($card['network'], 'VISA');
         $this->assertEquals($card['name'], 'dummy card');
+        $this->assertEquals($card['type'], 'UNKNOWN');
     }
 
     public function testGooglePayCardCallbackFailureSecondTime()
