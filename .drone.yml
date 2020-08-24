@@ -21,16 +21,13 @@ pipeline:
       CHROME_BIN: /usr/bin/chromium
     secrets: [ npm_razorpay_token ]
     commands:
-      - apt-get update
-      - apt-get install -y chromium
-      # Fix for https://github.com/npm/uid-number/issues/3
       - npm config set unsafe-perm true
       - npm config set cache npm_cache
       # Root directory
       - npm install
       - node signup.js
       # Web directory
-      - cd web && npm install && npm run production:build
+      - cd web && npm run production:build
     when:
         event: push
   test-js:
@@ -43,6 +40,7 @@ pipeline:
       - apt-get update
       - apt-get install -y chromium
       - npm test
+      - npm run test:jest
     when:
       event: push
   # Uploaded to a build artifact

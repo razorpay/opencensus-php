@@ -1,0 +1,53 @@
+let utm = null;
+let gclid = null;
+let browser_details = {};
+
+if (typeof window.analytics !== 'undefined') {
+  utm = window.analytics.utils.getLandingParams();
+  gclid = window.analytics.utils.getCookie('gclid');
+  if (typeof window.analytics.utils.getBrowserDetails !== 'undefined') {
+    browser_details = window.analytics.utils.getBrowserDetails();
+  }
+}
+
+const commonProperties = {
+  utm_params: utm,
+  gclid,
+  mode: 'live',
+  reffering_url: document.referrer,
+  url: document.location.href,
+  session_id: window.session_id,
+};
+
+Object.assign(commonProperties, browser_details);
+
+interface EventData {
+  eventGroup: string;
+  eventAction: string;
+  eventContext: unknown;
+  eventName: string;
+}
+
+export default function pushEvents({
+  eventGroup,
+  eventAction,
+  eventContext = {},
+  eventName,
+}: EventData): void {
+  let properties = { ...commonProperties };
+  if (typeof eventContext === 'object') {
+    properties = { ...commonProperties, ...eventContext };
+  }
+  const eventQ = window.rzpQ[eventGroup]();
+  switch (eventAction) {
+    case 'initiated':
+      eventQ.initiated(eventName);
+      break;
+    case 'success':
+      eventQ.success(eventName);
+      break;
+    default:
+      break;
+  }
+  window.rzpQ.push(properties);
+}

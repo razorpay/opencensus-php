@@ -8,16 +8,20 @@
     "jsx": "react",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "typeRoots": ["node_modules/@types"],
+    "typeRoots": ["./typings", "node_modules/@types"],
     "strict": true,
     "resolveJsonModule": true,
     "experimentalDecorators": true,
     "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "test-utils": ["v2/services/test/test-utils"]
+    },
     "plugins": [
       {
         "name": "typescript-styled-plugin"
       }
     ]
   },
-  "include": ["js/dashboard_v2", "stories", "custom.d.ts"]
+  "include": ["v2/**/*", "stories", "typings/**/*"]
 }

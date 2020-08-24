@@ -15,7 +15,6 @@ import store from './store';
 import App from './containers/App';
 import '../../css/merchant.styl';
 import '../../dashboard.font';
-
 (async () => {
   if (localStorage.referrer === 'chrome-extension') {
     await import(/* webpackChunkName: "extension" */ './extension-entry');
@@ -32,5 +31,5 @@ render(
       </Router>
     </ConfirmModalProvider>
   </Provider>,
-  document.getElementById('react-root')
+  document.getElementById('react-root'),
 );

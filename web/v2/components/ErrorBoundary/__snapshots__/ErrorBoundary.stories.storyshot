@@ -1,0 +1,81 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Storyshots ErrorBoundary With SDK 1`] = `
+<div
+  className="Viewweb__View-sc-1cphyjf-0 ErrorBoundary__Container-sc-1m2tqz3-0 hVoDuP Sizeweb__Size-sc-10bl685-0 cXIHoT"
+>
+  <img
+    src="error_illustration.svg"
+  />
+  <p
+    className="Textweb__Text-sc-6jf9e4-0 hDFotI"
+    color="shade.980"
+    data-testid="ds-text"
+    size="large"
+  >
+    We're sorry — something's gone wrong.
+  </p>
+  <div
+    className="Textweb__Text-sc-6jf9e4-0 icdclg"
+    color="shade.980"
+    data-testid="ds-text"
+    size="large"
+  >
+    Our team has been notified, but
+    <a
+      className="Textweb__Text-sc-6jf9e4-0 Link__StyledText-sc-3nmidz-0 cARiWA"
+      color="shade.980"
+      data-testid="ds-text"
+      disabled={false}
+      onClick={[Function]}
+      size="medium"
+      target="_self"
+    >
+       click here 
+    </a>
+    <span
+      className="Textweb__Text-sc-6jf9e4-0 icdclg"
+      color="shade.980"
+      data-testid="ds-text"
+      size="large"
+    >
+      to fill out a report.
+    </span>
+  </div>
+  <div
+    className="Textweb__Text-sc-6jf9e4-0 icdclg"
+    color="shade.980"
+    data-testid="ds-text"
+    size="large"
+  >
+    Error Code: 
+    <code>
+      1234
+    </code>
+  </div>
+</div>
+`;
+
+exports[`Storyshots ErrorBoundary Without SDK 1`] = `
+<div
+  className="Viewweb__View-sc-1cphyjf-0 lhSUkp Sizeweb__Size-sc-10bl685-0 cXIHoT"
+>
+  <div
+    className="Textweb__Text-sc-6jf9e4-0 kgmkNM"
+    color="shade.980"
+    data-testid="ds-text"
+    size="large"
+  >
+    An error occured
+  </div>
+  <pre>
+    Error: something went wrong
+  </pre>
+  <pre>
+      trace@file:///C:/example.html:9:17
+  b@file:///C:/example.html:16:13
+  a@file:///C:/example.html:19:13
+  @file:///C:/example.html:21:9
+  </pre>
+</div>
+`;
