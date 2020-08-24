@@ -11,6 +11,12 @@ use RZP\Models\Merchant\AutoKyc\KycService\BaseProcessor;
 
 class POAProcessor extends BaseProcessor
 {
+
+    /**
+     * Timeout in Seconds
+     */
+    protected $timeout = 15;
+
     /**
      * @return Response
      * @throws \RZP\Exception\IntegrationException

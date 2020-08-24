@@ -9,6 +9,11 @@ use RZP\Models\Merchant\Detail\Constants;
 
 class POAProcessor extends BaseProcessor
 {
+    /**
+     * Timeout in Seconds
+     */
+    protected $timeout = 15;
+
     public function process(): Response
     {
         $signedUrl = $this->input[Constants::SIGNED_URL];
