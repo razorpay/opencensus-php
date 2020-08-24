@@ -123,6 +123,7 @@ class Netbanking
         IFSC::SBTR,
         IFSC::JSFB,
         IFSC::IOBA,
+        IFSC::FSFB,
     ];
 
     protected static $selfCorp = [
@@ -664,7 +665,12 @@ class Netbanking
             'tpv' => [
                 IFSC::IOBA,
             ],
-        ]
+        ],
+         Gateway::NETBANKING_FSB => [
+            'retail'    =>  [
+                IFSC::FSFB,
+            ]
+        ],
     ];
 
     protected static $defaultDisabled = [

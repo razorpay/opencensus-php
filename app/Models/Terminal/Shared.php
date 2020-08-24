@@ -132,6 +132,7 @@ class Shared
     const WORLDLINE_TERMINAL                 = '1000WldlineTml';
     const UPI_JUSPAY_TERMINAL                = '100UpiJsPayTml';
     const CRED_TERMINAL                      = '100DiCreDTrmnl';
+    const NETBANKING_FSB_TERMINAL            = '1000NbFsbTrmnl';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
@@ -237,6 +238,7 @@ class Shared
         self::NETBANKING_JSB_TERMINAL            => Gateway::NETBANKING_JSB,
         self::NETBANKING_IDBI_TERMINAL           => Gateway::NETBANKING_IDBI,
         self::NETBANKING_IOB_TERMINAL            => Gateway::NETBANKING_IOB,
+        self::NETBANKING_FSB_TERMINAL            => Gateway::NETBANKING_FSB,
         self::OLAMONEY_RAZORPAY_TERMINAL         => Gateway::WALLET_OLAMONEY,
         self::PAYTM_RAZORPAY_TERMINAL            => Gateway::PAYTM,
         self::PAYZAPP_RAZORPAY_TERMINAL          => Gateway::WALLET_PAYZAPP,

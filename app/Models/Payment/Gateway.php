@@ -78,6 +78,7 @@ class Gateway
     const NETBANKING_SVC         = 'netbanking_svc';
     const NETBANKING_JSB         = 'netbanking_jsb';
     const NETBANKING_IOB         = 'netbanking_iob';
+    const NETBANKING_FSB         = 'netbanking_fsb';
     const NACH_CITI              = 'nach_citi';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
@@ -611,6 +612,7 @@ class Gateway
         Payment\Gateway::PAYLATER_ICICI,
         Payment\Gateway::UPI_JUSPAY,
         Payment\Gateway::NETBANKING_IOB,
+        Payment\Gateway::NETBANKING_FSB,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
@@ -642,6 +644,7 @@ class Gateway
         Payment\Gateway::PAYLATER_ICICI         => 1593685800,
         Payment\Gateway::NETBANKING_IDBI        => 1578479400,
         Payment\Gateway::NETBANKING_IOB         => 1578479400,
+        Payment\Gateway::NETBANKING_FSB         => 1591900200,
     ];
 
     public static $channels = [
@@ -747,6 +750,7 @@ class Gateway
             self::NETBANKING_SVC,
             self::NETBANKING_JSB,
             self::NETBANKING_IOB,
+            self::NETBANKING_FSB,
         ],
 
         //
@@ -1222,6 +1226,7 @@ class Gateway
         self::NETBANKING_SVC,
         self::NETBANKING_JSB,
         self::NETBANKING_IDBI,
+        self::NETBANKING_FSB,
     ];
 
     public static $captureVerifyEnabled = [
@@ -1632,6 +1637,7 @@ class Gateway
         IFSC::STBP         => Gateway::NETBANKING_SBI,
         IFSC::SBTR         => Gateway::NETBANKING_SBI,
         IFSC::IOBA         => Gateway::NETBANKING_IOB,
+        IFSC::FSFB         => Gateway::NETBANKING_FSB,
     ];
 
     /**
@@ -1702,6 +1708,7 @@ class Gateway
         Gateway::NETBANKING_CORPORATION,
         Gateway::NETBANKING_KVB,
         Gateway::NETBANKING_SVC,
+        Gateway::NETBANKING_FSB,
     ];
 
     /**
@@ -2587,6 +2594,7 @@ class Gateway
             self::NETBANKING_IDBI,
             self::NETBANKING_JKB,
             self::NETBANKING_IOB,
+            self::NETBANKING_FSB,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -2610,6 +2618,7 @@ class Gateway
             self::NETBANKING_IDBI,
             self::NETBANKING_JKB,
             self::NETBANKING_IOB,
+            self::NETBANKING_FSB,
         ];
 
         return (in_array($gateway, $gateways, true));

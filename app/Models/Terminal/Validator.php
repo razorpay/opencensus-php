@@ -1399,6 +1399,11 @@ class Validator extends Base\Validator
         Entity::ENABLED              => 'required_with:status',
     ];
 
+    protected static $netbankingFsbTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:netbanking_fsb',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+    ];
+
     // A gateway is automatic iff terminals for this gateway are created
     // automatically(during payments flow, via API etc).
     // all gateways that are not automatic are classified as manual gateways
