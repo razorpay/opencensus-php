@@ -7427,6 +7427,18 @@ trait Authorize
         //fetches the emi plans for merchant as well as shared merchant
         $emiPlans = $this->repo->emi_plan->fetchRelevantMerchantEmiPlan($iinEntity, $emiDuration, $merchant, $type);
 
+        // If SBI EMI is disabled, don't consider that plan
+        if ((new Merchant\Service)->isSbiEmiEnabled() === false)
+        {
+            $emiPlans = $emiPlans->reject(
+                function($emiPlan)
+                {
+                    return (($emiPlan->getType() === Emi\Type::CREDIT) and
+                        ($emiPlan->getBank() === IFSC::SBIN));
+                }
+            );
+        }
+
         if ($emiPlans->count() == 0)
         {
             throw new Exception\BadRequestException(

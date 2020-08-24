@@ -2,7 +2,6 @@
 
 namespace RZP\Tests\Functional\Payment;
 
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use Str;
 use File;
 use Mail;
@@ -14,6 +13,7 @@ use Carbon\Carbon;
 use RZP\Jobs\BeamJob;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class EMIPaymentTest extends TestCase
@@ -108,6 +108,84 @@ class EMIPaymentTest extends TestCase
         $this->testEmiPaymentCreate();
 
         $this->testEmiPaymentCreate();
+    }
+
+    public function testSbiEmiPaymentWithEmiSbiTerminal()
+    {
+        $this->fixtures->emiPlan->createMerchantSpecificEmiPlans();
+
+        $this->fixtures->create('iin',
+            [
+                'iin'           => '400666',
+                'category'      => 'STANDARD',
+                'network'       => 'MasterCard',
+                'type'          => 'credit',
+                'country'       => 'IN',
+                'issuer_name'   => 'STATE BANK OF INDI',
+                'issuer'        => 'SBIN',
+                'emi'           => 1,
+                'trivia'        => 'random trivia'
+            ]);
+
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->terminal->create([
+            'merchant_id' => '10000000000000',
+            'gateway'     => 'emi_sbi',
+        ]);
+
+        $this->ba->publicAuth();
+
+        $this->makeEmiPaymentOnCard('4006660000086709', 9);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'status' => 'captured',
+                'method' => 'emi',
+            ],
+            $payment
+        );
+
+        $emiPlan = $this->getDbEntityById('emi_plan', $payment['emi_plan_id'])->toArray();
+
+        $this->assertArraySelectiveEquals(
+            [
+                'bank' => 'SBIN',
+                'type' => 'credit',
+            ],
+            $emiPlan
+        );
+    }
+
+    public function testSbiEmiPaymentWithoutEmiSbiTerminal()
+    {
+        $this->fixtures->emiPlan->createMerchantSpecificEmiPlans();
+
+        $this->fixtures->create('iin',
+            [
+                'iin'           => '400666',
+                'category'      => 'STANDARD',
+                'network'       => 'MasterCard',
+                'type'          => 'credit',
+                'country'       => 'IN',
+                'issuer_name'   => 'STATE BANK OF INDI',
+                'issuer'        => 'SBIN',
+                'emi'           => 1,
+                'trivia'        => 'random trivia'
+            ]);
+
+        $this->fixtures->merchant->enableEmi();
+
+        $this->ba->publicAuth();
+
+        $this->makeRequestAndCatchException(
+            function()
+            {
+                $this->makeEmiPaymentOnCard('4006660000086709', 9);
+            },
+            \RZP\Exception\BadRequestException::class);
     }
 
     public function testEmiFileGenerate()
@@ -316,7 +394,7 @@ class EMIPaymentTest extends TestCase
     }
 
     protected function makeEmiPaymentOnCard($card, $emiDuration,
-        $paymentTime, $save = 0, $appToken = null, $customerId = null)
+        $paymentTime = null, $save = 0, $appToken = null, $customerId = null)
     {
         $this->payment['amount'] = 500000;
         $this->payment['method'] = 'emi';
@@ -331,12 +409,15 @@ class EMIPaymentTest extends TestCase
         // Set Payment Time
         $payment = $this->getDbLastEntityToArray('payment');
 
-        $this->fixtures->edit('payment', $payment['id'], [
-            'created_at'    => $paymentTime - 2,
-            'authorized_at' => $paymentTime,
-            'captured_at'   => $paymentTime + 2,
-            'updated_at'    => $paymentTime + 2,
-        ]);
+        if ($paymentTime !== null)
+        {
+            $this->fixtures->edit('payment', $payment['id'], [
+                'created_at'    => $paymentTime - 2,
+                'authorized_at' => $paymentTime,
+                'captured_at'   => $paymentTime + 2,
+                'updated_at'    => $paymentTime + 2,
+            ]);
+        }
 
         return $this->getDbLastEntityToArray('payment');
     }

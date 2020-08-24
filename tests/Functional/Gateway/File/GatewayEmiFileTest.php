@@ -342,6 +342,11 @@ class GatewayEmiFileTest extends TestCase
             'merchant_id'           => '10000000000000',
         ]);
 
+        $this->fixtures->terminal->create([
+            'merchant_id' => '10000000000000',
+            'gateway'     => 'emi_sbi',
+        ]);
+
         $this->ba->publicAuth();
 
         $this->makeEmiPaymentOnCard('4006660000086709', 9);
