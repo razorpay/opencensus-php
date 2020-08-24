@@ -22,7 +22,7 @@ class BaseResponse implements Response
 
     public function validateResponse()
     {
-        //sd($this->response);
+        // validate response here if any specific validation is required
     }
 
     public function getResponseData()
