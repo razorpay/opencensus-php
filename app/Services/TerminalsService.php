@@ -25,6 +25,7 @@ class TerminalsService
 
     const X_RAZORPAY_TASKID         = 'X-Razorpay-TaskId';
     const X_RZP_TESTCASE_ID         = 'X-RZP-TESTCASE-ID';
+    const X_DASHBOARD_MERCHANT_ID   = 'X-Dashboard-Merchant-Id';
 
 
     const GATEWAY           = 'gateway';
@@ -62,6 +63,9 @@ class TerminalsService
     const MERCHANT_HAS_ALREADY_COMPLETED_PAYPAL_ONBOARDING         = 'Merchant has already completed PayPal onboarding';
     const PAYPAL_ONBOARDING_NOT_ALLOWED_FOR_YOUR_ACCOUNT           = 'PayPal Onboarding is not allowed for your account.';
     const DUPLICATE_TERMINAL_EXIST                                 = "Duplicate Terminal Exist";
+
+    // razorx flags
+    const RAZORX_FLAG_MERCHANT_INSTRUMENT_REQUEST = 'instrument_request_merchant_dashboard';
 
     // terminals service error descriptions mapped with exception that needs to be raised by api
     const TERMINALS_API_ERROR_CODE_MAPPING     =    [
@@ -292,6 +296,74 @@ class TerminalsService
         return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
     }
 
+    public function reRequestInternalInstrumentRequestsOnActivationFormSubmit(string $merchantId)
+    {
+        try
+        {
+            if ($this->isMerchantRampedForInstrumentRequests($merchantId) === false)
+            {
+                return;
+            }
+
+            $input = [
+                'status'  => 'requested',
+            ];
+
+            $query = 'v2/internal_instrument_request?status=action_required&merchant_ids=' . $merchantId;
+
+            $headers = $this->getMerchantHeadersForInstrumentRequest($merchantId);
+
+            $headers['activation_form_submit'] = true;
+
+
+            $response = $this->proxyTerminalService($input, Requests::PATCH, $query, [], $headers);
+
+            $this->trace->info(TraceCode::TERMINALS_SERVICE_MERCHANT_INSTRUMENT_RE_REQUEST_RESPONSE, $response);
+
+        }
+        catch (\Throwable $throwable)
+        {
+            $data = [
+                Merchant\Entity::MERCHANT_ID => $merchantId,
+                'message'                    => $throwable->getMessage(),
+                'code'                       => $throwable->getCode(),
+            ];
+
+            $this->trace->error(TraceCode::TERMINALS_SERVICE_MERCHANT_INSTRUMENT_RE_REQUEST_FAILED, $data);
+        }
+    }
+
+    public function requestDefaultMerchantInstruments(string $merchantId)
+    {
+        try
+        {
+            if ($this->isMerchantRampedForInstrumentRequests($merchantId) === false)
+            {
+                return;
+            }
+
+            $input = [
+                Merchant\Entity::MERCHANT_ID => $merchantId,
+            ];
+
+            $headers = $this->getMerchantHeadersForInstrumentRequest($merchantId);
+
+            $response = $this->proxyTerminalService($input, Requests::POST, 'v2/default_merchant_instrument_requests', [], $headers);
+
+            $this->trace->info(TraceCode::TERMINALS_SERVICE_MERCHANT_DEFAULT_INSTRUMENTS_REQUEST_RESPONSE, $response);
+        }
+        catch (\Throwable $throwable)
+        {
+            $data = [
+                Merchant\Entity::MERCHANT_ID => $merchantId,
+                'message' => $throwable->getMessage(),
+                'code' => $throwable->getCode(),
+            ];
+
+            $this->trace->error(TraceCode::TERMINALS_SERVICE_MERCHANT_DEFAULT_INSTRUMENTS_REQUEST_FAILED, $data);
+        }
+    }
+
     protected function sendRequest(string $path, $content = '', string $method = Requests::POST, array $addditionalOptions = [],
                                    array $additionalHeaders = []): \Requests_Response
     {
@@ -450,5 +522,23 @@ class TerminalsService
     protected function getMode()
     {
         return $this->app['rzp.mode'];
+    }
+
+    protected function isMerchantRampedForInstrumentRequests(string $merchantId) : bool
+    {
+        $response = $this->app->razorx->getTreatment($merchantId, self::RAZORX_FLAG_MERCHANT_INSTRUMENT_REQUEST, $this->getMode());
+
+        $this->trace->info(TraceCode::TERMINALS_SERVICE_MERCHANT_INSTRUMENT_RAZORX_RESPONSE, [
+            'variant' => $response
+        ]);
+
+        return $response === 'on';
+    }
+
+    protected function getMerchantHeadersForInstrumentRequest(string $merchantId) : array
+    {
+        return [
+            self::X_DASHBOARD_MERCHANT_ID => $merchantId,
+        ];
     }
 }

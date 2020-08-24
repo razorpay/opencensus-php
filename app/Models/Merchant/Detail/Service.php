@@ -116,6 +116,8 @@ class Service extends Base\Service
 
         $response = $this->saveMerchantDetails($input, $merchant);
 
+        $this->app['terminals_service']->reRequestInternalInstrumentRequestsOnActivationFormSubmit($merchant->getId());
+
         $this->app->hubspot->trackL2ContactProperties($input, $this->merchant);
 
         $this->app['diag']->trackOnboardingEvent(EventCode::KYC_SAVE_MODIFICATIONS_SUCCESS, $this->merchant, null, $input);

@@ -132,6 +132,8 @@ class Service extends Base\Service
 
         $this->setDefaultLateAuthConfigForMerchant($merchant);
 
+       $this->app['terminals_service']->requestDefaultMerchantInstruments($merchant->getId());
+
         return $merchantData;
     }
 

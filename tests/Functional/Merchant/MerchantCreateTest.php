@@ -24,6 +24,7 @@ use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Models\Partner\Config as PartnerConfig;
+use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use Razorpay\OAuth\Application\Entity as OAuthApp;
 use RZP\Mail\User\PasswordReset as PasswordResetMail;
@@ -36,6 +37,7 @@ use RZP\Mail\Merchant\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateMa
 class MerchantCreateTest extends TestCase
 {
     use PartnerTrait;
+    use TerminalTrait;
     use BatchTestTrait;
 
     public function setUp()
@@ -1493,5 +1495,99 @@ class MerchantCreateTest extends TestCase
 
         $this->assertEquals('late_auth_'.$this->merchantId, $liveConfig['name']);
         $this->assertEquals('late_auth_'.$this->merchantId, $testConfig['name']);
+    }
+
+    // whenever a merchant is created, certain default instruments should be requested on behalf of the merchant
+    // this is accomplished by a call to terminals service
+    // this test asserts that the required call is made
+    public function testCreateMerchantRequestDefaultInstruments()
+    {
+        $this->ba->adminAuth();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'instrument_request_merchant_dashboard')
+                    {
+                        return 'on';
+                    }
+                    else
+                    {
+                        return 'control';
+                    }
+
+                }) );
+
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+
+        $receivedMethod = '';
+
+        $receivedContent = '';
+
+        $receivedPath = '';
+
+        // cannot assert within mock as exception failures thrown are handled in code somewhere else, leading to silent failure of assertions failures
+        $this->mockTerminalsServiceSendRequest(function($path, $content, $method) use (&$receivedPath, &$receivedContent, &$receivedMethod) {
+
+            $receivedPath = $path;
+
+            $receivedContent = $content;
+
+            $receivedMethod = $method;
+        }, 1);
+
+        $this->ba->adminAuth();
+
+        $this->merchantId = '1X4hRFHFx4UiXt';
+
+        $this->createMerchant();
+
+        $this->assertEquals('POST', $receivedMethod);
+
+        $this->assertEquals('v2/default_merchant_instrument_requests', $receivedPath);
+
+        $this->assertEquals('{"merchant_id":"1X4hRFHFx4UiXt"}', $receivedContent);
+    }
+
+    // whenever a merchant is created, certain default instruments should be requested on behalf of the merchant
+    // this is accomplished by a call to terminals service
+    // this test asserts that the required call is not made when razorx returns control
+    public function testCreateMerchantRequestDefaultInstrumentsRazorxControl()
+    {
+        $this->ba->adminAuth();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode) {
+                    return 'control';
+
+                }));
+
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use (&$receivedPath, &$receivedContent, &$receivedMethod) {
+
+        }, 0);
+
+        $this->ba->adminAuth();
+
+        $this->merchantId = '1X4hRFHFx4UiXt';
+
+        $this->createMerchant();
     }
 }
