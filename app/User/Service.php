@@ -529,19 +529,6 @@ class Service extends Base\Service
         return self::OAUTH_SESSION_TOKEN . '.' . $token;
     }
 
-    private function debugLogsForActivationIssue(array $data, $traceCode)
-    {
-        // Debug logs for Specific UserId. Will be removed once issue is fixed.
-        $userId = $data['user']['id'] ?? null;
-
-        if ($userId === Constants::USER_ID_DEBUG_ACTIVATION_ISSUE)
-        {
-            $activated = $data['activated'] ?? null;
-
-            $this->trace->info($traceCode, ['userId' => $userId, 'activated' => $activated]);
-        }
-    }
-
     public function getUserDetails()
     {
         $data = [
@@ -599,8 +586,6 @@ class Service extends Base\Service
         }
 
         $currentMerchantId = $currentMerchant->id;
-
-        $this->debugLogsForActivationIssue($data, TraceCode::USER_FROM_API_DEBUG);
 
         // If the user is logged in as someone
         if ($currentMerchantId)
@@ -673,8 +658,6 @@ class Service extends Base\Service
                         list($error, $x) = $request->send("merchants/product-switch", "POST");
 
                         $data = $this->updateUserDetails($data, $user);
-
-                        $this->debugLogsForActivationIssue($data, TraceCode::USER_AFTER_UPDATE_DEBUG);
                     }
 
                     // if the merchant is a partner
