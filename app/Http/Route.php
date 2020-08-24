@@ -344,7 +344,7 @@ class Route
         'initiate_terminal_onboarding'             => ['post',     'terminals/onboard',                              'TerminalOnboardingController@postInitiateOnboarding'               ],
         'terminal_onboard_callback'                => ['post',     'terminals/onboard/{gateway}/callback/{mode}',    'TerminalOnboardingController@postTerminalOnboardCallback'          ],
         'bank_transfer_process'                    => ['post',     'ecollect/validate',                              'BankTransferController@processBankTransfer'                        ],
-        'bank_transfer_process_icici'              => ['post',     'ecollect/validate/icici',                        'BankTransferController@processIciciBankTransfer'                   ],
+        'bank_transfer_process_icici'              => ['post',     'ecollect/validate/icici',                        'BankTransferController@processIciciBankTransferCallback'                 ],
         'bank_transfer_process_icici_internal'     => ['post',     'ecollect/validate/icici/internal',               'BankTransferController@processIciciBankTransfer'                   ],
         'bank_transfer_process_file'               => ['post',     'ecollect/validate/file',                         'BankTransferController@processBankTransferFile'                    ],
         'bank_transfer_process_file_rbl'           => ['post',     'ecollect/validate/file/rbl',                     'BankTransferController@processBankTransferFileRbl'                 ],
@@ -2630,6 +2630,7 @@ class Route
         'subscription_registration_resend_link',
         'subscription_registration_cancel_link',
         'user_resend_verification_otp',
+        'bank_transfer_process_icici',
     ];
 
     // The below routes can be used with partner credentials without X-Razorpay-Account header,
@@ -5052,6 +5053,10 @@ class Route
             'bank_transfer_notify',
         ],
 
+        'icici' => [
+            'bank_transfer_process_icici',
+        ],
+
         'rbl' => [
             'banking_account_webhook_account_info',
         ],
@@ -5186,7 +5191,6 @@ class Route
             'mdr_adjustment',
             'entity_bulk_update',
             'adj_add_batch',
-            'bank_transfer_process_icici',
             'bank_transfer_process_icici_internal',
             'reporting_log_create',
             'bank_transfer_process_rbl_internal',

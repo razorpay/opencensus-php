@@ -1911,6 +1911,44 @@ class BankTransferTest extends TestCase
         $this->assertEquals('bt_rbl', $payment['gateway']);
     }
 
+    public function testIciciBankTransferCallback()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Virtual_Account_Number_Verification_IN'][0]['payee_account'] =  $this->getIciciVaBankAccount();
+
+        $this->ba->iciciAuth();
+
+        $this->startTest($testData);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['Virtual_Account_Number_Verification_IN'][0]['transaction_id']);
+        $this->assertEquals(100000, $bankTransfer['amount']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(100000, $payment['amount']);
+        $this->assertEquals('bt_icici', $payment['gateway']);
+    }
+
+    public function testIciciBankTransferCallbackInvalid()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->iciciAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testIciciBankTransferCallbackBadRequest()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->iciciAuth();
+
+        $this->startTest($testData);
+    }
+
     public function testBankTransferRblRefund()
     {
         $this->createRblRefund(__FUNCTION__);

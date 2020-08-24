@@ -260,6 +260,132 @@ return [
             'status_code' => 200,
         ]
     ],
+
+    'testIciciBankTransferCallback' => [
+        'request' => [
+            'url'     => '/ecollect/validate/icici',
+            'method'  => 'post',
+            'content' => [
+                'Virtual_Account_Number_Verification_IN' =>  [
+                    [
+                        'client_code'     => '2233',
+                        'payee_account'   =>  null,
+                        'amount'          => '1000.00',
+                        'mode'            => 'N',
+                        'transaction_id'  => 'ICICI123',
+                        'payer_name'      => 'ABCD Limited',
+                        'payer_account'   => '22233303415693401',
+                        'payer_ifsc'      => 'ICIC0000104',
+                        'description'     => 'some info',
+                        'date'            => '2019-03-19 20:00:11',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Virtual_Account_Number_Verification_OUT' => [
+                    [
+                        'client_code'    => '2233',
+                        'amount'         => '1000.00',
+                        'mode'           => 'N',
+                        'transaction_id' => 'ICICI123',
+                        'payer_name'     => 'ABCD Limited',
+                        'payer_account'  => '22233303415693401',
+                        'payer_ifsc'     => 'ICIC0000104',
+                        'status'         => 'ACCEPT',
+                        'reject_reason'  => '',
+                        'date'           => '2019-03-19 20:00:11'
+                    ]
+                ]
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testIciciBankTransferCallbackInvalid' => [
+        'request' => [
+            'url'     => '/ecollect/validate/icici',
+            'method'  => 'post',
+            'content' => [
+                'Virtual_Account_Number_Verification_IN' =>  [
+                    [
+                        'client_code'     => '2233',
+                        'payee_account'   =>  '22233303415693402',
+                        'amount'          => '1000.00',
+                        'mode'            => 'N',
+                        'transaction_id'  => 'ICICI123',
+                        'payer_name'      => 'ABCD Limited',
+                        'payer_account'   => '22233303415693401',
+                        'payer_ifsc'      => 'ICIC0000104',
+                        'description'     => 'some info',
+                        'date'            => '2019-03-19 20:00:11',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Virtual_Account_Number_Verification_OUT' => [
+                    [
+                        'client_code'    => '2233',
+                        'payee_account'   =>  '22233303415693402',
+                        'amount'         => '1000.00',
+                        'mode'           => 'N',
+                        'transaction_id' => 'ICICI123',
+                        'payer_name'     => 'ABCD Limited',
+                        'payer_account'  => '22233303415693401',
+                        'payer_ifsc'     => 'ICIC0000104',
+                        'status'         => 'ACCEPT',
+                        'reject_reason'  => 'SERVER_ERROR',
+                        'date'           => '2019-03-19 20:00:11'
+                    ]
+                ]
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testIciciBankTransferCallbackBadRequest' => [
+        'request' => [
+            'url'     => '/ecollect/validate/icici',
+            'method'  => 'post',
+            'content' => [
+                'Virtual_Account_Number_Verification_IN' =>  [
+                    [
+                        'client_code'     => '2233',
+                        'payee_account'   =>  '22233303415693402',
+                        'amount'          => '1000.00',
+                        'mode'            => 'N',
+                        'payer_name'      => 'ABCD Limited',
+                        'payer_account'   => '22233303415693401',
+                        'payer_ifsc'      => 'ICIC0000104',
+                        'description'     => 'some info',
+                        'date'            => '2019-03-19 20:00:11',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Virtual_Account_Number_Verification_OUT' => [
+                    [
+                        'client_code'    => '2233',
+                        'payee_account'  =>  '22233303415693402',
+                        'amount'         => '1000.00',
+                        'mode'           => 'N',
+                        'payer_name'     => 'ABCD Limited',
+                        'payer_account'  => '22233303415693401',
+                        'payer_ifsc'     => 'ICIC0000104',
+                        'status'         => 'REJECT',
+                        'reject_reason'  => 'BAD_REQUEST',
+                        'date'           => '2019-03-19 20:00:11'
+                    ]
+                ]
+            ],
+            'status_code' => 400,
+        ]
+    ],
     'testBankTransferRblIft' => [
         'request' => [
             'url'     => '/ecollect/validate/rbl/test',

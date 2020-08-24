@@ -558,6 +558,7 @@ class Core extends Base\Core
                 break;
 
             case 'bank_transfer_process_rbl':
+            case 'bank_transfer_process_icici':
                 $properties = [
                     'source'        => 'callback',
                     'request_from'  => 'bank',
@@ -573,7 +574,6 @@ class Core extends Base\Core
 
                 break;
 
-            case 'bank_transfer_process_icici':
             case 'bank_transfer_process_icici_internal':
                 $properties = [
                     'source'        => 'file',

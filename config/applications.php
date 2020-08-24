@@ -231,6 +231,9 @@ return [
     VirtualAccount\Provider::YESBANK => [
         'secret'    => env('YESBANK_SECRET'),
     ],
+    VirtualAccount\Provider::ICICI => [
+        'secret'    => env('ICICI_SECRET'),
+    ],
 
     'rbl_va'    => [
         'org_token' => env('RBL_VA_SECRET'),

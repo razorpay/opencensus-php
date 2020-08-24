@@ -384,6 +384,15 @@ class Authorization
         $this->appAuth('rzp_'.$mode, $pwd);
     }
 
+    public function iciciAuth($mode = 'test')
+    {
+        $iciciConfig = \Config::get('applications.icici');
+
+        $pwd = $iciciConfig['secret'];
+
+        $this->appAuth('rzp_'.$mode, $pwd);
+    }
+
     public function authServiceAuth($mode = 'test')
     {
         $authServiceConfig = \Config::get('applications.auth_service');

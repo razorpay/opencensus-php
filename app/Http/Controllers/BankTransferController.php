@@ -118,6 +118,39 @@ class BankTransferController extends Controller
         return ApiResponse::json(['Status' => 'Success']);
     }
 
+    public function processIciciBankTransferCallback()
+    {
+        $input = Request::all();
+
+        $this->trace->info(TraceCode::ICICI_VA_CALLBACK, $input);
+
+        try
+        {
+            $entityInput = $this->modifyIciciDataToEntity($input);
+
+            $response = $this->service()->saveRequestAndProcess($entityInput, Provider::ICICI, false, $input);
+
+            if (boolval($response['valid']) === false)
+            {
+                return $this->getIciciResponse($input, 'SERVER_ERROR');
+            }
+        }
+        catch (BadRequestValidationFailureException $e)
+        {
+            $this->trace->traceException($e);
+
+            return $this->getIciciResponse($input, 'BAD_REQUEST', 400);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+
+            return $this->getIciciResponse($input, 'ERROR');
+        }
+
+        return $this->getIciciResponse($input, '');
+    }
+
     protected function validateRequestToken($validateReqToken)
     {
         if ($validateReqToken === false)
@@ -273,6 +306,53 @@ class BankTransferController extends Controller
         ];
     }
 
+    protected function modifyIciciDataToEntity($input)
+    {
+        (new JitValidator)->setStrictFalse()->rules(Validator::$iciciRules)->caller($this)->validate($input);
+
+        $data = $input['Virtual_Account_Number_Verification_IN'][0];
+
+        $mode = strtolower($data['mode']);
+
+        switch ($mode)
+        {
+            case 'n':
+                $mode = \RZP\Models\BankTransfer\Mode::NEFT;
+                break;
+
+            case 'f':
+                $mode = \RZP\Models\BankTransfer\Mode::FT;
+                break;
+
+            case 'r':
+                $mode = \RZP\Models\BankTransfer\Mode::RTGS;
+                break;
+
+            case 'o':
+                $mode = \RZP\Models\BankTransfer\Mode::IMPS;
+                break;
+
+            default:
+                throw new BadRequestValidationFailureException('invalid mode: '. $data['mode'], null, $data);
+        }
+
+        $time = Carbon::createFromFormat('Y-m-d H:i:s', $data['date'], Timezone::IST)->getTimestamp();
+
+        return [
+            'payee_account'  => $data['payee_account'],
+            'payee_ifsc'     => Provider::IFSC[Provider::ICICI],
+            'payer_name'     => $data['payer_name'],
+            'payer_account'  => $data['payer_account'],
+            'payer_ifsc'     => $data['payer_ifsc'],
+            'mode'           => $mode,
+            'transaction_id' => $data['transaction_id'],
+            'time'           => $time,
+            'amount'         => number_format($data['amount'], 2, '.', ''),
+            'description'    => $data['description'] ?? null,
+            'narration'      => $data['transaction_id'],
+        ];
+    }
+
     public function notifyBankTransfer()
     {
         $input = Request::all();
@@ -325,5 +405,20 @@ class BankTransferController extends Controller
         $response = $this->service()->insert($provider, $input);
 
         return ApiResponse::json($response);
+    }
+
+    private function getIciciResponse(array $input, string $failureReason, int $statusCode = 200)
+    {
+        $input = $input['Virtual_Account_Number_Verification_IN'][0];
+
+        $input['status'] = $statusCode === 200 ? 'ACCEPT' : 'REJECT';
+
+        $input['reject_reason'] = $failureReason;
+
+        return ApiResponse::json(['Virtual_Account_Number_Verification_OUT' =>
+            [
+                $input
+            ]
+        ], $statusCode);
     }
 }

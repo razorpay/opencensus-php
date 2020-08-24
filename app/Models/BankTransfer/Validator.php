@@ -51,6 +51,20 @@ class Validator extends Base\Validator
         'Data.0.creditAccountNumber'    => 'required|string',
     ];
 
+    public static $iciciRules = [
+        'Virtual_Account_Number_Verification_IN'                    => 'required|array',
+        'Virtual_Account_Number_Verification_IN.0.client_code'      => 'required|string',
+        'Virtual_Account_Number_Verification_IN.0.payee_account'    => 'required|string',
+        'Virtual_Account_Number_Verification_IN.0.amount'           => 'required|string',
+        'Virtual_Account_Number_Verification_IN.0.mode'             => 'required|string',
+        'Virtual_Account_Number_Verification_IN.0.transaction_id'   => 'required|string',
+        'Virtual_Account_Number_Verification_IN.0.payer_name'       => 'required|string',
+        'Virtual_Account_Number_Verification_IN.0.payer_account'    => 'required|string',
+        'Virtual_Account_Number_Verification_IN.0.payer_ifsc'       => 'required|string',
+        'Virtual_Account_Number_Verification_IN.0.description'      => 'nullable|string',
+        'Virtual_Account_Number_Verification_IN.0.date'             => 'required|string',
+    ];
+
     protected static $editBankTransferRules = [
         Entity::PAYER_NAME              => 'sometimes|string|max:100',
         Entity::PAYER_ACCOUNT           => 'sometimes|string|max:20',

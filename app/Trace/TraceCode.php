@@ -3209,6 +3209,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PRODUCT_INTERNATIONAL_TRIGGERED                       = 'PRODUCT_INTERNATIONAL_TRIGGERED';
     const PRODUCT_INTERNATIONAL_APPROVED                        = 'PRODUCT_INTERNATIONAL_APPROVED';
 
+    // ICICI Integration
+    const ICICI_VA_CALLBACK                                     = 'ICICI_VA_CALLBACK';
+
     // VA Migrate - Yesbank -> RBL
     const VA_MIGRATE_REQUEST            = 'VA_MIGRATE_REQUEST';
     const VA_MIGRATE_JOB_TRIGGERED      = 'VA_MIGRATE_JOB_TRIGGERED';
