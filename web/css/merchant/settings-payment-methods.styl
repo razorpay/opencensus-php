@@ -1,0 +1,209 @@
+#settings-payment-methods
+  .mr-20
+    margin-right: 20px
+  .panel-heading
+    padding-top: 4px
+    .title
+      font-size: 18px
+      font-weight: 600
+  .methods-view
+    display: flex
+    width: 100%
+    border: 1px solid #E6E7E8
+    background: rgba(238, 238, 238, 0.1)
+    overflow-x: auto
+    .level-1, .level-2
+      width: 320px
+      flex-shrink:0
+      border-right: 1px solid #E6E7E8
+      flex-wrap:no-wrap
+    .level-2
+        ul > li
+          height: 69px
+    ul
+      list-style-type: none
+      padding: 0
+      margin-bottom: 0
+      li:hover
+        background: rgba(11, 112, 231, 0.05);
+        .show-expand
+          visibility: visible
+          cursor: pointer
+
+      li
+        display: flex
+        height: 70px
+        align-items: center
+        padding-right: 5px
+        margin: 0px
+        border-bottom: 1px solid #E6E7E8
+        background: #FFFFFF
+        .icon
+          width: 30px
+          margin-left: 22px;
+        .detail
+          flex:5
+          padding-left: 15px
+          strong
+            user-select: none;
+            color: #5D666D
+            font-size: 14px
+            line-height: 17px
+          p
+            user-select: none;
+            color: #828282
+            font-size: 12px
+            line-height: 20px
+        .expand
+          flex:1
+          color: #0B70E7
+          font-size: 20px
+        .show-expand
+          visibility: hidden
+        .highlight-expand
+          visibility: visible
+          cursor: pointer
+      .highlight
+        background: rgba(11, 112, 231, 0.05);
+
+        
+
+    .level-3
+      width: 100%
+      padding: 32px
+      background: #FFFFFF
+      .heading
+        display: flex
+        width: 420px
+        justify-content: space-between
+        font-size: 12px
+        color: #5D666D
+        margin-bottom: 16px
+        padding: 0 2px
+      .filter 
+        margin: 0px 0 20px 0;
+        button:not(:last-child)
+          margin-right: 16px
+
+      .filter-btn
+        outline: none;
+        background: rgba(22, 47, 86, 0.02)
+        border: 1px solid rgba(22, 47, 86, 0.1)
+        border-radius: 2px
+        font-size: 14px
+        line-height: 20px
+        padding: 4px 12px
+        color: rgba(22, 47, 86, 0.74)
+      
+      .filter-active
+        background: #E7F1FD
+        color: #2B83EA
+        border: 1px solid #E7F1FD
+      
+      li:first-child
+        border-top: 1px solid #E6E7E8
+
+      li
+        width: 420px
+        border-right: 1px solid #E6E7E8
+        border-left: 1px solid #E6E7E8
+        display: flex
+        height: 50px
+        flex-direction: column
+        justify-content: center
+        align-items: center
+        > div
+          width: 100%
+          display: flex
+          align-items: center
+          .icon
+            flex:1
+          .detail
+            width: 180px
+            padding-left: 15px
+            strong
+              user-select: none;
+              color: #5D666D
+              font-size: 14px
+              line-height: 17px
+            p
+              user-select: none;
+              color: #828282
+              font-size: 12px
+              line-height: 20px
+
+      li.action-required-list-item
+        height: auto
+        padding: 12px 0px
+        .comment
+          display: flex
+          margin: 12px 0px
+          width: 90%
+          background: rgba(232, 235, 239, 0.32)
+          padding: 2px 10px
+          font-size: 14px
+          i
+            padding: 5px 10px 2px 0px
+            font-size: 20px
+          p
+            margin: 5px 20px
+
+
+
+      
+    .status
+      text-transform: uppercase
+      font-size: 10px
+      font-weight: bold
+      padding: 5px 15px
+      border-radius: 15px
+      border: none
+      border: none
+      margin-right: 20px
+      height: 25px
+      margin-top: 5px
+      user-select: none
+    .activated
+      min-width: 80px
+      color: #1F890E
+      background: rgba(31, 137, 14, 0.1)
+    .pending
+      min-width: 80px
+      color: rgba(22, 47, 86, 0.87)
+      background: rgba(22, 47, 86, 0.1)
+    .requested
+      min-width: 80px
+      color: #2A8CFF
+      background: rgba(11, 112, 231, 0.1);
+    .rejected
+      min-width: 80px
+      color: #D12D2D
+      background: rgba(209, 45, 45, 0.1)
+    .action-required
+      min-width: 80px
+      color: #CD8214
+      border-radius: 15px
+      background: rgba(205, 130, 20, 0.1)
+    
+    .notify-badge
+      cursor: pointer
+      background: #CD8214
+      color: white
+      padding: 1px 4px
+      border-radius: 20px
+      font-size: 10px
+      margin-left: 10px
+    
+    .foot-note
+      margin-top: 40px
+      width: 420px
+      padding: 15px 10px
+      border: 1px solid #DFE4E6
+      display: flex
+      background: #FBF8E3
+      color: #828282
+      height: 85px
+      i
+        font-size: 18px
+        padding-top: 5px;
+        margin-right: 10px;

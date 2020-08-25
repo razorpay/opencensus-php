@@ -1,0 +1,956 @@
+import ajax, { merchantFetch } from 'merchant/utils/ajax';
+import { set } from 'common/utils/immutable';
+import { set as lodashset, cloneDeep } from 'lodash';
+
+const SET_LEAF_INSTRUMENT = 'SET_LEAF_INSTRUMENT';
+const SET_INTERMEDIATE_INSTRUMENT = 'SET_INTERMEDIATE_INSTRUMENT';
+const CLEAR_INTERMEDIATE_INSTRUMENT = 'CLEAR_INTERMEDIATE_INSTRUMENT';
+const CLEAR_LEAF_INSTRUMENT = 'CLEAR_LEAF_INSTRUMENT';
+const FETCH_ALL_MERCHANT_INSTRUMENTS = 'FETCH_ALL_MERCHANT_INSTRUMENTS';
+const CREATE_INSTRUMENT_REQUEST = 'CREATE_INSTRUMENT_REQUEST';
+const CANCEL_INSTRUMENT_REQUEST = 'CANCEL_INSTRUMENT_REQUEST';
+const SET_LOADING = 'SET_LOADING';
+
+export const clearIntermediateInstrument = () => {
+  return {
+    type: CLEAR_INTERMEDIATE_INSTRUMENT,
+  };
+};
+
+export const clearLeafInstrument = () => {
+  return {
+    type: CLEAR_LEAF_INSTRUMENT,
+  };
+};
+
+export const setIntrument = instrument => {
+  if (instrument.leafList) {
+    return {
+      type: SET_LEAF_INSTRUMENT,
+      payload: instrument,
+    };
+  } else {
+    return {
+      type: SET_INTERMEDIATE_INSTRUMENT,
+      payload: instrument,
+    };
+  }
+};
+
+export const fetchMerchantInstruments = () => {
+  return {
+    type: FETCH_ALL_MERCHANT_INSTRUMENTS,
+    payload: merchantFetch('merchant_instrument_status'),
+  };
+};
+
+export const createMerchantInstrumentRequest = instrument => {
+  return {
+    type: CREATE_INSTRUMENT_REQUEST,
+    payload: merchantFetch({
+      url: 'merchant_instrument_request',
+      method: 'post',
+      data: { instrument },
+    }),
+  };
+};
+
+export const cancelMerchantInstrumentRequest = id => {
+  return {
+    type: CANCEL_INSTRUMENT_REQUEST,
+    payload: merchantFetch({
+      url: `merchant_instrument_request/${id}`,
+      method: 'patch',
+      data: { status: 'cancelled' },
+    }),
+  };
+};
+export const setLoading = () => {
+  return {
+    type: SET_LOADING,
+  };
+};
+
+let initialState = {
+  pg: [
+    {
+      name: 'Cards',
+      description: 'Visa, Master, Amex',
+      actionItems: {},
+      slug: 'cards',
+      icon: 'card',
+
+      leafList: [
+        {
+          header: 'Domestic Cards',
+          list: [
+            {
+              name: 'Visa Cards',
+              status: 'Request',
+              slug: 'domestic.visa',
+              icon: 'visa',
+            },
+            {
+              name: 'MasterCard',
+              status: 'Request',
+              slug: 'domestic.mastercard',
+              icon: 'masterCard',
+            },
+            {
+              name: 'Rupay Cards',
+              status: 'Request',
+              slug: 'domestic.rupay',
+              icon: 'rupay',
+            },
+            {
+              name: 'Mastero',
+              status: 'Request',
+              slug: 'domestic.maestro',
+              icon: 'maestro',
+            },
+            {
+              name: 'Amex Cards',
+              status: 'Request',
+              slug: 'domestic.amex',
+              icon: 'amex',
+            },
+            {
+              name: 'Diners Club',
+              status: 'Request',
+              slug: 'domestic.dicl',
+              icon: 'diners',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'UPI/QR',
+      description: 'GooglePay, PhonePe, BHIM & more',
+      slug: 'upi',
+      icon: 'upi',
+      actionItems: {},
+      leafList: [
+        {
+          header: 'UPI',
+          docLink:
+            'https://razorpay.com/docs/payment-gateway/payment-methods/upi',
+          list: [
+            {
+              name: 'UPI',
+              status: 'Request',
+              slug: 'upi',
+              description: 'Select a UPI app to make a payment',
+            },
+            {
+              name: 'Google Pay Omnichannel',
+              status: 'Request',
+              slug: 'google_pay',
+              description: 'Pay via Google Pay Number',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'Netbanking',
+      description: 'All Indian Banks',
+      slug: 'netbanking',
+      icon: 'netbanking',
+      actionItems: {},
+      intermediateList: [
+        {
+          name: 'Retail Netbanking',
+          description: 'Direct Netbanking with customers',
+          slug: 'retail',
+          leafList: [
+            {
+              header: 'Available Banks',
+              list: [
+                { name: 'HDFC Bank', status: 'Request', slug: 'hdfc' },
+                {
+                  name: 'State bank of India',
+                  status: 'Request',
+                  slug: 'sbin',
+                },
+                { name: 'Axis Bank', status: 'Request', slug: 'utib' },
+                { name: 'ICICI Bank', status: 'Request', slug: 'icic' },
+                { name: 'City Union Bank', status: 'Request', slug: 'ciub' },
+                {
+                  name: 'Standard Chartered Bank',
+                  status: 'Request',
+                  slug: 'scbl',
+                },
+                {
+                  name: 'AU Bank',
+                  status: 'Request',
+                  slug: 'aubl',
+                },
+                {
+                  name: 'ABPB Bank',
+                  status: 'Request',
+                  slug: 'abpb',
+                },
+                {
+                  name: 'Airtel Payments Bank Limited',
+                  status: 'Request',
+                  slug: 'airp',
+                },
+                {
+                  name: 'Allahabad Bank',
+                  status: 'Request',
+                  slug: 'alla',
+                },
+                {
+                  name: 'Andhra Bank',
+                  status: 'Request',
+                  slug: 'andb',
+                },
+                {
+                  name: 'Bandhan Bank',
+                  status: 'Request',
+                  slug: 'bdbl',
+                },
+                {
+                  name: 'Bank of baharain and kuwait',
+                  status: 'Request',
+                  slug: 'bbkm',
+                },
+                {
+                  name: 'Baroda Bank',
+                  status: 'Request',
+                  slug: 'barb_r',
+                },
+                {
+                  name: 'Bank of India',
+                  status: 'Request',
+                  slug: 'bkid',
+                },
+                {
+                  name: 'Bank of Maharashtra',
+                  status: 'Request',
+                  slug: 'mahb',
+                },
+                {
+                  name: 'Bassein Catholic Co-op Bank',
+                  status: 'Request',
+                  slug: 'bacb',
+                },
+                {
+                  name: 'Canara Bank',
+                  status: 'Request',
+                  slug: 'cnrb',
+                },
+                {
+                  name: 'Catholic Syrian Bank',
+                  status: 'Request',
+                  slug: 'csbk',
+                },
+                {
+                  name: 'Central Bank of India',
+                  status: 'Request',
+                  slug: 'cbin',
+                },
+                {
+                  name: 'Cosmos Cooperative Bank',
+                  status: 'Request',
+                  slug: 'cosb',
+                },
+                {
+                  name: 'DCB Bank',
+                  status: 'Request',
+                  slug: 'dcbl',
+                },
+                {
+                  name: 'Dena Bank',
+                  status: 'Request',
+                  slug: 'bkdn',
+                },
+                {
+                  name: 'Deutsche Bank',
+                  status: 'Request',
+                  slug: 'deut',
+                },
+                {
+                  name: 'DBS Bank',
+                  status: 'Request',
+                  slug: 'dbss',
+                },
+                {
+                  name: 'Dhanlaxmi Bank',
+                  status: 'Request',
+                  slug: 'dlxb',
+                },
+                {
+                  name: 'ESAF Bank',
+                  status: 'Request',
+                  slug: 'esaf',
+                },
+                {
+                  name: 'Equitas Small Finance Bank',
+                  status: 'Request',
+                  slug: 'esfb',
+                },
+                {
+                  name: 'Federal Bank',
+                  status: 'Request',
+                  slug: 'fdrl',
+                },
+                {
+                  name: 'IDBI Bank',
+                  status: 'Request',
+                  slug: 'ibkl',
+                },
+                {
+                  name: 'IDFC Bank',
+                  status: 'Request',
+                  slug: 'idfb',
+                },
+                {
+                  name: 'IDIB Bank',
+                  status: 'Request',
+                  slug: 'idib',
+                },
+                {
+                  name: 'Indian Overseas Bank',
+                  status: 'Request',
+                  slug: 'ioba',
+                },
+                {
+                  name: 'IndusInd Bank',
+                  status: 'Request',
+                  slug: 'indb',
+                },
+                {
+                  name: 'Jammu and Kashmir Bank',
+                  status: 'Request',
+                  slug: 'jaka',
+                },
+                {
+                  name: 'Jana Small Finance Bank',
+                  status: 'Request',
+                  slug: 'jsfb',
+                },
+                {
+                  name: 'Janata Sahakari Bank',
+                  status: 'Request',
+                  slug: 'jsbp',
+                },
+                {
+                  name: 'Kangra Central Co-op Bank',
+                  status: 'Request',
+                  slug: 'kccb',
+                },
+                {
+                  name: 'Kalyan Janata Sahakari Bank',
+                  status: 'Request',
+                  slug: 'kjsb',
+                },
+                {
+                  name: 'Karnataka Bank',
+                  status: 'Request',
+                  slug: 'karb',
+                },
+                {
+                  name: 'Karur Vysya Bank',
+                  status: 'Request',
+                  slug: 'kvbl',
+                },
+                {
+                  name: 'Kottak Bank',
+                  status: 'Request',
+                  slug: 'kkbk',
+                },
+                {
+                  name: 'Lakshmi Vilas Bank',
+                  status: 'Request',
+                  slug: 'lavb_r',
+                },
+                {
+                  name: 'Mehsana Urban Bank',
+                  status: 'Request',
+                  slug: 'msnu',
+                },
+                {
+                  name: 'Nkgsb Co-op Bank',
+                  status: 'Request',
+                  slug: 'nkgs',
+                },
+                {
+                  name: 'North East Small Finance Bank',
+                  status: 'Request',
+                  slug: 'nesf',
+                },
+                {
+                  name: 'Oriental Bank of Commerce',
+                  status: 'Request',
+                  slug: 'orbc',
+                },
+                {
+                  name: 'United Bank Of India',
+                  status: 'Request',
+                  slug: 'utbi',
+                },
+                {
+                  name: 'Punjab and Sind Bank',
+                  status: 'Request',
+                  slug: 'psib',
+                },
+                {
+                  name: 'Punjab National Bank',
+                  status: 'Request',
+                  slug: 'punb_r',
+                },
+                {
+                  name: 'Ratnakar Bank',
+                  status: 'Request',
+                  slug: 'ratn',
+                },
+                {
+                  name: 'Saraswat Cooperative Bank',
+                  status: 'Request',
+                  slug: 'srcb',
+                },
+                // {
+                //   name: 'SVCB Co-operative Bank',
+                //   status: 'Request',
+                //   slug: 'svcb',
+                // },
+                {
+                  name: 'South Indian Bank',
+                  status: 'Request',
+                  slug: 'sibl',
+                },
+                {
+                  name: 'SBBJ Bank',
+                  status: 'Request',
+                  slug: 'sbbj',
+                },
+                {
+                  name: 'State Bank of Hyderabad',
+                  status: 'Request',
+                  slug: 'sbhy',
+                },
+                {
+                  name: 'State Bank of Mysore',
+                  status: 'Request',
+                  slug: 'sbmy',
+                },
+                {
+                  name: 'State Bank of Patiala',
+                  status: 'Request',
+                  slug: 'stbp',
+                },
+                {
+                  name: 'State Bank of Travancore',
+                  status: 'Request',
+                  slug: 'sbtr',
+                },
+                {
+                  name: 'Suryoday Small Finance Bank',
+                  status: 'Request',
+                  slug: 'sury',
+                },
+                {
+                  name: 'Syndicate Bank',
+                  status: 'Request',
+                  slug: 'synb',
+                },
+                {
+                  name: 'Tamil Nadu Mercantile Bank',
+                  status: 'Request',
+                  slug: 'tmbl',
+                },
+                {
+                  name: 'TNSC Bank ',
+                  status: 'Request',
+                  slug: 'tnsc',
+                },
+                {
+                  name: 'Thane Bharat Sahakari Bank',
+                  status: 'Request',
+                  slug: 'tbsb',
+                },
+                {
+                  name: 'Thane Janata Sahakari Bank',
+                  status: 'Request',
+                  slug: 'tjsb',
+                },
+                // {
+                //   name: 'UCO Bank',
+                //   status: 'Request',
+                //   slug: 'ucba',
+                // },
+                {
+                  name: 'Union Bank of India',
+                  status: 'Request',
+                  slug: 'ubin',
+                },
+                {
+                  name: 'Corporation Bank',
+                  status: 'Request',
+                  slug: 'corp',
+                },
+                {
+                  name: 'Varachha Co-Op Bank',
+                  status: 'Request',
+                  slug: 'vara',
+                },
+                {
+                  name: 'Vijaya Bank',
+                  status: 'Request',
+                  slug: 'vijb',
+                },
+                {
+                  name: 'Yes Bank',
+                  status: 'Request',
+                  slug: 'yesb',
+                },
+                {
+                  name: 'Zoroastrian Co-Operative Bank',
+                  status: 'Request',
+                  slug: 'zcbl',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          name: 'Corporate Netbanking',
+          description: 'Netbanking with businesses and corporates',
+          slug: 'corporate',
+          leafList: [
+            {
+              header: 'Available Banks',
+              list: [
+                { name: 'Andhra Bank', status: 'Request', slug: 'andb_c' },
+                {
+                  name: 'SVC Co-operative Bank',
+                  status: 'Request',
+                  slug: 'svcb_c',
+                },
+                {
+                  name: 'Baroda Bank',
+                  status: 'Request',
+                  slug: 'barb_c',
+                },
+                {
+                  name: 'Punjab National Bank',
+                  status: 'Request',
+                  slug: 'punb_c',
+                },
+                {
+                  name: 'YES Bank',
+                  status: 'Request',
+                  slug: 'yesb_c',
+                },
+                { name: 'ICICI Bank', status: 'Request', slug: 'icic_c' },
+                { name: 'Axis Bank', status: 'Request', slug: 'utib_c' },
+                {
+                  name: 'IDBI Bank',
+                  status: 'Request',
+                  slug: 'ibkl_c',
+                },
+                {
+                  name: 'Bank of India',
+                  status: 'Request',
+                  slug: 'bkid_c',
+                },
+                {
+                  name: 'Ratnakar Bank',
+                  status: 'Request',
+                  slug: 'ratn_c',
+                },
+                {
+                  name: 'Lakshmi Vilas Bank',
+                  status: 'Request',
+                  slug: 'lavb_c',
+                },
+                {
+                  name: 'Dhanlaxmi Bank',
+                  status: 'Request',
+                  slug: 'dlxb_c',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+
+    {
+      name: 'EMI',
+      description: 'Credit/Debit cards, Zest money & more',
+      slug: 'emi',
+      icon: 'emi',
+      actionItems: {},
+      leafList: [
+        {
+          header: 'EMI on Cards',
+          docLink:
+            'https://razorpay.com/docs/payment-gateway/payment-methods/emi/',
+          list: [
+            {
+              name: 'Debit Cards',
+              description: '',
+              status: 'Request',
+              slug: 'debit',
+            },
+            {
+              name: 'Credit Cards',
+              description: '',
+              status: 'Request',
+              slug: 'credit',
+            },
+            {
+              name: 'Bajaj Finserv',
+              description: '',
+              status: 'Request',
+              slug: 'credit.bajaj',
+            },
+          ],
+        },
+        {
+          header: 'Cardless EMI',
+          docLink:
+            'https://razorpay.com/docs/payment-gateway/payment-methods/emi/cardless-emi/',
+          list: [
+            {
+              name: 'ZestMoney',
+              description: '',
+              status: 'Request',
+              slug: 'cardless_emi.zestmoney',
+              icon: 'zestmoney',
+            },
+            {
+              name: 'Early Salary',
+              description: '',
+              status: 'Request',
+              slug: 'cardless_emi.earlysalary',
+              icon: 'earlysalary',
+            },
+            {
+              name: 'Instacred',
+              description: '',
+              status: 'Request',
+              slug: 'cardless_emi.instacred',
+              icon: 'instacred',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'Wallet',
+      description: 'Phonepe, Amazon Pay, Freecharge',
+      slug: 'wallet',
+      icon: 'wallet',
+      actionItems: {},
+      leafList: [
+        {
+          header: 'Wallets',
+          docLink:
+            'https://razorpay.com/docs/payment-gateway/payment-methods/amazon-pay/',
+          list: [
+            {
+              name: 'Phonepe',
+              description: '',
+              status: 'Request',
+              slug: 'phonepe',
+              icon: 'phonepe',
+            },
+            {
+              name: 'Phonepe Switch',
+              description: '',
+              status: 'Request',
+              slug: 'phonepeswitch',
+              icon: 'phonepe',
+            },
+            {
+              name: 'Airtel Money',
+              description: '',
+              status: 'Request',
+              slug: 'airtelmoney',
+              icon: 'airtelmoney',
+            },
+            {
+              name: 'Amazon Pay',
+              description: '',
+              status: 'Request',
+              slug: 'amazonpay',
+              icon: 'amazonpay',
+            },
+            {
+              name: 'Freecharge',
+              description: '',
+              status: 'Request',
+              slug: 'freecharge',
+              icon: 'freecharge',
+            },
+            {
+              name: 'Jio Money',
+              description: '',
+              status: 'Request',
+              slug: 'jiomoney',
+              icon: 'jiomoney',
+            },
+            {
+              name: 'SBI Buddy',
+              description: '',
+              status: 'Request',
+              slug: 'sbibuddy',
+              icon: 'sbibuddy',
+            },
+            {
+              name: 'mPesa',
+              description: '',
+              status: 'Request',
+              slug: 'mpesa',
+              icon: 'mpesa',
+            },
+            {
+              name: 'Ola Money',
+              description: '',
+              status: 'Request',
+              slug: 'olamoney',
+              icon: 'olamoney',
+            },
+            {
+              name: 'PayU Money',
+              description: '',
+              status: 'Request',
+              slug: 'payumoney',
+              icon: 'payumoney',
+            },
+            {
+              name: 'Payzapp',
+              description: '',
+              status: 'Request',
+              slug: 'payzapp',
+              icon: 'payzapp',
+            },
+            {
+              name: 'Mobikwik',
+              description: '',
+              status: 'Request',
+              slug: 'mobikwik',
+              icon: 'mobikwik',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'Pay Later',
+      description: 'Buy now and paye later with ePay Later',
+      slug: 'paylater',
+      icon: 'paylater',
+      actionItems: {},
+      leafList: [
+        {
+          header: 'PayLater',
+          docLink:
+            'https://razorpay.com/docs/payment-gateway/payment-methods/pay-later/',
+          list: [
+            {
+              name: 'Simpl',
+              description: '',
+              status: 'Request',
+              slug: 'getsimpl',
+              icon: 'getsimpl',
+            },
+            {
+              name: 'ePayLater',
+              description: '',
+              status: 'Request',
+              slug: 'epaylater',
+              icon: 'epaylater',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  intermediateInstrument: null,
+  leafInstrument: null,
+  loading: true,
+};
+
+function findPath(pathToFind, pg) {
+  let str = 'pg';
+  let root = pathToFind.shift();
+  let rootIndex = pg.findIndex(_ => _.slug === root);
+
+  if (rootIndex !== -1) {
+    str = str + `[${rootIndex}]`;
+    if (
+      pg[rootIndex].intermediateList &&
+      Array.isArray(pg[rootIndex].intermediateList) &&
+      pg[rootIndex].intermediateList.some(_ => _.slug)
+    ) {
+      let intermediate = pathToFind.shift();
+      let intermediateIndex = pg[rootIndex].intermediateList.findIndex(
+        _ => _.slug === intermediate
+      );
+      str = str + `.intermediateList[${intermediateIndex}]`;
+      if (pg[rootIndex].intermediateList[intermediateIndex].leafList) {
+        let leafSlug = pathToFind.shift();
+        let leafIndex;
+        pg[rootIndex].intermediateList[intermediateIndex].leafList.every(
+          (leaf, index) => {
+            leafIndex = leaf.list.findIndex(_ => _.slug === leafSlug);
+            if (leafIndex !== -1) {
+              str = str + `.leafList[${index}].list[${leafIndex}]`;
+              return false;
+            }
+            return true;
+          }
+        );
+      }
+    } else if (
+      pg[rootIndex].intermediateList &&
+      Array.isArray(pg[rootIndex].intermediateList) &&
+      !pg[rootIndex].intermediateList.some(_ => _.slug)
+    ) {
+      let leafSlug = pathToFind.shift();
+      for (
+        let intermediateIndex = 0;
+        intermediateIndex < pg[rootIndex].intermediateList.length;
+        intermediateIndex++
+      ) {
+        if (pg[rootIndex].intermediateList[intermediateIndex].leafList) {
+          let leafIndex;
+          pg[rootIndex].intermediateList[intermediateIndex].leafList.every(
+            (leaf, index) => {
+              leafIndex = leaf.list.findIndex(_ => _.slug === leafSlug);
+              if (leafIndex !== -1) {
+                str = str + `.intermediateList[${intermediateIndex}]`;
+                str = str + `.leafList[${index}].list[${leafIndex}]`;
+                return false;
+              }
+              return true;
+            }
+          );
+        }
+      }
+    } else if (!pg[rootIndex].intermediateList) {
+      let leafSlug = pathToFind.join('.');
+      let leafIndex;
+      pg[rootIndex].leafList.every((leaf, index) => {
+        leafIndex = leaf.list.findIndex(_ => _.slug === leafSlug);
+        if (leafIndex !== -1) {
+          str = str + `.leafList[${index}].list[${leafIndex}]`;
+          return false;
+        }
+        return true;
+      });
+    }
+    return str;
+  }
+}
+
+export default function(state = initialState, action) {
+  let pg = state.pg;
+  let stateClone;
+  switch (action.type) {
+    case SET_LEAF_INSTRUMENT:
+      return set(state, 'leafInstrument', action.payload);
+    case SET_INTERMEDIATE_INSTRUMENT:
+      return set(state, 'intermediateInstrument', action.payload);
+    case CLEAR_INTERMEDIATE_INSTRUMENT:
+      return set(state, 'intermediateInstrument', null);
+    case CLEAR_LEAF_INSTRUMENT:
+      return set(state, 'leafInstrument', null);
+    case SET_LOADING:
+      return set(state, 'loading', true);
+    case `${FETCH_ALL_MERCHANT_INSTRUMENTS}::ERROR`:
+      return set(state, 'loading', false);
+    case `${FETCH_ALL_MERCHANT_INSTRUMENTS}::SUCCESS`:
+      stateClone = cloneDeep(state);
+      action.payload.data.forEach(s => {
+        let pathToFind = s.instrument.replace('pg.', '').split('.');
+        let path = findPath(pathToFind, pg);
+        if (s.comment && s.status === 'action_required') {
+          let rootPath = path.split('.')[0];
+          lodashset(
+            stateClone,
+            `${rootPath}.actionItems["${s.instrument}"]`,
+            s.comment
+          );
+        }
+        lodashset(
+          stateClone,
+          `${path}.merchant_instrument_request_id`,
+          s.merchant_instrument_request_id
+        );
+        lodashset(stateClone, `${path}.status`, s.status);
+        if (s.status === 'action_required') {
+          lodashset(stateClone, `${path}.comment`, s.comment);
+        }
+      });
+      lodashset(stateClone, 'intermediateInstrument', null);
+      lodashset(stateClone, 'leafInstrument', null);
+      lodashset(stateClone, 'loading', false);
+      return stateClone;
+    case `${CREATE_INSTRUMENT_REQUEST}::SUCCESS`:
+      let updatedLeafIndex;
+      let pathToUpdate;
+      let stateClone = cloneDeep(state);
+      stateClone.leafInstrument.leafList.every((leaf, index) => {
+        updatedLeafIndex = leaf.list.findIndex(_ => {
+          return _.slug.includes(
+            action.payload.data.instrument.split('.').pop()
+          );
+        });
+        if (updatedLeafIndex !== -1) {
+          pathToUpdate = `leafInstrument.leafList[${index}].list[${updatedLeafIndex}]`;
+          return false;
+        }
+        return true;
+      });
+      if (updatedLeafIndex !== -1) {
+        lodashset(
+          stateClone,
+          `${pathToUpdate}.merchant_instrument_request_id`,
+          action.payload.data.merchant_instrument_request_id
+        );
+        lodashset(
+          stateClone,
+          `${pathToUpdate}.status`,
+          action.payload.data.status
+        );
+        return stateClone;
+      }
+      return state;
+
+    case `${CANCEL_INSTRUMENT_REQUEST}::SUCCESS`:
+      let cancelLeafIndex;
+      let pathToCancel;
+      stateClone = cloneDeep(state);
+      stateClone.leafInstrument.leafList.every((leaf, index) => {
+        cancelLeafIndex = leaf.list.findIndex(_ => {
+          return _.slug.includes(
+            action.payload.data.instrument.split('.').pop()
+          );
+        });
+
+        if (cancelLeafIndex !== -1) {
+          pathToCancel = `leafInstrument.leafList[${index}].list[${cancelLeafIndex}]`;
+          return false;
+        }
+        return true;
+      });
+      if (cancelLeafIndex !== -1) {
+        lodashset(
+          stateClone,
+          `${pathToCancel}.status`,
+          action.payload.data.status
+        );
+        return stateClone;
+      }
+      return state;
+
+    default:
+      return state;
+  }
+}

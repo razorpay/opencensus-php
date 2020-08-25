@@ -12,6 +12,7 @@ import Webhooks from 'merchant/views/Settings/Webhooks/List';
 import Applications from 'merchant/views/Settings/Applications/';
 import Configuration from 'merchant/views/Settings/Configuration';
 import ApplicationsNew from 'merchant/views/Settings/Applications/new';
+import PaymentMethods from 'merchant/views/Settings/PaymentMethods';
 
 import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
 
@@ -112,6 +113,16 @@ export default class Settings extends Component {
           >
             <NavLink to="/applications">Applications</NavLink>
           </ShowWhen>
+          <ShowWhen
+            additionalCondition={user => user.isInstrumentRequestAllowed()}
+          >
+            <NavLink
+              to="/payment-methods"
+              onClick={() => analyticsGoTo('Payment Methods')}
+            >
+              Payment Methods
+            </NavLink>
+          </ShowWhen>
         </header>
         <TestModeBanner />
         <content>
@@ -133,6 +144,7 @@ export default class Settings extends Component {
             <Route exact path="/applications/new" component={ApplicationsNew} />
             <Route path="/applications/:id" component={ApplicationsNew} />
           </Switch>
+          <Route path="/payment-methods" component={PaymentMethods} />
         </content>
       </tabbed-container>
     );

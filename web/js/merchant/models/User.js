@@ -631,6 +631,9 @@ export default class User {
     // Eg: disable-edit-reports (if corresponding experiment is "on", it can't be edited for those merchants)
     return this.getExpStatus(`disable-edit-${moduleName}`);
   }
+  isInstrumentRequestAllowed() {
+    return this.getExpStatus('instrument_request_merchant_dashboard');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

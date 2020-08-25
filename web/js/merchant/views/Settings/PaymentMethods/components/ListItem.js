@@ -1,0 +1,77 @@
+import { connect } from 'react-redux';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import { getIcon } from './paymentMethodIcons';
+import {
+  setIntrument,
+  clearIntermediateInstrument,
+  clearLeafInstrument,
+} from 'merchant/reducers/instrumentRequests';
+import { useEffect } from 'react';
+
+const ListItem = ({
+  index,
+  instrument,
+  handleClickedInstument,
+  from,
+  setIntrument,
+  clearLeafInstrument,
+  clearIntermediateInstrument,
+  clickedName,
+}) => {
+  const handleSetInstrument = (instrument, from) => {
+    if (from === 'root') {
+      clearLeafInstrument();
+      clearIntermediateInstrument();
+    }
+    handleClickedInstument(instrument.name);
+    setIntrument(instrument);
+  };
+  // for auto-selecting the first child node
+  useEffect(() => {
+    if (index === 0) {
+      handleSetInstrument(instrument, from);
+    }
+  }, []);
+  const instrumentActions =
+    instrument.actionItems && Object.keys(instrument.actionItems).length;
+  return (
+    <li
+      onClick={() => handleSetInstrument(instrument, from)}
+      class={`${clickedName === instrument.name ? 'highlight' : ''}`}
+    >
+      {instrument.icon && <div class="icon">{getIcon(instrument.icon)}</div>}
+      <div class="detail">
+        <strong>
+          {instrument.name}&nbsp;
+          {instrumentActions ? (
+            <span>
+              <span class="notify-badge">{instrumentActions}</span>
+              <Popover align="bottom" theme="dark">
+                <PopoverBody>
+                  <div style={{ textAlign: 'left' }}>
+                    item requires user action. Please complete your activation
+                    form.
+                  </div>
+                </PopoverBody>
+              </Popover>
+            </span>
+          ) : null}
+        </strong>
+        <p>{instrument.description}</p>
+      </div>
+      <div
+        class={`expand show-expand ${
+          clickedName === instrument.name ? 'highlight-expand' : ''
+        }`}
+      >
+        <i class="i i-chevron-right" />
+      </div>
+    </li>
+  );
+};
+
+export default connect(null, {
+  setIntrument,
+  clearIntermediateInstrument,
+  clearLeafInstrument,
+})(ListItem);

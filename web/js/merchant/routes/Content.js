@@ -54,12 +54,18 @@ const ReportsAsync = lazy(() =>
   import(/* webpackChunkName: "ReportsAsync" */ 'merchant/views/ReportsAsync/Home')
 );
 
-const MyAccount = lazy(() => import(/* webpackChunkName: "Account" */ 'merchant/views/Account'));
-const Settings = lazy(() => import(/* webpackChunkName: "Settings" */ 'merchant/views/Settings'));
+const MyAccount = lazy(() =>
+  import(/* webpackChunkName: "Account" */ 'merchant/views/Account')
+);
+const Settings = lazy(() =>
+  import(/* webpackChunkName: "Settings" */ 'merchant/views/Settings')
+);
 const SmartCollect = lazy(() =>
   import(/* webpackChunkName: "SmartCollect" */ 'merchant/views/SmartCollect/Index')
 );
-const Offers = lazy(() => import(/* webpackChunkName: "Offers" */ 'merchant/views/Offers'));
+const Offers = lazy(() =>
+  import(/* webpackChunkName: "Offers" */ 'merchant/views/Offers')
+);
 const PaypalOnboardRedirect = lazy(() =>
   import(/* webpackChunkName: "Settings" */ 'merchant/views/Settings/Configuration/PaypalOnboardRedirect')
 );
@@ -78,7 +84,11 @@ import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import qs from 'query-string';
 import Spinner from 'common/ui/Spinner';
 
-import { setBaseLocation, setActiveEntity, setSecActiveEntity } from 'merchant/reducers/app';
+import {
+  setBaseLocation,
+  setActiveEntity,
+  setSecActiveEntity,
+} from 'merchant/reducers/app';
 import { openSlider } from 'merchant_common/reducers/slider';
 import Support from 'merchant/components/Support';
 
@@ -108,7 +118,7 @@ const Loader = () => (
 
 @withRouter
 @connect(
-  (state) => ({
+  state => ({
     user: state.session.user,
   }),
   {
@@ -119,7 +129,7 @@ const Loader = () => (
   }
 )
 export default class Content extends Component {
-  setBaseLocation = (location) => {
+  setBaseLocation = location => {
     let { setBaseLocation, setActiveEntity, setSecActiveEntity } = this.props;
     var matchDetailsRoute = matchDetail(location.pathname);
     var matchModalsRoute = matchModal(location.pathname);
@@ -423,6 +433,11 @@ export default class Content extends Component {
               additionalCondition={(user) => user.isAllowedView('applications')}
             />
             <ShowWhenRoute
+              path="/payment-methods"
+              component={Settings}
+              additionalCondition={user => user.isInstrumentRequestAllowed()}
+            />
+            <ShowWhenRoute
               path="/offers"
               component={Offers}
               additionalCondition={(user) => user.isAllowedView('offers')}
@@ -461,7 +476,7 @@ export default class Content extends Component {
     }
   }
 
-  closeModalView = (e) => {
+  closeModalView = e => {
     document.body.classList.remove('noscroll');
     this.props.history.replace(this.baseLocation.pathname);
   };
@@ -479,7 +494,10 @@ export default class Content extends Component {
         <Slider closeUrl={this.baseLocation}>
           <ErrorBoundary resetOnProps location={this.baseLocation}>
             {' '}
-            <DetailView {...this.detailProps} closeUrl={this.baseLocation.pathname} />{' '}
+            <DetailView
+              {...this.detailProps}
+              closeUrl={this.baseLocation.pathname}
+            />{' '}
           </ErrorBoundary>
         </Slider>
       ) : (
