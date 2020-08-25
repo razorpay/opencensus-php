@@ -5,6 +5,7 @@ namespace RZP\Models\PaymentLink;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
@@ -122,6 +123,10 @@ class ViewSerializer extends Base\Core
             $mode
         );
 
+        $contactOptional = $this->merchant->isFeatureEnabled(Feature\Constants::CONTACT_OPTIONAL);
+
+        $emailOptional  = $this->merchant->isFeatureEnabled(Feature\Constants::EMAIL_OPTIONAL);
+
         return [
             'id'               => $this->merchant->getId(),
             'name'             => $this->merchant->getBillingLabel(),
@@ -130,6 +135,8 @@ class ViewSerializer extends Base\Core
             'brand_text_color' => get_brand_text_color($this->merchant->getBrandColorOrDefault()),
             'branding_variant' => $brandingVariant,
             'asterix_variant'  => $asterixVariant,
+            'contact_optional' => $contactOptional,
+            'email_optional'   => $emailOptional,
         ];
     }
 

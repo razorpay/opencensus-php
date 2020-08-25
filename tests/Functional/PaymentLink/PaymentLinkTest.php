@@ -484,6 +484,19 @@ class PaymentLinkTest extends TestCase
         $this->assertContains($id, $response->getContent());
     }
 
+    public function testOptionalFeatureInHostedPage()
+    {
+        $this->createPaymentLinkWithMultipleItem();
+
+        $this->ba->publicAuth();
+
+        $response = $this->call('GET', "/v1/payment_pages/pl_".self::TEST_PL_ID."/view");
+
+        $response->assertStatus(200);
+
+        $this->assertContains('contact_optional', $response->getContent());
+    }
+
     public function testFetchPostButtonHostedView()
     {
         $this->testCreatePaymentButtonWithMultipleItems();
