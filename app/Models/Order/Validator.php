@@ -405,7 +405,7 @@ class Validator extends Base\Validator
         $order = $this->entity;
 
         if (($payment->isEmandate() === true) and
-            ($order->getPaymentCapture() === false))
+            ($order->getPaymentCapture() !== true))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'payment_capture should be true for eMandate payments.',

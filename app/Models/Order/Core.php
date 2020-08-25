@@ -58,6 +58,11 @@ class Core extends Base\Core
             $order->allowPartialPayment();
         }
 
+        if (isset($input['payment_capture']) === false)
+        {
+            $order->setAttribute(Entity::PAYMENT_CAPTURE, null);
+        }
+
         $this->createLateAuthConfigIfApplicable($input, $order);
 
         list($order, $ba) = $this->repo->transaction(function() use ($order, $input)

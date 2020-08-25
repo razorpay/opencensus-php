@@ -3451,7 +3451,7 @@ class Processor
             return false;
         }
 
-        if ($order->getPaymentCapture() === false)
+        if ($order->getPaymentCapture() !== true)
         {
             return false;
         }
