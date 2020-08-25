@@ -44,7 +44,7 @@ class Constants
     const EMAIL_VERIFIED = 'email_verified';
 
     const OAUTH_LOGIN = 'oauth_login';
-
+    
     const OAUTH_MERCHANT_OAUTH_CLIENT_ID = 'oauth.merchant_oauth_client_id';
 
     /**

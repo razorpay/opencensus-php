@@ -130,7 +130,13 @@ class Service extends Base\Service
         //
         if ((empty($error) === true) and (Auth::attempt($input, false, true) === false))
         {
-            list($error, $data) = $this->oauthSignIn($input);
+            $credentials = [
+                Constants::EMAIL          => $input[Constants::EMAIL],
+                Constants::ID_TOKEN       => $input[Constants::ID_TOKEN],
+                Constants::OAUTH_PROVIDER => $input[Constants::OAUTH_PROVIDER],
+            ];
+
+            list($error, $data) = $this->oauthSignIn($credentials);
         }
 
         return [$error, $data];
