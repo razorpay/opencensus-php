@@ -3033,4 +3033,45 @@ return [
             ],
         ],
     ],
+
+    'testPostInstantActivationBlockedOrg' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+            'content' => [
+                'business_category'           => 'ecommerce',
+                'business_subcategory'        => 'fashion_and_lifestyle',
+                'promoter_pan'                => 'ABCPE0000Z',
+                'promoter_pan_name'           => 'test123',
+                'business_name'               => 'business_name',
+                'business_dba'                => 'test123',
+                'business_type'               => 4,
+                'business_model'              => '1245',
+                'business_website'            => 'https://example.com',
+                'business_operation_address'  => 'My Addres is somewhere',
+                'business_operation_state'    => 'KA',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560095',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'submitted_at'            => null,
+                'activation_status'       => null,
+                'poi_verification_status' => null,
+                'business_type'           => "4",
+                'can_submit'              => false,
+                'activated'               => 0,
+                'activation_flow'         => 'greylist'
+            ],
+        ],
+        'status_code' => 200,
+    ],
 ];

@@ -348,29 +348,7 @@ class Core extends Base\Core
     {
         $merchantDetails = $this->getMerchantDetails($merchant);
 
-        //
-        // if request comes via on-boarding api, it will always be grey-list as on-boarding api
-        // does not support instant activation flow
-        //
-        if ($batchFlow === true)
-        {
-            // Making ActivationFlow Whitelist for the batchFlow Merchants though there KYC has not been verified
-            $activationFlow = ActivationFlow::WHITELIST;
-        }
-        elseif (empty($partner) === false)
-        {
-            $activationFlow = ActivationFlow::GREYLIST;
-        }
-        else
-        {
-            $subcategory = $merchantDetails->getBusinessSubcategory();
-
-            $category    = $merchantDetails->getBusinessCategory();
-
-            $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
-
-            $activationFlow = $subcategoryMetaData[Entity::ACTIVATION_FLOW];
-        }
+        $activationFlow = $this->getActivationFlow($merchant, $merchantDetails, $partner, $batchFlow);
 
         $merchantDetails->setActivationFlow($activationFlow);
 
@@ -2840,4 +2818,51 @@ class Core extends Base\Core
 
     }
 
+    /**
+     * @param Merchant\Entity $merchant
+     * @param Entity          $merchantDetails
+     * @param                 $partner
+     * @param bool            $batchFlow
+     *
+     * @return string
+     * @throws Exception\BadRequestException
+     */
+    private function getActivationFlow(Merchant\Entity $merchant, Entity $merchantDetails, $partner, bool $batchFlow)
+    {
+        $subcategory = $merchantDetails->getBusinessSubcategory();
+
+        $category = $merchantDetails->getBusinessCategory();
+
+        $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
+
+        $activationFlow = $subcategoryMetaData[Entity::ACTIVATION_FLOW];
+
+        //
+        // If activation flow is blacklisted we need not to update that
+        //
+        if (($merchant->isBlockedOrgForInstantActivation() === true) and
+            ($activationFlow === ActivationFlow::WHITELIST))
+        {
+            return ActivationFlow::GREYLIST;
+        }
+
+        //
+        // If request comes via on-boarding api, it will always be grey-list as on-boarding api
+        // does not support instant activation flow
+        //
+        if ($batchFlow === true)
+        {
+            //
+            // Making ActivationFlow Whitelist for the batchFlow Merchants though there KYC has not been verified
+            //
+            return ActivationFlow::WHITELIST;
+        }
+
+        if (empty($partner) === false)
+        {
+            return ActivationFlow::GREYLIST;
+        }
+
+        return $activationFlow;
+    }
 }

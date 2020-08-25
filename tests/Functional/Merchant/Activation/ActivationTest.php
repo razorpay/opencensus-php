@@ -151,6 +151,26 @@ class ActivationTest extends OAuthTestCase
         $this->assertFalse($terminal['enabled']);
     }
 
+    public function testPostInstantActivationBlockedOrg()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+        $orgId      = 'CLTnQqDj9Si8bx';
+
+        $this->fixtures->create('org', ['id' => $orgId]);
+
+        $this->fixtures->edit('merchant', $merchantId, [
+            'org_id' => $orgId,
+        ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
     public function testBusinessWebsiteUpdate()
     {
         $merchantId = '1cXSLlUU8V9sXl';

@@ -181,6 +181,15 @@ class Entity extends Base\PublicEntity
         'apple.com',
     ];
 
+    const AXIS_ORG_ID = 'CLTnQqDj9Si8bx';
+
+    /**
+     * List of all OrgIds which are blocked from instant activation
+     */
+    const INSTANT_ACTIVATION_BLOCKED_ORG_MAPPING = [
+        self::AXIS_ORG_ID,
+    ];
+
     /**
      * A query parameter to filter results based on
      * account status which can be one of suspended,
@@ -2657,5 +2666,17 @@ class Entity extends Base\PublicEntity
     public function isRazorpayOrgId() :bool
     {
         return $this->getOrgId() === Org\Entity::RAZORPAY_ORG_ID;
+    }
+
+    /**
+     * Few orgs are very often on direct settlements, so instant activation means
+     * they are fully activated, (without any KYC)
+     * So blocking instant_activation for them
+     *
+     * @return bool
+     */
+    public function isBlockedOrgForInstantActivation(): bool
+    {
+        return in_array($this->getOrgId(), self::INSTANT_ACTIVATION_BLOCKED_ORG_MAPPING, true);
     }
 }
