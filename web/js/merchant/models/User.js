@@ -292,6 +292,10 @@ export default class User {
     return this.isFeatureEnabled('disable_refunds');
   }
 
+  get isProjectNitroEnabled() {
+    return this.getExpStatus('project_nitro');
+  }
+
   get isChargeAtWillEnabled() {
     return this.findTag('Charge_at_will');
   }

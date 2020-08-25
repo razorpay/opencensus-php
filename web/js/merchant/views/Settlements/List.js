@@ -34,6 +34,8 @@ import ScheduledBanner from 'merchant/views/Settlements/components/ScheduledBann
 import SettlementSchedule from 'merchant/views/Settlements/components/SettlementSchedule';
 import SettlementDetail from 'merchant/views/Settlements/components/SettlementDetail';
 import Time from 'common/ui/Time';
+import ScheduledNitroBanner from 'merchant/components/ScheduledNitroBanner';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 @withRouter
 @connect(
@@ -318,6 +320,13 @@ export default class SettlementsListContainer extends ListContainer {
                         />
                       </div>
                     )}
+                  <ShowWhen
+                    additionalCondition={user => user.isProjectNitroEnabled}
+                  >
+                    <div class="box-left-pad10-inline">
+                      <ScheduledNitroBanner fromWhere="settlement" url="https://lp.razorpay.com/razorpayxca-sttlmnts1" />
+                    </div>
+                  </ShowWhen>
                 </div>
               </HeaderAction>
               <SettlementsListFilter

@@ -18,6 +18,7 @@ import PaymentReceipt from './PaymentReceipt';
 import PaymentSplitInItems from './PaymentSplitInItems';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import SettlementOverview from './SettlementOverview';
+import AnnouncementBar from 'merchant/components/AnnouncementBar';
 
 export default (props) => {
   let {
@@ -60,17 +61,16 @@ export default (props) => {
             {payment.status === 'authorized' &&
             Object.keys(merchantManualAction.details).length > 0 ? (
               <div class="payments-manual-actions">
-                {merchantManualAction.details.capture &&
-                  isRoleAllowedEdit && (
-                    <button
-                      onClick={() => {
-                        props.confirmCapture(payment);
-                      }}
-                      class="btn btn-primary"
-                    >
-                      Capture Payment
-                    </button>
-                  )}
+                {merchantManualAction.details.capture && isRoleAllowedEdit && (
+                  <button
+                    onClick={() => {
+                      props.confirmCapture(payment);
+                    }}
+                    class="btn btn-primary"
+                  >
+                    Capture Payment
+                  </button>
+                )}
                 {merchantManualAction.details.refund && (
                   <button
                     onClick={openRefundModal}
@@ -189,6 +189,11 @@ export default (props) => {
                     </span>
                   </Definition>
                 </EntityDetailRow>
+                <ShowWhen
+                  additionalCondition={user => user.isProjectNitroEnabled}
+                >
+                  <AnnouncementBar fromWhere="transacrions" url="https://lp.razorpay.com/razorpayxca-pymnts2"/>
+                </ShowWhen>
 
                 <EntityDetailRow label="Order ID">
                   {payment.order_id ? (

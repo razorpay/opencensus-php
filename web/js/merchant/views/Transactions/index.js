@@ -12,7 +12,7 @@ import DisputesList from 'merchant/views/Transactions/Disputes/List';
 import BatchPaymentsList from 'merchant/views/Transactions/BatchPayments/List';
 import BatchRefundsList from 'merchant/views/Transactions/BatchRefunds/List';
 import BatchRefundsUpload from 'merchant/views/Transactions/BatchRefunds/BatchUpload';
-import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner';
+import HeaderAction from 'common/ui/HeaderAction';
 import OnHoldBanner from 'common/ui/OnHoldBanner';
 import { fetchSettlementAmount } from 'merchant/reducers/home';
 import Amount from 'common/ui/Amount';
@@ -20,6 +20,8 @@ import SettlementDetail from 'merchant/views/Settlements/components/SettlementDe
 import { openModal } from 'merchant_common/reducers/modals';
 import Time from 'common/ui/Time';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import ScheduledNitroBanner from 'merchant/components/ScheduledNitroBanner';
+import SettlementSchedule from 'merchant/views/Settlements/components/SettlementSchedule';
 
 @connect(
   (state) => {
@@ -35,11 +37,27 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 export default class TransactionsContainer extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      openAutoModal: false,
+    };
   }
 
   componentDidMount() {
     this.props.fetchSettlementAmount();
   }
+
+  viewSettlementCycle = () => {
+    this.props.openModal({
+      size: 'medium',
+      component: <SettlementSchedule holidayList={this.props.holidayList} />,
+    });
+
+    window.rzpAnalytics({
+      eventCategory: 'Settlement Revamp',
+      eventAction: 'View Settlement Cycle',
+      eventLabel: `Settlements`,
+    });
+  };
 
   render() {
     const { user, mode } = this.props,
@@ -159,7 +177,22 @@ export default class TransactionsContainer extends Component {
             </div>
           ) : null}
         </header>
-
+        <HeaderAction>
+          <div class="settlement-actions-wrapper">
+            <div
+              class="btn btn-link settlement-doc-btn"
+              onClick={this.viewSettlementCycle}
+            >
+              <span class="icon i-info-outline settlement-announcement" />
+              View Settlement Cycle
+            </div>
+            <ShowWhen additionalCondition={user => user.isProjectNitroEnabled}>
+              <div class="box-left-pad10-inline">
+                <ScheduledNitroBanner fromWhere="transaction" url="https://lp.razorpay.com/razorpayxca-pymnts1"/>
+              </div>
+            </ShowWhen>
+          </div>
+        </HeaderAction>
         <TestModeBanner />
 
         {mode === 'live' && nextSettlement && no_settlement && no_settlement.on_hold === true ? (

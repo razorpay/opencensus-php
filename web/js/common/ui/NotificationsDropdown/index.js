@@ -171,14 +171,19 @@ export default class NotificationsDropdown extends Component {
   render() {
     let { user, showMobileNav, analytics = () => {} } = this.props;
     const hasUnread = !!this.state.totalUnread;
-    let cardsList = this.state.notifications.map((n, idx) => (
+    const eventTrackingRequired = ['upiAutopay', 'projectNitro'];
+    let cardsList = this.state.notifications.map((card, idx) => (
       <div className="media media-action" key={idx}>
         <NotificationCard
-          {...n}
+          {...card}
           user={user}
           lastReadTS={this.state.lastReadTS}
           trackAnnouncement={trackAnnouncement}
-          trackEvents={n.track_event ? this.trackEvents : null}
+          trackEvents={
+            card.id && eventTrackingRequired.includes(card.id)
+              ? this.trackEvents
+              : null
+          }
           handleHbForm={this.handleHbForm}
         />
       </div>

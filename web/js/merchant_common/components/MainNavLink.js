@@ -4,6 +4,7 @@ import { NavLink, withRouter } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { setActivePageName, toggleMobileMenu } from 'merchant/reducers/app';
+import RTracking from 'react-tracking';
 
 @connect(
   state => {
@@ -15,6 +16,7 @@ import { setActivePageName, toggleMobileMenu } from 'merchant/reducers/app';
   { setActivePageName, toggleMobileMenu }
 )
 @withRouter
+@RTracking(() => window.rzpQ.component('MainNavLink'))
 export default class MainNavLink extends Component {
   constructor(props) {
     super(props);
@@ -37,6 +39,17 @@ export default class MainNavLink extends Component {
   handleClick() {
     this.sendAnalytics();
     this.props.setActivePageName(this.props.label);
+
+    const trackingRequired = ['Transactions', 'Settlements', 'Payment Pages'];
+
+    if (trackingRequired.includes(this.props.label)) {
+      const tracking = this.props.tracking;
+      tracking.trackEvent(
+        window.rzpQ
+          .merchantActions()
+          .initiated(`${this.props.label}.click.initiated`)
+      );
+    }
 
     return this.props.isMobileResolution && this.props.toggleMobileMenu();
   }

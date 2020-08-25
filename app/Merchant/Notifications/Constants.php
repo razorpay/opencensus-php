@@ -401,6 +401,24 @@ class Constants
                 'experiments'         => ['capital_loans_announcement_aug2020'],
             ]
         ],
+        [
+            'title'       => 'Get 1.65% pricing with RazorpayX',
+            'description' => 'Open a current account with RazorpayX & reduce your transaction fee to 1.65%.',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
+            'id'          => 'projectNitro',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Know More',
+                    'url'   => 'https://lp.razorpay.com/razorpayxca-anncment',
+                ],
+            ],
+            'start_ts'    => 1597390475,	
+            'end_ts'      => 1601445430, 
+            'filters'     => [
+                'experiments'         => ['project_nitro'],
+            ],
+        ],
     ];
 
     public static function getNotifications(): array

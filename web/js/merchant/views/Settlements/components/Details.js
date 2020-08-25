@@ -6,6 +6,8 @@ import ListGroupToggler from 'common/ui/Toggler/ListGroupToggler';
 import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
 import SettlementBreakupTable from 'merchant/views/Settlements/components/BreakupTable';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import AnnouncementBar from 'merchant/components/AnnouncementBar';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 export default props => {
   let { settlement, breakupDetails, isLoading, statusMsg } = props;
@@ -72,6 +74,11 @@ export default props => {
                   loading={breakupDetails.loading}
                 />
               </ListGroupToggler>
+              <ShowWhen
+                additionalCondition={user => user.isProjectNitroEnabled}
+              >
+                <AnnouncementBar fromWhere="settlements" url="https://lp.razorpay.com/razorpayxca-sttlmnts2"/>
+              </ShowWhen>
             </div>
           </div>
         </div>
