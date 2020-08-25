@@ -1000,6 +1000,24 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+
+    /**
+     * /**
+     *
+     * Gets Business Category and SubCategory list
+     * based on a string entered by user
+     *
+     *  @return mixed
+     */
+    public function getBusinessDetails()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->getBusinessDetails($input);
+
+        return ApiResponse::json($response);
+    }
+
     /**
      * Returns clarification reason against each field
      *

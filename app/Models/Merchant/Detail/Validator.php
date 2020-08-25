@@ -471,6 +471,10 @@ class Validator extends Base\Validator
         Entity::LIVE_TRANSACTION_DONE   => 'filled|numeric|in:0,1,2',
     ];
 
+    protected static $searchBusinessDetailsRules = [
+      Constants::SEARCH_STRING  => 'required|string|max:25'
+    ];
+
     protected function validateRegisteredBusinessRules(array $input)
     {
         if (BusinessType::isUnregisteredBusinessIndex($input[Entity::BUSINESS_TYPE]) === true)

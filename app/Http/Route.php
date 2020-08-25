@@ -442,6 +442,8 @@ class Route
         'merchant_activation_update_website'       => ['put',      'merchant/activation/update_website_details',     'MerchantController@updateWebsiteDetails'                           ],
         'merchant_activation_update_website_status'=> ['get',      'merchant/activation/websites/status',            'MerchantController@getWebsiteStatus'                               ],
         'merchant_activation_business_categories'  => ['get',      'merchant/activation/business_categories',        'MerchantController@getBusinessCategories'                          ],
+        'merchant_activation_business_details'
+                                                   => ['get',      'merchant/activation/business_details',           'MerchantController@getBusinessDetails'                             ],
         'merchant_activation_needs_clarification'  => ['get',      'merchant/activation/clarification_reasons',      'MerchantController@getNeedsClarificationReasons'                   ],
         'merchant_activation_files'                => ['get',      'merchant/activation/{id}/files',                 'MerchantController@getActivationFiles'                             ],
         'merchant_activation_upload_file_admin'    => ['post',     'merchant/activation/{id}/files',                 'MerchantController@postUploadActivationFileAdmin'                  ],
@@ -2753,6 +2755,7 @@ class Route
         'merchant_activation_update_website',
         'merchant_one_time_token',
         'merchant_activation_business_categories',
+        'merchant_activation_business_details',
         'merchant_activation_needs_clarification',
         'merchant_razorx_evaluate',
         'merchant_razorx_bulk_evaluate',

@@ -171,5 +171,7 @@ class Constants
     const DETAILS_FROM_USER         = 'detail_from_user';
     const MATCH_TYPE                = 'match_type';
 
+    const SEARCH_STRING = 'search_string';
+
 }
 

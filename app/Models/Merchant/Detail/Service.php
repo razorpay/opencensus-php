@@ -682,6 +682,18 @@ class Service extends Base\Service
     }
 
     /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function getBusinessDetails(array $input): array
+    {
+        $businessDetails = (new Core)->getBusinessDetails($input);
+
+        return $businessDetails;
+    }
+
+    /**
      * This function is used for getting needs clarification reasons for fields
      *
      * @return array

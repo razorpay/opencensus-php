@@ -2329,4 +2329,13 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->startTest();
     }
+
+    public function testGetBusinessDetails()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
+
+        $this->startTest();
+    }
 }

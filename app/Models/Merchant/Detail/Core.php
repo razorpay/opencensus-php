@@ -47,6 +47,7 @@ use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
+use RZP\Models\Merchant\Detail\BusinessDetailSearch\InMemoryBusinessSearch;
 
 class Core extends Base\Core
 {
@@ -2815,7 +2816,24 @@ class Core extends Base\Core
                 }
                 break;
         }
+    }
 
+    /**
+     * @param $input
+     *
+     * get sorted subcategory list based on user-entered string
+     *
+     * @return array
+     */
+    public function getBusinessDetails(array $input) : array
+    {
+        (new Validator())->validateInput('search_business_details', $input);
+
+        $inMemorySearch = new InMemoryBusinessSearch($input[DEConstants::SEARCH_STRING]);
+
+        $response = $inMemorySearch->searchString();
+
+        return $response;
     }
 
     /**
