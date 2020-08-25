@@ -49,6 +49,13 @@ class CardProcessor extends BaseProcessor
 
     protected function calculateUnavailableNetworks(Collection $gatewayDowntimes)
     {
+        $paymentDowntimesEnabled = (bool) ConfigKey::get(ConfigKey::ENABLE_PAYMENT_DOWNTIME_CARD_NETWORK, false);
+
+        if ($paymentDowntimesEnabled === false)
+        {
+            $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::DOWNTIME_V2);
+        }
+
         if ($gatewayDowntimes->isEmpty() === true)
         {
             return [];
@@ -70,7 +77,15 @@ class CardProcessor extends BaseProcessor
         return $mapping->getUnavailableNetworks();
     }
 
-    protected function calculateUnavailableIssuer(Collection $gatewayDowntimes){
+    protected function calculateUnavailableIssuer(Collection $gatewayDowntimes)
+    {
+        $paymentDowntimesEnabled = (bool) ConfigKey::get(ConfigKey::ENABLE_PAYMENT_DOWNTIME_CARD_ISSUER, false);
+
+        if ($paymentDowntimesEnabled === false)
+        {
+            $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::DOWNTIME_V2);
+        }
+
         if ($gatewayDowntimes->isEmpty() === true)
         {
             return [];

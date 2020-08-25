@@ -58,6 +58,22 @@ class PaymentDowntimeTest extends TestCase
             'method'  => 'PUT',
             'url'     => '/config/keys',
             'content' => [
+                'config:enable_payment_downtimes_card_issuer' => '1',
+            ],
+        ]);
+
+        $this->makeRequestAndGetContent([
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:enable_payment_downtimes_card_network' => '1',
+            ],
+        ]);
+
+        $this->makeRequestAndGetContent([
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
                 'config:enable_payment_downtimes_netbanking' => '1',
             ],
         ]);
@@ -1243,6 +1259,58 @@ class PaymentDowntimeTest extends TestCase
         $paymentDowntime = $this->getEntityById('payment.downtime', $issuerDowntimeId, true);
 
         $this->assertEquals($paymentDowntime['issuer'], 'HDFC');
+        $this->assertNotNull($paymentDowntime['end']);
+    }
+
+    public function testNetworkDowntimeResolveAfterFlagDisabled(){
+        $request = [
+            'content' => [
+                'gateway'     => 'ALL',
+                'network'      => 'RUPAY',
+                'method'      => 'card',
+                'source'      => 'DOWNTIME_V2',
+                'reason_code' => 'HIGHER_ERRORS',
+                'begin'       => strval(Carbon::now()->timestamp),
+                'issuer'      => 'UNKNOWN'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $this->ba->adminAuth();
+        $this->makeRequestAndGetContent($request);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals($paymentDowntime['network'], 'RUPAY');
+        $this->assertNull($paymentDowntime['end']);
+
+        // setting network flag to false
+        $this->makeRequestAndGetContent([
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:enable_payment_downtimes_card_network' => '0',
+            ],
+        ]);
+
+        $request = [
+            'content' => [
+                'gateway'     => 'upi_mindgate',
+                'method'      => 'upi',
+                'source'      => 'VAJRA',
+                'reason_code' => 'HIGHER_ERRORS',
+                'begin'       => strval(Carbon::now()->timestamp),
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $this->ba->adminAuth();
+        $this->makeRequestAndGetContent($request);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+        $this->assertEquals($paymentDowntime['network'], 'RUPAY');
         $this->assertNotNull($paymentDowntime['end']);
     }
 

@@ -69,6 +69,8 @@ class ConfigKey
     const FTS_BENEFICIARY                       = self::PREFIX . 'fts_beneficiary';
     const ENABLE_NB_KOTAK_ENCRYPTED_FLOW        = self::PREFIX . 'enable_nb_kotak_encrypted_flow';
     const ENABLE_PAYMENT_DOWNTIME_CARD          = self::PREFIX . 'enable_payment_downtimes_card';
+    const ENABLE_PAYMENT_DOWNTIME_CARD_ISSUER   = self::PREFIX . 'enable_payment_downtimes_card_issuer';
+    const ENABLE_PAYMENT_DOWNTIME_CARD_NETWORK  = self::PREFIX . 'enable_payment_downtimes_card_network';
     const ENABLE_PAYMENT_DOWNTIME_NETBANKING    = self::PREFIX . 'enable_payment_downtimes_netbanking';
     const ENABLE_PAYMENT_DOWNTIME_UPI           = self::PREFIX . 'enable_payment_downtimes_upi';
     const ENABLE_PAYMENT_DOWNTIME_WALLET        = self::PREFIX . 'enable_payment_downtimes_wallet';

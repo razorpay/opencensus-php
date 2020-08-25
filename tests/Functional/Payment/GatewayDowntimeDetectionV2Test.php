@@ -362,6 +362,22 @@ class GatewayDowntimeDetectionV2Test extends TestCase
             'method'  => 'PUT',
             'url'     => '/config/keys',
             'content' => [
+                'config:enable_payment_downtimes_card_issuer' => '1',
+            ],
+        ]);
+
+        $this->makeRequestAndGetContent([
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:enable_payment_downtimes_card_network' => '1',
+            ],
+        ]);
+
+        $this->makeRequestAndGetContent([
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
                 'config:enable_payment_downtimes_netbanking' => '1',
             ],
         ]);
