@@ -175,6 +175,7 @@ return array(
         'Maatwebsite\Excel\ExcelServiceProvider',
         Razorpay\Slack\Laravel\ServiceProviderLaravel5::class,
         Illuminate\Validation\ValidationServiceProvider::class,
+        Razorpay\Metrics\ServiceProvider::class,
     ],
 
     /*
@@ -248,6 +249,7 @@ return array(
         'Slack'           => Razorpay\Slack\Laravel\Facade::class,
         'Trace'           => App\Trace\Facade::class,
         'Uuid'            => App\Facades\Uuid::class,
+        'Metrics'         => Razorpay\Metrics\Facade::class,
     ),
 
     'cdn_dashboard_url'   => env('CDN_DASHBOARD_URL'),

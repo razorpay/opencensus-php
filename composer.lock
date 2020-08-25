@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "04118ae49dc4ec1c2e44b409144c076e",
+    "content-hash": "5f3b0f54950c049985de3e3586b33dc6",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -233,6 +233,7 @@
                 "mail",
                 "mailgun"
             ],
+            "abandoned": true,
             "time": "2015-09-18T08:03:36+00:00"
         },
         {
@@ -288,6 +289,64 @@
                 "preload"
             ],
             "time": "2017-12-10T11:40:39+00:00"
+        },
+        {
+            "name": "datadog/php-datadogstatsd",
+            "version": "1.5.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/DataDog/php-datadogstatsd.git",
+                "reference": "8befb950aa5a90326f78298a9973aa591bee499b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/DataDog/php-datadogstatsd/zipball/8befb950aa5a90326f78298a9973aa591bee499b",
+                "reference": "8befb950aa5a90326f78298a9973aa591bee499b",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-sockets": "*",
+                "lib-curl": "*",
+                "php": ">=5.6.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "4.8.36"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "DataDog\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Alex Corley",
+                    "email": "anthroprose@gmail.com",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Datadog",
+                    "email": "dev@datadoghq.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "An extremely simple PHP datadogstatsd client",
+            "homepage": "https://www.datadoghq.com/",
+            "keywords": [
+                "DataDog",
+                "check",
+                "error-reporting",
+                "health",
+                "logging",
+                "monitoring",
+                "statsd"
+            ],
+            "time": "2020-05-06T20:43:36+00:00"
         },
         {
             "name": "dnoegel/php-xdg-base-dir",
@@ -681,6 +740,7 @@
                 }
             ],
             "description": "Provides a simple API and specification that abstracts away the details of HTTP into a single PHP function.",
+            "abandoned": true,
             "time": "2015-05-20T03:37:09+00:00"
         },
         {
@@ -731,6 +791,7 @@
                 "Guzzle",
                 "stream"
             ],
+            "abandoned": true,
             "time": "2014-10-12T19:18:40+00:00"
         },
         {
@@ -875,6 +936,7 @@
                     "homepage": "http://www.acci.cz"
                 }
             ],
+            "abandoned": "php-parallel-lint/php-console-color",
             "time": "2014-04-08T15:00:19+00:00"
         },
         {
@@ -919,6 +981,7 @@
                     "homepage": "http://www.acci.cz/"
                 }
             ],
+            "abandoned": "php-parallel-lint/php-console-highlighter",
             "time": "2015-04-20T18:58:01+00:00"
         },
         {
@@ -977,6 +1040,7 @@
                 "serialize",
                 "tokenizer"
             ],
+            "abandoned": "opis/closure",
             "time": "2018-03-21T22:21:57+00:00"
         },
         {
@@ -1664,6 +1728,7 @@
                 "cron",
                 "schedule"
             ],
+            "abandoned": "dragonmantank/cron-expression",
             "time": "2017-01-23T04:29:33+00:00"
         },
         {
@@ -2233,12 +2298,12 @@
             "version": "v1.1.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/nrk/predis.git",
+                "url": "https://github.com/predis/predis.git",
                 "reference": "f0210e38881631afeafb56ab43405a92cafd9fd1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nrk/predis/zipball/f0210e38881631afeafb56ab43405a92cafd9fd1",
+                "url": "https://api.github.com/repos/predis/predis/zipball/f0210e38881631afeafb56ab43405a92cafd9fd1",
                 "reference": "f0210e38881631afeafb56ab43405a92cafd9fd1",
                 "shasum": ""
             },
@@ -2446,6 +2511,44 @@
                 "shell"
             ],
             "time": "2016-03-09T05:03:14+00:00"
+        },
+        {
+            "name": "razorpay/metrics-php",
+            "version": "2.1.0",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:razorpay/metrics-php.git",
+                "reference": "9ff9e31e7c31abc701659506c6412755e6ef74c3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/razorpay/metrics-php/zipball/9ff9e31e7c31abc701659506c6412755e6ef74c3",
+                "reference": "9ff9e31e7c31abc701659506c6412755e6ef74c3",
+                "shasum": ""
+            },
+            "require": {
+                "datadog/php-datadogstatsd": "^1.0",
+                "illuminate/support": ">=5.2",
+                "php": "^7.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^6.5"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "tests"
+                ],
+                "psr-4": {
+                    "Razorpay\\Metrics\\": "src/"
+                }
+            },
+            "description": "Agent or backend agnostic php interface for collecting application metrics",
+            "support": {
+                "source": "https://github.com/razorpay/metrics-php/tree/2.1.0",
+                "issues": "https://github.com/razorpay/metrics-php/issues"
+            },
+            "time": "2020-07-01T07:06:34+00:00"
         },
         {
             "name": "razorpay/razorpay",
@@ -4116,5 +4219,6 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": [],
-    "platform-dev": []
+    "platform-dev": [],
+    "plugin-api-version": "1.1.0"
 }
