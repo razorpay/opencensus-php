@@ -179,7 +179,7 @@ return [
 //                'id'                => 'd2c_Dg8DrxoP8KXelQ',
                 'provider'          => 'experian',
                 'score'             => null,
-                'ntc_score'         => 4,
+                'ntc_score'         => '4',
                 'report'            => null,
                 'interested'        => null,
 //                'created_at'        => 1571374473

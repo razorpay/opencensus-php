@@ -96,7 +96,19 @@ class Service extends Base\Service
             throw new BadRequestValidationFailureException('no report found for '. json_encode($input));
         }
 
-        return $bureauReport->toArrayForDashboard();
+        return $this->getReportArrayForLos($bureauReport);
+    }
+
+    public function getReportArrayForLos($bureauReport)
+    {
+        $bureauReport = $bureauReport->toArrayForDashboard();
+
+        if(empty($bureauReport[Entity::NTC_SCORE]) === false)
+        {
+            $bureauReport['ntc_score'] = strval($bureauReport['ntc_score']);
+        }
+
+        return $bureauReport;
     }
 
     public function getDownloadUrl($id)

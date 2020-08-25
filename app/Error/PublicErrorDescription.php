@@ -1132,6 +1132,15 @@ class PublicErrorDescription
     const BAD_REQUEST_D2C_NON_OWNER_USER_NOT_ALLOWED                                = 'Access denied.';
     const BAD_REQUEST_D2C_CREDIT_BUREAU_NO_RECORDS_FOUND                            = 'No records found. Please contact support.';
     const BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT                    = 'The phone number entered isn\'t linked to your PAN. Please mention the correct phone number.';
+    const BAD_REQUEST_D2C_MANDATORY_FIELD_MISSING                                   = 'Mandatory field missing';
+    const BAD_REQUEST_D2C_INVALID_DATA_IN_INPUT                                     = 'Invalid Data in input';
+    const BAD_REQUEST_D2C_INVALID_PAN                                               = 'Invalid PAN';
+    const SERVER_ERROR_D2C_VOUCHER_CODE_INVALID                                     = 'Something went wrong. Please try again later';
+    const GATEWAY_ERROR_D2C_EXPERIAN_VALIDATION_FAILURE                             = 'Something went wrong. Please try again later';
+    const GATEWAY_ERROR_D2C_EXPERIAN_SERVER_ERROR                                   = 'Something went wrong. Please try again later';
+    const GATEWAY_ERROR_D2C_EXPERIAN_SYSTEM_ERROR                                   = 'Something went wrong. Please try again later';
+    const GATEWAY_ERROR_D2C_EXPERIAN_INVALID_AFFINITY                               = 'Something went wrong. Please try again later';
+
 
     // Early Settlements and payouts
     const BAD_REQUEST_ES_ON_DEMAND_IMPS_AMOUNT_LIMIT_EXCEEDED                       = 'Please provide an amount less than 2 Lacs to get a settlement at this point of time.';

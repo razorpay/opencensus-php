@@ -63,7 +63,7 @@ class Core extends Base\Core
             throw $e;
         }
 
-        // Response contains 3 keys:
+        // Response contains 4 keys:
         // 1. score: credit score of owner.
         // 2. report: map of attributes to be shown on dashboard mandatorily. this will be saved in json format in db.
         // 3. raw_report: whole dump to be saved in filestore.

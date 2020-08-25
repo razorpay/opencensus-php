@@ -258,8 +258,9 @@ class Service extends Base\Service
 
             $this->core()->updateStatusVerified($bureauDetail);
 
-            return $this->bureauReport->getReport($bureauDetail, $this->merchant, $this->user)
-                ->toArrayForDashboard();
+            $report =  $this->bureauReport->getReport($bureauDetail, $this->merchant, $this->user);
+
+            return $this->bureauReport->getReportArrayForLos($report);
         }, 120);
     }
 
