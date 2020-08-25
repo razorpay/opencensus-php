@@ -325,7 +325,6 @@ class UserAccess
         $userId = $user->getId();
 
         $merchantId = $this->ba->getMerchantId();
-        $requestingProduct = $this->ba->getRequestOriginProduct();
 
         // currently keeping this feature under razorx
         // keeping this razorx under merchantId for consistency with dashboard
@@ -335,10 +334,7 @@ class UserAccess
             RazorxTreatment::VALIDATE_USER_2FA_STATUS,
             $this->ba->getMode());
 
-        if (strtolower($user2FaCheckExperimentVariant) === 'on' and
-        // temporary exception added, will remove once X dashboard
-        // completes critical actions development
-            $requestingProduct === Product::PRIMARY)
+        if (strtolower($user2FaCheckExperimentVariant) === 'on')
         {
             $user2FaVerified = $this->reqCtx->getUser2FAVerified();
 

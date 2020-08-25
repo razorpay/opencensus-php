@@ -11,7 +11,6 @@ use RZP\Exception;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Constants\Product;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -536,15 +535,13 @@ class Validator extends Base\Validator
 
         $merchantId = $ba->getMerchantId();
         $mode = $ba->getMode();
-        $requestOriginProduct = $ba->getRequestOriginProduct();
 
         $user2FaCheckExperimentVariant = $razorx->getTreatment(
             $merchantId,
             Merchant\RazorxTreatment::VALIDATE_USER_2FA_STATUS,
             $mode);
 
-        if (strtolower($user2FaCheckExperimentVariant) !== 'on' or
-            $requestOriginProduct === Product::BANKING)
+        if (strtolower($user2FaCheckExperimentVariant) !== 'on')
         {
             if (isset($input[Entity::PASSWORD]) === true)
             {

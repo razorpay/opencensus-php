@@ -13,7 +13,6 @@ use RZP\Constants\Mode;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
-use RZP\Constants\Product;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Payment\Event;
 use RZP\Models\Merchant\Detail;
@@ -1572,15 +1571,13 @@ class Validator extends Base\Validator
         $ba = $app['basicauth'];
 
         $merchantId = $ba->getMerchantId();
-        $requestOriginProduct = $ba->getRequestOriginProduct();
 
         $variant = $razorx->getTreatment(
             $merchantId,
             RazorxTreatment::VALIDATE_USER_2FA_STATUS,
             $ba->getMode());
 
-        if (strtolower($variant) !== 'on' or
-            $requestOriginProduct === Product::BANKING)
+        if (strtolower($variant) !== 'on')
         {
             if (isset($input[User\Entity::PASSWORD]) === true)
             {
