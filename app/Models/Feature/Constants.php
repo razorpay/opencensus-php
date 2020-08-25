@@ -416,6 +416,10 @@ class Constants
     const NPS_SURVEY_PAYMENT_GATEWAY_12M = 'nps_survey_pg_12m';
     const NPS_SURVEY_OTHER_PRODUCTS      = 'nps_survey_other_products';
 
+    /*
+    * This feature is enabled  when the merchant wants emandate registration with aadhaar auth type.
+    */
+    const ESIGN = 'esign';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -651,6 +655,7 @@ class Constants
         self::NPS_SURVEY_PAYMENT_GATEWAY_6M   => true,
         self::NPS_SURVEY_PAYMENT_GATEWAY_12M  => true,
         self::NPS_SURVEY_OTHER_PRODUCTS       => true,
+        self::ESIGN                           => true,
     ];
 
     // Entity type constants

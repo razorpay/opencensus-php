@@ -326,6 +326,13 @@ class Core extends Base\Core
         {
             $authTypes = [Payment\AuthType::NETBANKING, Payment\AuthType::DEBITCARD];
         }
+        else
+        {
+            if ($merchant->isFeatureEnabled(Constants::ESIGN) === false)
+            {
+                $authTypes = array_diff($authTypes, [Payment\AuthType::AADHAAR]);
+            }
+        }
 
         foreach ($authTypes as $authType)
         {
