@@ -117,7 +117,6 @@ class Repository extends Base\Repository
                     ->where($bankAccountIfscCodeColumn, '=', strtoupper($bankAccount[BankAccount\Entity::IFSC]))
                     ->where($bankAccountBeneficiaryName, '=', $bankAccount[BankAccount\Entity::NAME])
                     ->where($bankAccountMerchantIdColumn, '=', $merchant->getId())
-                    ->latest($bankAccountCreatedAtColumn)
                     ->first();
     }
 
@@ -157,7 +156,6 @@ class Repository extends Base\Repository
                     ->where($vpaUsernameColumn, $username)
                     ->where($vpaHandleColumn, $handle)
                     ->where($vpaMerchantIdColumn, '=', $merchant->getId())
-                    ->latest($vpaCreatedAtColumn)
                     ->first();
     }
 
