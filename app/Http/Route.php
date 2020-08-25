@@ -1244,8 +1244,6 @@ class Route
         'migrate_tokens_to_gateway_tokens'         => ['post',     'tokens/migrate/gateway_tokens',                  'CustomerController@postMigrateToGatewayTokens'                     ],
 
         // Risk Routes
-        'risk_create'                              => ['post',     'risk',                                           'RiskController@create'                                             ],
-        'risk_update'                              => ['patch',    'risk/{id}',                                      'RiskController@update'                                             ],
         'risk_fetch_multiple'                      => ['get',      'risk',                                           'RiskController@list'                                               ],
         'risk_get'                                 => ['get',      'risk/{id}',                                      'RiskController@get'                                                ],
 
@@ -3299,10 +3297,8 @@ class Route
         'promotion_create_for_event',
         'refund_create_missing_txn',
         'refund_gateway_manual',
-        'risk_create',
         'risk_fetch_multiple',
         'risk_get',
-        'risk_update',
         'schedule_fetch',
         'schedule_update_next_run',
         'send_newsletter',
@@ -4051,10 +4047,8 @@ class Route
         'promotion_deactivate'                     => Permission::DEACTIVATE_PROMOTION,
         'refund_create_missing_txn'                => '*',
         'refund_gateway_manual'                    => '*',
-        'risk_create'                              => '*',
         'risk_fetch_multiple'                      => '*',
         'risk_get'                                 => '*',
-        'risk_update'                              => '*',
         'refund_reference1_bulk_update'            => Permission::UPDATE_REFUND_REFERENCE1,
         'scrooge_dashboard_init'                   => '*',
         'scrooge_reports_get_multiple'             => '*',

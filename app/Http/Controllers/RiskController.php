@@ -5,9 +5,21 @@ namespace RZP\Http\Controllers;
 use ApiResponse;
 use Request;
 
-use RZP\Http\Controllers\Traits\HasCrudMethods;
-
 class RiskController extends Controller
 {
-    use HasCrudMethods;
+    public function get(string $id)
+    {
+        $entity = $this->service()->fetch($id);
+
+        return ApiResponse::json($entity);
+    }
+
+    public function list()
+    {
+        $input = Request::all();
+
+        $entities = $this->service()->fetchMultiple($input);
+
+        return ApiResponse::json($entities);
+    }
 }
