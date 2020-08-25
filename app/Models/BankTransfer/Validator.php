@@ -114,7 +114,7 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
-                    $bankTransfer);
+                    $bankTransfer, ['method' => $payment->getMethod()]);
         }
     }
 }

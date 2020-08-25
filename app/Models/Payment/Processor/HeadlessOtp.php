@@ -260,6 +260,7 @@ trait HeadlessOtp
         $data = [
             'payment_id' => $payment->getId(),
             'gateway'    => $gatewayInput,
+            'method'     => $payment->getMethod(),
         ];
 
         $response = $this->app['card.otpelf']->otpSubmit($data);
@@ -282,7 +283,8 @@ trait HeadlessOtp
                         if (isset($response['data']['data']['next']) === true)
                         {
                             $data = [
-                                'next' => $this->getNextOtpAction($response['data']['data']['next'])
+                                'next' => $this->getNextOtpAction($response['data']['data']['next']),
+                                'method' => $payment->getMethod()
                             ];
                         }
 
@@ -307,7 +309,8 @@ trait HeadlessOtp
         $this->handleFailedResponse($response, $payment, $traceInput);
 
         throw new Exception\GatewayErrorException(
-            ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+            ErrorCode::BAD_REQUEST_PAYMENT_FAILED,null,null,
+            ['method' => $payment->getMethod()]
         );
     }
 
@@ -385,7 +388,8 @@ trait HeadlessOtp
                 $errorCode = self::$elfErrorCodeMapping[$response['error']['reason']];
 
                 throw new Exception\GatewayErrorException(
-                    $errorCode
+                    $errorCode, null, null,
+                    ['method' => $payment->getMethod()]
                 );
             }
         }

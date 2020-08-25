@@ -273,7 +273,7 @@ trait Callback
         $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
 
         throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED, null, ['method' => $payment->getMethod()]);
     }
 
     protected function processPaymentCallback(Payment\Entity $payment, $gatewayInput, $s2sCallback = false)
@@ -314,7 +314,8 @@ trait Callback
             ($input['payment']['method'] === Payment\Method::CARD))
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_GATEWAY_EMPTY_CALLBACK);
+                ErrorCode::BAD_REQUEST_GATEWAY_EMPTY_CALLBACK,null,null,
+                ['method'=>$payment->getMethod()]);
         }
 
         try
@@ -485,7 +486,8 @@ trait Callback
                 if (in_array($payment->getGateway(), Payment\Gateway::$otpPostFormSubmitGateways, true) === false)
                 {
                     throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PAYMENT_OTP_SUBMIT_FOR_3DS_AUTH);
+                        ErrorCode::BAD_REQUEST_PAYMENT_OTP_SUBMIT_FOR_3DS_AUTH,null,
+                        ['method'=>$payment->getMethod()]);
                 }
             }
         }
@@ -638,9 +640,13 @@ trait Callback
         $internalErrorCode = $payment->getInternalErrorCode();
         $publicErrorCode = $payment->getErrorCode();
         $errorDesc = $payment->getErrorDescription();
+        $data = [
+            'payment_id'  => $this->payment->getPublicId(),
+            'order_id'    => $this->payment->getPublicOrderId(),
+            'method'      => $this->payment->getMethod()];
 
         Error\Map::throwExceptionFromErrorDetails(
-            $publicErrorCode, $internalErrorCode, $errorDesc);
+            $publicErrorCode, $internalErrorCode, $errorDesc, $data);
 
         $errors = [
             'payment_id' => $payment->getPublicId(),

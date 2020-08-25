@@ -240,6 +240,7 @@ class Charge extends Base\Core
                     'subscription_status'   => $subscription->getStatus(),
                     'captured_payment_id'   => $capturedPayment->getId(),
                     'invoice_id'            => $invoice->getId(),
+                    'method'                => $capturedPayment->getMethod()
                 ]);
         }
 
@@ -371,6 +372,7 @@ class Charge extends Base\Core
                         'new_status'        => $updatedStatus,
                         'invoice_id'        => $invoice->getId(),
                         'payment_id'        => $capturedPayment->getId(),
+                        'method'            => $capturedPayment->getMethod()
                     ]);
         }
     }
@@ -403,6 +405,7 @@ class Charge extends Base\Core
                     'subscription_status'   => $subscription->getStatus(),
                     'captured_payment_id'   => $capturedPayment->getId(),
                     'invoice_id'            => $invoice->getId(),
+                    'method'                => $capturedPayment->getMethod()
                 ]);
         }
 
@@ -484,6 +487,7 @@ class Charge extends Base\Core
                         'new_status'        => $subscription->getStatus(),
                         'invoice_id'        => $invoice->getId(),
                         'payment_id'        => $capturedPayment->getId(),
+                        'method'            => $capturedPayment->getMethod()
                     ]);
         }
     }
@@ -725,6 +729,7 @@ class Charge extends Base\Core
                 [
                     'subscription_id' => $subscription->getId(),
                     'status' => $subscription->getStatus(),
+                    'method' => $payment->getMethod()
                 ]);
         }
 

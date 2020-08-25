@@ -69,13 +69,13 @@ trait Refund
         if ($this->isInvalidInstantRefundsRequest($payment, $input) === true)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED);
+                ErrorCode::BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED, null, ['method' => $payment->getMethod()]);
         }
 
         if ($payment->getGateway() === Payment\Gateway::BHARAT_QR)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED);
+                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,null, ['method' => $payment->getMethod()]);
         }
 
         if ($payment->isDisputed() === true)
@@ -87,7 +87,7 @@ trait Refund
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_UNDER_DISPUTE_CANNOT_BE_REFUNDED,
                     null,
-                    ['input' => $input, 'payment_id' => $payment->getId()]);
+                    ['input' => $input, 'payment_id' => $payment->getId(), 'method' => $payment->getMethod()]);
             }
         }
 

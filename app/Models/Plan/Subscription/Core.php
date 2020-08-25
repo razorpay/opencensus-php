@@ -321,7 +321,8 @@ class Core extends Base\Core
                 ErrorCode::SERVER_ERROR_WEBHOOK_IN_TRANSACTION,
                 [
                     'subscription_id'   => $subscription->getId(),
-                    'status'            => $status
+                    'status'            => $status,
+                    'method'            => $payment->getMethod()
                 ]);
         }
 

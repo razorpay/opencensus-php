@@ -166,6 +166,7 @@ trait Capture
                 [
                     'payment_id'     => $payment->getId(),
                     'payment_status' => $payment->getStatus(),
+                    'method'         => $payment->getMethod()
                 ]);
         }
     }

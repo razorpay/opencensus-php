@@ -2811,4 +2811,20 @@ class Service extends Base\Service
         return $response;
 
     }
+
+    public function processOtpSubmitPrivate($id, $hash, $input)
+    {
+        $data = $this->callback($id, $hash, $input);
+
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::OTP_SUBMIT_RESPONSE) === true)
+        {
+            Entity::verifyIdAndSilentlyStripSign($id);
+
+            $payment = $this->repo->payment->findOrFailPublic($id);
+
+            return array_merge($data, $payment->toArrayPublic());
+        }
+
+        return $data;
+    }
 }

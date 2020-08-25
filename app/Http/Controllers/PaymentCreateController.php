@@ -443,7 +443,14 @@ class PaymentCreateController extends Controller
     {
         $hash = $this->route->getHashOf($id);
 
-        return $this->postOtpSubmit($id, $hash);
+        $input = Request::all();
+
+        // Type should be OTP since it's an OTP callback
+        $input['type'] = 'otp';
+
+        $data = $this->service(E::PAYMENT)->processOtpSubmitPrivate($id, $hash, $input);
+
+        return ApiResponse::json($data);
     }
 
     public function postOtpSubmit($id, $hash)

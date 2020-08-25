@@ -2221,7 +2221,8 @@ class Processor
             throw new Exception\LogicException(
                 'Terminal should not be null here',
                 null,
-                ['payment_id' => $this->payment->getId()]);
+                ['payment_id' => $this->payment->getId(),
+                    'method'  => $this->payment->getMethod()]);
         }
 
         $gateway = $this->payment->getGateway();
@@ -2353,6 +2354,12 @@ class Processor
         catch (Exception\GatewayErrorException $ex)
         {
             $error = $ex->getError();
+
+            $data = $ex->getData();
+
+            $data['method'] = $this->payment->getMethod();
+
+            $ex->setData($data);
 
             $this->disableTerminalIfApplicable($terminal, $error);
 

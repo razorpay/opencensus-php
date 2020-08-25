@@ -11,7 +11,7 @@ class Map
         PublicErrorCode::BAD_REQUEST_ERROR  => Exception\BadRequestException::class,
         PublicErrorCode::SERVER_ERROR       => Exception\ServerErrorException::class);
 
-    public static function throwExceptionFromErrorDetails($publicCode, $internalCode, $desc)
+    public static function throwExceptionFromErrorDetails($publicCode, $internalCode, $desc, $data)
     {
         $class = null;
 
@@ -22,11 +22,11 @@ class Map
 
         if ($internalCode === ErrorCode::BAD_REQUEST_VALIDATION_FAILURE)
         {
-            throw new Exception\BadRequestValidationFailureException($desc);
+            throw new Exception\BadRequestValidationFailureException($desc, null, $data);
         }
         else if ($publicCode === ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT,null, $data);
         }
         else if ($internalCode === ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT)
         {
@@ -34,17 +34,19 @@ class Map
         }
         else if ($class === Exception\BadRequestException::class)
         {
-            throw new Exception\BadRequestException($internalCode);
+            throw new Exception\BadRequestException($internalCode, null, $data);
         }
         else if ($publicCode === PublicErrorCode::SERVER_ERROR)
         {
             throw new Exception\ServerErrorException(
                 'Server error getting repeated for payment callback',
-                ErrorCode::SERVER_ERROR);
+                ErrorCode::SERVER_ERROR,
+                $data);
         }
         else if ($publicCode === PublicErrorCode::GATEWAY_ERROR)
         {
-            throw new Exception\GatewayErrorException($internalCode);
+            throw new Exception\GatewayErrorException($internalCode, null, null,
+                $data);
         }
     }
 }
