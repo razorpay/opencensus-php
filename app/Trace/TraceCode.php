@@ -26,12 +26,16 @@ class TraceCode
 
     const USER_LOGIN                                = 'USER_LOGIN';
     const USER_LOGIN_KEYS                           = 'USER_LOGIN_KEYS';
+    const USER_OAUTH_LOGIN                          = 'USER_OAUTH_LOGIN';
     const USER_LOGIN_FAILURE                        = 'USER_LOGIN_FAILURE';
     const SWITCH_MERCHANT                           = 'SWITCH_MERCHANT';
     const USER_LOGOUT                               = 'USER_LOGOUT';
     const USER_UNLOCK_REQUEST                       = 'USER_UNLOCK_REQUEST';
     const USER_UNLOCK_RESPONSE                      = 'USER_UNLOCK_RESPONSE';
+    const USER_OAUTH_UNLOCK_RESPONSE                = 'USER_OAUTH_UNLOCK_RESPONSE';
     const ENABLE_INSTANT_ACTIVATIONS                = 'ENABLE_INSTANT_ACTIVATIONS';
+    const GOOGLE_OAUTH_SIGN_IN_FAILURE              = 'GOOGLE_OAUTH_SIGN_IN_FAILURE';
+
 
     const USER_UNAUTHORIZED                         = 'USER_UNAUTHORIZED';
     const USER_UNAUTHORIZED_EXCEPTION               = 'USER_UNAUTHORIZED_EXCEPTION';

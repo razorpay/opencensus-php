@@ -8,6 +8,7 @@ use Hash;
 use Input;
 use Queue;
 use Config;
+use Cookie;
 use Session;
 use Request;
 use App\Base;
@@ -28,6 +29,7 @@ use Illuminate\Foundation\Application;
 use Lcobucci\JWT\Builder as JWTBuilder;
 use Razorpay\Api\Errors\BadRequestError;
 use Lcobucci\JWT\Parser as JWTParser;
+use Illuminate\Support\Facades\Crypt;
 use Lcobucci\JWT\ValidationData as JWTValidation;
 use Illuminate\Auth\Access\AuthorizationException;
 
@@ -113,6 +115,75 @@ class Service extends Base\Service
     }
 
     /**
+     * @param $input
+     *
+     * @return array
+     * @throws BadRequestError
+     */
+    public function oauthRegisterAndSignIn($input): array
+    {
+        list($error, $data) = $this->oauthRegister($input);
+
+        //
+        // THe Laravel attempt function defined as
+        // attempt($credentials , $remember , $login )
+        //
+        if ((empty($error) === true) and (Auth::attempt($input, false, true) === false))
+        {
+            list($error, $data) = $this->oauthSignIn($input);
+        }
+
+        return [$error, $data];
+    }
+
+    /**
+     * @param $input
+     *
+     * @return array
+     * @throws BadRequestError
+     */
+    public function oauthRegister($input): array
+    {
+        $request = new ApiRequestAny();
+
+        $tokenVerified = (new OauthHelper)->oauthProviderVerification($input);
+
+        if ($tokenVerified === false)
+        {
+            throw new BadRequestError(
+                Constants::GOOGLE_SIGN_IN_ERROR,
+                ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        Session::put(Constants::OAUTH_LOGIN, true);
+
+        list($error, $data) = $request->processInput($input)->send(
+            Constants::OAUTH_REGISTER_ROUTE, Constants::POST_METHOD);
+
+        if (empty($error) === false)
+        {
+            throw new BadRequestError(
+                $error[0],
+                ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        return [$error, $data];
+    }
+
+    public function oauthSignIn($input): array
+    {
+        list($error, $genericUser) = $this->oauthLoginOnApiOnRoute($input,
+                                                                   Constants::OAUTH_LOGIN_ROUTE,
+                                                                   Constants::POST_METHOD);
+
+        return $this->handleOauthLoginResponse($error, $genericUser);
+    }
+
+    /**
      * @param  array  $input [description]
      *
      * @return array
@@ -168,6 +239,52 @@ class Service extends Base\Service
         list($error, $genericUser) = $this->loginOnApiNo2faSetup($input);
 
         return $this->handleLoginResponse($error, $genericUser);
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function oauthUnlock(array $input): array
+    {
+        $encryptedEmail = Cookie::get(Constants::RZP_USER_EMAIL);
+
+        if ((empty($encryptedEmail) === false))
+        {
+            $email = Crypt::decrypt($encryptedEmail);
+            //
+            // Adding the email of current user email from cookie
+            // otherwise different google account can unlock the account
+            //
+            $input[Constants::EMAIL] = $email;
+
+            list($error, $data) = $this->oauthLoginNo2fa($input);
+
+            $traceData = [
+                Constants::EMAIL => $input[Constants::EMAIL],
+                Constants::ERROR => $error,
+                Constants::DATA  => $data,
+            ];
+
+            $this->trace->info(TraceCode::USER_OAUTH_UNLOCK_RESPONSE, $traceData);
+        }
+        else
+        {
+            $error = [Constants::NETWORK_ISSUE_RELOAD_PAGE];
+            $data  = null;
+        }
+
+        return [$error, $data];
+    }
+
+    public function oauthLoginNo2fa(array $input): array
+    {
+        list($error, $genericUser) = $this->oauthLoginOnApiOnRoute($input,
+                                                                   Constants::OAUTH_UNLOCK_ROUTE,
+                                                                   Constants::POST_METHOD);
+
+        return $this->handleOauthLoginResponse($error, $genericUser);
     }
 
     public function verify2faOtp(array $input, array $options = [])
@@ -331,6 +448,72 @@ class Service extends Base\Service
         ];
 
         $this->trace->info(TraceCode::USER_LOGIN, $traceData);
+
+        return [$error, $res];
+    }
+
+    protected function handleOauthLoginResponse($error, $genericUser)
+    {
+        if (empty($error) === false)
+        {
+            if ((array_key_exists(Constants::INTERNAL_ERROR_CODE, $error) === true) and
+                (empty($error[Constants::INTERNAL_ERROR_CODE]) === false))
+            {
+                $userId = $error[Constants::INTERNAL][Constants::USER_DETAILS][Constants::USER_ID] ??  "";
+
+                if (empty($userId) === false)
+                {
+                    Session::set(Constants::USER_ID, $userId);
+                }
+                else
+                {
+                    return [[Constants::LOGIN_FAILED_CHECK_CREDENTIALS], null];
+                }
+
+                // very very nasty dirty hack to not to write lot of code. check handleLoginResponse function
+                if ($error[Constants::INTERNAL_ERROR_CODE] === self::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP)
+                {
+                    $error = $error[Constants::DESCRIPTION];
+                }
+
+                return [[$error], null];
+            }
+
+            //temporarily added and will be removed after the root cause is fixed.
+            if (in_array(Constants::NO_DB_RECORDS_FOUND, $error) === true)
+            {
+                return [[Constants::ACCOUNT_DOES_NOT_EXIST], null];
+            }
+
+            return [[Constants::GOOGLE_SIGN_IN_ERROR], null];
+        }
+
+        Auth::login($genericUser, false);
+
+        $this->app[Constants::SESSION]->put(Constants::DASHBOARD_USER_PAYLOAD, $genericUser);
+
+        $res = [
+            Constants::ID => $genericUser->id,
+        ];
+
+        $merchantIds = [];
+
+        foreach ($genericUser->merchants as $merchant)
+        {
+            $merchantIds[] = $merchant->id;
+        }
+        $res[Constants::MERCHANT_IDS] = $merchantIds;
+
+        $user = Auth::user();
+
+        $currentMerchantId = $user->currentMerchant() ? $user->currentMerchant()->id : null;
+
+        $traceData = [
+            Constants::ID          => $user->id,
+            Constants::MERCHANT_ID => $currentMerchantId,
+        ];
+
+        $this->trace->info(TraceCode::USER_OAUTH_LOGIN, $traceData);
 
         return [$error, $res];
     }
@@ -558,6 +741,9 @@ class Service extends Base\Service
         $userDetails[Constants::TWO_FA_VERIFIED] = Session::get(
             Constants::TWO_FA_VERIFIED,
             false); //default value is false
+
+        //default value is false
+        $userDetails[Constants::OAUTH_LOGIN] = Session::get(Constants::OAUTH_LOGIN, false);
 
         $merchants = $userDetails['merchants'];
 
@@ -797,6 +983,52 @@ class Service extends Base\Service
                 ['error' => $error, 'email' => $email]);
         }
 
+
+        return [$error, $genericUser];
+    }
+
+
+    /**
+     * @param array  $input
+     * @param string $route
+     * @param string $httpVerb
+     *
+     * @return array
+     * @throws BadRequestError
+     */
+    public function oauthLoginOnApiOnRoute(array $input, string $route, string $httpVerb): array
+    {
+        $request = new ApiRequestAny();
+
+        $tokenVerified = (new OauthHelper)->oauthProviderVerification($input);
+
+        if ($tokenVerified === false)
+        {
+            throw new BadRequestError(
+                Constants::GOOGLE_SIGN_IN_ERROR,
+                ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        Session::put(Constants::OAUTH_LOGIN, true);
+
+        $genericUser = null;
+
+        list($error, $data) = $request->processInput($input)->send($route, $httpVerb);
+
+        if (empty($error) === true)
+        {
+            $genericUser = (new Helper)->createdGenericUser($data);
+        }
+        else
+        {
+            $email = $input[Constants::EMAIL] ?? '';
+
+            $this->trace->info(
+                TraceCode::USER_LOGIN_FAILURE,
+                [Constants::ERROR => $error, Constants::EMAIL => $email]);
+        }
 
         return [$error, $genericUser];
     }

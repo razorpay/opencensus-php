@@ -6,6 +6,7 @@ return [
     'mock'                   => env('OAUTH_MOCK', false),
 
     // Used for CORS validation
-    'auth_service_url'       => env('AUTH_SERVICE_URL'),
-    'auth_service_url_cde'   => env('AUTH_SERVICE_URL_CDE'),
+    'auth_service_url'         => env('AUTH_SERVICE_URL'),
+    'auth_service_url_cde'     => env('AUTH_SERVICE_URL_CDE'),
+    'merchant_oauth_client_id' => env('MERCHANT_OAUTH_CLIENT_ID'),
 ];

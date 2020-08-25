@@ -72,6 +72,8 @@ class SessionInActivity
             // then it'll remain even after user is logged out
             Session::forget(UserConstants::TWO_FA_VERIFIED);
 
+            Session::forget(UserConstants::OAUTH_LOGIN);
+
             $path = '/#/access/signin';
 
             if (empty($userEmail) === false)

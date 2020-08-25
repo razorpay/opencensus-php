@@ -14,6 +14,7 @@ use App\Merchant;
 use App\Http\ApiUrl;
 use App\Trace\TraceCode;
 use App\Http\AppResponse;
+use App\User\RecoverableException;
 
 class UserController extends Controller
 {
@@ -167,6 +168,23 @@ class UserController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function postOauthRegister()
+    {
+        $input = Input::all();
+
+        try
+        {
+            list($error, $data) = (new User\Service)->oauthRegisterAndSignIn($input);
+        }
+        catch (RecoverableException $e)
+        {
+            $error = [$e->getMessage()];
+            $data  = null;
+        }
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     /**
      * Handle the authentication request from the user.
      *
@@ -185,6 +203,23 @@ class UserController extends Controller
         $this->trace->info(TraceCode::USER_LOGIN_KEYS, array_keys($input));
 
         list($error, $data) = (new User\Service)->login($input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function postOauthSignIn()
+    {
+        $input = Input::all();
+
+        try
+        {
+            list($error, $data) = (new User\Service)->oauthSignIn($input);
+        }
+        catch (RecoverableException $e)
+        {
+            $error = [$e->getMessage()];
+            $data  = null;
+        }
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -264,6 +299,8 @@ class UserController extends Controller
         $this->trace->info(TraceCode::USER_LOGOUT, $traceData);
 
         $user->logout();
+
+        Session::forget(User\Constants::OAUTH_LOGIN);
 
         Session::forget(User\Constants::TWO_FA_VERIFIED);
 
@@ -447,6 +484,23 @@ class UserController extends Controller
         {
             $error = ["Incorrect password/Network issue, please reload the page"];
             $data = null;
+        }
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function postOauthUnlockUserScreen()
+    {
+        $input = Input::all();
+
+        try
+        {
+            list($error, $data) = (new User\Service)->oauthUnlock($input);
+        }
+        catch (RecoverableException $e)
+        {
+            $error = [$e->getMessage()];
+            $data  = null;
         }
 
         return AppResponse::jsonResponse($error, $data);
