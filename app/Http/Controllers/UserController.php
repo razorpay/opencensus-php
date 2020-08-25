@@ -154,7 +154,11 @@ class UserController extends Controller
                     'captcha_disable'   => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
                 ];
 
-                if (Auth::attempt($credentials, false, true) === false)
+                $loginResult = Auth::attempt($credentials, false, true);
+
+                app('trace')->info(TraceCode::USER_REGISTER_LOGIN_ATTEMPT, ["email" => $input['email'], "login_result" => $loginResult]);
+
+                if ($loginResult === false)
                 {
                     list($error, $data) = (new User\Service)->login($credentials);
                 }

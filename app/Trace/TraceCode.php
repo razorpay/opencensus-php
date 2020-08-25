@@ -6,13 +6,14 @@ use EE\Exception\InvalidArgumentException;
 
 class TraceCode
 {
+    const USER_LOGIN_CREDS                          = 'USER_LOGIN_CREDS';
     const AWS_INSTANCE_DATA_RECORD_FAILURE          = 'AWS_INSTANCE_DATA_RECORD_FAILURE';
     const AWS_INSTANCE_DATA_WRITE_FAILURE           = 'AWS_INSTANCE_DATA_WRITE_FAILURE';
     const AWS_INSTANCE_DATA_READ_FAILURE            = 'AWS_INSTANCE_DATA_READ_FAILURE';
 
     const DASHBOARD_INTEGRATION_ERROR               = 'DASHBOARD_INTEGRATION_ERROR';
     const QUEUE_JOB_FAILURE                         = 'QUEUE_JOB_FAILURE';
-
+    const USER_REGISTER_LOGIN_ATTEMPT               = 'USER_REGISTER_LOGIN_ATTEMPT';
     const ERROR_EXCEPTION                           = 'ERROR_EXCEPTION';
     const MISC_TRACE_CODE                           = 'MISC_TRACE_CODE';
     const SLACK_QUERY_RESPONSE                      = 'SLACK_QUERY_RESPONSE';
@@ -32,6 +33,7 @@ class TraceCode
     const USER_LOGOUT                               = 'USER_LOGOUT';
     const USER_UNLOCK_REQUEST                       = 'USER_UNLOCK_REQUEST';
     const USER_UNLOCK_RESPONSE                      = 'USER_UNLOCK_RESPONSE';
+    const USER_RETRIEVE_CREDS                       = 'USER_RETRIEVE_CREDS';
     const USER_OAUTH_UNLOCK_RESPONSE                = 'USER_OAUTH_UNLOCK_RESPONSE';
     const ENABLE_INSTANT_ACTIVATIONS                = 'ENABLE_INSTANT_ACTIVATIONS';
     const GOOGLE_OAUTH_SIGN_IN_FAILURE              = 'GOOGLE_OAUTH_SIGN_IN_FAILURE';

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Trace\TraceCode;
 use App\User;
 use App\Merchant\GenericMerchant;
 use Illuminate\Support\Collection;
@@ -10,7 +11,7 @@ use Illuminate\Contracts\Auth\Authenticatable as UserContract;
 
 class DashboardUserProvider implements UserProvider
 {
-    protected $conn;
+    protected $app;
 
     public function __construct($app, $config)
     {
@@ -69,6 +70,8 @@ class DashboardUserProvider implements UserProvider
         $credentials['captcha_disable'] = 'DISABLE_THE_CAPTCHA_YOU_SHALL';
 
         list($error, $genericUser) = (new User\Service)->loginOnApi($credentials);
+
+        app('trace')->info(TraceCode::USER_RETRIEVE_CREDS, [$genericUser ? $genericUser->toArray() : null, $error]);
 
         if (empty($error) === true)
         {
