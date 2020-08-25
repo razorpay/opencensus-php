@@ -137,6 +137,69 @@
       </div>
     </div>
   </div>
+  <div class="overlay-container" ng-if="showGAuthPopup">
+    <div class="content" id="overlay-container-content">
+      <!--Replace with icon-->
+        <div class="ds-close" ng-click="closeGauthPopUp()">
+           <img src="../../img/close.svg"/>
+        </div>
+      <div>
+        <p class="heading">
+          Creating a new account?
+        </p>
+        <p class="subtext" style="margin-bottom: 0">
+          There is no Razorpay account registered with the email id
+          <strong>{{googleAuthEmail}}</strong>.
+          Do you wish to create a new account with this email?
+        </p>
+
+      </div>
+      <div class="btn-container">
+        <button
+          ng-click="onCreateAccountWithGoogle(googleAuthEmail)"
+          class="ds-btn secondary">
+          Create New Account
+        </button>
+        <button
+          ng-click="onShowGAuthFromPopUp()"
+          class="ds-btn">
+          Retry Login
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="overlay-container" ng-if="showCookieErrorPopup">
+    <div class="content" id="overlay-container-content">
+      <div>
+        <p class="heading">
+          'Login with Google' failed
+        </p>
+        <p class="subtext">
+          It looks like your browser has blocked the third party cookies.
+          You can choose to update your browser settings to allow third
+          party cookies or you can login with email & password.
+        </p>
+      </div>
+      <div class="btn-container">
+        <!--Handle click-->
+        <button
+          ng-if = "showKnowMore"
+          ng-click = "handleKnowMore()"
+          class="ds-btn tertiary">
+          Know more
+          <img src="../../img/know-more.svg"/>
+        </button>
+        <button
+          ng-click="closeCookieErrorPopup()"
+          class="ds-btn">
+          Okay, got it
+        </button>
+      </div>
+    </div>
+  </div>
+
 </div>
 <script >
 var _dcq = _dcq || [];
@@ -159,3 +222,4 @@ _dcs.account = '9421167';
 
   gtag('config', 'AW-928471290');
 </script>
+<script async defer src="https://apis.google.com/js/api:client.js"></script>

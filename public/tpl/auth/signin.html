@@ -1,79 +1,139 @@
 <div class="auth-overflow-container">
-  <div class="login-translate-container" ng-style="{'transform': 'translateX(' + ((-240)*login.currentStep) + 'px)', 'width': '2160'}">
+  <div class="login-translate-container"
+       ng-style="{'transform': 'translateX(' + ((-240)*login.currentStep) + 'px)', 'width': '2160'}">
     <div class="auth-step">
       <div class="auth-heading">
-          Forgot Password
+        Forgot Password
       </div>
       <div class="auth-text">
         Enter your email and we will send you a password reset link
       </div>
 
-      <form class="auth-form" name="forgotPwdForm" xng-submit="goToStep(1)" ng-submit="forgotPwdSubmit(forgotPwdForm.$valid)">
+      <form class="auth-form" name="forgotPwdForm" xng-submit="goToStep(1)"
+            ng-submit="forgotPwdSubmit(forgotPwdForm.$valid)">
         <label class="form-label auth-subheading" for="email">Email</label>
-        <input override-tab type="email" placeholder="yourname@company.com" name="email" id="email" ng-model="login.data.email" class="form-control auth-form-input" required ng-focus="onResetEmailChange()">
+        <input override-tab type="email" placeholder="yourname@company.com" name="email" id="email"
+               ng-model="login.data.email" class="form-control auth-form-input" required
+               ng-focus="onResetEmailChange()">
         <button override-tab class="btn btn-primary form-control" type="submit">
           Send Reset Link
         </button>
-        <div class="loading-animation"><div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div></div>
+        <div class="loading-animation">
+          <div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div>
+        </div>
       </form>
       <div class="highlight-clickable-text forgot-password-text" ng-click="goToSigninLayout()">
         Back to Login
       </div>
-      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">
+        {{alert.msg}}
+      </alert>
     </div>
     <div class="auth-step">
       <div class="auth-heading">
         {{lockme ? "Dashboard Locked" : "Login to Dashboard"}}
       </div>
       <div class="login-details-overflow-container">
-        <div class="login-details-translate-container" ng-style="{'transform': 'translateX(' + ((-240)*login.currentSubStep) + 'px)'}">
+        <div class="login-details-translate-container"
+             ng-style="{'transform': 'translateX(' + ((-240)*login.currentSubStep) + 'px)'}">
           <div class="auth-substep">
             <div class="auth-text">
               <span ng-if="lockme">You have been inactive for more than 5 minutes. Enter password to access the dashboard as </span>
               <strong ng-if="lockme">{{login.data.email}}</strong>
-              <span ng-if="!lockme">Enter your {{isOrgRZP ? "Razorpay" : ""}} Credentials</span>
             </div>
 
-            <form class="auth-form" name="loginForm" xng-submit="goToLoginStep(0, 1)" ng-submit="sendLoginCredentials(loginForm.$valid)">
-              <label ng-if="!lockme" class="form-label auth-subheading" for="email">Email</label>
-              <input ng-if="!lockme" type="email" placeholder="yourname@company.com" name="email" id="email" ng-model="login.data.email" class="form-control auth-form-input" required ng-focus="onLoginInputFocus('email')">
-              <label class="form-label auth-subheading" for="password">Password</label>
-              <input type="password" placeholder="Password" name="password" ng-model="login.data.password" class="form-control auth-form-input" required ng-focus="onLoginInputFocus('password')">
-              <div
-                class="google-captcha"
-                no-captcha
-                g-recaptcha-response="login.data.captcha"
-                captcha-loaded="login.isCaptchaLoaded"
-                theme="light"
-                control="login.captchaControl"
-                site-key="6LdsmwETAAAAADmNGCLvbrjL09O_Fv7WOVTngbO4">
-              </div>
-              <div ng-if="!lockme && isOrgCheckDone" class="highlight-clickable-text forgot-password-text" ng-click="goToForgotPwd()">
-                Forgot Password?
+            <form class="auth-form" name="loginForm" xng-submit="goToLoginStep(0, 1)"
+                  ng-submit="sendLoginCredentials(loginForm.$valid)">
+              <label ng-if="!lockme" class="form-label auth-subheading auth-subheading" for="email">Your work
+                email</label>
+              <input ng-if="!lockme" type="email" placeholder="yourname@company.com" name="email" id="email"
+                     ng-model="login.data.email" class="form-control auth-form-input" required
+                     ng-focus="onLoginInputFocus('email')"
+                     ng-class="{'ds-error-input': inlineError}"
+              >
+              <div class="ds-error" ng-if="inlineError">
+                {{inlineError}}
               </div>
 
-              <!-- keep disabled if -->
-              <!-- first check if form is not valid -->
-              <!-- second check if captcha is loaded but not filled -->
-              <!-- NOTE: if captcha is not loaded then only form validation is checked -->
+              <div ng-if="!isGoogleAuth">
+                <label class="form-label auth-subheading" for="password">Password</label>
+                <input type="password" placeholder="Password" name="password" ng-model="login.data.password"
+                       class="form-control auth-form-input" required ng-focus="onLoginInputFocus('password')">
+
+                <div ng-if="!lockme && isOrgCheckDone" class="forgot-password-text"
+                     ng-click="goToForgotPwd()">
+                  Forgot Password?
+                </div>
+
+                <div
+                  class="google-captcha"
+                  no-captcha
+                  g-recaptcha-response="login.data.captcha"
+                  captcha-loaded="login.isCaptchaLoaded"
+                  theme="light"
+                  control="login.captchaControl"
+                  site-key="6LdsmwETAAAAADmNGCLvbrjL09O_Fv7WOVTngbO4">
+                </div>
+
+                <button
+                  ng-disabled="!loginForm.$valid || (login.isCaptchaLoaded && login.disableLogInSubmission)"
+                  override-tab
+                  class="full-width btn-primary"
+                  type="submit"
+                  ng-click="onLogin()"
+                >
+                  {{lockme ? "Unlock" : "Log in"}}
+                </button>
+
+                <div class="ds-bottom-text" ng-click="onShowGAuth()" ng-if="showGauthScreen">
+                  <img src="../../img/left-arrow.svg" class="left-arrow"/>
+                  All log in options
+                </div>
+              </div>
+
               <button
-                ng-disabled="!loginForm.$valid || (login.isCaptchaLoaded && login.disableLogInSubmission)"
-                override-tab
-                class="btn btn-primary form-control"
-                type="submit"
-                ng-click="onLogin()"
+                ng-if="isGoogleAuth"
+                class="btn-primary full-width"
               >
-                {{lockme ? "Unlock" : "Log in"}}
+                Continue
               </button>
-              <div class="loading-animation"><div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div></div>
             </form>
 
-            <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+            <div ng-if="isGoogleAuth">
+              <div class="separator-container">
+                <div class="separator"/>
+                <span class="text"><strong>or</strong></span>
+              </div>
+
+              <div class="g-btn-container">
+                <img class="g-image" src="../../img/google-icon.svg"/>
+                <button
+                  id="gauth"
+                  override-tab
+                  class="btn-primary full-width"
+                  type="submit"
+                  ng-click="onLoginWithGoogle()"
+                  ng-init="init()"
+                >
+                  Login with Google
+                </button>
+              </div>
+
+            </div>
+
+              <div class="loading-animation">
+                  <div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div>
+              </div>
+
+            <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">
+              {{alert.msg}}
+            </alert>
           </div>
         </div>
       </div>
       <div ng-if="!lockme && isOrgCheckDone && !isOrgHDFC" class="contact-us-text">
-        Need help? <a class="highlight-clickable-text" ng-click="onContactUs()" href="https://razorpay.com/support/#request/merchant" target="_blank">Contact Us</a>
+        Need help? <a class="highlight-clickable-text" ng-click="onContactUs()"
+                      href="https://razorpay.com/support/#request/merchant" target="_blank">Contact Us</a>
       </div>
     </div>
 
