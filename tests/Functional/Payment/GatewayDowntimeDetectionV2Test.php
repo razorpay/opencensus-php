@@ -21,6 +21,7 @@ use RZP\Models\Gateway\Downtime\DowntimeDetection;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Method;
 use RZP\Services\RazorXClient;
+use RZP\Tests\Functional\Helpers\DowntimeTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -30,6 +31,8 @@ use RZP\Tests\Functional\TestCase;
 class GatewayDowntimeDetectionV2Test extends TestCase
 {
     use PaymentTrait;
+
+    use DowntimeTrait;
 
     protected $redis;
 
@@ -336,69 +339,6 @@ class GatewayDowntimeDetectionV2Test extends TestCase
         $this->assertEquals('upi', $gatewayDowntime['method']);
 
         $this->assertNotNull($paymentDowntime);
-    }
-
-    protected function enablePaymentDowntimes()
-    {
-        $this->ba->adminAuth();
-
-        $this->makeRequestAndGetContent([
-            'method'  => 'PUT',
-            'url'     => '/config/keys',
-            'content' => [
-                'config:enable_payment_downtimes' => '1',
-            ],
-        ]);
-
-        $this->makeRequestAndGetContent([
-            'method'  => 'PUT',
-            'url'     => '/config/keys',
-            'content' => [
-                'config:enable_payment_downtimes_card' => '1',
-            ],
-        ]);
-
-        $this->makeRequestAndGetContent([
-            'method'  => 'PUT',
-            'url'     => '/config/keys',
-            'content' => [
-                'config:enable_payment_downtimes_card_issuer' => '1',
-            ],
-        ]);
-
-        $this->makeRequestAndGetContent([
-            'method'  => 'PUT',
-            'url'     => '/config/keys',
-            'content' => [
-                'config:enable_payment_downtimes_card_network' => '1',
-            ],
-        ]);
-
-        $this->makeRequestAndGetContent([
-            'method'  => 'PUT',
-            'url'     => '/config/keys',
-            'content' => [
-                'config:enable_payment_downtimes_netbanking' => '1',
-            ],
-        ]);
-
-        $this->makeRequestAndGetContent([
-            'method'  => 'PUT',
-            'url'     => '/config/keys',
-            'content' => [
-                'config:enable_payment_downtimes_upi' => '1',
-            ],
-        ]);
-
-        $this->makeRequestAndGetContent([
-            'method'  => 'PUT',
-            'url'     => '/config/keys',
-            'content' => [
-                'config:enable_payment_downtimes_wallet' => '1',
-            ],
-        ]);
-
-        $this->fixtures->merchant->addFeatures('expose_downtimes');
     }
 }
 

@@ -23,9 +23,7 @@ class NetbankingProcessor extends BaseProcessor
 
         if ($paymentDowntimesEnabled === false)
         {
-            $this->endOngoingDowntimes();
-
-            return;
+            $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::DOWNTIME_V2);
         }
 
         $unavailableBanks = $this->calculateUnavailableBanks($gatewayDowntimes);

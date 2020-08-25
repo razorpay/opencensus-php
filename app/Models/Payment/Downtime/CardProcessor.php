@@ -23,9 +23,7 @@ class CardProcessor extends BaseProcessor
 
         if ($paymentDowntimesEnabled === false)
         {
-            $this->endOngoingDowntimes();
-
-            return;
+            $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::DOWNTIME_V2);
         }
 
         $unavailableNetworks = $this->calculateUnavailableNetworks($gatewayDowntimes);
