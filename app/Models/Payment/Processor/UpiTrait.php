@@ -229,4 +229,22 @@ trait UpiTrait
 
         return $metadata;
     }
+
+    protected function getTracableAcquirerDataForUpi(Payment\Entity $payment, $data)
+    {
+        if (is_array($data) === false)
+        {
+            return [];
+        }
+
+        $tracable = $data;
+
+        if ((isset($tracable[Entity::VPA]) === true) and
+            (is_string($tracable[Entity::VPA]) === true))
+        {
+            $tracable[Entity::VPA] = mask_vpa($tracable[Entity::VPA]);
+        }
+
+        return $tracable;
+    }
 }

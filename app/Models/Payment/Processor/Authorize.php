@@ -6590,12 +6590,22 @@ trait Authorize
             // getting authorized late.
             $payment->setLateAuthorized($wasFailed);
 
+            $tracableAcquirerData = [];
+
+            if ($payment->isUpi() === true)
+            {
+                $tracableAcquirerData = $this->getTracableAcquirerDataForUpi($payment, $data);
+            }
+
             $this->trace->info(
                 TraceCode::PAYMENT_STATUS_AUTHORIZED,
                 [
                     'payment_id'        => $payment->getId(),
                     'late_authorize'    => $wasFailed,
                     'old_status'        => $status,
+                    'method'            => $payment->getMethod(),
+                    'gateway'           => $payment->getGateway(),
+                    'acquirer'          => $tracableAcquirerData,
                 ]);
 
             //
