@@ -1835,6 +1835,7 @@ class Gateway
         Gateway::UPI_MINDGATE,
         Gateway::UPI_AXIS,
         Gateway::UPI_RBL,
+        Gateway::UPI_AIRTEL,
         Gateway::UPI_JUSPAY,
         Gateway::UPI_SBI,
     ];

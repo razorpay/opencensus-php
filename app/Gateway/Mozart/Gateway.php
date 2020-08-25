@@ -112,6 +112,11 @@ class Gateway extends Base\Gateway
             parent::action($input, Action::INTENT);
         }
 
+        if (($this->getGateway($input) === 'upi_airtel') and ($input['upi']['flow'] == 'intent'))
+        {
+            parent::action($input, Action::INTENT);
+        }
+
         if (($this->isContactMandatoryGateway($input) === true) and
             ($input['payment']['contact'] == Payment\Entity::DUMMY_PHONE))
         {
@@ -1599,6 +1604,7 @@ class Gateway extends Base\Gateway
                 Action::VERIFY_REFUND => null,
             ],
             Payment\Gateway::UPI_AIRTEL => [
+                Action::INTENT        => null,
                 Action::PAY_INIT      => null,
                 Action::PAY_VERIFY    => null,
                 Action::VERIFY        => Action::PAY_VERIFY,
@@ -1741,6 +1747,7 @@ class Gateway extends Base\Gateway
                 Action::VERIFY        => Action::AUTHORIZE,
             ],
             Payment\Gateway::UPI_AIRTEL => [
+                Action::INTENT => null,
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => null,
                 Action::VERIFY => Action::AUTHORIZE,

@@ -9,26 +9,78 @@ class PayVerifyData extends Base\Mock\Server
 {
     public function upi_airtel($entities)
     {
-        $response = [
-            'data' =>
-                [
-                    'code' => '0',
-                    'errorCode' => 000,
-                    'message' => 'successful',
-                    'rrn' => '09321',
-                    'txnStatus' => 'SUCCESS',
-                    'paymentId' => $entities['payment']['id'],
-                    'amount' => $entities['payment']['amount'] / 100,
-                    'hash' => 'abcd',
-                    '_raw' => '',
-                ],
-            'error'             => null,
-            'success'           => true,
-            'mozart_id'         => '',
-            'external_trace_id' => '',
-        ];
+        try
+        {
+            if ($entities['gateway']['redirect']['txnStatus'] == 'FAILED')
+            {
+                $response = [
+                    'data' => [
+                        'code'      => '0',
+                        'errorCode' => 000,
+                        'message'   => 'successful',
+                        'rrn'       => '09321',
+                        'txnStatus' => $entities['gateway']['redirect']['txnStatus'],
+                        'paymentId' => $entities['payment']['id'],
+                        'amount'    => $entities['payment']['amount'] / 100,
+                        'hash'      => 'abcd',
+                        '_raw'      => 'eee',
+                    ],
+                    'error'             => null,
+                    'external_trace_id' => '',
+                    'mozart_id'         => '',
+                    'next'              => [],
+                    'success'           => false,
+                ];
 
-        $this->content($response, 'callback');
+                $this->content($response, 'callback');
+
+                return $response;
+            }
+            else
+            {
+                $response = [
+                    'data' =>
+                        [
+                            'code'      => '0',
+                            'errorCode' => 000,
+                            'message'   => 'successful',
+                            'rrn'       => '09321',
+                            'txnStatus' => 'SUCCESS',
+                            'paymentId' => $entities['payment']['id'],
+                            'amount'    => $entities['payment']['amount'] / 100,
+                            'hash'      => 'abcd',
+                            '_raw'      => 'ddd',
+                        ],
+                    'error'             => null,
+                    'success'           => true,
+                    'mozart_id'         => '',
+                    'external_trace_id' => '',
+                ];
+
+                $this->content($response, 'callback');
+            }
+
+        }
+        catch (\Exception $e)
+        {
+            $response = [
+                'data' => [
+                    '_raw'   => '',
+                    'status' => 'callback_failed'
+                ],
+                'error' => [
+                    'description'               => 'INPUT_VALIDATION_FAILED',
+                    'gateway_error_code'        => '',
+                    'gateway_error_description' => 'INPUT_VALIDATION_FAILED',
+                    'gateway_status_code'       => 0,
+                    'internal_error_code'       => 'BAD_REQUEST_VALIDATION_FAILURE',
+                ],
+                'external_trace_id' => '',
+                'mozart_id'         => '',
+                'next'              => [],
+                'success'           => false
+            ];
+        }
 
         return $response;
     }

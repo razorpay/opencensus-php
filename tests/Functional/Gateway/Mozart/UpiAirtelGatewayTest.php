@@ -81,10 +81,81 @@ class UpiAirtelGatewayTest extends TestCase
         return $payment;
     }
 
+    public function testIntentPayment()
+    {
+        //create Shared Upi-Airtel IntentTerminal
+        $this->sharedTerminal = $this->fixtures->create('terminal:sharedUpiAirtelIntentTerminal');
+
+        $this->payment['_']['flow'] = 'intent';
+
+        unset($this->payment['vpa']);
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        // Co Proto must be working
+        $this->assertEquals('intent', $response['type']);
+
+        $this->assertArrayHasKey('intent_url', $response['data']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('created', $payment['status']);
+
+        $content =  $this->mockServer()->getAsyncCallbackContent($payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_airtel');
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('authorized', $payment['status']);
+    }
+
+    public function testIntentFailedPayment()
+    {
+        //create Shared Upi-Airtel IntentTerminal
+        $this->sharedTerminal = $this->fixtures->create('terminal:sharedUpiAirtelIntentTerminal');
+
+        $this->payment['_']['flow'] = 'intent';
+
+        unset($this->payment['vpa']);
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        // Co Proto must be working
+        $this->assertEquals('intent', $response['type']);
+        $this->assertArrayHasKey('intent_url', $response['data']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('created', $payment['status']);
+
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'callback')
+            {
+                $content['code'] = 'PAYMENT_FAILED';
+
+                $content['success'] = false;
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        //Getting failed payment
+        $content = $this->getMockServer()->getFailedAsyncCallbackContent($payment);
+
+        $this->runRequestResponseFlow($data, function() use ($content)
+        {
+            $response = $this->makeS2SCallbackAndGetContent($content, 'upi_airtel');
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('failed', $payment['status']);
+    }
+
     public function testFailedCallbackResponse($status = 'created')
     {
-        $this->markTestSkipped();
-
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
 
         $paymentId = $response['payment_id'];
@@ -249,8 +320,6 @@ class UpiAirtelGatewayTest extends TestCase
         $this->assertArraySelectiveEquals(json_decode($mozart['raw'], true), $gatewayData['gateway_transaction']);
         $this->assertArraySelectiveEquals($mozart['data'], $gatewayData['gateway_transaction']);
     }
-
-
 
     protected function checkPaymentStatus($id, $expectedStatus)
     {

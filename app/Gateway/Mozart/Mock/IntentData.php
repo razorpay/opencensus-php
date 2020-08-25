@@ -36,4 +36,25 @@ class IntentData extends Base\Mock\Server
 
         return $response;
     }
+
+    public function upi_airtel($entities)
+    {
+        $response = [
+            'data' =>
+                [],
+            'next' => [
+                'redirect' => [
+                    'content' => [],
+                    'method' => 'post',
+                    'url' => 'upi://pay?test=test1',
+                ]
+            ],
+            'error' => null,
+            'success' => true,
+            'mozart_id' => '',
+            'external_trace_id' => '',
+        ];
+
+        return $response;
+    }
 }

@@ -3077,6 +3077,20 @@ class Terminal extends Base
         return $this->createSharedUpiMindgateTerminal(array_merge($attributes, $override));
     }
 
+    //UPI_AIRTEL_INTENT_TERMINAL
+    public function createSharedUpiAirtelIntentTerminal(array $override)
+    {
+        $attributes = [
+            'id'                        => Shared::UPI_AIRTEL_INTENT_TERMINAL,
+            'type'                      => [
+                'non_recurring' => '1',
+                'pay'           => '1',
+            ]
+        ];
+
+        return $this->createSharedUpiAirtelTerminal(array_merge($attributes, $override));
+    }
+
     public function createSharedUpiAxisIntentTerminal(array $override)
     {
         $attributes = [
