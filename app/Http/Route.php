@@ -743,6 +743,7 @@ class Route
         'invoice_remove_line_item'                 => ['delete',   'invoices/{id}/line_items/{lineItemId}',          'InvoiceController@removeLineItem'                                  ],
         'invoice_send_notifications'               => ['post',     'invoices/notify',                                'InvoiceController@sendNotifications'                               ],
         'invoice_send_notification'                => ['post',     'invoices/{x_entity_id}/notify/{medium}',         'InvoiceController@sendNotification'                                ],
+        'invoice_send_notification_proxy'          => ['post',     'invoices/{x_entity_id}/notify/{medium}/proxy',   'InvoiceController@sendNotification'                                ],
         'invoice_send_notification_private'        => ['post',     'invoices/{id}/notify_by/{medium}',               'InvoiceController@sendNotification'                                ],
         'invoice_notification_update'              => ['put',      'invoices/{medium}',                              'InvoiceController@updateInvoiceNotificationStatus'                 ],
         'invoice_get_status'                       => ['get',      'invoices/{x_entity_id}/status',                  'InvoiceController@getInvoiceStatus'                                ],
@@ -3011,6 +3012,7 @@ class Route
         'proxy_merchant_get_pricing',
         'payment_links_sign_payload',
         'currency_fetch_rates_proxy',
+        'invoice_send_notification_proxy',
 
         // Get free_payout attributes for balance
         'get_free_payouts_attributes',
@@ -5040,6 +5042,8 @@ class Route
             'payment_links_payment_by_id',
             'currency_fetch_rates_proxy',
             'order_edit',
+            'batch_stats',
+            'invoice_send_notification_proxy',
         ],
 
         'kotak' => [

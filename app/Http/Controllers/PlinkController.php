@@ -171,7 +171,7 @@ class PlinkController extends Controller
 
         $method = $request->method();
 
-        $headers = $this->getHeaders();
+        $headers = $this->getHeaders($request);
 
         $requestBody = [];
 
@@ -208,7 +208,7 @@ class PlinkController extends Controller
         return $response;
     }
 
-    protected function getHeaders(): array
+    protected function getHeaders(Request $request): array
     {
         $headers = [
             'Accept'            => self::CONTENT_TYPE_JSON,
@@ -241,6 +241,15 @@ class PlinkController extends Controller
         $headers['X-Razorpay-Mode']          = $this->ba->getMode();
 
         $headers['X-Razorpay-Auth']          = $this->ba->getAuthType();
+
+        $headers['User-Agent']  = $request->userAgent();
+
+        $requester = $request->header('X-Razorpay-Requester');
+
+        if (empty($requester) === false)
+        {
+            $headers['X-Razorpay-Requester'] = $requester;
+        }
 
         return $headers;
     }
