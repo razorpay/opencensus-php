@@ -621,6 +621,8 @@ export default class App extends Component {
             removeLockScreen={this.removeLockScreen}
             showNotification={this.props.showNotification}
             resumeLockActionCB={this.resumeLockActionCB}
+            isGoogleLogin = {user.isGoogleLogin()}
+            isPartner = {user.isPartner()}
           />
         )}
       </div>

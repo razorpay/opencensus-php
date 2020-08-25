@@ -30,6 +30,12 @@ function executeJS() {
     appendLink(cdnDashboardUrl + src);
   });
   appendLink('https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css');
+  
+  const script = document.createElement('script');
+  script.src = 'https://apis.google.com/js/api:client.js';
+  script.async = true;
+  script.defer = true;
+  document.documentElement.appendChild(script);
 }
 
 module.exports = `${executeJS.toString()} executeJS()`;

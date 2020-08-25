@@ -12,6 +12,7 @@ import Group, { GroupItem } from 'common/ui/Group';
 
 import { logout, showOrHideTour } from 'merchantLA/reducers/session';
 import { SwitchMerchantTypeahead } from 'merchant/components/HeaderNav/SwitchMerchant';
+import logoutGoogleAccount from '../../../common/utils/logoutGoogle';
 
 @withRouter
 @connect(
@@ -25,6 +26,7 @@ import { SwitchMerchantTypeahead } from 'merchant/components/HeaderNav/SwitchMer
 )
 export default class ProfileDropdown extends Component {
   logout = () => {
+    logoutGoogleAccount();
     this.props.analytics && this.props.analytics('Log Out');
     return this.props
       .logout()

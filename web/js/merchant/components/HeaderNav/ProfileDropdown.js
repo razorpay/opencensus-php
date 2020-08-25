@@ -20,6 +20,7 @@ import SwitchMerchant, {
 } from 'merchant/components/HeaderNav/SwitchMerchant';
 import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
 import rolesList from 'merchant/helpers/permissions/roles-list';
+import logoutGoogleAccount from '../../../common/utils/logoutGoogle';
 
 @withRouter
 @connect(
@@ -52,6 +53,7 @@ export default class ProfileDropdown extends Component {
   };
 
   logout = () => {
+    logoutGoogleAccount();
     this.props.analytics && this.props.analytics('Log Out');
     return this.props
       .logout()
