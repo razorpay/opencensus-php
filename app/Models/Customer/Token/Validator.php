@@ -28,7 +28,7 @@ class Validator extends Base\Validator
         // We generate it if max_amount is not present and method is emandate or nach or upi
         Entity::MAX_AMOUNT          => 'sometimes_if:method,emandate,nach,upi',
         Entity::WALLET              => 'required_only_if:method,wallet|custom',
-        Entity::AUTH_TYPE           => 'required_only_if:method,emandate,nach|string|filled|in:netbanking,aadhaar,aadhaar_fp,debitcard,physical,migrated',
+        Entity::AUTH_TYPE           => 'required_only_if:method,emandate,nach|string|filled|in:netbanking,aadhaar,debitcard,physical,migrated',
         Entity::RECURRING           => 'sometimes|boolean',
         Entity::GATEWAY_TOKEN       => 'required_if:auth_type,migrated|string',
         Entity::GATEWAY_TOKEN2      => 'sometimes|string',

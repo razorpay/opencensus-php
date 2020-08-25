@@ -25,7 +25,7 @@ class AuthType
         Method::EMANDATE => [
             self::NETBANKING,
             self::AADHAAR,
-            self::AADHAAR_FP,
+            //self::AADHAAR_FP,
             self::DEBITCARD,
             self::MIGRATED,
         ],

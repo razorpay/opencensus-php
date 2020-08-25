@@ -87,6 +87,10 @@
         border-radius: 0 2px 2px 0;
       }
 
+      .accordion-container > div:nth-child(n+2) {
+        border-top: 1px solid #ccc;
+      }
+
       .accordion-heading {
         padding: 10px;
         display: block;
@@ -474,6 +478,22 @@
       <main>
         <div class="heading">Please select Authentication method:</div>
         <div class="accordion-container">
+        @if (in_array('debitcard', $data['request']['content']['bank_details']['auth_types']))
+          <div id="section3">
+            <label class="accordion-heading pickable" for="content3">
+              <svg viewBox="0 0 27 22" width="24px" height="17px" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                <path d="M2 7v13h18v-5H7V7H2zm0-2h5v10h15v5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" fill="#B70611"></path>
+                <path d="M10.004 13.003a1 1 0 0 1 0-2h2a1 1 0 0 1 0 2h-2zM7 0h18a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2zm0 2v13h18V2H7zm-.282 5.005a1 1 0 1 1 0-2h19a1 1 0 0 1 0 2h-19z" fill="#B70611"></path>
+              </svg>
+              <span class="title">
+                Debit Card
+                <div class="sub-title">Via Debit Card details</div>
+              </span>
+            </label>
+            <input type="radio" id="content3" name="auth_type" value="debitcard" hidden>
+            <span class="arrow"></span>
+          </div>
+        @endif
         @if (in_array('netbanking', $data['request']['content']['bank_details']['auth_types']))
           <div id="section1">
             <label class="accordion-heading pickable" for="content1">
@@ -488,13 +508,12 @@
           </div>
         @endif
         @if (in_array('aadhaar', $data['request']['content']['bank_details']['auth_types']))
-          <div class="separate hidden"></div>
-          <div id="section2" class="hidden">
+          <div id="section2">
             <label class="accordion-heading pickable" for="content2">
               <svg width="24px" height="16px" viewBox="0 0 24 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> <title>Group 11</title> <desc>Created with Sketch.</desc> <defs> <linearGradient x1="0%" y1="54.6514554%" x2="103.027754%" y2="39.6782836%" id="linearGradient-1"> <stop stop-color="#F53742" offset="0%"></stop> <stop stop-color="#CB0D1A" offset="98.6427774%"></stop> </linearGradient> <linearGradient x1="0%" y1="0%" x2="100%" y2="100%" id="linearGradient-2"> <stop stop-color="#EA3A44" offset="0%"></stop> <stop stop-color="#B70611" offset="100%"></stop> </linearGradient> </defs> <g id="Flow-1--Testing" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <g id="Group-11"> <g id="Group-2"> <rect id="cards-base" stroke="url(#linearGradient-1)" stroke-width="0.639" x="0.902833333" y="0.930611111" width="22.361" height="14.6943333" rx="1.27777778"></rect> <polygon id="Rectangle-24" fill="url(#linearGradient-2)" points="2.66666667 3.66666667 20.9966666 3.66666667 20.9966666 5 2.66666667 5"></polygon> <polygon id="Rectangle-24" fill="url(#linearGradient-2)" points="2.66666667 8 7.33333333 8 7.33333333 12.6666667 2.66666667 12.6666667"></polygon> <polygon id="Rectangle-24" fill="url(#linearGradient-2)" points="8.66666667 8.33333333 18 8.33333333 18 9.66666667 8.66666667 9.66666667"></polygon> <polygon id="Rectangle-24" fill="url(#linearGradient-2)" points="8.66666667 11 20.9966666 11 20.9966666 12.3333333 8.66666667 12.3333333"></polygon> </g> </g> </g> </svg>
               <span class="title">
-                Aadhaar Virtual ID
-                <div class="sub-title">Via Aadhaar linked mobile OTP</div>
+                Aadhaar
+                <div class="sub-title">Via Aadhaar Number</div>
               </span>
             </label>
             <input type="radio" id="content2" name="auth_type" value="aadhaar" hidden>
@@ -549,23 +568,6 @@
                     </div>
                 @endif
             </div>
-          </div>
-        @endif
-        @if (in_array('debitcard', $data['request']['content']['bank_details']['auth_types']))
-          <div class="separate"></div>
-          <div id="section3">
-            <label class="accordion-heading pickable" for="content3">
-              <svg viewBox="0 0 27 22" width="24px" height="17px" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-                <path d="M2 7v13h18v-5H7V7H2zm0-2h5v10h15v5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" fill="#B70611"></path>
-                <path d="M10.004 13.003a1 1 0 0 1 0-2h2a1 1 0 0 1 0 2h-2zM7 0h18a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2zm0 2v13h18V2H7zm-.282 5.005a1 1 0 1 1 0-2h19a1 1 0 0 1 0 2h-19z" fill="#B70611"></path>
-              </svg>
-              <span class="title">
-                Debit Card
-                <div class="sub-title">Via Debit Card details</div>
-              </span>
-            </label>
-            <input type="radio" id="content3" name="auth_type" value="debitcard" hidden>
-            <span class="arrow"></span>
           </div>
         @endif
         </div>

@@ -69,7 +69,9 @@ class LegaldeskGatewayTest extends TestCase
 
     public function testBiometricEsignGeneration()
     {
-        $payment = $this->getEmandatePaymentArray('SVCB', 'aadhaar_fp', 0);
+        $this->markTestSkipped("aadhaar_fp is temporarily blocked");
+
+        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar_fp', 0);
         $payment['bank_account'] = [
             'account_number'    => '914010009305862',
             'ifsc'              => 'SVCB0010015',
