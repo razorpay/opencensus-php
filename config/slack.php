@@ -192,7 +192,9 @@ return array(
         'rx_ca_rbl_alerts'       => 'C010ZL4J9V3',
 
         //tech_payments_cards_alerts
-        'card_payments_alert'    => 'CTB3BPENR'
+        'card_payments_alert'    => 'CTB3BPENR',
+
+        'rx_rbl_recon_alerts'    => 'C019AKLLQAH',
     ],
 
     'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true,

@@ -46,6 +46,7 @@ use RZP\Jobs\ScheduledPayoutsProcess;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
 use RZP\Models\Merchant\Balance\Channel;
+use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
@@ -1820,6 +1821,18 @@ class Core extends Base\Core
 
         if (empty($bas) === false)
         {
+            // raising an alert for RBL payouts for now, to inform the recon team to look into
+            // this quickly and reduce the SLA for merchants to see final payout status
+
+            $data = [
+                'payout_id'                 => $payout->getId(),
+                'account_statement_row'     => $bas->getId(),
+            ];
+
+            $operation = 'RBL payout could not be marked as failed, account statement row exists for it';
+
+            (new SlackNotification)->send($operation, $data, null, 1, 'rx_rbl_recon_alerts');
+
             throw new Exception\LogicException(
                 'Failed payout has a corresponding BAS entity. This should be reversed instead, not failed.',
                 null,
