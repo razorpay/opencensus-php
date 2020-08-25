@@ -2,7 +2,7 @@
 
 namespace RZP\Services\Elfin\Impl;
 
-use Requests;
+use RZP\Http\Request\Requests;
 
 use RZP\Exception;
 
