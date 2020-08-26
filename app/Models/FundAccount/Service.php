@@ -322,7 +322,8 @@ class Service extends Base\Service
 
         $variant  = $this->app['razorx']->getTreatment($merchant->getId(),
                                                        Merchant\RazorxTreatment::X_CONTACT_AND_FUND_ACCOUNT_CREATION,
-                                                       $this->mode);
+                                                       $this->mode,
+                                                       Entity::FUND_ACCOUNT_RX_RETRY_COUNT);
 
         $flag = ($variant === 'create_duplicate') ? true : false;
 

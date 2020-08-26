@@ -58,6 +58,8 @@ class Entity extends Base\PublicEntity
 
     const RESPONSE_CODE   = 'response_code';
 
+    const FUND_ACCOUNT_RX_RETRY_COUNT = '2';
+
     protected $generateIdOnCreate = true;
 
     protected $composite = false;
