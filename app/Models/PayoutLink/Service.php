@@ -97,7 +97,7 @@ class Service extends Base\Service
         return;
     }
 
-    public function getStatus(string $payoutLinkId)
+    public function getStatus(string $payoutLinkId, array $input)
     {
         $this->checkIfPLServiceIsDown();
 
@@ -110,7 +110,7 @@ class Service extends Base\Service
         }
         else
         {
-            $payoutLink = $this->app['payout-links']->fetch($payoutLinkId);
+            $payoutLink = $this->app['payout-links']->fetch($payoutLinkId, $input);
 
             return [Entity::STATUS => $payoutLink['status']];
         }

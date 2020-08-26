@@ -20,7 +20,7 @@ class PayoutLinkController extends Controller
 
     public function getStatus(string $payoutLinkId)
     {
-        $response = $this->service()->getStatus($payoutLinkId);
+        $response = $this->service()->getStatus($payoutLinkId, $this->input);
 
         $response = ApiResponse::json($response);
 
