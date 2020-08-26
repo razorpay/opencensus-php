@@ -65,7 +65,7 @@
 
     if (window.analytics) {
         analytics.init(
-          ['ga', 'fb', 'twitter', 'linkedin', 'bing', 'lj', 'quora', 'reddit'],
+          ['perf', 'ga', 'fb', 'twitter', 'linkedin', 'bing', 'lj', 'quora', 'reddit'],
           {
             ga: appEnvironment === 'prod' ? 'UA-53341507-2' : 'UA-53341507-4',
             fb: '697927486977350',
@@ -73,7 +73,8 @@
           },
           isLocal,
           appEnvironment,
-          disableEventEmitters
+          disableEventEmitters,
+          { appName: 'pg-dashboard' }
         );
 
          // Init old key as well
