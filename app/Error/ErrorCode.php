@@ -1705,6 +1705,7 @@ class ErrorCode
     // Fund transfer service
     const SERVER_ERROR_FTS_SERVICE_TIMEOUT                                          = 'SERVER_ERROR_FTS_SERVICE_TIMEOUT';
     const BAD_REQUEST_FTS_DUPLICATE_TRANSFER_REQUEST_SENT                           = 'BAD_REQUEST_FTS_DUPLICATE_TRANSFER_REQUEST_SENT';
+    const BAD_REQUEST_UNSUPPORTED_SOURCE_TYPE                                       = 'BAD_REQUEST_UNSUPPORTED_SOURCE_TYPE';
 
     const SERVER_ERROR_MOZART_INTEGRATION_ERROR                                     = 'SERVER_ERROR_MOZART_INTEGRATION_ERROR';
     const SERVER_ERROR_MOZART_SERVICE_GATEWAY_ERROR                                 = 'SERVER_ERROR_MOZART_SERVICE_GATEWAY_ERROR';

@@ -2507,8 +2507,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // fund transfer service trace codes
     const FTS_REQUEST                                           = 'FTS_REQUEST';
     const FTS_RESPONSE                                          = 'FTS_RESPONSE';
-    const FTS_INVALID_CHANNEL                                   = 'FTS_INVALID_CHANNEL';
+    const FTS_TRANSFER_INIT                                     = 'FTS_TRANSFER_INIT';
     const FTS_SERVICE_RETRY                                     = 'FTS_SERVICE_RETRY';
+    const FTS_INVALID_CHANNEL                                   = 'FTS_INVALID_CHANNEL';
+    const FTS_TRANSFER_FAILED                                   = 'FTS_TRANSFER_FAILED';
+    const FTS_TRANSFER_COMPLETE                                 = 'FTS_TRANSFER_COMPLETE';
     const FTS_REQUEST_TIMEOUT_EXCEPTION                         = 'FTS_REQUEST_TIMEOUT_EXCEPTION';
     const FTS_FAILURE_EXCEPTION                                 = 'FTS_FAILURE_EXCEPTION';
     const FTS_FUND_TRANSFER_INIT                                = 'FTS_FUND_TRANSFER_INIT';

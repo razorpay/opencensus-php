@@ -355,6 +355,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getAttemptBySourceId(string $sourceId, string $sourceType)
+    {
+        return $this->newQuery()
+                    ->where(Entity::SOURCE_ID, $sourceId)
+                    ->where(Entity::SOURCE_TYPE, $sourceType)
+                    ->first();
+    }
+
 
     /**
      * @param string $channel

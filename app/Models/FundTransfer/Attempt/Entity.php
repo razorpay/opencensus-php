@@ -641,4 +641,24 @@ class Entity extends Base\PublicEntity
 
         return false;
     }
+
+    public function setBankAccountId($bankAccountId)
+    {
+        $this->setAttribute(self::BANK_ACCOUNT_ID, $bankAccountId);
+    }
+
+    public function setMerchantId($merchantID)
+    {
+        $this->setAttribute(self::MERCHANT_ID, $merchantID);
+    }
+
+    public function setVpaId($vpaId)
+    {
+        $this->setAttribute(self::VPA_ID, $vpaId);
+    }
+
+    public function setCardId($cardID)
+    {
+        $this->setAttribute(self::CARD_ID, $cardID);
+    }
 }

@@ -54,4 +54,19 @@ class FundTransfer extends BaseFundTransfer
     {
         return [true, 'Dummy'];
     }
+
+    public function createAndSendRequest(
+      string $endpoint, string $method, array $data = []): array
+    {
+        $mockResponse = [
+          Constants::STATUS           => strtoupper(Constants::STATUS_CREATED),
+          Constants::FUND_TRANSFER_ID => random_integer(2),
+          Constants::FUND_ACCOUNT_ID  => random_integer(2),
+        ];
+
+        return [
+          'body' => $mockResponse,
+          'code' => 201,
+        ];
+    }
 }

@@ -1146,6 +1146,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ES_ON_DEMAND_IMPS_AMOUNT_LIMIT_EXCEEDED                       = 'Please provide an amount less than 2 Lacs to get a settlement at this point of time.';
 
     //FTS
+    const BAD_REQUEST_UNSUPPORTED_SOURCE_TYPE                                       = 'Unsupported source type';
     const BAD_REQUEST_ERROR_SOURCE_ACCOUNT_FUND_ACCOUNT_CREATION_FAILED             = 'Fund Account could not be created for source account';
 
     //Invalid Bank Account

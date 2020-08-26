@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
 use RZP\Http\Request\Requests;
 use RZP\Trace\TraceCode;
+use RZP\Base\RepositoryManager;
 
 class Base
 {
@@ -33,6 +34,12 @@ class Base
     protected $auth;
 
     protected $mode;
+
+    /**
+     * Repository manager instance
+     * @var RepositoryManager
+     */
+    protected $repo;
 
     // Account related URIs
     const FUND_ACCOUNT_CREATE_URI  = '/account';
@@ -110,6 +117,8 @@ class Base
         $this->key     = $this->config[$this->mode]['fts_key'];
 
         $this->secret  = $this->config[$this->mode]['fts_secret'];
+
+        $this->repo = $app['repo'];
 
         $this->setHeaders();
     }
