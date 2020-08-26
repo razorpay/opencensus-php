@@ -3603,17 +3603,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::SERVER_ERROR,
-                    'description' => 'ES scheduled pricing is not assigned to this Merchant',
-                ],
-            ],
-            'status_code' => 500,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\LogicException::class,
-            'internal_error_code' => ErrorCode::SERVER_ERROR_ES_SCHEDULED_PRICING_NOT_FOUND,
-        ],
+                'percent_rate' => 15,
+                'fixed_rate'   => 0
+            ]
+        ]
     ],
 
     'testEnableEsScheduledSuccess' => [
@@ -3739,17 +3732,21 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::SERVER_ERROR,
-                    'description' => 'ES scheduled pricing is not assigned to this Merchant',
-                ],
-            ],
-            'status_code' => 500,
+                'success' => true
+            ]
+        ]
+    ],
+
+    'testEnableEsScheduledEsautomaticPricingUnavailableForSharedPlan' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
         ],
-        'exception' => [
-            'class' => RZP\Exception\LogicException::class,
-            'internal_error_code' => ErrorCode::SERVER_ERROR_ES_SCHEDULED_PRICING_NOT_FOUND,
-        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
     ],
 
     'testPutEmiMethod' => [

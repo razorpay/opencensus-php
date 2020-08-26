@@ -467,6 +467,87 @@ class Pricing extends Base
         return $rows;
     }
 
+    public function createTestPlanForNoOndemandAndEsAutomaticPricing()
+    {
+        $pricingPlanId = '1BFFkd38fFGbnh';
+
+        $rows = [
+            [
+                'id'             => '1ABp2Xd3t5aRLX',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'payment',
+                'payment_method' => 'card',
+                'percent_rate'   => 2000,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+            ],
+            [
+                'id'             => '1osdf0GGDdalfF',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'payment',
+                'payment_method' => 'netbanking',
+                'percent_rate'   => 2000,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+            ],
+            [
+                'id'             => '1osdf0GGDdaHfF',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'payment',
+                'payment_method' => 'emandate',
+                'percent_rate'   => 0,
+                'fixed_rate'     => 1000,
+                'org_id'         => '100000razorpay',
+            ],
+            [
+                'id'             => '1pteg2HHEebmhH',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'payment',
+                'payment_method' => 'wallet',
+                'percent_rate'   => 2000,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+            ],
+            [
+                'id'             => '1pteg2FFEebmgG',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'payment',
+                'payment_method' => 'transfer',
+                'percent_rate'   => 0,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+            ],
+            [
+                'id'             => '1zE31zbyeGCTd4',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'transfer',
+                'payment_method' => 'account',
+                'percent_rate'   => 200,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+            ],
+            [
+                'id'             => '1zE31zbyeGCTd5',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'transfer',
+                'payment_method' => 'customer',
+                'percent_rate'   => 200,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+            ]
+
+        ];
+    
+        $this->addPricingRulesToDb($rows);
+    }
+
     public function createOndemandPercentRatePricingPlan()
     {
         $pricingPlanId = self::DEFAULT_PRICING_PLAN_ID;

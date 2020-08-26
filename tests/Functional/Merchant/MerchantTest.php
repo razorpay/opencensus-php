@@ -3396,16 +3396,60 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEnableEsScheduledEsautomaticPricingUnavailableForSharedPlan()
+    {
+        Mail::fake();
+
+        $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1BFFkd38fFGbnh',  'international'    => 0]);
+
+        $merchant2 = $this->fixtures->create('merchant');
+
+        $merchant2Id = $merchant2['id'];
+
+        $this->fixtures->merchant->edit($merchant2Id, ['pricing_plan_id' => '1BFFkd38fFGbnh', 'international'    => 0]);
+
+        $this->fixtures->create(
+            'schedule',
+            [
+                'id'       => '100001schedule',
+                'period'   => 'hourly',
+                'interval' => 1,
+                'anchor'   => null,
+                'delay'    => 0,
+                'hour'     => 0,
+                'name'     => 'hh',
+            ]);
+
+        $this->fixtures->merchant->addFeatures(['es_on_demand']);
+
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+
+        $esAutomaticPricingRulesOldPlan = $this->getDbEntities('pricing', ['feature'        => 'esautomatic',
+                                                                           'plan_id'        => '1BFFkd38fFGbnh',])->toArray();
+
+        $this->assertEmpty($esAutomaticPricingRulesOldPlan);
+                                                                  
+        $esAutomaticPricingRulesNewPlan = $this->getDbEntities('pricing', ['feature'        => 'esautomatic'])->toArray();
+    
+        $this->assertEquals(sizeof($esAutomaticPricingRulesNewPlan), 11);
+
+        Mail::assertQueued(EsEnabledNotify::class);
+    }
+
     public function testFetchEsScheduledPricingInternationalPricing()
     {
-        $this->fixtures->create('pricing:standard_plan');
+        $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
 
-        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1nvp2XPMmaRLxb']);
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1BFFkd38fFGbnh']);
 
         $esInternationalRules = [
             [
                 'id'             => 'EsInterPrice01',
-                'plan_id'        => '1nvp2XPMmaRLxb',
+                'plan_id'        => '1BFFkd38fFGbnh',
                 'plan_name'      => 'testDefaultPlan',
                 'feature'        => 'esautomatic',
                 'payment_method' => 'card',
@@ -3416,7 +3460,7 @@ class MerchantTest extends TestCase
             ],
             [
                 'id'             => 'EsInterPrice02',
-                'plan_id'        => '1nvp2XPMmaRLxb',
+                'plan_id'        => '1BFFkd38fFGbnh',
                 'plan_name'      => 'testDefaultPlan',
                 'feature'        => 'esautomatic',
                 'payment_method' => 'upi',
@@ -3432,6 +3476,11 @@ class MerchantTest extends TestCase
         $this->ba->proxyAuthTest();
 
         $this->startTest();
+
+        $esAutomaticPricingRules = $this->getDbEntities('pricing', ['feature'        => 'esautomatic',
+                                                                    'plan_id'        => '1BFFkd38fFGbnh',])->toArray();
+
+        $this->assertEquals(sizeof($esAutomaticPricingRules), 12);
     }
 
     public function testEnableEsScheduledSuccess()
@@ -3992,9 +4041,9 @@ class MerchantTest extends TestCase
     {
         Mail::fake();
 
-        $this->fixtures->create('pricing:standard_plan');
+        $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
 
-        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1AXp2Xd3t5aRLX']);
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1BFFkd38fFGbnh']);
 
         $this->fixtures->create(
             'schedule',
@@ -4014,7 +4063,12 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertNotQueued(EsEnabledNotify::class);
+        $esAutomaticPricingRules = $this->getDbEntities('pricing', ['feature'        => 'esautomatic',
+                                                                    'plan_id'        => '1BFFkd38fFGbnh',])->toArray();
+        
+        $this->assertEquals(sizeof($esAutomaticPricingRules), 11);
+
+        Mail::assertQueued(EsEnabledNotify::class);
     }
 
     public function testPutEmiMethod()

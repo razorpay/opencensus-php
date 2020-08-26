@@ -1845,9 +1845,12 @@ class Service extends Base\Service
 
         if ($scheduledPricings->isEmpty() === true)
         {
-            throw new Exception\LogicException(
-                'ES scheduled Pricing has not been assigned to the merchant.',
-                ErrorCode::SERVER_ERROR_ES_SCHEDULED_PRICING_NOT_FOUND);
+            $pricingPlanId = $this->addDefaultScheduledEarlySettlementPricingForMerchant($pricingPlanId);
+
+            $scheduledPricings = $this->repo->pricing
+                                  ->getPricingRulesByPlanIdFeatureAndInternationalWithoutOrgId($pricingPlanId,
+                                                                                               PricingFeature::ESAUTOMATIC,
+                                                                                               false);
         }
 
         $finalSchedulePricing = new Pricing\Entity();
@@ -1879,6 +1882,117 @@ class Service extends Base\Service
         );
 
         return $finalSchedulePricing->toArrayPublic();
+    }
+
+    public function addDefaultScheduledEarlySettlementPricingForMerchant($pricingPlanId)
+    {
+        if ($this->merchant->isPostpaid() === false)
+        {
+            return $this->repo->transactionOnLiveAndTest(function () use($pricingPlanId)
+            {
+                // Replicates plan for this merchant if it was shared
+                if ($this->repo->merchant->fetchMerchantsCountWithPricingPlanId($pricingPlanId) !== 1)
+                {
+                    $newPlan = (new Pricing\Service())->replicatePlanAndAssign($this->merchant,
+                                $this->repo->pricing->getPlanByIdOrFailPublic($pricingPlanId));
+
+                    $this->merchant->refresh();
+
+                    $pricingPlanId = $newPlan->getId();
+                }
+
+                $defaultScheduledEarlySettlementPricings = $this->getDefaultScheduledEarlySettlementPricing($pricingPlanId);
+
+                foreach($defaultScheduledEarlySettlementPricings as $scheduledEarlySettlementPricing)
+                {
+                    $updatedPlanRule = (new Pricing\Service())->addPlanRule($pricingPlanId, $scheduledEarlySettlementPricing);
+                }
+
+                return $pricingPlanId;
+            });
+        }
+        else
+        {
+            throw new Exception\LogicException('ES scheduled Default Pricing cannot be assigned to postpaid merchant.',
+                                                ErrorCode::SERVER_ERROR_NO_ES_PRICING_FOR_POSTPAID_MERCHANT);
+        }
+    }
+
+    public function getDefaultScheduledEarlySettlementPricing($pricingPlanId)
+    {
+        $scheduledEarlySettlementmethods = [
+            Payment\Method::AEPS,
+            Payment\Method::CARD,
+            Payment\Method::CARDLESS_EMI,
+            Payment\Method::EMI,
+            Payment\Method::NETBANKING,
+            Payment\Method::PAYLATER,
+            Payment\Method::TRANSFER,
+            Payment\Method::UPI,
+            Payment\Method::WALLET,
+        ];
+
+        $defaultScheduledEarlySettlementPricings = [];
+
+        foreach($scheduledEarlySettlementmethods as $method)
+        {
+            $pricingRule = [
+                'product'             => Product::PRIMARY,
+                'feature'             => PricingFeature::ESAUTOMATIC,
+                'payment_method'      => $method,
+                'percent_rate'        => 15,
+                'amount_range_active' => 0,
+                'amount_range_max'    => 0,
+                'amount_range_min'    => 0,
+                'fee_bearer'          => $this->merchant->getFeeBearer(),
+            ];
+
+            array_push($defaultScheduledEarlySettlementPricings, $pricingRule);
+        }
+
+        $scheduledInternaltionalRules = $this->repo->pricing
+                                        ->getPricingRulesByPlanIdFeatureAndInternationalWithoutOrgId($pricingPlanId,
+                                                                                                    PricingFeature::ESAUTOMATIC,
+                                                                                                    true)->toArray();
+
+        $esInternationCardRule = array_filter($scheduledInternaltionalRules, function($scheduledInternaltionalRule)
+        {
+            return (isset($scheduledInternaltionalRule['payment_method']) === true &&
+                    $scheduledInternaltionalRule['payment_method'] === Payment\Method::CARD);
+        });
+
+        if(empty($esInternationCardRule) === true)
+        {
+            $cardInternationalEsRule = [
+                'product'             => Product::PRIMARY,
+                'feature'             => PricingFeature::ESAUTOMATIC,
+                'payment_method'      => Payment\Method::CARD,
+                'international'       => 1,
+                'percent_rate'        => 0,
+                'amount_range_active' => 0,
+                'amount_range_max'    => 0,
+                'amount_range_min'    => 0,
+                'fee_bearer'          => $this->merchant->getFeeBearer(),
+            ];
+
+            array_push($defaultScheduledEarlySettlementPricings, $cardInternationalEsRule);
+        }
+
+        $paypalWalletEsRule = [
+            'product'             => Product::PRIMARY,
+            'feature'             => PricingFeature::ESAUTOMATIC,
+            'payment_method'      => Payment\Method::WALLET,
+            'payment_network'     => Payment\Processor\Wallet::PAYPAL,
+            'percent_rate'        => 0,
+            'amount_range_active' => 0,
+            'amount_range_max'    => 0,
+            'amount_range_min'    => 0,
+            'fee_bearer'          => $this->merchant->getFeeBearer(),
+        ];
+
+        array_push($defaultScheduledEarlySettlementPricings, $paypalWalletEsRule);
+
+        return $defaultScheduledEarlySettlementPricings;
     }
 
     public function getInstantRefundsPricingForMerchant(): array

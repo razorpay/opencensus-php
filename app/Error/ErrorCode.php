@@ -1425,7 +1425,7 @@ class ErrorCode
 
     // ES related error codes
     const BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID                                     = 'BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID';
-    const SERVER_ERROR_ES_SCHEDULED_PRICING_NOT_FOUND                               = 'SERVER_ERROR_ES_SCHEDULED_PRICING_NOT_FOUND';
+    const SERVER_ERROR_NO_ES_PRICING_FOR_POSTPAID_MERCHANT                          = 'SERVER_ERROR_NO_ES_PRICING_FOR_POSTPAID_MERCHANT';
     const SERVER_ERROR_INVALID_ES_PRICING                                           = 'SERVER_ERROR_INVALID_ES_PRICING';
     // Error code for data missing during force authorize flow
     const BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING                                     = 'BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING';
