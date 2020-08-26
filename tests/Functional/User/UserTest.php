@@ -298,6 +298,26 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * As oauth valid it will get precedence and give the user details
+     * as oauth payload is coming from dashboard backend
+     * we already have an extra layer of security
+     * So it should prevent malicious attack
+     */
+    public function testOauthLoginSuccessPasswordAndOauthBothPresent()
+    {
+        $user = $this->fixtures->create('user', [
+            'id'    => "FL0nl7kME8j3Dd",
+            'email' => 'hello123@gmail.com',
+            'password' => 'hello123']);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function testOauthLoginFail()
     {
         $user = $this->fixtures->create('user', [

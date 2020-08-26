@@ -39,7 +39,7 @@ class Validator extends Base\Validator
         Entity::SETTINGS                        => 'nullable|associative_array',
         Merchant\Constants::PARTNER_INTENT      => 'sometimes|boolean',
         Entity::APP                             => 'sometimes|string',
-        Entity::OAUTH_PROVIDER                  => 'sometimes|string|custom',
+        Entity::OAUTH_PROVIDER                  => 'required_without:password|string|custom',
     ];
 
     protected static $editRules = [
@@ -71,7 +71,7 @@ class Validator extends Base\Validator
         Entity::CAPTCHA               => 'required_without_all:captcha_disable,oauth_provider',
         Entity::CAPTCHA_DISABLE       => 'sometimes|string',
         Entity::APP                   => 'sometimes|string',
-        Entity::OAUTH_PROVIDER        => 'sometimes|string|custom',
+        Entity::OAUTH_PROVIDER        => 'required_without:password|string|custom',
     ];
 
     protected static $verifyUserSecondFactorRules = [
@@ -333,8 +333,13 @@ class Validator extends Base\Validator
      */
     protected function validateCaptcha(array $input)
     {
-        if ((isset($input[Entity::CAPTCHA_DISABLE])) and
-            ($input[Entity::CAPTCHA_DISABLE] === self::DISABLE_CAPTCHA_SECRET))
+        //
+        // Captcha is Required When both captcha_disable and oauth_provider not present,
+        // and in case of oauth_provider it's their security which prevents the malicious attack
+        // So no need of Captcha there
+        //
+        if (($this->isCaptchaDisabled($input) === true) or
+            ($this->isOauthEnabled($input) === true))
         {
             return;
         }
@@ -394,6 +399,37 @@ class Validator extends Base\Validator
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED);
         }
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return bool
+     */
+    protected function isCaptchaDisabled(array $input): bool
+    {
+        if ((empty($input[Entity::CAPTCHA_DISABLE]) === false) and
+            ($input[Entity::CAPTCHA_DISABLE] === self::DISABLE_CAPTCHA_SECRET))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return bool
+     */
+    protected function isOauthEnabled(array $input): bool
+    {
+        if (empty($input[Entity::OAUTH_PROVIDER]) === false)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**

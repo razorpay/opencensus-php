@@ -250,17 +250,17 @@ return [
     ],
 
     'testOauthLoginFailPasswordOauthNotPresent' => [
-        'request'  => [
+        'request'   => [
             'url'     => '/users/oauth-login',
             'method'  => 'POST',
             'content' => [
-                'email'          => 'hello123@gmail.com',
+                'email' => 'hello123@gmail.com',
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                 ],
             ],
             'status_code' => 400,
@@ -268,6 +268,33 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testOauthLoginSuccessPasswordAndOauthBothPresent' => [
+        'request'  => [
+            'url'     => '/users/oauth-login',
+            'method'  => 'POST',
+            'content' => [
+                'email'          => 'hello123@gmail.com',
+                'oauth_provider' => "[\"google\"]",
+                'password'       => 'hello123'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
         ],
     ],
 
