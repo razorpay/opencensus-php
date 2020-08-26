@@ -1696,6 +1696,7 @@ class Gateway
         IFSC::SCBL => Gateway::NETBANKING_SCB,
         IFSC::SVCB => Gateway::NETBANKING_SVC,
         IFSC::IOBA => Gateway::NETBANKING_IOB,
+        IFSC::FSFB => Gateway::NETBANKING_FSB,
     ];
 
     /**

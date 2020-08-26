@@ -51,6 +51,7 @@ class Constants
     const JSB              = 'jsb';
     const PNB              = 'pnb';
     const IOB              = 'iob';
+    const FSB              = 'fsb';
 
     const ENACH_NPCI_NETBANKING = 'enach_npci_netbanking';
     const ENACH_NB_ICICI        = 'enach_nb_icici';
@@ -118,6 +119,7 @@ class Constants
             self::JSB,
             self::PNB,
             self::IOB,
+            self::FSB,
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -208,6 +210,7 @@ class Constants
             self::JSB         => ['jsb-netbanking.refunds@razorpay.com'],
             self::PNB         => [],
             self::IOB         => ['iob-netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
+            self::FSB         => ['fsb-netbanking-refunds@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [

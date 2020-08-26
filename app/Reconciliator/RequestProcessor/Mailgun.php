@@ -58,6 +58,7 @@ class Mailgun extends Base
         self::HDFC_DEBIT_EMI,
         self::UPI_JUSPAY,
         self::NETBANKING_JSB,
+        self::NETBANKING_FSB,
     ];
 
     const LINK_BASED_GATEWAYS = [

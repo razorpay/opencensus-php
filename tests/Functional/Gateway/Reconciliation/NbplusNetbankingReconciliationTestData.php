@@ -18,4 +18,12 @@ return [
         'amount'             => '500.00',
         'Date'               => Carbon::today()->format("Y-d-m")
     ],
+    'testFsbSuccessRecon' => [
+        'AggregatorReferenceNumber'     => '',
+        'BankTransactionReferenceNo'    => '1234',
+        'TransactionAmount'             => '500.00',
+        'STATUS'                        => 'Y',
+        'TRANSACTIONDATE'               => Carbon::today()->format("Y-m-d"),
+        'Account_Number'                => '123456789'
+    ],
 ];
