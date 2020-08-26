@@ -5,6 +5,7 @@ namespace RZP\Models\P2p\Device;
 use RZP\Models\P2p\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
+use RZP\Models\P2p\Client;
 use RZP\Models\P2p\Vpa\Handle;
 use RZP\Models\P2p\Base\Traits;
 
@@ -383,6 +384,11 @@ class Entity extends Base\Entity
     public function deviceToken(Handle\Entity $handle)
     {
         return $this->deviceTokens()->handle($handle)->verified()->latest()->first();
+    }
+
+    public function client(Handle\Entity $handle)
+    {
+        return $handle->client(Client\Type::MERCHANT, $this->getMerchantId());
     }
 
     public function setPublicCustomerIdAttribute(& $input)

@@ -153,6 +153,17 @@ class Entity extends Base\Entity
         return $this->setAttribute(self::GATEWAY_DATA, $gatewayData);
     }
 
+    /********** Helper Functions *************/
+    public function getConfigValue(string $key)
+    {
+        return $this->getConfig()->get($key);
+    }
+
+    public function getGatewayDataValue(string $key)
+    {
+        return $this->getGatewayData()->get($key);
+    }
+
     /********* Entity Views ******************/
     public function toArrayWithSecrets()
     {

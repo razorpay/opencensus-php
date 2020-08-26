@@ -59,6 +59,20 @@ class VpaTest extends TestCase
         $helper->createVpa($request['callback'], $content);
     }
 
+    public function testCreateVpaSuggestion()
+    {
+        $helper = $this->getVpaHelper();
+
+        $request = $helper->intiateCreateVpa([
+            'username' => null
+        ]);
+
+        /**
+         * Asserting that the vpa suffix is there in the suggested vpa
+         */
+        $this->assertContains('suf', $request['request']['content']['customerVpa']);
+    }
+
     public function testCreateVpaWithUppercaseUsername()
     {
         $helper = $this->getVpaHelper();

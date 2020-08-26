@@ -44,6 +44,26 @@ class Gateway extends Base\Gateway
         return $this->context->getHandle()->toArrayBag();
     }
 
+    public function getContextClient()
+    {
+        return $this->context->getClient()->toArrayBag();
+    }
+
+    public function getClientConfig()
+    {
+        return $this->context->getClient()->getConfig();
+    }
+
+    public function getClientGatewayData()
+    {
+        return $this->context->getClient()->getGatewayData();
+    }
+
+    public function getClientSecrets()
+    {
+        return $this->context->getClient()->getSecrets();
+    }
+
     public function getRequestId()
     {
         return $this->context->getRequestId();

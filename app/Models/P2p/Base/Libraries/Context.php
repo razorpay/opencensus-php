@@ -5,6 +5,7 @@ namespace RZP\Models\P2p\Base\Libraries;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Models\P2p\Device;
+use RZP\Models\P2p\Client;
 use RZP\Base\JitValidator;
 use RZP\Error\P2p\ErrorCode;
 use Illuminate\Http\Request;
@@ -173,7 +174,9 @@ class Context extends ArrayObject
      */
     public function setMerchant(Merchant\Entity $merchant)
     {
-        if ($this->handle->isAllowedToMerchant($merchant->getId()) === false)
+        $client = $this->handle->client(Client\Type::MERCHANT, $merchant->getId());
+
+        if (($client instanceof Client\Entity) === false)
         {
             throw $this->badRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NOT_ALLOWED_ON_HANDLE);
         }
@@ -181,6 +184,8 @@ class Context extends ArrayObject
         $this->type = self::MERCHANT;
 
         $this->merchant = $merchant;
+
+        $this->handle->setClient($client);
     }
 
     /**
@@ -237,6 +242,14 @@ class Context extends ArrayObject
     public function setHandle(Handle\Entity $handle)
     {
         $this->handle = $handle;
+    }
+
+    /**
+     * @return Client\Entity
+     */
+    public function getClient()
+    {
+        return $this->handle->getClient();
     }
 
     /**

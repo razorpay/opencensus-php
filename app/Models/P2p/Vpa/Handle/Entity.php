@@ -221,13 +221,14 @@ class Entity extends Base\Entity
 
     /**
      * @param $clientId
+     * @return Client\Entity
      */
-    public function merchant(string $clientId)
+    public function client(string $type, string $clientId)
     {
         return $this->clients()->where(
             [
                Client\Entity::HANDLE        => $this->getCode(),
-               Client\Entity::CLIENT_TYPE   => Client\Type::MERCHANT,
+               Client\Entity::CLIENT_TYPE   => $type,
                Client\Entity::CLIENT_ID     => $clientId
             ])->first();
     }

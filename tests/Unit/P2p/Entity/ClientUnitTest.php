@@ -5,6 +5,7 @@ namespace RZP\Tests\Unit\P2p\Entity;
 use RZP\Models\Merchant\Account;
 use RZP\Models\P2p\Client\Core;
 use RZP\Models\P2p\Vpa\Handle;
+use RZP\Models\P2p\Client\Type;
 use RZP\Models\P2p\Client\Entity;
 use RZP\Models\P2p\Client\Config;
 use RZP\Models\P2p\Client\Secrets;
@@ -51,7 +52,7 @@ class ClientUnitTest extends TestCase
 
         $savedClient = $this->getDbLastEntity('p2p_client');
 
-        $client = $handle->merchant($savedClient->getClientId());
+        $client = $handle->client(Type::MERCHANT, $savedClient->getClientId());
 
         $handle->setClient($client);
 

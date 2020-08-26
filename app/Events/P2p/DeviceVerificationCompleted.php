@@ -3,6 +3,8 @@
 namespace RZP\Events\P2p;
 
 use App;
+use RZP\Models\P2p\Client;
+use RZP\Models\P2p\Client\Config;
 use RZP\Models\P2p\Transaction\Entity;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -25,10 +27,18 @@ class DeviceVerificationCompleted extends Event implements ShouldQueue
 
     public function getNotificationPayload()
     {
+        $handle = $this->context->getHandle();
+
         $entity = $this->getEntity();
 
-        $appName = $entity->getAppFullName();
-        $sender  = $entity->getSmsSender();
+        /**
+         * @var $client Client\Entity
+         */
+        $client =  $entity->client($handle);
+
+        $appName = $client->getConfigValue(Config::APP_FULL_NAME);
+
+        $sender  = $client->getConfigValue(Config::SMS_SENDER);
 
         return [
             'receiver' => $entity->getFormattedContact(),

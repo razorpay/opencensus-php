@@ -7,6 +7,7 @@ use RZP\Constants\Mode;
 use RZP\Models\P2p\Base;
 use RZP\Constants\Environment;
 use RZP\Models\P2p\BankAccount;
+use RZP\Models\P2p\Client\Config;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
 
@@ -94,7 +95,11 @@ class Core extends Base\Core
         {
             $vpas = $this->repo->newP2pQuery()->withTrashed()->get();
 
-            $maxLimit = $this->context()->getHandle()->getMaxAllowedVpas($this->context()->getMerchant()->getId());
+            /**
+             * We will fetch the max vpa from p2p client entity which
+             * was seeded per merchant and handle.
+             */
+            $maxLimit = $this->context()->getClient()->getConfigValue(Config::MAX_VPA);
 
             return ($vpas->count() >= $maxLimit);
         }
@@ -218,6 +223,15 @@ class Core extends Base\Core
     {
         // Last 10 character of phone number
         $username = substr($bankAccount->device->getContact(), -10);
+
+        // We need to use vpa suffix for username from client
+        // This will be based on merchant config set in the client entity
+        $vpaSuffix = $this->context()->getClient()->getConfigValue(Config::VPA_SUFFIX);
+
+        if (isset($vpaSuffix) === true)
+        {
+            $username = $username.$vpaSuffix;
+        }
 
         // For production and
         if (($this->mode() === Mode::LIVE) and

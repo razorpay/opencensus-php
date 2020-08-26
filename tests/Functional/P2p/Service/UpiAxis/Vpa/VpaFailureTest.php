@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\P2p\Service\UpiAxis\Vpa;
 
+use RZP\Models\P2p\Client;
+use RZP\Models\P2p\Client\Config;
 use RZP\Tests\P2p\Service\UpiAxis\TestCase;
 
 class VpaFailureTest extends TestCase
@@ -91,5 +93,32 @@ class VpaFailureTest extends TestCase
 
         // Also for addition
         $helper->intiateCreateVpa();
+    }
+
+    public function testMaxVpaLimitWithChangedMaxVpa()
+    {
+        $merchantId = $this->fixtures->merchant->getId();
+
+        $client = $this->fixtures->handle->client(Client\Type::MERCHANT, $merchantId);
+
+        $client->setConfig([Config::MAX_VPA => 2])->save();
+
+        $helper = $this->getVpaHelper();
+
+        $this->fixtures->createVpa([]);
+
+        $vpas = $helper->fetchAllVpa();
+
+        $this->assertCount(2, $vpas['items']);
+
+        $this->withFailureResponse($helper, function($error)
+        {
+            $this->assertArraySubset([
+                'code'        => 'BAD_REQUEST_ERROR',
+                'description' => 'Maximum VPA allowed per customer limit reached',
+            ], $error);
+        });
+
+        $helper->initiateCheckVpaAvailable();
     }
 }

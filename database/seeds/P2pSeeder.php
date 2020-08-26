@@ -4,6 +4,7 @@ use Illuminate\Database\Seeder;
 
 use RZP\Models\P2p;
 use RZP\Models\Customer;
+use RZP\Models\P2p\Client;
 use RZP\Tests\P2p\Service\Base\Constants;
 
 class P2pSeeder extends Seeder
@@ -30,6 +31,8 @@ class P2pSeeder extends Seeder
         $this->seedHandles();
 
         $this->seedVpas();
+
+        $this->seedClients();
     }
 
     private function seedRzpCustomer()
@@ -412,5 +415,57 @@ class P2pSeeder extends Seeder
                 'username'              => Constants::CUSTOMER_2_VPA_2_AXIS,
                 'bank_account_id'       => null,
             ]);
+    }
+
+    private function seedClients()
+    {
+        P2p\Client\Entity::whereIn(
+            P2p\Client\Entity::ID,
+            [
+                Constants::CLIENT_1_RAZORAXIS_MER1,
+                Constants::CLIENT_2_RAZORAXIS_MER2,
+                Constants::CLIENT_1_RAZORSHARP_MER1,
+            ])->forceDelete();
+
+        factory(P2p\Client\Entity::class)->create([
+            'id'            => Constants::CLIENT_1_RAZORAXIS_MER1,
+            'handle'        => Constants::RAZOR_AXIS,
+            'client_type'                    => 'merchant',
+            'client_id'                      => Constants::TEST_MERCHANT,
+            'gateway_data'                        => [
+                'merchantId'          => env('P2P_UPI_AXIS_MERCHANT_ID'),
+                'merchantChannelId'   => env('P2P_UPI_AXIS_MERCHANT_CHANNEL_ID'),
+            ],
+            'config'                         => [
+                Client\Config::MAX_VPA          => 5,
+                Client\Config::VPA_SUFFIX       => '.suf',
+                Client\Config::SMS_SENDER       => 'SENDER',
+                Client\Config::APP_FULL_NAME    => 'APPLICATION NAME',
+            ],
+        ]);
+
+        factory(P2p\Client\Entity::class)->create([
+            'id'             => Constants::CLIENT_2_RAZORAXIS_MER2,
+            'handle'         => Constants::RAZOR_AXIS,
+            'client_type'    => 'merchant',
+            'client_id'      => Constants::DEMO_MERCHANT,
+            'gateway_data'        => [
+                'merchantId'        => 'TEST_CRED' ,
+                'merchantChannelId' => 'TEST_CHANNEL_CRED',
+            ],
+            'config'                         => [
+                Client\Config::MAX_VPA          => 3,
+                Client\Config::VPA_SUFFIX       => '.suf2',
+                Client\Config::SMS_SENDER       => 'Sender',
+                Client\Config::APP_FULL_NAME    => 'P2P Application',
+            ],
+        ]);
+
+        factory(P2p\Client\Entity::class)->create([
+            'id'             => Constants::CLIENT_1_RAZORSHARP_MER1,
+            'handle'         => Constants::RAZOR_SHARP,
+            'client_type'    => 'merchant',
+            'client_id'      => Constants::TEST_MERCHANT,
+        ]);
     }
 }

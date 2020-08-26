@@ -94,13 +94,18 @@ class DeviceTest extends TestCase
 
         $this->assertRavenRequest(function($input)
         {
+            /**
+             * Asserting the notification , sender and app_name will be fetched from
+             * p2p client, changing it to generic values, making the test
+             * agnostic of merchant
+             */
             $this->assertArraySubset([
                 'receiver'  => '919742417121',
                 'source'    => 'api.test.p2p',
                 'template'  => 'sms.p2p.verification_completed',
-                'sender'    => 'BajajP',
+                'sender'    => 'SENDER',
                 'params'    => [
-                    'app_name'      => 'Bajaj Finserv MARKETS',
+                    'app_name'      => 'APPLICATION NAME',
                 ],
             ], $input);
         });

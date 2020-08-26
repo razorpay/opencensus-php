@@ -147,12 +147,12 @@ class Gateway extends Upi\Gateway
 
     protected function getMerchantId()
     {
-        return $this->config['merchant_id'];
+        return $this->getClientGatewayData()->get(Fields::MERCHANT_ID);
     }
 
     protected function getMerchantChannelId()
     {
-        return $this->config['merchant_channel_id'];
+        return $this->getClientGatewayData()->get(Fields::MERCHANT_CHANNEL_ID);
     }
 
     protected function getMerchantCategoryCode()

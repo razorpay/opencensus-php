@@ -85,4 +85,9 @@ class Constants
     const RAZOR_AXIS                                        = 'razoraxis';
     const RZP_AXIS                                          = 'rzpaxis';
     const NORZP_AXIS                                        = 'norzpaxis';
+
+    // Clients
+    const CLIENT_1_RAZORAXIS_MER1                           = 'CL01TestRzAxis';
+    const CLIENT_2_RAZORAXIS_MER2                           = 'CL02DemoRzAxis';
+    const CLIENT_1_RAZORSHARP_MER1                          = 'CL01ShrdRzShrp';
 }
