@@ -55,12 +55,22 @@ class BankingAccountActivationCommentsTest extends TestCase
                 [
                     Batch\Header::RZP_REF_NO => $refno,
                     Batch\Header::COMMENT => $comment,
-                    Batch\Header::NEW_STATUS => 'Razorpay Processing'
+                    Batch\Header::NEW_STATUS => 'RazorpayProcessing',
+                    Batch\Header::NEW_SUBSTATUS => 'Merchant is not Available',
+                    Batch\Header::NEW_ASSIGNEE => 'sales',
+                    Batch\Header::RM_NAME => 'Name1',
+                    Batch\Header::RM_PHONE_NUMBER => '1234543121',
+                    Batch\Header::ACCOUNT_OPEN_DATE => '20/7/2020 12:00:00 AM',
                 ],
                 [
                     Batch\Header::RZP_REF_NO => "102020", // non-existent
                     Batch\Header::COMMENT => $comment,
-                    Batch\Header::NEW_STATUS => 'Razorpay Processing'
+                    Batch\Header::NEW_STATUS => 'RazorpayProcessing',
+                    Batch\Header::NEW_SUBSTATUS => 'Merchant is not Available',
+                    Batch\Header::NEW_ASSIGNEE => 'sales',
+                    Batch\Header::RM_NAME => 'Name1',
+                    Batch\Header::RM_PHONE_NUMBER => '1234543121',
+                    Batch\Header::ACCOUNT_OPEN_DATE => '20/7/2020 12:00:00 AM',
                 ]
             ];
         }

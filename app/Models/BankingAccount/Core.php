@@ -33,10 +33,11 @@ use RZP\Mail\BankingAccount\XProActivation;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Jobs\BankingAccountGatewayBalanceUpdate;
-use RZP\Models\BankingAccount\Activation\Comment;
 use RZP\Models\BankingAccount\Channel as BAChannel;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccount\Detail as BankingAccountDetail;
+use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
+use RZP\Models\BankingAccount\Activation\Comment as BAComment;
 use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFactory;
 
 class Core extends Base\Core
@@ -220,6 +221,44 @@ class Core extends Base\Core
         }
     }
 
+    protected function extractAndValidateActivationDetailInput(array &$input, $entity = null)
+    {
+        if (isset($input['activation_detail']) === true)
+        {
+            $auth = $this->app['basicauth'];
+
+            // if comment is passed and updater entity is merchant, can't add comment as
+            // commenter is figured out from admin.
+            if ((empty($entity) === false)
+                and (isset($input['activation_detail'][ActivationDetail\Entity::COMMENT]) === true)
+                and ($entity->getEntity() !== 'admin'))
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_DETAILS_ONLY_ON_ADMIN_AUTH);
+            }
+
+            return array_pull($input, 'activation_detail');
+        }
+
+        return null;
+    }
+
+    protected function preProcessActivationDetailCreateInput(array $input = null)
+    {
+        if (empty($input) === true)
+        {
+            return $input;
+        }
+
+        if (isset($input[ActivationDetail\Entity::ASSIGNEE_TEAM]) === false)
+        {
+            // defaulting to Ops as they are the default assignee
+            $input[ActivationDetail\Entity::ASSIGNEE_TEAM] = 'ops';
+        }
+
+        return $input;
+    }
+
     public function createBankingAccount(array $input, Merchant\Entity $merchant): Entity
     {
         (new Validator)->setStrictFalse()->validateInput(Validator::PRE_PROCESS, $input);
@@ -249,20 +288,9 @@ class Core extends Base\Core
         // Pulling the activation details out as they are stored as part of
         // a different entity.
         // These details are only to be sent from admin auth.
-        $activationDetailInput = null;
+        $activationDetailInput = $this->extractAndValidateActivationDetailInput($input);
 
-        if (isset($input['activation_detail']) === true)
-        {
-            $auth = $this->app['basicauth'];
-
-            if ($auth->isAdminAuth() === false)
-            {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_DETAILS_ONLY_ON_ADMIN_AUTH);
-            }
-
-            $activationDetailInput = array_pull($input, 'activation_detail');
-        }
+        $activationDetailInput = $this->preProcessActivationDetailCreateInput($activationDetailInput);
 
         $bankingAccount = new Entity;
 
@@ -360,7 +388,7 @@ class Core extends Base\Core
                         'channel'   => $channel,
                     ]);
 
-                $this->updateBankingAccount($bankingAccount, $attributes, $bankingAccount->merchant);
+                $this->updateBankingAccount($bankingAccount, $attributes, $bankingAccount->merchant, true);
             }
 
             $response = $processor->postProcessAccountInfoNotificationResponse($input, Status::PROCESSED);
@@ -382,7 +410,28 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function updateBankingAccount(Entity $bankingAccount, array $input, Base\PublicEntity $entity = null)
+    /**
+     * input =
+     * {
+     *      'status' : 'processing',
+     *      'sub_status' : 'merchant_not_available',
+     *      'activation_detail' : {
+     *              'assignee_team' : 'ops',
+     *              'comment' : {
+     *                  'comment' : 'sampel comment',
+     *                  'type' : 'external',
+     *              }
+     *      }
+     * }
+     * @param Entity $bankingAccount
+     * @param array $input
+     * @param Base\PublicEntity|null $entity
+     * @param bool $isAutomatedUpdate
+     * @return Entity
+     * @throws BadRequestException
+     * @throws LogicException
+     */
+    public function updateBankingAccount(Entity $bankingAccount, array $input, Base\PublicEntity $entity = null, bool $isAutomatedUpdate = false)
     {
         $channel = $bankingAccount->getChannel();
 
@@ -403,6 +452,8 @@ class Core extends Base\Core
                 'input'   => $traceRequest,
             ]);
 
+        $activationDetailInput = $this->extractAndValidateActivationDetailInput($input, $entity);
+
         $processor = $this->getProcessor($channel);
 
         $processor->validateAccountBeforeUpdating($input);
@@ -419,15 +470,56 @@ class Core extends Base\Core
 
         $bankingAccountStatusChanged = $bankingAccount->isDirty(Entity::STATUS);
 
+        $bankingAccountSubStatusChanged = $bankingAccount->isDirty(Entity::SUB_STATUS);
+
         if (empty($input[Entity::STATUS]) === false)
         {
             $bankingAccount->setStatus($input[Entity::STATUS]);
+
+            // if actual update in status is happening, and substatus is not passed,
+            // pick default substatus
+            if (($bankingAccountStatusChanged === true) and (array_key_exists(Entity::SUB_STATUS, $input) === false))
+            {
+                $input[Entity::SUB_STATUS] = Status::getDetaultSubStatus($input[Entity::STATUS]);
+            }
         }
 
-        $this->repo->transaction(function() use ($bankingAccount, $input, $processor)
+        // Not using empty because empty(NULL)=true and NULL is a valid value.
+        // Not using isset here because  isset will return false if array('key'=>NULL) and NULL is a valid value.
+        // (sub_status can be set/defaulted to null for some statuses)
+        if (array_key_exists(Entity::SUB_STATUS, $input) === true)
         {
+            $bankingAccount->setSubStatus($input[Entity::SUB_STATUS]);
+        }
+
+        $admin = $this->app['basicauth']->getAdmin() ?? (($this->app->bound('batchAdmin') === true)? $this->app['batchAdmin'] : null);
+
+        (new Validator())->validateUpdatePermissions($bankingAccount, $admin);
+
+        $this->repo->transaction(function()
+            use ($bankingAccount,
+                $input,
+                $processor,
+                $activationDetailInput,
+                $entity,
+                $bankingAccountStatusChanged,
+                $bankInternalStatusChanged,
+                $bankingAccountSubStatusChanged,
+                $isAutomatedUpdate)
+        {
+            // Updating BankingAccount
             $this->repo->saveOrFail($bankingAccount);
 
+            // Updating BankingAccountActivation Details
+            if (empty($activationDetailInput) === false)
+            {
+                $activationDetailService = new Activation\Detail\Service;
+
+                // if ActivationDetail is passed with comment in input, entity will always be admin, not merchant.
+                $activationDetailService->updateForBankingAccount($bankingAccount->getPublicId(), $activationDetailInput, $isAutomatedUpdate);
+            }
+
+            // Updating BankingAccountDetails
             if ((isset($input[Entity::DETAILS]) === true) and
                 (empty($input[Entity::DETAILS])) === false)
             {
@@ -447,32 +539,35 @@ class Core extends Base\Core
                                                                              $bankingAccount,
                                                                              $processor);
             }
+
+            // storing state change
+            if (($bankInternalStatusChanged === true) or
+                ($bankingAccountStatusChanged === true) or
+                ($bankingAccountSubStatusChanged === true))
+            {
+                $stateCore = new State\Core;
+
+                $content = [
+                    Entity::STATUS              => $bankingAccount->getStatus(),
+                    Entity::SUB_STATUS          => $bankingAccount->getSubStatus(),
+                    State\Entity::BANK_STATUS   => $bankingAccount->getBankInternalStatus()
+                ];
+
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_UPDATE_ACTIVATION_STATUS,
+                    [
+                        'id'    => $bankingAccount->getId(),
+                        'input' => $content,
+                    ]);
+
+                $stateCore->createForMakerAndEntity($content, $entity, $bankingAccount);
+            }
         });
 
         // We need to populate banking account details using
         // toArrayPublic, which populates only the pre fetched
         // relations. So explicitly fetching this relation here
         $bankingAccount->load('bankingAccountDetails');
-
-        if (($bankInternalStatusChanged === true) or
-            ($bankingAccountStatusChanged === true))
-        {
-            $stateCore = new State\Core;
-
-            $content = [
-                Entity::STATUS              => $bankingAccount->getStatus(),
-                State\Entity::BANK_STATUS   => $bankingAccount->getBankInternalStatus()
-            ];
-
-            $this->trace->info(
-                TraceCode::BANKING_ACCOUNT_UPDATE_ACTIVATION_STATUS,
-                [
-                    'id'    => $bankingAccount->getId(),
-                    'input' => $content,
-                ]);
-
-            $stateCore->createForMakerAndEntity($content, $entity, $bankingAccount);
-        }
 
         return $bankingAccount;
     }
@@ -566,6 +661,15 @@ class Core extends Base\Core
                 ]);
 
             $stateCore->createForMakerAndEntity($content, $admin, $bankingAccount);
+
+            // updating assignee to null
+            $updateInput = [
+                'activation_detail' => [
+                    ActivationDetail\Entity::ASSIGNEE_TEAM => null
+                ]
+            ];
+
+            $this->updateBankingAccount($bankingAccount, $updateInput, null, true);
 
             return $bankingAccount;
         });

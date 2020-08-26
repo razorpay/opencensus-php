@@ -4,8 +4,13 @@
 namespace RZP\Models\BankingAccount\Activation\Detail;
 
 use RZP\Base;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Models\Admin\Permission;
 use RZP\Models\BankingAccount\Channel;
+use RZP\Models\BankingAccount\Activation\Detail\Entity;
 
 class Validator extends Base\Validator
 {
@@ -27,7 +32,36 @@ class Validator extends Base\Validator
     const KEY_ACCOUNT = 'key_account';
     const SME = 'sme';
 
+    // placeholder create rules to allow both the below flows
     protected static $createRules = [
+        Entity::BANKING_ACCOUNT_ID                  => 'required|string|size:14',
+        Entity::MERCHANT_POC_NAME                   => 'sometimes|string|max:255',
+        Entity::MERCHANT_POC_DESIGNATION            => 'sometimes|string|max:255',
+        Entity::MERCHANT_POC_EMAIL                  => 'sometimes|string|max:255',
+        Entity::MERCHANT_POC_PHONE_NUMBER           => 'sometimes|string|max:255',
+        Entity::MERCHANT_CITY                       => 'sometimes|string|max:255',
+        Entity::MERCHANT_DOCUMENTS_ADDRESS          => 'sometimes|string|max:255',
+        Entity::MERCHANT_REGION                     => 'sometimes|string|max:255',
+        Entity::EXPECTED_MONTHLY_GMV                => 'sometimes|integer|min:0',
+        Entity::INITIAL_CHEQUE_VALUE                => 'sometimes|integer|min:0',
+        Entity::BUSINESS_CATEGORY                   => 'sometimes|string|max:255|custom',
+        Entity::AVERAGE_MONTHLY_BALANCE             => 'sometimes|integer|min:0',
+        Entity::ACCOUNT_TYPE                        => 'sometimes|string|max:255',
+        Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE   => 'sometimes|boolean',
+        Entity::SALES_TEAM                          => 'sometimes|string|max:255|custom',
+        Entity::SALES_POC_PHONE_NUMBER              => 'sometimes|string|max:255',
+        Entity::COMMENT                             => 'sometimes|string',
+        Entity::ASSIGNEE_TEAM                       => 'sometimes|string|in:ops,bank,sales'
+    ];
+
+    // for older BankingAccounts, entity will not be created (as this was recently made mandatory for BankingAccountCreation)
+    //. Creating empty entities so that assignee_team works for older entities.
+    protected static $createNullRules = [
+        Entity::BANKING_ACCOUNT_ID                  => 'required|string|size:14',
+    ];
+
+    // main flow via admin dashboard
+    protected static $createNormalRules = [
         Entity::BANKING_ACCOUNT_ID                  => 'required|string|size:14',
         Entity::MERCHANT_POC_NAME                   => 'required|string|max:255',
         Entity::MERCHANT_POC_DESIGNATION            => 'required|string|max:255',
@@ -44,7 +78,8 @@ class Validator extends Base\Validator
         Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE   => 'required|boolean',
         Entity::SALES_TEAM                          => 'required|string|max:255|custom',
         Entity::SALES_POC_PHONE_NUMBER              => 'required|string|max:255',
-        Entity::COMMENT                             => 'required|string'
+        Entity::COMMENT                             => 'required|string',
+        Entity::ASSIGNEE_TEAM                       => 'required|string|in:ops,bank,sales'
     ];
 
     protected static $editRules = [
@@ -63,6 +98,10 @@ class Validator extends Base\Validator
         Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE   => 'sometimes|boolean',
         Entity::SALES_TEAM                          => 'sometimes|string|max:255|custom',
         Entity::SALES_POC_PHONE_NUMBER              => 'sometimes|string|max:255',
+        Entity::ASSIGNEE_TEAM                       => 'sometimes|string|nullable|in:ops,bank,sales',
+        Entity::RM_NAME                               => 'sometimes|string|max:255',
+        Entity::RM_PHONE_NUMBER                       => 'sometimes|string|max:255',
+        Entity::ACCOUNT_OPEN_DATE                     => 'sometimes|epoch',
     ];
 
     protected static $allowedBusinessCategories = [
@@ -108,6 +147,7 @@ class Validator extends Base\Validator
 
     public function validateAccountTypeForChannel(\RZP\Models\BankingAccount\Entity $bankingAccount, $input)
     {
+        // TODO make this channel generic
         if ((isset($input[Entity::ACCOUNT_TYPE])) and ($bankingAccount->getChannel() === Channel::RBL))
         {
             if (in_array($input[Entity::ACCOUNT_TYPE], self::$allowedAccountTypesForRBL) === false)
@@ -119,4 +159,67 @@ class Validator extends Base\Validator
         }
     }
 
+    /*
+     * If there is a change in the assignee team, a comment is mandatory
+     */
+    public function validateCommentOnAssigneeTeamChange(Entity $activationDetail, $input, $commentInput)
+    {
+        $newAssigneeTeam = $input[Entity::ASSIGNEE_TEAM] ?? null;
+
+        if ((empty($newAssigneeTeam) === false)
+           and ($activationDetail->getAssigneeTeam() !== $newAssigneeTeam)
+           and (empty($commentInput) === true))
+        {
+           throw new BadRequestValidationFailureException("Comment is required when changing Assignee team");
+        }
+    }
+
+    public static $selectivelyDisallowedFieldUpdates = [
+        Entity::ASSIGNEE_TEAM => 'bank'
+    ];
+
+    public function validateUpdatePermissions(Entity $bankingAccountActivationDetail, $admin)
+    {
+        // Admin auth or Batch auth with $admin entity passed
+
+        $isAdminUpdate = ($admin !== null);
+
+        if ($isAdminUpdate === true)
+        {
+            $adminPermissions = $admin->getPermissionsList();
+
+            $dirtyUpdates = $bankingAccountActivationDetail->getDirty();
+
+            if (empty($dirtyUpdates) === false)
+            {
+                if (in_array(Permission\Name::BANKING_UPDATE_ACCOUNT, $adminPermissions) === true)
+                {
+                    // this permission is okay for all updates.
+                    return;
+                }
+                else
+                {
+                    foreach (self::$selectivelyDisallowedFieldUpdates as $field => $value)
+                    {
+                        if (array_key_exists($field, $dirtyUpdates) and ($dirtyUpdates[$field] === $value))
+                        {
+                            throw new BadRequestException(
+                                ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+                                null,
+                                [
+                                    'admin_id'             => $admin->getPublicId(),
+                                    'required_permissions' => [Permission\Name::BANKING_UPDATE_ACCOUNT],
+                                    'update'               => [
+                                        'field' => $field,
+                                        'value' => $value
+                                    ]
+                                ]);
+                        }
+                    }
+
+                }
+            }
+
+        }
+    }
 }

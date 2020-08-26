@@ -22,6 +22,7 @@ use RZP\Mail\BankingAccount\StatusNotifications\Activated;
 use RZP\Mail\BankingAccount\StatusNotifications\Processing;
 use RZP\Mail\BankingAccount\StatusNotifications\Unserviceable;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
+use RZP\Models\BankingAccount\Activation\MIS;
 
 class BankingAccountTest extends TestCase
 {
@@ -124,6 +125,24 @@ class BankingAccountTest extends TestCase
         $this->assertNotNull($activationDetailEntity);
 
         Mail::assertQueued(XProActivation::class);
+
+        return $bankingAccount;
+    }
+
+    public function testCreateBankingAccountWithActivationDetailFails()
+    {
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        // Turn on the 'allow_all_merchants' feature for admin
+        DB::table('admins')->update(['allow_all_merchants' => 1]);
+
+        Mail::fake();
+
+        $this->ba->adminAuth();
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->startTest();
     }
 
     public function testSuccessBankAccountInfoNotification(string $id = null)
@@ -143,6 +162,8 @@ class BankingAccountTest extends TestCase
         $this->testCreateBankingAccount();
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->testCreateActivationDetail(null, $bankingAccount);
 
         $this->fixtures->edit('banking_account',
             $bankingAccount->getId(),
@@ -180,7 +201,12 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals('created', $logs['items'][0]['status']);
         $this->assertEquals('processed', $logs['items'][1]['status']);
+        $this->assertEquals('api_onboarding_pending', $logs['items'][1]['sub_status']);
         $this->assertEquals('closed', $logs['items'][1]['bank_status']);
+
+        $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
+
+        $this->assertEquals('ops', $bankingAccountActivationDetail['assignee_team']);
 
         return $response;
     }
@@ -280,11 +306,16 @@ class BankingAccountTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
 
-        $this->createBankingAccount();
+//        $this->createBankingAccount();
+
+
 
         (new User())->createBankingUserForMerchant($merchantDetail->merchant['id'], [
             'contact_mobile' => '8888888888',
         ]);
+
+//
+        $this->testCreateActivationDetail();
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
@@ -326,6 +357,10 @@ class BankingAccountTest extends TestCase
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $this->assertEquals(RZP\Models\BankingAccount\Status::ACTIVATED, $bankingAccount['status']);
+
+        $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
+
+        $this->assertEquals(null, $bankingAccountActivationDetail['assignee_team']);
 
         $balance = $this->getDbLastEntity('balance');
 
@@ -667,7 +702,7 @@ class BankingAccountTest extends TestCase
         $this->assertEquals('initiated', $logs['items'][1]['status']);
     }
 
-    protected function assertUpdateBankingAccountStatusFromTo(string $initialStatus, string $finalStatus)
+    protected function assertUpdateBankingAccountStatusFromTo(string $initialStatus, string $finalStatus, string $initialSubStatus = null, string $finalSubStatus = null)
     {
         Mail::fake();
 
@@ -684,32 +719,55 @@ class BankingAccountTest extends TestCase
                 'url'     => '/banking_accounts/' . $bankingAccount['id'],
                 'method'  => 'PATCH',
                 'content' => [
-                    RZP\Models\BankingAccount\Entity::STATUS => $finalStatus
+                    RZP\Models\BankingAccount\Entity::STATUS     => $finalStatus,
                 ]
             ],
             'response' => [
                 'content' => [
-                    'merchant_id' => $merchantDetail->merchant['id'],
-                    RZP\Models\BankingAccount\Entity::STATUS => $finalStatus
+                    'merchant_id'                                => $merchantDetail->merchant['id'],
+                    RZP\Models\BankingAccount\Entity::STATUS     => $finalStatus,
                 ],
             ],
         ];
+
+        if (empty($finalSubStatus) === false)
+        {
+            $dataToReplace['request']['content'][RZP\Models\BankingAccount\Entity::SUB_STATUS] = $finalSubStatus;
+            $dataToReplace['response']['content'][RZP\Models\BankingAccount\Entity::SUB_STATUS] = $finalSubStatus;
+        }
 
         $this->ba->adminAuth();
 
         $this->fixtures->edit('banking_account',
             $bankingAccount['id'],
             [
-                'status' => $initialStatus,
+                'status'     => $initialStatus,
+                'sub_status' => $initialSubStatus
             ]);
 
         $this->startTest($dataToReplace);
 
         $updatedBankingAccount = $this->getDbEntityById('banking_account', $bankingAccount['id']);
 
-        $mailableClass = RZP\Mail\BankingAccount\StatusNotifications\Factory::getMailer($updatedBankingAccount);
+        $bankingAccountStateUpdate = $this->getDbLastEntity('banking_account_state');
 
-        Mail::assertQueued(get_class($mailableClass));
+        $this->assertEquals($bankingAccount['id'], $bankingAccountStateUpdate->bankingAccount->getPublicId());
+
+        $this->assertEquals($finalStatus, $bankingAccountStateUpdate['status']);
+
+        $this->assertEquals($finalSubStatus, $bankingAccountStateUpdate['sub_status']);
+
+        if (($finalStatus !== $initialStatus)
+            and (in_array($finalStatus, [Status::INITIATED, Status::PICKED]) === false))
+        {
+            $mailableClass = RZP\Mail\BankingAccount\StatusNotifications\Factory::getMailer($updatedBankingAccount);
+
+            Mail::assertQueued(get_class($mailableClass));
+        }
+        else
+        {
+            Mail::assertNothingSent();
+        }
     }
 
     public function testUpdateBankingAccountStatusProcessingToProcessed()
@@ -767,6 +825,44 @@ class BankingAccountTest extends TestCase
             \RZP\Models\BankingAccount\Status::CANCELLED,
             \RZP\Models\BankingAccount\Status::CREATED);
 
+    }
+
+    public function testUpdateBankingAccountSubStatus()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            \RZP\Models\BankingAccount\Status::INITIATED,
+            \RZP\Models\BankingAccount\Status::INITIATED,
+            null,
+            \RZP\Models\BankingAccount\Status::MERCHANT_NOT_AVAILABLE);
+    }
+
+    public function testUpdateBankingAccountStatusWithSubStatus()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            \RZP\Models\BankingAccount\Status::PICKED,
+            \RZP\Models\BankingAccount\Status::INITIATED,
+            null,
+            \RZP\Models\BankingAccount\Status::MERCHANT_NOT_AVAILABLE);
+    }
+
+    public function testUpdateBankingAccountStatusWithInvalidSubStatus()
+    {
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            \RZP\Models\BankingAccount\Status::INITIATED,
+            \RZP\Models\BankingAccount\Status::PROCESSING,
+            null,
+            \RZP\Models\BankingAccount\Status::MERCHANT_NOT_AVAILABLE);
+    }
+
+    public function testUpdateBankingAccountStatusWithNoneSubStatus()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            \RZP\Models\BankingAccount\Status::PICKED,
+            \RZP\Models\BankingAccount\Status::INITIATED,
+            \RZP\Models\BankingAccount\Status::MERCHANT_NOT_AVAILABLE,
+            Status::NONE);
     }
 
     public function testUpdateBankingAccountStatusAsProcessed()
@@ -958,11 +1054,13 @@ class BankingAccountTest extends TestCase
         $this->assertEquals(RZP\Models\BankingAccount\Status::INITIATED, $bankingAccount->getStatus());
     }
 
+
+
     protected function createBankingAccount(array $attributes = [])
     {
         $data = [
             Entity::PINCODE => '560030',
-            Entity::CHANNEL => 'rbl'
+            Entity::CHANNEL => 'rbl',
         ];
 
         $data = array_merge($data, $attributes);
@@ -1777,11 +1875,21 @@ class BankingAccountTest extends TestCase
 
     }
 
-    public function testCreateActivationDetail(array $input = null)
+    public function testCreateActivationDetail(array $input = null, RZP\Models\BankingAccount\Entity $bankingAccount=null)
     {
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
-        $bankingAccount = $this->createBankingAccount();
+        if ($bankingAccount === null)
+        {
+            $bankingAccount = $this->createBankingAccount();
+
+            $bankingAccountId = $bankingAccount['id'];
+        }
+        else
+        {
+            $bankingAccountId = $bankingAccount->getPublicId();
+        }
+
 
         $comment = "Sample comment";
 
@@ -1789,7 +1897,7 @@ class BankingAccountTest extends TestCase
 
         $dataToReplace  = [
             'request' => [
-                'url'     => '/banking_accounts/activation/' . $bankingAccount['id'] . '/details',
+                'url'     => '/banking_accounts/activation/' . $bankingAccountId . '/details',
                 'method'  => 'POST',
                 'content' => [
                     'sales_poc_id' => $adminId,
@@ -1807,7 +1915,7 @@ class BankingAccountTest extends TestCase
 
         $this->startTest($dataToReplace);
 
-        $bankingAccountId  = str_replace("bacc_", "", $bankingAccount['id']);
+        $bankingAccountId  = str_replace("bacc_", "", $bankingAccountId);
 
         $commentEntity = $this->getDbEntity('banking_account_comment', [
             'banking_account_id' => $bankingAccountId
@@ -1828,9 +1936,13 @@ class BankingAccountTest extends TestCase
         return $bankingAccount;
     }
 
-    public function testCreateBankingAccountActivationComment()
+    public function testCreateBankingAccountActivationComment(array $bankingAccount = null, array $comment = null)
     {
-        $bankingAccount = $this->createBankingAccount();
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        if ($bankingAccount === null){
+            $bankingAccount = $this->createBankingAccount();
+        }
 
         $dataToReplace = [
             'request'  => [
@@ -1838,6 +1950,12 @@ class BankingAccountTest extends TestCase
                 'method'  => 'POST',
             ],
         ];
+
+        if ($comment !== null)
+        {
+            $dataToReplace['request']['content'] = $comment;
+            $dataToReplace['response']['content'] = $comment;
+        }
 
         $this->ba->adminAuth();
 
@@ -1869,6 +1987,10 @@ class BankingAccountTest extends TestCase
 
         $bankingAccount = $this->createBankingAccount();
 
+        $bankingAccountEntity = $this->getDbLastEntity('banking_account');
+
+        $this->testCreateActivationDetail(null, $bankingAccountEntity);
+
         $admin = $this->getDbLastEntity('admin');
 
         $comment = 'this is a comment from Ops team';
@@ -1894,17 +2016,28 @@ class BankingAccountTest extends TestCase
         return $bankingAccount;
     }
 
-    public function testCreateBankingAccountActivationCommentAndUpdateStatusViaBatch(string $comment = null, string $status = null)
+    public function prepareActivationDetail(array $input = null)
+    {
+        $bankingAccountEntity = $this->getDbLastEntity('banking_account');
+
+        $this->testCreateActivationDetail($input, $bankingAccountEntity);
+    }
+
+    public function testCreateBankingAccountActivationCommentAndUpdateStatusViaBatch(string $comment = null, string $status = null, string $subStatus = null)
     {
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
         $bankingAccount = $this->createBankingAccount();
 
+        $this->prepareActivationDetail();
+
         $admin = $this->getDbLastEntity('admin');
 
         $comment = ($comment !== null) ? $comment: 'this is a comment from Ops team';
 
-        $status = ($status !== null) ? $status: 'Razorpay Processing';
+        $status = ($status !== null) ? $status: 'RazorpayProcessing';
+
+        $subStatus = ($subStatus !== null) ? $subStatus: '';
 
         $dataToReplace = [
             'request'  => [
@@ -1912,10 +2045,13 @@ class BankingAccountTest extends TestCase
                     'bank_reference_number' => $bankingAccount['bank_reference_number'],
                     'admin_id'          => $admin['id'],
                     'comment'           => $comment,
-                    'status'            => $status
+                    'status'            => $status,
+                    'sub_status'        => $subStatus,
                 ]
             ],
         ];
+
+        $bankingAccountOld = $this->getDbLastEntity('banking_account');
 
         $this->ba->batchAuth();
 
@@ -1925,7 +2061,7 @@ class BankingAccountTest extends TestCase
 
         if ($comment === '')
         {
-            $this->assertNull($bankingAccountComment);
+            $this->assertNotEquals($comment, $bankingAccountComment->comment);
         }
         else
         {
@@ -1936,7 +2072,7 @@ class BankingAccountTest extends TestCase
 
         if ($status === '')
         {
-            $expectedStatus = $bankingAccount['status'];
+            $expectedStatus = $bankingAccountOld['status'];
         }
         else
         {
@@ -1945,12 +2081,23 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals($expectedStatus, $bankingAccountUpdated->getStatus());
 
+        if ($subStatus === '')
+        {
+            $expectedSubStatus = $bankingAccountOld['sub_status'];
+        }
+        else
+        {
+            $expectedSubStatus = Status::transformSubStatusFromExternalToInternal($subStatus);
+        }
+
+        $this->assertEquals($expectedSubStatus, $bankingAccountUpdated->getSubStatus());
+
         return $bankingAccount;
     }
 
     public function testUpdateStatusWithEmptyCommentViaBatch()
     {
-        $this->testCreateBankingAccountActivationCommentAndUpdateStatusViaBatch('','Razorpay Processing');
+        $this->testCreateBankingAccountActivationCommentAndUpdateStatusViaBatch('','RazorpayProcessing');
     }
 
     public function testCreateBankingAccountCommentWithEmptyStatusViaBatch()
@@ -1958,12 +2105,22 @@ class BankingAccountTest extends TestCase
         $this->testCreateBankingAccountActivationCommentAndUpdateStatusViaBatch('Sample comment','');
     }
 
+    public function testCreateBankingAccountCommentWithSubStatusViaBatch()
+    {
+        $this->testCreateBankingAccountActivationCommentAndUpdateStatusViaBatch('Sample comment','RazorpayProcessing', 'Merchant is preparing Docs');
+    }
+
+    public function testCreateBankingAccountCommentWithNoneSubStatusViaBatch()
+    {
+        $this->testCreateBankingAccountActivationCommentAndUpdateStatusViaBatch('Sample comment','RazorpayProcessing', 'None');
+    }
+
     public function testCreateBankingAccountCommentWithForbiddenStatusChangeViaBatch()
     {
         // Application Received (initial state) -> Bank Processing is not permitted
-        $this->expectException(BadRequestValidationFailureException::class);
+        $this->expectException(\RZP\Exception\BadRequestException::class);
 
-        $this->testCreateBankingAccountActivationCommentAndUpdateStatusViaBatch('Sample comment','Bank Processing');
+        $this->testCreateBankingAccountActivationCommentAndUpdateStatusViaBatch('Sample comment','BankProcessing');
     }
 
     public function testGetBankingAccountActivationComment()
@@ -1980,5 +2137,179 @@ class BankingAccountTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest($dataToReplace);
+    }
+
+    public function testResolveBankingAccountActivationComment(){
+        $this->testCreateBankingAccountActivationComment();
+
+        $comment = $this->getDbLastEntity('banking_account_comment');
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/activation/comments/' . $comment->getId(),
+                'content' => [
+                    'type' => 'external_resolved'
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'type' => 'external_resolved'
+                ]
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testCreateBankingAccountCreatesAssignee()
+    {
+        $this->testCreateBankingAccountWithActivationDetail();
+
+        $bankingAccountActivationDetails = $this->getDbLastEntity('banking_account_activation_detail');
+
+        $this->assertEquals('ops', $bankingAccountActivationDetails[ActivationDetail\Entity::ASSIGNEE_TEAM]);
+    }
+
+    public function testUpdateBankingAccountAssignee(array $content = null)
+    {
+        $bankingAccount = $this->testCreateBankingAccountWithActivationDetail();
+
+        if ($content === null)
+        {
+            $content = [
+                'activation_detail' => [
+                    'assignee_team' => 'sales',
+                    'comment' => [
+                        'comment' => 'sample comment while changing assignee',
+                        'source_team' => 'ops',
+                        'source_team_type' => 'internal',
+                        'type' => 'internal',
+                        'added_at' => 1597217557
+                    ]
+                ]
+            ];
+        }
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/' . $bankingAccount->getPublicId(),
+                'method'  => 'PATCH',
+                'content' => $content
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccountActivationDetails = $this->getDbLastEntity('banking_account_activation_detail');
+
+        $this->assertEquals($content['activation_detail']['assignee_team'], $bankingAccountActivationDetails[ActivationDetail\Entity::ASSIGNEE_TEAM]);
+
+        return $bankingAccount;
+    }
+
+    public function testUpdateBankingAccountAssigneeWithoutCommentFails()
+    {
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->testUpdateBankingAccountAssignee([
+            'activation_detail' => [
+                'assignee_team' => 'sales',
+            ]
+        ]);
+    }
+
+    public function assertBankingAccountFetchCommon(array $baAttributes, $searchBody)
+    {
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $this->testCreateActivationDetail($baAttributes);
+
+        $this->ba->adminAuth();
+
+        $dataToReplace = [
+            'request' => [
+                'content' => $searchBody
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testBankingAccountFetchForAssignee()
+    {
+        $baAttributes = [];
+
+        $searchBody = [
+            'assignee_team' => 'ops'
+        ];
+
+        $this->assertBankingAccountFetchCommon($baAttributes, $searchBody);
+    }
+
+    public function testBankingAccountFetchForSpoc()
+    {
+        $baAttributes = [
+            'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
+        ];
+
+        $searchBody = [
+            'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN
+        ];
+
+        $this->assertBankingAccountFetchCommon($baAttributes, $searchBody);
+    }
+
+    public function testBankingAccountExternalCommentsMIS()
+    {
+//        Mail::fake();
+//
+//        $this->ba->publicAuth();
+//
+//        $this->makeEmiPaymentOnCard('4111460212312338', 3);
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $bankingAccount = $this->createBankingAccount();
+
+        $this->prepareActivationDetail([
+            'assignee_team' => 'bank'
+        ]);
+
+        $this->testCreateBankingAccountActivationComment($bankingAccount, [
+            'comment' => 'Sample external comment',
+            'type' => 'external'
+        ]);
+
+        $this->testCreateBankingAccountActivationComment($bankingAccount, [
+            'comment' => 'Sample external comment 2',
+            'type' => 'external'
+        ]);
+
+        $this->testCreateBankingAccountActivationComment($bankingAccount, [
+            'comment' => 'Sample internal comment',
+            'type' => 'internal'
+        ]);
+
+        $misProcessor = new MIS\ExternalComments([]);
+
+        $fileInput = $misProcessor->getFileInput();
+
+        // voluntarily mis-aligned to assert new line
+        // TODO: Assert cleanly
+
+        $today = '['. epoch_format(time(), 'M d, Y'). ']';
+        $expectedFileInput = [
+            [
+                'RZP Ref No' => '10000',
+                'Comments'   => $today.' Sample external comment
+'.$today. ' Sample external comment 2
+'
+            ]
+        ];
+
+        $this->assertEquals($expectedFileInput, $fileInput);
     }
 }

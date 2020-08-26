@@ -924,6 +924,11 @@ class Header
     const RZP_REF_NO                = 'RZP Ref No';
     const COMMENT                   = 'Comment';
     const NEW_STATUS                = 'New Status';
+    const NEW_SUBSTATUS             = 'New SubStatus';
+    const NEW_ASSIGNEE              = 'New Assignee';
+    const RM_NAME                   = 'RM Name';
+    const RM_PHONE_NUMBER           = 'RM Phone Number';
+    const ACCOUNT_OPEN_DATE         = 'Account Open Date';
 
 
     // Internal Instrument Request
@@ -2943,15 +2948,12 @@ class Header
                 self::RZP_REF_NO,
                 self::COMMENT,
                 self::NEW_STATUS,
+                self::NEW_SUBSTATUS,
+                self::NEW_ASSIGNEE,
+                self::RM_NAME,
+                self::RM_PHONE_NUMBER,
+                self::ACCOUNT_OPEN_DATE,
             ],
-            self::OUTPUT => [
-                self::RZP_REF_NO,
-                self::COMMENT,
-                self::NEW_STATUS,
-                self::STATUS,
-                self::ERROR_CODE,
-                self::ERROR_DESCRIPTION,
-            ]
         ],
 
 

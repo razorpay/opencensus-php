@@ -194,6 +194,37 @@ class Repository extends Base\Repository
         });
     }
 
+    public function addQueryParamSalesPocId($query, $params)
+    {
+        AdminEntity::verifyIdAndStripSign($params[Entity::SALES_POC_ID]);
+
+        return $query->whereExists(function ($q) use ($params) {
+            $q->select('admin_id')
+                ->from(Table::ADMIN_AUDIT_MAP)
+                ->where('admin_id', '=', $params[Entity::SALES_POC_ID])
+                ->where(Entity::AUDITOR_TYPE,'=','spoc')
+                ->where('entity_type','=','banking_account')
+                ->whereRaw(Table::BANKING_ACCOUNT.'.'.Entity::ID.' = '.Table::ADMIN_AUDIT_MAP.'.'.Entity::ENTITY_ID);
+        });
+    }
+
+    public function addQueryParamAssigneeTeam($query, $params)
+    {
+        $assigneeTeamColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::ASSIGNEE_TEAM);
+
+        $this->joinQueryActivationDetail($query);
+
+        // selecting only banking_accounts columns so that
+        // clashes between field names do not result in corrputed data
+        // For example, both merchants and banking_accounts have field 'channel'
+        $query->select($this->dbColumn('*'));
+
+        // case insensitive exact match for merchant email
+        $assigneeTeam = $params[ActivationDetail\Entity::ASSIGNEE_TEAM];
+
+        $query->where($assigneeTeamColumn, '=', $assigneeTeam);
+    }
+
     /**
      * Filter out Balance Id for balances where gateway balance has updated in last 24 hours
      *

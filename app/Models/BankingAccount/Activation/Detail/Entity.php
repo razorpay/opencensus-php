@@ -77,6 +77,14 @@ class Entity extends Base\PublicEntity
 
     const COMMENT = 'comment';
 
+    // team that is currently assigned to work on this
+    const ASSIGNEE_TEAM = 'assignee_team';
+
+    // Details received from RBL
+    const RM_NAME = 'rm_name';
+    const RM_PHONE_NUMBER = 'rm_phone_number';
+    const ACCOUNT_OPEN_DATE = 'account_open_date';
+
     // relations
     // admin_audit_map is used here
     const SALES_POC_ID = 'sales_poc_id';
@@ -104,8 +112,12 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_TYPE,
         self::IS_DOCUMENTS_WALKTHROUGH_COMPLETE,
         self::COMMENT,
+        self::ASSIGNEE_TEAM,
         self::SALES_TEAM,
         self::SALES_POC_PHONE_NUMBER,
+        self::RM_NAME,
+        self::RM_PHONE_NUMBER,
+        self::ACCOUNT_OPEN_DATE,
     ];
 
     protected $visible = [
@@ -126,7 +138,11 @@ class Entity extends Base\PublicEntity
         self::IS_DOCUMENTS_WALKTHROUGH_COMPLETE,
         self::SALES_TEAM,
         self::SALES_POC_PHONE_NUMBER,
+        self::ASSIGNEE_TEAM,
         self::COMMENT,
+        self::RM_NAME,
+        self::RM_PHONE_NUMBER,
+        self::ACCOUNT_OPEN_DATE,
         self::CREATED_AT,
     ];
 
@@ -148,7 +164,11 @@ class Entity extends Base\PublicEntity
         self::IS_DOCUMENTS_WALKTHROUGH_COMPLETE,
         self::SALES_TEAM,
         self::SALES_POC_PHONE_NUMBER,
+        self::ASSIGNEE_TEAM,
         self::COMMENT,
+        self::RM_NAME,
+        self::RM_PHONE_NUMBER,
+        self::ACCOUNT_OPEN_DATE,
         self::CREATED_AT,
     ];
 
@@ -165,5 +185,10 @@ class Entity extends Base\PublicEntity
     public function bankingAccount()
     {
         return $this->belongsTo(BankingAccount\Entity::class);
+    }
+
+    public function getAssigneeTeam()
+    {
+        return $this->getAttributeValue(self::ASSIGNEE_TEAM);
     }
 }

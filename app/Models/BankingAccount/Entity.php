@@ -37,6 +37,7 @@ class Entity extends Base\PublicEntity
      */
     const PINCODE                           = 'pincode';
     const STATUS                            = 'status';
+    const SUB_STATUS                        = 'sub_status';
     const BANK_INTERNAL_STATUS              = 'bank_internal_status';
     const FTS_FUND_ACCOUNT_ID               = 'fts_fund_account_id';
     const BALANCE_ID                        = 'balance_id';
@@ -125,8 +126,9 @@ class Entity extends Base\PublicEntity
     const SPOCS                              = 'spocs';
     const FEE_RECOVERY_DETAILS               = 'fee_recovery_details';
 
-    // Constants for reviewers() relation
+    // Constants for reviewers() and spocs relation
     const REVIEWER_ID             = 'reviewer_id';
+    const SALES_POC_ID            = 'sales_poc_id';
     const ADMIN_ID                = 'admin_id';
     const BANKING_ACCOUNT_IDS     = 'banking_account_ids';
     const AUDITOR_TYPE            = 'auditor_type';
@@ -141,6 +143,7 @@ class Entity extends Base\PublicEntity
     const MERCHANT_POC_CITY = 'merchant_poc_city';
     const IS_DOCUMENTS_WALKTHROUGH_COMPLETE = 'is_documents_walkthrough_complete';
     const BANK_ACCOUNT_TYPE = 'bank_account_type';
+    const ASSIGNEE_TEAM = 'assignee_team';
 
     // Slack channel for alerts
     const RX_CA_RBL_ALERTS = 'rx_ca_rbl_alerts';
@@ -157,6 +160,7 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_IFSC,
         self::STATUS,
+        self::SUB_STATUS,
         self::PINCODE,
         self::BANK_REFERENCE_NUMBER,
         self::BANK_INTERNAL_STATUS,
@@ -187,6 +191,7 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::STATUS,
+        self::SUB_STATUS,
         self::PINCODE,
         self::CHANNEL,
         self::USERNAME,
@@ -244,6 +249,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::CHANNEL,
         self::STATUS,
+        self::SUB_STATUS,
         self::MERCHANT_ID,
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_IFSC,
@@ -318,6 +324,16 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setSubStatus($substatus)
+    {
+//        // empty strings are converted to NULL.
+//        $substatus = (empty($substatus) === true) ? null : $substatus;
+
+        Status::validateStatusSubstatusMapping($this->getStatus(), $substatus);
+
+        $this->setAttribute(self::SUB_STATUS, $substatus);
+    }
+
     public function setBankReferenceNumber(string $number)
     {
         $this->setAttribute(self::BANK_REFERENCE_NUMBER, $number);
@@ -368,6 +384,11 @@ class Entity extends Base\PublicEntity
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
+    }
+
+    public function getSubStatus()
+    {
+        return $this->getAttribute(self::SUB_STATUS);
     }
 
     public function getBankReferenceNumber()

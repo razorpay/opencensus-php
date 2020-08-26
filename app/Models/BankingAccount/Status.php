@@ -18,15 +18,44 @@ class Status
 
 
     // External Statuses as interpreted by Product
-    const APPLICATION_RECEIVED = 'Application Received';
-    const RAZORPAY_PROCESSING  = 'Razorpay Processing';
-    const SENT_TO_BANK         = 'Sent to Bank';
-    const BANK_PROCESSING      = 'Bank Processing';
-    const CA_OPENED            = 'CA Opened';
-    const MERCHANT_CANCELLED   = 'Merchant Cancelled';
-    const CA_ACTIVATED         = 'CA Activated';
-    const TEMP_UNSERVICEABLE   = 'Temp Unserviceable';
-    const BANK_REJECTED        = 'Bank Rejected';
+
+    const APPLICATION_RECEIVED = 'ApplicationReceived';
+    const RAZORPAY_PROCESSING  = 'RazorpayProcessing';
+    const SENT_TO_BANK         = 'SentToBank';
+    const BANK_PROCESSING      = 'BankProcessing';
+    const CA_OPENED            = 'CAOpened';
+    const MERCHANT_CANCELLED   = 'MerchantCancelled';
+    const CA_ACTIVATED         = 'CAActivated';
+    const TEMP_UNSERVICEABLE   = 'TempUnserviceable';
+    const BANK_REJECTED        = 'BankRejected';
+
+    // Substatuses
+    const MERCHANT_NOT_AVAILABLE = 'merchant_not_available';
+    const MERCHANT_PREPARING_DOCS = 'merchant_preparing_docs';
+    const READY_TO_SEND_TO_BANK = 'ready_to_send_to_bank';
+    const BANK_TO_PICKUP_DOCS = 'bank_to_pickup_docs';
+    const BANK_PICKED_UP_DOCS = 'bank_picked_up_docs';
+    const DISCREPANCY_IN_DOCS = 'discrepancy_in_docs';
+    const BANK_OPENED_ACCOUNT = 'bank_opened_account';
+    const API_ONBOARDING_PENDING = 'api_onboarding_pending';
+    const API_ONBOARDING_INITIATED = 'api_onboarding_initiated';
+    const API_ONBOARDING_IN_PROGRESS = 'api_onboarding_in_progress';
+    const NONE = 'none';
+
+
+    // External Substatuses as inputted by Ops/Sales teams via batch
+    const MERCHANT_NOT_AVAILABLE_EXTERNAL = 'Merchant is not Available';
+    const MERCHANT_PREPARING_DOCS_EXTERNAL = 'Merchant is preparing Docs';
+    const READY_TO_SEND_TO_BANK_EXTRENAL = 'Ready to send to Bank';
+    const BANK_TO_PICKUP_DOCS_EXTERNAL = 'Bank yet to pick up Docs';
+    const BANK_PICKED_UP_DOCS_EXTERNAL = 'Bank has picked up Docs';
+    const DISCREPANCY_IN_DOCS_EXTERNAL = 'Discrepancy in Docs';
+    const BANK_OPENED_ACCOUNT_EXTERNAL = 'Bank Opened Account-Webhook Pending';
+    const API_ONBOARDING_PENDING_EXTERNAL = 'API onboarding is Pending on RZP';
+    const API_ONBOARDING_INITIATED_EXTERNAL = 'API onboarding has been initiated by RZP';
+    const API_ONBOARDING_IN_PROGRESS_EXTERNAL = 'API onboarding in Progress';
+    const NONE_EXTERNAL = 'None';
+
 
     //
     // Account details can be saved only if the status
@@ -122,6 +151,70 @@ class Status
         ],
     ];
 
+    # TODO: Finalize after checking with Product
+    protected static $subStatuses = [
+        self::MERCHANT_NOT_AVAILABLE,
+        self::MERCHANT_PREPARING_DOCS,
+        self::READY_TO_SEND_TO_BANK,
+        self::BANK_TO_PICKUP_DOCS,
+        self::BANK_PICKED_UP_DOCS,
+        self::DISCREPANCY_IN_DOCS,
+        self::BANK_OPENED_ACCOUNT,
+        self::API_ONBOARDING_INITIATED,
+        self::API_ONBOARDING_PENDING,
+        self::API_ONBOARDING_IN_PROGRESS,
+        self::NONE,
+    ];
+
+    protected static $defaultSubStatus = [
+        self::PROCESSED => self::API_ONBOARDING_PENDING
+    ];
+
+    /**
+     * @var array
+     * This contains the allowed set of status<->substatus mappings
+     */
+    public static $statusToSubStatusMap = [
+        self::CREATED => [
+        ],
+        self::PICKED => [
+            self::NONE,
+            self::MERCHANT_NOT_AVAILABLE,
+            self::MERCHANT_PREPARING_DOCS,
+            self::READY_TO_SEND_TO_BANK,
+        ],
+        self::INITIATED => [
+            self::NONE,
+            self::MERCHANT_NOT_AVAILABLE,
+            self::MERCHANT_PREPARING_DOCS,
+            self::BANK_TO_PICKUP_DOCS,
+            self::BANK_PICKED_UP_DOCS,
+        ],
+        self::PROCESSING => [
+            self::DISCREPANCY_IN_DOCS,
+            self::BANK_OPENED_ACCOUNT,
+        ],
+        self::PROCESSED => [
+            // Pending on RZP
+            self::API_ONBOARDING_PENDING,
+            // Initiated by RZP
+            self::API_ONBOARDING_INITIATED,
+            // In progress on Bank
+            self::API_ONBOARDING_IN_PROGRESS,
+            // Sometimes API onboarding related docs are
+            // processed by Bank after opening account.
+            self::DISCREPANCY_IN_DOCS
+        ],
+        self::UNSERVICEABLE => [
+        ],
+
+        self::ACTIVATED => [],
+        self::CANCELLED => [
+        ],
+        self::REJECTED  => [
+        ],
+    ];
+
     public static $internallyEditStatuses = [
         self::CREATED,
         self::PICKED,
@@ -152,19 +245,45 @@ class Status
         self::RAZORPAY_PROCESSING  => self::PICKED,
         self::SENT_TO_BANK         => self::INITIATED,
         self::BANK_PROCESSING      => self::PROCESSING,
+        self::CA_OPENED            => self::PROCESSED,
         self::MERCHANT_CANCELLED   => self::CANCELLED,
         self::TEMP_UNSERVICEABLE   => self::UNSERVICEABLE,
         self::BANK_REJECTED        => self::REJECTED,
     ];
+
+    public static $externalToInternalSubStatusMap = [
+        self::MERCHANT_NOT_AVAILABLE_EXTERNAL => self::MERCHANT_NOT_AVAILABLE,
+        self::MERCHANT_PREPARING_DOCS_EXTERNAL => self::MERCHANT_PREPARING_DOCS,
+        self::READY_TO_SEND_TO_BANK_EXTRENAL => self::READY_TO_SEND_TO_BANK,
+        self::BANK_TO_PICKUP_DOCS_EXTERNAL => self::BANK_TO_PICKUP_DOCS,
+        self::BANK_PICKED_UP_DOCS_EXTERNAL => self::BANK_PICKED_UP_DOCS,
+        self::DISCREPANCY_IN_DOCS_EXTERNAL => self::DISCREPANCY_IN_DOCS,
+        self::BANK_OPENED_ACCOUNT_EXTERNAL => self::BANK_OPENED_ACCOUNT,
+        self::API_ONBOARDING_PENDING_EXTERNAL => self::API_ONBOARDING_PENDING,
+        self::API_ONBOARDING_INITIATED_EXTERNAL => self::API_ONBOARDING_INITIATED,
+        self::API_ONBOARDING_IN_PROGRESS_EXTERNAL => self::API_ONBOARDING_IN_PROGRESS,
+        self::NONE_EXTERNAL => self::NONE
+    ];
+
 
     public static function isValidStatus(string $status = null)
     {
         return in_array($status, self::$statuses);
     }
 
+    public static function isValidSubStatus(string $status = null)
+    {
+        return in_array($status, self::$subStatuses);
+    }
+
     public static function isValidExternalStatus(string $status)
     {
         return in_array($status, array_keys(self::$externalToInternalStatusMap));
+    }
+
+    public static function isValidExternalSubStatus(string $status)
+    {
+        return in_array($status, array_keys(self::$externalToInternalSubStatusMap));
     }
 
     public static function validate(string $status = null)
@@ -177,6 +296,52 @@ class Status
                 [
                     Entity::STATUS => $status
                 ]);
+        }
+    }
+
+    public static function validateSubStatus(string $subStatus = null)
+    {
+        if (self::isValidSubStatus($subStatus) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Not a valid Razorpay Banking SubStatus',
+                Entity::SUB_STATUS,
+                [
+                    Entity::SUB_STATUS => $subStatus
+                ]);
+        }
+    }
+
+    public static function validateStatusSubstatusMapping(string $status, $subStatus)
+    {
+        if ($subStatus === null)
+        {
+            return;
+        }
+
+        $allowedSubStatuses = self::$statusToSubStatusMap[$status];
+
+        if (in_array($subStatus, $allowedSubStatuses) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Not a valid Substatus '. $subStatus . ' for status ' . $status,
+                Entity::SUB_STATUS,
+                [
+                    Entity::STATUS     => $status,
+                    Entity::SUB_STATUS => $subStatus
+                ]);
+        }
+    }
+
+    public static function getDetaultSubStatus(string $status)
+    {
+        if (in_array($status, self::$defaultSubStatus) === true)
+        {
+            return self::$defaultSubStatus[$status];
+        }
+        else
+        {
+            return null;
         }
     }
 
@@ -193,11 +358,31 @@ class Status
         }
     }
 
+    public static function validateExternalSubStatus(string $subStatus)
+    {
+        if (self::isValidExternalSubStatus($subStatus) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Not a valid Razorpay Banking External subStatus',
+                Entity::STATUS,
+                [
+                    Entity::STATUS => $subStatus
+                ]);
+        }
+    }
+
     public static function transformFromExternalToInternal(string $status)
     {
         self::validateExternalStatus($status);
 
         return self::$externalToInternalStatusMap[$status];
+    }
+
+    public static function transformSubStatusFromExternalToInternal(string $subStatus)
+    {
+        self::validateExternalSubStatus($subStatus);
+
+        return self::$externalToInternalSubStatusMap[$subStatus];
     }
 
     public static function validatePreviousToCurrentMapping(string $previousStatus, string $currentStatus)

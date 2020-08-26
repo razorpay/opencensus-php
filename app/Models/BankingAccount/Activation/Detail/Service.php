@@ -5,6 +5,7 @@ namespace RZP\Models\BankingAccount\Activation\Detail;
 
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
+use RZP\Models\Admin\Admin;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankingAccount;
 use RZP\Models\BankingAccount\Activation\Comment;
@@ -45,19 +46,65 @@ class Service extends Base\Service
         return $activationDetail->toArrayPublic();
     }
 
-    public function updateForBankingAccount(string $bankingAccountId, array $input)
+    protected function extractCommentInput(array & $input)
+    {
+        if (isset($input['comment']) === true)
+        {
+            return array_pull($input, 'comment');
+        }
+
+        return null;
+    }
+
+
+    public function updateForBankingAccount(string $bankingAccountId, array $input, bool $isAutomatedUpdate = false)
     {
         /** @var BankingAccount\Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
 
-        $activationDetail = $this->repo->banking_account_activation_detail->getFromBankingAccountId($bankingAccount->getId());
+        // while updating, the comment field of activationDetailInput is not to be updated,
+        // because of the way we handle comments (only for create, it is accepted, and is present
+        // in the MIS. not accepted while updating)
+        // Once external/internal type is introduced,
+        // comment field of activationDetail needs to get deprecated altogether.
+        // This is available here only to handle updates in the following flows
+        // - change in assignee team requires a comment
+        // - update via batch service.
+        $commentInput = $this->extractCommentInput($input);
 
-        $updatedActivationDetail = $this->repo->transaction(function() use ($bankingAccount, $activationDetail, $input)
+        $salesPocId = $input[Entity::SALES_POC_ID] ?? null;
+
+        $activationDetail = $this->repo->banking_account_activation_detail->findByBankingAccountId($bankingAccount->getId());
+
+        if ($activationDetail === null)
+        {
+            // has not been created yet. Create an entry with NULLs
+            $activationDetail = $this->core->create([Entity::BANKING_ACCOUNT_ID => $bankingAccount->getId()], true);
+        }
+
+        if ($isAutomatedUpdate === false)
+        {
+            (new Validator())->validateCommentOnAssigneeTeamChange($activationDetail, $input, $commentInput);
+        }
+
+        $updatedActivationDetail = $this->repo->transaction(function() use ($bankingAccount, $activationDetail, $input, $commentInput, $salesPocId)
         {
             // Adding Sales POC to admin_audit_map table
-            $this->addSalesPOCToBankingAccountIfApplicable($bankingAccount, $input);
+            if (empty($salesPocId) === false)
+            {
+                $this->addSalesPOCToBankingAccountIfApplicable($bankingAccount, $input);
+            }
 
-            return $this->core->update($activationDetail, $input);
+            $activationDetail = $this->core->update($activationDetail, $input);
+
+            if (empty($commentInput) === false)
+            {
+                $admin = $this->app['basicauth']->getAdmin() ?? (($this->app->bound('batchAdmin') === true)? $this->app['batchAdmin'] : null);
+
+                (new Comment\Core())->create($bankingAccount, $admin, $commentInput);
+            }
+
+            return $activationDetail;
         });
 
         return $updatedActivationDetail->toArrayPublic();
@@ -94,6 +141,7 @@ class Service extends Base\Service
                 Comment\Entity::COMMENT => $input[Comment\Entity::COMMENT],
                 Comment\Entity::SOURCE_TEAM_TYPE => 'internal',
                 Comment\Entity::SOURCE_TEAM => 'sales',
+                Comment\Entity::TYPE => 'internal', // TODO: check if this needs to be external
                 Comment\Entity::ADDED_AT => time()
             ]);
         }

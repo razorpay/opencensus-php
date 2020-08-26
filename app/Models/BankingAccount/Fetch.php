@@ -11,6 +11,7 @@ class Fetch extends BaseFetch
         self::DEFAULTS => [
             Entity::MERCHANT_ID           => 'sometimes|unsigned_id',
             Entity::STATUS                => 'sometimes|string|custom',
+            Entity::SUB_STATUS            => 'sometimes|string|custom',
             Entity::ACCOUNT_NUMBER        => 'sometimes|alpha_num|max:40',
             Entity::CHANNEL               => 'sometimes|string|custom',
             Entity::BANK_INTERNAL_STATUS  => 'sometimes|string',
@@ -22,20 +23,21 @@ class Fetch extends BaseFetch
         ],
         AuthType::PRIVILEGE_AUTH => [
             self::EXPAND_EACH             => 'filled|string|in:merchant,merchant.merchantDetail,banking_account_details,reviewers,spocs,banking_account_activation_details',
-        ],
-        AuthType::ADMIN_AUTH => [
             Entity::MERCHANT_EMAIL                      => 'sometimes|string',
             Entity::MERCHANT_BUSINESS_NAME              => 'sometimes|string',
             Entity::MERCHANT_POC_CITY                   => 'sometimes|string',
             Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE   => 'sometimes|boolean',
             Entity::BANK_ACCOUNT_TYPE                   => 'sometimes|string',
-        ]
+            Entity::SALES_POC_ID                        => 'sometimes|string',
+            Entity::ASSIGNEE_TEAM                       => 'sometimes|string',
+        ],
     ];
 
     const ACCESSES = [
         AuthType::PRIVILEGE_AUTH => [
             Entity::MERCHANT_ID,
             Entity::STATUS,
+            Entity::SUB_STATUS,
             Entity::ACCOUNT_NUMBER,
             Entity::CHANNEL,
             Entity::BANK_INTERNAL_STATUS,
@@ -44,16 +46,21 @@ class Fetch extends BaseFetch
             Entity::FTS_FUND_ACCOUNT_ID,
             Entity::ACCOUNT_TYPE ,
             Entity::REVIEWER_ID,
-            self::EXPAND_EACH,
-        ],
-        AuthType::ADMIN_AUTH => [
             Entity::MERCHANT_EMAIL,
             Entity::MERCHANT_BUSINESS_NAME,
             Entity::MERCHANT_POC_CITY,
             Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE,
             Entity::BANK_ACCOUNT_TYPE,
-        ]
+            Entity::SALES_POC_ID,
+            Entity::ASSIGNEE_TEAM,
+            self::EXPAND_EACH,
+        ],
     ];
+
+    public function validateSubstatus(string $attribute, string $subStatus)
+    {
+        Status::validateSubStatus($subStatus);
+    }
 
     public function validateStatus(string $attribute, string $status)
     {

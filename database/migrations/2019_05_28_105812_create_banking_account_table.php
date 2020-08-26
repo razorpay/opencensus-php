@@ -33,6 +33,9 @@ class CreateBankingAccountTable extends Migration
             $table->string(Entity::STATUS, 255)
                   ->nullable();
 
+            $table->string(Entity::SUB_STATUS, 64)
+                  ->nullable();
+
             $table->string(Entity::BANK_INTERNAL_STATUS, 255)
                   ->nullable();
 

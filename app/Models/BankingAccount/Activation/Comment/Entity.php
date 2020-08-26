@@ -21,6 +21,10 @@ class Entity extends Base\PublicEntity
 
     const SOURCE_TEAM = 'source_team'; // Sales/Ops/Product/etc
 
+    // internal/external denoting whether the comment
+    // is to be sent to an external party(bank, for example)
+    const TYPE = 'type';
+
     /*
     This is needed because we want to capture the exact time at which
     we received the comment (say from bank). Sometimes we receive updates
@@ -55,6 +59,7 @@ class Entity extends Base\PublicEntity
         self::BANKING_ACCOUNT_ID,
         self::COMMENT,
         self::SOURCE_TEAM_TYPE,
+        self::TYPE,
         self::SOURCE_TEAM,
         self::ADDED_AT,
     ];
@@ -66,6 +71,7 @@ class Entity extends Base\PublicEntity
         self::COMMENT,
         self::SOURCE_TEAM_TYPE,
         self::SOURCE_TEAM,
+        self::TYPE,
         self::ADDED_AT,
         self::CREATED_AT,
         self::ADMIN
@@ -78,6 +84,7 @@ class Entity extends Base\PublicEntity
         self::COMMENT,
         self::SOURCE_TEAM_TYPE,
         self::SOURCE_TEAM,
+        self::TYPE,
         self::ADDED_AT,
         self::CREATED_AT,
         self::ADMIN
@@ -99,4 +106,8 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Admin\Entity::class);
     }
 
+    public function getComment()
+    {
+        return $this->getAttribute(self::COMMENT);
+    }
 }

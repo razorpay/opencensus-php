@@ -97,6 +97,15 @@ class BankingAccountController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function patchUpdateActivationComment(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::BANKING_ACCOUNT_COMMENT)->update($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function patchActivationDetail(string $bankingAccountId)
     {
         $response = $this->service(E::BANKING_ACCOUNT_ACTIVATION_DETAIL)->updateForBankingAccount($bankingAccountId, $this->input);

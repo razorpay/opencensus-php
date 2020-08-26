@@ -95,7 +95,11 @@ class Processor extends BankingAccount\Gateway\Processor
 
         $attributes[BankingAccount\Entity::STATUS] = BankingAccount\Status::PROCESSED;
 
+        $attributes[BankingAccount\Entity::SUB_STATUS] = BankingAccount\Status::API_ONBOARDING_PENDING;
+
         $attributes[BankingAccount\Entity::BANK_INTERNAL_STATUS] = Status::CLOSED;
+
+        $attributes['activation_detail'][BankingAccount\Activation\Detail\Entity::ASSIGNEE_TEAM] = 'ops';
 
         return $attributes;
     }

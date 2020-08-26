@@ -13,7 +13,7 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    public function create(array $input): Entity
+    public function create(array $input, bool $allowNulls = false): Entity
     {
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_ACTIVATION_DETAIL_CREATE,
@@ -26,7 +26,13 @@ class Core extends Base\Core
 
         $activationDetail->build($input);
 
-        (new Validator())->validateAccountTypeForChannel($activationDetail->bankingAccount, $input);
+        $validator = new Validator();
+
+        $inputValidationOp = ($allowNulls === true) ? 'create_null' : 'create_normal';
+
+        $validator->validateInput($inputValidationOp, $input);
+
+        $validator->validateAccountTypeForChannel($activationDetail->bankingAccount, $input);
 
         $this->repo->saveOrFail($activationDetail);
 
@@ -49,6 +55,10 @@ class Core extends Base\Core
         $validator->validateAccountTypeForChannel($activationDetail->bankingAccount, $input);
 
         $activationDetail->edit($input);
+
+        $admin = $this->app['basicauth']->getAdmin() ?? (($this->app->bound('batchAdmin') === true)? $this->app['batchAdmin'] : null);
+
+        (new Validator())->validateUpdatePermissions($activationDetail, $admin);
 
         $this->repo->saveOrFail($activationDetail);
 

@@ -13,6 +13,8 @@ class Entity extends Base\PublicEntity
 
     const STATUS = 'status';
 
+    const SUB_STATUS = 'sub_status';
+
     const BANK_STATUS = 'bank_status';
 
     const ADMIN_ID = 'admin_id';
@@ -26,6 +28,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::ID,
         self::STATUS,
+        self::SUB_STATUS,
         self::BANK_STATUS,
         self::MERCHANT_ID,
         self::ADMIN_ID,
@@ -35,6 +38,7 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::STATUS,
+        self::SUB_STATUS,
         self::BANK_STATUS,
         self::MERCHANT_ID,
         self::ADMIN_ID,
@@ -45,6 +49,7 @@ class Entity extends Base\PublicEntity
     public $public = [
         self::ID,
         self::STATUS,
+        self::SUB_STATUS,
         self::BANK_STATUS,
         self::MERCHANT_ID,
         self::ADMIN_ID,

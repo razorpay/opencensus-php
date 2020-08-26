@@ -4,15 +4,71 @@
 namespace RZP\Models\BankingAccount\Activation\Comment;
 
 use RZP\Base;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
+use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Models\Admin\Permission;
 
 class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::BANKING_ACCOUNT_ID  => 'required|string|size:14',
         Entity::ADMIN_ID            => 'required|string|size:14',
-        Entity::COMMENT             => 'required|string',
+        Entity::COMMENT             => 'required|filled|string',
         Entity::SOURCE_TEAM_TYPE    => 'required|max:255|in:internal,external',
         Entity::SOURCE_TEAM         => 'required|max:255|in:product,sales,ops,bank',
+        Entity::TYPE                => 'required|max:64|in:internal,external',
         Entity::ADDED_AT            => 'required|epoch'
     ];
+
+    protected static $editRules = [
+        Entity::COMMENT             => 'sometimes|string',
+        Entity::SOURCE_TEAM_TYPE    => 'sometimes|max:255|in:internal,external',
+        Entity::SOURCE_TEAM         => 'sometimes|max:255|in:product,sales,ops,bank',
+        Entity::TYPE                => 'sometimes|max:64|in:internal,external,external_resolved',
+        Entity::ADDED_AT            => 'sometimes|epoch'
+    ];
+
+    public static $selectivelyDisallowedFieldCreates = [
+        Entity::TYPE => 'external'
+    ];
+
+    public function validateCreatePermissions(Entity $bankingAccountComment, $admin)
+    {
+        $adminPermissions = $admin->getPermissionsList();
+
+        $dirtyUpdates = $bankingAccountComment->getDirty();
+
+        if (empty($dirtyUpdates) === false)
+        {
+            if (in_array(Permission\Name::BANKING_UPDATE_ACCOUNT, $adminPermissions) === true)
+            {
+                // this permission is okay for all updates.
+                return;
+            }
+            else
+            {
+                foreach (self::$selectivelyDisallowedFieldCreates as $field => $value)
+                {
+                    if (array_key_exists($field, $dirtyUpdates) and ($dirtyUpdates[$field] === $value))
+                    {
+                        throw new BadRequestException(
+                            ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+                            null,
+                            [
+                                'admin_id'             => $admin->getPublicId(),
+                                'required_permissions' => [Permission\Name::BANKING_UPDATE_ACCOUNT],
+                                'update'               => [
+                                    'field' => $field,
+                                    'value' => $value
+                                ]
+                            ]);
+                    }
+                }
+
+            }
+        }
+
+
+    }
 }

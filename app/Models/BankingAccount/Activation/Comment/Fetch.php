@@ -15,6 +15,7 @@ class Fetch extends BaseFetch
             Entity::ADMIN_ID              => 'sometimes|unsigned_id',
             Entity::SOURCE_TEAM_TYPE      => 'sometimes|string',
             Entity::SOURCE_TEAM           => 'sometimes|string',
+            Entity::TYPE                  => 'sometimes|string',
         ],
     ];
 
@@ -24,6 +25,7 @@ class Fetch extends BaseFetch
             Entity::ADMIN_ID,
             Entity::SOURCE_TEAM_TYPE,
             Entity::SOURCE_TEAM,
+            Entity::TYPE,
             self::EXPAND_EACH,
         ],
     ];

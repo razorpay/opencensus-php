@@ -83,6 +83,45 @@ return [
         ],
     ],
 
+    'testCreateBankingAccountWithActivationDetailFails' => [
+        'request'  => [
+            'url'     => '/banking_accounts_admin',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [
+                'channel' => 'rbl',
+                'pincode' => '560034',
+                'activation_detail' => [
+//                    'merchant_poc_name' => 'Sample Name',
+//                    'merchant_poc_designation' => 'Financial Consultant',
+                    'merchant_poc_email' => 'sample@sample.com',
+                    'merchant_poc_phone_number' => '9876556789',
+                    'merchant_documents_address' => 'x, y, z',
+                    'initial_cheque_value' => 100,
+                    'account_type' => 'insignia',
+                    'merchant_city' => 'Bangalore',
+                    'comment' => 'abc',
+                    'is_documents_walkthrough_complete' => true,
+                    'merchant_region' => 'South',
+                    'expected_monthly_gmv' => 10000,
+                    'average_monthly_balance' => 0,
+                    'business_category' => 'partnership',
+                    'sales_team' => 'sme',
+                    'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
+                    'sales_poc_phone_number' => '1234554321'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel'     => 'rbl',
+                'status'      => 'created'
+            ],
+        ],
+    ],
+
     'testCreateBankingAccountWithUnserviceablePincode' => [
         'request'  => [
             'url'     => '/banking_accounts',
@@ -1236,7 +1275,8 @@ return [
                 'business_category' => 'partnership',
                 'sales_team' => 'sme',
                 'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
-                'sales_poc_phone_number' => '1234554321'
+                'sales_poc_phone_number' => '1234554321',
+                'assignee_team' => 'ops'
                 ],
         ],
         'response' => [
@@ -1254,7 +1294,8 @@ return [
                 'comment'           => 'this is a comment from Ops team',
                 'source_team_type'  => 'internal',
                 'source_team'       => 'ops',
-                'added_at'          => '1593567500'
+                'added_at'          => '1593567500',
+                'type'              => 'external'
             ],
         ],
         'response' => [
@@ -1360,4 +1401,59 @@ return [
             ]
         ],
     ],
+
+    'testUpdateBankingAccountAssignee' => [
+        'request'  => [
+            'url'     => '/banking_account',
+            'method'  => 'PATCH',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'                  => '10000000000000',
+                'channel'                      => 'rbl',
+            ],
+        ],
+    ],
+
+    'assertBankingAccountFetchCommon' => [
+        'request' => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+            ],
+        ],
+    ],
+
+    'testResolveBankingAccountActivationComment' => [
+        'request' => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'patch',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testBankingAccountExternalCommentsMIS' => [
+        'request' => [
+            'url'     => '/banking_accounts/activation/mis/download',
+            'method'  => 'GET',
+            'content' => [
+                'mis_type' => 'external_comments',
+                'assignee_team' => 'bank'
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
+    ]
 ];

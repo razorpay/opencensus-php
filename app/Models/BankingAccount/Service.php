@@ -12,6 +12,8 @@ use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Permission;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Activation\Comment;
+use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
+
 
 class Service extends Base\Service
 {
@@ -45,7 +47,7 @@ class Service extends Base\Service
      * @param Admin\Entity $admin
      * @return array
      */
-    public function update(string $id, array $input, Admin\Entity $admin = null): array
+    public function update(string $id, array $input): array
     {
         /** @var Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicId($id);
@@ -64,14 +66,7 @@ class Service extends Base\Service
 
         (new Validator)->setStrictFalse()->validateInput(Validator::INTERNAL_EDIT, $input);
 
-        // $admin can be passed if called by updateDetailsFromBatchService
-        // Ideally, admin should be set in the middleware, but
-        // it's currently not done for requests coming from batch service.
-        // TODO: handle correctly in middleware layer.
-        if ($admin === null)
-        {
-            $admin = $this->app['basicauth']->getAdmin();
-        }
+        $admin = $this->app['basicauth']->getAdmin() ?? (($this->app->bound('batchAdmin') === true)? $this->app['batchAdmin'] : null);
 
         $account = $this->core->updateBankingAccount($bankingAccount, $input, $admin);
 
@@ -212,36 +207,76 @@ class Service extends Base\Service
         return (new Core)->bulkAssignReviewer($reviewerId, $bankingAccountIds);
     }
 
-
-    public function prepareInputForCommentCreate(array $input)
+    public function prepareInputForUpdate(array $input)
     {
-        $requiredKeys = [
+        $requiredKeysForUpdateInput = [
+            Entity::STATUS,
+            Entity::SUB_STATUS
+        ];
+
+        $requiredKeysForActivationDetailInput = [
+            ActivationDetail\Entity::ASSIGNEE_TEAM,
+            ActivationDetail\Entity::RM_NAME,
+            ActivationDetail\Entity::RM_PHONE_NUMBER,
+            ActivationDetail\Entity::ACCOUNT_OPEN_DATE,
+        ];
+
+        $requiredKeysforCommentInput = [
             Comment\Entity::COMMENT,
             Comment\Entity::SOURCE_TEAM_TYPE,
             Comment\Entity::SOURCE_TEAM,
             Comment\Entity::ADDED_AT
         ];
 
-        $commentInput = array_intersect_key($input, array_fill_keys($requiredKeys, ''));
+        $commentInput = array_intersect_key($input, array_fill_keys($requiredKeysforCommentInput, ''));
 
-        $commentInput[Comment\Entity::COMMENT] = trim($commentInput[Comment\Entity::COMMENT]);
+        $updateInput = array_intersect_key($input, array_fill_keys($requiredKeysForUpdateInput, ''));
 
-        return $commentInput;
-    }
+        $activationDetailInput = array_intersect_key($input, array_fill_keys($requiredKeysForActivationDetailInput, ''));
 
-    public function prepareInputForUpdate(array $input)
-    {
-        $requiredKeys = [
-            Entity::STATUS
-        ];
+        $updateInput['activation_detail'] = $activationDetailInput;
 
-        $updateInput = array_intersect_key($input, array_fill_keys($requiredKeys, ''));
+        if (empty($commentInput[Comment\Entity::COMMENT]) === false)
+        {
+            // hard coding to internal as we don't expect external comments to
+            // be made via batch
+            $commentInput[Comment\Entity::TYPE] = 'internal';
 
-        if (empty($updateInput[Entity::STATUS]) === false)
+            $updateInput['activation_detail']['comment'] = $commentInput;
+        }
+
+        // removing whitespaces
+        array_walk_recursive($updateInput, 'trim');
+
+        // empty string indicates nothing to update. Therefore, excluding
+        array_unset_recursive($updateInput, '');
+
+        // Convert free text Status string to internally accepted status keys.
+        if (isset($updateInput[Entity::STATUS]) === true)
         {
             $updateInput[Entity::STATUS] = trim($updateInput[Entity::STATUS]);
 
             $updateInput[Entity::STATUS] = Status::transformFromExternalToInternal($updateInput[Entity::STATUS]);
+        }
+
+        if (isset($updateInput[Entity::SUB_STATUS]) === true)
+        {
+            $updateInput[Entity::SUB_STATUS] = trim($updateInput[Entity::SUB_STATUS]);
+
+            $updateInput[Entity::SUB_STATUS] = Status::transformSubStatusFromExternalToInternal($updateInput[Entity::SUB_STATUS]);
+        }
+
+        // Convert date strings to epoch
+        $dateFields = [
+            ActivationDetail\Entity::ACCOUNT_OPEN_DATE,
+        ];
+
+        foreach($dateFields as $dateField)
+        {
+            if (isset($updateInput['activation_detail'][$dateField]) === true)
+            {
+                $updateInput['activation_detail'][$dateField] = strtoepoch($updateInput['activation_detail'][$dateField]);
+            }
         }
 
         return $updateInput;
@@ -264,6 +299,16 @@ class Service extends Base\Service
                 $input[Entity::BANK_REFERENCE_NUMBER]);
 
             $admin = $this->repo->admin->findOrFailPublic($input[Entity::ADMIN_ID]);
+
+            // Storing admin interpreted via batch in app
+            // so that downstream services like BankingAccountComment
+            // can retrieve it directly (as opposed to passing admin through
+            // various classes.
+            // TODO: Ideally, should be handled in the middleware.
+            $this->app->bind('batchAdmin', function() use($admin) {
+               return $admin;
+            });
+
         }
         catch (\Throwable $e)
         {
@@ -277,24 +322,18 @@ class Service extends Base\Service
                 ]);
         }
 
-        // Transaction because we want to eiher process the entire batch row, or nothing, so that it
-        // is possible to retry.
-        $this->repo->transaction(function () use ($input, $bankingAccount, $admin)
+        // Catch all errors because batch service fails silently if you return 5xx.
+        // TODO: solve cleanly
+        try
         {
-            $commentCreateInput = $this->prepareInputForCommentCreate($input);
-
-            if (empty($commentCreateInput[Comment\Entity::COMMENT]) === false)
-            {
-                (new Comment\Core)->create($bankingAccount, $admin, $commentCreateInput);
-            }
-
             $updateInput = $this->prepareInputForUpdate($input);
 
-            if (empty($updateInput[Entity::STATUS]) === false)
-            {
-                $this->update($bankingAccount->getPublicId(), $updateInput, $admin);
-            }
-        });
+            $this->update($bankingAccount->getPublicId(), $updateInput);
+        }
+        catch (\Throwable $e)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, [], $e->getMessage());
+        }
 
         return [
             'status' => 'success'
@@ -303,7 +342,9 @@ class Service extends Base\Service
 
     public function downloadActivationMis(array $input)
     {
-        $misProcessor = new Activation\MIS\Leads($input);
+        $misType = array_pull($input, 'mis_type');
+
+        $misProcessor = Activation\MIS\Factory::getProcessor($misType, $input);
 
         return $misProcessor->generate();
     }

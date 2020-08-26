@@ -3,7 +3,11 @@
 namespace RZP\Models\BankingAccount;
 
 use RZP\Base;
+use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Models\Admin\Permission;
 use RZP\Models\Pincode;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
@@ -83,6 +87,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_IFSC                    => 'filled|alpha_num|size:11',
         Entity::BANK_INTERNAL_STATUS            => 'sometimes|string',
         Entity::STATUS                          => 'filled|string|custom',
+        Entity::SUB_STATUS                      => 'string|nullable|custom',
         Entity::BANK_REFERENCE_NUMBER           => 'filled|string',
         Entity::BANK_INTERNAL_REFERENCE_NUMBER  => 'filled|string',
         Entity::BENEFICIARY_PIN                 => 'filled|string',
@@ -107,6 +112,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER                  => 'filled|alpha_num|between:5,40',
         Entity::ACCOUNT_IFSC                    => 'filled|alpha_num|size:11',
         Entity::STATUS                          => 'filled|string',
+        Entity::SUB_STATUS                      => 'string|nullable|custom',
         Entity::BENEFICIARY_PIN                 => 'filled|string',
         Entity::BENEFICIARY_CITY                => 'filled|string',
         Entity::BENEFICIARY_COUNTRY             => 'filled|string',
@@ -226,6 +232,11 @@ class Validator extends Base\Validator
         Status::validate($status);
     }
 
+    protected function validateSubStatus(string $attribute, string $subStatus = null)
+    {
+        Status::validateSubStatus($subStatus);
+    }
+
     protected function validateAccountType(string $attribute, string $accountType)
     {
         if (AccountType::isValid($accountType) === false)
@@ -289,6 +300,39 @@ class Validator extends Base\Validator
                     'The beneficiary name field is invalid.',
                     Entity::BENEFICIARY_NAME);
             }
+        }
+    }
+
+    public function validateUpdatePermissions(Entity $bankingAccount, $admin)
+    {
+        // Admin auth or Batch auth with $admin entity passed
+        $isAdminUpdate = ($admin !== null);
+
+        if ($isAdminUpdate === true)
+        {
+            $adminPermissions = $admin->getPermissionsList();
+
+            $dirtyUpdates = $bankingAccount->getDirty();
+
+            if (empty($dirtyUpdates) === false)
+            {
+                if (in_array(Permission\Name::BANKING_UPDATE_ACCOUNT, $adminPermissions) === true)
+                {
+                    // this permission is okay
+                    return;
+                }
+                else
+                {
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+                        null,
+                        [
+                            'admin_id'             => $admin->getPublicId(),
+                            'required_permissions' => [Permission\Name::BANKING_UPDATE_ACCOUNT]
+                        ]);
+                }
+            }
+
         }
     }
 }

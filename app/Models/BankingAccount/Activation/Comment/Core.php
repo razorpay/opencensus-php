@@ -7,10 +7,11 @@ namespace RZP\Models\BankingAccount\Activation\Comment;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankingAccount as BA;
+use RZP\Models\Admin\Admin;
 
 class Core extends Base\Core
 {
-    public function create(BA\Entity $bankingAccount, $admin, array $input): Entity
+    public function create(BA\Entity $bankingAccount, Admin\Entity $admin, array $input): Entity
     {
         $input[Entity::ADMIN_ID] = $admin->getId();
 
@@ -25,6 +26,8 @@ class Core extends Base\Core
 
         $newComment = $newCommentEntity->build($input);
 
+        (new Validator())->validateCreatePermissions($newComment, $admin);
+
         $newComment->admin()->associate($admin);
 
         $newComment->bankingAccount()->associate($bankingAccount);
@@ -32,5 +35,25 @@ class Core extends Base\Core
         $newComment->saveOrFail();
 
         return $newComment;
+    }
+
+    public function update(Entity $comment, array $input)
+    {
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_COMMENT_UPDATE,
+            [
+                'banking_account_id'    => $comment->bankingAccount->getId(),
+                'input' => $input,
+            ]);
+
+        $validator = new Validator;
+
+        $validator->validateInput('edit', $input);
+
+        $comment->edit($input);
+
+        $this->repo->saveOrFail($comment);
+
+        return $comment;
     }
 }

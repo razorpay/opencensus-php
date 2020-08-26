@@ -9,5 +9,6 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::STATUS          => 'required|string',
         Entity::BANK_STATUS     => 'sometimes|string|nullable',
+        Entity::SUB_STATUS      => 'sometimes|string|nullable'
     ];
 }

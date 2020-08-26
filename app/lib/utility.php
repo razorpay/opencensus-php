@@ -4,9 +4,11 @@ use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Constants\Date;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Exception\AssertionException;
+use RZP\Exception\BadRequestException;
 
 /**
  * getallheaders() polyfill for nginx servers
@@ -69,6 +71,29 @@ if (! function_exists('array_assoc_flatten'))
         }
 
         return $return;
+    }
+}
+
+if (! function_exists('array_unset_recursive'))
+{
+    function array_unset_recursive(array &$array, $remove)
+    {
+        if (!is_array($remove))
+        {
+            $remove = array($remove);
+        }
+
+        foreach ($array as $key => &$value) {
+            if (in_array($value, $remove))
+            {
+                unset($array[$key]);
+            }
+
+            else if (is_array($value))
+            {
+                array_unset_recursive($value, $remove);
+            }
+        }
     }
 }
 
@@ -623,6 +648,35 @@ if (! function_exists('epoch_format'))
         return date($format, $epoch);
     }
 }
+
+if (! function_exists('strtoepoch'))
+{
+    /**
+     * Converts given human readable string representation to epoch
+     * @param  string $dateStr
+     * @param  string $format
+     * @return string
+     */
+    function strtoepoch(string $dateStr, string $format = 'd/m/Y h:i:s A'): string
+    {
+        try
+        {
+            $dt = Carbon::createFromFormat($format, $dateStr, Timezone::IST);
+        }
+        catch (Throwable $e)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null,
+                [
+                    'date string'     => $dateStr,
+                    'expected format' => $format
+                ],
+            'Invalid date format');
+        }
+
+        return $dt->format('U');
+    }
+}
+
 
 if (! function_exists('multidim_array_unique'))
 {

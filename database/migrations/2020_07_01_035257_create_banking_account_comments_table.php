@@ -31,6 +31,8 @@ class CreateBankingAccountCommentsTable extends Migration
 
             $table->char(Entity::SOURCE_TEAM, 255);
 
+            $table->string(Entity::TYPE, 64);
+
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);

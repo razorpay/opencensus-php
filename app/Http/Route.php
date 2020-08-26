@@ -1756,6 +1756,7 @@ class Route
         . 'change_log'                            => ['get',      'banking_accounts/activation/{id}/status_change_log',        'BankingAccountController@getActivationStatusChangeLog'   ],
         'banking_account_comments_create'         => ['post',     'banking_accounts/activation/{id}/comments',                 'BankingAccountController@createActivationComment'        ],
         'banking_account_comments_list'           => ['get',      'banking_accounts/activation/{id}/comments',                 'BankingAccountController@getActivationComments'          ],
+        'banking_account_comment_edit'            => ['patch',    'banking_accounts/activation/comments/{id}',                 'BankingAccountController@patchUpdateActivationComment'   ],
         'banking_account_activation_details'.
         '_via_batch'                              => ['post',     'banking_accounts/activation/details/batch',                'BankingAccountController@postUpdateActivationDetailsFromBatchService' ],
         'banking_account_statement_process'       => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
@@ -3470,6 +3471,7 @@ class Route
         'banking_account_comments_create',
         'banking_account_activation_mis_download',
         'banking_account_comments_list',
+        'banking_account_comment_edit',
         'banking_account_bulk_assign_reviewer',
         'banking_account_activation_detail_create',
         'banking_account_activation_detail_update',
@@ -4268,7 +4270,7 @@ class Route
         'currency_fetch_all_proxy'                 => '*',
         'payment_on_hold_bulk_update'              => Permission::SETTLEMENT_RELEASE_HOLD_PAYMENT,
         'payment_card_vault_migrate'               => '*',
-        'banking_account_update'                   => Permission::BANKING_UPDATE_ACCOUNT,
+        'banking_account_update'                   => '*', // Internal entity updates are behind permissions.
         'banking_account_activate'                 => Permission::BANKING_UPDATE_ACCOUNT,
         'banking_account_webhook_account'
         . '_info_internal'                        => Permission::BANKING_UPDATE_ACCOUNT,
@@ -4298,6 +4300,7 @@ class Route
         'banking_account_comments_create'          => '*', //TODO: change to the correct permission
         'banking_account_activation_mis_download'  => '*',
         'banking_account_comments_list'            => '*',
+        'banking_account_comment_edit'            => '*',
         'banking_account_bulk_assign_reviewer'     => Permission::ASSIGN_BANKING_ACCOUNT_REVIEWER,
         'set_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
         'get_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
