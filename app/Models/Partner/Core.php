@@ -10,6 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends Base\Core
@@ -128,5 +129,33 @@ class Core extends Base\Core
                     'merchants'  => $merchants->pluck(Merchant\Entity::ID)->toArray(),
                 ]);
         }
+    }
+
+    /**
+     * @param Merchant\Entity $merchant
+     *
+     * @return bool
+     */
+    public function isSmsBlockedSubmerchant(Merchant\Entity $merchant): bool
+    {
+        $partners = (new Merchant\Core())->fetchAffiliatedPartners($merchant->getId());
+
+        //
+        //submerchant can belong to only one aggregator or fully managed at a time
+        //
+        $partner = $partners->filter(function(Merchant\Entity $partner) {
+            return (($partner->isAggregatorPartner() === true) or ($partner->isFullyManagedPartner() === true));
+        })->first();
+
+        if (empty($partner) === true)
+        {
+            return false;
+        }
+
+        //
+        // Is the feature flag enabled for the submerchant or the partner
+        //
+        return (($merchant->isFeatureEnabled((FeatureConstant::BLOCK_ONBOARDING_SMS) === true)
+            or ($partner->isFeatureEnabled(FeatureConstant::BLOCK_ONBOARDING_SMS) === true)));
     }
 }

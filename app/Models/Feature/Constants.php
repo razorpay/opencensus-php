@@ -416,6 +416,8 @@ class Constants
     const NPS_SURVEY_PAYMENT_GATEWAY_12M = 'nps_survey_pg_12m';
     const NPS_SURVEY_OTHER_PRODUCTS      = 'nps_survey_other_products';
 
+    const BLOCK_ONBOARDING_SMS           = 'block_onboarding_sms';
+
     //OTP Submit response feature
     const OTP_SUBMIT_RESPONSE            = 'otp_submit_response';
 
@@ -658,6 +660,7 @@ class Constants
         self::NPS_SURVEY_PAYMENT_GATEWAY_6M   => true,
         self::NPS_SURVEY_PAYMENT_GATEWAY_12M  => true,
         self::NPS_SURVEY_OTHER_PRODUCTS       => true,
+        self::BLOCK_ONBOARDING_SMS            => true,
         self::OTP_SUBMIT_RESPONSE             => true,
         self::ESIGN                           => true,
     ];

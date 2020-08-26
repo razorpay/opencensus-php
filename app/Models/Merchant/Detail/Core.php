@@ -38,9 +38,10 @@ use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
+use RZP\Mail\Merchant\Rejection as RejectionEmail;
+use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Mail\Merchant\RazorpayX\L2SubmissionGreylist;
 use RZP\Mail\Merchant\RazorpayX\L2SubmissionWhitelist;
-use RZP\Mail\Merchant\Rejection as RejectionEmail;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
@@ -2716,12 +2717,11 @@ class Core extends Base\Core
     /**
      * @param Entity $merchantDetail
      * @param string $template
-     *
-     * @throws Exception\ServerErrorException
      */
     public function sendOnboardingJourneySms(Entity $merchantDetail, string $template)
     {
-        if ($merchantDetail->merchant->isRazorpayOrgId() === false)
+        if ($merchantDetail->merchant->isRazorpayOrgId() === false or
+            (new \RZP\Models\Partner\Core())->isSmsBlockedSubmerchant($merchantDetail->merchant) === true)
         {
             return;
         }
