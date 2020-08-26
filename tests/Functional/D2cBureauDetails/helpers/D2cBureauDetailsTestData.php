@@ -67,6 +67,18 @@ return [
         ],
     ],
 
+    'testReportDelete'  => [
+        'request' => [
+            'url' => '/d2c_bureau_reports/',
+            'method' => 'delete',
+            'content'   => [
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testPostCreateInternalWithExperianFailure' => [
         'request' => [
             'url' => '/los/d2c_bureau_details',

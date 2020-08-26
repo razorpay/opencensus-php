@@ -132,6 +132,19 @@ class D2cBureauDetailsTest extends TestCase
         ], $d2cOwnerDetails);
     }
 
+    public function testReportDelete()
+    {
+        $this->ba->appAuth('rzp_test', Config::get('applications.los')['secret']);
+
+        $response = $this->startTest($this->testData['testPostCreateInternal']);
+
+        $this->testData['testReportDelete']['request']['url'] .= $response['id'];
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testPostCreateInternalWithExperianFailure()
     {
         $mozartMockCopy = $this->mozartServiceMock;

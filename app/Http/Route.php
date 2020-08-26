@@ -1822,6 +1822,7 @@ class Route
         'd2c_bureau_details_otp_submit'           => ['post',      'd2c_bureau_details/{id}/otp_submit',                       'D2cController@getReportWithOtp'                           ],
         'd2c_bureau_reports_patch'                => ['patch',     'd2c_bureau_reports/{id}',                                  'D2cController@patchReport'                                ],
         'los_d2c_bureau_report_fetch'             => ['get',       'los/d2c_bureau_reports',                                   'D2cController@fetchReportForLos'                          ],
+        'd2c_bureau_report_delete'                => ['delete',    'd2c_bureau_reports/{id}',                                  'D2cController@deleteReport'                               ],
         'd2c_bureau_reports_download'             => ['get',       'd2c_bureau_reports/{id}/download_url',                     'D2cController@getReportDownloadUrl'                       ],
 
         // routes for Rendering Preferences / Options service
@@ -3023,6 +3024,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'd2c_bureau_report_delete',
         'correct_merchant_owners_products',
         'paper_nach_fetch_failure',
         'paper_nach_approve_failure',
@@ -3692,6 +3694,7 @@ class Route
     ];
 
     public static $routePermission = [
+        'd2c_bureau_report_delete'                 => '*',
         'correct_merchant_owners_products'         => Permission::CORRECT_MERCHANT_OWNER_MISMATCH,
         'paper_nach_fetch_failure'                 => Permission::VERIFY_NACH_UPLOADS,
         'paper_nach_approve_failure'               => Permission::VERIFY_NACH_UPLOADS,

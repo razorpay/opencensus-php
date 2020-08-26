@@ -73,6 +73,15 @@ class Service extends Base\Service
         return $bureauReport->toArrayForDashboard();
     }
 
+    public function deleteReport($id)
+    {
+        $bureauReport = $this->repo->d2c_bureau_report->findByPublicId($id);
+
+        $this->repo->deleteOrFail($bureauReport);
+
+        return [];
+    }
+
     public function fetchReportForLos($input)
     {
         $this->trace->info(TraceCode::LOS_D2C_BUREAU_REPORT_FETCH, $input);
