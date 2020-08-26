@@ -3720,7 +3720,6 @@ class Route
         'payout_links_settings_post'               => Permission::EDIT_MERCHANT,
         'payout_links_settings_get'                => Permission::EDIT_MERCHANT,
         'pricing_add_plan_rule_bulk'               => '*',
-        'adj_add_batch'                            => '*',
         'reminder_admin'                           => Permission::REMINDER_OPERATION,
         'reminder_service'                         => Permission::REMINDER_OPERATION,
         'merchant_document_admin_fetch'            => '*',
