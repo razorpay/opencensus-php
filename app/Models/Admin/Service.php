@@ -6,12 +6,12 @@ use Cache;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Razorpay\Trace\Logger as Trace;
+use Illuminate\Support\Facades\Redis;
 
 use RZP\Jobs;
 use RZP\Exception;
 use RZP\Jobs\EsSync;
 use RZP\Models\Card;
-use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
@@ -760,7 +760,7 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('set_redis_keys', $input);
 
-        $redis = $this->app['redis']->connection();
+        $redis = Redis::Connection('mutex_redis');
 
         $result = [];
 
@@ -801,7 +801,7 @@ class Service extends Base\Service
 
         $key = $input['key'];
 
-        $redis = $this->app['redis']->connection();
+        $redis = Redis::Connection('mutex_redis');
 
         $values = $redis->HGETALL($key);
 
@@ -814,7 +814,7 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('update_redis_keys', $input);
 
-        $redis = $this->app['redis']->connection();
+        $redis = Redis::Connection('mutex_redis');
 
         $key = $input['key'];
 

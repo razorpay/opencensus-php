@@ -6,6 +6,7 @@ use App;
 use Closure;
 use Carbon\Carbon;
 use Illuminate\Redis\RedisManager;
+use Illuminate\Support\Facades\Redis;
 
 use Razorpay\Trace\Logger as Trace;
 
@@ -151,7 +152,7 @@ class HeartbeatLagChecker implements LagChecker
 
         $this->reqCtx = $app['request.ctx'];
 
-        $this->redis = $app['redis']->connection();
+        $this->redis = Redis::Connection('mutex_redis');
 
         $this->cache = $app['cache'];
 
@@ -273,9 +274,9 @@ class HeartbeatLagChecker implements LagChecker
         // Using raw query here as we can not use model or eloquent builder here
         // as it also calls this flow to get the connection
         //
-        $query = 'SELECT ROUND(( ROUND(UNIX_TIMESTAMP(Now(6)) * 1000000) - ( 
-                        UNIX_TIMESTAMP(SUBSTR(ts, 1, 19)) * 1000000 + 
-                        SUBSTR(ts, 21, 6) ) 
+        $query = 'SELECT ROUND(( ROUND(UNIX_TIMESTAMP(Now(6)) * 1000000) - (
+                        UNIX_TIMESTAMP(SUBSTR(ts, 1, 19)) * 1000000 +
+                        SUBSTR(ts, 21, 6) )
                      ) / 1000) AS replica_lag_milli, ts, CONNECTION_ID() as connection_id
                 FROM   heartbeat.heartbeat
                 LIMIT  1';
