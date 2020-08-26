@@ -127,7 +127,7 @@ class Core extends Base\Core
 
             $this->updateBankTransferRequest($input[Entity::REQ_UTR], $paymentSuccess, $errorMessage);
 
-            (new VirtualAccount\Metric())->pushPaymentMetrics(Constants\Entity::BANK_TRANSFER, $isExpected, $paymentSuccess);
+            (new VirtualAccount\Metric())->pushPaymentMetrics(Constants\Entity::BANK_TRANSFER, $isExpected, $paymentSuccess, $provider);
 
             $this->pushBankTransferSourceToLake($bankTransfer);
         }

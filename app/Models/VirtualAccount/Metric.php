@@ -91,12 +91,13 @@ class Metric extends Base\Core
         );
     }
 
-    public function pushPaymentMetrics(string $method, bool $isExpected = null, bool $success = false)
+    public function pushPaymentMetrics(string $method, bool $isExpected = null, bool $success = false, string $gateway = null)
     {
         $dimensions = [
             'method'            => $method,
             'expected'          => $isExpected,
             'successful'        => $success,
+            'gateway'           => $gateway,
         ];
 
         $this->trace->count(

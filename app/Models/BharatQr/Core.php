@@ -4,9 +4,11 @@ namespace RZP\Models\BharatQr;
 
 use Config;
 
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\VirtualAccount;
 use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
@@ -71,6 +73,12 @@ class Core extends Base\Core
             $this->alertException($ex, $input);
 
             $valid = false;
+        }
+        finally
+        {
+            $isExpected = $bharatQr === null ? null : $bharatQr->isExpected();
+
+            (new VirtualAccount\Metric())->pushPaymentMetrics(Constants\Entity::BHARAT_QR, $isExpected, $valid, $terminal->getGateway());
         }
 
         return $valid;
