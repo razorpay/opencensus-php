@@ -8,7 +8,7 @@ exports[`Storyshots ErrorBoundary With SDK 1`] = `
     src="error_illustration.svg"
   />
   <p
-    className="Textweb__Text-sc-6jf9e4-0 hDFotI"
+    className="Textweb__Text-sc-6jf9e4-0 jacyhQ"
     color="shade.980"
     data-testid="ds-text"
     size="large"
@@ -16,7 +16,7 @@ exports[`Storyshots ErrorBoundary With SDK 1`] = `
     We're sorry — something's gone wrong.
   </p>
   <div
-    className="Textweb__Text-sc-6jf9e4-0 icdclg"
+    className="Textweb__Text-sc-6jf9e4-0 hTjrlE"
     color="shade.980"
     data-testid="ds-text"
     size="large"
@@ -34,7 +34,7 @@ exports[`Storyshots ErrorBoundary With SDK 1`] = `
        click here 
     </a>
     <span
-      className="Textweb__Text-sc-6jf9e4-0 icdclg"
+      className="Textweb__Text-sc-6jf9e4-0 hTjrlE"
       color="shade.980"
       data-testid="ds-text"
       size="large"
@@ -43,7 +43,7 @@ exports[`Storyshots ErrorBoundary With SDK 1`] = `
     </span>
   </div>
   <div
-    className="Textweb__Text-sc-6jf9e4-0 icdclg"
+    className="Textweb__Text-sc-6jf9e4-0 hTjrlE"
     color="shade.980"
     data-testid="ds-text"
     size="large"
@@ -61,7 +61,7 @@ exports[`Storyshots ErrorBoundary Without SDK 1`] = `
   className="Viewweb__View-sc-1cphyjf-0 lhSUkp Sizeweb__Size-sc-10bl685-0 cXIHoT"
 >
   <div
-    className="Textweb__Text-sc-6jf9e4-0 kgmkNM"
+    className="Textweb__Text-sc-6jf9e4-0 eKxMBE"
     color="shade.980"
     data-testid="ds-text"
     size="large"
