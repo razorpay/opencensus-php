@@ -1,14 +1,12 @@
-import { PowerSelect } from 'react-power-select';
-
+import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
+import { getFormattedAmount, rupeesToPaise } from 'common/utils/rzp-utils';
 import Input from 'common/new-ui/Input';
 
 import { AmountTooltip } from 'common/ui/Amount';
 
-import {
-  checkIfAmount,
-  checkIfAmountForFirstCharge,
-} from './PaymentDetails/utils';
-import { payment } from 'common/ui/item/id';
+import { checkIfAmount, checkIfAmountForFirstCharge } from './PaymentDetails/utils';
+
+const MAX_TOKEN_AMOUNT = 100000000;
 
 export default ({
   amount,
@@ -23,11 +21,15 @@ export default ({
   mandateExpireAt,
   onBlurElement,
 }) => {
-  const maxAmountProps = {};
+  const maxAmountProps = {
+    validator: maxAmountValidator(amount, MAX_TOKEN_AMOUNT),
+    description: `Max Amount for Mandate (Up to ${getFormattedAmount(MAX_TOKEN_AMOUNT)})`,
+  };
 
   if (isUPIPayment) {
-    maxAmountProps.placeholder = 'Max 2000';
-    maxAmountProps.validator = maxAmountValidator(amount);
+    maxAmountProps.placeholder = `Max ${UPI_AVL_LIMIT}`;
+    maxAmountProps.validator = maxAmountValidator(amount, UPI_AVL_LIMIT);
+    maxAmountProps.description = `Max Amount for Mandate`;
   }
 
   return (
@@ -77,12 +79,9 @@ export default ({
         label="Token Max Amount"
         data-name="token_max_amount"
         onBlur={onBlurElement}
-        addonBefore={
-          <AmountTooltip currency={'INR'} parentQuerySelector=".Modal" />
-        }
+        addonBefore={<AmountTooltip currency={'INR'} parentQuerySelector=".Modal" />}
         size="half_big"
         validator={checkIfAmount}
-        description="Max Amount for Mandate"
         class="Input--Amount"
         value={mandateMaxAmount}
         {...maxAmountProps}
@@ -101,9 +100,7 @@ export default ({
           onBlur={onBlurElement}
           value={firstPaymentAmount}
           validator={firstPaymentAmountValidator(mandateMaxAmount)}
-          addonBefore={
-            <AmountTooltip currency={'INR'} parentQuerySelector=".Modal" />
-          }
+          addonBefore={<AmountTooltip currency={'INR'} parentQuerySelector=".Modal" />}
         />
       )}
     </React.Fragment>
@@ -111,22 +108,21 @@ export default ({
 };
 
 function firstPaymentAmountValidator(mandateMaxAmount) {
-  return value =>
-    checkIfAmountForFirstCharge(Number(mandateMaxAmount) || 100000, value);
+  return (value) => checkIfAmountForFirstCharge(Number(mandateMaxAmount) || 100000, value);
 }
 
-const maxAmountValidator = methodAMount => value => {
+const maxAmountValidator = (methodAmount, maxAmount) => (value) => {
   const isAmountCheckFiled = checkIfAmount(value);
 
   if (isAmountCheckFiled) {
     return isAmountCheckFiled;
   }
 
-  const amount = Number(value);
+  const amount = rupeesToPaise(Number(value));
 
-  if (amount > 2000) {
-    return 'Max amount should not be greater than 2000';
-  } else if (amount < methodAMount) {
+  if (amount > maxAmount) {
+    return `Max amount should not be greater than ${getFormattedAmount(maxAmount)}`;
+  } else if (amount < methodAmount) {
     return 'Max amount should bet greater then amount set for this payment method';
   }
 };
