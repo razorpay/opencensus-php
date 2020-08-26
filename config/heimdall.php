@@ -1012,15 +1012,15 @@ return [
         ],
 
         PermissionCategory::INSTRUMENT_REQUESTS => [
-            Permission::VIEW_INTERNAL_INSTRUMENT_REQUESTS => [
+            Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST => [
                 'description'   => 'View single/bulk internal instrument requests',
                 'assignable'    => true,
             ],
-            Permission::UPDATE_INTERNAL_INSTRUMENT_REQUESTS => [
+            Permission::UPDATE_INTERNAL_INSTRUMENT_REQUEST => [
                 'description'   => 'Update single/bulk internal instrument requests',
                 'assignable'    => true,
             ],
-            Permission::DELETE_INTERNAL_INSTRUMENT_REQUESTS => [
+            Permission::DELETE_INTERNAL_INSTRUMENT_REQUEST => [
                 'description'   => 'Delete internal instrument requests',
                 'assignable'    => true,
             ],

@@ -4411,12 +4411,12 @@ class Route
         'merchants_update_onboarding_category_to_normal_cron'     => '*',
 
         // Instrument requests
-        'get_internal_instrument_request_by_id'       => Permission::VIEW_INTERNAL_INSTRUMENT_REQUESTS,
-        'patch_internal_instrument_request_by_id'     => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUESTS,
-        'bulk_copy_internal_instrument_request'       => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUESTS,
-        'delete_internal_instrument_request_by_id'    => Permission::DELETE_INTERNAL_INSTRUMENT_REQUESTS,
-        'fetch_internal_instrument_requests'          => Permission::VIEW_INTERNAL_INSTRUMENT_REQUESTS,
-        'patch_internal_instrument_requests'          => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUESTS,
+        'get_internal_instrument_request_by_id'       => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
+        'patch_internal_instrument_request_by_id'     => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUEST,
+        'bulk_copy_internal_instrument_request'       => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUEST,
+        'delete_internal_instrument_request_by_id'    => Permission::DELETE_INTERNAL_INSTRUMENT_REQUEST,
+        'fetch_internal_instrument_requests'          => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
+        'patch_internal_instrument_requests'          => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUEST,
         'instrument_request_razorx_admin'             => '*',
 
         //payout downtime fetch from X dashboard

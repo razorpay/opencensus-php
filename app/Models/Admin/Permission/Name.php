@@ -429,9 +429,9 @@ class Name
     const UPDATE_TAX_PAYMENT_SETTINGS         = 'update_tax_payment_settings';
     const VIEW_TAX_PAYMENTS                   = 'view_tax_payments';
 
-    const VIEW_INTERNAL_INSTRUMENT_REQUESTS   = 'view_internal_insturment_request';
-    const UPDATE_INTERNAL_INSTRUMENT_REQUESTS = 'update_internal_insturment_request';
-    const DELETE_INTERNAL_INSTRUMENT_REQUESTS = 'delete_internal_insturment_request';
+    const VIEW_INTERNAL_INSTRUMENT_REQUEST   = 'view_internal_instrument_request';
+    const UPDATE_INTERNAL_INSTRUMENT_REQUEST = 'update_internal_instrument_request';
+    const DELETE_INTERNAL_INSTRUMENT_REQUEST = 'delete_internal_instrument_request';
 
     const MANAGE_PAYOUT_DOWNTIME              = 'manage_payout_downtime';
     const VIEW_PAYOUT_DOWNTIME                = 'view_payout_downtime';

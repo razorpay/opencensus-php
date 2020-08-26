@@ -32,7 +32,7 @@ class InstrumentRequestProxyTest extends TestCase
     public function testInternalInstrumentAdminDashboardProxyMissingPermission()
     {
         // deleting all permissions that were seeded
-        $permissionNames = [Name::VIEW_INTERNAL_INSTRUMENT_REQUESTS, Name::UPDATE_INTERNAL_INSTRUMENT_REQUESTS, Name::DELETE_INTERNAL_INSTRUMENT_REQUESTS];
+        $permissionNames = ['view_internal_instrument_request', 'update_internal_instrument_request', 'delete_internal_instrument_request'];
 
         foreach($permissionNames as $name)
         {
