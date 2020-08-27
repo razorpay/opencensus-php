@@ -54,8 +54,10 @@ export default class PasswordReLogin extends Component {
             service: this.service,
           })
       );
-
-    this.initializeGoogleAuth();
+    
+    if(this.props.isGoogleLogin) {
+      this.initializeGoogleAuth();
+    }
   }
   
   eventObj = {
@@ -114,6 +116,14 @@ export default class PasswordReLogin extends Component {
           //redirect the user to signin if the account is logged out
           this.props.removeLockScreen();
           this.props.resumeLockActionCB();
+  
+          window.rzpQ &&
+          window.rzpQ.push(
+            window.rzpQ
+              .now()
+              .onbr()
+              .success('dash.unlock', {...this.eventObj, method: 'email', service: this.service, email: formData.email})
+          );
         } else {
           this.setState({ isPending: false });
           window.rzpQ &&
@@ -154,7 +164,7 @@ export default class PasswordReLogin extends Component {
   
   initializeGoogleAuth = () => {
     const button = document.getElementById('gauth');
-    if (!this.googleAuthInstance && window.gapi) {
+    if (!this.googleAuthInstance && window.gapi && button) {
       window.gapi.load('auth2', () => {
         // Retrieve the singleton for the GoogleAuth library and set up the client.
         this.googleAuthInstance = window.gapi.auth2.init({
