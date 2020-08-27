@@ -58,26 +58,26 @@ export default class SuccessModal extends React.Component {
 
   render() {
     const content = (
-      <div className="Form-container">
-        <div className="Form-title">
+      <div class="Form-container">
+        <div class="Form-title">
           Button Created Successfully
-          <div className="Form-description">Your payment button is ready for integration</div>
+          <div class="Form-description">Your payment button is ready for integration</div>
         </div>
 
-        <div className="Form">
-          <div className="Form-buttonIntegration">
-            <div className="Form-buttonIntegration-title">
+        <div class="Form">
+          <div class="Form-buttonIntegration">
+            <div class="Form-buttonIntegration-title">
               <b>Integrate On your Website</b>
             </div>
 
             {/* Integrate via copy-code */}
-            <div className="Form-buttonIntegration-code">
+            <div class="Form-buttonIntegration-code">
               <div>
-                <span className="help-text">Copy & paste this HTML in your code.</span>
+                <span class="help-text">Copy & paste this HTML in your code.</span>
 
                 <CustomClipboard value={this.codeToCopy}>
                   <Button.Primary onClick={this.onClickCopy}>
-                    <i className="i i-copy m-r" />
+                    <i class="i i-copy m-r" />
                     <b>COPY CODE</b>
                   </Button.Primary>
                 </CustomClipboard>
@@ -91,26 +91,30 @@ export default class SuccessModal extends React.Component {
                 />
               </div>
 
-              <div className="help-text">
-                How do I use this code? See our documentation{' '}
-                <a href="" target="_blank">
-                  here <i className="i i-external-link m-l" />
+              <div class="help-text">
+                Want to try this code before integration?{' '}
+                <a
+                  href="https://cdn.razorpay.com/static/widget/test-payment-button.html"
+                  target="_blank"
+                  class="Button Button--primary--invert try-now-btn"
+                >
+                  <i class="i i-play-arrow" /> TRY CODE
                 </a>
               </div>
             </div>
 
             {/* Other integration methods */}
-            <div className="Form-buttonIntegration-others">
+            <div class="Form-buttonIntegration-others">
               <b>Plan on using this on platforms like Wix, Weebly?</b>
 
               {/*
-              <div className="help-text">
+              <div class="help-text">
                 Check out our integration guide for{' '}
                 <a
                   href="https://betasite.razorpay.com/docs/pb-index-true/payment-button/supported-platforms#wordpress"
                   target="_blank"
                 >
-                  Wordpress <i className="i i-external-link m-l" />
+                  Wordpress <i class="i i-external-link m-l" />
                 </a>
               </div>
 */}
@@ -124,48 +128,49 @@ export default class SuccessModal extends React.Component {
                   Platforms<i class="i i-external-link m-l" />
                 </a>
               </div>
+
             </div>
           </div>
 
-          <div className="Form-buttonActions">
-            <div className="Form-buttonActions-title">
+          <div class="Form-buttonActions">
+            <div class="Form-buttonActions-title">
               <b>After a Successful Payment</b>
             </div>
 
             {/* Payment Receipt Action Modal */}
-            <div className="Form-buttonActions-receipt">
+            <div class="Form-buttonActions-receipt">
               <div>
-                <i className="i i-document m-r" /> <b>Send Payment Receipts</b>
+                <i class="i i-document m-r" /> <b>Send Payment Receipts</b>
                 <Button class="Button--primary--invert" onClick={this.props.openPageReceiptModal}>
                   <b>CONFIGURE</b>
                 </Button>
               </div>
-              <div className="help-text">
+              <div class="help-text">
                 Send automated receipts for transactions on your Payment Button.
               </div>
             </div>
 
             {/* Redirect Url Action Modal */}
-            <div className="Form-buttonActions-postPayment">
+            <div class="Form-buttonActions-postPayment">
               <div>
-                <i className="i i-checked-document m-r" /> <b>Redirect URL and Custom Message</b>
+                <i class="i i-checked-document m-r" /> <b>Redirect URL and Custom Message</b>
                 <Button class="Button--primary--invert" onClick={this.props.openSettingsModal}>
                   <b>CONFIGURE</b>
                 </Button>
               </div>
 
-              <div className="help-text">
+              <div class="help-text">
                 Show a custom message and(or) redirect customers after payments.
               </div>
             </div>
 
-            <div className="help-text help-text-settings">
-              <i className="i i-info-outline m-r" /> These settings can also be configured from the{' '}
+            <div class="help-text help-text-settings">
+              <i class="i i-info-outline m-r" /> These settings can also be configured from the{' '}
               <a onClick={this.onClickButtonSettings}>details page</a> of this button.
             </div>
           </div>
 
-          <div className="Form-controls">
+          <div class="Form-controls">
             <Link to="/paymentbuttons" class="Button Button--primary">
               Back To Dashboard
             </Link>
