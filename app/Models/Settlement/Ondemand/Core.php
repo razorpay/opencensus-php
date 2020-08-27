@@ -8,14 +8,19 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
+use RZP\Models\Payout;
 use RZP\Models\Pricing;
 use RZP\Models\Reversal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Constants\Product;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Settlement\OndemandPayout;
+use RZP\Models\Pricing\Feature as PricingFeature;
 
 class Core extends Base\Core
 {
@@ -228,6 +233,89 @@ class Core extends Base\Core
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD);
+        }
+    }
+
+    public function addDefaultOndemandPricingIfNotPresent($merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        if ($merchant->isPostpaid() === false && $merchant->getFeeBearer() === FeeBearer::PLATFORM)
+        {
+            $pricingPlanId = $merchant->getPricingPlanId();
+
+            $settlementOndemandPricing = $this->repo->pricing
+                                        ->getPricingRulesByPlanIdProductFeaturePaymentMethod($pricingPlanId,
+                                                                                            Product::PRIMARY,
+                                                                                            PricingFeature::SETTLEMENT_ONDEMAND,
+                                                                                            Payout\Method::FUND_TRANSFER);
+
+            $onDemandPayoutPricing = $this->repo->pricing
+                                        ->getPricingRulesByPlanIdProductFeaturePaymentMethod($pricingPlanId,
+                                                                                            Product::PRIMARY,
+                                                                                            PricingFeature::PAYOUT,
+                                                                                            Payout\Method::FUND_TRANSFER);
+
+            if($settlementOndemandPricing->count() < 1 or $onDemandPayoutPricing->count() < 1)
+            {
+                $this->repo->transactionOnLiveAndTest(function () use($merchant,
+                                                                      $pricingPlanId,
+                                                                      $settlementOndemandPricing,
+                                                                      $onDemandPayoutPricing)
+                {
+                    // Replicates plan for this merchant if it was shared
+                    if ($this->repo->merchant->fetchMerchantsCountWithPricingPlanId($pricingPlanId) !== 1)
+                    {
+                        $newPlan = (new Pricing\Service())->replicatePlanAndAssign($merchant,
+                                                                                   $this->repo->pricing->getPlanByIdOrFailPublic($pricingPlanId));
+
+                        $merchant->refresh();
+
+                        $pricingPlanId = $newPlan->getId();
+                    }
+
+                    if($settlementOndemandPricing->count() < 1)
+                    {
+                        $settlementOndemandPricingRule = [
+                            'product'             => Product::PRIMARY,
+                            'feature'             => PricingFeature::SETTLEMENT_ONDEMAND,
+                            'payment_method'      => Payout\Method::FUND_TRANSFER,
+                            'percent_rate'        => 25,
+                            'amount_range_active' => 0,
+                            'amount_range_max'    => 0,
+                            'amount_range_min'    => 0
+                        ];
+
+                        $updatedPlanRule = (new Pricing\Service())->addPlanRule($pricingPlanId, $settlementOndemandPricingRule);
+
+                        $this->trace->info(TraceCode::ADD_ONDEMAND_PRICING_IF_ABSENT, [
+                            'merchant_id'   => $merchant->getId(),
+                            'pricing_type'  => 'settlement_ondemand',
+                        ]);
+                
+                    }
+
+                    if($onDemandPayoutPricing->count() < 1)
+                    {
+                        $onDemandPayoutPricingRule = [
+                            'product'             => Product::PRIMARY,
+                            'feature'             => PricingFeature::PAYOUT,
+                            'payment_method'      => Payout\Method::FUND_TRANSFER,
+                            'percent_rate'        => 25,
+                            'amount_range_active' => 0,
+                            'amount_range_max'    => 0,
+                            'amount_range_min'    => 0
+                        ];
+
+                        $updatedPlanRule = (new Pricing\Service())->addPlanRule($pricingPlanId, $onDemandPayoutPricingRule);
+
+                        $this->trace->info(TraceCode::ADD_ONDEMAND_PRICING_IF_ABSENT, [
+                            'merchant_id'   => $merchant->getId(),
+                            'pricing_type'  => 'payout_fund_transfer',
+                        ]);
+                    }
+                });
+            }
         }
     }
 }

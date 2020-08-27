@@ -17,6 +17,7 @@ use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement\OndemandPayout;
 use RZP\Jobs\SettlementOndemand\MockPayoutOndemandWebhook;
+use RZP\Jobs\SettlementOndemand\AddOndemandPricingIfAbsent;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutJobs;
 
 class Service extends Base\Service
@@ -210,5 +211,21 @@ class Service extends Base\Service
         {
             return $settlementOndemandArray;
         }
+    }
+
+    public function addOndemandPricingIfAbscent()
+    {
+        AddOndemandPricingIfAbsent::dispatch($this->mode);
+
+        $response = [
+            'response'  => 'AddOndemandPricingIfAbsent job dispatched',
+        ];
+
+        return $response;
+    }
+
+    public function addDefaultOndemandPricingIfNotPresent($merchantId)
+    {
+        $this->core()->addDefaultOndemandPricingIfNotPresent($merchantId);
     }
 }

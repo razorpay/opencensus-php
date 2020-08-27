@@ -1130,6 +1130,54 @@ class SettlementOndemandTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddOndemandPricingIfAbsent()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1BFFkd38fFGbnh', 'international'    => 0]);
+
+        $merchant2 = $this->fixtures->create('merchant');
+
+        $merchant2Id = $merchant2['id'];
+
+        $this->fixtures->merchant->edit($merchant2Id, ['pricing_plan_id' => '1BFFkd38fFGbnh', 'international' => 0]);
+
+        $this->startTest();
+
+        $newPricingPlanId =  $this->getDbEntities('merchant', ['id' => $this->merchantDetail['merchant_id']])->toArray()[0]['pricing_plan_id'];
+
+        $settlementOndemandPricingRule = $this->getDbEntities('pricing', ['feature'        => 'settlement_ondemand',
+                                                                          'payment_method' => 'fund_transfer',
+                                                                          'plan_id'        => '1BFFkd38fFGbnh'])->toArray();
+
+        $ondemandPayoutPricingRule = $this->getDbEntities('pricing', ['feature'        => 'payout',
+                                                                      'payment_method' => 'fund_transfer',
+                                                                      'plan_id'        => '1BFFkd38fFGbnh'])->toArray();
+
+        $this->assertEmpty($settlementOndemandPricingRule);
+
+        $this->assertEmpty($ondemandPayoutPricingRule);
+
+        $newSettlementOndemandPricingRule = $this->getDbEntities('pricing', ['product'        =>  'primary',
+                                                                             'feature'        => 'settlement_ondemand',
+                                                                             'payment_method' => 'fund_transfer',
+                                                                             'percent_rate'   => 25,])->toArray();
+
+        $newOndemandPayoutPricingRule = $this->getDbEntities('pricing', ['product'        =>  'primary',
+                                                                         'feature'        => 'payout',
+                                                                         'payment_method' => 'fund_transfer',
+                                                                         'percent_rate'   => 25,])->toArray();
+
+        $this->assertNotEmpty($newSettlementOndemandPricingRule);
+
+        $this->assertNotEmpty($newOndemandPayoutPricingRule);    
+    }
+
     public function testNoMinLimitFornEsAutomaticMerchants()
     {
         $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());

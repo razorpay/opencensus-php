@@ -607,6 +607,18 @@ return [
         ]
     ],
 
+    'testAddOndemandPricingIfAbsent' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/add_ondemand_pricing',
+            'method'  => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'response' => 'AddOndemandPricingIfAbsent job dispatched'
+            ]
+        ]
+    ],
+
     'testAdjustmentAditionToOndemandXMerchant' => [
         'request'  => [
             'url'     => '/settlements/ondemand',
@@ -640,5 +652,5 @@ return [
 //                'created_at'         => 1582000200,
             ]
         ]
-    ],
+    ]
 ];

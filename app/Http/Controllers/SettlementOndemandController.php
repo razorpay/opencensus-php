@@ -27,6 +27,13 @@ class SettlementOndemandController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function addOndemandPricingIfAbscent()
+    {
+        $data = $this->service(Entity::SETTLEMENT_ONDEMAND)->addOndemandPricingIfAbscent();
+
+        return ApiResponse::json($data);
+    }
+
     public function getSettlementOndemand(string $id)
     {
         $input = Request::all();

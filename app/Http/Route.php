@@ -1387,6 +1387,7 @@ class Route
         //Ondemand routes
         'settlement_ondemand_create'               => ['post',      'settlements/ondemand',                          'SettlementOndemandController@postSettlementOndemand'               ],
         'bulk_create_fund_accounts'                => ['post',      'settlement/ondemand/create_fund_account',       'SettlementOndemandController@createFundAccount'                    ],
+        'add_ondemand_pricing_if_absent'           => ['post',      'settlements/ondemand/add_ondemand_pricing',     'SettlementOndemandController@addOndemandPricingIfAbscent'          ],
         'settlement_ondemand_razorpayx_webhook'    => ['post',      'settlement/ondemand/update',                    'SettlementOndemandController@ondemandPayoutUpdate'                 ],
         'settlement_ondemand_fees'                 => ['get',       'settlements/ondemand/fees',                     'SettlementOndemandController@calculateFees'                        ],
         'settlement_ondemand_create_dashboard'     => ['post',      'settlement/ondemand/dashboard',                 'SettlementOndemandController@postSettlementOndemand'               ],
@@ -3036,6 +3037,7 @@ class Route
         'emi_plans_migrate',
         'ufh_admin_upload_file',
         'bulk_create_fund_accounts',
+        'add_ondemand_pricing_if_absent',
         'd2c_create_csv_report',
         'offline_verification_service_get',
         'offline_verification_service_put',
@@ -3701,6 +3703,7 @@ class Route
         'paper_nach_fetch_failure'                 => Permission::VERIFY_NACH_UPLOADS,
         'paper_nach_approve_failure'               => Permission::VERIFY_NACH_UPLOADS,
         'bulk_create_fund_accounts'                => '*',
+        'add_ondemand_pricing_if_absent'           => '*',
         'payout_reject_admin_bulk'                 => Permission::REJECT_PAYOUT_BULK,
         'pincode_get'                              => '*',
         'loc_service_admin'                        => Permission::LOC,
