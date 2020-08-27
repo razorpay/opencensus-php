@@ -3572,6 +3572,7 @@ return [
             'content' => [
                 'percent_rate' => 240,
                 'fixed_rate' => 0,
+                'fee_bearer' => 'platform',
             ]
         ]
     ],
@@ -3604,7 +3605,8 @@ return [
         'response' => [
             'content' => [
                 'percent_rate' => 15,
-                'fixed_rate'   => 0
+                'fixed_rate'   => 0,
+                'fee_bearer' => 'platform',
             ]
         ]
     ],

@@ -1881,7 +1881,7 @@ class Service extends Base\Service
             ]
         );
 
-        return $finalSchedulePricing->toArrayPublic();
+        return $finalSchedulePricing->toArrayPublic() + ['fee_bearer' => $this->merchant->getFeeBearer()];
     }
 
     public function addDefaultScheduledEarlySettlementPricingForMerchant($pricingPlanId)
