@@ -186,21 +186,19 @@ class PayoutLinks
 
         $url = $this->getConstructedUrl(self::FETCH_PAYOUT_LINK_PATH);
 
-        $request = [
-            self::PAYOUT_LINK_ID => $this->appendPublicSignForPayoutLink($payoutLinkId)
-        ];
+        $input[self::PAYOUT_LINK_ID] = $this->appendPublicSignForPayoutLink($payoutLinkId);
 
         if($merchantId != "")
         {
             $forAdminResponse = false;
-            $request[self::MERCHANT_ID] = $merchantId;
+            $input[self::MERCHANT_ID] = $merchantId;
         }
 
         $expandArray = array_pull($input, 'expand', []);
 
-        $request['expand'] = $expandArray;
+        $input['expand'] = $expandArray;
 
-        $response = $this->makeRequest($url, $request);
+        $response = $this->makeRequest($url, $input);
 
         $this->processParameters($response, $forAdminResponse, $expandArray);
 

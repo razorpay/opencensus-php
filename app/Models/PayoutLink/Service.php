@@ -110,6 +110,8 @@ class Service extends Base\Service
         }
         else
         {
+            $input['fetch_internal_status'] = true;
+
             $payoutLink = $this->app['payout-links']->fetch($payoutLinkId, $input);
 
             return [Entity::STATUS => $payoutLink['status']];
