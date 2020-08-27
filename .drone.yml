@@ -17,6 +17,8 @@ pipeline:
     # to razorpay
     image: node:12.18.2
     pull: false
+    environment:
+      VERSION: ${DRONE_COMMIT_SHA}
     secrets: [ npm_razorpay_token ]
     commands:
       - npm config set unsafe-perm true
@@ -43,6 +45,14 @@ pipeline:
       event: push
   # Uploaded to a build artifact
   # This is not a deployment
+  upload-sentry-sourcemaps:
+    image: dividab/sentry-cli:1.21.0
+    secrets: [ sentry_auth_token ]
+    commands:
+      - sentry-cli releases files ${DRONE_COMMIT_SHA} upload-sourcemaps ./public/dist
+    when:
+      event: deployment
+      environment: prod
   upload-javascript-to-s3:
     image: razorpay/containers:drone-s3-cache
     endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com

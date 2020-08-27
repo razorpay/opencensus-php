@@ -10,6 +10,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const fontsToProjectMap = {
   pokedex: 'merchant',
 };
+
 module.exports = ({ config, project }) => {
   config.entry = {
     [project]: `./js/${project}/index.js`,
@@ -26,7 +27,7 @@ module.exports = ({ config, project }) => {
 
   //should be removed once commnader and blade pulish their pacakge with babel
   config.module.rules[0].exclude = new RegExp(
-    '/node_modules/(?!(@commander|@razorpay|@universe)/).*/'
+    '/node_modules/(?!(@commander|@razorpay|@universe)/).*/',
   );
 
   //css
@@ -74,7 +75,7 @@ module.exports = ({ config, project }) => {
           },
         },
       ],
-    }
+    },
   );
 
   //we are using react and others mentioned below as global variables in our codebase.
@@ -90,7 +91,7 @@ module.exports = ({ config, project }) => {
     new MiniCssExtractPlugin({
       filename: devMode ? 'css/[name].css' : 'css/[name].[contenthash].css',
       chunkFilename: devMode ? 'css/[id].css' : 'css/[id].[contenthash].css',
-    })
+    }),
   );
 
   //remove unused CopyWebpackPlugin, LoadablePlugin, HtmlWebpackPlugin from default config
@@ -119,14 +120,15 @@ module.exports = ({ config, project }) => {
     }),
     new webpack.DefinePlugin({
       'process.env.PROJECT': JSON.stringify(project),
-    })
+      __VERSION__: JSON.stringify(process.env.VERSION),
+    }),
   );
   config.plugins.shift(); //removed cleanup plugin as outputpath is common for each build
 
   if (isProd) {
     config.plugins.splice(4, 1); //removing compress plugin as we have files othe than dist folder
   }
-  if (project !== 'merchant' && isProd) {
+  if (project !== 'merchant' && project !== 'newAuth' && isProd) {
     config.devtool = false;
   }
 

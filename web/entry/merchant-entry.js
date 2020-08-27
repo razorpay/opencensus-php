@@ -1,12 +1,13 @@
 function executeJS() {
   var cdnDashboardUrl = window.cdnDashboardUrl || '';
   if (typeof Sentry !== 'undefined') {
-    Sentry.onLoad(function() {
+    Sentry.onLoad(function () {
       Sentry.init({
         environment: 'prod',
+        release: __VERSION__,
       });
       if (window.rzp_user && window.rzp_user.current) {
-        Sentry.configureScope(function(scope) {
+        Sentry.configureScope(function (scope) {
           scope.setUser({ id: window.rzp_user.current });
         });
       }
@@ -16,22 +17,22 @@ function executeJS() {
     .call(document.querySelectorAll('script[src]'), -1)[0]
     .src.replace(/[^\/]+$/, '');
 
-  var appendLink = function(src) {
+  var appendLink = function (src) {
     var link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = src;
     document.documentElement.appendChild(link);
   };
 
-  window.websiteAssets.js.forEach(function(src) {
+  window.websiteAssets.js.forEach(function (src) {
     document.write('<script src="' + cdnDashboardUrl + src + '"></script>');
   });
-  window.websiteAssets.css.forEach(function(src) {
+  window.websiteAssets.css.forEach(function (src) {
     appendLink(cdnDashboardUrl + src);
   });
 
   appendLink('https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css');
-  
+
   const script = document.createElement('script');
   script.src = 'https://apis.google.com/js/api:client.js';
   script.async = true;
