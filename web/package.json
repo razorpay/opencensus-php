@@ -3,7 +3,7 @@
   "author": "Team Razorpay",
   "private": true,
   "dependencies": {
-    "@commander/shield": "0.0.1092",
+    "@commander/shield": "0.0.1094",
     "@universe/services": "1.0.30",
     "@universe/utils": "1.0.30",
     "axios": "0.19.2",
