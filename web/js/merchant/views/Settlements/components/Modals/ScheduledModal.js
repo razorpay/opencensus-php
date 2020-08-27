@@ -28,6 +28,7 @@ export default class ScheduledModal extends Component {
 
     this.state = {
       fees: '',
+      feeBearer: '',
       autoEnabled: false,
       isLoading: false,
       modalClosed: false,
@@ -90,6 +91,7 @@ export default class ScheduledModal extends Component {
       .then(response => {
         this.setState({
           fees: response.data.percent_rate,
+          feeBearer: response.data.fee_bearer,
           isLoading: false,
         });
       })
@@ -250,10 +252,19 @@ export default class ScheduledModal extends Component {
                     settled
                   </li>
                   {!this.state.isLoading && (
-                    <li>
-                      A Minimal fee of <b>{`${this.state.fees / 100}%`}</b>{' '}
-                      charged for each settlement
-                    </li>
+                    <div>
+                      {this.state.feeBearer === 'platform' ? (
+                          <li>
+                            A minimal fee of <b>{`${this.state.fees / 100}%`}</b>{' '}
+                            charged for each settlement
+                          </li>
+                        ) : (
+                          <li>
+                            A minimal fee of <b>{`${this.state.fees / 100}%`}</b>{' '}
+                            charged for each settlement, borne by your customers
+                          </li>
+                        )}                      
+                    </div>
                   )}
                 </ul>
               </div>
