@@ -131,30 +131,28 @@ class Processor extends VirtualAccount\Processor
 
 
         // Currently dispatches transaction.created only for bank transfer on banking balance.
-        //skipping dispatching event for first time fund loading on test mode.
-        if ($bankTransfer->isBalanceTypeBanking() === true and
-            $this->isFirstTimeOnTestMode() === false)
-        {
-            (new Transaction\Core)->dispatchEventForTransactionCreated($bankTransfer->transaction);
-        }
+        $this->dispatchEventForTransactionCreated($bankTransfer);
 
         $this->refundOrCapturePayment($bankTransfer);
 
         return $bankTransfer;
     }
 
-    private function isFirstTimeOnTestMode(): bool
+    protected function dispatchEventForTransactionCreated(Base\PublicEntity $bankTransfer)
     {
-        $input = Request::all();
-
-        if ($this->isTestMode() === true and
-            isset($input['first_time_on_test_mode']) === true and
-            $input['first_time_on_test_mode'] === true)
+        if ($bankTransfer->isBalanceTypeBanking() === true)
         {
-            return true;
-        }
+            $transactionCore = new Transaction\Core;
 
-        return false;
+            if ($this->isLiveMode() === true)
+            {
+                $transactionCore->dispatchEventForTransactionCreated($bankTransfer->transaction);
+            }
+            else
+            {
+                $transactionCore->dispatchEventForTransactionCreatedWithoutEmailOrSmsNotification($bankTransfer->transaction);
+            }
+        }
     }
 
     protected function processPaymentForPg(Entity $bankTransfer)

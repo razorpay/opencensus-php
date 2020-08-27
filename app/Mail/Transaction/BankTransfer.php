@@ -21,11 +21,9 @@ class BankTransfer extends Transaction
 
     protected function getSubject(): string
     {
-        $modePrefix = ($this->mode === Mode::TEST) ? Constants::TEST_MODE_PREFIX : '';
-
         return sprintf(
-            "{$modePrefix}Your A/C ending with %s has been credited with INR %s",
-            mask_except_last4($this->balance['account_number']),
+            "Your RazorpayX A/C %s is credited with INR %s",
+            substr(mask_except_last4($this->balance['account_number']), -6),
             amount_format_IN($this->txn['amount']));
     }
 
