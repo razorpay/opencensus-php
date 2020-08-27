@@ -7,7 +7,6 @@ import Amount from 'common/ui/Amount';
 import {
   getPaymentSplitAmongstItems,
 } from 'merchant/views/PaymentPages/PaymentPages/model';
-import { getURLQueryParams } from 'common/utils/rzp-utils';
 
 
 const name = { title: 'Item Name', value: item => item.name };
@@ -50,12 +49,14 @@ export default class PaymentSplitInItems extends React.Component {
   }
 
   get isSectionAllowed() {
-    const
-      queryParams = getURLQueryParams(this.props.location.search),
-      sourceType = queryParams.source_type;
-    const allowedModules = ['paymentpages', 'paymentbuttons'];
+    let hash = this.props.location.hash;
 
-    return allowedModules.indexOf(sourceType) > -1;
+    if (hash) {
+      hash = hash.substring(1);
+      const allowedModules = ['paymentpages', 'paymentbuttons'];
+
+      return allowedModules.indexOf(hash) > -1;
+    }
   }
 
   render() {

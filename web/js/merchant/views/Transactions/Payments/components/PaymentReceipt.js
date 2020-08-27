@@ -10,7 +10,6 @@ import {
   saveReceipt,
 } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { getURLQueryParams } from 'common/utils/rzp-utils';
 
 @withRouter
 @connect(null, {
@@ -159,12 +158,14 @@ export default class PaymentReceipt extends React.Component {
   };
 
   get isSectionAllowed() {
-    const
-      queryParams = getURLQueryParams(this.props.location.search),
-      sourceType = queryParams.source_type;
-    const allowedModules = ['paymentpages', 'paymentbuttons'];
+    let hash = this.props.location.hash;
 
-    return allowedModules.indexOf(sourceType) > -1;
+    if (hash) {
+      hash = hash.substring(1);
+      const allowedModules = ['paymentpages', 'paymentbuttons'];
+
+      return allowedModules.indexOf(hash) > -1;
+    }
   }
 
   render() {
