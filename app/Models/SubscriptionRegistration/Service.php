@@ -37,6 +37,36 @@ class Service extends Base\Service
 
     public function listTokens(array $input): array
     {
+        if (empty($input[Entity::CUSTOMER_CONTACT]) === false)
+        {
+            $customerContact = array_pull($input, Entity::CUSTOMER_CONTACT);
+
+            $customer = $this->repo->customer->findByContactAndMerchant($customerContact, $this->merchant);
+
+            if ($customer === null)
+            {
+                return (new Base\PublicCollection)->toArrayPublic();
+            }
+
+            $input[Token\Entity::CUSTOMER_ID] = $customer->getId();
+        }
+
+        if (empty($input[Entity::PAYMENT_ID]) === false)
+        {
+            $paymentId = array_pull($input, Entity::PAYMENT_ID);
+
+            try
+            {
+                $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId,$this->merchant);
+
+                $input[Token\Entity::ID] = $payment->getTokenId();
+            }
+            catch (Exception\BadRequestException $e)
+            {
+                return (new Base\PublicCollection)->toArrayPublic();
+            }
+        }
+
         $result = $this->repo->subscription_registration->fetchRecurringTokensByMerchant(
             $this->merchant,
             $input);

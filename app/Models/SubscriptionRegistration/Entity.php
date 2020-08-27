@@ -68,6 +68,9 @@ class Entity extends Base\PublicEntity
     const NACH            = 'nach';
     const SUCCEED         = 'succeed';
 
+    const PAYMENT_ID       = 'payment_id';
+    const CUSTOMER_CONTACT = 'customer_contact';
+
     const DEFAULT_MAX_AMOUNT = 9999900;
 
     protected static $sign = 'subr';

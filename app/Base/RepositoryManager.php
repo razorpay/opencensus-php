@@ -15,6 +15,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
 /**
  * @property Models\Plan\Subscription\Repository                 $subscription
  * @property Models\SubscriptionRegistration\Repository          $subscription_registration
+ * @property Models\Customer\Repository                          $customer
  * @property Models\Customer\Token\Repository                    $token
  * @property Models\Terminal\Repository                          $terminal
  * @property Models\Invoice\Repository                           $invoice
