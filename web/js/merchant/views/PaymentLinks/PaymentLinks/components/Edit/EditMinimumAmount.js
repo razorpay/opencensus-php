@@ -84,7 +84,7 @@ export default class EditMinimumAmount extends React.Component {
   };
 
   render() {
-    const { isRoleAllowedEdit, currency } = this.props;
+    const { isRoleAllowedEdit, isIssued, currency } = this.props;
 
     let content = (
       <div style={{ marginTop: 4 }}>
@@ -102,11 +102,12 @@ export default class EditMinimumAmount extends React.Component {
             <Popover align="top">{PopoverBodyText}</Popover>
           </small>
         </span>
-        {isRoleAllowedEdit && (
-          <Button.Transparent onClick={this.makeEditable} class="Button--Link">
-            Change
-          </Button.Transparent>
-        )}
+        {isRoleAllowedEdit &&
+          isIssued && (
+            <Button.Transparent onClick={this.makeEditable} class="Button--Link">
+              Change
+            </Button.Transparent>
+          )}
       </div>
     );
 

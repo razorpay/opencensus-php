@@ -188,6 +188,7 @@ export default props => {
                           {isMinimumFirstPaymentEnabled &&
                             isPartialPayment && (
                               <EditMinimumAmount
+                                isIssued={isIssued}
                                 value={paymentlink.first_payment_min_amount}
                                 maximum={paymentlink.amount}
                                 currency={paymentlink.currency}
