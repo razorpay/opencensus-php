@@ -375,9 +375,11 @@ app
   
         if(triggerButton) {
           showSpinner();
-          fireDLInitiatedEvents('login.google_oauth');
-          fireDLInitiatedEvents('login.login', {method: 'google-oauth'});
-          isInitiatedEventFired = true;
+          if(!isInitiatedEventFired) {
+            fireDLInitiatedEvents('login.google_oauth');
+            fireDLInitiatedEvents('login.login', { method: 'google-oauth' });
+            isInitiatedEventFired = true;
+          }
         }
     
           if (!googleAuthObj) {
