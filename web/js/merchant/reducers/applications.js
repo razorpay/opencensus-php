@@ -33,6 +33,10 @@ const _makeWebhookPayload = (data, appId) => {
     payload.application_id = appId;
   }
 
+  if (data.alert_email){
+    payload.alert_email = data.alert_email;
+  }
+
   for (let k in data.events) {
     if (data.events.hasOwnProperty(k)) {
       payload.events[k] = data.events[k] ? 1 : 0;
