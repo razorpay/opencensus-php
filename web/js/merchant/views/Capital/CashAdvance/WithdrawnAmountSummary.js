@@ -3,13 +3,7 @@ import Amount from 'common/ui/Amount';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 
-function WithdrawnAmountSummary({
-  principle,
-  interest,
-  repaymentDate,
-  roi,
-  diffDays,
-}) {
+function WithdrawnAmountSummary({ principle, interest, repaymentDate, roi, diffDays }) {
   return (
     <div className="withdrawals__credit-meta">
       <div className="title__wrapper">
@@ -21,10 +15,7 @@ function WithdrawnAmountSummary({
             <div className="description">
               <p>Principle Repayable</p>
             </div>
-            <Amount
-              value={parseFloat(principle * 100).toFixed(2)}
-              className="pull-right"
-            />
+            <Amount value={parseFloat(principle * 100).toFixed(2)} className="pull-right" />
           </div>
         </div>
         <div className="withdrawals__credit-meta__list-item">
@@ -39,10 +30,7 @@ function WithdrawnAmountSummary({
                 <Popover align="top" theme="dark">
                   <PopoverBody>
                     <div class="text-center">
-                      {`(${getFormattedAmountNew(
-                        principle * 100,
-                        true
-                      )} X ${roi}%) * ${diffDays} ${
+                      {`(${getFormattedAmountNew(principle * 100, true)} X ${roi}%) * ${diffDays} ${
                         diffDays > 1 ? 'days' : 'day'
                       }`}
                     </div>
@@ -66,8 +54,8 @@ function WithdrawnAmountSummary({
         </div>
       </div>
       <div className="block-note text-small m-t">
-        Repayment amount will be collected as daily installments from your
-        settlement balance till <strong>{repaymentDate.format('LL')}</strong>.
+        The repayable amount will be collected in equal instalments for the next{' '}
+        <strong>{diffDays}</strong> days
       </div>
     </div>
   );

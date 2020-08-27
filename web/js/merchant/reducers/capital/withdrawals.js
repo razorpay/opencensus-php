@@ -5,6 +5,7 @@ const FETCH_WITHDRAWAL_CONFIG = 'FETCH_WITHDRAWAL_CONFIG';
 const FETCH_SEED_DATA = 'FETCH_SEED_DATA';
 const FETCH_WITHDRAWALS = 'FETCH_WITHDRAWALS';
 const FETCH_WITHDRAWAL_DETAILS = 'FETCH_WITHDRAWAL_DETAILS';
+const FETCH_DESTINATION_DETAILS = 'FETCH_DESTINATION_DETAILS';
 
 export const fetchSeedData = () => {
   const withdrawal = new Withdrawal();
@@ -15,7 +16,7 @@ export const fetchSeedData = () => {
   };
 };
 
-export const fetchWithdrawalConfiguration = data => {
+export const fetchWithdrawalConfiguration = (data) => {
   const withdrawal = new Withdrawal();
   return {
     type: FETCH_WITHDRAWAL_CONFIG,
@@ -23,7 +24,7 @@ export const fetchWithdrawalConfiguration = data => {
   };
 };
 
-export const fetchWithdrawalConfigurationByMerchantID = data => {
+export const fetchWithdrawalConfigurationByMerchantID = (data) => {
   const withdrawal = new Withdrawal();
   return {
     type: FETCH_WITHDRAWAL_CONFIG,
@@ -31,7 +32,15 @@ export const fetchWithdrawalConfigurationByMerchantID = data => {
   };
 };
 
-export const fetchWithdrawals = data => {
+export const fetchDestinationAccountDetails = (data) => {
+  const withdrawal = new Withdrawal();
+  return {
+    type: FETCH_DESTINATION_DETAILS,
+    payload: withdrawal.fetchDestinationAccountDetails(data),
+  };
+};
+
+export const fetchWithdrawals = (data) => {
   const withdrawal = new Withdrawal();
   return {
     type: FETCH_WITHDRAWALS,
@@ -39,7 +48,7 @@ export const fetchWithdrawals = data => {
   };
 };
 
-export const fetchWithdrawalDetails = data => {
+export const fetchWithdrawalDetails = (data) => {
   const withdrawal = new Withdrawal();
   return {
     type: FETCH_WITHDRAWAL_DETAILS,
@@ -47,7 +56,7 @@ export const fetchWithdrawalDetails = data => {
   };
 };
 
-export const createWithdrawal = payload => {
+export const createWithdrawal = (payload) => {
   const withdrawal = new Withdrawal();
   return withdrawal.createWithdrawal(payload);
 };
@@ -71,7 +80,12 @@ const getInitialState = () => {
     },
     seedData: {
       loading: false,
-      data: [],
+      data: null,
+      error: null,
+    },
+    destinationAccountDetails: {
+      loading: false,
+      data: null,
       error: null,
     },
   };
@@ -178,6 +192,30 @@ export default function(state = initialState, action) {
         },
       });
 
+    case `${FETCH_DESTINATION_DETAILS}::PENDING`:
+      return merge(state, {
+        destinationAccountDetails: {
+          loading: true,
+          data: {},
+        },
+      });
+
+    case `${FETCH_DESTINATION_DETAILS}::SUCCESS`:
+      return merge(state, {
+        destinationAccountDetails: {
+          loading: false,
+          data: action.payload.data.destination_account,
+        },
+      });
+
+    case `${FETCH_DESTINATION_DETAILS}::ERROR`:
+      return merge(state, {
+        destinationAccountDetails: {
+          loading: false,
+          data: {},
+          error: action.payload.errors,
+        },
+      });
     default:
       return state;
   }

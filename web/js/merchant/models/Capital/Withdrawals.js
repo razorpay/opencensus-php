@@ -23,21 +23,14 @@ export default class LoanOriginationEntity extends GenericEntity {
     `loc/service/twirp/rzp.capital.loc.${domain}.v1.${entity}/${endpoint}`;
 
   fetchSeedData() {
-    return this.request(
-      `${this.resourceUrlPrefix('withdrawal', 'WithdrawalAPI', 'SeedData')}`,
-      {}
-    );
+    return this.request(`${this.resourceUrlPrefix('withdrawal', 'WithdrawalAPI', 'SeedData')}`, {});
   }
 
   fetchWithdrawalConfigurationByMerchantID(data) {
     return this.request(
-      this.resourceUrlPrefix(
-        'withdrawal',
-        'WithdrawalConfigAPI',
-        'ListOrSearchWithdrawalConfig'
-      ),
-      data
-    ).then(res => {
+      this.resourceUrlPrefix('withdrawal', 'WithdrawalConfigAPI', 'ListOrSearchWithdrawalConfig'),
+      data,
+    ).then((res) => {
       if (
         res &&
         !res.errors &&
@@ -57,41 +50,36 @@ export default class LoanOriginationEntity extends GenericEntity {
 
   fetchWithdrawalConfiguration(data) {
     return this.request(
-      this.resourceUrlPrefix(
-        'withdrawal',
-        'WithdrawalConfigAPI',
-        'GetWithdrawalConfig'
-      ),
-      data
+      this.resourceUrlPrefix('withdrawal', 'WithdrawalConfigAPI', 'GetWithdrawalConfig'),
+      data,
     );
   }
 
   createWithdrawal(data) {
     return this.request(
       this.resourceUrlPrefix('withdrawal', 'WithdrawalAPI', 'CreateWithdrawal'),
-      data
+      data,
     );
   }
 
   fetchWithdrawalDetails(data) {
     return this.request(
-      this.resourceUrlPrefix(
-        'withdrawal',
-        'WithdrawalAPI',
-        'GetWithdrawalByReference'
-      ),
-      data
+      this.resourceUrlPrefix('withdrawal', 'WithdrawalAPI', 'GetWithdrawalByReference'),
+      data,
     );
   }
 
   fetchWithdrawals(data) {
     return this.request(
-      `${this.resourceUrlPrefix(
-        'withdrawal',
-        'WithdrawalAPI',
-        'ListOrSearchWithdrawal'
-      )}`,
-      data
+      `${this.resourceUrlPrefix('withdrawal', 'WithdrawalAPI', 'ListOrSearchWithdrawal')}`,
+      data,
+    );
+  }
+
+  fetchDestinationAccountDetails(data) {
+    return this.request(
+      `${this.resourceUrlPrefix('defrayment', 'DestinationAccountsAPI', 'GetDestinationAccount')}`,
+      data,
     );
   }
 }

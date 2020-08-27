@@ -4,28 +4,33 @@ import Amount from 'common/ui/Amount';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { connect } from 'react-redux';
 import {
+  createWithdrawal,
+  fetchDestinationAccountDetails,
   fetchSeedData,
   fetchWithdrawalConfiguration,
-  createWithdrawal,
   fetchWithdrawalConfigurationByMerchantID,
   fetchWithdrawals,
 } from 'merchant/reducers/capital/withdrawals';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { CSSTransition } from 'react-transition-group';
-import { STATUSES, VIEWS, CLOSE_OPTIONS } from './constants';
+import { CLOSE_OPTIONS, STATUSES, VIEWS } from './constants';
 import CreditSummary from './CreditSummary';
 import WithdrawnAmountSummary from './WithdrawnAmountSummary';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import MinWithdrawAmountModal from './MinWithdrawAmountModal';
-import CancelWithdrawalReasons from './CancelWithdrawalReasons';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import TCModal from './TCModal';
+import WorkingHoursPrompt from './WorkingHoursPrompt';
+import { isApolloFinvestServiceable } from '../utils/ApolloFinvestValidations';
+import CancelWithdrawalReasons from './CancelWithdrawalReasons';
 
 @connect(
-  state => ({
+  (state) => ({
     user: state.session.user,
     withdrawalConfigurationDetails: state.withdrawals.withdrawalConfiguration,
     seedData: state.withdrawals.seedData,
+    destinationAccountDetails: state.withdrawals.destinationAccountDetails,
   }),
   {
     fetchWithdrawalConfiguration: fetchWithdrawalConfiguration,
@@ -35,7 +40,8 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
     openModal,
     closeModal,
     fetchWithdrawals,
-  }
+    fetchDestinationAccountDetails,
+  },
 )
 export default class AmountWithdraw extends React.Component {
   constructor(props) {
@@ -45,9 +51,11 @@ export default class AmountWithdraw extends React.Component {
       selectedDueDate: null,
       withdraw_errors: [],
       isConfirmingWithdraw: false,
+      isConfirmingWithdrawalTC: false,
       currentView: VIEWS.WITHDRAW,
       showRepaymentDetailsBreakup: false,
       isTouched: false,
+      isWithdrawalTCAccepted: false,
     };
     this.state = this.initialState;
   }
@@ -56,10 +64,18 @@ export default class AmountWithdraw extends React.Component {
     const { fetchSeedData } = this.props;
 
     // fetchSeedData();
-    this.fetchWithdrawalConfiguration().then(_ => this.prefillData());
+    this.fetchWithdrawalConfiguration().then((_) => this.prefillData());
+    this.fetchDestinationAccountDetails();
   }
 
-  gaEventDispatcher = eventObject => {
+  fetchDestinationAccountDetails = () => {
+    return this.props.fetchDestinationAccountDetails({
+      reference_id: this.props.user.current,
+      reference_type: 'OWNER_ID',
+    });
+  };
+
+  gaEventDispatcher = (eventObject) => {
     eventObject['eventCategory'] = 'Dashboard CA - Apply';
     window.rzpAnalytics(eventObject);
   };
@@ -76,8 +92,7 @@ export default class AmountWithdraw extends React.Component {
 
   prefillData = () => {
     const maxWithdrawableAmount = this.getMaxWithdrawableAmount();
-    const withdrawalConfigurationDetails = this.props
-      .withdrawalConfigurationDetails.data;
+    const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
     const { start_day_limit } = withdrawalConfigurationDetails.configuration;
     const startDay = moment().add(start_day_limit, 'days');
 
@@ -103,21 +118,21 @@ export default class AmountWithdraw extends React.Component {
     });
   };
 
-  handleWithdrawalAmountChange = e => {
+  handleWithdrawalAmountChange = (e) => {
     e.persist();
     const amount = parseInt(e.currentTarget.value + '00');
     const errors = [];
     if (amount > this.getMaxWithdrawableAmount()) {
       errors.push(
         'Max. amount can be withdrawn is ₹' +
-          getFormattedAmountNew(this.getMaxWithdrawableAmount())
+          getFormattedAmountNew(this.getMaxWithdrawableAmount()),
       );
     }
 
     if (amount < this.getMinWithdrawableAmount()) {
       errors.push(
         'Min. amount can be withdrawn is ₹' +
-          getFormattedAmountNew(this.getMinWithdrawableAmount())
+          getFormattedAmountNew(this.getMinWithdrawableAmount()),
       );
     }
 
@@ -125,7 +140,7 @@ export default class AmountWithdraw extends React.Component {
       errors.push(
         'Amount cannot be more than the credit limit(₹' +
           getFormattedAmountNew(this.getMinWithdrawableAmount()) +
-          ')'
+          ')',
       );
     }
 
@@ -135,21 +150,17 @@ export default class AmountWithdraw extends React.Component {
     });
   };
 
-  handleDueDateChange = date => {
+  handleDueDateChange = (date) => {
     this.setState({
       selectedDueDate: date,
     });
   };
 
-  isDateDisabled = current => {
+  isDateDisabled = (current) => {
     if (!current) return false;
 
-    const withdrawalConfigurationDetails = this.props
-      .withdrawalConfigurationDetails.data;
-    const {
-      start_day_limit,
-      end_day_limit,
-    } = withdrawalConfigurationDetails.configuration;
+    const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
+    const { start_day_limit, end_day_limit } = withdrawalConfigurationDetails.configuration;
 
     const startDay = moment()
       .add(start_day_limit, 'days')
@@ -163,12 +174,8 @@ export default class AmountWithdraw extends React.Component {
   };
 
   getRepayableAmount = () => {
-    const withdrawalConfigurationDetails = this.props
-      .withdrawalConfigurationDetails.data;
-    const {
-      start_day_limit,
-      interest,
-    } = withdrawalConfigurationDetails.configuration;
+    const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
+    const { start_day_limit, interest } = withdrawalConfigurationDetails.configuration;
     const startDay = moment();
 
     const selectedDate = moment(this.state.selectedDueDate).endOf('day');
@@ -188,50 +195,36 @@ export default class AmountWithdraw extends React.Component {
   };
 
   getInternalCreditBalance = () => {
-    const withdrawalConfigurationDetails = this.props
-      .withdrawalConfigurationDetails.data;
-    return (
-      parseInt(
-        withdrawalConfigurationDetails.configuration.internal_credit_limit
-      ) -
-      parseInt(
-        withdrawalConfigurationDetails.principal_outstanding_balance || 0
-      )
-    );
+    const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
+    const internalBalance =
+      parseInt(withdrawalConfigurationDetails.configuration.internal_credit_limit) -
+      parseInt(withdrawalConfigurationDetails.principal_outstanding_balance || 0);
+    return internalBalance > 0 ? internalBalance : 0;
   };
 
   getMaxWithdrawableAmount = () => {
-    const withdrawalConfigurationDetails = this.props
-      .withdrawalConfigurationDetails.data;
+    const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
     const {
       max_withdraw_amount,
       internal_credit_limit,
       min_withdraw_amount,
     } = withdrawalConfigurationDetails.configuration;
 
-    const maxAmount = Math.min(
-      parseInt(max_withdraw_amount),
-      this.getInternalCreditBalance()
-    );
+    const maxAmount = Math.min(parseInt(max_withdraw_amount), this.getInternalCreditBalance());
 
     const minAmount = parseInt(min_withdraw_amount);
     return maxAmount > 0 ? (maxAmount > minAmount ? maxAmount : minAmount) : 0;
   };
 
   getMinWithdrawableAmount = () => {
-    const withdrawalConfigurationDetails = this.props
-      .withdrawalConfigurationDetails.data;
+    const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
 
-    return parseInt(
-      withdrawalConfigurationDetails.configuration.min_withdraw_amount
-    );
+    return parseInt(withdrawalConfigurationDetails.configuration.min_withdraw_amount);
   };
 
   canWithdraw = () => {
     const { withdrawalAmount, selectedDueDate, withdraw_errors } = this.state;
-    return (
-      !!withdrawalAmount && !!selectedDueDate && withdraw_errors.length === 0
-    );
+    return !!withdrawalAmount && !!selectedDueDate && withdraw_errors.length === 0;
   };
 
   confirmWithdraw = () => {
@@ -239,9 +232,16 @@ export default class AmountWithdraw extends React.Component {
       eventAction: 'Dashboard CA - Withdraw',
       eventLabel: 'Withdraw | Withdraw Now',
     });
-    this.setState({
-      isConfirmingWithdraw: true,
-    });
+
+    if (this.isTCMandatoryLender()) {
+      this.setState({
+        isConfirmingWithdrawalTC: true,
+      });
+    } else {
+      this.setState({
+        isConfirmingWithdraw: true,
+      });
+    }
   };
 
   withdraw = async () => {
@@ -252,8 +252,7 @@ export default class AmountWithdraw extends React.Component {
       eventLabel: 'Withdraw | Confirm',
     });
 
-    const withdrawalConfigurationDetails = this.props
-      .withdrawalConfigurationDetails.data;
+    const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
     const { withdrawalAmount, selectedDueDate } = this.state;
 
     const payload = {
@@ -332,6 +331,8 @@ export default class AmountWithdraw extends React.Component {
             this.props.closeModal();
             this.setState({
               isConfirmingWithdraw: false,
+              isConfirmingWithdrawalTC: false,
+              isWithdrawalTCAccepted: false,
             });
           }}
         />
@@ -340,7 +341,7 @@ export default class AmountWithdraw extends React.Component {
     });
   };
 
-  toggleWithdrawView = fromWhere => {
+  toggleWithdrawView = (fromWhere) => {
     this.gaEventDispatcher({
       eventAction: `Withdraw | ${fromWhere}`,
     });
@@ -353,7 +354,7 @@ export default class AmountWithdraw extends React.Component {
         ? 'Withdraw | Hide Breakup'
         : 'Withdraw | Show Breakup',
     });
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       showRepaymentDetailsBreakup: !prevState.showRepaymentDetailsBreakup,
     }));
   };
@@ -368,47 +369,88 @@ export default class AmountWithdraw extends React.Component {
     return this.getInternalCreditBalance() > this.getMinWithdrawableAmount();
   };
 
+  isTCMandatoryLender = () => {
+    // TODO: take this WC
+    const lender = 'APOLLO_FINVEST';
+
+    return lender === 'APOLLO_FINVEST';
+  };
+
+  isTCAccepted = () => {
+    if (this.isTCMandatoryLender()) {
+      return this.state.isWithdrawalTCAccepted;
+    } else {
+      return true;
+    }
+  };
+
+  openLenderTCModal = () => {
+    this.props.openModal({
+      style: {
+        content: {
+          maxWidth: 640,
+        },
+      },
+      component: (
+        <TCModal
+          onClose={this.props.closeModal}
+          dueDate={this.state.selectedDueDate}
+          amountSummary={this.getRepayableAmount()}
+          trackGA={this.gaEventDispatcher}
+          destinationAccountDetails={this.props.destinationAccountDetails}
+        />
+      ),
+    });
+  };
+
+  isLenderServiceable = () => {
+    //checks if the current time is greater than sunday 12 AM and less
+    // than Friday 5:00PM
+    return isApolloFinvestServiceable(moment());
+  };
+
+  getCannotWithdrawDueToUnserviceableCTA = () => {
+    return (
+      <button
+        class="btn btn-outline"
+        onClick={() => {
+          this.gaEventDispatcher({
+            eventAction: 'Low Balance | Why can' + "'t I withdraw",
+          });
+
+          this.props.openModal({
+            size: 'small',
+            component: (
+              <WorkingHoursPrompt
+                availableBalance={this.getInternalCreditBalance()}
+                minWithdrawalAmount={this.getMinWithdrawableAmount()}
+                closeModal={this.props.closeModal}
+                repayDues={this.props.repayDues}
+                trackGA={this.gaEventDispatcher}
+              />
+            ),
+          });
+        }}
+      >
+        Why can't I withdraw?
+      </button>
+    );
+  };
+
   getWithdrawCTA = () => {
-    const withdrawalConfigurationDetails = this.props
-      .withdrawalConfigurationDetails.data;
-    const withdrawConfigLoading = this.props.withdrawalConfigurationDetails
-      .loading;
+    const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
+    const withdrawConfigLoading = this.props.withdrawalConfigurationDetails.loading;
 
     const { seedData } = this.props;
-    if (
-      !withdrawalConfigurationDetails ||
-      withdrawConfigLoading ||
-      seedData.loading
-    )
-      return null;
+    if (!withdrawalConfigurationDetails || withdrawConfigLoading || seedData.loading) return null;
 
     if (!this.isMinWithdrawalBalanceAvailable()) {
-      return (
-        <button
-          class="btn btn-outline"
-          onClick={() => {
-            this.gaEventDispatcher({
-              eventAction: "Low Balance | Why can't I withdraw",
-            });
-
-            this.props.openModal({
-              size: 'small',
-              component: (
-                <MinWithdrawAmountModal
-                  availableBalance={this.getInternalCreditBalance()}
-                  minWithdrawalAmount={this.getMinWithdrawableAmount()}
-                  closeModal={this.props.closeModal}
-                  repayDues={this.props.repayDues}
-                  trackGA={this.gaEventDispatcher}
-                />
-              ),
-            });
-          }}
-        >
-          Why can't I withdraw?
-        </button>
-      );
+      return this.getCannotWithdrawDueToLowBalanceCTA();
     }
+    if (this.isTCMandatoryLender() && !this.isLenderServiceable()) {
+      return this.getCannotWithdrawDueToUnserviceableCTA();
+    }
+
     return (
       <React.Fragment>
         {!this.state.isConfirmingWithdraw ? (
@@ -437,96 +479,108 @@ export default class AmountWithdraw extends React.Component {
     );
   };
 
+  getCannotWithdrawDueToLowBalanceCTA = () => {
+    return (
+      <button
+        class="btn btn-outline"
+        onClick={() => {
+          this.gaEventDispatcher({
+            eventAction: 'Low Balance | Why can' + "'t I withdraw",
+          });
+
+          this.props.openModal({
+            size: 'small',
+            component: (
+              <MinWithdrawAmountModal
+                availableBalance={this.getInternalCreditBalance()}
+                minWithdrawalAmount={this.getMinWithdrawableAmount()}
+                closeModal={this.props.closeModal}
+                repayDues={this.props.repayDues}
+                trackGA={this.gaEventDispatcher}
+              />
+            ),
+          });
+        }}
+      >
+        Why can't I withdraw?
+      </button>
+    );
+  };
+
+  getWithdrawalTCAcceptanceForm = (withdrawalAmount) => {
+    return (
+      <div class="tc-form-container flex">
+        <div class="tc-form-field flex">
+          <div class="amount-wrapper">
+            <Amount value={withdrawalAmount * 100} />
+          </div>
+          <Input.Check
+            class="no-margin full-width"
+            fieldLabel={() => (
+              <div>
+                Agree with &nbsp;
+                <Button.Transparent class="pull-right" onClick={this.openLenderTCModal}>
+                  Terms & Conditions
+                </Button.Transparent>
+              </div>
+            )}
+            onChange={(e) => {
+              this.setState((prevState) => ({
+                isWithdrawalTCAccepted: !prevState.isWithdrawalTCAccepted,
+              }));
+            }}
+            checked={this.state.isWithdrawalTCAccepted}
+            defaultChecked={false}
+          />
+          <AsyncBtn.Primary
+            class="tc-confirm-cta no-margin"
+            disabled={!this.state.isWithdrawalTCAccepted}
+            onClick={this.withdraw}
+          >
+            Confirm
+          </AsyncBtn.Primary>
+        </div>
+        <Button.Transparent onClick={this.cancelWithdraw}>Cancel</Button.Transparent>
+      </div>
+    );
+  };
+
   withdrawableSection = () => {
-    const { withdrawalAmount } = this.state;
+    const { withdrawalAmount, isConfirmingWithdrawalTC } = this.state;
+
     return (
       <div className="withdrawals__action-container flex">
-        <div>
+        <div class="no-margin full-width" style={{ position: 'relative' }}>
           <h3 className="title text--secondary">Withdraw Amount</h3>
-          <div className="flex">
-            <Input.Group
-              label="How much do you want to withdraw?"
-              className="InputGroup--inline Input--vTop"
-              required
+          <div class="full-width no-margin" style={{ position: 'absolute' }}>
+            <CSSTransition
+              key={'withdrawal-initiate-section'}
+              in={!isConfirmingWithdrawalTC}
+              timeout={300}
+              classNames="withdraw-fade-section"
+              unmountOnExit
             >
-              <div className="Input-content">
-                <Input
-                  addonBefore={'₹'}
-                  type="number"
-                  addonAfter={<small>.00</small>}
-                  name="amount"
-                  onBlur={this.handleBlur}
-                  value={withdrawalAmount}
-                  onChange={this.handleWithdrawalAmountChange}
-                />
-              </div>
-              {this.state.withdraw_errors.length > 0 &&
-                this.state.isTouched && (
-                  <div class="text-danger">
-                    {this.state.withdrawalAmount &&
-                      this.state.withdraw_errors[0]}
-                  </div>
-                )}
-            </Input.Group>
-            <Input.ToCalendar
-              required={false}
-              className="Input--vTop"
-              data-name="date_slot"
-              label={
-                <React.Fragment>
-                  When do you repay by?
-                  <small
-                    className="help-content"
-                    style={{ paddingLeft: '4px' }}
-                  >
-                    <i
-                      className="i i-info-outline"
-                      // onMouseOver={() => trackMouseOver('tenure')}
-                    />
-                    <Popover align="top" theme="dark">
-                      <PopoverBody>
-                        <div className="text-center">
-                          Your equated repayments will start from tomorrow
-                        </div>
-                      </PopoverBody>
-                    </Popover>
-                  </small>
-                </React.Fragment>
-              }
-              defaultValue={
-                this.state.selectedDueDate
-                  ? moment(this.state.selectedDueDate).format('DD-MM-YYYY')
-                  : ''
-              }
-              value={
-                this.state.selectedDueDate
-                  ? moment(this.state.selectedDueDate).format('DD-MM-YYYY')
-                  : ''
-              }
-              onChange={this.handleDueDateChange}
-              addonAfter={<i className="i i-date-range" />}
-              placement="topLeft"
-              allowToday={false}
-              disablePastDates={false}
-              disabledDate={this.isDateDisabled}
-            />
-            <div className="withdrawal-cta-container">
-              {this.getWithdrawCTA()}
-            </div>
+              {this.getWithdrawalForm(withdrawalAmount)}
+            </CSSTransition>
+            <CSSTransition
+              key={'withdrawal-confirm-section'}
+              in={isConfirmingWithdrawalTC}
+              timeout={300}
+              classNames="withdraw-fade-section"
+              unmountOnExit
+            >
+              {this.getWithdrawalTCAcceptanceForm(withdrawalAmount)}
+            </CSSTransition>
           </div>
           {this.state.selectedDueDate && this.state.withdrawalAmount && (
             <div class="repayable-amount-hint">
               <strong>
                 {getFormattedAmountNew(
-                  (this.getRepayableAmount().principle +
-                    this.getRepayableAmount().interest) *
-                    100,
-                  true
+                  (this.getRepayableAmount().principle + this.getRepayableAmount().interest) * 100,
+                  true,
                 )}
               </strong>
-              <span class="repayable-helper-text">
-                &nbsp; will be the repayable amount
-              </span>
+              <span class="repayable-helper-text">&nbsp; will be the repayable amount</span>
               <div class="flex">
                 <div class="text-small full-width no-margin text-strong p-r">
                   <strong>
@@ -542,10 +596,7 @@ export default class AmountWithdraw extends React.Component {
                       </Button.Transparent>
                     )}
                     {this.state.showRepaymentDetailsBreakup && (
-                      <Button.Transparent
-                        class="pull-right"
-                        onClick={this.toggleBreakup}
-                      >
+                      <Button.Transparent class="pull-right" onClick={this.toggleBreakup}>
                         Show Credit Details
                         <i class="i i-chevron-right" />
                       </Button.Transparent>
@@ -560,6 +611,72 @@ export default class AmountWithdraw extends React.Component {
     );
   };
 
+  getWithdrawalForm(withdrawalAmount) {
+    return (
+      <div className="flex">
+        <Input.Group
+          label="How much do you want to withdraw?"
+          className="InputGroup--inline Input--vTop"
+          required
+        >
+          <div className="Input-content">
+            <Input
+              addonBefore={'₹'}
+              type="number"
+              addonAfter={<small>.00</small>}
+              name="amount"
+              onBlur={this.handleBlur}
+              value={withdrawalAmount}
+              onChange={this.handleWithdrawalAmountChange}
+            />
+          </div>
+          {this.state.withdraw_errors.length > 0 && this.state.isTouched && (
+            <div class="text-danger">
+              {this.state.withdrawalAmount && this.state.withdraw_errors[0]}
+            </div>
+          )}
+        </Input.Group>
+        <Input.ToCalendar
+          required={false}
+          className="Input--vTop"
+          data-name="date_slot"
+          format="DD-MM-YYYY"
+          label={
+            <React.Fragment>
+              When do you repay by?
+              <small className="help-content" style={{ paddingLeft: '4px' }}>
+                <i
+                  className="i i-info-outline"
+                  // onMouseOver={() => trackMouseOver('tenure')}
+                />
+                <Popover align="top" theme="dark">
+                  <PopoverBody>
+                    <div className="text-center">
+                      Your equated repayments will start from tomorrow
+                    </div>
+                  </PopoverBody>
+                </Popover>
+              </small>
+            </React.Fragment>
+          }
+          // defaultValue={this.state.selectedDueDate}
+          value={
+            this.state.selectedDueDate
+              ? moment(this.state.selectedDueDate).format('DD-MM-YYYY')
+              : ''
+          }
+          onChange={this.handleDueDateChange}
+          addonAfter={<i className="i i-date-range" />}
+          placement="topLeft"
+          allowToday={false}
+          disablePastDates={false}
+          disabledDate={this.isDateDisabled}
+        />
+        <div className="withdrawal-cta-container">{this.getWithdrawCTA()}</div>
+      </div>
+    );
+  }
+
   withdrawalSuccessView = () => {
     const { selectedDueDate, withdrawalAmount } = this.state;
     const { interest, principle } = this.getRepayableAmount();
@@ -573,17 +690,13 @@ export default class AmountWithdraw extends React.Component {
           </Button.Transparent>
         </div>
         <div className="title-container">
-          <img
-            height={16}
-            src={`/dist/css/assets/success-tick-green.svg`}
-            alt="Loading icon"
-          />
+          <img height={16} src={`/dist/css/assets/success-tick-green.svg`} alt="Loading icon" />
           <h3 className="text--secondary">
-            <strong>Withdraw Request Successful!</strong>
+            <strong>Withdrawal Request Successful!</strong>
           </h3>
         </div>
         <p className="disbursal-details text--secondary">
-          The money will be settled to your bank account within 5 mins. <br />
+          The money will be transferred to your bank account in a few hours. <br />
           The withdrawal request has been successfully sent to bank.
         </p>
         <div className="flex withdrawal-info">
@@ -610,12 +723,8 @@ export default class AmountWithdraw extends React.Component {
             </span>
           </div>
           <div class="m-l m-r">
-            <Button.Primary onClick={() => this.toggleWithdrawView('Done')}>
-              Done
-            </Button.Primary>
-            <Button.Transparent
-              onClick={() => this.toggleWithdrawView('Another Withdrawal')}
-            >
+            <Button.Primary onClick={() => this.toggleWithdrawView('Done')}>Done</Button.Primary>
+            <Button.Transparent onClick={() => this.toggleWithdrawView('Another Withdrawal')}>
               Another Withdrawal
             </Button.Transparent>
           </div>
@@ -640,10 +749,9 @@ export default class AmountWithdraw extends React.Component {
           </h3>
         </div>
         <p className="disbursal-details text--secondary">
-          Oops, The withdrawal request creation failed due to some internal
-          error. <br />
-          Incase if any money has been debited from your withdrawal balance, it
-          will be added back in sometime.
+          Oops, The withdrawal request creation failed due to some internal error. <br />
+          Incase if any money has been debited from your withdrawal balance, it will be added back
+          in sometime.
         </p>
         <div className="flex withdrawal-info">
           <div className="m-r">
@@ -673,9 +781,7 @@ export default class AmountWithdraw extends React.Component {
             >
               Retry
             </AsyncBtn.Primary>
-            <Button.Transparent
-              onClick={() => this.toggleWithdrawView('Cancel')}
-            >
+            <Button.Transparent onClick={() => this.toggleWithdrawView('Cancel')}>
               Cancel
             </Button.Transparent>
           </div>
@@ -684,7 +790,7 @@ export default class AmountWithdraw extends React.Component {
     );
   };
 
-  getTopSection = currentView => {
+  getTopSection = (currentView) => {
     switch (currentView) {
       case VIEWS.WITHDRAW:
         return this.withdrawableSection();
@@ -695,22 +801,16 @@ export default class AmountWithdraw extends React.Component {
     }
   };
 
-  getRightSection = currentView => {
-    const withdrawalConfigurationDetails = this.props
-      .withdrawalConfigurationDetails.data;
-    const withdrawConfigLoading = this.props.withdrawalConfigurationDetails
-      .loading;
+  getRightSection = (currentView) => {
+    const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
+    const withdrawConfigLoading = this.props.withdrawalConfigurationDetails.loading;
 
     const { seedData } = this.props;
 
     switch (currentView) {
       case VIEWS.WITHDRAW:
       case VIEWS.WITHDRAW_FAIL:
-        if (
-          !withdrawalConfigurationDetails ||
-          withdrawConfigLoading ||
-          seedData.loading
-        )
+        if (!withdrawalConfigurationDetails || withdrawConfigLoading || seedData.loading)
           return <CreditSummary loading={true} />;
         else {
           return (
@@ -726,27 +826,15 @@ export default class AmountWithdraw extends React.Component {
       case VIEWS.WITHDRAW_SUCCESS:
         const meta = this.getRepayableAmount();
         return (
-          <WithdrawnAmountSummary
-            {...meta}
-            repaymentDate={moment(this.state.selectedDueDate)}
-          />
+          <WithdrawnAmountSummary {...meta} repaymentDate={moment(this.state.selectedDueDate)} />
         );
     }
   };
 
-  getLeftSection = currentView => {
-    if (
-      currentView !== VIEWS.WITHDRAW ||
-      !this.state.showRepaymentDetailsBreakup
-    )
-      return null;
+  getLeftSection = (currentView) => {
+    if (currentView !== VIEWS.WITHDRAW || !this.state.showRepaymentDetailsBreakup) return null;
     const meta = this.getRepayableAmount();
-    return (
-      <WithdrawnAmountSummary
-        {...meta}
-        repaymentDate={moment(this.state.selectedDueDate)}
-      />
-    );
+    return <WithdrawnAmountSummary {...meta} repaymentDate={moment(this.state.selectedDueDate)} />;
   };
 
   render() {
@@ -762,9 +850,7 @@ export default class AmountWithdraw extends React.Component {
         >
           <div
             className={`repayment_details_wrapper ${
-              showRepaymentDetailsBreakup && currentView === VIEWS.WITHDRAW
-                ? 'show'
-                : 'hide'
+              showRepaymentDetailsBreakup && currentView === VIEWS.WITHDRAW ? 'show' : 'hide'
             }`}
           >
             {this.getLeftSection(currentView)}
@@ -773,18 +859,13 @@ export default class AmountWithdraw extends React.Component {
 
         {this.getTopSection(currentView)}
         <CSSTransition
-          in={
-            !showRepaymentDetailsBreakup ||
-            currentView === VIEWS.WITHDRAW_SUCCESS
-          }
+          in={!showRepaymentDetailsBreakup || currentView === VIEWS.WITHDRAW_SUCCESS}
           timeout={500}
           classNames="display"
           unmountOnExit
         >
           <div
-            className={`credit_details_wrapper ${
-              !showRepaymentDetailsBreakup ? 'show' : 'hide'
-            }`}
+            className={`credit_details_wrapper ${!showRepaymentDetailsBreakup ? 'show' : 'hide'}`}
           >
             {this.getRightSection(currentView)}
           </div>

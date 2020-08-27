@@ -47,7 +47,7 @@
     color: rgba(22, 47, 86, 0.87);
     background-position: right;
     display: flex;
-    padding-left: 152px;
+    padding-left: 132px;
     overflow-x: hidden;
     &:before
       content: '';
@@ -62,10 +62,16 @@
       margin-left: -54px;
       background-position: -54px;
     .withdrawals__action-container
-      padding: 40px 12px 24px 0px;
+      padding: 40px 52px 24px 0;
       width: 100%;
       position: relative;
       z-index: 2;
+      .Input-addons
+        top: 1px;
+        bottom: 1px;
+        line-height: 42px;
+      input
+        height: 42px;
       .InputGroup.InputGroup--inline
         height: 82px;
       .Input--vTop .Input-label
@@ -74,14 +80,74 @@
         font-weight: 900;
         font-size: 24px;
       .repayable-amount-hint
+        position: absolute;
+        bottom: 0;
         margin-top: 18px;
+        width: 100%;
         .repayable-helper-text
           font-size: 13px;
+      .withdraw-fade-section-enter {
+        opacity: 0;
+        transform: translateX(60px);
+      }
+      .withdraw-fade-section-enter-active {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      .withdraw-fade-section-exit {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      .withdraw-fade-section-exit-active {
+        opacity: 0;
+        transform: translateX(-60px);
+      }
+      .withdraw-fade-section-enter-active,
+      .withdraw-fade-section-exit-active {
+        transition: opacity 600ms, transform 600ms;
+      }
+      .tc-form-container
+        margin-top: 50px;
+        margin-bottom: 46px;
+
+        position: absolute;
+        width: 100%;
+        top: 0;
+
+        .tc-form-field
+          align-items: center;
+          height: 44px;
+          border: 1px solid rgba(22, 47, 86, 0.08);
+          border-radius: 2px;
+          margin-right: 24px;
+          flex: 1;
+          input
+            height: 0;
+          .amount-wrapper
+            background: #f8f8f8;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 2px;
+            margin-right: 18px;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            height: 100%;
+            .help-content--currency
+              font-size: 18px;
+              .rzp-amount
+              .rzp-currency, .rzp-whole, rzp-paise
+                font-weight: 600;
+          .tc-confirm-cta
+            height: 100%;
+            border-radius: 1px;
+
       .withdrawal-cta-container
-        height: 84px;
+        height: 82px;
         align-items: flex-end;
         display: flex;
-        margin: 2px 12px 0;
+        margin: 10px 12px 0;
+        .btn
+          height: 42px;
       .title-container
         display: flex;
         margin-bottom: 10px;
@@ -175,10 +241,10 @@
       margin-left: -60px;
       &.show
         //transition: all 200ms ease-in-out;
-        width: 420px;
+        width: 390px;
         opacity: 0.5;
         .withdrawals__credit-meta
-          width: 420px;
+          width: 390px;
       &.hide
         //width: 0;
         transform: translate(-20%, 0);
@@ -192,11 +258,11 @@
         transition: all 200ms ease-in-out;
       &.display-enter-done
         opacity: 1;
-        width: 420px;
+        width: 390px;
         transition: all 200ms ease-in-out;
         margin-left: 0;
         .withdrawals__credit-meta
-          width: 420px;
+          width: 390px;
 
       .withdrawals__credit-meta
         border-left: none;
@@ -248,3 +314,11 @@
     border-width: 0;
     border-right-width: 3px;
 
+
+.withdrawals-tc-modal
+  .content-wrapper
+    margin: 12px 28px 24px;
+    overflow: scroll;
+    .tc-content
+      line-height: 24px;
+      font-size: 13px;
