@@ -159,6 +159,7 @@ class Validator extends Base\Validator
 
     protected static $upiIciciTerminalRules = [
         Entity::GATEWAY                    => 'required|in:upi_icici',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string',
         Entity::UPI                        => 'required|boolean|in:1',

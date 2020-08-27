@@ -898,6 +898,17 @@ trait UpiRecurring
             'remind_at' => $metadata->getRemindAt(),
         ];
 
+        $env = $this->app['env'];
+
+        if (($env === 'func') or
+            ($env === 'automation') or
+            ($env === 'bvt'))
+        {
+            $reminderData = [
+                'remind_at' => Carbon::now()->getTimestamp()+1,
+            ];
+        }
+
         $namespace  = ReminderProcessor::UPI_AUTO_RECURRING;
         $paymentId  = $metadata->getPaymentId();
         $merchantId = Merchant\Account::SHARED_ACCOUNT;
