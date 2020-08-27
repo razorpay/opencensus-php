@@ -808,7 +808,7 @@ class Processor extends Base\Core
 
         list ($status, $_) = $this->isMerchantSettlementAllowed($merchant, $forceFlag);
 
-        if ($status === false)
+        if (($status === false) or ((new Bucket\Core)->shouldProcessViaNewService($merchant->getId()) === true))
         {
             return [
                 'settlement_count' => 0,
