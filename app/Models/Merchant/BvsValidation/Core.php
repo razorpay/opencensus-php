@@ -13,17 +13,19 @@ class Core extends Base\Core
      * this function is called to process the response pushed to kafka queue by BVS,
      * here we update the bvs_validation entity status based on the response
      *
-     * @param array $validationObject
+     * @param array $payload
      *
      * @throws \Throwable
      */
-    public function Process(array $validationObject)
+    public function Process(array $payload)
     {
-        (new Validator())->validateInput('process_kafka_message', $validationObject);
+        (new Validator())->validateInput('process_kafka_message', $payload);
 
-        $validation = $this->repo->bvs_validation->findByPublicId($validationObject[Entity::VALIDATION_ID]);
+        $validationObj = $this->getvalidationObject($payload);
 
-        $validation->edit($validationObject);
+        $validation = $this->repo->bvs_validation->findOrFail($validationObj[Entity::VALIDATION_ID]);
+
+        $validation->edit($validationObj);
 
         $merchantId = $validation->getOwnerId();
 
@@ -58,7 +60,7 @@ class Core extends Base\Core
     {
         $panBvsToKycVerificationResult = Constants::MATCH;
 
-        if (($validation->getStatus() === Constants::SUCCESS) and
+        if (($validation->getValidationStatus() === Constants::SUCCESS) and
             ($merchantDetails->getPoiVerificationStatus() != Detail\POIStatus::VERIFIED))
         {
             $panBvsToKycVerificationResult = Constants::MISMATCH;
@@ -72,7 +74,7 @@ class Core extends Base\Core
 
         if ((($merchantDetails->getPoiVerificationStatus() === Detail\POIStatus::FAILED) or
              ($merchantDetails->getPoiVerificationStatus() === Detail\POIStatus::INCORRECT_DETAILS)) and
-            ($validation->getStatus() != Constants::FAILED))
+            ($validation->getValidationStatus() != Constants::FAILED))
         {
             $panBvsToKycVerificationResult = Constants::MISMATCH;
         }
@@ -80,7 +82,7 @@ class Core extends Base\Core
         $bvsPoiVerificationMetrics = [
             Constants::BVS_KYC_VERIFICATION_RESULT      => $panBvsToKycVerificationResult,
             Detail\Constants::POI_STATUS                => $merchantDetails->getPoiVerificationStatus(),
-            Constants::BVS_DOCUMENT_VERIFICATION_STATUS => $validation->getStatus()
+            Constants::BVS_DOCUMENT_VERIFICATION_STATUS => $validation->getValidationStatus()
         ];
         $this->trace->count(Detail\Metric::BVS_VALIDATION_STATUS_TOTAL, $bvsPoiVerificationMetrics);
     }
@@ -99,5 +101,22 @@ class Core extends Base\Core
         $validation->build($input);
 
         $this->repo->bvs_validation->saveOrFail($validation);
+    }
+
+    /**
+     * convert payload consumed form kafka queue to bvs_validation object
+     *
+     * @param array $payload
+     *
+     * @return array
+     */
+    public function getValidationObject(array $payload)
+    {
+        return [
+            Entity::VALIDATION_ID     => $payload[Constants::VALIDATION_ID],
+            Entity::VALIDATION_STATUS => $payload[Constants::STATUS],
+            Entity::ERROR_CODE        => $payload[Constants::ERROR_CODE] ?? null,
+            Entity::ERROR_DESCRIPTION => $payload[Constants::ERROR_DESCRIPTION] ?? null,
+        ];
     }
 }

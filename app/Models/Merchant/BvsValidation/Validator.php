@@ -12,7 +12,7 @@ class Validator extends Base\Validator
         Entity::OWNER_ID          => 'required|string|max:14',
         Entity::OWNER_TYPE        => 'required|string|in:merchant',
         Entity::PLATFORM          => 'required|string|in:pg,capital',
-        Entity::STATUS            => 'required|string|in:success,failed,captured',
+        Entity::VALIDATION_STATUS => 'required|string|in:success,failed,captured',
         Entity::ERROR_DESCRIPTION => 'sometimes|string|max:255',
         Entity::ERROR_CODE        => 'sometimes|string|max:255',
     ];
@@ -23,15 +23,15 @@ class Validator extends Base\Validator
         Entity::OWNER_ID          => 'sometimes|string|max:14',
         Entity::OWNER_TYPE        => 'sometimes|string|in:merchant',
         Entity::PLATFORM          => 'sometimes|string|in:pg,capital',
-        Entity::STATUS            => 'required|string|in:success,failed,captured',
+        Entity::VALIDATION_STATUS => 'required|string|in:success,failed,captured',
         Entity::ERROR_DESCRIPTION => 'sometimes|string|max:255',
         Entity::ERROR_CODE        => 'sometimes|string|max:255',
     ];
 
     protected static $processKafkaMessageRules = [
-        Entity::VALIDATION_ID     => 'required|string|max:14',
-        Entity::STATUS            => 'required|string|max:255',
-        Entity::ERROR_CODE        => 'sometimes|string|max:255',
-        Entity::ERROR_DESCRIPTION => 'sometimes|string|max:255',
+        Constants::VALIDATION_ID     => 'required|string|max:14',
+        Constants::STATUS            => 'required|string|max:255',
+        Constants::ERROR_CODE        => 'sometimes|string|max:255',
+        Constants::ERROR_DESCRIPTION => 'sometimes|string|max:255',
     ];
 }

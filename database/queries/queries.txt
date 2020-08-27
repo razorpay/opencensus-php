@@ -5942,3 +5942,5 @@ ALTER TABLE users
     MODIFY COLUMN password VARCHAR(100) COLLATE utf8_bin NULL,
     ADD COLUMN oauth_provider json DEFAULT NULL;
 
+ALTER TABLE bvs_validation
+    CHANGE COLUMN `status` `validation_status` enum('success','failed','captured') not null;

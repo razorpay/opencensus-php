@@ -11,7 +11,7 @@ class Entity extends PublicEntity
     const PLATFORM          = 'platform';
     const OWNER_TYPE        = 'owner_type';
     const OWNER_ID          = 'owner_id';
-    const STATUS            = 'status';
+    const VALIDATION_STATUS = 'validation_status';
     const ERROR_CODE        = 'error_code';
     const ERROR_DESCRIPTION = 'error_description';
 
@@ -25,7 +25,7 @@ class Entity extends PublicEntity
         self::PLATFORM,
         self::OWNER_TYPE,
         self::OWNER_ID,
-        self::STATUS,
+        self::VALIDATION_STATUS,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
     ];
@@ -36,7 +36,7 @@ class Entity extends PublicEntity
         self::PLATFORM,
         self::OWNER_TYPE,
         self::OWNER_ID,
-        self::STATUS,
+        self::VALIDATION_STATUS,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
         self::CREATED_AT,
@@ -68,9 +68,9 @@ class Entity extends PublicEntity
         return $this->getAttribute(self::OWNER_TYPE);
     }
 
-    public function getStatus(): string
+    public function getValidationStatus(): string
     {
-        return $this->getAttribute(self::STATUS);
+        return $this->getAttribute(self::VALIDATION_STATUS);
     }
 
     public function getErrorCode()

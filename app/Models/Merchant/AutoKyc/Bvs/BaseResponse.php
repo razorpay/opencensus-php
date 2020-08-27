@@ -28,8 +28,8 @@ class BaseResponse implements Response
     public function getResponseData()
     {
         $responseData = [
-            Entity::VALIDATION_ID => $this->response->getValidationId(),
-            Entity::STATUS        => $this->response->getStatus(),
+            Entity::VALIDATION_ID     => $this->response->getValidationId(),
+            Entity::VALIDATION_STATUS => $this->response->getStatus(),
         ];
 
         if ($this->response->getError() !== null)

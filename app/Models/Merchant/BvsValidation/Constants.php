@@ -11,6 +11,14 @@ class Constants
     const FAILED   = 'failed';
     const CAPTURED = 'captured';
 
+    //
+    // message keys Kafka consumer
+    //
+    const VALIDATION_ID     = 'validation_id';
+    const STATUS            = 'status';
+    const ERROR_CODE        = 'error_code';
+    const ERROR_DESCRIPTION = 'error_description';
+
     const BVS_KYC_VERIFICATION_RESULT       = 'bvs_kyc_verification_result';
     const MATCH                             = 'match';
     const MISMATCH                          = 'mismatch';
@@ -24,7 +32,7 @@ class Constants
         self::CAPITAL,
     ];
 
-    const STATUS = [
+    const VALIDATION_STATUS = [
         self::SUCCESS,
         self::FAILED,
         self::CAPTURED,
