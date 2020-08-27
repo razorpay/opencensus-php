@@ -464,6 +464,12 @@ abstract class Base extends BaseCore
             return true;
         }
 
+        // For cred, amount doesn't matches with credits because of the discount.
+        if ($this->source->isAppCred() === true)
+        {
+            return true;
+        }
+
         return ($this->txn->getCredit() === $this->txn->getAmount());
     }
 
