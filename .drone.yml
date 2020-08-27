@@ -45,14 +45,6 @@ pipeline:
       event: push
   # Uploaded to a build artifact
   # This is not a deployment
-  upload-sentry-sourcemaps:
-    image: dividab/sentry-cli:1.21.0
-    secrets: [ sentry_auth_token ]
-    commands:
-      - sentry-cli releases files ${DRONE_COMMIT_SHA} upload-sourcemaps ./public/dist
-    when:
-      event: deployment
-      environment: prod
   upload-javascript-to-s3:
     image: razorpay/containers:drone-s3-cache
     endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
@@ -98,6 +90,14 @@ pipeline:
       - aws_region
     when:
       event: deployment
+  upload-sentry-sourcemaps:
+    image: dividab/sentry-cli:1.21.0
+    secrets: [ sentry_auth_token ]
+    commands:
+      - sentry-cli releases files ${DRONE_COMMIT_SHA} upload-sourcemaps ./public/dist
+    when:
+      event: deployment
+      environment: prod
   deploy-s3-beta:
     image: node:9-alpine
     environment:
