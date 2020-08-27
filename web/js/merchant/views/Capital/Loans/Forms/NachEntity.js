@@ -36,7 +36,7 @@ const createFormData = (form = {}) => {
     getNach,
     changeActiveState,
     ...NotificationActions,
-  }
+  },
 )
 class NachEntity extends Component {
   constructor() {
@@ -47,20 +47,22 @@ class NachEntity extends Component {
     };
   }
   componentDidMount() {
-    triggerHotjarRecording(HOTJAR_TRIGGER.LOANS_SUBMIT_NACH);
+    triggerHotjarRecording(HOTJAR_TRIGGERS.LOANS_SUBMIT_NACH);
   }
   createNach = () => {
     const { loanApplicationDetails, user } = this.props;
     const {
       meta,
-      promoter_details: { data: { applicant } },
+      promoter_details: {
+        data: { applicant },
+      },
       credit_offer_details,
       accepted_offer_details,
     } = loanApplicationDetails;
 
     const acceptedCreditOfferId = accepted_offer_details.data.credit_offer_id;
     const creditOffer = credit_offer_details.data.credit_offers.find(
-      (credit_offer) => credit_offer.id === acceptedCreditOfferId
+      (credit_offer) => credit_offer.id === acceptedCreditOfferId,
     );
 
     const payload = {
@@ -222,7 +224,7 @@ class NachEntity extends Component {
   handleNext = () => {
     this.props._trackNavigationActions('NEXT', APPLICATION_STATES.SLOT_SELECTION_PENDING);
     return this.props.fetchLoanApplicationMeta(
-      this.props.loanApplicationDetails.meta.data.application.id
+      this.props.loanApplicationDetails.meta.data.application.id,
     );
   };
 
@@ -270,8 +272,8 @@ class NachEntity extends Component {
 
     if (entity && entity.file_store_id) {
       return (
-        <div>
-          <div className="panel panel-default" style={{ margin: 20 }}>
+        <div class="m-all">
+          <div className="panel panel-default m-all">
             <div className="panel-body">
               <strong>Signed Nach Form</strong>
               <p className="text--secondary">You have uploaded the signed Nach Form</p>
@@ -287,11 +289,14 @@ class NachEntity extends Component {
               </a>
             </div>
           </div>
-          <div className="actions pull-right m-r">
+          <div className="actions pull-right">
             <Button.Transparent
               onClick={() => {
-                this.props._trackNavigationActions('BACK', APPLICATION_STATES.CONTRACT_PENDING);
-                this.props.changeActiveState(APPLICATION_STATES.CONTRACT_PENDING);
+                this.props._trackNavigationActions(
+                  'BACK',
+                  APPLICATION_STATES.CREDIT_OFFER_GENERATED,
+                );
+                this.props.changeActiveState(APPLICATION_STATES.CREDIT_OFFER_GENERATED);
               }}
             >
               <i className="i i-chevron-left" />
@@ -302,7 +307,7 @@ class NachEntity extends Component {
               onClick={() => {
                 this.props._trackNavigationActions(
                   'NEXT',
-                  APPLICATION_STATES.SLOT_SELECTION_PENDING
+                  APPLICATION_STATES.SLOT_SELECTION_PENDING,
                 );
                 this.props.changeActiveState(APPLICATION_STATES.SLOT_SELECTION_PENDING);
               }}
@@ -339,7 +344,7 @@ class NachEntity extends Component {
         </AsyncBtn.Primary>
         <button
           className="btn btn-link pull-right"
-          onClick={() => this.props.changeActiveState(APPLICATION_STATES.CONTRACT_PENDING)}
+          onClick={() => this.props.changeActiveState(APPLICATION_STATES.CREDIT_OFFER_GENERATED)}
         >
           <i className="i i-chevron-left" />
           Back

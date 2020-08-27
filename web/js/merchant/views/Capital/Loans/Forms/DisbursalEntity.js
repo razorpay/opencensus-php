@@ -31,7 +31,7 @@ import { triggerHotjarRecording } from 'common/utils/hotjar';
     fetchLoanApplicationMeta,
     openModal,
     closeModal,
-  }
+  },
 )
 class DisbursalEntity extends Component {
   state = {
@@ -66,7 +66,7 @@ class DisbursalEntity extends Component {
 
     const acceptedCreditOfferId = accepted_offer_details.data.credit_offer_id;
     const creditOffer = credit_offer_details.data.credit_offers.find(
-      (credit_offer) => credit_offer.id === acceptedCreditOfferId
+      (credit_offer) => credit_offer.id === acceptedCreditOfferId,
     );
 
     return (

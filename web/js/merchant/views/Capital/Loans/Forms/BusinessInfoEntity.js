@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
-import { Form, Field, reduxForm, isDirty } from 'redux-form';
+import { Field, Form, isDirty, reduxForm } from 'redux-form';
 import { connect } from 'react-redux';
 import Input from 'common/new-ui/Input';
 import { APPLICATION_STATES, BUSINESS_TYPES, HOTJAR_TRIGGERS } from '../constants';
 import {
-  saveBusinessDetails,
-  saveRequestedLoanAttributes,
+  changeActiveState,
   registerBusiness,
   saveApplicationDetails,
-  changeActiveState,
+  saveBusinessDetails,
+  saveRequestedLoanAttributes,
 } from 'merchant/reducers/capital';
 import { AsyncBtn } from 'common/new-ui/Button';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
@@ -29,7 +29,9 @@ const OutlineLockIcon = <i class="i i-outline-lock" />;
 @connect(
   (state) => {
     if (state.loanApplicationDetails.meta.data.application.id === 'new') {
-      const { session: { user } } = state;
+      const {
+        session: { user },
+      } = state;
       const { loan_attributes: loanAttributes, business_details } = state.loanApplicationDetails;
       return {
         session: state.session,
@@ -70,7 +72,12 @@ const OutlineLockIcon = <i class="i i-outline-lock" />;
         },
       };
     }
-    const { business_details, meta: { data: { application } } } = state.loanApplicationDetails;
+    const {
+      business_details,
+      meta: {
+        data: { application },
+      },
+    } = state.loanApplicationDetails;
     if (business_details.data.business) {
       return {
         session: state.session,
@@ -106,7 +113,7 @@ const OutlineLockIcon = <i class="i i-outline-lock" />;
     saveApplicationDetails,
     changeActiveState,
     ...NotificationsActions,
-  }
+  },
 )
 @reduxForm({
   form: 'loanee-business-details',
@@ -137,11 +144,11 @@ class BusinessInfoEntity extends Component {
               ([volume, volume_label]) => ({
                 label: volume_label,
                 name: volume,
-              })
+              }),
             ),
           };
         },
-        {}
+        {},
       );
     }
     triggerHotjarRecording(HOTJAR_TRIGGERS.LOANS_BUSINESS_INFO);
@@ -150,7 +157,7 @@ class BusinessInfoEntity extends Component {
   canModify = () =>
     isPreceedingState(
       this.props.loanApplicationDetails.meta.data.application.status,
-      APPLICATION_STATES.CONTRACT_PENDING
+      APPLICATION_STATES.CONTRACT_PENDING,
     );
 
   handleSubmit = async (formData) => {
@@ -163,7 +170,10 @@ class BusinessInfoEntity extends Component {
       expected_tenure,
       credit_request_purpose,
     } = formData;
-    const { loanApplicationDetails, session: { user } } = this.props;
+    const {
+      loanApplicationDetails,
+      session: { user },
+    } = this.props;
 
     if (!this.canModify()) {
       this.props.changeActiveState('PROMOTER_INFO_PENDING');
@@ -172,7 +182,7 @@ class BusinessInfoEntity extends Component {
     }
     const businessExists = Boolean(
       loanApplicationDetails.business_details.data.business &&
-        loanApplicationDetails.business_details.data.business.id
+        loanApplicationDetails.business_details.data.business.id,
     );
     const businessDetails = loanApplicationDetails.business_details.data.business;
     const payload = {
@@ -191,18 +201,17 @@ class BusinessInfoEntity extends Component {
         addresses: [
           {
             ...(businessExists
-              ? {
-                  id: businessDetails.addresses[0].id,
-                }
-              : {}),
-            address_type: 'ADDRESS_TYPE_BUSINESS',
-            address_line1: user.business_registered_address,
-            address_line2: user.business_registered_address_l2,
-            city: user.business_registered_city,
-            state: user.business_registered_state,
-            pincode: user.business_registered_pin,
-            country: user.business_registered_country || 'IN',
-            is_primary: true,
+              ? businessDetails.addresses[0]
+              : {
+                  address_type: 'ADDRESS_TYPE_BUSINESS',
+                  address_line1: user.business_registered_address,
+                  address_line2: user.business_registered_address_l2,
+                  city: user.business_registered_city,
+                  state: user.business_registered_state,
+                  pincode: user.business_registered_pin,
+                  country: user.business_registered_country || 'IN',
+                  is_primary: true,
+                }),
           },
         ],
         phones: [
@@ -269,10 +278,10 @@ class BusinessInfoEntity extends Component {
           this.props._trackNavigationActions('NEXT', 'PROMOTER_INFO_PENDING');
           this.props.changeActiveState('PROMOTER_INFO_PENDING');
         })
-        .catch((err) => {
+        .catch((e) => {
           this.props.showNotification({
             type: 'error',
-            message: 'Data cannot be updated at this time.',
+            message: e.errors ? e.errors[0] : 'Something went wrong.',
           });
         });
     } else {
@@ -316,16 +325,7 @@ class BusinessInfoEntity extends Component {
           size="medium"
           required
         />
-        {this.props.initialValues.business_type === BUSINESS_TYPES[1] ? (
-          <Field
-            key="business_pan"
-            component={TextInputWrapper}
-            label="Business PAN"
-            name="business_pan"
-            placeholder=""
-            size="medium"
-          />
-        ) : (
+        {this.props.initialValues.business_type !== BUSINESS_TYPES[1] && (
           <Field
             key="business_pan"
             component={TextInputWrapper}

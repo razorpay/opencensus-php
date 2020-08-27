@@ -3,22 +3,22 @@ import BusinessInfoEntity from './Forms/BusinessInfoEntity';
 import Banner from '../components/Banner';
 import { connect } from 'react-redux';
 import {
-  fetchLoanApplicationMeta,
-  fetchBusinessDetails,
+  changeActiveState,
   fetchApplicantDetails,
-  fetchDocumentGroups,
+  fetchBusinessDetails,
   fetchCreditOffers,
+  fetchD2cReport,
+  fetchDocumentGroups,
+  fetchLoanApplicationMeta,
+  fetchProducts,
   getAcceptedOffer,
   getAgreementStatus,
-  getNach,
-  fetchD2cReport,
-  changeActiveState,
-  fetchProducts,
   getBusinessByMerchantId,
-  getLenderDetails,
   getDisbursalDetails,
-  getScheduleDetails,
+  getLenderDetails,
+  getNach,
   getOfferVerificationTasks,
+  getScheduleDetails,
 } from 'merchant/reducers/capital';
 import PromoterDetailsEntity from './Forms/PromoterDetailsEntity';
 import MobileVerification from './Forms/MobileVerification';
@@ -41,7 +41,6 @@ import {
 import DocumentCollectionInformation from './Forms/DocumentCollectionInformation';
 import DisbursalEntity from './Forms/DisbursalEntity';
 import PendingState from './Forms/PendingState';
-import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
 
 const StateMessageMap = {
   [APPLICATION_STATES.SCORE_GENERATION_PENDING]: (
@@ -145,6 +144,19 @@ const stateTitleMap = {
     title: 'OTP Verification for Credit Inquiry',
     description:
       'We will do a credit bureau pull based on your phone number and PAN to evaluate your credit score',
+  },
+  CREDIT_PULL_COMPLETED_WITH_NTC: {
+    title: 'Credit Inquiry Report',
+    type: 'conditional_success',
+    description:
+      "We couldn't find any credit records on your name. You may" +
+      ' be still eligible for a loan.',
+    rightComponent: (
+      <div className="right-component">
+        <span className="exp-logo-text">Powered by</span>
+        <img className="exp-logo" src="https://cdn.razorpay.com/static/assets/experian_logo.png" />
+      </div>
+    ),
   },
   CREDIT_PULL_COMPLETED: {
     title: 'Credit Inquiry Report',
@@ -257,7 +269,7 @@ const getTitleInformation = (info) => {
     getDisbursalDetails,
     getScheduleDetails,
     getOfferVerificationTasks,
-  }
+  },
 )
 class FormSectionRenderer extends Component {
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -407,7 +419,7 @@ class FormSectionRenderer extends Component {
       state === APPLICATION_STATES.PREVERIFICATION_FAILED
     ) {
       await this.props.fetchLoanApplicationMeta(
-        this.props.loanApplicationDetails.meta.data.application.id
+        this.props.loanApplicationDetails.meta.data.application.id,
       );
       // !business_details.data.business
 
@@ -521,7 +533,7 @@ class FormSectionRenderer extends Component {
 
       const acceptedCreditOfferId = acceptedOfferDetails.data.credit_offer_id;
       const acceptedOffer = creditOffers.data.credit_offers.find(
-        (credit_offer) => credit_offer.id === acceptedCreditOfferId
+        (credit_offer) => credit_offer.id === acceptedCreditOfferId,
       );
 
       if (acceptedOffer) {
@@ -567,7 +579,7 @@ class FormSectionRenderer extends Component {
       ]).then(([acceptedOfferDetails, allOffers, _]) => {
         const acceptedCreditOfferId = acceptedOfferDetails.data.credit_offer_id;
         const creditOffer = allOffers.data.credit_offers.find(
-          (credit_offer) => credit_offer.id === acceptedCreditOfferId
+          (credit_offer) => credit_offer.id === acceptedCreditOfferId,
         );
         return this.props.getLenderDetails({
           lender_id: creditOffer.lender_id,
@@ -594,7 +606,7 @@ class FormSectionRenderer extends Component {
         if (
           isPreceedingState(
             meta.data.application.status,
-            APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING
+            APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING,
           )
         ) {
           return getTitleInformation(stateTitleMap['PROMOTER_INFO_PENDING']);
@@ -607,6 +619,10 @@ class FormSectionRenderer extends Component {
           return null;
         }
         if (bureau_report_details.data.bureau_report) {
+          const { score, ntc_score } = bureau_report_details.data.bureau_report;
+          if (!!ntc_score && !score) {
+            return getTitleInformation(stateTitleMap['CREDIT_PULL_COMPLETED_WITH_NTC']);
+          }
           return getTitleInformation(stateTitleMap['CREDIT_PULL_COMPLETED']);
         }
         return getTitleInformation(stateTitleMap['MOBILE_VERIFICATION_PENDING']);
@@ -725,7 +741,9 @@ class FormSectionRenderer extends Component {
     if (context) {
       return context.activeState
         ? context.activeState
-        : meta.data.application ? meta.data.application.status : defaultState;
+        : meta.data.application
+        ? meta.data.application.status
+        : defaultState;
     } else {
       return meta.data.application ? meta.data.application.status : defaultState;
     }
@@ -740,7 +758,7 @@ class FormSectionRenderer extends Component {
     return Object.values(SIDE_NAVIGATION_STATE_GROUPS).filter((meta) =>
       Object.values(meta.steps)
         .reduce((acc, curr) => [...acc, ...curr], [])
-        .includes(step)
+        .includes(step),
     )[0].description;
   };
 

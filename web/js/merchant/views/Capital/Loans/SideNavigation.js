@@ -12,7 +12,7 @@ import { changeActiveState } from 'merchant/reducers/capital';
 import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
 
 @connect(
-  state => ({
+  (state) => ({
     loanApplicationDetails: state.loanApplicationDetails,
   }),
   {
@@ -29,8 +29,8 @@ class SideNavigation extends Component {
     this.stepFound = false;
   }
 
-  _getParentStepLabel = step => {
-    return Object.values(SIDE_NAVIGATION_STATE_GROUPS).filter(meta =>
+  _getParentStepLabel = (step) => {
+    return Object.values(SIDE_NAVIGATION_STATE_GROUPS).filter((meta) =>
       Object.values(meta.steps)
         .reduce((acc, curr) => [...acc, ...curr], [])
         .includes(step)
@@ -45,8 +45,7 @@ class SideNavigation extends Component {
 
   _trackNavigationEvent = (_to, _from) => {
     const _toStepLabel = APPLICATION_STATE_DESCRIPTIONS[_to].short_description;
-    const _fromStepLabel =
-      APPLICATION_STATE_DESCRIPTIONS[_from].short_description;
+    const _fromStepLabel = APPLICATION_STATE_DESCRIPTIONS[_from].short_description;
     this.gaEventDispatcher({
       eventAction: 'Left Navigation | Steps',
       eventLabel: `${this._getParentStepLabel(
@@ -64,23 +63,17 @@ class SideNavigation extends Component {
 
     const { activeState } = context;
 
-    const isCurrentStateGroup = APPLICATION_STATE_GROUPS[parentStep].includes(
-      currentState
-    );
+    const isCurrentStateGroup = APPLICATION_STATE_GROUPS[parentStep].includes(currentState);
 
-    const isActiveStateGroup = APPLICATION_STATE_GROUPS[parentStep].includes(
-      activeState
-    );
+    const isActiveStateGroup = APPLICATION_STATE_GROUPS[parentStep].includes(activeState);
 
     const isFinalState =
       Object.keys(APPLICATION_STATE_GROUPS).indexOf(parentStep) ===
       Object.keys(APPLICATION_STATE_GROUPS).length - 1;
 
     //both cannot be true
-    const isPendingState =
-      isCurrentStateGroup && PENDING_APPLICATION_STATES.includes(currentState);
-    const isErrorState =
-      isCurrentStateGroup && ERROR_STATES.includes(currentState);
+    const isPendingState = isCurrentStateGroup && PENDING_APPLICATION_STATES.includes(currentState);
+    const isErrorState = isCurrentStateGroup && ERROR_STATES.includes(currentState);
 
     const classList = [
       // ...(isCurrentStateGroup ? [''] : []),
@@ -88,8 +81,8 @@ class SideNavigation extends Component {
       ...(this.stepFound
         ? ['not_started']
         : isCurrentStateGroup && !isFinalState
-          ? ['partial-complete', 'active']
-          : ['completed']),
+        ? ['partial-complete', 'active']
+        : ['completed']),
       ...(isPendingState ? ['pending'] : []),
       ...(isErrorState ? ['error'] : []),
     ];
@@ -124,8 +117,7 @@ class SideNavigation extends Component {
             )
           }
         />
-        {classList.includes('expanded') &&
-          this.getSteps(parentStep, parentStepMeta, classList)}
+        {classList.includes('expanded') && this.getSteps(parentStep, parentStepMeta, classList)}
       </React.Fragment>
     );
   };
@@ -155,28 +147,22 @@ class SideNavigation extends Component {
       const doHighlight = parentStepMeta.steps[step].includes(activeState);
 
       if (statuses.includes('completed'))
-        return [
-          'completed',
-          'parent-complete',
-          ...(doHighlight ? ['highlight'] : []),
-        ];
+        return ['completed', 'parent-complete', ...(doHighlight ? ['highlight'] : [])];
 
       const isCurrentStateGroup = steps.includes(currentState);
 
       //both cannot be true
       const isPendingState =
-        isCurrentStateGroup &&
-        PENDING_APPLICATION_STATES.includes(currentState);
-      const isErrorState =
-        isCurrentStateGroup && ERROR_STATES.includes(currentState);
+        isCurrentStateGroup && PENDING_APPLICATION_STATES.includes(currentState);
+      const isErrorState = isCurrentStateGroup && ERROR_STATES.includes(currentState);
 
       const classList = [
         ...(doHighlight ? ['highlight'] : []),
         ...(isCurrentStateGroup
           ? ['active']
           : stepFound
-            ? ['not_started']
-            : ['completed', 'parent-partial-complete']),
+          ? ['not_started']
+          : ['completed', 'parent-partial-complete']),
         ...(isPendingState ? ['pending'] : []),
         ...(isErrorState ? ['error'] : []),
       ];
@@ -206,7 +192,7 @@ class SideNavigation extends Component {
     });
   };
 
-  gaEventDispatcher = eventObject => {
+  gaEventDispatcher = (eventObject) => {
     eventObject['eventCategory'] = 'Dashboard - WCL LOS';
     window.rzpAnalytics(eventObject);
   };
@@ -215,9 +201,8 @@ class SideNavigation extends Component {
     return (
       <div class="progress-overview-container">
         <MultiLevelStepper>
-          {Object.entries(SIDE_NAVIGATION_STATE_GROUPS).map(
-            ([parentStep, parentStepMeta]) =>
-              this.getParentStep(parentStep, parentStepMeta)
+          {Object.entries(SIDE_NAVIGATION_STATE_GROUPS).map(([parentStep, parentStepMeta]) =>
+            this.getParentStep(parentStep, parentStepMeta)
           )}
         </MultiLevelStepper>
       </div>

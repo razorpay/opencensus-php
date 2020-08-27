@@ -3,13 +3,14 @@ import { connect } from 'react-redux';
 import { Bar } from 'react-chartjs-2';
 import CreditPullScoreBreakdown from 'merchant/containers/CreditPullModal/components/CreditPullScoreBreakdown';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
-import { fetchLoanApplicationMeta, changeActiveState } from 'merchant/reducers/capital';
+import { changeActiveState, fetchLoanApplicationMeta } from 'merchant/reducers/capital';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import {
+  APPLICATION_STATE_DESCRIPTIONS,
   APPLICATION_STATES,
   TOOLTIP_DESCRIPTIONS,
-  APPLICATION_STATE_DESCRIPTIONS,
 } from '../constants';
+import Note from '../../components/Note';
 
 @connect(
   (state) => ({
@@ -18,7 +19,7 @@ import {
   {
     fetchLoanApplicationMeta,
     changeActiveState,
-  }
+  },
 )
 class CreditScoreBreakdown extends Component {
   constructor(props) {
@@ -97,17 +98,11 @@ class CreditScoreBreakdown extends Component {
     if (!!ntc_score && !score) {
       return (
         <div>
-          <div className="credit-score-ntc">
-            <span class="m-b">
-              You either don't have a bureau presence or your bureau records are not recent enough
-              to evaluate a score.
-            </span>
-
-            <span>
-              The good news is that we will still process your application and evaluate you for
-              loan.
-            </span>
-          </div>
+          <Note
+            showRazorpaySupportInstruction={false}
+            message="You either don't have a bureau presence or your bureau records are not recent enough to evaluate a score."
+            extraMessage="The good news is that we will still process your application and evaluate you for loan."
+          />
           <div className="credit-score-actions m-l m-r pull-right">
             <Button.Transparent onClick={() => changeActiveState('PROMOTER_INFO_PENDING')}>
               <i className="i i-chevron-left" />
@@ -120,7 +115,7 @@ class CreditScoreBreakdown extends Component {
                   'NEXT',
                   APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING,
                   APPLICATION_STATE_DESCRIPTIONS[APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING]
-                    .stages.ADDRESS_PROOF
+                    .stages.ADDRESS_PROOF,
                 );
                 changeActiveState(APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING);
               }}
@@ -169,7 +164,7 @@ class CreditScoreBreakdown extends Component {
                   report,
                   ['Active', 'Closed'],
                   ['active_accounts', 'closed_accounts'],
-                  ['success', 'danger']
+                  ['success', 'danger'],
                 )}
               />
             </div>
@@ -182,7 +177,7 @@ class CreditScoreBreakdown extends Component {
                   report,
                   ['Secured', 'Un-secured'],
                   ['secured_account_outstanding_balance', 'un_secured_account_outstanding_balance'],
-                  ['success', 'danger']
+                  ['success', 'danger'],
                 )}
               />
             </div>
@@ -201,7 +196,7 @@ class CreditScoreBreakdown extends Component {
                 onClick={() => {
                   this.props._trackNavigationActions(
                     'NEXT',
-                    APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING
+                    APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING,
                   );
                   changeActiveState(APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING);
                 }}

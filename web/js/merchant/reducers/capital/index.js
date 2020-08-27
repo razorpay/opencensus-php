@@ -489,7 +489,10 @@ export default function(state = initialState, action) {
       return merge(state, {
         business_details: {
           loading: false,
-          data: action.payload.data,
+          data: {
+            ...state.business_details.data,
+            ...action.payload.data,
+          },
         },
       });
 

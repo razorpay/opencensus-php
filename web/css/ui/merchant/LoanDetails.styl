@@ -126,7 +126,7 @@
             z-index: -1;
             transform: translate(-50%, 0);
             bottom: 0;
-            content: url('/dist/css/assets/capital/los_onboarding_hero.svg')
+            //content: url('/dist/css/assets/capital/los_onboarding_hero.svg')
           }
           .loan-application-form-header-section{
             hr{
@@ -356,7 +356,7 @@
       .status-icon.success {
         color: #24A832;
       }
-      .status-icon.pending {
+      .status-icon.pending, .status-icon.conditional_success {
         color: #F08A0A;
       }
       .status-icon.error {
@@ -394,7 +394,7 @@
   .banner-message-wrapper.success.border-left {
     border-left: 3px solid #24A831;
   }
-  .banner-message-wrapper.pending.border-left {
+  .banner-message-wrapper.pending.border-left, .banner-message-wrapper.conditional_success.border-left {
     border-left: 3px solid #F08A0A;
   }
   .banner-message-wrapper.error.border-left {
@@ -562,3 +562,11 @@
     }
   }
 }
+
+.Modal-container--credit-pull-otp-error
+  max-width: 328px;
+  .modal-title
+    display: flex;
+    img
+      margin-top: -2px;
+      margin-right: 8px;

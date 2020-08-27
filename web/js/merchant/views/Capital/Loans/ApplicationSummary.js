@@ -1,11 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import CircularProgress from 'common/new-ui/CircularProgress';
-import {
-  getAcceptedOffer,
-  fetchCreditOffers,
-  changeActiveState,
-} from 'merchant/reducers/capital';
+import { getAcceptedOffer, fetchCreditOffers, changeActiveState } from 'merchant/reducers/capital';
 import Amount from 'common/ui/Amount';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
@@ -19,7 +15,7 @@ import {
 } from './constants';
 
 @connect(
-  state => ({
+  (state) => ({
     user: state.session.user,
     loanApplicationDetails: state.loanApplicationDetails,
   }),
@@ -30,8 +26,8 @@ import {
   }
 )
 class ApplicationSummary extends Component {
-  _getParentStepLabel = step => {
-    return Object.values(SIDE_NAVIGATION_STATE_GROUPS).filter(meta =>
+  _getParentStepLabel = (step) => {
+    return Object.values(SIDE_NAVIGATION_STATE_GROUPS).filter((meta) =>
       Object.values(meta.steps)
         .reduce((acc, curr) => [...acc, ...curr], [])
         .includes(step)
@@ -96,8 +92,7 @@ class ApplicationSummary extends Component {
       return null;
 
     const { amount, expected_tenure, credit_request_purpose } =
-      meta.data.application &&
-      meta.data.application.requested_product_attributes
+      meta.data.application && meta.data.application.requested_product_attributes
         ? meta.data.application.requested_product_attributes
         : loan_attributes;
 
@@ -141,19 +136,17 @@ class ApplicationSummary extends Component {
     ];
   };
 
-  gaEventDispatcher = eventObject => {
+  gaEventDispatcher = (eventObject) => {
     //TODO:remove this
     eventObject['eventCategory'] = 'Dashboard - WCL LOS';
     window.rzpAnalytics(eventObject);
   };
 
-  trackMouseOver = type => {
+  trackMouseOver = (type) => {
     const { meta } = this.props.loanApplicationDetails;
     this.gaEventDispatcher({
       eventAction: `TOOLTIP | ${type.toUpperCase()}`,
-      eventLabel: `Right Info | ${getApplicationProgressPercentage(
-        meta.data.application.status
-      )}`,
+      eventLabel: `Right Info | ${getApplicationProgressPercentage(meta.data.application.status)}`,
     });
   };
 
@@ -170,10 +163,7 @@ class ApplicationSummary extends Component {
       });
     }
 
-    if (
-      accepted_offer_details.data &&
-      !accepted_offer_details.data.credit_offer_id
-    ) {
+    if (accepted_offer_details.data && !accepted_offer_details.data.credit_offer_id) {
       this.props.fetchCreditOffers({
         application_id: meta.data.application.id,
       });
@@ -187,7 +177,7 @@ class ApplicationSummary extends Component {
     ) {
       return [
         <hr />,
-        ...[1, 2, 3].map(_ => (
+        ...[1, 2, 3].map((_) => (
           <div className="section">
             <p className="title PlaceholderLoader" />
             <p className="sub-title PlaceholderLoader" />
@@ -197,7 +187,7 @@ class ApplicationSummary extends Component {
     }
 
     const creditOffer = credit_offer_details.data.credit_offers.find(
-      offer => offer.id === accepted_offer_details.data.credit_offer_id
+      (offer) => offer.id === accepted_offer_details.data.credit_offer_id
     );
 
     return [
@@ -229,15 +219,10 @@ class ApplicationSummary extends Component {
           <p className="sub-title">
             EWI
             <small className="help-content" style={{ paddingLeft: '4px' }}>
-              <i
-                className="i i-info-outline"
-                onMouseOver={() => this.trackMouseOver('ewi')}
-              />
+              <i className="i i-info-outline" onMouseOver={() => this.trackMouseOver('ewi')} />
               <Popover align="top" theme="dark">
                 <PopoverBody>
-                  <div style={{ textAlign: 'left' }}>
-                    {TOOLTIP_DESCRIPTIONS['ewi']}
-                  </div>
+                  <div style={{ textAlign: 'left' }}>{TOOLTIP_DESCRIPTIONS['ewi']}</div>
                 </PopoverBody>
               </Popover>
             </small>
@@ -251,15 +236,10 @@ class ApplicationSummary extends Component {
           <p className="sub-title">
             EDI
             <small className="help-content" style={{ paddingLeft: '4px' }}>
-              <i
-                className="i i-info-outline"
-                onMouseOver={() => this.trackMouseOver('edi')}
-              />
+              <i className="i i-info-outline" onMouseOver={() => this.trackMouseOver('edi')} />
               <Popover align="top" theme="dark">
                 <PopoverBody>
-                  <div style={{ textAlign: 'left' }}>
-                    {TOOLTIP_DESCRIPTIONS['edi']}
-                  </div>
+                  <div style={{ textAlign: 'left' }}>{TOOLTIP_DESCRIPTIONS['edi']}</div>
                 </PopoverBody>
               </Popover>
             </small>
@@ -284,9 +264,7 @@ class ApplicationSummary extends Component {
       <div class="summary__wrapper">
         <div class="progress-container flex">
           <CircularProgress
-            progress={getApplicationProgressPercentage(
-              meta.data.application.status
-            )}
+            progress={getApplicationProgressPercentage(meta.data.application.status)}
             size={100}
             helpMsg={'completed'}
           />

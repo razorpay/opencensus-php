@@ -3,11 +3,11 @@ import { connect } from 'react-redux';
 import DocumentsUpload from '../../components/DocumentsUpload';
 import { merchantFetch } from 'merchant/utils/ajax';
 import {
-  uploadPreVerificationDocuments,
-  uploadBankStatement,
+  changeActiveState,
   fetchLoanApplicationMeta,
   getNetBankingLink,
-  changeActiveState,
+  uploadBankStatement,
+  uploadPreVerificationDocuments,
 } from 'merchant/reducers/capital';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
@@ -44,7 +44,7 @@ export const toBase64 = (file) =>
     fetchLoanApplicationMeta,
     changeActiveState,
     ...NotificationActions,
-  }
+  },
 )
 class PreVerificationUpload extends Component {
   constructor(props) {
@@ -119,9 +119,9 @@ class PreVerificationUpload extends Component {
         this.props._trackNavigationActions(
           'NEXT',
           APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING,
-          title
+          title,
         );
-      }
+      },
     );
   };
 
@@ -132,7 +132,7 @@ class PreVerificationUpload extends Component {
     this.props._trackNavigationActions(
       'NEXT',
       APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING,
-      title
+      title,
     );
   };
 
@@ -143,10 +143,10 @@ class PreVerificationUpload extends Component {
       .document_group_id;
     if (documentGroupId) {
       const selectedDocGroup = documentGroups.find(
-        (docGroup) => docGroup.document_group.id === documentGroupId
+        (docGroup) => docGroup.document_group.id === documentGroupId,
       );
       return selectedDocGroup.master_documents.find(
-        (master_doc) => master_doc.id === master_document_id
+        (master_doc) => master_doc.id === master_document_id,
       )[property];
     }
   };
@@ -155,7 +155,7 @@ class PreVerificationUpload extends Component {
     const externalServiceType = this.getDocumentProperty(
       docId,
       masterDocId,
-      'external_service_name'
+      'external_service_name',
     );
     switch (externalServiceType) {
       case 'KYC':
@@ -254,7 +254,7 @@ class PreVerificationUpload extends Component {
       .then((response) => {
         if (!response.errors) {
           return this.props.fetchLoanApplicationMeta(
-            this.props.loanApplicationDetails.meta.data.application.id
+            this.props.loanApplicationDetails.meta.data.application.id,
           );
         }
       })
@@ -273,7 +273,7 @@ class PreVerificationUpload extends Component {
     const externalServiceType = this.getDocumentProperty(
       document.id,
       document.document_masters_id,
-      'external_service_name'
+      'external_service_name',
     );
     switch (externalServiceType) {
       case 'KYC':
@@ -342,7 +342,7 @@ class PreVerificationUpload extends Component {
         return this.state.documents.filter((document) =>
           document.master_documents
             .map((masterDoc) => masterDoc.external_service_name)
-            .includes('FDS')
+            .includes('FDS'),
         );
     }
   };
@@ -357,7 +357,7 @@ class PreVerificationUpload extends Component {
     const applicationDocuments = this.props.loanApplicationDetails.meta.data.application.documents;
     const documents = applicationDocuments.reduce((acc, applicationDocument) => {
       const documentGroup = document_groups.find(
-        (docGroup) => docGroup.document_group.id === applicationDocument.document_group_id
+        (docGroup) => docGroup.document_group.id === applicationDocument.document_group_id,
       );
       if (
         documentGroup.master_documents &&
@@ -488,7 +488,7 @@ class PreVerificationUpload extends Component {
             });
         }
         //TODO:Handle external actions like redirecting to perfios
-      }
+      },
     );
   };
 
@@ -543,7 +543,7 @@ class PreVerificationUpload extends Component {
                 onClick={() => {
                   this.props._trackNavigationActions(
                     'BACK',
-                    APPLICATION_STATES.CREDIT_PULL_PENDING
+                    APPLICATION_STATES.CREDIT_PULL_PENDING,
                   );
                   this.props.changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING);
                 }}
@@ -571,7 +571,7 @@ class PreVerificationUpload extends Component {
                     this.props.changeActiveState(APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS);
                     this.props._trackNavigationActions(
                       'NEXT',
-                      APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS
+                      APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS,
                     );
                   }}
                 >

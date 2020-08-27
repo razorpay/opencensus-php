@@ -28,7 +28,7 @@ const Banner = React.forwardRef(
       >
         <div className="banner-status-title-wrapper">
           {type &&
-            type === 'success' && (
+            (type === 'success' || type === 'conditional_success') && (
               <i className={`i i-check-circle ${type} status-icon`} />
             )}
           {type &&

@@ -12,7 +12,7 @@ import {
 } from './constants';
 
 @connect(
-  state => ({
+  (state) => ({
     loanApplicationDetails: state.loanApplicationDetails,
   }),
   {
@@ -30,10 +30,8 @@ class ApplicationStatusOverview extends Component {
     this.stepFound = false;
   }
 
-  getStateType = applicationStatus => {
-    const isPendingState = PENDING_APPLICATION_STATES.includes(
-      applicationStatus
-    );
+  getStateType = (applicationStatus) => {
+    const isPendingState = PENDING_APPLICATION_STATES.includes(applicationStatus);
     const isErrorState = PENDING_APPLICATION_STATES.includes(applicationStatus);
     if (isPendingState) {
       return 'pending';
@@ -59,12 +57,7 @@ class ApplicationStatusOverview extends Component {
   viewCurrentState = (_targetStepTitle, _stepCtaLabel) => {
     const { meta } = this.props.loanApplicationDetails;
 
-    this.props.openLoanEntity(
-      meta.data.application.id,
-      null,
-      _targetStepTitle,
-      _stepCtaLabel
-    );
+    this.props.openLoanEntity(meta.data.application.id, null, _targetStepTitle, _stepCtaLabel);
   };
 
   getStepTobeShown = (classList, step) => {
@@ -73,28 +66,22 @@ class ApplicationStatusOverview extends Component {
     if (classList.includes('active')) {
       return APPLICATION_STATE_DESCRIPTIONS[applicationStatus];
     } else if (classList.includes('completed')) {
-      return APPLICATION_STATE_DESCRIPTIONS[
-        APPLICATION_STATE_GROUPS[step].slice(-1)
-      ];
+      return APPLICATION_STATE_DESCRIPTIONS[APPLICATION_STATE_GROUPS[step].slice(-1)];
     } else if (classList.includes('not_started')) {
       return APPLICATION_STATE_DESCRIPTIONS[APPLICATION_STATE_GROUPS[step][0]];
     }
   };
 
-  getStep = step => {
+  getStep = (step) => {
     const { meta } = this.props.loanApplicationDetails;
     const applicationStatus = meta.data.application.status;
 
-    const isCurrentStateGroup = APPLICATION_STATE_GROUPS[step].includes(
-      applicationStatus
-    );
+    const isCurrentStateGroup = APPLICATION_STATE_GROUPS[step].includes(applicationStatus);
 
     //both cannot be true
     const isPendingState =
-      isCurrentStateGroup &&
-      PENDING_APPLICATION_STATES.includes(applicationStatus);
-    const isErrorState =
-      isCurrentStateGroup && ERROR_STATES.includes(applicationStatus);
+      isCurrentStateGroup && PENDING_APPLICATION_STATES.includes(applicationStatus);
+    const isErrorState = isCurrentStateGroup && ERROR_STATES.includes(applicationStatus);
 
     const isFinalState =
       Object.keys(APPLICATION_STATE_GROUPS).indexOf(step) ===
@@ -134,9 +121,7 @@ class ApplicationStatusOverview extends Component {
           <div>
             {classList.includes('completed') ? (
               <a
-                onClick={() =>
-                  this.viewCompletedStateGroup(step, descriptiveStep.title)
-                }
+                onClick={() => this.viewCompletedStateGroup(step, descriptiveStep.title)}
                 className="link"
               >
                 View application steps
@@ -146,10 +131,7 @@ class ApplicationStatusOverview extends Component {
               classList.includes('error') || classList.includes('pending') ? (
                 <a
                   onClick={() =>
-                    this.viewCurrentState(
-                      descriptiveStep.title,
-                      descriptiveStep.ctaText
-                    )
+                    this.viewCurrentState(descriptiveStep.title, descriptiveStep.ctaText)
                   }
                   className="link"
                 >
@@ -160,10 +142,7 @@ class ApplicationStatusOverview extends Component {
                 <button
                   className="btn btn-primary multilevel-step__step-action"
                   onClick={() =>
-                    this.viewCurrentState(
-                      descriptiveStep.title,
-                      descriptiveStep.ctaText
-                    )
+                    this.viewCurrentState(descriptiveStep.title, descriptiveStep.ctaText)
                   }
                 >
                   {descriptiveStep.ctaText}

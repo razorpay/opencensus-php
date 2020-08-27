@@ -50,7 +50,7 @@ export const PROS = [
     changeActiveState,
     getApplications,
     getLenderDetails,
-  }
+  },
 )
 class LoanApplicationOverview extends React.Component {
   state = {
@@ -75,7 +75,7 @@ class LoanApplicationOverview extends React.Component {
           });
           const activeApplications = res.data.applications.filter(
             (application) =>
-              application.status !== 'RZP_REJECTED' && application.status !== 'CLOSED'
+              application.status !== 'RZP_REJECTED' && application.status !== 'CLOSED',
           );
           if (activeApplications.length > 0 && activeApplications[0].id) {
             this.fetchApplicationDetails(activeApplications[0].id);
@@ -109,7 +109,9 @@ class LoanApplicationOverview extends React.Component {
     if (context) {
       return context.activeState
         ? context.activeState
-        : meta.data.application ? meta.data.application.status : defaultState;
+        : meta.data.application
+        ? meta.data.application.status
+        : defaultState;
     } else {
       return meta.data.application ? meta.data.application.status : defaultState;
     }

@@ -3,10 +3,10 @@ import { connect } from 'react-redux';
 import CreditOffer from '../../components/CreditOffer';
 import {
   acceptCreditOffer,
-  fetchCreditOffers,
-  getAcceptedOffer,
   changeActiveState,
+  fetchCreditOffers,
   fetchLoanApplicationMeta,
+  getAcceptedOffer,
 } from 'merchant/reducers/capital';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
@@ -24,7 +24,7 @@ import { APPLICATION_STATES, HOTJAR_TRIGGERS } from '../constants';
     getAcceptedOffer,
     changeActiveState,
     fetchLoanApplicationMeta,
-  }
+  },
 )
 class CreditOfferEntity extends Component {
   componentDidMount() {
@@ -44,7 +44,7 @@ class CreditOfferEntity extends Component {
         });
         return Promise.all([
           this.props.fetchLoanApplicationMeta(
-            this.props.loanApplicationDetails.meta.data.application.id
+            this.props.loanApplicationDetails.meta.data.application.id,
           ),
           this.props.fetchCreditOffers({
             application_id: this.props.loanApplicationDetails.meta.data.application.id,
@@ -65,7 +65,7 @@ class CreditOfferEntity extends Component {
   render() {
     const { credit_offer_details, accepted_offer_details } = this.props.loanApplicationDetails;
 
-    if (credit_offer_details.loading) return <FormLoader />;
+    if (credit_offer_details.loading || !credit_offer_details.data) return <FormLoader />;
 
     if (!credit_offer_details.data.credit_offers) return 'No Credit offers' + ' found';
 
@@ -95,7 +95,7 @@ class CreditOfferEntity extends Component {
             </div>
           ) : (
             <div className="loan-offer-action">
-              <Button.Transparent onClick={this.handleBack}>
+              <Button.Transparent onClick={this.handleBack} class="back-btn">
                 <i className="i i-chevron-left" />
                 Back
               </Button.Transparent>
@@ -103,8 +103,11 @@ class CreditOfferEntity extends Component {
                 type="submit"
                 class="no-margin"
                 onClick={() => {
-                  this.props._trackNavigationActions('NEXT', APPLICATION_STATES.CONTRACT_PENDING);
-                  this.props.changeActiveState(APPLICATION_STATES.CONTRACT_PENDING);
+                  this.props._trackNavigationActions(
+                    'NEXT',
+                    APPLICATION_STATES.NACH_CREATION_PENDING,
+                  );
+                  this.props.changeActiveState(APPLICATION_STATES.NACH_CREATION_PENDING);
                 }}
               >
                 Next

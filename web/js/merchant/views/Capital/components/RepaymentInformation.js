@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import Amount from 'common/ui/Amount';
-import { TOOLTIP_DESCRIPTIONS, HOTJAR_TRIGGERS } from '../Loans/constants';
+import { HOTJAR_TRIGGERS, TOOLTIP_DESCRIPTIONS } from '../Loans/constants';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 
 function RepaymentInformation({ amount, trackGAEvents = true, _fromWhere }) {

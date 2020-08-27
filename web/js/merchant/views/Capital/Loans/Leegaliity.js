@@ -49,8 +49,7 @@
           e &&
             'object' == typeof e &&
             (e.hasOwnProperty('error') ||
-              (e.hasOwnProperty('message') &&
-                e.hasOwnProperty('documentId'))) &&
+              (e.hasOwnProperty('message') && e.hasOwnProperty('documentId'))) &&
             (o.responseData = e);
         },
         !1
@@ -58,9 +57,7 @@
       var i = window.setInterval(function() {
         o.responseData
           ? (window.clearInterval(i), o.handleResponse(o.responseData))
-          : o.popup.closed &&
-            (o.handleResponse({ error: 'Cancelled.' }),
-            window.clearInterval(i));
+          : o.popup.closed && (o.handleResponse({ error: 'Cancelled.' }), window.clearInterval(i));
       }, 1e3);
     },
     esign: function(e) {

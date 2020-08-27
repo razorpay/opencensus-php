@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import CreditOffer from '../../components/CreditOffer';
 import RepaymentInformation from '../../components/RepaymentInformation';
-import Button, { AsyncBtn } from 'common/new-ui/Button';
+import Button from 'common/new-ui/Button';
 import { connect } from 'react-redux';
-import { fetchLoanApplicationMeta, changeActiveState } from 'merchant/reducers/capital';
+import { changeActiveState, fetchLoanApplicationMeta } from 'merchant/reducers/capital';
 import SettlementAccountDetails from '../../components/SettlementAccountDetails';
 import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
 import { APPLICATION_STATES, HOTJAR_TRIGGERS } from '../constants';
@@ -18,7 +18,7 @@ import { triggerHotjarRecording } from 'common/utils/hotjar';
   {
     fetchLoanApplicationMeta,
     changeActiveState,
-  }
+  },
 )
 class LoanApproved extends Component {
   componentDidMount() {
@@ -36,7 +36,7 @@ class LoanApproved extends Component {
 
     const acceptedCreditOfferId = accepted_offer_details.data.credit_offer_id;
     const creditOffer = credit_offer_details.data.credit_offers.find(
-      (credit_offer) => credit_offer.id === acceptedCreditOfferId
+      (credit_offer) => credit_offer.id === acceptedCreditOfferId,
     );
 
     return (
@@ -67,7 +67,7 @@ class LoanApproved extends Component {
           </Button.Transparent>
           {!isPreceedingState(
             meta.data.application.status,
-            APPLICATION_STATES.CREDIT_DISBURSED
+            APPLICATION_STATES.CREDIT_DISBURSED,
           ) && (
             <Button.Primary
               class="no-margin"

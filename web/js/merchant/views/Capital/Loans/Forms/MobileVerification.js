@@ -7,7 +7,8 @@ import { changeActiveState, saveD2cReportDetails, submitOtp } from 'merchant/red
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
-import { APPLICATION_STATES, HOTJAR_TRIGGERS } from '../constants';
+import { Modal, ModalMask } from 'common/new-ui/Modal';
+import { HOTJAR_TRIGGERS } from '../constants';
 
 @connect(
   (state) => ({
@@ -19,7 +20,7 @@ import { APPLICATION_STATES, HOTJAR_TRIGGERS } from '../constants';
     saveD2cReportDetails,
     changeActiveState,
     ...NotificationsActions,
-  }
+  },
 )
 class MobileVerification extends Component {
   constructor(props) {
@@ -28,6 +29,7 @@ class MobileVerification extends Component {
       otp: '',
       hasError: false,
       generatingToken: false,
+      otpSubmissionError: {},
     };
     this.token = '';
   }
@@ -63,7 +65,7 @@ class MobileVerification extends Component {
           data: payload,
         },
         {},
-        '/merchant/api'
+        '/merchant/api',
       );
     } catch (e) {
       this.props.showNotification({
@@ -96,32 +98,27 @@ class MobileVerification extends Component {
       otp: this.state.otp,
       merchant_id: this.props.merchantDetails.id,
       user_id: this.props.merchantDetails.user.id,
-      // d2c_bureau_detail: {
-      //   first_name: applicant.kyc.first_name,
-      //   last_name: applicant.kyc.second_name,
-      //   date_of_birth: applicant.kyc.date_of_birth,
-      //   contact_mobile: applicant.phones[0].phone_number,
-      //   email: applicant.emails[0].email_id,
-      //   address: applicant.addresses[0].address_line1,
-      //   city: applicant.addresses[0].city,
-      //   state: applicant.addresses[0].state,
-      //   pincode: applicant.addresses[0].pincode,
-      //   pan: applicant.kyc.pan_number,
-      // }
     };
+    this.setState({
+      hasError: false,
+      otpSubmissionError: {},
+    });
     try {
       const otpResponse = await this.props.submitOtp(payload);
       if (otpResponse && otpResponse.data) {
         this.props.saveD2cReportDetails(otpResponse);
+        this.props.changeActiveState('PREVERIFICATION_UPLOAD_PENDING');
       } else {
-        //check for any specific code
         this.setState({
           hasError: true,
+          otpSubmissionError: e,
+          errorMessages: otpResponse.errors,
         });
       }
     } catch (e) {
       this.setState({
         hasError: true,
+        otpSubmissionError: e,
       });
     }
   };
@@ -134,6 +131,54 @@ class MobileVerification extends Component {
       });
     }
     this.props.changeActiveState('PROMOTER_INFO_PENDING');
+  };
+
+  getErrorMessage = () => {
+    const { otpSubmissionError } = this.state;
+
+    if (otpSubmissionError.errors && otpSubmissionError.errors.length > 0) {
+      if (otpSubmissionError.status_code === 500) {
+        return null;
+      }
+      return otpSubmissionError.errors[0];
+    } else {
+      return 'Something went wrong. Please reach out to support team.';
+    }
+  };
+
+  getGenericErrorModal = () => {
+    return (
+      <ModalMask>
+        <Modal
+          class="credit-pull-otp-error"
+          onClose={() => {
+            this.setState({
+              hasError: false,
+              otpSubmissionError: {},
+            });
+          }}
+        >
+          <div className={`modal-header`}>
+            <h3 className="modal-title">
+              <img src="/dist/css/assets/capital/otp_error.svg" alt="Loading icon" />
+              Something went Wrong!
+            </h3>
+          </div>
+          <div className="modal-body">
+            Sorry, we're facing connectivity issues. Please try after sometimes.
+            <div class="Modal__actions">
+              <AsyncBtn.Primary
+                disabled={this.state.otp.trim().length < 4}
+                class="m-l full-width no-margin"
+                onClick={this.handleSubmit}
+              >
+                Try Again
+              </AsyncBtn.Primary>
+            </div>
+          </div>
+        </Modal>
+      </ModalMask>
+    );
   };
 
   render() {
@@ -149,13 +194,17 @@ class MobileVerification extends Component {
               <p className="otp-helper-text">Timeout in 15:00 Min</p>
             </div>
             <div className="otp-input-container">
+              {this.state.hasError && !this.getErrorMessage() && this.getGenericErrorModal()}
               <OtpInput
-                //throws an error if :onChange is not passed.
                 onChange={this.handleChange}
                 onComplete={() => {}}
                 wrong={this.state.hasError}
+                wrongOtpText=""
               />
               <div className="otp-helper-text-wrapper">
+                {this.state.hasError && this.getErrorMessage() && (
+                  <p className="otp-helper-text error-description">◦ {this.getErrorMessage()}</p>
+                )}
                 <p className="otp-helper-text">
                   ◦ OTP is sent to{' '}
                   {loanApplicationDetails.promoter_details.data.applicant.phones[0].phone_number}
@@ -183,7 +232,11 @@ class MobileVerification extends Component {
             <i class="i i-chevron-left" />
             Back
           </Button.Transparent>
-          <AsyncBtn.Primary class="m-l" onClick={this.handleSubmit}>
+          <AsyncBtn.Primary
+            disabled={this.state.otp.trim().length < 4}
+            class="m-l"
+            onClick={this.handleSubmit}
+          >
             Submit
           </AsyncBtn.Primary>
         </div>

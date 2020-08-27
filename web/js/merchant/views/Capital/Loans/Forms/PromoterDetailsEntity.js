@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Input from 'common/new-ui/Input';
 import {
-  saveApplicantDetails,
-  saveBusinessDetails,
-  saveApplicationDetails,
   changeActiveState,
+  saveApplicantDetails,
+  saveApplicationDetails,
+  saveBusinessDetails,
 } from 'merchant/reducers/capital';
 import Form from 'common/new-ui/Form';
 import { AsyncBtn } from 'common/new-ui/Button';
@@ -18,7 +18,7 @@ import { APPLICATION_STATES, GENDER_MAP } from '../constants';
 const OutlineLockIcon = <i class="i i-outline-lock" />;
 
 @connect(
-  state => {
+  (state) => {
     return {
       session: state.session,
       loanApplicationDetails: state.loanApplicationDetails,
@@ -59,13 +59,7 @@ class PromoterDetailsEntity extends Component {
       const { address_line1, city, state, pincode } = addresses[0];
       const { phone_number: contact_number } = phones[0];
       const { email_id: contact_email } = emails[0];
-      const {
-        first_name,
-        second_name,
-        gender,
-        date_of_birth,
-        pan_number,
-      } = kyc;
+      const { first_name, second_name, gender, date_of_birth, pan_number } = kyc;
       this.setState({
         initialValues: {
           first_name,
@@ -97,13 +91,39 @@ class PromoterDetailsEntity extends Component {
   handleChange = ({ target }) => {
     let fieldValue = target.value;
     const fieldName = target.name;
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       formData: {
         ...prevState.formData,
         [fieldName]: fieldValue,
       },
       dirty: true,
     }));
+  };
+
+  isValidDate = function(current) {
+    const age = moment().diff(current, 'years');
+    return age < 100 && age > 18;
+  };
+
+  isValidForm = () => {
+    const mandatoryFields = [
+      'date_of_birth',
+      'first_name',
+      'second_name',
+      'contact_number',
+      'contact_email',
+      'pan_number',
+      'gender',
+      'address',
+    ];
+    const formData = {
+      ...this.state.initialValues,
+      ...this.state.formData,
+    };
+    return (
+      mandatoryFields.every((field) => !!formData[field]) &&
+      this.isValidDate(formData['date_of_birth'])
+    );
   };
 
   canModify = () =>
@@ -147,8 +167,7 @@ class PromoterDetailsEntity extends Component {
           loanApplicationDetails.business_details.data.business.id
       );
 
-      const applicantDetails =
-        loanApplicationDetails.promoter_details.data.applicant;
+      const applicantDetails = loanApplicationDetails.promoter_details.data.applicant;
 
       const payload = {
         applicant: {
@@ -211,19 +230,15 @@ class PromoterDetailsEntity extends Component {
               : {}),
             first_name,
             second_name,
-            gender: [
-              'GENDER_TYPE_MALE',
-              'GENDER_TYPE_FEMALE',
-              'GENDER_TYPE_OTHER',
-            ][parseInt(gender)],
+            gender: ['GENDER_TYPE_MALE', 'GENDER_TYPE_FEMALE', 'GENDER_TYPE_OTHER'][
+              parseInt(gender)
+            ],
             date_of_birth: moment(date_of_birth).format('YYYY-MM-DD'),
             pan_number: promoter_pan,
           },
         },
       };
-      if (
-        this.props.loanApplicationDetails.meta.data.application.id === 'new'
-      ) {
+      if (this.props.loanApplicationDetails.meta.data.application.id === 'new') {
         let businessDetails;
         if (!businessExists) {
           try {
@@ -278,8 +293,7 @@ class PromoterDetailsEntity extends Component {
                 });
               }
             } else {
-              applicantResponse =
-                loanApplicationDetails.promoter_details.data.applicant;
+              applicantResponse = loanApplicationDetails.promoter_details.data.applicant;
             }
           }
         }
@@ -287,10 +301,7 @@ class PromoterDetailsEntity extends Component {
         let applicationResponse;
         if (applicantResponse) {
           try {
-            const {
-              loan_attributes: loanAttributes,
-              products,
-            } = this.props.loanApplicationDetails;
+            const { loan_attributes: loanAttributes, products } = this.props.loanApplicationDetails;
             const applicationPayload = {
               owner_id: businessDetails.business.id,
               owner_type: 'BUSINESS',
@@ -309,16 +320,9 @@ class PromoterDetailsEntity extends Component {
               },
             };
 
-            applicationResponse = await this.props.saveApplicationDetails(
-              applicationPayload
-            );
-            this.props.changeActiveState(
-              APPLICATION_STATES.CREDIT_PULL_PENDING
-            );
-            this.props._trackNavigationActions(
-              'NEXT',
-              APPLICATION_STATES.CREDIT_PULL_PENDING
-            );
+            applicationResponse = await this.props.saveApplicationDetails(applicationPayload);
+            this.props.changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING);
+            this.props._trackNavigationActions('NEXT', APPLICATION_STATES.CREDIT_PULL_PENDING);
           } catch (e) {
             //TODO:show appropriate errors
             this.props.showNotification({
@@ -346,21 +350,15 @@ class PromoterDetailsEntity extends Component {
         let applicantResponse;
         try {
           applicantResponse = await this.props.saveApplicantDetails({
-            business_id: [
-              loanApplicationDetails.business_details.data.business.id,
-            ],
+            business_id: [loanApplicationDetails.business_details.data.business.id],
             ...payload,
           });
           this.props.changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING);
-          this.props._trackNavigationActions(
-            'NEXT',
-            APPLICATION_STATES.CREDIT_PULL_PENDING
-          );
+          this.props._trackNavigationActions('NEXT', APPLICATION_STATES.CREDIT_PULL_PENDING);
         } catch (e) {
-          //TODO:show appropriate errors
           this.props.showNotification({
             type: 'error',
-            message: 'Something went wrong',
+            message: e.errors ? e.errors[0] : 'Something went wrong.',
           });
         }
         if (applicantResponse) {
@@ -371,10 +369,7 @@ class PromoterDetailsEntity extends Component {
       }
     } else {
       this.props.changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING);
-      this.props._trackNavigationActions(
-        'NEXT',
-        APPLICATION_STATES.CREDIT_PULL_PENDING
-      );
+      this.props._trackNavigationActions('NEXT', APPLICATION_STATES.CREDIT_PULL_PENDING);
     }
   };
 
@@ -412,11 +407,7 @@ class PromoterDetailsEntity extends Component {
             />
           </div>
         </Input.Group>
-        <Input.Group
-          label="Contact Details"
-          className="InputGroup--inline"
-          required
-        >
+        <Input.Group label="Contact Details" className="InputGroup--inline" required>
           <div className="Input-content">
             <Input
               addonBefore={<span>+91</span>}
@@ -459,14 +450,10 @@ class PromoterDetailsEntity extends Component {
           required
           disabled={!canModify}
         />
-        <Input.Group
-          label="Date of Birth"
-          className="InputGroup--inline"
-          required
-        >
+        <Input.Group label="Date of Birth" className="InputGroup--inline" required>
           <div className="Input-content">
             <Datetime
-              onChange={value =>
+              onChange={(value) =>
                 this.handleChange({
                   target: {
                     name: 'date_of_birth',
@@ -475,9 +462,8 @@ class PromoterDetailsEntity extends Component {
                 })
               }
               name="date_of_birth"
-              value={
-                formData['date_of_birth'] || initialValues['date_of_birth']
-              }
+              value={formData['date_of_birth'] || initialValues['date_of_birth']}
+              isValidDate={this.isValidDate}
               dateFormat="YYYY-MM-DD"
               closeOnSelect={true}
               allowToday={false}
@@ -500,15 +486,15 @@ class PromoterDetailsEntity extends Component {
         <Input
           key="pincode"
           defaultValue={initialValues['pincode']}
-          label="PinCode"
+          label="Pincode"
           name="pincode"
-          placeholder="pincode"
+          placeholder="Pincode"
           required
           size="small"
           disabled={!canModify}
         />
         <Input.Textarea
-          placeholder="address"
+          placeholder="Address"
           key="address"
           defaultValue={initialValues['address']}
           label="Residential Address"
@@ -553,7 +539,7 @@ class PromoterDetailsEntity extends Component {
                   });
                 }}
               >
-                T&C
+                T&C&nbsp;
               </a>
               and our
               <a
@@ -577,6 +563,7 @@ class PromoterDetailsEntity extends Component {
             type="submit"
             class="btn btn-primary pull-right no-margin"
             onClick={this.handleSubmit}
+            disabled={!this.isValidForm()}
           >
             {canModify ? 'Save & Next' : 'Next'}
             <i className="i i-chevron-right" />
@@ -584,10 +571,7 @@ class PromoterDetailsEntity extends Component {
           <button
             className="btn btn-link pull-right"
             onClick={() => {
-              this.props._trackNavigationActions(
-                'BACK',
-                APPLICATION_STATES.BUSINESS_INFO_PENDING
-              );
+              this.props._trackNavigationActions('BACK', 'BUSINESS_INFO_PENDING');
               this.props.changeActiveState('BUSINESS_INFO_PENDING');
             }}
           >

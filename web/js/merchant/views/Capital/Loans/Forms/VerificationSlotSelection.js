@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import {
+  changeActiveState,
   fetchLoanApplicationMeta,
   scheduleVerification,
-  changeActiveState,
 } from 'merchant/reducers/capital';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import ToggleWithDescription from '../../components/ToggleWithDescription';
@@ -12,7 +12,7 @@ import Form from 'common/new-ui/Form';
 import { states } from 'merchant/helpers/data';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
-import { APPLICATION_STATES, VERIFICATION_TIME_SLOTS, HOTJAR_TRIGGERS } from '../constants';
+import { APPLICATION_STATES, HOTJAR_TRIGGERS, VERIFICATION_TIME_SLOTS } from '../constants';
 import { isPreceedingState } from '../../utils';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 
@@ -25,7 +25,7 @@ import { triggerHotjarRecording } from 'common/utils/hotjar';
     scheduleVerification,
     showNotification,
     changeActiveState,
-  }
+  },
 )
 class VerificationSlotSelection extends Component {
   constructor(props) {
@@ -44,9 +44,7 @@ class VerificationSlotSelection extends Component {
   }
 
   isDateValid = (day) => {
-    const begin = moment()
-      .endOf('day')
-      .add(1, 'days');
+    const begin = moment().endOf('day').add(1, 'days');
     return !moment(day).isBefore(moment()) && moment(day).isAfter(begin);
   };
 
@@ -73,7 +71,7 @@ class VerificationSlotSelection extends Component {
       {
         selected_date_slot: moment(selected_date).format('YYYY-MM-DD'),
       },
-      this.validateDateSlot
+      this.validateDateSlot,
     );
   };
 
@@ -88,7 +86,7 @@ class VerificationSlotSelection extends Component {
 
     return isPreceedingState(
       meta.data.application.status,
-      APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED
+      APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED,
     );
   };
 
@@ -229,7 +227,7 @@ class VerificationSlotSelection extends Component {
             propagatedError={this.state.date_slot_error}
             defaultValue={moment(
               this.state.selected_date_slot ? this.state.selected_date_slot : new Date(),
-              'X'
+              'X',
             )}
             value={this.state.selected_date_slot}
             onChange={this.handleDateSlotSelection}
@@ -263,7 +261,7 @@ class VerificationSlotSelection extends Component {
               onClick={() => {
                 this.props._trackNavigationActions(
                   'BACK',
-                  APPLICATION_STATES.NACH_CREATION_PENDING
+                  APPLICATION_STATES.NACH_CREATION_PENDING,
                 );
                 this.props.changeActiveState(APPLICATION_STATES.NACH_CREATION_PENDING);
               }}

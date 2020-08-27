@@ -6,6 +6,7 @@ function Note({
   showRazorpaySupportInstruction = true,
   applicationId,
   _trackSupportClick,
+  extraMessage
 }) {
   const raiseTicket = () => {
     if (_trackSupportClick && _trackSupportClick.constructor === Function) {
@@ -33,9 +34,19 @@ function Note({
       }, 1000);
     }
   };
+  console.log('showRazorpaySupportInstruction', showRazorpaySupportInstruction);
   return (
     <div class="process-note">
       {message}
+      {
+        extraMessage && (
+          <div className="instructions-wrapper">
+            <div className="instruction">
+              <span className="description">{extraMessage}</span>
+            </div>
+          </div>
+        )
+      }
       {showRazorpaySupportInstruction && (
         <div class="instructions-wrapper">
           <div class="instruction">

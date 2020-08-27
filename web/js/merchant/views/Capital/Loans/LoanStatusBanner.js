@@ -8,12 +8,11 @@ const getStateBanner = (loanApplicationDetails, ref, changeActiveState) => {
 
   switch (activeState) {
     case 'CREDIT_PULL_PENDING':
-      if (loanApplicationDetails.bureau_report_details.data.bureau_report && loanApplicationDetails.bureau_report_details.data.bureau_report
-        .score) {
-        if (
-          loanApplicationDetails.bureau_report_details.data.bureau_report
-            .score > 450
-        ) {
+      if (
+        loanApplicationDetails.bureau_report_details.data.bureau_report &&
+        loanApplicationDetails.bureau_report_details.data.bureau_report.score
+      ) {
+        if (loanApplicationDetails.bureau_report_details.data.bureau_report.score > 450) {
           return (
             <Banner
               title="Congratulations"
@@ -22,45 +21,33 @@ const getStateBanner = (loanApplicationDetails, ref, changeActiveState) => {
             />
           );
         } else {
-            return (
-              <Banner
-                title="Sorry!"
-                description="Based on your credit history, you are not eligible for loan. Please apply later."
-                type="error"
-              />
-            );
-        }
-      } else {
-        if(loanApplicationDetails.bureau_report_details.data.bureau_report && loanApplicationDetails.bureau_report_details.data.bureau_report.ntc_score)
-        {
           return (
             <Banner
-              title="Congratulations"
-              description="We couldn't find any credit records on your name.  But, you may still be eligible for a loan."
-              type="success"
+              title="Sorry!"
+              description="Based on your credit history, you are not eligible for loan. Please apply later."
+              type="error"
             />
           );
         }
-        else
-        {
-          return null;
-        }
+      } else {
+        return null;
       }
       break;
     case 'PREVERIFICATION_UPLOAD_PENDING':
-      if(loanApplicationDetails.bureau_report_details.data.bureau_report && loanApplicationDetails.bureau_report_details.data.bureau_report.ntc_score)
-      {
-        return(
+      if (
+        loanApplicationDetails.bureau_report_details.data.bureau_report &&
+        loanApplicationDetails.bureau_report_details.data.bureau_report.ntc_score
+      ) {
+        return (
           <Banner
             title="Congratulations"
             description={
               <span>
-                We couldn't find any credit records on your name.  But, you may still be eligible for a loan. &nbsp;
+                We couldn't find any credit records on your name. But, you may still be eligible for
+                a loan. &nbsp;
                 <Button.Transparent
                   class="no-margin"
-                  onClick={() =>
-                    changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING)
-                  }
+                  onClick={() => changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING)}
                 >
                   View Credit Report
                 </Button.Transparent>
@@ -71,7 +58,7 @@ const getStateBanner = (loanApplicationDetails, ref, changeActiveState) => {
           />
         );
       }
-      return(
+      return (
         <Banner
           title="Congratulations"
           description={
@@ -79,9 +66,7 @@ const getStateBanner = (loanApplicationDetails, ref, changeActiveState) => {
               Based on your credit history, you are eligible for a loan. &nbsp;
               <Button.Transparent
                 class="no-margin"
-                onClick={() =>
-                  changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING)
-                }
+                onClick={() => changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING)}
               >
                 View Credit Report
               </Button.Transparent>
@@ -159,12 +144,8 @@ const getStateBanner = (loanApplicationDetails, ref, changeActiveState) => {
   }
 };
 
-const LoanStatusBanner = props => {
-  return getStateBanner(
-    props.loanApplicationDetails,
-    props.ref,
-    props.changeActiveState
-  );
+const LoanStatusBanner = (props) => {
+  return getStateBanner(props.loanApplicationDetails, props.ref, props.changeActiveState);
 };
 
 export default LoanStatusBanner;

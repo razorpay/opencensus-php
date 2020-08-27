@@ -15,20 +15,23 @@ import getApplicationProgressPercentage from '../utils/ProgressPercentageCalcula
   }),
   {
     fetchLoanApplicationMeta,
-  }
+  },
 )
 class LoanEntity extends Component {
   _getParentStepLabel = (step) => {
     return Object.values(SIDE_NAVIGATION_STATE_GROUPS).filter((meta) =>
       Object.values(meta.steps)
         .reduce((acc, curr) => [...acc, ...curr], [])
-        .includes(step)
+        .includes(step),
     )[0].description;
   };
 
   handleClose = () => {
     const { onClose, loanApplicationDetails } = this.props;
-    const { meta, context: { activeState } } = loanApplicationDetails;
+    const {
+      meta,
+      context: { activeState },
+    } = loanApplicationDetails;
 
     window.rzpAnalytics({
       eventCategory: 'Dashboard - WCL LOS',
@@ -41,7 +44,10 @@ class LoanEntity extends Component {
   };
 
   sendDataToAnalytics = ({ status, majorStepTitle = '', cta = '', subpage = null, ...rest }) => {
-    const { meta, context: { activeState } } = this.props.loanApplicationDetails;
+    const {
+      meta,
+      context: { activeState },
+    } = this.props.loanApplicationDetails;
     const currentStatus = status || activeState;
 
     window.rzpAnalytics({
@@ -50,7 +56,7 @@ class LoanEntity extends Component {
       eventLabel: `${subpage ? `${subpage} | ` : ''}${
         APPLICATION_STATE_DESCRIPTIONS[status].short_description
       } | ${majorStepTitle ? `${majorStepTitle} | ` : ''}${getApplicationProgressPercentage(
-        meta.data.application.status
+        meta.data.application.status,
       )}%`,
       ...rest,
     });

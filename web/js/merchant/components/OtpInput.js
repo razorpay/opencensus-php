@@ -87,7 +87,7 @@ export class OtpInput extends Component {
 
   render() {
     const { currentIndex } = { ...this.state };
-    const { wrong } = { ...this.props };
+    const { wrong, wrongOtpText = "Wrong OTP" } = { ...this.props };
     const opt = [
       { cList: ['first'], key: 1 },
       { cList: ['middle-man'], key: 2 },
@@ -101,7 +101,7 @@ export class OtpInput extends Component {
     return (
       <div>
         <strong class="">Enter the code</strong>
-        {wrong && <span class="pull-right wrong-msg">Wrong OTP</span>}
+        {wrong && <span class="pull-right wrong-msg">{wrongOtpText}</span>}
         <div class="otp-input">
           {opt.map(i => {
             if (i === '-') {
