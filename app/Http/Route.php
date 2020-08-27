@@ -29,6 +29,8 @@ class Route
         'fetch_payment_config_admin'               => ['get',      'admin/payment/config/{type}',                    'ConfigController@fetchPaymentConfig'                               ],
         'create_payment_config'                    => ['post',     'payment/config',                                 'ConfigController@createPaymentConfig'                              ],
         'create_payment_config_bulk'               => ['post',     'payment/config/bulk',                            'ConfigController@createPaymentConfigBulk'                          ],
+        'create_payment_config_bulk'.
+        '_via_batch'                               => ['post',     'payment/config/bulk/batch',                      'ConfigController@createPaymentConfigBulk'                          ],
         'create_payment_config_admin'              => ['post',     'admin/payment/config',                           'ConfigController@createPaymentConfig'                              ],
         'update_payment_config'                    => ['patch',    'payment/config',                                 'ConfigController@updatePaymentConfig'                              ],
         'update_payment_config_admin'              => ['patch',    'admin/payment/config',                           'ConfigController@updatePaymentConfig'                              ],
@@ -2589,6 +2591,7 @@ class Route
         'razorflow_admin_fetch_entity_by_id',
         'razorflow_admin_fetch_entity_multiple',
         'scrooge_refunds_get_multiple_razorflow',
+        'create_payment_config_bulk_via_batch',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -5211,7 +5214,8 @@ class Route
             'credits_create_bulk_batch',
             'terminal_create_bulk',
             'mpans_bulk',
-            'banking_account_activation_details_via_batch'
+            'banking_account_activation_details_via_batch',
+            'create_payment_config_bulk_via_batch',
         ],
 
         'stork' => [

@@ -952,6 +952,19 @@ class Header
     const P_A_TAX                   = 'tax (do not edit)';
     const P_A_SCHEDULED_AT          = 'scheduled_at (do not edit)';
 
+    // Capture Setting
+    const CUSTOMER_TYPE                     = 'customer_type';
+    const AUTO_CAPTURE_LATE_AUTH            = 'auto_capture_late_auth';
+    const AUTO_REFUND_DELAY                 = 'auto_refund_delay';
+    const DEFAULT_REFUND_SPEED              = 'default_refund_speed';
+    const CAPTURE_SETTING_MERCHANT_ID       = 'merchant_id';
+    const CAPTURE_SETTING_MERCHANT_NAME     = 'merchant_name';
+    const CAPTURE_SETTING_BUSINESS_CATEGORY = 'business_category';
+    const TOTAL_CAPTURES                    = 'total_captures';
+    const CAPTURE_SETTING_NAME              = 'Name';
+    const CAPTURE_SETTING_CONFIG            = 'Config';
+
+
 
     /**
      * Input and output file headers
@@ -2981,6 +2994,24 @@ class Header
                 self::P_A_FEES,
                 self::P_A_TAX,
                 self::P_A_SCHEDULED_AT
+            ]
+        ],
+
+        Type::CAPTURE_SETTING => [
+            self::INPUT => [
+                self::CUSTOMER_TYPE,
+                self::AUTO_CAPTURE_LATE_AUTH,
+                self::AUTO_REFUND_DELAY,
+                self::DEFAULT_REFUND_SPEED,
+                self::CAPTURE_SETTING_MERCHANT_ID,
+                self::CAPTURE_SETTING_MERCHANT_NAME,
+                self::CAPTURE_SETTING_BUSINESS_CATEGORY,
+                self::TOTAL_CAPTURES,
+            ],
+            self::OUTPUT => [
+                self::CAPTURE_SETTING_MERCHANT_ID,
+                self::CAPTURE_SETTING_NAME,
+                self::CAPTURE_SETTING_CONFIG,
             ]
         ],
     ];

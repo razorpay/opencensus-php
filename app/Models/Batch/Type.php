@@ -94,6 +94,8 @@ class Type
 
     const MPAN                  = 'mpan';
 
+    const CAPTURE_SETTING       = 'capture_setting';
+
     const ADMIN_BATCH           = 'admin_batch';
 
     const ENTITY_UPDATE_ACTION  = 'entity_update_action';
@@ -147,6 +149,7 @@ class Type
         self::IIN_HITACHI_VISA,
         self::IIN_MC_MASTERCARD,
         self::MPAN,
+        self::CAPTURE_SETTING,
         self::PRICING_RULE,
         self::ADMIN_BATCH,
         self::MERCHANT_CONFIG_INHERITANCE,
@@ -356,6 +359,7 @@ class Type
         self::MERCHANT_ACTIVATION,
         self::INTERNAL_INSTRUMENT_REQUEST,
         self::ADJUSTMENT,
+        self::CAPTURE_SETTING,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data

@@ -59,6 +59,7 @@ class Limit
         Type::MPAN                                  => 100000,
         Type::TERMINAL_CREATION                     => 5000,
         Type::MERCHANT_ACTIVATION                   => 5000,
+        Type::CAPTURE_SETTING                       => 1100000,
     ];
 
     /**
