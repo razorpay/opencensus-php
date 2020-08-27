@@ -14,19 +14,20 @@ import * as NotificationActions from 'merchant_common/reducers/notifications';
 import FileUpload from 'merchant/components/File/Upload';
 import { downloadFromUFH } from 'merchant/utils/downloadFile';
 import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
-import { APPLICATION_STATES } from '../constants';
+import { APPLICATION_STATES, HOTJAR_TRIGGERS } from '../constants';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
 
 const createFormData = (form = {}) => {
   let formData = new FormData();
 
-  Object.keys(form).map(key => {
+  Object.keys(form).map((key) => {
     formData.append(key, form[key]);
   });
   return formData;
 };
 
 @connect(
-  state => ({
+  (state) => ({
     loanApplicationDetails: state.loanApplicationDetails,
     user: state.session.user,
   }),
@@ -45,6 +46,9 @@ class NachEntity extends Component {
       error: null,
     };
   }
+  componentDidMount() {
+    triggerHotjarRecording(HOTJAR_TRIGGER.LOANS_SUBMIT_NACH);
+  }
   createNach = () => {
     const { loanApplicationDetails, user } = this.props;
     const {
@@ -56,7 +60,7 @@ class NachEntity extends Component {
 
     const acceptedCreditOfferId = accepted_offer_details.data.credit_offer_id;
     const creditOffer = credit_offer_details.data.credit_offers.find(
-      credit_offer => credit_offer.id === acceptedCreditOfferId
+      (credit_offer) => credit_offer.id === acceptedCreditOfferId
     );
 
     const payload = {
@@ -85,23 +89,17 @@ class NachEntity extends Component {
           auth_type: 'physical',
           max_amount: creditOffer.loan_attributes.credit_offered,
           nach: {
-            form_reference1: `Recurring payment for ${
-              applicant.kyc.first_name
-            }`,
+            form_reference1: `Recurring payment for ${applicant.kyc.first_name}`,
             form_reference2: 'Method Paper Nach',
             description: 'Paper NACH',
           },
           bank_account: {
             account_number: user.bank_account_number,
             ifsc_code: user.bank_branch_ifsc,
-            beneficiary_name: `${applicant.kyc.first_name} ${
-              applicant.kyc.second_name
-            }`,
+            beneficiary_name: `${applicant.kyc.first_name} ${applicant.kyc.second_name}`,
             beneficiary_email: applicant.emails[0].email_id,
             beneficiary_mobile: applicant.phones[0].phone_number,
-            account_type: user.bank_account_type
-              ? user.bank_account_type.toLowerCase()
-              : 'current',
+            account_type: user.bank_account_type ? user.bank_account_type.toLowerCase() : 'current',
           },
         },
       },
@@ -156,15 +154,14 @@ class NachEntity extends Component {
   };
 
   handleFileChange = (file, progreeTracker) => {
-    return this.uploadToUfh(file, progreeTracker).then(response => {
+    return this.uploadToUfh(file, progreeTracker).then((response) => {
       if (response && !response.errors) {
         const payload = {
-          application_id: this.props.loanApplicationDetails.meta.data
-            .application.id,
+          application_id: this.props.loanApplicationDetails.meta.data.application.id,
           id: this.props.loanApplicationDetails.nach_details.data.nach[0].id,
           file_store_id: response.data.file_id,
         };
-        return uploadNach(payload).then(_ => {
+        return uploadNach(payload).then((_) => {
           this.props.showNotification({
             type: 'success',
             message: 'Nach Form Uploaded Successfully.',
@@ -178,9 +175,7 @@ class NachEntity extends Component {
     return [
       {
         title: 'Dowload the NACH form',
-        description:
-          'Printout the prefilled NACH form provided by Razorpay &' +
-          ' Verify Details.',
+        description: 'Printout the prefilled NACH form provided by Razorpay &' + ' Verify Details.',
         cta: () => (
           <AsyncBtn.Primary
             showLoader={false}
@@ -202,8 +197,7 @@ class NachEntity extends Component {
       },
       {
         title: 'Upload the signed NACH form',
-        description:
-          'Ensure the form is not cropped and no shadows with size less than 6 MB.',
+        description: 'Ensure the form is not cropped and no shadows with size less than 6 MB.',
         cta: () => (
           <FileUpload
             showCloseBtn={false}
@@ -226,10 +220,7 @@ class NachEntity extends Component {
   };
 
   handleNext = () => {
-    this.props._trackNavigationActions(
-      'NEXT',
-      APPLICATION_STATES.SLOT_SELECTION_PENDING
-    );
+    this.props._trackNavigationActions('NEXT', APPLICATION_STATES.SLOT_SELECTION_PENDING);
     return this.props.fetchLoanApplicationMeta(
       this.props.loanApplicationDetails.meta.data.application.id
     );
@@ -244,13 +235,13 @@ class NachEntity extends Component {
     });
     const entity = nach_details.data.nach ? nach_details.data.nach[0] : null;
     return downloadFromUFH(entity.file_store_id)
-      .then(_ => {
+      .then((_) => {
         this.setState({
           downloading: false,
           error: null,
         });
       })
-      .catch(error => {
+      .catch((error) => {
         this.setState({
           downloading: false,
           error: true,
@@ -272,11 +263,7 @@ class NachEntity extends Component {
       accepted_offer_details,
     } = this.props.loanApplicationDetails;
 
-    if (
-      nach_details.loading ||
-      credit_offer_details.loading ||
-      accepted_offer_details.loading
-    )
+    if (nach_details.loading || credit_offer_details.loading || accepted_offer_details.loading)
       return <FormLoader />;
 
     const entity = nach_details.data.nach ? nach_details.data.nach[0] : null;
@@ -287,13 +274,8 @@ class NachEntity extends Component {
           <div className="panel panel-default" style={{ margin: 20 }}>
             <div className="panel-body">
               <strong>Signed Nach Form</strong>
-              <p className="text--secondary">
-                You have uploaded the signed Nach Form
-              </p>
-              <a
-                className="link no-margin no-padding"
-                onClick={this.downloadSignedNach}
-              >
+              <p className="text--secondary">You have uploaded the signed Nach Form</p>
+              <a className="link no-margin no-padding" onClick={this.downloadSignedNach}>
                 {this.state.downloading ? (
                   'Downloading...'
                 ) : (
@@ -308,13 +290,8 @@ class NachEntity extends Component {
           <div className="actions pull-right m-r">
             <Button.Transparent
               onClick={() => {
-                this.props._trackNavigationActions(
-                  'BACK',
-                  APPLICATION_STATES.CONTRACT_PENDING
-                );
-                this.props.changeActiveState(
-                  APPLICATION_STATES.CONTRACT_PENDING
-                );
+                this.props._trackNavigationActions('BACK', APPLICATION_STATES.CONTRACT_PENDING);
+                this.props.changeActiveState(APPLICATION_STATES.CONTRACT_PENDING);
               }}
             >
               <i className="i i-chevron-left" />
@@ -327,9 +304,7 @@ class NachEntity extends Component {
                   'NEXT',
                   APPLICATION_STATES.SLOT_SELECTION_PENDING
                 );
-                this.props.changeActiveState(
-                  APPLICATION_STATES.SLOT_SELECTION_PENDING
-                );
+                this.props.changeActiveState(APPLICATION_STATES.SLOT_SELECTION_PENDING);
               }}
             >
               Next
@@ -344,18 +319,13 @@ class NachEntity extends Component {
         {this.getSteps().map((step, index) => (
           <div className="nach-submission-step">
             <div className="nach-step-icon">
-              <img
-                src={`/dist/css/assets/capital/${step.icon}.svg`}
-                alt="Loading icon"
-              />
+              <img src={`/dist/css/assets/capital/${step.icon}.svg`} alt="Loading icon" />
             </div>
             <div className="nach-step-instructions">
               <div className="nach-step-index">Step {index + 1}</div>
               <div className="nach-step-title">{step.title}</div>
               <div className="nach-step-description">{step.description}</div>
-              <div className="nach-step-cta m-t">
-                {step.cta ? step.cta() : null}
-              </div>
+              <div className="nach-step-cta m-t">{step.cta ? step.cta() : null}</div>
             </div>
           </div>
         ))}
@@ -369,9 +339,7 @@ class NachEntity extends Component {
         </AsyncBtn.Primary>
         <button
           className="btn btn-link pull-right"
-          onClick={() =>
-            this.props.changeActiveState(APPLICATION_STATES.CONTRACT_PENDING)
-          }
+          onClick={() => this.props.changeActiveState(APPLICATION_STATES.CONTRACT_PENDING)}
         >
           <i className="i i-chevron-left" />
           Back

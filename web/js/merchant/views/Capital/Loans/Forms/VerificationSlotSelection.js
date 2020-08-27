@@ -12,11 +12,12 @@ import Form from 'common/new-ui/Form';
 import { states } from 'merchant/helpers/data';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
-import { APPLICATION_STATES, VERIFICATION_TIME_SLOTS } from '../constants';
+import { APPLICATION_STATES, VERIFICATION_TIME_SLOTS, HOTJAR_TRIGGERS } from '../constants';
 import { isPreceedingState } from '../../utils';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
 
 @connect(
-  state => ({
+  (state) => ({
     loanApplicationDetails: state.loanApplicationDetails,
   }),
   {
@@ -38,14 +39,18 @@ class VerificationSlotSelection extends Component {
     this.timeSlots = VERIFICATION_TIME_SLOTS;
   }
 
-  isDateValid = day => {
+  componentDidMount() {
+    triggerHotjarRecording(HOTJAR_TRIGGERS.LOANS_APPOINTMENT_SCHEDULE);
+  }
+
+  isDateValid = (day) => {
     const begin = moment()
       .endOf('day')
       .add(1, 'days');
     return !moment(day).isBefore(moment()) && moment(day).isAfter(begin);
   };
 
-  handleSelectSlot = selected_time_slot => {
+  handleSelectSlot = (selected_time_slot) => {
     this.setState({
       selected_time_slot,
     });
@@ -63,7 +68,7 @@ class VerificationSlotSelection extends Component {
     });
   };
 
-  handleDateSlotSelection = selected_date => {
+  handleDateSlotSelection = (selected_date) => {
     this.setState(
       {
         selected_date_slot: moment(selected_date).format('YYYY-MM-DD'),
@@ -74,9 +79,7 @@ class VerificationSlotSelection extends Component {
 
   isFormInValid = () => {
     return (
-      this.state.date_slot_error ||
-      !this.state.selected_date_slot ||
-      !this.state.selected_time_slot
+      this.state.date_slot_error || !this.state.selected_date_slot || !this.state.selected_time_slot
     );
   };
 
@@ -92,20 +95,11 @@ class VerificationSlotSelection extends Component {
   scheduleVerification = () => {
     if (this.isFormInValid()) return;
 
-    const {
-      meta,
-      business_details,
-      promoter_details,
-    } = this.props.loanApplicationDetails;
+    const { meta, business_details, promoter_details } = this.props.loanApplicationDetails;
 
     if (!this.canModify()) {
-      this.props._trackNavigationActions(
-        'NEXT',
-        APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED
-      );
-      this.props.changeActiveState(
-        APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED
-      );
+      this.props._trackNavigationActions('NEXT', APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED);
+      this.props.changeActiveState(APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED);
       return;
     }
 
@@ -129,12 +123,12 @@ class VerificationSlotSelection extends Component {
     };
 
     return scheduleVerification(payload)
-      .then(response => {
+      .then((response) => {
         if (response && !response.errors) {
           return this.props.fetchLoanApplicationMeta(meta.data.application.id);
         }
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: 'Unable to schedule the document collection',
@@ -142,48 +136,39 @@ class VerificationSlotSelection extends Component {
       });
   };
 
-  handleAddressChange = address_type => {
+  handleAddressChange = (address_type) => {
     this.setState({
       selected_address: address_type,
     });
   };
 
-  getAddress = addressType => {
-    const {
-      business_details,
-      promoter_details,
-    } = this.props.loanApplicationDetails;
+  getAddress = (addressType) => {
+    const { business_details, promoter_details } = this.props.loanApplicationDetails;
 
     switch (addressType) {
       //TODO: destructure the below code
       case 'business':
         return {
-          address_line1:
-            business_details.data.business.addresses[0].address_line1,
-          address_line2:
-            business_details.data.business.addresses[0].address_line2,
+          address_line1: business_details.data.business.addresses[0].address_line1,
+          address_line2: business_details.data.business.addresses[0].address_line2,
           city: business_details.data.business.addresses[0].city,
-          state:
-            states[business_details.data.business.addresses[0].state] || null,
+          state: states[business_details.data.business.addresses[0].state] || null,
           pincode: business_details.data.business.addresses[0].pincode,
         };
       case 'residential':
         return {
-          address_line1:
-            promoter_details.data.applicant.addresses[0].address_line1,
-          address_line2:
-            promoter_details.data.applicant.addresses[0].address_line2,
+          address_line1: promoter_details.data.applicant.addresses[0].address_line1,
+          address_line2: promoter_details.data.applicant.addresses[0].address_line2,
           city: promoter_details.data.applicant.addresses[0].city,
-          state:
-            states[promoter_details.data.applicant.addresses[0].state] || null,
+          state: states[promoter_details.data.applicant.addresses[0].state] || null,
           pincode: promoter_details.data.applicant.addresses[0].pincode,
         };
     }
   };
 
-  formatAddress = address => {
+  formatAddress = (address) => {
     return Object.values(address)
-      .filter(value => !!value)
+      .filter((value) => !!value)
       .join(', ');
   };
 
@@ -194,9 +179,7 @@ class VerificationSlotSelection extends Component {
 
       this.setState({
         selected_time_slot: scheduleDetails.slot_timing,
-        selected_date_slot: moment(scheduleDetails.slot_date).format(
-          'YYYY-MM-DD'
-        ),
+        selected_date_slot: moment(scheduleDetails.slot_date).format('YYYY-MM-DD'),
         date_slot_error: null,
         selected_address: scheduleDetails.addresses[0].address.address_type,
       });
@@ -210,11 +193,7 @@ class VerificationSlotSelection extends Component {
       schedule_details,
     } = this.props.loanApplicationDetails;
 
-    if (
-      business_details.loading ||
-      promoter_details.loading ||
-      schedule_details.loading
-    )
+    if (business_details.loading || promoter_details.loading || schedule_details.loading)
       return <FormLoader />;
 
     const canModify = this.canModify();
@@ -222,11 +201,7 @@ class VerificationSlotSelection extends Component {
     return (
       <div>
         <Form layout="tabular" style={{ width: 524 }}>
-          <Input.Group
-            label="Address Type"
-            className="InputGroup--inline"
-            required
-          >
+          <Input.Group label="Address Type" className="InputGroup--inline" required>
             <div className="Input-content">
               <ToggleWithDescription
                 name="address_type"
@@ -253,9 +228,7 @@ class VerificationSlotSelection extends Component {
             label="Date Selection"
             propagatedError={this.state.date_slot_error}
             defaultValue={moment(
-              this.state.selected_date_slot
-                ? this.state.selected_date_slot
-                : new Date(),
+              this.state.selected_date_slot ? this.state.selected_date_slot : new Date(),
               'X'
             )}
             value={this.state.selected_date_slot}
@@ -268,14 +241,10 @@ class VerificationSlotSelection extends Component {
             disablePastDates={true}
             disabled={!canModify}
           />
-          <Input.Group
-            label="Time Slot Selection"
-            className="InputGroup--inline"
-            required
-          >
+          <Input.Group label="Time Slot Selection" className="InputGroup--inline" required>
             <div className="Input-content">
               <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                {this.timeSlots.map(slot => (
+                {this.timeSlots.map((slot) => (
                   <ToggleWithDescription
                     name="time_slot"
                     size="small"
@@ -296,9 +265,7 @@ class VerificationSlotSelection extends Component {
                   'BACK',
                   APPLICATION_STATES.NACH_CREATION_PENDING
                 );
-                this.props.changeActiveState(
-                  APPLICATION_STATES.NACH_CREATION_PENDING
-                );
+                this.props.changeActiveState(APPLICATION_STATES.NACH_CREATION_PENDING);
               }}
             >
               <i className="i i-chevron-left" />

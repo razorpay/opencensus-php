@@ -10,9 +10,10 @@ import {
   changeActiveState,
 } from 'merchant/reducers/capital';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import FormSectionLoadingSkeleton from '../../components/FormSectionLoadingSkeleton';
-import { APPLICATION_STATES } from '../constants';
+import { APPLICATION_STATES, HOTJAR_TRIGGERS } from '../constants';
 import { isPreceedingState } from '../../utils';
 
 const createFormData = (form = {}) => {
@@ -92,6 +93,7 @@ class PreVerificationUpload extends Component {
 
   componentDidMount() {
     this.deriveFormData();
+    triggerHotjarRecording(HOTJAR_TRIGGERS.LOANS_DOCUMENT_UPLOAD);
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -106,15 +108,32 @@ class PreVerificationUpload extends Component {
   }
 
   handleFooterActions = (indexChangeBy = 1) => {
-    this.setState((prevState) => ({
-      activeTabIndex: prevState.activeTabIndex + indexChangeBy,
-    }));
+    this.setState(
+      (prevState) => ({
+        activeTabIndex: prevState.activeTabIndex + indexChangeBy,
+      }),
+      () => {
+        const tab = this.tabs.filter((tab) => tab.index === this.state.activeTabIndex);
+        const title = tab.length ? tab[0].title : null;
+
+        this.props._trackNavigationActions(
+          'NEXT',
+          APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING,
+          title
+        );
+      }
+    );
   };
 
-  handleTabChange = (targetTab) => {
+  handleTabChange = (targetTab, title) => {
     this.setState({
       activeTabIndex: targetTab,
     });
+    this.props._trackNavigationActions(
+      'NEXT',
+      APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING,
+      title
+    );
   };
 
   getDocumentProperty = (documentId, master_document_id, property) => {
@@ -492,7 +511,7 @@ class PreVerificationUpload extends Component {
           {this.tabs.map((tab) => (
             <a
               className={activeTabIndex === tab.index && 'active'}
-              onClick={() => this.handleTabChange(tab.index)}
+              onClick={() => this.handleTabChange(tab.index, tab.title)}
             >
               {this.isValidTab(tab.index) ? (
                 <i className="i i-check text-success" />

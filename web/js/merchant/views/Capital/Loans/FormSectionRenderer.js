@@ -749,13 +749,13 @@ class FormSectionRenderer extends Component {
     return APPLICATION_STATE_DESCRIPTIONS[tobeRenderedState];
   };
 
-  _trackNavigationActions = (actionType, to) => {
+  _trackNavigationActions = (actionType, to, subpage = '') => {
     const { meta } = this.props.loanApplicationDetails;
-    this.gaEventDispatcher({
+    this.props.sendDataToAnalytics({
       eventAction: `Application | ${actionType}`,
-      eventLabel: `${this._getParentStepLabel(to)}:${
-        APPLICATION_STATE_DESCRIPTIONS[to].short_description
-      } | ${getApplicationProgressPercentage(meta.data.application.status)}%`,
+      status: to,
+      majorStepTitle: this._getParentStepLabel(to),
+      subpage,
     });
   };
 

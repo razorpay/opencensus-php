@@ -12,13 +12,14 @@ import {
   getAcceptedOffer,
 } from 'merchant/reducers/capital';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import { APPLICATION_STATES } from '../constants';
+import { APPLICATION_STATES, HOTJAR_TRIGGERS } from '../constants';
 import Button from 'common/new-ui/Button';
 import RepaymentModal from '../../components/RepaymentModal';
 import Modal from 'react-modal';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
 
 @connect(
-  state => ({
+  (state) => ({
     loanApplicationDetails: state.loanApplicationDetails,
     user: state.session.user,
   }),
@@ -37,7 +38,11 @@ class DisbursalEntity extends Component {
     isModalOpen: false,
   };
 
-  toggleModal = visibility => {
+  componentDidMount() {
+    triggerHotjarRecording(HOTJAR_TRIGGERS.LOAN_FUND_DISBURSED);
+  }
+
+  toggleModal = (visibility) => {
     this.setState({
       isModalOpen: visibility,
     });
@@ -61,7 +66,7 @@ class DisbursalEntity extends Component {
 
     const acceptedCreditOfferId = accepted_offer_details.data.credit_offer_id;
     const creditOffer = credit_offer_details.data.credit_offers.find(
-      credit_offer => credit_offer.id === acceptedCreditOfferId
+      (credit_offer) => credit_offer.id === acceptedCreditOfferId
     );
 
     return (
@@ -72,10 +77,7 @@ class DisbursalEntity extends Component {
           contentLabel="ConfirmModal"
           ariaHideApp={false}
         >
-          <RepaymentModal
-            creditOffer={creditOffer}
-            closeModal={() => this.toggleModal(false)}
-          />
+          <RepaymentModal creditOffer={creditOffer} closeModal={() => this.toggleModal(false)} />
         </Modal>
         <div className="loan-offer-wrapper">
           <CreditOffer
@@ -102,10 +104,7 @@ class DisbursalEntity extends Component {
         <div className="loan-offer-action pull-right">
           <Button.Transparent
             onClick={() => {
-              this.props._trackNavigationActions(
-                'BACK',
-                APPLICATION_STATES.RZP_APPROVED
-              );
+              this.props._trackNavigationActions('BACK', APPLICATION_STATES.RZP_APPROVED);
               this.props.changeActiveState(APPLICATION_STATES.RZP_APPROVED);
             }}
           >

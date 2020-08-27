@@ -6,14 +6,11 @@ import ApplicationSummary from './ApplicationSummary';
 import HelpSection from '../components/HelpSection';
 import SideNavigation from './SideNavigation';
 import Button from 'common/new-ui/Button';
-import {
-  APPLICATION_STATE_DESCRIPTIONS,
-  SIDE_NAVIGATION_STATE_GROUPS,
-} from './constants';
+import { APPLICATION_STATE_DESCRIPTIONS, SIDE_NAVIGATION_STATE_GROUPS } from './constants';
 import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
 
 @connect(
-  state => ({
+  (state) => ({
     loanApplicationDetails: state.loanApplicationDetails,
   }),
   {
@@ -21,8 +18,8 @@ import getApplicationProgressPercentage from '../utils/ProgressPercentageCalcula
   }
 )
 class LoanEntity extends Component {
-  _getParentStepLabel = step => {
-    return Object.values(SIDE_NAVIGATION_STATE_GROUPS).filter(meta =>
+  _getParentStepLabel = (step) => {
+    return Object.values(SIDE_NAVIGATION_STATE_GROUPS).filter((meta) =>
       Object.values(meta.steps)
         .reduce((acc, curr) => [...acc, ...curr], [])
         .includes(step)
@@ -43,6 +40,22 @@ class LoanEntity extends Component {
     onClose();
   };
 
+  sendDataToAnalytics = ({ status, majorStepTitle = '', cta = '', subpage = null, ...rest }) => {
+    const { meta, context: { activeState } } = this.props.loanApplicationDetails;
+    const currentStatus = status || activeState;
+
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - WCL LOS',
+      eventAction: `Landing Steps | ${cta}`,
+      eventLabel: `${subpage ? `${subpage} | ` : ''}${
+        APPLICATION_STATE_DESCRIPTIONS[status].short_description
+      } | ${majorStepTitle ? `${majorStepTitle} | ` : ''}${getApplicationProgressPercentage(
+        meta.data.application.status
+      )}%`,
+      ...rest,
+    });
+  };
+
   render() {
     const { meta, context } = this.props.loanApplicationDetails;
 
@@ -51,10 +64,7 @@ class LoanEntity extends Component {
         <div className="loan-application-modal-header">
           <div className="wrapper">
             <div className="logo">
-              <img
-                src="/dist/css/assets/capital/capital_logo.svg"
-                alt="Loading icon"
-              />
+              <img src="/dist/css/assets/capital/capital_logo.svg" alt="Loading icon" />
             </div>
             <div className="title">Business Loan Application</div>
             <Button.Transparent onClick={this.handleClose}>
@@ -69,6 +79,7 @@ class LoanEntity extends Component {
           </div>
           <FormSectionRenderer
             loanApplicationDetails={this.props.loanApplicationDetails}
+            sendDataToAnalytics={this.sendDataToAnalytics}
             onClose={this.handleClose}
           />
           <div className="application-summary">

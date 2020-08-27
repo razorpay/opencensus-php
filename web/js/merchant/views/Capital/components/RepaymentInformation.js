@@ -1,9 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import Amount from 'common/ui/Amount';
-import { TOOLTIP_DESCRIPTIONS } from '../Loans/constants';
+import { TOOLTIP_DESCRIPTIONS, HOTJAR_TRIGGERS } from '../Loans/constants';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
 
 function RepaymentInformation({ amount, trackGAEvents = true, _fromWhere }) {
+  useEffect(() => {
+    triggerHotjarRecording(HOTJAR_TRIGGERS.LOAN_REPAYMENT_PAGE);
+  }, []);
+
   const trackMouseOver = () => {
     if (!trackGAEvents) return;
 

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Form, Field, reduxForm, isDirty } from 'redux-form';
 import { connect } from 'react-redux';
 import Input from 'common/new-ui/Input';
-import { APPLICATION_STATES, BUSINESS_TYPES } from '../constants';
+import { APPLICATION_STATES, BUSINESS_TYPES, HOTJAR_TRIGGERS } from '../constants';
 import {
   saveBusinessDetails,
   saveRequestedLoanAttributes,
@@ -11,6 +11,7 @@ import {
   changeActiveState,
 } from 'merchant/reducers/capital';
 import { AsyncBtn } from 'common/new-ui/Button';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { isPreceedingState } from '../../utils';
 import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
@@ -143,6 +144,7 @@ class BusinessInfoEntity extends Component {
         {}
       );
     }
+    triggerHotjarRecording(HOTJAR_TRIGGERS.LOANS_BUSINESS_INFO);
   }
 
   canModify = () =>
@@ -263,7 +265,10 @@ class BusinessInfoEntity extends Component {
       };
       return this.props
         .saveApplicationDetails(applicationPayload)
-        .then((_) => this.props.changeActiveState('PROMOTER_INFO_PENDING'))
+        .then((_) => {
+          this.props._trackNavigationActions('NEXT', 'PROMOTER_INFO_PENDING');
+          this.props.changeActiveState('PROMOTER_INFO_PENDING');
+        })
         .catch((err) => {
           this.props.showNotification({
             type: 'error',

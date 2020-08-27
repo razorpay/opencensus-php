@@ -3,17 +3,14 @@ import { OtpInput } from 'merchant/components/OtpInput';
 import { connect } from 'react-redux';
 import ajax from 'merchant/utils/ajax';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
-import {
-  changeActiveState,
-  saveD2cReportDetails,
-  submitOtp,
-} from 'merchant/reducers/capital';
+import { changeActiveState, saveD2cReportDetails, submitOtp } from 'merchant/reducers/capital';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
-import { APPLICATION_STATES } from '../constants';
+import { APPLICATION_STATES, HOTJAR_TRIGGERS } from '../constants';
 
 @connect(
-  state => ({
+  (state) => ({
     merchantDetails: state.session.user,
     loanApplicationDetails: state.loanApplicationDetails,
   }),
@@ -35,7 +32,7 @@ class MobileVerification extends Component {
     this.token = '';
   }
 
-  handleChange = otp => {
+  handleChange = (otp) => {
     this.setState({
       otp,
     });
@@ -43,6 +40,7 @@ class MobileVerification extends Component {
 
   componentDidMount() {
     this.sendReqForOtp();
+    triggerHotjarRecording(HOTJAR_TRIGGERS.LOANS_CREDIT_INQUIRY);
   }
 
   sendReqForOtp = async () => {
@@ -50,9 +48,7 @@ class MobileVerification extends Component {
       generatingToken: true,
     });
     const { loanApplicationDetails } = this.props;
-    const mobile =
-      loanApplicationDetails.promoter_details.data.applicant.phones[0]
-        .phone_number;
+    const mobile = loanApplicationDetails.promoter_details.data.applicant.phones[0].phone_number;
     const payload = {
       medium: 'sms',
       action: 'bureau_verify',
@@ -162,10 +158,7 @@ class MobileVerification extends Component {
               <div className="otp-helper-text-wrapper">
                 <p className="otp-helper-text">
                   ◦ OTP is sent to{' '}
-                  {
-                    loanApplicationDetails.promoter_details.data.applicant
-                      .phones[0].phone_number
-                  }
+                  {loanApplicationDetails.promoter_details.data.applicant.phones[0].phone_number}
                   <a
                     className="text-primary m-l"
                     target="_blank"
@@ -177,11 +170,7 @@ class MobileVerification extends Component {
                 </p>
                 <p className="otp-helper-text">
                   ◦ Didn’t receive an OTP?
-                  <a
-                    className="text-primary m-l"
-                    target="_blank"
-                    onClick={this.sendReqForOtp}
-                  >
+                  <a className="text-primary m-l" target="_blank" onClick={this.sendReqForOtp}>
                     Resend
                   </a>
                 </p>
