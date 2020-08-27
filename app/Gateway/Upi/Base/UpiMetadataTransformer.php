@@ -87,6 +87,20 @@ class UpiMetadataTransformer extends UpiTransanformer
                 $this->item->setInternalStatus(InternalStatus::PENDING_FOR_AUTHORIZE);
             }
         }
+        else if ($this->context->getAction() === Action::VERIFY)
+        {
+            $this->item->setVpa($this->upi->getVpa())
+                ->setUmn($this->response(Metadata::UMN))
+                ->setRrn($this->response(Metadata::RRN))
+                ->setNpciTxnId($this->response(Metadata::NPCI_TXN_ID));
+
+            if ($this->isSuccess() === true)
+            {
+                // Callback on authenticate entity with success means that mandate is created
+                // successfully and now first debit is pending for the mandate
+                $this->item->setInternalStatus(InternalStatus::PENDING_FOR_AUTHORIZE);
+            }
+        }
         else
         {
             throw new LogicException('Not implemented for authenticate');
@@ -112,6 +126,19 @@ class UpiMetadataTransformer extends UpiTransanformer
             $this->item->setUmn($this->response(Metadata::UMN))
                        ->setRrn($this->response(Metadata::RRN))
                        ->setNpciTxnId($this->response(Metadata::NPCI_TXN_ID));
+
+            if ($this->isSuccess() === true)
+            {
+                // Callback on authorize entity with success means that the debit was successful
+                // For both First Debit and Auto debit this logic holds true
+                $this->item->setInternalStatus(InternalStatus::AUTHORIZED);
+            }
+        }
+        else if ($this->context->getAction() === Action::VERIFY)
+        {
+            $this->item->setUmn($this->response(Metadata::UMN))
+                ->setRrn($this->response(Metadata::RRN))
+                ->setNpciTxnId($this->response(Metadata::NPCI_TXN_ID));
 
             if ($this->isSuccess() === true)
             {

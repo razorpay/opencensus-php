@@ -89,6 +89,19 @@ class UpiMandateTransformer extends UpiTransanformer
                        ->setRrn($this->response(Mandate::RRN))
                        ->setNpciTxnId($this->response(Mandate::NPCI_TXN_ID));
         }
+        else if ($this->context->getAction() === Action::VERIFY)
+        {
+            $this->item->setStatus(Status::CREATED);
+
+            if ($this->isSuccess() === true)
+            {
+                $this->item->setStatus(Status::CONFIRMED);
+            }
+
+            $this->item->setUmn($this->response(Mandate::UMN))
+                       ->setRrn($this->response(Mandate::RRN))
+                       ->setNpciTxnId($this->response(Mandate::NPCI_TXN_ID));
+        }
         else
         {
             throw new LogicException('Not implemented for authenticate');

@@ -891,6 +891,19 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function verifyAllPayments()
+    {
+        $request = array(
+            'url'     => '/payments/verify/all',
+            'method'  => 'POST');
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function authorizedFailedPayment($id)
     {
         $request = array(

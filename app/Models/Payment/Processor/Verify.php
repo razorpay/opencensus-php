@@ -60,6 +60,9 @@ trait Verify
                     'expiry_time'  => $upi['expiry_time'],
                 ];
             }
+
+            // Upi for OTM and Recurring need to send extra information in verify
+            $this->modifyGatewayInputForUpi($payment, $data);
         }
 
         // So that verification calls can be made with the relevant token related information

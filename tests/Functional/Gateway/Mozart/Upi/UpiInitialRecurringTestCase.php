@@ -7,6 +7,7 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Upi\Base;
+use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
 use RZP\Models\UpiMandate\Entity;
 use RZP\Models\UpiMandate\Status;
@@ -392,6 +393,135 @@ class UpiInitialRecurringTestCase extends TestCase
         $token = $this->getDbLastEntity('token');
 
         $this->assertEquals(Token\RecurringStatus::CANCELLED, $token['recurring_status']);
+    }
+
+    public function testVerifyRecurringMandateCreatePayment()
+    {
+        $orderId = $this->createUpiRecurringOrder();
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $this->assertArraySubset([
+            Entity::ORDER_ID        => substr($orderId, 6),
+            Entity::CUSTOMER_ID     => '100000customer',
+            Entity::FREQUENCY       => 'monthly',
+            Entity::RECURRING_VALUE => 31,
+            Entity::RECURRING_TYPE  => 'before',
+            Entity::STATUS          => Status::CREATED,
+        ], $upiMandate->toArray());
+
+        $this->payment['order_id'] = $orderId;
+
+        $this->payment['customer_id'] = 'cust_100000customer';
+
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $time = Carbon::now(Timezone::IST)->addMinutes(4);
+
+        Carbon::setTestNow($time);
+
+        $response = $this->verifyAllPayments();
+
+        $payment->reload();
+
+        $upiMandate->reload();
+
+        $this->assertArraySubset([
+            Payment\Entity::ORDER_ID        => substr($orderId, 6),
+            Payment\Entity::CUSTOMER_ID     => '100000customer',
+            Payment\Entity::STATUS          => 'created',
+        ], $payment->toArray());
+
+        $this->assertArraySubset([
+            Entity::ORDER_ID        => substr($orderId, 6),
+            Entity::CUSTOMER_ID     => '100000customer',
+            Entity::FREQUENCY       => 'monthly',
+            Entity::RECURRING_VALUE => 31,
+            Entity::RECURRING_TYPE  => 'before',
+            Entity::STATUS          => Status::CONFIRMED,
+        ], $upiMandate->toArray());
+
+        $this->firstDebitCallback($payment);
+
+        $payment->reload();
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->assertArraySubset([
+            Payment\Entity::ORDER_ID        => substr($orderId, 6),
+            Payment\Entity::CUSTOMER_ID     => '100000customer',
+            Payment\Entity::STATUS          => 'authorized',
+            Payment\Entity::LATE_AUTHORIZED  => true,
+        ], $payment->toArray());
+
+        //TODO:: set payment late authorized here.
+        $this->assertArraySubset([
+            Token\Entity::RECURRING        => true,
+            Token\Entity::RECURRING_STATUS => 'confirmed'
+        ], $token->toArray());
+    }
+
+    public function testVerifyRecurringFirstDebitPayment()
+    {
+        $orderId = $this->createUpiRecurringOrder();
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $this->assertArraySubset([
+            Entity::ORDER_ID        => substr($orderId, 6),
+            Entity::CUSTOMER_ID     => '100000customer',
+            Entity::FREQUENCY       => 'monthly',
+            Entity::RECURRING_VALUE => 31,
+            Entity::RECURRING_TYPE  => 'before',
+            Entity::STATUS          => Status::CREATED,
+        ], $upiMandate->toArray());
+
+        $this->payment['order_id'] = $orderId;
+
+        $this->payment['customer_id'] = 'cust_100000customer';
+
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->mandateCreateCallback($payment);
+
+        $upiMandate->reload();
+
+        $this->assertArraySubset([
+            Entity::ORDER_ID        => substr($orderId, 6),
+            Entity::CUSTOMER_ID     => '100000customer',
+            Entity::FREQUENCY       => 'monthly',
+            Entity::RECURRING_VALUE => 31,
+            Entity::RECURRING_TYPE  => 'before',
+            Entity::STATUS          => Status::CONFIRMED,
+        ], $upiMandate->toArray());
+
+        $time = Carbon::now(Timezone::IST)->addMinutes(4);
+
+        Carbon::setTestNow($time);
+
+        $response = $this->verifyAllPayments();
+
+        $payment->reload();
+
+        $this->assertArraySubset([
+            Payment\Entity::ORDER_ID         => substr($orderId, 6),
+            Payment\Entity::CUSTOMER_ID      => '100000customer',
+            Payment\Entity::STATUS           => 'authorized',
+            Payment\Entity::LATE_AUTHORIZED  => true,
+        ], $payment->toArray());
+    }
+
+    public function testVerifyForSuccessfulFirstPayment()
+    {
+        $this->testRecurringMandateCreate();
+
+        $payment = $this->getDbLastPayment();
+
+        $response = $this->verifyPayment($payment->getPublicId());
     }
 
     public function testRecurringMandateCreateOnDark()

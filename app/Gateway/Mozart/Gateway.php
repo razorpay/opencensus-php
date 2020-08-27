@@ -1233,6 +1233,19 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    public function upiRecurringVerify(array $input, UpiEntity $entity)
+    {
+        parent::verify($input);
+
+        $gateway = $input['payment']['gateway'];
+
+        $verify = new Verify($gateway, $input);
+
+        $verify->payment = $entity;
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
     public function forceAuthorizeFailed(array $input)
     {
         if ($this->isVerifyMissingGateway($input) === true)
@@ -1308,6 +1321,11 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment($verify)
     {
+        if ($this->isUpiRecurringPayment($verify->input['payment']) === true)
+        {
+            return $this->verifyUpiRecurringPayment($verify);
+        }
+
         $input = $verify->input;
 
         $content = $verify->verifyResponseContent;
@@ -1330,6 +1348,50 @@ class Gateway extends Base\Gateway
         $gatewayName = $this->getGateway($input);
 
         $this->restrictPaymentVerifyGatewayIfApplicable($gatewayName, $verify);
+
+        return $verify->status;
+    }
+
+    protected function verifyUpiRecurringPayment($verify)
+    {
+        $input = $verify->input;
+
+        $content = $verify->verifyResponseContent;
+
+        $verify->status = VerifyResult::STATUS_MATCH;
+
+        $verify->gatewaySuccess = $content['success'];
+
+        $this->checkApiSuccess($verify);
+
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+        {
+            $verify->status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
+
+        $action = Action::AUTHORIZE;
+
+        if (($this->isUpiRecurringPayment($verify->input['payment']) === true) and
+            ($verify->input['upi']['action'] === Base\Action::AUTHENTICATE))
+        {
+            $action = Action::MANDATE_CREATE;
+        }
+
+        $attributes = array_only($content['data'], (new UpiEntity())->getFillable());
+
+        $new = array_pull($attributes, UpiEntity::GATEWAY_DATA);
+
+        $current = $verify->payment->getGatewayData();
+
+        // In fact, we should not allow gateway data to be updated from mozart response
+        // But, as of now merging this in case it seems useful from mozart's side
+        $updated = array_merge($current, $new);
+
+        $attributes[UpiEntity::GATEWAY_DATA] = $updated;
+
+        $this->updateGatewayPaymentEntity($verify->payment, $attributes, false);
 
         return $verify->status;
     }
@@ -1648,6 +1710,7 @@ class Gateway extends Base\Gateway
                 Action::PAY_INIT          => null,
                 Action::PAY_VERIFY        => null,
                 Action::CAPTURE           => Action::PAY_INIT,
+                Action::VERIFY            => null,
             ],
             Payment\Gateway::NETBANKING_KVB =>  [
                 Action::PAY_INIT    =>  null,
@@ -1695,6 +1758,7 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY        => null,
                 Action::MANDATE_REVOKE    => null,
                 Action::NOTIFY            => null,
+                Action::VERIFY            => null,
             ],
         ];
 
@@ -1806,6 +1870,7 @@ class Gateway extends Base\Gateway
                 Action::PAY_INIT        => null,
                 Action::PAY_VERIFY      => null,
                 Action::CAPTURE         => Action::AUTHORIZE,
+                Action::VERIFY          => null,
             ],
             Payment\Gateway::UPI_SBI => [
                 Action::PAY_INIT        => null,
@@ -1859,6 +1924,7 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY        => null,
                 Action::MANDATE_REVOKE    => null,
                 Action::NOTIFY            => null,
+                Action::VERIFY            => null,
             ],
         ];
 
@@ -2014,6 +2080,11 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentToVerify(Verify $verify)
     {
+        if ($this->isUpiRecurringPayment($verify->input['payment']) === true)
+        {
+            return $verify->payment;
+        }
+
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
             $verify->input['payment']['id'], Action::AUTHORIZE);
 

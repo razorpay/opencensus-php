@@ -953,6 +953,12 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
+        if (($this->isFirstRecurringPayment($input) === true) or
+            ($this->isSecondRecurringPayment($input) === true))
+        {
+            return $this->recurringPaymentVerify($input);
+        }
+
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);

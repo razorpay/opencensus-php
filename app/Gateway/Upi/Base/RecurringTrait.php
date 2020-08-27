@@ -364,7 +364,7 @@ trait RecurringTrait
             return $entity;
         }
 
-        $mozartAction =$this->gatewayDataIdToActionMap[$action];
+        $mozartAction = $this->gatewayDataIdToActionMap[$action];
 
         $executeAt = null;
         // For notify call ICICI is expecting the execution, we are going to make it centralize
@@ -493,5 +493,62 @@ trait RecurringTrait
 
         // fields like npci_reference_id, npci_txn_id must be checked against mismatch for anomalies
         $this->updateGatewayPaymentResponse($upi, $attributes, false);
+    }
+
+    protected function recurringPaymentVerify(array $input)
+    {
+        // Here we check which step for the first recurring payment needs to be verified. If authorize entity has been
+        // created, that means mandate creation was successful and we need to verify first debit. Otherwise, we need
+        // to verify mandate creation only.
+
+        $upiEntity = $this->getUpiEntityForAction($input, Action::AUTHORIZE);
+
+        if (($upiEntity instanceof Entity) === false)
+        {
+            $upiEntity = $this->getUpiEntityForAction($input, Action::AUTHENTICATE);
+        }
+
+        if (($upiEntity instanceof Entity) === false)
+        {
+            throw new LogicException('Upi Entity not found');
+        }
+
+        $this->setRequestDataForUpiRecurring($input, $upiEntity);
+
+        $gateway = $this->getMozartGatewayWithModeSet();
+
+        $response = $gateway->upiRecurringVerify($input, $upiEntity);
+
+        return $response;
+    }
+
+    public function extractUpiRecurringMandateAndPaymentProperties($upiEntity, $verify)
+    {
+        $input = $verify->input;
+
+        $response = $verify->verifyResponseContent;
+
+        $anomalies = new Anomalies($this);
+
+        $mandateTransformer = (new UpiMandateTransformer($this, $anomalies));
+        $mandate = $mandateTransformer->from($input, $response['data'], $upiEntity)->transform();
+
+        $metadataTransformer = (new UpiMetadataTransformer($this, $anomalies));
+        $metadata = $metadataTransformer->from($input, $response['data'], $upiEntity)->transform();
+
+        $processed = [
+            // Data which is needed for mandate
+            'upi_mandate'                       => $mandateTransformer->toArray(),
+            // Data which is needed for UPI Metadata
+            'upi'                               => $metadataTransformer->toArray(),
+            // Acquirer data which is needed to be saved in payment entity
+            'acquirer'                          => [
+                Payment\Entity::VPA             => $upiEntity->getVpa(),
+                Payment\Entity::REFERENCE1      => $upiEntity->getNpciTransactionId(),
+                Payment\Entity::REFERENCE16     => $upiEntity->getNpciReferenceId(),
+            ],
+        ];
+
+        return $processed;
     }
 }

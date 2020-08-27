@@ -2888,6 +2888,11 @@ trait Authorize
             $data['card'] = $this->repo->card->fetchForPayment($payment)->toArray();
         }
 
+        if ($payment->isUpi() === true)
+        {
+            $this->modifyGatewayInputForUpi($payment, $data);
+        }
+
         $response = $this->callGatewayFunction(Action::AUTHORIZE_FAILED, $data);
 
         return $response;
@@ -2943,6 +2948,12 @@ trait Authorize
             // The first argument marks the payment as converted from failed
             // to authorized
             $this->updateAndNotifyPaymentAuthorized($response, true);
+
+            if (($payment->isUpiRecurring() === true) and
+                ($this->shouldHitDebitOnRecurringForUpi($payment) === true))
+            {
+                $this->processRecurringDebitForUpi($payment);
+            }
         }
 
         $this->autoCapturePaymentIfApplicable($payment);

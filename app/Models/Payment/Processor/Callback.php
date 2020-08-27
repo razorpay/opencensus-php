@@ -348,7 +348,18 @@ trait Callback
             $this->processPaymentCallbackException($e);
         }
 
-        $this->updateAndNotifyPaymentAuthorized($data);
+        $shouldLateAuthorize = false;
+
+        // This condition has been added for upi recurring payments.For upi recurring payments we get two callbacks,
+        // one for mandate approval and one for first debit. If upi mandate was confirmed late via verify, then in that
+        // case we need to mark the payment as late authorized.
+        if ((isset($input['upi_mandate']) === true) and
+            ($input['upi_mandate']['late_confirmed']) === true)
+        {
+            $shouldLateAuthorize = true;
+        }
+
+        $this->updateAndNotifyPaymentAuthorized($data, $shouldLateAuthorize);
     }
 
     // headless exception handling
