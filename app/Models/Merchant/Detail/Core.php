@@ -241,14 +241,16 @@ class Core extends Base\Core
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
      */
-    public function updatePoaVerificationStatusIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant)
+    public function updatePoaVerificationStatusIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant) : void
     {
         if ((new Merchant\Core)->isAutoKycEnabled($merchantDetails, $merchant) === false)
         {
             return;
         }
 
-        // no poa verification for linked accounts
+        //
+        // No poa verification for linked accounts
+        //
         if ($merchant->isLinkedAccount() === true)
         {
             return;
@@ -256,39 +258,42 @@ class Core extends Base\Core
 
         $documents = $merchant->merchantDocuments;
 
-        $isOcrVerified = false;
-
         $documentType = '';
 
+        $poaVerificationStatus = null;
+
         //
-        // Update PoaVerificationStatus to Verified if any document uploaded has OCR Verified.
+        // Update PoaVerificationStatus to Verified if poa document uploaded has OCR Verified status.
         //
         foreach ($documents as $document)
         {
-            if ((isset($document[Document\Entity::OCR_VERIFY]) === true) and
-                ($document[Document\Entity::OCR_VERIFY] === OcrVerificationStatus::VERIFIED))
+            if (Document\Type::isDocumentTypeToPerformOcr($document->getDocumentType()) === false)
+            {
+                continue;
+            }
+
+            $documentType = $document[Document\Entity::DOCUMENT_TYPE];
+
+            $poaVerificationStatus = $document[Document\Entity::OCR_VERIFY] ?? null;
+
+            if ($poaVerificationStatus === OcrVerificationStatus::VERIFIED)
             {
                 $this->trace->info(
                     TraceCode::MERCHANT_VERIFY_POA,
                     [
-                        'document_type' => $document[Document\Entity::DOCUMENT_TYPE],
+                        DEConstants::DOCUMENT_TYPE => $documentType,
                     ]);
-
-                $documentType = $document[Document\Entity::DOCUMENT_TYPE];
-
-                $isOcrVerified = true;
 
                 break;
             }
+
         }
-        $poaVerificationStatus =
-            ($isOcrVerified === true) ? PoaVerificationStatus::VERIFIED : PoaVerificationStatus::FAILED;
 
         $this->trace->count(DetailMetric::POA_VERIFICATION_STATUS_TOTAL,
                             [
-                                Detail\Constants::POA_STATUS    => $poaVerificationStatus,
+                                Detail\Constants::POA_STATUS    => $poaVerificationStatus ?? DEConstants::NOT_AVAILABLE,
                                 Detail\Constants::DOCUMENT_TYPE => $documentType,
-                                Detail\Constants::BUSINESS_TYPE => $merchantDetails->getBusinessTypeValue()
+                                Detail\Constants::BUSINESS_TYPE => $merchantDetails->getBusinessType()
                             ]);
 
         $merchantDetails->setPoaVerificationStatus($poaVerificationStatus);

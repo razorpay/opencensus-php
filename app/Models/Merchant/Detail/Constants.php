@@ -170,6 +170,7 @@ class Constants
     const DETAILS_FROM_API_RESPONSE = 'detail_from_api';
     const DETAILS_FROM_USER         = 'detail_from_user';
     const MATCH_TYPE                = 'match_type';
+    const NOT_AVAILABLE             = 'not_available';
 
     const SEARCH_STRING = 'search_string';
 

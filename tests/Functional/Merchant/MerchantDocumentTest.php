@@ -7,6 +7,7 @@ use RZP\Constants\Mode;
 use RZP\Services\RazorXClient;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\Document\Source;
 use RZP\Models\Merchant\Detail\Constants;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -153,25 +154,38 @@ class MerchantDocumentTest Extends TestCase
 
     public function testDocUploadAndCheckOcrStatusSuccessForRegistered()
     {
-        $this->uploadDocAndCheckOcrSuccess(1, 'verified');
+        $this->uploadDocAndCheckOcrSuccess(1, 'success', 'verified');
     }
 
     public function testDocUploadAndCheckOcrStatusSuccessForUnregistered()
     {
-        $this->uploadDocAndCheckOcrSuccess(2, 'verified');
+        $this->uploadDocAndCheckOcrSuccess(2, 'success', 'verified');
     }
 
-    public function testDocUploadAndCheckOcrStatusFailureForRegistered()
+    public function testDocUploadAndCheckOcrStatusNotMatchedForRegistered()
     {
-        $this->uploadDocAndCheckOcrSuccess(1, 'failed', 'random name');
+        $this->uploadDocAndCheckOcrSuccess(1, 'success', 'not_matched', 'random name');
     }
 
-    public function testDocUploadAndCheckOcrStatusFailureForUnregistered()
+    public function testDocUploadAndCheckOcrStatusNotMatchedForUnregistered()
     {
-        $this->uploadDocAndCheckOcrSuccess(2, 'failed', 'random name');
+        $this->uploadDocAndCheckOcrSuccess(2, 'success', 'not_matched', 'random name');
     }
 
-    public function uploadDocAndCheckOcrSuccess(int $businessType, string $status, string $panName = 'ABCDE FGHIJ')
+    public function testDocUploadAndCheckOcrStatusIncorrectDetailsForRegistered()
+    {
+        $this->uploadDocAndCheckOcrSuccess(1, 'incorrect_details', 'incorrect_details');
+    }
+
+    public function testDocUploadAndCheckOcrStatusIncorrectDetailsForUnregistered()
+    {
+        $this->uploadDocAndCheckOcrSuccess(2, 'incorrect_details', 'incorrect_details');
+    }
+
+    public function uploadDocAndCheckOcrSuccess(int $businessType,
+                                                string $octResponseStatus,
+                                                string $ocrVerificationStatus,
+                                                string $panName = 'ABCDE FGHIJ')
     {
         $this->ba->proxyAuth('rzp_test_' . '10000000000000');
 
@@ -184,19 +198,21 @@ class MerchantDocumentTest Extends TestCase
             ]);
 
         $ocrResponseTypes = [
-            Constants::AADHAAR,
-            Constants::VOTERS_ID,
-            Constants::PASSPORT,
+            Type::AADHAAR,
+            Type::VOTERS_ID,
+            Type::PASSPORT,
         ];
 
         $documentType = Constants::VOTER_ID_FRONT;
 
         $this->updateUploadDocumentData(__FUNCTION__);
 
-        foreach ($ocrResponseTypes as $ocrResponseType)
+        foreach ($ocrResponseTypes as $ocrDocumentType)
         {
+
             Config::set('applications.kyc.mock', true);
-            Config::set('applications.kya.poa_ocr_response_type', $ocrResponseType);
+            Config::set('applications.kyc.poa_ocr_document_type', $ocrDocumentType);
+            Config::set('applications.kyc.poa_ocr_response_status', $octResponseStatus);
 
             $testData = &$this->testData[__FUNCTION__];
 
@@ -208,7 +224,7 @@ class MerchantDocumentTest Extends TestCase
 
             $merchantDocumentDb = $this->getDbEntityById('merchant_document', $response['documents'][$documentType][0]['id']);
 
-            $this->assertEquals($merchantDocumentDb['ocr_verify'], $status);
+            $this->assertEquals($merchantDocumentDb['ocr_verify'], $ocrVerificationStatus);
         }
     }
 
@@ -230,7 +246,7 @@ class MerchantDocumentTest Extends TestCase
         $this->updateUploadDocumentData($testDataKeyName);
 
         Config::set('applications.kyc.mock', false);
-        Config::set('applications.kya.poa_ocr_response_type', Constants::FAILURE);
+        Config::set('applications.kyc.poa_ocr_response_status', Constants::FAILURE);
 
         $testData = &$this->testData[$testDataKeyName];
 
@@ -243,27 +259,6 @@ class MerchantDocumentTest Extends TestCase
         $response = $this->startTest($testData);
 
         $merchantDocumentDb = $this->getDbEntityById('merchant_document', $response['documents'][$documentType][0]['id']);
-
-        $this->assertEquals($merchantDocumentDb['ocr_verify'], 'failed');
-    }
-
-    public function testDocumentUploadAndCheckOcrVerificationStatusFailed()
-    {
-        $this->ba->proxyAuth('rzp_test_' . '10000000000000');
-
-        $this->fixtures->create(
-            'merchant_detail',
-            [
-                'merchant_id'       => '10000000000000',
-                'promoter_pan_name' => 'XYZ',
-                'business_type'     => 11,
-            ]);
-
-        $this->updateUploadDocumentData(__FUNCTION__);
-
-        $response = $this->startTest();
-
-        $merchantDocumentDb = $this->getDbEntityById('merchant_document', $response['documents']['aadhar_front'][0]['id']);
 
         $this->assertEquals($merchantDocumentDb['ocr_verify'], 'failed');
     }

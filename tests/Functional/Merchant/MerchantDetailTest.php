@@ -106,6 +106,17 @@ class MerchantDetailTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testSubmitWithOcrStatusVerified()
+    {
+        $this->validatePoaStatusOnL2Submission('verified');
+    }
+
+
+    public function testSubmitWithOcrStatusIncorrectDetails()
+    {
+        $this->validatePoaStatusOnL2Submission('incorrect_details');
+    }
+
     public function testSubmitAutoActivate()
     {
         $this->fixtures->merchant->addFeatures(['marketplace'], '10000000000000');
@@ -2225,7 +2236,7 @@ class MerchantDetailTest extends OAuthTestCase
         $this->fixtures->create('balance', $balanceData);
     }
 
-    private function createDocumentEntities(string $merchantId, array $documentTypes)
+    private function createDocumentEntities(string $merchantId, array $documentTypes, array $attributes = [])
     {
         $data = [
             'document_types' => $documentTypes,
@@ -2233,6 +2244,8 @@ class MerchantDetailTest extends OAuthTestCase
                 'merchant_id'   => $merchantId,
                 'file_store_id' => 'abcdefgh12345',]
         ];
+
+        $data['attributes'] = array_merge($data['attributes'], $attributes);
 
         $this->fixtures->create('merchant_document:multiple', $data);
     }
@@ -2338,4 +2351,32 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->startTest();
     }
+
+    /**
+     * @param $status
+     *
+     * @return mixed
+     */
+    protected function validatePoaStatusOnL2Submission($status)
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
+
+        $this->createDocumentEntities($merchantDetail[MerchantDetails::MERCHANT_ID],
+                                      ['aadhar_front'], ['ocr_verify' => $status]);
+
+        $this->createDocumentEntities($merchantDetail[MerchantDetails::MERCHANT_ID],
+                                      ['aadhar_back']);
+
+        $testData = &$this->testData['testSubmit'];
+
+        $this->startTest($testData);
+
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+
+        $this->assertEquals($status, $merchantDetail->getPoaVerificationStatus());
+
+        return $testData;
+}
 }

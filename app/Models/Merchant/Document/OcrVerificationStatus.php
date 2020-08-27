@@ -4,9 +4,25 @@ namespace RZP\Models\Merchant\Document;
 
 class OcrVerificationStatus
 {
-    const VERIFIED = 'verified';
+    /**
+     * When ocr is successfully verified
+     */
+    const VERIFIED    = 'verified';
 
-    const FAILED = 'failed';
+    /**
+     * When ocr verification fails because of timeout and external api outages
+     */
+    const FAILED      = 'failed';
+
+    /**
+     * When details not matching with the ocr results
+     */
+    const NOT_MATCHED = 'not_matched';
+
+    /**
+     * When external service input detail is not correct
+     */
+    const INCORRECT_DETAILS = 'incorrect_details';
 
     const OCR_VERIFICATION_THRESHOLD = 70.0;
 

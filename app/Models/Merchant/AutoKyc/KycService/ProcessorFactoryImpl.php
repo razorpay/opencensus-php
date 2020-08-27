@@ -4,13 +4,14 @@ namespace RZP\Models\Merchant\AutoKyc\KycService;
 
 use App;
 
-use RZP\Models\Merchant\AutoKyc\KycService\cin\CINProcessor;
-use RZP\Models\Merchant\AutoKyc\KycService\cin\CINProcessorMock;
+use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\Detail\Constants;
 use RZP\Models\Merchant\AutoKyc\Processor;
 use RZP\Models\Merchant\AutoKyc\ProcessorFactory;
+use RZP\Models\Merchant\AutoKyc\KycService\cin\CINProcessor;
 use RZP\Models\Merchant\AutoKyc\KycService\poa\POAProcessor;
 use RZP\Models\Merchant\AutoKyc\KycService\poi\POIProcessor;
+use RZP\Models\Merchant\AutoKyc\KycService\cin\CINProcessorMock;
 use RZP\Models\Merchant\AutoKyc\KycService\poa\POAProcessorMock;
 use RZP\Models\Merchant\AutoKyc\KycService\poi\POIProcessorMock;
 use RZP\Models\Merchant\AutoKyc\KycService\gstin\GSTINProcessor;
@@ -87,12 +88,12 @@ class ProcessorFactoryImpl implements ProcessorFactory
 
         if ($mock === true)
         {
-            $poaVerifiedMock = new POAProcessorMock($input);
-
             // this config is not defined in application config , this is used in test case only
-            $documentType = $app['config']['applications.kyc.poa_ocr_response_type'] ?? Constants::DOCUMENT_TYPES['AADHAAR'];
+            $documentType = $app['config']['applications.kyc.poa_ocr_document_type'] ?? Type::AADHAAR;
 
-            $poaVerifiedMock->setDocumentType($documentType);
+            $mockStatus = $app['config']['applications.kyc.poa_ocr_response_status'] ?? Constants::SUCCESS;
+
+            $poaVerifiedMock = new POAProcessorMock($input, $mockStatus, $documentType);
 
             return $poaVerifiedMock;
         }

@@ -335,7 +335,6 @@ class Validator extends Base\Validator
         Entity::BUSINESS_MODEL                           => 'sometimes|max:255',
         Entity::INTERNATIONAL_ACTIVATION_FLOW            => 'filled|custom',
         Entity::BANK_DETAILS_VERIFICATION_STATUS         => 'filled|custom',
-        Entity::POA_VERIFICATION_STATUS                  => 'filled|custom',
         Entity::ESTD_YEAR                                => 'filled|max:4',
         Entity::DATE_OF_ESTABLISHMENT                    => 'filled|date_format:"Y-m-d"|before:"today"',
         Entity::AUTHORIZED_SIGNATORY_RESIDENTIAL_ADDRESS => 'filled|max:255',
@@ -417,23 +416,6 @@ class Validator extends Base\Validator
             $validBankDetailValidationStatuses,
             ErrorCode::BAD_REQUEST_INVALID_BANK_DETAIL_VERIFICATION_STATUS_CHANGE);
 
-    }
-
-    public function validatePOAVerificationStatus($attribute, $value)
-    {
-        // adding this check for qa automation
-        if (self::isValidAutomationEnv() === false)
-        {
-            $this->validateActivationFormSubmitted();
-        }
-
-        $validPoaValidationStatuses = PoaVerificationStatus::ALLOWED_NEXT_POA_VERIFICATION_STATUSES_MAPPING;
-
-        $this->isAllowedStatusChange(
-            $this->entity->getPoaVerificationStatus(),
-            $value,
-            $validPoaValidationStatuses,
-            ErrorCode::BAD_REQUEST_INVALID_POA_VERIFICATION_STATUS_CHANGE);
     }
 
     private function isAllowedStatusChange($currentStatus,

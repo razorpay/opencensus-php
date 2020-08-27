@@ -4,7 +4,6 @@ namespace RZP\Models\Merchant\AutoKyc\Verifiers;
 
 use RZP\lib\FuzzyMatcher;
 use RZP\Models\Merchant\Detail\Constants;
-use RZP\Models\Merchant\Detail\PoaVerificationStatus;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 
 class POAVerifier implements Verifier
@@ -65,21 +64,21 @@ class POAVerifier implements Verifier
 
     function getIncorrectDetailsStatus()
     {
-        return PoaVerificationStatus::FAILED;
+        return OcrVerificationStatus::INCORRECT_DETAILS;
     }
 
     function getFailedStatus()
     {
-        return PoaVerificationStatus::FAILED;
+        return OcrVerificationStatus::FAILED;
     }
 
     function getNotMatchedStatus()
     {
-        return PoaVerificationStatus::FAILED;
+        return OcrVerificationStatus::NOT_MATCHED;
     }
 
     function getVerifiedStatus()
     {
-        return PoaVerificationStatus::VERIFIED;
+        return OcrVerificationStatus::VERIFIED;
     }
 }

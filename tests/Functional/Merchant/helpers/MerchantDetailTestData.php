@@ -456,7 +456,6 @@ return [
         'request'  => [
             'content' => [
                 'bank_details_verification_status' => 'verified',
-                'poa_verification_status'          => 'verified'
             ],
             'url'     => '/merchants/details',
             'method'  => 'PATCH',
@@ -464,7 +463,6 @@ return [
         'response' => [
             'content'     => [
                 'bank_details_verification_status' => 'verified',
-                'poa_verification_status'          => 'verified'
             ],
             'status_code' => 200,
         ],

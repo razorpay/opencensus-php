@@ -8,6 +8,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Admin\Admin;
 use RZP\Constants\IndianStates;
 use RZP\Models\Merchant\AutoKyc;
+use RZP\Models\Merchant\Document\OcrVerificationStatus;
 
 /**
  * Class Entity
@@ -731,7 +732,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         $this->setAttribute(self::ACTIVATION_FLOW, $activationFlow);
     }
 
-    public function setPoaVerificationStatus(string $poaVerificationStatus)
+    public function setPoaVerificationStatus(?string $poaVerificationStatus)
     {
         $this->setAttribute(self::POA_VERIFICATION_STATUS, $poaVerificationStatus);
     }
@@ -741,9 +742,9 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         return $this->getAttribute(self::POA_VERIFICATION_STATUS);
     }
 
-    public function isPoaVerified() : bool
+    public function isPoaVerified(): bool
     {
-        return ($this->getPoaVerificationStatus() === PoaVerificationStatus::VERIFIED);
+        return ($this->getPoaVerificationStatus() === OcrVerificationStatus::VERIFIED);
     }
 
     public function isCinVerified(): bool

@@ -170,7 +170,7 @@ class Core extends Base\Core
 
         (new Events())->sendServiceVerifierEvents($response);
 
-        $poaVerifier = new POAVerifier($input[DEConstants::PROMOTER_PAN_NAME], $response);
+        $poaVerifier = new POAVerifier($input[DEConstants::PROMOTER_PAN_NAME] ?? '', $response);
 
         $verificationStatus = $poaVerifier->verify();
 

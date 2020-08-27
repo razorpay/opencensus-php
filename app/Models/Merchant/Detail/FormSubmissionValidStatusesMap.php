@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use RZP\Models\Merchant\Document\OcrVerificationStatus;
+
 class FormSubmissionValidStatusesMap
 {
     /**
@@ -33,7 +35,7 @@ class FormSubmissionValidStatusesMap
     const POI_REGISTERED   = [POIStatus::FAILED, POIStatus::VERIFIED, POIStatus::NOT_MATCHED];
     const POI_UNREGISTERED = [POIStatus::VERIFIED];
     const COMPANY_PAN      = [CompanyPanStatus::FAILED, CompanyPanStatus::VERIFIED, CompanyPanStatus::NOT_MATCHED];
-    const POA              = [PoaVerificationStatus::VERIFIED, PoaVerificationStatus::FAILED];
+    const POA              = [OcrVerificationStatus::VERIFIED, OcrVerificationStatus::FAILED, OcrVerificationStatus::NOT_MATCHED, OcrVerificationStatus::INCORRECT_DETAILS];
     const GSTIN            = [GSTINVerificationStatus::FAILED, GSTINVerificationStatus::VERIFIED, GSTINVerificationStatus::NOT_MATCHED];
 
     const ALLOWED_VERIFICATION_STATUS_MAP_REGISTERED = [

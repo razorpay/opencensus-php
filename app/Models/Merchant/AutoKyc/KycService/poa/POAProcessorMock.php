@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\AutoKyc\KycService\poa;
 use Requests_Response;
 use Requests_Exception;
 use RZP\Models\Merchant\Document\Type;
+use RZP\Models\Merchant\Detail\Constants;
 use RZP\Models\Merchant\AutoKyc\Response;
 
 class POAProcessorMock extends POAProcessor
@@ -15,11 +16,17 @@ class POAProcessorMock extends POAProcessor
     protected $documentType;
 
     /**
-     * @param string $documentType
+     * @var string
      */
-    public function setDocumentType(string $documentType): void
+    protected $mockStatus;
+
+    public function __construct(array $input, string $mockStatus, string $documentType)
     {
+        parent::__construct($input);
+
         $this->documentType = $documentType;
+
+        $this->mockStatus = $mockStatus;
     }
 
     public function getResponse(array $request)
@@ -32,31 +39,61 @@ class POAProcessorMock extends POAProcessor
 
         $body = null;
 
-        switch ($this->documentType)
+        switch ($this->mockStatus)
         {
-            case Type::PASSPORT:
+            case Constants::INCORRECT_DETAILS:
 
-                $body = $this->getKycPayloadForPassportOcr();
+                $response->status_code = 400;
 
-                break;
-            case Type::VOTERS_ID:
-
-                $body = $this->getKycPayloadForVoterIdOcr();
-
-                break;
-            case Type::AADHAAR:
-
-                $body = $this->getKycPayloadForAadharOcr();
+                $body                  = [
+                    'internal_error' => [
+                        'code' => 'VALIDATION_ERROR'
+                    ]
+                ];
 
                 break;
-            default:
 
+            case Constants::SUCCESS:
+
+                $body = $this->getMockResponseForSuccessCase();
+
+                break;
+
+            case Constants::FAILURE:
                 throw new Requests_Exception('Error when fetching ocr data', 'timeout/downtime');
         }
 
         $response->body = json_encode($body);
 
         return $response;
+    }
+
+    /**
+     * Returns response for success case
+     *
+     * @return array
+     * @throws Requests_Exception
+     */
+    protected function getMockResponseForSuccessCase() : array
+    {
+        switch ($this->documentType)
+        {
+            case Type::PASSPORT:
+
+                return $this->getKycPayloadForPassportOcr();
+
+            case Type::VOTERS_ID:
+
+                return $this->getKycPayloadForVoterIdOcr();
+
+            case Type::AADHAAR:
+
+                return $this->getKycPayloadForAadharOcr();
+
+            default:
+
+                throw new Requests_Exception('unsupported document type', 'timeout/downtime');
+        }
     }
 
     protected function getKycPayloadForPassportOcr(): array

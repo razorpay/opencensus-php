@@ -208,28 +208,6 @@ return [
         ]
     ],
 
-    'testDocumentUploadAndCheckOcrVerificationStatusFailed' => [
-        'request'  => [
-            'url'     => '/merchant/documents/upload',
-            'method'  => 'POST',
-            'content' => [
-                'document_type' => 'aadhar_front'
-            ],
-            'server'  => [
-                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'documents' => [
-                    "aadhar_front" => [
-
-                    ]
-                ],
-            ]
-        ]
-    ],
-
     'testFetchMerchantDocuments' => [
         'request'  => [
             'url'    => '/merchant/documents',
