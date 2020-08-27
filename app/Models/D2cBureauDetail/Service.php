@@ -249,12 +249,25 @@ class Service extends Base\Service
 
         return $this->mutex->acquireAndRelease($bureauDetail->getId(), function () use ($bureauDetail, $input)
         {
-            (new User\Core)->verifyOtp([
-                'otp'               => $input['otp'],
-                'token'             => $input['token'],
-                'action'            => 'bureau_verify',
-                'contact_mobile'    => $bureauDetail->getContactMobile(),
-            ], $this->merchant, $this->user);
+            try
+            {
+                (new User\Core)->verifyOtp([
+                    'otp'               => $input['otp'],
+                    'token'             => $input['token'],
+                    'action'            => 'bureau_verify',
+                    'contact_mobile'    => $bureauDetail->getContactMobile(),
+                ], $this->merchant, $this->user);
+            }
+            catch (\Throwable $e)
+            {
+                if ($e->getCode() === ErrorCode::BAD_REQUEST_INCORRECT_OTP)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_D2C_WRONG_OTP, null, $e->getData()); 
+                }
+
+                throw $e;
+            }
 
             $this->core()->updateStatusVerified($bureauDetail);
 

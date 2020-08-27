@@ -1129,6 +1129,7 @@ class PublicErrorDescription
     const OFFER_NOT_ACTIVE                                                          = 'Offer is inactive';
     const OFFER_NOT_APPLICABLE_ON_ISSUER                                            = 'Offer not applicable on selected issuer';
 
+    const BAD_REQUEST_D2C_WRONG_OTP                                                 = 'Wrong OTP, Make sure to enter the correct OTP.';
     const BAD_REQUEST_D2C_NON_OWNER_USER_NOT_ALLOWED                                = 'Access denied.';
     const BAD_REQUEST_D2C_CREDIT_BUREAU_NO_RECORDS_FOUND                            = 'No records found. Please contact support.';
     const BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT                    = 'The phone number entered isn\'t linked to your PAN. Please mention the correct phone number.';

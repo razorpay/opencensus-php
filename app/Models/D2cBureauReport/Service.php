@@ -112,7 +112,8 @@ class Service extends Base\Service
     {
         $bureauReport = $bureauReport->toArrayForDashboard();
 
-        if(empty($bureauReport[Entity::NTC_SCORE]) === false)
+        if ((empty($bureauReport[Entity::NTC_SCORE]) === false) || 
+             ($bureauReport[Entity::NTC_SCORE] === 0))
         {
             $bureauReport['ntc_score'] = strval($bureauReport['ntc_score']);
         }
