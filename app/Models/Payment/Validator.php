@@ -24,6 +24,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Reconciliator\Base\Reconciliate;
 use RZP\Models\Payment\Processor\Constants;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Payment\Processor\UpiTrait;
@@ -573,6 +574,10 @@ class Validator extends Base\Validator
                 ]);
         }
 
+        if (Reconciliate::$isReconRunning === true)
+        {
+            return;
+        }
         // First we remove all the non-numeric chars from the string
         // +/- are considered numeric chars, we need to remove these separately
         // Now, we are left we only numbers
