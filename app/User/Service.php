@@ -1023,7 +1023,12 @@ class Service extends Base\Service
 
         $genericUser = null;
 
-        list($error, $data) = $request->processInput($input)->send($route, $httpVerb);
+        $credentials = [
+            Constants::EMAIL          => $input[Constants::EMAIL],
+            Constants::OAUTH_PROVIDER => $input[Constants::OAUTH_PROVIDER],
+        ];
+
+        list($error, $data) = $request->processInput($credentials)->send($route, $httpVerb);
 
         if (empty($error) === true)
         {
