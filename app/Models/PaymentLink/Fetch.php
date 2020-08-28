@@ -22,13 +22,13 @@ class Fetch extends BaseFetch
 
     const ACCESSES = [
         AuthType::PRIVATE_AUTH => [
-        ],
-        AuthType::PROXY_AUTH => [
             Entity::RECEIPT,
             Entity::TITLE,
             Entity::STATUS,
             Entity::STATUS_REASON,
             Entity::VIEW_TYPE,
+        ],
+        AuthType::PROXY_AUTH => [
             self::EXPAND_EACH,
         ],
         AuthType::PRIVILEGE_AUTH => [
