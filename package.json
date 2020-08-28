@@ -14,7 +14,7 @@
     "query-string": "^6.8.3"
   },
   "scripts": {
-    "postinstall": "cd web && npm i",
+    "postinstall": "cd web && npm ci",
     "start": "node signup.js; cd web && npm start",
     "build": "node signup.js; cd web && npm run production:build",
     "test": "node test.js; cd web && npm run test",

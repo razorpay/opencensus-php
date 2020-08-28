@@ -24,7 +24,7 @@ pipeline:
       - npm config set unsafe-perm true
       - npm config set cache npm_cache
       # Root directory
-      - npm install
+      - npm ci
       - node signup.js
       # Web directory
       - cd web && npm run production:build
