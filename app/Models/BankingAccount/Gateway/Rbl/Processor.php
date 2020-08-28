@@ -59,7 +59,8 @@ class Processor extends BankingAccount\Gateway\Processor
         $this->createAccountMappingForFts($bankingAccount);
 
         $input = [
-            Entity::STATUS  => BankingAccount\Status::ACTIVATED,
+            Entity::STATUS     => BankingAccount\Status::ACTIVATED,
+            Entity::SUB_STATUS => null
         ];
 
         $bankingAccount->fill($input);

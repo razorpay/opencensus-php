@@ -306,15 +306,10 @@ class BankingAccountTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
 
-//        $this->createBankingAccount();
-
-
-
         (new User())->createBankingUserForMerchant($merchantDetail->merchant['id'], [
             'contact_mobile' => '8888888888',
         ]);
 
-//
         $this->testCreateActivationDetail();
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
@@ -323,6 +318,8 @@ class BankingAccountTest extends TestCase
             'account_number'        => '1234567890',
             'beneficiary_state'     => 'karnataka',
             'beneficiary_country'   => 'india',
+            'status'                => 'processed',
+            'sub_status'            => 'api_onboarding_in_progress'
         ]);
 
         $this->setupDataForActivation($bankingAccount);
@@ -385,6 +382,7 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals('created', $logs['items'][0]['status']);
         $this->assertEquals('activated', $logs['items'][1]['status']);
+        $this->assertEquals(null, $logs['items'][1]['sub_status']);
 
         $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
         $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);

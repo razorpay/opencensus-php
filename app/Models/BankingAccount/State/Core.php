@@ -5,6 +5,7 @@ namespace RZP\Models\BankingAccount\State;
 use RZP\Models\Base;
 use RZP\Models\BankingAccount;
 use RZP\Models\Base\PublicEntity;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -28,6 +29,24 @@ class Core extends Base\Core
         $this->repo->saveOrFail($state);
 
         return $state;
+    }
+
+    public function captureNewBankingAccountState(BankingAccount\Entity $bankingAccount, PublicEntity $maker)
+    {
+        $content = [
+            Entity::STATUS      => $bankingAccount->getStatus(),
+            Entity::SUB_STATUS  => $bankingAccount->getSubStatus(),
+            Entity::BANK_STATUS => $bankingAccount->getBankInternalStatus()
+        ];
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_UPDATE_ACTIVATION_STATUS,
+            [
+                'id'    => $bankingAccount->getId(),
+                'input' => $content,
+            ]);
+
+        $this->createForMakerAndEntity($content, $maker, $bankingAccount);
     }
 
     /**

@@ -327,25 +327,17 @@ class Core extends Base\Core
         {
             $this->repo->saveOrFail($bankingAccount);
 
-            $stateCore = new State\Core;
-
-            $content = [Entity::STATUS => $bankContent[Entity::STATUS]];
-
-            $this->trace->info(
-                TraceCode::BANKING_ACCOUNT_UPDATE_ACTIVATION_STATUS,
-                [
-                    'id'    => $bankingAccount->getId(),
-                    'input' => $content,
-                ]);
-
-            $stateCore->createForMakerAndEntity($content, $merchant, $bankingAccount);
-
             if ($activationDetailInput !== null)
             {
                 $activationDetailService = new Activation\Detail\Service;
 
                 $activationDetailService->createForBankingAccount($bankingAccount->getPublicId(), $activationDetailInput);
             }
+
+            $stateCore = new State\Core;
+
+            $stateCore->captureNewBankingAccountState($bankingAccount, $merchant);
+
         });
 
         $this->notifyOpsAboutProActivation($bankingAccount);
@@ -547,20 +539,7 @@ class Core extends Base\Core
             {
                 $stateCore = new State\Core;
 
-                $content = [
-                    Entity::STATUS              => $bankingAccount->getStatus(),
-                    Entity::SUB_STATUS          => $bankingAccount->getSubStatus(),
-                    State\Entity::BANK_STATUS   => $bankingAccount->getBankInternalStatus()
-                ];
-
-                $this->trace->info(
-                    TraceCode::BANKING_ACCOUNT_UPDATE_ACTIVATION_STATUS,
-                    [
-                        'id'    => $bankingAccount->getId(),
-                        'input' => $content,
-                    ]);
-
-                $stateCore->createForMakerAndEntity($content, $entity, $bankingAccount);
+                $stateCore->captureNewBankingAccountState($bankingAccount, $entity);
             }
         });
 
@@ -647,21 +626,6 @@ class Core extends Base\Core
 
             (new Counter\Core)->fetchOrCreate($balance);
 
-            $stateCore = new State\Core;
-
-            $content = [
-                Entity::STATUS => Status::ACTIVATED,
-            ];
-
-            $this->trace->info(
-                TraceCode::BANKING_ACCOUNT_UPDATE_ACTIVATION_STATUS,
-                [
-                    'id'    => $bankingAccount->getId(),
-                    'input' => $content,
-                ]);
-
-            $stateCore->createForMakerAndEntity($content, $admin, $bankingAccount);
-
             // updating assignee to null
             $updateInput = [
                 'activation_detail' => [
@@ -670,6 +634,10 @@ class Core extends Base\Core
             ];
 
             $this->updateBankingAccount($bankingAccount, $updateInput, null, true);
+
+            $stateCore = new State\Core;
+
+            $stateCore->captureNewBankingAccountState($bankingAccount, $admin);
 
             return $bankingAccount;
         });
