@@ -81,6 +81,13 @@ class CreateTransfers extends Migration
                   ->nullable()
                   ->default(null);
 
+            $table->string(Entity::ACCOUNT_CODE, 255)
+                  ->nullable()
+                  ->default(null);
+
+            $table->boolean(Entity::ACCOUNT_CODE_USED)
+                  ->default(0);
+
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::PROCESSED_AT)

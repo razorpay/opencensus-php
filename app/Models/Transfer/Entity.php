@@ -48,6 +48,8 @@ class Entity extends Base\PublicEntity
     const ORIGIN                    = 'origin';
     const PROCESSED_AT              = 'processed_at';
     const ATTEMPTS                  = 'attempts';
+    const ACCOUNT_CODE              = 'account_code';
+    const ACCOUNT_CODE_USED         = 'account_code_used';
 
     // Report fields
     const SETTLEMENT_INITIATED_ON = 'settlement_initiated_on';
@@ -80,6 +82,7 @@ class Entity extends Base\PublicEntity
         self::LINKED_ACCOUNT_NOTES,
         self::STATUS,
         self::ORIGIN,
+        self::ACCOUNT_CODE,
     ];
 
     protected $visible = [
@@ -108,6 +111,8 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::PROCESSED_AT,
         self::MESSAGE,
+        self::ACCOUNT_CODE,
+        self::ACCOUNT_CODE_USED,
     ];
 
     protected $public = [

@@ -130,6 +130,8 @@ class Entity extends Base\PublicEntity
 
     const BUSINESS_BANKING         = 'business_banking';
 
+    const ACCOUNT_CODE              = 'account_code';
+
     // Coupon Related Data for display only
     const COUPON_CODE              = 'coupon_code';
 
@@ -317,6 +319,7 @@ class Entity extends Base\PublicEntity
         self::PARTNERSHIP_URL,
         self::EXTERNAL_ID,
         self::SIGNUP_SOURCE,
+        self::ACCOUNT_CODE,
     ];
 
     const CONFIG_LIST = [
@@ -405,6 +408,7 @@ class Entity extends Base\PublicEntity
         self::EXTERNAL_ID,
         self::PRODUCT_INTERNATIONAL,
         self::SIGNUP_SOURCE,
+        self::ACCOUNT_CODE,
      ];
 
     protected $defaults = [
