@@ -23,7 +23,7 @@ use RZP\Base\RuntimeManager;
 use RZP\Constants\AdminFetch;
 use RZP\Models\Payment\Method;
 use RZP\Jobs\SFMerchantPocUpdate;
-use RZP\Jobs\SFMerchantPocRemoval;
+use RZP\Jobs\SFMerchantPocAsync;
 use RZP\Services\Mozart as MozartBase;
 use RZP\Models\GeoIP\Service as GeoIP;
 use RZP\Models\Admin\Admin as AdminModel;
@@ -196,7 +196,7 @@ class Service extends Base\Service
      * @param array $historicalSmeAdminsIds
      * @param array $currentSmeAdminIds
      */
-    protected function removeHistoricalAdminsFromGroup(array $historicalSmeAdminsIds, array $currentSmeAdminIds)
+    public function removeHistoricalAdminsFromGroup(array $historicalSmeAdminsIds, array $currentSmeAdminIds)
     {
         $deltaAdminIds = array_diff($historicalSmeAdminsIds, array_unique($currentSmeAdminIds));
 
@@ -1140,7 +1140,7 @@ class Service extends Base\Service
      *
      * Either Fetch SF data from client or use passed data while testing
      */
-    private function fetchAndDispatchPocOperation(array &$input, array &$currentSmeAdminIds, array &$currentClaimedMerchantsIds, int $timeStamp = 0, bool $timeBased = false)
+    public function fetchAndDispatchPocOperation(array &$input, array &$currentSmeAdminIds, array &$currentClaimedMerchantsIds, int $timeStamp = 0, bool $timeBased = false)
     {
         if (empty($input) === true)
         {
@@ -1177,11 +1177,8 @@ class Service extends Base\Service
     {
         RuntimeManager::setMemoryLimit('2048M');
 
+        // As request time more than 60 second
         RuntimeManager::setTimeLimit(20000);
-
-        $currentClaimedMerchantsIds = [];
-
-        $currentSmeAdminIds = [];
 
         $historicalSmeAdminsIds = \DB::connection($this->mode)->table('group_map')
                                      ->select('entity_id')
@@ -1190,23 +1187,9 @@ class Service extends Base\Service
                                      ->pluck('entity_id')
                                      ->toArray();
 
-        $this->fetchAndDispatchPocOperation($input, $currentSmeAdminIds, $currentClaimedMerchantsIds);
-
         $historicalClaimedMerchantIds = $this->repo->merchant->fetchHistoricalClaimedMerchantIds($this->mode);
 
-        $this->removeHistoricalAdminsFromGroup($historicalSmeAdminsIds, $currentSmeAdminIds);
-
-        $deltaUnclaimedAccounts = array_diff($historicalClaimedMerchantIds, array_unique($currentClaimedMerchantsIds));
-
-        if (sizeof($deltaUnclaimedAccounts) > 0)
-        {
-            foreach ($deltaUnclaimedAccounts as $merchantId)
-            {
-                SFMerchantPocRemoval::dispatch($this->mode, $merchantId);
-            }
-        }
-
-        EsSync::dispatch($this->mode, EsRepository::UPDATE, Entity::MERCHANT, $deltaUnclaimedAccounts);
+        SFMerchantPocAsync::dispatch($this->mode, $input, $historicalSmeAdminsIds, $historicalClaimedMerchantIds);
     }
 
     public function unclaimedMerchantPoc(array $input = [])
