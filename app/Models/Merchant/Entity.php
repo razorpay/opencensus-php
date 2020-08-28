@@ -706,6 +706,11 @@ class Entity extends Base\PublicEntity
         return $this->isFeatureEnabled(Feature\Constants::PAYMENT_ONHOLD);
     }
 
+    public function isRouteAccountCodeEnabled() : bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::ROUTE_CODE_SUPPORT);
+    }
+
     public function linkedAccountsRequireKyc(): bool
     {
         return $this->getAttribute(self::LINKED_ACCOUNT_KYC);

@@ -426,6 +426,9 @@ class Constants
     */
     const ESIGN = 'esign';
 
+    // For merchants who want to use the alias feature on Route.
+    const ROUTE_CODE_SUPPORT                = 'route_code_support';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -663,6 +666,7 @@ class Constants
         self::BLOCK_ONBOARDING_SMS            => true,
         self::OTP_SUBMIT_RESPONSE             => true,
         self::ESIGN                           => true,
+        self::ROUTE_CODE_SUPPORT              => true,
     ];
 
     // Entity type constants
@@ -900,6 +904,11 @@ class Constants
         self::NPS_SURVEY_PAYMENT_PAGES  => [
             'feature'       => self::NPS_SURVEY_PAYMENT_PAGES,
             'display_name'  => 'NPS Survey for Payment Pages',
+            'documentation' => '',
+        ],
+        self::ROUTE_CODE_SUPPORT => [
+            'feature'       => self::ROUTE_CODE_SUPPORT,
+            'display_name'  => 'Alias on Route',
             'documentation' => '',
         ],
     ];
