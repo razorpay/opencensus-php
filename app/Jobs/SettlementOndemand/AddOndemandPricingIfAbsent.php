@@ -6,7 +6,6 @@ use RZP\Jobs\Job;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
-use RZP\Models\Settlement\Ondemand;
 use Razorpay\Trace\Logger as Trace;
 
 class AddOndemandPricingIfAbsent extends Job
@@ -61,7 +60,7 @@ class AddOndemandPricingIfAbsent extends Job
 
                 foreach ($merchantIds as $merchantId)
                 {
-                    (new Ondemand\Service)->addDefaultOndemandPricingIfNotPresent($merchantId);
+                    AddOndemandPricingIfAbsentForMerchant::dispatch($this->mode, $merchantId);
                 }
             }
         }
