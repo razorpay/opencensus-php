@@ -194,8 +194,8 @@ class UpiMetadataTransformer extends UpiTransanformer
             }
             else
             {
-                // 24 hours in minutes to be set for authorization
-                $remindAfter = 1440;
+                // 24+1 hours in minutes to be set for authorization
+                $remindAfter = 1500;
             }
         }
 

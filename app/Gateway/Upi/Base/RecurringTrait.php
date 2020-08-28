@@ -30,8 +30,8 @@ trait RecurringTrait
         'notify'                => Action::PRE_DEBIT,
     ];
 
-    // 24 hours in second
-    protected $defaultExecuteBuffer = 86400;
+    // 24 + 1 hours in second
+    protected $defaultExecuteBuffer = 90000;
 
     public function redirectCallbackIfRequired(array $response)
     {
@@ -371,6 +371,13 @@ trait RecurringTrait
         if ($mozartAction === 'notify')
         {
             $executeAt = $input['payment']['created_at'] + $this->defaultExecuteBuffer;
+
+            $position = strpos($input['payment']['description'], 'execute at ');
+
+            if ($position > 0)
+            {
+                $executeAt = (int) substr($input['payment']['description'], ($position + 11), 10);
+            }
         }
 
         // This is more like a hack for now, we need to see how its flowing on ICICI

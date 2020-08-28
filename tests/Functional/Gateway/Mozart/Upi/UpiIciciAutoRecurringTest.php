@@ -86,7 +86,7 @@ class UpiIciciAutoRecurringTest extends TestCase
                 $this->assertArraySubset([
                     'act'   => 'notify',
                     'ano'   => 1,
-                    'ext'   => $paymentCreatedAt + 86400,
+                    'ext'   => $paymentCreatedAt + 90000,
                     'sno'   => 2,
                     'id'    => $paymentId . '0notify' . 1,
                 ], $content['upi']['gateway_data']);
@@ -124,13 +124,13 @@ class UpiIciciAutoRecurringTest extends TestCase
             'gateway_data'      => [
                 'act'   => 'notify',
                 'ano'   => 1,
-                'ext'   => $payment->getCreatedAt() + 86400,
+                'ext'   => $payment->getCreatedAt() + 90000,
                 'sno'   => 2,
             ],
         ]);
 
         // Skipping to execution time, with 90 seconds buffer
-        Carbon::setTestNow(Carbon::now()->addDay()->addSeconds(90));
+        Carbon::setTestNow(Carbon::now()->addHours(25)->addSeconds(90));
 
         // Remind at should be in last 3 minutes
         $this->assertLessThan(Carbon::now()->getTimestamp(), $metadata->getRemindAt());
@@ -233,7 +233,7 @@ class UpiIciciAutoRecurringTest extends TestCase
             'gateway_data'      => [
                 'act'   => 'notify',
                 'ano'   => 1,
-                'ext'   => $payment->getCreatedAt() + 86400,
+                'ext'   => $payment->getCreatedAt() + 90000,
                 'sno'   => 2,
             ],
         ]);
@@ -295,7 +295,7 @@ class UpiIciciAutoRecurringTest extends TestCase
         ]);
 
         // Skipping to final time of authorization, with 90 seconds buffer
-        Carbon::setTestNow(Carbon::now()->addDay()->addSeconds(90));
+        Carbon::setTestNow(Carbon::now()->addHours(25)->addSeconds(90));
 
         // Remind at should be in last 3 minutes
         $this->assertLessThan(Carbon::now()->getTimestamp(), $metadata->getRemindAt());
@@ -362,7 +362,7 @@ class UpiIciciAutoRecurringTest extends TestCase
             'gateway_data'      => [
                 'act'   => 'notify',
                 'ano'   => 1,
-                'ext'   => $payment->getCreatedAt() + 86400,
+                'ext'   => $payment->getCreatedAt() + 90000,
                 'sno'   => 2,
             ],
         ]);
@@ -484,7 +484,7 @@ class UpiIciciAutoRecurringTest extends TestCase
             'gateway_data'      => [
                 'act'   => 'notify',
                 'ano'   => 1,
-                'ext'   => $payment->getCreatedAt() + 86400,
+                'ext'   => $payment->getCreatedAt() + 90000,
                 'sno'   => 2,
             ],
         ]);
@@ -492,4 +492,35 @@ class UpiIciciAutoRecurringTest extends TestCase
         // TODO: Add cron code here
     }
 
+    public function testAutoRecurringPaymentDescription()
+    {
+        $this->createDbUpiMandate();
+
+        $this->createDbUpiToken();
+
+        $input = $this->getDbUpiAutoRecurringPayment([
+            'description' => 'I am test payment to be execute at 1998530840 with seqno 45'
+        ]);
+
+        // The request which we have sent to create the reminder
+        $this->assertReminderRequest('createReminder', $createReminder, $pending);
+
+        $this->doS2SRecurringPayment($input);
+
+        // The first reminder call will trigger an update reminder
+        $this->assertReminderRequest('updateReminder', $updateReminder, $pending);
+
+        // Making first call from RS, This will call preDebit action no ICICI Gateway
+        $this->sendReminderRequest($createReminder);
+
+        $this->assertUpiDbLastEntity('upi', [
+            'status_code'       => '0',
+            'gateway_data'      => [
+                'act'   => 'notify',
+                'ano'   => 1,
+                'ext'   => 1998530840,
+                'sno'   => '45',
+            ],
+        ]);
+    }
 }
