@@ -58,12 +58,6 @@ trait HeadlessOtp
 
     protected function canRunHeadlessOtpFlow($payment, $gatewayInput)
     {
-        if (($this->mode === Mode::TEST) and
-            ($this->app->environment(Environment::PRODUCTION) === true))
-        {
-            return false;
-        }
-
         if (empty($gatewayInput['auth_type']) === false)
         {
             if ($gatewayInput['auth_type'] === Payment\AuthType::HEADLESS_OTP)
@@ -147,6 +141,7 @@ trait HeadlessOtp
             'iin'     => $payment->card->getIin(),
             'issuer'  => $payment->card->getIssuer(),
             'network' => $payment->card->getNetwork(),
+            'last4'   => $payment->card->getLast4(),
             'type'    => $payment->card->getType()
         ];
 

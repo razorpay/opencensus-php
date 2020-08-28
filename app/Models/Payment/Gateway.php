@@ -1003,6 +1003,10 @@ class Gateway
         self::MPI_BLADE => [
             Network::MC,
             Network::VISA
+        ],
+        self::SHARP => [
+            Network::VISA,
+            Network::MC,
         ]
     ];
 

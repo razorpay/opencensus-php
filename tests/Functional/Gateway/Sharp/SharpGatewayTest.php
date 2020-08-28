@@ -825,6 +825,154 @@ class SharpGatewayTest extends TestCase
         'Your UPI application does not support one time mandate.');
     }
 
+    public function testHeadlessAuthenticationPayment()
+    {
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['auth_type'] = 'otp';
+
+        $this->setOtp('213433');
+
+        $response = $this->doAuthPayment($payment);
+
+        self::assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        self::assertEquals('authorized', $payment['status']);
+        self::assertEquals('headless_otp', $payment['auth_type']);
+        self::assertEquals('sharp', $payment['gateway']);
+        self::assertEquals('1000SharpTrmnl', $payment['terminal_id']);
+    }
+
+    public function testHeadlessOtpPaymentFallbackTo3ds()
+    {
+        $this->fixtures->iin->edit('411111',[
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+                'otp'          => '0',
+                'ivr'          => '0',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['otp_auth_default']);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4111111111111160';
+
+        $this->setOtp('213433');
+
+        $response = $this->doAuthPayment($payment);
+
+        self::assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        self::assertEquals('authorized', $payment['status']);
+        self::assertEquals(null, $payment['auth_type']);
+        self::assertEquals('sharp', $payment['gateway']);
+        self::assertEquals('1000SharpTrmnl', $payment['terminal_id']);
+    }
+
+    public function testHeadlessOtpPaymentBlockedCard()
+    {
+        $this->fixtures->iin->edit('411111',[
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+                'otp'          => '0',
+                'ivr'          => '0',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['otp_auth_default']);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4111111111111145';
+
+        $this->setOtp('213433');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+    }
+
+    public function testHeadlessAuthenticationPaymentS2S()
+    {
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_otp_json']);
+        $this->mockCardVault();
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['auth_type'] = 'otp';
+
+        $payment['ip']         = '52.34.123.23';
+        $payment['user_agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/redirect',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+        $content = $this->getJsonContentFromResponse($response);
+
+        self::assertArrayHasKey('next', $content);
+        self::assertArrayHasKey('razorpay_payment_id', $content);
+        self::assertNotNull($content['razorpay_payment_id']);
+
+        $payment = $this->getEntityById('payment', $content['razorpay_payment_id'], true);
+
+        self::assertEquals('created', $payment['status']);
+        self::assertEquals('headless_otp', $payment['auth_type']);
+        self::assertEquals('sharp', $payment['gateway']);
+        self::assertEquals('1000SharpTrmnl', $payment['terminal_id']);
+
+        $response = $this->doS2SOtpSubmitCallback($content, '123456');
+
+        self::assertArrayHasKey('razorpay_payment_id', $content);
+        self::assertEquals($content['razorpay_payment_id'], $response['razorpay_payment_id']);
+
+        $payment = $this->getEntityById('payment', $content['razorpay_payment_id'], true);
+        self::assertEquals('authorized', $payment['status']);
+    }
+
     protected function otpCommonFlow($otp)
     {
         $this->fixtures->merchant->enableWallet('10000000000000', 'mobikwik');
@@ -929,5 +1077,22 @@ class SharpGatewayTest extends TestCase
                 throw new Exception\RuntimeException(
                     'Test Exception');
             });
+    }
+
+    protected function doS2SOtpSubmitCallback(array $content, string $otp)
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/' . $content['razorpay_payment_id'] . '/otp/submit',
+            'content' => [
+                'otp' => $otp
+            ],
+        ];
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
     }
 }

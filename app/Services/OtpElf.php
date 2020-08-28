@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Http\Request\Requests;
 
@@ -38,9 +39,17 @@ class OtpElf
 
     protected $trace;
 
+    protected $mode;
+
+    protected $app;
+
     public function __construct($app)
     {
+        $this->app = $app;
+
         $this->trace = $app['trace'];
+
+        $this->mode = $this->app['rzp.mode'];
 
         $this->config = $app['config']->get('applications.otpelf');
 
@@ -51,7 +60,7 @@ class OtpElf
 
     public function otpSend(array $input)
     {
-        $response = $this->sendRequest('/', 'POST', $input);
+        $response = $this->sendRequest('/', 'POST', $input, 'otpSend');
 
         return $response;
     }
@@ -65,7 +74,7 @@ class OtpElf
             ]
         ];
 
-        $response = $this->sendRequest('/act', 'POST', $content);
+        $response = $this->sendRequest('/act', 'POST', $content, 'otpResend');
 
         return $response;
     }
@@ -82,13 +91,20 @@ class OtpElf
             ]
         ];
 
-        $response = $this->sendRequest('/act', 'POST', $content);
+        $response = $this->sendRequest('/act', 'POST', $content, 'otpSubmit');
 
         return $response;
     }
 
-    public function sendRequest($url, $method, $content = null)
+    public function sendRequest($url, $method, $content = null, $action = null)
     {
+        if ($this->mode === Mode::TEST)
+        {
+            $mockClass = new Mock\OtpElf($this->app);
+
+            return $mockClass->$action($content);
+        }
+
         $url = $this->baseUrl . $url;
 
         if ($content === null)

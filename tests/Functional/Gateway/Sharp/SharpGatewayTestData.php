@@ -335,5 +335,21 @@ return [
             'class'                 => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
-    ]
+    ],
+
+    'testHeadlessOtpPaymentBlockedCard' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment processing failed because cardholder\'s card was blocked'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => 'BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD',
+        ]
+    ],
 ];

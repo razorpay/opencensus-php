@@ -421,6 +421,11 @@ class Gateway extends Base\Gateway
             }
         }
 
+        if (isset($input['gateway']['PaRes']) === true)
+        {
+            $input['gateway']['status'] = 'authorized';
+        }
+
         $this->verifyPaymentCreateResponse($input);
 
         $acquirerData = $this->getAcquirerData($input, null);
@@ -738,7 +743,8 @@ class Gateway extends Base\Gateway
         if ((isset($input['gateway']['status']) === false) or
             ($input['gateway']['status'] !== 'authorized'))
         {
-            if ($input['gateway']['status'] === 'gateway_down')
+            if ((isset($input['gateway']['status']) === true) and
+                ($input['gateway']['status'] === 'gateway_down'))
             {
                 throw new Exception\GatewayErrorException(
                         ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
