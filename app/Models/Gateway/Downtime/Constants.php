@@ -207,6 +207,24 @@ class Constants
             'key' => DowntimeDetection::BANK,
             'value' => Bank::ICIC,
         ],
+        [
+            'type' => DowntimeDetection::PAYMENT_INTERVAL,
+            'method' => Method::NETBANKING,
+            'key' => DowntimeDetection::BANK,
+            'value' => Bank::PUNB,
+        ],
+        [
+            'type' => DowntimeDetection::PAYMENT_INTERVAL,
+            'method' => Method::NETBANKING,
+            'key' => DowntimeDetection::BANK,
+            'value' => Bank::UTIB,
+        ],
+        [
+            'type' => DowntimeDetection::PAYMENT_INTERVAL,
+            'method' => Method::NETBANKING,
+            'key' => DowntimeDetection::BANK,
+            'value' => Bank::KKBK,
+        ],
     ];
 
     public static function getMaxSingleMerchantContribution()
