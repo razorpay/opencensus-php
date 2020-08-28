@@ -1330,33 +1330,7 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals('hdfc', $payment['settled_by']);
     }
 
-    public function testDirectSettlementPaymentCustomerFeeBearerForNonHDFCOrgId()
-    {
-        $this->fixtures->merchant->edit('10000000000000',
-            [
-                'fee_bearer'  => 'customer',
-                'org_id'      =>  Admin\Org\Entity::RAZORPAY_ORG_ID
-            ]
-        );
-
-        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => 'customer']);
-
-        $this->fixtures->create('terminal:direct_settlement_axis_migs_terminal');
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-
-        $payment = $this->getDefaultPaymentArray();
-        $payment = $this->getFeesForPayment($payment)['input'];
-        $this->doAuthPayment($payment);
-
-        $payment = $this->getDbLastEntityToArray('payment');
-
-        $this->assertEquals('authorized', $payment['status']);
-        $this->assertEquals('sharp', $payment['gateway']);
-        $this->assertEquals('1000SharpTrmnl', $payment['terminal_id']);
-        $this->assertEquals('Razorpay', $payment['settled_by']);
-    }
-
-    public function testDirectSettlementPaymentCustomerFeeBearerForHDFCOrgId()
+    public function testDirectSettlementPaymentCustomerFeeBearer()
     {
         $this->fixtures->org->createHdfcOrg();
 
