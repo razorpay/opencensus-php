@@ -12,7 +12,7 @@
       <form class="auth-form" name="forgotPwdForm" xng-submit="goToStep(1)"
             ng-submit="forgotPwdSubmit(forgotPwdForm.$valid)">
         <label class="form-label auth-subheading" for="email">Email</label>
-        <input override-tab type="email" placeholder="yourname@company.com" name="email" id="email"
+        <input override-tab type="email" placeholder="example@xyz.com" name="email" id="email"
                ng-model="login.data.email" class="form-control auth-form-input" required
                ng-focus="onResetEmailChange()">
         <button override-tab class="btn btn-primary form-control" type="submit">
@@ -44,9 +44,8 @@
 
             <form class="auth-form" name="loginForm" xng-submit="goToLoginStep(0, 1)"
                   ng-submit="sendLoginCredentials(loginForm.$valid)">
-              <label ng-if="!lockme" class="form-label auth-subheading auth-subheading" for="email">Your work
-                email</label>
-              <input ng-if="!lockme" type="email" placeholder="yourname@company.com" name="email" id="email"
+              <label ng-if="!lockme" class="form-label auth-subheading auth-subheading" for="email">Your email</label>
+              <input ng-if="!lockme" type="email" placeholder="example@xyz.com" name="email" id="email"
                      ng-model="login.data.email" class="form-control auth-form-input" required
                      ng-focus="onLoginInputFocus('email')"
                      ng-class="{'ds-error-input': inlineError}"
