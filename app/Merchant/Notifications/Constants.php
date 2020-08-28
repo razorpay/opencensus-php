@@ -409,7 +409,7 @@ class Constants
             'buttons'     => [
                 [
                     'type'  => 'button',
-                    'label' => 'Know More',
+                    'label' => 'Learn More',
                     'url'   => 'https://lp.razorpay.com/razorpayxca-anncment',
                 ],
             ],

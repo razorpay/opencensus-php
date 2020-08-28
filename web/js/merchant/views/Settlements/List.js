@@ -258,6 +258,14 @@ export default class SettlementsListContainer extends ListContainer {
           </AnnouncementBanner>
         )}
 
+         <ShowWhen
+            additionalCondition={user => user.isProjectNitroEnabled}
+          >
+            <AnnouncementBanner title="Exclusive Offer For You" canBeClosed={false}>
+              <ScheduledNitroBanner fromWhere="settlements" url="https://lp.razorpay.com/razorpayxca-sttlmnts1" />
+            </AnnouncementBanner>
+          </ShowWhen>
+
         <tabbed-container style={{ paddingTop: user.isISBannerEnabled ? '0px' : '20px' }}>
           <header>
             <NavLink to="/settlements">Settlements</NavLink>
@@ -320,13 +328,6 @@ export default class SettlementsListContainer extends ListContainer {
                         />
                       </div>
                     )}
-                  <ShowWhen
-                    additionalCondition={user => user.isProjectNitroEnabled}
-                  >
-                    <div class="box-left-pad10-inline">
-                      <ScheduledNitroBanner fromWhere="settlement" url="https://lp.razorpay.com/razorpayxca-sttlmnts1" />
-                    </div>
-                  </ShowWhen>
                 </div>
               </HeaderAction>
               <SettlementsListFilter

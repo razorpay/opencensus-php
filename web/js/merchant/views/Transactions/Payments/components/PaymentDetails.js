@@ -192,7 +192,7 @@ export default (props) => {
                 <ShowWhen
                   additionalCondition={user => user.isProjectNitroEnabled}
                 >
-                  <AnnouncementBar fromWhere="transacrions" url="https://lp.razorpay.com/razorpayxca-pymnts2"/>
+                  <AnnouncementBar fromWhere="transactions" url="https://lp.razorpay.com/razorpayxca-pymnts2"/>
                 </ShowWhen>
 
                 <EntityDetailRow label="Order ID">

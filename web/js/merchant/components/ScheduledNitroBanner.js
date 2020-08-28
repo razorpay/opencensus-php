@@ -12,7 +12,7 @@ export default class ScheduledNitroBanner extends Component {
     tracking.trackEvent(
       window.rzpQ
         .merchantActions()
-        .success(`${this.props.fromWhere}.display_promo_notification`)
+        .success(`${this.props.fromWhere}_display_promo_notification1`)
     );
   }
 
@@ -22,14 +22,14 @@ export default class ScheduledNitroBanner extends Component {
     tracking.trackEvent(
       window.rzpQ
         .merchantActions()
-        .initiated(`${fromWhere}.click_promo_notification_cta1`)
+        .initiated(`${fromWhere}_click_promo_notification1_cta1`)
     );
   };
 
+
   render() {
     return (
-      <div class="pull-right schedule-enable-container">
-        <i class="i i-early-settlement scheduled-enable" />
+      <div class="schedule-enable-container">
         Reduce transaction fee to 1.65% with a RazorpayX Current Account
         <a
           class="Button--secondary Button scheduled-btn-act btn-border"

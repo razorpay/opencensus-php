@@ -12,9 +12,10 @@ export default class AnnouncementBar extends Component {
     tracking.trackEvent(
       window.rzpQ
         .merchantActions()
-        .success(`${this.props.fromWhere}.display_promo_notification`)
+        .success(`${this.props.fromWhere}_display_promo_notification2`)
     );
   }
+
 
   trackEvents = (fromWhere) => {
     const tracking = this.props.tracking;
@@ -22,9 +23,10 @@ export default class AnnouncementBar extends Component {
     tracking.trackEvent(
       window.rzpQ
         .merchantActions()
-        .initiated(`${fromWhere}.click_promo_notification_cta1`)
+        .initiated(`${fromWhere}_click_promo_notification2_cta1`)
     );
   };
+
 
   render() {
     return (

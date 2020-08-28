@@ -22,6 +22,7 @@ import Time from 'common/ui/Time';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import ScheduledNitroBanner from 'merchant/components/ScheduledNitroBanner';
 import SettlementSchedule from 'merchant/views/Settlements/components/SettlementSchedule';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
 @connect(
   (state) => {
@@ -70,7 +71,13 @@ export default class TransactionsContainer extends Component {
     const pathname = this.props.location.pathname;
 
     return (
-      <tabbed-container>
+      <React.Fragment>
+        <ShowWhen additionalCondition={user => user.isProjectNitroEnabled}>
+          <AnnouncementBanner title="Exclusive Offer For You"  canBeClosed={false}>
+              <ScheduledNitroBanner fromWhere="transactions" url="https://lp.razorpay.com/razorpayxca-pymnts1"/>
+          </AnnouncementBanner>
+        </ShowWhen>
+        <tabbed-container>
         <header id="transactions-header">
           <NavLink to="/payments" exact>
             Payments
@@ -186,11 +193,6 @@ export default class TransactionsContainer extends Component {
               <span class="icon i-info-outline settlement-announcement" />
               View Settlement Cycle
             </div>
-            <ShowWhen additionalCondition={user => user.isProjectNitroEnabled}>
-              <div class="box-left-pad10-inline">
-                <ScheduledNitroBanner fromWhere="transaction" url="https://lp.razorpay.com/razorpayxca-pymnts1"/>
-              </div>
-            </ShowWhen>
           </div>
         </HeaderAction>
         <TestModeBanner />
@@ -236,6 +238,7 @@ export default class TransactionsContainer extends Component {
           </Switch>
         </content>
       </tabbed-container>
+      </React.Fragment>
     );
   }
 }

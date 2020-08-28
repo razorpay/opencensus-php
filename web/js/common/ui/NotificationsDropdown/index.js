@@ -77,7 +77,7 @@ export default class NotificationsDropdown extends Component {
     }
   }
 
-  trackEvents = (value, url, type) => {
+  trackEvents = (value, url, type, id) => {
     const tracking = this.props.tracking;
 
     const eventName =
@@ -88,6 +88,7 @@ export default class NotificationsDropdown extends Component {
       window.rzpQ.merchantActions().initiated(eventName, {
         CTAValue: value,
         url: url,
+        id: id,
       })
     );
   };
@@ -298,6 +299,7 @@ const NotificationCard = ({
   trackEvents,
   handleHbForm,
   ga,
+  id,
 }) => {
   const isUnread = _isUnreadNotification(start_ts, end_ts, lastReadTS);
   return (
@@ -360,7 +362,7 @@ const NotificationCard = ({
                     ga ? ga.action : title,
                     `CTA Click - ${btn.label} - ${isUnread ? 'unread' : 'read'}`
                   );
-                  trackEvents && trackEvents(btn.label, urlPath, btn.type);
+                  trackEvents && trackEvents(btn.label, urlPath, btn.type, id);
                   if (btn.label === 'Get Early Access') {
                     handleHbForm(e);
                   }
