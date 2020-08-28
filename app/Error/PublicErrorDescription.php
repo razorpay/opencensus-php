@@ -1194,22 +1194,23 @@ class PublicErrorDescription
 
     const BAD_REQUEST_X_CREDITS_SUPPORTED_IN_ONLY_LIVE_MODE                          = 'Bad request, X credits supported in only live mode';
 
-    const BAD_REQUEST_CRED_CUSTOMER_NOT_ELIGIBLE                                    = 'Join CRED and pay your credit card bill. Win assured Amazon gift card worth INR 250.';
+    //Using double quotes to escape newline for cred
+    const BAD_REQUEST_CRED_CUSTOMER_NOT_ELIGIBLE                                    = "You are not eligible to pay via CRED as you are not a CRED member.\n Please use another method to complete your payment.";
     const BAD_REQUEST_MISSING_HEADERS                                               = 'It seems that there are some details missing in the request for this API call.';
     const BAD_REQUEST_INVALID_TRACKING_ID                                           = 'The order for which you are trying to place a request does not exist in our system. Request is being made via an incorrect tracking ID.';
     const BAD_REQUEST_PAYMENT_DUPLICATE_REQUEST                                     = 'The request for this tracking id is in progress already.';
     const GATEWAY_ERROR_PAYMENT_REFUND_FAILED                                       = 'The refund is being request for an order which is in progress. Please initiate a refund request once the order is complete.';
     const GATEWAY_ERROR_REFUND_AMOUNT_GREATER_THAN_CAPTURED                         = 'The refund amount being requested is higher than the original order amount. Hence this refund cannot be processed.';
-    const GATEWAY_ERROR_INTERNAL_SERVER_ERROR                                       = 'Something went wrong. Please try again or use another method to complete your payment for this order.';
-    const BAD_REQUEST_CRED_MISSING_FIELDS_MESSAGE                                   = 'Something went wrong. Please try again or use another method to complete your payment for this order.';
-    const BAD_REQUEST_CRED_USER_NOT_REGISTERED                                      = 'Join CRED and pay your credit card bill. Win assured Amazon gift card worth INR 250.';
-    const BAD_REQUEST_CRED_PENDING_USER                                             = 'Join CRED and pay your credit card bill. Win assured Amazon gift card worth INR 250.';
-    const BAD_REQUEST_CRED_CARD_NOT_VERIFIED                                        = 'Join CRED and pay your credit card bill. Win assured Amazon gift card worth INR 250.';
-    const BAD_REQUEST_CRED_WAITLISTED_USER                                          = 'Join CRED and pay your credit card bill. Win assured Amazon gift card worth INR 250.';
-    const BAD_REQUEST_CRED_UNSUPPORTED_APP_VERSION                                  = 'Update CRED app to unlock this payment option and avail exclusive discounts.';
-    const BAD_REQUEST_CRED_NO_SUPPORTED_APP_VERSION                                 = 'Update CRED app on your mobile to unlock this payment option and avail exclusive discounts.';
-    const BAD_REQUEST_CRED_INACTIVE_USER                                            = 'Join CRED and pay your credit card bill. Win assured Amazon gift card worth INR 250.';
-    const BAD_REQUEST_CRED_BLOCKED_USER                                             = 'Your CRED account is blocked. Please contact support@cred.club.';
+    const GATEWAY_ERROR_INTERNAL_SERVER_ERROR                                       = 'Something went wrong. Please try again or use another method to complete your payment';
+    const BAD_REQUEST_CRED_MISSING_FIELDS_MESSAGE                                   = 'Something went wrong. Please try again or use another method to complete your payment';
+    const BAD_REQUEST_CRED_USER_NOT_REGISTERED                                      = "You are not eligible to pay via CRED as you are not a CRED member.\n Please use another method to complete your payment.";
+    const BAD_REQUEST_CRED_PENDING_USER                                             = "You are not eligible to pay via CRED as you are not a CRED member.\n Please use another method to complete your payment.";
+    const BAD_REQUEST_CRED_CARD_NOT_VERIFIED                                        = "You do not have a verified card on CRED to use this payment method.\n Please use another method to complete your payment.";
+    const BAD_REQUEST_CRED_WAITLISTED_USER                                          = "You are not eligible to pay via CRED as you are not a CRED member.\n Please use another method to complete your payment.";
+    const BAD_REQUEST_CRED_UNSUPPORTED_APP_VERSION                                  = "You are not eligible to pay via CRED as you are not a CRED member.\n Please use another method to complete your payment.";
+    const BAD_REQUEST_CRED_NO_SUPPORTED_APP_VERSION                                 = "You are not eligible to pay via CRED as you are not a CRED member.\n Please use another method to complete your payment.";
+    const BAD_REQUEST_CRED_INACTIVE_USER                                            = "You are not eligible to pay via CRED as you are not a CRED member.\n Please use another method to complete your payment.";
+    const BAD_REQUEST_CRED_BLOCKED_USER                                             = 'You CRED account is blocked. Please reach out to support@cred.club to unblock your account and enable this payment method';
     const GATEWAY_ERROR_CRED_RESERVED_ERROR                                         = 'Download CRED app and activate your membership to unlock this payment option and avail exclusive discounts.';
     const BAD_REQUEST_DISCOUNT_GREATER_THAN_BASE_AMOUNT                             = 'Discount amount greater than base amount';
 
