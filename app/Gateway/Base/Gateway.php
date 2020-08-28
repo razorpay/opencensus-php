@@ -1733,7 +1733,7 @@ class Gateway
 
             $cacheKey = self::getNetbankingUrlCacheKey($bank);
 
-            $cache = $this->app['redis']->connection();
+            $cache = $this->app['redis']->connection('mutex_redis');
 
             $cacheValue = $cache->get($cacheKey);
 
