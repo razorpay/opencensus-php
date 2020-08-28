@@ -9,14 +9,14 @@ import User from 'merchant/models/User';
 
 import Toggle2FA from '../../components/TwoFAVerification/Toggle2FA';
 
-@connect(state => ({ user: state.session.user }), {
+@connect((state) => ({ user: state.session.user }), {
   toggleMerchant2FaEnforcement,
   updateSession,
 })
 export default class Merchant2FASettings extends React.PureComponent {
   static contextType = TwoFactorVerificaionContext;
 
-  onToggleComplete = twoFaEnabled => {
+  onToggleComplete = (twoFaEnabled) => {
     const { user: currentUser } = this.props.user;
     const user = new User({
       ...this.props.user,
@@ -28,7 +28,7 @@ export default class Merchant2FASettings extends React.PureComponent {
     this.props.updateSession({ user });
   };
 
-  handleTwoFactorVerificationOnLoginToggle = onToggleChange => (flag, callback) => {
+  handleTwoFactorVerificationOnLoginToggle = (onToggleChange) => (flag, callback) => {
     return this.context.criticalFlow({
       mode: ['live', 'test'],
       onUserTwoFaVerified: () => {
@@ -40,7 +40,7 @@ export default class Merchant2FASettings extends React.PureComponent {
 
       onFlowTermination: () => {
         return callback(false);
-      }
+      },
     });
   };
 
@@ -76,12 +76,11 @@ function Merchant2FADescription() {
   return (
     <>
       <p>
-        2-step verification will be enforced to all the team members who have
-        access to this Dashboard.
+        2-step verification will be enforced to all the team members who have access to this
+        Dashboard.
       </p>
       <p>
-        <strong>Note:</strong> This setting requires 2-step verification set up
-        on your account
+        <strong>Note:</strong> This setting requires 2-step verification set up on your account
       </p>
     </>
   );

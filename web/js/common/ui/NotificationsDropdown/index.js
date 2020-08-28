@@ -89,7 +89,7 @@ export default class NotificationsDropdown extends Component {
         CTAValue: value,
         url: url,
         id: id,
-      })
+      }),
     );
   };
 
@@ -102,7 +102,7 @@ export default class NotificationsDropdown extends Component {
         portalId: '5558946',
         formId: 'd5f93905-4a4a-4d69-ba5f-d838ed1f5be4',
         target: '#hubspotForm',
-        onFormSubmit: function() {
+        onFormSubmit: function () {
           tracking.trackEvent(window.rzpQ.merchantActions().success('click.modal.cta'));
         },
       });
@@ -112,7 +112,7 @@ export default class NotificationsDropdown extends Component {
   onShow = () => {
     const tracking = this.props.tracking;
     tracking.trackEvent(
-      window.rzpQ.merchantActions().initiated('dashboard.click.notification.tab')
+      window.rzpQ.merchantActions().initiated('dashboard.click.notification.tab'),
     );
 
     trackExpand(this.state.totalUnread);
@@ -180,11 +180,7 @@ export default class NotificationsDropdown extends Component {
           user={user}
           lastReadTS={this.state.lastReadTS}
           trackAnnouncement={trackAnnouncement}
-          trackEvents={
-            card.id && eventTrackingRequired.includes(card.id)
-              ? this.trackEvents
-              : null
-          }
+          trackEvents={card.id && eventTrackingRequired.includes(card.id) ? this.trackEvents : null}
           handleHbForm={this.handleHbForm}
         />
       </div>
@@ -210,7 +206,7 @@ export default class NotificationsDropdown extends Component {
           <div
             class={classList(
               'dropdown-menu Dropdown--Notifications-menu js-overflow',
-              this.state.canScrollDown && 'can-scroll'
+              this.state.canScrollDown && 'can-scroll',
             )}
           >
             {user.current && (
@@ -306,7 +302,7 @@ const NotificationCard = ({
     <div
       class={classList(
         'NotificationCard',
-        isUnread ? 'active' : 'inactive' // Notification is not read and also not expiry
+        isUnread ? 'active' : 'inactive', // Notification is not read and also not expiry
       )}
     >
       <span class="NotificationCard-icon">
@@ -360,7 +356,7 @@ const NotificationCard = ({
                 onClick={(e) => {
                   trackAnnouncement(
                     ga ? ga.action : title,
-                    `CTA Click - ${btn.label} - ${isUnread ? 'unread' : 'read'}`
+                    `CTA Click - ${btn.label} - ${isUnread ? 'unread' : 'read'}`,
                   );
                   trackEvents && trackEvents(btn.label, urlPath, btn.type, id);
                   if (btn.label === 'Get Early Access') {

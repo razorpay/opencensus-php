@@ -49,9 +49,7 @@ export default class SuccessModal extends React.Component {
   get codeToCopy() {
     const { paymentButton } = this.props;
 
-    const paymentBtnCode = `<form><script src="https://cdn.razorpay.com/static/widget/payment-button.js" data-payment_button_id="${
-      paymentButton.id
-    }"> </script> </form>`;
+    const paymentBtnCode = `<form><script src="https://cdn.razorpay.com/static/widget/payment-button.js" data-payment_button_id="${paymentButton.id}"> </script> </form>`;
 
     return paymentBtnCode;
   }
@@ -125,10 +123,10 @@ export default class SuccessModal extends React.Component {
                   href="https://betasite.razorpay.com/docs/pb-index-true/payment-button/supported-platforms/"
                   target="_blank"
                 >
-                  Platforms<i class="i i-external-link m-l" />
+                  Platforms
+                  <i class="i i-external-link m-l" />
                 </a>
               </div>
-
             </div>
           </div>
 

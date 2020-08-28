@@ -6,7 +6,7 @@ function Note({
   showRazorpaySupportInstruction = true,
   applicationId,
   _trackSupportClick,
-  extraMessage
+  extraMessage,
 }) {
   const raiseTicket = () => {
     if (_trackSupportClick && _trackSupportClick.constructor === Function) {
@@ -27,9 +27,7 @@ function Note({
       }, 0);
       setTimeout(() => {
         document.getElementsByName('request-description')[0].value = `${
-          applicationId === 'new'
-            ? ''
-            : `[Loan Application ID:${applicationId}]`
+          applicationId === 'new' ? '' : `[Loan Application ID:${applicationId}]`
         }I have a loan application related query`;
       }, 1000);
     }
@@ -38,22 +36,18 @@ function Note({
   return (
     <div class="process-note">
       {message}
-      {
-        extraMessage && (
-          <div className="instructions-wrapper">
-            <div className="instruction">
-              <span className="description">{extraMessage}</span>
-            </div>
+      {extraMessage && (
+        <div className="instructions-wrapper">
+          <div className="instruction">
+            <span className="description">{extraMessage}</span>
           </div>
-        )
-      }
+        </div>
+      )}
       {showRazorpaySupportInstruction && (
         <div class="instructions-wrapper">
           <div class="instruction">
             <div>
-              <Button.Transparent onClick={raiseTicket}>
-                Have questions?
-              </Button.Transparent>
+              <Button.Transparent onClick={raiseTicket}>Have questions?</Button.Transparent>
             </div>
             <span class="description">Write to us!</span>
           </div>

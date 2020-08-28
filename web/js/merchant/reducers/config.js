@@ -11,6 +11,7 @@ const CREATE_LATE_AUTH_CONFIG = 'CREATE_LATE_AUTH_CONFIG';
 const GET_ONBOARDING_STATUS = 'GET_ONBOARDING_STATUS';
 const FETCH_REFUND_PRICING = 'FETCH_REFUND_PRICING';
 const UPDATE_BRAND_COLOR_CONTRAST = 'UPDATE_BRAND_COLOR_CONTRAST';
+const FETCH_INTERNATIONAL_PRODUCTS_STATUS = 'FETCH_INTERNATIONAL_PRODUCTS_STATUS';
 
 export const fetchConfigAjax = () => {
   return merchantFetch('account/config');
@@ -31,7 +32,7 @@ export const fetchFeaturesAjax = (currentUserId, mode) => {
   return merchantFetch(params);
 };
 
-export const onboardTerminal = gateway => {
+export const onboardTerminal = (gateway) => {
   let params = {
     url: `terminals/onboard`,
     method: 'post',
@@ -57,7 +58,7 @@ export const fetchRefundPricing = () => {
   };
 };
 
-export const fetchOnboardingStatus = gateway => {
+export const fetchOnboardingStatus = (gateway) => {
   let params = {
     url: `proxy/merchant/terminals?gateway=${gateway}`,
   };
@@ -69,7 +70,7 @@ export const fetchOnboardingStatus = gateway => {
 /*
  * Fetches merchant's config and features
  */
-export const fetchFeatures = currentUserId => {
+export const fetchFeatures = (currentUserId) => {
   return {
     type: FEATURES_FETCH,
     payload: fetchFeaturesAjax(currentUserId),
@@ -87,7 +88,7 @@ export const updateFeatures = (data, currentUserId) => {
   };
 };
 
-export const updateConfig = data => {
+export const updateConfig = (data) => {
   return {
     type: CONFIG_SAVE,
     payload: merchantFetch({
@@ -105,14 +106,14 @@ export const updateBrandColorContrast = (isBrandColorDark = false) => {
   };
 };
 
-export const getOnboardingStatus = gateway => {
+export const getOnboardingStatus = (gateway) => {
   return {
     type: GET_ONBOARDING_STATUS,
     payload: fetchOnboardingStatus(gateway),
   };
 };
 
-export const getRefundPricing = gateway => {
+export const getRefundPricing = (gateway) => {
   return {
     type: GET_ONBOARDING_STATUS,
     payload: fetchOnboardingStatus(gateway),
@@ -135,7 +136,7 @@ export const uploadLogo = (file, fieldName) => {
 };
 
 /* normalize config in proper format*/
-const normalizeConfig = config => {
+const normalizeConfig = (config) => {
   let logoUrl = config.logo_url;
 
   config.transaction_report_email = config.transaction_report_email.join(',');
@@ -148,10 +149,7 @@ const normalizeConfig = config => {
    * so we need to translate it into a valid URL
    */
   if (logoUrl !== null && !/^http/.test(logoUrl)) {
-    logoUrl = `https://cdn.razorpay.com${logoUrl.replace(
-      /\.([^\.]+$)/,
-      '_medium.$1'
-    )}`;
+    logoUrl = `https://cdn.razorpay.com${logoUrl.replace(/\.([^\.]+$)/, '_medium.$1')}`;
   }
   config.logo_url = logoUrl;
 
@@ -176,6 +174,17 @@ export const createLateAuthConfig = (payload, method) => {
   };
 };
 
+export const fetchInternationalProductsStatus = () => {
+  return {
+    type: FETCH_INTERNATIONAL_PRODUCTS_STATUS,
+    payload: merchantFetch({
+      url: 'merchants/product_international/workflow/status/all',
+      mode: 'live',
+      method: 'GET',
+    }),
+  };
+};
+
 let initialState = {
   loading: true,
   error: null,
@@ -193,6 +202,11 @@ let initialState = {
     error: null,
   },
   paypal_terminals: [],
+  internationalProductsStatus: {
+    loading: false,
+    data: {},
+    error: null,
+  },
 };
 
 export default function(state = initialState, action) {
@@ -260,6 +274,28 @@ export default function(state = initialState, action) {
 
     case 'UPDATE_BRAND_COLOR_CONTRAST':
       return set(state, 'isBrandColorDark', !!action.payload);
+
+    case `${FETCH_INTERNATIONAL_PRODUCTS_STATUS}::PENDING`:
+      return merge(state, {
+        internationalProductsStatus: {
+          loading: true,
+          ...state.internationalProductsStatus,
+        },
+      });
+
+    case `${FETCH_INTERNATIONAL_PRODUCTS_STATUS}::SUCCESS`:
+      return set(state, 'internationalProductsStatus', {
+        loading: false,
+        data: action.payload.data.data,
+        error: null,
+      });
+
+    case `${FETCH_INTERNATIONAL_PRODUCTS_STATUS}::ERROR`:
+      return set(state, 'internationalProductsStatus', {
+        loading: false,
+        data: {},
+        error: action.payload.errors,
+      });
 
     default:
       return state;

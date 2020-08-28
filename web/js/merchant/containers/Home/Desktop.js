@@ -21,9 +21,11 @@ import NPSAnnouncement from 'merchant/components/Announcements/NPSAnnouncement';
 import CapitalAnnouncement from 'merchant/components/Announcements/Capital';
 import CovidCampaignAnnouncement from 'merchant/components/Announcements/CovidCampaign';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
+import InternationalRequestStatusAnnouncement from 'merchant/components/Announcements/InternationalRequestStatus';
 import Button from 'common/new-ui/Button';
 import OndemandModal from 'merchant/views/Settlements/components/Modals/OndemandModal';
 import { openModal } from 'merchant_common/reducers/modals';
+import { fetchInternationalProductsStatus } from 'merchant/reducers/config';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 
 import CreditPullModal from 'merchant/containers/CreditPullModal';
@@ -34,9 +36,17 @@ import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
 import Time from 'common/ui/Time';
 
 @withRouter
-@connect((state) => ({ user: state.session.user, config: state.config }), {
-  openModal,
-})
+@connect(
+  (state) => ({
+    user: state.session.user,
+    config: state.config,
+    internationalProductsStatus: state.config.internationalProductsStatus,
+  }),
+  {
+    openModal,
+    fetchInternationalProductsStatus,
+  }
+)
 class AnalyticsDesktop extends Component {
   constructor(props) {
     super(props);
@@ -56,6 +66,10 @@ class AnalyticsDesktop extends Component {
 
   componentDidUpdate() {
     this.popupCredit();
+  }
+
+  componentDidMount() {
+    this.props.fetchInternationalProductsStatus();
   }
 
   resetHash = () => {
@@ -151,7 +165,17 @@ class AnalyticsDesktop extends Component {
           {/* nps banner */}
           {user.isAccepted && <NPSAnnouncement user={user} />}
 
+          {/* onboarding banner */}
           {showInstantActivation && <Announcement mode={mode} user={user} payments={payments} />}
+
+          {/* international onboarding banner */}
+          {mode === 'live' &&
+            user.instantActivation.isGraylistFlow &&
+            user.internationalActivationFlow.isGraylistFlow && (
+              <InternationalRequestStatusAnnouncement
+                internationalProductsStatus={this.props.internationalProductsStatus}
+              />
+            )}
 
           {this.isCaptureSettingsDefault(items) &&
             user.instantActivation.isWhitelistFlow === true && (

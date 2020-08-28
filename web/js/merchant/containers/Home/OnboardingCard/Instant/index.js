@@ -8,10 +8,9 @@ import ActivationStatusCard from './ActivationStatus';
 import LiveModeCard from './LiveMode';
 import RTracking from 'react-tracking';
 
-import {
-  showAcceptPaymentsModal,
-  hideAcceptPaymentsModal,
-} from 'merchant/reducers/home';
+import { showAcceptPaymentsModal, hideAcceptPaymentsModal } from 'merchant/reducers/home';
+import { fetchInternationalProductsStatus } from 'merchant/reducers/config';
+import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
 
 import {
   trackTestModeCard,
@@ -22,14 +21,17 @@ import {
 } from './ga';
 
 @connect(
-  state => ({
+  (state) => ({
     ...state.session,
     config: state.config.config,
     windowWidth: state.app.windowWidth,
+    internationalProductsStatus: state.config.internationalProductsStatus,
   }),
   {
     showAcceptPaymentsModal,
     hideAcceptPaymentsModal,
+    fetchInternationalProductsStatus,
+    fetchAddWebsiteWorkflowStatus,
   }
 )
 @RTracking((state, props, args) => {
@@ -42,6 +44,7 @@ export default class OnboardingCardInstant extends Component {
     this.state = {
       contentWidth: null,
       activeStep: 0,
+      isWebsiteInWorkflow: false,
     };
 
     this.showAcceptPaymentsModal = this.showAcceptPaymentsModal.bind(this);
@@ -49,9 +52,7 @@ export default class OnboardingCardInstant extends Component {
   }
 
   setActiveStep(activeStep = 0) {
-    return (
-      activeStep !== this.state.activeStep && this.setState({ activeStep })
-    );
+    return activeStep !== this.state.activeStep && this.setState({ activeStep });
   }
 
   setContentWidth(width) {
@@ -64,7 +65,15 @@ export default class OnboardingCardInstant extends Component {
     if (this.content) {
       this.setContentWidth(this.content.innerWidth);
     }
-
+    Promise.all([
+      this.props.fetchAddWebsiteWorkflowStatus(),
+      this.props.fetchInternationalProductsStatus(),
+    ]).then((resp) => {
+      const { 0: websiteWorkflow } = resp;
+      this.setState({
+        isWebsiteInWorkflow: websiteWorkflow.data,
+      });
+    });
     trackhubsContactUpdate({
       activation_status: this.props.user.activation_status,
     });
@@ -91,7 +100,7 @@ export default class OnboardingCardInstant extends Component {
   }
 
   render() {
-    const { mode, user, integration } = this.props,
+    const { mode, user, integration, internationalProductsStatus } = this.props,
       {
         has_key_access: hasKeyAccess,
         business_website: businessWebsite,
@@ -106,8 +115,10 @@ export default class OnboardingCardInstant extends Component {
         business_type,
         poi_verification_status,
         isUnregisteredBusiness,
+        internationalActivationFlow,
+        activation_status: activationStatus,
       } = user,
-      { showTransactionsHelper, isKLA, contentWidth, activeStep } = this.state,
+      { showTransactionsHelper, isKLA, isWebsiteInWorkflow, contentWidth, activeStep } = this.state,
       commonModeCardProps = {
         mode,
         integration,
@@ -116,8 +127,10 @@ export default class OnboardingCardInstant extends Component {
         showProductsModal: this.showProductsModal,
         setActiveStep: this.setActiveStep,
         merchantId: user.current,
+        internationalActivationFlow,
       },
       activationCardProps = {
+        mode,
         instantActivation,
         isSubmitted,
         needsClarification,
@@ -129,14 +142,17 @@ export default class OnboardingCardInstant extends Component {
         business_type,
         poi_verification_status,
         isUnregisteredBusiness,
+        businessWebsite,
+        internationalActivationFlow,
+        internationalProductsStatus,
+        activationStatus,
+        isAccepted,
+        isWebsiteInWorkflow,
       };
 
     return (
       <div className="onboarding-card-instant">
-        <div
-          className="onboarding-card-instant-content"
-          ref={node => (this.content = node)}
-        >
+        <div className="onboarding-card-instant-content" ref={(node) => (this.content = node)}>
           <div className={`onboarding-steps active-step-${activeStep}`}>
             <TestModeCard
               {...commonModeCardProps}
@@ -166,23 +182,18 @@ export default class OnboardingCardInstant extends Component {
           <div className="onboarding-illustration-bottom">
             <img src="/dist/css/assets/onboarding/bottom_bg.png" />
           </div>
-          {isAccepted &&
-            integration.paymentsMade && (
-              <div className="btn-close cursor-pointer" onClick={this.onClose}>
-                &times;
-              </div>
-            )}
+          {isAccepted && integration.paymentsMade && (
+            <div className="btn-close cursor-pointer" onClick={this.onClose}>
+              &times;
+            </div>
+          )}
         </div>
         <div className="onboarding-step-switcher">
-          {[0, 1, 2].map(stepNum => (
+          {[0, 1, 2].map((stepNum) => (
             <div
-              className={`onboarding-step-switch${
-                activeStep === stepNum ? ' active' : ''
-              }`}
+              className={`onboarding-step-switch${activeStep === stepNum ? ' active' : ''}`}
               key={stepNum}
-              onClick={() => (
-                trackDotClick(stepNum), this.setActiveStep(stepNum)
-              )}
+              onClick={() => (trackDotClick(stepNum), this.setActiveStep(stepNum))}
             />
           ))}
         </div>

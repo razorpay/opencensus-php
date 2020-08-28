@@ -13,7 +13,7 @@ import TwoFactorVerificationOTP from 'common/ui/TwoFactorVerification/TwoFactorV
 import { isPhone } from 'common/utils/validators';
 
 @connect(
-  state => ({
+  (state) => ({
     contactMobile: (state.session.user.user || {}).contact_mobile,
   }),
   {
@@ -36,7 +36,7 @@ export default class UpdateContactMobile extends React.Component {
     return this.props.onSubmit(data);
   };
 
-  @RTracking(props => {
+  @RTracking((props) => {
     return props.tracking.trackEvent(
       window.rzpQ.merchantActions().success('change_contact_mobile')
     );
@@ -101,14 +101,10 @@ export default class UpdateContactMobile extends React.Component {
   render() {
     return (
       <div class="2fa-modal">
-        <ModalHeader
-          title="Setting up 2-step verification"
-          onCloseClick={this.onCloseClick}
-        />
+        <ModalHeader title="Setting up 2-step verification" onCloseClick={this.onCloseClick} />
         <div class="modal-body">
           <p>
-            Let's setup a mobile number where you will receive an SMS with OTP
-            for 2FA verification.
+            Let's setup a mobile number where you will receive an SMS with OTP for 2FA verification.
           </p>
           <Form>
             <Input

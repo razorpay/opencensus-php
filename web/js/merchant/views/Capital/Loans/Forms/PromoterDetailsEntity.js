@@ -30,7 +30,7 @@ const OutlineLockIcon = <i class="i i-outline-lock" />;
     saveApplicationDetails,
     changeActiveState,
     ...NotificationsActions,
-  }
+  },
 )
 class PromoterDetailsEntity extends Component {
   constructor(props) {
@@ -100,7 +100,7 @@ class PromoterDetailsEntity extends Component {
     }));
   };
 
-  isValidDate = function(current) {
+  isValidDate = function (current) {
     const age = moment().diff(current, 'years');
     return age < 100 && age > 18;
   };
@@ -129,7 +129,7 @@ class PromoterDetailsEntity extends Component {
   canModify = () =>
     isPreceedingState(
       this.props.loanApplicationDetails.meta.data.application.status,
-      APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING
+      APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING,
     );
 
   handleSubmit = async () => {
@@ -159,12 +159,12 @@ class PromoterDetailsEntity extends Component {
 
       const applicantExists = Boolean(
         loanApplicationDetails.promoter_details.data.applicant &&
-          loanApplicationDetails.promoter_details.data.applicant.id
+          loanApplicationDetails.promoter_details.data.applicant.id,
       );
 
       const businessExists = Boolean(
         loanApplicationDetails.business_details.data.business &&
-          loanApplicationDetails.business_details.data.business.id
+          loanApplicationDetails.business_details.data.business.id,
       );
 
       const applicantDetails = loanApplicationDetails.promoter_details.data.applicant;
@@ -243,7 +243,7 @@ class PromoterDetailsEntity extends Component {
         if (!businessExists) {
           try {
             const response = await this.props.saveBusinessDetails(
-              this.props.loanApplicationDetails.business_details.data
+              this.props.loanApplicationDetails.business_details.data,
             );
             businessDetails = response.data;
           } catch (e) {

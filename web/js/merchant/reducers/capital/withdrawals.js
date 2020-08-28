@@ -93,7 +93,7 @@ const getInitialState = () => {
 
 const initialState = getInitialState();
 
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   switch (action.type) {
     case `${FETCH_SEED_DATA}::PENDING`:
       return merge(state, {

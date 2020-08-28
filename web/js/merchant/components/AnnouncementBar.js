@@ -10,23 +10,17 @@ export default class AnnouncementBar extends Component {
   componentDidMount() {
     const tracking = this.props.tracking;
     tracking.trackEvent(
-      window.rzpQ
-        .merchantActions()
-        .success(`${this.props.fromWhere}_display_promo_notification2`)
+      window.rzpQ.merchantActions().success(`${this.props.fromWhere}_display_promo_notification2`),
     );
   }
-
 
   trackEvents = (fromWhere) => {
     const tracking = this.props.tracking;
 
     tracking.trackEvent(
-      window.rzpQ
-        .merchantActions()
-        .initiated(`${fromWhere}_click_promo_notification2_cta1`)
+      window.rzpQ.merchantActions().initiated(`${fromWhere}_click_promo_notification2_cta1`),
     );
   };
-
 
   render() {
     return (
@@ -39,7 +33,7 @@ export default class AnnouncementBar extends Component {
           class="Button--secondary Button scheduled-btn-act btn-border"
           href={this.props.url}
           target="_blank"
-          onClick={e => {
+          onClick={(e) => {
             this.trackEvents(this.props.fromWhere);
           }}
         >

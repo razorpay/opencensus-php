@@ -33,7 +33,7 @@ import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBa
       payments: state.payments,
     };
   },
-  { fetchSettlementAmount, openModal }
+  { fetchSettlementAmount, openModal },
 )
 export default class TransactionsContainer extends Component {
   constructor(props) {
@@ -72,172 +72,172 @@ export default class TransactionsContainer extends Component {
 
     return (
       <React.Fragment>
-        <ShowWhen additionalCondition={user => user.isProjectNitroEnabled}>
-          <AnnouncementBanner title="Exclusive Offer For You"  canBeClosed={false}>
-              <ScheduledNitroBanner fromWhere="transactions" url="https://lp.razorpay.com/razorpayxca-pymnts1"/>
+        <ShowWhen additionalCondition={(user) => user.isProjectNitroEnabled}>
+          <AnnouncementBanner title="Exclusive Offer For You" canBeClosed={false}>
+            <ScheduledNitroBanner
+              fromWhere="transactions"
+              url="https://lp.razorpay.com/razorpayxca-pymnts1"
+            />
           </AnnouncementBanner>
         </ShowWhen>
         <tabbed-container>
-        <header id="transactions-header">
-          <NavLink to="/payments" exact>
-            Payments
-          </NavLink>
-          <ShowWhen
-            featureEnabled="direct_debit"
-            additionalCondition={(user) => user.isAllowedView('payments_batch_uploads')}
-          >
-            <NavLink to="/payments/batchuploads">Batch Payments</NavLink>
-          </ShowWhen>
-          <ShowWhen additionalCondition={(user) => user.isAllowedView('refunds')}>
-            <NavLink to="/refunds" exact>
-              Refunds
+          <header id="transactions-header">
+            <NavLink to="/payments" exact>
+              Payments
             </NavLink>
-          </ShowWhen>
-          <ShowWhen
-            featureEnabled="Batchrefunds"
-            additionalCondition={(user) => user.isAllowedView('refunds_batch_uploads')}
-          >
-            <NavLink
-              to="/refunds/batchuploads"
-              isActive={(match, { pathname }) =>
-                pathname === '/refunds/batchupload' || pathname === '/refunds/batchuploads'
-              }
+            <ShowWhen
+              featureEnabled="direct_debit"
+              additionalCondition={(user) => user.isAllowedView('payments_batch_uploads')}
             >
-              Batch Refunds
-            </NavLink>
-          </ShowWhen>
-          <ShowWhen additionalCondition={(user) => user.isAllowedView('orders')}>
-            <NavLink to="/orders">Orders</NavLink>
-          </ShowWhen>
-          <NavLink to="/disputes">Disputes</NavLink>
-          {no_settlement &&
-          (pathname === '/payments' || pathname === '/refunds' || pathname === '/orders') &&
-          mode === 'live' &&
-          this.props.payments &&
-          this.props.payments.items.length > 0 ? (
-            <div class="text-right settlement-caption">
-              {no_settlement.caption}
-              {no_settlement.reason && (
-                <React.Fragment>
-                  <div style={{ display: 'inline' }}>
-                    <i class="i i-info-circle" />
-                    <Popover theme="dark" align="left">
-                      <PopoverBody>
-                        <div>{no_settlement.reason}</div>
-                      </PopoverBody>
-                    </Popover>
-                  </div>
-                </React.Fragment>
-              )}
-            </div>
-          ) : null}
-          {!no_settlement &&
-          !nextSettlement &&
-          (pathname === '/payments' || pathname === '/refunds' || pathname === '/orders') ? (
-            <div class="text-right" style={{ width: '100%' }}>
-              <strong>
-                <Amount
-                  value={this.props.settlement_amount.data.settlement_amount}
-                  currency={'INR'}
-                />
-              </strong>{' '}
-              will be settled on{' '}
-              <Time
-                value={this.props.settlement_amount.data.next_settlement_time}
-                format={'DD MMM YYYY, hh:mm:ss a'}
-              />{' '}
-              {this.props.settlement_amount.data.reason_for_delay && (
-                <React.Fragment>
-                  <div style={{ display: 'inline' }}>
-                    <i class="i i-info-circle" />
-                    <Popover theme="dark" align="left">
-                      <PopoverBody>
-                        <div>{this.props.settlement_amount.data.reason_for_delay}</div>
-                      </PopoverBody>
-                    </Popover>
-                  </div>
-                </React.Fragment>
-              )}
-              <span
-                class="btn-link"
-                style={{ marginLeft: '5px' }}
-                onClick={() => {
-                  this.props.openModal({
-                    size: 'medium',
-                    component: (
-                      <SettlementDetail
-                        user={user}
-                        settlementAmount={this.props.settlement_amount.data}
-                      />
-                    ),
-                  });
-
-                  window.rzpAnalytics({
-                    eventCategory: 'Settlement Revamp',
-                    eventAction: 'Know more - Next Settlement',
-                    eventLabel: `Payments`,
-                  });
-                }}
+              <NavLink to="/payments/batchuploads">Batch Payments</NavLink>
+            </ShowWhen>
+            <ShowWhen additionalCondition={(user) => user.isAllowedView('refunds')}>
+              <NavLink to="/refunds" exact>
+                Refunds
+              </NavLink>
+            </ShowWhen>
+            <ShowWhen
+              featureEnabled="Batchrefunds"
+              additionalCondition={(user) => user.isAllowedView('refunds_batch_uploads')}
+            >
+              <NavLink
+                to="/refunds/batchuploads"
+                isActive={(match, { pathname }) =>
+                  pathname === '/refunds/batchupload' || pathname === '/refunds/batchuploads'
+                }
               >
-                Know more
-              </span>
-            </div>
-          ) : null}
-        </header>
-        <HeaderAction>
-          <div class="settlement-actions-wrapper">
-            <div
-              class="btn btn-link settlement-doc-btn"
-              onClick={this.viewSettlementCycle}
-            >
-              <span class="icon i-info-outline settlement-announcement" />
-              View Settlement Cycle
-            </div>
-          </div>
-        </HeaderAction>
-        <TestModeBanner />
-
-        {mode === 'live' && nextSettlement && no_settlement && no_settlement.on_hold === true ? (
-          <OnHoldBanner
-            payments={this.props.payments}
-            user={user}
-            ctaOnClick={() => {
-              this.props.openModal({
-                size: 'medium',
-                component: (
-                  <SettlementDetail
-                    user={user}
-                    settlementAmount={this.props.settlement_amount.data}
+                Batch Refunds
+              </NavLink>
+            </ShowWhen>
+            <ShowWhen additionalCondition={(user) => user.isAllowedView('orders')}>
+              <NavLink to="/orders">Orders</NavLink>
+            </ShowWhen>
+            <NavLink to="/disputes">Disputes</NavLink>
+            {no_settlement &&
+            (pathname === '/payments' || pathname === '/refunds' || pathname === '/orders') &&
+            mode === 'live' &&
+            this.props.payments &&
+            this.props.payments.items.length > 0 ? (
+              <div class="text-right settlement-caption">
+                {no_settlement.caption}
+                {no_settlement.reason && (
+                  <React.Fragment>
+                    <div style={{ display: 'inline' }}>
+                      <i class="i i-info-circle" />
+                      <Popover theme="dark" align="left">
+                        <PopoverBody>
+                          <div>{no_settlement.reason}</div>
+                        </PopoverBody>
+                      </Popover>
+                    </div>
+                  </React.Fragment>
+                )}
+              </div>
+            ) : null}
+            {!no_settlement &&
+            !nextSettlement &&
+            (pathname === '/payments' || pathname === '/refunds' || pathname === '/orders') ? (
+              <div class="text-right" style={{ width: '100%' }}>
+                <strong>
+                  <Amount
+                    value={this.props.settlement_amount.data.settlement_amount}
+                    currency={'INR'}
                   />
-                ),
-              });
+                </strong>{' '}
+                will be settled on{' '}
+                <Time
+                  value={this.props.settlement_amount.data.next_settlement_time}
+                  format={'DD MMM YYYY, hh:mm:ss a'}
+                />{' '}
+                {this.props.settlement_amount.data.reason_for_delay && (
+                  <React.Fragment>
+                    <div style={{ display: 'inline' }}>
+                      <i class="i i-info-circle" />
+                      <Popover theme="dark" align="left">
+                        <PopoverBody>
+                          <div>{this.props.settlement_amount.data.reason_for_delay}</div>
+                        </PopoverBody>
+                      </Popover>
+                    </div>
+                  </React.Fragment>
+                )}
+                <span
+                  class="btn-link"
+                  style={{ marginLeft: '5px' }}
+                  onClick={() => {
+                    this.props.openModal({
+                      size: 'medium',
+                      component: (
+                        <SettlementDetail
+                          user={user}
+                          settlementAmount={this.props.settlement_amount.data}
+                        />
+                      ),
+                    });
 
-              window.rzpAnalytics({
-                eventCategory: 'Settlement Revamp',
-                eventAction: 'View details - Funds on Hold',
-                eventLabel: `Payments`,
-              });
-            }}
-          />
-        ) : null}
+                    window.rzpAnalytics({
+                      eventCategory: 'Settlement Revamp',
+                      eventAction: 'Know more - Next Settlement',
+                      eventLabel: `Payments`,
+                    });
+                  }}
+                >
+                  Know more
+                </span>
+              </div>
+            ) : null}
+          </header>
+          <HeaderAction>
+            <div class="settlement-actions-wrapper">
+              <div class="btn btn-link settlement-doc-btn" onClick={this.viewSettlementCycle}>
+                <span class="icon i-info-outline settlement-announcement" />
+                View Settlement Cycle
+              </div>
+            </div>
+          </HeaderAction>
+          <TestModeBanner />
 
-        <content>
-          <Switch>
-            <Route path="/refunds/batchupload" component={BatchRefundsUpload} />
-            <Route path="/refunds/batchuploads" component={BatchRefundsList} />
-            <Route path="/refunds" component={RefundsList} />
-            <ShowWhenRoute
-              path="/orders"
-              component={OrdersList}
-              additionalCondition={(user) => user.isAllowedView('orders')}
+          {mode === 'live' && nextSettlement && no_settlement && no_settlement.on_hold === true ? (
+            <OnHoldBanner
+              payments={this.props.payments}
+              user={user}
+              ctaOnClick={() => {
+                this.props.openModal({
+                  size: 'medium',
+                  component: (
+                    <SettlementDetail
+                      user={user}
+                      settlementAmount={this.props.settlement_amount.data}
+                    />
+                  ),
+                });
+
+                window.rzpAnalytics({
+                  eventCategory: 'Settlement Revamp',
+                  eventAction: 'View details - Funds on Hold',
+                  eventLabel: `Payments`,
+                });
+              }}
             />
-            <Route path="/payments/batchuploads/:mode" component={BatchPaymentsList} />
-            <Route path="/payments/batchuploads" component={BatchPaymentsList} />
-            <Route path="/payments" component={PaymentsList} />
-            <Route path="/disputes" component={DisputesList} />
-          </Switch>
-        </content>
-      </tabbed-container>
+          ) : null}
+
+          <content>
+            <Switch>
+              <Route path="/refunds/batchupload" component={BatchRefundsUpload} />
+              <Route path="/refunds/batchuploads" component={BatchRefundsList} />
+              <Route path="/refunds" component={RefundsList} />
+              <ShowWhenRoute
+                path="/orders"
+                component={OrdersList}
+                additionalCondition={(user) => user.isAllowedView('orders')}
+              />
+              <Route path="/payments/batchuploads/:mode" component={BatchPaymentsList} />
+              <Route path="/payments/batchuploads" component={BatchPaymentsList} />
+              <Route path="/payments" component={PaymentsList} />
+              <Route path="/disputes" component={DisputesList} />
+            </Switch>
+          </content>
+        </tabbed-container>
       </React.Fragment>
     );
   }

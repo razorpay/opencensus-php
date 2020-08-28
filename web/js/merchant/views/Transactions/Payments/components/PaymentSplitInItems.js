@@ -4,45 +4,37 @@ import RTracking from 'react-tracking';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import DataTable from 'common/ui/Table/DataTable';
 import Amount from 'common/ui/Amount';
-import {
-  getPaymentSplitAmongstItems,
-} from 'merchant/views/PaymentPages/PaymentPages/model';
+import { getPaymentSplitAmongstItems } from 'merchant/views/PaymentPages/PaymentPages/model';
 
-
-const name = { title: 'Item Name', value: item => item.name };
-const revenue = { title: 'Revenue', value: item => (
-    <Amount
-      value={item.net_amount}
-      currency={item.currency}
-    />
-  )};
-const price = { title: 'Price', value: item => (
-    <Amount
-      value={item.amount}
-      currency={item.currency}
-    />
-  )};
-const unitsSold = { title: 'Units Sold', value: item => item.quantity || '--' };
-
+const name = { title: 'Item Name', value: (item) => item.name };
+const revenue = {
+  title: 'Revenue',
+  value: (item) => <Amount value={item.net_amount} currency={item.currency} />,
+};
+const price = {
+  title: 'Price',
+  value: (item) => <Amount value={item.amount} currency={item.currency} />,
+};
+const unitsSold = { title: 'Units Sold', value: (item) => item.quantity || '--' };
 
 @withRouter
 @RTracking(() => window.rzpQ.component('PaymentSplitInItems'))
 export default class PaymentSplitInItems extends React.Component {
   state = {
     isLoading: false,
-    items: []
+    items: [],
   };
 
   componentDidMount() {
     if (this.isSectionAllowed) {
       this.setState({
-        isLoading: true
+        isLoading: true,
       });
 
-      getPaymentSplitAmongstItems(this.props.payment.order_id).then(res => {
+      getPaymentSplitAmongstItems(this.props.payment.order_id).then((res) => {
         this.setState({
           isLoading: false,
-          items: res.data ? res.data.items : [] ,
+          items: res.data ? res.data.items : [],
         });
       });
     }

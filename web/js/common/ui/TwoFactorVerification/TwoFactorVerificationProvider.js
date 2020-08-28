@@ -78,7 +78,7 @@ export default class TwoFaVerificationContextProvider extends React.Component {
     }
 
     this.props.closeModal();
-  }
+  };
 
   @RTracking((props) => {
     return props.tracking.trackEvent(

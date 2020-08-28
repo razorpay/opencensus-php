@@ -37,7 +37,7 @@ import {
   trackClickDuplicatePaymentLink,
 } from 'merchant/views/PaymentLinks/PaymentLinks/ga';
 
-export default props => {
+export default (props) => {
   let {
     user,
     paymentlink,
@@ -54,30 +54,24 @@ export default props => {
 
   let status = paymentlink.status ? paymentlink.status.toLowerCase() : null;
   const isDraft = status === 'draft';
-  const isIssued =
-    status && ['issued', 'created'].indexOf(status.toLowerCase()) > -1;
+  const isIssued = status && ['issued', 'created'].indexOf(status.toLowerCase()) > -1;
   const isPaid = status === 'paid';
   const isPartiallyPaid = status === 'partially_paid';
   const isCancelled = status === 'cancelled';
   const isExpired = status === 'expired';
 
-  let isSmsOrEmailSent =
-    paymentlink.sms_status === 'sent' || paymentlink.email_status === 'sent';
+  let isSmsOrEmailSent = paymentlink.sms_status === 'sent' || paymentlink.email_status === 'sent';
 
   const isRemindersEnabled =
     paymentlink.reminder_status &&
-    !(
-      paymentlink.reminder_status === 'disabled' ||
-      paymentlink.reminder_status === 'failed'
-    );
+    !(paymentlink.reminder_status === 'disabled' || paymentlink.reminder_status === 'failed');
 
   const isPaymentLinkClosed = isPaid || isCancelled || isExpired;
 
   const isContactDetailsAvl =
     paymentlink.customer_details &&
     !!(
-      paymentlink.customer_details.customer_email ||
-      paymentlink.customer_details.customer_contact
+      paymentlink.customer_details.customer_email || paymentlink.customer_details.customer_contact
     );
 
   return (
@@ -89,8 +83,7 @@ export default props => {
       ) : (
         <div class="panel panel-default SliderPanel">
           <div class="panel-heading">
-            <i class="i i-link text-primary icon--formal" />{' '}
-            <strong>{paymentlink.id}</strong>
+            <i class="i i-link text-primary icon--formal" /> <strong>{paymentlink.id}</strong>
             <div class="btn-toolbar pull-right">
               <NavLink
                 onClick={trackClickDuplicatePaymentLink}
@@ -103,13 +96,8 @@ export default props => {
               {(isRoleAllowedEdit || user.role === rolesList.RBL_AGENT) &&
                 isContactDetailsAvl &&
                 (isDraft || isIssued || isPartiallyPaid) && (
-                  <button
-                    class="btn Button--primary"
-                    onClick={props.notifyCustomer}
-                  >
-                    <Tooltip theme="dark">
-                      {isSmsOrEmailSent ? 'Resend Link' : 'Send Link'}
-                    </Tooltip>
+                  <button class="btn Button--primary" onClick={props.notifyCustomer}>
+                    <Tooltip theme="dark">{isSmsOrEmailSent ? 'Resend Link' : 'Send Link'}</Tooltip>
 
                     <i className="i i-send" />
                   </button>
@@ -131,22 +119,17 @@ export default props => {
                   value={() => (
                     <div>
                       <InvoiceStatusLabel
-                        status={
-                          paymentlink.status
-                            ? paymentlink.status.toLowerCase()
-                            : null
-                        }
+                        status={paymentlink.status ? paymentlink.status.toLowerCase() : null}
                       />
-                      {isRoleAllowedEdit &&
-                        isIssued && (
-                          <Button.Transparent
-                            class="Button--Link"
-                            style={{ marginLeft: 12 }}
-                            onClick={props.onCancel}
-                          >
-                            Cancel Link
-                          </Button.Transparent>
-                        )}
+                      {isRoleAllowedEdit && isIssued && (
+                        <Button.Transparent
+                          class="Button--Link"
+                          style={{ marginLeft: 12 }}
+                          onClick={props.onCancel}
+                        >
+                          Cancel Link
+                        </Button.Transparent>
+                      )}
                     </div>
                   )}
                 />
@@ -160,44 +143,40 @@ export default props => {
                       value={() => (
                         <div>
                           {isPartialPayment ? 'Enabled' : 'Disabled'}
-                          {isRoleAllowedEdit &&
-                            isIssued && (
-                              <AsyncBtn.Transparent
-                                onClick={() => {
-                                  const toEnablePartialPayment = +!isPartialPayment;
+                          {isRoleAllowedEdit && isIssued && (
+                            <AsyncBtn.Transparent
+                              onClick={() => {
+                                const toEnablePartialPayment = +!isPartialPayment;
 
-                                  editPaymentLink({
-                                    partial_payment: toEnablePartialPayment,
-                                  });
+                                editPaymentLink({
+                                  partial_payment: toEnablePartialPayment,
+                                });
 
-                                  trackTogglePartialPayment(
-                                    paymentlink.id,
-                                    'Toggle Partial Payment',
-                                    toEnablePartialPayment
-                                  );
-                                }}
-                                class="Button--Link"
-                                style={{ marginLeft: 12 }}
-                                pendingState={
-                                  isPartialPayment ? 'Disabling' : 'Enabling'
-                                }
-                              >
-                                {isPartialPayment ? 'Disable' : 'Enable'}
-                              </AsyncBtn.Transparent>
-                            )}
-                          {isMinimumFirstPaymentEnabled &&
-                            isPartialPayment && (
-                              <EditMinimumAmount
-                                isIssued={isIssued}
-                                value={paymentlink.first_payment_min_amount}
-                                maximum={paymentlink.amount}
-                                currency={paymentlink.currency}
-                                entityId={paymentlink.id}
-                                editFn={editPaymentLink}
-                                trackerFn={() => {}}
-                                isRoleAllowedEdit={isRoleAllowedEdit}
-                              />
-                            )}
+                                trackTogglePartialPayment(
+                                  paymentlink.id,
+                                  'Toggle Partial Payment',
+                                  toEnablePartialPayment,
+                                );
+                              }}
+                              class="Button--Link"
+                              style={{ marginLeft: 12 }}
+                              pendingState={isPartialPayment ? 'Disabling' : 'Enabling'}
+                            >
+                              {isPartialPayment ? 'Disable' : 'Enable'}
+                            </AsyncBtn.Transparent>
+                          )}
+                          {isMinimumFirstPaymentEnabled && isPartialPayment && (
+                            <EditMinimumAmount
+                              isIssued={isIssued}
+                              value={paymentlink.first_payment_min_amount}
+                              maximum={paymentlink.amount}
+                              currency={paymentlink.currency}
+                              entityId={paymentlink.id}
+                              editFn={editPaymentLink}
+                              trackerFn={() => {}}
+                              isRoleAllowedEdit={isRoleAllowedEdit}
+                            />
+                          )}
                         </div>
                       )}
                     />;
@@ -207,10 +186,7 @@ export default props => {
                 <EntityDetailRow
                   label="Amount"
                   value={() => (
-                    <Amount
-                      value={paymentlink.amount}
-                      currency={paymentlink.currency}
-                    />
+                    <Amount value={paymentlink.amount} currency={paymentlink.currency} />
                   )}
                 />
                 <EntityDetailRow label="Amount Paid">
@@ -248,9 +224,7 @@ export default props => {
                           fieldLabel="Send auto reminders"
                           checked={isRemindersEnabled}
                           disabled={
-                            !isContactDetailsAvl ||
-                            isPaymentLinkClosed ||
-                            isAutoRemindersUpdating
+                            !isContactDetailsAvl || isPaymentLinkClosed || isAutoRemindersUpdating
                           }
                           onChange={onChangeSendAutoReminder}
                           autoRender
@@ -258,8 +232,7 @@ export default props => {
                         {!isContactDetailsAvl && (
                           <Popover theme="dark" align="bottom">
                             <PopoverBody>
-                              No contact details present for reminders to be
-                              sent
+                              No contact details present for reminders to be sent
                             </PopoverBody>
                           </Popover>
                         )}
@@ -291,11 +264,7 @@ export default props => {
                 )}
 
                 <EntityDetailRow
-                  label={
-                    user.isPaymentlinksV2Enabled
-                      ? 'Reference Id'
-                      : 'Receipt No.'
-                  }
+                  label={user.isPaymentlinksV2Enabled ? 'Reference Id' : 'Receipt No.'}
                   value={
                     isIssued
                       ? () => (
@@ -310,9 +279,7 @@ export default props => {
                             }}
                             isRoleAllowedEdit={isRoleAllowedEdit}
                             required={user.isInvoiceReceiptMandatory}
-                            isPaymentlinksV2Enabled={
-                              user.isPaymentlinksV2Enabled
-                            }
+                            isPaymentlinksV2Enabled={user.isPaymentlinksV2Enabled}
                           />
                         )
                       : paymentlink.receipt || '--'
@@ -341,9 +308,7 @@ export default props => {
 
                 <EntityDetailRow
                   label="Created At"
-                  value={() => (
-                    <Time value={paymentlink.date || paymentlink.created_at} />
-                  )}
+                  value={() => <Time value={paymentlink.date || paymentlink.created_at} />}
                 />
                 <EntityDetailRow
                   label={isExpired ? 'Expired On' : 'Expires On'}
@@ -362,19 +327,14 @@ export default props => {
                             isRoleAllowedEdit={isRoleAllowedEdit}
                             isExpireByRequired={
                               user.isExpireByRequired ||
-                              (user.isPaymentlinksV2Enabled &&
-                                paymentlink.expire_by)
+                              (user.isPaymentlinksV2Enabled && paymentlink.expire_by)
                             }
                           />
                         )
                       : () =>
                           paymentlink.expire_by ? (
                             <Time
-                              value={
-                                isExpired
-                                  ? paymentlink.expired_at
-                                  : paymentlink.expire_by
-                              }
+                              value={isExpired ? paymentlink.expired_at : paymentlink.expire_by}
                               format="DD MMM YYYY, hh:mm a"
                             />
                           ) : (

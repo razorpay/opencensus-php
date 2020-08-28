@@ -10,10 +10,7 @@ export const MIN_AMOUNT_TEXT = 'Minimum due amount';
 
 export const PopoverBodyText = (
   <PopoverBody>
-    <div>
-      You can set a minimum due amount for the first payment made by your
-      customer
-    </div>
+    <div>You can set a minimum due amount for the first payment made by your customer</div>
   </PopoverBody>
 );
 
@@ -54,19 +51,13 @@ export default class EditMinimumAmount extends React.Component {
     this.setState({
       isEditableMode: true,
     });
-    setTimeout(
-      () => document.getElementsByName('first_payment_min_amount')[0].focus(),
-      10
-    );
+    setTimeout(() => document.getElementsByName('first_payment_min_amount')[0].focus(), 10);
     this.props.trackerFn('Edit Minimum Payable Amount');
   };
 
   handleSubmit = () => {
     let first_payment_min_amount = null;
-    if (
-      this.state.first_payment_min_amount !== '0' &&
-      this.state.first_payment_min_amount
-    ) {
+    if (this.state.first_payment_min_amount !== '0' && this.state.first_payment_min_amount) {
       first_payment_min_amount = this.state.first_payment_min_amount * 100;
     }
 
@@ -74,7 +65,7 @@ export default class EditMinimumAmount extends React.Component {
       .editFn({
         first_payment_min_amount,
       })
-      .then(resp => {
+      .then((resp) => {
         if (resp && resp.data) {
           this.setState(this.resetState());
 
@@ -89,25 +80,18 @@ export default class EditMinimumAmount extends React.Component {
     let content = (
       <div style={{ marginTop: 4 }}>
         <span style={{ marginRight: 12 }}>
-          <Amount
-            value={this.state.first_payment_min_amount * 100}
-            currency={currency}
-          />{' '}
+          <Amount value={this.state.first_payment_min_amount * 100} currency={currency} />{' '}
           {titleCase(MIN_AMOUNT_TEXT)}
           <small className="help-content">
-            <i
-              class="i i-info-outline"
-              style={{ verticalAlign: 'middle', marginLeft: 4 }}
-            />
+            <i class="i i-info-outline" style={{ verticalAlign: 'middle', marginLeft: 4 }} />
             <Popover align="top">{PopoverBodyText}</Popover>
           </small>
         </span>
-        {isRoleAllowedEdit &&
-          isIssued && (
-            <Button.Transparent onClick={this.makeEditable} class="Button--Link">
-              Change
-            </Button.Transparent>
-          )}
+        {isRoleAllowedEdit && isIssued && (
+          <Button.Transparent onClick={this.makeEditable} class="Button--Link">
+            Change
+          </Button.Transparent>
+        )}
       </div>
     );
 
@@ -117,21 +101,15 @@ export default class EditMinimumAmount extends React.Component {
           {MIN_AMOUNT_TEXT}
           <Input.Group class="InputGroup--inline">
             <div class="Input-content">
-              <Input.CurrencySelect
-                name="currency"
-                defaultValue="INR"
-                disabled
-              />
+              <Input.CurrencySelect name="currency" defaultValue="INR" disabled />
 
               <Input
                 name="first_payment_min_amount"
                 placeholder={titleCase(MIN_AMOUNT_TEXT)}
                 class="Input--small"
                 value={this.state.first_payment_min_amount}
-                validator={val =>
-                  validateMinAmount(val, this.props.maximum / 100)
-                }
-                onChange={e => {
+                validator={(val) => validateMinAmount(val, this.props.maximum / 100)}
+                onChange={(e) => {
                   this.setState({
                     first_payment_min_amount: e.target.value,
                   });
@@ -140,17 +118,12 @@ export default class EditMinimumAmount extends React.Component {
             </div>
           </Input.Group>
 
-          <div
-            style={{ textAlign: 'right', margin: '8px 0 12px 0', width: 260 }}
-          >
+          <div style={{ textAlign: 'right', margin: '8px 0 12px 0', width: 260 }}>
             <Button.Transparent
               class="Button--Link"
               onClick={() => {
                 this.setState(this.resetState());
-                this.props.trackerFn(
-                  this.props.entityId,
-                  'Cancel Minimum Payable Amount'
-                );
+                this.props.trackerFn(this.props.entityId, 'Cancel Minimum Payable Amount');
               }}
             >
               Cancel
@@ -160,10 +133,7 @@ export default class EditMinimumAmount extends React.Component {
               class="Button--small"
               style={{ marginRight: 0, marginLeft: 16 }}
               disabled={
-                !!validateMinAmount(
-                  this.state.first_payment_min_amount,
-                  this.props.maximum / 100
-                )
+                !!validateMinAmount(this.state.first_payment_min_amount, this.props.maximum / 100)
               }
               onClick={this.handleSubmit}
               showLoader={false}

@@ -26,7 +26,7 @@ export default class PaymentReceipt extends React.Component {
 
   componentDidMount() {
     if (this.isSectionAllowed) {
-      getReceiptDetails(this.props.payment.id).then(res => {
+      getReceiptDetails(this.props.payment.id).then((res) => {
         if (res && res.data) {
           this.setState({
             receipt: res.data.receipt,
@@ -37,13 +37,13 @@ export default class PaymentReceipt extends React.Component {
     }
   }
 
-  sendReceipt = receipt => {
+  sendReceipt = (receipt) => {
     this.setState({
       isActionInProgress: true,
     });
 
     sendReceipt(this.props.payment.id, receipt)
-      .then(res => {
+      .then((res) => {
         if (res.data && res.data.success) {
           this.setState({
             isActionInProgress: false,
@@ -55,7 +55,7 @@ export default class PaymentReceipt extends React.Component {
               receipt: this.state.receipt,
               invoiceId: this.state.invoiceId,
               type: this.state.showCustomReceiptInput && 'resend',
-            })
+            }),
           );
 
           this.props.showNotification({
@@ -78,7 +78,7 @@ export default class PaymentReceipt extends React.Component {
     window.location.href = `https://invoices.razorpay.com/v1/invoices/${this.state.invoiceId}/pdf?download=1`;
   };
 
-  downloadReceipt = receipt => {
+  downloadReceipt = (receipt) => {
     this.props.showNotification({
       type: 'success',
       message: 'Receipt is downloading...',
@@ -89,7 +89,7 @@ export default class PaymentReceipt extends React.Component {
         receipt: this.state.receipt,
         invoiceId: this.state.invoiceId,
         type: this.state.showCustomReceiptInput && 'download',
-      })
+      }),
     );
 
     if (receipt) {
@@ -98,7 +98,7 @@ export default class PaymentReceipt extends React.Component {
       });
 
       saveReceipt(this.props.payment.id, receipt)
-        .then(res => {
+        .then((res) => {
           if (res && res.success) {
             this.openDownloadReceiptUrl();
 
@@ -153,7 +153,7 @@ export default class PaymentReceipt extends React.Component {
       window.rzpQ.paymentPages().success('pp.receipt.enter_custom_cancel', {
         receipt: this.state.receipt,
         invoiceId: this.state.invoiceId,
-      })
+      }),
     );
   };
 
@@ -170,8 +170,7 @@ export default class PaymentReceipt extends React.Component {
 
   render() {
     const { payment } = this.props;
-    const showReceiptActions =
-      !!this.state.invoiceId && this.isSectionAllowed; // TODO: Must add support for product names as constants in dashboard
+    const showReceiptActions = !!this.state.invoiceId && this.isSectionAllowed; // TODO: Must add support for product names as constants in dashboard
 
     // Payment Receipt Actions only to be shown for payment pages for which invoice id exists in GET /receipt call
     if (!showReceiptActions) {
@@ -192,9 +191,7 @@ export default class PaymentReceipt extends React.Component {
       }
 
       manualReceiptActions = (
-        <Form
-          onSubmit={formData => manualReceiptActionHandler(formData.receipt)}
-        >
+        <Form onSubmit={(formData) => manualReceiptActionHandler(formData.receipt)}>
           <Input name="receipt" placeholder="Enter Reference ID" required />
 
           <div class="pull-right">
@@ -211,12 +208,10 @@ export default class PaymentReceipt extends React.Component {
               disabled={this.state.isActionInProgress}
               onClick={() => {
                 this.props.tracking.trackEvent(
-                  window.rzpQ
-                    .paymentPages()
-                    .success('pp.receipt.enter_custom_save', {
-                      receipt: this.state.receipt,
-                      invoiceId: this.state.invoiceId,
-                    })
+                  window.rzpQ.paymentPages().success('pp.receipt.enter_custom_save', {
+                    receipt: this.state.receipt,
+                    invoiceId: this.state.invoiceId,
+                  }),
                 );
               }}
             >
@@ -231,9 +226,7 @@ export default class PaymentReceipt extends React.Component {
     return (
       <EntityDetailRow label="Payment Receipt">
         <div>
-          {this.state.receipt && (
-            <div class="m-b">Reference ID: {this.state.receipt}</div>
-          )}
+          {this.state.receipt && <div class="m-b">Reference ID: {this.state.receipt}</div>}
 
           {this.state.showCustomReceiptInput ? (
             manualReceiptActions

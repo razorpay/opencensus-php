@@ -6,10 +6,7 @@ import RTracking from 'react-tracking';
 import AcceptPaymentsModal from 'merchant/containers/Home/OnboardingCard/Instant/AcceptPaymentsModal';
 
 import { toggleMobileMenu } from 'merchant/reducers/app';
-import {
-  showAcceptPaymentsModal,
-  hideAcceptPaymentsModal,
-} from 'merchant/reducers/home';
+import { showAcceptPaymentsModal, hideAcceptPaymentsModal } from 'merchant/reducers/home';
 
 import ActivationProgress from './ActivationProgress';
 import { trackGoToActivation, trackGoToConfig } from './ga';
@@ -48,7 +45,7 @@ const BASE_ROUTES = {
 
 @withRouter
 @connect(
-  state => ({
+  (state) => ({
     showMobileMenu: state.app.showMobileMenu,
     showAcceptPayments: state.home.instantActivations.showAcceptPayments,
   }),
@@ -70,12 +67,8 @@ export default class Sidebar extends Component {
   }
 
   componentDidMount() {
-    this.props.tracking.trackEvent(
-      window.rzpQ.merchantActions().success('Merchant_Logged_In')
-    );
-    this.props.tracking.trackEvent(
-      window.rzpQ.onbr().initiated('dashboard.loaded')
-    );
+    this.props.tracking.trackEvent(window.rzpQ.merchantActions().success('Merchant_Logged_In'));
+    this.props.tracking.trackEvent(window.rzpQ.onbr().initiated('dashboard.loaded'));
   }
 
   initializeRoutes(location) {
@@ -117,16 +110,12 @@ export default class Sidebar extends Component {
       routes.partnerDashboard = pathname.match(PARTNER_DASHBOARD_REGEX)[0];
       this.prevRoute = 'partnerDashboard';
     } else if (SUBSCRIPTIONS_ROUTES_REGEX.test(pathname)) {
-      routes[
-        user.isChargeAtWillEnabled ? 'chargeAtWill' : 'subscriptions'
-      ] = pathname.match(SUBSCRIPTIONS_ROUTES_REGEX)[0];
-      this.prevRoute = user.isChargeAtWillEnabled
-        ? 'recurring_payments'
-        : 'subscriptions';
+      routes[user.isChargeAtWillEnabled ? 'chargeAtWill' : 'subscriptions'] = pathname.match(
+        SUBSCRIPTIONS_ROUTES_REGEX
+      )[0];
+      this.prevRoute = user.isChargeAtWillEnabled ? 'recurring_payments' : 'subscriptions';
 
-      this.prevRoute = user.isRegistrationLinkBasedRole
-        ? 'registration_links'
-        : this.prevRoute;
+      this.prevRoute = user.isRegistrationLinkBasedRole ? 'registration_links' : this.prevRoute;
     }
 
     if (user.isRegistrationLinkBasedRole) {
@@ -162,8 +151,7 @@ export default class Sidebar extends Component {
       ? trackGoToConfig(showInstantActivation)
       : !isAcceptPaymentsShown &&
           trackGoToActivation(
-            showInstantActivation &&
-              (user.instantActivation.isL1Submitted ? 'KYC Form' : 'L1 Form')
+            showInstantActivation && (user.instantActivation.isL1Submitted ? 'KYC Form' : 'L1 Form')
           );
   };
 
@@ -179,8 +167,7 @@ export default class Sidebar extends Component {
     const merchantNavLinkProps = {
       routes,
       isChargeAtWillEnabled: user.isChargeAtWillEnabled,
-      isSettlementEnabled:
-        user.isOndemandSettlementEnabled || user.isAutomaticSettlementEnabled,
+      isSettlementEnabled: user.isOndemandSettlementEnabled || user.isAutomaticSettlementEnabled,
     };
     return (
       <>
@@ -200,10 +187,7 @@ export default class Sidebar extends Component {
                 />
 
                 {user.isPartner() ? (
-                  <PartnerSidebar
-                    merchantNavLinkProps={merchantNavLinkProps}
-                    user={user}
-                  />
+                  <PartnerSidebar merchantNavLinkProps={merchantNavLinkProps} user={user} />
                 ) : (
                   <MerchantNavLinks {...merchantNavLinkProps} user={user} />
                 )}
@@ -211,9 +195,7 @@ export default class Sidebar extends Component {
             )}
           </nav>
         </div>
-        {showMobileMenu && (
-          <div className="sidebar-bg-overlay" onClick={this.hideSidebar} />
-        )}
+        {showMobileMenu && <div className="sidebar-bg-overlay" onClick={this.hideSidebar} />}
         {/* `Accept modal` for universal access */}
         <AcceptPaymentsModal
           isKLA={user.has_key_access}
@@ -246,11 +228,10 @@ class PartnerSidebar extends Component {
     }
   }
 
-  isPartnerRoute = props =>
-    props.location.pathname === '/' ||
-    props.location.pathname.includes('partners');
+  isPartnerRoute = (props) =>
+    props.location.pathname === '/' || props.location.pathname.includes('partners');
 
-  toggle = type => () => {
+  toggle = (type) => () => {
     this.setState(
       {
         [type]: !this.state[type],
@@ -264,7 +245,7 @@ class PartnerSidebar extends Component {
     );
   };
 
-  getCounterType = type => {
+  getCounterType = (type) => {
     return type === 'partnerOpen' ? 'merchantOpen' : 'partnerOpen';
   };
 

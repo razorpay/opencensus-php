@@ -162,12 +162,8 @@ export default class AmountWithdraw extends React.Component {
     const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
     const { start_day_limit, end_day_limit } = withdrawalConfigurationDetails.configuration;
 
-    const startDay = moment()
-      .add(start_day_limit, 'days')
-      .format('LL');
-    const endDay = moment()
-      .add(end_day_limit, 'days')
-      .format('LL');
+    const startDay = moment().add(start_day_limit, 'days').format('LL');
+    const endDay = moment().add(end_day_limit, 'days').format('LL');
 
     const isValid = current.isAfter(startDay) && current.isBefore(endDay);
     return !isValid;
@@ -265,12 +261,8 @@ export default class AmountWithdraw extends React.Component {
         application_id: withdrawalConfigurationDetails.application_id,
         application_number: withdrawalConfigurationDetails.application_number,
         amount: withdrawalAmount * 100,
-        due_date: moment(selectedDueDate)
-          .utc()
-          .format(),
-        drawn_at: moment()
-          .utc()
-          .format(),
+        due_date: moment(selectedDueDate).utc().format(),
+        drawn_at: moment().utc().format(),
         //TODO: right now BE has kept this as mandatory, remove this after
         // BE remove this validation
         comments: {

@@ -59,7 +59,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
     fetchSettlementAmount,
     fetchHolidayList,
     fetchBalanceConfig,
-  }
+  },
 )
 export default class SettlementsListContainer extends ListContainer {
   state = {
@@ -246,7 +246,7 @@ export default class SettlementsListContainer extends ListContainer {
 
         {handleNegativeBalanceLimit(
           this.props.merchantBalanceConfigs,
-          this.props.current_balance.data.balance
+          this.props.current_balance.data.balance,
         ) && (
           <AnnouncementBanner title="On Hold!" theme="danger" canBeClosed={true}>
             Your current balance had reached the maximum negative limit. Transactions will start to
@@ -258,13 +258,14 @@ export default class SettlementsListContainer extends ListContainer {
           </AnnouncementBanner>
         )}
 
-         <ShowWhen
-            additionalCondition={user => user.isProjectNitroEnabled}
-          >
-            <AnnouncementBanner title="Exclusive Offer For You" canBeClosed={false}>
-              <ScheduledNitroBanner fromWhere="settlements" url="https://lp.razorpay.com/razorpayxca-sttlmnts1" />
-            </AnnouncementBanner>
-          </ShowWhen>
+        <ShowWhen additionalCondition={(user) => user.isProjectNitroEnabled}>
+          <AnnouncementBanner title="Exclusive Offer For You" canBeClosed={false}>
+            <ScheduledNitroBanner
+              fromWhere="settlements"
+              url="https://lp.razorpay.com/razorpayxca-sttlmnts1"
+            />
+          </AnnouncementBanner>
+        </ShowWhen>
 
         <tabbed-container style={{ paddingTop: user.isISBannerEnabled ? '0px' : '20px' }}>
           <header>
@@ -388,8 +389,7 @@ export default class SettlementsListContainer extends ListContainer {
                           )}
                         </span>
                       ) : null}
-                      {nextSettlement &&
-                        !no_settlement && (
+                      {nextSettlement && !no_settlement && (
                         <span style={{ fontSize: '13px' }}>
                           <span>&nbsp;</span>
                           <strong>

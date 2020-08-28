@@ -9,7 +9,7 @@ const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
 
 @withRouter
 @connect(
-  state => ({
+  (state) => ({
     showMobileMenu: state.app.showMobileMenu,
   }),
   { toggleMobileMenu }
@@ -61,21 +61,13 @@ export default class Sidebar extends Component {
                     icon="i i-transfers text-primary"
                     to={routes.transfers}
                   />
-                  <MainNavLink
-                    label="Reversals"
-                    icon="i i-undo text-warm"
-                    to={routes.reversals}
-                  />
+                  <MainNavLink label="Reversals" icon="i i-undo text-warm" to={routes.reversals} />
                   <MainNavLink
                     label="Settlements"
                     icon="i i-done-all text-success"
                     to="/settlements"
                   />
-                  <MainNavLink
-                    label="Reports"
-                    icon="i i-books text-danger"
-                    to="/reports"
-                  />
+                  <MainNavLink label="Reports" icon="i i-books text-danger" to="/reports" />
                   <MainNavLink
                     label="Account Settings"
                     icon="i i-account text-primary"
@@ -86,9 +78,7 @@ export default class Sidebar extends Component {
             }}
           </nav>
         </div>
-        {showMobileMenu && (
-          <div className="sidebar-bg-overlay" onClick={this.hideSidebar} />
-        )}
+        {showMobileMenu && <div className="sidebar-bg-overlay" onClick={this.hideSidebar} />}
       </React.Fragment>
     );
   }

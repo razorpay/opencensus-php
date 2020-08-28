@@ -17,7 +17,7 @@ import getApplicationProgressPercentage from '../utils/ProgressPercentageCalcula
   }),
   {
     changeActiveState,
-  }
+  },
 )
 class SideNavigation extends Component {
   constructor(props) {
@@ -33,7 +33,7 @@ class SideNavigation extends Component {
     return Object.values(SIDE_NAVIGATION_STATE_GROUPS).filter((meta) =>
       Object.values(meta.steps)
         .reduce((acc, curr) => [...acc, ...curr], [])
-        .includes(step)
+        .includes(step),
     )[0].description;
   };
 
@@ -49,9 +49,9 @@ class SideNavigation extends Component {
     this.gaEventDispatcher({
       eventAction: 'Left Navigation | Steps',
       eventLabel: `${this._getParentStepLabel(
-        _from
+        _from,
       )}:${_fromStepLabel} to ${this._getParentStepLabel(
-        _to
+        _to,
       )}:${_toStepLabel} | ${this._getProgressPercentage()}%`,
     });
   };
@@ -105,7 +105,7 @@ class SideNavigation extends Component {
                 className="link"
                 onClick={() => {
                   const targetStep = Object.values(
-                    SIDE_NAVIGATION_STATE_GROUPS[parentStep].steps
+                    SIDE_NAVIGATION_STATE_GROUPS[parentStep].steps,
                   )[0][0];
                   this._trackNavigationEvent(targetStep, activeState);
                   this.props.changeActiveState(targetStep);
@@ -202,7 +202,7 @@ class SideNavigation extends Component {
       <div class="progress-overview-container">
         <MultiLevelStepper>
           {Object.entries(SIDE_NAVIGATION_STATE_GROUPS).map(([parentStep, parentStepMeta]) =>
-            this.getParentStep(parentStep, parentStepMeta)
+            this.getParentStep(parentStep, parentStepMeta),
           )}
         </MultiLevelStepper>
       </div>

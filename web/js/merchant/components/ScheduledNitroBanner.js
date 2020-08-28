@@ -10,9 +10,7 @@ export default class ScheduledNitroBanner extends Component {
   componentDidMount() {
     const tracking = this.props.tracking;
     tracking.trackEvent(
-      window.rzpQ
-        .merchantActions()
-        .success(`${this.props.fromWhere}_display_promo_notification1`)
+      window.rzpQ.merchantActions().success(`${this.props.fromWhere}_display_promo_notification1`),
     );
   }
 
@@ -20,12 +18,9 @@ export default class ScheduledNitroBanner extends Component {
     const tracking = this.props.tracking;
 
     tracking.trackEvent(
-      window.rzpQ
-        .merchantActions()
-        .initiated(`${fromWhere}_click_promo_notification1_cta1`)
+      window.rzpQ.merchantActions().initiated(`${fromWhere}_click_promo_notification1_cta1`),
     );
   };
-
 
   render() {
     return (
@@ -35,7 +30,7 @@ export default class ScheduledNitroBanner extends Component {
           class="Button--secondary Button scheduled-btn-act btn-border"
           href={this.props.url}
           target="_blank"
-          onClick={e => {
+          onClick={(e) => {
             this.trackEvents(this.props.fromWhere);
           }}
         >

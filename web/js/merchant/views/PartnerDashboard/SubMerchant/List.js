@@ -17,10 +17,7 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import { getTime } from 'common/ui/item';
-import {
-  ActivationStatusLabel,
-  SubmerchantSettlementLabel,
-} from 'merchant/components/StatusLabel';
+import { ActivationStatusLabel, SubmerchantSettlementLabel } from 'merchant/components/StatusLabel';
 import {
   submerchant as submerchantColumn,
   submerchantId as id,
@@ -32,23 +29,16 @@ import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr'
 import AddMerchant from './AddMerchant';
 import ListFilter from './ListFilter';
 import Announcement from 'merchant/components/Announcements/Instant';
-import {
-  trackListEvents,
-  trackSearchAnalytics,
-  trackClearAnalytics,
-  trackReferral,
-} from '../ga';
+import { trackListEvents, trackSearchAnalytics, trackClearAnalytics, trackReferral } from '../ga';
 import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 import { mediaWindowUrl } from './components/SocialShare';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 
-const name = isPurePlatform => ({
+const name = (isPurePlatform) => ({
   ...submerchantColumn,
   ...(isPurePlatform && {
-    value: item => (
-      <Link to={`/partners/submerchants/${item.id}/${item.application.id}`}>
-        {item.name}
-      </Link>
+    value: (item) => (
+      <Link to={`/partners/submerchants/${item.id}/${item.application.id}`}>{item.name}</Link>
     ),
   }),
 });
@@ -71,14 +61,12 @@ const activationStatus = {
         <i class="i i-info-circle" />
         &nbsp;
         <Popover align="top" theme="dark">
-          <PopoverBody>
-            Current status of merchant's activation request
-          </PopoverBody>
+          <PopoverBody>Current status of merchant's activation request</PopoverBody>
         </Popover>
       </span>
     </Fragment>
   ),
-  value: submerchant =>
+  value: (submerchant) =>
     submerchant.details && submerchant.details.activation_status ? (
       <>
         <ActivationStatusLabel status={submerchant.details.activation_status} />
@@ -88,8 +76,8 @@ const activationStatus = {
             <i class="i i-info-circle" />
             <Popover align="right" theme="dark">
               <PopoverBody>
-                The merchant can accept live payments but settlements will be on
-                hold until KYC completion.
+                The merchant can accept live payments but settlements will be on hold until KYC
+                completion.
               </PopoverBody>
             </Popover>
           </>
@@ -115,16 +103,22 @@ const settlementStatus = {
       </span>
     </Fragment>
   ),
-  value: submerchant => (
+  value: (submerchant) => (
     <SubmerchantSettlementLabel
-      status={submerchant.details && submerchant.details.activation_status === 'activated' && submerchant.hold_funds === false ? 'active' : 'inactive'}
+      status={
+        submerchant.details &&
+        submerchant.details.activation_status === 'activated' &&
+        submerchant.hold_funds === false
+          ? 'active'
+          : 'inactive'
+      }
     />
   ),
 };
 
-const switchMerchantActionBtn = handleSwitchMerchant => ({
+const switchMerchantActionBtn = (handleSwitchMerchant) => ({
   title: 'Switch Account',
-  value: item =>
+  value: (item) =>
     item.dashboard_access ? (
       <button
         class="btn btn-default btn-xs"
@@ -139,15 +133,13 @@ const switchMerchantActionBtn = handleSwitchMerchant => ({
 
 const appId = {
   title: 'App Id',
-  value: item => (
-    <Link to={`/partners/applications/${item.application.id}`}>
-      {item.application.id}
-    </Link>
+  value: (item) => (
+    <Link to={`/partners/applications/${item.application.id}`}>{item.application.id}</Link>
   ),
 };
 
 @connect(
-  state => ({
+  (state) => ({
     user: state.session.user,
     mode: state.session.mode,
     ...state.submerchants,
@@ -182,13 +174,13 @@ export default class SubMerchantsList extends ListContainer {
     });
   };
 
-  handleSwitchMerchant = merchantId => () => {
+  handleSwitchMerchant = (merchantId) => () => {
     this.props
       .switchMerchant(merchantId)
       .then(() => {
         window.location.reload();
       })
-      .catch(errors => {
+      .catch((errors) => {
         this.props.showNotification({
           type: 'error',
           message: errors,
@@ -205,7 +197,7 @@ export default class SubMerchantsList extends ListContainer {
     });
     this.setState({ affiliatesDownloading: true });
     return downloadSubmerchants(user.isPartner('pure_platform'), user.id)
-      .then(response => {
+      .then((response) => {
         this.setState({ affiliatesDownloading: false });
         if (response.error) {
           this.props.showNotification({
@@ -258,9 +250,7 @@ export default class SubMerchantsList extends ListContainer {
     if (user.isPartner('pure_platform')) {
       appIdColumn = [appId];
     } else if (user.isPartner('aggregator', 'fully_managed')) {
-      switchMerchantColumn = [
-        switchMerchantActionBtn(this.handleSwitchMerchant),
-      ];
+      switchMerchantColumn = [switchMerchantActionBtn(this.handleSwitchMerchant)];
     }
 
     if (user.isPartnerIntent()) {
@@ -285,14 +275,9 @@ export default class SubMerchantsList extends ListContainer {
                 <HeaderAction>
                   <>
                     <ShowWhen
-                      additionalCondition={user =>
-                        user.isPartner() && user.isPartner('reseller')
-                      }
+                      additionalCondition={(user) => user.isPartner() && user.isPartner('reseller')}
                     >
-                      <button
-                        class="btn btn-link"
-                        onClick={this.handleShareReferralLink}
-                      >
+                      <button class="btn btn-link" onClick={this.handleShareReferralLink}>
                         <i className="i i-share" />
                         <span> Share Referral Link</span>
                       </button>
@@ -313,7 +298,7 @@ export default class SubMerchantsList extends ListContainer {
                     </button>
                     <ShowWhen
                       myRole="owner manager admin"
-                      additionalCondition={user =>
+                      additionalCondition={(user) =>
                         user.isPartner() && !user.isPartner('pure_platform')
                       }
                     >
@@ -328,114 +313,111 @@ export default class SubMerchantsList extends ListContainer {
                   </>
                 </HeaderAction>
               </div>
-              {Array.isArray(this.props.items) && this.props.items.length > 0 && (
-                <div class="content-wrapper">
-                  <ListFilter
-                    form="SubmerchantListFilter"
-                    type="link"
-                    count={this.state.count}
-                    onSubmit={this.search}
-                    onSearchAnalytics={trackSearchAnalytics}
-                    onClearAnalytics={trackClearAnalytics}
-                    showAppIdFilter={user.isPartner('pure_platform')}
-                  />
-                  <DataTable
-                    title="Sub Merchants"
-                    count={this.state.count}
-                    skip={this.state.skip}
-                    paginate={this.paginate}
-                    columns={[
-                      name(user.isPartner('pure_platform')),
-                      id,
-                      email,
-                      ...appIdColumn,
-                      addedOn,
-                      activationStatus,
-                      settlementStatus,
-                      ...switchMerchantColumn,
-                    ]}
-                    {...this.props}
-                  />
-                </div>
-              )}
-              {Array.isArray(this.props.items) && this.props.items.length == 0 && (
-                <div class="content-wrapper partner-welcome">
-                  <div style={{ flex: 2, textAlign: 'center' }}>
-                    <div>
-                      <h1 class="main-title"> Welcome to Partner Dashboard</h1>
-                      <h3 class="sub-title">
-                        Get started by adding merchants to Razorpay
-                      </h3>
-                    </div>
+              {Array.isArray(this.props.items) &&
+                this.props.items.length > 0 && (
+                  <div class="content-wrapper">
+                    <ListFilter
+                      form="SubmerchantListFilter"
+                      type="link"
+                      count={this.state.count}
+                      onSubmit={this.search}
+                      onSearchAnalytics={trackSearchAnalytics}
+                      onClearAnalytics={trackClearAnalytics}
+                      showAppIdFilter={user.isPartner('pure_platform')}
+                    />
+                    <DataTable
+                      title="Sub Merchants"
+                      count={this.state.count}
+                      skip={this.state.skip}
+                      paginate={this.paginate}
+                      columns={[
+                        name(user.isPartner('pure_platform')),
+                        id,
+                        email,
+                        ...appIdColumn,
+                        addedOn,
+                        activationStatus,
+                        settlementStatus,
+                        ...switchMerchantColumn,
+                      ]}
+                      {...this.props}
+                    />
                   </div>
-                  <div style={{ flex: 3 }} class="action-area">
-                    <div>
+                )}
+              {Array.isArray(this.props.items) &&
+                this.props.items.length == 0 && (
+                  <div class="content-wrapper partner-welcome">
+                    <div style={{ flex: 2, textAlign: 'center' }}>
+                      <div>
+                        <h1 class="main-title"> Welcome to Partner Dashboard</h1>
+                        <h3 class="sub-title">Get started by adding merchants to Razorpay</h3>
+                      </div>
+                    </div>
+                    <div style={{ flex: 3 }} class="action-area">
                       <div>
                         <div>
-                          <img src="/dist/css/assets/onboarding/add-new-sub-merchants.png" />
-                        </div>
-                        <p>
-                          <strong>Invite a merchant</strong> by adding their
-                          details
-                        </p>
-                        <div style={{ paddingTop: '20px' }}>
-                          <button
-                            class="btn btn-primary pull-right m-l"
-                            onClick={this.handleAddMerchant}
-                          >
-                            <i class="i i-plus line-height-9" /> Add New
-                            Merchant
-                          </button>
-                        </div>
-                      </div>
-                      <ShowWhen
-                        additionalCondition={user =>
-                          user.isPartner() && user.isPartner('reseller')
-                        }
-                      >
-                        <div>
                           <div>
-                            <img src="/dist/css/assets/onboarding/share-referral-link.png" />
+                            <img src="/dist/css/assets/onboarding/add-new-sub-merchants.png" />
                           </div>
                           <p>
-                            Share the <strong>invite link</strong> on social
-                            media
+                            <strong>Invite a merchant</strong> by adding their details
                           </p>
-
-                          <div class="social-share-btn-grp">
-                            <CustomClipboard value={this.state.referralUrl}>
-                              <button
-                                class="btn btn-primary pull-right m-l"
-                                onClick={() => {
-                                  fireAnalyticsEvents({
-                                    fbData: 'partner_copy_link',
-                                    liData: 1764844,
-                                  });
-                                  trackReferral();
-                                }}
-                              >
-                                <i class="i i-link line-height-9" /> Copy Link
-                              </button>
-                            </CustomClipboard>
-                            <img
-                              src="/img/social-media/fb.png"
-                              onClick={() => this.shareReferralOn('fb')}
-                            />
-                            <img
-                              src="/img/social-media/twitter.png"
-                              onClick={() => this.shareReferralOn('twitter')}
-                            />
-                            <img
-                              src="/img/social-media/whatsapp.png"
-                              onClick={() => this.shareReferralOn('whatsapp')}
-                            />
+                          <div style={{ paddingTop: '20px' }}>
+                            <button
+                              class="btn btn-primary pull-right m-l"
+                              onClick={this.handleAddMerchant}
+                            >
+                              <i class="i i-plus line-height-9" /> Add New Merchant
+                            </button>
                           </div>
                         </div>
-                      </ShowWhen>
+                        <ShowWhen
+                          additionalCondition={(user) =>
+                            user.isPartner() && user.isPartner('reseller')
+                          }
+                        >
+                          <div>
+                            <div>
+                              <img src="/dist/css/assets/onboarding/share-referral-link.png" />
+                            </div>
+                            <p>
+                              Share the <strong>invite link</strong> on social media
+                            </p>
+
+                            <div class="social-share-btn-grp">
+                              <CustomClipboard value={this.state.referralUrl}>
+                                <button
+                                  class="btn btn-primary pull-right m-l"
+                                  onClick={() => {
+                                    fireAnalyticsEvents({
+                                      fbData: 'partner_copy_link',
+                                      liData: 1764844,
+                                    });
+                                    trackReferral();
+                                  }}
+                                >
+                                  <i class="i i-link line-height-9" /> Copy Link
+                                </button>
+                              </CustomClipboard>
+                              <img
+                                src="/img/social-media/fb.png"
+                                onClick={() => this.shareReferralOn('fb')}
+                              />
+                              <img
+                                src="/img/social-media/twitter.png"
+                                onClick={() => this.shareReferralOn('twitter')}
+                              />
+                              <img
+                                src="/img/social-media/whatsapp.png"
+                                onClick={() => this.shareReferralOn('whatsapp')}
+                              />
+                            </div>
+                          </div>
+                        </ShowWhen>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
           </content>
         </tabbed-container>
@@ -447,34 +429,22 @@ export default class SubMerchantsList extends ListContainer {
 const ReferalBox = ({ closeModal, referralUrl, shareReferralOn }) => (
   <div>
     <div style={{ padding: '10px' }}>
-      <img
-        src="/dist/css/assets/onboarding/share-referral-link.png"
-        height="50"
-      />{' '}
+      <img src="/dist/css/assets/onboarding/share-referral-link.png" height="50" />{' '}
       <strong>
         <strong>Share Referral Link</strong>
       </strong>
-      <button
-        type="button"
-        class="close"
-        onClick={closeModal}
-        style={{ marginTop: '10px' }}
-      >
+      <button type="button" class="close" onClick={closeModal} style={{ marginTop: '10px' }}>
         <i class="i i-close" />
       </button>
     </div>
     <div style={{ padding: '14px' }}>
       <p>
-        You <strong>get 0.1% commission for every transaction</strong> done by
-        your affiliate accounts who signs up with this link.
+        You <strong>get 0.1% commission for every transaction</strong> done by your affiliate
+        accounts who signs up with this link.
       </p>
       <div class="input-group" style={{ marginTop: '20px' }}>
         <CustomClipboard value={referralUrl}>
-          <input
-            class="form-control input"
-            value={referralUrl}
-            style={{ width: '200px' }}
-          />
+          <input class="form-control input" value={referralUrl} style={{ width: '200px' }} />
           <button
             class="btn btn-primary"
             style={{
@@ -499,18 +469,9 @@ const ReferalBox = ({ closeModal, referralUrl, shareReferralOn }) => (
             <p>Or Share Via</p>
           </strong>
         </div>
-        <img
-          src="/img/social-media/fb.png"
-          onClick={() => shareReferralOn('fb')}
-        />
-        <img
-          src="/img/social-media/twitter.png"
-          onClick={() => shareReferralOn('twitter')}
-        />
-        <img
-          src="/img/social-media/whatsapp.png"
-          onClick={() => shareReferralOn('whatsapp')}
-        />
+        <img src="/img/social-media/fb.png" onClick={() => shareReferralOn('fb')} />
+        <img src="/img/social-media/twitter.png" onClick={() => shareReferralOn('twitter')} />
+        <img src="/img/social-media/whatsapp.png" onClick={() => shareReferralOn('whatsapp')} />
       </div>
     </div>
   </div>

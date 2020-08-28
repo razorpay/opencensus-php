@@ -382,7 +382,7 @@ export default class Content extends Component {
             <ShowWhenRoute
               path="/reports"
               component={ReportsAsync}
-              additionalCondition={user => user.isAllowedView('reports')}
+              additionalCondition={(user) => user.isAllowedView('reports')}
             />
 
             <ShowWhenRoute

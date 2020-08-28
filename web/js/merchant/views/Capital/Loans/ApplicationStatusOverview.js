@@ -17,7 +17,7 @@ import {
   }),
   {
     fetchLoanApplicationMeta,
-  }
+  },
 )
 class ApplicationStatusOverview extends Component {
   constructor() {
@@ -50,7 +50,7 @@ class ApplicationStatusOverview extends Component {
       meta.data.application.id,
       targetStep,
       _targetStepTitle,
-      'View Completed Steps'
+      'View Completed Steps',
     );
   };
 

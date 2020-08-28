@@ -15,7 +15,7 @@ import SwitchField from 'common/ui/Forms/SwitchField';
 import UpdateSelfContactMobile from 'merchant/views/Account/Profile/components/UpdateSelfContactMobile';
 import PasswordVerification from './PasswordVerification';
 
-@connect(state => ({ user: state.session.user }), {
+@connect((state) => ({ user: state.session.user }), {
   openModal,
   closeModal,
   updateSelfContact,
@@ -27,14 +27,14 @@ class Toggle2FA extends Component {
     confirm: PropTypes.func,
   };
 
-  showModal = component => {
+  showModal = (component) => {
     this.props.openModal({
       size: 'small',
       component: component,
     });
   };
 
-  verifyPassword = flag => {
+  verifyPassword = (flag) => {
     const user = this.props.user;
     const secondFactorAuthPayload = { second_factor_auth: flag };
 
@@ -52,10 +52,10 @@ class Toggle2FA extends Component {
     }
   };
 
-  sendUpdateSecondFactorAuthRequest = data => {
+  sendUpdateSecondFactorAuthRequest = (data) => {
     const { toggle2FaEnforcement, getToggle2FaSuccessMsg } = this.props;
     return toggle2FaEnforcement(data)
-      .then(response => {
+      .then((response) => {
         const { second_factor_auth } = response.data;
         const twoFaStatus = second_factor_auth ? 'on' : 'off';
         const message = getToggle2FaSuccessMsg(twoFaStatus);
@@ -82,7 +82,7 @@ class Toggle2FA extends Component {
       });
   };
 
-  verifyMobile = flag => {
+  verifyMobile = (flag) => {
     this.showModal(
       <UpdateSelfContactMobile
         onSuccess={() => {
@@ -137,9 +137,9 @@ class Toggle2FA extends Component {
     });
   }
 
-  toggle2FA = flag => {
+  toggle2FA = (flag) => {
     //Hold the toggle state until a final API call is made & resolved
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       this.actionCompleted = resolve;
       if (flag) {
         const { user: { second_factor_auth_setup } } = this.props.user;
@@ -155,7 +155,7 @@ class Toggle2FA extends Component {
   };
 
   onToggleChange = (flag, cb) =>
-    this.toggle2FA(flag).then(completed => {
+    this.toggle2FA(flag).then((completed) => {
       //Set the sate in redux store to reflect the new changes
       if (completed) {
         this.props.onToggleComplete(flag);
@@ -180,12 +180,7 @@ class Toggle2FA extends Component {
               onChange={this.props.onToggleChange(this.onToggleChange)}
               type="prime"
             />
-            <strong
-              class={classList(
-                'm-l',
-                twoFaEnabled ? 'text-primary' : 'text-faded'
-              )}
-            >
+            <strong class={classList('m-l', twoFaEnabled ? 'text-primary' : 'text-faded')}>
               {twoFaEnabled ? 'Enabled' : 'Disabled'}
             </strong>
           </span>
@@ -200,7 +195,7 @@ class Toggle2FA extends Component {
     );
   }
 
-  trackEvent = twoFaEnabled => {
+  trackEvent = (twoFaEnabled) => {
     const event = twoFaEnabled ? 'enable' : 'disable';
     this.props.tracking.trackEvent(
       window.rzpQ

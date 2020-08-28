@@ -27,12 +27,12 @@ export default class ActivationCard extends Component {
     tracking.trackEvent(
       window.rzpQ.onbr().initiated('act.form_fill', {
         clickSource: 'Modify_Business_Category',
-      })
+      }),
     );
     tracking.trackEvent(
       window.rzpQ.onbr().initiated('act.blacklist_change_category', {
         clickSource: 'Dashboard_Link',
-      })
+      }),
     );
   };
 
@@ -52,12 +52,7 @@ export default class ActivationCard extends Component {
         poi_verification_status,
         isUnregisteredBusiness,
       } = nextProps,
-      {
-        isL1Submitted,
-        isWhitelistFlow,
-        isBlacklistFlow,
-        isGraylistFlow,
-      } = instantActivation;
+      { isL1Submitted, isWhitelistFlow, isBlacklistFlow, isGraylistFlow } = instantActivation;
 
     let { status, content, title } = initialState;
 
@@ -73,12 +68,12 @@ export default class ActivationCard extends Component {
                 <Link
                   to="/activation?auto-submit=l1-form"
                   className="btn btn-primary"
-                  onClick={e => {
+                  onClick={(e) => {
                     track.activateAccount();
                     this.props.tracking.trackEvent(
                       window.rzpQ.onbr().initiated('act.form_fill', {
                         clickSource: 'Dashboard_CTA',
-                      })
+                      }),
                     );
                   }}
                 >
@@ -93,18 +88,18 @@ export default class ActivationCard extends Component {
         ) {
           content = (
             <div>
-              Your PAN details did not match with the government database.
-              Please review your details
+              Your PAN details did not match with the government database. Please review your
+              details
               <div>
                 <Link
                   to="/activation"
                   className="btn btn-primary"
-                  onClick={e => {
+                  onClick={(e) => {
                     track.activateAccount();
                     this.props.tracking.trackEvent(
                       window.rzpQ.onbr().initiated('act.form_fill', {
                         clickSource: 'Dashboard_CTA',
-                      })
+                      }),
                     );
                     trackGoToActivationFromError();
                   }}
@@ -123,12 +118,12 @@ export default class ActivationCard extends Component {
               <Link
                 to="/activation"
                 className="btn btn-primary"
-                onClick={e => {
+                onClick={(e) => {
                   track.activateAccount();
                   this.props.tracking.trackEvent(
                     window.rzpQ.onbr().initiated('act.form_fill', {
                       clickSource: 'Dashboard_CTA',
-                    })
+                    }),
                   );
                 }}
               >
@@ -141,18 +136,13 @@ export default class ActivationCard extends Component {
     } else if (isActivated) {
       title = 'Account Activated';
       status = possibleStatuses.done;
-      content =
-        'You can now start accepting domestic ' +
-        (international ? 'and international' : '') +
-        ' payments';
+      content = this.activatedAccountContent;
     } else if (isGraylistFlow) {
       if (!isSubmitted) {
         status = possibleStatuses.active;
         content = (
           <div>
-            <div>
-              For your business model, we need a few more details for activation
-            </div>
+            <div>For your business model, we need a few more details for activation</div>
             <Link
               to="/activation"
               className="btn btn-primary"
@@ -161,7 +151,7 @@ export default class ActivationCard extends Component {
                 tracking.trackEvent(
                   window.rzpQ.onbr().initiated('kyc.form_fill', {
                     clickSource: 'Dashboard_CTA',
-                  })
+                  }),
                 );
               }}
             >
@@ -178,20 +168,15 @@ export default class ActivationCard extends Component {
           content = 'Your KYC form has been rejected.';
         } else {
           status = possibleStatuses.progress;
-          content = `We are reviewing your form. Expect confirmation in ${activationDuration}.`;
+          content = this.accountUnderReviewContent;
         }
       }
     } else if (isBlacklistFlow) {
       status = possibleStatuses.blocked;
       content = (
         <span>
-          We do not support your selected business model. In case you entered it
-          wrong, change it{' '}
-          <Link
-            to="/activation"
-            className="btn-link"
-            onClick={this.handleBlackListFlowClick}
-          >
+          We do not support your selected business model. In case you entered it wrong, change it{' '}
+          <Link to="/activation" className="btn-link" onClick={this.handleBlackListFlowClick}>
             here
           </Link>
         </span>
@@ -213,6 +198,221 @@ export default class ActivationCard extends Component {
       title,
       status,
     });
+  }
+
+  get internationalPGStatus() {
+    return (
+      this.props.internationalProductsStatus &&
+      this.props.internationalProductsStatus.data.payment_gateway
+    );
+  }
+
+  get internationalOtherProductsStatus() {
+    return (
+      this.props.internationalProductsStatus &&
+      this.props.internationalProductsStatus.data.payment_links
+    );
+  }
+
+  get isAllInternationalProductsApproved() {
+    return (
+      this.internationalPGStatus === 'approved' &&
+      this.internationalOtherProductsStatus === 'approved'
+    );
+  }
+
+  get isAnyInternationalProductsApproved() {
+    return (
+      this.internationalPGStatus === 'approved' ||
+      this.internationalOtherProductsStatus === 'approved'
+    );
+  }
+
+  get intlWhitelistedContent() {
+    const {
+      businessWebsite,
+      activationStatus,
+      isWebsiteInWorkflow,
+      instantActivation,
+      isAccepted,
+    } = this.props;
+
+    if (this.isAllInternationalProductsApproved) {
+      return <>You can now start accepting domestic and international payments.</>;
+    }
+
+    if (!businessWebsite) {
+      if (isWebsiteInWorkflow) {
+        return (
+          <>
+            You can now start accepting domestic payments. Please raise a support ticket post
+            website review to start accepting international payments.
+          </>
+        );
+      }
+      return (
+        <>
+          You can now start accepting domestic payments. Update your{' '}
+          <Link to="/profile">website details</Link> to activate international payments.
+        </>
+      );
+    }
+
+    if (activationStatus === 'under_review' && this.internationalPGStatus === 'approved') {
+      return (
+        <>
+          You can now start accepting domestic and international payments via the Payment Gateway.
+          You can request for international payments acceptance using other products post KYC
+          Verification.
+        </>
+      );
+    }
+
+    if (isAccepted) {
+      if (this.internationalPGStatus !== 'approved') {
+        return (
+          <>
+            You can now start accepting domestic payments. Please raise a support ticket to start
+            accepting international payments.
+          </>
+        );
+      }
+
+      if (this.internationalOtherProductsStatus === 'in_review') {
+        return (
+          <>
+            You can now start accepting domestic and international payments via the Payment Gateway.
+            Your request to accept international payments using our other products is under review.
+          </>
+        );
+      }
+
+      return (
+        <>
+          You can now start accepting domestic and international payments through our Payment
+          Gateway. To accept international payments through other methods,{' '}
+          <Link to="/config#request-international">request here</Link>.
+        </>
+      );
+    }
+
+    if (instantActivation.isL1Submitted && this.internationalPGStatus !== 'approved') {
+      return (
+        <>
+          You can now start accepting domestic payments. You can start accepting international
+          payments via the Payment Gateway post KYC Verification.
+        </>
+      );
+    }
+
+    return (
+      <>
+        You can now start accepting domestic and international payments, through our payment
+        gateway. <Link to="/config#request-international">View Details</Link>
+      </>
+    );
+  }
+
+  get intlGreylistedContent() {
+    const { isAccepted, businessWebsite, isWebsiteInWorkflow } = this.props;
+
+    if (this.isAnyInternationalProductsApproved) {
+      return <>You can now start accepting domestic and international payments.</>;
+    }
+
+    if (
+      this.internationalPGStatus === 'in_review' ||
+      this.internationalOtherProductsStatus === 'in_review'
+    ) {
+      return (
+        <>
+          You can now start accepting domestic payments. Your request to enable international
+          payments is under review.
+        </>
+      );
+    }
+
+    if (!businessWebsite && !isWebsiteInWorkflow) {
+      return (
+        <>
+          You can now start accepting domestic payments. Update your{' '}
+          <Link to="/profile">website details</Link> to activate international payments.
+        </>
+      );
+    }
+
+    if (
+      isAccepted &&
+      !(
+        this.internationalPGStatus === 'rejected' ||
+        this.internationalOtherProductsStatus === 'rejected'
+      )
+    ) {
+      return (
+        <>
+          You can now start accepting domestic payments. To enable international payments,{' '}
+          <Link to="/config#request-international">request here</Link>.
+        </>
+      );
+    }
+
+    return <>You can now start accepting domestic payments.</>;
+  }
+
+  get intlUnregisteredBusinessContent() {
+    const { isAccepted } = this.props;
+    if (isAccepted) {
+      return (
+        <>
+          You can now start accepting domestic payments. You can integrate Paypal to enable
+          international payments.{' '}
+          <a
+            href="https://razorpay.com/docs/payment-gateway/payment-methods/paypal/"
+            target="_blank"
+            rel="noopener"
+          >
+            Know more
+          </a>
+          .
+        </>
+      );
+    }
+
+    return <>You can start accepting domestic payments.</>;
+  }
+
+  get activatedAccountContent() {
+    const { isUnregisteredBusiness, mode, internationalActivationFlow, international } = this.props;
+
+    if (mode !== 'live') {
+      if (international) {
+        return <>You can now start accepting domestic and international payments.</>;
+      }
+      return <>You can now start accepting domestic payments.</>;
+    }
+
+    if (internationalActivationFlow.isWhitelistFlow) {
+      return this.intlWhitelistedContent;
+    }
+
+    if (internationalActivationFlow.isGraylistFlow) {
+      return this.intlGreylistedContent;
+    }
+
+    if (isUnregisteredBusiness) {
+      return this.intlUnregisteredBusinessContent;
+    }
+
+    return <>You can now start accepting domestic payments.</>;
+  }
+
+  get accountUnderReviewContent() {
+    const { internationalActivationFlow } = this.props;
+    if (internationalActivationFlow.isGraylistFlow) {
+      return `We are reviewing your form. Expect confirmation in ${activationDuration}. You can request for international payments acceptance post KYC Verification.`;
+    }
+
+    return `We are reviewing your form. Expect confirmation in ${activationDuration}.`;
   }
 
   render() {

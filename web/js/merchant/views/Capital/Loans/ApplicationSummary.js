@@ -23,14 +23,14 @@ import {
     getAcceptedOffer,
     fetchCreditOffers,
     changeActiveState,
-  }
+  },
 )
 class ApplicationSummary extends Component {
   _getParentStepLabel = (step) => {
     return Object.values(SIDE_NAVIGATION_STATE_GROUPS).filter((meta) =>
       Object.values(meta.steps)
         .reduce((acc, curr) => [...acc, ...curr], [])
-        .includes(step)
+        .includes(step),
     )[0].description;
   };
 
@@ -38,7 +38,7 @@ class ApplicationSummary extends Component {
     const { meta, context } = this.props.loanApplicationDetails;
     const canModify = isPreceedingState(
       meta.data.application.status,
-      APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING
+      APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING,
     );
 
     const { activeState } = context;
@@ -100,7 +100,7 @@ class ApplicationSummary extends Component {
 
     const canModify = isPreceedingState(
       meta.data.application.status,
-      APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING
+      APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING,
     );
 
     return [
@@ -187,7 +187,7 @@ class ApplicationSummary extends Component {
     }
 
     const creditOffer = credit_offer_details.data.credit_offers.find(
-      (offer) => offer.id === accepted_offer_details.data.credit_offer_id
+      (offer) => offer.id === accepted_offer_details.data.credit_offer_id,
     );
 
     return [
@@ -253,7 +253,7 @@ class ApplicationSummary extends Component {
     const { meta } = this.props.loanApplicationDetails;
     return !isPreceedingState(
       meta.data.application.status,
-      APPLICATION_STATES.NACH_CREATION_PENDING
+      APPLICATION_STATES.NACH_CREATION_PENDING,
     );
   };
 

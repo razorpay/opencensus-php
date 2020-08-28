@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 import { makePopup } from '@typeform/embed';
+import { withRouter } from 'react-router-dom';
 
 import Button from 'common/new-ui/Button';
 import SwitchField from 'common/ui/Forms/SwitchField';
@@ -34,6 +35,7 @@ const IN_REVIEW = 'in_review';
 const APPROVED = 'approved';
 const REJECTED = 'rejected';
 
+@withRouter
 @connect(
   (state) => ({
     user: state.session.user,
@@ -44,12 +46,13 @@ const REJECTED = 'rejected';
     showNotification,
     updateSession,
     fetchAddWebsiteWorkflowStatus,
-  }
+  },
 )
 @RTracking(() => window.rzpQ.component('InternationalConfig'))
 class InternationalConfig extends Component {
   constructor(props) {
     super(props);
+    this.internationalSection = React.createRef();
     this.state = {
       isAccessRequested: false,
       pgProductStatus: '', // Payment Gateway
@@ -69,7 +72,7 @@ class InternationalConfig extends Component {
         hideHeaders: true,
         hideFooters: true,
         onSubmit: this.handleTypeFormSubmitted,
-      }
+      },
     );
     this.IntlEnableTypeForm = IntlEnableTypeForm; // saving reference typeform
   };
@@ -77,7 +80,7 @@ class InternationalConfig extends Component {
   async componentDidMount() {
     const currentMID = this.props.user.current;
     const isAccessRequested = LocalStorageService.getItem(
-      `international-access-requested-${currentMID}`
+      `international-access-requested-${currentMID}`,
     );
 
     try {
@@ -114,16 +117,23 @@ class InternationalConfig extends Component {
           message: 'Could not fetch website workflow status.',
         });
       });
+
+    if (
+      this.internationalSection.current &&
+      this.props.location.hash === '#request-international'
+    ) {
+      this.internationalSection.current.scrollIntoView();
+    }
   }
 
   setInternationalFlowStatusForProducts = (internationalWorkflowStatus) => {
     const currentMID = this.props.user.current;
 
     const isPGStatusSetInLocalStorage = !!LocalStorageService.getItem(
-      `international-pg-${currentMID}`
+      `international-pg-${currentMID}`,
     );
     const isOtherProductsStatusInLocalStorage = !!LocalStorageService.getItem(
-      `international-otherProducts-${currentMID}`
+      `international-otherProducts-${currentMID}`,
     );
 
     let pgProductStatus = '';
@@ -176,7 +186,7 @@ class InternationalConfig extends Component {
       },
       () => {
         this.IntlEnableTypeForm.open();
-      }
+      },
     );
   };
 
@@ -214,7 +224,7 @@ class InternationalConfig extends Component {
   @RTracking(() =>
     window.rzpQ.onbr().initiated('dash.settings_action', {
       action: 'Toggle_International_Payments',
-    })
+    }),
   )
   toggleInternationalization = (enableInternational, postActionCB) => {
     this.analytics(enableInternational ? 'Enable' : 'Disable');
@@ -239,7 +249,7 @@ class InternationalConfig extends Component {
           this.props.updateSession({ user });
         } else {
           throw new Error(
-            'We are unable to process this request. Please reach out to support@razorpay.com'
+            'We are unable to process this request. Please reach out to support@razorpay.com',
           ); // This code is ideally unreachable as per business logic. However, since Api silently fails here, hence handling explicitly.
         }
       })
@@ -266,7 +276,7 @@ class InternationalConfig extends Component {
     const currentMID = this.props.user.current;
 
     const isProductAccessRequested = LocalStorageService.getItem(
-      `international-${product}-${currentMID}`
+      `international-${product}-${currentMID}`,
     );
 
     return this.isStatusUpdatedForProduct(product) || isPresent(isProductAccessRequested);
@@ -500,7 +510,7 @@ class InternationalConfig extends Component {
     const description = this.description;
 
     return (
-      <div class="panel panel-default">
+      <div ref={this.internationalSection} class="panel panel-default">
         <div class="panel-heading">
           <span class="title">International Payments</span>
           {isTogglerVisible && (
@@ -532,13 +542,13 @@ class InternationalConfig extends Component {
                 additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
               >
                 <div class="col-sm-10">
+                  To know more about Pricing and other FAQs,&nbsp;
                   <a
                     class="highlight"
                     target="_blank"
                     href="https://razorpay.com/payment-gateway/#go-international"
                   >
-                    Know more
-                    <i class="i i-external-link" style={{ marginLeft: '5px' }} />
+                    click here.
                   </a>
                 </div>
               </ShowWhen>

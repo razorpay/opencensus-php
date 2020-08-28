@@ -33,7 +33,7 @@ const _makeWebhookPayload = (data, appId) => {
     payload.application_id = appId;
   }
 
-  if (data.alert_email){
+  if (data.alert_email) {
     payload.alert_email = data.alert_email;
   }
 
@@ -151,7 +151,7 @@ let initialState = {
   partnerApplication: {},
 };
 
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   switch (action.type) {
     case `${CREATE_APPLICATION}::PENDING`:
     case `${UPDATE_APPLICATION}::PENDING`:

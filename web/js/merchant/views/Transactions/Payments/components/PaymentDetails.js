@@ -189,10 +189,11 @@ export default (props) => {
                     </span>
                   </Definition>
                 </EntityDetailRow>
-                <ShowWhen
-                  additionalCondition={user => user.isProjectNitroEnabled}
-                >
-                  <AnnouncementBar fromWhere="transactions" url="https://lp.razorpay.com/razorpayxca-pymnts2"/>
+                <ShowWhen additionalCondition={(user) => user.isProjectNitroEnabled}>
+                  <AnnouncementBar
+                    fromWhere="transactions"
+                    url="https://lp.razorpay.com/razorpayxca-pymnts2"
+                  />
                 </ShowWhen>
 
                 <EntityDetailRow label="Order ID">

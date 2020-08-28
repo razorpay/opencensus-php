@@ -11,7 +11,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import ModalCloseReasons from 'merchant/views/Settlements/components/Modals/ModalCloseReasons';
 
 @connect(
-  state => ({
+  (state) => ({
     user: state.session.user,
     features: state.config.features,
   }),
@@ -20,7 +20,7 @@ import ModalCloseReasons from 'merchant/views/Settlements/components/Modals/Moda
     updateFeatures,
     ...SessionActions,
     showNotification,
-  }
+  },
 )
 export default class ScheduledModal extends Component {
   constructor(props) {
@@ -45,7 +45,7 @@ export default class ScheduledModal extends Component {
     document.addEventListener('keydown', this.escFunction);
   }
 
-  escFunction = event => {
+  escFunction = (event) => {
     if (event.keyCode === 27) {
       this.setState({ modalClosed: true });
     }
@@ -65,10 +65,7 @@ export default class ScheduledModal extends Component {
     });
     if (window.rzpTicketSystem) {
       const rzpTicketSystem = window.rzpTicketSystem;
-      rzpTicketSystem.setPrefill('#request', [
-        'merchant',
-        'international-early-settlement',
-      ]);
+      rzpTicketSystem.setPrefill('#request', ['merchant', 'international-early-settlement']);
       rzpTicketSystem.openModal('#ticket');
       setTimeout(() => {
         rzpTicketSystem.modal.next();
@@ -86,9 +83,9 @@ export default class ScheduledModal extends Component {
         method: 'GET',
       },
       {},
-      '/merchant/api'
+      '/merchant/api',
     )
-      .then(response => {
+      .then((response) => {
         this.setState({
           fees: response.data.percent_rate,
           feeBearer: response.data.fee_bearer,
@@ -120,13 +117,13 @@ export default class ScheduledModal extends Component {
         method: 'POST',
       },
       {},
-      '/merchant/api'
+      '/merchant/api',
     )
       .then(() => {
         let updatedUser = new User(this.props.user);
         updatedUser
           .fetch()
-          .then(res => {
+          .then((res) => {
             this.props.updateSession({ user: res.data });
             this.setState({
               autoEnabled: true,
@@ -167,7 +164,7 @@ export default class ScheduledModal extends Component {
     );
   };
 
-  fireGAEvent = eventPayload => {
+  fireGAEvent = (eventPayload) => {
     eventPayload['eventCategory'] = 'Dashboard - Early Settlement';
     window.rzpAnalytics(eventPayload);
   };
@@ -180,13 +177,10 @@ export default class ScheduledModal extends Component {
           onCloseClick={() => this.props.closeModal()}
         />
         <div class="modal-body">
-          Congratulations, Your Early Settlement feature has now been enabled.
-          Never fall short of cash now!
+          Congratulations, Your Early Settlement feature has now been enabled. Never fall short of
+          cash now!
           <div class="border">
-            <p>
-              Early settlement applies to domestic settlements only. For
-              International, please{' '}
-            </p>
+            <p>Early settlement applies to domestic settlements only. For International, please </p>
             <a class="btn-link" onClick={this.openSupport}>
               Contact support
             </a>
@@ -232,13 +226,9 @@ export default class ScheduledModal extends Component {
         />
         <div class="modal-body">
           <div>
-            Early settlements will automatically settle the amount to your
-            account in few hours from the time of transaction, everyday.
-            <a
-              class="btn-link"
-              target="_blank"
-              href="http://razorpay.com/settlement"
-            >
+            Early settlements will automatically settle the amount to your account in few hours from
+            the time of transaction, everyday.
+            <a class="btn-link" target="_blank" href="http://razorpay.com/settlement">
               {` `}Learn more
             </a>
           </div>
@@ -248,22 +238,21 @@ export default class ScheduledModal extends Component {
               <div class="schedule-desc-container">
                 <ul class="schedule-desc">
                   <li>
-                    Everyday at <b>9AM</b> and <b>5PM</b> all your payments get
-                    settled
+                    Everyday at <b>9AM</b> and <b>5PM</b> all your payments get settled
                   </li>
                   {!this.state.isLoading && (
                     <div>
                       {this.state.feeBearer === 'platform' ? (
-                          <li>
-                            A minimal fee of <b>{`${this.state.fees / 100}%`}</b>{' '}
-                            charged for each settlement
-                          </li>
-                        ) : (
-                          <li>
-                            A minimal fee of <b>{`${this.state.fees / 100}%`}</b>{' '}
-                            charged for each settlement, borne by your customers
-                          </li>
-                        )}                      
+                        <li>
+                          A minimal fee of <b>{`${this.state.fees / 100}%`}</b> charged for each
+                          settlement
+                        </li>
+                      ) : (
+                        <li>
+                          A minimal fee of <b>{`${this.state.fees / 100}%`}</b> charged for each
+                          settlement, borne by your customers
+                        </li>
+                      )}
                     </div>
                   )}
                 </ul>
@@ -283,15 +272,10 @@ export default class ScheduledModal extends Component {
               </div>
             </div>
           ) : (
-            <div style={{ color: 'red', marginTop: 20 }}>
-              {this.state.errors}
-            </div>
+            <div style={{ color: 'red', marginTop: 20 }}>{this.state.errors}</div>
           )}
           <div class="border">
-            <p>
-              Early settlement applies to domestic settlements only. For
-              International, please{' '}
-            </p>
+            <p>Early settlement applies to domestic settlements only. For International, please </p>
             <a class="btn-link" onClick={this.openSupport}>
               Contact support
             </a>

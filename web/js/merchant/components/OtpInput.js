@@ -13,10 +13,10 @@ const DigitField = ({ pos, digit, currentIndex, setCurPos, handleInput }) => {
       onClick={() => {
         setCurPos(pos);
       }}
-      onKeyDown={e => {
+      onKeyDown={(e) => {
         handleInput(pos, e);
       }}
-      ref={input => input && currentIndex == pos && input.focus()}
+      ref={(input) => input && currentIndex == pos && input.focus()}
     />
   );
 };
@@ -26,10 +26,7 @@ export class OtpInput extends Component {
     digit: this.props.otp
       ? this.props.otp
           .split('')
-          .reduce(
-            (o, val, i) => Object.assign(o, { [parseInt(i) + 1]: val }),
-            {}
-          )
+          .reduce((o, val, i) => Object.assign(o, { [parseInt(i) + 1]: val }), {})
       : {
           1: '',
           2: '',
@@ -40,7 +37,7 @@ export class OtpInput extends Component {
         },
   };
 
-  setCurPos = i => {
+  setCurPos = (i) => {
     this.setState(() => {
       return {
         currentIndex: parseInt(i),
@@ -61,19 +58,18 @@ export class OtpInput extends Component {
       }
     }
     this.setState(
-      prevState => {
+      (prevState) => {
         return {
           digit: {
             ...prevState.digit,
             [i]: val.length <= 1 ? val : prevState.digit[i],
           },
-          currentIndex:
-            val.length === 1 && i + 1 <= OTP_LENGTH ? i + 1 : i - back,
+          currentIndex: val.length === 1 && i + 1 <= OTP_LENGTH ? i + 1 : i - back,
         };
       },
       () => {
         const otp = Object.keys(this.state.digit)
-          .map(i => {
+          .map((i) => {
             return this.state.digit[i];
           })
           .join('');
@@ -81,13 +77,13 @@ export class OtpInput extends Component {
           this.props.onComplete(otp);
         }
         this.props.onChange(otp);
-      }
+      },
     );
   };
 
   render() {
     const { currentIndex } = { ...this.state };
-    const { wrong, wrongOtpText = "Wrong OTP" } = { ...this.props };
+    const { wrong, wrongOtpText = 'Wrong OTP' } = { ...this.props };
     const opt = [
       { cList: ['first'], key: 1 },
       { cList: ['middle-man'], key: 2 },
@@ -103,7 +99,7 @@ export class OtpInput extends Component {
         <strong class="">Enter the code</strong>
         {wrong && <span class="pull-right wrong-msg">{wrongOtpText}</span>}
         <div class="otp-input">
-          {opt.map(i => {
+          {opt.map((i) => {
             if (i === '-') {
               return (
                 <div class="seprator" key="seprator">
@@ -117,7 +113,7 @@ export class OtpInput extends Component {
                   class={classList(
                     ...i.cList,
                     currentIndex == i.key ? 'active' : '',
-                    wrong ? 'wrong' : ''
+                    wrong ? 'wrong' : '',
                   )}
                 >
                   <DigitField

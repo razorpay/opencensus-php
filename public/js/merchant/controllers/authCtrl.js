@@ -3,14 +3,14 @@
 //Signin Controller
 app
   .factory('authCallbacks', [
-    function() {
+    function () {
       var signinCallback = null;
 
       return {
-        getSigninCallback: function() {
+        getSigninCallback: function () {
           return signinCallback;
         },
-        setSigninCallback: function(cb) {
+        setSigninCallback: function (cb) {
           return typeof cb === 'function' && (signinCallback = cb);
         },
       };
@@ -36,7 +36,7 @@ app
     '$sce',
     '$filter',
     'tracking',
-    function(
+    function (
       $scope,
       $timeout,
       $http,
@@ -55,23 +55,25 @@ app
       authCallbacks,
       $sce,
       $filter,
-      tracking
+      tracking,
     ) {
-      $scope.toArray = function(obj) {
+      $scope.toArray = function (obj) {
         if (!obj) {
           return [];
         }
         return Object.keys(obj);
       };
       const COOKIE_POLICY_DOCS = {
-        CHROME: 'https://support.google.com/chrome/answer/95647?co=GENIE.Platform%3DDesktop&hl=en-GB',
-        FIREFOX: 'https://support.mozilla.org/en-US/kb/websites-say-cookies-are-blocked-unblock-them',
-        SAFARI: 'https://support.apple.com/en-in/guide/safari/sfri11471/mac'
+        CHROME:
+          'https://support.google.com/chrome/answer/95647?co=GENIE.Platform%3DDesktop&hl=en-GB',
+        FIREFOX:
+          'https://support.mozilla.org/en-US/kb/websites-say-cookies-are-blocked-unblock-them',
+        SAFARI: 'https://support.apple.com/en-in/guide/safari/sfri11471/mac',
       };
       const BROWSERS = {
-        CHROME : 'Chrome',
-        FIREFOX : 'Firefox',
-        SAFARI: 'Safari'
+        CHROME: 'Chrome',
+        FIREFOX: 'Firefox',
+        SAFARI: 'Safari',
       };
       $scope.data = {};
       $scope.alerts = alertsFactory.getHandler();
@@ -89,7 +91,7 @@ app
 
       $scope.organization = {};
       $scope.isOrgCheckDone = false;
-      organization.fetchCurrentOrg().then(function(data) {
+      organization.fetchCurrentOrg().then(function (data) {
         $scope.login_logo = data.login_logo_url || 'img/logo_full.png';
         $scope.isOrgCheckDone = true;
         $scope.organization = data;
@@ -219,13 +221,13 @@ app
       };
 
       // wait for recaptcha response
-      $scope.$watch('signup.data.captcha', function(newVal) {
+      $scope.$watch('signup.data.captcha', function (newVal) {
         if (newVal && newVal.length !== 0) {
           $scope.signup.submissionDisabled = false;
         }
       });
 
-      $scope.$watch('login.data.captcha', function(newVal) {
+      $scope.$watch('login.data.captcha', function (newVal) {
         if (newVal && newVal.length !== 0) {
           $scope.login.disableLogInSubmission = false;
           tracking.pushEvents({
@@ -239,10 +241,10 @@ app
 
       $scope.inlineError = '';
 
-      $scope.init = function() {
+      $scope.init = function () {
         initializeGAPI();
       };
-  
+
       /**
        * Datalake event object for google oauth events
        * @type {{mode: string, service: (string), sessionId: *, version: number}}
@@ -256,201 +258,181 @@ app
         service: $scope.currentService,
         version: 1.1,
       };
-      
-      const fireDLFailureEvents = function(eventName, properties){
+
+      const fireDLFailureEvents = function (eventName, properties) {
         window.rzpQ &&
-        window.rzpQ.push(
-          window.rzpQ
-            .now()
-            .onbr()
-            .failed(eventName,
-              Object.assign(gauthEventObj, properties))
-        );
+          window.rzpQ.push(
+            window.rzpQ.now().onbr().failed(eventName, Object.assign(gauthEventObj, properties)),
+          );
       };
-  
-      const fireDLSuccessEvents = function(eventName, properties){
+
+      const fireDLSuccessEvents = function (eventName, properties) {
         window.rzpQ &&
-        window.rzpQ.push(
-          window.rzpQ
-            .now()
-            .onbr()
-            .success(eventName,
-              Object.assign(gauthEventObj, properties))
-        );
+          window.rzpQ.push(
+            window.rzpQ.now().onbr().success(eventName, Object.assign(gauthEventObj, properties)),
+          );
       };
-  
-      const fireDLInitiatedEvents = function(eventName, properties){
+
+      const fireDLInitiatedEvents = function (eventName, properties) {
         window.rzpQ &&
-        window.rzpQ.push(
-          window.rzpQ
-            .now()
-            .onbr()
-            .initiated(eventName,
-              Object.assign(gauthEventObj, properties))
-        );
+          window.rzpQ.push(
+            window.rzpQ.now().onbr().initiated(eventName, Object.assign(gauthEventObj, properties)),
+          );
       };
-      
-      const fireGauthLoginEvt = function(email, error){
-        fireDLFailureEvents('login.login',
-          {emailId: email, error, method: 'google_oauth'})
+
+      const fireGauthLoginEvt = function (email, error) {
+        fireDLFailureEvents('login.login', { emailId: email, error, method: 'google_oauth' });
       };
-      
-      $scope.closeGauthPopUp = function(){
+
+      $scope.closeGauthPopUp = function () {
         $scope.showGAuthPopup = false;
       };
-      
-      $scope.closeCookieErrorPopup = function(){
+
+      $scope.closeCookieErrorPopup = function () {
         $scope.showCookieErrorPopup = false;
       };
-      
+
       /**
        * Function works with top 3 browsers only
        * @return {string}
        */
-      const getBrowser = function(){
+      const getBrowser = function () {
         const userAgent = navigator.userAgent;
-        let browserName  = navigator.appName;
-        
-        if (userAgent.indexOf("Chrome") !==- 1) {
+        let browserName = navigator.appName;
+
+        if (userAgent.indexOf('Chrome') !== -1) {
           browserName = BROWSERS.CHROME;
-        }
-        else if (userAgent.indexOf("Safari") !== -1) {
+        } else if (userAgent.indexOf('Safari') !== -1) {
           browserName = BROWSERS.SAFARI;
-        }
-        else if (userAgent.indexOf("Firefox") !==- 1) {
+        } else if (userAgent.indexOf('Firefox') !== -1) {
           browserName = BROWSERS.FIREFOX;
         }
         return browserName;
       };
-  
+
       const browser = getBrowser();
       /**
        * When 3rd party cookies are disabled in browser,
        * this function will take user to the official doc on
        * how to enable it.
        */
-      $scope.handleKnowMore = function(){
+      $scope.handleKnowMore = function () {
         let docsLink;
-        if(browser === BROWSERS.CHROME) docsLink = COOKIE_POLICY_DOCS.CHROME;
-        if(browser === BROWSERS.SAFARI) docsLink = COOKIE_POLICY_DOCS.SAFARI;
-        if(browser === BROWSERS.FIREFOX) docsLink = COOKIE_POLICY_DOCS.FIREFOX;
+        if (browser === BROWSERS.CHROME) docsLink = COOKIE_POLICY_DOCS.CHROME;
+        if (browser === BROWSERS.SAFARI) docsLink = COOKIE_POLICY_DOCS.SAFARI;
+        if (browser === BROWSERS.FIREFOX) docsLink = COOKIE_POLICY_DOCS.FIREFOX;
         $scope.showCookieErrorPopup = false;
-        window.open(docsLink,
-          '_blank'
-        );
+        window.open(docsLink, '_blank');
       };
 
-      $scope.onShowGAuthFromPopUp = function() {
+      $scope.onShowGAuthFromPopUp = function () {
         $scope.showGAuthPopup = false;
-  
-        fireDLInitiatedEvents('login.try_another_account')
+
+        fireDLInitiatedEvents('login.try_another_account');
         var googleAuthInstance = window.gapi.auth2.getAuthInstance();
-        googleAuthInstance.signOut().then(function() {
+        googleAuthInstance.signOut().then(function () {
           $scope.onLoginWithGoogle();
           $scope.isGoogleAuth = true;
         });
-  
+
         googleAuthInstance.disconnect();
       };
 
-      $scope.onShowGAuth = function() {
-        fireDLInitiatedEvents('login.login_actions',
-          {actions: 'login_options'})
-        
+      $scope.onShowGAuth = function () {
+        fireDLInitiatedEvents('login.login_actions', { actions: 'login_options' });
+
         $scope.alerts.resetAlerts();
         $scope.isGoogleAuth = true;
         $scope.showGAuthPopup = false;
       };
 
-      $scope.onLoginWithGoogle = function() {
+      $scope.onLoginWithGoogle = function () {
         initializeGAPI(true);
       };
-      
+
       var googleAuthObj;
       var isInitiatedEventFired = false;
-      const initializeGAPI = triggerButton => {
+      const initializeGAPI = (triggerButton) => {
         $scope.showCookieErrorPopup = false;
-        
+
         let button = document.getElementById('gauth');
-  
-        if(triggerButton) {
+
+        if (triggerButton) {
           showSpinner();
-          if(!isInitiatedEventFired) {
+          if (!isInitiatedEventFired) {
             fireDLInitiatedEvents('login.google_oauth');
             fireDLInitiatedEvents('login.login', { method: 'google-oauth' });
             isInitiatedEventFired = true;
           }
         }
-    
-          if (!googleAuthObj) {
-          
+
+        if (!googleAuthObj) {
           window.gapi &&
-            window.gapi.load('auth2', function() {
+            window.gapi.load('auth2', function () {
               // Retrieve the singleton for the GoogleAuth library and set up the client.
-              window.gapi.auth2.init({
-                client_id: window.OAUTH_CLIENT_ID,
-              }).then(function(res){
-                
-                googleAuthObj = res;
-                attachSignin(button);
-                if (triggerButton) {
-                  button.click();
-                  showSpinner();
-                }
-                
-              }, function(error){
-                
-                hideSpinner();
-                if(error.details.includes('Cookies are not enabled in current environment') ) {
-                  if (triggerButton) {
-                    $scope.showCookieErrorPopup = true;
-                    
-                    if(browser === BROWSERS.CHROME || browser === BROWSERS.SAFARI || browser === BROWSERS.FIREFOX){
-                      $scope.showKnowMore = true;
+              window.gapi.auth2
+                .init({
+                  client_id: window.OAUTH_CLIENT_ID,
+                })
+                .then(
+                  function (res) {
+                    googleAuthObj = res;
+                    attachSignin(button);
+                    if (triggerButton) {
+                      button.click();
+                      showSpinner();
                     }
-                   
-                    fireDLFailureEvents('login.google_oauth',
-                      { emailId: email, error: error.details })
-                  }
-                }
-                else{
-                  $scope.alerts.addAlert('danger', error.details);
-                }
-                $scope.$apply();
-                
-              });
+                  },
+                  function (error) {
+                    hideSpinner();
+                    if (error.details.includes('Cookies are not enabled in current environment')) {
+                      if (triggerButton) {
+                        $scope.showCookieErrorPopup = true;
+
+                        if (
+                          browser === BROWSERS.CHROME ||
+                          browser === BROWSERS.SAFARI ||
+                          browser === BROWSERS.FIREFOX
+                        ) {
+                          $scope.showKnowMore = true;
+                        }
+
+                        fireDLFailureEvents('login.google_oauth', {
+                          emailId: email,
+                          error: error.details,
+                        });
+                      }
+                    } else {
+                      $scope.alerts.addAlert('danger', error.details);
+                    }
+                    $scope.$apply();
+                  },
+                );
             });
-          
         } else {
-          
           attachSignin(button);
           if (triggerButton) {
-            
-            if(!isInitiatedEventFired) {
+            if (!isInitiatedEventFired) {
               fireDLInitiatedEvents('login.google_oauth');
               fireDLInitiatedEvents('login.login', { method: 'google-oauth' });
             }
-            
+
             button.click();
             showSpinner();
           }
-          
         }
       };
 
-      const attachSignin = element => {
-       
+      const attachSignin = (element) => {
         googleAuthObj.attachClickHandler(
           element,
           {},
-          function(googleUser) {
+          function (googleUser) {
             $scope.idToken = googleUser.getAuthResponse().id_token;
             const email = googleUser.getBasicProfile().getEmail();
             $scope.googleAuthEmail = email;
-            
-            fireDLSuccessEvents('login.google_oauth',
-              {emailId: email})
-           
+
+            fireDLSuccessEvents('login.google_oauth', { emailId: email });
 
             var payload = {
               method: 'post',
@@ -466,92 +448,85 @@ app
             };
             let request = $http(payload);
             request
-              .success(function(data) {
+              .success(function (data) {
                 if (data.success) {
                   user
                     .identity(true)
-                    .then(function(userDetails) {
-                      userIdentitySuccess(userDetails)
-                      
+                    .then(function (userDetails) {
+                      userIdentitySuccess(userDetails);
                     })
-                    .catch(function(errors) {
-                      
+                    .catch(function (errors) {
                       hideSpinner();
                       fireGauthLoginEvt(email, errors[0]);
                       $scope.alerts.addAlert('danger', errors[0]);
-                      
                     });
                 } else {
                   hideSpinner();
-                  
+
                   if (data.errors && data.errors.length) {
                     var firstError = data.errors[0];
-                    
-                    if(typeof firstError === 'object' &&
-                      !!firstError.internal_error_code){
+
+                    if (typeof firstError === 'object' && !!firstError.internal_error_code) {
                       $scope.handleErrorsWithInternalCode(firstError);
-                    }
-                    else if (firstError.includes('Razorpay Account Not Found')) {
-                      
+                    } else if (firstError.includes('Razorpay Account Not Found')) {
                       $scope.googleAuthEmail = email;
                       $scope.showGAuthPopup = true;
-                      fireDLSuccessEvents('login.account_not_found_modal',
-                        { emailId: email, method: 'google_oauth' })
+                      fireDLSuccessEvents('login.account_not_found_modal', {
+                        emailId: email,
+                        method: 'google_oauth',
+                      });
                       fireGauthLoginEvt(email, firstError);
-  
-                    }
-                    else {
-                      
+                    } else {
                       fireGauthLoginEvt(email, firstError);
                       $scope.alerts.addAlert('danger', firstError);
-                      
                     }
                   }
-                  
                 }
               })
-              .error(function(errors) {
+              .error(function (errors) {
                 hideSpinner();
                 fireGauthLoginEvt(email, errors[0]);
                 $scope.alerts.addAlert('danger', errors[0]);
               });
           },
-          function(errors) {
+          function (errors) {
             hideSpinner();
-            fireDLFailureEvents('login.google_oauth',
-              {emailId: email, error: errors.error})
-          }
+            fireDLFailureEvents('login.google_oauth', { emailId: email, error: errors.error });
+          },
         );
       };
-      
-      const getCookie = function(name){
+
+      const getCookie = function (name) {
         const cookieName = `${name}=`;
         const cookieArray = document.cookie.split(';');
         for (let i = 0; i < cookieArray.length; i++) {
           let cookie = cookieArray[i];
           while (cookie.charAt(0) === ' ') cookie = cookie.substring(1, cookie.length);
-          if (cookie.indexOf(cookieName) === 0) return cookie.substring(cookieName.length, cookie.length);
+          if (cookie.indexOf(cookieName) === 0)
+            return cookie.substring(cookieName.length, cookie.length);
         }
         return false;
       };
-      
-      const readUTMsCookie = function(){
+
+      const readUTMsCookie = function () {
         const rzpUtmCookie = getCookie('rzp_utm');
         let utms = {};
         let parsedCookie = JSON.parse(rzpUtmCookie);
-          utms.firstUtm = parsedCookie && parsedCookie.attributions ? parsedCookie.attributions[0] : '';
-          utms.lastUtm = parsedCookie && parsedCookie.attributions ? parsedCookie.attributions[1] : '';
-          utms.firstPage = parsedCookie && parsedCookie.first_page ? parsedCookie.first_page : '';
-          utms.finalPage = parsedCookie && parsedCookie.final_page ? parsedCookie.final_page : '';
-          utms.website = parsedCookie && parsedCookie.website ? parsedCookie.website : '';
+        utms.firstUtm =
+          parsedCookie && parsedCookie.attributions ? parsedCookie.attributions[0] : '';
+        utms.lastUtm =
+          parsedCookie && parsedCookie.attributions ? parsedCookie.attributions[1] : '';
+        utms.firstPage = parsedCookie && parsedCookie.first_page ? parsedCookie.first_page : '';
+        utms.finalPage = parsedCookie && parsedCookie.final_page ? parsedCookie.final_page : '';
+        utms.website = parsedCookie && parsedCookie.website ? parsedCookie.website : '';
         return utms;
       };
 
-      $scope.onCreateAccountWithGoogle = function(email) {
+      $scope.onCreateAccountWithGoogle = function (email) {
         showSpinner();
-        fireDLInitiatedEvents('login.create_account', {emailId: email});
+        fireDLInitiatedEvents('login.create_account', { emailId: email });
         $scope.showGAuthPopup = false;
-        
+
         var payload = {
           method: 'post',
           url: '/user/oauth-register',
@@ -559,7 +534,7 @@ app
             email,
             id_token: $scope.idToken,
             oauth_provider: 'google',
-            partner_intent: $scope.signup.settings.partner_intent
+            partner_intent: $scope.signup.settings.partner_intent,
           },
           headers: {
             'Content-Type': 'application/json',
@@ -567,15 +542,14 @@ app
         };
 
         let request = $http(payload);
-        request.success(function(data) {
+        request.success(function (data) {
           if (data.success) {
-
             user
               .identity(true)
-              .then(function(userDetails) {
-                userIdentitySuccess(userDetails)
+              .then(function (userDetails) {
+                userIdentitySuccess(userDetails);
               })
-              .catch(function(errors) {
+              .catch(function (errors) {
                 hideSpinner();
                 $scope.alerts.addAlert('danger', errors[0]);
               });
@@ -588,34 +562,34 @@ app
           }
         });
       };
-      
-      const userIdentitySuccess = function(userDetails){
+
+      const userIdentitySuccess = function (userDetails) {
         var signinSuccessCb = authCallbacks.getSigninCallback();
-  
+
         setExperimentsFlags(userDetails.experiments); // set razorX experiment flags
         if (signinSuccessCb) {
           signinSuccessCb(userDetails);
         }
-  
+
         if (user.isVerified() && user.isPreSignupDone()) {
           // parse query parameters to object
           // ?next=foo&q=bar → { next: 'foo', q: 'bar' }
           var queryParams = location.search
             .slice(1)
             .split(/=|&/)
-            .reduce(function(map, param, index, array) {
+            .reduce(function (map, param, index, array) {
               if (index % 2) {
                 map[array[index - 1]] = param;
               }
               return map;
             }, {});
-    
+
           if (queryParams.next) {
             var parser = document.createElement('a');
             parser.href = decodeURIComponent(queryParams.next);
-      
+
             var hostname = parser.hostname || location.hostname;
-      
+
             if (/razorpay\.(com|dev|in)$/.test(hostname)) {
               location.href = parser.href;
               if (parser.origin === location.origin && parser.hash) {
@@ -626,46 +600,40 @@ app
               return false;
             }
           }
-  
+
           hideSpinner();
-    
+
           if (!signinSuccessCb) {
             $scope.goToDashboard(userDetails);
           }
         } else {
           $scope.isLoggedIn = true;
-          
+
           if (userDetails) {
             $scope.login.data.email = userDetails.email;
-            $scope.signup.settings.partner_intent =
-              userDetails.partner_intent;
-            Object.assign(
-              $scope.signup.merchantData,
-              userDetails.pre_signup
-            );
+            $scope.signup.settings.partner_intent = userDetails.partner_intent;
+            Object.assign($scope.signup.merchantData, userDetails.pre_signup);
           }
           if (!user.isPreSignupDone()) {
             $scope.email_not_verified = false;
-            $scope.signup.settings.partner_intent =
-              userDetails.partner_intent;
-      
+            $scope.signup.settings.partner_intent = userDetails.partner_intent;
+
             if ($scope.currentService === 'X') {
               $state.transitionTo(
                 'access.pre_signup',
                 {},
                 {
                   notify: false,
-                }
+                },
               );
             } else {
-              location.href =
-                location.origin + '/signup/?screen=business_details';
+              location.href = location.origin + '/signup/?screen=business_details';
             }
           }
         }
-      }
+      };
 
-      $scope.goToSignupStep = function(step, subStep) {
+      $scope.goToSignupStep = function (step, subStep) {
         $scope.signup.currentStep = step;
         if (subStep !== undefined) {
           // for individual upon press take him to step 4
@@ -677,7 +645,7 @@ app
         }
       };
 
-      $scope.goToLoginStep = function(step, subStep) {
+      $scope.goToLoginStep = function (step, subStep) {
         $scope.login.currentStep = step;
         if (subStep !== undefined) {
           $scope.login.currentSubStep = subStep;
@@ -698,10 +666,8 @@ app
 
         // Get invitation details
         $http
-          .get(
-            '/user/api/live/invitations/token/' + $scope.signup.data.invitation
-          )
-          .success(function(data) {
+          .get('/user/api/live/invitations/token/' + $scope.signup.data.invitation)
+          .success(function (data) {
             if (data.success) {
               $scope.signup.data.email = data.data.email;
               $scope.lock_email = data.data.email ? true : false;
@@ -710,32 +676,27 @@ app
               $scope.showTopbar = false;
             }
           })
-          .error(function() {});
+          .error(function () {});
       } else if ($location.search().merchant_invitation) {
         // heimdall specific
         $scope.signup.data.merchant_invitation = $location.search().merchant_invitation;
 
         // Get invitation details
         $http
-          .get(
-            '/user/api/live/admin-lead/verify/' +
-              $scope.signup.data.merchant_invitation
-          )
-          .success(function(data) {
+          .get('/user/api/live/admin-lead/verify/' + $scope.signup.data.merchant_invitation)
+          .success(function (data) {
             if (data.success) {
               var form_data = data.data.form_data;
 
               $scope.signup.data.email = data.data.email;
               $scope.lock_email = data.data.email ? true : false;
-              $scope.signup.merchantData.business_name =
-                form_data.merchant_name;
-              $scope.signup.merchantData.business_website =
-                form_data.business_website;
+              $scope.signup.merchantData.business_name = form_data.merchant_name;
+              $scope.signup.merchantData.business_website = form_data.business_website;
               $scope.signup.merchantData.contact_name = form_data.contact_name;
               $scope.merchant_invitation = true;
             }
           })
-          .error(function() {});
+          .error(function () {});
       } else {
         // We only track referers if they are registering a business
         if (typeof $window.google_trackConversion === 'function') {
@@ -771,7 +732,7 @@ app
 
       $scope.currentService = serviceName();
 
-      $scope.createAccount = function($valid) {
+      $scope.createAccount = function ($valid) {
         window.rzpAnalytics({
           name: 'facebook',
           event: 'signup_start',
@@ -868,12 +829,10 @@ app
         $scope.alerts.resetAlerts();
         var request = $http(payload);
         showSpinner();
-        request.success(function(data) {
+        request.success(function (data) {
           if (data.success) {
             $localStorage.new_user_signup = true;
-            $scope.signup.account_type = $scope.signup.data.invitation
-              ? 'team_member'
-              : 'merchant';
+            $scope.signup.account_type = $scope.signup.data.invitation ? 'team_member' : 'merchant';
             trackDrip('account_created');
             pushToDrip();
             if (window.ga) {
@@ -882,7 +841,7 @@ app
                 'send',
                 'event',
                 'Signup - Email Password',
-                'Click - Create Account (Success)'
+                'Click - Create Account (Success)',
               );
             }
 
@@ -891,7 +850,7 @@ app
             });
 
             $scope.isLoggedIn = true;
-            user.identity(true).then(function(data) {
+            user.identity(true).then(function (data) {
               var signinSuccessCb = authCallbacks.getSigninCallback();
 
               setExperimentsFlags(data.experiments);
@@ -911,16 +870,13 @@ app
                 $scope.signup.mid = data.current;
                 window.rzpQ &&
                   window.rzpQ.push(
-                    window.rzpQ
-                      .now()
-                      .onbr()
-                      .success('signup.create_account', {
-                        mode: $scope.eventsMode,
-                        version: 1,
-                        emailId: data.user.email,
-                        userid: data.user.id,
-                        mid: data.current,
-                      })
+                    window.rzpQ.now().onbr().success('signup.create_account', {
+                      mode: $scope.eventsMode,
+                      version: 1,
+                      emailId: data.user.email,
+                      userid: data.user.id,
+                      mid: data.current,
+                    }),
                   );
                 hideSpinner();
                 $state.transitionTo(
@@ -928,7 +884,7 @@ app
                   {},
                   {
                     notify: false,
-                  }
+                  },
                 );
                 $scope.showTopbar = true;
                 $scope.goToSignupStep(1);
@@ -951,38 +907,29 @@ app
 
             window.rzpQ &&
               window.rzpQ.push(
-                window.rzpQ
-                  .now()
-                  .onbr()
-                  .failed('signup.create_account', {
-                    mode: $scope.eventsMode,
-                    version: 1,
-                    emailId: payload.data.email,
-                    error: signupError,
-                  })
+                window.rzpQ.now().onbr().failed('signup.create_account', {
+                  mode: $scope.eventsMode,
+                  version: 1,
+                  emailId: payload.data.email,
+                  error: signupError,
+                }),
               );
 
             let firstError = '';
             if (data.errors && data.errors.length) {
               firstError = data.errors[0];
             }
-            if (
-              typeof firstError === 'object' &&
-              !!firstError.internal_error_code
-            ) {
+            if (typeof firstError === 'object' && !!firstError.internal_error_code) {
               $scope.goToSigninLayout();
               $scope.handleErrorsWithInternalCode(firstError);
             } else {
-              if (
-                firstError &&
-                firstError.indexOf('email has already been taken') !== -1
-              ) {
+              if (firstError && firstError.indexOf('email has already been taken') !== -1) {
                 trackDrip('error_email_taken');
                 window.rzpQ.push(
                   window.rzpQ
                     .now()
                     .onbr()
-                    .failed('signup.submit_email', { mode: $scope.eventsMode })
+                    .failed('signup.submit_email', { mode: $scope.eventsMode }),
                 );
               }
 
@@ -992,10 +939,10 @@ app
                   'event',
                   'Signup - Email Password',
                   'Click - Create Account (Error)',
-                  JSON.stringify(data.errors)
+                  JSON.stringify(data.errors),
                 );
 
-              angular.forEach(data.errors, function(value) {
+              angular.forEach(data.errors, function (value) {
                 $scope.alerts.addAlert('danger', value);
               });
             }
@@ -1010,8 +957,7 @@ app
       function hideSpinner() {
         $('.loading-animation').removeClass('active');
       }
-  
-      
+
       // @TODO: Remove this after launching google oauth
       /**
        * Function to fire datalake events
@@ -1021,38 +967,35 @@ app
        */
       function fireIncognitoEvent() {
         if ('storage' in navigator && 'estimate' in navigator.storage) {
-          navigator.storage.estimate().then(function(res) {
-            if (res.quota < 1200000000){
+          navigator.storage.estimate().then(function (res) {
+            if (res.quota < 1200000000) {
               window.rzpQ.push(
-                window.rzpQ
-                  .now()
-                  .onbr()
-                  .success('login.incognito_session', {
-                    source: 'sign_in',
-                    sessionId: window.session_id,
-                    emailId: $scope.login.data.email,
-                    mode: $scope.eventsMode,
-                  })
+                window.rzpQ.now().onbr().success('login.incognito_session', {
+                  source: 'sign_in',
+                  sessionId: window.session_id,
+                  emailId: $scope.login.data.email,
+                  mode: $scope.eventsMode,
+                }),
               );
             }
           });
         }
       }
-      
-      $scope.goToDashboard = function(data) {
-        fireDLSuccessEvents('login.login',
-          {source: 'sign_in',
-            method: $scope.isGoogleAuth ? 'google-oauth': 'email',
-            emailId: data.user.email,
-            userid: data.user.id,
-            mid: data.current,
-          });
+
+      $scope.goToDashboard = function (data) {
+        fireDLSuccessEvents('login.login', {
+          source: 'sign_in',
+          method: $scope.isGoogleAuth ? 'google-oauth' : 'email',
+          emailId: data.user.email,
+          userid: data.user.id,
+          mid: data.current,
+        });
         location.hash = '';
         location.pathname = '/app';
         location.reload();
       };
 
-      $scope.onLoginInputFocus = function(type) {
+      $scope.onLoginInputFocus = function (type) {
         tracking.pushEvents({
           event_name: 'login',
           event_type: 'initiated',
@@ -1062,7 +1005,7 @@ app
         });
       };
 
-      $scope.onLogin = function() {
+      $scope.onLogin = function () {
         tracking.pushEvents({
           event_name: 'login',
           event_type: 'initiated',
@@ -1072,7 +1015,7 @@ app
         });
       };
 
-      $scope.onContactUs = function() {
+      $scope.onContactUs = function () {
         tracking.pushEvents({
           event_name: 'non_login_actions',
           event_type: 'initiated',
@@ -1082,7 +1025,7 @@ app
         });
       };
 
-      $scope.handlePromotionClick = function(data) {
+      $scope.handlePromotionClick = function (data) {
         tracking.pushEvents({
           event_name: 'non_login_actions',
           event_type: 'initiated',
@@ -1093,7 +1036,7 @@ app
         });
       };
 
-      $scope.onResetEmailChange = function() {
+      $scope.onResetEmailChange = function () {
         tracking.pushEvents({
           event_name: 'send_password_reset_link',
           event_type: 'initiated',
@@ -1103,14 +1046,14 @@ app
         });
       };
 
-      $scope.sendDetails = function() {
+      $scope.sendDetails = function () {
         if (
           $scope.signup.merchantData.business_website &&
           ($scope.forms.detailsForm.business_website.$valid ||
             $scope.forms.detailsForm.business_website.$error.pattern)
         ) {
           $scope.signup.merchantData.business_website = utils.autoPrefixUrls(
-            $scope.signup.merchantData.business_website
+            $scope.signup.merchantData.business_website,
           );
         }
 
@@ -1150,7 +1093,7 @@ app
         $scope.alerts.resetAlerts();
         showSpinner();
 
-        request.success(function(data) {
+        request.success(function (data) {
           hideSpinner();
           if (data.success) {
             trackDrip('signup_flow_completed');
@@ -1159,7 +1102,7 @@ app
             updateHubSpotContactProperty();
 
             // if verification is already done, go to dashboard (call /user again to check)
-            user.identity(true).then(function(userDetails) {
+            user.identity(true).then(function (userDetails) {
               // user.authorize and then if email verified
 
               var signinSuccessCb = authCallbacks.getSigninCallback();
@@ -1188,12 +1131,12 @@ app
                     userid: $scope.signup.userid,
                     error: data.errors ? data.errors[0] : '',
                     version: 1,
-                  })
+                  }),
               );
-            angular.forEach(data.errors, function(value) {
+            angular.forEach(data.errors, function (value) {
               $scope.alerts.addAlert('danger', value);
 
-              setTimeout(function() {
+              setTimeout(function () {
                 var alertEle = $('.pre_signup_alert');
 
                 window.ga &&
@@ -1202,7 +1145,7 @@ app
                     'event',
                     'Signup - Steps',
                     'Click - Finish',
-                    JSON.stringify(data.errors)
+                    JSON.stringify(data.errors),
                   );
 
                 alertEle[0] &&
@@ -1210,7 +1153,7 @@ app
                     {
                       scrollTop: alertEle.offset().top,
                     },
-                    500
+                    500,
                   );
               }, 100);
             });
@@ -1218,7 +1161,7 @@ app
         });
       };
 
-      $scope.quickSendDetails = function(detailField, key) {
+      $scope.quickSendDetails = function (detailField, key) {
         $scope.signup.merchantData[detailField] = key;
 
         var reqPayload = Object.assign({}, $scope.signup.merchantData);
@@ -1237,20 +1180,17 @@ app
 
         var request = $http(payload);
         $scope.alerts.resetAlerts();
-        $timeout(function() {
+        $timeout(function () {
           // if individuval in business type take him directly to last screen
-          if (
-            $scope.signup.currentSubStep == 0 &&
-            $scope.canSkipIntermediateScreens()
-          ) {
+          if ($scope.signup.currentSubStep == 0 && $scope.canSkipIntermediateScreens()) {
             $scope.signup.currentSubStep = $scope.signup.currentSubStep + 2;
           } else {
             $scope.signup.currentSubStep = $scope.signup.currentSubStep + 1;
           }
         }, 200);
-        request.success(function(data) {
+        request.success(function (data) {
           if (!data.success) {
-            angular.forEach(data.errors, function(value) {
+            angular.forEach(data.errors, function (value) {
               $scope.alerts.addAlert('danger', value);
             });
           }
@@ -1258,7 +1198,7 @@ app
           updateHubSpotContactProperty();
 
           $('.business-type-substep').scrollTop(0);
-          $timeout(function() {
+          $timeout(function () {
             $scope.signup.showMore = false;
           }, 200);
         });
@@ -1291,11 +1231,9 @@ app
         if (!$scope.showCompanyName) {
           companyNameAsked = 'NOT ';
         }
-        gaAction =
-          regOrUnreg + ' and ' + companyNameAsked + 'asked for company name';
+        gaAction = regOrUnreg + ' and ' + companyNameAsked + 'asked for company name';
 
-        window.ga &&
-          window.ga('send', 'event', 'Company AB', gaAction, gaLabel);
+        window.ga && window.ga('send', 'event', 'Company AB', gaAction, gaLabel);
       }
 
       function goToVerification() {
@@ -1313,7 +1251,7 @@ app
       /**
        * Set signup razorX flags for AB tests
        */
-      var setExperimentsFlags = function(experiments) {
+      var setExperimentsFlags = function (experiments) {
         if (!experiments) {
           return;
         }
@@ -1327,7 +1265,7 @@ app
         }
       };
 
-      var trackDrip = function(action) {
+      var trackDrip = function (action) {
         if (!action) return;
         if (location.host !== 'dashboard.razorpay.com') return;
         try {
@@ -1335,9 +1273,9 @@ app
         } catch (e) {}
       };
 
-      var pushToDrip = (function() {
+      var pushToDrip = (function () {
         var dataSent = {};
-        return function(tag) {
+        return function (tag) {
           // send only on production
           if (location.host !== 'dashboard.razorpay.com') {
             return;
@@ -1351,15 +1289,14 @@ app
             'contact_mobile',
             'contact_name',
           ];
-          keys.forEach(function(key) {
+          keys.forEach(function (key) {
             if ($scope.signup.merchantData[key]) {
               data[key] = $scope.signup.details[key]
                 ? $scope.signup.details[key][$scope.signup.merchantData[key]]
                 : $scope.signup.merchantData[key];
             }
           });
-          if ($scope.signup.account_type)
-            data.account_type = $scope.signup.account_type;
+          if ($scope.signup.account_type) data.account_type = $scope.signup.account_type;
           data.source = $location.search().utm_source || document.referrer;
 
           for (var key in data) {
@@ -1403,17 +1340,14 @@ app
         adroll_adv_id = 'TJ37WOXRMNBN3E7GBHOOXB';
         adroll_pix_id = 'KCGQOUBQ5VFKRM3XB5PB2U';
 
-        (function() {
-          var _onload = function() {
+        (function () {
+          var _onload = function () {
             // Use only on prod.
             if (window.location.hostname !== 'dashboard.razorpay.com') {
               return;
             }
 
-            if (
-              document.readyState &&
-              !/loaded|complete/.test(document.readyState)
-            ) {
+            if (document.readyState && !/loaded|complete/.test(document.readyState)) {
               setTimeout(_onload, 10);
               return;
             }
@@ -1433,7 +1367,7 @@ app
                 : 'http://a.adroll.com';
             scr.setAttribute('async', 'true');
             scr.type = 'text/javascript';
-            scr.onload = function() {
+            scr.onload = function () {
               __adroll.record_user({
                 adroll_segments: 'ef374af4',
               });
@@ -1474,63 +1408,48 @@ app
 
       // creates Drip lead if email present in params
       pushToDrip('email_only');
-      $scope.onPrivacyClick = function() {
+      $scope.onPrivacyClick = function () {
         window.rzpQ.push(
-          window.rzpQ
-            .now()
-            .onbr()
-            .initiated('signup.click_other_links', {
-              source: 'privacy',
-              mode: $scope.eventsMode,
-            })
+          window.rzpQ.now().onbr().initiated('signup.click_other_links', {
+            source: 'privacy',
+            mode: $scope.eventsMode,
+          }),
         );
       };
-      $scope.onTermsClick = function() {
+      $scope.onTermsClick = function () {
         window.rzpQ.push(
-          window.rzpQ
-            .now()
-            .onbr()
-            .initiated('signup.click_other_links', {
-              source: 'terms',
-              mode: $scope.eventsMode,
-            })
+          window.rzpQ.now().onbr().initiated('signup.click_other_links', {
+            source: 'terms',
+            mode: $scope.eventsMode,
+          }),
         );
       };
-      $scope.slectTrack = function(type) {
+      $scope.slectTrack = function (type) {
         window.rzpQ.push(
-          window.rzpQ
-            .now()
-            .onbr()
-            .initiated('signup.select_option', {
-              source: type,
-              mode: $scope.eventsMode,
-            })
+          window.rzpQ.now().onbr().initiated('signup.select_option', {
+            source: type,
+            mode: $scope.eventsMode,
+          }),
         );
       };
-      $scope.onInputFocus = function(type) {
+      $scope.onInputFocus = function (type) {
         window.rzpQ.push(
-          window.rzpQ
-            .now()
-            .onbr()
-            .initiated('signup.fill_pre_signup_form', {
-              source: type,
-              mode: $scope.eventsMode,
-            })
+          window.rzpQ.now().onbr().initiated('signup.fill_pre_signup_form', {
+            source: type,
+            mode: $scope.eventsMode,
+          }),
         );
       };
-      $scope.onFinishClick = function(type) {
+      $scope.onFinishClick = function (type) {
         window.rzpQ.push(
-          window.rzpQ
-            .now()
-            .onbr()
-            .initiated('signup.finish_signup', {
-              source: type,
-              mode: $scope.eventsMode,
-              mid: $scope.signup.mid,
-              emailId: $scope.signup.data.email,
-              userid: $scope.signup.userid,
-              version: 1,
-            })
+          window.rzpQ.now().onbr().initiated('signup.finish_signup', {
+            source: type,
+            mode: $scope.eventsMode,
+            mid: $scope.signup.mid,
+            emailId: $scope.signup.data.email,
+            userid: $scope.signup.userid,
+            version: 1,
+          }),
         );
 
         if ($scope.signup.settings.partner_intent) {
@@ -1554,15 +1473,12 @@ app
         }
       };
 
-      $scope.onCreateClick = function() {
+      $scope.onCreateClick = function () {
         window.rzpQ.push(
-          window.rzpQ
-            .now()
-            .onbr()
-            .initiated('signup.create_account', { mode: $scope.eventsMode })
+          window.rzpQ.now().onbr().initiated('signup.create_account', { mode: $scope.eventsMode }),
         );
       };
-      $scope.goToSigninLayout = function() {
+      $scope.goToSigninLayout = function () {
         $scope.goToSignupStep(0); // reset signup step
         $scope.goToLoginStep(1); // reset login step
         $scope.rightLayout = true;
@@ -1570,27 +1486,24 @@ app
         $scope.alerts.resetAlerts();
         var toRoute = 'access.signin';
         window.rzpQ.push(
-          window.rzpQ
-            .now()
-            .onbr()
-            .success('signup.click_other_links', {
-              source: 'sign_in',
-              mode: $scope.eventsMode,
-            })
+          window.rzpQ.now().onbr().success('signup.click_other_links', {
+            source: 'sign_in',
+            mode: $scope.eventsMode,
+          }),
         );
         $state.transitionTo(
           toRoute,
           {},
           {
             notify: false,
-          }
+          },
         );
         $scope.showTopbar = false;
         return $scope.onShowSignin && $scope.onShowSignin();
       };
 
       // full page redirect to signup for running experiment
-      $scope.goToSignup = function() {
+      $scope.goToSignup = function () {
         tracking.pushEvents({
           event_name: 'non_login_actions',
           event_type: 'initiated',
@@ -1606,7 +1519,7 @@ app
       };
 
       // client redirection to signup
-      $scope.goToSignupLayout = function(data) {
+      $scope.goToSignupLayout = function (data) {
         var signupData = data || {};
         if (!data) {
           tracking.pushEvents({
@@ -1630,38 +1543,31 @@ app
           {},
           {
             notify: false,
-          }
+          },
         );
         $scope.showTopbar = true;
         return $scope.onShowSignup && $scope.onShowSignup();
       };
 
       if (
-        [
-          'access.signin',
-          'access.forgotpwd',
-          'access.pre_signup',
-          'access.lockme',
-        ].indexOf($state.current.name) !== -1
+        ['access.signin', 'access.forgotpwd', 'access.pre_signup', 'access.lockme'].indexOf(
+          $state.current.name,
+        ) !== -1
       ) {
         $scope.rightLayout = true;
-        if (
-          $state.current.name === 'access.signin' ||
-          $state.current.name === 'access.lockme'
-        ) {
+        if ($state.current.name === 'access.signin' || $state.current.name === 'access.lockme') {
           if ($state.current.name === 'access.signin') {
             let utm = readUTMsCookie();
-            
-            fireDLSuccessEvents('login.display_login',
-              {
-                source: 'sign_in',
-                first_utm: utm.firstUtm,
-                last_utm: utm.lastUtm,
-                ref_url: $location.search().utm_source || document.referrer,
-                first_page: utm.firstPage,
-                final_page: utm.finalPage,
-                website: utm.website,
-              })
+
+            fireDLSuccessEvents('login.display_login', {
+              source: 'sign_in',
+              first_utm: utm.firstUtm,
+              last_utm: utm.lastUtm,
+              ref_url: $location.search().utm_source || document.referrer,
+              first_page: utm.firstPage,
+              final_page: utm.finalPage,
+              website: utm.website,
+            });
           }
 
           if (!user.isAuthenticated()) {
@@ -1671,21 +1577,17 @@ app
               $scope.login.data.email = $stateParams.email;
             }
           } else {
-            user.identity().then(function(userDetails) {
+            user.identity().then(function (userDetails) {
               var signinSuccessCb = authCallbacks.getSigninCallback();
               $scope.isLoggedIn = true;
               $scope.login.data.email = userDetails.email;
               $scope.signup.mid = userDetails.current;
               $scope.signup.userid = userDetails.user.id;
               $scope.signup.data.email = userDetails.email;
-              $scope.signup.settings.partner_intent =
-                userDetails.partner_intent;
+              $scope.signup.settings.partner_intent = userDetails.partner_intent;
               if (!user.isPreSignupDone()) {
                 if (userDetails) {
-                  Object.assign(
-                    $scope.signup.merchantData,
-                    userDetails.pre_signup
-                  );
+                  Object.assign($scope.signup.merchantData, userDetails.pre_signup);
                 }
                 goToRelevantQuestion();
                 $scope.login.currentStep = 2;
@@ -1694,7 +1596,7 @@ app
                   {},
                   {
                     notify: false,
-                  }
+                  },
                 );
                 $scope.showTopbar = true;
               } else if (!user.isVerified()) {
@@ -1717,12 +1619,12 @@ app
               {},
               {
                 notify: false,
-              }
+              },
             );
             $scope.showTopbar = false;
             $scope.login.currentStep = 1;
           } else {
-            user.identity().then(function(userDetails) {
+            user.identity().then(function (userDetails) {
               setExperimentsFlags(userDetails.experiments);
               // if pre sign up pending
               $scope.isLoggedIn = true;
@@ -1730,13 +1632,9 @@ app
               $scope.signup.mid = userDetails.current;
               $scope.signup.userid = userDetails.user.id;
               $scope.signup.data.email = userDetails.email;
-              $scope.signup.settings.partner_intent =
-                userDetails.partner_intent;
+              $scope.signup.settings.partner_intent = userDetails.partner_intent;
               if (!user.isPreSignupDone()) {
-                Object.assign(
-                  $scope.signup.merchantData,
-                  userDetails.pre_signup
-                );
+                Object.assign($scope.signup.merchantData, userDetails.pre_signup);
 
                 $scope.login.currentStep = 2;
                 goToRelevantQuestion();
@@ -1754,7 +1652,7 @@ app
             {},
             {
               notify: false,
-            }
+            },
           );
           $scope.showTopbar = true;
           var userDetails = user.getIdentity();
@@ -1782,18 +1680,17 @@ app
         } else {
           $scope.signup.currentSubStep = 2;
         }
-        $timeout(function() {
+        $timeout(function () {
           $scope.noTransition = false;
         }, 0);
       }
 
-      $scope.canSkipIntermediateScreens = function() {
+      $scope.canSkipIntermediateScreens = function () {
         return (
-          $scope.signup.settings.partner_intent ||
-          $scope.signup.merchantData.business_type == 11
+          $scope.signup.settings.partner_intent || $scope.signup.merchantData.business_type == 11
         );
       };
-      $scope.goToForgotPwd = function() {
+      $scope.goToForgotPwd = function () {
         tracking.pushEvents({
           event_name: 'non_login_actions',
           event_type: 'initiated',
@@ -1807,45 +1704,38 @@ app
           {},
           {
             notify: false,
-          }
+          },
         );
         $scope.showTopbar = false;
         $scope.login.currentStep = 0;
         $scope.alerts.resetAlerts();
       };
 
-      $scope.sendLoginCredentials = function($valid) {
+      $scope.sendLoginCredentials = function ($valid) {
         $scope.inlineError = '';
-        
+
         if (!$valid) {
           $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
           return true;
         }
-        
+
         if (!$scope.emailRegex.test($scope.login.data.email)) {
           $scope.inlineError = 'Please enter a valid email id';
           return false;
-        }
-        
-        else if($scope.isGoogleAuth){
-          
-          fireDLInitiatedEvents('login.native_auth',
-            {emailId: $scope.login.data.email});
-  
+        } else if ($scope.isGoogleAuth) {
+          fireDLInitiatedEvents('login.native_auth', { emailId: $scope.login.data.email });
+
           $scope.inlineError = '';
           $scope.isGoogleAuth = false;
-        }
-        
-        else {
+        } else {
           if (
             !$scope.login.isCaptchaLoaded ||
-            (window.location.hostname !== 'dashboard.razorpay.com' &&
-              !$scope.login.data.captcha)
+            (window.location.hostname !== 'dashboard.razorpay.com' && !$scope.login.data.captcha)
           ) {
             $scope.login.data.captcha = 'Faked';
           }
-          
-          fireDLInitiatedEvents('login.login', {method: 'email'});
+
+          fireDLInitiatedEvents('login.login', { method: 'email' });
 
           var payload = {
             method: 'post',
@@ -1857,35 +1747,29 @@ app
           var request = $http(payload);
           showSpinner();
           $scope.alerts.resetAlerts();
-          request.success(function(data) {
+          request.success(function (data) {
             if (data.success) {
               if (payload.data.otp && payload.data.otp.length) {
                 window.rzpQ.push(
-                  window.rzpQ
-                    .now()
-                    .onbr()
-                    .success('login.2fa_otp', {
-                      source: 'sign_in',
-                      sessionId: window.session_id,
-                      emailId: $scope.login.data.email,
-                      mode: $scope.eventsMode,
-                    })
+                  window.rzpQ.now().onbr().success('login.2fa_otp', {
+                    source: 'sign_in',
+                    sessionId: window.session_id,
+                    emailId: $scope.login.data.email,
+                    mode: $scope.eventsMode,
+                  }),
                 );
               }
               $scope.successFullSignin();
             } else {
               if (payload.data.otp && payload.data.otp.length) {
                 window.rzpQ.push(
-                  window.rzpQ
-                    .now()
-                    .onbr()
-                    .failed('login.2fa_otp', {
-                      source: 'sign_in',
-                      sessionId: window.session_id,
-                      emailId: $scope.login.data.email,
-                      mode: $scope.eventsMode,
-                      error: data.errors[0],
-                    })
+                  window.rzpQ.now().onbr().failed('login.2fa_otp', {
+                    source: 'sign_in',
+                    sessionId: window.session_id,
+                    emailId: $scope.login.data.email,
+                    mode: $scope.eventsMode,
+                    error: data.errors[0],
+                  }),
                 );
               }
               hideSpinner();
@@ -1902,16 +1786,13 @@ app
                   $scope.email_not_verified = true;
                   $scope.login.currentStep = 2;
                 } else {
-                  angular.forEach(data.errors, function(value) {
+                  angular.forEach(data.errors, function (value) {
                     if (typeof value === 'string') {
                       $scope.alerts.addAlert('danger', value);
                     }
                   });
                 }
-              } else if (
-                typeof firstError === 'object' &&
-                !!firstError.internal_error_code
-              ) {
+              } else if (typeof firstError === 'object' && !!firstError.internal_error_code) {
                 $scope.handleErrorsWithInternalCode(firstError);
               }
             }
@@ -1919,12 +1800,11 @@ app
         }
       };
 
-      $scope.successFullSignin = function() {
+      $scope.successFullSignin = function () {
         // check questions have been answered or not
         user
           .identity(true)
-          .then(function(userDetails) {
-            
+          .then(function (userDetails) {
             var signinSuccessCb = authCallbacks.getSigninCallback();
 
             setExperimentsFlags(userDetails.experiments); // set razorX experiment flags
@@ -1938,7 +1818,7 @@ app
               var queryParams = location.search
                 .slice(1)
                 .split(/=|&/)
-                .reduce(function(map, param, index, array) {
+                .reduce(function (map, param, index, array) {
                   if (index % 2) {
                     map[array[index - 1]] = param;
                   }
@@ -1970,43 +1850,41 @@ app
               hideSpinner();
               if (userDetails) {
                 $scope.login.data.email = userDetails.email;
-                $scope.signup.settings.partner_intent =
-                  userDetails.partner_intent;
-                Object.assign(
-                  $scope.signup.merchantData,
-                  userDetails.pre_signup
-                );
+                $scope.signup.settings.partner_intent = userDetails.partner_intent;
+                Object.assign($scope.signup.merchantData, userDetails.pre_signup);
               }
               if (!user.isPreSignupDone()) {
                 $scope.email_not_verified = false;
                 goToRelevantQuestion();
                 $scope.login.currentStep = 2;
-                $scope.signup.settings.partner_intent =
-                  userDetails.partner_intent;
+                $scope.signup.settings.partner_intent = userDetails.partner_intent;
 
                 $state.transitionTo(
                   'access.pre_signup',
                   {},
                   {
                     notify: false,
-                  }
+                  },
                 );
               } else if (!user.isVerified()) {
                 goToVerification();
               }
             }
           })
-          .catch(function(errors) {
+          .catch(function (errors) {
             hideSpinner();
-            
-            fireDLFailureEvents('login.login',
-              {emailId: email, error: errors[0], method: 'email'})
-           
+
+            fireDLFailureEvents('login.login', {
+              emailId: email,
+              error: errors[0],
+              method: 'email',
+            });
+
             $scope.alerts.addAlert('danger', errors[0]);
           });
       };
 
-      $scope.updateMobileFromLogin = function($valid) {
+      $scope.updateMobileFromLogin = function ($valid) {
         if (!$valid) {
           $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
           return true;
@@ -2023,22 +1901,19 @@ app
         };
 
         window.rzpQ.push(
-          window.rzpQ
-            .now()
-            .onbr()
-            .initiated('login.2fa_change_mobile_number', {
-              source: 'sign_in',
-              sessionId: window.session_id,
-              emailId: $scope.login.data.email,
-              mode: $scope.eventsMode,
-            })
+          window.rzpQ.now().onbr().initiated('login.2fa_change_mobile_number', {
+            source: 'sign_in',
+            sessionId: window.session_id,
+            emailId: $scope.login.data.email,
+            mode: $scope.eventsMode,
+          }),
         );
 
         var request = $http(payload);
         $scope.alerts.resetAlerts();
         showSpinner();
 
-        request.success(function(data) {
+        request.success(function (data) {
           hideSpinner();
 
           if (data.success) {
@@ -2049,7 +1924,7 @@ app
         });
       };
 
-      $scope.verifyMobile = function($valid) {
+      $scope.verifyMobile = function ($valid) {
         if (!$valid) {
           $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
           return true;
@@ -2071,40 +1946,34 @@ app
         showSpinner();
         $scope.alerts.resetAlerts();
 
-        request.success(function(data) {
+        request.success(function (data) {
           if (data.success) {
             $scope.successFullSignin();
             window.rzpQ.push(
-              window.rzpQ
-                .now()
-                .onbr()
-                .success('login.2fa_otp', {
-                  source: 'sign_in',
-                  sessionId: window.session_id,
-                  emailId: $scope.login.data.email,
-                  mode: $scope.eventsMode,
-                })
+              window.rzpQ.now().onbr().success('login.2fa_otp', {
+                source: 'sign_in',
+                sessionId: window.session_id,
+                emailId: $scope.login.data.email,
+                mode: $scope.eventsMode,
+              }),
             );
           } else {
             hideSpinner();
             $scope.alerts.addAlert('danger', data.errors[0]);
             window.rzpQ.push(
-              window.rzpQ
-                .now()
-                .onbr()
-                .failed('login.2fa_otp', {
-                  source: 'sign_in',
-                  sessionId: window.session_id,
-                  emailId: $scope.login.data.email,
-                  mode: $scope.eventsMode,
-                  error: data.errors[0],
-                })
+              window.rzpQ.now().onbr().failed('login.2fa_otp', {
+                source: 'sign_in',
+                sessionId: window.session_id,
+                emailId: $scope.login.data.email,
+                mode: $scope.eventsMode,
+                error: data.errors[0],
+              }),
             );
           }
         });
       };
 
-      $scope.verify2FaOtp = function($valid) {
+      $scope.verify2FaOtp = function ($valid) {
         const data = {
           otp: $scope.secondFA.data.otp,
         };
@@ -2118,39 +1987,30 @@ app
         const request = $http(payload);
         showSpinner();
         $scope.alerts.resetAlerts();
-        request.success(function(data) {
+        request.success(function (data) {
           if (data.success) {
             window.rzpQ.push(
-              window.rzpQ
-                .now()
-                .onbr()
-                .success('login.2fa_otp', {
-                  source: 'sign_in',
-                  sessionId: window.session_id,
-                  emailId: $scope.login.data.email,
-                  mode: $scope.eventsMode,
-                })
+              window.rzpQ.now().onbr().success('login.2fa_otp', {
+                source: 'sign_in',
+                sessionId: window.session_id,
+                emailId: $scope.login.data.email,
+                mode: $scope.eventsMode,
+              }),
             );
             $scope.successFullSignin();
           } else {
             window.rzpQ.push(
-              window.rzpQ
-                .now()
-                .onbr()
-                .failed('login.2fa_otp', {
-                  source: 'sign_in',
-                  sessionId: window.session_id,
-                  emailId: $scope.login.data.email,
-                  mode: $scope.eventsMode,
-                  error: data.errors[0],
-                })
+              window.rzpQ.now().onbr().failed('login.2fa_otp', {
+                source: 'sign_in',
+                sessionId: window.session_id,
+                emailId: $scope.login.data.email,
+                mode: $scope.eventsMode,
+                error: data.errors[0],
+              }),
             );
             hideSpinner();
             const firstError = data.errors[0];
-            if (
-              typeof firstError === 'object' &&
-              !!firstError.internal_error_code
-            ) {
+            if (typeof firstError === 'object' && !!firstError.internal_error_code) {
               $scope.handleErrorsWithInternalCode(firstError);
             } else {
               $scope.alerts.addAlert('danger', data.errors[0]);
@@ -2159,68 +2019,56 @@ app
         });
       };
 
-      $scope.resendOtp = function() {
+      $scope.resendOtp = function () {
         const payload = {
           method: 'post',
           url: '/user/2fa/otp-resend',
         };
 
         window.rzpQ.push(
-          window.rzpQ
-            .now()
-            .onbr()
-            .initiated('login.2fa_resend_otp', {
-              source: 'sign_in',
-              sessionId: window.session_id,
-              emailId: $scope.login.data.email,
-              mode: $scope.eventsMode,
-            })
+          window.rzpQ.now().onbr().initiated('login.2fa_resend_otp', {
+            source: 'sign_in',
+            sessionId: window.session_id,
+            emailId: $scope.login.data.email,
+            mode: $scope.eventsMode,
+          }),
         );
 
         var request = $http(payload);
         $scope.login.resendingOtp = true;
         $scope.alerts.resetAlerts();
-        request.success(function(data) {
+        request.success(function (data) {
           if (data.success) {
             $scope.login.resendingOtp = false;
             window.rzpQ.push(
-              window.rzpQ
-                .now()
-                .onbr()
-                .success('login.2fa_resend_otp', {
-                  source: 'sign_in',
-                  sessionId: window.session_id,
-                  emailId: $scope.login.data.email,
-                  mode: $scope.eventsMode,
-                })
+              window.rzpQ.now().onbr().success('login.2fa_resend_otp', {
+                source: 'sign_in',
+                sessionId: window.session_id,
+                emailId: $scope.login.data.email,
+                mode: $scope.eventsMode,
+              }),
             );
           } else {
             $scope.alerts.addAlert(data.errors[0]);
             window.rzpQ.push(
-              window.rzpQ
-                .now()
-                .onbr()
-                .initiated('login.2fa_resend_otp', {
-                  source: 'sign_in',
-                  sessionId: window.session_id,
-                  emailId: $scope.login.data.email,
-                  mode: $scope.eventsMode,
-                  error: data.errors[0],
-                })
+              window.rzpQ.now().onbr().initiated('login.2fa_resend_otp', {
+                source: 'sign_in',
+                sessionId: window.session_id,
+                emailId: $scope.login.data.email,
+                mode: $scope.eventsMode,
+                error: data.errors[0],
+              }),
             );
           }
         });
       };
 
-      $scope.resendVerificationEmail = function() {
+      $scope.resendVerificationEmail = function () {
         window.rzpQ.push(
-          window.rzpQ
-            .now()
-            .onbr()
-            .success('signup.email_verification', {
-              source: 'sign_in',
-              mode: $scope.eventsMode,
-            })
+          window.rzpQ.now().onbr().success('signup.email_verification', {
+            source: 'sign_in',
+            mode: $scope.eventsMode,
+          }),
         );
 
         var payload = {
@@ -2231,12 +2079,12 @@ app
 
         var request = $http(payload);
         $scope.alerts.resetAlerts();
-        request.success(function(data) {
+        request.success(function (data) {
           if (data.success) {
             $scope.alerts.addAlert('success', 'Verification email resent.');
           } else {
             $scope.alerts.resetAlerts();
-            angular.forEach(data.errors, function(value) {
+            angular.forEach(data.errors, function (value) {
               $scope.alerts.addAlert('danger', value);
             });
           }
@@ -2247,12 +2095,12 @@ app
               'event',
               'Signup - Steps',
               'Click - Resend Verification Email',
-              JSON.stringify(data.errors)
+              JSON.stringify(data.errors),
             );
         });
       };
 
-      $scope.forgotPwdSubmit = function($valid) {
+      $scope.forgotPwdSubmit = function ($valid) {
         tracking.pushEvents({
           event_name: 'send_password_reset_link',
           event_type: 'initiated',
@@ -2274,7 +2122,7 @@ app
           url: '/user/api/live/users/reset-password',
           data: data,
         });
-        request.success(function(data) {
+        request.success(function (data) {
           hideSpinner();
           if (data.success) {
             var message =
@@ -2285,7 +2133,7 @@ app
             $scope.alerts.resetAlerts();
             $scope.alerts.addAlert(
               'danger',
-              'Something went wrong, please try again after sometime.'
+              'Something went wrong, please try again after sometime.',
             );
           }
         });
@@ -2295,14 +2143,11 @@ app
         if (!$scope.isSignupDisplayEventFired) {
           window.rzpQ &&
             window.rzpQ.push(
-              window.rzpQ
-                .now()
-                .onbr()
-                .success('signup.display_signup_page', {
-                  mode: $scope.eventsMode,
-                  version: 1,
-                  service: $scope.currentService,
-                })
+              window.rzpQ.now().onbr().success('signup.display_signup_page', {
+                mode: $scope.eventsMode,
+                version: 1,
+                service: $scope.currentService,
+              }),
             );
           $scope.isSignupDisplayEventFired = true;
         }
@@ -2312,10 +2157,10 @@ app
       function hotjarSurvey() {
         window.hj =
           window.hj ||
-          function() {
+          function () {
             (hj.q = hj.q || []).push(arguments);
           };
-        setTimeout(function() {
+        setTimeout(function () {
           if (document.getElementById('email').value === '') {
             window.hj('trigger', 'signup-no-email-survey');
           }
@@ -2327,12 +2172,12 @@ app
         displaySignupEvent();
       }
 
-      $scope.logoutAndGoToLogin = function() {
+      $scope.logoutAndGoToLogin = function () {
         var request = $http({
           method: 'get',
           url: '/user/logout',
         });
-        request.finally(function() {
+        request.finally(function () {
           user.identity(true);
           // go to login
           $scope.rightLayout = true;
@@ -2341,7 +2186,7 @@ app
             {},
             {
               notify: false,
-            }
+            },
           );
           $scope.showTopbar = false;
 
@@ -2370,47 +2215,34 @@ app
         return request;
       };
 
-      $scope.trackContactUsClick = function(e) {
-        window.ga &&
-          window.ga('send', 'event', 'Signup - Steps', 'Click - Contact Us');
+      $scope.trackContactUsClick = function (e) {
+        window.ga && window.ga('send', 'event', 'Signup - Steps', 'Click - Contact Us');
         window.rzpQ.push(
-          window.rzpQ
-            .now()
-            .onbr()
-            .success('signup.click_other_links', {
-              source: 'contact_us',
-              mode: $scope.eventsMode,
-            })
+          window.rzpQ.now().onbr().success('signup.click_other_links', {
+            source: 'contact_us',
+            mode: $scope.eventsMode,
+          }),
         );
       };
 
-      $scope.trackBannerClick = function(e) {
-        window.ga &&
-          window.ga('send', 'event', 'Website - Banner', 'Click - Top Banner');
+      $scope.trackBannerClick = function (e) {
+        window.ga && window.ga('send', 'event', 'Website - Banner', 'Click - Top Banner');
       };
 
-      $scope.timerFunction = function() {
+      $scope.timerFunction = function () {
         var deadline = new Date('April 1, 2020 00:00:00').getTime();
         var daysEls = document.querySelector('.topbar-container .days .number');
-        var hoursEls = document.querySelector(
-          '.topbar-container .hours .number'
-        );
-        var minutesEls = document.querySelector(
-          '.topbar-container .minutes .number'
-        );
-        var secondsEls = document.querySelector(
-          '.topbar-container .seconds .number'
-        );
+        var hoursEls = document.querySelector('.topbar-container .hours .number');
+        var minutesEls = document.querySelector('.topbar-container .minutes .number');
+        var secondsEls = document.querySelector('.topbar-container .seconds .number');
         var timer = document.querySelector('.topbar-container .top-timer');
         var now, timeLeft, days, hours, minutes, seconds;
 
-        var interval = setInterval(function() {
+        var interval = setInterval(function () {
           now = new Date().getTime();
           timeLeft = deadline - now;
           days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-          hours = Math.floor(
-            (timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-          );
+          hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
           minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
           seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
 
@@ -2435,46 +2267,30 @@ app
        * stepName: at which step name
        * sourceLabel: from which CTA, step
        * */
-      $scope.trackStepClicksOnMore = function(stepName, sourceLabel) {
+      $scope.trackStepClicksOnMore = function (stepName, sourceLabel) {
         if (!stepName || !sourceLabel) {
           return;
         }
 
         window.ga &&
-          window.ga(
-            'send',
-            'event',
-            'Signup - Steps',
-            'Step - ' + stepName,
-            sourceLabel
-          );
+          window.ga('send', 'event', 'Signup - Steps', 'Step - ' + stepName, sourceLabel);
       };
 
       /*
        * toStepName: to which link the back click points
        * */
-      $scope.trackBackClick = function(toStepName) {
+      $scope.trackBackClick = function (toStepName) {
         if (!toStepName) {
           return;
         }
 
-        window.ga &&
-          window.ga(
-            'send',
-            'event',
-            'Signup - Steps',
-            'Click - Back',
-            toStepName
-          );
+        window.ga && window.ga('send', 'event', 'Signup - Steps', 'Click - Back', toStepName);
 
         window.rzpQ.push(
-          window.rzpQ
-            .now()
-            .onbr()
-            .success('signup.back_action', {
-              source: toStepName,
-              mode: $scope.eventsMode,
-            })
+          window.rzpQ.now().onbr().success('signup.back_action', {
+            source: toStepName,
+            mode: $scope.eventsMode,
+          }),
         );
       };
 
@@ -2493,21 +2309,21 @@ app
             [
               {
                 name: supportedEvents.signin,
-                callback: function() {
+                callback: function () {
                   $scope.goToSigninLayout();
                 },
               },
               {
                 name: supportedEvents.signup,
-                callback: function(userDetails) {
+                callback: function (userDetails) {
                   $scope.goToSignupLayout(userDetails);
                 },
               },
               {
                 name: supportedEvents.signinSuccess,
                 hasReply: true,
-                callback: function(reply) {
-                  authCallbacks.setSigninCallback(function(userData) {
+                callback: function (reply) {
+                  authCallbacks.setSigninCallback(function (userData) {
                     reply({ user: userData });
                   });
                 },
@@ -2515,7 +2331,7 @@ app
               {
                 name: supportedEvents.onShowSignin,
                 hasReply: true,
-                callback: function(reply) {
+                callback: function (reply) {
                   $scope.onShowSignin = reply;
                   return $scope.rightLayout && reply($scope.login);
                 },
@@ -2523,13 +2339,13 @@ app
               {
                 name: supportedEvents.onShowSignup,
                 hasReply: true,
-                callback: function(reply) {
+                callback: function (reply) {
                   $scope.onShowSignup = reply;
                   return !$scope.rightLayout && reply();
                 },
               },
             ],
-            'auth'
+            'auth',
           );
       }
 
@@ -2543,26 +2359,20 @@ app
         shouldRender: false,
       };
 
-      $scope.onGotCouponCodeClick = function() {
+      $scope.onGotCouponCodeClick = function () {
         $scope.allowInput = true;
-        window.ga &&
-          window.ga(
-            'send',
-            'event',
-            'Signup - Steps',
-            'Click- Got a coupon code'
-          );
+        window.ga && window.ga('send', 'event', 'Signup - Steps', 'Click- Got a coupon code');
       };
 
-      $scope.onCouponChange = function() {
+      $scope.onCouponChange = function () {
         $scope.coupon.val = $filter('uppercase')($scope.coupon.val);
       };
 
-      $scope.clearCoupon = function() {
+      $scope.clearCoupon = function () {
         $scope.coupon.val = '';
       };
 
-      $scope.removeCoupon = function() {
+      $scope.removeCoupon = function () {
         $scope.coupon.val = '';
         $scope.coupon.disabled = false;
         $scope.coupon.status = '';
@@ -2570,7 +2380,7 @@ app
         delete $scope.signup.merchantData.coupon_code;
       };
 
-      $scope.validateCoupon = function() {
+      $scope.validateCoupon = function () {
         if ($scope.coupon.val === '') {
           return;
         }
@@ -2579,13 +2389,7 @@ app
         $scope.coupon.isValidating = true;
 
         window.ga &&
-          window.ga(
-            'send',
-            'event',
-            'Signup - Steps',
-            'Click - Coupon Apply',
-            $scope.coupon.val
-          );
+          window.ga('send', 'event', 'Signup - Steps', 'Click - Coupon Apply', $scope.coupon.val);
 
         var payload = {
           method: 'post',
@@ -2595,7 +2399,7 @@ app
           },
         };
 
-        $http(payload).success(function(response) {
+        $http(payload).success(function (response) {
           var msg = '',
             status = '';
 
@@ -2603,7 +2407,7 @@ app
             var today = new Date();
             var amount = response.data.credit_amount / 100;
             var expiryDate = new Date(
-              today.setDate(today.getDate() + response.data.expire_days)
+              today.setDate(today.getDate() + response.data.expire_days),
             ).toDateString();
 
             msg = $sce.trustAsHtml(
@@ -2612,7 +2416,7 @@ app
                 amount +
                 '</strong>' +
                 '/- will be free of charge' +
-                (response.data.expire_days ? ' till ' + expiryDate : '.')
+                (response.data.expire_days ? ' till ' + expiryDate : '.'),
             );
 
             status = 'success';
@@ -2622,7 +2426,7 @@ app
                 'event',
                 'Signup - Steps',
                 'Coupon - Response',
-                'Success | ' + $scope.coupon.val
+                'Success | ' + $scope.coupon.val,
               );
           } else {
             msg = $sce.trustAsHtml(response.errors[0]);
@@ -2633,7 +2437,7 @@ app
                 'event',
                 'Signup - Steps',
                 'Coupon - Response',
-                'Fail | ' + $scope.coupon.val + ' | ' + response.errors[0]
+                'Fail | ' + $scope.coupon.val + ' | ' + response.errors[0],
               );
           }
           $scope.coupon.isValidating = false;
@@ -2643,7 +2447,7 @@ app
         });
       };
 
-      $scope.handleErrorsWithInternalCode = function(error) {
+      $scope.handleErrorsWithInternalCode = function (error) {
         switch (error.internal_error_code) {
           case 'BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED': {
             $scope.goToLoginStep(4);
@@ -2669,11 +2473,7 @@ app
       };
 
       function shouldAutoApplyOffer() {
-        if (
-          $scope.currentService === 'X' ||
-          $scope.currentService === 'Partner'
-        )
-          return false;
+        if ($scope.currentService === 'X' || $scope.currentService === 'Partner') return false;
         var startDate = new Date('July 15, 2020 00:00:00').getTime();
         var endDate = new Date('August 1, 2020 00:00:00').getTime();
         var now = new Date().getTime();
@@ -2706,13 +2506,9 @@ app
 
       shouldRenderCouponCode();
 
-      $scope.$watch('signup.currentSubStep', function(newVal) {
+      $scope.$watch('signup.currentSubStep', function (newVal) {
         if (newVal === 2) {
-          if (
-            !isHostedInBB &&
-            !$scope.coupon.shouldRender &&
-            user.getTreatment('coupons')
-          ) {
+          if (!isHostedInBB && !$scope.coupon.shouldRender && user.getTreatment('coupons')) {
             $scope.coupon.shouldRender = true;
           }
 
@@ -2723,7 +2519,7 @@ app
         }
       });
 
-      $scope.$watch('signup.merchantData.business_type', function() {
+      $scope.$watch('signup.merchantData.business_type', function () {
         trackCompanyAB(false);
       });
 
@@ -2736,9 +2532,7 @@ app
 
         var ec = 'Signup - Steps';
         var ea = 'Click - Finish';
-        var el = isUnregisteredBusiness(businessType)
-          ? 'Unregistered'
-          : 'Registered';
+        var el = isUnregisteredBusiness(businessType) ? 'Unregistered' : 'Registered';
 
         var facebookEvents = ['signup_complete'];
 
@@ -2760,19 +2554,16 @@ app
 
         window.rzpQ &&
           window.rzpQ.push(
-            window.rzpQ
-              .now()
-              .onbr()
-              .success('signup.finish_signup', {
-                mode: $scope.eventsMode,
-                emailId: $scope.signup.data.email,
-                mid: $scope.signup.mid,
-                userid: $scope.signup.userid,
-                version: 1,
-              })
+            window.rzpQ.now().onbr().success('signup.finish_signup', {
+              mode: $scope.eventsMode,
+              emailId: $scope.signup.data.email,
+              mid: $scope.signup.mid,
+              userid: $scope.signup.userid,
+              version: 1,
+            }),
           );
 
-        facebookEvents.forEach(function(event) {
+        facebookEvents.forEach(function (event) {
           window.rzpAnalytics({
             name: 'facebook',
             event: event,
@@ -2796,8 +2587,7 @@ app
           details = $scope.signup.details,
           department = null,
           business_type = null,
-          transaction_volume =
-            details.transaction_volume[merchantData.transaction_volume],
+          transaction_volume = details.transaction_volume[merchantData.transaction_volume],
           business_type_list = Object.keys(details.business_type);
 
         for (var key in business_type_list) {
@@ -2827,9 +2617,9 @@ app
   ])
   .directive('overrideTab', [
     '$window',
-    function() {
-      return function(scope, element) {
-        element.bind('keydown', function(e) {
+    function () {
+      return function (scope, element) {
+        element.bind('keydown', function (e) {
           var keyCode = e.keyCode || e.which;
           if (keyCode == 9) {
             e.preventDefault();

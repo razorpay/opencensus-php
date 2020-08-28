@@ -43,6 +43,7 @@ export default class LiveMode extends Component {
         showTransactionsModal,
         onActive,
         track,
+        internationalActivationFlow,
       } = nextProps,
       { isLoading, keysGenerated, paymentsMade, isKLA } = integration,
       { isL1Submitted, isGraylistFlow, isBlacklistFlow } = instantActivation;
@@ -53,11 +54,7 @@ export default class LiveMode extends Component {
       if (!isL1Submitted) {
         content = (
           <span>
-            <Link
-              to="/activation"
-              className="btn-link"
-              onClick={() => track.fillActivationForm()}
-            >
+            <Link to="/activation" className="btn-link" onClick={() => track.fillActivationForm()}>
               Fill the Activation Form
             </Link>{' '}
             in order to unlock Live Payments
@@ -65,22 +62,20 @@ export default class LiveMode extends Component {
         );
       } else if (isGraylistFlow) {
         if (!isSubmitted) {
-          content = (
-            <span>
-              <Link
-                to="/activation"
-                className="btn-link"
-                onClick={() => track.fillKYCForm()}
-              >
-                Fill KYC Form
-              </Link>
-              &nbsp; to complete verification and get live payments enabled for
-              your account.
-            </span>
-          );
+          if (internationalActivationFlow.isGraylistFlow) {
+            content = this.internationalGreylistContent;
+          } else {
+            content = (
+              <span>
+                <Link to="/activation" className="btn-link" onClick={() => track.fillKYCForm()}>
+                  Fill KYC Form
+                </Link>
+                &nbsp; to complete verification and get live payments enabled for your account.
+              </span>
+            );
+          }
         } else {
-          content =
-            'Live payments will be enabled after your KYC form is verified';
+          content = 'Live payments will be enabled after your KYC form is verified';
         }
       } else if (isBlacklistFlow) {
         status = possibleStatuses.blocked;
@@ -92,10 +87,7 @@ export default class LiveMode extends Component {
         status = possibleStatuses.active;
         content = (
           <div>
-            <div>
-              Accept payments in Live mode by integrating or using other
-              products
-            </div>
+            <div>Accept payments in Live mode by integrating or using other products</div>
             <button className="btn btn-primary m-t" onClick={this.switchToLive}>
               Take me to live mode
             </button>
@@ -104,8 +96,7 @@ export default class LiveMode extends Component {
       } else {
         if (isRejected) {
           status = possibleStatuses.blocked;
-          content =
-            'Transactions are not allowed as your account has been suspended';
+          content = 'Transactions are not allowed as your account has been suspended';
         } else {
           if (isLoading) {
             status = possibleStatuses.loading;
@@ -115,15 +106,10 @@ export default class LiveMode extends Component {
               title = 'Transact in Live Mode';
               content = (
                 <div>
-                  <div>
-                    Receive payments by integrating in Live mode or view
-                    products
-                  </div>
+                  <div>Receive payments by integrating in Live mode or view products</div>
                   <button
                     className="btn btn-primary m-t"
-                    onClick={() => (
-                      track.howDoIAcceptPayments(), showTransactionsModal(isKLA)
-                    )}
+                    onClick={() => (track.howDoIAcceptPayments(), showTransactionsModal(isKLA))}
                   >
                     How do I accept payments?
                   </button>
@@ -163,6 +149,19 @@ export default class LiveMode extends Component {
       status,
       content,
     });
+  }
+
+  get internationalGreylistContent() {
+    const { track } = this.props;
+    return (
+      <span>
+        <Link to="/activation" className="btn-link" onClick={() => track.fillKYCForm()}>
+          Fill KYC Form
+        </Link>
+        &nbsp; to unlock Live domestic payments. Complete KYC verification to unlock international
+        payments.
+      </span>
+    );
   }
 
   render() {

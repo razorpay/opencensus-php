@@ -6,8 +6,7 @@ function pruneReqPayload(reqPayload) {
     reqPayload.amount *= 100;
   }
 
-  reqPayload.expire_by &&
-    (reqPayload.expire_by = Math.floor(reqPayload.expire_by / 1000));
+  reqPayload.expire_by && (reqPayload.expire_by = Math.floor(reqPayload.expire_by / 1000));
 
   if (reqPayload.title) {
     // It is required field. Safe check.
@@ -130,12 +129,7 @@ export function sendLink(id, data) {
     data: reqPayload,
   });
 }
-export function exportReportCSV(
-  user,
-  paymentPageEntity,
-  configId,
-  saveLongPollInstances
-) {
+export function exportReportCSV(user, paymentPageEntity, configId, saveLongPollInstances) {
   if (!configId) {
     return;
   }
@@ -159,7 +153,7 @@ export function _prepareTemplate(paymentPageEntity) {
   const UDF_SCHEMA = JSON.parse(paymentPageEntity.settings.udf_schema);
   const udfKeys = {};
 
-  UDF_SCHEMA.forEach(udf => {
+  UDF_SCHEMA.forEach((udf) => {
     udfKeys[udf.name] = ['payments.notes.' + udf.name];
   });
 

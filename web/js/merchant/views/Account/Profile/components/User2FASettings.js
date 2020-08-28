@@ -11,14 +11,14 @@ import ShowWhen from 'merchant/components/ShowWhen';
 
 import Toggle2FA from '../../components/TwoFAVerification/Toggle2FA';
 
-@connect(state => ({ user: state.session.user }), {
+@connect((state) => ({ user: state.session.user }), {
   toggleUser2FaEnforcement,
   updateSession,
 })
 export default class User2FASettings extends React.PureComponent {
   static contextType = TwoFactorVerificaionContext;
 
-  onToggleComplete = twoFaEnabled => {
+  onToggleComplete = (twoFaEnabled) => {
     const { user: currentUser } = this.props.user;
     const user = new User({
       ...this.props.user,
@@ -30,7 +30,7 @@ export default class User2FASettings extends React.PureComponent {
     this.props.updateSession({ user });
   };
 
-  handleTwoFactorVerificationOnLoginToggle = onToggleChange => (flag, callback) => {
+  handleTwoFactorVerificationOnLoginToggle = (onToggleChange) => (flag, callback) => {
     return this.context.criticalFlow({
       modes: ['live', 'test'],
       onUserTwoFaVerified: () => {
@@ -41,8 +41,8 @@ export default class User2FASettings extends React.PureComponent {
       },
 
       onFlowTermination: () => {
-        return callback(false)
-      }
+        return callback(false);
+      },
     });
   };
 
@@ -77,10 +77,10 @@ function DescriptionForUser2Fa() {
   return (
     <>
       <p>
-        Add an extra layer of security to your account by using a one-time
-        verification code in addition to your password each time you log in.
+        Add an extra layer of security to your account by using a one-time verification code in
+        addition to your password each time you log in.
       </p>
-      <ShowWhen additionalCondition={user => user.isAllowedTeamManagement}>
+      <ShowWhen additionalCondition={(user) => user.isAllowedTeamManagement}>
         <p>
           <strong>Note:</strong> You can setup 2FA for your team from{' '}
           <Link to="/team">manage team</Link> page
