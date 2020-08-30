@@ -182,7 +182,7 @@
 
             if (search) {
                 allParamsWithValues = search.split('&').reduce(function(prev, curr){
-                        let [key, value] = curr.split('=');
+                        var [key, value] = curr.split('=');
                         prev[key] = value;
                         return prev;
                     }, {});
