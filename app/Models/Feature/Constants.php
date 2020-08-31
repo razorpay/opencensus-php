@@ -432,6 +432,9 @@ class Constants
     // For merchants who want to use the alias feature on Route.
     const ROUTE_CODE_SUPPORT                = 'route_code_support';
 
+    // google imali auth split feature
+    const AUTH_SPLIT                     = 'auth_split';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -671,6 +674,7 @@ class Constants
         self::OTP_SUBMIT_RESPONSE             => true,
         self::ESIGN                           => true,
         self::ROUTE_CODE_SUPPORT              => true,
+        self::AUTH_SPLIT                      => true,
     ];
 
     // Entity type constants
