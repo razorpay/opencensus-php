@@ -85,6 +85,7 @@ class Base extends Core
     const NETBANKING_EQUITAS     = 'NetbankingEquitas';
     const NETBANKING_HDFC        = 'NetbankingHdfc';
     const NETBANKING_ALLAHABAD   = 'NetbankingAllahabad';
+    const NETBANKING_JKB         = 'NetbankingJkb';
     const NETBANKING_SBI         = 'NetbankingSbi';
     const NETBANKING_KVB         = 'NetbankingKvb';
     const NETBANKING_JSB         = 'NetbankingJsb';
@@ -156,6 +157,7 @@ class Base extends Core
         self::AIRTEL                 => ['no-reply@airtelbank.com'],
         self::NETBANKING_INDUSIND    => [],
         self::NETBANKING_OBC         => [],
+        self::NETBANKING_JKB         => ['netbanking@jkbmail.com'],
         self::NETBANKING_PNB         => [],
         self::NETBANKING_ALLAHABAD   => ['imps.recon@allahabadbank.in', 'cbspo.aeps@allahabadbank.in'],
         self::NETBANKING_IDFC        => [],
@@ -237,6 +239,7 @@ class Base extends Core
         Gateway::NETBANKING_YESB        => self::NETBANKING_YESB,
         Gateway::NETBANKING_CUB         => self::NETBANKING_CUB,
         Gateway::NETBANKING_IBK         => self::NETBANKING_IBK,
+        Gateway::NETBANKING_JKB         => self::NETBANKING_JKB,
         Gateway::NETBANKING_EQUITAS     => self::NETBANKING_EQUITAS,
         Gateway::NETBANKING_BOB         => self::NETBANKING_BOB,
         Gateway::NETBANKING_VIJAYA      => self::NETBANKING_VIJAYA,

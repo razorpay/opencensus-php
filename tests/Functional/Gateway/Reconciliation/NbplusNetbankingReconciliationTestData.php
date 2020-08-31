@@ -26,4 +26,14 @@ return [
         'TRANSACTIONDATE'               => Carbon::today()->format("Y-m-d"),
         'Account_Number'                => '123456789'
     ],
+    'testJkbSuccessRecon' => [
+        'BID'                => '1234',
+        'PRN'                => '',
+        'AMT'                => '500.00',
+        'CRN'                => 'INR',
+        'DATE'               => Carbon::today()->format("YmdHis"),
+        'STATUS'             => 'S',
+        'REAL'               => 'Y',
+        'ITC'                => 'RAZORPAY'
+    ],
 ];
