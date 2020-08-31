@@ -18,6 +18,7 @@ use RZP\Models\Customer;
 use RZP\Constants\Timezone;
 use RZP\Models\BankTransfer;
 use RZP\Models\Currency\Currency;
+use RZP\Models\VirtualAccountProducts;
 use RZP\Models\Offline\Device as OfflineDevice;
 
 class Service extends Base\Service
@@ -87,6 +88,11 @@ class Service extends Base\Service
                                        ->virtual_account
                                        ->findActiveVirtualAccountByOrder($order);
 
+                if ($virtualAccount === null)
+                {
+                    $virtualAccount = $this->getVirtualAccountForCustomer($input, $order);
+                }
+
                 if ($virtualAccount !== null)
                 {
                     $virtualAccount = $virtualAccount->toArrayPublic();
@@ -110,6 +116,11 @@ class Service extends Base\Service
                 if (isset($input[Entity::CLOSE_BY]) === true)
                 {
                     $createArray[Entity::CLOSE_BY] =  $input[Entity::CLOSE_BY];
+                }
+
+                if (isset($input[Entity::CUSTOMER_ID]) === true)
+                {
+                    $createArray[Entity::CUSTOMER_ID] = $input[Entity::CUSTOMER_ID];
                 }
 
                 $virtualAccount = $this->create($createArray);
@@ -727,5 +738,48 @@ class Service extends Base\Service
         $this->mode = str_contains($routeName, 'test') ? Mode::TEST : Mode::LIVE;
 
         $this->app['basicauth']->setModeAndDbConnection($this->mode);
+    }
+
+    protected function getVirtualAccountForCustomer(array $input, Order\Entity $order)
+    {
+        $customer = $this->getCustomerIfGiven($input);
+
+        if ($customer === null)
+        {
+            return null;
+        }
+
+        $virtualAccount = $this->repo
+                                ->virtual_account
+                                ->findActiveVirtualAccountForOrderByCustomer($customer);
+        if ($virtualAccount === null)
+        {
+            return null;
+        }
+
+        $editArray = [
+            Entity::AMOUNT_EXPECTED => $order->getAmountDue(),
+            Entity::AMOUNT_PAID     => 0,
+            Entity::AMOUNT_RECEIVED => 0,
+            Entity::NOTES           => $input[Entity::NOTES] ?? [],
+            Entity::STATUS          => Status::ACTIVE,
+        ];
+
+        if (isset($input[Entity::CLOSE_BY]) === true)
+        {
+            $editArray[Entity::CLOSE_BY] =  $input[Entity::CLOSE_BY];
+        }
+
+        $this->repo->transaction(function() use ($virtualAccount, $order, $editArray)
+        {
+            $virtualAccount->entity()->associate($order);
+            $virtualAccount->edit($editArray, 'editForOrder');
+
+            (new VirtualAccountProducts\Core())->create($virtualAccount);
+
+            $this->repo->saveOrFail($virtualAccount);
+        });
+
+        return $virtualAccount;
     }
 }

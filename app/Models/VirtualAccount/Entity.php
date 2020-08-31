@@ -75,6 +75,8 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTOR,
         self::DESCRIPTION,
         self::AMOUNT_EXPECTED,
+        self::AMOUNT_RECEIVED,
+        self::AMOUNT_PAID,
         self::CLOSE_BY,
     ];
 

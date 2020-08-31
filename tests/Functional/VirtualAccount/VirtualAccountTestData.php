@@ -468,6 +468,22 @@ return [
         ],
     ],
 
+    'testCreateVirtualAccountForInvalidCustomer' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'qwerty is not a valid id',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateVirtualAccountWithIdenticalDescriptor' => [
         'response' => [
             'content' => [

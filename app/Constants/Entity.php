@@ -152,6 +152,7 @@ class Entity
     const MERCHANT_ATTRIBUTE         = 'merchant_attribute';
     const PAYMENT_META               = 'payment_meta';
     const LOW_BALANCE_CONFIG         = 'low_balance_config';
+    const VIRTUAL_ACCOUNT_PRODUCTS   = 'virtual_account_products';
 
     //ondemand
     const SETTLEMENT_ONDEMAND_FUND_ACCOUNT  = 'settlement.ondemand_fund_account';

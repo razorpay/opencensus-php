@@ -18,6 +18,7 @@ use RZP\Models\VirtualAccountTpv;
 use RZP\Jobs\VirtualAccountMigrate;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Order\Entity as Order;
+use RZP\Models\VirtualAccountProducts;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Merchant\Entity as Merchant;
 
@@ -204,6 +205,8 @@ class Core extends Base\Core
             $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
 
             $this->repo->saveOrFail($virtualAccount);
+
+            (new VirtualAccountProducts\Core())->create($virtualAccount);
 
             (new VirtualAccountTpv\Core())->buildAllowedPayers($virtualAccount, $input);
 

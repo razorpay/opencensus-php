@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
+use RZP\Models\Customer;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Entity as Merchant;
 
@@ -195,5 +196,15 @@ class Repository extends Base\Repository
                     ->pluck(Entity::MERCHANT_ID)
                     ->toArray();
 
+    }
+
+    public function findActiveVirtualAccountForOrderByCustomer(Customer\Entity $customer)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::STATUS, [Status::ACTIVE, Status::PAID])
+                    ->where(Entity::CUSTOMER_ID, '=', $customer->getId())
+                    ->where(Entity::ENTITY_TYPE, '=', 'order')
+                    ->whereNotNull(Entity::ENTITY_ID)
+                    ->first();
     }
 }

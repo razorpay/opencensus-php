@@ -44,6 +44,15 @@ class Validator extends Base\Validator
         Entity::CLOSE_BY        => 'filled|epoch|custom',
     ];
 
+    protected static $editForOrderRules = [
+        Entity::STATUS          => 'sometimes',
+        Entity::NOTES           => 'sometimes|notes',
+        Entity::CLOSE_BY        => 'filled|epoch|custom',
+        Entity::AMOUNT_EXPECTED => 'filled|integer|min:0',
+        Entity::AMOUNT_PAID     => 'filled|integer|min:0',
+        Entity::AMOUNT_RECEIVED => 'filled|integer|min:0',
+    ];
+
     protected static $bankAccountReceiverOptionRules = [
         Entity::NUMERIC    => 'sometimes|boolean',
         Entity::DESCRIPTOR => 'sometimes|alpha_num|max:10',
