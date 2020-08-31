@@ -75,6 +75,7 @@ app
         FIREFOX: 'Firefox',
         SAFARI: 'Safari',
       };
+      const isMerchantX = window.location.href.includes('merchant=x');
       $scope.data = {};
       $scope.alerts = alertsFactory.getHandler();
       $scope.rightLayout = false; // login layout ? right is true : right is false
@@ -82,8 +83,9 @@ app
       $scope.eventsMode = 'live';
       $scope.showTopbar = false;
       $scope.isSignupDisplayEventFired = false;
-      $scope.isGoogleAuth = $location.search().mode === 'google'; // this flag changes when signup with email clicked
-      $scope.showGauthScreen = $location.search().mode === 'google'; // this flag contains the info in the entire auth session - does not changes (will remove after experiment)
+      // disable google oauth login for X
+      $scope.isGoogleAuth = !isMerchantX; // this flag changes when signup with email clicked
+      $scope.showGauthScreen = !isMerchantX; // this flag contains the info in the entire auth session - does not changes (will remove after experiment)
       $scope.showGAuthPopup = false;
       $scope.showCookieErrorPopup = false;
       $scope.showKnowMore = false;
@@ -716,7 +718,7 @@ app
        */
       function serviceName() {
         var service = 'PG';
-        if (window.top !== window.self) {
+        if (isMerchantX) {
           service = 'X';
         } else if ($scope.signup.settings.partner_intent) {
           service = 'Partner';
