@@ -1793,4 +1793,15 @@ class FeaturesTest extends TestCase
 
         $this->startTest();
     }
+
+    /**
+     * This function tests updating of merchant feature rx_block_report_download.
+     */
+    public function testAddMerchantRxBlockReportDownloadFeatureAdminAuth()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
+
 }

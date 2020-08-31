@@ -780,6 +780,27 @@ return [
         ]
     ],
 
+    'testAddMerchantRxBlockReportDownloadFeatureAdminAuth' => [
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['rx_block_report_download'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name' => 'rx_block_report_download',
+                    'entity_id' => '10000000000000',
+                    'entity_type' => 'merchant',
+                ]
+            ]
+        ]
+    ],
+
     'testAddMerchantLocStage1FeatureAdminAuth' => [
         'request'  => [
             'url'     => '/features',

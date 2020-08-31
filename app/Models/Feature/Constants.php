@@ -405,6 +405,9 @@ class Constants
 
     const TRANSACTION_ON_HOLD            = 'transaction_on_hold';
 
+    //Disable download report actions for View Only Role for RazorpayX dashboard
+    const RX_BLOCK_REPORT_DOWNLOAD       = 'rx_block_report_download';
+
     const BEPG  = 'bepg';
 
     //NPS FEATURES
@@ -663,6 +666,7 @@ class Constants
         self::NPS_SURVEY_PAYMENT_GATEWAY_6M   => true,
         self::NPS_SURVEY_PAYMENT_GATEWAY_12M  => true,
         self::NPS_SURVEY_OTHER_PRODUCTS       => true,
+        self::RX_BLOCK_REPORT_DOWNLOAD        => true,
         self::BLOCK_ONBOARDING_SMS            => true,
         self::OTP_SUBMIT_RESPONSE             => true,
         self::ESIGN                           => true,
@@ -904,6 +908,11 @@ class Constants
         self::NPS_SURVEY_PAYMENT_PAGES  => [
             'feature'       => self::NPS_SURVEY_PAYMENT_PAGES,
             'display_name'  => 'NPS Survey for Payment Pages',
+            'documentation' => '',
+        ],
+        self::RX_BLOCK_REPORT_DOWNLOAD  => [
+            'feature'       => self::RX_BLOCK_REPORT_DOWNLOAD,
+            'display_name'  => 'Disable download report actions for View Only Role for RazorpayX dashboard',
             'documentation' => '',
         ],
         self::ROUTE_CODE_SUPPORT => [
