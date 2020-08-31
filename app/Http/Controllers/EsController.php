@@ -27,12 +27,12 @@ class EsController extends Controller
      */
     const ALLOWED_DEBUG_METHODS = [
         'cat',
-        'mget',
-        'search',
         'explain',
         'getAliases',
         'getMapping',
         'getSettings',
+        // Notice! Intentionally search or mget like read actions are not
+        // allowed. Documents like merchant contains pii e.g. balance, email etc.
     ];
 
     /**

@@ -894,10 +894,6 @@ return [
                 'description' => 'Create Banking VAs for a merchant',
                 'assignable'  => true,
             ],
-            Permission::CREATE_WEBHOOK_STORK_BANKING_BULK => [
-                'description' => 'Copy RX setting from Api to Rx',
-                'assignable'  => true,
-            ],
             Permission::UPDATE_FREE_PAYOUTS_ATTRIBUTES => [
                 'description' => 'Update free payout attributes',
                 'assignable'  => true,

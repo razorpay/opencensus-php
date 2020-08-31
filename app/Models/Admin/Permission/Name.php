@@ -422,7 +422,6 @@ class Name
     const CREATE_PROMOTION_EVENT              = 'create_promotion_event';
     const CREDITS_BATCH_UPLOAD                = 'credits_batch_upload';
     const UPDATE_MERCHANT_2FA_SETTING         = 'update_merchant_2fa_setting';
-    const CREATE_WEBHOOK_STORK_BANKING_BULK   = 'create_webhook_stork_banking_bulk';
 
     // tax payment settings
     const PAY_TAX_PAYMENTS                    = 'pay_tax_payment';
