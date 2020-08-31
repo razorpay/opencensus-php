@@ -24,13 +24,13 @@ class Scorecard extends Base\Core
 
         $yesterdayMerchantVolume = $this->repo->payment->getYesterdayTopMerchantVolumeWise($limit);
 
-        //$monthlyMerchantVolume = $this->repo->payment->getMonthTopMerchantVolumeWise($limit);
+        $monthlyMerchantVolume = $this->repo->payment->getMonthTopMerchantVolumeWise($limit);
 
         $data =  [
             'yesterdayVolume'         => $yesterdayVolume,
             'monthVolume'             => $monthVolume,
             'yesterdayMerchantVolume' => $yesterdayMerchantVolume,
-            //'monthlyMerchantVolume'   => $monthlyMerchantVolume
+            'monthlyMerchantVolume'   => $monthlyMerchantVolume
         ];
 
         $scoreCardMail = new ScorecardMail($data);

@@ -988,6 +988,11 @@ class Repository extends \Razorpay\Spine\Repository
 
     protected function getDataWarehouseConnection()
     {
+        if ($this->app['env'] === Environment::TESTING)
+        {
+            return Config::get('database.default');
+        }
+
         return Connection::DATA_WAREHOUSE;
     }
 

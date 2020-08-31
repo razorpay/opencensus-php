@@ -1099,7 +1099,7 @@ class Repository extends Base\Repository
         $pid = $this->dbColumn(Payment\Entity::MERCHANT_ID);
         $mid = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
                     ->join($this->repo->merchant->getTableName(), $pid, '=', $mid)
                     ->selectRaw(
                        Payment\Entity::MERCHANT_ID . ','.
@@ -1126,7 +1126,7 @@ class Repository extends Base\Repository
         $pid = $this->dbColumn(Payment\Entity::MERCHANT_ID);
         $mid = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
                     ->join($this->repo->merchant->getTableName(), $pid, '=', $mid)
                     ->selectRaw(
                        Payment\Entity::MERCHANT_ID . ','.
@@ -1349,7 +1349,7 @@ class Repository extends Base\Repository
 
     protected function getPaymentVolumeBetweenTimestamp($from, $to)
     {
-        $vol = $this->newQuery()
+        $vol = $this->newQueryWithConnection($this->getDataWarehouseConnection())
                     ->betweenTime($from, $to)
                     ->statusSuccess()
                     ->selectRaw('SUM(' . Entity::AMOUNT . ') AS amount' . ','.
