@@ -123,10 +123,39 @@ class Core extends Base\Core
             return;
         }
 
-        $properties = [
-            'source'        => 'callback',
-            'request_from'  => 'bank',
-        ];
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        $properties = [];
+
+        switch ($routeName)
+        {
+            case 'upi_transfer_process':
+                $properties = [
+                    'source'       => 'callback',
+                    'request_from' => 'bank',
+                ];
+
+                break;
+
+            case 'reconciliate_via_batch_service':
+                $properties = [
+                    'source'       => 'recon',
+                    'request_from' => 'admin',
+                ];
+
+                break;
+
+            default:
+                $this->trace->info(
+                    TraceCode::UNTRACKED_ENDPOINT_UPI_TRANSFER,
+                    [
+                        'route_name'    => $routeName,
+                        'npci_ref_id'   => $upiTransfer->getRrn(),
+                    ]);
+
+                break;
+
+        }
 
         $this->app['diag']->trackUpiTransferRequestEvent(
             EventCode::UPI_TRANSFER_REQUEST,
