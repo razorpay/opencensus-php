@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\Downtime;
 
 
 use App;
+use Database\Connection;
 use RZP\Models\Base\UniqueIdEntity;
 use \stdClass;
 use Carbon\Carbon;
@@ -38,6 +39,8 @@ class DowntimeDetection
 
     protected $repo;
 
+    protected $app;
+
     const ISSUER            = 'ISSUER';
 
     const NETWORK           = 'NETWORK';
@@ -59,12 +62,17 @@ class DowntimeDetection
 
     const PAYMENT_INTERVAL  = 'payment_interval';
 
+    // 10 seconds
+    const MAX_LAG_IN_MILLI  = 10000;
+
     public function __construct()
     {
         /**
          * @var $app Application
          */
         $app = App::getFacadeRoot();
+
+        $this->app = $app;
 
         $this->trace   = $app['trace'];
 
@@ -198,6 +206,17 @@ class DowntimeDetection
 
     public function createDowntimeIfNecessary($type, $method, $key, $value, $to)
     {
+        $conn = $this->repo->payment->getSlaveConnection();
+
+        $replicationLagInMilli = $this->app['db.connector.mysql']->getReplicationLagInMilli($conn);
+
+        if ($replicationLagInMilli > self::MAX_LAG_IN_MILLI)
+        {
+            $this->trace->info(TraceCode::GATEWAY_DOWNTIME_V2_DOWN_DUE_TO_REPLICA_LAG);
+
+           return;
+        }
+
         //Check if downtime present in Gateway downtime Table
         $downtimeCreatedSince = $this->fetchExistingDowntime($method, $key, $value);
 
@@ -233,15 +252,15 @@ class DowntimeDetection
 
                 if ($method === Method::CARD)
                 {
-                    $payments = (new \RZP\Models\Payment\Repository())->fetchLastNPaymentsForDowntime($from->timestamp, $to->timestamp, $type, $key, $value, $minimumPayments);
+                    $payments = $this->repo->payment->fetchLastNPaymentsForDowntime($from->timestamp, $to->timestamp, $type, $key, $value, $minimumPayments);
                 }
                 else if ($method === Method::NETBANKING)
                 {
-                    $payments = (new \RZP\Models\Payment\Repository())->fetchLastNNetbankingPaymentsForDowntime($from->timestamp, $to->timestamp, $type, $key, $value, $minimumPayments);
+                    $payments = $this->repo->payment->fetchLastNNetbankingPaymentsForDowntime($from->timestamp, $to->timestamp, $type, $key, $value, $minimumPayments);
                 }
                 else if ($method === Method::UPI)
                 {
-                    $payments = (new \RZP\Models\Payment\Repository())->fetchLastNUpiPaymentsForDowntime($from->timestamp, $to->timestamp, $type, $key, $value, $minimumPayments);
+                    $payments = $this->repo->payment->fetchLastNUpiPaymentsForDowntime($from->timestamp, $to->timestamp, $type, $key, $value, $minimumPayments);
                 }
                 else
                 {
@@ -361,15 +380,15 @@ class DowntimeDetection
 
             if ($method === Method::CARD)
             {
-                $payments = (new \RZP\Models\Payment\Repository())->fetchLastNPaymentsForDowntime($from, $to, $type, $key, $value, $minimumPayments);
+                $payments = $this->repo->payment->fetchLastNPaymentsForDowntime($from, $to, $type, $key, $value, $minimumPayments);
             }
             else if ($method === Method::NETBANKING)
             {
-                $payments = (new \RZP\Models\Payment\Repository())->fetchLastNNetbankingPaymentsForDowntime($from, $to, $type, $key, $value, $minimumPayments);
+                $payments = $this->repo->payment->fetchLastNNetbankingPaymentsForDowntime($from, $to, $type, $key, $value, $minimumPayments);
             }
             else if ($method === Method::UPI)
             {
-                $payments = (new \RZP\Models\Payment\Repository())->fetchLastNUpiPaymentsForDowntime($from, $to, $type, $key, $value, $minimumPayments);
+                $payments = $this->repo->payment->fetchLastNUpiPaymentsForDowntime($from, $to, $type, $key, $value, $minimumPayments);
             }
 
             else

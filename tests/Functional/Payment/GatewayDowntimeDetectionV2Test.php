@@ -72,6 +72,19 @@ class GatewayDowntimeDetectionV2Test extends TestCase
         $externalMock->shouldReceive('getAllJobTypes')->andReturn($this->getAllJobTypes());
 
         $this->enablePaymentDowntimes();
+
+        $app = App::getFacadeRoot();
+
+        $connector = \Mockery::mock('RZP\Base\Database\Connectors\MySqlConnector', [$app])->makePartial();
+
+        $connector->shouldReceive('getReplicationLagInMilli')
+            ->with(\Mockery::type('string'))
+            ->andReturnUsing(function ()
+            {
+                return 0;
+            });
+
+        $this->app->instance('db.connector.mysql', $connector);
     }
 
     public function tearDown()

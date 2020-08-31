@@ -996,7 +996,7 @@ class Repository extends \Razorpay\Spine\Repository
         return Connection::DATA_WAREHOUSE;
     }
 
-    protected function getSlaveConnection(string $mode = null)
+    public function getSlaveConnection(string $mode = null)
     {
         if ($this->app['env'] === 'testing')
         {

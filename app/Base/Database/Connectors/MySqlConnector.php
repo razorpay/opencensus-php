@@ -230,4 +230,18 @@ class MySqlConnector extends BaseMySqlConnector
             }
         }
     }
+
+    public function getReplicationLagInMilli(string $connection)
+    {
+        $query = 'SELECT ROUND(( ROUND(UNIX_TIMESTAMP(Now(6)) * 1000000) - (
+                        UNIX_TIMESTAMP(SUBSTR(ts, 1, 19)) * 1000000 +
+                        SUBSTR(ts, 21, 6) )
+                     ) / 1000) AS replica_lag_milli
+                FROM heartbeat.heartbeat
+                LIMIT  1';
+
+        $result = $this->app['db']->connection($connection)->getPdo()->query($query)->fetch();
+
+        return $result['replica_lag_milli'];
+    }
 }
