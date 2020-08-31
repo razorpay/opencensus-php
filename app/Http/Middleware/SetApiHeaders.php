@@ -6,6 +6,7 @@ use Session;
 use Closure;
 use App\Http\ApiUrl;
 use App\Http\Headers;
+use App\Trace\TraceCode;
 use Illuminate\Contracts\Auth\Guard;
 use Razorpay\Api\Request as ApiRequest;
 
@@ -55,9 +56,13 @@ class SetApiHeaders {
             Headers::CSRF_TOKEN => $csrfToken . ',' . $timeStamp,
         ];
 
+        app('trace')->info(TraceCode::USER_LOGIN_CREDS, ['session_id' => Session::getId()]);
+
         $response = $next($request);
 
         $response->withHeaders($csrfTokenHeader);
+
+        app('trace')->info(TraceCode::USER_LOGIN_CREDS, ['session_id' => Session::getId()]);
 
         return $response;
 	}
