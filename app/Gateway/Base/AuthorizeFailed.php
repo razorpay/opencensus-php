@@ -103,8 +103,9 @@ trait AuthorizeFailed
                 $this->updateGatewayEntityLateAuthorized($gatewayPayment, $content);
             }
 
-            if (($verify->input['payment']['method'] === Payment\Method::UPI)
-                and ($verify->input['payment']['recurring'] === true))
+            if ((empty($verify->input['payment']) === false) and
+                ($verify->input['payment']['method'] === Payment\Method::UPI) and
+                ($verify->input['payment']['recurring'] === true))
             {
                 return $this->extractUpiRecurringMandateAndPaymentProperties($gatewayPayment, $verify);
             }
