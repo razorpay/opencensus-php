@@ -2,13 +2,14 @@
 
 namespace RZP\Models\Gateway\File\Processor\Claim;
 
+use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
 use Carbon\Carbon;
 
-class Bob extends Base
+class Bob extends NetbankingBase
 {
     use FileHandler;
 
@@ -39,7 +40,7 @@ class Bob extends Base
 
             $formattedData[] = [
                 $row['payment']['id'],
-                $row['gateway']['bank_payment_id'],
+                $this->fetchBankPaymentId($row),
                 $date,
                 number_format($row['payment']['amount'] / 100, 2, '.', '')
             ];
@@ -49,6 +50,16 @@ class Bob extends Base
         $formattedData = $this->getTextData($formattedData, $initialLine, '|');
 
         return $formattedData;
+    }
+
+    protected function fetchBankPaymentId($data)
+    {
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['gateway']['bank_transaction_id'];
+        }
+
+        return $data['gateway']['bank_payment_id'];
     }
 
     protected function getFileToWriteNameWithoutExt()

@@ -6,7 +6,7 @@ use RZP\Gateway\Netbanking\Bob;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 
-class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
 {
     const COLUMN_PAYMENT_ID          = 'fldMerchRefNbr';
     const COLUMN_GATEWAY_PAYMENT_ID  = 'fldBankRefNbr';

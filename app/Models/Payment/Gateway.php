@@ -2627,6 +2627,7 @@ class Gateway
             self::NETBANKING_YESB,
             self::NETBANKING_SIB,
             self::NETBANKING_IDBI,
+            self::NETBANKING_BOB,
             self::NETBANKING_JKB,
             self::NETBANKING_IOB,
             self::NETBANKING_FSB,

@@ -9,6 +9,7 @@ use RZP\Gateway\Netbanking\Bob\Constants;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
 use Config;
+use RZP\Services\NbPlus\Netbanking;
 
 class Bob extends Base
 {
@@ -30,7 +31,7 @@ class Bob extends Base
 
         foreach ($inputData as $row)
         {
-            if (empty($row['gateway']['account_number']) === true)
+            if ((empty($row['gateway']['account_number']) === true) and (empty($row['gateway']['bank_account_number']) === true))
             {
                 throw new Exception\LogicException(
                     'Account number missing for refund file generation',
@@ -43,11 +44,11 @@ class Bob extends Base
             }
 
             $data[] = $this->getDataForRow(
-                $row['gateway']['account_number'],
+                $this->fetchBankAccountNumber($row),
                 $row['refund']['amount'],
                 $row['refund']['id'],
                 Constants::REFUND_CREDIT,
-                trim($row['gateway']['bank_payment_id'])
+                trim($this->fetchBankPaymentId($row))
             );
 
             $totalAmount += $row['refund']['amount'];
@@ -64,6 +65,26 @@ class Bob extends Base
         );
 
         return $this->generateText($data, '', true);
+    }
+
+    protected function fetchBankPaymentId($data)
+    {
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['gateway']['bank_transaction_id'];
+        }
+
+        return $data['gateway']['bank_payment_id'];
+    }
+
+    protected function fetchBankAccountNumber($data)
+    {
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['gateway']['bank_account_number'];
+        }
+
+        return $data['gateway']['account_number'];
     }
 
     protected function getDataForRow($accountNumber, $amount, $particulars, $type, $bankRefNumber = '')
