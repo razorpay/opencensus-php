@@ -27,6 +27,7 @@
                 <tr>
                     <th> Merchant Id </th>
                     <th> Merchant Name </th>
+                    <th> Merchant Website </th>
                     <th> Payouts Count </th>
                     <th> Payout Amount Cr. </th>
                 </tr>
@@ -37,6 +38,7 @@
 
                     <td>{{ $merchant['x_merchant_id'] }}</td>
                     <td>{{ $merchant['x_merchant_display_name'] }}</td>
+                    <td>{{ $merchant['x_merchant_website'] }}</td>
                     <td>{{ $merchant['payout_count'] }}</td>
                     <td>{{ $merchant['payout_amount_cr'] }}</td>
 

@@ -1069,7 +1069,7 @@ class Repository extends Base\Repository
                         ]
                     );
     }
-  
+
     /**
      * get yesterday's total payout amount and tax count
      *
@@ -1144,6 +1144,7 @@ class Repository extends Base\Repository
         $merchantIdColumn              = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
         $merchantNameColumn            = $this->repo->merchant->dbColumn(Merchant\Entity::NAME);
         $merchantEmailColumn           = $this->repo->merchant->dbColumn(Merchant\Entity::EMAIL);
+        $merchantWebsiteColumn         = $this->repo->merchant->dbColumn(Merchant\Entity::WEBSITE);
         $merchantBillingLabelColumn    = $this->repo->merchant->dbColumn(Merchant\Entity::BILLING_LABEL);
         $merchantBusinessBankingColumn = $this->repo->merchant->dbColumn(Merchant\Entity::BUSINESS_BANKING);
 
@@ -1158,6 +1159,7 @@ class Repository extends Base\Repository
                     ->selectRaw(
                         $payoutsMerchantIdColumn .' as x_merchant_id' . ',' .
                         'COALESCE('. $merchantBillingLabelColumn .',' . $merchantNameColumn .') as x_merchant_display_name'. ',' .
+                        'COALESCE('. $merchantWebsiteColumn .',"Not Available") as x_merchant_website,' .
                         'COUNT(*) AS payout_count' . ',' .
                         'COALESCE(ROUND(SUM(' . Entity::AMOUNT . '* 1.0 / 1000000000), 2), 0) AS payout_amount_cr'
                     )
@@ -1167,7 +1169,8 @@ class Repository extends Base\Repository
                     ->where($merchantEmailColumn, 'not like', '%@razorpay.com')
                     ->groupBy(
                         'x_merchant_id',
-                        'x_merchant_display_name')
+                        'x_merchant_display_name',
+                        'x_merchant_website')
                     ->orderBy('payout_count', 'desc')
                     ->limit($limit)
                     ->get();
