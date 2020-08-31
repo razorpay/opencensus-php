@@ -212,6 +212,14 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD2 => 'required',
     ];
 
+    protected static $payuTerminalRules = [
+        Entity::GATEWAY                                 => 'required|in:payu',
+        Entity::GATEWAY_MERCHANT_ID                     => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET                   => 'required|string',
+        Entity::TYPE                                    => 'required|array',
+        Entity::TYPE . '.direct_settlement_with_refund' => 'required|in:1',
+    ];
+
     protected static $hdfcTerminalRules = [
         Entity::GATEWAY                    => 'required|in:hdfc',
         Entity::GATEWAY_MERCHANT_ID        => 'required|integer|digits_between:4,8',

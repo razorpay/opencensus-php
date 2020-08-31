@@ -12,6 +12,7 @@ return [
     'available' => [
         'amex',
         'atom',
+        'payu',
         'cred',
         'mozart',
         'axis_genius',
@@ -119,6 +120,7 @@ return [
     'mock_cybersource'            => env('CYBERSOURCE_MOCK'),
     'mock_first_data'             => env('FIRST_DATA_MOCK'),
     'mock_atom'                   => env('ATOM_MOCK'),
+    'mock_payu'                   => env('PAYU_MOCK'),
     'mock_hitachi'                => env('HITACHI_MOCK'),
     'mock_esigner_digio'          => env('ESIGNER_DIGIO_MOCK'),
     'mock_esigner_legaldesk'      => env('ESIGNER_LEGALDESK_MOCK'),

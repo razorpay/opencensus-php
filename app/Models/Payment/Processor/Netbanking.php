@@ -417,6 +417,80 @@ class Netbanking
                 IFSC::YESB,
             ],
         ],
+        Gateway::PAYU => [
+            'retail' => [
+                IFSC::AIRP,
+                IFSC::ALLA,
+                IFSC::ANDB,
+                self::ANDB_C,
+                IFSC::AUBL,
+                self::BARB_C,
+                self::BARB_R,
+                IFSC::BBKM,
+                IFSC::BDBL,
+                IFSC::BKDN,
+                IFSC::BKID,
+                IFSC::CBIN,
+                IFSC::CIUB,
+                IFSC::CNRB,
+                IFSC::CORP,
+                IFSC::COSB,
+                IFSC::CSBK,
+                IFSC::DBSS,
+                IFSC::DCBL,
+                IFSC::DEUT,
+                IFSC::DLXB,
+                IFSC::ESAF,
+                IFSC::ESFB,
+                IFSC::FDRL,
+                IFSC::HDFC,
+                IFSC::IBKL,
+                self::IBKL_C,
+                IFSC::ICIC,
+                self::ICIC_C,
+                IFSC::IDFB,
+                IFSC::IDIB,
+                IFSC::INDB,
+                IFSC::IOBA,
+                IFSC::JAKA,
+                IFSC::JSBP,
+                IFSC::JSFB,
+                IFSC::KARB,
+                IFSC::KKBK,
+                IFSC::KVBL,
+                self::LAVB_C,
+                self::LAVB_R,
+                IFSC::MAHB,
+                IFSC::MSNU,
+                IFSC::NESF,
+                IFSC::NKGS,
+                IFSC::ORBC,
+                IFSC::PSIB,
+                self::PUNB_C,
+                self::PUNB_R,
+                IFSC::RATN,
+                self::RATN_C,
+                IFSC::SBIN,
+                IFSC::SCBL,
+                IFSC::SIBL,
+                IFSC::SRCB,
+                IFSC::SURY,
+                IFSC::SVCB,
+                self::SVCB_C,
+                IFSC::SYNB,
+                IFSC::TJSB,
+                IFSC::TMBL,
+                IFSC::TNSC,
+                IFSC::UBIN,
+                IFSC::UCBA,
+                IFSC::UTBI,
+                IFSC::UTIB,
+                self::UTIB_C,
+                IFSC::VIJB,
+                IFSC::YESB,
+                self::YESB_C,
+            ]
+        ],
         Gateway::NETBANKING_ICICI => [
             'retail' => [
                 IFSC::ICIC,
@@ -815,6 +889,11 @@ class Netbanking
         return self::$gatewaySupportedBanks[Gateway::ATOM]['retail'];
     }
 
+    public static function getPayuSupportedBanks()
+    {
+        return self::$gatewaySupportedBanks[Gateway::PAYU]['retail'];
+    }
+
     public static function getDirectlyNetbankingBanks()
     {
         return array_merge(self::$self, self::$selfCorp);
@@ -906,6 +985,11 @@ class Netbanking
     public static function isAtomSupportedBank($bank)
     {
         return in_array($bank, self::getAtomSupportedBanks(), true) === true;
+    }
+
+    public static function isPayuSupportedBank($bank)
+    {
+        return in_array($bank, self::getPayuSupportedBanks(), true) === true;
     }
 
     public static function isNetbankingBankDirectlySupported($bank)

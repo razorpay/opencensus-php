@@ -24,6 +24,7 @@ class Gateway
 {
     const AMEX                   = 'amex';
     const ATOM                   = 'atom';
+    const PAYU                   = 'payu';
     const BHARAT_QR              = 'bharat_qr';
     const AXIS_GENIUS            = 'axis_genius';
     const AXIS_MIGS              = 'axis_migs';
@@ -278,7 +279,8 @@ class Gateway
             self::ACQUIRER_AXIS => self::AXIS,
         ],
         self::WALLET_PAYZAPP        => self::WALLET_PAYZAPP,
-        self::ENACH_NPCI_NETBANKING => self::ENACH_NPCI_NETBANKING
+        self::ENACH_NPCI_NETBANKING => self::ENACH_NPCI_NETBANKING,
+        self::PAYU                  => self::PAYU,
     ];
 
     /**
@@ -718,6 +720,7 @@ class Gateway
             self::BILLDESK,
             self::EBS,
             self::ATOM,
+            self::PAYU,
             self::NETBANKING_SIB,
             self::NETBANKING_CBI,
             self::NETBANKING_IDFC,
@@ -1727,7 +1730,8 @@ class Gateway
         Gateway::BILLDESK,
         Gateway::EBS,
         Gateway::PAYTM,
-        Gateway::ATOM
+        Gateway::ATOM,
+        Gateway::PAYU,
     ];
 
     /**
@@ -2601,6 +2605,7 @@ class Gateway
             self::NETBANKING_JKB,
             self::NETBANKING_IOB,
             self::NETBANKING_FSB,
+            self::PAYU,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -2625,6 +2630,7 @@ class Gateway
             self::NETBANKING_JKB,
             self::NETBANKING_IOB,
             self::NETBANKING_FSB,
+            self::PAYU,
         ];
 
         return (in_array($gateway, $gateways, true));

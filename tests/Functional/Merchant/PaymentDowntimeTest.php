@@ -259,6 +259,13 @@ class PaymentDowntimeTest extends TestCase
         $this->updateSignature($request);
         $this->makeRequestAndGetContent($request);
 
+        $request['content']['gateway'] = 'payu';
+        $request['content']['begin'] = strval(Carbon::now()->addMinutes(30)->timestamp);
+        $request['content']['end'] = strval(Carbon::now()->addMinutes(90)->timestamp);
+
+        $this->updateSignature($request);
+        $this->makeRequestAndGetContent($request);
+
         $request['content']['gateway'] = 'netbanking_sbi';
         $request['content']['begin'] = strval(Carbon::now()->addMinutes(40)->timestamp);
         $request['content']['end'] = strval(Carbon::now()->addMinutes(90)->timestamp);
@@ -1359,7 +1366,7 @@ class PaymentDowntimeTest extends TestCase
 
     protected function createNetbankingAllGatewayDowntime()
     {
-        foreach (['billdesk', 'atom', 'ebs'] as $gateway)
+        foreach (['billdesk', 'atom', 'ebs', 'payu'] as $gateway)
         {
             $request = [
                 'content' => [

@@ -310,6 +310,21 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
+    public function createPayuTerminal()
+    {
+        $attributes = [
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'payu',
+            'card'                  => 0,
+            'netbanking'            => 1,
+            'gateway_merchant_id'   => 'abcd',
+            'network_category'      => 'ecommerce',
+            'gateway_secure_secret' => 'secret',
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createBilldeskTerminal(array $attributes = [])
     {
         $defaultValues = [

@@ -207,6 +207,7 @@ class Entity
     const AMEX                   = 'amex';
     const HDFC                   = 'hdfc';
     const ATOM                   = 'atom';
+    const PAYU                   = 'payu';
     const ENACH                  = 'enach';
     const SHARP                  = 'sharp';
     const PAYTM                  = 'paytm';
