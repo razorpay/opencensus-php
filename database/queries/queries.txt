@@ -5951,3 +5951,7 @@ ALTER TABLE transfers
 
 ALTER TABLE bvs_validation
     CHANGE COLUMN `status` `validation_status` enum('success','failed','captured') not null;
+
+ALTER TABLE paper_mandates
+	ADD COLUMN generated_form_url varchar(255),
+	ADD COLUMN generated_form_url_expire int(11);

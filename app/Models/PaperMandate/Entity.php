@@ -40,6 +40,8 @@ class Entity extends Base\PublicEntity
     const TERTIARY_ACCOUNT_HOLDER     = 'tertiary_account_holder';
     const TERMINAL_ID                 = 'terminal_id';
     const GENERATED_FILE_ID           = 'generated_file_id';
+    const GENERATED_FORM_URL          = 'generated_form_url';
+    const GENERATED_FORM_URL_EXPIRE   = 'generated_form_url_expire';
     const UPLOADED_FILE_ID            = 'uploaded_file_id';
     const FORM_CHECKSUM               = 'form_checksum';
 
@@ -108,6 +110,8 @@ class Entity extends Base\PublicEntity
         self::TERMINAL_ID,
         self::FORM_CHECKSUM,
         self::GENERATED_FILE_ID,
+        self::GENERATED_FORM_URL,
+        self::GENERATED_FORM_URL_EXPIRE,
         self::UPLOADED_FILE_ID,
         self::CREATED_AT,
     ];

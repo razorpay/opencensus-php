@@ -63,6 +63,12 @@ class CreatePaperMandatesTable extends Migration
             $table->string(Entity::GENERATED_FILE_ID, Entity::ID_LENGTH)
                   ->nullable();
 
+            $table->string(Entity::GENERATED_FORM_URL, self::VARCHAR_LEN)
+                  ->nullable();
+
+            $table->integer(Entity::GENERATED_FORM_URL_EXPIRE)
+                  ->nullable();
+
             $table->string(Entity::UPLOADED_FILE_ID, Entity::ID_LENGTH)
                   ->nullable();
 
