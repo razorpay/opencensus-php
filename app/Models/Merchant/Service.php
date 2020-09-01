@@ -3100,6 +3100,8 @@ class Service extends Base\Service
 
         $data[EntityConstants::MERCHANT_DETAIL] = isset($merchantDetail) === true ? $merchantDetail->toArrayPublic() : [];
 
+        $data[EntityConstants::MERCHANT][EntityConstants::FEATURE] = $merchant->getEnabledFeatures();
+
         return $data;
     }
 

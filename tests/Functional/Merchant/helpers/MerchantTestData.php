@@ -5923,6 +5923,7 @@ return [
                 'merchant' => [
                     'id'        => '100ghi000ghi00',
                     'entity'    =>  'merchant',
+                    'feature'   => ['upi_otm', 'override_hitachi_blacklst']
                 ],
                 'merchant_detail' => [
                     'contact_email' => 'test@gmail.com'

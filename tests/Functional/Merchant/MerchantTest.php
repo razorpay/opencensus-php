@@ -3432,9 +3432,9 @@ class MerchantTest extends TestCase
                                                                            'plan_id'        => '1BFFkd38fFGbnh',])->toArray();
 
         $this->assertEmpty($esAutomaticPricingRulesOldPlan);
-                                                                  
+
         $esAutomaticPricingRulesNewPlan = $this->getDbEntities('pricing', ['feature'        => 'esautomatic'])->toArray();
-    
+
         $this->assertEquals(sizeof($esAutomaticPricingRulesNewPlan), 11);
 
         Mail::assertQueued(EsEnabledNotify::class);
@@ -4065,7 +4065,7 @@ class MerchantTest extends TestCase
 
         $esAutomaticPricingRules = $this->getDbEntities('pricing', ['feature'        => 'esautomatic',
                                                                     'plan_id'        => '1BFFkd38fFGbnh',])->toArray();
-        
+
         $this->assertEquals(sizeof($esAutomaticPricingRules), 11);
 
         Mail::assertQueued(EsEnabledNotify::class);
@@ -7205,6 +7205,8 @@ class MerchantTest extends TestCase
         $this->ba->appAuth();
 
         $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);
+
+        $this->fixtures->merchant->addFeatures(['upi_otm', 'override_hitachi_blacklst'], '100ghi000ghi00');
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => '100ghi000ghi00', 'contact_email' => 'test@gmail.com']);
 
