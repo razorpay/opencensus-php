@@ -284,7 +284,7 @@ class Validator extends Base\Validator
         if ($amountToRefund > $payment->getAmountUnrefunded())
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED);
+                ErrorCode::BAD_REQUEST_TOTAL_REFUND_AMOUNT_IS_GREATER_THAN_THE_PAYMENT_AMOUNT);
         }
     }
 

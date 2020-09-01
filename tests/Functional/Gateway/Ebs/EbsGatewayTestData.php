@@ -111,14 +111,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_TOTAL_REFUND_AMOUNT_IS_GREATER_THAN_THE_PAYMENT_AMOUNT,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'                 => RZP\Exception\BadRequestException::class,
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_TOTAL_REFUND_AMOUNT_IS_GREATER_THAN_THE_PAYMENT_AMOUNT,
         ],
     ],
 
