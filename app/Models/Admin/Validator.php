@@ -237,7 +237,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $mozartGatewayPvtRules = [
-        'gateway'            => 'required|string|in:citi,icici,yesbank_upi,yesbank,icici_imps,rbl,m2p',
+        'gateway'            => 'required|string|in:citi,icici,yesbank_upi,yesbank,icici_imps,rbl,m2p,axis',
         'action'             => 'required|string|in:gateway_auth,transfer_init,transfer_status,beneficiary_verify,beneficiary_register,registration,account_balance',
         'namespace'          => 'required|string',
         'payload'            => 'required|array',
