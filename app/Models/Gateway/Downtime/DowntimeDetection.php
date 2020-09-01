@@ -82,7 +82,7 @@ class DowntimeDetection
 
         $this->repo = $app['repo'];
 
-        $this->redis   = Redis::connection()->client();
+        $this->redis   = Redis::connection('mutex_redis')->client();
     }
 
     protected function initConfigurationSettings($type, $method, $key, $value, $settingType)

@@ -137,11 +137,12 @@ class Validator extends Base\Validator
         ConfigKey::FTS_BENEFICIARY                  => 'filled|array',
     ];
 
+    //Verify if $setGatewayDowntimeRedisKeysRules is getting used and clean it up.
     protected static $setGatewayDowntimeRedisKeysRules = [
-        'config:downtime:detection:configuration_v2'             => 'required|array',
-        'config:downtime:detection:configuration_v2.*.key'       => 'required|string',
-        'config:downtime:detection:configuration_v2.*.value'     => 'required|array',
-        'config:downtime:detection:configuration_v2.*.value.*.*' => 'required|string',
+        'config:{downtime}:detection:configuration_v2'             => 'required|array',
+        'config:{downtime}:detection:configuration_v2.*.key'       => 'required|string',
+        'config:{downtime}:detection:configuration_v2.*.value'     => 'required|array',
+        'config:{downtime}:detection:configuration_v2.*.value.*.*' => 'required|string',
     ];
 
     protected static $updateRedisKeysRules = [

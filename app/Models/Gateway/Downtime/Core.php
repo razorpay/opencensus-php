@@ -326,7 +326,7 @@ class Core extends Base\Core
 
     protected function getDuration(): int
     {
-        $redis = $this->app['redis']->connection();
+        $redis = $this->app['redis']->connection('mutex_redis');
 
         $settings = $redis->hgetall(ConfigKey::DOWNTIME_THROTTLE);
 

@@ -4,7 +4,7 @@ return [
     'testPutGatewayDowntimeRedisConf' => [
         'request' => [
             'content' => [
-                "config:downtime:detection:configuration_v2" =>
+                "config:{downtime}:detection:configuration_v2" =>
                     [
                         [
                             "key" => "success_rate_card_issuer_sbin_create",
@@ -62,7 +62,7 @@ return [
         ],
         'response' => [
             'content' => [
-                "config:downtime:detection:configuration_v2" =>
+                "config:{downtime}:detection:configuration_v2" =>
                     [
                         [
                             "key" => "success_rate_card_issuer_hdfc_create",

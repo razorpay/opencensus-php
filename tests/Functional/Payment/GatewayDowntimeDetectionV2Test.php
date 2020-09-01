@@ -150,7 +150,7 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $sbiExpected = $this->testData['redisConfDowntimeResponse'];
 
-        $sbiActual = array_filter($response['config:downtime:detection:configuration_v2'], function($arr) {
+        $sbiActual = array_filter($response['config:{downtime}:detection:configuration_v2'], function($arr) {
             return $arr['key'] === 'success_rate_card_issuer_sbin_create';
         });
 

@@ -863,7 +863,7 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('set_gateway_downtime_redis_keys', $input);
 
-        $redis = $this->app['redis']->connection();
+        $redis = $this->app['redis']->connection('mutex_redis');
 
         foreach ($input[ConfigKey::DOWNTIME_DETECTION_CONFIGURATION_V2] as $value)
         {
@@ -880,7 +880,7 @@ class Service extends Base\Service
 
     public function getGatewayDowntimeConf(): array
     {
-        $redis = $this->app['redis']->connection();
+        $redis = $this->app['redis']->connection('mutex_redis');
 
         $result = [];
 
