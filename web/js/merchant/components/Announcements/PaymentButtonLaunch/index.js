@@ -1,14 +1,13 @@
 import { Link } from 'react-router-dom';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
-
 const bannerText = 'Accept payments on your website, in less than 5 minutes.';
 const cardId = 'Payment Button Launch';
 
 const cta2Text = 'Learn More';
 const cta2Link = 'https://razorpay.com/payment-buttons?click=dshbrd-notif-pb';
 
-const cta1Text = 'Check Now';
+const cta1Text = 'Try Now';
 const cta1Link = '/paymentbuttons/new';
 
 
@@ -44,7 +43,7 @@ function _track(source) {
     onViewBanner,
     onClickCTA1,
     onClickCTA2,
-  }
+  };
 }
 
 
@@ -63,10 +62,8 @@ export default function({ productName }) {
         onClick={_track.onClickCTA2}
       >
         {cta2Text}
-      </a>
-      {' '}
-
-      <Link to={cta1Link} class="btn btn-primary btn-sm pull-right" onClick={_track.onClickCTA1}>
+      </a>{' '}
+      <Link to={cta1Link} class="Button--secondary Button scheduled-btn-act btn-border" onClick={_track.onClickCTA1}>
         {cta1Text}
       </Link>
     </AnnouncementBanner>

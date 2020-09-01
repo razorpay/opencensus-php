@@ -420,7 +420,7 @@ class Constants
             ],
         ],
         [
-            'title'       => 'Payment Buttons (Accept payments on your website)',
+            'title'       => 'Introducing Payment Buttons',
             'description' => 'Start accepting payments on your website or blog in less than 5 minutes. No coding needed.',
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/payment-button.svg',
             'track_event' => true,
@@ -428,7 +428,7 @@ class Constants
             'buttons'     => [
                 [
                     'type'  => 'button',
-                    'label' => 'Create Now',
+                    'label' => 'Try Now',
                     'url'   => '/paymentbuttons/new',
                 ],
                 [
@@ -440,7 +440,7 @@ class Constants
             'start_ts'    => 1598941800,
             'end_ts'      => 1601555400,
             'filters'     => [
-                'activated' => 0,
+                'activated' => 1,
             ]
         ],
     ];
