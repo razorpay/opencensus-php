@@ -70,7 +70,9 @@ class CreditScoreBreakdown extends Component {
   }
 
   componentDidMount() {
-    const { context: { data } } = this.props.loanApplicationDetails;
+    const {
+      context: { data },
+    } = this.props.loanApplicationDetails;
 
     if (data && data.from === 'next') {
       this.props._trackNavigationActions(

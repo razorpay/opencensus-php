@@ -23,19 +23,16 @@ import QuickGuide, { getInvoicesQuickGuideIsClosed } from './QuickGuide';
 
 @withRouter
 @connect(
-  state => ({
+  (state) => ({
     ...state.session,
     invoices: state.invoices,
     items: state.items,
-    invoicesProductOnBoarding: getCurrentProductOnBoardingDetails(
-      state,
-      RZPFeatures.INVOICE
-    ),
+    invoicesProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.INVOICE),
   }),
   {
     handleProductQuickGuide,
     fetchItems,
-  }
+  },
 )
 export default class InvoicesContainer extends Component {
   componentDidMount() {
@@ -87,10 +84,7 @@ export default class InvoicesContainer extends Component {
   };
 
   render() {
-    const {
-      isQuickGuideOpen,
-      showOnboarding,
-    } = this.props.invoicesProductOnBoarding;
+    const { isQuickGuideOpen, showOnboarding } = this.props.invoicesProductOnBoarding;
 
     if (showOnboarding) {
       return <OnBoarding />;
@@ -120,4 +114,4 @@ export default class InvoicesContainer extends Component {
   }
 }
 
-const ItemsComponent = props => <Items {...props} isInvoiceView />;
+const ItemsComponent = (props) => <Items {...props} isInvoiceView />;

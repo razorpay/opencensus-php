@@ -25,17 +25,14 @@ import OnBoarding, {
 import QuickGuide, { getPaymentLinksQuickGuideIsClosed } from './QuickGuide';
 
 @connect(
-  state => {
+  (state) => {
     return {
       user: state.session.user,
       paymentlinks: state.paymentlinks,
-      paymentLinksProductOnBoarding: getCurrentProductOnBoardingDetails(
-        state,
-        RZPFeatures.PL
-      ),
+      paymentLinksProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PL),
     };
   },
-  { handleProductQuickGuide }
+  { handleProductQuickGuide },
 )
 export default class PaymentLinksContainer extends React.Component {
   componentWillReceiveProps(nextProps) {
@@ -73,9 +70,7 @@ export default class PaymentLinksContainer extends React.Component {
     let showOnboarding = !isPaymentLinksEnabled;
 
     if (isPaymentLinksEnabled) {
-      showOnboarding = getIsAllowedResetPaymentLinksOnBoarding(
-        data.paymentlinks
-      );
+      showOnboarding = getIsAllowedResetPaymentLinksOnBoarding(data.paymentlinks);
     }
 
     const paymentLinksProductOnBoarding = {
@@ -88,10 +83,7 @@ export default class PaymentLinksContainer extends React.Component {
   };
 
   render() {
-    const {
-      isQuickGuideOpen,
-      showOnboarding,
-    } = this.props.paymentLinksProductOnBoarding;
+    const { isQuickGuideOpen, showOnboarding } = this.props.paymentLinksProductOnBoarding;
 
     if (showOnboarding) {
       return <OnBoarding />;
@@ -108,10 +100,9 @@ export default class PaymentLinksContainer extends React.Component {
               Payment Links
             </NavLink>
             <ShowWhen
-              additionalCondition={user =>
+              additionalCondition={(user) =>
                 user.isAllowedView('payment_links_batch_uploads') &&
-                (!user.isSellerAppRole ||
-                  user.isPaymentLinkBatchEnabledForSellerAppRole)
+                (!user.isSellerAppRole || user.isPaymentLinkBatchEnabledForSellerAppRole)
               }
             >
               <NavLink exact to="/paymentlinks/batchuploads">
@@ -127,10 +118,9 @@ export default class PaymentLinksContainer extends React.Component {
               <ShowWhenRoute
                 path="/paymentlinks/batchuploads"
                 component={BatchUploadList}
-                additionalCondition={user =>
+                additionalCondition={(user) =>
                   user.isAllowedView('payment_links_batch_uploads') &&
-                  (!user.isSellerAppRole ||
-                    user.isPaymentLinkBatchEnabledForSellerAppRole)
+                  (!user.isSellerAppRole || user.isPaymentLinkBatchEnabledForSellerAppRole)
                 }
               />
               <Route path="/paymentlinks" component={PaymentLinksList} />

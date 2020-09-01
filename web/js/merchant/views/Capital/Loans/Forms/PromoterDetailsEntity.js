@@ -100,7 +100,7 @@ class PromoterDetailsEntity extends Component {
     }));
   };
 
-  isValidDate = function(current) {
+  isValidDate = function (current) {
     const age = moment().diff(current, 'years');
     return age < 100 && age > 18;
   };

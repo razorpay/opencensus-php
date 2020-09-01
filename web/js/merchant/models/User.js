@@ -392,11 +392,11 @@ export default class User {
       this.partner_type === null && this.partner_intent && this.merchant_partner_intent === false
     );
   }
-  
-  isGoogleLogin(){
+
+  isGoogleLogin() {
     return this.user.oauth_login;
   }
-  
+
   get isHavingPartnerConfigs() {
     const currentMerchant = (this.merchants || {})[this.current];
     return !!currentMerchant.partner_type && (currentMerchant.partner || {}).has_commission_configs;

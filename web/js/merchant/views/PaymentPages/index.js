@@ -18,25 +18,19 @@ import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
 import PaymentButtonLaunchBanner from 'merchant/components/Announcements/PaymentButtonLaunch';
 
 @connect(
-  state => {
+  (state) => {
     return {
-      paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(
-        state,
-        RZPFeatures.PP
-      ),
+      paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PP),
       user: state.session.user,
     };
   },
   {
     handleProductQuickGuide,
-  }
+  },
 )
 export default class PaymentPagesContainer extends React.Component {
   render() {
-    const {
-      isQuickGuideOpen,
-      showOnboarding,
-    } = this.props.paymentPageProductOnBoarding;
+    const { isQuickGuideOpen, showOnboarding } = this.props.paymentPageProductOnBoarding;
 
     if (showOnboarding) {
       return <OnBoarding />;

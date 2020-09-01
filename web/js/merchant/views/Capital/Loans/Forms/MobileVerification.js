@@ -207,10 +207,9 @@ class MobileVerification extends Component {
                 wrongOtpText=""
               />
               <div className="otp-helper-text-wrapper">
-                {this.state.hasError &&
-                  this.getErrorMessage() && (
-                    <p className="otp-helper-text error-description">◦ {this.getErrorMessage()}</p>
-                  )}
+                {this.state.hasError && this.getErrorMessage() && (
+                  <p className="otp-helper-text error-description">◦ {this.getErrorMessage()}</p>
+                )}
                 <p className="otp-helper-text">
                   ◦ OTP is sent to{' '}
                   {loanApplicationDetails.promoter_details.data.applicant.phones[0].phone_number}

@@ -90,14 +90,15 @@ pipeline:
       - aws_region
     when:
       event: deployment
-#   upload-sentry-sourcemaps:
-#     image: dividab/sentry-cli:1.21.0
-#     secrets: [ sentry_auth_token ]
-#     commands:
-#       - sentry-cli releases files ${DRONE_COMMIT_SHA} upload-sourcemaps ./public/dist
-#     when:
-#       event: deployment
-#       environment: prod
+  upload-sentry-sourcemaps:
+    image: node:12.18.2
+    secrets: [ sentry_auth_token ]
+    commands:
+      - curl -sL https://sentry.io/get-cli/ | bash
+      - "sentry-cli releases files ${DRONE_COMMIT_SHA} upload-sourcemaps ./public/dist --log-level=info || :" # Added null command to ignore failures
+    when:
+      event: deployment
+      environment: prod
   deploy-s3-beta:
     image: node:9-alpine
     environment:
