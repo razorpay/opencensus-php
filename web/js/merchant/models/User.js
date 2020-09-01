@@ -274,7 +274,10 @@ export default class User {
     return isEnabled;
   }
 
+  // 100% rollout done. Exp to be removed shortly
   get isPaymentButtonsEnabled() {
+    return true;
+
     const { isEnabled } = getOnBoardingDataFromLocalState(RZPFeatures.PB);
 
     return isEnabled;

@@ -9,6 +9,7 @@ import {
 } from 'merchant/reducers/onboarding';
 import { fetchItems } from 'merchant/reducers/items';
 
+import PaymentButtonLaunchBanner from 'merchant/components/Announcements/PaymentButtonLaunch';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import Invoices from 'merchant/views/Invoices/Invoices/List';
 import Items from 'merchant/views/Invoices/Items/List';
@@ -96,21 +97,25 @@ export default class InvoicesContainer extends Component {
     }
 
     return (
-      <tabbed-container>
-        {isQuickGuideOpen && <QuickGuide />}
+      <React.Fragment>
+        <PaymentButtonLaunchBanner productName="Invoices" />
 
-        <header id="invoicing-header">
-          <NavLink to="/invoices">Invoices</NavLink>
-          <NavLink to="/items">Items</NavLink>
-        </header>
+        <tabbed-container>
+          {isQuickGuideOpen && <QuickGuide />}
 
-        <TestModeBanner />
+          <header id="invoicing-header">
+            <NavLink to="/invoices">Invoices</NavLink>
+            <NavLink to="/items">Items</NavLink>
+          </header>
 
-        <content>
-          <Route path="/invoices" component={Invoices} />
-          <Route path="/items" render={ItemsComponent} />
-        </content>
-      </tabbed-container>
+          <TestModeBanner />
+
+          <content>
+            <Route path="/invoices" component={Invoices} />
+            <Route path="/items" render={ItemsComponent} />
+          </content>
+        </tabbed-container>
+      </React.Fragment>
     );
   }
 }

@@ -8,6 +8,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import PaymentLinksList from 'merchant/views/PaymentLinks/PaymentLinks/List';
 import BatchUploadList from 'merchant/views/PaymentLinks/BatchUpload/List';
 
+import PaymentButtonLaunchBanner from 'merchant/components/Announcements/PaymentButtonLaunch';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
@@ -96,43 +97,47 @@ export default class PaymentLinksContainer extends React.Component {
       return <OnBoarding />;
     }
     return (
-      <tabbed-container>
-        {isQuickGuideOpen && <QuickGuide />}
+      <React.Fragment>
+        <PaymentButtonLaunchBanner productName="PaymentLinks" />
 
-        <header id="link-header">
-          <NavLink exact to="/paymentlinks">
-            Payment Links
-          </NavLink>
-          <ShowWhen
-            additionalCondition={user =>
-              user.isAllowedView('payment_links_batch_uploads') &&
-              (!user.isSellerAppRole ||
-                user.isPaymentLinkBatchEnabledForSellerAppRole)
-            }
-          >
-            <NavLink exact to="/paymentlinks/batchuploads">
-              Batch Uploads
+        <tabbed-container>
+          {isQuickGuideOpen && <QuickGuide />}
+
+          <header id="link-header">
+            <NavLink exact to="/paymentlinks">
+              Payment Links
             </NavLink>
-          </ShowWhen>
-        </header>
-
-        <TestModeBanner />
-
-        <content>
-          <Switch>
-            <ShowWhenRoute
-              path="/paymentlinks/batchuploads"
-              component={BatchUploadList}
+            <ShowWhen
               additionalCondition={user =>
                 user.isAllowedView('payment_links_batch_uploads') &&
                 (!user.isSellerAppRole ||
                   user.isPaymentLinkBatchEnabledForSellerAppRole)
               }
-            />
-            <Route path="/paymentlinks" component={PaymentLinksList} />
-          </Switch>
-        </content>
-      </tabbed-container>
+            >
+              <NavLink exact to="/paymentlinks/batchuploads">
+                Batch Uploads
+              </NavLink>
+            </ShowWhen>
+          </header>
+
+          <TestModeBanner />
+
+          <content>
+            <Switch>
+              <ShowWhenRoute
+                path="/paymentlinks/batchuploads"
+                component={BatchUploadList}
+                additionalCondition={user =>
+                  user.isAllowedView('payment_links_batch_uploads') &&
+                  (!user.isSellerAppRole ||
+                    user.isPaymentLinkBatchEnabledForSellerAppRole)
+                }
+              />
+              <Route path="/paymentlinks" component={PaymentLinksList} />
+            </Switch>
+          </content>
+        </tabbed-container>
+      </React.Fragment>
     );
   }
 }

@@ -15,7 +15,7 @@ import QuickGuide from './QuickGuide';
 
 import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
 
-import PaymentPageReceiptBanner from 'merchant/components/Announcements/PaymentPageReceipt';
+import PaymentButtonLaunchBanner from 'merchant/components/Announcements/PaymentButtonLaunch';
 
 @connect(
   state => {
@@ -44,9 +44,7 @@ export default class PaymentPagesContainer extends React.Component {
 
     return (
       <>
-        {this.props.user.isPaymentPageReceiptsEnabled && (
-          <PaymentPageReceiptBanner />
-        )}
+        <PaymentButtonLaunchBanner productName="PaymentPages" />
 
         <tabbed-container>
           {isQuickGuideOpen && <QuickGuide />}

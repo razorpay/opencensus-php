@@ -413,11 +413,35 @@ class Constants
                     'url'   => 'https://lp.razorpay.com/razorpayxca-anncment',
                 ],
             ],
-            'start_ts'    => 1597390475,	
-            'end_ts'      => 1601445430, 
+            'start_ts'    => 1597390475,
+            'end_ts'      => 1601445430,
             'filters'     => [
                 'experiments'         => ['project_nitro'],
             ],
+        ],
+        [
+            'title'       => 'Payment Buttons (Accept payments on your website)',
+            'description' => 'Start accepting payments on your website or blog in less than 5 minutes. No coding needed.',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/payment-button.svg',
+            'track_event' => true,
+            'id'          => 'paymentButton_GTM',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Create Now',
+                    'url'   => '/paymentbuttons/new',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Know More',
+                    'url'   => 'https://betasite.razorpay.com/docs/pb-index-true/payment-button',
+                ]
+            ],
+            'start_ts'    => 1598941800,
+            'end_ts'      => 1601555400,
+            'filters'     => [
+                'activated' => 0,
+            ]
         ],
     ];
 
