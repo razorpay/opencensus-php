@@ -129,6 +129,10 @@ export const APPLICATION_STATE_DESCRIPTIONS = {
     description: 'Fill your details to check the loan eligibility and the' + ' loan offer',
     ctaText: 'Check credit score',
     short_description: 'Credit Report',
+    stages: {
+      OTP_SCREEN: 'OTP Screen',
+      CREDIT_REPORT: 'Credit Report',
+    },
   },
   [APPLICATION_STATES.CREDIT_PULL_FAILED]: {
     title: 'Credit Report failed',
@@ -379,6 +383,7 @@ export const VERIFICATION_TIME_SLOTS = [
 ];
 
 export const HOTJAR_TRIGGERS = {
+  LOAN_APPLICATION_PAGE_OPEN: 'Loans_page_open',
   LOAN_APPLICATION_OPEN: 'Loans_Application_Open',
   LOANS_BUSINESS_INFO: 'Loans_Business_Info',
   LOANS_CREDIT_INQUIRY: 'Loans_Credit_Inquiry',

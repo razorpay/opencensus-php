@@ -261,10 +261,11 @@ export const createNach = (payload) => {
   return loanApplication.createNach(payload);
 };
 
-export const changeActiveState = (state) => {
+export const changeActiveState = (state, data = null) => {
   return {
     type: 'CHANGE_ACTIVE_STATE',
     state,
+    data,
   };
 };
 
@@ -315,7 +316,7 @@ export const getOfferVerificationTasks = (data) => {
 
 const initialState = getInitialState();
 
-export default function (state = initialState, action) {
+export default function(state = initialState, action) {
   switch (action.type) {
     case `${FETCH_SEED_DATA}::PENDING`:
       return merge(state, {
@@ -673,6 +674,7 @@ export default function (state = initialState, action) {
         context: {
           ...state.context,
           activeState: action.state,
+          data: action.data,
         },
       });
 

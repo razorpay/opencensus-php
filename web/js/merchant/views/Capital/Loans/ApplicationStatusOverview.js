@@ -5,11 +5,14 @@ import { fetchLoanApplicationMeta } from 'merchant/reducers/capital';
 import {
   APPLICATION_STATE_DESCRIPTIONS,
   APPLICATION_STATE_GROUPS,
+  CONSOLIDATED_STATES,
   CONSOLIDATED_STATE_SEQUENCE,
   ERROR_STATES,
   PENDING_APPLICATION_STATES,
   STATE_GROUP_COMPLETION_DESCRIPTION,
+  HOTJAR_TRIGGERS,
 } from './constants';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
 
 @connect(
   (state) => ({
@@ -141,9 +144,10 @@ class ApplicationStatusOverview extends Component {
               ) : (
                 <button
                   className="btn btn-primary multilevel-step__step-action"
-                  onClick={() =>
-                    this.viewCurrentState(descriptiveStep.title, descriptiveStep.ctaText)
-                  }
+                  onClick={() => {
+                    triggerHotjarRecording(HOTJAR_TRIGGERS.LOAN_APPLICATION_OPEN);
+                    this.viewCurrentState(descriptiveStep.title, descriptiveStep.ctaText);
+                  }}
                 >
                   {descriptiveStep.ctaText}
                 </button>

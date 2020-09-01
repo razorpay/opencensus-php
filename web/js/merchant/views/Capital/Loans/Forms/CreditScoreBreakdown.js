@@ -69,6 +69,18 @@ class CreditScoreBreakdown extends Component {
     };
   }
 
+  componentDidMount() {
+    const { context: { data } } = this.props.loanApplicationDetails;
+
+    if (data && data.from === 'next') {
+      this.props._trackNavigationActions(
+        'NEXT',
+        APPLICATION_STATES.CREDIT_PULL_PENDING,
+        APPLICATION_STATE_DESCRIPTIONS[APPLICATION_STATES.CREDIT_PULL_PENDING].stages.CREDIT_REPORT,
+      );
+    }
+  }
+
   handleNext = () => {
     const { id, status } = this.props.loanApplicationDetails.meta.data.application;
     if (status === 'CREDIT_PULL_PENDING') {
@@ -197,6 +209,9 @@ class CreditScoreBreakdown extends Component {
                   this.props._trackNavigationActions(
                     'NEXT',
                     APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING,
+                    APPLICATION_STATE_DESCRIPTIONS[
+                      APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING
+                    ].stages.ADDRESS_PROOF,
                   );
                   changeActiveState(APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING);
                 }}

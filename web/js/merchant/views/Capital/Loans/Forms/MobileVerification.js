@@ -8,7 +8,7 @@ import { triggerHotjarRecording } from 'common/utils/hotjar';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
 import { Modal, ModalMask } from 'common/new-ui/Modal';
-import { HOTJAR_TRIGGERS } from '../constants';
+import { HOTJAR_TRIGGERS, APPLICATION_STATES, APPLICATION_STATE_DESCRIPTIONS } from '../constants';
 
 @connect(
   (state) => ({
@@ -43,6 +43,11 @@ class MobileVerification extends Component {
   componentDidMount() {
     this.sendReqForOtp();
     triggerHotjarRecording(HOTJAR_TRIGGERS.LOANS_CREDIT_INQUIRY);
+    this.props._trackNavigationActions(
+      'NEXT',
+      APPLICATION_STATES.CREDIT_PULL_PENDING,
+      APPLICATION_STATE_DESCRIPTIONS[APPLICATION_STATES.CREDIT_PULL_PENDING].stages.OTP_SCREEN,
+    );
   }
 
   sendReqForOtp = async () => {
@@ -202,9 +207,10 @@ class MobileVerification extends Component {
                 wrongOtpText=""
               />
               <div className="otp-helper-text-wrapper">
-                {this.state.hasError && this.getErrorMessage() && (
-                  <p className="otp-helper-text error-description">◦ {this.getErrorMessage()}</p>
-                )}
+                {this.state.hasError &&
+                  this.getErrorMessage() && (
+                    <p className="otp-helper-text error-description">◦ {this.getErrorMessage()}</p>
+                  )}
                 <p className="otp-helper-text">
                   ◦ OTP is sent to{' '}
                   {loanApplicationDetails.promoter_details.data.applicant.phones[0].phone_number}

@@ -90,7 +90,7 @@ class LoanApplicationOverview extends React.Component {
         this.props.registerNewLoanApplication();
       });
     this.fetchSeedData();
-    triggerHotjarRecording(HOTJAR_TRIGGERS.LOAN_APPLICATION_OPEN);
+    triggerHotjarRecording(HOTJAR_TRIGGERS.LOAN_APPLICATION_PAGE_OPEN);
   }
 
   fetchApplicationDetails = (id) => {
@@ -109,9 +109,7 @@ class LoanApplicationOverview extends React.Component {
     if (context) {
       return context.activeState
         ? context.activeState
-        : meta.data.application
-        ? meta.data.application.status
-        : defaultState;
+        : meta.data.application ? meta.data.application.status : defaultState;
     } else {
       return meta.data.application ? meta.data.application.status : defaultState;
     }

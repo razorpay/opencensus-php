@@ -100,7 +100,7 @@ class PromoterDetailsEntity extends Component {
     }));
   };
 
-  isValidDate = function (current) {
+  isValidDate = function(current) {
     const age = moment().diff(current, 'years');
     return age < 100 && age > 18;
   };
@@ -321,7 +321,7 @@ class PromoterDetailsEntity extends Component {
             };
 
             applicationResponse = await this.props.saveApplicationDetails(applicationPayload);
-            this.props.changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING);
+            this.props.changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING, { from: 'next' });
             this.props._trackNavigationActions('NEXT', APPLICATION_STATES.CREDIT_PULL_PENDING);
           } catch (e) {
             //TODO:show appropriate errors
@@ -353,7 +353,7 @@ class PromoterDetailsEntity extends Component {
             business_id: [loanApplicationDetails.business_details.data.business.id],
             ...payload,
           });
-          this.props.changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING);
+          this.props.changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING, { from: 'next' });
           this.props._trackNavigationActions('NEXT', APPLICATION_STATES.CREDIT_PULL_PENDING);
         } catch (e) {
           this.props.showNotification({
@@ -368,7 +368,7 @@ class PromoterDetailsEntity extends Component {
         }
       }
     } else {
-      this.props.changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING);
+      this.props.changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING, { from: 'next' });
       this.props._trackNavigationActions('NEXT', APPLICATION_STATES.CREDIT_PULL_PENDING);
     }
   };
