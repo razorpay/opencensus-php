@@ -7132,7 +7132,7 @@ trait Authorize
 
             $this->cache->put($key, $encryptedPayload, self::REDIRECT_CACHE_TTL);
 
-            $redirectUrl = $this->route->getUrl('payment_redirect_to_authorize_get', ['id' => $trackId]);
+            $redirectUrl = $this->route->getUrl('payment_redirect_to_authenticate_get', ['id' => $trackId]);
 
 
             $data['type'] = 'first';

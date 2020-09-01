@@ -112,7 +112,7 @@ trait PaymentCreationTrait
 
     protected function isRedirectToAuthorizeUrl($uri)
     {
-        $pattern = '/payments\/[\w]+\/authorize/';
+        $pattern = '/payments\/[\w]+\/authenticate/';
 
         return (preg_match($pattern, $uri) === 1);
     }
@@ -351,7 +351,7 @@ trait PaymentCreationTrait
 
     protected function makeRedirectToAuthorize($targetUrl)
     {
-        $id = getTextBetweenStrings($targetUrl, '/payments/', '/authorize');
+        $id = getTextBetweenStrings($targetUrl, '/payments/', '/authenticate');
 
         $this->redirectToAuthorize = true;
 

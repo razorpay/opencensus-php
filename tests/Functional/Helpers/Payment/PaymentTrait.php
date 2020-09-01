@@ -2041,7 +2041,7 @@ trait PaymentTrait
             'id' => $trackId,
         ];
 
-        $url = \URL::route('payment_redirect_to_authorize_get', $params, false);
+        $url = \URL::route('payment_redirect_to_authenticate_get', $params, false);
         $url = 'http://localhost' . $url;
 
         return $url;

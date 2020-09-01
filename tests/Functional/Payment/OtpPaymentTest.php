@@ -1644,7 +1644,7 @@ class OtpPaymentTest extends TestCase
 
         $targetUrl =$this->getMetaRefreshUrl($response);
 
-        $id = getTextBetweenStrings($targetUrl, '/payments/', '/authorize');
+        $id = getTextBetweenStrings($targetUrl, '/payments/', '/authenticate');
 
         $this->redirectToAuthorize = true;
 
@@ -4053,7 +4053,7 @@ class OtpPaymentTest extends TestCase
 
         $targetUrl =$this->getMetaRefreshUrl($response);
 
-        $trackId = getTextBetweenStrings($targetUrl, '/payments/', '/authorize');
+        $trackId = getTextBetweenStrings($targetUrl, '/payments/', '/authenticate');
 
         $url = $this->getPaymentRedirectToAuthorizrUrl($trackId);
 
