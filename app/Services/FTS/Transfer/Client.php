@@ -3,11 +3,14 @@
 namespace RZP\Services\FTS\Transfer;
 
 use App;
+use RZP\Trace\TraceCode;
 use RZP\Http\Request\Requests;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Services\FTS\Base as BaseHandler;
 
 class Client extends BaseHandler
 {
+    use Recon;
     use Initiate;
 
     protected $app;
@@ -17,7 +20,8 @@ class Client extends BaseHandler
         if ($app == null)
         {
             $this->app = App::getFacadeRoot();
-        } else
+        }
+        else
         {
             $this->app = $app;
         }
@@ -40,6 +44,26 @@ class Client extends BaseHandler
           $this->request);
 
         $this->extractAndUpdateResponse($response);
+
+        return $response;
+    }
+
+    public function doRecon(array $response)
+    {
+        try
+        {
+            $this->reconcileFTA($response);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+              $e,
+              Trace::ERROR,
+              TraceCode::FTS_UPDATE_FUND_TRANSFER_ATTEMPT_FAILED,
+              [
+                'error' => $e->getMessage()
+              ]);
+        }
 
         return $response;
     }
