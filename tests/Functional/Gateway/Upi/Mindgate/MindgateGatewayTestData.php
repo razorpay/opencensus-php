@@ -61,7 +61,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Maximum amount for UPI payment can be Rs 20000',
+                    'description' => 'Amount for UPI payment cannot be greater than ₹100000.00',
                 ],
             ],
             'status_code' => 400,

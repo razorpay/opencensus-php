@@ -360,7 +360,7 @@ class UpiMindgateGatewayTest extends TestCase
 
         $payment = $this->payment;
 
-        $payment['amount'] = 2100000;
+        $payment['amount'] = 10000001;
 
         $data = $this->testData[__FUNCTION__];
 

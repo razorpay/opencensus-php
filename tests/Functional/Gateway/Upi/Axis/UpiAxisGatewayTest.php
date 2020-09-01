@@ -250,7 +250,7 @@ class UpiAxisGatewayTest extends TestCase
 
         $payment = $this->payment;
 
-        $payment['amount'] = 2100000;
+        $payment['amount'] = 10000001;
 
         $data = $this->testData[__FUNCTION__];
 
@@ -260,6 +260,19 @@ class UpiAxisGatewayTest extends TestCase
             {
                 $this->doAuthPaymentViaAjaxRoute($payment);
             });
+    }
+
+    public function testUpiAmountCapSuccess()
+    {
+        $this->payment['vpa'] = 'vishnu@upi';
+
+        $payment = $this->payment;
+
+        $payment['amount'] = 9000000;
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $this->assertNotNull($response['payment_id']);
     }
 
     public function testVpaWithCapitalPspValidation($status = 'created')

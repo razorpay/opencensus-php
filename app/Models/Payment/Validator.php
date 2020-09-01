@@ -228,7 +228,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $pspAmountLimit = [
-        'upi'       => 2000000,
+        'upi'       => 10000000, // Changing limit for @upi handle
     ];
 
     protected static $validateVpaRules = [
