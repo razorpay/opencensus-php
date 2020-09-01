@@ -167,11 +167,6 @@ return [
         'razorflow_slack_signing_secret' => env('RAZORFLOW_SLACK_SIGNING_SECRET'),
     ],
 
-    'redisdualwrite' => [
-        'redislab_cache_read'      => env('REDISLABS_CACHE_READ'),
-        'skip_dual_write'          => env('SKIP_DUAL_WRITE'),
-    ],
-
     'cache_dual_write' => [
         'cluster_cache_read'        => env('CLUSTER_CACHE_READ'),
         'cache_skip_dual_write'     => env('CACHE_SKIP_DUAL_WRITE'),
