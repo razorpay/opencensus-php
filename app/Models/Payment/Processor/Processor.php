@@ -132,8 +132,9 @@ class Processor
 
     /**
      * Default UPI collect request expiry time in minutes.
+     * Revised: We are changing the default time from 5 minutes to 10.
      */
-    const UPI_COLLECT_EXPIRY = 5;
+    const UPI_COLLECT_EXPIRY = 10;
 
     /**
      * Minimum payment amount for which mdr should be calculated
