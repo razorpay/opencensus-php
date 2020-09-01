@@ -214,7 +214,7 @@ class Core extends Base\Core
     {
         $data = [
             UpiTransferRequest\Entity::IS_CREATED       => $isCreated,
-            UpiTransferRequest\Entity::ERROR_MESSAGE    => $errorMessage,
+            UpiTransferRequest\Entity::ERROR_MESSAGE    => substr($errorMessage, 0, 255),
         ];
 
         $gateway = $upiTransferInput[Entity::GATEWAY];

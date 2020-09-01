@@ -658,7 +658,7 @@ class Core extends Base\Core
     {
         $data = [
             BankTransferRequest\Entity::IS_CREATED      => $isCreated,
-            BankTransferRequest\Entity::ERROR_MESSAGE   => $errorMessage,
+            BankTransferRequest\Entity::ERROR_MESSAGE   => substr($errorMessage, 0, 255),
         ];
 
         try
