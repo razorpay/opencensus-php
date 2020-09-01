@@ -1340,6 +1340,7 @@ class Service extends Base\Service
             'rx_payout_links_new_information_flow',
             'capital_loans_announcement_aug2020',
             'instrument_request_merchant_dashboard',
+            'rx_view_only_update',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
