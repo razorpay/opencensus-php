@@ -15,6 +15,7 @@ use App\Http\ApiUrl;
 use App\Trace\TraceCode;
 use App\Http\AppResponse;
 use App\User\RecoverableException;
+use App\Metrics\Constants as MetricConstants;
 
 class UserController extends Controller
 {
@@ -34,6 +35,8 @@ class UserController extends Controller
         $this->app = $app;
 
         $this->trace = $app['trace'];
+
+        $this->metrics = $app['metrics'];
     }
 
     /**
@@ -158,9 +161,27 @@ class UserController extends Controller
 
                 app('trace')->info(TraceCode::USER_REGISTER_LOGIN_ATTEMPT, ["email" => $input['email'], "login_result" => $loginResult]);
 
+                $twoFaDuringSignup = false;
+
                 if ($loginResult === false)
                 {
                     list($error, $data) = (new User\Service)->login($credentials);
+
+                    if (empty($error) === false and
+                        isset($error['internal_error_code']) === true and
+                        $error['internal_error_code'] === 'BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED')
+                    {
+                        $twoFaDuringSignup = true;
+                    }
+                }
+
+                // push metrics on no error or if error is about two_fa_setup
+                if (empty($error) === true or $twoFaDuringSignup === true)
+                {
+                    $this->metrics->count(MetricConstants::USER_SIGNUP_COUNT,
+                        [
+                            MetricConstants::TWO_FA_DURING_SIGNUP   => $twoFaDuringSignup,
+                        ]);
                 }
             }
         }
@@ -208,6 +229,14 @@ class UserController extends Controller
 
         list($error, $data) = (new User\Service)->login($input);
 
+        if (empty($error) === true)
+        {
+            $this->metrics->count(MetricConstants::USER_LOGIN_COUNT,
+                [
+                    MetricConstants::LOGIN_METHOD => MetricConstants::PASSWORD,
+                ]);
+        }
+
         return AppResponse::jsonResponse($error, $data);
     }
 
@@ -225,6 +254,14 @@ class UserController extends Controller
             $data  = null;
         }
 
+        if (empty($error) === true)
+        {
+            $this->metrics->count(MetricConstants::USER_LOGIN_COUNT,
+                [
+                    MetricConstants::LOGIN_METHOD => MetricConstants::OAUTH,
+                ]);
+        }
+
         return AppResponse::jsonResponse($error, $data);
     }
 
@@ -238,6 +275,15 @@ class UserController extends Controller
         $input = Input::all();
 
         list($error, $data) = (new User\Service)->postSetup2faVerifyOtp($input);
+
+        if (empty($error) === true)
+        {
+            $this->metrics->count(MetricConstants::USER_LOGIN_COUNT,
+                [
+                    MetricConstants::LOGIN_METHOD => $this->getLoginMethodFromSession(),
+                    MetricConstants::LOGIN_ACTION => MetricConstants::TWO_FA_OTP_VERIFICATION,
+                ]);
+        }
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -301,6 +347,11 @@ class UserController extends Controller
         ];
 
         $this->trace->info(TraceCode::USER_LOGOUT, $traceData);
+
+        $this->metrics->count(MetricConstants::USER_LOGOUT_COUNT,
+            [
+                MetricConstants::LOGIN_METHOD => $this->getLoginMethodFromSession(),
+            ]);
 
         $user->logout();
 
@@ -490,6 +541,14 @@ class UserController extends Controller
             $data = null;
         }
 
+        if (empty($error) === true)
+        {
+            $this->metrics->count(MetricConstants::USER_UNLOCK_COUNT,
+                [
+                    MetricConstants::LOGIN_METHOD   => MetricConstants::PASSWORD,
+                ]);
+        }
+
         return AppResponse::jsonResponse($error, $data);
     }
 
@@ -505,6 +564,14 @@ class UserController extends Controller
         {
             $error = [$e->getMessage()];
             $data  = null;
+        }
+
+        if (empty($error) === true)
+        {
+            $this->metrics->count(MetricConstants::USER_UNLOCK_COUNT,
+                [
+                    MetricConstants::LOGIN_METHOD   => MetricConstants::OAUTH,
+                ]);
         }
 
         return AppResponse::jsonResponse($error, $data);
@@ -524,5 +591,12 @@ class UserController extends Controller
         }
 
         return $connection . \Request::server('SERVER_NAME');
+    }
+
+    private function getLoginMethodFromSession()
+    {
+        $isOauthLogin = Session::get(User\Constants::OAUTH_LOGIN, false);
+
+        return $isOauthLogin === true ? MetricConstants::OAUTH : MetricConstants::PASSWORD;
     }
 }

@@ -2,19 +2,12 @@
 
 namespace App\User;
 
-use DB;
 use Auth;
-use Hash;
-use Input;
-use Queue;
-use Config;
 use Cookie;
 use Session;
 use Request;
 use App\Base;
-use App\Generic;
 use App\Merchant;
-use App\AdminLead;
 use App\Http\ApiUrl;
 use App\Trace\TraceCode;
 use App\MerchantDetails;
@@ -77,8 +70,6 @@ class Service extends Base\Service
         $this->trace = $app['trace'];
 
         $this->cache = $app['cache'];
-
-        $this->metrics = $app['metrics'];
     }
 
     /**
@@ -431,8 +422,6 @@ class Service extends Base\Service
         }
 
         Auth::login($genericUser, false);
-
-        $this->metrics->count('user_successful_login_count');
 
         $this->app['session']->put('dashboard_user_payload', $genericUser);
 
