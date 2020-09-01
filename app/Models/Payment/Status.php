@@ -5,6 +5,7 @@ namespace RZP\Models\Payment;
 class Status
 {
     const CREATED       = 'created';
+    const AUTHENTICATED = 'authenticated';
     const AUTHORIZED    = 'authorized';
     const CAPTURED      = 'captured';
     const FAILED        = 'failed';
@@ -12,6 +13,7 @@ class Status
 
     protected static $statusList = [
         self::CREATED,
+        self::AUTHENTICATED,
         self::AUTHORIZED,
         self::CAPTURED,
         self::FAILED,
