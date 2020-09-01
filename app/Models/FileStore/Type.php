@@ -101,6 +101,8 @@ class Type
 
     const SVC_NETBANKING_REFUND             = 'svc_netbanking_refund';
 
+    const JKB_NETBANKING_REFUND             = 'jkb_netbanking_refund';
+
     const SCB_NETBANKING_CLAIM              = 'scb_netbanking_claim';
 
     const SCB_NETBANKING_REFUND             = 'scb_netbanking_refund';
@@ -256,6 +258,7 @@ class Type
             self::KVB_NETBANKING_REFUND,
             self::KVB_NETBANKING_CLAIM,
             self::SVC_NETBANKING_REFUND,
+            self::JKB_NETBANKING_REFUND,
             self::SCB_NETBANKING_CLAIM,
             self::SCB_NETBANKING_REFUND,
             self::JSB_NETBANKING_REFUND,
@@ -395,6 +398,7 @@ class Type
         self::KVB_NETBANKING_REFUND,
         self::KVB_NETBANKING_CLAIM,
         self::SVC_NETBANKING_REFUND,
+        self::JKB_NETBANKING_REFUND,
         self::SCB_NETBANKING_CLAIM,
         self::SCB_NETBANKING_REFUND,
         self::CUB_NETBANKING_CLAIM,
@@ -488,6 +492,7 @@ class Type
             self::OBC_NETBANKING_REFUND,
             self::SVC_NETBANKING_REFUND,
             self::FSB_NETBANKING_REFUND,
+            self::JKB_NETBANKING_REFUND,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [

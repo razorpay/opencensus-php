@@ -33,4 +33,6 @@ class Constants
     const FIRST_DATA_PARES_FILE_JOB_NAME = 'firstdata_pares_data_push';
 
     const PNB_NB_COMBINED_FILE_JOB_NAME  = 'pnb_net_banking';
+
+    const JKB_NB_REFUND_FILE_JOB_NAME = 'jkb_netbanking_refund_file';
 }
