@@ -7,8 +7,8 @@ use Carbon\Carbon;
 use RZP\Constants\Entity;
 use RZP\Models\PaperMandate;
 use Illuminate\Http\UploadedFile;
-use RZP\Models\Base\UniqueIdEntity;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -67,6 +67,24 @@ class PaperMandateTest extends TestCase
         $paperMandate = $this->getDbLastEntity(Entity::PAPER_MANDATE);
 
         $this->assertEquals('1cXSLlUU8V9sXl', $paperMandate->getUploadedFileID());
+    }
+
+    public function testShortUrlGenerationForGeneratedImageUrl()
+    {
+        $this->ba->publicAuth();
+
+        $this->createOrder();
+
+        $paperMandate = $this->getDbLastEntity(Entity::PAPER_MANDATE);
+
+        $formUrl = $paperMandate->getGeneratedFormUrl();
+
+        $this->assertEquals($formUrl, $paperMandate->getGeneratedFormUrl());
+
+        $time = new Carbon('+7 days');
+        Carbon::setTestNow($time);
+
+        $this->assertNotEquals($formUrl, $paperMandate->getGeneratedFormUrl());
     }
 
     public function testAuthenticatePaperMandateWithoutCustomerSign()
@@ -258,6 +276,7 @@ class PaperMandateTest extends TestCase
                         'sponsor_bank_code' => 'RATN0TREASU',
                         'terminal_id'       => '1citinachDTmnl',
                         'form_checksum'     => 'XXXXXXX',
+                        'generated_file_id' => 'aaaaaaaaaaaaaa',
                     ],
                     $overrideWith
                 )

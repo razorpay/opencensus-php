@@ -2,6 +2,7 @@
 
 namespace RZP\Models\PaperMandate;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
@@ -179,19 +180,46 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::UPLOADED_FILE_ID);
     }
 
-    public function getGeneratedFormUrl()
+    public function isGeneratedFormUrlExpired()
     {
-        $generatedFileId = $this->getGeneratedFileID();
+        $expiry = $this->getAttribute(self::GENERATED_FORM_URL_EXPIRE);
 
-        if (empty($generatedFileId) === true)
+        $bufferTime = '+' . Constants::SHORT_URL_BUFFER_TIME . ' days';
+
+        if (($expiry === null) or ($expiry < (new Carbon($bufferTime))->getTimestamp()))
         {
-            return null;
+            return true;
         }
 
-        return (new FileUploader($this))->getSignedShortUrl(
-            $generatedFileId,
-            Constants::MAX_SIGNED_URL_TIMEOUT
-        );
+        return false;
+    }
+
+    public function getGeneratedFormUrl()
+    {
+        if ($this->isGeneratedFormUrlExpired() === true)
+        {
+            $generatedFileId = $this->getGeneratedFileID();
+
+            if (empty($generatedFileId) === true)
+            {
+                return null;
+            }
+
+            $shortUrl = (new FileUploader($this))->getSignedShortUrl(
+                $generatedFileId,
+                Constants::MAX_SIGNED_URL_TIMEOUT
+            );
+
+            $this->setGeneratedFormUrl($shortUrl);
+
+            $expireAfter = '+' . Constants::MAX_SIGNED_URL_TIMEOUT_IN_DAYS . ' days';
+
+            $this->setGeneratedFormUrlExpire((new Carbon($expireAfter))->getTimestamp());
+
+            $this->saveOrFail();
+        }
+
+        return $this->getAttribute(self::GENERATED_FORM_URL);
     }
 
     public function getUploadedFormUrl()
@@ -204,6 +232,16 @@ class Entity extends Base\PublicEntity
         }
 
         return (new FileUploader($this))->getSignedShortUrl($uploadedFileId);
+    }
+
+    public function setGeneratedFormUrl($generatedFormUrl)
+    {
+        $this->setAttribute(self::GENERATED_FORM_URL, $generatedFormUrl);
+    }
+
+    public function setGeneratedFormUrlExpire($generatedFormUrlExpire)
+    {
+        $this->setAttribute(self::GENERATED_FORM_URL_EXPIRE, $generatedFormUrlExpire);
     }
 
     public function getTerminalId()
