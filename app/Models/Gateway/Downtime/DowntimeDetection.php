@@ -283,14 +283,14 @@ class DowntimeDetection
                         'method'                    => $method,
                         'key'                       => $key,
                         'value'                     => $value,
-                        'downtime_start_time'       => $downtimeStartTime,
+                        'payments_from'             => $from,
+                        'payments_to'               => $to,
                         'top_merchant_count'        => $metric->top_merchant_count,
                         'window'                    => $windowSizeInSeconds,
                         'minimumPayments'           => $minimumPayments,
                         'successRateForDowntime'    => $successRateForDowntime,
                         'numerator'                 => $numerator,
                         'denominator'               => $denominator,
-
                     ]);
 
                 if ($denominator < $minimumPayments)
@@ -316,6 +316,8 @@ class DowntimeDetection
                             'method'                    => $method,
                             'key'                       => $key,
                             'value'                     => $value,
+                            'payments_from'             => $from,
+                            'payments_to'               => $to,
                             'downtime_start_time'       => $downtimeStartTime,
                             'windowSizeInSeconds'       => $windowSizeInSeconds,
                             'minimumPayments'           => $minimumPayments,
@@ -344,7 +346,7 @@ class DowntimeDetection
             //TODO: If $downtimeCreatedSince is more then 5 hour. send slack notification.
             // Because There has never been downtime for this long.
 
-            if ($type === self::PAYMENT_INTERVAL && $method != Method::NETBANKING)
+            if ($type === self::PAYMENT_INTERVAL)
             {
                 return;
             }
@@ -390,7 +392,6 @@ class DowntimeDetection
             {
                 $payments = $this->repo->payment->fetchLastNUpiPaymentsForDowntime($from, $to, $type, $key, $value, $minimumPayments);
             }
-
             else
             {
                 new Exception\LogicException("Method not supported yet.");
@@ -415,6 +416,8 @@ class DowntimeDetection
                     'setting_type' => 'resolve',
                     'downtime_start_time' => $downtimeCreatedSince,
                     'downtime_recover_time' => $downtimeResolvedAt,
+                    'payments_from' => $from,
+                    'payments_to' => $to,
                     'top_merchant_count' => $metric->top_merchant_count,
                     'minimumPayments' => $minimumPayments,
                     'successRateToResolve' => $successRateToResolve,
@@ -442,6 +445,8 @@ class DowntimeDetection
                         'type' => $type,
                         'key' => $key,
                         'value' => $value,
+                        'payments_from' => $from,
+                        'payments_to' => $to,
                         'downtime_start_time' => $downtimeCreatedSince,
                         'downtime_recover_time' => $downtimeResolvedAt,
                         'minimumPayments' => $minimumPayments,

@@ -225,6 +225,48 @@ class Constants
             'key' => DowntimeDetection::BANK,
             'value' => Bank::KKBK,
         ],
+        [
+            'type' => DowntimeDetection::SUCCESS_RATE,
+            'method' => Method::NETBANKING,
+            'key' => DowntimeDetection::BANK,
+            'value' => Bank::HDFC,
+        ],
+        [
+            'type' => DowntimeDetection::SUCCESS_RATE,
+            'method' => Method::NETBANKING,
+            'key' => DowntimeDetection::BANK,
+            'value' => Bank::SBIN,
+        ],
+        [
+            'type' => DowntimeDetection::SUCCESS_RATE,
+            'method' => Method::NETBANKING,
+            'key' => DowntimeDetection::BANK,
+            'value' => Bank::ALLA,
+        ],
+        [
+            'type' => DowntimeDetection::SUCCESS_RATE,
+            'method' => Method::NETBANKING,
+            'key' => DowntimeDetection::BANK,
+            'value' => Bank::ICIC,
+        ],
+        [
+            'type' => DowntimeDetection::SUCCESS_RATE,
+            'method' => Method::NETBANKING,
+            'key' => DowntimeDetection::BANK,
+            'value' => Bank::PUNB,
+        ],
+        [
+            'type' => DowntimeDetection::SUCCESS_RATE,
+            'method' => Method::NETBANKING,
+            'key' => DowntimeDetection::BANK,
+            'value' => Bank::UTIB,
+        ],
+        [
+            'type' => DowntimeDetection::SUCCESS_RATE,
+            'method' => Method::NETBANKING,
+            'key' => DowntimeDetection::BANK,
+            'value' => Bank::KKBK,
+        ],
     ];
 
     public static function getMaxSingleMerchantContribution()
