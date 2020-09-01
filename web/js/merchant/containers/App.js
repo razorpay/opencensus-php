@@ -25,15 +25,9 @@ import User, { setFeatures } from 'merchant/models/User';
 import { fetchFeaturesAjax } from 'merchant/reducers/config';
 import AddGST from 'merchant/views/Account/Profile/components/AddGST';
 import { fetchGST } from 'merchant/reducers/profile';
-import { fetchConfig } from 'merchant/reducers/config';
-import {
-  fireAnalyticsEvents,
-  setTrackData,
-} from 'common/utils/googleAnalytics';
-import {
-  resizeWindow,
-  updateMerchantLiveTransactionFlag,
-} from 'merchant/reducers/app';
+import { fetchConfig, fetchRefundPricing } from 'merchant/reducers/config';
+import { fireAnalyticsEvents, setTrackData } from 'common/utils/googleAnalytics';
+import { resizeWindow, updateMerchantLiveTransactionFlag } from 'merchant/reducers/app';
 import { matchFullPageView } from 'merchant/routes';
 import { classList, isPresent } from 'common/utils/rzp-utils';
 
@@ -46,7 +40,7 @@ import qs from 'query-string';
 
 @withRouter
 @connect(
-  state => ({
+  (state) => ({
     ...state.session,
     config: state.config,
     windowWidth: state.app.windowWidth,
@@ -104,7 +98,7 @@ import qs from 'query-string';
     });
   },
   {
-    dispatch: data => {
+    dispatch: (data) => {
       window.rzpQ.push(data);
     },
   }
@@ -124,11 +118,8 @@ export default class App extends Component {
     // across logins/merchants
     if (oldModeValue) {
       window.rzp_user &&
-        Object.keys(window.rzp_user.merchants).forEach(merchantId => {
-          LocalStorageService.setItem(
-            `${oldModeToken}--${merchantId}`,
-            oldModeValue
-          );
+        Object.keys(window.rzp_user.merchants).forEach((merchantId) => {
+          LocalStorageService.setItem(`${oldModeToken}--${merchantId}`, oldModeValue);
         });
 
       LocalStorageService.removeItem(oldModeToken);
@@ -171,9 +162,7 @@ export default class App extends Component {
     });
 
     window.addEventListener('REQUEST_ERROR', function(e) {
-      const errorCode = e.detail.response
-        ? e.detail.response.status
-        : 'UNKNOWN STATUS';
+      const errorCode = e.detail.response ? e.detail.response.status : 'UNKNOWN STATUS';
 
       window.ga &&
         window.ga(
@@ -189,6 +178,7 @@ export default class App extends Component {
 
     this.props.fetchGST();
     this.props.fetchConfig();
+    this.props.fetchRefundPricing();
 
     Promise.all([
       this.fetchUser().then(({ data }) => {
@@ -223,7 +213,7 @@ export default class App extends Component {
         window.currencyList = data;
       }),
     ])
-      .then(response => {
+      .then((response) => {
         if (response[0].showInstantActivation) {
           setTrackData({
             eventCategory: 'Dashboard - Instant Activations',
@@ -238,8 +228,8 @@ export default class App extends Component {
 
         // Fetch features before displaying other views
         fetchFeaturesAjax(response[0].current)
-          .catch(_ => _)
-          .then(data => {
+          .catch((_) => _)
+          .then((data) => {
             const user = new User(response[0]);
             user.features = setFeatures(data.success ? data.data.features : []);
 
@@ -277,11 +267,9 @@ export default class App extends Component {
     return merchantFetch('currency/all/proxy');
   }
 
-  fireMTUFunnelEvents = user => {
+  fireMTUFunnelEvents = (user) => {
     const isUnregisteredBusiness = user.isUnregisteredBusiness;
-    const eventLabel = `MTU-Funnel${
-      user.isUnregisteredBusiness ? '-Unreg' : ''
-    }`;
+    const eventLabel = `MTU-Funnel${user.isUnregisteredBusiness ? '-Unreg' : ''}`;
 
     setTrackData({
       eventCategory: 'Dashboard - Instant Activations Live',
@@ -291,33 +279,15 @@ export default class App extends Component {
 
     let fbEvents = ['live_mtu_funnel', 'live_mtu_audience'];
     const bizTypeTerm = isUnregisteredBusiness ? 'unreg' : 'reg';
-    fbEvents = [
-      ...fbEvents,
-      `live_mtu_funnel_${bizTypeTerm}`,
-      `live_mtu_audience_${bizTypeTerm}`,
-    ];
+    fbEvents = [...fbEvents, `live_mtu_funnel_${bizTypeTerm}`, `live_mtu_audience_${bizTypeTerm}`];
 
     if (isUnregisteredBusiness) {
-      fbEvents = [
-        ...fbEvents,
-        'combo1',
-        'combo2',
-        'combo4',
-        'combo5',
-        'combo7',
-      ];
+      fbEvents = [...fbEvents, 'combo1', 'combo2', 'combo4', 'combo5', 'combo7'];
     } else {
-      fbEvents = [
-        ...fbEvents,
-        'combo1',
-        'combo2',
-        'combo3',
-        'combo4',
-        'combo6',
-      ];
+      fbEvents = [...fbEvents, 'combo1', 'combo2', 'combo3', 'combo4', 'combo6'];
     }
 
-    fbEvents.forEach(evt => {
+    fbEvents.forEach((evt) => {
       fireAnalyticsEvents({
         fbData: evt,
       });
@@ -327,11 +297,9 @@ export default class App extends Component {
     });
   };
 
-  fireMTUAudienceEvents = user => {
+  fireMTUAudienceEvents = (user) => {
     const isUnregisteredBusiness = user.isUnregisteredBusiness;
-    const eventLabel = `MTU-Audience${
-      user.isUnregisteredBusiness ? '-Unreg' : ''
-    }`;
+    const eventLabel = `MTU-Audience${user.isUnregisteredBusiness ? '-Unreg' : ''}`;
 
     setTrackData({
       eventCategory: 'Dashboard - Instant Activations Live',
@@ -341,13 +309,9 @@ export default class App extends Component {
 
     let fbEvents = ['live_mtu_audience'];
     const bizTypeTerm = isUnregisteredBusiness ? 'unreg' : 'reg';
-    fbEvents = [
-      ...fbEvents,
-      `live_mtu_audience`,
-      `live_mtu_audience_${bizTypeTerm}`,
-    ];
+    fbEvents = [...fbEvents, `live_mtu_audience`, `live_mtu_audience_${bizTypeTerm}`];
 
-    fbEvents.forEach(evt => {
+    fbEvents.forEach((evt) => {
       fireAnalyticsEvents({
         fbData: evt,
       });
@@ -359,7 +323,7 @@ export default class App extends Component {
     });
   };
 
-  setLiveTransactionDone = user => {
+  setLiveTransactionDone = (user) => {
     let { live_transaction_done, id } = user;
 
     if (!isPresent(live_transaction_done)) {
@@ -370,12 +334,12 @@ export default class App extends Component {
     switch (live_transaction_done) {
       case 1:
         updateMerchantLiveTransactionFlag(id)
-          .then(resp => {
+          .then((resp) => {
             if (resp.success) {
               this.fireMTUFunnelEvents(user);
             }
           })
-          .catch(err => {});
+          .catch((err) => {});
         break;
       case 2:
         this.fireMTUAudienceEvents(user);
@@ -449,11 +413,7 @@ export default class App extends Component {
   redirectToRoute(role) {
     const pathname = this.props.history.location.pathname;
 
-    if (
-      pathname === '/' ||
-      pathname === '/dashboard' ||
-      pathname === '/dashboard_v2'
-    ) {
+    if (pathname === '/' || pathname === '/dashboard' || pathname === '/dashboard_v2') {
       switch (role) {
         case [rolesList.SELLERAPP]:
         case [rolesList.AGENT]:
@@ -469,7 +429,7 @@ export default class App extends Component {
     }
   }
 
-  switchMode = mode => {
+  switchMode = (mode) => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Header',
       eventAction: 'Switch - Mode',
@@ -480,10 +440,7 @@ export default class App extends Component {
       this.props.openModal({
         size: 'small',
         component: (
-          <ActivationRequiredModal
-            user={this.props.user}
-            onCloseClick={this.props.closeModal}
-          />
+          <ActivationRequiredModal user={this.props.user} onCloseClick={this.props.closeModal} />
         ),
       });
     } else {
@@ -499,7 +456,7 @@ export default class App extends Component {
     }
   };
 
-  switchMerchant = merchant => {
+  switchMerchant = (merchant) => {
     this.props
       .switchMerchant(merchant.id)
       .then(() => {
@@ -513,7 +470,7 @@ export default class App extends Component {
       });
   };
 
-  lockDashboard = cb => {
+  lockDashboard = (cb) => {
     const email = this.props.user.user.email;
 
     if (window.Raven && window.Raven.captureMessage) {
@@ -543,7 +500,7 @@ export default class App extends Component {
     });
   };
 
-  getFPView = location => {
+  getFPView = (location) => {
     const matchView = matchFullPageView(location.pathname);
     let FPView = null;
 
@@ -563,29 +520,19 @@ export default class App extends Component {
   render() {
     const { user, config, org, mode, modeFormatted, merchant_gst } = this.props;
 
-    const hasGSTIN =
-      this.props.merchant_gst.p_gstin || this.props.merchant_gst.gstin;
+    const hasGSTIN = this.props.merchant_gst.p_gstin || this.props.merchant_gst.gstin;
 
     if (this.state.isLoading || !user.isAuthenticated) {
       return null;
     }
 
     return (
-      <div
-        className={classList(
-          'layout',
-          this.orgCode,
-          this.renderFPView && 'layout--fp'
-        )}
-      >
+      <div className={classList('layout', this.orgCode, this.renderFPView && 'layout--fp')}>
         {this.renderFPView ? (
           this.renderFPView
         ) : (
           <React.Fragment>
-            <TwoFactorVerificationProvider
-              merchantFetch={merchantFetch}
-              ajax={ajax}
-            >
+            <TwoFactorVerificationProvider merchantFetch={merchantFetch} ajax={ajax}>
               <HeaderNav
                 user={user}
                 mode={mode}
@@ -602,10 +549,7 @@ export default class App extends Component {
                 org_custom_code={org.custom_code}
               />
               <Content user={user} modeFormatted={modeFormatted} />
-              <Footer
-                showMobileNav={this.props.windowWidth < 950}
-                user={user}
-              />
+              <Footer showMobileNav={this.props.windowWidth < 950} user={user} />
             </TwoFactorVerificationProvider>
           </React.Fragment>
         )}

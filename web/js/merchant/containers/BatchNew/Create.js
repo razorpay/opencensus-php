@@ -107,6 +107,8 @@ export default class BatchCreate extends Component {
       <BatchCreateModal
         closeModal={closeModal}
         parsedEntries={batch.parsed_entries}
+        speedCount={batch.speed_count}
+        processableCount={batch.processable_count}
         batchType={batchType}
         onCreateBatch={handleBatchCreate}
         initialValues={initialValues}

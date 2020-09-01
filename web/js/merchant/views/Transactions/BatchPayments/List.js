@@ -12,7 +12,13 @@ const gaEvents = setGaTrack('Dashboard - Payments - BU');
 
 @connect(null, { fetchAll })
 export default class BatchListContainer extends Component {
-  renderUploadModal = () => <BatchPaymentsUpload gaEvents={gaEvents} />;
+  renderUploadModal = () => (
+    <BatchPaymentsUpload
+      gaEvents={gaEvents}
+      docUrl="https://razorpay.com/docs/payment-methods/cards/batch-card-payments/"
+      sampleUrl="https://cdn.razorpay.com/dashboard/sample_batch_payments.csv"
+    />
+  );
 
   render() {
     return (

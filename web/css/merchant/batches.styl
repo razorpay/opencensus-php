@@ -1,18 +1,21 @@
-$stats-border = #eaeff0
+$stats-border = #eaeff0;
 
 .batch-upload-wrapper
   .empty-table-message
     .helper
       width: 60%
       margin: 20px auto
+
   .refresh-batch-btn
     display: inline-block
     margin-left: 5px
     animation: infinite-spin-anti 2s linear infinite
+
   .header-btns
     position: absolute
     top: -44px
     right: 12px
+
     .MultiBatch
       &--popover
         margin-left: -15px
@@ -23,6 +26,7 @@ $stats-border = #eaeff0
 
   .custom-date
     position: relative
+
     .custom-icon
       right: 10px
       display: inline-block
@@ -31,72 +35,93 @@ $stats-border = #eaeff0
 
   .Dropzone-content-desc--secondary
     color: rgba(119, 119, 119, 0.7)
+
   &.success
     text-align: center
+
     .success-tick
-      background: url(assets/success-tick.png) no-repeat;
+      background: url("assets/success-tick.png") no-repeat
       height: 38px
       width: 38px
       margin: 0 auto
       margin-bottom: 20px
+
     .success-text
       text-align: initial
       padding: 24px 0 0 0
       width: 85%
       margin: 0 auto
+
     .btn-link
       display: inline-block
       margin-top: 16px
+
     .modal-body
       padding-top: 0px
 
   .modal-file
     width: 70%
     margin: 0 auto
+
   .modal-heading
     text-align: center
     font-weight: bold
     margin: 20px 0
     font-size: 14px
+
   .modal-info
     background-color: #FAFAFA
     border-radius: 2px
     border: 1px solid #DBDBDB
     margin: 30px 0 0
     padding: 0 15px
+
     .doc-url
       vertical-align: unset
       padding: 0
+
     ul
       list-style-type: none
       padding: 0
+
     .btn-link
       cursor: pointer
+
     &.stretch
       margin: 0 -24px -24px
       padding: 15px 24px
+
     &.error
       background-color: #fff8e5
       padding: 20px
+
       p
         margin: 0
+
       .btn
         margin-top: 12px
         padding: 10px
+
       h4
         margin-bottom: 10px
+
     &.create
       border: none
       background-color: #f5f5f5
+
       .send-link-head
         margin-top: 25px
         text-transform: uppercase
+
       .send-links-form
         margin-bottom: 4px
+
       .rzpCheckbox
         display: inline-block
+
       h5
         color: #58666E
+
       button
         display: block
         margin: 30px auto 10px
@@ -105,54 +130,66 @@ $stats-border = #eaeff0
   .notification
     margin: 25px 0
     text-align: center
+
     &.error, &.exceed
       color: #FF6363
+
   h4, h5
     color: #2D2D2D
+
 .batch-table
   font-size: 12px
+
   thead > tr > th
     background-color: #eeeeee
     border: 1px solid #ddd
     white-space: nowrap
+
   tbody > tr > td
     white-space: nowrap
 
 .batch-details
   .panel-body
     padding: 12px 24px
+
   .panel-heading
     span
       color: #5E70D2
       font-size: 13px
+
   .equal-margin
     margin: 12px 0
+
   .invoice-list
     .rzp-amount, .status-label
       float: right
+
     tr:first-of-type
       td
         border-top: none
+
     .empty-table
       padding: 30px
+
     .i-info-circle
       margin-right: 5px
+
   .pair-group-item
     padding: 8px 0
+
   .cancel-batch
     margin-left: 12px
 
-/* payment batch styles */
 .batch-upload-modal
   .batch-payments-iframe
-    pointer-events: none;
-    width: calc(0.7 * ( 100% - 24px ));
-    height: 76px;
-    margin-top: 79px;
-    position: absolute;
-    margin-left: calc(24px + 13%);
-    z-index: 1000;
-    border: none;
+    pointer-events: none
+    width: calc(0.7 * (100% - 24px))
+    height: 76px
+    margin-top: 79px
+    position: absolute
+    margin-left: calc(24px + 13%)
+    z-index: 1000
+    border: none
 
     &.disabled
       display: none
@@ -160,15 +197,120 @@ $stats-border = #eaeff0
     &.enabled
       pointer-events: all
 
-@keyframes infinite-spin-anti {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(-360deg);
-  }
-}
+@keyframes infinite-spin-anti
+  from
+    transform: rotate(0deg)
+
+  to
+    transform: rotate(-360deg)
 
 @media (max-width: $screen-sm-max)
   .modal-file
     width: 100% !important
+
+.batch-cancel-confirmation
+  width: 100%
+  min-height: 113px
+  display: flex
+  flex-direction: column
+  background: #f7f7f7
+  box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3)
+  border-radius: 3px
+
+  .content-header
+    display: flex
+    flex: 0.4
+    color: #515978
+    font-weight: bold
+    padding: 10px 0px 0px 20px
+    align-items: center
+    font-size: 17px
+
+  .content-header::before
+    content: none !important
+
+  .content-sub-header
+    display: flex
+    flex: 0.2
+    justify-content: center
+    font-size: 12px
+
+  .content
+    display: flex
+    flex: 0.4
+    justify-content: space-evenly
+    align-items: end
+    padding: 5px 0px 0px 0px
+
+  .btn
+    width: 50%
+    margin: 10px
+
+.validate-modal-ul
+  li
+    margin: 5px 0px
+
+.upload-file-batch-img
+  width: 27px
+  margin-right: 15px
+  margin-left: 5px
+
+.create-modal-panel
+  background: #FAFAFA
+
+  .panel-header
+    h3
+      margin-top: 6px
+      padding: 10px 15px
+      border-bottom: 1px solid rgba(173, 188, 201, 0.2)
+      font-size: 15px
+      color: #000
+
+  .panel-body
+    padding-top: 0
+    padding-left: 5px
+
+  ul
+    padding-left: 30px
+
+  li
+    color: #57666E
+    margin: 8px 0px
+
+  .success-tick
+    background: url("assets/success-tick.png") no-repeat
+    height: 38px
+    width: 38px
+    margin: 0 auto
+    margin-bottom: 20px
+
+.process-instant-batch
+  text-align: center
+  margin-top: 12px
+  margin-right: 5px
+
+  img
+    width: 20px
+    position: relative
+    top: -2px
+
+.batch-refund-create-modal
+  .table-responsive
+    height: 105px
+    overflow-y: scroll
+
+.process-refunds-btn
+  width: 470px
+
+.download-sample-file-p
+  margin-left: 25px
+  margin-bottom: 15px
+
+.instant-symbol-validate-modal
+  width: 9px
+  margin-right: 5px
+
+.status-label
+
+.cancel-batch-btn
+  min-width: 66px

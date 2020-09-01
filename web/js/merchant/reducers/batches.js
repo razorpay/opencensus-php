@@ -12,7 +12,7 @@ import {
 } from 'merchant_common/reducers/entity';
 import { merchantFetch } from 'merchant/utils/ajax';
 
-const REFUND = 'REFUND_BATCHES';
+const REFUND = 'REFUND_BATCHS';
 
 //Spelling it `batchs` instead of `batches` due to makeActionCollectionReducer use of singular namespace. see web/js/merchant_common/reducers/collection.js
 const BATCH_DOWNLOAD = 'BATCH_DOWNLOAD';
@@ -36,7 +36,7 @@ const BATCH_DETAILS = getFetchDetailAction(BATCH);
 const BATCH_LIST = getFetchActionName(BATCH);
 const PAYMENT_LINK_DETAILS = getFetchDetailAction(PAYMENT_LINK);
 
-const fetchBatchAjax = id =>
+export const fetchBatchAjax = id =>
   merchantFetch(`batches/${id}`).then(response => ({
     batch: response.data,
   }));
@@ -108,9 +108,9 @@ const fetchBatchDetails = (batchType, fetchDetailAction) => params => ({
 
 /////
 
-function _createBatch(data, batchType) {
+function _createBatch(data, batchType, customBatch) {
   return {
-    type: getCreateActioName(BATCH),
+    type: getCreateActioName(customBatch || BATCH),
     payload: merchantFetch({
       url: 'batches',
       method: 'post',
@@ -123,8 +123,8 @@ function _createBatch(data, batchType) {
 }
 
 /* method to create action for create batch action */
-const createBatch = batchType => data => {
-  return _createBatch(data, batchType);
+const createBatch = (batchType, actionPrefix) => data => {
+  return _createBatch(data, batchType, actionPrefix);
 };
 
 /////
@@ -161,6 +161,34 @@ const _cancelBatch = (batchId, actionType) => {
       url: `invoices/batch/${batchId}/cancel`,
       method: 'post',
     }),
+  };
+};
+
+export const updateBatchInList = batch => {
+  const REFUND_BATCH_EDIT = 'REFUND_BATCH_EDIT';
+  return {
+    type: `${REFUND_BATCH_EDIT}::SUCCESS`,
+    payload: batch,
+  };
+};
+
+export const cancelBatchRefund = batchId => {
+  const actionType = 'REFUND_BATCH_CANCEL';
+  return _cancelBatchRefund(batchId, actionType, 'refunds');
+};
+
+const _cancelBatchRefund = (batchId, actionType, prefix) => {
+  return {
+    type: actionType,
+    payload: merchantFetch({
+      url: `${prefix}/batch/${batchId}/cancel`,
+      method: 'post',
+    }).then(e =>
+      fetchBatchAjax(batchId).then(r => {
+        r.batch.status = 'created';
+        return r.batch;
+      })
+    ),
   };
 };
 
@@ -335,12 +363,14 @@ export const fetchHostMandateBatches = fetchBatches([
 export const fetchHostMandateAuthLinkBatches = fetchBatches('auth_link');
 export const createRegistrationLinkBatch = createBatch('auth_link');
 export const validateRegistrationLinkBatch = validateBatch('auth_link');
+export const validateRefundBatch = validateBatch('refund');
+export const createRefundBatch = createBatch('refund', 'REFUND');
 export const createRecurringChargeBatch = createBatch('recurring_charge');
 export const validateRecurringChargeBatch = validateBatch('recurring_charge');
 export const fetchHostedMandateBatchDetails = fetchBatchDetails();
 
 /* reducers */
-export const refundBatchesReducer = makeCollectionReducer(REFUND);
+export const refundBatchesReducer = makeActionCollectionReducer(REFUND);
 export const batchesReducer = makeActionCollectionReducer(appendBatches(BATCH));
 
 let paymentBatchIdsInitialState = {

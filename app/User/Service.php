@@ -1317,6 +1317,7 @@ class Service extends Base\Service
             'validate_user_2fa_status',
             'enable_payment_buttons',
             'enable_subscription_buttons',
+            'batch_service_refund_migration',
             'batch_scheduling_options',
             'upi_caw',
             'rx_payout_links_inactive',

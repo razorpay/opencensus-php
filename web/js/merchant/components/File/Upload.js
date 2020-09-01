@@ -1,4 +1,4 @@
-import { readableFileSize } from 'common/utils/rzp-utils';
+import { readableFileSize, titleCase } from 'common/utils/rzp-utils';
 import { classList } from 'common/utils/rzp-utils';
 import { isBlank } from 'common/utils/rzp-utils';
 
@@ -275,6 +275,13 @@ export default class FileUpload extends React.Component {
                 'Dropzone-cavity',
                 this.state.isFileDraggedInside && 'Dropzone-cavity--highlight'
               )}
+              onClick={() => {
+                window.rzpAnalytics({
+                  eventCategory: `Batch ${titleCase(this.props.batchType)}`,
+                  eventAction: 'Upload file -  upload modal',
+                  eventLabel: `Click to upload file`,
+                });
+              }}
               for={`fileInput-${name}`}
               onDrop={isDocPreUploaded ? undefined : this.handleDrop}
               onDragOver={isDocPreUploaded ? undefined : this.handleDragOver}

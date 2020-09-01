@@ -573,6 +573,10 @@ export default class User {
     return this.getExpStatus('enable_subscription_buttons');
   }
 
+  get isInstantBatchRefundsEnabled() {
+    return this.getExpStatus('batch_service_refund_migration');
+  }
+
   get isSellerAppRole() {
     const userRole = this.userRole;
     return [rolesList.SELLERAPP, rolesList.SELLERAPP_PLUS].indexOf(userRole) > -1;

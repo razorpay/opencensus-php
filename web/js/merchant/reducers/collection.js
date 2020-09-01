@@ -104,6 +104,7 @@ export const makeActionCollectionReducer = (
   const defaultHandlers = {
     [`${singularNamespace}_CREATE::SUCCESS`]: appendEntityToList,
     [`${singularNamespace}_EDIT::SUCCESS`]: updateEntityInList,
+    [`${singularNamespace}_CANCEL::SUCCESS`]: updateEntityInList,
     [`${singularNamespace}_DELETE::SUCCESS`]: removeEntityFromList,
   };
 

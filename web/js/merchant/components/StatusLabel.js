@@ -60,6 +60,7 @@ export const batchUploadStatusMap = {
   processed: 'label-success',
   failure: 'label-danger',
   cancelled: 'label-danger',
+  cancellation_requested: 'label-info',
   paused: 'label-yellow',
   scheduled: 'label-info',
 };

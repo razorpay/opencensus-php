@@ -1,14 +1,29 @@
-import { Component } from 'react';
+import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import DataTable from 'common/ui/Table/DataTable';
 import { Link } from 'react-router-dom';
 import HeaderAction from 'common/ui/HeaderAction';
 import { batchId, totalCount, status, createdAt } from 'common/ui/item/pair';
-import { batchDownload } from 'merchant/reducers/batches';
+import {
+  batchDownload,
+  cancelBatchRefund as CancelBatchRefund,
+  fetchBatchAjax,
+  updateBatchInList,
+} from 'merchant/reducers/batches';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 import BatchListFilter from './BatchListFilter';
 import store from 'merchant/store';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import BatchUpload from 'merchant/containers/BatchNew/Upload';
+import setGaTrack from 'merchant/containers/BatchNew/ga';
+import { titleCase } from 'common/utils/rzp-utils';
+import Spinner from 'common/ui/Spinner';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+const gaEvents = setGaTrack('Dashboard - Instant Refunds - BU');
+
+const STATUS_VALUES = ['created'];
 
 const batchName = {
   title: 'Name',
@@ -19,70 +34,110 @@ function batchActions({
   mode,
   viewAll,
   issueAll,
+  batchType,
   onDownloadClick,
   issuableIdList,
+  CancelBatchRefund,
+  openModal,
+  closeModal,
 }) {
   const storeData = store.getState();
   const plType = storeData.session.user.isPaymentlinksV2Enabled
     ? 'payment_link_v2'
     : 'payment_link';
-
   return {
     viewAll,
     issueAll,
     title: 'Actions',
-    value: item =>
-      item.status === 'processed' && (
-        <div class="btn-toolbar">
-          <button
-            class="btn btn-xs btn-default"
-            onClick={() => onDownloadClick(item.id)}
-          >
-            Download
-          </button>
-          {do {
-            if (item.type === plType) {
-              if (viewAll) {
-                <button
-                  class="btn btn-default btn-xs"
-                  onClick={_ => viewAll(item)}
-                >
-                  view all links
-                </button>;
-              }
-
-              {
-                /*issuableIdList is present only in case of Payment Links*/
-              }
-              if (
-                issueAll &&
-                item.status === 'processed' &&
-                (!issuableIdList || issuableIdList.indexOf(item.id) > -1)
-              ) {
-                <button
-                  class="btn btn-default btn-xs"
-                  onClick={_ => issueAll(item)}
-                >
-                  Issue all links
-                </button>;
-              }
-            }
-          }}
-        </div>
-      ),
+    value: (item) => (
+      <div class="btn-toolbar">
+        {storeData.session.user.isInstantBatchRefundsEnabled
+          ? STATUS_VALUES.includes(item.status) && (
+              <button
+                class="btn btn-xs btn-default btn-outline cancel-batch-btn"
+                onClick={() => {
+                  window.rzpAnalytics({
+                    eventCategory: `Batch ${titleCase(batchType)}`,
+                    eventAction: 'Cancel - List view',
+                    eventLabel: `Click to upload file`,
+                  });
+                  cancelBatch({
+                    batch: item,
+                    openModal,
+                    batchType,
+                    closeModal,
+                    CancelBatchRefund,
+                  });
+                }}
+              >
+                Cancel
+              </button>
+            )
+          : null}
+        <button class="btn btn-xs btn-default" onClick={() => onDownloadClick(item.id)}>
+          Download
+        </button>
+        {item.status === 'processed' &&
+          handleLinks({ viewAll, issueAll, item, plType, issuableIdList })}
+      </div>
+    ),
   };
 }
 
-@connect(state => ({ session: state.session }), {
+function handleLinks({ viewAll, issueAll, item, plType, issuableIdList }) {
+  let elem = null;
+
+  if (item.type === plType) {
+    if (viewAll) {
+      elem = (
+        <button class="btn btn-default btn-xs" onClick={(_) => viewAll(item)}>
+          view all links
+        </button>
+      );
+    }
+
+    if (
+      issueAll &&
+      item.status === 'processed' &&
+      (!issuableIdList || issuableIdList.indexOf(item.id) > -1)
+    ) {
+      elem = (
+        <button class="btn btn-default btn-xs" onClick={(_) => issueAll(item)}>
+          Issue all links
+        </button>
+      );
+    }
+  }
+
+  return elem;
+}
+
+function cancelBatch({ batch, openModal, closeModal, CancelBatchRefund, batchType }) {
+  openModal({
+    size: 'small',
+    component: (
+      <CancelConfirmation
+        cancelBatchRefund={CancelBatchRefund}
+        closeModal={closeModal}
+        batch={batch}
+      />
+    ),
+  });
+}
+
+@connect((state) => ({ session: state.session }), {
   batchDownload,
+  showNotification,
+  CancelBatchRefund,
   ...NotificationsActions,
+  ...ModalActions,
 })
 export default class BatchList extends Component {
-  dowload = id => {
+  dowload = (id) => {
     let windowRef = window.open('', '_blank');
     this.props
       .batchDownload(id)
-      .then(response => {
+      .then((response) => {
         windowRef.location.href = response.data.url;
       })
       .catch(({ errors }) => {
@@ -94,6 +149,31 @@ export default class BatchList extends Component {
       });
   };
 
+  openBatchUploadModal = () => {
+    this.props.openModal({
+      size: 'large',
+      component: (
+        <BatchUpload
+          docUrl="https://razorpay.com/docs/refunds/batch-refunds/"
+          sampleUrl={this.props.sampleUrl}
+          closeUrl="/refunds/batchuploads"
+          ctaText="Create Batch"
+          pendingText="Creating & Sending..."
+          batchType="refund"
+          maxRows={5000}
+          createBatch={this.props.createRefundBatch}
+          validateBatch={this.props.validateRefundBatch}
+          gaEvents={gaEvents}
+        />
+      ),
+    });
+    window.rzpAnalytics({
+      eventCategory: 'Batch Refund',
+      eventAction: 'Click to upload - List view',
+      eventLabel: `Click to upload`,
+    });
+  };
+
   render() {
     let {
         mode,
@@ -103,23 +183,36 @@ export default class BatchList extends Component {
         paginate,
         onSubmit,
         uploadUrl,
+        CancelBatchRefund,
+        fetchBatchAjax,
         viewAll,
         issueAll,
         issuableIdList,
         showBatchName,
         session,
+        batchType,
+        openModal,
+        sampleUrl,
+        closeModal,
       } = this.props,
       { user } = session;
     let handleDownloadClick = this.dowload;
-
+    let items = this.props.items;
     return (
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
+            {sampleUrl && (
+              <a
+                class="btn btn-link hidden-xs"
+                href={sampleUrl}
+                onClick={this.props.gaEvents.trackSampleFileDownload('From List View')}
+              >
+                Download Sample File
+              </a>
+            )}
             <ShowWhen
-              additionalCondition={user =>
-                user.isOrgAllowedFunctionality('external_links')
-              }
+              additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
             >
               {docUrl && (
                 <a class="btn btn-link" href={docUrl} target="_blank">
@@ -130,18 +223,22 @@ export default class BatchList extends Component {
             </ShowWhen>
 
             {(session.mode !== 'live' || !user.isRejected) && (
-              <Link class="btn btn-primary pull-right" to={uploadUrl}>
-                Click here to upload
-              </Link>
+              <Fragment>
+                {user.isInstantBatchRefundsEnabled ? (
+                  <button class="btn btn-primary pull-right" onClick={this.openBatchUploadModal}>
+                    Click here to upload
+                  </button>
+                ) : (
+                  <Link class="btn btn-primary pull-right" to={uploadUrl}>
+                    Click here to upload
+                  </Link>
+                )}
+              </Fragment>
             )}
           </div>
         </HeaderAction>
 
-        <BatchListFilter
-          form="batchListFilter"
-          count={count}
-          onSubmit={onSubmit}
-        />
+        <BatchListFilter form="batchListFilter" count={count} onSubmit={onSubmit} />
         <DataTable
           title="Batch Uploads"
           columns={[
@@ -153,16 +250,90 @@ export default class BatchList extends Component {
             batchActions({
               mode,
               viewAll,
+              batchType,
               issueAll,
               onDownloadClick: handleDownloadClick,
               issuableIdList,
+              openModal,
+              CancelBatchRefund,
+              fetchBatchAjax,
+              closeModal,
             }),
           ]}
           count={count}
           skip={skip}
           paginate={paginate}
           {...this.props}
+          items={items}
         />
+      </div>
+    );
+  }
+}
+
+@connect((state) => null, {
+  ...NotificationsActions,
+})
+class CancelConfirmation extends Component {
+  state = {
+    loading: false,
+  };
+  cancel = () => {
+    this.setState({ loading: true });
+    window.rzpAnalytics({
+      eventCategory: `Batch ${titleCase(this.props.batch.type)}`,
+      eventAction: 'Yes cancel - Cancel Modal',
+      eventLabel: this.props.batch.status,
+    });
+    fetchBatchAjax(this.props.batch.id).then((r) => {
+      const batch = r.batch;
+      if (batch.status == 'created') {
+        return this.props.cancelBatchRefund(this.props.batch.id).then((e) => {
+          this.setState({ loading: false });
+          this.props.closeModal();
+          this.props.showNotification({
+            type: 'success',
+            message: 'This batch cancellation initiated.',
+          });
+        });
+      } else {
+        updateBatchInList(this.props.batch);
+        this.setState({ loading: false });
+        this.props.closeModal();
+        let message;
+        if (batch.status == 'processing') {
+          message = 'Batch refund is already being processed.';
+        }
+        if (batch.status == 'cancelled') {
+          message = 'Batch refund already cancelled.';
+        }
+        if (batch.status == 'processed') {
+          message = 'Batch refund already processed.';
+        }
+        if (message) {
+          this.props.showNotification({
+            type: 'error',
+            message: message,
+          });
+        }
+      }
+    });
+  };
+  render() {
+    return (
+      <div class="batch-cancel-confirmation">
+        <div class="content-header">Are you sure you want to cancel the batch file?</div>
+        {/* <div class="content-sub-header">
+          Many of the refunds might have been processed already
+        </div> */}
+        <div class="content">
+          <button class="btn btn-default" onClick={this.props.closeModal}>
+            No, don't
+          </button>
+          <button disabled={this.state.loading} onClick={this.cancel} class="btn btn-primary">
+            {this.state.loading ? <span>Please Wait..</span> : <span>Yes, cancel</span>}
+          </button>
+        </div>
       </div>
     );
   }

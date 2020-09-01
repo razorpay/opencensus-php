@@ -90,13 +90,21 @@ export default class BatchUpload extends Component {
             case 'success':
               return (
                 <SuccessModal onModalClose={this.onModalClose}>
-                  <p class="text-center">
-                    You can download the output file from batch detail view to
-                    check payment links generated. For the links that could not
-                    be generated due to some issues, please upload a new batch
-                    file.
-                    <br />
-                  </p>
+                  {this.props.batchType === 'refund' ? (
+                    <p class="text-center">
+                      You can download the batch file report to check the final
+                      state of each refund request.
+                      <br />
+                    </p>
+                  ) : (
+                    <p class="text-center">
+                      You can download the output file from batch detail view to
+                      check payment links generated. For the links that could
+                      not be generated due to some issues, please upload a new
+                      batch file.
+                      <br />
+                    </p>
+                  )}
                 </SuccessModal>
               );
             case 'default':
