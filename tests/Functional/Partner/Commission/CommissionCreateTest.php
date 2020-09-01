@@ -838,7 +838,7 @@ class CommissionCreateTest extends TestCase
 
         $baseCommission = $commission['credit'] - $commission['tax'];
 
-        $tds = $this->getFeeWithoutTax($baseCommission, 5);
+        $tds = $this->getFeeWithoutTax($baseCommission, Config\Entity::DEFAULT_TDS_PERCENTAGE/100);
 
         $this->assertEquals(-1 * $tds, $tdsAdjustment['amount']);
         $this->assertEquals(Channel::YESBANK, $tdsAdjustment['channel']);

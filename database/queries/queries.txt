@@ -5949,6 +5949,8 @@ ALTER TABLE transfers
     ADD COLUMN account_code VARCHAR(255) DEFAULT NULL,
     ADD COLUMN account_code_used TINYINT(1) DEFAULT 0;
 
+ALTER TABLE `partner_configs` CHANGE COLUMN `tds_percentage` `tds_percentage` INT(11) NOT NULL DEFAULT 375;
+
 ALTER TABLE bvs_validation
     CHANGE COLUMN `status` `validation_status` enum('success','failed','captured') not null;
 
