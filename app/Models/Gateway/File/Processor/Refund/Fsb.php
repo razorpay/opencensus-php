@@ -18,7 +18,7 @@ class Fsb extends Base
     const REFUNDID          = 'Refund ID';
     const BANKID            = 'Bank ID';
     const MERCHNAME         = 'Merchant Name';
-    const TXNDATE           = 'Transaction Date';
+    const TXNDATE           = 'Txn Date';
     const REFUNDDATE        = 'Refund Date';
     const BANKMERCHCODE     = 'Bank Merchant Code';
     const BANKREFNO         = 'Bank Ref No.';
@@ -39,7 +39,7 @@ class Fsb extends Base
     {
         $formattedData = [];
 
-        $count = 0;
+        $count = 1;
 
         foreach ($data as $row)
         {
@@ -59,7 +59,7 @@ class Fsb extends Base
                 self::TXNAMT                => number_format($row['payment']['amount'] / 100, 2, '.', ''),
                 self::REFUNDAMT             => number_format($row['refund']['amount'] / 100, 2, '.', ''),
                 self::BANKACCNO             => $row['gateway'][Netbanking::BANK_ACCOUNT_NUMBER],
-                self::BANKPAYTYPE           => "Fincare"
+                self::BANKPAYTYPE           => "CITNEFT"
             ];
         }
         return $formattedData;
