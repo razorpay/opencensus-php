@@ -1089,7 +1089,7 @@ class Repository extends Base\Repository
     public function getPayoutAmountAndTaxCountForMonth()
     {
         $from = Carbon::yesterday(Timezone::IST)->startOfMonth()->startOfDay()->getTimestamp();
-        $to = Carbon::yesterday(Timezone::IST)->endOfMonth()->endOfDay()->getTimestamp();
+        $to = Carbon::yesterday(Timezone::IST)->endOfDay()->getTimestamp();
 
         return $this->getPayoutAmountAndTaxCountBetweenTimestamp($from, $to);
     }

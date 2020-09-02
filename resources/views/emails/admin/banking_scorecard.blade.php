@@ -6,7 +6,7 @@
     <body>
         <div>
             <p>Yesterday's TPV - {{ $yesterday_tpv }} Cr.</p>
-            <p>Monthly TPV till now - {{ $month_tpv }} Cr.</p>
+            <p>Monthly TPV till EOD yesterday - {{ $month_tpv }} Cr.</p>
 
             <br>
 
