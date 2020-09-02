@@ -240,8 +240,8 @@ class MySqlConnector extends BaseMySqlConnector
                 FROM heartbeat.heartbeat
                 LIMIT  1';
 
-        $result = $this->app['db']->connection($connection)->getPdo()->query($query)->fetch();
+        $result = $this->app['db']->connection($connection)->selectOne($query);
 
-        return $result['replica_lag_milli'];
+        return $result->replica_lag_milli;
     }
 }
