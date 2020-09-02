@@ -65,23 +65,18 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->createGatewayPaymentEntity($content, $input);
 
-        $content = ['msg' => implode('|', $content)];
+        $merchantId = $this->getMerchantId();
 
-        if ($this->isEncryptedFlowTerminal())
-        {
-            $merchantId = $this->getMerchantId();
+        $contentString = implode('|', $content);
 
-            $contentString = implode('|', $content);
+        $masterKey = $this->getEncryptionSecret();
 
-            $masterKey = $this->getEncryptionSecret();
+        $encryptedString = $this->getRsaCrypter($masterKey)->encryptString($contentString);
 
-            $encryptedString = $this->getRsaCrypter($masterKey)->encryptString($contentString);
-
-            $content = [
-                'msg'        => $encryptedString,
-                'merchantId' => $merchantId,
-            ];
-        }
+        $content = [
+            'msg'        => $encryptedString,
+            'merchantId' => $merchantId,
+        ];
 
         $request = $this->getStandardRequestArray($content);
 
@@ -253,7 +248,7 @@ class Gateway extends Base\Gateway
         unset($content['Checksum']);
 
         //This is done because there is a extra '|' that has to be appended at then end of hash string.
-        if (($this->action === Action::VERIFY) and ($this->isEncryptedFlowTerminal()))
+        if ($this->action === Action::VERIFY)
         {
             $content['FieldToAppendExtraPipe'] = '';
         }
@@ -406,14 +401,10 @@ class Gateway extends Base\Gateway
     {
         $str = $this->getStringToHash($content, '|');
 
-        if($this->isEncryptedFlowTerminal())
-        {
-            $str = $str . '|';
+        $str = $str . '|';
 
-            return $str . $this->getHashOfString($str);
-        }
+        return $str . $this->getHashOfString($str);
 
-        return $str . '|' . $this->getHashOfString($str);
     }
 
     protected function getTestMerchantId()
@@ -449,38 +440,14 @@ class Gateway extends Base\Gateway
     {
         assertTrue ($this->mode === Mode::LIVE);
 
-        if($this->isEncryptedFlowTerminal())
-        {
-            return $this->config['live_hmac_hash_secret'];
-        }
-
-        if ($this->tpv === true)
-        {
-            return $this->config['live_hash_secret_tpv'];
-        }
-        else if (isset($this->input['merchant']))
-        {
-            if ($this->input['merchant']->isTPVRequired())
-            {
-                return $this->config['live_hash_secret_tpv'];
-            }
-        }
-
-        return $this->config['live_hash_secret'];
+        return $this->config['live_hmac_hash_secret'];
     }
 
     protected function getHashOfString($str)
     {
-        if($this->isEncryptedFlowTerminal())
-        {
-            $key = $this->getSecret();
+        $key = $this->getSecret();
 
-            return (hash_hmac('sha256', $str, $key));
-        }
-
-        $str = $str . '|' . $this->getSecret();
-
-        return (string)(crc32($str));
+        return (hash_hmac('sha256', $str, $key));
     }
 
     protected function getHashOfArray($content)
@@ -488,26 +455,13 @@ class Gateway extends Base\Gateway
         $str = $this->getStringToHash($content, '|');
 
         // Authorize and callback have the checksum in uppercase.
-        if ((($this->action === Action::AUTHORIZE) or
-             ($this->action === Action::CALLBACK)) and
-             ($this->isEncryptedFlowTerminal()))
+        if (($this->action === Action::AUTHORIZE) or
+             ($this->action === Action::CALLBACK))
         {
             return strtoupper($this->getHashOfString($str));
         }
 
         return $this->getHashOfString($str);
-    }
-
-    protected function isEncryptedFlowTerminal()
-    {
-        // TODO: remove this method when all the terminals are migrated to the new encrypted flow
-
-        if ( ((bool) ConfigKey::get(ConfigKey::ENABLE_NB_KOTAK_ENCRYPTED_FLOW, false)) or ($this->input['terminal']->getAccountType() === 'enc'))
-        {
-            return true;
-        }
-
-        return false;
     }
 
     protected function verifyCallback(array $input, $gatewayPayment)

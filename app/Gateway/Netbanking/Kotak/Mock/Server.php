@@ -33,20 +33,15 @@ class Server extends Base\Mock\Server
         //fot test only
         $content = explode('|',$input['msg']);
 
-        $this->encryptedFlow = false;
+        $this->encryptedFlow = true;
 
-        if (count($content) === 2)
-        {
-            $this->encryptedFlow = true;
+        $masterKey = $this->getDecryptionKey();
 
-            $masterKey = $this->getDecryptionKey();
+        $encryptor = $this->getGatewayInstance()->getRsaCrypter($masterKey);
 
-            $encryptor = $this->getGatewayInstance()->getRsaCrypter($masterKey);
+        $decryptedData = $encryptor->decryptString($content[0]);
 
-            $decryptedData = $encryptor->decryptString($content[0]);
-
-            $content = explode('|',$decryptedData);
-        }
+        $content = explode('|',$decryptedData);
 
         unset($content[7]);
 
@@ -71,15 +66,11 @@ class Server extends Base\Mock\Server
 
         $msg = $this->getMessageStringWithHash($content);
 
-        if ($this->encryptedFlow === true)
-        {
-            $masterKey = $this->getEncryptionSecret();
+        $masterKey = $this->getEncryptionSecret();
 
-            $encryptor = $this->getGatewayInstance()->getRsaCrypter($masterKey);
+        $encryptor = $this->getGatewayInstance()->getRsaCrypter($masterKey);
 
-            $msg = $encryptor->encryptString($msg);
-        }
-
+        $msg = $encryptor->encryptString($msg);
 
         $callbackUrl = $this->route->getUrl('gateway_payment_callback_kotak');
 
@@ -125,16 +116,6 @@ class Server extends Base\Mock\Server
                 $id, Base\Action::AUTHORIZE);
         }
 
-        $paymentEntity = $this->repo->payment->findOrFailPublic($payment['payment_id']);
-
-        $terminal = $this->repo->terminal->fetchForPayment($paymentEntity);
-
-        $this->encryptedFlow = false;
-        
-        if ($terminal['account_type'] === 'enc')
-        {
-            $this->encryptedFlow = true;
-        }
         $content = array(
             'MessageCode'         => $input['MessageCode'],
             'DateTimeInGMT'       => $input['DateTimeInGMT'],
@@ -222,30 +203,19 @@ class Server extends Base\Mock\Server
     protected function getHashOfString($str)
     {
         $secret = null;
+
         if ($this->action === 'verify')
         {
             $secret = $this->config['test_verify_hash_secret'];
 
-            if ($this->encryptedFlow === true)
-            {
-                $str = $str . '|';
+            $str = $str . '|';
 
-                return (hash_hmac('sha256', $str, $secret));
-            }
-        }
-        else
-        {
-            $secret = $this->config['test_hash_secret'];
-
-            if ($this->encryptedFlow === true)
-            {
-                return (strtoupper(hash_hmac('sha256', $str, $secret)));
-            }
+            return (hash_hmac('sha256', $str, $secret));
         }
 
-        $str = $str . '|' . $secret;
+        $secret = $this->config['test_hash_secret'];
 
-        return (string)(crc32($str));
+        return (strtoupper(hash_hmac('sha256', $str, $secret)));
     }
 
     public function getMessageStringWithHash($content)
