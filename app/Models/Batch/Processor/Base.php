@@ -1230,7 +1230,7 @@ class Base extends BaseModel\Core
                     $entry[Batch\Header::NOTES][$matches[1]] = $value;
                 }
                 // Trim leading or trailing whitespace in the speed column value
-                else if (Batch\Header::SPEED === $key)
+                else if ($key === Batch\Header::SPEED)
                 {
                     $entry[$key] = trim($value);
                 }
