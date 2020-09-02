@@ -2519,6 +2519,24 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
+    public function createSharedNetbankingEquitasTpvTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => Shared::NETBANKING_ESFB_TPV_TERMINAL,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_EQUITAS,
+            'gateway_merchant_id'   => 'netbanking_equitas_merchant_id',
+            'tpv'                   => 1,
+            'netbanking'            => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
     public function createSharedNetbankingYesbTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;

@@ -48,7 +48,11 @@ class Gateway extends Base\Gateway
 
         $request = $this->createRequest($data);
 
-        $this->traceGatewayPaymentRequest($request, $input);
+        $traceData = $request;
+
+        unset($traceData['content'][RequestFields::ACCOUNT_NUMBER]);
+
+        $this->traceGatewayPaymentRequest($traceData, $input);
 
         return $request;
     }
@@ -59,11 +63,15 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
+        $traceData = $content;
+
+        unset($traceData[RequestFields::ACCOUNT_NUMBER]);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
                 'gateway'          => $this->gateway,
-                'gateway_response' => $content,
+                'gateway_response' => $traceData,
                 'terminal_id'      => $input['payment']['terminal_id'],
                 'payment_id'       => $input['payment']['id']
             ]
@@ -129,12 +137,19 @@ class Gateway extends Base\Gateway
 
     protected function getAuthRequestData($input)
     {
+        $accountNo = Constants::NOT_APPLICABLE;
+
+        if ($input['merchant']->isTPVRequired())
+        {
+            $accountNo = $input['order']['account_number'];
+        }
+
         return [
             RequestFields::MERCHANT_ID                  => $this->getMerchantId(),      // PID
             RequestFields::PAYMENT_ID                   => $input['payment']['id'],     //BRN
             RequestFields::AMOUNT                       => $this->formatAmount($input['payment']['amount']), //AMT
             RequestFields::RETURN_URL                   => $input['callbackUrl'], //
-            RequestFields::ACCOUNT_NUMBER               => Constants::NOT_APPLICABLE,
+            RequestFields::ACCOUNT_NUMBER               => $accountNo,
             RequestFields::MODE                         => Constants::MODE_OF_TRANSACTION_PAYMENT,
             // TODO : should we send this ?
             RequestFields::DESCRIPTION                  => $input['merchant']->getFilteredDba(),

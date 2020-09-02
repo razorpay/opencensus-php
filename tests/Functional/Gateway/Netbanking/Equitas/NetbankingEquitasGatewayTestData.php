@@ -30,6 +30,28 @@ return [
         'verified'          => null,
     ],
 
+    'testTpvPayment' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'netbanking',
+                'bank'           => 'ESFB',
+                'account_number' => '12345678910',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+
     'testPaymentNetbankingEntity' => [
         'action'            => 'authorize',
         'bank'              => 'ESFB',

@@ -712,6 +712,10 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
     ];
 
+    protected static $netbankingEquitasEditTerminalRules = [
+        Entity::TPV                        => 'sometimes|in:0,1,2',
+    ];
+
     protected static $netbankingCubTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_cub',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',

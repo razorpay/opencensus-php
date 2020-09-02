@@ -155,6 +155,7 @@ class Netbanking
         IFSC::IBKL,
         IFSC::JAKA,
         IFSC::IOBA,
+        IFSC::ESFB,
     ];
 
     protected static $defaultGatewayDisabledBanks = [
@@ -600,7 +601,10 @@ class Netbanking
         Gateway::NETBANKING_EQUITAS => [
             'retail' => [
                 IFSC::ESFB
-            ]
+            ],
+            'tpv'    => [
+                IFSC::ESFB
+            ],
         ],
         Gateway::NETBANKING_AIRTEL => [
             'retail' => [

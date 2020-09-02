@@ -8,6 +8,7 @@ use RZP\Models\Payment\Entity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Netbanking\Equitas\Status;
 use RZP\Gateway\Netbanking\Equitas\Constants;
+use RZP\Gateway\Netbanking\Equitas\Mock\Server;
 use RZP\Gateway\Netbanking\Equitas\RequestFields;
 use RZP\Gateway\Netbanking\Equitas\ResponseFields;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -49,6 +50,47 @@ class NetbankingEquitasGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentNetbankingEntity'], $netbankingEntity);
+    }
+
+    public function testTpvPayment()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_equitas_tpv_terminal');
+
+        $this->ba->privateAuth();
+
+        $data = $this->testData[__FUNCTION__]['request']['content'];
+
+        $this->fixtures->merchant->enableTPV();
+
+        $order = $this->startTest();
+
+        $order = $this->getLastEntity('order');
+
+        $this->payment['order_id'] = $order['id'];
+
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['terminal_id'], $terminal->getId());
+
+        $this->assertEquals($payment['reference1'], Server::TRANSACTION_ID);
+
+        $this->assertEquals($payment['status'], 'captured');
+
+        $this->assertEquals($payment['amount'], $data['amount']);
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertNotNull($gatewayPayment['account_number']);
+
+        $this->assertEquals($gatewayPayment['account_number'], $data['account_number']);
+
+        $this->assertEquals($gatewayPayment['bank_payment_id'], Server::TRANSACTION_ID);
+
+        $this->assertEquals($gatewayPayment['bank'], $data['bank']);
+
+        $this->fixtures->merchant->disableTPV();
     }
 
     public function testTamperedAmount()
