@@ -1080,7 +1080,9 @@ class Route
 
 
         // Tax Payments
+        'tax_payments_mail_cron'                   => ['post',    'tax-payments/mailCron',                           'TaxPaymentController@mailCron'                                     ],
         'tax_payments_payout_cron'                 => ['post',    'tax-payments/initiateMonthlyPayouts',             'TaxPaymentController@initiateMonthlyPayouts'                       ],
+        'tax_payments_send_email'                  => ['post',    'tax-payments/sendMail',                           'TaxPaymentController@sendMail'                                     ],
         'tax_payments_enabled_merchant_settings'   => ['get',     'tax-payments/enabledMerchantSettings',            'TaxPaymentController@enabledMerchantSettings'                      ],
         'tax_payments_pay'                         => ['post',    'tax-payments/{id}/pay',                           'TaxPaymentController@payTaxPayment'                                ],
         'tax_payments_bulk_pay'                    => ['post',    'tax-payments/bulk-pay',                           'TaxPaymentController@bulkPayTaxPayment'                            ],
@@ -1750,6 +1752,7 @@ class Route
         'banking_account_activate'                => ['post',     'banking_accounts/{id}/activate',                            'BankingAccountController@activate'                         ],
         'banking_serviceable_pincodes'            => ['post',     'banking_account/serviceability/{channel}/pincodes',         'BankingAccountController@postServiceablePincodes'          ],
         'banking_accounts_list'                   => ['get',      'banking_accounts',                                          'BankingAccountController@list'                             ],
+        'banking_accounts_list_internal'          => ['get',      'banking_accounts_internal',                                 'BankingAccountController@list'                             ],
         'banking_account_update'                  => ['patch',    'banking_accounts/{id}',                                     'BankingAccountController@update'                           ],
         'banking_account_bulk_assign_reviewer'    => ['post',     'banking_accounts/reviewers',                                'BankingAccountController@bulkAssignReviewer'               ],
         'banking_account_gateway_balance_fetch'   => ['put',      'banking_accounts/gateway/{channel}/balance',                'BankingAccountController@processGatewayBalanceUpdate'      ],
@@ -2581,8 +2584,11 @@ class Route
         'banking_account_activation_details_via_batch',
         'payout_create_on_internal_contact',
         'tax_payments_payout_cron',
+        'tax_payments_mail_cron',
         'tax_payments_enabled_merchant_settings',
+        'tax_payments_send_email',
         'vendor_payment_ocr_accuracy_cron',
+        'banking_accounts_list_internal',
         'mpans_tokenize_existing',
         'terminal_mpans_tokenize_existing',
         'scrooge_refunds_get_razorflow',
@@ -4800,6 +4806,8 @@ class Route
             'fund_account_create_internal',
             'payout_create_on_internal_contact',
             'tax_payments_enabled_merchant_settings',
+            'tax_payments_send_email',
+            'banking_accounts_list_internal',
         ],
 
         'dashboard' => [
@@ -4995,6 +5003,7 @@ class Route
             'terminals_proxy_create_submerchant',
             'cps_backfill_entities',
             'tax_payments_payout_cron',
+            'tax_payments_mail_cron',
             'vendor_payment_ocr_accuracy_cron',
             'mpans_tokenize_existing',
             'terminal_mpans_tokenize_existing',

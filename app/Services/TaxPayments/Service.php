@@ -1,27 +1,29 @@
 <?php
 
-namespace RZP\Services;
+namespace RZP\Services\TaxPayments;
 
+use Mail;
 use Requests;
+
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\User\Entity;
 use RZP\Models\Settings\Module;
-use RZP\Models\Settings\Service;
 use RZP\Http\Response\StatusCode;
 use RZP\Models\Settings\Accessor;
 use RZP\Exception\BadRequestException;
-use RZP\Models\Settings\GlobalAccessor;
 use RZP\Models\User\Entity as UserEntity;
+use RZP\Mail\TaxPayments\GenericTaxPaymentEmail;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Settings\Service as SettingsService;
 
 /**
  * Class TaxPayments
  * @package RZP\Services
  * This class is responsible to talk to the TaxPayments APIs that are hosted
- * on the VendorPayments APP
+ * on the TaxPayments APP
  */
-class TaxPayments
+class Service
 {
     const BASE_PATH                = 'twirp/razorpay.vendorpayments.taxpayments.Taxpayments';
     const GET_ALL_SETTINGS         = 'GetAllSettings';
@@ -31,10 +33,24 @@ class TaxPayments
     const PAY_TAX_PAYMENTS         = 'PayTaxPayment';
     const BULK_PAY_TAX_PAYMENTS    = 'BulkPayTaxPayments';
     const INITIATE_MONTHLY_PAYOUTS = 'InitiateMonthlyPayouts';
+    const EMAIL_CRON               = 'EmailCron';
     const TAX_PAYMENT_ENABLED_KEY  = 'tax_payment_enabled';
     const MARK_AS_PAID             = 'MarkAsPaid';
     const UPLOAD_CHALLAN           = 'UploadChallan';
     const EDIT_TP                  = 'EditTp';
+
+    const DATA                     = 'data';
+    const TEMPLATE_NAME            = 'template_name';
+    const SUBJECT                  = 'subject';
+    const NAME                     = 'name';
+    const TYPE                     = 'type';
+    const ACCOUNT_NUMBER           = 'account_number';
+    const BALANCE                  = 'balance';
+    const MERCHANT_ID              = 'merchant_id';
+    const SETTINGS                 = 'settings';
+    const BANKING_ACCOUNT          = 'banking_account';
+    const MERCHANT_EMAIL           = 'merchant_email';
+
 
     protected $app;
 
@@ -56,12 +72,33 @@ class TaxPayments
         $this->repo = $app['repo'];
     }
 
+    public function sendMail(array $input)
+    {
+        (new Validator())->validateInput(Validator::SEND_MAIL, $input);
+
+        Mail::queue(new GenericTaxPaymentEmail($input[self::MERCHANT_EMAIL],
+                                               $input[self::SUBJECT],
+                                               $input[self::TEMPLATE_NAME],
+                                               $input[self::DATA]));
+
+        return ['success' => true];
+    }
+
+    public function mailCron(array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::EMAIL_CRON);
+
+        return $this->makeRequest(null, $url, $input);
+    }
+
     /**
      * This will query the settings service and get all the merchants that have the tax-payment settings enabled
      */
     public function settingsOfTaxPaymentEnabledMerchants()
     {
-         $settings = (new Service())->getSettingsIfKeyPresent(Module::TAX_PAYMENTS, self::TAX_PAYMENT_ENABLED_KEY);
+        $settings = (new SettingsService())->getSettingsIfKeyPresent(
+            Module::TAX_PAYMENTS,
+            self::TAX_PAYMENT_ENABLED_KEY);
 
         $settingsOfEnabledMerchants = [];
 
@@ -73,10 +110,34 @@ class TaxPayments
 
                 $settingsAccessor = Accessor::for($merchant, Module::TAX_PAYMENTS);
 
+                $settings = $settingsAccessor->all()->toArray();
+
+                $accountNumber = array_get($settings, 'merchant_auto_debit_account_number', null);
+
+                $bankingAccountInfo = null;
+
+                if (empty($accountNumber) === false)
+                {
+                    $bankingAccount = $this->repo
+                                            ->banking_account
+                                            ->findByMerchantAndAccountNumberPublic($merchant, $accountNumber);
+                    if ($bankingAccount !== null)
+                    {
+                        $bankingAccountInfo = [
+                            self::NAME           => $bankingAccount->getBankName(),
+                            self::TYPE           => $bankingAccount->getAccountType(),
+                            self::ACCOUNT_NUMBER => $bankingAccount->getAccountNumber(),
+                            self::BALANCE        => $bankingAccount->balance->getBalance()
+                        ];
+                    }
+                }
+
                 array_push($settingsOfEnabledMerchants,
                            [
-                               'merchant_id' => $merchant->getId(),
-                               'settings'    => $settingsAccessor->all()->toArray()
+                               self::MERCHANT_ID     => $merchant->getId(),
+                               self::SETTINGS        => $settings,
+                               self::BANKING_ACCOUNT => $bankingAccountInfo,
+                               self::MERCHANT_EMAIL  => $merchant->getEmail(),
                            ]);
             }
         }
@@ -175,7 +236,7 @@ class TaxPayments
         return $this->makeRequest($merchant, $url, $input);
     }
 
-    public function uploadChallan(MerchantEntity $merchant,array $input)
+    public function uploadChallan(MerchantEntity $merchant, array $input)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::UPLOAD_CHALLAN);
         // The MS we are calling, expects JSON content,
@@ -183,8 +244,8 @@ class TaxPayments
         // base_64 encoded byte array
 
         $input['file'] = base64_encode(file_get_contents($_FILES['file']['tmp_name']));
-        $input['file_name'] = $_FILES['file']['name'];
 
+        $input['file_name'] = $_FILES['file']['name'];
 
         return $this->makeRequest($merchant, $url, $input);
 
@@ -209,7 +270,7 @@ class TaxPayments
     {
         if ($merchant !== null)
         {
-            $data = array_merge($data, ['merchant_id' => $merchant->getId()]);
+            $data['merchant_id'] = $merchant->getId();
         }
 
         $headers['Content-Type'] = 'application/json';

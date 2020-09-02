@@ -117,7 +117,7 @@ class Service extends Base\Service
 
         else
         {
-            $payout = $this->core->createPayoutToFundAccount($input, $this->merchant);
+            $payout = $this->core->createPayoutToFundAccount($input, $this->merchant, null, $internal);
         }
 
         return $payout->toArrayPublic();

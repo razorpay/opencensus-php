@@ -32,6 +32,22 @@ class TaxPaymentController extends Controller
                                              $this->ba->getUser());
     }
 
+    /*
+     * This is called by internal apps to trigger the email
+     */
+    public function sendMail()
+    {
+        return $this->service->sendMail($this->input);
+    }
+
+    /*
+     * This is used by the SetCronJob to hit Mail sending routes on the MS
+     */
+    public function mailCron()
+    {
+        return $this->service->mailCron($this->input);
+    }
+
     public function bulkPayTaxPayment()
     {
         return $this->service->bulkPayTaxPayment($this->ba->getMerchant(),

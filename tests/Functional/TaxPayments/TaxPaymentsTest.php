@@ -8,13 +8,12 @@ use RZP\Models\Contact\Type;
 use RZP\Models\Payout\Status;
 use RZP\Models\Payout\Purpose;
 use RZP\Models\Settings\Accessor;
-use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 
-class TaxPaymentTests extends TestCase
+class TaxPaymentsTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
@@ -63,7 +62,7 @@ class TaxPaymentTests extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
 
         $tpMock->shouldReceive('getAllSettings')->andReturn([]);
 
@@ -79,7 +78,7 @@ class TaxPaymentTests extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
 
         $tpMock->shouldReceive('addOrUpdateSettings')->andReturn([]);
 
@@ -95,7 +94,7 @@ class TaxPaymentTests extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
 
         $tpMock->shouldReceive('getTaxPayment')->andReturn([]);
 
@@ -111,7 +110,7 @@ class TaxPaymentTests extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
 
         $tpMock->shouldReceive('listTaxPayments')->andReturn([]);
 
@@ -127,7 +126,7 @@ class TaxPaymentTests extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
 
         $tpMock->shouldReceive('payTaxPayment')->andReturn([]);
 
@@ -248,7 +247,7 @@ class TaxPaymentTests extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
 
         $tpMock->shouldReceive('bulkPayTaxPayment')->andReturn([]);
 
@@ -322,13 +321,35 @@ class TaxPaymentTests extends TestCase
 
         $m1 = $this->fixtures->create('merchant', ['id' => '200DemoAccount']);
 
+        $xBalance1 = $this->fixtures->create('balance',
+                                             [
+                                                 'merchant_id'       => $m1->getId(),
+                                                 'type'              => 'banking',
+                                                 'account_type'      => 'shared',
+                                                 'account_number'    => '2224440041626905',
+                                                 'balance'           => 200,
+                                             ]);
+
+        $ba1 = $this->fixtures->create('banking_account',
+                                       [
+                                           'account_number'        => '2224440041626905',
+                                           'account_type'          => 'current',
+                                           'merchant_id'           => $m1->getId(),
+                                           'channel'               => 'yesbank',
+                                           'status'                => 'created',
+                                           'balance_id'            => $xBalance1->getId(),
+                                           'pincode'               => '1',
+                                           'bank_reference_number' => '',
+                                           'account_ifsc'          => 'RATN0000156',
+                                       ]);
+
         $m2 = $this->fixtures->create('merchant', ['id' => '201DemoAccount']);
 
         $m3 = $this->fixtures->create('merchant', ['id' => '202DemoAccount']);
 
         $this->createTestSettingsForMerchant($m1->getId(), [
             'tax_payment_enabled' => true,
-            'merchant_auto_debit_account_number' => 'm1_account',
+            'merchant_auto_debit_account_number' => $ba1->getAccountNumber(),
         ]);
 
         $this->createTestSettingsForMerchant($m2->getId(), [
@@ -357,7 +378,7 @@ class TaxPaymentTests extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
 
         $tpMock->shouldReceive('initiateMonthlyPayouts')->andReturn([]);
 
@@ -366,6 +387,64 @@ class TaxPaymentTests extends TestCase
         $this->startTest();
 
         $tpMock->shouldHaveReceived('initiateMonthlyPayouts');
+    }
+
+    public function testUpcomingEmailCronCallsServiceMethod()
+    {
+        $this->ba->appAuthTest($this->config['applications.cron.secret']);
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
+
+        $tpMock->shouldReceive('mailCron')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('mailCron');
+    }
+
+    public function testSendMailServiceMethodIsCalled()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
+
+        $tpMock->shouldReceive('sendMail')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('sendMail');
+    }
+
+    public function testSendEmailValidation()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->startTest();
+    }
+
+    public function testSendEmailDataFieldRequired()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->startTest();
+    }
+
+    public function testSendEmailSubjectFieldRequired()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->startTest();
+    }
+
+    public function testSendEmailTemplateFieldRequired()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->startTest();
     }
 
     public function testPayoutWithTaxPaymentPurposeCanBeDeleted()
@@ -436,5 +515,4 @@ class TaxPaymentTests extends TestCase
 
         $this->startTest();
     }
-
 }

@@ -400,8 +400,14 @@ return [
                     'merchant_id' => '200DemoAccount',
                     'settings'    => [
                         'tax_payment_enabled'                => '1',
-                        'merchant_auto_debit_account_number' => 'm1_account'
-                    ]
+                        'merchant_auto_debit_account_number' => '2224440041626905',
+                    ],
+                    'banking_account' => [
+                        'name'           => 'yesbank',
+                        'account_number' => '2224440041626905',
+                        'type'           => 'current',
+                        'balance'        => 200
+                    ],
                 ],
                 [
                     'merchant_id' => '201DemoAccount',
@@ -430,7 +436,7 @@ return [
             ]
         ]
     ],
-    'testInitiateMonthlyPayoutsCallsServiceMethod'                             => [
+    'testInitiateMonthlyPayoutsCallsServiceMethod'                        => [
         'request'  => [
             'method' => 'POST',
             'url'    => '/tax-payments/initiateMonthlyPayouts',
@@ -439,14 +445,120 @@ return [
             'content' => []
         ]
     ],
-    'testPayoutWithTaxPaymentPurposeCanBeDeleted'                             => [
+    'testUpcomingEmailCronCallsServiceMethod'                             => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/tax-payments/mailCron',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testSendMailServiceMethodIsCalled'                                   => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/tax-payments/sendMail',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testSendEmailValidation'                                             => [
+        'request'   => [
+            'method' => 'POST',
+            'url'    => '/tax-payments/sendMail',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The merchant email field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+    'testSendEmailDataFieldRequired'                                            => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/tax-payments/sendMail',
+            'content' => [
+                'merchant_email' => 'some@mail.com'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The data field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+    'testSendEmailSubjectFieldRequired'                                            => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/tax-payments/sendMail',
+            'content' => [
+                'merchant_email' => 'some@mail.com',
+                'data'           => ['some' => 'data'],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The subject field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+    'testSendEmailTemplateFieldRequired'                                            => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/tax-payments/sendMail',
+            'content' => [
+                'merchant_email' => 'some@mail.com',
+                'data'           => ['some' => 'data'],
+                'subject'        => 'some subject'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The template name field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
+    ],
+    'testPayoutWithTaxPaymentPurposeCanBeDeleted'                         => [
         'request'  => [
             'method' => 'POST',
             'url'    => '/payouts/<>/cancel',
         ],
         'response' => [
             'content' => [
-                'status' => 'cancelled',
+                'status'  => 'cancelled',
                 'purpose' => 'rzp_tax_pay',
             ]
         ]
@@ -460,8 +572,8 @@ return [
             'url'    => '/tax-payments/mark-as-paid',
             'content' => [
                 'tax_payment_id' => ['txpy_F2qwMZe97QTGG1'],
-                "manually_paid_metadata" => [
-                    "notes1"=> "smoething"
+                'manually_paid_metadata' => [
+                    'notes1' => 'smoething'
                 ],
             ],
         ],
@@ -500,8 +612,8 @@ return [
             'url'    => '/tax-payments/mark-as-paid',
             'content' => [
                 'tax_payment_id' => ['txpy_F2qwMZe97QTGG1'],
-                "manually_paid_metadata" => [
-                    "notes1"=> "smoething"
+                'manually_paid_metadata' => [
+                    'notes1' => 'smoething'
                 ],
             ],
         ],

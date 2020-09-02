@@ -133,7 +133,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->app->singleton('tax-payments', function($app)
         {
-            return new TaxPayments($app);
+            return new TaxPayments\Service($app);
         });
 
         $this->app->singleton('gateway', function($app)
