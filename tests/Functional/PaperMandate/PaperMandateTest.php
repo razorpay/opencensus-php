@@ -71,6 +71,8 @@ class PaperMandateTest extends TestCase
 
     public function testShortUrlGenerationForGeneratedImageUrl()
     {
+        $this->markTestSkipped('until s3 signed url timeout bug is fixed');
+
         $this->ba->publicAuth();
 
         $this->createOrder();

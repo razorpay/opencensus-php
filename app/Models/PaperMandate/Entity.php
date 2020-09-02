@@ -182,16 +182,19 @@ class Entity extends Base\PublicEntity
 
     public function isGeneratedFormUrlExpired()
     {
-        $expiry = $this->getAttribute(self::GENERATED_FORM_URL_EXPIRE);
+        return true;
 
-        $bufferTime = '+' . Constants::SHORT_URL_BUFFER_TIME . ' days';
-
-        if (($expiry === null) or ($expiry < (new Carbon($bufferTime))->getTimestamp()))
-        {
-            return true;
-        }
-
-        return false;
+        // Todo: enable once ufh s3 signed url timeout bug is fixed
+//        $expiry = $this->getAttribute(self::GENERATED_FORM_URL_EXPIRE);
+//
+//        $bufferTime = '+' . Constants::SHORT_URL_BUFFER_TIME . ' days';
+//
+//        if (($expiry === null) or ($expiry < (new Carbon($bufferTime))->getTimestamp()))
+//        {
+//            return true;
+//        }
+//
+//        return false;
     }
 
     public function getGeneratedFormUrl()
