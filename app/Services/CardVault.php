@@ -9,7 +9,9 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Card\Validator;
+use RZP\Models\Card;
 
 class CardVault
 {
@@ -28,6 +30,7 @@ class CardVault
     const TRACE_REQUEST_FEATURE = 'cardvault_dns_trace';
 
     const REQUEST_TIMEOUT = 20;
+
     const MAX_RETRY_COUNT = 1;
 
     // card-vault namespaces
@@ -65,7 +68,7 @@ class CardVault
         $this->namespace = $namespace;
 
         if ($namespace === self::CARD)
-        {            
+        {
             $this->key = $this->config['key'];
 
             $this->secret = $this->config['secret'];
@@ -77,9 +80,43 @@ class CardVault
             $secretName = $namespace . '_secret';
 
             $this->key = $this->config[$keyName];
-            
-            $this->secret = $this->config[$secretName];    
+
+            $this->secret = $this->config[$secretName];
         }
+    }
+
+    public function ping()
+    {
+        try
+        {
+            $payload = [
+                self::SECRET => '4111111111111111',
+            ];
+
+            $response = $this->sendRequest('tokenize', 'post', $payload);
+
+            $vault = Card\Vault::RZP_ENCRYPTION;
+
+            if (isset($response['scheme']) === true)
+            {
+               $vault = Card\Vault::getVaultName($response['scheme']);
+            }
+
+            if ((empty($response[self::TOKEN]) === true) or
+                ($vault === Card\Vault::RZP_ENCRYPTION))
+            {
+                throw new Exception\RuntimeException(
+                    'card vault ping request failed', ['data' => $response]);
+            }
+
+            return true;
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::VAULT_PING_REQUEST_FAILED, []);
+        }
+
+        return false;
     }
 
     public function tokenize($input)
@@ -239,8 +276,9 @@ class CardVault
             'content' => $data
         ];
 
+
         $this->trace->info(TraceCode::CARD_VAULT_REQUEST, [
-            'url'       => $url,
+            'url' => $request['url'],
             'namespace' => $this->namespace,
         ]);
 

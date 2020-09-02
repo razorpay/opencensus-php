@@ -3,9 +3,11 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use DB;
+use App;
 use Mail;
 use Event;
 use Redis;
+use Mockery;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Cache\Events\CacheHit;
@@ -7840,6 +7842,74 @@ class MerchantTest extends TestCase
         $response = $this->runRequestResponseFlow($testData);
 
         $this->assertArrayHasKey('offers', $response);
+
+    }
+
+    public function testGetCheckoutRouteWithSavedGlobalVault()
+    {
+        $app = App::getFacadeRoot();
+
+        $this->mockCardVault();
+
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['customer']['tokens']);
+
+        $this->assertEquals($response['options']['remember_customer'], true);
+
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$app])->makePartial();
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $this->count = 0;
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing(function ($route, $method, $input)
+            {
+                $response = [
+                    'error' => '',
+                    'success' => false,
+                ];
+                return $response;
+            });
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('customer', $response);
+        $this->assertArrayNotHasKey('tokens', $response);
+
+        $this->assertEquals($response['options']['remember_customer'], false);
+
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$app])->makePartial();
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing(function ($route, $method, $input)
+            {
+                $response = [];
+                $response['token'] = base64_encode($input['secret']);
+                $response['fingerprint'] = base64_encode($input['secret']);
+                $response['scheme'] = "1";
+                return $response;
+            });
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('customer', $response);
+        $this->assertArrayNotHasKey('tokens', $response);
+
+        $this->assertEquals($response['options']['remember_customer'], false);
 
     }
 

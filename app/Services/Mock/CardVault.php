@@ -7,6 +7,11 @@ use RZP\Models\Card\Vault;
 
 class CardVault extends BaseCardVault
 {
+    public function ping()
+    {
+        return true;
+    }
+
     public function tokenize($input)
     {
         if (isset($input['card']) === true)

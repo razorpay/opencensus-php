@@ -3909,6 +3909,22 @@ return [
         ],
     ],
 
+
+    'testGetCheckoutRouteWithSavedGlobalVault' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'app_token' => 'capp_1000000custapp',
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testGetCheckoutRouteWithCheckoutFeatures' => [
         'request' => [
             'url' => '/preferences',

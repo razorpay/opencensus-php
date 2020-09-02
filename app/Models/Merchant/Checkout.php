@@ -58,6 +58,8 @@ class Checkout
      */
     protected $order;
 
+    protected $isCardVaultUp;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -70,6 +72,8 @@ class Checkout
     public function getPreferences(Entity $merchant, $mode, array $input)
     {
         $this->tracePreferencesRequest($merchant, $mode, $input);
+
+        $this->isCardVaultUp = $this->app['card.cardVault']->ping();
 
         $this->checkAndFillAppTokenInputFromSession($merchant, $mode, $input);
 
@@ -385,6 +389,11 @@ class Checkout
             $this->doCustomerProcessingForSubscription($input, $data, $merchant);
         }
 
+        if ($this->isCardVaultUp === false)
+        {
+            return;
+        }
+
         //
         // To recognize the flow as local, the only way is, to check
         // if `customer_id` is present in the input.
@@ -632,7 +641,7 @@ class Checkout
         $isEmailOrContactOptional = (($merchant->isFeatureEnabled(Feature\Constants::EMAIL_OPTIONAL) === true) or
                                      ($merchant->isFeatureEnabled(Feature\Constants::CONTACT_OPTIONAL) === true));
 
-        $rememberCustomer = ($merchant->isFeatureEnabled(Feature\Constants::NOFLASHCHECKOUT) === false);
+        $rememberCustomer = (($merchant->isFeatureEnabled(Feature\Constants::NOFLASHCHECKOUT) === false) and ($this->isCardVaultUp == true));
 
         // if card saving is enabled, create a session and set a key
         if ($rememberCustomer === true)
