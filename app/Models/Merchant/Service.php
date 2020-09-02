@@ -4760,7 +4760,7 @@ class Service extends Base\Service
                               ->razorx
                               ->getTreatment(
                                   $merchant->getId(),
-                                  RazorxTreatment::TRIM_SPACE_FOR_MERCHANT,
+                                  RazorxTreatment::TRIM_MIGRATION_IN_PROGRESS,
                                   $mode
                               );
 

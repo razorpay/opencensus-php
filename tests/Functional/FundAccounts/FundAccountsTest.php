@@ -923,45 +923,35 @@ class FundAccountsTest extends TestCase
         Queue::assertPushed(CreateAccount::class);
     }
 
-    // check trimming in fund account creation when experiment is on for merchant.
+    // check trimming in fund account creation when experiment is not on for merchant.
     public function testCreateFundAccountWithBankAccountAndUnnecessarySpacesTrimmedInNameAndNumber()
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->willReturn('on');
-
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->startTest();
     }
 
-    // don't trim in fund account creation when experiment is not on for merchant.
+    // don't trim in fund account creation when experiment is on for merchant.
     public function testCreateFundAccountWithBankAccountAndUnnecessarySpacesInNameAndNumber()
     {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->startTest();
     }
 
-    // check trimming in fund account creation when experiment is on for merchant.
+    // check trimming in fund account creation when experiment is not on for merchant.
     public function testCreateFundAccountWithBankAccountAndUnnecessarySpacesTrimmedInNameAndNumberAndProxyAuth()
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->willReturn('on');
-
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->ba->proxyAuth();

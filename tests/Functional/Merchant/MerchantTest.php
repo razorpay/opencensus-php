@@ -7954,6 +7954,21 @@ class MerchantTest extends TestCase
 
     public function testTrimMerchantData()
     {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if($featureFlag === RazorxTreatment::BLOCKED_MERCHANT_FOR_TRIM_SPACE ||
+                    $featureFlag === RazorxTreatment::TRIM_MIGRATION_IN_PROGRESS)
+                {
+                    return 'on';
+                }
+                return 'control';
+            });
+
         $createdMerchant = $this->getDbEntity('merchant', ['id' => '10000000000000']);
 
         $fund_account = $this->fixtures->create('fund_account:bank_account', ['id' => '100000000000fa']);
@@ -8032,20 +8047,6 @@ class MerchantTest extends TestCase
         $this->assertTrue(in_array($customType, $contactTypeBeforeUpdate['items'], true));
 
         $this->testData[__FUNCTION__]['request']['content']['merchant_ids'] = [$createdMerchant['id']];
-
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-               ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-                 {
-                     if($featureFlag === (RazorxTreatment::TRIM_SPACE_FOR_MERCHANT))
-                     {
-                         return 'on';
-                     }
-                     return 'control';
-                 });
 
         $this->ba->adminAuth();
 

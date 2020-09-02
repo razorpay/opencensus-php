@@ -37,12 +37,12 @@ class Core extends Base\Core
 
         $treatment = $this->app->razorx->getTreatment(
             $merchantId,
-            RazorxTreatment::TRIM_SPACE_FOR_MERCHANT,
+            RazorxTreatment::BLOCKED_MERCHANT_FOR_TRIM_SPACE,
             $this->mode,
             Entity::CONTACT_RX_RETRY_COUNT
         );
 
-        if ($treatment === 'on')
+        if ($treatment !== 'on')
         {
             $input = $this->trimSpaces($input);
         }
@@ -69,17 +69,16 @@ class Core extends Base\Core
         {
             $contact = $this->repo->contact->getContactWithSimilarDetails($input, $merchant);
 
-            if (($treatment === 'on') and
-                ($contact === null))
+            if ($contact === null)
             {
                 $treatmentTrimMigrationCompleted = $this->app->razorx->getTreatment(
                     $merchantId,
-                    RazorxTreatment::TRIM_MIGRATION_COMPLETED,
+                    RazorxTreatment::TRIM_MIGRATION_IN_PROGRESS,
                     $this->mode,
                     Entity::CONTACT_RX_RETRY_COUNT
                 );
 
-                if ($treatmentTrimMigrationCompleted !== 'on')
+                if ($treatmentTrimMigrationCompleted === 'on')
                 {
                     $contact = $this->repo->contact->getContactWithTrimmedSimilarDetails($input, $merchant);
                 }

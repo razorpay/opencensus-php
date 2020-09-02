@@ -127,7 +127,7 @@ final class RazorxTreatment
     const BLOCK_EXTERNAL_TRANSACTION_CREATED_WEBHOOK_RBL = 'block_external_transaction_created_webhook_rbl';
 
     // Check whether trimming is allowed for merchant or not.
-    const TRIM_SPACE_FOR_MERCHANT = 'trim_space_for_merchant';
+    const BLOCKED_MERCHANT_FOR_TRIM_SPACE = 'blocked_merchant_for_trim_space';
 
     const VIRTUAL_VPA_ICICI = 'virtual_vpa_icici';
 
@@ -168,6 +168,6 @@ final class RazorxTreatment
 
     const API_EMAIL_SHOULD_SET_TO_DEFAULT_DRIVER = 'api_email_should_set_default_driver';
 
-    // experiment for merchant with trim migration completed
-    const TRIM_MIGRATION_COMPLETED = 'trim_migration_completed';
+    // experiment for merchant when trim migration in progress
+    const TRIM_MIGRATION_IN_PROGRESS = 'trim_migration_in_progress';
 }

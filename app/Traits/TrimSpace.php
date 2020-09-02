@@ -17,12 +17,12 @@ trait TrimSpace
 
         $treatment = $this->app->razorx->getTreatment(
             $merchantId,
-            RazorxTreatment::TRIM_SPACE_FOR_MERCHANT,
+            RazorxTreatment::BLOCKED_MERCHANT_FOR_TRIM_SPACE,
             Mode::LIVE,
             self::$trimSpacesRazorxRetryCount
         );
 
-        if ($treatment === 'on')
+        if ($treatment !== 'on')
         {
             return $this->trimSpaces($data);
         }
