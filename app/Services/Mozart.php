@@ -41,6 +41,7 @@ class Mozart
     const ERROR                          = 'error';
     const DATA                           = 'data';
     const MORE_INFORMATION               = 'moreInformation';
+    const NO_ERROR_MAPPING_DESCRIPTION   = '(No error description was mapped for this error code)';
 
     protected $app;
 

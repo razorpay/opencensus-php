@@ -277,12 +277,13 @@ class Core extends Base\Core
             // Throwing an error here in case admin dashboard user
             // attempts to create another BankingAccount for same MID, channel.
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_DUPLICATE_EXTERNAL_ID,
+                ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_ALREADY_EXISTS,
                 Entity::MERCHANT_ID,
                 [
                     'merchant_id' => $merchant->getPublicId(),
                     'banking_account_id' => $bankingAccount->getPublicId()
-                ]);
+                ],
+                'Current Account already exists for MID on channel '. $channel);
         }
 
         // Pulling the activation details out as they are stored as part of

@@ -8,6 +8,7 @@ use RZP\Models\BankingAccount\Status;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Models\BankingAccount\AccountType;
 use RZP\Mail\BankingAccount\XProActivation;
+use RZP\Models\BankingAccount\Activation\MIS;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
@@ -22,7 +23,7 @@ use RZP\Mail\BankingAccount\StatusNotifications\Activated;
 use RZP\Mail\BankingAccount\StatusNotifications\Processing;
 use RZP\Mail\BankingAccount\StatusNotifications\Unserviceable;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
-use RZP\Models\BankingAccount\Activation\MIS;
+use RZP\Models\BankingAccount\Gateway\Rbl\Processor as RblProcessor;
 
 class BankingAccountTest extends TestCase
 {
@@ -450,12 +451,6 @@ class BankingAccountTest extends TestCase
 
         $schedule = $this->setupDefaultScheduleForFeeRecovery();
 
-        $dataToReplace = [
-            'request' => [
-                'url' => '/banking_accounts/' . $bankingAccount->getPublicId() . '/activate'
-            ]
-        ];
-
         $this->mockFundAccountService();
 
         $this->mockCardVault(function ()
@@ -466,19 +461,38 @@ class BankingAccountTest extends TestCase
             ];
         });
 
-        $content = [
+        $errorContent = [
             'error' => [
-                'gateway_error_code' => 'ERR_PG_003'
+                'description' => '',
+                'gateway_error_code' => '',
+                'gateway_error_description' => \RZP\Services\Mozart::NO_ERROR_MAPPING_DESCRIPTION,
+                'gateway_status_code' => 200,
+                'internal_error_code' => 'GATEWAY_ERROR_UNKNOWN_ERROR'
             ],
             'data' => [
-                'moreInformation' => 'something'
+                'httpCode' => "401",
+                "httpMessage" => "Unauthorized",
+                'moreInformation' => 'Unauthorized Request',
+            ]
+        ];
+
+        $dataToReplace = [
+            'request' => [
+                'url' => '/banking_accounts/' . $bankingAccount->getPublicId() . '/activate'
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'description' => RblProcessor::GATEWAY_ERROR_PREFIX . $errorContent['data']['moreInformation']
+                    ]
+                ]
             ]
         ];
 
         $exception = new \RZP\Exception\GatewayErrorException('GATEWAY_ERROR_AUTHENTICATION_FAILED',
-                                                              null,
-                                                              '',
-                                                               $content);
+                                                              $errorContent['error']['gateway_error_code'],
+                                                              $errorContent['error']['gateway_error_description'],
+                                                              $errorContent);
 
         $this->setMozartMockResponseException($exception);
 

@@ -82,6 +82,19 @@ class GatewayErrorException extends RecoverableException
         $this->message = $message;
     }
 
+    public function getGatewayErrorCodeAndDesc()
+    {
+        return [
+            $this->error->getGatewayErrorCode(),
+            $this->error->getGatewayErrorDesc(),
+        ];
+    }
+
+    public function getGatewayErrorDesc()
+    {
+        return $this->error->getGatewayErrorDesc();
+    }
+
     public function setAction($action)
     {
         $this->action = $action;

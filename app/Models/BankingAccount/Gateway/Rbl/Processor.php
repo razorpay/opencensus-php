@@ -38,6 +38,8 @@ class Processor extends BankingAccount\Gateway\Processor
     // we are starting the reference number from 10000
     const START_BANK_REFERENCE_NUMBER = 10000;
 
+    const GATEWAY_ERROR_PREFIX = 'RBL Gateway Error: ';
+
     protected $mozartRetryCode = [
         TraceCode::MOZART_SERVICE_REQUEST_FAILED,
         TraceCode::MOZART_SERVICE_REQUEST_TIMEOUT,
@@ -246,6 +248,30 @@ class Processor extends BankingAccount\Gateway\Processor
         }
     }
 
+    protected function getRblGatewayDescriptionFromException(GatewayErrorException $ex)
+    {
+        $gatewayErrorDesc = $ex->getGatewayErrorDesc();
+
+        $data = $ex->getData();
+
+        // If no error description is mapped, then check for the moreInformation field
+        if ($gatewayErrorDesc === Mozart::NO_ERROR_MAPPING_DESCRIPTION)
+        {
+            if ((isset($data['data']) === true)
+                and (isset($data['data']['moreInformation']) === true))
+            {
+                $gatewayErrorDesc = $data['data']['moreInformation'];
+            }
+        }
+
+        if (empty($gatewayErrorDesc) === false)
+        {
+            return self::GATEWAY_ERROR_PREFIX . $gatewayErrorDesc;
+        }
+
+        return self::GATEWAY_ERROR_PREFIX . "Unknown";
+    }
+
     protected function verifyCredentials(BankingAccount\Entity $bankingAccount)
     {
         $request = $this->formatDataForMozartFetchBalanceApi($bankingAccount);
@@ -281,11 +307,14 @@ class Processor extends BankingAccount\Gateway\Processor
                         'channel' => BankingAccount\Channel::RBL,
                     ]);
 
-                // throwing a generic error with mozart error data since there is no issue with user entered information
+                // throwing a generic error with which includes the gateway error description from Mozart
+                $errorDescription = $this->getRblGatewayDescriptionFromException($ex);
+
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED,
                     null,
-                    ['data' => $ex->getData(), 'channel' => BankingAccount\Channel::RBL]);
+                    ['data' => $ex->getData(), 'channel' => BankingAccount\Channel::RBL],
+                    $errorDescription);
             }
             catch (\Throwable $exception)
             {
