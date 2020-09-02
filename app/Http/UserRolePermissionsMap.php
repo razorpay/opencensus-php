@@ -321,6 +321,8 @@ class UserRolePermissionsMap
                  Permission::VIEW_WEBHOOK,
                  Permission::VIEW_WEBHOOK_EVENT,
                  Permission::VIEW_REPORTING,
+                 Permission::CREATE_REPORTING,
+                 Permission::GENERATE_BANKING_ACCOUNT_STATEMENT,
                  Permission::VIEW_TRANSACTION_STATEMENT,
                  Permission::GET_SELF_SERVE_REPORT,
                  Permission::MERCHANT_PRODUCT_SWITCH,

@@ -292,6 +292,7 @@ trait BankingRoleTrait
                 'transaction_statement_fetch_multiple',
                 'reporting_config_get',
                 'reporting_config_list',
+                'reporting_log_create',
                 'merchant_product_switch',
                 'payout_links_merchant_summary',
                 'payout_links_merchant_on_boarding_status',
