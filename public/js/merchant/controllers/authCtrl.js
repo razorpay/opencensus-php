@@ -222,12 +222,6 @@ app
         },
       };
 
-      if(window.location.hash.includes('/access/signup')){
-        window.analytics && window.analytics.init(
-          ['hubspot'],
-        );
-      }
-      
       // wait for recaptcha response
       $scope.$watch('signup.data.captcha', function (newVal) {
         if (newVal && newVal.length !== 0) {

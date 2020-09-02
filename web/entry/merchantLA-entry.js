@@ -37,8 +37,6 @@ function executeJS() {
   script.async = true;
   script.defer = true;
   document.documentElement.appendChild(script);
-  
-  window.loadHubspot = true;
 }
 
 module.exports = `${executeJS.toString()} executeJS()`;
