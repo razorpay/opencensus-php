@@ -1725,6 +1725,19 @@ class VirtualAccountTest extends TestCase
         });
     }
 
+    public function testAddVpaToExistingVAWithOrder()
+    {
+        $order = $this->fixtures->create('order');
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order);
+
+        $this->expectException(\Rzp\Exception\BadRequestException::class);
+
+        $this->expectExceptionMessage('Can\'t add receiver to existing VA with order');
+
+        $this->addReceiverToVirtualAccount($virtualAccount['id'], 'vpa');
+    }
+
     public function testWebhookVirtualAccountCreatedForVpa()
     {
         $expectedEvent = $this->testData[__FUNCTION__]['event'];

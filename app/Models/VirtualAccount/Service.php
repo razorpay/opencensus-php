@@ -401,6 +401,12 @@ class Service extends Base\Service
                                ->virtual_account
                                ->findByPublicIdAndMerchant($id, $this->merchant);
 
+        if ($virtualAccount->hasOrder() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_RECEIVER_WITH_ORDER);
+        }
+
         if ($virtualAccount->isClosed())
         {
             throw new Exception\BadRequestException(

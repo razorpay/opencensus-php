@@ -391,6 +391,8 @@ trait VirtualAccountTrait
             'content' => $content,
         ];
 
+        $this->ba->privateAuth();
+
         $response = $this->makeRequestAndGetContent($request);
 
         return $response;
