@@ -47,19 +47,6 @@ export default class TransactionsContainer extends Component {
     this.props.fetchSettlementAmount();
   }
 
-  viewSettlementCycle = () => {
-    this.props.openModal({
-      size: 'medium',
-      component: <SettlementSchedule holidayList={this.props.holidayList} />,
-    });
-
-    window.rzpAnalytics({
-      eventCategory: 'Settlement Revamp',
-      eventAction: 'View Settlement Cycle',
-      eventLabel: `Settlements`,
-    });
-  };
-
   render() {
     const { user, mode } = this.props,
       { showInstantActivation, isSubmitted } = user;
@@ -187,14 +174,7 @@ export default class TransactionsContainer extends Component {
               </div>
             ) : null}
           </header>
-          <HeaderAction>
-            <div class="settlement-actions-wrapper">
-              <div class="btn btn-link settlement-doc-btn" onClick={this.viewSettlementCycle}>
-                <span class="icon i-info-outline settlement-announcement" />
-                View Settlement Cycle
-              </div>
-            </div>
-          </HeaderAction>
+
           <TestModeBanner />
 
           {mode === 'live' && nextSettlement && no_settlement && no_settlement.on_hold === true ? (
