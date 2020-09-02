@@ -84,8 +84,8 @@ app
       $scope.showTopbar = false;
       $scope.isSignupDisplayEventFired = false;
       // disable google oauth login for X
-      $scope.isGoogleAuth = !isMerchantX; // this flag changes when signup with email clicked
-      $scope.showGauthScreen = !isMerchantX; // this flag contains the info in the entire auth session - does not changes (will remove after experiment)
+      $scope.isGoogleAuth = true; // this flag changes when signup with email clicked
+      $scope.showGauthScreen = true; // this flag contains the info in the entire auth session - does not changes (will remove after experiment)
       $scope.showGAuthPopup = false;
       $scope.showCookieErrorPopup = false;
       $scope.showKnowMore = false;
@@ -471,8 +471,13 @@ app
                     if (typeof firstError === 'object' && !!firstError.internal_error_code) {
                       $scope.handleErrorsWithInternalCode(firstError);
                     } else if (firstError.includes('Razorpay Account Not Found')) {
-                      $scope.googleAuthEmail = email;
-                      $scope.showGAuthPopup = true;
+                      if(isMerchantX){
+                        $scope.alerts.addAlert('danger', `No account found for ${email}`);
+                      }
+                      else {
+                        $scope.googleAuthEmail = email;
+                        $scope.showGAuthPopup = true;
+                      }
                       fireDLSuccessEvents('login.account_not_found_modal', {
                         emailId: email,
                         method: 'google_oauth',
