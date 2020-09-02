@@ -42,7 +42,8 @@ class Defaults
                 Gateway::AXIS_GENIUS,
                 Gateway::PAYTM,
                 Gateway::ATOM,
-                Gateway::SHARP
+                Gateway::SHARP,
+                Gateway::PAYU,
             ]
         ],
         Method::NETBANKING => [

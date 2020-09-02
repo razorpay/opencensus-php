@@ -197,6 +197,7 @@ class Gateway
         self::WORLDLINE    => [self::ACQUIRER_AXIS],
         self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX, self::ACQUIRER_ICIC],
         self::UPI_JUSPAY   => [self::ACQUIRER_AXIS],
+        self::PAYU         => [self::PAYU],
     ];
 
     const POWER_WALLETS = [
@@ -715,6 +716,7 @@ class Gateway
             self::CARD_FSS,
             self::MPGS,
             self::ISG,
+            self::PAYU,
         ],
 
         Method::NETBANKING => [
@@ -1112,6 +1114,14 @@ class Gateway
         self::ISG => [
             Network::MC,
             Network::VISA,
+            Network::RUPAY,
+        ],
+        self::PAYU => [
+            Network::MC,
+            Network::VISA,
+            Network::AMEX,
+            Network::DICL,
+            Network::MAES,
             Network::RUPAY,
         ]
     ];
@@ -1830,6 +1840,7 @@ class Gateway
         Gateway::CYBERSOURCE => Gateway::CYBERSOURCE,
         Gateway::FIRST_DATA  => Gateway::FIRST_DATA,
         Gateway::AXIS_MIGS   => Gateway::AXIS_MIGS,
+        Gateway::PAYU        => Gateway::PAYU,
     ];
 
     // in case of any changes in gateway config, please contact smart routing team
@@ -2564,6 +2575,7 @@ class Gateway
             self::MPGS,
             self::PAYSECURE,
             self::FIRST_DATA,
+            self::PAYU,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -2595,6 +2607,7 @@ class Gateway
             self::AMEX,
             self::PAYSECURE,
             self::ISG,
+            self::PAYU,
         ];
 
         return (in_array($gateway, $gateways, true));

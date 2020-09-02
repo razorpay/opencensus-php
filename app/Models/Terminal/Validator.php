@@ -218,6 +218,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET                   => 'required|string',
         Entity::TYPE                                    => 'required|array',
         Entity::TYPE . '.direct_settlement_with_refund' => 'required|in:1',
+        Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
     ];
 
     protected static $hdfcTerminalRules = [
@@ -1600,6 +1601,7 @@ class Validator extends Base\Validator
 
         $PurchaseOnlyGateway = [
             Gateway::WALLET_PAYPAL,
+            Gateway::PAYU,
         ];
 
         //Migs now supports purchase mode as well
