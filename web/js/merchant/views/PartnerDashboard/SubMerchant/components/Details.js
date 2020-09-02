@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import React, { Fragment } from 'react';
 import { Link } from 'react-router-dom';
 
 import Spinner from 'common/ui/Spinner';
@@ -8,12 +8,9 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import ShowWhen from 'merchant/components/ShowWhen';
 import AsyncButton from 'react-async-button';
 
-import {
-  ActivationStatusLabel,
-  SubmerchantSettlementLabel,
-} from 'merchant/components/StatusLabel';
+import { ActivationStatusLabel, SubmerchantSettlementLabel } from 'merchant/components/StatusLabel';
 
-export default props => {
+export default (props) => {
   const { submerchant, isLoading, error, onResendInvite } = props;
   return (
     <div class="content-wrapper content-sm txn-details">
@@ -22,12 +19,10 @@ export default props => {
           <Spinner />
         </div>
       ) : (
-        <div class="panel panel-default SliderPanel">
+        <div class="panel panel-default SliderPanel SubmerchantDetail__Panel">
           <div class="panel-heading">
-            <span>{submerchant.name || 'Default Name'}</span>
-            <ShowWhen
-              additionalCondition={user => !user.isPartner('pure_platform')}
-            >
+            <div class="submerchant-name">{submerchant.name || 'Default Name'}</div>
+            <ShowWhen additionalCondition={(user) => !user.isPartner('pure_platform')}>
               {submerchant.user && (
                 <div class="btn-toolbar pull-right">
                   <AsyncButton
@@ -48,10 +43,7 @@ export default props => {
                 <EntityDetailRow value={submerchant.id} label="Account ID" />
 
                 {/* Registered email of sub-merchant */}
-                <EntityDetailRow
-                  value={submerchant.email}
-                  label="Registered Email"
-                />
+                <EntityDetailRow value={submerchant.email} label="Registered Email" />
 
                 {/* Creation date of merchant */}
                 <EntityDetailRow label="Added On">
@@ -60,15 +52,10 @@ export default props => {
 
                 {/* Status of Activation */}
                 <EntityDetailRow label="Activation Status">
-                  {submerchant.details &&
-                  submerchant.details.activation_status ? (
-                    <ActivationStatusLabel
-                      status={submerchant.details.activation_status}
-                    />
+                  {submerchant.details && submerchant.details.activation_status ? (
+                    <ActivationStatusLabel status={submerchant.details.activation_status} />
                   ) : (
-                    <span class="label status-label label-warning">
-                      Not Submitted
-                    </span>
+                    <span class="label status-label label-warning">Not Submitted</span>
                   )}
                 </EntityDetailRow>
 
@@ -82,9 +69,7 @@ export default props => {
                 {/* application details for pure platform partners */}
                 {submerchant.application && (
                   <EntityDetailRow label="Application Id">
-                    <Link
-                      to={`/submerchants/applications/${submerchant.application.id}`}
-                    >
+                    <Link to={`/submerchants/applications/${submerchant.application.id}`}>
                       {submerchant.application.id}
                     </Link>
                   </EntityDetailRow>
@@ -92,13 +77,13 @@ export default props => {
 
                 <ShowWhen
                   myRole="owner admin manager"
-                  additionalCondition={user => user.isPartner('aggregator')}
+                  additionalCondition={(user) => user.isPartner('aggregator')}
                 >
                   <div class="pair-group-item">
                     {submerchant.user ? (
                       <Fragment>
-                        <strong>{submerchant.user.email}</strong> is managing
-                        the dashboard for this account
+                        <strong>{submerchant.user.email}</strong> is managing the dashboard for this
+                        account
                       </Fragment>
                     ) : (
                       <Fragment>
