@@ -2,39 +2,15 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs;
 
+use App;
+
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\AutoKyc\Processor;
-use RZP\Models\Merchant\AutoKyc\ProcessorFactory;
-use RZP\Models\Merchant\AutoKyc\Bvs\poi\PoiProcessor;
+use RZP\Models\Merchant\AutoKyc\Bvs\Poi\PoiProcessor;
 
-class Factory implements ProcessorFactory
+class Factory
 {
-    public static function getRegisterProcessor(array $input): ?Processor
-    {
-        return null;
-    }
-
-    public static function getCompanyPanProcessor(array $input): ?Processor
-    {
-        // TODO: Implement getCompanyPanProcessor() method.
-    }
-
-    public static function getPOAProcessor(array $input): Processor
-    {
-        // TODO: Implement getPOAProcessor() method.
-    }
-
-    public static function getGSTINProcessor(array $input): ?Processor
-    {
-        // TODO: Implement getGSTINProcessor() method.
-    }
-
-    public static function getCINProcessor(array $input): ?Processor
-    {
-        // TODO: Implement getCINProcessor() method.
-    }
-
     /**
      * @param string $artefactType
      *
@@ -45,22 +21,34 @@ class Factory implements ProcessorFactory
      */
     public function getProcessor(string $artefactType, array $input): Processor
     {
+        $app = $app = App::getFacadeRoot();
+
+        $mock = $app['config']['services.bvs.mock'];
+
+        if ($mock === true)
+        {
+            $processorMock = new ProcessorMock($input);
+
+            //
+            // This config is not defined in application config , this is used in test case only
+            //
+            $mockStatus = $app['config']['services.bvs.pan_authentication'] ?? Constant::SUCCESS;
+
+            $processorMock->setMockStatus($mockStatus);
+
+            return $processorMock;
+        }
+
         switch ($artefactType)
         {
             case Constant::POI :
 
-                return self::getPOIProcessor($input);
+                return new PoiProcessor($input);
 
             default:
-                throw new LogicException(ErrorCode::UNSUPPORTED_ARTEFACT_TYPE, null, [
+                throw new LogicException(ErrorCode::SERVER_ERROR_UNSUPPORTED_ARTEFACT_TYPE, null, [
                     Constant::ARTEFACT_TYPE => $artefactType
                 ]);
         }
-    }
-
-    public static function getPOIProcessor(array $input): Processor
-    {
-        // need to handle mockPoiProcessor
-        return new PoiProcessor($input);
     }
 }

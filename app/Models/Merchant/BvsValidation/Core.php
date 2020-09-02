@@ -94,7 +94,7 @@ class Core extends Base\Core
      */
     public function create(array $input)
     {
-        $this->trace->info(TraceCode::BVS_REQUEST_CREATE_VALIDATION, $input);
+        $this->trace->info(TraceCode::BVS_CREATE_VALIDATION_PAYLOAD, $input);
 
         $validation = new Entity();
 

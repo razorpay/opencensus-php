@@ -43,7 +43,7 @@ class Entity extends PublicEntity
         self::UPDATED_AT,
     ];
 
-    public function getBvsValidationId(): string
+    public function getValidationId(): string
     {
         return $this->getAttribute(self::VALIDATION_ID);
     }

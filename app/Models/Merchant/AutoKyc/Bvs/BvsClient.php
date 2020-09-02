@@ -65,7 +65,7 @@ class BvsClient
      */
     public function CreateValidation(array $validation)
     {
-        $this->trace->info(TraceCode::BVS_REQUEST_CREATE_VALIDATION, ['artefact' => $validation['artefact']]);
+        $this->trace->info(TraceCode::BVS_CREATE_VALIDATION_REQUEST, ['artefact' => $validation['artefact']]);
 
         $createValidation = new validationV1\CreateValidationRequest();
 
@@ -86,6 +86,8 @@ class BvsClient
             $response = $this->ValidationApiClient->CreateValidation($this->apiClientCtx, $createValidation);
 
             $this->trace->count(Metric::BVS_REQUEST_SUCCESS_TOTAL);
+
+            $this->trace->info(TraceCode::BVS_CREATE_VALIDATION_RESPONSE, ['response' => $response->serializeToJsonString()]);
 
             return $response;
         }

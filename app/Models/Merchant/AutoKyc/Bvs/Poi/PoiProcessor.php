@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Merchant\AutoKyc\Bvs\poi;
+namespace RZP\Models\Merchant\AutoKyc\Bvs\Poi;
 
 use RZP\Models\Merchant\AutoKyc\Bvs\Rules;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;

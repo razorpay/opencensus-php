@@ -1094,7 +1094,12 @@ class ErrorCode
     const BAD_REQUEST_KYC_ID_MISSING                                                = 'BAD_REQUEST_KYC_ID_MISSING';
     const BAD_REQUEST_INVALID_RESPONSE_BODY                                         = 'BAD_REQUEST_INVALID_RESPONSE_BODY';
 
-    const UNSUPPORTED_ARTEFACT_TYPE                                                 = 'UNSUPPORTED_ARTEFACT_TYPE';
+    //
+    // BVS
+    //
+    const SERVER_ERROR_VALIDATION_ID_MISSING                                        = 'SERVER_ERROR_VALIDATION_ID_MISSING';
+    const SERVER_ERROR_VALIDATION_STATUS_MISSING                                    = 'SERVER_ERROR_VALIDATION_STATUS_MISSING';
+    const SERVER_ERROR_UNSUPPORTED_ARTEFACT_TYPE                                    = 'SERVER_ERROR_UNSUPPORTED_ARTEFACT_TYPE';
 
     const SERVER_ERROR_JSON_ENCODE_FALSE                                            = 'SERVER_ERROR_JSON_ENCODE_FALSE';
     const SERVER_ERROR_IDEM_KEY_ROUTE_ENTITY_MAPPING_ABSENT                         = 'SERVER_ERROR_IDEM_KEY_ROUTE_ENTITY_MAPPING_ABSENT';
