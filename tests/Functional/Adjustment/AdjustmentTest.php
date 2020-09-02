@@ -10,7 +10,6 @@ use RZP\Mail\Transaction\Adjustment;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Mail\Banking\YesbankLoadViaAdjustment;
 use RZP\Tests\Functional\Fixtures\Entity\User;
-use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Mail\Merchant\NegativeBalanceThresholdAlert;
@@ -20,7 +19,6 @@ class AdjustmentTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
-    use MocksDnsTrait;
     use TestsWebhookEvents;
 
     public function setUp()
@@ -456,8 +454,6 @@ class AdjustmentTest extends TestCase
     {
         Mail::fake();
 
-        $this->setupMockDns();
-
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
                            ->setMethods(['getTreatment', 'getCachedTreatment'])
@@ -561,8 +557,6 @@ class AdjustmentTest extends TestCase
     public function testTransactionCreatedWebhookFiringAndMailOnNegativeAdjustmentCreateForBankingBalance()
     {
         Mail::fake();
-
-        $this->setupMockDns();
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
@@ -668,8 +662,6 @@ class AdjustmentTest extends TestCase
     {
         Mail::fake();
 
-        $this->setupMockDns();
-
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
                            ->setMethods(['getTreatment', 'getCachedTreatment'])
@@ -773,8 +765,6 @@ class AdjustmentTest extends TestCase
     public function testTransactionCreatedWebhookFiringAndMailOnNegativeAdjustmentCreateForBankingBalanceRazorxControl()
     {
         Mail::fake();
-
-        $this->setupMockDns();
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])

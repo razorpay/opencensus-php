@@ -2,7 +2,15 @@
 
 namespace RZP\Models\Merchant\WebhookV2;
 
+use Razorpay\Trace\Logger;
+
+use RZP\Models\Event;
+use RZP\Constants\Mode;
+use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
+use RZP\Jobs\WebhookEvent;
+use RZP\Constants\Entity as E;
 
 /**
  * Class Stork
@@ -15,10 +23,29 @@ use RZP\Constants\Product;
  */
 class Stork
 {
+    // Calls to stork defaults to 2s timeout, but for process event it is overridden to 350ms.
+    const PROCESS_EVENT_REQUEST_TIMEOUT_MS = 350;
+
+    /**
+     * @var string
+     */
+    protected $mode;
+
+    /**
+     * Product value is used to figure out service value to use for stork communication.
+     * @var string
+     */
+    protected $product;
+
     /**
      * @var \RZP\Services\Stork
      */
     protected $service;
+
+    /**
+     * @var Logger
+     */
+    protected $trace;
 
     const WK_GET_ROUTE                = '/twirp/rzp.stork.webhook.v1.WebhookAPI/Get';
     const WK_LIST_ROUTE               = '/twirp/rzp.stork.webhook.v1.WebhookAPI/List';
@@ -29,10 +56,14 @@ class Stork
     const WK_LIST_WITH_SECRET_ROUTE   = '/twirp/rzp.stork.webhook.v1.WebhookAPI/ListWithSecret';
     const WK_GET_ANALYTICS_ROUTE      = '/twirp/rzp.stork.webhook.v1.WebhookAPI/GetAnalytics';
 
-    public function __construct(string $product = Product::PRIMARY)
+    public function __construct(string $mode = Mode::LIVE, string $product = Product::PRIMARY)
     {
+        $this->mode    = $mode;
+        $this->product = $product;
         $this->service = app('stork_service');
-        $this->service->init(app('rzp.mode'), $product);
+        $this->trace   = app('trace');
+
+        $this->service->init($this->mode, $this->product);
     }
 
     /**
@@ -203,5 +234,107 @@ class Stork
         }, $webhook['subscriptions']);
 
         return $webhook;
+    }
+
+    /**
+     * # What?
+     * Calls processEvent() and if failure queues it for which worker exists in
+     * this service itself. The worker again just calls processEvent() for each
+     * queued messages.
+     *
+     * # Why?
+     * We are doing this to avoid event drops with network issues and/or
+     * timeouts between api<>stork communication. Note that there exists retry
+     * for http call and this is eventual fallback.
+     *
+     * Worker exists for now in api service itself to save development time and
+     * devops ask. Ideally there should be a shared queue and stork itself
+     * should drain that queue.
+     *
+     * @param  Event\Entity $event
+     * @return void
+     */
+    public function processEventSafe(Event\Entity $event)
+    {
+        try
+        {
+            $this->processEvent($event);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Logger::ERROR, TraceCode::STORK_DISPATCH_EVENT_FAILED);
+
+            // Exception for this call i.e. dispatch() is suppressed and logged within by the dispatcher.
+            WebhookEvent::dispatch($this->mode, $event->merchant, $event->getAttributes(), $this->product);
+        }
+    }
+
+    /**
+     * Calls rzp.stork.webhook.v1.WebhookAPI/ProcessEvent endpoint of stork service.
+     * Also see processEventSafe().
+     *
+     * @param  Event\Entity $event
+     * @return void
+     * @throws \RZP\Exception\ServerErrorException
+     * @throws \Throwable
+     */
+    public function processEvent(Event\Entity $event)
+    {
+        $this->trace->info(TraceCode::STORK_DISPATCH_EVENT_REQUEST, $event->toArrayPublic());
+
+        $merchant = $event->merchant;
+
+        $payload = json_encode($event->toArrayPublic());
+
+        if (empty($merchant) === false)
+        {
+            $response = (new Merchant\Core)->translateWebhookPayloadIfApplicable($merchant, $payload, $this->mode);
+
+            $payload  = $response['content'];
+        }
+
+        $processEventReq = [
+            'event' => [
+                'service'    => $this->service->service,
+                'owner_id'   => $event->getMerchantId(),
+                'owner_type' => E::MERCHANT,
+                'name'       => $event->event,
+                'payload'    => $payload,
+            ],
+        ];
+        $this->service->request(
+            '/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent',
+            $processEventReq,
+            self::PROCESS_EVENT_REQUEST_TIMEOUT_MS
+        );
+    }
+
+    /**
+     * @param  string $merchantId
+     * @return void
+     */
+    public function invalidateAffectedOwnersCache(string $merchantId)
+    {
+        $this->trace->info(
+            TraceCode::STORK_INVALIDATE_AFFECTED_OWNERS_CACHE_REQ,
+            ['merchant_id' => $merchantId, 'mode' => $this->mode]
+        );
+
+        $snsMsgPayload = [
+            'invalidate_affected_owners_cache_request' => [
+                'service'    => $this->service->service,
+                'owner_id'   => $merchantId,
+                'owner_type' => E::MERCHANT,
+            ],
+        ];
+
+        try
+        {
+            $this->service->publishOnSns($snsMsgPayload);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Logger::ERROR, TraceCode::STORK_INVALIDATE_CACHE_FAILED);
+        }
     }
 }

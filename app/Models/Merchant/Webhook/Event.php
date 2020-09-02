@@ -566,86 +566,15 @@ class Event
         self::PAYOUT_LINK_CANCELLED             => Feature\Constants::PAYOUT,
     ];
 
-    /**
-     * Takes the hex value and merges it
-     * with the hex value of the events passed.
-     *
-     * @param  array    $events
-     * @param  integer  $hex
-     * @return integer
-     */
-    public static function getHexValue($events, $hex)
-    {
-        foreach ($events as $event => $value)
-        {
-            $pos = Event::getBitPosition($event);
-
-            $value = ($value === '1') ? 1 : 0;
-
-            // Sets the bit value for the current event.
-            $hex ^= ((-1 * $value) ^ $hex) & (1 << ($pos - 1));
-        }
-
-        return $hex;
-    }
-
-    public static function getAllEventNames()
-    {
-        return self::$names;
-    }
-
     public static function getLaunchedEventNames()
     {
         return self::$launchedEvents;
-    }
-
-    public static function getEnabledEvents($hex, array $bitPosition)
-    {
-        $events = [];
-
-        foreach (self::$events as $event)
-        {
-            $pos = $bitPosition[$event] ?? null;
-
-            // If the event is present in the other bit position (we have two bit position arrays),
-            // it'll be taken care of in the next run with a different bitPosition array set
-            if (empty($pos) === true)
-            {
-                continue;
-            }
-
-            $value = ($hex >> ($pos - 1)) & 1;
-
-            if ($value)
-            {
-                array_push($events, $event);
-            }
-        }
-
-        return $events;
-    }
-
-    public static function isEventEnabled($hexEvent, $event)
-    {
-        // This checks in both the bitPosition arrays.
-        $pos = self::getBitPosition($event);
-
-        return ($hexEvent >> ($pos - 1)) & 1;
     }
 
     public static function validateEventName(string $event): bool
     {
         return (in_array($event, self::$names) === true);
     }
-
-    public static function getBitPosition(string $event): int
-    {
-        // TODO: If the same event is defined in 2 arrays, throw an error? But, since this is temp, let it be for now?
-
-        // The event could be either in the first bit position or the second.
-        return self::$bitPosition[$event] ?? self::$bitPosition2[$event];
-    }
-
 
     /**
      * Filters and returns events to be exposed in public api response.
@@ -695,10 +624,5 @@ class Event
         }
 
         return $eventNames;
-    }
-
-    public static function getAllEventsByProduct($product)
-    {
-        return group_array_by_value_array($product, self::getLaunchedEventNames())[$product];
     }
 }

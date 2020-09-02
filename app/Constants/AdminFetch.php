@@ -2456,10 +2456,6 @@ class AdminFetch
                 'wallet' => Fetch::FIELD_WALLET,
             ],
 
-            Entity::WEBHOOK => [
-                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
-            ],
-
             Entity::SCHEDULE => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],

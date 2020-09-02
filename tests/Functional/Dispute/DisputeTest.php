@@ -12,7 +12,6 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\Dispute\Reason\Network;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
-use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\Dispute\Entity as DisputeEntity;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Dispute\File\Core as DisputeFileCore;
@@ -26,7 +25,6 @@ use RZP\Mail\Dispute\Admin\SubmittedAdmin as DisputeSubmittedForAdminMail;
 class DisputeTest extends TestCase
 {
     use PaymentTrait;
-    use MocksDnsTrait;
     use TestsWebhookEvents;
 
     protected $payment = null;
@@ -214,13 +212,8 @@ class DisputeTest extends TestCase
         Mail::assertNotSent(DisputeCreationMail::class);
     }
 
-    /**
-     * @group dns-sensitive
-     */
     public function testDisputeCreatedWebhook()
     {
-        $this->setupMockDns();
-
         $payment = $this->doAuthAndCapturePayment();
 
         $paymentId = $payment['id'];

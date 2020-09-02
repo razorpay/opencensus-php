@@ -23,20 +23,15 @@ use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Exception\GatewayTimeoutException;
 use RZP\Mail\Gateway\EMandate\Base as Email;
-use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use Illuminate\Http\Testing\File as TestingFile;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Fixtures\Entity\TransactionTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 
-/**
- * @group dns-sensitive
- */
 class EnachRblGatewayTest extends TestCase
 {
     use AttemptTrait;
-    use MocksDnsTrait;
     use TransactionTrait;
     use TestsWebhookEvents;
     use DbEntityFetchTrait;
@@ -55,8 +50,6 @@ class EnachRblGatewayTest extends TestCase
         $this->fixtures->merchant->addFeatures([Constants::CHARGE_AT_WILL]);
 
         $this->gateway = 'enach_rbl';
-
-        $this->setupMockDns();
 
         Cache::put('merchant_enach_configs', '{"auth_gateway":{"10000000000000": "esigner_digio"}}', 2);
 

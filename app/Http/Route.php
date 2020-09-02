@@ -424,12 +424,12 @@ class Route
         'webhook_delete'                           => ['delete',   'webhooks/{id}',                                  'WebhookV2Controller@delete'                                        ],
         'webhook_edit'                             => ['put',      'webhooks/{id}',                                  'WebhookV2Controller@update'                                        ],
         'webhook_fetch'                            => ['get',      'webhooks/{id}',                                  'WebhookV2Controller@get'                                           ],
-        'webhook_fetch_events'                     => ['get',      'webhooks/events/all',                            'MerchantController@getWebhookEvents'                               ],
+        'webhook_fetch_events'                     => ['get',      'webhooks/events/all',                            'WebhookV2Controller@getWebhookEvents'                              ],
         'webhook_fetch_multiple'                   => ['get',      'webhooks',                                       'WebhookV2Controller@list'                                          ],
         'webhook_analytics'                        => ['get',      'webhooks/{id}/analytics',                        'WebhookV2Controller@getAnalytics'                                  ],
         'oauth_app_webhook_create'                 => ['post',     'oauth/applications/{id}/webhooks',               'WebhookV2Controller@createForOAuthApp'                             ],
         'webhook_send_email'                       => ['post',     'webhooks-email/{emailType}',                     'WebhookV2Controller@sendEmail'                                     ],
-        'admin_webhook_email_stork_recon'          => ['post',     'admin/webhooks/email/recon',                     'WebhookController@webhookEmailStorkRecon'                          ],
+        'admin_webhook_email_stork_recon'          => ['post',     'admin/webhooks/email/recon',                     'WebhookV2Controller@webhookEmailStorkRecon'                        ],
         'admin_process_webhook_events_csv'         => ['post',     'admin/webhooks/process_events_csv',              'WebhookV2Controller@processWebhookEventsFromCsv'                   ],
         'merchant_create_key'                      => ['post',     'keys',                                           'KeyController@postCreateKeys'                                      ],
         'merchant_fetch_keys'                      => ['get',      'keys',                                           'KeyController@getKeys'                                             ],
@@ -1567,7 +1567,7 @@ class Route
         'merchant_associated_accounts_fetch'       => ['get',      'merchant/{id}/associated_accounts',              'MerchantController@getAssociatedAccounts'                          ],
 
         // Webhook Api Wrapper
-        'webhook_fire'                             => ['post',     'webhook/{event}/fire',                           'WebhookController@processWebhook'                                  ],
+        'webhook_fire'                             => ['post',     'webhook/{event}/fire',                           'WebhookV2Controller@processWebhook'                                ],
         'admin_mdr_update'                         => ['put',      'mdr_update',                                     'AdminController@updateMdr'                                         ],
         'merchant_bulk_edit_attributes'            => ['post',     'merchants/bulk/attributes',                      'MerchantController@bulkEditMerchantAttributes'                     ],
 

@@ -17,21 +17,16 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Invoice\Entity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 
-/**
- * @group dns-sensitive
- */
 class InvoiceTest extends TestCase
 {
     use TestsMetrics;
     use PaymentTrait;
-    use MocksDnsTrait;
     use CreatesInvoice;
     use InvoiceTestTrait;
     use DbEntityFetchTrait;
@@ -57,8 +52,6 @@ class InvoiceTest extends TestCase
         $this->fixtures->create('user', ['id' => '1000000000user']);
 
         $this->ba->privateAuth();
-
-        $this->setupMockDns();
     }
 
     // ------------------------------------------------------------

@@ -10,18 +10,13 @@ use Requests_Response;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsWebhookEvents;
-use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\Helpers\DowntimeTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Downtime\DowntimeNotification as DowntimeNotification;
 
-/**
- * @group dns-sensitive
- */
 class PaymentDowntimeTest extends TestCase
 {
     use PaymentTrait;
-    use MocksDnsTrait;
     use DowntimeTrait;
     use TestsWebhookEvents;
 

@@ -34,7 +34,6 @@ class Table
     const PRICING               = 'pricing';
     const INVOICE               = 'invoices';
     const PAYMENT               = 'payments';
-    const WEBHOOK               = 'webhooks';
     const FEATURE               = 'features';
     const DISPUTE               = 'disputes';
     const ADDRESS               = 'addresses';

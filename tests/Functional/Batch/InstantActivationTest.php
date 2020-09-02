@@ -6,16 +6,11 @@ use RZP\Jobs\Batch as BatchJob;
 use RZP\Models\Merchant\Entity;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Queue;
-use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 
-/**
- * @group dns-sensitive
- */
 class InstantActivationTest extends TestCase
 {
     use BatchTestTrait;
-    use MocksDnsTrait;
 
     public function setUp()
     {
@@ -24,8 +19,6 @@ class InstantActivationTest extends TestCase
         parent::setUp();
 
         $this->ba->proxyAuth();
-
-        $this->setupMockDns();
     }
 
     /**

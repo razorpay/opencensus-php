@@ -5,7 +5,7 @@ namespace RZP\Listeners;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\AccessMap;
-use RZP\Models\Merchant\Webhook\Stork;
+use RZP\Models\Merchant\WebhookV2\Stork;
 
 /**
  * AccessMapListener listens to AccessMap\Entity's events.
@@ -20,7 +20,7 @@ class AccessMapListener
 
         app('trace')->info(TraceCode::ACCESS_MAP_EVENT_SAVED, getTraceInfo($entity));
 
-        (new Stork)->invalidateAffectedOwnersCache($entity->getMerchantId(), $entity->getConnectionName());
+        (new Stork($entity->getConnectionName()))->invalidateAffectedOwnersCache($entity->getMerchantId());
     }
 
     public function onDeleted(AccessMap\EventDeleted $event)
@@ -29,7 +29,7 @@ class AccessMapListener
 
         app('trace')->info(TraceCode::ACCESS_MAP_EVENT_DELETED, getTraceInfo($entity));
 
-        (new Stork)->invalidateAffectedOwnersCache($entity->getMerchantId(), $entity->getConnectionName());
+        (new Stork($entity->getConnectionName()))->invalidateAffectedOwnersCache($entity->getMerchantId());
     }
 }
 

@@ -17,21 +17,16 @@ use RZP\Models\VirtualAccount\Core;
 use RZP\Models\VirtualAccount\Status;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Traits\TestsWebhookEvents;
-use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
-/**
- * @group dns-sensitive
- */
 class VirtualAccountTest extends TestCase
 {
     protected $t1;
     protected $t2;
     use PaymentTrait;
-    use MocksDnsTrait;
     use TestsWebhookEvents;
     use VirtualAccountTrait;
     use DbEntityFetchTrait;
@@ -70,8 +65,6 @@ class VirtualAccountTest extends TestCase
         $this->fixtures->on('test');
 
         $this->fixtures->create('terminal:vpa_shared_terminal');
-
-        $this->setupMockDns();
 
         $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 

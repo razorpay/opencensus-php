@@ -9,7 +9,6 @@ use RZP\Jobs;
 use RZP\Models\Event;
 use RZP\Trace\TraceCode;
 use RZP\Models\P2p\Transaction;
-use RZP\Models\Merchant\Webhook;
 
 class P2pReminderListener extends P2pListener
 {

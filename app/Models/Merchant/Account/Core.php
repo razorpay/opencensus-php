@@ -9,7 +9,6 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\Merchant\Webhook\Stork;
 
 class Core extends Merchant\Core
 {

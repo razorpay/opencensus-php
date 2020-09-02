@@ -19,7 +19,6 @@ use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Tests\Functional\Fixtures\Entity\User;
-use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -30,14 +29,10 @@ use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\Merchant\Document\Entity as MerchantDocuments;
 
-/**
- * @group dns-sensitive
- */
 class MerchantDetailTest extends OAuthTestCase
 {
     use PaymentTrait;
     use HeimdallTrait;
-    use MocksDnsTrait;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
 
@@ -55,8 +50,6 @@ class MerchantDetailTest extends OAuthTestCase
         $this->testDataFilePath = __DIR__.'/helpers/MerchantDetailTestData.php';
 
         parent::setUp();
-
-        $this->setupMockDns();
     }
 
     public function testGetMerchantDetails()

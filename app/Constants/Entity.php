@@ -50,7 +50,6 @@ class Entity
     const METHODS                    = 'methods';
     const PAYMENT                    = 'payment';
     const PRICING                    = 'pricing';
-    const WEBHOOK                    = 'webhook';
     const QR_CODE                    = 'qr_code';
     const OPTIONS                    = 'options';
     const ACCOUNT                    = 'account';
@@ -484,7 +483,6 @@ class Entity
         self::METHODS                   => \RZP\Models\Merchant\Methods::class,
         self::PRICING                   => \RZP\Models\Pricing::class,
         self::FEATURE                   => \RZP\Models\Feature::class,
-        self::WEBHOOK                   => \RZP\Models\Merchant\Webhook::class,
         self::DISPUTE                   => \RZP\Models\Dispute::class,
         self::CUSTOMER                  => \RZP\Models\Customer::class,
         self::EMI_PLAN                  => \RZP\Models\Emi::class,
@@ -847,11 +845,6 @@ class Entity
 
     public static function getEntityNamespace(string $entity)
     {
-        if (strtolower($entity) === self::WEBHOOK)
-        {
-            app('trace')->debug(TraceCode::WEBHOOK_ENTITY_ACCESSED);
-        }
-
         self::validateIsEntity($entity);
 
         if (array_key_exists($entity, self::$namespace))

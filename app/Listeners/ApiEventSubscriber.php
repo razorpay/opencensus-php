@@ -24,13 +24,13 @@ use RZP\Models\Customer\Token;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Payment\Downtime;
 use RZP\Models\Order\ProductType;
-use RZP\Models\Merchant\Webhook\Stork;
 use RZP\Exception\ServerErrorException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
+use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Jobs\SubscriptionPaymentHandler;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\PayoutLink\Entity as PayoutLinkEntity;
-use RZP\Models\Merchant\Webhook\Metric as WebhookMetric;
+use RZP\Models\Merchant\WebhookV2\Metric as WebhookMetric;
 
 class ApiEventSubscriber extends Base\Core
 {
@@ -1241,7 +1241,7 @@ class ApiEventSubscriber extends Base\Core
     protected function dispatchEventToStork(array $payload)
     {
         $event = $this->createEventEntity($payload);
-        (new Stork($this->storkProduct))->processEventSafe($event, $this->getMode());
+        (new Stork($this->getMode(), $this->storkProduct))->processEventSafe($event);
     }
 
     /**

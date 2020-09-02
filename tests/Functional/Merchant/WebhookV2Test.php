@@ -15,7 +15,6 @@ use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
 use RZP\Tests\Functional\Helpers\WebhookV2Trait;
-use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 
@@ -23,7 +22,6 @@ class WebhookV2Test extends TestCase
 {
     use WebhookV2Trait;
     use RequestResponseFlowTrait;
-    use MocksDnsTrait;
     use OAuthTrait;
     use TestsBusinessBanking;
     use TestsWebhookEvents;
@@ -42,8 +40,6 @@ class WebhookV2Test extends TestCase
         $this->app->make(Factory::class)->load($factoryPath);
 
         $this->ba->proxyAuth();
-
-        $this->setupMockDns();
 
         $this->mockStorkService();
 

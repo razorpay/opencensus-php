@@ -1449,13 +1449,6 @@ class Service extends Base\Service
         return (new Methods\Core)->editMethods($input, $merchant);
     }
 
-    public function fetchWebhookEvents()
-    {
-        $events = (new Webhook\Core)->fetchApplicableWebhookEvents($this->merchant);
-
-        return $events;
-    }
-
     public function patchMerchantBeneficiaryCode()
     {
         $data = (new BankAccount\Core)->updateBeneficiaryCodes();

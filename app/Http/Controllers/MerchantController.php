@@ -512,13 +512,6 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getWebhookEvents()
-    {
-        $data = $this->service()->fetchWebhookEvents();
-
-        return ApiResponse::json($data);
-    }
-
     public function postMerchantBeneficiary($channel)
     {
         $input = Request::all();

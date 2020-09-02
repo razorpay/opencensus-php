@@ -17,7 +17,6 @@ use RZP\Models\VirtualAccount\Core;
 use RZP\Models\VirtualAccount\Entity;
 use RZP\Models\VirtualAccount\Status;
 use RZP\Exception\BadRequestException;
-use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;

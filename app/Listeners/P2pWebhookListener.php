@@ -9,7 +9,7 @@ use RZP\Jobs;
 use RZP\Models\Event;
 use RZP\Trace\TraceCode;
 use RZP\Models\P2p\Transaction;
-use RZP\Models\Merchant\Webhook\Stork;
+use RZP\Models\Merchant\WebhookV2\Stork;
 
 class P2pWebhookListener extends P2pListener
 {
@@ -40,6 +40,6 @@ class P2pWebhookListener extends P2pListener
         $event->merchant()->associate($this->getMerchant());
 
         // Invokes fail safe stork's processor on event.
-        (new Stork)->processEventSafe($event, $this->getMode());
+        (new Stork($this->getMode()))->processEventSafe($event);
     }
 }

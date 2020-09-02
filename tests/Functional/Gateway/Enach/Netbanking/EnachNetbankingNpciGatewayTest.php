@@ -61,8 +61,6 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->fixtures->merchant->addFeatures([Feature\Constants::CHARGE_AT_WILL]);
 
         $this->gateway = 'enach_npci_netbanking';
-
-        //$this->setupMockDns();
     }
 
     public function testPayment()

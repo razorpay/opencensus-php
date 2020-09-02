@@ -3,13 +3,17 @@
 namespace RZP\Models\Merchant\WebhookV2;
 
 use Mail;
+use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Event;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Modules\Migrate\Migrate;
+use RZP\Models\Event\Entity as EventEntity;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
 
 /**
@@ -137,7 +141,7 @@ class Service extends Base\Service
 
         $this->setUserIdForInputAndKey($input, self::CREATED_BY);
 
-        $res = (new Stork($this->product))->create($input);
+        $res = (new Stork($this->mode, $this->product))->create($input);
 
         $this->traceStorkOperationSuccess('create', ['webhook_id' => $res[self::ID] ?? '', 'webhook' => $this->getStorkWebhookForTracing($res)]);
 
@@ -171,7 +175,7 @@ class Service extends Base\Service
 
         $this->setUserIdForInputAndKey($input, self::UPDATED_BY);
 
-        $res = (new Stork($this->product))->edit($input);
+        $res = (new Stork($this->mode, $this->product))->edit($input);
 
         $this->traceStorkOperationSuccess('update', ['webhook_id' => $res[self::ID] ?? '', 'webhook' => $this->getStorkWebhookForTracing($res)]);
 
@@ -187,11 +191,11 @@ class Service extends Base\Service
         if (($this->app['basicauth']->isHosted() === true) or
             ($this->app['basicauth']->isExpress() === true))
         {
-            $res = (new Stork($this->product))->getWithSecret($webhookId, $this->merchant->getId());
+            $res = (new Stork($this->mode, $this->product))->getWithSecret($webhookId, $this->merchant->getId());
         }
         else
         {
-            $res = (new Stork($this->product))->get($webhookId, $this->merchant->getId());
+            $res = (new Stork($this->mode, $this->product))->get($webhookId, $this->merchant->getId());
         }
 
         $this->traceOperationExit('get', ['webhook_id' => $webhookId ?? '']);
@@ -208,7 +212,7 @@ class Service extends Base\Service
         if (($this->app['basicauth']->isHosted() === true) or
             ($this->app['basicauth']->isExpress() === true))
         {
-            $res = (new Stork($this->product))->listWithSecret($ownerId, $params);
+            $res = (new Stork($this->mode, $this->product))->listWithSecret($ownerId, $params);
         }
         else
         {
@@ -219,7 +223,7 @@ class Service extends Base\Service
                 $ownerId = $params[self::APPLICATION_ID];
             }
 
-            $res = (new Stork($this->product))->list($ownerId, $params);
+            $res = (new Stork($this->mode, $this->product))->list($ownerId, $params);
         }
 
         $res['items'] = array_map(function ($v) { return $this->storkToApiFormat($v); }, $res['items']);
@@ -247,7 +251,7 @@ class Service extends Base\Service
     {
         $this->traceOperationEntry('delete', ['webhook_id' => $webhookId ?? '']);
 
-        (new Stork($this->product))->delete($webhookId, $this->merchant->getId());
+        (new Stork($this->mode, $this->product))->delete($webhookId, $this->merchant->getId());
 
         $this->traceStorkOperationSuccess('delete', ['webhook_id' => $webhookId ?? '']);
 
@@ -265,7 +269,7 @@ class Service extends Base\Service
     {
         $input[self::WEBHOOK_ID] = $id;
         $input[self::OWNER_ID] = $this->merchant->getId();
-        return (new Stork($this->product))->getAnalytics($input);
+        return (new Stork($this->mode, $this->product))->getAnalytics($input);
     }
 
     /**
@@ -582,10 +586,81 @@ class Service extends Base\Service
         }
 
         // Dispatches all events to stork.
-        $stork = new Merchant\Webhook\Stork($this->product);
+        $stork = new Stork($this->mode, $this->product);
         foreach ($events as $event)
         {
-            $stork->processEventSafe($event, $this->mode);
+            $stork->processEventSafe($event);
         }
+    }
+
+    /**
+     * See WebhookV2Controller's processWebhook.
+     * @param  string $event
+     * @param  array  $input
+     * @return void
+     */
+    public function processWebhook(string $event, array $input)
+    {
+        $merchant = $this->merchant->isLinkedAccount() ? $this->merchant->parent : $this->merchant;
+        $payloads = $input['payloads'] ?? [$input['payload']];
+        $signedAccountId = Merchant\Account\Entity::getSignedId($this->merchant->getId());
+
+        $stork = new Stork($this->mode);
+
+        foreach ($payloads as $payload)
+        {
+            $eventAttrs = [
+                EventEntity::EVENT      => $event,
+                EventEntity::ACCOUNT_ID => $signedAccountId,
+                EventEntity::CONTAINS   => array_keys($payload),
+                EventEntity::CREATED_AT => Carbon::now()->getTimestamp(),
+            ];
+            $eventEntity = new EventEntity($eventAttrs);
+            $eventEntity->setPayload($payload);
+            $eventEntity->merchant()->associate($this->merchant);
+
+            $stork->processEventSafe($eventEntity);
+        }
+    }
+
+    /**
+     * An array of mids are passed as an input. Stork has a field
+     * alert_email for each webhook entity. For each mid, this
+     * route will make sure that the alert_email field of
+     * the webhook entity in Stork belonging to the mid, will
+     * be populated with `transactions_report_email` from the
+     * merchants table in the API.
+     *
+     * sample input :
+     * {
+     *  source : ['mids' : ['merchant01', merchant02']],
+     *  'is_dry_run' : true/false (not mandatory)
+     * }
+     *
+     * @param array $input
+     * @return array
+     */
+    public function webhookEmailStorkRecon(array $input): array
+    {
+        $this->trace->info(TraceCode::WEBHOOK_EMAIL_STORK_RECON_REQUEST, $input);
+
+        $isDryRun = $input[self::IS_DRY_RUN] ?? false;
+
+        $source  = new AlertEmailRecon\MigrateSource();
+        $target  = new AlertEmailRecon\MigrateTarget();
+        $migrate = new Migrate($source, $target);
+
+        $sourceOpts = $input['source'] ?? [];
+        $targetOpts = $input['target'] ?? [];
+
+        return $migrate->migrateAsync($sourceOpts, $targetOpts, $isDryRun);
+    }
+
+    /**
+     * @return array
+     */
+    public function getWebhookEvents(): array
+    {
+        return array_keys(Merchant\Webhook\Event::filterForPublicApi($this->merchant));
     }
 }

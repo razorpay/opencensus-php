@@ -12,7 +12,6 @@ use RZP\Models\Merchant\Balance\Channel;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
-use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\FundAccount\Entity as FundAccount;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
@@ -23,14 +22,10 @@ use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 
-/**
- * @group dns-sensitive
- */
 class FundAccountValidationTest extends TestCase
 {
     use WebhookTrait;
     use AttemptTrait;
-    use MocksDnsTrait;
     use FundAccountTrait;
     use TestsWebhookEvents;
     use DbEntityFetchTrait;

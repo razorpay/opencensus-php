@@ -7,7 +7,7 @@ use Generator;
 use RZP\Modules\Migrate\Target;
 use RZP\Modules\Migrate\Record;
 use RZP\Modules\Migrate\Response;
-use RZP\Models\Merchant\Webhook\Stork;
+use RZP\Models\Merchant\WebhookV2\Stork;
 
 class MigrateStorkTarget implements Target
 {
@@ -32,7 +32,7 @@ class MigrateStorkTarget implements Target
         $accessMap = $sourceRecord->value;
 
         // Dry run flag is not honored in this case because not needed :)
-        (new Stork)->invalidateAffectedOwnersCache($accessMap->getMerchantId(), $accessMap->getConnectionName());
+        (new Stork($accessMap->getConnectionName()))->invalidateAffectedOwnersCache($accessMap->getMerchantId());
 
         return new Response(Response::ACTION_UPSERTED, $sourceRecord->key, null);
     }

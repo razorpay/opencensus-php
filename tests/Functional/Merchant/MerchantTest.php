@@ -47,7 +47,6 @@ use RZP\Models\User\Entity as UserEntity;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\Partner\PartnerTrait;
-use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -64,9 +63,6 @@ use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 use function Clue\StreamFilter\fun;
 
-/**
- * @group dns-sensitive
- */
 class MerchantTest extends TestCase
 {
     use PaymentTrait;
@@ -74,7 +70,6 @@ class MerchantTest extends TestCase
     use SettlementTrait;
     use InteractsWithSession;
     use HeimdallTrait;
-    use MocksDnsTrait;
     use DbEntityFetchTrait;
     use CreatesInvoice;
     use PartnerTrait;
@@ -104,8 +99,6 @@ class MerchantTest extends TestCase
         $this->ba->appAuth();
 
         $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
-
-        $this->setupMockDns();
 
         $this->fixtures->create('org:hdfc_org');
 

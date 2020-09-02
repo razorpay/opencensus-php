@@ -10,7 +10,7 @@ use RZP\Constants\Product;
 
 /**
  * This is a fallback queued job and the handler just calls stork's processEvent().
- * Also see Webhook/Stork's processEventSafe().
+ * Also see WebhookV2/Stork's processEventSafe().
  */
 class WebhookEvent extends Job
 {
@@ -61,7 +61,7 @@ class WebhookEvent extends Job
 
             $this->trace->info(TraceCode::WEBHOOK_EVENT_JOB_RECEIVED, $event->toArrayPublic());
 
-            (new Merchant\Webhook\Stork($this->product))->processEvent($event, $this->mode);
+            (new Merchant\WebhookV2\Stork($this->mode, $this->product))->processEvent($event);
         }
         catch (\Throwable $e)
         {

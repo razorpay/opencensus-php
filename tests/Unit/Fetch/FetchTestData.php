@@ -546,14 +546,6 @@ return [
 
     E::MERCHANT_INVOICE => [],
 
-    E::WEBHOOK => [
-        Type::PRIVATE_AUTH => [
-            [
-                'application_id' => str_random(14)
-            ],
-        ],
-    ],
-
     E::NODAL_STATEMENT => [],
 
     E::PAYMENT_LINK => [],

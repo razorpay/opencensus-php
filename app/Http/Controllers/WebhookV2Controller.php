@@ -81,4 +81,56 @@ class WebhookV2Controller extends Controller
 
         return ApiResponse::json([]);
     }
+
+    /**
+     * @deprecated This should be removed. Subscriptions service, who is only
+     * user for this route, should integrate with stork for dispatching webhook
+     * events.
+     *
+     * Dispatches payload to stork.
+     *
+     * Sample payload-
+     * {
+     *   "payloads": [
+     *     {
+     *       "refund": {
+     *         "entity": {
+     *           "entity": "refund"
+     *           "id": "rfnd_DIsa6F6Fikva7D",
+     *         }
+     *       }
+     *     }
+     *   ]
+     * }
+     *
+     * @param  string $event
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function processWebhook(string $event)
+    {
+        (new Service)->processWebhook($event, $this->input);
+
+        return ApiResponse::json([]);
+    }
+
+    /**
+     * TODO: Write comment!
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function webhookEmailStorkRecon()
+    {
+        $summary = (new Service)->webhookEmailStorkRecon($this->input);
+
+        return ApiResponse::json($summary);
+    }
+
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getWebhookEvents()
+    {
+        $response = (new Service)->getWebhookEvents();
+
+        return ApiResponse::json($response);
+    }
 }

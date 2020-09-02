@@ -9,13 +9,11 @@ use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Traits\TestsWebhookEvents;
-use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class OrderTransferTest extends TestCase
 {
-    use MocksDnsTrait;
     use PaymentTrait;
     use DbEntityFetchTrait;
     use TestsWebhookEvents;

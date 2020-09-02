@@ -40,7 +40,6 @@ use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Mail\Transaction\Payout as PayoutMail;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
-use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -56,7 +55,6 @@ class PayoutTest extends TestCase
     use PaymentTrait;
     use HeimdallTrait;
     use WorkflowTrait;
-    use MocksDnsTrait;
     use SettlementTrait;
     use TestsWebhookEvents;
     use DbEntityFetchTrait;
@@ -3054,8 +3052,6 @@ class PayoutTest extends TestCase
 
     public function testFiringOfWebhookOnUpdationOfUtr()
     {
-        $this->setupMockDns();
-
         $this->mockRazorxTreatment('yesbank', 'on');
 
         $this->testCreatePayout();
@@ -3121,8 +3117,6 @@ class PayoutTest extends TestCase
 
     public function testNotFiringOfWebhookOnNotUpdationOfUtr()
     {
-        $this->setupMockDns();
-
         $this->mockRazorxTreatment('yesbank', 'on');
 
         $this->testCreatePayout();
@@ -3594,8 +3588,6 @@ class PayoutTest extends TestCase
     {
         $this->liveSetUp();
 
-        $this->setupMockDns();
-
         $this->mockRazorxTreatment('yesbank', 'on');
 
         $eventTestDataKey = 'testFiringOfWebhookOnCreationOfPendingPayoutEventData';
@@ -3719,8 +3711,6 @@ class PayoutTest extends TestCase
     public function testFiringOfWebhookOnCreationOfPendingPayoutWithStork()
     {
         $this->liveSetUp();
-
-        $this->setupMockDns();
 
         $this->mockRazorxTreatment('yesbank', 'on', 'on');
 

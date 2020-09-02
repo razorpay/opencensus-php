@@ -26,7 +26,6 @@ use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Models\PayoutLink\Entity as PayoutLink;
-use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -40,7 +39,6 @@ class PayoutLinkTest extends TestCase
     use DbEntityFetchTrait;
     use EntityActionTrait;
     use WebhookTrait;
-    use MocksDnsTrait;
     use TestsWebhookEvents;
 
     protected $config;

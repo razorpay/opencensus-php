@@ -25,7 +25,6 @@ use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
-use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -38,13 +37,10 @@ use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 use RZP\Mail\Merchant\NeedsClarificationEmail as NeedsClarificationEmail;
 
 /**
- * @group dns-sensitive
- *
  * todo, need to add test cases for VA Emails (https://razorpay.atlassian.net/browse/RX-1025)
  */
 class ActivationTest extends OAuthTestCase
 {
-    use MocksDnsTrait;
     use TerminalTrait;
     use PartnerTrait;
     use EntityActionTrait;
@@ -59,7 +55,6 @@ class ActivationTest extends OAuthTestCase
         $this->testDataFilePath = __DIR__ . '/helpers/ActivationTestData.php';
 
         parent::setUp();
-        $this->setupMockDns();
 
         $this->fixtures->create('org:hdfc_org');
     }
