@@ -14,9 +14,11 @@ class BankingScorecard extends Base\Core
      * Generate data for payout analysis for:
      * 1. Total TPV for the month
      * 2. Total txn count for the month
-     * 3. Yesterday's TPV
-     * 4. Yesterday's txn count
-     * 5. Merchant level yesterday's TPV and txn count
+     * 3. Total fee collected for the month
+     * 4. Yesterday's TPV
+     * 5. Yesterday's txn count
+     * 6. Total fee collection from yesterday payouts
+     * 7. Merchant level yesterday's TPV and txn count
      * here tpv --> Total Payout Value
      *
      * @param $input
@@ -29,18 +31,18 @@ class BankingScorecard extends Base\Core
 
         $limit = $input['count'];
 
-        // get yesterday's total payout amount and tax count
-        $yesterdayPayoutAmountAndTaxCount          = $this->repo->payout->getPayoutAmountAndTaxCountForYesterday();
+        // get yesterday's total payout amount, fees and tax count
+        $yesterdayPayoutAmountFeeAndTaxCount       = $this->repo->payout->getPayoutAmountFeeAndTaxCountForYesterday();
 
-        // get total payout amount and tax count for month
-        $payoutAmountAndTaxCountForMonth           = $this->repo->payout->getPayoutAmountAndTaxCountForMonth();
+        // get total payout amount, fee and tax count for month
+        $payoutAmountFeeAndTaxCountForMonth        = $this->repo->payout->getPayoutAmountFeeAndTaxCountForMonth();
 
         // get yesterday's total payout amount and tax count for merchants
         $yesterdayMerchantsPayoutAmountAndTaxCount = $this->repo->payout->getYesterdayMerchantsPayoutAmountAndTaxCountGroupByMerchant($limit);
 
         return [
-            'yesterdayPayoutAmountAndTaxCount'          => $yesterdayPayoutAmountAndTaxCount,
-            'payoutAmountAndTaxCountForMonth'           => $payoutAmountAndTaxCountForMonth,
+            'yesterdayPayoutAmountFeeAndTaxCount'       => $yesterdayPayoutAmountFeeAndTaxCount,
+            'payoutAmountFeeAndTaxCountForMonth'        => $payoutAmountFeeAndTaxCountForMonth,
             'yesterdayMerchantsPayoutAmountAndTaxCount' => $yesterdayMerchantsPayoutAmountAndTaxCount,
         ];
     }

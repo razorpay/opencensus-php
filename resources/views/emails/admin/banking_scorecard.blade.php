@@ -13,6 +13,10 @@
             <p>Yesterday's Payouts Count - {{ $yesterday_tax_count }}</p>
             <p>Monthly Payouts Count - {{ $month_tax_count }}</p>
 
+            <br>
+            <p>Yesterday's Fees earned - {{ $yesterday_fees_collected }}</p>
+            <p>Monthly Fees earned - {{ $month_fees_collected }}</p>
+
         </div>
 
         <div>

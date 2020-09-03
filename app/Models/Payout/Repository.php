@@ -1071,38 +1071,38 @@ class Repository extends Base\Repository
     }
 
     /**
-     * get yesterday's total payout amount and tax count
+     * get yesterday's total payout amount, fee and tax count
      *
      */
-    public function getPayoutAmountAndTaxCountForYesterday()
+    public function getPayoutAmountFeeAndTaxCountForYesterday()
     {
         $yesterdayStartOfDay = Carbon::yesterday(Timezone::IST)->startOfDay()->getTimestamp();
         $yesterdayEndOfDay = Carbon::yesterday(Timezone::IST)->endOfDay()->getTimestamp();
 
-        return $this->getPayoutAmountAndTaxCountBetweenTimestamp($yesterdayStartOfDay, $yesterdayEndOfDay);
+        return $this->getPayoutAmountFeeAndTaxCountBetweenTimestamp($yesterdayStartOfDay, $yesterdayEndOfDay);
     }
 
     /**
-     * get total payout amount and tax count for month
+     * get total payout amount, fee and tax count for month
      *
      */
-    public function getPayoutAmountAndTaxCountForMonth()
+    public function getPayoutAmountFeeAndTaxCountForMonth()
     {
         $from = Carbon::yesterday(Timezone::IST)->startOfMonth()->startOfDay()->getTimestamp();
         $to = Carbon::yesterday(Timezone::IST)->endOfDay()->getTimestamp();
 
-        return $this->getPayoutAmountAndTaxCountBetweenTimestamp($from, $to);
+        return $this->getPayoutAmountFeeAndTaxCountBetweenTimestamp($from, $to);
     }
 
     /**
-     * get total payout amount and tax count between two time stamp
+     * get total payout amount, fee and tax count between two time stamp
      *
      * @param $from
      * @param $to
      *
      * @return array
      */
-    protected function getPayoutAmountAndTaxCountBetweenTimestamp($from, $to)
+    protected function getPayoutAmountFeeAndTaxCountBetweenTimestamp($from, $to)
     {
         $balanceIdColumn            = $this->repo->balance->dbColumn(Balance\Entity::ID);
         $balanceTypeColumn          = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
@@ -1119,6 +1119,7 @@ class Repository extends Base\Repository
                     ->join(Table::MERCHANT, $merchantIdColumn, '=', $payoutsMerchantIdColumn)
                     ->betweenTime($from, $to)
                     ->selectRaw('COALESCE(ROUND(SUM(' . Entity::AMOUNT . '* 1.0 / 1000000000), 2), 0)AS payout_amount_cr' . ','.
+                                'COALESCE(ROUND(SUM(' . Entity::FEES . ')/100, 2), 0)AS payout_fee_collected' . ','.
                                 'COUNT(' . Entity::AMOUNT . ') AS payout_count')
                     ->where($payoutStatusColumn, '=', Status::PROCESSED)
                     ->where($merchantEmailColumn, 'not like', '%@razorpay.com')

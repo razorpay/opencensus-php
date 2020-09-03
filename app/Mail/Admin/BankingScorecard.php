@@ -61,11 +61,13 @@ class BankingScorecard extends Mailable
     protected function addMailData()
     {
         $mailData = [
-            'yesterday_tpv'        => $this->data['yesterdayPayoutAmountAndTaxCount']->getAttribute('payout_amount_cr'),
-            'yesterday_tax_count'  => $this->data['yesterdayPayoutAmountAndTaxCount']->getAttribute('payout_count'),
-            'month_tpv'            => $this->data['payoutAmountAndTaxCountForMonth']->getAttribute('payout_amount_cr'),
-            'month_tax_count'      => $this->data['payoutAmountAndTaxCountForMonth']->getAttribute('payout_count'),
-            'merchant_data'        => $this->data['yesterdayMerchantsPayoutAmountAndTaxCount']
+            'yesterday_tpv'              => $this->data['yesterdayPayoutAmountFeeAndTaxCount']->getAttribute('payout_amount_cr'),
+            'yesterday_tax_count'        => $this->data['yesterdayPayoutAmountFeeAndTaxCount']->getAttribute('payout_count'),
+            'yesterday_fees_collected'   => $this->data['yesterdayPayoutAmountFeeAndTaxCount']->getAttribute('payout_fee_collected'),
+            'month_tpv'                  => $this->data['payoutAmountFeeAndTaxCountForMonth']->getAttribute('payout_amount_cr'),
+            'month_tax_count'            => $this->data['payoutAmountFeeAndTaxCountForMonth']->getAttribute('payout_count'),
+            'month_fees_collected'       => $this->data['payoutAmountFeeAndTaxCountForMonth']->getAttribute('payout_fee_collected'),
+            'merchant_data'              => $this->data['yesterdayMerchantsPayoutAmountAndTaxCount']
         ];
 
         $this->with($mailData);
