@@ -2,7 +2,6 @@
 
 namespace RZP\Tests\Unit\Gateway;
 
-use App;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Redis;
 use RZP\Exception\ServerErrorException;
@@ -24,8 +23,6 @@ class WorldlineTidGenerationTest extends TestCase
 
         $this->redis = Redis::connection()->client();
 
-        $this->redisEc = Redis::connection('mutex_redis')->client();
-
         $ranges = [
             [123800, 123899],
             [133800, 133899],
@@ -37,50 +34,27 @@ class WorldlineTidGenerationTest extends TestCase
 
     private function insertTidRangesIntoRedis(array $ranges)
     {
-        if (empty($this->redis->lrange($this->generator->redisTidKey, 0, -1)))
+        foreach ($ranges as $range)
         {
-            foreach ($ranges as $range)
-            {
-                $this->redis->rpush($this->generator->redisTidKey, json_encode($range));
-            }    
+            $this->redis->rpush($this->generator->redisTidKey, json_encode($range));
         }
-
-        if (empty($this->redisEc->lrange($this->generator->redisTidKey, 0, -1)))
-        {
-            foreach ($ranges as $range)
-            {    
-                $this->redisEc->rpush($this->generator->redisTidKey, json_encode($range));
-            }    
-        }    
     }
 
     public function testGenerateTid()
     {
-        $app = App::getFacadeRoot();
-
         for ($i = 0; $i < 100; $i++)
         {
-            $app['config']->set('applications.redisdualwrite', ['redislab_cache_read' => true, 'skip_dual_write' => false ]);
-
-            $generator = new Worldline\TidGenerator();
-
-            $tid = $generator->generateTid();
-
-            $this->assertEquals(123800 + $i, $tid);
-
-            // If we switch to ElasticCache from RedisLabs in between, then functionality should work fine
-            $app['config']->set('applications.redisdualwrite', ['redislab_cache_read' => false, 'skip_dual_write' => false ]);
-            $i++;
-
-            $generator = new Worldline\TidGenerator();
-
-            $tid = $generator->generateTid();
+            $tid = $this->generator->generateTid();
 
             $this->assertEquals(123800 + $i, $tid);
         }
+    }
 
-        // test range switch, instead of next sequence (1238900), next range should get picked (133800 - 133899)
-        $tid = $generator->generateTid();
+    public function testGenerateTidRangeSwitch()
+    {
+        $this->testGenerateTid();
+
+        $tid = $this->generator->generateTid();
 
         $this->assertEquals(133800, $tid);
     }

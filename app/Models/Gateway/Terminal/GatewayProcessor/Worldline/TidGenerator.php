@@ -25,34 +25,20 @@ class TidGenerator extends core
     {
         parent::__construct();
     
-        $this->redis = $this->app['redisdualwrite'];
-
-        $this->redisOld = Redis::Connection();
-        
-        $this->redisEc = Redis::Connection('mutex_redis');
+        $this->redis = Redis::Connection();
 
         $this->redisTidKey = $this->mode . '_' . self::WORLDLINE_TID_RANGE_LIST;
     }
 
     protected function insertTidRangesIntoRedisIfEmpty()
     {   
-        if (empty($this->redisOld->lrange($this->redisTidKey, 0, -1)))
+        if (empty($this->app->redis->lrange($this->redisTidKey, 0, -1)))
         {
             $staticTidRanges = Cache::get(ConfigKey::WORLDLINE_TID_RANGE_LIST, false);
 
             foreach ($staticTidRanges as $tidRange)
             {
-                $this->redisOld->rpush($this->redisTidKey, json_encode($tidRange));
-            }
-        }
-
-        if (empty($this->redisEc->lrange($this->redisTidKey, 0, -1)))
-        {
-            $staticTidRanges = Cache::get(ConfigKey::WORLDLINE_TID_RANGE_LIST, false);
-
-            foreach ($staticTidRanges as $tidRange)
-            {
-                $this->redisEc->rpush($this->redisTidKey, json_encode($tidRange));
+                $this->redis->rpush($this->redisTidKey, json_encode($tidRange));
             }
         }
     }
@@ -100,7 +86,7 @@ class TidGenerator extends core
 
     protected function leftPopFromTidRangeList() : array
     {
-        $tidRangeList = json_decode($this->redis->lpop($this->redisTidKey));
+        $tidRangeList = json_decode($this->app->redis->lpop($this->redisTidKey));
 
         if ($tidRangeList === null)
         {
@@ -126,14 +112,14 @@ class TidGenerator extends core
 
     protected function leftInsertIntoTidRangeList($tidRange)
     {
-        $this->redis->lpush($this->redisTidKey, json_encode($tidRange));
+        $this->app->redis->lpush($this->redisTidKey, json_encode($tidRange));
     }
 
     protected function getTidRangeList() : array
     {
         //0 means start of list in redis
         //-1 means end of list in redis
-        $tidRangeRedisList = $this->redis->lrange($this->redisTidKey, 0, -1);
+        $tidRangeRedisList = $this->app->redis->lrange($this->redisTidKey, 0, -1);
 
         $tidRangeList = [];
 
