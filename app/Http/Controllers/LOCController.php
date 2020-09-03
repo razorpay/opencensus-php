@@ -4,11 +4,13 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Mail\Loc\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Permission\Entity;
 use RZP\Models\Admin\Permission\Name;
+use RZP\Models\Base\PublicCollection;
 use RZP\Tests\Functional\Fixtures\Entity\Permission;
 use RZP\Trace\TraceCode;
 use Illuminate\Support\Str;
@@ -43,6 +45,7 @@ class LOCController extends Controller
     const UPDATE_DESTINATION_ACCOUNT_REGEX       = 'UPDATE_DESTINATION_ACCOUNT_REGEX';
     const POSIDEX_ACCESS_TOKEN                   = 'POSIDEX_ACCESS_TOKEN';
     const POSIDEX_CRN                            = 'POSIDEX_CRN';
+    const BULK_UPDATE_WITHDRAWAL                 = 'BULK_UPDATE_WITHDRAWAL';
 
     const ROUTES_URL_MAP = [
         self::SEED_DATA_REGEX                        => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalAPI/SeedData',
@@ -50,6 +53,7 @@ class LOCController extends Controller
         self::GET_WITHDRAWAL_REGEX                   => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalAPI/GetWithdrawalByReference',
         self::LIST_OR_SEARCH_WITHDRAWAL_REGEX        => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalAPI/ListOrSearchWithdrawal',
         self::UPDATE_WITHDRAWAL_REGEX                => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalAPI/UpdateWithdrawal',
+        self::BULK_UPDATE_WITHDRAWAL                 => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalAPI/BulkUpdateWithdrawal',
         self::ADD_REPAYMENT_REGEX                    => 'twirp/rzp.capital.loc.withdrawal.v1.RepaymentAPI/AddRepayment',
         self::CREATE_WITHDRAWAL_CONFIG_REGEX         => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalConfigAPI/CreateWithdrawalConfig',
         self::GET_WITHDRAWAL_CONFIG_REGEX            => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalConfigAPI/GetWithdrawalConfig',
@@ -98,6 +102,60 @@ class LOCController extends Controller
 
     const MAIL_ERROR_REGEX = '/View \[emails.loc.(?:\w+)?\] not found./';
 
+    public function postLocBulkWithdrawalUpdate()
+    {
+        $input = Request::all();
+        $bulkCollection = new PublicCollection;
+        try
+        {
+            if (isset($input['0']) == false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+            }
+
+            $body = $input['0'];
+
+            $idempotencyKey = $body['idempotency_key'];
+
+            $url = self::ROUTES_URL_MAP[self::BULK_UPDATE_WITHDRAWAL];
+
+            $this->trace->info(TraceCode::LINE_OF_CREDIT_PROXY_REQUEST, [
+                'request' => $url,
+            ]);
+
+            $headers = [
+                'X-Service-Name' => $this->ba->getInternalApp() ?? '',
+                'X-Auth-Type'    => 'internal',
+            ];
+
+            $response = $this->sendRequest($url, $body, $headers);
+
+            $responseArray = json_decode($response->body, true);
+
+            if ($response->status_code !== 200)
+            {
+                throw new Exception\TwirpException($responseArray);
+            }
+
+            $responseArray['idempotency_key'] = $idempotencyKey;
+
+            $bulkCollection->push($responseArray);
+        }
+        catch (\Throwable $e)
+        {
+            $bulkCollection->push([
+                'idempotency_key'   => $idempotencyKey,
+                'success'            => false,
+                'error'             => [
+                    Error::DESCRIPTION       => $e->getMessage(),
+                    Error::PUBLIC_ERROR_CODE => $e->getCode(),
+                ]
+            ]);
+        }
+
+        return $bulkCollection->toArrayWithItems();
+    }
+
     protected function handleProxyRequests($path = null)
     {
         $request = Request::instance();
@@ -108,6 +166,7 @@ class LOCController extends Controller
         ]);
 
         $isMerchantAccessible = false;
+
         foreach (self::MERCHANT_ROUTES as $route)
         {
             if (self::ROUTES_URL_MAP[$route] === $path)
@@ -182,6 +241,17 @@ class LOCController extends Controller
         array $headers = [],
         array $options = [])
     {
+        $response = $this->sendRequest($url, $body, $headers, $options);
+
+        return $this->parseResponse($response);
+    }
+
+    protected function sendRequest(
+        string $url,
+        array $body = [],
+        array $headers = [],
+        array $options = [])
+    {
         $config                  = config('applications.line_of_credit');
         $baseUrl                 = $config['url'];
         $username                = $config['username'];
@@ -221,7 +291,7 @@ class LOCController extends Controller
             );
         }
 
-        return $this->parseResponse($response);
+        return $response;
     }
 
     protected function hasRequestTimedOut(\Requests_Exception $e): bool

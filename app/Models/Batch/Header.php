@@ -827,6 +827,42 @@ class Header
     const PRICING_RULE_FIXED_RATE               = 'fixed_rate';
     const PRICING_RULE_UPDATE                   = 'update';
 
+    // Loc withdrawals
+
+    const LOC_WITHDRAWAL_TRANSACTION_TYPE           = 'Transaction Type';
+    const LOC_WITHDRAWAL_BENEFICIARY_CODE           = 'Beneficiary Code';
+    const LOC_WITHDRAWAL_BENEFICIARY_ACCOUNT_NUMBER = 'Beneficiary Account Number';
+    const LOC_WITHDRAWAL_INSTRUMENT_AMOUNT          = 'Instrument Amount';
+    const LOC_WITHDRAWAL_BENEFICIARY_NAME           = 'Beneficiary Name';
+    const LOC_WITHDRAWAL_DRAWEE_LOCATION            = 'Drawee Location';
+    const LOC_WITHDRAWAL_PRINT_LOCATION             = 'Print Location';
+    const LOC_WITHDRAWAL_BENE_ADDR_1                = 'Bene Address 1';
+    const LOC_WITHDRAWAL_BENE_ADDR_2                = 'Bene Address 2';
+    const LOC_WITHDRAWAL_BENE_ADDR_3                = 'Bene Address 3';
+    const LOC_WITHDRAWAL_BENE_ADDR_4                = 'Bene Address 4';
+    const LOC_WITHDRAWAL_BENE_ADDR_5                = 'Bene Address 5';
+    const LOC_WITHDRAWAL_IRN                        = 'Instruction Reference Number';
+    const LOC_WITHDRAWAL_CRN                        = 'Customer Reference Number';
+    const LOC_WITHDRAWAL_PAYMENT_DETAILS_1          = 'Payment details 1';
+    const LOC_WITHDRAWAL_PAYMENT_DETAILS_2          = 'Payment details 2';
+    const LOC_WITHDRAWAL_PAYMENT_DETAILS_3          = 'Payment details 3';
+    const LOC_WITHDRAWAL_PAYMENT_DETAILS_4          = 'Payment details 4';
+    const LOC_WITHDRAWAL_PAYMENT_DETAILS_5          = 'Payment details 5';
+    const LOC_WITHDRAWAL_PAYMENT_DETAILS_6          = 'Payment details 6';
+    const LOC_WITHDRAWAL_PAYMENT_DETAILS_7          = 'Payment details 7';
+    const LOC_WITHDRAWAL_CHEQUE_NUMBER              = 'Cheque Number';
+    const LOC_WITHDRAWAL_TRN_DATE                   = 'Chq / Trn Date';
+    const LOC_WITHDRAWAL_MICR_NUMBER                = 'MICR Number';
+    const LOC_WITHDRAWAL_IFC_CODE                   = 'IFC Code';
+    const LOC_WITHDRAWAL_BENE_BANK_NAME             = 'Bene Bank Name';
+    const LOC_WITHDRAWAL_BENE_BANK_BRANCH_NAME      = 'Bene Bank Branch Name';
+    const LOC_WITHDRAWAL_BENE_EMAIL_ID              = 'Beneficiary email id';
+    const LOC_WITHDRAWAL_CLIENT_CODE                = 'Client Code';
+    const LOC_WITHDRAWAL_LOAN_AMOUNT                = 'Loan Amount';
+    const LOC_WITHDRAWAL_LOAN_INTEREST              = 'Loan interest %';
+    const LOC_WITHDRAWAL_LOAN_TENURE                = 'Loan tenure';
+    const LOC_WITHDRAWAL_UTR_NUMBER                 = 'UTR Number';
+
     // NPCI RUPAY IIN Batch
     const IIN_NPCI_RUPAY_ROW                     = 'row';
 
@@ -2706,6 +2742,78 @@ class Header
                 self::PRICING_RULE_AMOUNT_RANGE_ACTIVE,
                 self::PRICING_RULE_AMOUNT_RANGE_MIN,
                 self::PRICING_RULE_AMOUNT_RANGE_MAX,
+            ]
+        ],
+        Type::LOC_WITHDRAWAL => [
+            self::INPUT => [
+                self::LOC_WITHDRAWAL_TRANSACTION_TYPE,
+                self::LOC_WITHDRAWAL_BENEFICIARY_CODE,
+                self::LOC_WITHDRAWAL_BENEFICIARY_ACCOUNT_NUMBER,
+                self::LOC_WITHDRAWAL_INSTRUMENT_AMOUNT,
+                self::LOC_WITHDRAWAL_BENEFICIARY_NAME,
+                self::LOC_WITHDRAWAL_DRAWEE_LOCATION,
+                self::LOC_WITHDRAWAL_PRINT_LOCATION,
+                self::LOC_WITHDRAWAL_BENE_ADDR_1,
+                self::LOC_WITHDRAWAL_BENE_ADDR_2,
+                self::LOC_WITHDRAWAL_BENE_ADDR_3,
+                self::LOC_WITHDRAWAL_BENE_ADDR_4,
+                self::LOC_WITHDRAWAL_BENE_ADDR_5,
+                self::LOC_WITHDRAWAL_IRN,
+                self::LOC_WITHDRAWAL_CRN,
+                self::LOC_WITHDRAWAL_PAYMENT_DETAILS_1,
+                self::LOC_WITHDRAWAL_PAYMENT_DETAILS_2,
+                self::LOC_WITHDRAWAL_PAYMENT_DETAILS_3,
+                self::LOC_WITHDRAWAL_PAYMENT_DETAILS_4,
+                self::LOC_WITHDRAWAL_PAYMENT_DETAILS_5,
+                self::LOC_WITHDRAWAL_PAYMENT_DETAILS_6,
+                self::LOC_WITHDRAWAL_PAYMENT_DETAILS_7,
+                self::LOC_WITHDRAWAL_CHEQUE_NUMBER,
+                self::LOC_WITHDRAWAL_TRN_DATE,
+                self::LOC_WITHDRAWAL_MICR_NUMBER,
+                self::LOC_WITHDRAWAL_IFC_CODE,
+                self::LOC_WITHDRAWAL_BENE_BANK_NAME,
+                self::LOC_WITHDRAWAL_BENE_BANK_BRANCH_NAME,
+                self::LOC_WITHDRAWAL_BENE_EMAIL_ID,
+                self::LOC_WITHDRAWAL_CLIENT_CODE,
+                self::LOC_WITHDRAWAL_LOAN_AMOUNT,
+                self::LOC_WITHDRAWAL_LOAN_INTEREST,
+                self::LOC_WITHDRAWAL_LOAN_TENURE,
+                self::LOC_WITHDRAWAL_UTR_NUMBER,
+            ],
+            self::OUTPUT => [
+                self::LOC_WITHDRAWAL_TRANSACTION_TYPE,
+                self::LOC_WITHDRAWAL_BENEFICIARY_CODE,
+                self::LOC_WITHDRAWAL_BENEFICIARY_ACCOUNT_NUMBER,
+                self::LOC_WITHDRAWAL_INSTRUMENT_AMOUNT,
+                self::LOC_WITHDRAWAL_BENEFICIARY_NAME,
+                self::LOC_WITHDRAWAL_DRAWEE_LOCATION,
+                self::LOC_WITHDRAWAL_PRINT_LOCATION,
+                self::LOC_WITHDRAWAL_BENE_ADDR_1,
+                self::LOC_WITHDRAWAL_BENE_ADDR_2,
+                self::LOC_WITHDRAWAL_BENE_ADDR_3,
+                self::LOC_WITHDRAWAL_BENE_ADDR_4,
+                self::LOC_WITHDRAWAL_BENE_ADDR_5,
+                self::LOC_WITHDRAWAL_IRN,
+                self::LOC_WITHDRAWAL_CRN,
+                self::LOC_WITHDRAWAL_PAYMENT_DETAILS_1,
+                self::LOC_WITHDRAWAL_PAYMENT_DETAILS_2,
+                self::LOC_WITHDRAWAL_PAYMENT_DETAILS_3,
+                self::LOC_WITHDRAWAL_PAYMENT_DETAILS_4,
+                self::LOC_WITHDRAWAL_PAYMENT_DETAILS_5,
+                self::LOC_WITHDRAWAL_PAYMENT_DETAILS_6,
+                self::LOC_WITHDRAWAL_PAYMENT_DETAILS_7,
+                self::LOC_WITHDRAWAL_CHEQUE_NUMBER,
+                self::LOC_WITHDRAWAL_TRN_DATE,
+                self::LOC_WITHDRAWAL_MICR_NUMBER,
+                self::LOC_WITHDRAWAL_IFC_CODE,
+                self::LOC_WITHDRAWAL_BENE_BANK_NAME,
+                self::LOC_WITHDRAWAL_BENE_BANK_BRANCH_NAME,
+                self::LOC_WITHDRAWAL_BENE_EMAIL_ID,
+                self::LOC_WITHDRAWAL_CLIENT_CODE,
+                self::LOC_WITHDRAWAL_LOAN_AMOUNT,
+                self::LOC_WITHDRAWAL_LOAN_INTEREST,
+                self::LOC_WITHDRAWAL_LOAN_TENURE,
+                self::LOC_WITHDRAWAL_UTR_NUMBER,
             ]
         ],
 

@@ -55,6 +55,8 @@ class Type
 
     const PRICING_RULE              = 'pricing_rule';
 
+    const LOC_WITHDRAWAL            = 'loc_withdrawal';
+
     const MERCHANT_CONFIG_INHERITANCE = 'merchant_config_inheritance';
 
     const MDR_ADJUSTMENT            = 'mdr_adjustment';
@@ -151,6 +153,7 @@ class Type
         self::MPAN,
         self::CAPTURE_SETTING,
         self::PRICING_RULE,
+        self::LOC_WITHDRAWAL,
         self::ADMIN_BATCH,
         self::MERCHANT_CONFIG_INHERITANCE,
         self::ENTITY_UPDATE_ACTION,
@@ -241,6 +244,7 @@ class Type
         self::IIN_MC_MASTERCARD,
         self::MPAN,
         self::PRICING_RULE,
+        self::LOC_WITHDRAWAL,
         self::ADMIN_BATCH,
         self::ADJUSTMENT,
         self::CREDIT,
@@ -309,6 +313,7 @@ class Type
         self::FUND_ACCOUNT,
         self::SUBMERCHANT_ASSIGN,
         self::PRICING_RULE,
+        self::LOC_WITHDRAWAL,
         self::RECURRING_CHARGE,
         self::AUTH_LINK,
         self::VIRTUAL_BANK_ACCOUNT,
@@ -341,6 +346,7 @@ class Type
         self::PAYOUT,
         self::FUND_ACCOUNT,
         self::PRICING_RULE,
+        self::LOC_WITHDRAWAL,
         self::MERCHANT_CONFIG_INHERITANCE,
         self::MDR_ADJUSTMENT,
         self::ENTITY_UPDATE_ACTION,
@@ -371,9 +377,10 @@ class Type
     ];
 
     public static $batchToAdminPermissionMapping = [
-        self::ADJUSTMENT    => Name::ADJUSTMENT_BATCH_UPLOAD,
-        self::REPORT        => Name::REPORTING_BATCH_UPLOAD,
-        self::CREDIT        => Name::CREDITS_BATCH_UPLOAD,
+        self::ADJUSTMENT     => Name::ADJUSTMENT_BATCH_UPLOAD,
+        self::REPORT         => Name::REPORTING_BATCH_UPLOAD,
+        self::CREDIT         => Name::CREDITS_BATCH_UPLOAD,
+        self::LOC_WITHDRAWAL => Name::LOC_WITHDRAWAL_EDIT,
     ];
 
     public static $workflowApplicableBatchTypes = [
