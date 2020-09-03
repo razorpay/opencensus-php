@@ -108,6 +108,16 @@ class PayoutLinks
 
         $sendMail = array_pull($input, self::SEND_EMAIL, "false");
 
+        if(array_key_exists(self::NOTES, $input) === true)
+        {
+            $notes = $input[self::NOTES];
+
+            if(is_array($notes) === false)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_NOTES_SHOULD_BE_ARRAY, null, null);
+            }
+        }
+
         $input[self::MERCHANT_ID] = $merchant->getId();
 
         $input[self::SEND_SMS] = strval($sendSms);
