@@ -411,4 +411,25 @@ return  [
             ]
         ],
     ],
+
+    'testCreateRiskConfigBulk' => [
+        'request' => [
+            'content' => [
+                'type'       => 'risk',
+                'config'     => [
+                    'secure_3d_international' => 'v2',
+                ],
+                'is_default' => true,
+                'merchant_ids' => ['10000000000000'],
+            ],
+            'method'    => 'POST',
+            'url'       => '',
+        ],
+        'response' => [
+            'content' => [
+                'success'       => 1,
+                'failures'      => []
+            ]
+        ],
+    ],
 ];

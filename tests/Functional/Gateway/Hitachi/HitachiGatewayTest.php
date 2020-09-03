@@ -70,6 +70,8 @@ class HitachiGatewayTest extends TestCase
 
         $this->app->instance('razorx', $razorxMock);
 
+        $this->createRiskConfig();
+
         $this->app->razorx
              ->method('getTreatment')
              ->will($this->returnCallback(function ($mid, $feature, $mode)
@@ -1503,5 +1505,25 @@ class HitachiGatewayTest extends TestCase
     protected function parseResponseXml(string $response): array
     {
         return (array) simplexml_load_string(trim($response));
+    }
+
+    protected function createRiskConfig()
+    {
+        $this->ba->adminAuth();
+
+        $request = [
+            'content' => [
+                'type'       => 'risk',
+                'config'     => [
+                    'secure_3d_international' => 'v2',
+                ],
+                'is_default' => true,
+                'merchant_ids' => ['10000000000000'],
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config/bulk',
+        ];
+
+        $this->makeRequestAndGetContent($request);
     }
 }

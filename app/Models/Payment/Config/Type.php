@@ -7,9 +7,10 @@ class Type
     const LATE_AUTH              = 'late_auth';
     const CHECKOUT               = 'checkout';
     const LOCALE                 = 'locale';
+    const RISK                   = 'risk';
 
     protected static $supportedConfigType = [
-      self::LATE_AUTH, self::CHECKOUT, self::LOCALE
+      self::LATE_AUTH, self::CHECKOUT, self::LOCALE, self::RISK
     ];
 
     public function isConfigTypeSupported($type)

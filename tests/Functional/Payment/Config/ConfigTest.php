@@ -191,6 +191,18 @@ class ConfigTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateRiskConfigBulk()
+    {
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment/config/bulk';
+
+        $this->startTest();
+    }
+
+
     public function testDeleteLocaleConfig()
     {
         $config = $this->fixtures->create('config');

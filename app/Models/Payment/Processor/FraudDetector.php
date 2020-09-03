@@ -13,6 +13,7 @@ use RZP\Constants\Mode;
 use RZP\Exception;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Analytics\Metadata;
+use RZP\Models\Payment\Config\Type as PaymentConfigType;
 
 trait FraudDetector
 {
@@ -194,6 +195,18 @@ trait FraudDetector
 
     protected function getRiskEngineVersionVariant(Merchant\Entity $merchant)
     {
+        $configEntity = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($merchant->getId(), PaymentConfigType::RISK);
+
+        if ($configEntity != null)
+        {
+            $config = json_decode($configEntity->config, true);
+
+            if (empty($config[self::SECURE_3D_INTERNATIONAL]) === false)
+            {
+                return $config[self::SECURE_3D_INTERNATIONAL];
+            }
+        }
+
         return $this->app->razorx->getTreatment($merchant->getId(), self::SECURE_3D_INTERNATIONAL, $this->mode);
     }
 
