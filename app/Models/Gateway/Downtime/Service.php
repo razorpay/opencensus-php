@@ -121,9 +121,4 @@ class Service extends Base\Service
     {
         (new DowntimeDetection())->createDowntimeDetectionJobs();
     }
-
-    public function stats()
-    {
-        return (new GatewayDowntimeDetection())->stats();
-    }
 }

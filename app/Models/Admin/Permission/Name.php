@@ -297,8 +297,6 @@ class Name
     const FTS_TRANSFER_ATTEMPT_BULK_UPDATE    = 'fts_transfer_attempt_bulk_update';
     const FTS_ROUTING_RULES_UPDATE            = 'fts_routing_rules_update';
     const MANAGE_RENDERING_PREFERENCES  	  = 'manage_rendering_preferences';
-    const UPDATE_DOWNTIME_CONFIG              = 'update_downtime_config';
-    const LIST_DOWNTIME_CONFIG                = 'list_downtime_config';
     const ADJUSTMENT_BATCH_UPLOAD             = 'adjustment_batch_upload';
     const CREATE_BULK_ADJUSTMENT              = 'create_bulk_adjustment';
     const REPORTING_BATCH_UPLOAD              = 'reporting_batch_upload';

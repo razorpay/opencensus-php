@@ -1004,17 +1004,6 @@ return [
             ]
         ],
 
-        PermissionCategory::DOWNTIME_CONFIG => [
-            Permission::UPDATE_DOWNTIME_CONFIG => [
-                'description'   => 'Update Downtime Configuration',
-                'assignable'    => true
-            ],
-            Permission::LIST_DOWNTIME_CONFIG => [
-                'description'   => 'List Downtime Configuration',
-                'assignable'    => true
-            ],
-        ],
-
         PermissionCategory::INSTRUMENT_REQUESTS => [
             Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST => [
                 'description'   => 'View single/bulk internal instrument requests',

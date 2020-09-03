@@ -846,7 +846,6 @@ class Route
         'cps_downtime_vajra_webhook'               => ['post',     'gateway/cps/webhook/vajra',                      'GatewayController@postCpsDowntimeVajraWebhook'                     ],
         'gateway_downtime_source_webhook'          => ['post',     'gateway/downtimes/{source}/webhook',             'GatewayController@postGatewayDowntimeWebhook'                      ],
         'gateway_downtime_detection_purge_keys'    => ['post',     'gateway/downtimes/detection/keys/purge',         'GatewayController@purgeGatewayDowntimeDetectionKeys'               ],
-        'gateway_downtime_detection_get_stats'     => ['get',      'gateway/downtimes/detection/keys/stats',         'GatewayController@statsGatewayDowntimeDetection'                   ],
         'downtime_detection_cron'                  => ['post',     'gateway/downtimes/detection/cron',               'GatewayController@gatewayDowntimeCron'                             ],
         'gateway_create_rule'                      => ['post',     'gateway/rules',                                  'GatewayController@createGatewayRule'                               ],
         'gateway_update_rule'                      => ['patch',    'gateway/rules/{id}',                             'GatewayController@updateGatewayRule'                               ],
@@ -1878,10 +1877,6 @@ class Route
 
          //route for sending request to server from device
         'create_virtual_account_from_order'       => ['post',       'virtual_accounts/offline_qr',                              'VirtualAccountController@createOfflineQr'                 ],
-
-        // Route for Success Rate Global Configurations
-        'update_sr_level_global_config'  => ['put', 'cutoffs/{id}', 'SuccessRateController@proxy'],
-        'get_all_sr_level_global_config' => ['get', 'cutoffs', 'SuccessRateController@proxy'],
 
         // Offline
         'fetch_offline_device_multiple'           => ['get',       'offlines/devices',                                          'OfflineController@fetchMultiple'                              ],
@@ -3581,8 +3576,6 @@ class Route
         'token_registration_tokens_authenticate',
         'subscription_registration_cancel_links_batch',
 
-        'gateway_downtime_detection_get_stats',
-
         //FTS Dashboard routes
         'fts_dashboard_fund_transfer_update',
         'fts_dashboard_fund_transfer_status_bulk',
@@ -3613,10 +3606,6 @@ class Route
 
         'add_merchant_balance_config',
         'edit_merchant_balance_config',
-
-        // SuccessRate Config Routes
-        'update_sr_level_global_config',
-        'get_all_sr_level_global_config',
 
         // Offline QR
         'register_offline_device',
@@ -4344,7 +4333,6 @@ class Route
         'recon_fetch_batchs_files_multiple'         => '*',
         'recon_fetch_files_count'                   => '*',
         'on_demand_settlement_fees'                 => '*',
-        'gateway_downtime_detection_get_stats'      => '*',
 
         'fts_dashboard_fund_transfer_update'        => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_fund_transfer_status_bulk'   => '*',
@@ -4394,11 +4382,6 @@ class Route
 
         'commissions_invoice_status_change'         => Permission::COMMISSION_PAYOUT,
 
-        //Todo update permission later
-        //'update_sr_level_global_config'             => Permission::UPDATE_DOWNTIME_CONFIG,
-        'update_sr_level_global_config'             => '*',
-        //'get_all_sr_level_global_config'            => Permission::LIST_DOWNTIME_CONFIG,
-        'get_all_sr_level_global_config'            => '*',
         'toggle_transaction_hold'                   => Permission::TOGGLE_TRANSACTION_HOLD_STATUS,
         'toggle_transaction_release'                => Permission::TOGGLE_TRANSACTION_HOLD_STATUS,
         'register_offline_device'                   => '*',

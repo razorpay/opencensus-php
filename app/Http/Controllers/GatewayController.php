@@ -1371,15 +1371,6 @@ class GatewayController extends Controller
         ]);
     }
 
-    protected function statsGatewayDowntimeDetection(Downtime\Service $service)
-    {
-        $data = $service->stats();
-
-        return ApiResponse::json([
-            'stats' => $data
-        ]);
-    }
-
     protected function callGatewayPreprocessCallback($method, $gatewayName, $input, $mode)
     {
         $variant = null;

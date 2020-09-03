@@ -126,11 +126,4 @@ class GatewayDowntimeDetectionTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
     }
-
-    public function testStats()
-    {
-        $this->ba->adminAuth();
-
-        $this->startTest();
-    }
 }
