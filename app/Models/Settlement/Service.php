@@ -781,6 +781,11 @@ class Service extends Base\Service
         return app('settlements_dashboard')->scheduleGet($input);
     }
 
+    public function scheduleRename(array $input) : array
+    {
+        return app('settlements_dashboard')->scheduleRename($input);
+    }
+
     public function scheduleGetIds(array $input) : array
     {
         return app('settlements_dashboard')->scheduleGetIds($input);

@@ -543,6 +543,7 @@ class Route
         'setl_schedule_create'                     => ['post',     'settlements/schedule/create',                    'SettlementController@scheduleCreate'                               ],
         'setl_schedule_get'                        => ['post',     'settlements/schedule/get',                       'SettlementController@scheduleGet'                                  ],
         'setl_schedule_get_ids'                    => ['get',      'settlements/schedule/get_ids',                   'SettlementController@scheduleGetIds'                               ],
+        'setl_schedule_rename'                     => ['post',     'settlements/schedule/rename',                    'SettlementController@scheduleRename'                               ],
         'setl_service_migration'                   => ['post',     'settlements/service/migration',                  'SettlementController@migrateConfigurations'                        ],
         'setl_execution_reminder'                  => ['post',     'settlements/reminder/execution',                 'SettlementController@executionReminder'                            ],
         'setl_retry_new_service'                   => ['post',     'settlements/service/retry',                      'SettlementController@settlementRetry'                              ],
@@ -3687,6 +3688,7 @@ class Route
         'setl_channel_status_update',
         'setl_channel_state_get',
         'setl_retry_new_service',
+        'setl_schedule_rename',
 
         'get_irctc_settlement_file_admin',
         'fix_merchant_data_cron',
@@ -3909,6 +3911,7 @@ class Route
         'setl_channel_status_update'               => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_channel_state_get'                   => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_retry_new_service'                   => Permission::RETRY_SETTLEMENT,
+        'setl_schedule_rename'                     => Permission::SCHEDULE_UPDATE,
 
         'merchant_batches'                         => Permission::MERCHANT_BATCH_UPLOAD,
         'merchant_invoice_add_bulk'                => Permission::MERCHANT_INVOICE_EDIT,

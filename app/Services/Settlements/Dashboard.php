@@ -16,6 +16,7 @@ class Dashboard extends Base
     const FETCH_MULTIPLE_URI           = '/twirp/rzp.settlements.dashboard.v1.DashboardService/FetchMultiple';
     const SCHEDULE_CREATE_URI          = '/twirp/rzp.settlements.schedule.v1.ScheduleService/Create';
     const SCHEDULE_GET_URI             = '/twirp/rzp.settlements.schedule.v1.ScheduleService/Get';
+    const SCHEDULE_RENAME_URI          = '/twirp/rzp.settlements.schedule.v1.ScheduleService/Rename';
     const SCHEDULE_GET_IDS_URI         = '/twirp/rzp.settlements.schedule.v1.ScheduleService/GetAllIds';
 
     const BANK_ACCOUNT_GET             = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Get';
@@ -91,6 +92,18 @@ class Dashboard extends Base
     public function scheduleGet(array $input) : array
     {
         return $this->makeRequest(self::SCHEDULE_GET_URI, $input, self::SERVICE_DASHBOARD);
+    }
+
+    /**
+     * Schedule Service Rename
+     * @param array $input
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function scheduleRename(array $input) : array
+    {
+        return $this->makeRequest(self::SCHEDULE_RENAME_URI, $input, self::SERVICE_DASHBOARD);
     }
 
     /**

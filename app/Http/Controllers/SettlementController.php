@@ -431,6 +431,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function scheduleRename()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->scheduleRename($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function scheduleGetIds()
     {
         $input = Request::all();
