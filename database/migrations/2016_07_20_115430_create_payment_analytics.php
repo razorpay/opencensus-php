@@ -82,6 +82,9 @@ class CreatePaymentAnalytics extends Migration
             $table->text(Analytics::USER_AGENT)
                   ->nullable();
 
+            $table->string(Analytics::VIRTUAL_DEVICE_ID, 100)
+                  ->nullable();
+
             $table->integer(Analytics::CREATED_AT);
 
             $table->integer(Analytics::UPDATED_AT);

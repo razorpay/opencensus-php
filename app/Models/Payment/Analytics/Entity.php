@@ -30,6 +30,7 @@ class Entity extends Base\PublicEntity
     const USER_AGENT                    = 'user_agent';
     const CREATED_AT                    = 'created_at';
     const UPDATED_AT                    = 'updated_at';
+    const VIRTUAL_DEVICE_ID             = 'virtual_device_id';
 
     protected $entity = 'payment_analytics';
 
@@ -300,6 +301,11 @@ class Entity extends Base\PublicEntity
     public function setRiskEngine($riskEngine)
     {
         $this->setAttribute(self::RISK_ENGINE, $riskEngine);
+    }
+
+    public function setVirtualDeviceId($deviceId)
+    {
+        $this->setAttribute(self::VIRTUAL_DEVICE_ID, $deviceId);
     }
 
     // ----------------------- Setters End--------------------------------------

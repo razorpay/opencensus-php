@@ -132,7 +132,15 @@ trait Authorize
         // cards used in payment is international
         $this->processCurrencyConversions($payment);
 
-        $this->setAnalyticsLog($payment);
+        $deviceId = null;
+
+        if((isset($input['_']) === true) and
+            (isset($input['_']['device_id']) === true))
+        {
+            $deviceId = $input['_']['device_id'];
+        }
+
+        $this->setAnalyticsLog($payment, $deviceId);
 
         $this->runPaymentInputValidations($payment, $input);
 
@@ -5643,11 +5651,11 @@ trait Authorize
         }
     }
 
-    protected function setAnalyticsLog(Payment\Entity $payment)
+    protected function setAnalyticsLog(Payment\Entity $payment, $deviceId = null)
     {
         try
         {
-            $paymentAnalytics = (new Analytics\Core)->create($payment);
+            $paymentAnalytics = (new Analytics\Core)->create($payment, $deviceId);
 
             $payment->setMetadataKey('payment_analytics', $paymentAnalytics);
         }
