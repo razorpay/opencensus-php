@@ -1210,10 +1210,14 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content, 'post', Base\Type::PAY);
 
+        $traceData = $this->maskUpiDataForTracing($request, [
+            Entity::VPA => Fields::CUSTOMER_VPA,
+        ]);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
-                'content'           => $data,
+                'content'           => $traceData,
                 'gateway'           => $this->gateway,
                 'payment_id'        => $payment['id'],
                 'terminal_id'       => $input['terminal']['id'],

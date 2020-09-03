@@ -125,6 +125,13 @@ class Gateway extends Base\Gateway
         if ((isset($input['upi']['flow']) === true) and
             ($input['upi']['flow'] === 'intent'))
         {
+            $attributes = [
+                Entity::TYPE                => Base\Type::PAY,
+                Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
+            ];
+
+            $this->createGatewayPaymentEntity($attributes, Action::AUTHORIZE);
+
             if ($input['merchant']->isTPVRequired() === true)
             {
                 $this->initiateIntentTpv($input);
@@ -184,24 +191,11 @@ class Gateway extends Base\Gateway
 
     public function getIntentUrl(array $input)
     {
-        // We can call authorize intent with persist false
-        return $this->authorizeIntent($input, false);
+        return $this->authorizeIntent($input);
     }
 
-    protected function authorizeIntent(array $input, bool $persist = true)
+    protected function authorizeIntent(array $input)
     {
-        $attributes = [
-            Entity::TYPE                => Base\Type::PAY,
-            Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
-        ];
-
-        // No need to save the entity for Virtual Account, a corresponding
-        // entity will be created when a payment will be made for the VA.
-        if ($persist === true)
-        {
-            $payment = $this->createGatewayPaymentEntity($attributes, Action::AUTHORIZE);
-        }
-
         $request = $this->getIntentRequest($input);
 
         if ($this->shouldSignIntentRequest() === true)
@@ -815,11 +809,20 @@ class Gateway extends Base\Gateway
             'NA',
         ];
 
+        $traceData = $this->maskUpiDataForTracing($data, [
+            Entity::VPA => 2
+        ]);
+
         if ($input['merchant']->isTPVRequired() === true)
         {
             // MEBR is the request type for TPV
             $data[12] = 'MEBR';
             $data[13] = $input['order']['account_number'];
+
+            $traceData = $this->maskUpiDataForTracing($data, [
+                Entity::VPA             => 2,
+                Entity::ACCOUNT_NUMBER  => 13
+            ]);
         }
 
         $content = $this->transformRequestArrayToContent($data);
@@ -829,7 +832,8 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
-                'decrypted_content' => $data,
+                'type'              => 'collect',
+                'decrypted_content' => $traceData,
                 'encrypted'         => $content,
                 'gateway'           => $this->gateway,
                 'payment_id'        => $payment['id'],
@@ -1526,10 +1530,15 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
+        $traceData = $this->maskUpiDataForTracing($data, [
+            Entity::ACCOUNT_NUMBER  => 15,
+        ]);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
-                'decrypted_content' => $data,
+                'type'              => 'pay',
+                'decrypted_content' => $traceData,
                 'encrypted'         => $content,
                 'gateway'           => $this->gateway,
                 'payment_id'        => $input['payment']['id'],

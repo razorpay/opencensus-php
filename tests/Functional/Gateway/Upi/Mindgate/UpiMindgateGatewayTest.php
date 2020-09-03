@@ -1448,6 +1448,20 @@ class UpiMindgateGatewayTest extends TestCase
         {
             $this->doAuthPaymentViaAjaxRoute($this->payment);
         });
+
+        $payment = $this->getDbLastPayment();
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertArraySubset([
+            'status'                    => 'failed',
+            'internal_error_code'       => 'BAD_REQUEST_PAYMENT_FAILED',
+        ], $payment->toArray(), true);
+
+        $this->assertArraySubset([
+            'payment_id'    => $payment->getId(),
+            'action'        => 'authorize',
+            'type'          => 'pay',
+        ], $upi->toArray(), true);
     }
 
     public function testEmptyBodyInCallback()
