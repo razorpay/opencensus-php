@@ -169,6 +169,10 @@ class TestCase extends IlluminateTestCase
                     }
                     break;
 
+                case 'token/renewal' :
+                    $response['expiry_time'] = date('Y-m-d H:i:s', strtotime('+1 year'));
+                    break;
+
                 case 'delete':
                     break;
             }
@@ -182,6 +186,10 @@ class TestCase extends IlluminateTestCase
 
         $mpanVault->shouldReceive('sendRequest')
                   ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+                  ->andReturnUsing($callable);
+
+        $cardVault->shouldReceive('sendRequest')
+                  ->with(Mockery::type('string'), 'post', null)
                   ->andReturnUsing($callable);
 
         $this->app->instance('card.cardVault', $cardVault);

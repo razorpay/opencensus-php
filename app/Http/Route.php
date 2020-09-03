@@ -1664,6 +1664,7 @@ class Route
 
         // API Route for Vault
         'vault_token_create'                       => ['post',     'vault_token_create',                             'AdminController@createVaultToken'                                  ],
+        'vault_token_renewal'                      => ['post',     'vault_token_renew',                              'AdminController@renewVaultToken'                                  ],
 
         'entity_origin_create'                     => ['post',     'entity_origins',                                 'EntityOriginController@create'                                     ],
         'create_credit_note'                       => ['post',     'creditnote',                                     'CreditNoteController@create'                                       ],
@@ -2505,6 +2506,7 @@ class Route
         'scrooge_tagging_backfill',
         'payments_downtime_trigger_cron',
         'payment_card_vault_migrate',
+        'vault_token_renewal',
         'batch_send_mail',
         'banking_account_webhook_account_info',
         'gateway_downtime_detection_purge_keys',
@@ -4278,6 +4280,7 @@ class Route
         'currency_fetch_all_proxy'                 => '*',
         'payment_on_hold_bulk_update'              => Permission::SETTLEMENT_RELEASE_HOLD_PAYMENT,
         'payment_card_vault_migrate'               => '*',
+        'vault_token_renewal'                      => '*',
         'banking_account_update'                   => '*', // Internal entity updates are behind permissions.
         'banking_account_activate'                 => Permission::BANKING_UPDATE_ACCOUNT,
         'banking_account_webhook_account'
@@ -4994,6 +4997,7 @@ class Route
             'terminals_proxy_delete_submerchant',
             'terminals_proxy_create_submerchant',
             'cps_backfill_entities',
+            'vault_token_renewal',
             'tax_payments_payout_cron',
             'tax_payments_mail_cron',
             'vendor_payment_ocr_accuracy_cron',

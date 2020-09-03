@@ -57,4 +57,11 @@ class CardVaultTest extends TestCase
             $this->cardVault->tokenize(['card' => $cardNumber]);
         }, \RZP\Exception\RuntimeException::class);
     }
+
+    public function testCardVaultTokenRenewal()
+    {
+        $response = $this->cardVault->renewVaultToken();
+
+        $this->assertTrue($response['success']);
+    }
 }

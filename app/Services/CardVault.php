@@ -432,4 +432,25 @@ class CardVault
 
         return $response;
     }
+
+    public function renewVaultToken(): array
+    {
+        $this->trace->info(TraceCode::VAULT_TOKEN_RENEWAL_REQUEST);
+
+        $response = $this->sendRequest('token/renewal', 'post', null);
+
+        $this->trace->info(
+            TraceCode::VAULT_TOKEN_RENEWAL_RESPONSE,
+            [
+                'response' => $response
+            ]);
+
+        if ($response[self::SUCCESS] === false)
+        {
+            throw new Exception\RuntimeException(
+                'Service Token renewal request failed', ['data' => $response]);
+        }
+
+        return $response;
+    }
 }

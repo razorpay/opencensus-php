@@ -364,6 +364,14 @@ class AdminController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function renewVaultToken()
+    {
+        $response = $this->app['card.cardVault']->renewVaultToken();
+
+        return ApiResponse::json($response);
+
+    }
+
     public function setGatewayDowntimeConf()
     {
         $input  = Request::all();

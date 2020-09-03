@@ -46,6 +46,15 @@ class CardVault extends BaseCardVault
         return [];
     }
 
+    public function renewVaultToken(): array
+    {
+        return [
+            'success'    => true,
+            'error'      => '',
+            'expiry_time'=> date('Y-m-d H:i:s', strtotime('+1 year'))
+        ];
+    }
+
     public function createVaultToken(array $input): array
     {
         return [
