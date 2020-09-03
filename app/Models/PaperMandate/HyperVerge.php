@@ -199,7 +199,7 @@ class HyperVerge extends Base\Core
         return $input;
     }
 
-    protected function getCompanyName(Entity $paperMandate): string
+    public function getCompanyName(Entity $paperMandate): string
     {
         $merchant = $paperMandate->terminal->merchant;
 

@@ -588,7 +588,7 @@ class ApiServiceProvider extends BaseServiceProvider
         {
             $mock = $app['config']->get('applications.hyper_verge.mock');
 
-            $implementation = $mock ? Mock\HyperVerge::class : RZP\Services\HyperVerge::class;
+            $implementation = $mock ? Mock\HyperVerge\HyperVerge::class : RZP\Services\HyperVerge::class;
 
             return new $implementation($app);
         });

@@ -100,7 +100,7 @@ class HyperVerge
         self::MARKERS_NOT_FOUND,
     ];
 
-    public function __construct($app)
+    public function __construct($app, $client = null)
     {
         $this->app = $app;
 
@@ -111,10 +111,16 @@ class HyperVerge
         $this->appId   = $this->config['app_id'];
         $this->appKey  = $this->config['app_key'];
 
-        $this->client = new Client([
-            'base_uri' => $this->baseUrl,
-            'connect_timeout' => self::REQUEST_TIMEOUT
-        ]);
+        if ($client === null)
+        {
+            $this->client = new Client([
+                'base_uri' => $this->baseUrl,
+                'connect_timeout' => self::REQUEST_TIMEOUT
+            ]);
+        }
+        else {
+            $this->client = $client;
+        }
     }
 
     public function generateNACH(array $input, PaperMandate\Entity $paperMandate)
@@ -161,9 +167,13 @@ class HyperVerge
                 'time_taken'       => $timeTaken,
             ]);
 
-        $data = json_decode($response->getBody()->getContents(), true);
+        $data = $this->readHypervergeResponse($response);
 
         return $data[self::RESULT];
+    }
+
+    protected function readHypervergeResponse($response) {
+        return json_decode($response->getBody()->getContents(), true);
     }
 
     public function extractNACHWithOutputImage(array $input, PaperMandate\Entity $paperMandate)
@@ -233,7 +243,7 @@ class HyperVerge
                 'time_taken'       => $timeTaken,
             ]);
 
-        $data = json_decode($response->getBody()->getContents(), true);
+        $data = $this->readHypervergeResponse($response);
 
         return $this->mapExtractedData($data[self::RESULT][self::DETAILS]);
     }
@@ -287,7 +297,7 @@ class HyperVerge
         ];
     }
 
-    private function mapExtractedData(array $data): array
+    protected function mapExtractedData(array $data): array
     {
         $extractedRawData = $data;
 

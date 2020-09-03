@@ -213,16 +213,20 @@ class Entity extends Base\PublicEntity
                 Constants::MAX_SIGNED_URL_TIMEOUT
             );
 
-            $this->setGeneratedFormUrl($shortUrl);
+            //$this->setGeneratedFormUrl($shortUrl);
 
             $expireAfter = '+' . Constants::MAX_SIGNED_URL_TIMEOUT_IN_DAYS . ' days';
 
-            $this->setGeneratedFormUrlExpire((new Carbon($expireAfter))->getTimestamp());
+            // $this->setGeneratedFormUrlExpire((new Carbon($expireAfter))->getTimestamp());
 
             $this->saveOrFail();
         }
 
-        return $this->getAttribute(self::GENERATED_FORM_URL);
+        //return $this->getAttribute(self::GENERATED_FORM_URL);
+        return (new FileUploader($this))->getSignedShortUrl(
+            $generatedFileId,
+            Constants::MAX_SIGNED_URL_TIMEOUT
+        );
     }
 
     public function getUploadedFormUrl()
@@ -260,6 +264,16 @@ class Entity extends Base\PublicEntity
     public function getEndAt()
     {
         return $this->getAttribute(self::END_AT);
+    }
+
+    public function getSecondaryAccountHolder()
+    {
+        return $this->getAttribute(self::SECONDARY_ACCOUNT_HOLDER);
+    }
+
+    public function getTertiaryAccountHolder()
+    {
+        return $this->getAttribute(self::TERTIARY_ACCOUNT_HOLDER);
     }
 
     public function getUtilityCode()
