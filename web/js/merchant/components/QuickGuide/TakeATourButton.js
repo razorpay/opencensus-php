@@ -8,6 +8,8 @@ export default class TakeATourButton extends React.Component {
   };
 
   onClick = () => {
+    this.props.onClick && this.props.onClick();
+
     this.context.confirm({
       header: 'Restart the Tour?',
       message: 'This tour will give you a quick guide on this product.',
@@ -26,7 +28,10 @@ export default class TakeATourButton extends React.Component {
           eventAction: `Need help? Take a Tour CTA `,
         });
 
-        this.props.onClick && this.props.onClick();
+        this.props.onSuccess && this.props.onSuccess();
+      },
+      abort: () => {
+        this.props.onAbort && this.props.onAbort();
       },
     });
   };

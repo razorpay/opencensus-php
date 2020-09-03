@@ -47,6 +47,9 @@
       },
       paymentButtons: function() {
         return window.rzpQ;
+      },
+      smartCollect: function() {
+        return window.rzpQ;
       }
     };
 
@@ -170,6 +173,16 @@
             {
               propertyName: 'event_group',
               value: 'paymentbuttons-dashboard'
+            }
+          ],
+          smartCollect: [
+            {
+              propertyName: 'event_type',
+              value: 'smartcollect'
+            },
+            {
+              propertyName: 'event_group',
+              value: 'smartcollect-dashboard'
             }
           ]
         });

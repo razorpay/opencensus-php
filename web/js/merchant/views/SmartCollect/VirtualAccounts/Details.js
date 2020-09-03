@@ -2,20 +2,19 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+import RTracking from 'react-tracking';
+
 import VirtualAccountDetails from './components/Details';
 import * as VirtualAccountActions from 'merchant/reducers/virtualaccounts';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { openModal } from 'merchant_common/reducers/modals';
 
 import CreateTestPayment from './components/Modals/CreateTestPayment';
-import {
-  getKeysSeparatedByPipe,
-  getEventCategoryFromPath,
-} from 'common/utils/rzp-utils';
+import { getKeysSeparatedByPipe, getEventCategoryFromPath } from 'common/utils/rzp-utils';
 
 @withRouter
 @connect(
-  state => {
+  (state) => {
     return {
       ...state.virtualaccount,
       mode: state.session.mode,
@@ -25,8 +24,9 @@ import {
     openModal,
     showNotification,
     ...VirtualAccountActions,
-  }
+  },
 )
+@RTracking(() => window.rzpQ.component('VirtualAccountDetailsContainer'))
 export default class VirtualAccountDetailsContainer extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -54,6 +54,8 @@ export default class VirtualAccountDetailsContainer extends Component {
         eventAction: 'Open Details - Virtual Account',
         eventLabel: `virtual_account_id=${id}`,
       });
+
+    this.track('open');
   }
 
   componentWillUnmount() {
@@ -65,9 +67,18 @@ export default class VirtualAccountDetailsContainer extends Component {
         eventAction: 'Close Details - Virtual Account',
         eventLabel: `virtual_account_id=${id}`,
       });
+
+    this.track('close');
   }
 
-  closeAccount = virtualaccount => {
+  track = (event, options) => {
+    this.props.tracking.trackEvent(
+      window.rzpQ.smartCollect().success(`smartcollect.va.details.${event}`, options),
+    );
+  };
+
+  closeAccount = (virtualaccount) => {
+    this.track('close.initiated');
     this.context.confirm({
       header: 'Close account?',
       message:
@@ -77,7 +88,7 @@ export default class VirtualAccountDetailsContainer extends Component {
       action: () =>
         this.props
           .closeVirtualAccount({ ...virtualaccount, status: 'closed' })
-          .then(response => {
+          .then((response) => {
             window.rzpAnalytics({
               eventCategory: 'Dashboard - Smart Collect',
               eventAction: 'Submit Form - Close Virtual Account',
@@ -89,6 +100,8 @@ export default class VirtualAccountDetailsContainer extends Component {
               eventAction: 'Close Form - Close Virtual Account',
               eventLabel: `virtual_account_id=${virtualaccount.id}`,
             });
+
+            this.track('close', { closed: 'yes' });
 
             this.props.showNotification({
               type: 'success',
@@ -114,11 +127,13 @@ export default class VirtualAccountDetailsContainer extends Component {
           eventAction: 'Close Form - Close Virtual Account',
           eventLabel: `virtual_account_id=${virtualaccount.id}`,
         });
+
+        this.track('close', { closed: 'no' });
       },
     });
   };
 
-  onCopy = virtualaccount => {
+  onCopy = (virtualaccount) => {
     const { closeUrl } = this.props,
       eventCategory = getEventCategoryFromPath(closeUrl);
     eventCategory &&
@@ -127,9 +142,11 @@ export default class VirtualAccountDetailsContainer extends Component {
         eventAction: 'Copy To Clipboard',
         eventLabel: `virtual_account_id${virtualaccount.id}`,
       });
+
+    this.track('copy');
   };
 
-  onTestPaymentModalMount = id => {
+  onTestPaymentModalMount = (id) => {
     const { closeUrl } = this.props,
       eventCategory = getEventCategoryFromPath(closeUrl);
     eventCategory &&
@@ -140,7 +157,7 @@ export default class VirtualAccountDetailsContainer extends Component {
       });
   };
 
-  onTestPaymentModalUnmount = id => {
+  onTestPaymentModalUnmount = (id) => {
     const { closeUrl } = this.props,
       eventCategory = getEventCategoryFromPath(closeUrl);
     eventCategory &&
@@ -151,7 +168,7 @@ export default class VirtualAccountDetailsContainer extends Component {
       });
   };
 
-  onTestPayment = params => {
+  onTestPayment = (params) => {
     const { closeUrl } = this.props,
       eventCategory = getEventCategoryFromPath(closeUrl);
     eventCategory &&
@@ -197,6 +214,7 @@ export default class VirtualAccountDetailsContainer extends Component {
         onClose={this.closeAccount}
         onMakeTestPaymentClick={this.openTestPaymentModal}
         onCopy={this.onCopy}
+        track={this.track}
       />
     );
   }

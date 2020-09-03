@@ -23,7 +23,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { updateVirtualAccountDetails } from 'merchant/reducers/virtualaccounts';
 
 @connect(
-  state => ({
+  (state) => ({
     user: state.session.user,
     isTestMode: state.session.mode === 'test',
   }),
@@ -32,13 +32,15 @@ import { updateVirtualAccountDetails } from 'merchant/reducers/virtualaccounts';
     closeModal,
     showNotification,
     updateVirtualAccountDetails,
-  }
+  },
 )
 export default class extends React.Component {
   openEnableTransferModeModal = () => {
     const { bankAccount1, bankAccount2, upiAddress } = getVirtualAccountDetails(
-      this.props.virtualaccount
+      this.props.virtualaccount,
     );
+
+    this.props.track('enable');
 
     this.props.openModal({
       component: (
@@ -53,19 +55,16 @@ export default class extends React.Component {
     });
   };
 
-  updateVirtualAccountDetails = payload => {
+  updateVirtualAccountDetails = (payload) => {
     return this.props
       .updateVirtualAccountDetails(this.props.virtualaccount.id, payload)
-      .then(data => {
+      .then((data) => {
         this.props.closeModal();
 
         let accountDetails, modalTitle;
         let showUPIAddressDetails, showBankAccountDetails;
 
-        if (
-          payload.receivers.types &&
-          payload.receivers.types.indexOf('vpa') > -1
-        ) {
+        if (payload.receivers.types && payload.receivers.types.indexOf('vpa') > -1) {
           modalTitle = 'UPI Transfer Enabled';
           showUPIAddressDetails = true;
         } else if (
@@ -113,9 +112,7 @@ export default class extends React.Component {
 
     const isClosed = virtualaccount.status === 'closed';
 
-    const { bankAccount1, bankAccount2, upiAddress } = getVirtualAccountDetails(
-      virtualaccount
-    );
+    const { bankAccount1, bankAccount2, upiAddress } = getVirtualAccountDetails(virtualaccount);
 
     const hasBankAccount = bankAccount1 || bankAccount2;
 
@@ -125,8 +122,7 @@ export default class extends React.Component {
       upiAddress,
     });
 
-    const showTestPaymentBtn =
-      mode === 'test' && virtualaccount.status === 'active';
+    const showTestPaymentBtn = mode === 'test' && virtualaccount.status === 'active';
 
     return (
       <div class="content-wrapper content-sm txn-details VirtualAccount--Details">
@@ -152,9 +148,7 @@ export default class extends React.Component {
                         onCopy(virtualaccount);
                       }}
                     >
-                      <div class="copy btn btn-link no-padding">
-                        Copy Details
-                      </div>
+                      <div class="copy btn btn-link no-padding">Copy Details</div>
                     </CustomClipboard>
                   </EntityDetailRow>
 
@@ -166,28 +160,21 @@ export default class extends React.Component {
                   />
                 </div>
 
-                {!user.isVACreationBankAccountDisabled &&
-                  !isClosed && !hasBankAccount && (
-                    <>
-                      <br />
+                {!user.isVACreationBankAccountDisabled && !isClosed && !hasBankAccount && (
+                  <>
+                    <br />
 
-                      <button
-                        class="btn btn-default"
-                        onClick={this.openEnableTransferModeModal}
-                      >
-                        Enable Account Transfer
-                      </button>
-                    </>
-                  )}
+                    <button class="btn btn-default" onClick={this.openEnableTransferModeModal}>
+                      Enable Account Transfer
+                    </button>
+                  </>
+                )}
 
                 {!isClosed && !upiAddress && !isTestMode && (
                   <>
                     <br />
 
-                    <button
-                      class="btn btn-default"
-                      onClick={this.openEnableTransferModeModal}
-                    >
+                    <button class="btn btn-default" onClick={this.openEnableTransferModeModal}>
                       Enable UPI Transfer
                     </button>
                   </>
@@ -195,10 +182,7 @@ export default class extends React.Component {
 
                 <div style={{ margin: '24px 0' }}>
                   <EntityDetailRow label="Amount Paid">
-                    <Amount
-                      value={virtualaccount.amount_paid}
-                      currency={'INR'}
-                    />
+                    <Amount value={virtualaccount.amount_paid} currency={'INR'} />
                   </EntityDetailRow>
 
                   <EntityDetailRow label="Status">
@@ -207,44 +191,28 @@ export default class extends React.Component {
 
                   {virtualaccount.allowed_payers && (
                     <EntityDetailRow label="Third Party Validation">
-                      <AllowedPayersList
-                        allowedPayers={virtualaccount.allowed_payers}
-                      />
+                      <AllowedPayersList allowedPayers={virtualaccount.allowed_payers} />
                     </EntityDetailRow>
                   )}
 
-                  <EntityDetailRow
-                    label="Account Description"
-                    value={virtualaccount.description}
-                  />
+                  <EntityDetailRow label="Account Description" value={virtualaccount.description} />
 
-                  <EntityDetailRow
-                    label="Customer Id"
-                    value={virtualaccount.customer_id}
-                  />
+                  <EntityDetailRow label="Customer Id" value={virtualaccount.customer_id} />
 
                   <EntityDetailRow label="Created At">
-                    <Time
-                      value={virtualaccount.created_at}
-                      format="DD MMM YYYY, hh:mm:ss a"
-                    />
+                    <Time value={virtualaccount.created_at} format="DD MMM YYYY, hh:mm:ss a" />
                   </EntityDetailRow>
 
                   <EntityDetailRow label={isClosed ? 'Closed At' : 'Close By'}>
                     <Time
-                      value={
-                        isClosed
-                          ? virtualaccount.closed_at
-                          : virtualaccount.close_by
-                      }
+                      value={isClosed ? virtualaccount.closed_at : virtualaccount.close_by}
                       format="DD MMM YYYY, hh:mm:ss a"
                     />
                   </EntityDetailRow>
 
                   {/* Notes */}
                   <EntityDetailRow label="Notes">
-                    {virtualaccount.notes &&
-                    Object.keys(virtualaccount.notes).length === 0
+                    {virtualaccount.notes && Object.keys(virtualaccount.notes).length === 0
                       ? '--'
                       : Object.keys(virtualaccount.notes).map((key, index) => (
                           <div class="m-b" key={index}>
@@ -259,23 +227,17 @@ export default class extends React.Component {
                 </div>
 
                 {virtualaccount.status !== 'closed' ? (
-                  <button
-                    class="btn btn-default"
-                    onClick={() => onClose(virtualaccount)}
-                  >
+                  <button class="btn btn-default" onClick={() => onClose(virtualaccount)}>
                     Close Account
                   </button>
                 ) : null}
 
                 {showTestPaymentBtn && (
                   <Banner class="VA-test-payment">
-                    <Button onClick={onMakeTestPaymentClick}>
-                      Make a Test Payment
-                    </Button>
+                    <Button onClick={onMakeTestPaymentClick}>Make a Test Payment</Button>
 
                     <div>
-                      <strong>Test Mode:</strong> Make a test payment to this
-                      virtual acocunt.
+                      <strong>Test Mode:</strong> Make a test payment to this virtual acocunt.
                     </div>
                   </Banner>
                 )}
@@ -288,16 +250,13 @@ export default class extends React.Component {
                     <Link
                       class="pull-right"
                       to={`/smartcollect/payments/?virtual_account_id=${virtualaccount.id}`}
+                      onClick={() => this.props.track('view_payments')}
                     >
                       View All Payments
                     </Link>
                   </p>
 
-                  <Table
-                    rows={va_payments}
-                    columns={[paymentId, amount]}
-                    showHeaders={false}
-                  />
+                  <Table rows={va_payments} columns={[paymentId, amount]} showHeaders={false} />
                 </div>
               </div>
             </div>

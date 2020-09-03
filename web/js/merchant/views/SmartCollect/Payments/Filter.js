@@ -10,17 +10,28 @@ export default ({ showBatchIdFilter, ...props }) => {
           name="virtual_account_id"
           component="input"
           class="form-control input-sm"
+          onBlur={props.onEleBlur('virtual_account_id')}
         />
       </div>
 
       <div class="form-group list-filter-item">
         <label>Payment Id</label>
-        <Field name="id" component="input" class="form-control input-sm" />
+        <Field
+          name="id"
+          component="input"
+          class="form-control input-sm"
+          onBlur={props.onEleBlur('payment_id')}
+        />
       </div>
 
       <div class="form-group list-filter-item">
         <label>Payment Status</label>
-        <Field name="status" component="select" class="form-control input-sm">
+        <Field
+          name="status"
+          component="select"
+          class="form-control input-sm"
+          onBlur={props.onEleBlur('status')}
+        >
           <option value="">All</option>
           <option value="authorized">Authorized</option>
           <option value="captured">Captured</option>
@@ -36,12 +47,18 @@ export default ({ showBatchIdFilter, ...props }) => {
           component="input"
           type="email"
           class="form-control input-sm"
+          onBlur={props.onEleBlur('email')}
         />
       </div>
 
       <div class="form-group list-filter-item">
         <label>Notes</label>
-        <Field name="notes" component="input" class="form-control input-sm" />
+        <Field
+          name="notes"
+          component="input"
+          class="form-control input-sm"
+          onBlur={props.onEleBlur('notes')}
+        />
       </div>
 
       <div class="form-group list-filter-item count">
@@ -53,6 +70,7 @@ export default ({ showBatchIdFilter, ...props }) => {
           max={100}
           type="number"
           class="form-control input-sm"
+          onBlur={props.onEleBlur('count')}
         />
       </div>
     </ListFilter>

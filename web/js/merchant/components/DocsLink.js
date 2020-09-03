@@ -1,14 +1,10 @@
 import React from 'react';
 import ShowWhen from './ShowWhen';
 
-export default function DocsLink({ url, title = 'Documentation', style = {} }) {
+export default function DocsLink({ url, title = 'Documentation', style = {}, onClick }) {
   return (
-    <ShowWhen
-      additionalCondition={user =>
-        user.isOrgAllowedFunctionality('external_links')
-      }
-    >
-      <a className="btn btn-link" href={url} target="_blank" style={style}>
+    <ShowWhen additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}>
+      <a className="btn btn-link" href={url} target="_blank" style={style} onClick={onClick}>
         {`${title}`} &nbsp;
         <i className="i i-external-link" />
       </a>

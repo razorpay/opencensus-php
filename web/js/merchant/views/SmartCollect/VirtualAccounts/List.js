@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
+import RTracking from 'react-tracking';
 
 import {
   virtualAccountId,
@@ -37,15 +38,12 @@ import { getVAQuickGuideIsClosed } from '../QuickGuide';
 import EmptyList from 'merchant/components/EmptyList';
 
 @connect(
-  state => {
+  (state) => {
     return {
       ...state.virtualaccounts,
       user: state.session.user,
       mode: state.session.mode,
-      VAProductOnBoarding: getCurrentProductOnBoardingDetails(
-        state,
-        RZPFeatures.VA
-      ),
+      VAProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.VA),
     };
   },
   {
@@ -53,8 +51,9 @@ import EmptyList from 'merchant/components/EmptyList';
     openModal,
     closeModal,
     handleProductQuickGuide,
-  }
+  },
 )
+@RTracking(() => window.rzpQ.component('VirtualAccountsListContainer'))
 export default class VirtualAccountsListContainer extends ListContainer {
   componentWillMount() {
     // TODO: Don't call below when feature is disbaled
@@ -68,6 +67,8 @@ export default class VirtualAccountsListContainer extends ListContainer {
       eventCategory: 'Dashboard - Smart Collect',
       eventAction: 'Go To - Virtual Accounts',
     });
+
+    this.track('loaded');
   }
 
   componentWillReceiveProps(nextProps) {
@@ -88,6 +89,12 @@ export default class VirtualAccountsListContainer extends ListContainer {
       });
     }
   }
+
+  track = (event, options) => {
+    this.props.tracking.trackEvent(
+      window.rzpQ.smartCollect().success(`smartcollect.va.${event}`, options),
+    );
+  };
 
   initVAOnboarding = (props = this.props) => {
     if (props.VAProductOnBoarding.isTour) {
@@ -117,7 +124,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
     this.props.handleProductQuickGuide(VAProductOnBoarding);
   };
 
-  onSearchAnalytics = params => {
+  onSearchAnalytics = (params) => {
     const label = getKeysSeparatedByPipe(params);
     if (label && label.length > 0) {
       window.rzpAnalytics({
@@ -126,6 +133,8 @@ export default class VirtualAccountsListContainer extends ListContainer {
         eventLabel: label,
       });
     }
+
+    this.track('search.submit');
   };
 
   onClearAnalytics = () => {
@@ -133,6 +142,30 @@ export default class VirtualAccountsListContainer extends ListContainer {
       eventCategory: 'Dashboard - Smart Collect',
       eventAction: 'Clear Search Params - Virtual Accounts',
     });
+
+    this.track('search.clear');
+  };
+
+  onSearchEleBlur = (name) => (e) => {
+    this.track(`search.${name}`, { value: e.target.value });
+  };
+
+  onErrorCloseClick = () => {
+    this.track('search.error_close', {
+      response: this.state.status.message[1],
+    });
+  };
+
+  onSearchSubmit = (...args) => {
+    this.search(...args)
+      .then(() => {
+        this.track('search.success');
+      })
+      .catch(() => {
+        this.track('search.error', {
+          response: this.state.status.message[1],
+        });
+      });
   };
 
   render() {
@@ -140,18 +173,27 @@ export default class VirtualAccountsListContainer extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar">
-            <TakeATourButton feature={RZPFeatures.VA} />
+            <TakeATourButton
+              feature={RZPFeatures.VA}
+              onClick={() => this.track('tour')}
+              onSuccess={() => this.track('tour.yes')}
+              onAbort={() => this.track('tour.no')}
+            />
 
-            <DocsLink url="https://razorpay.com/docs/smart-collect/" />
+            <DocsLink
+              url="https://razorpay.com/docs/smart-collect/"
+              onClick={() => {
+                this.track('docs');
+              }}
+            />
 
-            <ShowWhen
-              additionalCondition={user =>
-                user.isAllowedEdit('virtual_accounts')
-              }
-            >
+            <ShowWhen additionalCondition={(user) => user.isAllowedEdit('virtual_accounts')}>
               <NavLink
                 class="btn btn-primary"
                 to="/smartcollect/virtualaccounts/new"
+                onClick={() => {
+                  this.track('create');
+                }}
               >
                 <i class="i i-plus" />
                 <span>Create Virtual Account</span>
@@ -163,25 +205,27 @@ export default class VirtualAccountsListContainer extends ListContainer {
         <VirtualAccountsListFilter
           form="virtualAccountsListFilter"
           count={this.state.count}
-          onSubmit={this.search}
+          onSubmit={this.onSearchSubmit}
+          onEleBlur={this.onSearchEleBlur}
           onSearchAnalytics={this.onSearchAnalytics}
           onClearAnalytics={this.onClearAnalytics}
         />
 
         <DataTable
           title="Virtual Accounts"
-          columns={[
-            virtualAccountId,
-            accountDescription,
-            amountPaid,
-            status,
-            createdAt,
-          ]}
+          columns={[virtualAccountId, accountDescription, amountPaid, status, createdAt]}
           count={this.state.count}
           skip={this.state.skip}
-          paginate={this.paginate}
           EmptyComponent={EmptyComponent}
           {...this.props}
+          paginate={(params, type) => {
+            this.track(`list.${type}`, {
+              page: params.skip % params.count,
+            });
+
+            this.paginate(params);
+          }}
+          onErrorCloseClick={this.onErrorCloseClick}
         />
       </div>
     );

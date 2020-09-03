@@ -41,7 +41,7 @@ const getRazorpayOrderId = ({ order_id }) => {
   return null;
 };
 
-const mapOrders = payments =>
+const mapOrders = (payments) =>
   payments.reduce((orders, payment) => {
     let orderId = getOrderId(payment);
     if (orderId) {
@@ -50,7 +50,7 @@ const mapOrders = payments =>
     return orders;
   }, {});
 
-const mapRzpOrders = payments =>
+const mapRzpOrders = (payments) =>
   payments.reduce((orders, payment) => {
     let razorpayOrderId = getRazorpayOrderId(payment);
     if (razorpayOrderId) {
@@ -59,8 +59,12 @@ const mapRzpOrders = payments =>
     return orders;
   }, {});
 
-export default props => {
+export default (props) => {
   let paymentColumns = [paymentId, amount, email, contact, createdAt, status];
+
+  if (props.paymentColumns) {
+    paymentColumns = props.paymentColumns;
+  }
 
   let orders = mapOrders(props.items);
   let rzpOrders = mapRzpOrders(props.items);

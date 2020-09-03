@@ -3,12 +3,7 @@ import { withRouter } from 'react-router-dom';
 // import RTracking from 'react-tracking';
 
 import { RZPFeatures } from 'merchant/helpers/data';
-import {
-  buttonTitle,
-  itemName,
-  unitsSold,
-  createdAt,
-} from 'common/ui/item/pair';
+import { buttonTitle, itemName, unitsSold, createdAt } from 'common/ui/item/pair';
 
 import Amount from 'common/ui/Amount';
 import DataTable from 'common/ui/Table/DataTable';
@@ -27,10 +22,10 @@ import { fetchSubscriptionButtonsList as fetchAll } from 'merchant/reducers/subs
 import { setIsPaymentButtonCodeUsed } from '../../utils';
 import track from './track';
 
-const getActions = openGetCodeModal => ({
+const getActions = (openGetCodeModal) => ({
   title: 'Actions',
   columnClass: 'action-col',
-  value: item => (
+  value: (item) => (
     <a class="get-code-btn" onClick={() => openGetCodeModal(item)}>
       GET BUTTON CODE
     </a>
@@ -39,24 +34,22 @@ const getActions = openGetCodeModal => ({
 
 const totalSales = {
   title: 'Total Sales',
-  value: item => (
-    <Amount value={item.total_amount_paid} currency={item.currency} />
-  ),
+  value: (item) => <Amount value={item.total_amount_paid} currency={item.currency} />,
 };
 
 export const status = {
   columnClass: 'status-col',
   title: 'Status',
-  value: item => <PaymentPagesStatusLabel status={item.status} />,
+  value: (item) => <PaymentPagesStatusLabel status={item.status} />,
 };
 
 @withRouter
 @connect(
-  state => ({
+  (state) => ({
     ...state.subscription_buttons,
     ...state.session,
   }),
-  { fetchAll, openModal, closeModal, handleProductQuickGuide }
+  { fetchAll, openModal, closeModal, handleProductQuickGuide },
 )
 // @RTracking(() => window.rzpQ.component('PaymentButtonsList'))
 export default class PaymentButtonsList extends ListContainer {
@@ -70,7 +63,7 @@ export default class PaymentButtonsList extends ListContainer {
     // });
   }
 
-  openGetCodeModal = subscriptionButtonEntity => {
+  openGetCodeModal = (subscriptionButtonEntity) => {
     // track.lj.trackGetCode(subscriptionButtonEntity.id);
 
     this.props.openModal({
@@ -110,7 +103,7 @@ export default class PaymentButtonsList extends ListContainer {
         mid: this.props.user.current,
         mode: this.props.mode,
       },
-      false
+      false,
     );
   };
 
@@ -123,7 +116,7 @@ export default class PaymentButtonsList extends ListContainer {
       },
       () => {
         this.props.history.push('/subscription_buttons/new');
-      }
+      },
     );
   };
 
@@ -135,18 +128,12 @@ export default class PaymentButtonsList extends ListContainer {
       <div class="PaymentButtons--ListingPage content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <TakeATourButton
-              feature={RZPFeatures.PB}
-              onClick={this.resetCopyPasteCodeStatus}
-            />
+            <TakeATourButton feature={RZPFeatures.PB} onSuccess={this.resetCopyPasteCodeStatus} />
 
             <DocsLink url="https://razorpay.com/docs/subscription-button/" />
 
             {isRoleAllowedEdit && user.isSubscriptionButtonEnabledByRazorX && (
-              <span
-                class="btn btn-primary"
-                onClick={this.openSubscriptionButtonsNewPage}
-              >
+              <span class="btn btn-primary" onClick={this.openSubscriptionButtonsNewPage}>
                 <i class="i i-plus" />
                 <span>Create Subscription Button</span>
               </span>
