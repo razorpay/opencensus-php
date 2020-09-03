@@ -40,6 +40,7 @@ use RZP\Models\Payment\Metric;
 use RZP\Models\Payment\Status;
 use RZP\Models\UpiMandate\Core;
 use RZP\Models\Payment\AuthType;
+use RZP\Services\NbPlus\Service;
 use RZP\Constants\Entity as E;
 use RZP\Base\RepositoryManager;
 use RZP\Models\Admin\ConfigKey;
@@ -1280,6 +1281,17 @@ class Processor
             return;
         }
 
+        if ((Payment\Gateway::isNbPlusServiceGateway($payment->getGateway()) === true) and
+            ((Service::isNbplusSupportedMethods($method)) === true))
+        {
+            $this->handleNbPlusServiceGateways($payment, $gatewayInput);
+
+            if ($payment->getCpsRoute() === Payment\Entity::NB_PLUS_SERVICE)
+            {
+                return;
+            }
+        }
+
         if (Payment\Gateway::isCardPaymentServiceGateway($payment->getGateway()))
         {
             if ($payment->isBharatQr() === true)
@@ -1290,16 +1302,6 @@ class Processor
             $this->handleCardPaymentServiceGateways($payment, $gatewayInput);
 
             if ($payment->getCpsRoute() === Payment\Entity::CARD_PAYMENT_SERVICE)
-            {
-                return;
-            }
-        }
-
-        if (Payment\Gateway::isNbPlusServiceGateway($payment->getGateway()) === true)
-        {
-            $this->handleNbPlusServiceGateways($payment, $gatewayInput);
-
-            if ($payment->getCpsRoute() === Payment\Entity::NB_PLUS_SERVICE)
             {
                 return;
             }

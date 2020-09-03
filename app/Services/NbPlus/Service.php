@@ -30,6 +30,10 @@ class Service
     // admin path
     const ADMIN_PATH = 'admin/entities/';
 
+    const NBPLUS_SUPPORTED_PAYMENT_METHODS = [
+        Payment\Method::NETBANKING,
+    ];
+
     protected $baseUrl;
     protected $config;
     protected $trace;
@@ -420,5 +424,10 @@ class Service
         $responseBody = $this->jsonToArray($response->body);
 
         return [$responseBody, $code];
+    }
+
+    public static function isNbplusSupportedMethods($method)
+    {
+        return in_array($method, self::NBPLUS_SUPPORTED_PAYMENT_METHODS, true);
     }
 }
