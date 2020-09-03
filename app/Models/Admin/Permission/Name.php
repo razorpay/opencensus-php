@@ -255,6 +255,8 @@ class Name
     const EDIT_PARTNERS                       = 'edit_partners';
     const VIEW_PARTNERS                       = 'view_partners';
     const EDIT_REFUND                         = 'edit_refund';
+    const VIEW_COMMISSIONS                    = 'view_commissions';
+    const PARTNER_AND_SUBMERCHANT_ACTIONS     = 'partner_submerchant_actions';
     const UPDATE_REFUND_REFERENCE1            = 'update_refund_reference1';
     const UPDATE_SCROOGE_REFUND_REFERENCE1    = 'update_scrooge_refund_reference1';
     const UPDATE_PROCESSED_REFUNDS_STATUS     = 'update_processed_refunds_status';

@@ -96,6 +96,14 @@ return [
                 'description' => 'Clear on hold flag of partner commission transactions which triggers settlement',
                 'assignable'  => true,
             ],
+            Permission::VIEW_COMMISSIONS => [
+                'description' => 'View commission details of a partner',
+                'assignable'  => true,
+            ],
+            Permission::PARTNER_AND_SUBMERCHANT_ACTIONS => [
+                'description' => 'Partner and submerchant debug actions',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::MERCHANT_DETAIL => [

@@ -4186,6 +4186,12 @@ class Route
         'token_registration_tokens_authenticate'   => '*',
         'merchants_access_map_create'              => Permission::EDIT_PARTNERS,
         'merchants_access_map_delete'              => Permission::EDIT_PARTNERS,
+        'partner_referral_create'                  => Permission::EDIT_PARTNERS,
+        'update_partner_intent'                    => Permission::EDIT_PARTNERS,
+        'update_partner_type'                      => Permission::EDIT_PARTNERS,
+        'merchant_partner_configs_fetch'           => Permission::VIEW_PARTNERS,
+        'fetch_partner_intent'                     => Permission::VIEW_PARTNERS,
+        'partner_referral_fetch'                   => Permission::VIEW_PARTNERS,
         'submerchants_fetch'                       => Permission::VIEW_PARTNERS,
         'submerchants_fetch_multiple'              => Permission::VIEW_PARTNERS,
         'oauth_application_fetch_multiple'         => Permission::VIEW_PARTNERS,
@@ -4212,10 +4218,9 @@ class Route
         'get_gateway_downtime_conf'                => Permission::VIEW_GATEWAY_DOWNTIME,
         'get_redis_key'                            => '*',
         'update_redis_keys'                        => '*',
-        // TODO fix the permissions later after discussing
-        'partner_config_create'                    => '*',
-        'partner_config_fetch'                     => '*',
-        'partner_config_edit'                      => '*',
+        'partner_config_create'                    => Permission::EDIT_PARTNERS,
+        'partner_config_fetch'                     => Permission::VIEW_PARTNERS,
+        'partner_config_edit'                      => Permission::EDIT_PARTNERS,
         'vault_token_create'                       => Permission::VAULT_TOKEN_CREATE,
         'merchant_user_reset_password'             => Permission::USER_PASSWORD_RESET,
         'subscription_update_data'                 => Permission::MODIFY_SUBSCRIPTION_DATA,
@@ -4223,7 +4228,7 @@ class Route
         'subscription_charge_cycle'                => Permission::MODIFY_SUBSCRIPTION_DATA,
         'subscription_skip_cycle'                  => Permission::MODIFY_SUBSCRIPTION_DATA,
 
-        'merchant_partners_fetch'                  => '*',
+        'merchant_partners_fetch'                  => Permission::VIEW_PARTNERS,
 
         'governor_create_namespace'                => Permission::CREATE_GATEWAY_RULE,
         'governor_domain_model_list'               => Permission::VIEW_GATEWAY_RULE,
@@ -4316,10 +4321,15 @@ class Route
         'set_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
         'get_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
 
+        'commissions_get_multiple'                 => Permission::VIEW_COMMISSIONS,
+        'commissions_get'                          => Permission::VIEW_COMMISSIONS,
+        'commissions_invoice_fetch_all'            => Permission::VIEW_COMMISSIONS,
+        'commissions_invoice_fetch'                => Permission::VIEW_COMMISSIONS,
+        'commissions_invoice_generate'             => Permission::COMMISSION_CAPTURE,
         'commissions_capture'                      => Permission::COMMISSION_CAPTURE,
         'commissions_capture_by_partner'           => Permission::COMMISSION_CAPTURE,
         'commissions_bulk_capture_by_partner'      => Permission::COMMISSION_CAPTURE,
-        'commissions_get_aggregates'               => '*',
+        'commissions_get_aggregates'               => Permission::COMMISSION_PAYOUT,
         'commissions_mark_for_settlement'          => Permission::COMMISSION_PAYOUT,
 
         'merchant_restrict'                        => Permission::MERCHANT_RESTRICT,
@@ -4370,7 +4380,7 @@ class Route
         'unclaimed_merchant_poc_update'                     => '*',
         'merchant_poc_update_with_time'                     => '*',
         'merchant_poc_update'                               => '*',
-        'create_submerchant_user'                           => '*',
+        'create_submerchant_user'                           => Permission::PARTNER_AND_SUBMERCHANT_ACTIONS,
 
         'fetch_merchant_balance_configs'                    => '*',
         'get_merchant_balance_config'                       => '*',
@@ -4378,8 +4388,6 @@ class Route
         'edit_merchant_balance_config'                      => '*',
 
         'merchant_locked_balance_update'                    => Permission::EDIT_MERCHANT_HOLD_FUNDS,
-
-        'commissions_invoice_generate'              => '*',
 
         'commissions_invoice_status_change'         => Permission::COMMISSION_PAYOUT,
 
@@ -4597,7 +4605,7 @@ class Route
         'merchant_activation_save'                     => '*',
         'merchant_razorx_bulk_evaluate'                => '*',
         'merchant_razorx_evaluate'                     => '*',
-        'fetch_partner_intent'                         => '*',
+        'fetch_partner_intent'                         => Permission::VIEW_PARTNERS,
         'merchant_features_fetch'                      => '*',
         'banking_accounts_list'                        => '*',
         'merchant_fetch_config'                        => '*',
@@ -4616,9 +4624,7 @@ class Route
         'payouts_scheduled_time_slots'                 => '*',
         'user_trigger_2fa_otp'                         => '*',
 
-        // This should go away after the fix
-        // https://razorpay.atlassian.net/browse/RX-1701
-        'merchant_partner_configs_fetch'               => '*',
+        'merchant_partner_configs_fetch'               => Permission::VIEW_PARTNERS,
         'setl_holidays'                                => '*',
         'merchant_activation_update_website_status'    => '*',
 
