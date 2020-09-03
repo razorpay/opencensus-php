@@ -4594,7 +4594,7 @@ class Route
         'merchant_activation_save'                     => '*',
         'merchant_razorx_bulk_evaluate'                => '*',
         'merchant_razorx_evaluate'                     => '*',
-        'fetch_partner_intent'                         => Permission::VIEW_PARTNERS,
+        'fetch_partner_intent'                         => '*',
         'merchant_features_fetch'                      => '*',
         'banking_accounts_list'                        => '*',
         'merchant_fetch_config'                        => '*',
@@ -4613,7 +4613,7 @@ class Route
         'payouts_scheduled_time_slots'                 => '*',
         'user_trigger_2fa_otp'                         => '*',
 
-        'merchant_partner_configs_fetch'               => Permission::VIEW_PARTNERS,
+        'merchant_partner_configs_fetch'               => '*',
         'setl_holidays'                                => '*',
         'merchant_activation_update_website_status'    => '*',
 
