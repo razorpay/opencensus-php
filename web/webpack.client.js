@@ -109,18 +109,19 @@ module.exports = ({ config, project }) => {
       inject: false,
       cache: false,
       chunks: [project],
+      version: JSON.stringify(process.env.VERSION),
       templateContent: ({ htmlWebpackPlugin }) => {
-        return `window.websiteAssets = {
-        js : ${JSON.stringify(htmlWebpackPlugin.files.js)},
-        css : ${JSON.stringify(htmlWebpackPlugin.files.css)}
-      };
-      ${require(`./entry/${project}-entry`)}
-      `;
+        return `(function(){
+          var websiteAssets = {
+            js : ${JSON.stringify(htmlWebpackPlugin.files.js)},
+            css : ${JSON.stringify(htmlWebpackPlugin.files.css)}
+          };
+          var __VERSION__ = ${htmlWebpackPlugin.options.version}
+          ${require(`./entry/${project}-entry`)()}})()`;
       },
     }),
     new webpack.DefinePlugin({
       'process.env.PROJECT': JSON.stringify(project),
-      __VERSION__: JSON.stringify(process.env.VERSION),
     }),
   );
   config.plugins.shift(); //removed cleanup plugin as outputpath is common for each build

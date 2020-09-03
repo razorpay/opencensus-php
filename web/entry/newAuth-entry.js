@@ -1,14 +1,16 @@
-function executeJS() {
-  var cdnDashboardUrl = window.cdnDashboardUrl || '';
-  window.websiteAssets.js.forEach(function(src) {
-    document.write('<script src="' + cdnDashboardUrl + src + '"></script>');
-  });
-  
-  const script = document.createElement('script');
-  script.src = 'https://apis.google.com/js/api:client.js';
-  script.async = true;
-  script.defer = true;
-  document.documentElement.appendChild(script);
-}
+function NewAuthEntry() {
+  function executeJS() {
+    var cdnDashboardUrl = window.cdnDashboardUrl || '';
+    websiteAssets.js.forEach(function (src) {
+      document.write('<script src="' + cdnDashboardUrl + src + '"></script>');
+    });
 
-module.exports = `${executeJS.toString()} executeJS()`;
+    const script = document.createElement('script');
+    script.src = 'https://apis.google.com/js/api:client.js';
+    script.async = true;
+    script.defer = true;
+    document.documentElement.appendChild(script);
+  }
+  return `${executeJS.toString()} executeJS()`;
+}
+module.exports = NewAuthEntry;
