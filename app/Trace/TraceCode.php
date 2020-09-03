@@ -1290,7 +1290,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DISABLING_DINERS_FOR_MERCHANT                         = 'DISABLING_DINERS_FOR_MERCHANT';
     const MERCHANT_ONBOARD_REQUEST_DATA                         = 'MERCHANT_ONBOARD_REQUEST_DATA';
     const MERCHANT_ONBOARD_GATEWAY_NOT_FOUND_ERROR              = 'MERCHANT_ONBOARD_GATEWAY_NOT_FOUND_ERROR';
-    const MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD                = 'MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD';
     const MERCHANT_BALANCE_DEBIT_FAILURE                        = 'MERCHANT_BALANCE_DEBIT_FAILURE';
     const MERCHANT_REFUND_CREDITS_DEBIT_FAILURE                 = 'MERCHANT_REFUND_CREDITS_DEBIT_FAILURE';
     const MERCHANT_PROCESS_WHITELIST_ACTIVATION                 = 'MERCHANT_PROCESS_WHITELIST_ACTIVATION';
@@ -3153,7 +3152,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINALS_SERVICE_TERMINAL_SUBMERCHANT_ALREADY_EXISTS  = 'TERMINALS_SERVICE_TERMINAL_SUBMERCHANT_ALREADY_EXISTS';
 
     const TERMINALS_SERVICE_RAZORX_RESPONSE                     = 'TERMINALS_SERVICE_RAZORX_RESPONSE';
-    const TERMINALS_SERVICE_ONBOARD_RESPONSE                    = 'TERMINALS_SERVICE_ONBOARD_RESPONSE';
     const DB_WAIT_TIMEOUT_FILE_READ_FAILED                      = 'DB_WAIT_TIMEOUT_FILE_READ_FAILED';
     const DB_PROXY_SQL_FILE_READ_FAILED                         = 'DB_PROXY_SQL_FILE_READ_FAILED';
 
@@ -3483,7 +3481,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::CREATE_MERCHANT_DETAIL_FAILED                         => 'Merchant Detail creation failed',
         self::MERCHANT_ONBOARD_REQUEST                              => 'Merchant onboarding request initiated',
         self::MERCHANT_ONBOARD_REQUEST_FAILED                       => 'Merchant onboarding request failed',
-        self::MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD                => 'Merchant onboarding index above the set threshold',
         self::PAYMENT_TERMINAL_CREATION_ERROR                       => 'Payments terminal creation error',
         self::SUBSCRIPTION_PAYMENT_AUTHORIZE_FAILED                 => 'Subscription payment authorization failed',
         self::SUBSCRIPTION_STATE_UNEXPECTED                         => 'Unexpected state of subscription',

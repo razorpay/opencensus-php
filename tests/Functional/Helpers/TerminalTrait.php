@@ -4,6 +4,8 @@
 namespace RZP\Tests\Functional\Helpers;
 
 use Mockery;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Constants\Entity;
 
@@ -77,6 +79,22 @@ trait TerminalTrait
         $this->throwTerminalsServiceIntegrationException();
     }
 
+    protected function getHitachiOnboardResponseAndCreate(string $category, $merchantId = "10000000000000")
+    {
+        // Though in production actual terminal will be created by terminal service, but since that part is mocked,
+        // creating the terminal through code only and the mock response shd return that terminal id
+        $mockTerminal = $this->fixtures->create('terminal:direct_hitachi_terminal', ["category"=>$category, "merchant_id"=> $merchantId]);
+
+        $tid = $mockTerminal->getId();
+
+        return $this->getHitachiOnboardResponse($tid);
+    }
+
+    protected function getHitachiOnboardIntegrationErrorResponse()
+    {
+        throw new Exception\IntegrationException('Terminals service request failed with status code : 500',
+            ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR);
+    }
     protected function getSyncDeleteTerminalTerminalServiceResponse() : \Requests_Response
     {
 

@@ -1325,22 +1325,6 @@ class TerminalSelectionTest extends TestCase
 
                 }) );
 
-        // in hitachi onboarding flow, there is a function called checkDbConstraints
-        // it runs in a trasnaction block and rolls back the transaction.
-        // it is used to check if a hitach terminal with given details exist or not by trying to create a terminal
-        // however, this was causing sync of the just created terminal to terminals service
-        // later in the flow, we actually create the terminal(and not roll it back).
-        // again at this stage, the created terminal is synced to terminals service
-        // however, this call was failing because the rollback was done on API only and not on terminals service
-        // the reason for failure was "DUPLICATE_TERMINAL_EXIST"
-        // this test is to check that in the checkDbConstraints, the sync terminal entity to terminals service is not called
-        // reason we are asserting that the mock is called 2 times is because:
-        // in every migrate terminal call, we first call POST to create on terminals service
-        // then call GET on the same enntity to verify that we are able to fetch the just created terminal
-        $this->mockTerminalsServiceSendRequest(function($path, $content, $method) {
-            return $this->getDefaultTerminalServiceResponse();
-        }, 2);
-
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->fixtures->merchant->setCategory('1240');
@@ -1351,15 +1335,19 @@ class TerminalSelectionTest extends TestCase
 
         $options = new Options;
         $selector = new Selector($input, $options);
+
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+
+        $category = "1240";
+        $this->mockTerminalsServiceSendRequest(function () use($category){
+            return $this->getHitachiOnboardResponseAndCreate($category);
+        }, 1);
+
         $selectedTerminals = $selector->select();
         $this->assertEquals(1, sizeof($selectedTerminals));
-
         $terminal = $selectedTerminals[0];
 
         $this->assertEquals('hitachi', $terminal->getGateway());
-        $this->assertEquals('38RR00000010001', $terminal->getGatewayMerchantId());
-        $this->assertEquals('38R10001', $terminal->getGatewayTerminalId());
-        $this->assertEquals('1240', $terminal->getCategory());
     }
 
     public function testSkipHitachiTerminalCreationOnRun()
@@ -1381,66 +1369,6 @@ class TerminalSelectionTest extends TestCase
         // There should be no seleted terminals, not even of 'hitachi' gateway
         $this->assertEquals(1, sizeof($selectedTerminals));
         $this->assertNull($selectedTerminals[0]);
-    }
-
-    public function testBlockedMccOnHitachiTerminal()
-    {
-        $this->fixtures->merchant->setCategory(HitachiGateway::BLACKLISTED_MCC[0]);
-
-        $cardArray = [
-            'number'        => '4012001036275556',
-            'expiry_month'  => '1',
-            'expiry_year'   => '2035',
-            'cvv'           => '123',
-            'network'       => 'Visa',
-            'issuer'        => 'HDFC',
-            'name'          => 'Test',
-            'international' => false,
-        ];
-
-        $card = (new Card\Entity)->fill($cardArray);
-
-        $merchantDetailArray = [
-            'contact_name'               => 'rzp',
-            'contact_email'              => 'test@rzp.com',
-            'merchant_id'                => '10000000000000',
-            'business_operation_address' => 'Koramangala',
-            'business_operation_state'   => 'KARNATAKA',
-            'business_operation_pin'     => 560047,
-            'business_dba'               => 'test',
-            'business_name'              => 'rzp_test',
-            'business_operation_city'    => 'Bangalore',
-        ];
-
-        $this->fixtures->create('merchant_detail', $merchantDetailArray);
-
-        $paymentArray = $this->getDefaultPaymentArray();
-        unset($paymentArray['card']);
-        $paymentArray['status'] = 'created';
-        $paymentArray['method'] = 'card';
-
-        $payment       = (new Payment\Entity)->fill($paymentArray);
-        $payment->card = $card;
-
-        $merchant = Merchant\Entity::find('10000000000000');
-
-        $payment->merchant()->associate($merchant);
-
-        $input = [
-            'payment'  => $payment,
-            'merchant' => $payment->merchant
-        ];
-
-        $this->app['rzp.mode'] = Mode::TEST;
-
-        $options           = new Options;
-        $selector          = new Selector($input, $options);
-        $selectedTerminals = $selector->select();
-
-        $selectedTerminals = array_filter($selectedTerminals);
-        $this->assertEquals(1, sizeof($selectedTerminals));
-
-        $this->assertNotEquals('hitachi', $selectedTerminals[0]->getGateway());
     }
 
     public function testBlockedMccOnHitachiTerminalWithOverrideFeature()
@@ -1499,6 +1427,13 @@ class TerminalSelectionTest extends TestCase
 
         $options           = new Options;
         $selector          = new Selector($input, $options);
+
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+        $category = $merchant->getCategory();
+        $this->mockTerminalsServiceSendRequest(function () use($category){
+            return $this->getHitachiOnboardResponseAndCreate($category);
+        }, 1);
+
         $selectedTerminals = $selector->select();
 
         $selectedTerminals = array_filter($selectedTerminals);
@@ -1508,8 +1443,6 @@ class TerminalSelectionTest extends TestCase
         $terminal = $selectedTerminals[0];
 
         $this->assertEquals('hitachi', $terminal->getGateway());
-        $this->assertEquals('38RR00000010001', $terminal->getGatewayMerchantId());
-        $this->assertEquals('38R10001', $terminal->getGatewayTerminalId());
         $this->assertEquals(HitachiGateway::BLACKLISTED_MCC[0], $terminal->getCategory());
     }
 
@@ -1525,14 +1458,20 @@ class TerminalSelectionTest extends TestCase
 
         $options = new Options;
         $selector = new Selector($input, $options);
+
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+
+        $category = "0240";
+        $this->mockTerminalsServiceSendRequest(function () use($category){
+            return $this->getHitachiOnboardResponseAndCreate($category);
+        }, 1);
+
         $selectedTerminals = $selector->select();
         $this->assertEquals(1, sizeof($selectedTerminals));
 
         $terminal = $selectedTerminals[0];
 
         $this->assertEquals('hitachi', $terminal->getGateway());
-        $this->assertEquals('38RR00000010001', $terminal->getGatewayMerchantId());
-        $this->assertEquals('38R10001', $terminal->getGatewayTerminalId());
         $this->assertEquals('0240', $terminal->getCategory());
     }
 
@@ -1613,14 +1552,17 @@ class TerminalSelectionTest extends TestCase
 
         $options = new Options;
         $selector = new Selector($input, $options);
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+        $category = "4321";
+        $this->mockTerminalsServiceSendRequest(function () use($category){
+            return $this->getHitachiOnboardResponseAndCreate($category);
+        }, 1);
         $selectedTerminals = $selector->select();
         $this->assertEquals(1, sizeof($selectedTerminals));
 
         $terminal = $selectedTerminals[0];
 
         $this->assertEquals('hitachi', $terminal->getGateway());
-        $this->assertEquals('38RR00000010001', $terminal->getGatewayMerchantId());
-        $this->assertEquals('38R10001', $terminal->getGatewayTerminalId());
         $this->assertEquals('4321', $terminal->getCategory());
     }
 
@@ -1675,14 +1617,17 @@ class TerminalSelectionTest extends TestCase
 
         $options = new Options;
         $selector = new Selector($input, $options);
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+        $category = "4321";
+        $this->mockTerminalsServiceSendRequest(function () use($category){
+            return $this->getHitachiOnboardResponseAndCreate($category);
+        }, 1);
         $selectedTerminals = $selector->select();
         $this->assertEquals(1, sizeof($selectedTerminals));
 
         $terminal = $selectedTerminals[0];
 
         $this->assertEquals('hitachi', $terminal->getGateway());
-        $this->assertEquals('38RR00000010001', $terminal->getGatewayMerchantId());
-        $this->assertEquals('38R10001', $terminal->getGatewayTerminalId());
         $this->assertEquals('4321', $terminal->getCategory());
         $this->assertNotEquals($terminalA['id'], $terminal->getId());
         $this->assertNotEquals($terminalB['id'], $terminal->getId());
@@ -2319,7 +2264,14 @@ class TerminalSelectionTest extends TestCase
 
         $options = new Options;
         $selector = new Selector($input, $options);
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+        $subMerchant = (new Merchant\Repository)->findByIdAndOrgId($subMerchantId, "100000razorpay");
 
+        $category = $subMerchant->getCategory();
+
+        $this->mockTerminalsServiceSendRequest(function () use($category, $subMerchantId){
+            return $this->getHitachiOnboardResponseAndCreate($category, $subMerchantId);
+        }, 1);
         $selectedTerminals = $selector->select();
 
         $this->assertEquals(2, sizeof($selectedTerminals));

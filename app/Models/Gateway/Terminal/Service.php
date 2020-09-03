@@ -65,6 +65,7 @@ class Service extends Base\Service
             return $this->onboardMerchantsViaTerminalService($merchant, $input);
         }
 
+        // applicable only for worldline
         $gatewayProcessor = GatewayFactory::build($gateway);
 
         $merchantDetail = $merchant->merchantDetail->toArray();
@@ -97,7 +98,6 @@ class Service extends Base\Service
             $identifiers, $currency);
 
         $terminalId = $terminalServiceResp["terminal"]["id"];
-
 
         $this->trace->info(TraceCode::TERMINALS_SERVICE_RESPONSE_TERMINAL, $terminalServiceResp);
 
@@ -215,7 +215,6 @@ class Service extends Base\Service
                 return true;
             }
         }
-
         return false;
     }
 
@@ -225,24 +224,8 @@ class Service extends Base\Service
         {
             return false;
         }
-        
-        $variantFlag = $this->app->razorx->getTreatment($merchant['id'], HITACHI_ONBOARDING_TERMINAlS_SERVICE, $this->mode);
 
-        $data = [
-            'feature'   => HITACHI_ONBOARDING_TERMINAlS_SERVICE,
-            'variant'   => $variantFlag,
-        ];
-
-        $this->trace->info(TraceCode::TERMINALS_SERVICE_ONBOARD_RESPONSE, $data);
-
-        $shouldUseTerminalService = ($variantFlag === HITACHI_ONBOARDING_TERINALS_SERVICE_VARIANT ? true : false);
-
-        if ($shouldUseTerminalService === true)
-        {
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
     public function callGatewayForTerminalEnableOrDisable($terminal, $action)

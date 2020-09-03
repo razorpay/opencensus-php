@@ -799,7 +799,11 @@ class TerminalMigrationTest extends TestCase
             {
                 return $this->getTerminalsServiceResponseForEntityNotFound();
             }
-        }, 2);
+            if ($method === \Requests::POST)
+            {
+                return $this->getHitachiOnboardResponseAndCreate("1234");
+            }
+        }, 3);
 
         $tid = $this->makePaymentAndGetTerminalId();
 
@@ -924,7 +928,10 @@ class TerminalMigrationTest extends TestCase
 
     public function testDeleteTerminalWithPaymentControlVariant()
     {
-        $this->mockTerminalsServiceSendRequest(null, 0);
+        $this->mockTerminalsServiceSendRequest(null, 1);
+
+        // hitachi terminal needs to be created, otherwise one request will go for that to ts for creation
+        $this->fixtures->create('terminal:direct_hitachi_terminal');
 
         $tid = $this->makePaymentAndGetTerminalId();
 
@@ -1740,6 +1747,8 @@ class TerminalMigrationTest extends TestCase
         $this->razorxValue = 'migrate';
 
         $this->mockTerminalsServiceSendRequest(null, 0);
+
+       $this->fixtures->create('terminal:direct_hitachi_terminal', ["category"=>"5399"]);
 
         $this->doAuthPayment();
     }

@@ -45,57 +45,31 @@ class HitachiOnboardTest extends TestCase
         ];
     }
 
-    public function testOnboard()
-    {
-        $this->createMerchants();
-
-        $data =$this->getDefaultInput();
-
-        $response = $this->onboard($this->merchantId, $data);
-
-        $this->assertNotNull($response);
-
-        $this->assertEquals($response['gateway'], 'hitachi');
-
-        $this->assertEquals($response['type'], ['non_recurring', 'recurring_3ds', 'recurring_non_3ds', 'debit_recurring']);
-    }
-
     public function testOnboardFailure()
     {
-        $this->app['config']->set('hitachi_merchant_onboarding_creation.case', "2");
-
         $this->createMerchants();
 
         $data =$this->getDefaultInput();
 
         $merchantId = $this->merchantId;
 
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+
+        $this->mockTerminalsServiceSendRequest(function () {
+            return $this->getHitachiOnboardIntegrationErrorResponse();
+        }, 1);
+
         $this->makeRequestAndCatchException(
             function() use ($merchantId, $data)
             {
                 $this->onboard($merchantId, $data);
             },
-            \RZP\Exception\GatewayErrorException::class);
-    }
-
-    protected function enableRazorXTreatmentForTerminalService()
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('terminals');
+            \RZP\Exception\IntegrationException::class);
     }
 
     public function testOnboardViaTerminalService()
     {
         $this->createMerchants();
-
-        $this->enableRazorXTreatmentForTerminalService();
 
         $data =$this->getDefaultInput();
 
@@ -118,63 +92,6 @@ class HitachiOnboardTest extends TestCase
 
         $this->assertEquals(['non_recurring', 'recurring_3ds', 'recurring_non_3ds', 'debit_recurring'], $response['type']);
     }
-
-    // Should add default merchant details if not present
-    public function testOnboardWhenRequiredMerchantDetailsAreMissing()
-    {
-        $this->createMerchants();
-
-        $data = $this->getDefaultInput();
-
-        $merchant = (new MerchantRepo)->findOrFailPublic($this->merchantId);
-
-        $merchantDetail = $merchant->merchantDetail;
-
-        $merchantDetail[Detail\Entity::BUSINESS_OPERATION_ADDRESS] =  null;
-        $merchantDetail[Detail\Entity::BUSINESS_OPERATION_STATE]   =  "dasf";
-        $merchantDetail[Detail\Entity::BUSINESS_OPERATION_PIN]     =  "123";
-        $merchantDetail[Detail\Entity::BUSINESS_DBA]               =  "abc";
-        $merchantDetail[Detail\Entity::BUSINESS_NAME]              =  "xyz";
-        $merchantDetail[Detail\Entity::BUSINESS_OPERATION_CITY]    =  null;
-        $merchantDetail->save();
-
-        $response = $this->onboard($this->merchantId, $data);
-
-        $this->assertNotNull($response);
-
-        $this->assertEquals($response['gateway'], 'hitachi');
-
-        $this->assertEquals($response['type'], ['non_recurring', 'recurring_3ds', 'recurring_non_3ds', 'debit_recurring']);
-    }
-
-    // this shd fail in validation as name is mandatory
-    public function testOnboardWhenRequiredMerchantDetailsAlongWithNameAreMissing()
-    {
-        $this->createMerchants();
-
-        $data = $this->getDefaultInput();
-
-        $merchant = (new MerchantRepo)->findOrFailPublic($this->merchantId);
-
-        $merchantDetail = $merchant->merchantDetail;
-
-        $merchantDetail[Detail\Entity::BUSINESS_OPERATION_ADDRESS] =  "test Address";
-        $merchantDetail[Detail\Entity::BUSINESS_OPERATION_STATE]   =  "KA";
-        $merchantDetail[Detail\Entity::BUSINESS_OPERATION_PIN]     =  "123456";
-        $merchantDetail[Detail\Entity::BUSINESS_DBA]               =  "abc";
-        $merchantDetail[Detail\Entity::BUSINESS_NAME]              =  "";
-        $merchantDetail[Detail\Entity::BUSINESS_OPERATION_CITY]    =  "Bengaluru";
-        $merchantDetail->save();
-
-        $merchantId = $this->merchantId;
-
-        $this->makeRequestAndCatchException(
-            function() use ($merchantId, $data)
-            {
-                $this->onboard($merchantId, $data);
-            },
-            \RZP\Exception\BadRequestValidationFailureException::class);
-   }
 
     public function testMerchantDoesntExist()
     {
@@ -201,24 +118,6 @@ class HitachiOnboardTest extends TestCase
                 $this->onboard($merchant, $data);
             },
             \RZP\Exception\BadRequestValidationFailureException::class);
-    }
-
-    public function testGatewayImplementationDoesntExist()
-    {
-        $this->createMerchants();
-
-        $data = $this->getDefaultInput();
-
-        $data['gateway'] = 'upi_hulk';
-
-        $merchant = $this->merchantId;
-
-        $this->makeRequestAndCatchException(
-            function() use ($merchant, $data)
-            {
-                $this->onboard($merchant, $data);
-            },
-            \RZP\Exception\RuntimeException::class);
     }
 
     protected function onboard($id, $input)
