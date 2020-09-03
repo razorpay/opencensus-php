@@ -64,7 +64,7 @@ export default class AmountWithdraw extends React.Component {
     const { fetchSeedData } = this.props;
 
     // fetchSeedData();
-    this.fetchWithdrawalConfiguration().then((_) => this.prefillData());
+    this.fetchWithdrawalConfiguration().then(this.prefillData);
     this.fetchDestinationAccountDetails();
   }
 
@@ -312,6 +312,18 @@ export default class AmountWithdraw extends React.Component {
     }
   };
 
+  closeReasonsModal = () => {
+    this.props.closeModal();
+    this.setState(
+      {
+        isConfirmingWithdraw: false,
+        isConfirmingWithdrawalTC: false,
+        isWithdrawalTCAccepted: false,
+      },
+      this.prefillData,
+    );
+  };
+
   cancelWithdraw = () => {
     this.props.openModal({
       component: (
@@ -319,14 +331,7 @@ export default class AmountWithdraw extends React.Component {
           eventCategory="Dashboard FC - Withdraw"
           eventAction="Withdraw | Cancel | Reason"
           closeReasons={CLOSE_OPTIONS}
-          onClose={() => {
-            this.props.closeModal();
-            this.setState({
-              isConfirmingWithdraw: false,
-              isConfirmingWithdrawalTC: false,
-              isWithdrawalTCAccepted: false,
-            });
-          }}
+          onClose={this.closeReasonsModal}
         />
       ),
       size: 'small',
@@ -337,7 +342,7 @@ export default class AmountWithdraw extends React.Component {
     this.gaEventDispatcher({
       eventAction: `Withdraw | ${fromWhere}`,
     });
-    this.setState(this.initialState);
+    this.setState(this.initialState, this.prefillData);
   };
 
   toggleBreakup = () => {
