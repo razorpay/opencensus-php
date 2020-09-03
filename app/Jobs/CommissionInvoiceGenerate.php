@@ -18,6 +18,8 @@ class CommissionInvoiceGenerate extends Job
      */
     protected $queueConfigKey = 'commission';
 
+    public $timeout = 1000;
+
     /**
      * @var array
      */

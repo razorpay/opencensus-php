@@ -27,7 +27,7 @@ use RZP\Models\Admin\Permission\Name as Permission;
 class Core extends Base\Core
 {
     const MAX_ALLOWED_PDF_GEN_ATTEMPTS = 2;
-    const COMMISSION_GENERATE_MID_LIMIT = 10;
+    const COMMISSION_GENERATE_MID_LIMIT = 100;
 
     /**
      * @var PdfGenerator

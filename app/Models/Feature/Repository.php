@@ -64,7 +64,8 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery()
                       ->whereIn(Entity::NAME, $featureNames)
-                      ->where(Entity::ENTITY_TYPE, 'merchant');
+                      ->where(Entity::ENTITY_TYPE, 'merchant')
+                      ->orderBy(Entity::ID);
 
         if (empty($limit) === false)
         {
