@@ -1828,7 +1828,7 @@ class PaymentCreateTest extends TestCase
         $content = $this->doAuthPayment($payment);
         $this->assertArrayHasKey('razorpay_payment_id', $content);
         $paymentObj = $this->getLastEntity('payment', true);
-        $this->assertNull($paymentObj['gateway_captured'] );
+        $this->assertTrue($paymentObj['gateway_captured'] );
     }
 
     public function testForRupayPaymentOnCybersourceTerminalModeDual()

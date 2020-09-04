@@ -116,12 +116,7 @@ class Capture extends Job
 
             $data['network']  = $iin->getNetwork();
 
-            $data['rupay_sms'] = 'N';
-
-            if ($iin->isRupaySMS() === true)
-            {
-                $data['rupay_sms'] = 'Y';
-            }
+            $data['message_type'] = $iin->getMessageType();
         }
 
         $data['state'] = 'initiated';

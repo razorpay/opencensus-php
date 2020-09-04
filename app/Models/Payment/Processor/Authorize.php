@@ -1007,13 +1007,9 @@ trait Authorize
         if (($payment->isGatewayCaptured() === false) and
             ($payment->getGateway() === Payment\Gateway::PAYSECURE))
         {
-            if (($payment->card !== null) and
-                ($payment->card->iinRelation !== null) and
-                ($payment->card->iinRelation->isRupaySms() === true))
-            {
-                return true;
-            }
+            return true;
         }
+
         return false;
     }
 
