@@ -4,22 +4,18 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs;
 
 use App;
 
-use RZP\Error\ErrorCode;
-use RZP\Exception\LogicException;
 use RZP\Models\Merchant\AutoKyc\Processor;
-use RZP\Models\Merchant\AutoKyc\Bvs\Poi\PoiProcessor;
 
 class Factory
 {
     /**
-     * @param string $artefactType
+     * @param string $documentType
      *
      * @param array  $input
      *
      * @return Processor
-     * @throws LogicException
      */
-    public function getProcessor(string $artefactType, array $input): Processor
+    public function getProcessor(string $documentType, array $input): Processor
     {
         $app = $app = App::getFacadeRoot();
 
@@ -27,7 +23,7 @@ class Factory
 
         if ($mock === true)
         {
-            $processorMock = new ProcessorMock($input);
+            $processorMock = new DefaultProcessorMock($input, $documentType);
 
             //
             // This config is not defined in application config , this is used in test case only
@@ -39,16 +35,6 @@ class Factory
             return $processorMock;
         }
 
-        switch ($artefactType)
-        {
-            case Constant::POI :
-
-                return new PoiProcessor($input);
-
-            default:
-                throw new LogicException(ErrorCode::SERVER_ERROR_UNSUPPORTED_ARTEFACT_TYPE, null, [
-                    Constant::ARTEFACT_TYPE => $artefactType
-                ]);
-        }
+        return new DefaultProcessor($input, $documentType);
     }
 }

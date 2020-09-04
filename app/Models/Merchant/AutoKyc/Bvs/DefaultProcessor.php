@@ -1,0 +1,142 @@
+<?php
+
+namespace RZP\Models\Merchant\AutoKyc\Bvs;
+
+use App;
+
+use RZP\Error\ErrorCode;
+use RZP\Exception\LogicException;
+use RZP\Exception\IntegrationException;
+use RZP\Models\Merchant\AutoKyc\Response;
+use RZP\Models\Merchant\Detail\Constants;
+use RZP\Models\Merchant\AutoKyc\Bvs\Config\BvsConfig;
+
+class DefaultProcessor implements Processor
+{
+    protected $input;
+
+    protected $trace;
+
+    /**
+     * @var BvsConfig
+     */
+    protected $bvsRuleConfig;
+
+    const BVS_CONFIG_NAME_SPACE = 'RZP\Models\Merchant\AutoKyc\Bvs\Config';
+
+
+    /**
+     * @param array  $input
+     * @param string $documentType
+     *
+     * @throws LogicException
+     */
+    public function __construct(array $input, string $documentType)
+    {
+        $app = App::getFacadeRoot();
+
+        $this->trace = $app['trace'];
+
+        $this->input = $input;
+
+        $configClass = $this->getConfigClass($documentType);
+
+        $this->bvsRuleConfig = new $configClass();
+
+    }
+
+    /**
+     * @return array
+     */
+    public function getOwnerInput(): array
+    {
+        return [
+            Constant::PLATFORM   => Constant::PG,
+            Constant::OWNER_ID   => $this->input[Constant::OWNER_ID] ?? '',
+            Constant::OWNER_TYPE => Constant::MERCHANT,
+        ];
+    }
+
+    /**
+     * This function basically aggregates the payload together and push it to BVS client for creation of validation.
+     *
+     * @return Response
+     * @throws \ErrorException
+     * @throws IntegrationException
+     */
+    public function Process(): Response
+    {
+        $validation = [];
+
+        $validation[Constant::ARTEFACT] = $this->getArtefact();
+
+        $validation[Constant::ENRICHMENTS] = $this->getEnrichments();
+
+        $validation[Constant::RULES] = $this->getRules();
+
+        $response = (new BvsClient())->createValidation($validation);
+
+        return new BaseResponse($response);
+    }
+
+    /**
+     * @return array
+     */
+    public function getArtefact(): array
+    {
+        $artefact = $this->getOwnerInput();
+
+        $artefact[Constant::TYPE] = $this->input[Constant::ARTEFACT_TYPE] ?? '';
+
+        $artefact[Constant::NOTES] = $this->input[Constant::NOTES] ?? [];
+
+        $artefact[Constant::PROOFS] = $this->input[Constant::PROOFS] ?? [];
+
+        $artefact[Constant::IDENTIFIER] = $this->input[Constant::IDENTIFIER] ?? '';
+
+        $artefact[Constant::DETAILS] = $this->input[Constant::DETAILS] ?? [];
+
+        return $artefact;
+    }
+
+    /**
+     * @return array
+     * @throws \RZP\Exception\AssertionException
+     */
+    public function getRules(): array
+    {
+        return $this->bvsRuleConfig->getRule();
+    }
+
+    /**
+     * @return array
+     * @throws \RZP\Exception\AssertionException
+     */
+    public function getEnrichments(): array
+    {
+        return $this->bvsRuleConfig->getEnrichment();
+    }
+
+    /**
+     * @param string $documentType
+     *
+     * @return string
+     * @throws LogicException
+     */
+    private function getConfigClass(string $documentType)
+    {
+        $configClass = self::BVS_CONFIG_NAME_SPACE . '\\' . (strtoupper($documentType));
+
+        if (class_exists($configClass) === true)
+        {
+            return $configClass;
+        }
+
+        throw new LogicException(
+            ErrorCode::SERVER_ERROR_BVS_CONFIG_FILE_MISSING_FOR_DOCUMENT_TYPE,
+            null,
+            [
+                Constants::DOCUMENT_TYPE => $documentType,
+            ]);
+    }
+}

@@ -10,24 +10,24 @@ use RZP\Models\Merchant\BvsValidation\Entity;
 class Core extends Base\Core
 {
     /**
-     * all BVS Artefact verification should be triggered from this function.
+     * All BVS Artefact verification should be triggered from this function.
      * this function triggers request to bvs and creates new entry in bvs_validation table if no error
      *
      * @param string $merchantId
-     * @param string $artefactType
+     * @param string $documentType
      * @param array  $input
      */
-    public function Verify(string $merchantId, string $artefactType, array $input)
+    public function Verify(string $merchantId, string $documentType, array $input)
     {
         $input[Constant::OWNER_ID] = $merchantId;
 
         try
         {
-            $processor = (new Factory())->getProcessor($artefactType, $input);
+            $processor = (new Factory())->getProcessor($documentType, $input);
 
             $response = $processor->Process();
 
-            $validationObject = $this->getValidationObject($merchantId, $artefactType, $response);
+            $validationObject = $this->getValidationObject($merchantId, $documentType, $response);
 
             (new BvsValidation\Core())->create($validationObject);
         }
@@ -38,7 +38,7 @@ class Core extends Base\Core
     }
 
     /**
-     * this function return payload for creation of Bvs_Validation entity
+     * This function return payload for creation of Bvs_Validation entity
      *
      * @param string   $merchantID
      * @param string   $artefactType
@@ -54,6 +54,7 @@ class Core extends Base\Core
             Entity::PLATFORM      => Constant::PG,
             Entity::ARTEFACT_TYPE => $artefactType,
         ];
+
         $validationObject = array_merge($validationObject, $response->getResponseData());
 
         return $validationObject;

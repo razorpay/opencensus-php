@@ -3314,6 +3314,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CREDIT_BALANCE_CREATE_REQUEST = 'CREDIT_BALANCE_CREATE_REQUEST';
 
     const VAULT_PING_REQUEST_FAILED = 'VAULT_PING_REQUEST_FAILED';
+
     //
     // BVS related trace codes
     //

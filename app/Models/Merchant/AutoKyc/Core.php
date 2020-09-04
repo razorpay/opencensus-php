@@ -67,7 +67,16 @@ class Core extends Base\Core
 
         if ($this->shouldTriggerBvsVerification() === true)
         {
-            (new Bvs\Core())->Verify($entity->getEntityId(), Constant::POI, $input);
+            $payload = [
+                Constant::ARTEFACT_TYPE => Constant::PERSONAL_PAN,
+                Constant::IDENTIFIER    => $input[DEConstants::PAN_NUMBER],
+                Constant::DETAILS       => [
+                    Constant::PAN_NUMBER => $input[DEConstants::PAN_NUMBER],
+                    Constant::NAME       => $input[DEConstants::PROMOTER_PAN_NAME],
+                ],
+            ];
+
+            (new Bvs\Core())->Verify($entity->getEntityId(), DEConstants::POI, $payload);
         }
 
         $response = $this->process($poiInput, DEConstants::POI);

@@ -9,6 +9,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Exception\AssertionException;
 use RZP\Exception\BadRequestException;
+use Google\Protobuf\Struct as ProtobufStuct;
 
 /**
  * getallheaders() polyfill for nginx servers
@@ -1054,5 +1055,22 @@ if (!function_exists('wrap_db_table'))
         return collect($segments)->map(function ($segment, $key) use ($segments) {
             return '`'. $segment .'`';
         })->implode('.');
+    }
+}
+
+if (!function_exists('get_Protobuf_Struct'))
+{
+    /**
+     * Convert Array to Google\Protobuf\Struct type
+     */
+    function get_Protobuf_Struct(array $arr): ProtobufStuct
+    {
+        $detailsJsonString = json_encode($arr);
+
+        $struct = new ProtobufStuct();
+
+        $struct->mergeFromJsonString($detailsJsonString);
+
+        return $struct;
     }
 }

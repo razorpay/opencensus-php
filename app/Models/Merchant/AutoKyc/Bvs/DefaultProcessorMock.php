@@ -7,7 +7,7 @@ use RZP\Exception\IntegrationException;
 use RZP\Models\Merchant\AutoKyc\Response;
 use Rzp\Bvs\Validation\V1\ValidationResponse;
 
-class ProcessorMock extends BaseProcessor
+class DefaultProcessorMock extends DefaultProcessor
 {
     private $mockStatus;
 
@@ -48,20 +48,5 @@ class ProcessorMock extends BaseProcessor
     public function setMockStatus(string $mockStatus)
     {
         $this->mockStatus = $mockStatus;
-    }
-
-    public function GetArtefact(): array
-    {
-        return [];
-    }
-
-    public function GetEnrichments(): array
-    {
-        return [];
-    }
-
-    public function GetRules(): array
-    {
-        return [];
     }
 }

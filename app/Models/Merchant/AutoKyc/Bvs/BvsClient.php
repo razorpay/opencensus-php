@@ -63,10 +63,60 @@ class BvsClient
      * @throws ErrorException
      * @throws IntegrationException
      */
-    public function CreateValidation(array $validation)
+    public function createValidation(array $validation)
     {
         $this->trace->info(TraceCode::BVS_CREATE_VALIDATION_REQUEST, ['artefact' => $validation['artefact']]);
 
+        $validationCreateRequest = $this->getCreateValidationRequest($validation);
+
+        $requestSuccess = false;
+
+        $artefactType = $validation[Constant::ARTEFACT][Constant::ARTEFACT_TYPE] ?? '';
+
+        try
+        {
+            $response = $this->ValidationApiClient->CreateValidation($this->apiClientCtx, $validationCreateRequest);
+
+            $requestSuccess = true;
+
+            $this->trace->count(
+                Metric::BVS_REQUEST_TOTAL,
+                [
+                    Constant::ARTEFACT_TYPE => $artefactType,
+                ]);
+
+            $this->trace->info(
+                TraceCode::BVS_CREATE_VALIDATION_RESPONSE,
+                ['response' => $response->serializeToJsonString()]);
+
+            return $response;
+        }
+        catch (Error $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::BVS_INTEGRATION_ERROR, $e->getMetaMap());
+
+            throw new IntegrationException('
+                Could not receive proper response from BVS service');
+        }
+        finally
+        {
+            $dimension = [
+                Constant::ARTEFACT_TYPE => $artefactType,
+                Constant::SUCCESS       => $requestSuccess,
+            ];
+
+            $this->trace->count(Metric::BVS_RESPONSE_TOTAL, $dimension);
+        }
+    }
+
+    /**
+     * @param array $validation
+     *
+     * @return validationV1\CreateValidationRequest
+     * @throws ErrorException
+     */
+    protected function getCreateValidationRequest(array $validation): validationV1\CreateValidationRequest
+    {
         $createValidation = new validationV1\CreateValidationRequest();
 
         $artefact = $this->NewArtefact($validation[Constant::ARTEFACT]);;
@@ -81,25 +131,7 @@ class BvsClient
 
         $createValidation->setRules($rules);
 
-        try
-        {
-            $response = $this->ValidationApiClient->CreateValidation($this->apiClientCtx, $createValidation);
-
-            $this->trace->count(Metric::BVS_REQUEST_SUCCESS_TOTAL);
-
-            $this->trace->info(TraceCode::BVS_CREATE_VALIDATION_RESPONSE, ['response' => $response->serializeToJsonString()]);
-
-            return $response;
-        }
-        catch (Error $e)
-        {
-            $this->trace->traceException($e, null, TraceCode::BVS_INTEGRATION_ERROR, $e->getMetaMap());
-
-            $this->trace->count(Metric::BVS_REQUEST_FAILED_TOTAL);
-
-            throw new IntegrationException('
-                Could not receive proper response from BVS service');
-        }
+        return $createValidation;
     }
 
     /**
@@ -108,19 +140,42 @@ class BvsClient
      * @return validationV1\Artefact
      * @throws \Exception
      */
-    private function NewArtefact(array $artefactArray)
+    private function NewArtefact(array $artefactArray): validationV1\Artefact
     {
-        $detailsJsonString = json_encode($artefactArray[Constant::DETAILS]);
-
-        $details = new Struct();
-
-        $details->mergeFromJsonString($detailsJsonString);
+        $details = get_Protobuf_Struct($artefactArray[Constant::DETAILS]);
+        $notes   = get_Protobuf_Struct($artefactArray[Constant::NOTES]);
+        $proof   = $this->getProof($artefactArray[Constant::PROOFS]);
 
         $artefactArray[Constant::DETAILS] = $details;
+        $artefactArray[Constant::NOTES]   = $notes;
+        $artefactArray[Constant::PROOFS]  = $proof;
 
         $artefact = new validationV1\Artefact($artefactArray);
 
         return $artefact;
+    }
+
+    /**
+     * @param array $proofsArr
+     *
+     * @return MapField
+     * @throws ErrorException
+     */
+    private function getProof(array $proofsArr): MapField
+    {
+        $proofs = new MapField(
+            GPBType::INT32,
+            GPBType::MESSAGE,
+            validationV1\ProofDetails::class);
+
+        foreach ($proofsArr as $key => $proofDetailsArr)
+        {
+            $proofDetails = new validationV1\ProofDetails($proofDetailsArr);
+
+            $proofs->offsetSet($key, $proofDetails);
+        }
+
+        return $proofs;
     }
 
     /**
@@ -129,9 +184,12 @@ class BvsClient
      * @return MapField
      * @throws ErrorException
      */
-    private function NewEnrichments(array $enrichments)
+    private function NewEnrichments(array $enrichments): MapField
     {
-        $enrichmentMap = new MapField(GPBType::STRING, GPBType::MESSAGE, validationV1\Fields::class);
+        $enrichmentMap = new MapField(
+            GPBType::STRING,
+            GPBType::MESSAGE,
+            validationV1\Fields::class);
 
         foreach ($enrichments as $key => $fields)
         {
@@ -153,7 +211,7 @@ class BvsClient
      * @return validationV1\Rules
      * @throws ErrorException
      */
-    private function NewRules(array $rules)
+    private function NewRules(array $rules): validationV1\Rules
     {
         $ruleList = $rules['rules_list'];
 
@@ -170,9 +228,12 @@ class BvsClient
      * @return MapField
      * @throws ErrorException
      */
-    private function getRuleList(array $ruleList)
+    private function getRuleList(array $ruleList): MapField
     {
-        $rulesListMapField = new MapField(GPBType::INT32, GPBType::MESSAGE, validationV1\Rule::class);
+        $rulesListMapField = new MapField(
+            GPBType::INT32,
+            GPBType::MESSAGE,
+            validationV1\Rule::class);
 
         foreach ($ruleList as $key => $rule)
         {
@@ -190,7 +251,7 @@ class BvsClient
      * @return validationV1\Rule
      * @throws \Exception
      */
-    private function NewRule(array $rule)
+    private function NewRule(array $rule): validationV1\Rule
     {
         $ruleDef = json_encode($rule['rule_def']);
 

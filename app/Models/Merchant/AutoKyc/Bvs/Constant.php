@@ -18,6 +18,8 @@ class Constant
     const PLATFORM    = 'platform';
     const OWNER_ID    = 'owner_id';
     const OWNER_TYPE  = 'owner_type';
+    const PROOFS      = 'proofs';
+    const NOTES       = 'notes';
 
     //
     // Response fields
@@ -25,11 +27,14 @@ class Constant
     const VALIDATION_ID = 'validation_id';
     const STATUS        = 'status';
 
-    const POI = 'poi';
-
+    //
+    // Artefact types in BVS
+    //
     const PERSONAL_PAN = 'personal_pan';
-    const PG           = 'pg';
-    const MERCHANT     = 'merchant';
+    const AADHAAR      = 'aadhaar';
+
+    const PG       = 'pg';
+    const MERCHANT = 'merchant';
 
     const ARTEFACT_TYPE = 'aretafct_type';
 

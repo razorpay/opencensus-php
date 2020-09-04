@@ -1,0 +1,18 @@
+<?php
+
+namespace RZP\Models\Merchant\AutoKyc\Bvs\Config;
+
+interface BvsConfig
+{
+    /**
+     * @return array
+     * @throws \RZP\Exception\AssertionException
+     */
+    public function getRule();
+
+    /**
+     * @return array
+     * @throws \RZP\Exception\AssertionException
+     */
+    public function getEnrichment();
+}
