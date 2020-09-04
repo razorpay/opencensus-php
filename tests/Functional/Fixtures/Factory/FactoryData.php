@@ -1484,5 +1484,15 @@ final class FactoryData
                'updated_at'        => $faker->timestamp,
             ]
         );
+
+        $factory(\RZP\Models\PayoutSource\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'payout_id'   => 'factory:\RZP\Models\Payout\Entity',
+            'source_id'   => '10000000000000',
+            'source_type' => 'vendor_payment',
+            'priority'    => 1,
+            'created_at'  => $faker->timestamp,
+            'updated_at'  => $faker->timestamp,
+        ]);
     }
 }

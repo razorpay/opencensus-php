@@ -1217,4 +1217,6 @@ class PublicErrorDescription
 
     const BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INCORRECT_BALANCE_TYPE                = 'Only Banking type balance is allowed.';
     const BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INVALID_BALANCE_ID                    = 'Invalid balance id, no db records found.';
+
+    const PAYOUT_SOURCE_ALREADY_EXISTS                                              = 'A source with same priority already exists';
 }

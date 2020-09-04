@@ -98,6 +98,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Merchant\BvsValidation\Repository            $bvs_validation
  * @property Models\UpiTransfer\Repository                       $upi_transfer
  * @property Models\UpiTransferRequest\Repository                $upi_transfer_request
+ * @property Models\PayoutSource\Repository                      $payout_source
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

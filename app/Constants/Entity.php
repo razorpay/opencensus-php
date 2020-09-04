@@ -78,6 +78,7 @@ class Entity
     const FEE_BREAKUP                = 'fee_breakup';
     const UPI_MANDATE                = 'upi_mandate';
     const PAYOUT_LINK                = 'payout_link';
+    const PAYOUT_SOURCE              = 'payout_source';
     const SETTINGS                   = 'settings';
     const FEE_RECOVERY               = 'fee_recovery';
     const LEGAL_ENTITY               = 'legal_entity';

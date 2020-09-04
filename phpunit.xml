@@ -61,6 +61,7 @@
           <exclude>./tests/Functional/Admin/GroupEsTest.php</exclude>
           <exclude>./tests/Functional/PaymentsUpi</exclude>
           <exclude>./tests/Functional/FeeRecovery/</exclude>
+          <exclude>./tests/Functional/PayoutSource/</exclude>
       </testsuite>
       <testsuite name="Features-1 Test Suite">
           <directory>./tests/Functional/Currency/</directory>
@@ -102,6 +103,7 @@
           <directory>./tests/Functional/Setting/</directory>
           <directory>./tests/Functional/Settlement/</directory>
           <directory>./tests/Functional/Storage/</directory>
+          <directory>./tests/Functional/PayoutSource/</directory>
       </testsuite>
       <testsuite name = "Features-4 Test Suite">
           <directory>./tests/Functional/Tax/</directory>

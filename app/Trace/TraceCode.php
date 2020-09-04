@@ -3356,6 +3356,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const UNKNOWN_CRITERIA_SENT_FOR_COUNTER_DECREMENT         = 'UNKNOWN_CRITERIA_SENT_FOR_COUNTER_DECREMENT';
 
+    const PAYOUT_SOURCE_ENTITY_CREATE_REQUEST                 = 'PAYOUT_SOURCE_ENTITY_CREATE_REQUEST';
+    const PAYOUT_SOURCE_ENTITY_CREATED                        = 'PAYOUT_SOURCE_ENTITY_CREATED';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
