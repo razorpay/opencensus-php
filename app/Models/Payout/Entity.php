@@ -97,6 +97,7 @@ class Entity extends Base\PublicEntity
     const PRICING_RULE_ID        = 'pricing_rule_id';
     const FEE_TYPE               = 'fee_type';
     const WORKFLOW_FEATURE       = 'workflow_feature';
+    const ORIGIN                 = 'origin';
 
     // scheduled_at is the timestamp for when the merchant schedules the payout to be processed
     const SCHEDULED_AT           = 'scheduled_at';
@@ -201,6 +202,19 @@ class Entity extends Base\PublicEntity
           self::ALL_TIME
     ];
 
+    const API       = 'api';
+    const DASHBOARD = 'dashboard';
+
+    const ORIGIN_DESERIALIZER = [
+        1 => self::API,
+        2 => self::DASHBOARD,
+    ];
+
+    const ORIGIN_SERIALIZER = [
+        self::API       => 1,
+        self::DASHBOARD => 2,
+    ];
+
     protected $queueFlag = false;
 
     protected $composite = false;
@@ -263,6 +277,7 @@ class Entity extends Base\PublicEntity
         self::FEE_TYPE,
         self::SCHEDULED_AT,
         self::SCHEDULED_ON,
+        self::ORIGIN,
     ];
 
     protected $visible = [
@@ -318,6 +333,7 @@ class Entity extends Base\PublicEntity
         self::WORKFLOW_FEATURE,
         self::SCHEDULED_AT,
         self::SCHEDULED_ON,
+        self::ORIGIN,
     ];
 
     protected $public = [
@@ -359,6 +375,7 @@ class Entity extends Base\PublicEntity
         self::FEE_TYPE,
         self::SCHEDULED_AT,
         self::SCHEDULED_ON,
+        self::ORIGIN,
     ];
 
     protected $webhook = [
@@ -416,6 +433,7 @@ class Entity extends Base\PublicEntity
         self::BATCH_ID,
         self::TRANSACTION,
         self::SCHEDULED_ON,
+        self::ORIGIN,
     ];
 
     protected $defaults = [
@@ -438,6 +456,7 @@ class Entity extends Base\PublicEntity
         self::PRICING_RULE_ID   => null,
         self::FEE_TYPE          => null,
         self::WORKFLOW_FEATURE  => null,
+        self::ORIGIN            => self::API,
     ];
 
     protected $amounts = [
@@ -962,6 +981,11 @@ class Entity extends Base\PublicEntity
         return $this->expectedFeeType;
     }
 
+    public function getOrigin()
+    {
+        return $this->getAttribute(self::ORIGIN);
+    }
+
     // ============================= END GETTERS =============================
 
     // ============================= SETTERS =============================
@@ -1220,6 +1244,11 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setOrigin($origin)
+    {
+        $this->setAttribute(self::ORIGIN, $origin);
+    }
+
     // ============================= END SETTERS =============================
 
     // ============================= MUTATORS =============================
@@ -1262,6 +1291,13 @@ class Entity extends Base\PublicEntity
         Metric::pushStatusChangeMetrics($this, $previousStatus);
     }
 
+    public function setOriginAttribute($origin)
+    {
+        $origin = self::ORIGIN_SERIALIZER[$origin];
+
+        $this->attributes[self::ORIGIN] = $origin;
+    }
+
     // ============================= END MUTATORS =============================
 
     // ============================= ACCESSORS =============================
@@ -1281,6 +1317,13 @@ class Entity extends Base\PublicEntity
     public function getInternalStatusAttribute()
     {
         return $this->getStatus();
+    }
+
+    public function getOriginAttribute()
+    {
+        $origin = $this->attributes[self::ORIGIN];
+
+        return self::ORIGIN_DESERIALIZER[$origin];
     }
 
     // ============================= END ACCESSORS =============================
@@ -1656,6 +1699,14 @@ class Entity extends Base\PublicEntity
         if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
         {
             unset($attributes[self::REJECTED_AT]);
+        }
+    }
+
+    public function setPublicOriginAttribute(array & $attributes)
+    {
+        if (app('basicauth')->isStrictPrivateAuth() === true)
+        {
+            unset($attributes[self::ORIGIN]);
         }
     }
 

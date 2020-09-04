@@ -5087,6 +5087,12 @@ class PayoutTest extends TestCase
         $this->assertEquals(Payout\Status::BATCH_SUBMITTED, $payouts[1]['status']);
         $this->assertEquals(Payout\Status::CREATED, $payouts[2]['status']);
         $this->assertEquals(Payout\Status::CREATED, $payouts[3]['status']);
+
+        // Assert that origin of all 4 payouts is dashboard
+        $this->assertEquals(Payout\Entity::DASHBOARD, $payouts[0][Payout\Entity::ORIGIN]);
+        $this->assertEquals(Payout\Entity::DASHBOARD, $payouts[1][Payout\Entity::ORIGIN]);
+        $this->assertEquals(Payout\Entity::DASHBOARD, $payouts[2][Payout\Entity::ORIGIN]);
+        $this->assertEquals(Payout\Entity::DASHBOARD, $payouts[3][Payout\Entity::ORIGIN]);
     }
 
     public function testProcessBulkPayoutDelayedInitiation()
@@ -6755,6 +6761,116 @@ class PayoutTest extends TestCase
 
     public function testSkipWorkflowKeyWithoutBoolean()
     {
+        $this->startTest();
+    }
+
+    public function testCreatePayoutWithoutOriginFieldPrivateAuth()
+    {
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(Payout\Entity::API, $payout->getOrigin());
+
+        $this->assertFalse(array_key_exists(Payout\Entity::ORIGIN, $payout->toArrayPublic()));
+    }
+
+    public function testCreatePayoutWithOriginFieldPrivateAuth()
+    {
+        $this->startTest();
+    }
+
+    public function testCreatePayoutWithoutOriginFieldProxyAuth()
+    {
+        $testData = $this->testData['testCreatePayoutWithoutOriginFieldPrivateAuth'];
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']   = '0007';
+
+        $testData['response']['content']['origin'] = Payout\Entity::DASHBOARD;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testCreatePayoutWithCorrectOriginFieldProxyAuth()
+    {
+        $testData                                 = $this->testData['testCreatePayoutWithoutOriginFieldPrivateAuth'];
+        $testData['request']['url']               = '/payouts_with_otp';
+        $testData['request']['content']['token']  = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']    = '0007';
+        $testData['request']['content']['origin'] = Payout\Entity::DASHBOARD;
+
+        $testData['response']['content']['origin'] = Payout\Entity::DASHBOARD;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testCreatePayoutWithIncorrectOriginFieldProxyAuth()
+    {
+        $testData                                 = $this->testData['testCreatePayoutWithOriginFieldPrivateAuth'];
+        $testData['request']['url']               = '/payouts_with_otp';
+        $testData['request']['content']['token']  = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']    = '0007';
+
+        $testData['response']['content']['error']['description'] = 'The selected origin is invalid.';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testCreateVendorPaymentPayoutWithOrigin()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutLinkPayoutWithOrigin()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $testData = $this->testData['testCreateVendorPaymentPayoutWithOrigin'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testCreateVendorPaymentPayoutWithoutOrigin()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $testData = $this->testData['testCreateVendorPaymentPayoutWithOrigin'];
+
+        unset($testData['request']['content']['origin']);
+
+        $testData['response']['content']['origin'] = Payout\Entity::API;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutLinkPayoutWithoutOrigin()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $testData = $this->testData['testCreateVendorPaymentPayoutWithOrigin'];
+
+        unset($testData['request']['content']['origin']);
+
+        $testData['response']['content']['origin'] = Payout\Entity::API;
+
+        $this->testData[__FUNCTION__] = $testData;
+
         $this->startTest();
     }
 }

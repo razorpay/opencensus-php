@@ -14,6 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\FundAccount;
 use RZP\Models\FundTransfer\Mode;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\ExtraFieldsException;
 use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\FundTransfer\Attempt\Constants;
@@ -36,6 +37,8 @@ class Validator extends Base\Validator
 
     const BEFORE_CREATE_FUND_ACCOUNT_PAYOUT = 'before_create_fund_account_payout';
 
+    const BEFORE_CREATE_FUND_ACCOUNT_PAYOUT_WITH_OTP = 'before_create_fund_account_payout_with_otp';
+
     // The max payout amount allowed for merchant payouts is 80 L
     const MAX_LIMIT_MERCHANT_PAYOUT_AMOUNT = 800000000;
 
@@ -52,6 +55,8 @@ class Validator extends Base\Validator
     const PROCESS_SCHEDULED_PAYOUTS = 'process_scheduled_payouts';
 
     const PAYOUT_STATUS_MANUAL = 'payout_status_manual';
+
+    const ACCEPTED_ORIGIN_VALUES = 'accepted_origin_values';
 
     //
     // This is required for build. Currently, build does not
@@ -75,6 +80,7 @@ class Validator extends Base\Validator
         Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
         Entity::IDEMPOTENCY_KEY      => 'sometimes|nullable|string',
         Entity::SCHEDULED_AT         => 'sometimes|filled|epoch',
+        Entity::ORIGIN               => 'sometimes|filled',
     ];
 
     protected static $fundAccountPayoutCompositeRules = [
@@ -111,6 +117,7 @@ class Validator extends Base\Validator
         Entity::PAYOUT_LINK_ID       => 'sometimes|filled|public_id',
         Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
         Entity::SCHEDULED_AT         => 'sometimes|filled|epoch|custom',
+        Entity::ORIGIN               => 'sometimes|filled',
     ];
 
     protected static $customerWalletPayoutRules = [
@@ -127,6 +134,15 @@ class Validator extends Base\Validator
     protected static $beforeCreateFundAccountPayoutRules = [
         Entity::FUND_ACCOUNT_ID => 'required_without:fund_account|public_id',
         Entity::FUND_ACCOUNT    => 'required_without:fund_account_id|array',
+        Entity::ORIGIN          => 'sometimes|filled',
+    ];
+
+    protected static $beforeCreateFundAccountPayoutWithOtpRules = [
+        Entity::ORIGIN => 'sometimes|filled|in:' . Entity::DASHBOARD,
+    ];
+
+    protected static $beforeCreateFundAccountPayoutValidators = [
+        'origin'
     ];
 
     // Both regular(type:default) and on demand(type:on_demand) payouts are validated through merchantPayoutRules.
@@ -714,6 +730,63 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 "Only true is valid for skip_workflow key.",
                 'skip_workflow');
+        }
+    }
+
+    protected function validateOrigin($input)
+    {
+        if (isset($input[Entity::ORIGIN]) === true)
+        {
+            if (isset($input[Entity::FUND_ACCOUNT]) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "Origin field is/are not required and should not be sent.",
+                    Entity::ORIGIN,
+                    [
+                        Entity::ORIGIN => $input[Entity::ORIGIN],
+                    ]
+                );
+            }
+
+            $origin = $input[Entity::ORIGIN];
+
+            $this->validateIfOriginShouldBeSentBasedOnAuth($origin);
+
+            $origin               = strtolower($origin);
+            $acceptedOriginValues = array_keys(Entity::ORIGIN_SERIALIZER);
+
+            if (in_array($origin, $acceptedOriginValues) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "Invalid origin.",
+                    Entity::ORIGIN,
+                    [
+                        Entity::ORIGIN               => $origin,
+                        self::ACCEPTED_ORIGIN_VALUES => $acceptedOriginValues,
+                    ]
+                );
+            }
+        }
+    }
+
+    protected function validateIfOriginShouldBeSentBasedOnAuth($origin)
+    {
+        $app = App::getFacadeRoot();
+
+        /** @var BasicAuth $auth */
+        $auth = $app['basicauth'];
+
+        $auth->isInternalApp();
+
+        if ((new Service)->isAllowedInternalApp() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Origin field is/are not required and should not be sent.",
+                Entity::ORIGIN,
+                [
+                    Entity::ORIGIN => $origin,
+                ]
+            );
         }
     }
 }

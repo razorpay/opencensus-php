@@ -179,6 +179,9 @@ class CreatePayoutsTable extends Migration
             $table->tinyInteger(Payout::WORKFLOW_FEATURE)
                   ->nullable();
 
+            $table->tinyInteger(Payout::ORIGIN)
+                  ->default(1);
+
             $table->integer(Payout::CREATED_AT);
 
             $table->integer(Payout::UPDATED_AT);

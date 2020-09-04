@@ -123,7 +123,7 @@ class Service extends Base\Service
         return $payout->toArrayPublic();
     }
 
-    protected function isAllowedInternalApp(): bool
+    public function isAllowedInternalApp(): bool
     {
         return $this->auth->isPayoutLinkApp() or
                $this->auth->isVendorPaymentApp();
@@ -281,6 +281,14 @@ class Service extends Base\Service
 
         // Only allowed for Rx payouts, mandates account number
         $this->processAccountNumber($payoutInput);
+
+        (new Validator)->setStrictFalse()
+                       ->validateInput(Validator::BEFORE_CREATE_FUND_ACCOUNT_PAYOUT_WITH_OTP, $input);
+
+        if (isset($payoutInput[Entity::ORIGIN]) === false)
+        {
+            $payoutInput[Entity::ORIGIN] = Entity::DASHBOARD;
+        }
 
         $payout = $this->core->createPayoutToFundAccount($payoutInput, $this->merchant);
 

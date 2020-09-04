@@ -54,6 +54,8 @@ class BatchHelper
 
         $input[PayoutModel\Entity::NOTES] = self::formatNotesInput($input[PayoutModel\Entity::NOTES]);
 
+        $input[PayoutModel\Entity::ORIGIN] = PayoutModel\Entity::DASHBOARD;
+
         // Returns removing attributes with empty values.
         return array_filter($input);
     }

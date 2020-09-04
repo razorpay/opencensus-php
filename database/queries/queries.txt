@@ -5963,3 +5963,6 @@ ALTER TABLE payment_analytics
 ALTER TABLE paper_mandates
 	ADD COLUMN generated_form_url varchar(255),
 	ADD COLUMN generated_form_url_expire int(11);
+
+ALTER TABLE payouts
+    ADD COLUMN origin TINYINT(1) default 1;
