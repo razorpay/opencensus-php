@@ -837,6 +837,36 @@ class AdminTest extends TestCase
         );
     }
 
+    public function testTaxPaymentAdminRouteHitsServiceMethod()
+    {
+        $token = $this->createAdminWithRedisConfigPermissions([
+                                                                  'tax_payment_admin_auth_execute'
+                                                              ]);
+
+        $this->ba->adminAuth('test', $token);
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
+
+        $tpMock->shouldReceive('adminActions')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('adminActions');
+    }
+
+    public function testTaxPaymentAdminRouteFailsWithoutPermission()
+    {
+        $token = $this->createAdminWithRedisConfigPermissions([
+                                                                  'some_other_permission'
+                                                              ]);
+
+        $this->ba->adminAuth('test', $token);
+
+        $this->startTest();
+    }
+
     public function testConfigKeysSetWithSpecificKeyPermissions()
     {
         $token = $this->createAdminWithRedisConfigPermissions([

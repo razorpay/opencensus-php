@@ -14,6 +14,11 @@ class TaxPaymentController extends Controller
         $this->service = $this->app['tax-payments'];
     }
 
+    public function adminActions()
+    {
+        return $this->service->adminActions($this->input);
+    }
+
     public function enabledMerchantSettings()
     {
         return $this->service->settingsOfTaxPaymentEnabledMerchants();

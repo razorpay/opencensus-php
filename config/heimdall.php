@@ -912,6 +912,13 @@ return [
             ],
         ],
 
+        PermissionCategory::RAZORPAYX_APPS => [
+            Permission::TAX_PAYMENT_ADMIN_AUTH_EXECUTE => [
+                'description' => 'Allow executing admin tax-payment apis',
+                'assignable'  => true,
+            ]
+        ],
+
         PermissionCategory::RAZORPAY_CAPITAL => [
             Permission::LOANS_EDIT => [
                 'description' => 'Allow access to capital-los service routes/actions from dashboard',

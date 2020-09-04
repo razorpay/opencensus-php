@@ -33,6 +33,7 @@ class Category
     const SUBSCRIPTIONS     			= 'subscriptions';
     const RAZORPAYX_BANKING 			= 'razorpayx_banking';
     const RAZORPAY_CAPITAL              = 'razorpay_capital';
+    const RAZORPAYX_APPS                = 'razorpayx_apps';
     const PAYOUTS           			= 'payouts';
     const FUND_ACCOUNT_VALIDATION       = 'fund_account_validation';
     const P2P             			    = 'p2p';

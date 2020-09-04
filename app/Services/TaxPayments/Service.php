@@ -33,6 +33,7 @@ class Service
     const PAY_TAX_PAYMENTS         = 'PayTaxPayment';
     const BULK_PAY_TAX_PAYMENTS    = 'BulkPayTaxPayments';
     const INITIATE_MONTHLY_PAYOUTS = 'InitiateMonthlyPayouts';
+    const ADMIN_ACTIONS            = 'AdminActions';
     const EMAIL_CRON               = 'EmailCron';
     const TAX_PAYMENT_ENABLED_KEY  = 'tax_payment_enabled';
     const MARK_AS_PAID             = 'MarkAsPaid';
@@ -142,6 +143,35 @@ class Service
             }
         }
         return $settingsOfEnabledMerchants;
+    }
+
+    public function adminActions(array $input)
+    {
+        // we are expecting a json string in the body here
+        $jsonInput = array_pull($input, 'json_data', null);
+
+        if ($jsonInput === null )
+        {
+            return ['message' => 'empty data'];
+        }
+
+        $parsedData = json_decode($jsonInput, true);
+
+        if ($parsedData == null)
+        {
+            return ['message' => 'json could not be decoded'];
+        }
+
+        if (empty($_FILES) === false)
+        {
+            $parsedData['file'] = base64_encode(file_get_contents($_FILES['file']['tmp_name']));
+
+            $parsedData['file_name'] = $_FILES['file']['name'];
+        }
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::ADMIN_ACTIONS);
+
+        return $this->makeRequest(null, $url, $parsedData);
     }
 
     public function initiateMonthlyPayouts()

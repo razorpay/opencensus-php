@@ -397,8 +397,8 @@ return [
         'response' => [
             'content' => [
                 [
-                    'merchant_id' => '200DemoAccount',
-                    'settings'    => [
+                    'merchant_id'     => '200DemoAccount',
+                    'settings'        => [
                         'tax_payment_enabled'                => '1',
                         'merchant_auto_debit_account_number' => '2224440041626905',
                     ],
@@ -482,7 +482,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
-    'testSendEmailDataFieldRequired'                                            => [
+    'testSendEmailDataFieldRequired'                                      => [
         'request'   => [
             'method'  => 'POST',
             'url'     => '/tax-payments/sendMail',
@@ -504,7 +504,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
-    'testSendEmailSubjectFieldRequired'                                            => [
+    'testSendEmailSubjectFieldRequired'                                   => [
         'request'   => [
             'method'  => 'POST',
             'url'     => '/tax-payments/sendMail',
@@ -527,7 +527,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
-    'testSendEmailTemplateFieldRequired'                                            => [
+    'testSendEmailTemplateFieldRequired'                                  => [
         'request'   => [
             'method'  => 'POST',
             'url'     => '/tax-payments/sendMail',
@@ -563,15 +563,15 @@ return [
             ]
         ]
     ],
-    'testTaxPaymentMarkAsPaid'                                                => [
+    'testTaxPaymentMarkAsPaid'                                            => [
         'request'  => [
-            'method' => 'POST',
+            'method'  => 'POST',
             'server'  => [
                 'HTTP_X-Dashboard-User-Id' => '20000000000000',
             ],
-            'url'    => '/tax-payments/mark-as-paid',
+            'url'     => '/tax-payments/mark-as-paid',
             'content' => [
-                'tax_payment_id' => ['txpy_F2qwMZe97QTGG1'],
+                'tax_payment_id'         => ['txpy_F2qwMZe97QTGG1'],
                 'manually_paid_metadata' => [
                     'notes1' => 'smoething'
                 ],
@@ -581,13 +581,13 @@ return [
             'content' => []
         ]
     ],
-    'testTaxPaymentUploadChallan'                                                => [
+    'testTaxPaymentUploadChallan'                                         => [
         'request'  => [
-            'method' => 'POST',
+            'method'  => 'POST',
             'server'  => [
                 'HTTP_X-Dashboard-User-Id' => '20000000000000',
             ],
-            'url'    => '/tax-payments/upload-challan',
+            'url'     => '/tax-payments/upload-challan',
             'content' => [
             ],
         ],
@@ -595,7 +595,7 @@ return [
             'content' => []
         ]
     ],
-    'testTaxPaymentEditTp'                                       => [
+    'testTaxPaymentEditTp'                                                => [
         'request'  => [
             'method' => 'POST',
             'url'    => '/tax-payments/txpy_1234/edit',
@@ -604,14 +604,14 @@ return [
             'content' => []
         ]
     ],
-    'testTaxPaymentMarkAsPaidNegative'                                                => [
-        'request'  => [
-            'method' => 'POST',
+    'testTaxPaymentMarkAsPaidNegative'                                    => [
+        'request'   => [
+            'method'  => 'POST',
             'server'  => [
             ],
-            'url'    => '/tax-payments/mark-as-paid',
+            'url'     => '/tax-payments/mark-as-paid',
             'content' => [
-                'tax_payment_id' => ['txpy_F2qwMZe97QTGG1'],
+                'tax_payment_id'         => ['txpy_F2qwMZe97QTGG1'],
                 'manually_paid_metadata' => [
                     'notes1' => 'smoething'
                 ],

@@ -454,7 +454,10 @@ class Name
 
     const CORRECT_MERCHANT_OWNER_MISMATCH     = 'correct_merchant_owner_mismatch';
 
+    const TAX_PAYMENT_ADMIN_AUTH_EXECUTE      = 'tax_payment_admin_auth_execute';
+
     const PAYOUT_STATUS_UPDATE_MANUALLY       = 'payout_status_update_manually';
+
     // Update Free Payout Permission
     const UPDATE_FREE_PAYOUTS_ATTRIBUTES      = 'update_free_payouts_attributes';
 

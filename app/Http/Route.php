@@ -1081,6 +1081,7 @@ class Route
 
 
         // Tax Payments
+        'tax_payments_admin_auth_api'              => ['post',    'tax-payments/admin',                              'TaxPaymentController@adminActions'                                 ],
         'tax_payments_mail_cron'                   => ['post',    'tax-payments/mailCron',                           'TaxPaymentController@mailCron'                                     ],
         'tax_payments_payout_cron'                 => ['post',    'tax-payments/initiateMonthlyPayouts',             'TaxPaymentController@initiateMonthlyPayouts'                       ],
         'tax_payments_send_email'                  => ['post',    'tax-payments/sendMail',                           'TaxPaymentController@sendMail'                                     ],
@@ -3702,6 +3703,7 @@ class Route
         'admin_get_free_payouts_attributes',
 
         'setl_service_migration',
+        'tax_payments_admin_auth_api',
     ];
 
     public static $routePermission = [
@@ -4454,6 +4456,8 @@ class Route
         'admin_get_free_payouts_attributes'           => Permission::VIEW_FREE_PAYOUTS_ATTRIBUTES,
 
         'setl_service_migration'                      => '*',
+
+        'tax_payments_admin_auth_api'                 => Permission::TAX_PAYMENT_ADMIN_AUTH_EXECUTE,
     ];
 
     public static $bankingRoutePermissions = [
