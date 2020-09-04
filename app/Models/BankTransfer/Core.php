@@ -599,6 +599,12 @@ class Core extends Base\Core
                 break;
 
             default:
+                $this->trace->info(
+                    TraceCode::UNTRACKED_ENDPOINT_BANK_TRANSFER,
+                    [
+                        'route_name'    => $routeName,
+                        'npci_ref_id'   => $bankTransfer->getUtr(),
+                    ]);
                 break;
         }
 

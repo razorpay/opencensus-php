@@ -1202,6 +1202,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANK_TRANSFER_BANK_CODE_MISSING                       = 'BANK_TRANSFER_BANK_CODE_MISSING';
     const BANK_TRANSFER_PAYER_BANK_ACCOUNT_EDITED               = 'BANK_TRANSFER_PAYER_BANK_ACCOUNT_EDITED';
     const BANK_TRANSFER_PAYER_BANK_ACCOUNT_SKIPPED              = 'BANK_TRANSFER_PAYER_BANK_ACCOUNT_SKIPPED';
+    const UNTRACKED_ENDPOINT_BANK_TRANSFER                      = 'UNTRACKED_ENDPOINT_BANK_TRANSFER';
 
     const BANK_ACCOUNT_DELETED                                  = 'BANK_ACCOUNT_DELETED';
     const BANK_ACCOUNT_EDIT                                     = 'BANK_ACCOUNT_EDIT';
