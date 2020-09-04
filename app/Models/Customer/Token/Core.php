@@ -16,6 +16,7 @@ use RZP\Models\Customer\Token;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Listeners\ApiEventSubscriber;
+use RZP\Models\Feature\Constants as Feature;
 
 class Core extends Base\Core
 {
@@ -177,16 +178,30 @@ class Core extends Base\Core
     }
 
     /**
-     * Get the token entity for local/global customer. $id can be token or
-     * token id for now.
+     * Get the token entity for local/global customer.
+     * $id can be token or
+     * token id or
+     * gateway token(with recurring_debit_umrn feature enabled for merchant)
+     * for now.
      * @param $id
      * @param $customer
      * @return Token\Entity
      */
     public function getByTokenIdAndCustomer($id, Customer\Entity $customer)
     {
+        $token = null;
+
+        if (($this->merchant !== null) and
+            ($this->merchant->isFeatureEnabled(Feature::RECURRING_DEBIT_UMRN) === true))
+        {
+            $token = $this->repo->token->getByGatewayTokenAndCustomerId($id, $customer->getId());
+        }
+
         // TODO: remove this once merchants shifts to token_id
-        $token = $this->repo->token->getByTokenAndCustomer($id, $customer);
+        if ($token === null)
+        {
+            $token = $this->repo->token->getByTokenAndCustomer($id, $customer);
+        }
 
         if ($token === null)
         {
@@ -213,11 +228,24 @@ class Core extends Base\Core
      */
     public function getByTokenIdAndCustomerId(string $id, string $customerId)
     {
-        $token = $this->repo->token->getByTokenAndCustomerId($id, $customerId);
+        $token = null;
+
+        if (($this->merchant !== null) and
+            ($this->merchant->isFeatureEnabled(Feature::RECURRING_DEBIT_UMRN) === true))
+        {
+            $token = $this->repo->token->getByGatewayTokenAndCustomerId($id, $customerId);
+        }
 
         if ($token === null)
         {
-            $token = $this->repo->token->getByTokenIdAndCustomerId($id, $customerId);
+            Entity::verifyIdAndSilentlyStripSign($id);
+
+            $token = $this->repo->token->getByTokenAndCustomerId($id, $customerId);
+
+            if ($token === null)
+            {
+                $token = $this->repo->token->getByTokenIdAndCustomerId($id, $customerId);
+            }
         }
 
         return $token;

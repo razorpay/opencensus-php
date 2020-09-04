@@ -144,6 +144,75 @@ class PaperMandatePaymentTest extends TestCase
         $this->startTest();
     }
 
+    public function testUMRNInsteadOfTokenForDebitPayment()
+    {
+        $this->fixtures->merchant->addFeatures(['recurring_debit_umrn']);
+
+        $token = $this->createAcceptedTokenForNACH();
+
+        $order = $this->fixtures->create('order', [
+            'amount' => 3000,
+            'payment_capture' => true,
+        ]);
+
+        $payment = [
+            'contact'     => '9876543210',
+            'email'       => 'r@g.c',
+            'customer_id' => $token->customer->getPublicId(),
+            'currency'    => 'INR',
+            'amount'      => 3000,
+            'recurring'   => true,
+            'token'       => $token->gateway_token,
+            'order_id'    => $order->getPublicId(),
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/recurring',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals($token->getId(), $payment->getTokenId());
+    }
+
+    protected function createAcceptedTokenForNACH()
+    {
+        return $this->createToken([
+            'terminal_id'      => '1citinachDTmnl',
+            'method'           => 'nach',
+            'recurring'        => true,
+            'recurring_status' => 'confirmed',
+            'gateway_token'    => 'NACH0000000000012345',
+            E::PAYMENT => [
+                'amount' => 0,
+                'method' => 'nach',
+                'status' => 'captured',
+                'token_id' => '100000000token',
+                'order_id' => '100000000order',
+                E::ORDER => [
+                    'amount' => 0,
+                    'method' => 'nach',
+                    E::INVOICE => [
+                        'amount' => 0,
+                        E::SUBSCRIPTION_REGISTRATION => [
+                            'token_id' => '100000000token',
+                            'auth_type' => 'physical',
+                            E::PAPER_MANDATE => [
+                                'uploaded_file_id' => '1000000000file',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+    }
+
     protected function createToken(array $overrideWith = [])
     {
         $payment = array_pull($overrideWith, E::PAYMENT, []);

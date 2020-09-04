@@ -224,6 +224,13 @@ class Constants
 
     const PL_HIDE_ISSUED_TO               = 'pl_hide_issued_to';
 
+    /**
+     * For emandate and nach debit payments:
+     * With this feature enabled merchant can pass UMRN (gateway token)
+     * instead of token_id in token field while creating debit payments
+     */
+    const RECURRING_DEBIT_UMRN = 'recurring_debit_umrn';
+
     // Orders
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
     const ORDER_RECEIPT_UNIQUE            = 'order_receipt_unique';
@@ -647,6 +654,7 @@ class Constants
         self::COVID                           => true,
         self::SR_SENSITIVE                    => true,
         self::PAYMENTLINKS_V2                 => true,
+        self::RECURRING_DEBIT_UMRN            => true,
         self::PAYMENTLINKS_COMPATIBILITY_V2   => true,
         self::SEND_PAYMENT_CONFIG_ID          => false,
         self::PAYMENT_STATUS_AGGREGATE        => true,

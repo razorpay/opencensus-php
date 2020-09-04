@@ -94,6 +94,15 @@ class Repository extends Base\Repository
                     ->firstOrFailPublic();
     }
 
+    public function getByGatewayTokenAndCustomerId($gatewayToken, $customerId)
+    {
+        return $this->newQuery()
+                    ->where(Token\Entity::CUSTOMER_ID, '=', $customerId)
+                    ->where(Token\Entity::GATEWAY_TOKEN, '=', $gatewayToken)
+                    ->orderBy(Token\Entity::CREATED_AT, 'desc')
+                    ->first();
+    }
+
     public function getByWalletTerminalAndCustomerId($wallet, $terminal, $customer)
     {
         return $this->newQuery()

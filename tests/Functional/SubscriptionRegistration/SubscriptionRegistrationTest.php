@@ -232,6 +232,47 @@ class SubscriptionRegistrationTest extends TestCase
 
     }
 
+    public function testUMRNInsteadOfTokenForDebitPayment()
+    {
+        $this->fixtures->merchant->addFeatures(['recurring_debit_umrn']);
+
+        $payment = $this->setupEmandateAndGetPaymentRequest('UTIB', 0);
+
+        $this->doAuthPayment($payment);
+
+        $token = $this->getDbLastEntity('token');
+
+        $order = $this->fixtures->create('order', [
+            'amount' => 3000,
+            'payment_capture' => true,
+        ]);
+
+        $payment = [
+            'contact'     => '9876543210',
+            'email'       => 'r@g.c',
+            'customer_id' => $token->customer->getPublicId(),
+            'currency'    => 'INR',
+            'amount'      => 3000,
+            'recurring'   => true,
+            'token'       => $token->gateway_token,
+            'order_id'    => $order->getPublicId(),
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/recurring',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals($token->getId(), $payment->getTokenId());
+    }
+
     public function testChargeToken()
     {
         $paymentRequest = $this->setupPaymentRequest();

@@ -1219,10 +1219,9 @@ class Processor
 
             //
             // TokenID can either be the token ID or the
-            // `token` attribute of the token entity.
+            // `token` attribute of the token entity or the
+            //`gateway_token` attribute of the token entity.
             //
-            Customer\Token\Entity::verifyIdAndSilentlyStripSign($tokenId);
-
             $token = (new Customer\Token\Core)->getByTokenIdAndCustomerId($tokenId, $customerId);
 
             //
