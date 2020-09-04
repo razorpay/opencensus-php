@@ -60,6 +60,8 @@ class Entity extends Base\PublicEntity
 
     const FUND_ACCOUNT_RX_RETRY_COUNT = '2';
 
+    const FUND_ACCOUNT_BULK_RX_RETRY_COUNT = '2';
+
     protected $generateIdOnCreate = true;
 
     protected $composite = false;
