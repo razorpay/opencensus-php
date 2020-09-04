@@ -634,7 +634,7 @@ app
                 },
               );
             } else {
-              location.href = location.origin + '/signup/?screen=business_details';
+              location.href = location.origin + '/signup?screen=business_details';
             }
           }
         }
