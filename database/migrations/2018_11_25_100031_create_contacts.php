@@ -64,6 +64,8 @@ class CreateContacts extends Migration
 
             $table->index([Contact::CONTACT, Contact::EMAIL, Contact::MERCHANT_ID]);
 
+            $table->index([Contact::NAME, Contact::MERCHANT_ID]);
+
             $table->index([Contact::CONTACT, Contact::MERCHANT_ID]);
 
             $table->index([Contact::TYPE, Contact::MERCHANT_ID]);

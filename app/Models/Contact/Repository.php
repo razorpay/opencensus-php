@@ -45,7 +45,7 @@ class Repository extends Base\Repository
                     ->merchantId($merchant->getId())
                     ->where(DB::raw('trim('. $contactTypeColumn .')'), ($input[Entity::TYPE] ?? null))
                     ->where(DB::raw('trim('. $contactNameColumn .')'), ($input[Entity::NAME] ?? null))
-                    ->latest()
+                    ->where(Entity::ACTIVE, 1)
                     ->first();
     }
 
@@ -60,14 +60,18 @@ class Repository extends Base\Repository
         // In case all of the input parameters exactly match
         // with any existing contact, we return the same contact
         // to the merchant. Name and type are inclusive here.
+        // We are forcing Mysql to use contact_merchant_name_index to ensure
+        // that minimum number of rows have to be searched as name will
+        // always be passed in this query
         return $this->newQuery()
+                    ->from(\DB::raw('`contacts` FORCE INDEX (contacts_name_merchant_id_index)'))
                     ->where(Entity::CONTACT, $input[Entity::CONTACT] ?? null)
                     ->where(Entity::EMAIL, $input[Entity::EMAIL] ?? null)
                     ->where(Entity::REFERENCE_ID, $input[Entity::REFERENCE_ID] ?? null)
                     ->merchantId($merchant->getId())
                     ->where(Entity::TYPE, $input[Entity::TYPE] ?? null)
                     ->where(Entity::NAME, $input[Entity::NAME] ?? null)
-                    ->latest()
+                    ->where(Entity::ACTIVE, 1)
                     ->first();
     }
 

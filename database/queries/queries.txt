@@ -5900,6 +5900,9 @@ ALTER TABLE pricing
 ALTER TABLE payouts
     ADD COLUMN fee_type VARCHAR(255) DEFAULT NULL;
 
+ALTER TABLE contacts
+    ADD  INDEX contacts_name_merchant_id_index (`name`, `merchant_id`);
+
 ALTER TABLE discounts
     MODIFY COLUMN offer_id char(14) default NULL,
     MODIFY COLUMN order_id char(14) default NULL;
