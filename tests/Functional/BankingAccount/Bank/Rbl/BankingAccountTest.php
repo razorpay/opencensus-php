@@ -2253,7 +2253,9 @@ class BankingAccountTest extends TestCase
 
     public function testBankingAccountFetchForAssignee()
     {
-        $baAttributes = [];
+        $baAttributes = [
+            'assignee_team' => 'ops'
+        ];
 
         $searchBody = [
             'assignee_team' => 'ops'

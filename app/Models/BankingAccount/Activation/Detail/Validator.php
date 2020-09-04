@@ -79,7 +79,7 @@ class Validator extends Base\Validator
         Entity::SALES_TEAM                          => 'required|string|max:255|custom',
         Entity::SALES_POC_PHONE_NUMBER              => 'required|string|max:255',
         Entity::COMMENT                             => 'required|string',
-        Entity::ASSIGNEE_TEAM                       => 'required|string|in:ops,bank,sales'
+        Entity::ASSIGNEE_TEAM                       => 'sometimes|string|in:ops,bank,sales' // if created via InitiateOnboarding, default assignee is chosen. If adding for existing CAs, then it will be empty.
     ];
 
     protected static $editRules = [

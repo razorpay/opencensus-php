@@ -1275,8 +1275,7 @@ return [
                 'business_category' => 'partnership',
                 'sales_team' => 'sme',
                 'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
-                'sales_poc_phone_number' => '1234554321',
-                'assignee_team' => 'ops'
+                'sales_poc_phone_number' => '1234554321'
                 ],
         ],
         'response' => [
