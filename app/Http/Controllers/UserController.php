@@ -17,6 +17,7 @@ use App\Http\AppResponse;
 use App\User\RecoverableException;
 use App\Metrics\Constants as MetricConstants;
 
+const EVENT_TRIGGER_COUNT = 1;
 class UserController extends Controller
 {
 
@@ -179,6 +180,7 @@ class UserController extends Controller
                 if (empty($error) === true or $twoFaDuringSignup === true)
                 {
                     $this->metrics->count(MetricConstants::USER_SIGNUP_COUNT,
+                        EVENT_TRIGGER_COUNT,
                         [
                             MetricConstants::TWO_FA_DURING_SIGNUP   => $twoFaDuringSignup,
                         ]);
@@ -232,8 +234,10 @@ class UserController extends Controller
         if (empty($error) === true)
         {
             $this->metrics->count(MetricConstants::USER_LOGIN_COUNT,
+                EVENT_TRIGGER_COUNT,
                 [
                     MetricConstants::LOGIN_METHOD => MetricConstants::PASSWORD,
+                    MetricConstants::LOGIN_ACTION => MetricConstants::NORMAL_LOGIN,
                 ]);
         }
 
@@ -257,8 +261,10 @@ class UserController extends Controller
         if (empty($error) === true)
         {
             $this->metrics->count(MetricConstants::USER_LOGIN_COUNT,
+                EVENT_TRIGGER_COUNT,
                 [
                     MetricConstants::LOGIN_METHOD => MetricConstants::OAUTH,
+                    MetricConstants::LOGIN_ACTION => MetricConstants::NORMAL_LOGIN,
                 ]);
         }
 
@@ -279,6 +285,7 @@ class UserController extends Controller
         if (empty($error) === true)
         {
             $this->metrics->count(MetricConstants::USER_LOGIN_COUNT,
+                EVENT_TRIGGER_COUNT,
                 [
                     MetricConstants::LOGIN_METHOD => $this->getLoginMethodFromSession(),
                     MetricConstants::LOGIN_ACTION => MetricConstants::TWO_FA_OTP_VERIFICATION,
@@ -349,6 +356,7 @@ class UserController extends Controller
         $this->trace->info(TraceCode::USER_LOGOUT, $traceData);
 
         $this->metrics->count(MetricConstants::USER_LOGOUT_COUNT,
+            EVENT_TRIGGER_COUNT,
             [
                 MetricConstants::LOGIN_METHOD => $this->getLoginMethodFromSession(),
             ]);
@@ -544,6 +552,7 @@ class UserController extends Controller
         if (empty($error) === true)
         {
             $this->metrics->count(MetricConstants::USER_UNLOCK_COUNT,
+                EVENT_TRIGGER_COUNT,
                 [
                     MetricConstants::LOGIN_METHOD   => MetricConstants::PASSWORD,
                 ]);
@@ -569,6 +578,7 @@ class UserController extends Controller
         if (empty($error) === true)
         {
             $this->metrics->count(MetricConstants::USER_UNLOCK_COUNT,
+                EVENT_TRIGGER_COUNT,
                 [
                     MetricConstants::LOGIN_METHOD   => MetricConstants::OAUTH,
                 ]);

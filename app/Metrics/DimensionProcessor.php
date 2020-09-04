@@ -16,6 +16,13 @@ class DimensionProcessor implements Processor
             {
                 $dimensions[$label] = $defaultLabelValue;
             }
+
+            if (is_string($value) !== true)
+            {
+                // Stringify php values e.g. true -> 'true', 0 -> '0',
+                //  as only unicode chars in label values is expected
+                $dimensions[$label] = json_encode($value);
+            }
         }
 
         return $dimensions;

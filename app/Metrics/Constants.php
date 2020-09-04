@@ -21,8 +21,14 @@ class Constants
   const LOGIN_ACTION                = 'login_action';
   const TWO_FA_DURING_SIGNUP        = 'two_fa_during_signup';
 
-  // Metric Values
-  const PASSWORD                    = 'password';
-  const OAUTH                       = 'oauth';
+  /* Possible Login actions */
+  //when user sigin after enterin OTP
   const TWO_FA_OTP_VERIFICATION     = 'two_fa_verificiation';
+   //when user does a normal login
+  const NORMAL_LOGIN                = 'normal_login';
+
+  /** Possible Login methods **/
+  const PASSWORD                    = 'password';
+   //currently only one oauth provider - google
+  const OAUTH                       = 'oauth';
 }
