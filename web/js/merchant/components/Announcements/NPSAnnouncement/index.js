@@ -3,12 +3,12 @@ import React from 'react';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
 const SURVEY_LINKS = {
-  PL: 'https://razorpay.typeform.com/to/qPGwujSe',
-  PP: 'https://razorpay.typeform.com/to/ZghqnkPS',
-  PG_1m: 'https://razorpay.typeform.com/to/cUdoZFUr',
-  PG_6m: 'https://razorpay.typeform.com/to/FesnWnOS',
-  PG_12m: 'https://razorpay.typeform.com/to/UGGYrwwF',
-  other_products: 'https://razorpay.typeform.com/to/ot3Hcuel',
+  PL: 'https://razorpay.typeform.com/to/yam7yYS4',
+  PP: 'https://razorpay.typeform.com/to/dM9zUqj8',
+  PG_1m: 'https://razorpay.typeform.com/to/ouFfP2JX',
+  PG_6m: 'https://razorpay.typeform.com/to/QITAeRbH',
+  PG_12m: 'https://razorpay.typeform.com/to/LPT6F0te',
+  other_products: 'https://razorpay.typeform.com/to/mjBs6Nqg',
 };
 
 const getLink = (user) => {
@@ -56,7 +56,7 @@ const NPSAnnouncement = ({ user }) => {
       Hello! Request you to fill in this quick feedback survey about your experience with Razorpay.
       <span className="big-dot-separator" />
       <a
-        href={`${survey.link}?mid=${user.current}&source=dashboard`}
+        href={`${survey.link}?mid=${user.current}&source=dashboard&email=${user.user.email}`}
         target="_blank"
         rel="noopener noreferrer"
       >
