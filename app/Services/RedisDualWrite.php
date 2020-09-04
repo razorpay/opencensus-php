@@ -5,6 +5,7 @@ namespace RZP\Services;
 use Illuminate\Support\Facades\Redis;
 use Predis\PredisException;
 
+use App;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -399,19 +400,18 @@ class RedisDualWrite
 
         $redisEc = Redis::Connection('mutex_redis');
 
-        $redisLabsResponse = $redis->incr($key);
-
         try
         {
-            if ($redisEc->get($key) !== null)
+            if ($this->shouldReadRedisLabs === true)
             {
-                $redisEc->incr($key);
+                $redisLabsResponse = $redis->incr($key);
 
-                return;
+                $redisEc->set($key, $redisLabsResponse);
+
+                return $redisLabsResponse;
             }
 
-            $redisEc->set($key, $redisLabsResponse);
-
+            return $redisEc->incr($key);
         }
         catch (\Throwable $e)
         {
@@ -424,6 +424,106 @@ class RedisDualWrite
             $redisEc->del($key);
 
             $redis->decr($key);
+
+            throw $e;
+        }
+    }
+
+    public function lpop($key)
+    {
+        $redis = Redis::Connection();
+
+        $redisEc = Redis::Connection('mutex_redis');
+
+        // reinstantiating app so that configs updated by tests gets picked up (for test testGenerateTid)
+        $app = App::getFacadeRoot();
+
+        $config = $app['config']->get('applications.redisdualwrite');
+
+        $this->shouldReadRedisLabs = $config['redislab_cache_read'];
+
+        try
+        {
+            $redisEcResponse = $redisEc->lpop($key);
+
+            $redisLabResponse = $redis->lpop($key);
+
+            if ($this->shouldReadRedisLabs === true)
+            {
+                return $redisLabResponse;
+            }
+
+            return $redisEcResponse;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::REDIS_DUAL_WRITE_READ_ERROR,
+                ['key' => $key]);
+
+            throw $e;
+        }
+    }
+
+    // This method is being used in GatewayProcessor/Worldline/TidGenerator.php:leftInsertIntoTidRangeList()
+    // where we have to left insert into both the redis
+    public function lpush($key, $value)
+    {
+        $redis = Redis::Connection();
+
+        $redisEc = Redis::Connection('mutex_redis');
+
+        try
+        {
+            $redisEcResponse = $redisEc->lpush($key, $value);
+
+            $redisLabResponse = $redis->lpush($key, $value);
+
+            if ($this->shouldReadRedisLabs === true)
+            {
+                return $redisLabResponse;
+            }
+
+            return $redisEcResponse;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::REDIS_DUAL_WRITE_READ_ERROR,
+                ['key' => $key]);
+
+            throw $e;
+        }
+    }
+
+    public function lrange($key, $start, $end)
+    {
+        $redis = Redis::Connection();
+
+        $redisEc = Redis::Connection('mutex_redis');
+
+        try
+        {
+            $redisEcResponse = $redisEc->lrange($key, $start, $end);
+
+            if ($this->shouldReadRedisLabs === true)
+            {
+                return $redis->lrange($key, $start, $end);
+            }
+
+            return $redisEcResponse;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::REDIS_DUAL_WRITE_READ_ERROR,
+                ['key' => $key]);
 
             throw $e;
         }

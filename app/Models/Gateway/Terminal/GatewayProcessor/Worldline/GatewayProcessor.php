@@ -44,7 +44,7 @@ class GatewayProcessor extends BaseGatewayProcessor
 
         $this->app = App::getFacadeRoot();
 
-        $this->redis = Redis::Connection();
+        $this->redis = $this->app['redisdualwrite'];
 
         $this->trace = $this->app['trace'];
 
