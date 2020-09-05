@@ -9,7 +9,8 @@ import { Modal, ModalContent } from 'common/new-ui/Modal';
 
 import { findBy, stringToObj } from 'common/utils/rzp-utils';
 
-import { fetchPlans } from 'merchant/reducers/plans';
+import Plan from 'merchant/models/Plan';
+import { fetchPlan, fetchPlans, updatePlans } from 'merchant/reducers/plans';
 import { fetchItems } from 'merchant/reducers/items';
 import {
   fetchSubscription,
@@ -24,12 +25,14 @@ import PlanDetails from './PlanDetails';
 
 @withRouter
 @connect(
-  state => ({
+  (state) => ({
     plans: state.plans,
     items: state.items,
     subscription: state.subscription,
   }),
   {
+    fetchPlan,
+    updatePlans,
     fetchPlans,
     fetchItems,
     updateSubscription,
@@ -53,8 +56,28 @@ export default class UpdateSubscription extends React.Component {
   }
 
   componentWillMount = async () => {
-    await this.props.fetchPlans({ count: 100 });
+    const plans = await this.props.fetchPlans({ count: 100 });
     await this.props.fetchItems({ count: 100, type: 'addon' });
+
+    let isPlanExists = false;
+    plans.data.items.forEach((plan) => {
+      if (plan.id === this.props.subscription.entity.plan_id) {
+        isPlanExists = true;
+      }
+    });
+
+    if (!isPlanExists) {
+      try {
+        const resp = await this.props.fetchPlan(this.props.subscription.entity.plan_id);
+        const plan = new Plan(resp);
+        const updatedPlans = {
+          ...this.props.plans,
+          items: [...this.props.plans.items, plan],
+        };
+
+        this.props.updatePlans(updatedPlans);
+      } catch (e) {}
+    }
 
     if (this.props.subscription.entity.id !== this.props.id) {
       await this.fetchSubscription(this.props.id);
@@ -69,7 +92,7 @@ export default class UpdateSubscription extends React.Component {
     this.initUpdateSubscription(this.props.subscription.entity);
   };
 
-  initUpdateSubscription = subscription => {
+  initUpdateSubscription = (subscription) => {
     const { plans } = this.props;
 
     const fields = {
@@ -113,7 +136,7 @@ export default class UpdateSubscription extends React.Component {
   fetchSubscription = (id = this.props.id) => {
     this.props
       .fetchSubscription(id)
-      .then(resp => {
+      .then((resp) => {
         if (resp.has_scheduled_changes) {
           return fetchScheduledChanges(id);
         }
@@ -133,7 +156,7 @@ export default class UpdateSubscription extends React.Component {
       });
   };
 
-  changeTab = step => () => {
+  changeTab = (step) => () => {
     const currentTab = this.state.currentTab + step;
 
     const validTabs = [...this.state.validTabs];
@@ -159,8 +182,7 @@ export default class UpdateSubscription extends React.Component {
       (fields.quantity && prevSubscription.quantity !== fields.quantity) ||
       (prevSubscription.start_at && _startsImmediately) ||
       prevSubscription.start_at !== fields.start_at ||
-      (fields.remaining_count &&
-        prevSubscription.remaining_count !== fields.remaining_count) ||
+      (fields.remaining_count && prevSubscription.remaining_count !== fields.remaining_count) ||
       prevSubscription.customer_notify !== fields.customer_notify
     );
   }
@@ -171,11 +193,9 @@ export default class UpdateSubscription extends React.Component {
 
     return (
       this.isFormChanged() &&
-      (!!fields.plan_id &&
-        (internals._startsImmediately || !!fields.start_at) &&
-        (validateTotalCount
-          ? !validateTotalCount(fields.remaining_count)
-          : true))
+      !!fields.plan_id &&
+      (internals._startsImmediately || !!fields.start_at) &&
+      (validateTotalCount ? !validateTotalCount(fields.remaining_count) : true)
     );
   };
 
@@ -207,12 +227,10 @@ export default class UpdateSubscription extends React.Component {
     });
   };
 
-  handleDateChange = fieldName => selectedDate => {
+  handleDateChange = (fieldName) => (selectedDate) => {
     selectedDate.startOf('day');
 
-    const current = this.state.fields[fieldName]
-      ? moment(this.state.fields[fieldName], 'X')
-      : 0;
+    const current = this.state.fields[fieldName] ? moment(this.state.fields[fieldName], 'X') : 0;
     const time = current
       ? Number(current.format('X')) - Number(current.startOf('day').format('X'))
       : 0;
@@ -224,19 +242,13 @@ export default class UpdateSubscription extends React.Component {
     this.handleChangeIn({ target });
   };
 
-  handleTimeChange = fieldName => selectedDate => {
-    const time =
-      Number(selectedDate.format('X')) -
-      Number(selectedDate.startOf('day').format('X'));
+  handleTimeChange = (fieldName) => (selectedDate) => {
+    const time = Number(selectedDate.format('X')) - Number(selectedDate.startOf('day').format('X'));
     fieldName = fieldName.replace('_time', '');
 
     let current = this.state.fields[fieldName];
     // adding time to current day
-    current = Number(
-      moment(current, 'X')
-        .startOf('day')
-        .format('X')
-    );
+    current = Number(moment(current, 'X').startOf('day').format('X'));
 
     const target = {
       name: fieldName,
@@ -245,7 +257,7 @@ export default class UpdateSubscription extends React.Component {
     this.handleChangeIn({ target });
   };
 
-  handleRadioChange = e => {
+  handleRadioChange = (e) => {
     this.setState({
       fields: {
         ...this.state.fields,
@@ -294,7 +306,7 @@ export default class UpdateSubscription extends React.Component {
 
     return this.props
       .updateSubscription(data)
-      .then(data => {
+      .then((data) => {
         if (data) {
           this.props.showNotification({
             type: 'success',
@@ -318,14 +330,7 @@ export default class UpdateSubscription extends React.Component {
   };
 
   renderForm = () => {
-    const {
-      fields,
-      currency,
-      internals,
-      isLoading,
-      currentTab,
-      prevSubscription,
-    } = this.state;
+    const { fields, currency, internals, isLoading, currentTab, prevSubscription } = this.state;
 
     if (isLoading) {
       return (
@@ -339,9 +344,7 @@ export default class UpdateSubscription extends React.Component {
       case 0: {
         const filteredPlans = { ...this.props.plans };
 
-        filteredPlans.items = filteredPlans.items.filter(
-          plan => plan.item.currency === currency
-        );
+        filteredPlans.items = filteredPlans.items.filter((plan) => plan.item.currency === currency);
 
         return (
           <PlanDetails
@@ -353,7 +356,7 @@ export default class UpdateSubscription extends React.Component {
             onTimeChange={this.handleTimeChange}
             onRadioChange={this.handleRadioChange}
             onChangeInPlan={this.handleChangeInPlan}
-            ref={form => (this.planDetailsForm = form)}
+            ref={(form) => (this.planDetailsForm = form)}
           />
         );
       }
@@ -365,15 +368,9 @@ export default class UpdateSubscription extends React.Component {
           prevSubscription.status !== 'authenticated'
         ) {
           if (prevSubscription.remaining_count < fields.remaining_count) {
-            totalCount =
-              totalCount +
-              (fields.remaining_count - prevSubscription.remaining_count);
-          } else if (
-            prevSubscription.remaining_count > fields.remaining_count
-          ) {
-            totalCount =
-              totalCount -
-              (prevSubscription.remaining_count - fields.remaining_count);
+            totalCount = totalCount + (fields.remaining_count - prevSubscription.remaining_count);
+          } else if (prevSubscription.remaining_count > fields.remaining_count) {
+            totalCount = totalCount - (prevSubscription.remaining_count - fields.remaining_count);
           }
         }
 
@@ -392,7 +389,7 @@ export default class UpdateSubscription extends React.Component {
     }
   };
 
-  disableTabCondition = tabIndex => {
+  disableTabCondition = (tabIndex) => {
     return tabIndex !== 0 && !this.state.validTabs[tabIndex - 1];
   };
 
@@ -418,11 +415,7 @@ export default class UpdateSubscription extends React.Component {
             <strong>{currentTabMeta.title}</strong>
           </div>
           <div class="description large">{currentTabMeta.desc}</div>
-          <Form
-            class="PaymentLinks--Create--Form"
-            layout="tabular"
-            onChange={this.handleChangeIn}
-          >
+          <Form class="PaymentLinks--Create--Form" layout="tabular" onChange={this.handleChangeIn}>
             {this.renderForm()}
           </Form>
         </main>
@@ -441,11 +434,7 @@ export default class UpdateSubscription extends React.Component {
               Next
             </Button.Primary>
           ) : (
-            <AsyncBtn.Primary
-              pendingState="Updating..."
-              type="submit"
-              onClick={this.handleCreate}
-            >
+            <AsyncBtn.Primary pendingState="Updating..." type="submit" onClick={this.handleCreate}>
               Update Subscription
             </AsyncBtn.Primary>
           )}
@@ -459,20 +448,13 @@ export default class UpdateSubscription extends React.Component {
 
     if (isModalView) {
       return (
-        <Modal
-          class="UpdateSubscriptionLink animate-down"
-          onClose={this.props.onClose}
-        >
+        <Modal class="UpdateSubscriptionLink animate-down" onClose={this.props.onClose}>
           <ModalContent>{this.renderWizard({ isModalView })}</ModalContent>
         </Modal>
       );
     }
 
-    return (
-      <div class="StandAloneContainer">
-        {this.renderWizard({ isModalView })}
-      </div>
-    );
+    return <div class="StandAloneContainer">{this.renderWizard({ isModalView })}</div>;
   }
 }
 

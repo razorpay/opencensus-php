@@ -1,12 +1,6 @@
 import Plan from 'merchant/models/Plan';
-import {
-  makeActionCollectionReducer,
-  fetchAll,
-} from 'merchant/reducers/collection';
-import {
-  makeEntityReducer,
-  updateEntity,
-} from 'merchant_common/reducers/entity';
+import { makeActionCollectionReducer, fetchAll } from 'merchant/reducers/collection';
+import { makeEntityReducer, updateEntity } from 'merchant_common/reducers/entity';
 import { set } from 'common/utils/immutable';
 
 export const PLANS_FETCH = 'PLANS_FETCH';
@@ -14,11 +8,12 @@ export const PLAN_CREATE = 'PLAN_CREATE';
 export const PLAN_EDIT = 'PLAN_EDIT';
 export const PLAN_DELETE = 'PLAN_DELETE';
 export const PLAN_FETCH = 'PLAN_FETCH';
+export const PLANS_UPDATE = 'PLANS_UPDATE';
 export const PLAN_FETCH_SUBSCRIPTIONS = 'PLAN_FETCH_SUBSRIPTIONS';
 
-export const fetchPlans = params => fetchAll(params, Plan, 'PLANS');
+export const fetchPlans = (params) => fetchAll(params, Plan, 'PLANS');
 
-export const fetchPlan = id => {
+export const fetchPlan = (id) => {
   let plan = new Plan();
   return {
     type: PLAN_FETCH,
@@ -26,14 +21,21 @@ export const fetchPlan = id => {
   };
 };
 
-export const fetchSubscriptionsByPlanId = plan => {
+export const updatePlans = (plans) => {
+  return {
+    type: PLANS_UPDATE,
+    payload: plans,
+  };
+};
+
+export const fetchSubscriptionsByPlanId = (plan) => {
   return {
     type: PLAN_FETCH_SUBSCRIPTIONS,
     payload: plan.fetchSubscriptions(),
   };
 };
 
-export const savePlan = params => {
+export const savePlan = (params) => {
   const plan = new Plan(params);
 
   return {
@@ -42,7 +44,7 @@ export const savePlan = params => {
   };
 };
 
-export const deletePlan = params => {
+export const deletePlan = (params) => {
   const plan = new Plan(params);
 
   return {
@@ -52,7 +54,7 @@ export const deletePlan = params => {
   };
 };
 
-const updateSubscriptions = status => (state, action) => {
+const updateSubscriptions = (status) => (state, action) => {
   switch (status) {
     case 'PENDING': {
       return set(state, 'subscriptions', {
@@ -77,7 +79,11 @@ const updateSubscriptions = status => (state, action) => {
 };
 
 // List Reducer
-export const plansReducer = makeActionCollectionReducer('PLANS');
+export const plansReducer = makeActionCollectionReducer('PLANS', {
+  [`${PLANS_UPDATE}`]: (state, action) => {
+    return action.payload;
+  },
+});
 
 // Plan Details Initial State
 let planInitialState = {
