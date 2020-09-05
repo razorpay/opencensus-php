@@ -4,10 +4,7 @@ import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
 
 import { closeModal } from 'merchant_common/reducers/modals';
-import {
-  validateVPACustomPrefix,
-  saveVPACustomPrefix,
-} from 'merchant/reducers/virtualaccounts';
+import { validateVPACustomPrefix, saveVPACustomPrefix } from 'merchant/reducers/virtualaccounts';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { validateAlphanumeric } from 'common/utils/validators';
@@ -22,7 +19,7 @@ import {
   getStyle_AddOnAfter_VPA_Prefix,
 } from 'merchant/views/SmartCollect/VirtualAccounts/helpers';
 
-@connect(state => state.virtualaccounts.va_config.vpa, {
+@connect((state) => state.virtualaccounts.va_config.vpa, {
   closeModal,
   showNotification,
   saveVPACustomPrefix,
@@ -38,24 +35,21 @@ export default class VPAPrefixModal extends React.Component {
       isSaving: false,
     };
 
-    this.debounce_validateMerchantPrefix = debounce(
-      this.validateMerchantPrefix.bind(this),
-      50
-    );
+    this.debounce_validateMerchantPrefix = debounce(this.validateMerchantPrefix.bind(this), 50);
   }
 
   get isInvalidMerchantPrefix() {
     return validateCustomMerchantPrefix()(this.state.merchantPrefix);
   }
 
-  validateMerchantPrefix = value => {
+  validateMerchantPrefix = (value) => {
     this.setState({
       status: {},
       isValidating: true,
     });
 
     validateVPACustomPrefix(value)
-      .then(resp => {
+      .then((resp) => {
         const newState = {
           isValidating: false,
         };
@@ -72,7 +66,7 @@ export default class VPAPrefixModal extends React.Component {
 
         this.setState(newState);
       })
-      .catch(error => {
+      .catch((error) => {
         this.props.showNotification({
           type: 'error',
           message: error.errors[0],
@@ -84,7 +78,7 @@ export default class VPAPrefixModal extends React.Component {
       });
   };
 
-  handleVPAPrefix = event => {
+  handleVPAPrefix = (event) => {
     const { value } = event.target;
 
     const newState = {
@@ -109,13 +103,15 @@ export default class VPAPrefixModal extends React.Component {
   };
 
   saveVPACustomPrefix = () => {
+    this.props.track('prefix.save');
+
     this.setState({
       isSaving: true,
     });
 
     return this.props
       .saveVPACustomPrefix(this.state.merchantPrefix)
-      .then(resp => {
+      .then((resp) => {
         this.setState({
           isSaving: false,
         });
@@ -127,7 +123,7 @@ export default class VPAPrefixModal extends React.Component {
 
         this.props.closeModal();
       })
-      .catch(error => {
+      .catch((error) => {
         this.props.showNotification({
           type: 'error',
           message: error.errors[0],
@@ -148,10 +144,7 @@ export default class VPAPrefixModal extends React.Component {
     const showStatus = !!(status.type && !isValidating);
 
     const disabled =
-      status.type !== 'text-success' ||
-      isValidating ||
-      this.isInvalidMerchantPrefix ||
-      isSaving;
+      status.type !== 'text-success' || isValidating || this.isInvalidMerchantPrefix || isSaving;
 
     return (
       <div class="PopOver--Modal">
@@ -175,13 +168,19 @@ export default class VPAPrefixModal extends React.Component {
             </>
           }
           addonBefore={
-            <span style={getStyle_AddOnBefore_VPA_Prefix(rzp_prefix)}>
-              {rzp_prefix}.
-            </span>
+            <span style={getStyle_AddOnBefore_VPA_Prefix(rzp_prefix)}>{rzp_prefix}.</span>
           }
-          addonAfter={
-            <span style={getStyle_AddOnAfter_VPA_Prefix(handle)}>{handle}</span>
-          }
+          addonAfter={<span style={getStyle_AddOnAfter_VPA_Prefix(handle)}>{handle}</span>}
+          onBlur={(event) => {
+            this.props.track('prefix.enter');
+
+            const message = validateCustomMerchantPrefix()(event.target.value);
+            if (message) {
+              this.props.track('smartcollect.va.prefix.error', {
+                message,
+              });
+            }
+          }}
         />
         <div class="upi-example">
           UPI ID Example{' '}
@@ -190,13 +189,17 @@ export default class VPAPrefixModal extends React.Component {
             {handle}
           </span>
         </div>
-        <img src="/dist/css/assets/lighten-bulb.svg" /> Protip: Highlight your
-        brand by adding it as a prefix to UPI IDs.
+        <img src="/dist/css/assets/lighten-bulb.svg" /> Protip: Highlight your brand by adding it as
+        a prefix to UPI IDs.
         <div class="Modal-actions">
           <Button.Transparent
             class="Cancel-btn"
             type="button"
-            onClick={this.props.closeModal}
+            onClick={() => {
+              this.props.closeModal();
+
+              this.props.track('prefix.cancel');
+            }}
           >
             <span>&times;</span>
             Cancel
@@ -221,7 +224,7 @@ function validateCustomMerchantPrefix() {
   const minLength = MERCHANT_PREFIX_MIN_LENGTH_VPA;
   const maxLength = MERCHANT_PREFIX_MAX_LENGTH_VPA;
 
-  return value => {
+  return (value) => {
     const isValidMinLength = value.length >= minLength;
     if (!isValidMinLength) {
       return `Must be greater than ${minLength} characters.`;

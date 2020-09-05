@@ -7,11 +7,7 @@ import InputField from 'common/ui/Forms/InputField';
 import ModalHeader from 'common/ui/ModalHeader';
 import Alert from 'common/ui/Forms/Alert';
 
-import {
-  getKeysSeparatedByPipe,
-  isAddressValid,
-  isValidGSTIN,
-} from 'common/utils/rzp-utils';
+import { getKeysSeparatedByPipe, isAddressValid, isValidGSTIN } from 'common/utils/rzp-utils';
 import { email, phone, validateGSTIN } from 'common/utils/validators';
 
 import * as CustomerActions from 'merchant/reducers/customers';
@@ -24,7 +20,7 @@ import AddressEntry from 'merchant/views/Customers/components/AddressEntry';
 import Countries from 'merchant/helpers/countries.json';
 
 @connect(
-  state => {
+  (state) => {
     return {
       // Screen 1
       name: selector(state, 'name'),
@@ -42,7 +38,7 @@ import Countries from 'merchant/helpers/countries.json';
     ...CustomerActions,
     ...ModalActions,
     ...NotificationsActions,
-  }
+  },
 )
 @reduxForm({
   form: 'newCustomer',
@@ -113,7 +109,7 @@ export default class AddCustomer extends Component {
    * Method to change the screen.
    * @param {Integer} screenIndex Screen # to show.
    */
-  changeScreen = screenIndex => {
+  changeScreen = (screenIndex) => {
     this.setState({
       screenIndex,
     });
@@ -136,7 +132,7 @@ export default class AddCustomer extends Component {
    * @param {Object} props
    * @return {Object}
    */
-  prepareForSave = props => {
+  prepareForSave = (props) => {
     let _props = {};
 
     // If address is to be saved.
@@ -152,7 +148,7 @@ export default class AddCustomer extends Component {
 
         // Check if shipping address is the same as billing address.
         if (shippingAddr) {
-          Object.keys(billingAddr).forEach(key => {
+          Object.keys(billingAddr).forEach((key) => {
             if (billingAddr[key] !== shippingAddr[key]) {
               areAddressesSame = false;
             }
@@ -182,7 +178,7 @@ export default class AddCustomer extends Component {
    * @param {Object} props
    * @return {Promise}
    */
-  save = props => {
+  save = (props) => {
     const { shipping_same_as_billing } = props;
 
     // Analytics.
@@ -203,14 +199,14 @@ export default class AddCustomer extends Component {
         ...props,
         ...extraProps,
       })
-      .then(customer => {
+      .then((customer) => {
         this.props.onSave(customer, shipping_same_as_billing);
         this.props.showNotification({
           type: 'success',
           message: 'Customer saved successfully',
         });
       })
-      .catch(err => {
+      .catch((err) => {
         this.setState({
           errors: err.errors,
         });
@@ -221,7 +217,7 @@ export default class AddCustomer extends Component {
    * Method to invoke when Same Shipping address as Billing address is clicked on Screen 3
    * @param {Event} e
    */
-  onSameShippingAsBilling = e => {
+  onSameShippingAsBilling = (e) => {
     // Get value of checkbox before it was clicked.
     let { shipping_same_as_billing } = this.props;
 
@@ -247,7 +243,7 @@ export default class AddCustomer extends Component {
   /**
    * Toggles the "Add Customer Address" checkbox.
    */
-  toggleAddCustomerAddress = e => {
+  toggleAddCustomerAddress = (e) => {
     this.setState({
       address: e.target.checked,
     });
@@ -257,7 +253,7 @@ export default class AddCustomer extends Component {
    * Invoked when Billing Address is changed.
    * @param {Object} address
    */
-  onBillingAddressChange = address => {
+  onBillingAddressChange = (address) => {
     if (this.props.user.isInttCurrenciesEnabled) {
       let updatedAddress = {
         editedBillingAddress: address,
@@ -292,7 +288,7 @@ export default class AddCustomer extends Component {
    * Invoked when Shipping Address is changed/
    * @param {Object} address
    */
-  onShippingAddressChange = address => {
+  onShippingAddressChange = (address) => {
     this.uncheckShippingSameAsBilling();
 
     if (this.props.user.isInttCurrenciesEnabled) {
@@ -330,14 +326,14 @@ export default class AddCustomer extends Component {
    * @param {Number} screenNumber
    * @return {Function}
    */
-  getChangeScreenHandler = screenNumber => {
+  getChangeScreenHandler = (screenNumber) => {
     return () => this.changeScreen(screenNumber);
   };
 
   closeModal = () => {
     this.props.closeModal();
 
-    this.props.onCloseClick();
+    this.props.onCloseClick && this.props.onCloseClick();
   };
 
   render() {
@@ -482,17 +478,15 @@ export default class AddCustomer extends Component {
               )}
             </div>
           </div>
-          {customer &&
-            customer.id && (
-              <div class="row">
-                <div class="col-md-12">
-                  <p>
-                    Note: The updated customer details will be reflected
-                    everywhere in the future.
-                  </p>
-                </div>
+          {customer && customer.id && (
+            <div class="row">
+              <div class="col-md-12">
+                <p>
+                  Note: The updated customer details will be reflected everywhere in the future.
+                </p>
               </div>
-            )}
+            </div>
+          )}
           <div class="row">
             <div class="col-md-12">
               <div class="Modal__actions">
@@ -500,11 +494,7 @@ export default class AddCustomer extends Component {
                   class="btn btn-primary btn-block"
                   type="button"
                   disabled={disabled[screenIndex]}
-                  onClick={
-                    address
-                      ? this.getChangeScreenHandler(1)
-                      : handleSubmit(this.save)
-                  }
+                  onClick={address ? this.getChangeScreenHandler(1) : handleSubmit(this.save)}
                 >
                   {address ? 'Add Billing Address' : saveLabel}
                 </button>
@@ -524,10 +514,7 @@ export default class AddCustomer extends Component {
         <form autoComplete="off">
           <div class="row CustomerCreationModal__header-action">
             <div class="col-md-12">
-              <span
-                onClick={this.getChangeScreenHandler(0)}
-                class="text-primary cursor-pointer"
-              >
+              <span onClick={this.getChangeScreenHandler(0)} class="text-primary cursor-pointer">
                 <i class="i i-arrow-back" />
                 Back to Customer Details
               </span>
@@ -591,7 +578,7 @@ export default class AddCustomer extends Component {
             </div>
           </div>
         </form>
-      </div>
+      </div>,
     );
 
     // Add Screen 3
@@ -601,10 +588,7 @@ export default class AddCustomer extends Component {
         <form autoComplete="off">
           <div class="row CustomerCreationModal__header-action">
             <div class="col-md-12">
-              <span
-                onClick={this.getChangeScreenHandler(1)}
-                class="text-primary cursor-pointer"
-              >
+              <span onClick={this.getChangeScreenHandler(1)} class="text-primary cursor-pointer">
                 <i class="i i-arrow-back" />
                 Back to Billing Address
               </span>
@@ -652,7 +636,7 @@ export default class AddCustomer extends Component {
             </div>
           </div>
         </form>
-      </div>
+      </div>,
     );
 
     return (

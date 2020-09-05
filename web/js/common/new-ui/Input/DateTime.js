@@ -16,19 +16,19 @@ export default class DateTime extends React.Component {
     this.ref = React.createRef();
   }
 
-  onDateChange = date => {
+  onDateChange = (date) => {
     const curSelectedDateTime = this.state.value;
 
     dateCalculator(date, curSelectedDateTime, this.updateDate);
   };
 
-  onTimeChange = date => {
+  onTimeChange = (date) => {
     const curDate = this.state.value;
 
     timeCalculator(date, curDate, this.updateDate);
   };
 
-  updateDate = ts => {
+  updateDate = (ts) => {
     const value = moment(ts);
     const error = this.props.validator && this.props.validator(value);
     this.props.onChange && this.props.onChange(value);
@@ -55,7 +55,7 @@ export default class DateTime extends React.Component {
             fieldLabel={checkboxFieldLabel}
             defaultValue={this.props.defaultValue ? '0' : '1'}
             value={hasNoDate}
-            onChange={e => {
+            onChange={(e) => {
               if (!e.target.checked) {
                 setTimeout(() => {
                   this.ref.current.focus();
@@ -80,7 +80,7 @@ export default class DateTime extends React.Component {
           class={classList(
             inputClass(this),
             !required && 'InputGroup--near',
-            isInline ? 'InputGroup--inline' : 'Input--half_big'
+            isInline ? 'InputGroup--inline' : 'Input--half_big',
           )}
         >
           <div class="Input-content" style={{ marginTop: required ? -8 : 0 }}>

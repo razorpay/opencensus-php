@@ -69,6 +69,12 @@ export default class VirtualAccountsListContainer extends ListContainer {
     });
 
     this.track('loaded');
+
+    const { isVirtualAccountsEnabled } = this.props.user;
+
+    if (!isVirtualAccountsEnabled) {
+      this.track('onboarding.first_time');
+    }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -92,7 +98,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
 
   track = (event, options) => {
     this.props.tracking.trackEvent(
-      window.rzpQ.smartCollect().success(`smartcollect.va.${event}`, options),
+      window.rzpQ.smartCollect().interaction(`smartcollect.va.${event}`, options),
     );
   };
 
@@ -152,7 +158,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
 
   onErrorCloseClick = () => {
     this.track('search.error_close', {
-      response: this.state.status.message[1],
+      response: this.state.status.message[0],
     });
   };
 
@@ -161,9 +167,9 @@ export default class VirtualAccountsListContainer extends ListContainer {
       .then(() => {
         this.track('search.success');
       })
-      .catch(() => {
+      .catch((error) => {
         this.track('search.error', {
-          response: this.state.status.message[1],
+          response: error.errors[0],
         });
       });
   };
