@@ -68,7 +68,7 @@ class DowntimeNotification extends Mailable
                     $dimension = $this->data[Entity::PSP];
 
                 }
-                else if (isset($this->data[Entity::VPA_HANDLE]))
+                else if (isset($this->data[Entity::VPA_HANDLE]) && $this->data[Entity::VPA_HANDLE] != Entity::ALL)
                 {
                     $dimension = $this->data[Entity::VPA_HANDLE];
                 }

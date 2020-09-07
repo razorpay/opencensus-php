@@ -28,22 +28,12 @@ class UpiProcessor extends BaseProcessor
 
         $vpaList = $this->getUnavailableVpaList($gatewayDowntimes);
 
-        if ($this->impliesUpiDowntime($gatewayDowntimes) === true)
+        foreach ($vpaList as $vpa)
         {
-            foreach ($vpaList as $vpa)
-            {
-                $this->createPaymentDowntime($gatewayDowntimes, $vpa);
-            }
+            $this->createPaymentDowntime($gatewayDowntimes, $vpa);
         }
 
-        if ($gatewayDowntimes->isEmpty() === true)
-        {
-            $this->endOngoingDowntimes();
-        }
-        elseif (empty($vpaList) === false)
-        {
-            $this->endOngoingDowntimes($vpaList);
-        }
+        $this->endOngoingDowntimes($vpaList);
 
         $this->googlePayDowntime($gatewayDowntimes);
     }
@@ -129,7 +119,7 @@ class UpiProcessor extends BaseProcessor
 
     protected function calculateDowntimePeriod(Collection $gatewayDowntimes, $vpa = null): array
     {
-        if( isset($vpa) === true)
+        if( isset($vpa) === true && $vpa != GatewayDowntime::ALL)
         {
             $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::VPA_HANDLE, '=', $vpa);
         }
@@ -147,7 +137,16 @@ class UpiProcessor extends BaseProcessor
     {
         $gatewaydowntimes = $gatewayDowntimes->unique(GatewayDowntime::VPA_HANDLE);
 
+        $gatewaydowntimes = $gatewaydowntimes->where(GatewayDowntime::VPA_HANDLE, '!=', null);
+
         $vpa = $gatewaydowntimes->pluck(GatewayDowntime::VPA_HANDLE)->toArray();
+
+        $gatewayDown = $gatewayDowntimes->where(GatewayDowntime::VPA_HANDLE, '=', null);
+
+        if ($this->impliesUpiDowntime($gatewayDown) === true)
+        {
+            array_push($vpa, GatewayDowntime::ALL);
+        }
 
         return $vpa;
     }

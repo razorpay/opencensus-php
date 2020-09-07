@@ -22,6 +22,7 @@ class Constants
         Gateway::UPI_AXIS,
         Gateway::UPI_ICICI,
         Gateway::UPI_MINDGATE,
+        Gateway::UPI_SBI,
     ];
 
     // List of active card gateways that are being used

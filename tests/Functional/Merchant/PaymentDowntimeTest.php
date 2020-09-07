@@ -801,7 +801,7 @@ class PaymentDowntimeTest extends TestCase
 
         $this->assertEquals($downtime['method'], 'upi');
 
-        $this->assertNull($downtime['vpa_handle']);
+        $this->assertEquals($downtime['vpa_handle'], 'ALL');
 
         $this->assertNull($downtime['end']);
 
@@ -973,7 +973,7 @@ class PaymentDowntimeTest extends TestCase
 
         $this->assertEquals($downtime['vpa_handle'], 'oksbi');
 
-        $this->assertNull($downtime2['vpa_handle']);
+        $this->assertEquals($downtime2['vpa_handle'], 'ALL');
 
         Carbon::setTestNow(Carbon::now()->addMinute(10));
 
@@ -1335,6 +1335,16 @@ class PaymentDowntimeTest extends TestCase
         $paymentDowntime = $this->getLastEntity('payment.downtime', true);
         $this->assertEquals($paymentDowntime['network'], 'RUPAY');
         $this->assertNotNull($paymentDowntime['end']);
+    }
+
+    public function testAllUPIPaymentDowntime()
+    {
+        $this->createUpiAllGatewayDowntime();
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals($paymentDowntime['method'], 'upi');
+        $this->assertEquals($paymentDowntime['vpa_handle'], 'ALL');
     }
 
     protected function createUpiAllGatewayDowntime()
