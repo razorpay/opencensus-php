@@ -1026,7 +1026,8 @@ class ApiEventSubscriber extends Base\Core
         $variant = $this->app->razorx->getTreatment(
             $merchantId,
             Merchant\RazorxTreatment::PAYOUTS_WEBHOOK_FILTER,
-            $this->mode
+            $this->mode,
+            Payout\Entity::RAZORX_RETRY_COUNT
         );
 
         if (strtolower($variant) === 'on')

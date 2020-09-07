@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FundTransfer;
+use RZP\Models\FundAccount;
 use RZP\Models\BankAccount\Beneficiary;
 use RZP\Models\FundAccount\Type as FundAccountType;
 
@@ -49,7 +50,6 @@ class Core extends Base\Core
                 $input[Card\Entity::VAULT] = Card\Vault::RZP_VAULT;
 
                 $card = $this->create($input, $merchant);
-
                 $cardType = $card->getType();
                 $cardIssuer = $card->getIssuer();
                 $cardVaultToken = $card->getCardVaultToken();
@@ -58,7 +58,8 @@ class Core extends Base\Core
                 $prepaidCardVariant = $this->app->razorx->getTreatment(
                     $merchant->getId(),
                     Merchant\RazorxTreatment::PAYOUT_TO_PREPAID_CARDS,
-                    $this->mode
+                    $this->mode,
+                    FundAccount\Entity::FUND_ACCOUNT_RX_RETRY_COUNT
                 );
 
                 if (($card->getCardVaultToken() === null) or
@@ -68,7 +69,8 @@ class Core extends Base\Core
                     $variant = $this->app->razorx->getTreatment(
                         $merchant->getId(),
                         Merchant\RazorxTreatment::PAYOUT_TO_AMEX_CARDS,
-                        $this->mode
+                        $this->mode,
+                        FundAccount\Entity::FUND_ACCOUNT_RX_RETRY_COUNT
                     );
 
                     if (($card->isAmex() === true) and

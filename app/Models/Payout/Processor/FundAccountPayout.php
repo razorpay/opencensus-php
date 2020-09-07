@@ -149,7 +149,8 @@ class FundAccountPayout extends Base
     {
         $variant = $this->app->razorx->getTreatment($payout->getMerchantId(),
                                                     Merchant\RazorxTreatment::PAYOUTS_CREATED_WEBHOOK,
-                                                    $this->mode);
+                                                    $this->mode,
+                                                    FundAccount\Entity::FUND_ACCOUNT_RX_RETRY_COUNT);
 
         return (strtolower($variant) === 'on');
     }
@@ -198,7 +199,8 @@ class FundAccountPayout extends Base
         $variant = $this->app->razorx->getTreatment(
             $merchant->getId(),
             constant(RazorxTreatment::class . '::' . $razorxFeature),
-            $this->mode
+            $this->mode,
+            Payout\Entity::RAZORX_RETRY_COUNT
         );
 
         if (strtolower($variant) === 'control')

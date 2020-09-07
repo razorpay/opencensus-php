@@ -151,7 +151,8 @@ class DownstreamProcessor
         $variant = $this->app->razorx->getTreatment(
             $merchant->getId(),
             constant(RazorxTreatment::class . '::' . $razorxFeature),
-            $this->mode
+            $this->mode,
+            Entity::RAZORX_RETRY_COUNT
         );
 
         if (strtolower($variant) === 'control')

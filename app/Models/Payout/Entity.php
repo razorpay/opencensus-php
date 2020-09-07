@@ -215,6 +215,8 @@ class Entity extends Base\PublicEntity
         self::DASHBOARD => 2,
     ];
 
+    const RAZORX_RETRY_COUNT = 2;
+
     protected $queueFlag = false;
 
     protected $composite = false;
