@@ -21,6 +21,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
 use RZP\Models\Card\Type;
 use RZP\Models\Settlement;
+use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
@@ -2225,12 +2226,47 @@ trait Refund
 
         $this->loadFTADataForScroogeRefund($scroogeData, $refund, $payment, $input);
 
+        $metaData = $this->getMetaDataOfRefund($payment);
+
+        $scroogeData[Constants::META_DATA] = $metaData;
+
         //
         // These attributes are already in scrooge, need to be reset before sending scrooge request
         //
         unset($scroogeData['status']);
 
         return $scroogeData;
+    }
+
+    protected function getMetaDataOfRefund(Payment\Entity $payment)
+    {
+        $headers = $this->ba->getDashboardHeaders();
+
+        $initiatorEmailId = null;
+
+        if (isset($headers[Constants::ADMIN_EMAIL]) === true)
+        {
+            $initiatorEmailId = $headers[Constants::ADMIN_EMAIL];
+        }
+        else if (isset($headers[Constants::USER_EMAIL]) === true)
+        {
+            $initiatorEmailId = $headers[Constants::USER_EMAIL];
+        }
+
+        $isBatch = (($this->ba->isBatchFlow() === true) or ($this->ba->isBatchApp() === true));
+
+        $metaData = [
+            Constants::INITIATOR_EMAIL_ID      => $initiatorEmailId,
+            Constants::IS_CRON                 => $this->ba->isCron(),
+            Constants::IS_DASHBOARD_APP        => $this->ba->isDashboardApp(),
+            Constants::ROUTE_NAME              => $this->route->getCurrentRouteName(),
+            Constants::IS_BATCH                => $isBatch,
+            Constants::CREATOR_ID              => $this->request->header(RequestHeader::X_Creator_Id) ?? null,
+            Constants::CREATOR_TYPE            => $this->request->header(RequestHeader::X_Creator_Type) ?? null,
+            Constants::IS_PAYMENT_CAPTURED     => (empty($payment->getCapturedAt()) === false)
+        ];
+
+        return $metaData;
     }
 
     protected function findExistingRefundForBatch(Batch\Entity $batch, Payment\Entity $payment)
