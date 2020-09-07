@@ -229,6 +229,72 @@ trait PayoutTrait
         return $workflow;
     }
 
+    /**
+     * This is just so bad way of doing this, All the fixtures here are hardcoded and none of them can
+     * be reused. For Ex : I would ideally want to use createPayoutWorkflowWithBankingUsersLiveMode to
+     * handle this for me, but that function just knows too much about the workflow and if I change it
+     * a lot of depenedent tests fail, hence creating this 😔
+     */
+    public function buildRolesRequiredForWorkflow() {
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX => [
+                    Merchant\Account::SHARED_ACCOUNT => '222444',
+                ]
+            ]);
+
+        // Creating Owner role corresponding to banking owner role
+        $this->fixtures->on('live')->create('role', [
+            'id'     => Org::OWNER_ROLE,
+            'org_id' => Org::RZP_ORG,
+            'name'   => 'Owner',
+        ]);
+
+        // Creating Banking Admin role corresponding to banking admin role
+        $this->fixtures->on('live')->create('role', [
+            'id'     => Org::BANKING_ADMIN_ROLE,
+            'org_id' => Org::RZP_ORG,
+            'name'   => 'Admin',
+        ]);
+
+        // Creating Finance L1 role corresponding to banking finance_l1 role
+        $this->fixtures->on('live')->create('role', [
+            'id'     => Org::FINANCE_L1_ROLE,
+            'org_id' => Org::RZP_ORG,
+            'name'   => 'Finance L1',
+        ]);
+
+        // Creating Finance L2 role corresponding to banking finance_l2 role
+        $this->fixtures->on('live')->create('role', [
+            'id'     => Org::FINANCE_L2_ROLE,
+            'org_id' => Org::RZP_ORG,
+            'name'   => 'Finance L2',
+        ]);
+
+        // Creating Finance L3 role corresponding to banking finance_l3 role
+        $this->fixtures->on('live')->create('role', [
+            'id'     => Org::FINANCE_L3_ROLE,
+            'org_id' => Org::RZP_ORG,
+            'name'   => 'Finance L3',
+        ]);
+
+        $this->ownerRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'owner', 'live');
+
+        $this->finL1RoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'finance_l1', 'live');
+        $this->finL2RoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'finance_l2', 'live');
+
+        $this->finL3RoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'finance_l3', 'live');
+
+        // The default bank account getting created has ifsc code prefix 'RAZR' even in live mode, which is modified here
+        $this->fixtures->on('live')->edit(
+            'bank_account',
+            '1000000lcustba',
+            [
+                'ifsc_code' => 'YESB0CMSNOC'
+            ]);
+
+    }
+
     protected function createPayoutWithWorkflow($payoutAttributes = [], $authKey = null)
     {
         $this->disableWorkflowMocks();
@@ -314,7 +380,7 @@ trait PayoutTrait
         $this->app['config']->set('heimdall.permissions.payouts.create_payout.assignable', true);
     }
 
-    protected function setupWorkflowForLiveMode()
+    protected function setupWorkflowForLiveMode(array $workflow = null)
     {
         $this->fixtures->merchant->addFeatures([Constants::PAYOUT_WORKFLOWS]);
 
@@ -343,11 +409,8 @@ trait PayoutTrait
 
         $this->fixtures->on('live')->create('org:workflow_users', ['org' => $org]);
 
-        $workflow = $this->createWorkflow([
-            'org_id'      => '100000razorpay',
-            'name'        => 'some workflow',
-            'permissions' => ['create_payout'],
-        ], 'live');
+        $workflow = $this->createWorkflow(is_null($workflow) ? $this->getDefaultWorkflowParams() : $workflow,
+            'live');
 
         $attributes = [
             'merchant_id' => '10000000000000',
@@ -361,6 +424,14 @@ trait PayoutTrait
         $this->createWorkflowCheckerRoleUser();
 
         return $workflow;
+    }
+
+    private function getDefaultWorkflowParams(){
+        return [
+            'org_id'      => '100000razorpay',
+            'name'        => 'some workflow',
+            'permissions' => ['create_payout'],
+        ];
     }
 
     protected function createWorkflowCheckerRoleUser()

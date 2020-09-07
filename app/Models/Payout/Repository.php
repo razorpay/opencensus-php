@@ -303,7 +303,7 @@ class Repository extends Base\Repository
             // If user role is not a workflow role
         }
 
-        $this->filterByRoleIds($query, $userRoleId, $user->getId());
+        $this->filterByRoleIds($query, $userRoleId, [$user->getId()]);
 
         $query->merchantId($merchant->getId());
 
@@ -660,7 +660,13 @@ class Repository extends Base\Repository
             Org\Entity::RAZORPAY_ORG_ID,
             BankingRole::getNamesForWorkflowRoles($pendingOnRoles));
 
-        $this->filterByRoleIds($query, $pendingRoleIds->pluck('id')->toArray());
+        // Adding this additional criteria to filter specificly these user_id's
+        // This is especially required when there are more than 1 checker on the same level
+        $merchantUsers = $this->repo->merchant_user
+            ->findByRolesAndMerchantId($pendingOnRoles, $this->merchant->getId());
+        $userIdsToFilter = array_pluck($merchantUsers->toArray(), 'user_id');
+
+        $this->filterByRoleIds($query, $pendingRoleIds->pluck('id')->toArray(), $userIdsToFilter);
     }
 
     protected function addQueryParamPendingOnMe(BuilderEx $query, array $params)
@@ -690,7 +696,7 @@ class Repository extends Base\Repository
         $this->filterByRoleIds($query, $userRoleId);
     }
 
-    protected function filterByRoleIds(BuilderEx $query, array $roleIds, string $userId = null)
+    protected function filterByRoleIds(BuilderEx $query, array $roleIds, array $userId = null)
     {
         $permissionId = ''; // Resolve from name
 
@@ -716,7 +722,7 @@ class Repository extends Base\Repository
         }
     }
 
-    protected function filterCompletedCheckerId(BuilderEx $query, string $checkerId)
+    protected function filterCompletedCheckerId(BuilderEx $query, array $checkerId)
     {
         $actionCheckerTable = $this->repo->action_checker->getTableName();
 
@@ -735,7 +741,7 @@ class Repository extends Base\Repository
 
                     $join->on($wfActionIdColumn, '=', $actionCheckerActionId)
                          ->on($wfStepIdColumn, '=', $actionCheckerStepId)
-                         ->where($actionCheckerCheckerId, '=', $checkerId);
+                         ->whereIn($actionCheckerCheckerId, $checkerId);
 
                 })
               ->whereNull($actionCheckerId);

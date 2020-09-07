@@ -64,6 +64,10 @@ class PayoutTest extends TestCase
 
     private $ownerRoleUser;
 
+    private $finL1RoleUser;
+
+    private $finL2RoleUser;
+
     private $finL3RoleUser;
 
     public function setUp()
@@ -1741,6 +1745,124 @@ class PayoutTest extends TestCase
         $this->assertEquals($payouts['count'], 2);
 
         $this->assertNotEquals($payouts['items'], null);
+    }
+
+    public function testGetPayoutsForPendingOnRoles() {
+        //Given
+
+        //1. I have a Workflow
+        // Sets up Fund Account and Merchant User mapping that may be needed to setup on live
+        $this->liveSetUp();
+        $this->buildRolesRequiredForWorkflow();
+        $this->setupWorkflowForLiveMode($this->getWorkflow1());
+
+        //2. I Create a Payout
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+        $expectedPayoutId = $payout["id"];
+
+        //When
+
+        //1. I approve the level1 finL1Role of workflow
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->finL1RoleUser->getId());
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => "/payouts/{$payout['id']}/approve",
+            'content' => [
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '0007',
+                'user_comment' => 'Approving',
+            ],
+        ];
+        $this->sendRequest($request);
+
+        //2. I approve the level2 finL2Role of workflow
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->finL2RoleUser->getId());
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => "/payouts/{$payout['id']}/approve",
+            'content' => [
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '0007',
+                'user_comment' => 'Approving',
+            ],
+        ];
+        $this->sendRequest($request);
+
+        //Then
+        //When I filter on pending on pending on L2 Role, I shouldn't get anything
+
+        //Assuming the role of merchant for maximum permissions
+        $merchantUser = $this->getDbEntity('merchant_user', ['role' => 'owner', 'product' => 'banking'], 'live')->toArray();
+        $this->ba->proxyAuth('rzp_live_10000000000000', $merchantUser['user_id']);
+
+        $request = [
+            'method'  => 'get',
+            'content' => [
+                'product'          => 'banking',
+                'expand'           => ['user'],
+                'pending_on_roles' => ['finance_l2']
+            ],
+            'url'     => '/payouts',
+        ];
+
+        $response = $this->sendRequest($request);
+        $payout = json_decode($response->getContent(), true);
+
+        $this->assertEmpty($payout["items"]);
+
+        // But when I filter by L3 Role (Which is not approved), I should see the payouts
+
+        $request = [
+            'method'  => 'get',
+            'content' => [
+                'product'          => 'banking',
+                'expand'           => ['user'],
+                'pending_on_roles' => ['finance_l3']
+            ],
+            'url'     => '/payouts',
+        ];
+
+        $response = $this->sendRequest($request);
+        $payout = json_decode($response->getContent(), false);
+
+        $this->assertEquals($expectedPayoutId, $payout->items[0]->id);
+    }
+
+    private function getWorkflow1() {
+        return [
+            'org_id'      => '100000razorpay',
+            'name'        => 'some workflow',
+            'permissions' => ['create_payout'],
+            'name'        => 'Test workflow',
+            'levels'      => [
+                [
+                    'level'   => 1,
+                    'op_type' => 'and',
+                    'steps'   => [
+                        [
+                            'reviewer_count' => 1,
+                            'role_id'        => Org::FINANCE_L1_ROLE,
+                        ],
+                    ],
+                ],
+                [
+                    'level'   => 2,
+                    'op_type' => 'and',
+                    'steps'   => [
+                        [
+                            'reviewer_count' => 1,
+                            'role_id'        => Org::FINANCE_L2_ROLE,
+                        ],
+                        [
+                            'reviewer_count' => 1,
+                            'role_id'        => Org::FINANCE_L3_ROLE,
+                        ],
+                    ],
+                ],
+            ],
+        ];
     }
 
     public function testGetPayoutsWithoutAccountNumber()

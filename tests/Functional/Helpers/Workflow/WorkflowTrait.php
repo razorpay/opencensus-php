@@ -13,7 +13,7 @@ trait WorkflowTrait
     {
         $defaultAttributes = $this->getDefaultWorkflowArray();
 
-        $attributes = array_merge($input, $defaultAttributes);
+        $attributes = array_merge($defaultAttributes, $input);
 
         $workflow = $this->fixtures->on($mode)->create('workflow', [
             'org_id' => $attributes['org_id'],
