@@ -520,7 +520,7 @@ class Validator extends Base\Validator
 
         $gateway = $refund->getGateway();
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway) === false)
+        if ($refund->isScrooge() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_REFUND_NOT_SCROOGE,

@@ -1495,8 +1495,8 @@ class Service extends Base\Service
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REFUND_NOT_SCROOGE);
                 }
 
-                if ((Payment\Gateway::isScroogeGatewayAndMerchant($refund->getGateway()) === false) or
-                    (($refund->isCreated() === false) and ($refund->isInitiated() === false)))
+                if (($refund->isCreated() === false) and
+                    ($refund->isInitiated() === false))
                 {
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REFUND_INVALID_STATE_FOR_RETRY);
                 }
@@ -1647,9 +1647,7 @@ class Service extends Base\Service
                 {
                     $refund = $this->repo->refund->findOrFailPublic($refundId);
 
-                    $gateway = $refund->getGateway();
-
-                    if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway) === true)
+                    if ($refund->isScrooge() === true)
                     {
                         $refund->getValidator()->validateUpdateScroogeRefundStatus($input);
 

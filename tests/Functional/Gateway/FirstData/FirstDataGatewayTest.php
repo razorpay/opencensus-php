@@ -213,14 +213,9 @@ class FirstDataGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway']) === true)
-        {
-            $this->assertEquals('created', $refund['status']);
-        }
-        else
-        {
-            $this->assertEquals('failed', $refund['status']);
-        }
+        $statusToBeAsserted = ($refund['is_scrooge'] === true) ? 'created' : 'failed';
+
+        $this->assertEquals($statusToBeAsserted, $refund['status']);
 
         $this->assertEquals(1, $refund['attempts']);
 
@@ -253,7 +248,7 @@ class FirstDataGatewayTest extends TestCase
 
         $this->assertEquals($actualRefund['id'], 'rfnd_'.$firstData['refund_id']);
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway']) === false)
+        if ($refund['is_scrooge'] === false)
         {
             $this->assertEquals('CAPTURED', $firstData['status']);
         }
@@ -269,14 +264,9 @@ class FirstDataGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway']) === true)
-        {
-            $this->assertEquals('created', $refund['status']);
-        }
-        else
-        {
-            $this->assertEquals('failed', $refund['status']);
-        }
+        $statusToBeAsserted = ($refund['is_scrooge'] === true) ? 'created' : 'failed';
+
+        $this->assertEquals($statusToBeAsserted, $refund['status']);
 
         $this->assertEquals(1, $refund['attempts']);
 
@@ -317,14 +307,9 @@ class FirstDataGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway']) === true)
-        {
-            $this->assertEquals('created', $refund['status']);
-        }
-        else
-        {
-            $this->assertEquals('failed', $refund['status']);
-        }
+        $statusToBeAsserted = ($refund['is_scrooge'] === true) ? 'created' : 'failed';
+
+        $this->assertEquals($statusToBeAsserted, $refund['status']);
 
         $this->assertEquals(1, $refund['attempts']);
 

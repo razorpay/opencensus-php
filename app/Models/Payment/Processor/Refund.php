@@ -1225,8 +1225,6 @@ trait Refund
                 $gatewayResponse = $this->callGatewayFunction(Payment\Action::REFUND, $data);
             }
 
-            $gateway = $data['payment'][Payment\Entity::GATEWAY];
-
             //
             // TODO: Remove for Scrooge
             // For refunds on Scrooge-enabled gateways, Scrooge
@@ -1237,7 +1235,7 @@ trait Refund
             // scrooge will not call API to mark processed as older refunds
             // are retried via API code itself and not via scrooge.
             //
-            if ((Payment\Gateway::isScroogeGatewayAndMerchant($gateway) === false) or
+            if (($this->refund->isScrooge() === false) or
                 ($retry === true))
             {
                 $this->refund->setStatusProcessed();
@@ -1343,8 +1341,6 @@ trait Refund
                 $gatewayResponse = $this->callGatewayFunction(Payment\Action::REVERSE, $data);
             }
 
-            $gateway = $data['payment'][Payment\Entity::GATEWAY];
-
             //
             // TODO: Remove for Scrooge
             // For refunds on Scrooge-enabled gateways, Scrooge makes an API call to mark it as processed, later.
@@ -1353,7 +1349,7 @@ trait Refund
             // refunds of scrooge gateways, scrooge will not call API to mark processed
             // as older refunds are retried via API admin dashboard not via scrooge.
             //
-            if ((Payment\Gateway::isScroogeGatewayAndMerchant($gateway) === false)
+            if (($this->refund->isScrooge() === false)
                 or ($retry === true))
             {
                 $this->refund->setStatusProcessed();
@@ -1879,7 +1875,7 @@ trait Refund
         // Enabling refund retry on created state and initiated state.
         // Refund is stuck in these state means refund is failed at some stage.
         //
-        if ((Payment\Gateway::isScroogeGatewayAndMerchant($refund->getGateway()) === true) and
+        if (($refund->isScrooge() === true) and
             (($refund->isCreated() === true) or ($refund->isInitiated() === true)))
         {
             $this->callRefundRetryFunctionOnScrooge($refund, $data);
