@@ -266,6 +266,12 @@ class Core extends Base\Core
             ];
         }
 
+        // Add meta details for refund type txn
+        if ($txn->isTypeRefund() === true)
+        {
+            $meta = $this->getMetaForSource($txn);
+        }
+
         $onHoldReason = ($txn->getOnHold() === true) ? 'created with transaction on hold' : '';
 
         $payload = [
@@ -296,6 +302,28 @@ class Core extends Base\Core
                 TraceCode::SETTLEMENT_TRANSACTION_STREAMING_FAILED,
                 $payload);
         }
+    }
+
+    protected function getMetaForSource(Transaction\Entity $txn)
+    {
+        $type = $txn->getType();
+
+        $txnSource = $txn->source;
+
+        switch ($type)
+        {
+            case Transaction\Type::REFUND:
+                $metaSource = $txnSource->payment;
+                break;
+
+            default:
+                $metaSource = $txnSource;
+        }
+
+        return [
+            'source_type' => $metaSource->getEntity(),
+            'source_id'   => $metaSource->getId()
+        ];
     }
 
     /**
