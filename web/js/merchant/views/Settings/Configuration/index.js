@@ -14,9 +14,10 @@ import { showWhenUtil } from 'merchant/components/ShowWhen';
 import RTracking from 'react-tracking';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import InstantRefundFee from 'merchant/views/Transactions/Payments/components/InstantRefundFee';
+import DebitRefundAnnouncement from '../../../components/Announcements/Refunds/DebitRefund';
 
 @connect(
-  state => {
+  (state) => {
     return {
       user: state.session.user,
       refund_pricing: state.config.refund_pricing,
@@ -24,12 +25,12 @@ import InstantRefundFee from 'merchant/views/Transactions/Payments/components/In
       mode: state.session.mode,
     };
   },
-  { ...ConfigActions, ...NotificationActions, openModal }
+  { ...ConfigActions, ...NotificationActions, openModal, closeModal },
 )
 @RTracking(() => window.rzpQ.component('CongfigurationContainer'))
 export default class CongfigurationContainer extends Component {
   componentWillMount() {
-    this.props.fetchFeatures(this.props.user.current).catch(err => {
+    this.props.fetchFeatures(this.props.user.current).catch((err) => {
       this.props.showNotification({
         type: 'error',
         message: err.errors,
@@ -47,14 +48,14 @@ export default class CongfigurationContainer extends Component {
 
     return this.props
       .updateConfig(data)
-      .then(res => {
+      .then((res) => {
         this.props.showNotification({
           type: 'success',
           message: 'Configuration Updated',
           hidePrevious: true,
         });
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -68,11 +69,42 @@ export default class CongfigurationContainer extends Component {
     this.popupIfSettle();
   }
 
+  scrolltoIR = () => {
+    setTimeout(() => {
+      this.scrollIntoView('default-refund-container');
+      const el = document.getElementById('instant-refund-panel-col');
+      if (el) {
+        el.style.border = '1px solid #528ff0';
+        setTimeout(() => {
+          el.style.border = '1px solid #ebeff0';
+        }, 2000);
+      }
+    }, 1000);
+  };
+
   popupIfSettle = () => {
     if (this.props.location.hash === '#paypalonboard') {
       this.resetHash();
       setTimeout(() => this.scrollIntoView('paypal-auto-onboarding'), 1000);
     }
+
+    if (this.props.location.hash === '#debitrefund') {
+      this.resetHash();
+      this.props.openModal({
+        component: (
+          <DebitRefundAnnouncement
+            onClose={this.props.closeModal}
+            onSuccess={() => {
+              console.log('success!');
+              this.props.closeModal();
+              this.scrolltoIR();
+            }}
+          />
+        ),
+        size: 'large',
+      });
+    }
+
     if (this.props.location.hash === '#instantrefunds') {
       if (!this.is_hash_loaded_once) {
         window.rzpAnalytics({
@@ -85,26 +117,14 @@ export default class CongfigurationContainer extends Component {
             label: 'Announcement Tab',
             session_id: window.session_id,
             category: 'Merchant Dashboard - IR',
-          })
+          }),
         );
         this.is_hash_loaded_once = true;
       }
 
-      setTimeout(() => {
-        this.scrollIntoView('default-refund-container');
-        const el = document.getElementById('instant-refund-panel-col');
-        if (el) {
-          el.style.border = '1px solid #528ff0';
-          setTimeout(() => {
-            el.style.border = '1px solid #ebeff0';
-          }, 2000);
-        }
-      }, 1000);
+      this.scrolltoIR();
     }
-    if (
-      this.props.location.hash === '#instantfee' &&
-      !this.props.refund_pricing.not_loaded
-    ) {
+    if (this.props.location.hash === '#instantfee' && !this.props.refund_pricing.not_loaded) {
       this.props.openModal({
         component: <InstantRefundFee pricing={this.props.refund_pricing} />,
         size: 'small',
@@ -113,7 +133,7 @@ export default class CongfigurationContainer extends Component {
     }
   };
 
-  scrollIntoView = id => {
+  scrollIntoView = (id) => {
     const el = document.getElementById(id);
     if (el) {
       el.scrollIntoView();
@@ -139,9 +159,7 @@ export default class CongfigurationContainer extends Component {
         ) : (
           <div>
             <CheckoutTheme form="configForm" onSave={this.saveConfig} />
-            {this.props.user.isOrgAllowedFunctionality('flashcheckout') && (
-              <FlashCheckout />
-            )}
+            {this.props.user.isOrgAllowedFunctionality('flashcheckout') && <FlashCheckout />}
             <PaymentSettings />
             {this.props.user.isActivated &&
             this.props.mode === 'live' &&
