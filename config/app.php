@@ -312,4 +312,9 @@ return array(
     'pl_demo' => [
         'nocaptcha_secret'      => env('NOCAPTCHA_SECRET', ''),
     ],
+
+    'payment_page_allowed_cors_url' => [
+        env('PAYMENT_LINK_HOSTED_BASE_URL'),
+        env('PL_DEMO_RAZORPAY_WEBSITE_URL'),
+    ]
 );

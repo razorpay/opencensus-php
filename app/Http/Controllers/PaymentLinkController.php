@@ -193,14 +193,30 @@ class PaymentLinkController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function createOrderOptions(string $id)
+    public function createOrderOptions(string $id, CurrentRequest $request)
     {
         $response = ApiResponse::json([]);
 
-        $response->headers->set(
-            'Access-Control-Allow-Origin',
-            $this->app['config']->get('app.payment_link_hosted_base_url')
-        );
+        $host = $request->getHost();
+
+        $urls = $this->app['config']->get('app.payment_page_allowed_cors_url');
+
+        foreach ($urls as $url)
+        {
+            if (stripos($url, $host) !== false)
+            {
+                $response->headers->set('Access-Control-Allow-Origin', $url);
+
+                $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
+
+                return $response;
+            }
+        }
+
+       $response->headers->set(
+           'Access-Control-Allow-Origin',
+           $this->app['config']->get('app.payment_link_hosted_base_url')
+       );
 
         $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
 
