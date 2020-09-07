@@ -4628,6 +4628,9 @@ class Route
         'fetch_payout_downtimes_enabled'               => '*',
         'merchant_credits_balance_fetch'               => '*',
 
+        // called in /user api in dashboard
+        'credits_fetch_multiple'                       => '*',
+
         // low balance configs
         'create_low_balance_config'                     => Permission::CREATE_LOW_BALANCE_CONFIG,
         'update_low_balance_config'                     => Permission::UPDATE_LOW_BALANCE_CONFIG,
