@@ -90,6 +90,60 @@ class InstrumentRequestProxyTest extends TestCase
         }
     }
 
+    public function testMerchantInstrumentKAMDashboardProxyMissingPermission()
+    {
+        // deleting all permissions that were seeded
+        $permissionNames = ['update_merchant_instrument_request', 'view_merchant_instrument_request'];
+
+        foreach($permissionNames as $name)
+        {
+            $permission = (new Repository)->findByOrgIdAndPermission(\RZP\Models\Admin\Org\Entity::RAZORPAY_ORG_ID, $name);
+
+            $permission->deleteOrFail();
+
+        }
+
+        $requests = [
+            [
+                'url'      => '/merchant_instrument_request',
+                'method'   => \Requests::POST,
+                'content'   =>  [
+                    'instrument'    =>  'pg.cards.visa',
+                    'special_pricing' => 'special_pricing_test'
+                ]
+            ],
+            [
+                'url'      => '/merchant_instrument_request/mir_12341234',
+                'method'   => \Requests::PATCH,
+                'content'   =>  [
+                    'status'    =>  'cancelled',
+                ]
+            ],
+            [
+                'url'      => '/merchant_instrument_request_fetch',
+                'method'   => \Requests::POST,
+                'content'  => [
+                    'query' =>"merchant_ids=a&status=activated"
+                ]
+            ],
+        ];
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth();
+
+        $this->mockTerminalsServiceSendRequest(null, 0);
+
+        foreach($requests as $request)
+        {
+            $this->testData[__FUNCTION__]['request'] = $request;
+
+            $this->startTest();
+        }
+    }
+
     public function testInternalInstrumentAdminDashboardProxy()
     {
         $this->ba->adminAuth();
@@ -276,7 +330,7 @@ class InstrumentRequestProxyTest extends TestCase
                 self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   => [
                     'status'    =>  'cancelled'
                 ],
-            ],
+            ]
         ];
 
         foreach ($testCases as $testCase)
@@ -314,4 +368,144 @@ class InstrumentRequestProxyTest extends TestCase
 
         }
     }
+
+    public function testKAMAdminDashboardProxy()
+    {
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth();
+
+        $testCases = [
+            [
+                self::REQUEST       => [
+                    'url'      => '/merchant_instrument_request',
+                    'method'   => \Requests::POST,
+                    'content'   =>  [
+                        'instrument'    =>  'pg.cards.visa',
+                        'special_pricing' => 'special_pricing_test'
+                    ]
+                ],
+                self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/merchant_instrument_request',
+                self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::POST,
+                self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   => [
+                    'instrument' => 'pg.cards.visa',
+                    'special_pricing' => 'special_pricing_test',
+                    'merchant_id' => '10000000000000'
+                ],
+            ],
+            [
+                self::REQUEST       => [
+                    'url'      => '/merchant_instrument_request/mir_12341234',
+                    'method'   => \Requests::PATCH,
+                    'content'   =>  [
+                        'status'    =>  'cancelled',
+                    ]
+                ],
+                self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/merchant_instrument_request/mir_12341234',
+                self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::PATCH,
+                self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   => ['status' => 'cancelled'],
+            ],
+        ];
+
+        foreach ($testCases as $testCase)
+        {
+            $this->testData[__FUNCTION__]['response'] = ['content' => ['testKey' => 'testValue']];
+
+            $this->testData[__FUNCTION__]['request'] = $testCase[self::REQUEST];
+
+            $this->mockTerminalsServiceSendRequest(function ($path, $content, $method, $additionalOptions = [], $additionalHeaders) use ($testCase) {
+
+                $this->assertEquals($testCase[self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE], $path);
+
+                $this->assertEquals($testCase[self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE], $method);
+
+                $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], json_decode($content, true));
+
+                $this->assertArrayHasKey('X-Dashboard-Merchant-Id', $additionalHeaders);
+
+                $this->assertArrayHasKey('X-Dashboard-Admin-Email', $additionalHeaders);
+
+                $response = new \Requests_Response;
+
+                $response->body = '
+                       {
+                        "data": {
+                           "testKey": "testValue"
+                        }
+                    }';
+
+                return $response;
+            }, 1);
+
+            $this->startTest();
+
+        }
+    }
+
+    public function testKamAdminDashboardFetchMerchantInstrument(){
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth();
+
+        $testCases = [
+            [
+
+                self::REQUEST       => [
+                    'url'       => '/merchant_instrument_request_fetch?count=50',
+                    'method'    => \Requests::POST,
+                    'content' => [
+                        'query' => "status=activated&start_time=123&end_time=456&has_special_pricing_request=true",
+                        'merchant_ids' => [
+                            "10000000000000"
+                        ],
+                    ],
+                ],
+                self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/composite_instrument_request?status=activated&start_time=123&end_time=456&has_special_pricing_request=true&count=50',
+                self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::POST,
+                self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   => [
+                    'merchant_ids'=>["10000000000000"]
+                ],
+
+            ],
+        ];
+
+        foreach ($testCases as $testCase)
+        {
+            $this->testData[__FUNCTION__]['response'] = ['content' => ['testKey' => 'testValue']];
+
+            $this->testData[__FUNCTION__]['request'] = $testCase[self::REQUEST];
+
+            $this->mockTerminalsServiceSendRequest(function ($path, $content, $method, $additionalOptions = [], $additionalHeaders) use ($testCase) {
+
+                $this->assertEquals($testCase[self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE], $path);
+
+                $this->assertEquals($testCase[self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE], $method);
+
+                $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], json_decode($content, true));
+
+                $this->assertArrayHasKey('X-Dashboard-Admin-Email', $additionalHeaders);
+
+                $response = new \Requests_Response;
+
+                $response->body = '
+                       {
+                        "data": {
+                           "testKey": "testValue"
+                        }
+                    }';
+
+                return $response;
+            }, 1);
+
+            $this->startTest();
+
+        }
+
+    }
+
 }

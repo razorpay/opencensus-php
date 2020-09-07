@@ -256,6 +256,25 @@ class InstrumentRequestController extends BaseController
         return ApiResponse::json($response);
     }
 
+    public function getMerchantInstruments()
+    {
+        $input = Request::all();
+
+        $query = $input['query'];
+
+        $merchantIds = $input['merchant_ids'];
+
+        unset($input['query'], $input['merchant_ids']);
+
+        $query = $query . '&' . http_build_query($input);
+
+        $instrumentHeaders = $this->getAdminHeadersForInstrumentRequest();
+
+        $response = $this->app['terminals_service']->getMerchantInstruments($merchantIds, $query, $instrumentHeaders);
+
+        return ApiResponse::json($response);
+
+    }
 
     protected function getMerchantHeadersForInstrumentRequest() : array
     {
@@ -263,7 +282,9 @@ class InstrumentRequestController extends BaseController
 
         return [
             self::X_DASHBOARD_MERCHANT_ID => $merchant->getId(),
+            self::X_DASHBOARD_ADMIN_EMAIL => $this->getAdminEmail(), // will be empty if not kam
         ];
+
     }
 
 }

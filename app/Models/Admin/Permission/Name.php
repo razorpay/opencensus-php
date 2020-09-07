@@ -432,6 +432,9 @@ class Name
     const UPDATE_INTERNAL_INSTRUMENT_REQUEST = 'update_internal_instrument_request';
     const DELETE_INTERNAL_INSTRUMENT_REQUEST = 'delete_internal_instrument_request';
 
+    const UPDATE_MERCHANT_INSTRUMENT_REQUEST = 'update_merchant_instrument_request';
+    const VIEW_MERCHANT_INSTRUMENT_REQUEST   = 'view_merchant_instrument_request';
+
     const MANAGE_PAYOUT_DOWNTIME              = 'manage_payout_downtime';
     const VIEW_PAYOUT_DOWNTIME                = 'view_payout_downtime';
     const VAULT_TOKEN_CREATE                  = 'vault_token_create';

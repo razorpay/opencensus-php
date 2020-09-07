@@ -1024,6 +1024,14 @@ return [
                 'description'   => 'Delete internal instrument requests',
                 'assignable'    => true,
             ],
+            Permission::VIEW_MERCHANT_INSTRUMENT_REQUEST => [
+                'description'   => 'View single/bulk merchant instrument requests',
+                'assignable'    => true,
+            ],
+            Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST => [
+                'description'   => 'Update single/bulk merchant instrument requests',
+                'assignable'    => true,
+            ],
         ],
 
         PermissionCategory::FUND_ACCOUNT_VALIDATION => [

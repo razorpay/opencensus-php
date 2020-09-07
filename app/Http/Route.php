@@ -1937,6 +1937,7 @@ class Route
         'merchant_instrument_status_get_by_merchant_id'     =>  ['get',     'merchant_instrument_status',                       'InstrumentRequestController@getMerchantInstrumentStatus'        ],
         'merchant_instrument_request_get_by_id'             =>  ['get',     'merchant_instrument_request/{id}',                 'InstrumentRequestController@getMerchantInstrumentRequestById'   ],
         'merchant_instrument_request_update_by_id'          =>  ['patch',   'merchant_instrument_request/{id}',                 'InstrumentRequestController@patchMerchantInstrumentRequestById' ],
+        'fetch_merchant_instrument_requests'                       =>  ['post',    'merchant_instrument_request_fetch',                              'InstrumentRequestController@getMerchantInstruments'             ],
 
         'create_promotions_events'                => ['post',      'promotions/events',                                        'PromotionEventController@create'],
 
@@ -3659,6 +3660,7 @@ class Route
         'fetch_internal_instrument_requests',
         'patch_internal_instrument_requests',
         'instrument_request_razorx_admin',
+        'fetch_merchant_instrument_requests',
 
         // settlements service dashboard routes
         'setl_admin_fetch',
@@ -4437,6 +4439,9 @@ class Route
         'fetch_internal_instrument_requests'          => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
         'patch_internal_instrument_requests'          => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUEST,
         'instrument_request_razorx_admin'             => '*',
+        'merchant_instrument_request_create'          => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
+        'merchant_instrument_request_update_by_id'    => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
+        'fetch_merchant_instrument_requests'          => Permission::VIEW_MERCHANT_INSTRUMENT_REQUEST,
 
         //payout downtime fetch from X dashboard
         'fetch_payout_downtimes_enabled'              => '*',

@@ -5,11 +5,16 @@ namespace RZP\Services;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Base\PublicEntity;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
+use  RZP\Models\Base\Service;
 use RZP\Http\Request\Requests;
+use RZP\Models\Admin\Group\Core as core;
+use RZP\Models\Admin\Admin\Service as AdminService;
+use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class TerminalsService
 {
@@ -296,6 +301,51 @@ class TerminalsService
         return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
     }
 
+    public function getMerchantInstruments(array $merchantIds, string $query, array $headers): array
+    {
+       if ($this->areMerchantIdsAccessible($merchantIds))
+       {
+           $response = $this->proxyTerminalService(
+               ['merchant_ids' => $merchantIds],
+               \Requests::POST,
+               'v2/composite_instrument_request?' . $query,
+               [],
+               $headers
+           );
+           return $response;
+       }
+       else
+       {
+           $this->trace->error(TraceCode::TERMINALS_SERVICE_MERCHANT_INSTRUMENTS_REQUEST_FAILED, [
+               'merchant_ids' => $merchantIds
+           ]);
+           return [];
+       }
+
+    }
+
+    private function areMerchantIdsAccessible(array $merchantIds):bool
+    {
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $merchant = (new Merchant\Entity);
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $merchant->setId($merchantId);
+
+            if (!(new core)->groupCheck($admin, $merchant))
+            {
+                return false;
+            }
+
+        }
+
+        return count($merchantIds) > 0;
+
+    }
+
+
     public function reRequestInternalInstrumentRequestsOnActivationFormSubmit(string $merchantId)
     {
         try
@@ -362,6 +412,7 @@ class TerminalsService
 
             $this->trace->error(TraceCode::TERMINALS_SERVICE_MERCHANT_DEFAULT_INSTRUMENTS_REQUEST_FAILED, $data);
         }
+
     }
 
     protected function sendRequest(string $path, $content = '', string $method = Requests::POST, array $addditionalOptions = [],
@@ -439,7 +490,7 @@ class TerminalsService
             $data = [
                 self::EXCEPTION => $exception->getMessage(),
                 self::URL       => $url,
-                'data'          => $exception->getData(),
+                'data'          => $exception,
             ];
 
             $this->trace->error(TraceCode::TERMINALS_SERVICE_INTEGRATION_ERROR, $data);
