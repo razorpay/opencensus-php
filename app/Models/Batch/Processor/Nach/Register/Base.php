@@ -230,6 +230,7 @@ abstract class Base extends BaseProcessor
             {
                 $this->trace->critical(TraceCode::CUSTOMER_TOKEN_STATUS_MISMATCH,
                     [
+                        'token_id'       => $token->getId(),
                         'new_status'     => $newRecurringStatus,
                         'current_status' => $currentRecurringStatus,
                     ]);

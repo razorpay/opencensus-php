@@ -8,9 +8,13 @@ namespace RZP\Models\SubscriptionRegistration;
 final class Metric
 {
     // Counters
-    const SUBSCRIPTION_REGISTRATION_MIGRATED       = 'subscription_registration_migrated';
-    const SUBSCRIPTION_REGISTRATION_CREATED        = 'subscription_registration_created';
-    const SUBSCRIPTION_REGISTRATION_AUTHENTICATED  = 'subscription_registration_authenticated';
+    const AUTH_LINK_PAPER_NACH_CREATED            = 'auth_link_paper_nach_created';
+    const AUTH_LINK_CHARGE_TOKEN_INITIATED        = 'auth_link_charge_token_initiated';
+    const AUTH_LINK_CHARGE_TOKEN_SUBMITTED        = 'auth_link_charge_token_submitted';
+    const AUTH_LINK_MIGRATION_STARTED             = 'auth_link_migration_started';
+    const AUTH_LINK_MIGRATION_COMPLETED           = 'auth_link_migration_completed';
+    const SUBSCRIPTION_REGISTRATION_CREATED       = 'subscription_registration_created';
+    const SUBSCRIPTION_REGISTRATION_AUTHENTICATED = 'subscription_registration_authenticated';
 
     const SUBSCRIPTION_REGISTRATION_AUTO_ORDER_CREATED      = 'subscription_registration_auto_order_created';
     const SUBSCRIPTION_REGISTRATION_TOKEN_ASSOCIATED        = 'subscription_registration_token_associated';

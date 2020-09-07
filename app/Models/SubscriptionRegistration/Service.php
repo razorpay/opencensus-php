@@ -89,6 +89,15 @@ class Service extends Base\Service
     {
         $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id) ?? null;
 
+        if ($batchId !== null)
+        {
+            $this->trace->info(TraceCode::AUTH_LINK_BATCH_INPUT,
+                [
+                    'input'    => $input,
+                    'batch_id' => $batchId,
+                ]);
+        }
+
         $invoice = $this->core->createAuthLink($input, $this->merchant,null, null, $batchId);
 
         return $invoice->toArrayPublic();
@@ -99,7 +108,18 @@ class Service extends Base\Service
      */
     public function migrateNach(array $input): array
     {
+        $this->trace->count(Metric::AUTH_LINK_MIGRATION_STARTED, ['mode' => $this->mode]);
+
         $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id) ?? null;
+
+        if ($batchId !== null)
+        {
+            $this->trace->info(TraceCode::AUTH_LINK_BATCH_INPUT,
+                [
+                    'input'    => $input,
+                    'batch_id' => $batchId,
+                ]);
+        }
 
         try {
             $emandatePaymentMethodEnabled = $input['emandate_payment_enabled'];
@@ -141,6 +161,8 @@ class Service extends Base\Service
                 $ex->getMessage()
             );
         }
+
+        $this->trace->count(Metric::AUTH_LINK_MIGRATION_COMPLETED, ['mode' => $this->mode]);
 
         return $response;
     }
@@ -242,7 +264,19 @@ class Service extends Base\Service
 
     public function chargeToken(String $id, array $input): array
     {
+        $this->trace->count(Metric::AUTH_LINK_CHARGE_TOKEN_INITIATED, ['mode' => $this->mode]);
+
         $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id) ?? null;
+
+        if ($batchId !== null)
+        {
+            $this->trace->info(TraceCode::AUTH_LINK_BATCH_INPUT,
+                [
+                    'token_id' => $id,
+                    'input'    => $input,
+                    'batch_id' => $batchId,
+                ]);
+        }
 
         $response =  $this->core->chargeToken($id, $input, $this->merchant, $batchId);
 
@@ -250,6 +284,9 @@ class Service extends Base\Service
         {
             $this->setOrderId($response);
         }
+
+        $this->trace->count(Metric::AUTH_LINK_CHARGE_TOKEN_SUBMITTED, ['mode' => $this->mode]);
+
         return $response;
     }
 

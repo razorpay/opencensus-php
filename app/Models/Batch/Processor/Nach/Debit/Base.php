@@ -6,7 +6,9 @@ use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Models\Batch\Processor\Emandate\Base as BaseProcessor;
@@ -26,9 +28,26 @@ class Base extends BaseProcessor
     {
         $content = $this->getDataFromRow($entry);
 
-        $this->updatePaymentEntities($content);
+        try
+        {
+            $this->updatePaymentEntities($content);
 
-        $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
+            $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::NACH_DEBIT_RESPONSE_ERROR,
+                [
+                    'content' => $content,
+                    'mode'    => $this->mode,
+                ]
+            );
+
+            throw $ex;
+        }
     }
 
     protected function updatePaymentEntities(array $content)

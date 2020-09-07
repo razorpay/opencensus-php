@@ -13,6 +13,7 @@ use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Exception\LogicException;
+use RZP\Models\SubscriptionRegistration\Metric;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Core extends Base\Core
@@ -54,6 +55,8 @@ class Core extends Base\Core
             [
                 'paper_mandate' => $paperMandate->toArrayPublic(),
             ]);
+
+        $this->trace->count(Metric::AUTH_LINK_PAPER_NACH_CREATED, ['mode' => $this->mode]);
 
         return $paperMandate;
     }
