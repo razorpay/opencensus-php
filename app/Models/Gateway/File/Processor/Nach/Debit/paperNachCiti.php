@@ -10,6 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Customer\Token;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\FundTransfer\Holidays;
@@ -543,5 +544,10 @@ class PaperNachCiti extends Debit\Base
             Enach\Base\Entity::ACQUIRER => Payment\Gateway::ACQUIRER_CITI,
             Enach\Base\Entity::UMRN     => $token['gateway_token'],
         ];
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('2048M');
     }
 }

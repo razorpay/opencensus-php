@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Models\Batch\Processor\Emandate\Base as BaseProcessor;
@@ -176,5 +177,10 @@ class Base extends BaseProcessor
         return $this->repo
                     ->netbanking
                     ->findByPaymentIdAndActionOrFail($paymentId, GatewayAction::AUTHORIZE);
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('2048M');
     }
 }

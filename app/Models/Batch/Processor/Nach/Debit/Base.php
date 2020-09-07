@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Base\RuntimeManager;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Models\Batch\Processor\Emandate\Base as BaseProcessor;
@@ -164,5 +165,10 @@ class Base extends BaseProcessor
     protected function updateGatewayPaymentEntity($content, $payment)
     {
         return;
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('2048M');
     }
 }

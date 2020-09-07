@@ -164,7 +164,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $emandateCreateRules = [
-        Entity::FILE        => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::FILE        => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
         Entity::TYPE        => 'required|in:emandate',
         Entity::SUB_TYPE    => 'required|string|in:register,debit,acknowledge',
         Entity::GATEWAY     => 'required|string',
@@ -172,7 +172,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $nachCreateRules = [
-        Entity::FILE        => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::FILE        => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
         Entity::TYPE        => 'required|in:nach',
         Entity::SUB_TYPE    => 'required|string|in:register,debit',
         Entity::GATEWAY     => 'required|string',
