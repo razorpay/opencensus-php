@@ -38,6 +38,30 @@ class Assertions extends TestCase
         $this->assertEquals(144, $commission->getTax());
     }
 
+    public function testImplicitForPartnerWithNoGstin(array $data)
+    {
+        $this->assertShouldCreateCommission($data);
+
+        $postAction = $data['post_action'];
+
+        $calculator = $postAction['calculator'];
+
+        $this->assertImplicitPlanType($calculator, 'implicit_variable');
+
+        $commission = $this->assertCommissionCreatedByType($calculator, Commission\Type::IMPLICIT);
+
+        $this->assertZeroCommissionTaxByType($calculator, Commission\Type::IMPLICIT);
+
+        $amount          = 400000; // INR 4000
+        $merchantPricing = 2; // 2% pricing
+
+        $this->assertEquals($this->getFee($amount, $merchantPricing), $calculator->getMerchantFee());
+        $this->assertEquals($this->getTax($amount, $merchantPricing), $calculator->getMerchantTax());
+
+        $this->assertEquals(800, $commission->getFee());
+        $this->assertEquals(0, $commission->getTax());
+    }
+
     public function testImplicitFixed(array $data)
     {
         $this->assertShouldCreateCommission($data);
@@ -608,6 +632,20 @@ class Assertions extends TestCase
         $this->assertNotEmpty($commission);
 
         $this->assertNotEquals(0, $commission->getTax());
+
+        if ($type === Commission\Type::IMPLICIT)
+        {
+            $this->assertImplicitCommissionTaxRules($calculator, $commission);
+        }
+    }
+
+    protected function assertZeroCommissionTaxByType(Calculator $calculator, string $type, int $totalCount = 1)
+    {
+        $commission = $this->getCommissionByType($calculator, $type, $totalCount);
+
+        $this->assertNotEmpty($commission);
+
+        $this->assertEquals(0, $commission->getTax());
 
         if ($type === Commission\Type::IMPLICIT)
         {

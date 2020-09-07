@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Partner\Commission\Base;
 
+use RZP\Constants\Mode;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 
 class Setup
@@ -29,6 +30,11 @@ class Setup
         $account = $this->fixtures->merchant->createAccount($data['id']);
 
         $this->fixtures->merchant->edit($account->getId(), ['partner_type' => $data['type']]);
+
+        $data['merchant_detail']['merchant_id'] = $data['id'];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $data['merchant_detail']);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $data['merchant_detail']);
 
         $appData = [
             'merchant_id' => $account->getId(),
@@ -182,6 +188,9 @@ class Setup
         return [
             'id'   => 'DefaultPartner',
             'type' => 'fully_managed',
+            'merchant_detail' => [
+                'gstin' => '27APIPM9598J1ZW',
+            ],
         ];
     }
 

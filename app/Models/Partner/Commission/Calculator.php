@@ -562,7 +562,9 @@ class Calculator extends Base\Core
 
     protected function shouldCreditGst(): bool
     {
-        return ($this->getPartnerConfig()->shouldCreditGst() === true);
+        $gstin = $this->getPartner()->getGstin();
+
+        return ((empty($gstin) == false) && ($this->getPartnerConfig()->shouldCreditGst() === true));
     }
 
     protected function buildCommission(array $payload)
@@ -698,19 +700,22 @@ class Calculator extends Base\Core
                 $commissionFee,
                 $commissionTax);
 
-            // update tax fee split to new commission tax as this will be stored as fee breakup
-            $taxFeeSplit = $feeSplit->filter(function ($split)
-                                        {
-                                            return ($split->getName() === FeeBreakupName::TAX);
-                                        })->first();
-
-            if (empty($taxFeeSplit) === true)
-            {
-                throw new LogicException('Tax component could not be found while calculating partner fees');
-            }
-
-            $taxFeeSplit->setAmount($commissionTax);
         }
+
+        list($commissionFee, $commissionTax) = $this->getCommissionComponents($commissionFee, $commissionTax);
+
+        // update tax fee split to new commission tax as this will be stored as fee breakup
+        $taxFeeSplit = $feeSplit->filter(function ($split)
+        {
+            return ($split->getName() === FeeBreakupName::TAX);
+        })->first();
+
+        if (empty($taxFeeSplit) === true)
+        {
+            throw new LogicException('Tax component could not be found while calculating partner fees');
+        }
+
+        $taxFeeSplit->setAmount($commissionTax);
 
         $feeSplit = $feeSplit->map(function ($split) {
             $split->setName(Constants::COMMISSION_BREAK_UP_PREFIX . $split->getName());
@@ -741,8 +746,6 @@ class Calculator extends Base\Core
         {
             return;
         }
-
-        list($commissionFee, $commissionTax) = $this->getCommissionComponents($commissionFee, $commissionTax);
 
         $payload = [
             Entity::FEE         => $commissionFee,

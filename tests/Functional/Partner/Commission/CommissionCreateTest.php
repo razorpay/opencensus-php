@@ -8,6 +8,7 @@ use Mail;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Partner\Config;
@@ -401,6 +402,11 @@ class CommissionCreateTest extends TestCase
 
         $this->ba->oauthPublicTokenAuth();
 
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+
         $this->fixtures->merchant->edit(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
             [
                 'fee_bearer' => 'customer',
@@ -481,6 +487,11 @@ class CommissionCreateTest extends TestCase
             $client);
 
         $this->ba->oauthPublicTokenAuth();
+
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
 
         $this->fixtures->merchant->edit(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
             [

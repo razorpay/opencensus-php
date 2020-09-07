@@ -38,6 +38,11 @@ class CalculatorTest extends OAuthTestCase
         $this->ruleEngine->execute(__FUNCTION__);
     }
 
+    public function testImplicitForPartnerWithNoGstin()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
     public function testImplicitFixedCommissionGreaterThanMerchantFees()
     {
         $this->ruleEngine->execute(__FUNCTION__);
