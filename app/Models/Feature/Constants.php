@@ -932,6 +932,16 @@ class Constants
             'display_name'  => 'Alias on Route',
             'documentation' => '',
         ],
+        self::CONTACT_OPTIONAL => [
+            'feature'       => self::CONTACT_OPTIONAL,
+            'display_name'  => 'Contact optional in checkout',
+            'documentation' => '',
+        ],
+        self::EMAIL_OPTIONAL => [
+            'feature'       => self::EMAIL_OPTIONAL,
+            'display_name'  => 'Email optional in checkout',
+            'documentation' => '',
+        ],
     ];
 
     /**
