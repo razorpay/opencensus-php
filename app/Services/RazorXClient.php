@@ -285,7 +285,7 @@ class RazorXClient
         catch (\Throwable $e)
         {
             if (($e instanceof \Requests_Exception) and
-                (checkRequestTimeout($e) === true) and
+                ($this->checkRequestTimeout($e) === true) and
                 ($retryCount > 0))
             {
                 $this->trace->info(
@@ -381,5 +381,27 @@ class RazorXClient
         }
 
         return null;
+    }
+
+    /**
+     * Checks whether the requests exception that we caught
+     * is actually because of timeout in the network call.
+     *
+     * @param Requests_Exception $e The caught requests exception
+     *
+     * @return boolean              true/false
+     */
+    protected function checkRequestTimeout(\Requests_Exception $e)
+    {
+        if ($e->getType() === 'curlerror')
+        {
+            $curlErrNo = curl_errno($e->getData());
+
+            if ($curlErrNo === 28)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }
