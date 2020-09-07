@@ -16,6 +16,7 @@ import { fetchPaymentPageEntity } from 'merchant/views/PaymentPages/PaymentPages
 // TODO: Remove dependency from here
 import { FIXED_FIELDS } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers/preAddedFields';
 
+const INIT_DEFAULT_FORM_ITEMS = 'INIT_DEFAULT_FORM_ITEMS';
 const FETCH_ENTITY = 'FETCH_ENTITY';
 const REFRESH_PAGE_DATA = 'REFRESH_PAGE_DATA';
 const UPDATE_DATA = 'UPDATE_DATA';
@@ -39,6 +40,13 @@ export const updateTemplateType = (data, templateKey) => {
     },
     isPageDirty
   );
+};
+
+export const initDefaultFormItems = () => {
+  return {
+    type: INIT_DEFAULT_FORM_ITEMS,
+    payload: { user: store.getState().session.user }
+  }
 };
 
 export const fetchPaymentPage = (id, isIntentDuplicate) => {
@@ -117,7 +125,7 @@ let initialState = {
     },
   },
   payment_page_id: null,
-  FORM_ITEMS: [FIXED_FIELDS.email, FIXED_FIELDS.phone], // Email and Phone are added by default to display in UI and will NOW be sent in udf_schema to API.
+  FORM_ITEMS: null, // Email and Phone are added by default to display in UI and will NOW be sent in udf_schema to API (Added only as per feature flag)
   isPageDirty: false,
 };
 
@@ -133,6 +141,21 @@ export const reorderFormItems = ({
 
 export default function(state = initialState, action) {
   switch (action.type) {
+    case INIT_DEFAULT_FORM_ITEMS: {
+      const currentUser = action.payload.user;
+
+      const defaultFields = [];
+
+      if (!currentUser.isPaymentPageEmailOptional) {
+        defaultFields.push(FIXED_FIELDS.email);
+      }
+
+      if (!currentUser.isPaymentPageContactOptional) {
+        defaultFields.push(FIXED_FIELDS.phone);
+      }
+
+      return set(state, 'FORM_ITEMS', defaultFields);
+    }
     case `${FETCH_ENTITY}::PENDING`:
       return set(state, 'paymentPageEntity', { id: action.id });
 

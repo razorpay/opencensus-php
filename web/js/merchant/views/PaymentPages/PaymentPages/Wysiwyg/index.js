@@ -21,6 +21,7 @@ import { createPaymentPage, editPaymentPage, sendLink, setReceiptDetails } from 
 import { autoPrefixUrls, getURLQueryParams } from 'common/utils/rzp-utils';
 
 import {
+  initDefaultFormItems,
   fetchPaymentPage,
   updateData,
   refreshPageData,
@@ -60,6 +61,7 @@ const ERROR = {
   {
     refreshPageData,
     updateData,
+    initDefaultFormItems,
     fetchPaymentPage,
     markDataSaved,
     showNotification,
@@ -196,6 +198,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   componentDidMount() {
+    this.props.initDefaultFormItems();
+
+
     // Load color.js
     let script = document.createElement('script');
     script.src = 'https://cdn.razorpay.com/static/assets/color.js';

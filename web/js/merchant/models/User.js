@@ -283,6 +283,14 @@ export default class User {
     return isEnabled;
   }
 
+  get isPaymentPageEmailOptional() {
+    return this.isFeatureEnabled('email_optional');
+  }
+
+  get isPaymentPageContactOptional() {
+    return this.isFeatureEnabled('contact_optional');
+  }
+
   get currentMerchant() {
     return this.merchants[this.current];
   }
