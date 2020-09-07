@@ -1,4 +1,3 @@
-import AsyncButton from 'react-async-button';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
@@ -12,11 +11,24 @@ import {
 import { getIcon } from './InstrumentIcons';
 
 class LeafListItem extends React.Component {
+  constructor(props) {
+    super(props);
+  }
   static contextTypes = {
     confirm: PropTypes.func,
   };
+  state = {
+    loading: false,
+    isImageLoaded: false,
+  };
 
-  handleCreateRequest = requestSlug => {
+  handleCreateRequest = () => {
+    this.setState({ loading: true });
+    let { instrument, intermediateInstrument, leafInstrument } = this.props;
+    let requestSlug = `pg.${intermediateInstrument &&
+      intermediateInstrument.slug}.${leafInstrument && leafInstrument.slug}.${
+      instrument.slug
+    }`.replace(/\.null|\.undefined/g, '');
     this.props
       .createMerchantInstrumentRequest(requestSlug)
       .catch(({ errors }) => {
@@ -24,7 +36,8 @@ class LeafListItem extends React.Component {
           type: 'error',
           message: errors[0],
         });
-      });
+      })
+      .finally(() => this.setState({ loading: false }));
   };
 
   handleCancelRequest = instrument => {
@@ -45,7 +58,7 @@ class LeafListItem extends React.Component {
               if (d.success) {
                 this.props.showNotification({
                   type: 'success',
-                  message: `Reqeuest for ${
+                  message: `Request for ${
                     instrument.name
                   } cancelled successfully`,
                 });
@@ -64,13 +77,7 @@ class LeafListItem extends React.Component {
   };
 
   render() {
-    let { instrument, intermediateInstrument, leafInstrument } = this.props;
-
-    let requestSlug = `pg.${intermediateInstrument &&
-      intermediateInstrument.slug}.${leafInstrument && leafInstrument.slug}.${
-      instrument.slug
-    }`.replace(/\.null|\.undefined/g, '');
-
+    let { instrument, intermediateInstrument } = this.props;
     let ctaClass = {
       Request: 'btn btn-primary',
       requestable: 'btn btn-primary',
@@ -124,7 +131,16 @@ class LeafListItem extends React.Component {
                 alt={instrument.name}
                 width="30px"
                 height="30px"
+                onLoad={() => this.setState({ isImageLoaded: true })}
+                style={{
+                  display: `${this.state.isImageLoaded ? 'initial' : 'none'}`,
+                }}
               />
+              {!this.state.isImageLoaded && (
+                <div class="flex">
+                  <p className="PlaceholderLoader" />
+                </div>
+              )}
             </div>
           )}
           <div class="detail">
@@ -142,12 +158,13 @@ class LeafListItem extends React.Component {
                   justifyContent: 'flex-end',
                 }}
               >
-                <AsyncButton
+                <button
                   class="btn btn-primary mr-20"
-                  text="Request"
-                  pendingText="Requesting..."
-                  onClick={() => this.handleCreateRequest(requestSlug)}
-                />
+                  disabled={this.state.loading}
+                  onClick={this.handleCreateRequest}
+                >
+                  {this.state.loading ? 'Requesting..' : 'Request'}
+                </button>
               </div>
             )}
             {!['Request', 'requestable', 'cancelled'].includes(
@@ -213,6 +230,7 @@ class LeafListItem extends React.Component {
 const mapStateToProps = state => ({
   intermediateInstrument: state.instrumentRequests.intermediateInstrument,
   leafInstrument: state.instrumentRequests.leafInstrument,
+  userActivationStatus: state.session.user.activation_status,
 });
 
 export default connect(mapStateToProps, {

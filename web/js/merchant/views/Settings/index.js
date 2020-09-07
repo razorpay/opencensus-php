@@ -18,9 +18,14 @@ import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
 
 @RTracking(() => window.rzpQ.component('Settings'))
 @withRouter
-@connect(null, {
-  fetchAddWebsiteWorkflowStatus,
-})
+@connect(
+  state => ({
+    mode: state.session.mode,
+  }),
+  {
+    fetchAddWebsiteWorkflowStatus,
+  }
+)
 export default class Settings extends Component {
   state = {
     isWebsiteInWorkflow: false,
@@ -114,7 +119,9 @@ export default class Settings extends Component {
             <NavLink to="/applications">Applications</NavLink>
           </ShowWhen>
           <ShowWhen
-            additionalCondition={user => user.isInstrumentRequestAllowed()}
+            additionalCondition={user =>
+              user.isInstrumentRequestAllowed() && this.props.mode !== 'test'
+            }
           >
             <NavLink
               to="/payment-methods"

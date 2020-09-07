@@ -1,9 +1,23 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { connect } from 'react-redux';
 import LeafListItem from './LeafListItem';
 
 const LeafList = ({ instrument, intermediateInstrument }) => {
   const [filter, setFilter] = useState('active');
+  const ulRef = useRef(null);
+  const addShadow = () => {
+    if (ulRef && ulRef.current) {
+      if (ulRef.current.scrollHeight > ulRef.current.clientHeight) {
+        ulRef.current.style.boxShadow =
+          'inset 0px 20px 8px -10px rgba(227, 227, 227, 0.42), inset 0px -20px 8px -10px rgba(227, 227, 227, 0.42)';
+      } else {
+        ulRef.current.style.boxShadow = 'none';
+      }
+    }
+  };
+  useEffect(() => {
+    addShadow();
+  });
   if (!instrument) return null;
   function renderLeafList(leafList) {
     let list = leafList.list
@@ -23,7 +37,15 @@ const LeafList = ({ instrument, intermediateInstrument }) => {
       })
       .filter(Boolean);
     if (list.length === 0) {
-      return <p>No active banks!</p>;
+      if (filter === 'inactive') {
+        return <p class="all-active">All banks are active on your account!</p>;
+      } else if (filter === 'active') {
+        return (
+          <p class="all-inactive">
+            No banks active for you. Add more banks to catch up.
+          </p>
+        );
+      }
     } else {
       return list.map(leafItem => {
         return <LeafListItem key={leafItem.name} instrument={leafItem} />;
@@ -56,7 +78,12 @@ const LeafList = ({ instrument, intermediateInstrument }) => {
                     class={`filter-btn ${
                       filter === 'active' ? 'filter-active' : ''
                     }`}
-                    onClick={() => setFilter('active')}
+                    onClick={() =>
+                      setFilter(() => {
+                        addShadow();
+                        return 'active';
+                      })
+                    }
                   >
                     Active Banks
                   </button>
@@ -64,14 +91,24 @@ const LeafList = ({ instrument, intermediateInstrument }) => {
                     class={`filter-btn ${
                       filter === 'inactive' ? 'filter-active' : ''
                     }`}
-                    onClick={() => setFilter('inactive')}
+                    onClick={() =>
+                      setFilter(() => {
+                        addShadow();
+                        return 'inactive';
+                      })
+                    }
                   >
                     Add more Banks
                   </button>
                 </div>
               )}
             <ul
-              style={{ maxHeight: '500px', overflowY: 'auto', width: '420px' }}
+              style={{
+                maxHeight: `${!intermediateInstrument ? '420px' : '370px'}`,
+                overflowY: 'auto',
+                width: '420px',
+              }}
+              ref={ulRef}
             >
               {renderLeafList(leafList)}
             </ul>

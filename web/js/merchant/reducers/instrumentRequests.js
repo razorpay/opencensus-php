@@ -103,7 +103,7 @@ let initialState = {
               icon: 'rupay',
             },
             {
-              name: 'Mastero',
+              name: 'Maestro',
               status: 'Request',
               slug: 'domestic.maestro',
               icon: 'maestro',
@@ -169,7 +169,7 @@ let initialState = {
               list: [
                 { name: 'HDFC Bank', status: 'Request', slug: 'hdfc' },
                 {
-                  name: 'State bank of India',
+                  name: 'State Bank of India',
                   status: 'Request',
                   slug: 'sbin',
                 },
@@ -182,17 +182,17 @@ let initialState = {
                   slug: 'scbl',
                 },
                 {
-                  name: 'AU Bank',
+                  name: 'AU Small Finance Bank',
                   status: 'Request',
                   slug: 'aubl',
                 },
                 {
-                  name: 'ABPB Bank',
+                  name: 'Aditya Birla Idea Payments Bank',
                   status: 'Request',
                   slug: 'abpb',
                 },
                 {
-                  name: 'Airtel Payments Bank Limited',
+                  name: 'Airtel Payments Bank',
                   status: 'Request',
                   slug: 'airp',
                 },
@@ -212,12 +212,12 @@ let initialState = {
                   slug: 'bdbl',
                 },
                 {
-                  name: 'Bank of baharain and kuwait',
+                  name: 'Bank of Bahrain and Kuwait',
                   status: 'Request',
                   slug: 'bbkm',
                 },
                 {
-                  name: 'Baroda Bank',
+                  name: 'Bank of Baroda',
                   status: 'Request',
                   slug: 'barb_r',
                 },
@@ -232,7 +232,7 @@ let initialState = {
                   slug: 'mahb',
                 },
                 {
-                  name: 'Bassein Catholic Co-op Bank',
+                  name: 'Bassein Catholic Co-operative Bank',
                   status: 'Request',
                   slug: 'bacb',
                 },
@@ -252,7 +252,7 @@ let initialState = {
                   slug: 'cbin',
                 },
                 {
-                  name: 'Cosmos Cooperative Bank',
+                  name: 'Cosmos Co-operative Bank',
                   status: 'Request',
                   slug: 'cosb',
                 },
@@ -272,7 +272,7 @@ let initialState = {
                   slug: 'deut',
                 },
                 {
-                  name: 'DBS Bank',
+                  name: 'Development Bank of Singapore',
                   status: 'Request',
                   slug: 'dbss',
                 },
@@ -282,7 +282,7 @@ let initialState = {
                   slug: 'dlxb',
                 },
                 {
-                  name: 'ESAF Bank',
+                  name: 'ESAF Small Finance Bank',
                   status: 'Request',
                   slug: 'esaf',
                 },
@@ -297,17 +297,17 @@ let initialState = {
                   slug: 'fdrl',
                 },
                 {
-                  name: 'IDBI Bank',
+                  name: 'IDBI',
                   status: 'Request',
                   slug: 'ibkl',
                 },
                 {
-                  name: 'IDFC Bank',
+                  name: 'IDFC FIRST Bank',
                   status: 'Request',
                   slug: 'idfb',
                 },
                 {
-                  name: 'IDIB Bank',
+                  name: 'Indian Bank',
                   status: 'Request',
                   slug: 'idib',
                 },
@@ -317,7 +317,7 @@ let initialState = {
                   slug: 'ioba',
                 },
                 {
-                  name: 'IndusInd Bank',
+                  name: 'Indusind Bank',
                   status: 'Request',
                   slug: 'indb',
                 },
@@ -332,12 +332,12 @@ let initialState = {
                   slug: 'jsfb',
                 },
                 {
-                  name: 'Janata Sahakari Bank',
+                  name: 'Janata Sahakari Bank (Pune)',
                   status: 'Request',
                   slug: 'jsbp',
                 },
                 {
-                  name: 'Kangra Central Co-op Bank',
+                  name: 'Kalupur Commercial Co-operative Bank',
                   status: 'Request',
                   slug: 'kccb',
                 },
@@ -357,7 +357,7 @@ let initialState = {
                   slug: 'kvbl',
                 },
                 {
-                  name: 'Kottak Bank',
+                  name: 'Kotak Mahindra Bank',
                   status: 'Request',
                   slug: 'kkbk',
                 },
@@ -367,12 +367,12 @@ let initialState = {
                   slug: 'lavb_r',
                 },
                 {
-                  name: 'Mehsana Urban Bank',
+                  name: 'Mehsana Urban Co-operative Bank',
                   status: 'Request',
                   slug: 'msnu',
                 },
                 {
-                  name: 'Nkgsb Co-op Bank',
+                  name: 'NKGSB Co-operative Bank',
                   status: 'Request',
                   slug: 'nkgs',
                 },
@@ -392,7 +392,7 @@ let initialState = {
                   slug: 'utbi',
                 },
                 {
-                  name: 'Punjab and Sind Bank',
+                  name: 'Punjab & Sind Bank',
                   status: 'Request',
                   slug: 'psib',
                 },
@@ -422,7 +422,7 @@ let initialState = {
                   slug: 'sibl',
                 },
                 {
-                  name: 'SBBJ Bank',
+                  name: 'State Bank of Bikaner and Jaipur',
                   status: 'Request',
                   slug: 'sbbj',
                 },
@@ -457,12 +457,12 @@ let initialState = {
                   slug: 'synb',
                 },
                 {
-                  name: 'Tamil Nadu Mercantile Bank',
+                  name: 'Tamilnadu Mercantile Bank',
                   status: 'Request',
                   slug: 'tmbl',
                 },
                 {
-                  name: 'TNSC Bank ',
+                  name: 'Tamilnadu State Apex Co-operative Bank ',
                   status: 'Request',
                   slug: 'tnsc',
                 },
@@ -492,7 +492,7 @@ let initialState = {
                   slug: 'corp',
                 },
                 {
-                  name: 'Varachha Co-Op Bank',
+                  name: 'Varachha Co-operative Bank',
                   status: 'Request',
                   slug: 'vara',
                 },
@@ -507,7 +507,7 @@ let initialState = {
                   slug: 'yesb',
                 },
                 {
-                  name: 'Zoroastrian Co-Operative Bank',
+                  name: 'Zoroastrian Co-operative Bank',
                   status: 'Request',
                   slug: 'zcbl',
                 },
@@ -525,12 +525,12 @@ let initialState = {
               list: [
                 { name: 'Andhra Bank', status: 'Request', slug: 'andb_c' },
                 {
-                  name: 'SVC Co-operative Bank',
+                  name: 'Shamrao Vithal Co-operative Bank',
                   status: 'Request',
                   slug: 'svcb_c',
                 },
                 {
-                  name: 'Baroda Bank',
+                  name: 'Bank of Baroda',
                   status: 'Request',
                   slug: 'barb_c',
                 },
@@ -547,7 +547,7 @@ let initialState = {
                 { name: 'ICICI Bank', status: 'Request', slug: 'icic_c' },
                 { name: 'Axis Bank', status: 'Request', slug: 'utib_c' },
                 {
-                  name: 'IDBI Bank',
+                  name: 'IDBI',
                   status: 'Request',
                   slug: 'ibkl_c',
                 },
@@ -649,8 +649,6 @@ let initialState = {
       leafList: [
         {
           header: 'Wallets',
-          docLink:
-            'https://razorpay.com/docs/payment-gateway/payment-methods/amazon-pay/',
           list: [
             {
               name: 'Phonepe',

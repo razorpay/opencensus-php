@@ -2,25 +2,35 @@
   .mr-20
     margin-right: 20px
   .panel-heading
-    padding-top: 4px
+    padding: 15px 20px 15px 0px
     .title
       font-size: 18px
       font-weight: 600
   .methods-view
+    height: 490px
     display: flex
-    width: 100%
     border: 1px solid #E6E7E8
+    border-bottom: none
+    border-left: none
+    width: 100%
     background: rgba(238, 238, 238, 0.1)
     overflow-x: auto
+    overflow-y: hidden
     .level-1, .level-2
       width: 320px
       flex-shrink:0
       border-right: 1px solid #E6E7E8
       flex-wrap:no-wrap
+    .level-1
+      background: white
+      ul
+        border-left: 1px solid #E6E7E8
     .level-2
         ul > li
           height: 69px
-    ul
+    .level-2, .level-3
+      border-bottom: 1px solid #E6E7E8
+    ul  
       list-style-type: none
       padding: 0
       margin-bottom: 0
@@ -55,7 +65,7 @@
             font-size: 12px
             line-height: 20px
         .expand
-          flex:1
+          margin-right: 10px
           color: #0B70E7
           font-size: 20px
         .show-expand
@@ -105,10 +115,11 @@
 
       li
         width: 420px
+        background: transparent
         border-right: 1px solid #E6E7E8
         border-left: 1px solid #E6E7E8
         display: flex
-        height: 50px
+        height: 56px
         flex-direction: column
         justify-content: center
         align-items: center
@@ -207,3 +218,29 @@
         font-size: 18px
         padding-top: 5px;
         margin-right: 10px;
+    
+    .all-active
+      display: flex
+      height: 36px
+      background: #E5FAED
+      border: 1px solid #70C692
+      border-radius: 4px
+      font-size: 14px;
+      line-height: 17px
+      color: #5D666D
+      padding-left: 10px
+      align-items: center
+
+    .all-inactive
+      display: flex
+      height: 36px
+      background: #FBF8E3
+      border: 1px solid #DFE4E6
+      border-radius: 4px
+      font-size: 14px
+      line-height: 17px
+      color: #828282
+      padding-left: 10px
+      align-items: center
+    
+
