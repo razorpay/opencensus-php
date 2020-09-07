@@ -38,12 +38,13 @@ class Mutex
     /**
      * Set the lock for the all resource provided
      *
-     * @param array $resources Array of the resource
-     * @param int $ttl Expiry time of lock in seconds
-     * @param bool $strict defines lock should happen or not, even if one resource is not locked
+     * @param array  $resources Array of the resource
+     * @param int    $ttl       Expiry time of lock in seconds
+     * @param bool   $strict    defines lock should happen or not, even if one resource is not locked
      * @param string $suffix
      *
      * @return array containing values of locked and not_locked keys
+     * @throws Exception\InvalidArgumentException
      */
     public function acquireMultiple($resources, $ttl = 60, $suffix = '', $strict = false)
     {
@@ -77,7 +78,7 @@ class Mutex
         }
 
         return [
-            'locked' => $lockedResources,
+            'locked'   => $lockedResources,
             'unlocked' => $alreadyLockedResources
         ];
     }
@@ -104,10 +105,11 @@ class Mutex
      *
      * @param string $resource Name of the resource
      * @param int    $ttl      Expiry time of lock in seconds
+     * @param bool   $strict   Block/continue on redis exception
      *
      * @return boolean
      */
-    protected function acquireNoWait($resource, $ttl = 60) : bool
+    protected function acquireNoWait($resource, $ttl = 60, $strict = false) : bool
     {
         $this->appendPrefix($resource);
 
@@ -139,8 +141,8 @@ class Mutex
                     'ttl'       => $ttl
                 ]);
 
-            // Do not block the payment in case of any exception
-            return true;
+            // Do not block in case of any exception if strict is false
+            return ($strict === false);
         }
 
         /**
@@ -166,8 +168,10 @@ class Mutex
      * @param int    $retryCount    Number of times to retry for acquiring lock
      * @param int    $minRetryDelay Minimum time to wait before retry in millisec
      * @param int    $maxRetryDelay Maximum time to wait before retry in millisec
+     * @param bool   $strict        Block/continue on redis exception
      *
      * @return bool Whether finally lock was acquired or not
+     *
      * @throws Exception\InvalidArgumentException
      */
     public function acquire(
@@ -175,7 +179,8 @@ class Mutex
         $ttl = 60,
         $retryCount = 0,
         $minRetryDelay = 100,
-        $maxRetryDelay = 200) : bool
+        $maxRetryDelay = 200,
+        $strict = false) : bool
     {
         // max and min retry delay is in millisec
         if (($retryCount > 0) and
@@ -188,7 +193,7 @@ class Mutex
         do
         {
             // Try to acquire lock
-            $acquired = $this->acquireNoWait($resource, $ttl);
+            $acquired = $this->acquireNoWait($resource, $ttl, $strict);
 
             // If acquired then get out of loop
             if ($acquired === true)
@@ -255,6 +260,21 @@ class Mutex
         }
     }
 
+    /**
+     * @param string   $resource      Key on which to acquire lock
+     * @param callable $callback      Callback function
+     * @param int      $ttl           Time delay before lock is automatically released
+     * @param string   $errorCode     Time delay before lock is automatically released
+     * @param int      $retryCount    Number of times to retry for acquiring lock
+     * @param int      $minRetryDelay Minimum time to wait before retry in millisec
+     * @param int      $maxRetryDelay Maximum time to wait before retry in millisec
+     * @param bool     $strict        Block/continue on redis exception
+     *
+     * @return mixed|null
+     *
+     * @throws Exception\BadRequestException
+     * @throws Exception\InvalidArgumentException
+     */
     public function acquireAndRelease(
         $resource,
         callable $callback,
@@ -262,14 +282,15 @@ class Mutex
         $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
         $retryCount = 0,
         $minRetryDelay = 100,
-        $maxRetryDelay = 200)
+        $maxRetryDelay = 200,
+        $strict = false)
     {
         $ret = null;
 
         try
         {
             $acquired = $this->acquire(
-                $resource, $ttl, $retryCount, $minRetryDelay, $maxRetryDelay);
+                $resource, $ttl, $retryCount, $minRetryDelay, $maxRetryDelay, $strict);
 
             if ($acquired === false)
             {

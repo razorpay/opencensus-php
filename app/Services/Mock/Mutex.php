@@ -23,6 +23,7 @@ class Mutex extends BaseLock
      * @param int    $retryCount    Number of times to retry for acquiring lock
      * @param int    $minRetryDelay Minimum time to wait before retry in millisec
      * @param int    $maxRetryDelay Maximum time to wait before retry in millisec
+     * @param bool   $strict        Block/continue on redis exception
      *
      * @return bool Whether finally lock was acquired or not
      */
@@ -31,7 +32,8 @@ class Mutex extends BaseLock
         $ttl = 60,
         $retryCount = 0,
         $minRetryDelay = 100,
-        $maxRetryDelay = 200) : bool
+        $maxRetryDelay = 200,
+        $strict = false) : bool
     {
         if ($this->cache->store('file')->get($resource))
         {
