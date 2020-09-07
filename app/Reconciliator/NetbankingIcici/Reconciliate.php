@@ -18,6 +18,7 @@ class Reconciliate extends Base\Reconciliate
         'razorpaysoftwarepvtltdreports' => self::PAYMENT,
         'razorpaydonationreports'       => self::PAYMENT,
         'zest_money_sip'                => self::PAYMENT,
+        'razorpaywalletreports'         => self::PAYMENT,
     ];
 
     const EXCLUDE_FILE_STRING = 'success';
