@@ -1,8 +1,26 @@
 import ReactDOM from 'react-dom';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
+const TOOLTIP_CLASS_NAME = 'no-merchant-logo';
+
 class _MerchantLogoTooltip extends React.Component {
   state = { show: false };
+
+  componentDidMount() {
+    window.addEventListener('click', this.hideTooltip);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('click', this.hideTooltip);
+  }
+
+  hideTooltip = (e) => {
+    if (e.target.className === TOOLTIP_CLASS_NAME) return;
+
+    this.setState({
+      show: false,
+    });
+  };
 
   handleTooltip = () => {
     this.setState({ show: !this.state.show });
@@ -10,7 +28,7 @@ class _MerchantLogoTooltip extends React.Component {
 
   render() {
     return (
-      <div class="no-merchant-logo" onClick={this.handleTooltip}>
+      <div class={TOOLTIP_CLASS_NAME} onClick={this.handleTooltip}>
         Add your logo here
         {this.state.show && (
           <Popover align="bottom" theme="dark" persistent>
