@@ -33,7 +33,18 @@ configure(){
   ALOHOMORA_BIN=$(which alohomora)
   echo "casting alohomora - vault,env.php,apache"
   sed -i "s|APACHE_HOST|$HOSTNAME|g" dockerconf/api.apache.conf.j2
-  $ALOHOMORA_BIN cast --region ap-south-1 --env "$APP_MODE" --app api "environment/.env.vault.j2" "environment/env.php.j2" "dockerconf/api.apache.conf.j2"
+
+  #The dynamodb convention changes for dev-cluster and reading those value from env variable DYNAMODB_PREFIX from kubernetes deployment
+  #APP_MODE can be changed to ephemeral but need to make changes in logging package as well
+  if [[ "${APP_MODE}" == "ephemeral" ]]; then
+    $ALOHOMORA_BIN cast --region ap-south-1 --env "$APP_MODE" --app api "environment/env.php.j2"
+    $ALOHOMORA_BIN cast --region ap-south-1 --env "$DYNAMODB_PREFIX" --app api "dockerconf/api.apache.conf.j2" "environment/.env.ephemeral.j2"
+   # We're casting env.ephemeral.j2 only when APP_MODE is ephemeral, in other scenarios the flow will be as usual.
+   # Doing this will avoid us from resolving the different environmental conditions existing in vault.j2.
+   # env.vault.j2 will remain unresolved in case of APP_MODE = 'ephemeral'
+  else
+    $ALOHOMORA_BIN cast --region ap-south-1 --env "$APP_MODE" --app api "environment/.env.vault.j2" "environment/env.php.j2" "dockerconf/api.apache.conf.j2"
+  fi
   echo "copying apache config"
   cp dockerconf/api.apache.conf /etc/apache2/conf.d/api.conf
   sed -i 's/^#ExtendedStatus\ On/ExtendedStatus\ On/g' /etc/apache2/conf.d/info.conf
