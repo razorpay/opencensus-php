@@ -193,8 +193,8 @@ class Constants
             'description' => 'We now support instant refunds for payments made via Debit Cards! Along with this update, pricing for instant refunds has also been revised.',
             'track_event' => true,
             'id'          => 'IR_update_DC',
-            'start_ts'    => 1599489000,
-            'end_ts'      => 1604092722,
+            'start_ts'    => 1599566400,
+            'end_ts'      => 1604170122,
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/instant-refunds.svg',
             'buttons'     => [
                 [

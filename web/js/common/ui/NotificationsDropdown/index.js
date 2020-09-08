@@ -180,7 +180,12 @@ export default class NotificationsDropdown extends Component {
   render() {
     let { user, showMobileNav, analytics = () => {} } = this.props;
     const hasUnread = !!this.state.totalUnread;
-    const eventTrackingRequired = ['upiAutopay', 'projectNitro', 'paymentButton_GTM'];
+    const eventTrackingRequired = [
+      'upiAutopay',
+      'projectNitro',
+      'paymentButton_GTM',
+      'IR_update_DC',
+    ];
     let cardsList = this.state.notifications.map((card, idx) => (
       <div className="media media-action" key={idx}>
         <NotificationCard
