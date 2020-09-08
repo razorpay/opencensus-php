@@ -26,6 +26,7 @@
     "@universe/configs": "^1.0.30",
     "commitizen": "^4.1.2",
     "cz-conventional-changelog": "^3.2.0",
+    "eslint-import-resolver-jest": "^3.0.0",
     "husky": "^4.2.5",
     "lint-staged": "^10.2.11",
     "prettier": "^2.0.5",

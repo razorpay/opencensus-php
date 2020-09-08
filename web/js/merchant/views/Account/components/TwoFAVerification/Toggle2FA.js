@@ -47,7 +47,7 @@ class Toggle2FA extends Component {
           onSubmit={this.sendUpdateSecondFactorAuthRequest}
           dataSentWithPassword={secondFactorAuthPayload}
           enable={flag}
-        />
+        />,
       );
     }
   };
@@ -89,7 +89,7 @@ class Toggle2FA extends Component {
           this.verifyPassword(flag);
         }}
         onClose={this.abort}
-      />
+      />,
     );
   };
 
@@ -142,7 +142,9 @@ class Toggle2FA extends Component {
     return new Promise((resolve) => {
       this.actionCompleted = resolve;
       if (flag) {
-        const { user: { second_factor_auth_setup } } = this.props.user;
+        const {
+          user: { second_factor_auth_setup },
+        } = this.props.user;
 
         const action =
           //Check if user has mobile number verified for setup to continue, if yes skip mobile number verification & move to password verification
@@ -198,13 +200,10 @@ class Toggle2FA extends Component {
   trackEvent = (twoFaEnabled) => {
     const event = twoFaEnabled ? 'enable' : 'disable';
     this.props.tracking.trackEvent(
-      window.rzpQ
-        .now()
-        .onbr()
-        .success(`dash.2fa_${event}`, {
-          source: 'Toggle2FA',
-          sessionId: window.session_id,
-        })
+      window.rzpQ.now().onbr().success(`dash.2fa_${event}`, {
+        source: 'Toggle2FA',
+        sessionId: window.session_id,
+      }),
     );
   };
 }

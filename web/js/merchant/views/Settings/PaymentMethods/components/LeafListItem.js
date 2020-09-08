@@ -25,10 +25,9 @@ class LeafListItem extends React.Component {
   handleCreateRequest = () => {
     this.setState({ loading: true });
     let { instrument, intermediateInstrument, leafInstrument } = this.props;
-    let requestSlug = `pg.${intermediateInstrument &&
-      intermediateInstrument.slug}.${leafInstrument && leafInstrument.slug}.${
-      instrument.slug
-    }`.replace(/\.null|\.undefined/g, '');
+    let requestSlug = `pg.${intermediateInstrument && intermediateInstrument.slug}.${
+      leafInstrument && leafInstrument.slug
+    }.${instrument.slug}`.replace(/\.null|\.undefined/g, '');
     this.props
       .createMerchantInstrumentRequest(requestSlug)
       .catch(({ errors }) => {
@@ -40,27 +39,21 @@ class LeafListItem extends React.Component {
       .finally(() => this.setState({ loading: false }));
   };
 
-  handleCancelRequest = instrument => {
+  handleCancelRequest = (instrument) => {
     this.context
       .confirm({
         header: 'Are you sure?',
-        message: `Are you certain you want to cancel request for ${
-          instrument.name
-        }`,
+        message: `Are you certain you want to cancel request for ${instrument.name}`,
         affirmativeLabel: 'Yes',
         abortLabel: 'No',
         action: () => {
           this.props
-            .cancelMerchantInstrumentRequest(
-              instrument.merchant_instrument_request_id
-            )
-            .then(d => {
+            .cancelMerchantInstrumentRequest(instrument.merchant_instrument_request_id)
+            .then((d) => {
               if (d.success) {
                 this.props.showNotification({
                   type: 'success',
-                  message: `Request for ${
-                    instrument.name
-                  } cancelled successfully`,
+                  message: `Request for ${instrument.name} cancelled successfully`,
                 });
               }
             })
@@ -73,7 +66,7 @@ class LeafListItem extends React.Component {
         },
         abort: () => {},
       })
-      .catch(e => {});
+      .catch((e) => {});
   };
 
   render() {
@@ -97,7 +90,7 @@ class LeafListItem extends React.Component {
       rejected: 'Your request has been rejected',
       action_required: 'Action required on your end to complete the process',
     };
-    const displayName = name => {
+    const displayName = (name) => {
       const displayTextStyle = {
         fontWeight: '500',
         fontSize: '14px',
@@ -116,11 +109,7 @@ class LeafListItem extends React.Component {
     };
     return (
       <li
-        class={`${
-          instrument.status === 'action_required'
-            ? 'action-required-list-item'
-            : ''
-        }`}
+        class={`${instrument.status === 'action_required' ? 'action-required-list-item' : ''}`}
         style={customHeight}
       >
         <div>
@@ -148,9 +137,7 @@ class LeafListItem extends React.Component {
             {instrument.description && <p>{instrument.description}</p>}
           </div>
           <div>
-            {['Request', 'requestable', 'cancelled'].includes(
-              instrument.status
-            ) && (
+            {['Request', 'requestable', 'cancelled'].includes(instrument.status) && (
               <div
                 style={{
                   display: 'flex',
@@ -167,9 +154,7 @@ class LeafListItem extends React.Component {
                 </button>
               </div>
             )}
-            {!['Request', 'requestable', 'cancelled'].includes(
-              instrument.status
-            ) && (
+            {!['Request', 'requestable', 'cancelled'].includes(instrument.status) && (
               <div
                 style={{
                   display: 'flex',
@@ -178,10 +163,7 @@ class LeafListItem extends React.Component {
                 }}
               >
                 {!['pending', 'activated'].includes(instrument.status) && (
-                  <button
-                    class="btn btn-link"
-                    onClick={() => this.handleCancelRequest(instrument)}
-                  >
+                  <button class="btn btn-link" onClick={() => this.handleCancelRequest(instrument)}>
                     Cancel
                   </button>
                 )}
@@ -190,9 +172,7 @@ class LeafListItem extends React.Component {
                     {instrument.status.replace('_', ' ')}
                     <Popover align="bottom" theme="dark">
                       <PopoverBody>
-                        <div
-                          style={{ textAlign: 'left', textTransform: 'none' }}
-                        >
+                        <div style={{ textAlign: 'left', textTransform: 'none' }}>
                           {statusPopoverText[instrument.status]}
                         </div>
                       </PopoverBody>
@@ -227,7 +207,7 @@ class LeafListItem extends React.Component {
   }
 }
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   intermediateInstrument: state.instrumentRequests.intermediateInstrument,
   leafInstrument: state.instrumentRequests.leafInstrument,
   userActivationStatus: state.session.user.activation_status,

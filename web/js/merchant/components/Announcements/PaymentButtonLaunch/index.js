@@ -13,44 +13,35 @@ const cta1Link = '/paymentbuttons/new';
 function _track(source) {
   function onViewBanner() {
     window.rzpQ.push(
-      window.rzpQ
-        .now()
-        .paymentButtons()
-        .success('merchant_dashboard.display_banner', {
-          banner_text: bannerText,
-          card_id: cardId,
-          source,
-        }),
+      window.rzpQ.now().paymentButtons().success('merchant_dashboard.display_banner', {
+        banner_text: bannerText,
+        card_id: cardId,
+        source,
+      }),
     );
   }
 
   function onClickCTA1() {
     window.rzpQ.push(
-      window.rzpQ
-        .now()
-        .paymentButtons()
-        .initiated('merchant_dashboard.click_banner_cta1', {
-          banner_text: bannerText,
-          card_id: cardId,
-          cta_value: cta1Text,
-          link_url: cta1Link,
-          source,
-        }),
+      window.rzpQ.now().paymentButtons().initiated('merchant_dashboard.click_banner_cta1', {
+        banner_text: bannerText,
+        card_id: cardId,
+        cta_value: cta1Text,
+        link_url: cta1Link,
+        source,
+      }),
     );
   }
 
   function onClickCTA2() {
     window.rzpQ.push(
-      window.rzpQ
-        .now()
-        .paymentButtons()
-        .initiated('merchant_dashboard.click_banner_cta2', {
-          banner_text: bannerText,
-          card_id: cardId,
-          cta_value: cta2Text,
-          link_url: cta2Link,
-          source,
-        }),
+      window.rzpQ.now().paymentButtons().initiated('merchant_dashboard.click_banner_cta2', {
+        banner_text: bannerText,
+        card_id: cardId,
+        cta_value: cta2Text,
+        link_url: cta2Link,
+        source,
+      }),
     );
   }
 

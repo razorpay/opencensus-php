@@ -22,22 +22,19 @@ const PaymentMethod = ({
   setLoading,
   showNotification,
 }) => {
-  useEffect(
-    () => {
-      setLoading();
-      fetchMerchantInstruments().catch(({ errors }) => {
-        showNotification({
-          type: 'error',
-          message: errors[0],
-        });
+  useEffect(() => {
+    setLoading();
+    fetchMerchantInstruments().catch(({ errors }) => {
+      showNotification({
+        type: 'error',
+        message: errors[0],
       });
-      return () => {
-        clearIntermediateInstrument();
-        clearLeafInstrument();
-      };
-    },
-    [fetchMerchantInstruments]
-  );
+    });
+    return () => {
+      clearIntermediateInstrument();
+      clearLeafInstrument();
+    };
+  }, [fetchMerchantInstruments]);
   return loading ? (
     <div class="page-spinner-container">
       <Spinner />
@@ -53,22 +50,19 @@ const PaymentMethod = ({
             target="_blank"
             rel="noreferrer"
           >
-            Know More{' '}
-            <i class="i i-external-link" style={{ marginLeft: '5px' }} />
+            Know More <i class="i i-external-link" style={{ marginLeft: '5px' }} />
           </a>
         </span>
         <div style={{ marginTop: '5px', marginBottom: '20px' }}>
-          We offer a host of payment methods. Some of them are available by
-          default, while others require approval. Raise a request directly from
-          here to enable such payment methods.
+          We offer a host of payment methods. Some of them are available by default, while others
+          require approval. Raise a request directly from here to enable such payment methods.
         </div>
         {/* list view starts*/}
         <div class="methods-view">
           <RootList />
-          {intermediateInstrument &&
-            Array.isArray(intermediateInstrument.intermediateList) && (
-              <IntermediateList instrument={intermediateInstrument} />
-            )}
+          {intermediateInstrument && Array.isArray(intermediateInstrument.intermediateList) && (
+            <IntermediateList instrument={intermediateInstrument} />
+          )}
           <LeafList />
         </div>
       </div>
@@ -76,7 +70,7 @@ const PaymentMethod = ({
   );
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   intermediateInstrument: state.instrumentRequests.intermediateInstrument,
   loading: state.instrumentRequests.loading,
 });

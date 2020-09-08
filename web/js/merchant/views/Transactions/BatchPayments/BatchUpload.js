@@ -90,7 +90,7 @@ export default class BatchUploadContainer extends Component {
         .then(() => {
           this.setState({ mode: 'success' });
         })
-        .catch(error => {
+        .catch((error) => {
           this.props.showNotification({
             type: 'error',
             message: error.errors,
@@ -106,9 +106,7 @@ export default class BatchUploadContainer extends Component {
   };
 
   render() {
-    const Header = ({ title }) => (
-      <ModalHeader title={title} onCloseClick={this.closeModal} />
-    );
+    const Header = ({ title }) => <ModalHeader title={title} onCloseClick={this.closeModal} />;
     const Loader = () => (
       <div class="page-spinner-container">
         <Spinner />
@@ -171,13 +169,11 @@ export default class BatchUploadContainer extends Component {
             <SuccessModal onModalClose={this.closeModal}>
               <div class="text-center">
                 <p>
-                  All payments have queued for processing and output file will
-                  be available shortly.
+                  All payments have queued for processing and output file will be available shortly.
                 </p>
                 <p>
-                  You can download the output file to check for processed
-                  payments. For the payments that could not be processed due to
-                  some issues, please upload a new batch file.
+                  You can download the output file to check for processed payments. For the payments
+                  that could not be processed due to some issues, please upload a new batch file.
                 </p>
               </div>
             </SuccessModal>

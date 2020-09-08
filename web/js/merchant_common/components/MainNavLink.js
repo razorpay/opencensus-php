@@ -7,13 +7,13 @@ import { setActivePageName, toggleMobileMenu } from 'merchant/reducers/app';
 import RTracking from 'react-tracking';
 
 @connect(
-  state => {
+  (state) => {
     return {
       baseLocation: state.app.baseLocation,
       isMobileResolution: state.app.isMobileResolution,
     };
   },
-  { setActivePageName, toggleMobileMenu }
+  { setActivePageName, toggleMobileMenu },
 )
 @withRouter
 @RTracking(() => window.rzpQ.component('MainNavLink'))
@@ -45,9 +45,7 @@ export default class MainNavLink extends Component {
     if (trackingRequired.includes(this.props.label)) {
       const tracking = this.props.tracking;
       tracking.trackEvent(
-        window.rzpQ
-          .merchantActions()
-          .initiated(`${this.props.label}.click.initiated`)
+        window.rzpQ.merchantActions().initiated(`${this.props.label}.click.initiated`),
       );
     }
 
@@ -63,10 +61,7 @@ export default class MainNavLink extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (
-      nextProps.baseLocation &&
-      this.isActivePath(nextProps.baseLocation, nextProps.to)
-    ) {
+    if (nextProps.baseLocation && this.isActivePath(nextProps.baseLocation, nextProps.to)) {
       this.props.setActivePageName(nextProps.label);
     }
   }
@@ -103,19 +98,13 @@ export default class MainNavLink extends Component {
     let tag, loader;
 
     if (isBeta) {
-      tag = (
-        <span class="badge bg-primary-fuse pull-right hidden-xs">beta</span>
-      );
+      tag = <span class="badge bg-primary-fuse pull-right hidden-xs">beta</span>;
     } else if (isNew) {
       tag = <span class="badge bg-success pull-right hidden-xs">new</span>;
     } else if (customBadge) {
-      tag = (
-        <span class="badge bg-success pull-right hidden-xs">{customBadge}</span>
-      );
+      tag = <span class="badge bg-success pull-right hidden-xs">{customBadge}</span>;
     } else if (isSettlementEnabled) {
-      tag = (
-        <i className="i i-early-settlement settle-icon pull-right temp-icon-2" />
-      );
+      tag = <i className="i i-early-settlement settle-icon pull-right temp-icon-2" />;
     }
     //show infinite spin loader if there are some pending items in that section of the app
     if (isPending) {

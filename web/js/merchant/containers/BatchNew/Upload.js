@@ -29,7 +29,7 @@ export default class BatchUpload extends Component {
     });
   };
 
-  handleCreation = batch => {
+  handleCreation = (batch) => {
     this.setState({
       batch: { ...this.state.batch, ...batch },
       currentStatus: 'success',
@@ -79,9 +79,7 @@ export default class BatchUpload extends Component {
                   renderBatchCreationForm={this.props.renderBatchCreationForm}
                   createBatch={this.props.createBatch}
                   trackUploadBatch={this.props.gaEvents.trackUploadBatch}
-                  trackSampleInterpretation={
-                    this.props.gaEvents.trackSampleInterpretation
-                  }
+                  trackSampleInterpretation={this.props.gaEvents.trackSampleInterpretation}
                   docUrl={this.props.docUrl}
                   sampleUrl={this.props.sampleUrl}
                   processingOptions={this.props.processingOptions}
@@ -92,16 +90,15 @@ export default class BatchUpload extends Component {
                 <SuccessModal onModalClose={this.onModalClose}>
                   {this.props.batchType === 'refund' ? (
                     <p class="text-center">
-                      You can download the batch file report to check the final
-                      state of each refund request.
+                      You can download the batch file report to check the final state of each refund
+                      request.
                       <br />
                     </p>
                   ) : (
                     <p class="text-center">
-                      You can download the output file from batch detail view to
-                      check payment links generated. For the links that could
-                      not be generated due to some issues, please upload a new
-                      batch file.
+                      You can download the output file from batch detail view to check payment links
+                      generated. For the links that could not be generated due to some issues,
+                      please upload a new batch file.
                       <br />
                     </p>
                   )}

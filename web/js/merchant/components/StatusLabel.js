@@ -1,9 +1,7 @@
 import { titleCase } from 'common/utils/rzp-utils';
 
-const StatusLabel = statusMap => ({ status = '', className }) => (
-  <span
-    class={`status-label label ${statusMap[status.toLowerCase()]} ${className}`}
-  >
+const StatusLabel = (statusMap) => ({ status = '', className }) => (
+  <span class={`status-label label ${statusMap[status.toLowerCase()]} ${className}`}>
     {titleCase(status)}
   </span>
 );
@@ -171,11 +169,7 @@ export const TokenStatusLabel = StatusLabel(tokenStatusMap);
 export const OfferStatusLabel = StatusLabel(offerStatusMap);
 export const RefundStatusLabel = StatusLabel(refundStatusMap);
 export const InternationalStatusLabel = StatusLabel(internationalStatusMap);
-export const CommissionInvoiceStatusLabel = StatusLabel(
-  commissionInvoiceStatusMap
-);
-export const SubmerchantSettlementLabel = StatusLabel(
-  SubmerchantSettlementStatusMap
-);
+export const CommissionInvoiceStatusLabel = StatusLabel(commissionInvoiceStatusMap);
+export const SubmerchantSettlementLabel = StatusLabel(SubmerchantSettlementStatusMap);
 
-export default item => StatusLabel(entityMap[item.entity])(item);
+export default (item) => StatusLabel(entityMap[item.entity])(item);

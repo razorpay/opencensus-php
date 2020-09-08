@@ -101,5 +101,5 @@ export const planReducer = makeEntityReducer(
     [`${PLAN_FETCH_SUBSCRIPTIONS}::SUCCESS`]: updateSubscriptions('SUCCESS'),
     [`${PLAN_FETCH_SUBSCRIPTIONS}::ERROR`]: updateSubscriptions('ERROR'),
   },
-  planInitialState
+  planInitialState,
 );

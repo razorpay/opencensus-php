@@ -27,8 +27,7 @@ const MARK_DATA_SAVED = 'MARK_DATA_SAVED';
 const REORDER_FORM_ITEMS = 'REORDER_FORM_ITEMS';
 const UPDATE_RECEIPT_DETAILS = 'UPDATE_RECEIPT_DETAILS';
 
-export const isFormItemOfTypeAmount = formItem =>
-  formItem.hasOwnProperty('item');
+export const isFormItemOfTypeAmount = (formItem) => formItem.hasOwnProperty('item');
 
 export const updateTemplateType = (data, templateKey) => {
   const isPageDirty = false;
@@ -38,15 +37,15 @@ export const updateTemplateType = (data, templateKey) => {
       description: data ? JSON.stringify({ value: data, metaText: '' }) : null, // No meta text if nothing updated by user
       template_type: templateKey,
     },
-    isPageDirty
+    isPageDirty,
   );
 };
 
 export const initDefaultFormItems = () => {
   return {
     type: INIT_DEFAULT_FORM_ITEMS,
-    payload: { user: store.getState().session.user }
-  }
+    payload: { user: store.getState().session.user },
+  };
 };
 
 export const fetchPaymentPage = (id, isIntentDuplicate) => {
@@ -77,7 +76,7 @@ export const refreshPageData = () => ({
   type: REFRESH_PAGE_DATA,
 });
 
-export const deleteInFormItems = index => ({
+export const deleteInFormItems = (index) => ({
   type: DELETE_IN_FORM_ITEMS,
   index,
 });
@@ -93,16 +92,16 @@ export const updateInFormItems = ({ formItem, index }) => {
   };
 };
 
-export const addInFormItems = formItem => ({
+export const addInFormItems = (formItem) => ({
   type: ADD_IN_FORM_ITEMS,
   formItem,
 });
 
-export const markDataSaved = _ => ({
+export const markDataSaved = (_) => ({
   type: MARK_DATA_SAVED,
 });
 
-export const updateReceiptDetails = data => ({
+export const updateReceiptDetails = (data) => ({
   type: UPDATE_RECEIPT_DETAILS,
   payload: data,
 });
@@ -139,7 +138,7 @@ export const reorderFormItems = ({
   };
 };
 
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   switch (action.type) {
     case INIT_DEFAULT_FORM_ITEMS: {
       const currentUser = action.payload.user;
@@ -168,15 +167,13 @@ export default function(state = initialState, action) {
       }
 
       // 2.
-      entityData.settings.allow_social_share =
-        entityData.settings.allow_social_share === '1';
+      entityData.settings.allow_social_share = entityData.settings.allow_social_share === '1';
 
       // 3. TODO: remove this, was used in PP v1
-      entityData.settings.allow_multiple_units =
-        entityData.settings.allow_multiple_units === '1';
+      entityData.settings.allow_multiple_units = entityData.settings.allow_multiple_units === '1';
 
       // 4.
-      entityData.payment_page_items.forEach(pi => {
+      entityData.payment_page_items.forEach((pi) => {
         // While creation/editing, all amounts are converted to Paisa (or smaller unit)
 
         if (pi.item.amount) {
@@ -195,7 +192,7 @@ export default function(state = initialState, action) {
       // 5. If intention while fetching is to duplicate, then delete existing entity specific data
       if (action.isIntentDuplicate) {
         // 5-1. Remove id for each of payment page item
-        entityData.payment_page_items.forEach(fi => {
+        entityData.payment_page_items.forEach((fi) => {
           // Removing payment_page_id is enough since removing/adding id for items is handled in handleSavePublish. However, this is just for sanity.
 
           delete fi.id;
@@ -216,7 +213,7 @@ export default function(state = initialState, action) {
 
       formItems = [].concat(udfSchema).concat(entityData.payment_page_items);
 
-      formItems.sort(function(a, b) {
+      formItems.sort(function (a, b) {
         const positionA = a.settings.position;
         const positionB = b.settings.position;
 
@@ -227,8 +224,7 @@ export default function(state = initialState, action) {
       const receiptSettings = {
         enable_receipt: entityData.settings.enable_receipt || '1',
         selected_udf_field: entityData.settings.selected_udf_field || '',
-        enable_custom_serial_number:
-          entityData.settings.enable_custom_serial_number || '0',
+        enable_custom_serial_number: entityData.settings.enable_custom_serial_number || '0',
         enable_80g_details: entityData.settings.enable_80g_details || '0',
       };
 
@@ -264,12 +260,11 @@ export default function(state = initialState, action) {
       } else {
         return {
           ...state,
-          isPageDirty:
-            action.isPageDirty !== void 0 ? action.isPageDirty : true,
+          isPageDirty: action.isPageDirty !== void 0 ? action.isPageDirty : true,
           paymentPageEntity: deepMerge(
             // Needed for settings
             state.paymentPageEntity,
-            action.formItems
+            action.formItems,
           ),
         };
       }
@@ -288,11 +283,7 @@ export default function(state = initialState, action) {
       if (action.payload.index === -1) {
         formItems = unshift(state.FORM_ITEMS, action.payload.formItem);
       } else {
-        formItems = updateItem(
-          state.FORM_ITEMS,
-          action.payload.index,
-          action.payload.formItem
-        );
+        formItems = updateItem(state.FORM_ITEMS, action.payload.index, action.payload.formItem);
       }
 
       return {
@@ -329,7 +320,7 @@ export default function(state = initialState, action) {
         FORM_ITEMS: arrayMove(
           state.FORM_ITEMS,
           action.payload.oldIndexInFormItems,
-          action.payload.newIndexInFormItems
+          action.payload.newIndexInFormItems,
         ),
       };
 

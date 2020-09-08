@@ -9,7 +9,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { SAMPLE_BATCH_REFUND_FILE } from './List';
 
 @withRouter
-@connect(state => state.session, { uploadBatch, showNotification })
+@connect((state) => state.session, { uploadBatch, showNotification })
 export default class BatchUploadContainer extends Component {
   render() {
     return (

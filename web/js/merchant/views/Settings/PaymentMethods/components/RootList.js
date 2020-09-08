@@ -4,7 +4,7 @@ import ListItem from './ListItem';
 
 const RootList = ({ instruments }) => {
   const [clickedName, setClickedName] = useState(null);
-  const handleClickedInstument = name => {
+  const handleClickedInstument = (name) => {
     setClickedName(name);
   };
   return (
@@ -27,7 +27,7 @@ const RootList = ({ instruments }) => {
   );
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   instruments: state.instrumentRequests.pg,
 });
 

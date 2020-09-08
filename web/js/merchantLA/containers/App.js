@@ -22,7 +22,7 @@ import rolesList from 'merchantLA/helpers/permissions/roles-list';
 
 @withRouter
 @connect(
-  state => ({
+  (state) => ({
     ...state.session,
     windowWidth: state.app.windowWidth,
   }),
@@ -31,7 +31,7 @@ import rolesList from 'merchantLA/helpers/permissions/roles-list';
     ...SessionActions,
     ...NotificationActions,
     resizeWindow,
-  }
+  },
 )
 export default class App extends Component {
   pendingRequests = [];
@@ -47,11 +47,8 @@ export default class App extends Component {
     // localizing mode for each merchant so that different modes can be maintained
     // across logins/merchants
     if (oldModeValue) {
-      Object.keys(window.rzp_user.merchants).forEach(merchantId => {
-        LocalStorageService.setItem(
-          `${oldModeToken}--${merchantId}`,
-          oldModeValue
-        );
+      Object.keys(window.rzp_user.merchants).forEach((merchantId) => {
+        LocalStorageService.setItem(`${oldModeToken}--${merchantId}`, oldModeValue);
       });
 
       LocalStorageService.removeItem(oldModeToken);
@@ -79,7 +76,7 @@ export default class App extends Component {
   componentWillMount() {
     // Event Based method to lock dashboard screen
     const self = this;
-    window.addEventListener('NOT_AUTHENTICATED', function(e) {
+    window.addEventListener('NOT_AUTHENTICATED', function (e) {
       self.registerPendingRequests(e.detail.continueAjax);
 
       if (this.isDashboardLocked) {
@@ -89,10 +86,8 @@ export default class App extends Component {
       self.lockDashboard(self.resumePendingRequests);
     });
 
-    window.addEventListener('REQUEST_ERROR', function(e) {
-      const errorCode = e.detail.response
-        ? e.detail.response.status
-        : 'UNKNOWN STATUS';
+    window.addEventListener('REQUEST_ERROR', function (e) {
+      const errorCode = e.detail.response ? e.detail.response.status : 'UNKNOWN STATUS';
 
       window.ga &&
         window.ga(
@@ -100,7 +95,7 @@ export default class App extends Component {
           'event',
           `LA Dashboard - ${errorCode} Error`,
           e.detail.url,
-          e.detail.response
+          e.detail.response,
         );
     });
 
@@ -128,7 +123,7 @@ export default class App extends Component {
           applyTheme(orgCode);
         }
       }),
-    ]).then(response => {
+    ]).then((response) => {
       this.props.updateSession({ mode: currentMode });
 
       let $splash = document.getElementById('splash');
@@ -221,11 +216,7 @@ export default class App extends Component {
   redirectToRoute(role) {
     let pathname = this.props.history.location.pathname;
 
-    if (
-      pathname === '/' ||
-      pathname === '/dashboard' ||
-      pathname === '/dashboard_v2'
-    ) {
+    if (pathname === '/' || pathname === '/dashboard' || pathname === '/dashboard_v2') {
       switch (role) {
         case [rolesList.SELLERAPP]:
           let url = '/paymentlinks';
@@ -239,7 +230,7 @@ export default class App extends Component {
     }
   }
 
-  switchMode = mode => {
+  switchMode = (mode) => {
     window.rzpAnalytics({
       eventCategory: 'LA Dashboard - Header',
       eventAction: 'Switch - Mode',
@@ -258,7 +249,7 @@ export default class App extends Component {
     }
   };
 
-  switchMerchant = merchant => {
+  switchMerchant = (merchant) => {
     this.props
       .switchMerchant(merchant.id)
       .then(() => {
@@ -272,7 +263,7 @@ export default class App extends Component {
       });
   };
 
-  lockDashboard = cb => {
+  lockDashboard = (cb) => {
     let email = this.props.user.user.email;
 
     if (window.Raven && window.Raven.captureMessage) {
@@ -328,8 +319,8 @@ export default class App extends Component {
             removeLockScreen={this.removeLockScreen}
             showNotification={this.props.showNotification}
             resumeLockActionCB={this.resumeLockActionCB}
-            isGoogleLogin = {user.isGoogleLogin()}
-            isPartner = {user.isPartner()}
+            isGoogleLogin={user.isGoogleLogin()}
+            isPartner={user.isPartner()}
           />
         )}
       </div>

@@ -471,10 +471,9 @@ app
                     if (typeof firstError === 'object' && !!firstError.internal_error_code) {
                       $scope.handleErrorsWithInternalCode(firstError);
                     } else if (firstError.includes('Razorpay Account Not Found')) {
-                      if(isMerchantX){
+                      if (isMerchantX) {
                         $scope.alerts.addAlert('danger', `No account found for ${email}`);
-                      }
-                      else {
+                      } else {
                         $scope.googleAuthEmail = email;
                         $scope.showGAuthPopup = true;
                       }

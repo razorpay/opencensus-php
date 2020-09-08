@@ -49,7 +49,7 @@ const BASE_ROUTES = {
     showMobileMenu: state.app.showMobileMenu,
     showAcceptPayments: state.home.instantActivations.showAcceptPayments,
   }),
-  { toggleMobileMenu, showAcceptPaymentsModal, hideAcceptPaymentsModal }
+  { toggleMobileMenu, showAcceptPaymentsModal, hideAcceptPaymentsModal },
 )
 @RTracking(() => window.rzpQ.component('Sidebar'))
 export default class Sidebar extends Component {
@@ -111,7 +111,7 @@ export default class Sidebar extends Component {
       this.prevRoute = 'partnerDashboard';
     } else if (SUBSCRIPTIONS_ROUTES_REGEX.test(pathname)) {
       routes[user.isChargeAtWillEnabled ? 'chargeAtWill' : 'subscriptions'] = pathname.match(
-        SUBSCRIPTIONS_ROUTES_REGEX
+        SUBSCRIPTIONS_ROUTES_REGEX,
       )[0];
       this.prevRoute = user.isChargeAtWillEnabled ? 'recurring_payments' : 'subscriptions';
 
@@ -151,7 +151,8 @@ export default class Sidebar extends Component {
       ? trackGoToConfig(showInstantActivation)
       : !isAcceptPaymentsShown &&
           trackGoToActivation(
-            showInstantActivation && (user.instantActivation.isL1Submitted ? 'KYC Form' : 'L1 Form')
+            showInstantActivation &&
+              (user.instantActivation.isL1Submitted ? 'KYC Form' : 'L1 Form'),
           );
   };
 
@@ -241,7 +242,7 @@ class PartnerSidebar extends Component {
         setTimeout(() => {
           this.props.history.push(this.getDefaultRoute(type));
         }, 600);
-      }
+      },
     );
   };
 

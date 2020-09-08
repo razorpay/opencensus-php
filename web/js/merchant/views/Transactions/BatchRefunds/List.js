@@ -2,24 +2,21 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import ListContainer from 'merchant/containers/ListContainer';
 import BatchList from './components/BatchList';
-import {
-  validateRefundBatch,
-  createRefundBatch,
-} from 'merchant/reducers/batches';
+import { validateRefundBatch, createRefundBatch } from 'merchant/reducers/batches';
 import { fetchRefundBatches as fetchAll } from 'merchant/reducers/batches';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
 const gaEvents = setGaTrack('Dashboard - Instant Refunds - BU');
 
 @connect(
-  state => {
+  (state) => {
     return {
       mode: state.session.mode,
       user: state.session.user,
       ...state.refundbatches,
     };
   },
-  { fetchAll, validateRefundBatch, createRefundBatch }
+  { fetchAll, validateRefundBatch, createRefundBatch },
 )
 export default class BatchListContainer extends ListContainer {
   render() {

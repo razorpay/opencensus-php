@@ -10,7 +10,7 @@ import BatchCreateModal from 'merchant/components/BatchNew/CreateModal';
 
 const oneHour = 3600 * 1000; //1 hour in milliseconds
 
-@connect(state => state.session, { showNotification })
+@connect((state) => state.session, { showNotification })
 @RTracking(() => window.rzpQ.component('BatchCreate'))
 export default class BatchCreate extends Component {
   formInitialValues = {
@@ -18,15 +18,9 @@ export default class BatchCreate extends Component {
   };
 
   getSchedulingOptions = (scheduleDate, scheduleTime) => {
-    const scheduleDateTs = scheduleDate
-      .clone()
-      .startOf('day')
-      .valueOf();
+    const scheduleDateTs = scheduleDate.clone().startOf('day').valueOf();
 
-    const scheduleTimeTs = scheduleTime.diff(
-      scheduleTime.clone().startOf('day'),
-      'milliseconds'
-    );
+    const scheduleTimeTs = scheduleTime.diff(scheduleTime.clone().startOf('day'), 'milliseconds');
 
     const schedule = scheduleDateTs + scheduleTimeTs;
 
@@ -44,14 +38,9 @@ export default class BatchCreate extends Component {
   @RTracking(() =>
     window.rzpQ.onbr().success('dash.pl_action', {
       action: 'Initiate_Batch_PL_Generation',
-    })
+    }),
   )
-  handleBatchCreate = ({
-    processing,
-    scheduleDate,
-    scheduleTime,
-    ...props
-  }) => {
+  handleBatchCreate = ({ processing, scheduleDate, scheduleTime, ...props }) => {
     const data = {
       file_id: this.props.batch.file_id,
       ...props,
@@ -70,10 +59,10 @@ export default class BatchCreate extends Component {
     this.props.trackUploadBatch('Create');
     return this.props
       .createBatch(data)
-      .then(response => {
+      .then((response) => {
         this.props.onCreation(response);
       })
-      .catch(error => {
+      .catch((error) => {
         this.props.showNotification({
           type: 'error',
           message: 'Failed to create batch.',

@@ -32,7 +32,7 @@ import {
     hideAcceptPaymentsModal,
     fetchInternationalProductsStatus,
     fetchAddWebsiteWorkflowStatus,
-  }
+  },
 )
 @RTracking((state, props, args) => {
   return window.rzpQ.component('OnboardingCardInstant');

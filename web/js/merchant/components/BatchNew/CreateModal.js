@@ -28,7 +28,7 @@ import { titleCase } from 'common/utils/rzp-utils';
   },
   {
     openModal,
-  }
+  },
 )
 export default class BatchCreateModal extends Component {
   static contextTypes = {
@@ -163,7 +163,8 @@ export default class BatchCreateModal extends Component {
                         class="highlight"
                       >
                         check pricing
-                      </strong>.
+                      </strong>
+                      .
                     </div>
                   ) : null}
                 </ul>

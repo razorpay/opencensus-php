@@ -51,7 +51,7 @@ function getIconFn(iconName) {
   }
 }
 
-export const getIcon = iconName => {
+export const getIcon = (iconName) => {
   const iconFn = getIconFn(iconName);
   return `https://cdn.razorpay.com/static/assets/instrument-request/${iconFn}.png`;
 };

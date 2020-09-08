@@ -26,18 +26,18 @@ const PAYMENT_LINK = 'PAYMENT_LINK';
 /* New Batch Action Types */
 const NOTIFY_BATCH = 'NOTIFY_BATCH';
 
-const appendBatches = namespace => namespace + '_BATCHS';
-const getCreateActioName = namespace => namespace + '_BATCH_CREATE';
-const getValidateActionName = namespace => namespace + '_BATCH_VALIDATE';
-const getFetchActionName = namespace => appendBatches(namespace) + '_FETCH';
-const getFetchDetailAction = namespace => namespace + '_BATCHS_FETCH_DETAILS';
+const appendBatches = (namespace) => namespace + '_BATCHS';
+const getCreateActioName = (namespace) => namespace + '_BATCH_CREATE';
+const getValidateActionName = (namespace) => namespace + '_BATCH_VALIDATE';
+const getFetchActionName = (namespace) => appendBatches(namespace) + '_FETCH';
+const getFetchDetailAction = (namespace) => namespace + '_BATCHS_FETCH_DETAILS';
 
 const BATCH_DETAILS = getFetchDetailAction(BATCH);
 const BATCH_LIST = getFetchActionName(BATCH);
 const PAYMENT_LINK_DETAILS = getFetchDetailAction(PAYMENT_LINK);
 
-export const fetchBatchAjax = id =>
-  merchantFetch(`batches/${id}`).then(response => ({
+export const fetchBatchAjax = (id) =>
+  merchantFetch(`batches/${id}`).then((response) => ({
     batch: response.data,
   }));
 
@@ -49,7 +49,7 @@ const fetchBatchesAjax = (params, type) => {
   });
 };
 
-export const fetchIssuableBatchList = batchIdList => {
+export const fetchIssuableBatchList = (batchIdList) => {
   return {
     type: ISSUABLE_BATCHES,
     payload: merchantFetch({
@@ -62,7 +62,7 @@ export const fetchIssuableBatchList = batchIdList => {
 };
 
 // Removing 'Issue all links' btn from view
-export const editIssuableBatchList = batchIdToRemove => {
+export const editIssuableBatchList = (batchIdToRemove) => {
   return {
     type: EDIT_ISSUABLE_BATCHES,
     batchIdToRemove,
@@ -88,20 +88,20 @@ function _validateBatch(file, progressTracker, batchType) {
 }
 
 /* methods to create actions for validating batch */
-const validateBatch = batchType => (file, progressTracker) => {
+const validateBatch = (batchType) => (file, progressTracker) => {
   return _validateBatch(file, progressTracker, batchType);
 };
 
 /////
 
 /* method to create action for fetching batch list */
-const fetchBatches = (batchType, fetchActionName) => params => ({
+const fetchBatches = (batchType, fetchActionName) => (params) => ({
   type: BATCH_LIST || fetchActionName,
   payload: fetchBatchesAjax(params, batchType),
 });
 
 /* method to create action for fetching batch details */
-const fetchBatchDetails = (batchType, fetchDetailAction) => params => ({
+const fetchBatchDetails = (batchType, fetchDetailAction) => (params) => ({
   type: BATCH_DETAILS || fetchDetailAction,
   payload: fetchBatchAjax(params.id, batchType),
 });
@@ -118,12 +118,12 @@ function _createBatch(data, batchType, customBatch) {
         type: batchType,
         ...data,
       },
-    }).then(response => response.data),
+    }).then((response) => response.data),
   };
 }
 
 /* method to create action for create batch action */
-const createBatch = (batchType, actionPrefix) => data => {
+const createBatch = (batchType, actionPrefix) => (data) => {
   return _createBatch(data, batchType, actionPrefix);
 };
 
@@ -164,7 +164,7 @@ const _cancelBatch = (batchId, actionType) => {
   };
 };
 
-export const updateBatchInList = batch => {
+export const updateBatchInList = (batch) => {
   const REFUND_BATCH_EDIT = 'REFUND_BATCH_EDIT';
   return {
     type: `${REFUND_BATCH_EDIT}::SUCCESS`,
@@ -172,7 +172,7 @@ export const updateBatchInList = batch => {
   };
 };
 
-export const cancelBatchRefund = batchId => {
+export const cancelBatchRefund = (batchId) => {
   const actionType = 'REFUND_BATCH_CANCEL';
   return _cancelBatchRefund(batchId, actionType, 'refunds');
 };
@@ -183,30 +183,30 @@ const _cancelBatchRefund = (batchId, actionType, prefix) => {
     payload: merchantFetch({
       url: `${prefix}/batch/${batchId}/cancel`,
       method: 'post',
-    }).then(e =>
-      fetchBatchAjax(batchId).then(r => {
+    }).then((e) =>
+      fetchBatchAjax(batchId).then((r) => {
         r.batch.status = 'created';
         return r.batch;
-      })
+      }),
     ),
   };
 };
 
-export const cancelBatch = actionType => batchId => {
+export const cancelBatch = (actionType) => (batchId) => {
   return _cancelBatch(batchId, actionType);
 };
 
 /////
 
 /* extra methods for more details related to payment link batch */
-export const fetchBatchStats = batchId =>
+export const fetchBatchStats = (batchId) =>
   merchantFetch({
     method: 'get',
     url: `batches/${batchId}/stats`,
   });
 
 /* extra methods for more details related to payment link batch */
-export const fetchBatchStatsForPLV2 = batchId =>
+export const fetchBatchStatsForPLV2 = (batchId) =>
   merchantFetch({
     method: 'get',
     url: `payment_links/${batchId}/batch`,
@@ -227,8 +227,7 @@ export const fetchBatchInvoices = (batchId, isPaymentlinksV2CompatEnabled) => {
   });
 };
 
-const fetchBatchPaymentLinks = batchId =>
-  merchantFetch(`payment_links?source_id=${batchId}`);
+const fetchBatchPaymentLinks = (batchId) => merchantFetch(`payment_links?source_id=${batchId}`);
 
 /* actions currently used by only payment link batch */
 export const issuePaymentLinkBatch = (batchId, data) => {
@@ -254,7 +253,7 @@ export const notifyBatch = (batchId, data) => {
 };
 
 /* common batch actions */
-export const batchDownload = batchId => {
+export const batchDownload = (batchId) => {
   return {
     type: BATCH_DOWNLOAD,
     payload: merchantFetch(`batches/${batchId}/download`),
@@ -262,35 +261,31 @@ export const batchDownload = batchId => {
 };
 
 /* actions refund batches */
-export const fetchRefundBatches = params => {
+export const fetchRefundBatches = (params) => {
   return {
     type: getActionName(REFUND),
-    payload: params.id
-      ? fetchBatchAjax(params.id)
-      : fetchBatchesAjax(params, 'refund'),
+    payload: params.id ? fetchBatchAjax(params.id) : fetchBatchesAjax(params, 'refund'),
   };
 };
 
 export const uploadRefundBatch = uploadBatch(REFUND, 'refund');
 
 /* action for payment link batch */
-export const fetchPaymentLinkBatches = params => {
+export const fetchPaymentLinkBatches = (params) => {
   const user = store.getState().session.user;
 
-  const type = user.isPaymentlinksV2Enabled
-    ? 'payment_link_v2'
-    : 'payment_link';
+  const type = user.isPaymentlinksV2Enabled ? 'payment_link_v2' : 'payment_link';
 
   //for new batches
   params.with_config = '1';
 
-  return dispatch => {
+  return (dispatch) => {
     return dispatch({
       type: BATCH_LIST,
-      payload: fetchBatchesAjax(params, type).then(res => {
+      payload: fetchBatchesAjax(params, type).then((res) => {
         const listOfBatchIds = [];
 
-        res.data.items.forEach(item => {
+        res.data.items.forEach((item) => {
           listOfBatchIds.push(item.id);
         });
 
@@ -302,7 +297,7 @@ export const fetchPaymentLinkBatches = params => {
   };
 };
 
-export const fetchPaymentLinkBatchesDetails = params => {
+export const fetchPaymentLinkBatchesDetails = (params) => {
   const user = store.getState().session.user;
   const id = params.id;
 
@@ -324,29 +319,23 @@ export const fetchPaymentLinkBatchesDetails = params => {
   };
 };
 
-export const createPaymentLinkBatch = data => {
+export const createPaymentLinkBatch = (data) => {
   const user = store.getState().session.user;
-  const batchType = user.isPaymentlinksV2Enabled
-    ? 'payment_link_v2'
-    : 'payment_link';
+  const batchType = user.isPaymentlinksV2Enabled ? 'payment_link_v2' : 'payment_link';
 
   return _createBatch(data, batchType);
 };
 
-export const cancelPaymentLinkBatch = batchId => {
+export const cancelPaymentLinkBatch = (batchId) => {
   const user = store.getState().session.user;
-  const actionType = user.isPaymentlinksV2Enabled
-    ? 'payment_link_v2'
-    : 'payment_link';
+  const actionType = user.isPaymentlinksV2Enabled ? 'payment_link_v2' : 'payment_link';
 
   return _cancelBatch(batchId, actionType);
 };
 
 export const validatePaymentLinkBatch = (file, progressTracker) => {
   const user = store.getState().session.user;
-  const batchType = user.isPaymentlinksV2Enabled
-    ? 'payment_link_v2'
-    : 'payment_link';
+  const batchType = user.isPaymentlinksV2Enabled ? 'payment_link_v2' : 'payment_link';
 
   return _validateBatch(file, progressTracker, batchType);
 };
@@ -356,10 +345,7 @@ export const createPaymentsBatch = createBatch('direct_debit');
 export const fetchPaymentBatches = fetchBatches('direct_debit');
 
 /* batches for emandate */
-export const fetchHostMandateBatches = fetchBatches([
-  'recurring_charge',
-  'auth_link',
-]);
+export const fetchHostMandateBatches = fetchBatches(['recurring_charge', 'auth_link']);
 export const fetchHostMandateAuthLinkBatches = fetchBatches('auth_link');
 export const createRegistrationLinkBatch = createBatch('auth_link');
 export const validateRegistrationLinkBatch = validateBatch('auth_link');
@@ -383,9 +369,7 @@ const onPaymentLinkDetails = (state, { payload, isPaymentlinksV2Enabled }) =>
     entity: {
       batch: payload[0].batch,
       stats: payload[1].data.stats,
-      paymentlinks: isPaymentlinksV2Enabled
-        ? payload[2].data.payment_links
-        : payload[2].data.items,
+      paymentlinks: isPaymentlinksV2Enabled ? payload[2].data.payment_links : payload[2].data.items,
       invoices: payload[2].data.items,
     },
   });
@@ -400,10 +384,7 @@ export const batchDetailsReducer = makeEntityReducer(BATCH_DETAILS, {
   ...customBatchDetailsSet(PAYMENT_LINK_DETAILS, onPaymentLinkDetails),
 });
 
-export const PaymentBatchIdsReducer = function(
-  state = paymentBatchIdsInitialState,
-  action
-) {
+export const PaymentBatchIdsReducer = function (state = paymentBatchIdsInitialState, action) {
   switch (action.type) {
     case `${ISSUABLE_BATCHES}::SUCCESS`:
       return set(state, 'issuableIdList', action.payload.data);

@@ -37,14 +37,9 @@ import referralsReducer from 'merchant/reducers/referrals';
 import applicationsReducer from 'merchant/reducers/applications';
 import offerReducer from 'merchant/reducers/offers/offerDetails';
 import offerListReducer from 'merchant/reducers/offers/offersList';
-import {
-  virtualAccountsReducer,
-  virtualAccountReducer,
-} from 'merchant/reducers/virtualaccounts';
+import { virtualAccountsReducer, virtualAccountReducer } from 'merchant/reducers/virtualaccounts';
 import submerchantReducer from 'merchant/reducers/submerchant';
-import commissionReducer, {
-  commAggSingleDayReducer,
-} from 'merchant/reducers/commission';
+import commissionReducer, { commAggSingleDayReducer } from 'merchant/reducers/commission';
 import registrationLinkReducer from 'merchant/reducers/registration_link';
 import statesReducer from 'merchant/reducers/states';
 import taxesReducer from 'merchant/reducers/taxes';
@@ -81,15 +76,9 @@ import {
 
 import { teamReducer } from 'merchant/reducers/team';
 
-import {
-  merchantReportsReducer,
-  partnerReportsReducer,
-} from 'merchant/reducers/reports/home';
+import { merchantReportsReducer, partnerReportsReducer } from 'merchant/reducers/reports/home';
 
-import {
-  subscriptionsReducer,
-  subscriptionReducer,
-} from 'merchant/reducers/subscriptions';
+import { subscriptionsReducer, subscriptionReducer } from 'merchant/reducers/subscriptions';
 import { plansReducer, planReducer } from 'merchant/reducers/plans';
 import { addOnsReducer } from 'merchant/reducers/addons';
 import { reportsReducer } from 'merchant/reducers/reports';

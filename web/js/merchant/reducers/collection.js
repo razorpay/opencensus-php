@@ -62,23 +62,23 @@ export const appendEntityToList = (state, action) => {
 };
 
 export const updateEntityInList = (state, action) => {
-  let itemIndex = state.items.findIndex(item => item.id === action.payload.id);
+  let itemIndex = state.items.findIndex((item) => item.id === action.payload.id);
   return set(state, `items.${itemIndex}`, action.payload);
 };
 
 export const removeEntityFromList = (state, action) => {
-  let itemsList = remove(state.items, item => item.id === action.payload.id);
+  let itemsList = remove(state.items, (item) => item.id === action.payload.id);
   return set(state, 'items', itemsList);
 };
 
-export const getActionName = namespace => {
+export const getActionName = (namespace) => {
   return namespace + '_FETCH';
 };
 
 export const makeCollectionReducer = (
   namespace,
   actionHandlers = {},
-  initialState = defaultInitialState
+  initialState = defaultInitialState,
 ) => {
   let fetchActionName = getActionName(namespace);
   const defaultHandlers = {
@@ -97,7 +97,7 @@ export const makeCollectionReducer = (
 export const makeActionCollectionReducer = (
   namespace,
   actionHandlers = {},
-  initialState = defaultInitialState
+  initialState = defaultInitialState,
 ) => {
   let singularNamespace = namespace.slice(0, namespace.length - 1);
 
@@ -114,84 +114,74 @@ export const makeActionCollectionReducer = (
 
 // TODO: Below things should be moved to individual files
 
-export const fetchPayments = params => fetchAll(params, Payment, 'PAYMENTS');
+export const fetchPayments = (params) => fetchAll(params, Payment, 'PAYMENTS');
 export const paymentsReducer = makeCollectionReducer(
   'PAYMENTS',
   {},
   // ignore( do not send to API ) "ref" param if seen present the url
-  { ...defaultInitialState, blacklistQueryParams: ['ref'] }
+  { ...defaultInitialState, blacklistQueryParams: ['ref'] },
 );
 
-export const fetchOrders = params => fetchAll(params, Order, 'ORDERS');
+export const fetchOrders = (params) => fetchAll(params, Order, 'ORDERS');
 export const ordersReducer = makeCollectionReducer('ORDERS');
 
-export const fetchTransfers = params => fetchAll(params, Transfer, 'TRANSFERS');
+export const fetchTransfers = (params) => fetchAll(params, Transfer, 'TRANSFERS');
 export const transfersReducer = makeCollectionReducer('TRANSFERS');
 
-export const fetchReversals = params => fetchAll(params, Reversal, 'REVERSALS');
+export const fetchReversals = (params) => fetchAll(params, Reversal, 'REVERSALS');
 export const reversalsReducer = makeCollectionReducer('REVERSALS');
 
-export const fetchMarketplacePayments = params => {
+export const fetchMarketplacePayments = (params) => {
   params.transferred = 1;
   return fetchAll(params, Payment, 'MP_PAYMENTS');
 };
 export const mpPaymentsReducer = makeCollectionReducer('MP_PAYMENTS');
 
-export const fetchRefunds = params => fetchAll(params, Refund, 'REFUNDS');
+export const fetchRefunds = (params) => fetchAll(params, Refund, 'REFUNDS');
 export const refundsReducer = makeCollectionReducer(
   'REFUNDS',
   {},
   // ignore( do not send to API ) "ref" param if seen present the url
-  { ...defaultInitialState, blacklistQueryParams: ['ref'] }
+  { ...defaultInitialState, blacklistQueryParams: ['ref'] },
 );
 
-export const fetchLinkBatches = params =>
-  fetchAll(params, LinkBatch, 'BATCHLINKS');
+export const fetchLinkBatches = (params) => fetchAll(params, LinkBatch, 'BATCHLINKS');
 export const linkBatchesReducer = makeCollectionReducer('BATCHLINKS');
 
-export const fetchSettlements = params =>
-  fetchAll(params, Settlement, 'SETTLEMENTS');
+export const fetchSettlements = (params) => fetchAll(params, Settlement, 'SETTLEMENTS');
 export const settlementsReducer = makeCollectionReducer('SETTLEMENTS');
 
-export const fetchDisputes = params => fetchAll(params, Dispute, 'DISPUTES');
+export const fetchDisputes = (params) => fetchAll(params, Dispute, 'DISPUTES');
 export const disputesReducer = makeCollectionReducer('DISPUTES');
 
-export const fetchSubmerchants = params =>
-  fetchAll(params, Submerchant, 'SUB_MERCHANTS');
+export const fetchSubmerchants = (params) => fetchAll(params, Submerchant, 'SUB_MERCHANTS');
 export const submerchantsReducer = makeActionCollectionReducer('SUB_MERCHANTS');
 
-export const fetchRegistrationLinks = params =>
+export const fetchRegistrationLinks = (params) =>
   fetchAll(params, RegistrationLink, 'REGISTRATION_LINKS');
-export const registrationLinksReducer = makeActionCollectionReducer(
-  'REGISTRATION_LINKS'
-);
+export const registrationLinksReducer = makeActionCollectionReducer('REGISTRATION_LINKS');
 
-export const fetchTokens = params => fetchAll(params, Token, 'TOKENS');
+export const fetchTokens = (params) => fetchAll(params, Token, 'TOKENS');
 export const tokensReducer = makeActionCollectionReducer('TOKENS');
 
-export const fetchEmandatePayments = params => {
+export const fetchEmandatePayments = (params) => {
   params.recurring = 1;
   return fetchAll(params, Payment, 'PAYMENTS');
 };
 
-const fetchCommissions = params => fetchAll(params, Commission, 'COMMISSIONS');
-export const fetchEarnings = params =>
-  fetchCommissions({ ...params, model: 'commission' });
-export const fetchSubventions = params =>
-  fetchCommissions({ ...params, model: 'subvention' });
+const fetchCommissions = (params) => fetchAll(params, Commission, 'COMMISSIONS');
+export const fetchEarnings = (params) => fetchCommissions({ ...params, model: 'commission' });
+export const fetchSubventions = (params) => fetchCommissions({ ...params, model: 'subvention' });
 
 export const commissionsReducer = makeActionCollectionReducer('COMMISSIONS');
-export const commissionsAggregateReducer = makeCollectionReducer(
-  'COMMISSION_AGGREGATE'
-);
+export const commissionsAggregateReducer = makeCollectionReducer('COMMISSION_AGGREGATE');
 
 // Invitations
-export const fetchInvitations = params =>
-  fetchAll(params, Invitation, 'INVITATIONS');
+export const fetchInvitations = (params) => fetchAll(params, Invitation, 'INVITATIONS');
 export const invitationsReducer = makeActionCollectionReducer('INVITATIONS');
 
 // Smart Collect
-export const fetchSmartCollectPayments = params => {
+export const fetchSmartCollectPayments = (params) => {
   params.virtual_account = 1;
   return fetchAll(params, Payment, 'SC_PAYMENTS');
 };

@@ -9,12 +9,7 @@ import Amount from 'common/ui/Amount';
 import { Fragment } from 'react';
 import { updateConfig } from 'merchant/reducers/config';
 
-import {
-  isBlank,
-  rupeesToPaise,
-  paiseToRupees,
-  titleCase,
-} from 'common/utils/rzp-utils';
+import { isBlank, rupeesToPaise, paiseToRupees, titleCase } from 'common/utils/rzp-utils';
 import {
   refundPayment,
   fetchItem as fetchPayment,
@@ -26,7 +21,7 @@ import { showWhenUtil } from 'merchant/components/ShowWhen';
 const selector = formValueSelector('refundModal');
 
 @connect(
-  state => {
+  (state) => {
     let partial = selector(state, 'partial');
     let reverse_all = selector(state, 'reverse_all');
     let payable_amount = selector(state, 'amount');
@@ -49,7 +44,7 @@ const selector = formValueSelector('refundModal');
     updateConfig,
     fetchTransfers,
     ...NotificationsActions,
-  }
+  },
 )
 export default class InstantRefundPricingTable extends Component {
   static contextTypes = {
@@ -72,40 +67,26 @@ export default class InstantRefundPricingTable extends Component {
       <div class="instant-refund-fee-modal">
         <Fragment>
           <div class="panel panel-default refund-fee-structure">
-            <div
-              class="panel-heading grey"
-              style={{ fontWeight: 600, color: '#515978' }}
-            >
+            <div class="panel-heading grey" style={{ fontWeight: 600, color: '#515978' }}>
               We charge minimal fee on each refund
             </div>
             <div class="panel-body" style={{ paddingBottom: '8px' }}>
               {!this.props.pricing.custom_pricing ? (
                 <div class="instant-breakup">
                   <div class="flex">
-                    <div
-                      style={{ marginBottom: '5px' }}
-                      class="w50 text-left t-heading"
-                    >
+                    <div style={{ marginBottom: '5px' }} class="w50 text-left t-heading">
                       Refund Amount
                     </div>
-                    <div
-                      style={{ marginBottom: '5px' }}
-                      class="w50 text-right t-heading"
-                    >
+                    <div style={{ marginBottom: '5px' }} class="w50 text-right t-heading">
                       Processing Fees
                     </div>
                   </div>
                   {rules.map((r, i) => (
                     <div key={i} class="flex">
                       <div class="text-left amt" style={{ flexGrow: 1 }}>
-                        ₹{' '}
-                        {i > 0
-                          ? r.amount_range_min / 100 + 1
-                          : r.amount_range_min / 100}{' '}
+                        ₹ {i > 0 ? r.amount_range_min / 100 + 1 : r.amount_range_min / 100}{' '}
                         {i == rules.length - 1 ? 'and' : '-'}{' '}
-                        {i == rules.length - 1
-                          ? `above`
-                          : r.amount_range_max / 100}{' '}
+                        {i == rules.length - 1 ? `above` : r.amount_range_max / 100}{' '}
                       </div>
                       <div class="text-right" style={{ flexGrow: 1 }}>
                         <Amount
@@ -158,9 +139,7 @@ const raiseTicket = () => {
     }, 0);
     setTimeout(() => {
       var el = document.getElementsByName('request-description')[0];
-      el.value =
-        'Hello Team,\n' +
-        'I’d like to know my custom pricing for instant refunds.';
+      el.value = 'Hello Team,\n' + 'I’d like to know my custom pricing for instant refunds.';
       el.focus();
     }, 1000);
   }

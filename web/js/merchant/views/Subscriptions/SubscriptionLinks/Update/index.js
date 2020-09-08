@@ -38,7 +38,7 @@ import PlanDetails from './PlanDetails';
     updateSubscription,
     showNotification,
     fetchSubscription,
-  }
+  },
 )
 export default class UpdateSubscription extends React.Component {
   constructor(props) {

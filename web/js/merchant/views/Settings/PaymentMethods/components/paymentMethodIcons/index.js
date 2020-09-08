@@ -26,7 +26,7 @@ function getIconFn(iconName) {
   }
 }
 
-export const getIcon = iconName => {
+export const getIcon = (iconName) => {
   const iconFn = getIconFn(iconName);
   return iconFn && iconFn();
 };

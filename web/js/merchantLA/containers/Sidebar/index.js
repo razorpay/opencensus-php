@@ -12,7 +12,7 @@ const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
   (state) => ({
     showMobileMenu: state.app.showMobileMenu,
   }),
-  { toggleMobileMenu }
+  { toggleMobileMenu },
 )
 export default class Sidebar extends Component {
   // currently active routes in tabbed containers

@@ -45,7 +45,7 @@ import Time from 'common/ui/Time';
   {
     openModal,
     fetchInternationalProductsStatus,
-  }
+  },
 )
 class AnalyticsDesktop extends Component {
   constructor(props) {
@@ -138,7 +138,9 @@ class AnalyticsDesktop extends Component {
       lateAuthConfig,
     } = this.props;
 
-    const { data: { items } } = lateAuthConfig;
+    const {
+      data: { items },
+    } = lateAuthConfig;
 
     const hasSecondaryBanner =
       showInstantActivation && config.config && !config.config.hasPersonalised;
@@ -177,16 +179,15 @@ class AnalyticsDesktop extends Component {
               />
             )}
 
-          {this.isCaptureSettingsDefault(items) &&
-            user.instantActivation.isWhitelistFlow === true && (
-              <AnnouncementBanner title="Capture Settings" theme="success" canBeClosed={true}>
-                Currently all payments with order id are being captured by default, click{' '}
-                <Link to={'/config'} target="_blank">
-                  here
-                </Link>{' '}
-                to configure your capture setting.
-              </AnnouncementBanner>
-            )}
+          {this.isCaptureSettingsDefault(items) && user.instantActivation.isWhitelistFlow === true && (
+            <AnnouncementBanner title="Capture Settings" theme="success" canBeClosed={true}>
+              Currently all payments with order id are being captured by default, click{' '}
+              <Link to={'/config'} target="_blank">
+                here
+              </Link>{' '}
+              to configure your capture setting.
+            </AnnouncementBanner>
+          )}
 
           {current_balance.data.balance < 0 && (
             <AnnouncementBanner title="Add Funds" theme="warning" canBeClosed={true}>

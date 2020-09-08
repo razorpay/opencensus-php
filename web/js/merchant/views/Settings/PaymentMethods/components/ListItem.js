@@ -32,8 +32,7 @@ const ListItem = ({
       handleSetInstrument(instrument, from);
     }
   }, []);
-  const instrumentActions =
-    instrument.actionItems && Object.keys(instrument.actionItems).length;
+  const instrumentActions = instrument.actionItems && Object.keys(instrument.actionItems).length;
   return (
     <li
       onClick={() => handleSetInstrument(instrument, from)}
@@ -49,8 +48,7 @@ const ListItem = ({
               <Popover align="bottom" theme="dark">
                 <PopoverBody>
                   <div style={{ textAlign: 'left' }}>
-                    item requires user action. Please complete your activation
-                    form.
+                    item requires user action. Please complete your activation form.
                   </div>
                 </PopoverBody>
               </Popover>
@@ -60,9 +58,7 @@ const ListItem = ({
         <p>{instrument.description}</p>
       </div>
       <div
-        class={`expand show-expand ${
-          clickedName === instrument.name ? 'highlight-expand' : ''
-        }`}
+        class={`expand show-expand ${clickedName === instrument.name ? 'highlight-expand' : ''}`}
       >
         <i class="i i-chevron-right" />
       </div>

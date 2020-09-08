@@ -24,7 +24,7 @@ import logoutGoogleAccount from '../../../common/utils/logoutGoogle';
 
 @withRouter
 @connect(
-  state => {
+  (state) => {
     return {
       ...state.session,
       ...state.config.config,
@@ -32,7 +32,7 @@ import logoutGoogleAccount from '../../../common/utils/logoutGoogle';
       user: state.session.user,
     };
   },
-  { logout, closeModal, openModal, updateSession }
+  { logout, closeModal, openModal, updateSession },
 )
 export default class ProfileDropdown extends Component {
   state = {
@@ -57,7 +57,7 @@ export default class ProfileDropdown extends Component {
     this.props.analytics && this.props.analytics('Log Out');
     return this.props
       .logout()
-      .catch(e => {
+      .catch((e) => {
         console.error(e);
       })
       .then(() => {
@@ -74,15 +74,12 @@ export default class ProfileDropdown extends Component {
     this.props.openModal({
       size: 'xlarge',
       disableClose: false,
-      component: (
-        <PartnerOnbr closeModal={this.props.closeModal} disableClose={false} />
-      ),
+      component: <PartnerOnbr closeModal={this.props.closeModal} disableClose={false} />,
     });
   };
 
   openTicketModal = () => {
-    window.rzpTicketSystem &&
-      window.rzpTicketSystem.openModal('#ticket', this.props.analytics);
+    window.rzpTicketSystem && window.rzpTicketSystem.openModal('#ticket', this.props.analytics);
   };
 
   openSwitchMerchantModal = () => {
@@ -92,15 +89,9 @@ export default class ProfileDropdown extends Component {
       size: 'small',
       component: (
         <div className="switch-merchant-modal-content">
-          <ModalHeader
-            title="Switch Merchant"
-            onCloseClick={this.props.closeModal}
-          />
+          <ModalHeader title="Switch Merchant" onCloseClick={this.props.closeModal} />
           <div className="modal-body">
-            <SwitchMerchantTypeahead
-              user={user}
-              onSwitchMerchant={onSwitchMerchant}
-            />
+            <SwitchMerchantTypeahead user={user} onSwitchMerchant={onSwitchMerchant} />
           </div>
         </div>
       ),
@@ -120,11 +111,7 @@ export default class ProfileDropdown extends Component {
     const { showRazorpayxToolTip } = this.state;
 
     return (
-      <Dropdown
-        closeOnClick={false}
-        onShow={this.handleShow}
-        onHide={this.handleHide}
-      >
+      <Dropdown closeOnClick={false} onShow={this.handleShow} onHide={this.handleHide}>
         <DropdownTrigger class="dropdown-toggle">
           {isMobileResolution ? (
             <span className="merchant-logo-preview">
@@ -159,9 +146,7 @@ export default class ProfileDropdown extends Component {
                         value={merchant.id}
                         onCopy={() => analytics('Copy - Merchant ID')}
                       >
-                        <button class="btn btn-default btn-xs">
-                          Copy Merchant Id
-                        </button>
+                        <button class="btn btn-default btn-xs">Copy Merchant Id</button>
                       </CustomClipboard>
                     </GroupItem>
                   </Group>
@@ -172,15 +157,12 @@ export default class ProfileDropdown extends Component {
             {showMobileNav && (
               <React.Fragment>
                 {Object.keys(user.merchants).length > 1 && (
-                  <div
-                    className="media media-action"
-                    onClick={this.openSwitchMerchantModal}
-                  >
+                  <div className="media media-action" onClick={this.openSwitchMerchantModal}>
                     <div className="media-body">Switch Merchant</div>
                   </div>
                 )}
                 <ShowWhen
-                  additionalCondition={user =>
+                  additionalCondition={(user) =>
                     !!showGSTModal && user.isAllowedView('profile_gst')
                   }
                 >
@@ -189,9 +171,7 @@ export default class ProfileDropdown extends Component {
                   </div>
                 </ShowWhen>
                 <ShowWhen
-                  additionalCondition={user =>
-                    user.isOrgAllowedFunctionality('external_links')
-                  }
+                  additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
                 >
                   <div class="media media-action">
                     <div class="media-body">
@@ -222,20 +202,11 @@ export default class ProfileDropdown extends Component {
                     </a>
                   </div>
                 </div>
-                {!showMobileNav &&
-                  showRazorpayxToolTip &&
-                  user.isRazorxAnnouncementEnabled && (
-                    <Popover
-                      persistent={true}
-                      theme="dark"
-                      align="left"
-                      class="razorpayx-popover"
-                    >
-                      <PopoverBody>
-                        You can switch to RazorpayX Dashboard from here
-                      </PopoverBody>
-                    </Popover>
-                  )}
+                {!showMobileNav && showRazorpayxToolTip && user.isRazorxAnnouncementEnabled && (
+                  <Popover persistent={true} theme="dark" align="left" class="razorpayx-popover">
+                    <PopoverBody>You can switch to RazorpayX Dashboard from here</PopoverBody>
+                  </Popover>
+                )}
               </>
             )}
 
@@ -243,35 +214,28 @@ export default class ProfileDropdown extends Component {
               <div class="media-body">
                 <div>Logged in as</div>
                 <p className="account-details">
-                  <i class="i i-account" />{' '}
-                  <span title={user.user.email}>{user.user.email}</span>
+                  <i class="i i-account" /> <span title={user.user.email}>{user.user.email}</span>
                 </p>
-                <button
-                  class="btn btn-primary logout-btn"
-                  onClick={this.logout}
-                >
+                <button class="btn btn-primary logout-btn" onClick={this.logout}>
                   Log out
                 </button>
               </div>
             </div>
-            {user.role === rolesList.OWNER &&
-              user.partner_type === null && (
-                <div class="media loggedin-as">
-                  <div class="media-body">
-                    <p class="small-txt">
-                      Partner with us and start earning on every referral
-                    </p>
+            {user.role === rolesList.OWNER && user.partner_type === null && (
+              <div class="media loggedin-as">
+                <div class="media-body">
+                  <p class="small-txt">Partner with us and start earning on every referral</p>
 
-                    <a
-                      class="partner-link"
-                      style={{ color: '#528ff0', fontSize: '14px' }}
-                      onClick={this.showPartnerIntent}
-                    >
-                      <strong>Explore Partner Program</strong>{' '}
-                    </a>
-                  </div>
+                  <a
+                    class="partner-link"
+                    style={{ color: '#528ff0', fontSize: '14px' }}
+                    onClick={this.showPartnerIntent}
+                  >
+                    <strong>Explore Partner Program</strong>{' '}
+                  </a>
                 </div>
-              )}
+              </div>
+            )}
           </div>
         </DropdownContent>
       </Dropdown>

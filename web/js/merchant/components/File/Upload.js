@@ -54,7 +54,7 @@ export default class FileUpload extends React.Component {
     }
   }
 
-  updateFile = file => {
+  updateFile = (file) => {
     // check if file type is allowed
     if (this.isFileAllowed(file)) {
       this.props.onDrop && this.props.onDrop(file);
@@ -65,7 +65,7 @@ export default class FileUpload extends React.Component {
     }
   };
 
-  progressTracker = progressEvent => {
+  progressTracker = (progressEvent) => {
     this.setState({ uploadedBytes: progressEvent.loaded });
   };
 
@@ -73,14 +73,10 @@ export default class FileUpload extends React.Component {
   onFileChange(file) {
     this.setState({ stagedFileStatus: 'process' });
 
-    const promise = this.props.onFileChange.call(
-      this,
-      file,
-      this.progressTracker
-    );
+    const promise = this.props.onFileChange.call(this, file, this.progressTracker);
 
     if (promise && promise.then) {
-      promise.then(data => {
+      promise.then((data) => {
         if (data && data.errors) {
           // In some cases data was undefined while it was success. Mostly for slow connection.
           this.setState({ stagedFileStatus: 'error' });
@@ -98,12 +94,12 @@ export default class FileUpload extends React.Component {
   };
 
   // Checks filze size in bits
-  isFileOfRightSize = file => {
+  isFileOfRightSize = (file) => {
     const maxSize = this.props.maxSize || MAX_API_LIMIT; // Max size is always 25MB
     return file.size <= maxSize;
   };
 
-  isFileTypeAllowed = file => {
+  isFileTypeAllowed = (file) => {
     let type = file.type;
 
     //- windows sends empty file.type if it is not set in user registry
@@ -126,12 +122,10 @@ export default class FileUpload extends React.Component {
     }
 
     // Get patterns of each accepted file types
-    const acceptedTypes = this.props.accept.map(
-      fileType => fileTypesMap[fileType]
-    );
+    const acceptedTypes = this.props.accept.map((fileType) => fileTypesMap[fileType]);
 
     // Uploaded file type matches given pattern
-    const isValidFilePattern = acceptedTypes.some(aT => {
+    const isValidFilePattern = acceptedTypes.some((aT) => {
       let pattern = new RegExp(aT);
       return pattern.test(type);
     });
@@ -139,11 +133,11 @@ export default class FileUpload extends React.Component {
     return acceptedTypes.length === 0 || isValidFilePattern;
   };
 
-  handleBiggerFile = fileSize => {
+  handleBiggerFile = (fileSize) => {
     this.props.onBiggerFileSize(fileSize);
   };
 
-  isFileAllowed = file => {
+  isFileAllowed = (file) => {
     if (this.isFileOfRightSize(file)) {
       return this.isFileTypeAllowed(file);
     } else {
@@ -161,7 +155,7 @@ export default class FileUpload extends React.Component {
 
     let infotext = 'Upload ';
 
-    accept = accept.map(fileType => `.${fileType}`);
+    accept = accept.map((fileType) => `.${fileType}`);
 
     if (accept.length > 1) {
       infotext += `${accept.slice(0, -1).join(', ')} or ${accept.slice(-1)}`;
@@ -174,7 +168,7 @@ export default class FileUpload extends React.Component {
     return infotext;
   };
 
-  handleCloseClick = fileIndex => e => {
+  handleCloseClick = (fileIndex) => (e) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -185,7 +179,7 @@ export default class FileUpload extends React.Component {
     if (this.state.isDocPreUploaded) {
       this.setState(
         { isDocPreUploaded: false },
-        () => this.props.onCloseClick && this.props.onCloseClick()
+        () => this.props.onCloseClick && this.props.onCloseClick(),
       );
 
       return;
@@ -194,11 +188,11 @@ export default class FileUpload extends React.Component {
       {
         files: this.state.files.filter((_, index) => index !== fileIndex),
       },
-      () => this.props.onCloseClick && this.props.onCloseClick()
+      () => this.props.onCloseClick && this.props.onCloseClick(),
     );
   };
 
-  handleDrop = event => {
+  handleDrop = (event) => {
     event.preventDefault();
     const { dataTransfer } = event;
     const files = dataTransfer.items || dataTransfer.files;
@@ -220,16 +214,16 @@ export default class FileUpload extends React.Component {
     }
   };
 
-  handleDragOver = e => {
+  handleDragOver = (e) => {
     e.preventDefault();
   };
 
-  toggleDragWithFile = e => {
+  toggleDragWithFile = (e) => {
     e.preventDefault();
     this.setState({ isFileDraggedInside: !this.state.isFileDraggedInside });
   };
 
-  handleFileInputChange = event => {
+  handleFileInputChange = (event) => {
     event.preventDefault();
     this.updateFile(event.currentTarget.files[0]);
   };
@@ -254,9 +248,7 @@ export default class FileUpload extends React.Component {
     } = this.props;
     let { isDocPreUploaded } = this.state;
 
-    const { stagedFileStatus, uploadedBytes } = onFileChange
-      ? this.state
-      : this.props;
+    const { stagedFileStatus, uploadedBytes } = onFileChange ? this.state : this.props;
 
     let files = this.props.files || this.state.files;
     // if doc is pre-uploaded inserting one dummy file object to be provided to Staged
@@ -268,70 +260,62 @@ export default class FileUpload extends React.Component {
         id={`Dropzone-${name}`}
         onDragLeave={isDocPreUploaded ? undefined : this.toggleDragWithFile}
       >
-        {!isDocPreUploaded &&
-          (multi || !files.length) && (
-            <label
-              class={classList(
-                'Dropzone-cavity',
-                this.state.isFileDraggedInside && 'Dropzone-cavity--highlight'
-              )}
-              onClick={() => {
-                window.rzpAnalytics({
-                  eventCategory: `Batch ${titleCase(this.props.batchType)}`,
-                  eventAction: 'Upload file -  upload modal',
-                  eventLabel: `Click to upload file`,
-                });
-              }}
-              for={`fileInput-${name}`}
-              onDrop={isDocPreUploaded ? undefined : this.handleDrop}
-              onDragOver={isDocPreUploaded ? undefined : this.handleDragOver}
-              onDragEnter={
-                isDocPreUploaded ? undefined : this.toggleDragWithFile
-              }
-            >
-              <div class={`Dropzone-content ${size}`}>
-                {children || (
-                  <React.Fragment>
-                    <img
-                      class="Dropzone-file-icon"
-                      src={'/dist/css/assets/files/file-placeholder.svg'}
-                      alt=""
-                    />
-                    <div class="Dropzone-content-desc">
-                      <p class="Dropzone-content-desc--primary">
-                        Drop file here or{' '}
-                        <b class="text-primary">Click to Upload</b>{' '}
-                        {maxSize && (
-                          <React.Fragment>
-                            ({readableFileSize(maxSize)} Max)
-                          </React.Fragment>
-                        )}
-                      </p>
-                      {do {
-                        const acceptedFileTypes = this.getAcceptedFileTypesInfo();
+        {!isDocPreUploaded && (multi || !files.length) && (
+          <label
+            class={classList(
+              'Dropzone-cavity',
+              this.state.isFileDraggedInside && 'Dropzone-cavity--highlight',
+            )}
+            onClick={() => {
+              window.rzpAnalytics({
+                eventCategory: `Batch ${titleCase(this.props.batchType)}`,
+                eventAction: 'Upload file -  upload modal',
+                eventLabel: `Click to upload file`,
+              });
+            }}
+            for={`fileInput-${name}`}
+            onDrop={isDocPreUploaded ? undefined : this.handleDrop}
+            onDragOver={isDocPreUploaded ? undefined : this.handleDragOver}
+            onDragEnter={isDocPreUploaded ? undefined : this.toggleDragWithFile}
+          >
+            <div class={`Dropzone-content ${size}`}>
+              {children || (
+                <React.Fragment>
+                  <img
+                    class="Dropzone-file-icon"
+                    src={'/dist/css/assets/files/file-placeholder.svg'}
+                    alt=""
+                  />
+                  <div class="Dropzone-content-desc">
+                    <p class="Dropzone-content-desc--primary">
+                      Drop file here or <b class="text-primary">Click to Upload</b>{' '}
+                      {maxSize && (
+                        <React.Fragment>({readableFileSize(maxSize)} Max)</React.Fragment>
+                      )}
+                    </p>
+                    {do {
+                      const acceptedFileTypes = this.getAcceptedFileTypesInfo();
 
-                        if (acceptedFileTypes && showAcceptInfo) {
-                          <p class="Dropzone-content-desc--secondary text-muted small-text">
-                            {acceptedFileTypes}
-                          </p>;
-                        }
-                      }}
-                    </div>
-                    <input
-                      type="file"
-                      id={`fileInput-${name}`}
-                      onChange={this.handleFileInputChange}
-                      accept={
-                        accept && accept.map(fileType => fileTypesMap[fileType])
+                      if (acceptedFileTypes && showAcceptInfo) {
+                        <p class="Dropzone-content-desc--secondary text-muted small-text">
+                          {acceptedFileTypes}
+                        </p>;
                       }
-                      disabled={disabled}
-                      hidden
-                    />
-                  </React.Fragment>
-                )}
-              </div>
-            </label>
-          )}
+                    }}
+                  </div>
+                  <input
+                    type="file"
+                    id={`fileInput-${name}`}
+                    onChange={this.handleFileInputChange}
+                    accept={accept && accept.map((fileType) => fileTypesMap[fileType])}
+                    disabled={disabled}
+                    hidden
+                  />
+                </React.Fragment>
+              )}
+            </div>
+          </label>
+        )}
         {!!(isDocPreUploaded || files.length) && (
           <div
             class={classList(
@@ -339,7 +323,7 @@ export default class FileUpload extends React.Component {
               'Dropzone-cavity--staged',
               stagedFileStatus && 'Dropzone-cavity--' + stagedFileStatus,
               disabled && 'Dropzone-cavity--disabled',
-              dropZoneCavityClassName
+              dropZoneCavityClassName,
             )}
           >
             {files.map((file, index) => (
@@ -347,9 +331,7 @@ export default class FileUpload extends React.Component {
                 file={file}
                 key={index}
                 isDocPreUploaded={isDocPreUploaded}
-                onCloseClick={
-                  this.props.showCloseBtn && this.handleCloseClick(index)
-                }
+                onCloseClick={this.props.showCloseBtn && this.handleCloseClick(index)}
                 isDisabled={disabled}
                 uploadedBytes={uploadedBytes}
                 stagedFileStatus={stagedFileStatus}

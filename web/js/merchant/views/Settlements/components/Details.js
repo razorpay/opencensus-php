@@ -9,7 +9,7 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import AnnouncementBar from 'merchant/components/AnnouncementBar';
 import ShowWhen from 'merchant/components/ShowWhen';
 
-export default props => {
+export default (props) => {
   let { settlement, breakupDetails, isLoading, statusMsg } = props;
 
   return (
@@ -29,33 +29,24 @@ export default props => {
               <Alert type={statusMsg.type} message={statusMsg.message} />
               <EntityDetailRow
                 label="Amount"
-                value={() => (
-                  <Amount value={settlement.amount} currency={'INR'} />
-                )}
+                value={() => <Amount value={settlement.amount} currency={'INR'} />}
               />
 
               <EntityDetailRow
                 label="Status"
-                value={() => (
-                  <SettlementStatusLabel status={settlement.status} />
-                )}
+                value={() => <SettlementStatusLabel status={settlement.status} />}
               />
 
               <EntityDetailRow
                 label="Created At"
                 value={() => (
-                  <Time
-                    value={settlement.created_at}
-                    format="DD MMM YYYY, hh:mm:ss a"
-                  />
+                  <Time value={settlement.created_at} format="DD MMM YYYY, hh:mm:ss a" />
                 )}
               />
 
               <EntityDetailRow
                 label="Fees"
-                value={() => (
-                  <Amount value={settlement.fees} currency={'INR'} />
-                )}
+                value={() => <Amount value={settlement.fees} currency={'INR'} />}
               />
 
               <EntityDetailRow label="UTR" value={settlement.utr} />
@@ -74,10 +65,11 @@ export default props => {
                   loading={breakupDetails.loading}
                 />
               </ListGroupToggler>
-              <ShowWhen
-                additionalCondition={user => user.isProjectNitroEnabled}
-              >
-                <AnnouncementBar fromWhere="settlements" url="https://lp.razorpay.com/razorpayxca-sttlmnts2"/>
+              <ShowWhen additionalCondition={(user) => user.isProjectNitroEnabled}>
+                <AnnouncementBar
+                  fromWhere="settlements"
+                  url="https://lp.razorpay.com/razorpayxca-sttlmnts2"
+                />
               </ShowWhen>
             </div>
           </div>

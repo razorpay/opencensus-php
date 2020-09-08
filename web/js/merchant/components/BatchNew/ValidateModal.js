@@ -83,13 +83,12 @@ export default class BatchValidateModal extends Component {
               </p>
               <ol class="validate-modal-ul">
                 <li>The amount mentioned should be in paise.</li>
-                {batchType &&
-                  batchType != 'refund' && (
-                    <li>
-                      The {user.isPaymentlinksV2Enabled ? 'reference id' : 'receipt id'} for all{' '}
-                      {batchTypeText ? batchTypeText : titleCase(batchType)}s should be unique.
-                    </li>
-                  )}
+                {batchType && batchType != 'refund' && (
+                  <li>
+                    The {user.isPaymentlinksV2Enabled ? 'reference id' : 'receipt id'} for all{' '}
+                    {batchTypeText ? batchTypeText : titleCase(batchType)}s should be unique.
+                  </li>
+                )}
 
                 {batchType == 'refund' ? (
                   <React.Fragment>

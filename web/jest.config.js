@@ -12,7 +12,7 @@ module.exports = {
   moduleFileExtensions: ['web.js', 'js', 'json', 'jsx', 'ts', 'tsx'],
 
   // An array of directory names to be searched recursively up from the requiring module's location
-  moduleDirectories: ['node_modules', 'v2/utils/test', __dirname],
+  moduleDirectories: ['node_modules', 'v2/services/test', __dirname],
 
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
   moduleNameMapper: {

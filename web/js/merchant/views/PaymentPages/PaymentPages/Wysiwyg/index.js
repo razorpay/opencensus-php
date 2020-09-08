@@ -69,7 +69,7 @@ const ERROR = {
     openModal,
     updateTemplateType,
     updateReceiptDetails,
-  }
+  },
 )
 @RTracking(() => window.rzpQ.component('PaymentPagesWysiwyg'))
 export default class PaymentPagesWysiwyg extends React.PureComponent {
@@ -199,7 +199,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
   componentDidMount() {
     this.props.initDefaultFormItems();
-
 
     // Load color.js
     let script = document.createElement('script');
@@ -362,7 +361,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   @RTracking(() =>
     window.rzpQ.onbr().success('dash.pp_action', {
       action: 'Initiate_PP_Launch',
-    })
+    }),
   )
   handleSavePublish = () => {
     const isEditExistingId = !!this.props.id;
@@ -534,7 +533,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         window.rzpQ.paymentPages().interaction('pp.create.publish_page', {
           is_new_page: false,
           clone: !!searchQueryNext.duplicate_id,
-        })
+        }),
       );
     } else {
       trackPageSave('create', trackData);
@@ -543,7 +542,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         window.rzpQ.paymentPages().interaction('pp.create.publish_page', {
           is_new_page: true,
           clone: !!searchQueryNext.duplicate_id,
-        })
+        }),
       );
     }
 
@@ -609,7 +608,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       resp.data.short_url,
       resp.data.title,
       resp.data.description,
-      isEditExistingId
+      isEditExistingId,
     );
   };
 

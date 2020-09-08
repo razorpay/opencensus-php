@@ -21,11 +21,8 @@ const LeafList = ({ instrument, intermediateInstrument }) => {
   if (!instrument) return null;
   function renderLeafList(leafList) {
     let list = leafList.list
-      .filter(_ => {
-        if (
-          intermediateInstrument &&
-          intermediateInstrument.slug === 'netbanking'
-        ) {
+      .filter((_) => {
+        if (intermediateInstrument && intermediateInstrument.slug === 'netbanking') {
           if (filter === 'active') {
             return _.status === 'activated';
           } else {
@@ -40,21 +37,17 @@ const LeafList = ({ instrument, intermediateInstrument }) => {
       if (filter === 'inactive') {
         return <p class="all-active">All banks are active on your account!</p>;
       } else if (filter === 'active') {
-        return (
-          <p class="all-inactive">
-            No banks active for you. Add more banks to catch up.
-          </p>
-        );
+        return <p class="all-inactive">No banks active for you. Add more banks to catch up.</p>;
       }
     } else {
-      return list.map(leafItem => {
+      return list.map((leafItem) => {
         return <LeafListItem key={leafItem.name} instrument={leafItem} />;
       });
     }
   }
   return (
     <div class="level-3">
-      {instrument.leafList.map(leafList => {
+      {instrument.leafList.map((leafList) => {
         return (
           <React.Fragment key={leafList.header}>
             <div class="heading">
@@ -62,46 +55,37 @@ const LeafList = ({ instrument, intermediateInstrument }) => {
               {leafList.docLink && (
                 <span class="toggler-btn">
                   <a href={leafList.docLink} target="_blank" rel="noreferrer">
-                    Documentation{' '}
-                    <i
-                      class="i i-external-link"
-                      style={{ marginLeft: '5px' }}
-                    />
+                    Documentation <i class="i i-external-link" style={{ marginLeft: '5px' }} />
                   </a>
                 </span>
               )}
             </div>
-            {intermediateInstrument &&
-              intermediateInstrument.slug === 'netbanking' && (
-                <div class="filter">
-                  <button
-                    class={`filter-btn ${
-                      filter === 'active' ? 'filter-active' : ''
-                    }`}
-                    onClick={() =>
-                      setFilter(() => {
-                        addShadow();
-                        return 'active';
-                      })
-                    }
-                  >
-                    Active Banks
-                  </button>
-                  <button
-                    class={`filter-btn ${
-                      filter === 'inactive' ? 'filter-active' : ''
-                    }`}
-                    onClick={() =>
-                      setFilter(() => {
-                        addShadow();
-                        return 'inactive';
-                      })
-                    }
-                  >
-                    Add more Banks
-                  </button>
-                </div>
-              )}
+            {intermediateInstrument && intermediateInstrument.slug === 'netbanking' && (
+              <div class="filter">
+                <button
+                  class={`filter-btn ${filter === 'active' ? 'filter-active' : ''}`}
+                  onClick={() =>
+                    setFilter(() => {
+                      addShadow();
+                      return 'active';
+                    })
+                  }
+                >
+                  Active Banks
+                </button>
+                <button
+                  class={`filter-btn ${filter === 'inactive' ? 'filter-active' : ''}`}
+                  onClick={() =>
+                    setFilter(() => {
+                      addShadow();
+                      return 'inactive';
+                    })
+                  }
+                >
+                  Add more Banks
+                </button>
+              </div>
+            )}
             <ul
               style={{
                 maxHeight: `${!intermediateInstrument ? '420px' : '370px'}`,
@@ -126,7 +110,7 @@ const LeafList = ({ instrument, intermediateInstrument }) => {
   );
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   instrument: state.instrumentRequests.leafInstrument,
   intermediateInstrument: state.instrumentRequests.intermediateInstrument,
 });

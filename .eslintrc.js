@@ -69,6 +69,16 @@ module.exports = {
         'prettier/@typescript-eslint',
       ],
     },
+    {
+      files: ['**/__tests__/**/*.tsx'],
+      settings: {
+        'import/resolver': {
+          jest: {
+            jestConfigFile: './jest.config',
+          },
+        },
+      },
+    },
   ],
   settings: {
     'import/resolver': {

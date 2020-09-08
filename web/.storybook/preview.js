@@ -46,6 +46,6 @@ addParameters({
   },
 });
 
-addDecorator((storyFn) => <ThemeProvider theme={theme}>{storyFn()}</ThemeProvider>);
+addDecorator((StoryFn) => <ThemeProvider theme={theme}>{<StoryFn />}</ThemeProvider>);
 
 //export const decorators = [addDecorator];

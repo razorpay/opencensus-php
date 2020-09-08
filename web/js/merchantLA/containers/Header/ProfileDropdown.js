@@ -16,13 +16,13 @@ import logoutGoogleAccount from '../../../common/utils/logoutGoogle';
 
 @withRouter
 @connect(
-  state => {
+  (state) => {
     return {
       ...state.session,
       isMobileResolution: state.app.isMobileResolution,
     };
   },
-  { logout, closeModal, openModal, showOrHideTour }
+  { logout, closeModal, openModal, showOrHideTour },
 )
 export default class ProfileDropdown extends Component {
   logout = () => {
@@ -30,7 +30,7 @@ export default class ProfileDropdown extends Component {
     this.props.analytics && this.props.analytics('Log Out');
     return this.props
       .logout()
-      .catch(e => {
+      .catch((e) => {
         console.error(e);
       })
       .then(() => {
@@ -39,8 +39,7 @@ export default class ProfileDropdown extends Component {
   };
 
   openTicketModal = () => {
-    window.rzpTicketSystem &&
-      window.rzpTicketSystem.openModal('#ticket', this.props.analytics);
+    window.rzpTicketSystem && window.rzpTicketSystem.openModal('#ticket', this.props.analytics);
   };
 
   openSwitchMerchantModal = () => {
@@ -50,22 +49,16 @@ export default class ProfileDropdown extends Component {
       size: 'small',
       component: (
         <div className="switch-merchant-modal-content">
-          <ModalHeader
-            title="Switch Merchant"
-            onCloseClick={this.props.closeModal}
-          />
+          <ModalHeader title="Switch Merchant" onCloseClick={this.props.closeModal} />
           <div className="modal-body">
-            <SwitchMerchantTypeahead
-              user={user}
-              onSwitchMerchant={onSwitchMerchant}
-            />
+            <SwitchMerchantTypeahead user={user} onSwitchMerchant={onSwitchMerchant} />
           </div>
         </div>
       ),
     });
   };
 
-  showOrHideTour = show => {
+  showOrHideTour = (show) => {
     let { analytics = () => {}, showOrHideTour } = this.props;
 
     analytics('Show - Recent UI Changes');
@@ -79,13 +72,7 @@ export default class ProfileDropdown extends Component {
   };
 
   render() {
-    let {
-      user,
-      mode,
-      showMobileNav,
-      isMobileResolution,
-      analytics = () => {},
-    } = this.props;
+    let { user, mode, showMobileNav, isMobileResolution, analytics = () => {} } = this.props;
     let merchant = user.merchants[user.current];
     return (
       <Dropdown closeOnClick={false}>
@@ -123,9 +110,7 @@ export default class ProfileDropdown extends Component {
                         value={merchant.id}
                         onCopy={() => analytics('Copy - Merchant ID')}
                       >
-                        <button class="btn btn-default btn-xs">
-                          Copy Merchant Id
-                        </button>
+                        <button class="btn btn-default btn-xs">Copy Merchant Id</button>
                       </CustomClipboard>
                     </GroupItem>
                   </Group>
@@ -136,10 +121,7 @@ export default class ProfileDropdown extends Component {
             {showMobileNav && (
               <React.Fragment>
                 {Object.keys(user.merchants).length > 1 && (
-                  <div
-                    className="media media-action"
-                    onClick={this.openSwitchMerchantModal}
-                  >
+                  <div className="media media-action" onClick={this.openSwitchMerchantModal}>
                     <div className="media-body">Switch Merchant</div>
                   </div>
                 )}
@@ -157,33 +139,24 @@ export default class ProfileDropdown extends Component {
               <div className="media-body">Raise a request</div>
             </div>
 
-            {mode === 'live' &&
-              !showMobileNav &&
-              user.isNewAnalyticsEnabled && (
-                <div
-                  class="media media-action"
-                  onClick={() => this.showOrHideTour(true)}
-                >
-                  <div class="media-left">
-                    <div class="media-object">
-                      <i class="i i-tour" />
-                    </div>
+            {mode === 'live' && !showMobileNav && user.isNewAnalyticsEnabled && (
+              <div class="media media-action" onClick={() => this.showOrHideTour(true)}>
+                <div class="media-left">
+                  <div class="media-object">
+                    <i class="i i-tour" />
                   </div>
-                  <div class="media-body">Show Dashboard Home Tour</div>
                 </div>
-              )}
+                <div class="media-body">Show Dashboard Home Tour</div>
+              </div>
+            )}
 
             <div class="media loggedin-as">
               <div class="media-body">
                 <div>Logged in as</div>
                 <p className="account-details">
-                  <i class="i i-account" />{' '}
-                  <span title={user.user.email}>{user.user.email}</span>
+                  <i class="i i-account" /> <span title={user.user.email}>{user.user.email}</span>
                 </p>
-                <button
-                  class="btn btn-primary logout-btn"
-                  onClick={this.logout}
-                >
+                <button class="btn btn-primary logout-btn" onClick={this.logout}>
                   Log out
                 </button>
               </div>

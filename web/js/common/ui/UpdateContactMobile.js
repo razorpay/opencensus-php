@@ -20,7 +20,7 @@ import { isPhone } from 'common/utils/validators';
     closeModal,
     openModal,
     showNotification,
-  }
+  },
 )
 @RTracking(() => window.rzpQ.component('UpdateContactMobile'))
 export default class UpdateContactMobile extends React.Component {
@@ -38,7 +38,7 @@ export default class UpdateContactMobile extends React.Component {
 
   @RTracking((props) => {
     return props.tracking.trackEvent(
-      window.rzpQ.merchantActions().success('change_contact_mobile')
+      window.rzpQ.merchantActions().success('change_contact_mobile'),
     );
   })
   onComplete = () => {
@@ -135,7 +135,7 @@ export default class UpdateContactMobile extends React.Component {
 
   onWrongOtp = () => {
     this.props.tracking.trackEvent(
-      window.rzpQ.merchantActions().failed('changed_contact_mobile.wrong_otp')
+      window.rzpQ.merchantActions().failed('changed_contact_mobile.wrong_otp'),
     );
   };
 }

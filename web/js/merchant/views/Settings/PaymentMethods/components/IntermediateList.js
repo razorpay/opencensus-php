@@ -2,7 +2,7 @@ import { useState } from 'react';
 import ListItem from './ListItem';
 const IntermediateList = ({ instrument }) => {
   const [clickedName, setClickedName] = useState(null);
-  const handleClickedInstument = name => {
+  const handleClickedInstument = (name) => {
     setClickedName(name);
   };
   return (

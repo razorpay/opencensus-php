@@ -25,7 +25,7 @@ import TwoFaVerificationContext from './TwoFactorVerificationContext';
     verifyTwoFactorOtp,
     updateContactMobile,
     updateUser,
-  }
+  },
 )
 @RTracking(() => window.rzpQ.component('TwoFaVerificationContextProvider'))
 export default class TwoFaVerificationContextProvider extends React.Component {
@@ -34,7 +34,7 @@ export default class TwoFaVerificationContextProvider extends React.Component {
       {
         otp: data.otp,
       },
-      this.props.ajax
+      this.props.ajax,
     );
   };
 
@@ -54,7 +54,7 @@ export default class TwoFaVerificationContextProvider extends React.Component {
     this.props.tracking.trackEvent(
       window.rzpQ.merchantActions().success('critical_actions.2fa_verification', {
         action: this.props.action,
-      })
+      }),
     );
 
     return onUserTwoFaVerified();
@@ -64,7 +64,7 @@ export default class TwoFaVerificationContextProvider extends React.Component {
     this.props.tracking.trackEvent(
       window.rzpQ.merchantActions().failed('critical_actions.2fa_verification_wrong_otp', {
         action: this.props.action,
-      })
+      }),
     );
   };
 
@@ -84,7 +84,7 @@ export default class TwoFaVerificationContextProvider extends React.Component {
     return props.tracking.trackEvent(
       window.rzpQ.merchantActions().initiated('critical_action.2fa_verification', {
         action: props.action,
-      })
+      }),
     );
   })
   criticalFlow = ({ onUserTwoFaVerified, onFlowTermination, modes = ['test', 'live'] }) => {
@@ -163,7 +163,7 @@ export default class TwoFaVerificationContextProvider extends React.Component {
     this.props.tracking.trackEvent(
       window.rzpQ.merchantActions().success('critical_actions.2fa_verification_skipped', {
         action: this.props.action,
-      })
+      }),
     );
   };
 
@@ -171,7 +171,7 @@ export default class TwoFaVerificationContextProvider extends React.Component {
     this.props.tracking.trackEvent(
       window.rzpQ.merchantActions().success('critical_actions.2fa_setup_success', {
         action: this.props.action,
-      })
+      }),
     );
   };
 }

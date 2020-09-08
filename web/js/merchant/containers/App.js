@@ -54,7 +54,7 @@ import qs from 'query-string';
     updateTwoFactorVerified,
     fetchGST,
     resizeWindow,
-  }
+  },
 )
 @RTracking(
   ({ user, mode }) => {
@@ -101,7 +101,7 @@ import qs from 'query-string';
     dispatch: (data) => {
       window.rzpQ.push(data);
     },
-  }
+  },
 )
 export default class App extends Component {
   pendingRequests = [];
@@ -151,7 +151,7 @@ export default class App extends Component {
   componentWillMount() {
     // Event Based method to lock dashboard screen
     const self = this;
-    window.addEventListener('NOT_AUTHENTICATED', function(e) {
+    window.addEventListener('NOT_AUTHENTICATED', function (e) {
       self.registerPendingRequests(e.detail.continueAjax);
 
       if (this.isDashboardLocked) {
@@ -161,7 +161,7 @@ export default class App extends Component {
       self.lockDashboard(self.resumePendingRequests);
     });
 
-    window.addEventListener('REQUEST_ERROR', function(e) {
+    window.addEventListener('REQUEST_ERROR', function (e) {
       const errorCode = e.detail.response ? e.detail.response.status : 'UNKNOWN STATUS';
 
       window.ga &&
@@ -170,7 +170,7 @@ export default class App extends Component {
           'event',
           `Dashboard - ${errorCode} Error`,
           e.detail.url,
-          e.detail.response
+          e.detail.response,
         );
     });
 
@@ -565,8 +565,8 @@ export default class App extends Component {
             removeLockScreen={this.removeLockScreen}
             showNotification={this.props.showNotification}
             resumeLockActionCB={this.resumeLockActionCB}
-            isGoogleLogin = {user.isGoogleLogin()}
-            isPartner = {user.isPartner()}
+            isGoogleLogin={user.isGoogleLogin()}
+            isPartner={user.isPartner()}
           />
         )}
       </div>
