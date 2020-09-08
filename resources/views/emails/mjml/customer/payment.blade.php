@@ -618,7 +618,7 @@
                                   <div class="description"
                                     style="text-align: center; color: #515978; font-size: 14px; line-height: 1.5;">
                                     <!-- For any product or service related queries, please contact {{$merchant['billing_label']}} support. -->
-                                    For any order related queries, please reach out to {{$merchant['name']}}. <br />
+                                    For any order related queries, please reach out to {{$merchant['billing_label']}}. <br />
                                     If you do not get a satisfactory response within 15 days, you may then raise a <a
                                       class="link" href="https://razorpay.com/dispute-guide" target="_blank"
                                       style="text-decoration: none; color: #528FF0;">chargeback</a> with your bank and
@@ -769,7 +769,7 @@
                       style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; margin-top: 8px; margin-bottom: 8px;">
                       <div class="footer-text"
                         style="font-size: 12px; line-height: 1.5; color: #7B8199; text-align: center; padding: 8px 0;">
-                        Razorpay is a payment gateway and only facilitates {{$merchant['name']}} with online payments.
+                        Razorpay is a payment gateway and only facilitates {{$merchant['billing_label']}} with online payments.
                         If you want to dispute this payment, please go through our <a class="link"
                           href="https://razorpay.com/dispute-guide/?utm_source=customer_mailer&amp;utm_medium=email&amp;utm_campaign=payment_refund"
                           target="_blank" style="text-decoration: none; color: #528FF0;"> Customer Dispute Guide</a>.
