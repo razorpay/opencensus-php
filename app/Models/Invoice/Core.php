@@ -1110,7 +1110,7 @@ class Core extends Base\Core
     {
         $stats = null;
 
-        if ($this->isPaymentLinkServiceCompatibilityFeatureEnabled() === true)
+        if ($this->shouldForwardToPaymentLinkService() === true)
         {
             try
             {
@@ -1369,8 +1369,13 @@ class Core extends Base\Core
         }
     }
 
-    protected function isPaymentLinkServiceCompatibilityFeatureEnabled(): bool
+    protected function shouldForwardToPaymentLinkService(): bool
     {
+        if ($this->app['basicauth']->isPaymentLinkServiceApp() === true)
+        {
+            return false;
+        }
+
         $merchant = $this->merchant;
 
         if ($merchant !== null)
