@@ -190,7 +190,9 @@ class Constants
         ],
         [
             'title'       => 'Instant Refund Update',
-            'description' => 'The pricing for instant refund has been revised. Now, you can process refunds instantly for Debit Cards too along with Credit Cards, UPI & Net Banking.',
+            'description' => 'We now support instant refunds for payments made via Debit Cards! Along with this update, pricing for instant refunds has also been revised.',
+            'track_event' => true,
+            'id'          => 'IR_update_DC',
             'start_ts'    => 1599489000,
             'end_ts'      => 1604092722,
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/instant-refunds.svg',
@@ -198,7 +200,7 @@ class Constants
                 [
                     'type'  => 'button',
                     'label' => 'What’s Changing?',
-                    'url'   => '/config#debitrefund',
+                    'url'   => '',
                 ],
                 [
                     'type'  => 'primary-inverted',

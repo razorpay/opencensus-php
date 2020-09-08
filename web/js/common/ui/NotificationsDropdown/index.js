@@ -9,18 +9,26 @@ import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
 import { classList } from 'common/utils/rzp-utils';
 
 import { trackLoad, trackExpand, trackAnnouncement } from './ga';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import DebitRefundAnnouncement from 'merchant/components/Announcements/Refunds/DebitRefund';
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
   return lastReadTS < startTS && moment().unix() < endTS;
 }
 
 @withRouter
-@connect((state) => {
-  return {
-    ...state.session,
-    ...state.config.config,
-  };
-})
+@connect(
+  (state) => {
+    return {
+      ...state.session,
+      ...state.config.config,
+    };
+  },
+  {
+    openModal,
+    closeModal,
+  },
+)
 @RTracking(() => window.rzpQ.component('NotificationsDropdown'))
 export default class NotificationsDropdown extends Component {
   state = {};
@@ -176,6 +184,8 @@ export default class NotificationsDropdown extends Component {
     let cardsList = this.state.notifications.map((card, idx) => (
       <div className="media media-action" key={idx}>
         <NotificationCard
+          openModal={this.props.openModal}
+          closeModal={this.props.closeModal}
           {...card}
           user={user}
           lastReadTS={this.state.lastReadTS}
@@ -288,6 +298,8 @@ const NotificationCard = ({
   start_ts,
   end_ts,
   title,
+  openModal,
+  closeModal,
   description,
   buttons,
   lastReadTS,
@@ -361,6 +373,20 @@ const NotificationCard = ({
                   trackEvents && trackEvents(btn.label, urlPath, btn.type, id);
                   if (btn.label === 'Get Early Access') {
                     handleHbForm(e);
+                  }
+                  if (btn.label === 'What’s Changing?') {
+                    e.preventDefault();
+                    openModal({
+                      component: (
+                        <DebitRefundAnnouncement
+                          onClose={closeModal}
+                          onSuccess={() => {
+                            closeModal();
+                          }}
+                        />
+                      ),
+                      size: 'large',
+                    });
                   }
                 }}
                 href={urlPath}

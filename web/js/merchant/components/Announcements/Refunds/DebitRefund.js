@@ -78,7 +78,7 @@ export default class DebitRefundAnnouncement extends Component {
     return (
       <div class="debit-refund-notif">
         <Fragment>
-          <div class="panel-body" style={{ paddingBottom: '8px' }}>
+          <div class="panel-body debit-refund-panel-body" style={{ paddingBottom: '8px' }}>
             <div className="row">
               <div className="col-xs-6">
                 <h3 class="title">Instant Refunds on Debit Card payments is here!</h3>
@@ -103,7 +103,7 @@ export default class DebitRefundAnnouncement extends Component {
                   </li>
                   <li>
                     Instant Refunds pricing is also getting revised and the revised pricing will be
-                    effective from <strong>7th Sep 2020</strong>
+                    effective from <strong>8th Sep 2020</strong>
                   </li>
                 </ul>
               </div>
@@ -132,8 +132,12 @@ export default class DebitRefundAnnouncement extends Component {
               <div className="col-xs-9">
                 <b>Note:</b> Your default refund speed is currently set to ‘Instant’. If you wish to
                 change it to ‘Normal’, please{' '}
-                <a onClick={this.props.onSuccess} claasName="nav-link">
-                  Update Preferences
+                <a
+                  href="/app/config#instantrefunds"
+                  onClick={this.props.onSuccess}
+                  className="nav-link"
+                >
+                  Update your preferences
                 </a>
                 .
               </div>
