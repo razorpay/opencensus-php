@@ -1034,6 +1034,21 @@ return [
             ],
         ],
 
+        PermissionCategory::GATEWAY_CREDENTIAL => [
+            Permission::VIEW_GATEWAY_CREDENTIAL => [
+                'description'   => 'View gateway level credentials',
+                'assignable'    => true,
+            ],
+            Permission::CREATE_GATEWAY_CREDENTIAL => [
+                'description'   => 'Create gateway level credentials',
+                'assignable'    => true,
+            ],
+            Permission::DELETE_GATEWAY_CREDENTIAL => [
+                'description'   => 'Delete gateway level credentials',
+                'assignable'    => true,
+            ],
+        ],
+
         PermissionCategory::FUND_ACCOUNT_VALIDATION => [
             Permission::BULK_PATCH_FUND_ACCOUNT_VALIDATION => [
                 'description'   => 'Bulk patch FAV requests',

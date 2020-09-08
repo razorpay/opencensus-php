@@ -428,6 +428,23 @@ return [
         ],
     ],
 
+    'testTerminalServiceProxyCreateGatewayCredential' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/terminals/proxy/gateway_credentials',
+            'content' => [
+                'id' => '10000000000000',
+                'secrets'  => ["secret1"=> "test1"],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => "123456789asdfg",
+                "gateway_credential_id" => "12345678901234"
+            ],
+        ],
+    ],
+
     'testTerminalServiceProxyCreateTerminalSubmerchant' => [
         'request' => [
             'method'  => 'POST',

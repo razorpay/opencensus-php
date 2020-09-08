@@ -123,6 +123,21 @@ trait TerminalTrait
         return $response;
     }
 
+
+    protected function getProxyCreateGatewayCredentialTerminalServiceResponse() : \Requests_Response
+    {
+
+        $data = ["id" => "123456789asdfg", "gateway_credential_id" => "12345678901234"];
+
+        $response =  new \Requests_Response;
+
+        $responseData = ['data' => $data];
+
+        $response->body = json_encode($responseData);
+
+        return $response;
+    }
+
     protected function getProxyCreateTerminalSubmerchantTerminalServiceResponse() : \Requests_Response
     {
 

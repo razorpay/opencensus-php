@@ -166,7 +166,30 @@ class TerminalController extends Controller
 
         $path = Request::path();
 
+        $traceData = ["method" => $method, "path" => $path];
+
+        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $traceData);
+
         $path = str_replace("v1/terminals/proxy","v1", $path);
+
+        $response = $this->app['terminals_service']->proxyTerminalService($input, $method, $path);
+
+        return ApiResponse::json($response);
+    }
+
+    public function proxyV2TerminalService()
+    {
+        $input = Request::all();
+
+        $method = Request::method();
+
+        $path = Request::path();
+
+        $traceData = ["method" => $method, "path" => $path];
+
+        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V2, $traceData);
+
+        $path = str_replace("v1/terminals/proxy","v2", $path);
 
         $response = $this->app['terminals_service']->proxyTerminalService($input, $method, $path);
 
@@ -204,7 +227,7 @@ class TerminalController extends Controller
         $input = Request::all();
 
         $cronResponse = $this->service()->tokenizeExistingMpans($input);
-        
+
         return ApiResponse::json($cronResponse);
     }
 }

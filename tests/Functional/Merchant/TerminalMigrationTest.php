@@ -1777,6 +1777,18 @@ class TerminalMigrationTest extends TestCase
         $this->startTest();
     }
 
+    public function testTerminalServiceProxyCreateGatewayCredential()
+    {
+        $this->ba->adminAuth();
+
+        $this->mockTerminalsServiceSendRequest(function() {
+            return $this->getProxyCreateGatewayCredentialTerminalServiceResponse();
+        }, 1);
+
+        $this->startTest();
+    }
+
+
     public function testTerminalServiceProxyCreateTerminalSubmerchant()
     {
         $this->ba->cronAuth();

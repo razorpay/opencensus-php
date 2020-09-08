@@ -41,4 +41,5 @@ class Category
     const INSTRUMENT_REQUESTS           = 'instrument_requests';
     const REDIS_CONFIG_PERIMSSIONS      = 'redis_config_permissions';
     const PAYOUT_DOWNTIME               = 'payout_downtime';
+    const GATEWAY_CREDENTIAL            = 'gateway_credential';
 }

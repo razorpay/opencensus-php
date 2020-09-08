@@ -338,8 +338,13 @@ class Route
         'terminal_migrate_cron'                    => ['post',     'terminals/migrate_cron',                         'TerminalController@postTerminalsMigrateCron'                       ],
         'terminal_create_bulk'                     => ['post',     'terminals/bulk',                                 'TerminalController@postTerminalsBulk'                              ],
         'terminal_service_sync_delete'             => ['post',     'terminals/sync/deleted',                         'TerminalController@syncDeletedTerminalsOnTerminalService'          ],
+        // terminal service proxies
         'terminals_proxy_delete_submerchant'       => ['delete',   'terminals/proxy/terminal/submerchant',           'TerminalController@proxyV1TerminalService'                         ],
         'terminals_proxy_create_submerchant'       => ['post',     'terminals/proxy/terminal/submerchant',           'TerminalController@proxyV1TerminalService'                         ],
+        'terminals_proxy_create_gateway_credential'=> ['post',     'terminals/proxy/gateway_credentials',             'TerminalController@proxyV2TerminalService'                         ],
+        'terminals_proxy_fetch_gateway_credential' => ['get',      'terminals/proxy/gateway_credentials/{gateway}',   'TerminalController@proxyV2TerminalService'                         ],
+        'terminals_proxy_delete_gateway_credential'=> ['delete',   'terminals/proxy/gateway_credentials/{id}',        'TerminalController@proxyV2TerminalService'                         ],
+
         'terminal_enable'                          => ['put',      'terminals/{id}/enable',                          'TerminalOnboardingController@putTerminalEnable'                    ],
         'terminal_disable'                         => ['put',      'terminals/{id}/disable',                         'TerminalOnboardingController@putTerminalDisable'                   ],
         'terminal_fetch'                           => ['get',      'terminals',                                      'TerminalOnboardingController@fetchTerminals'                       ],
@@ -3662,6 +3667,11 @@ class Route
         'instrument_request_razorx_admin',
         'fetch_merchant_instrument_requests',
 
+        // gateway credentials
+        'terminals_proxy_create_gateway_credential',
+        'terminals_proxy_fetch_gateway_credential',
+        'terminals_proxy_delete_gateway_credential',
+
         // settlements service dashboard routes
         'setl_admin_fetch',
         'setl_schedule_get',
@@ -4442,6 +4452,11 @@ class Route
         'merchant_instrument_request_create'          => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
         'merchant_instrument_request_update_by_id'    => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
         'fetch_merchant_instrument_requests'          => Permission::VIEW_MERCHANT_INSTRUMENT_REQUEST,
+
+        // gateway credential
+        'terminals_proxy_create_gateway_credential'   => Permission::CREATE_GATEWAY_CREDENTIAL,
+        'terminals_proxy_fetch_gateway_credential'    => Permission::VIEW_GATEWAY_CREDENTIAL,
+        'terminals_proxy_delete_gateway_credential'   => Permission::DELETE_GATEWAY_CREDENTIAL,
 
         //payout downtime fetch from X dashboard
         'fetch_payout_downtimes_enabled'              => '*',
