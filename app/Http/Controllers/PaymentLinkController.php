@@ -197,20 +197,17 @@ class PaymentLinkController extends Controller
     {
         $response = ApiResponse::json([]);
 
-        $host = $request->getHost();
+        $origin = $request->headers->get('origin');
 
         $urls = $this->app['config']->get('app.payment_page_allowed_cors_url');
 
-        foreach ($urls as $url)
+        if (in_array($origin, $urls) === true)
         {
-            if (stripos($url, $host) !== false)
-            {
-                $response->headers->set('Access-Control-Allow-Origin', $url);
+            $response->headers->set('Access-Control-Allow-Origin', $origin);
 
-                $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
+            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
 
-                return $response;
-            }
+            return $response;
         }
 
        $response->headers->set(
