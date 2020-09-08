@@ -35,6 +35,8 @@ class Base
 
     protected $mode;
 
+    protected $razorx;
+
     /**
      * Repository manager instance
      * @var RepositoryManager
@@ -119,6 +121,8 @@ class Base
         $this->secret  = $this->config[$this->mode]['fts_secret'];
 
         $this->repo = $app['repo'];
+
+        $this->razorx = $app['razorx'];
 
         $this->setHeaders();
     }

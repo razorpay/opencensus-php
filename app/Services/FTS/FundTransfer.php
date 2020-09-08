@@ -16,6 +16,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Vpa\Core as VPACore;
 use RZP\Models\Base\PublicCollection;
 use RZP\Constants\Mode as ModeConstants;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Card\Entity as CardVault;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Payout\Entity as PayoutEntity;
@@ -790,6 +791,16 @@ class FundTransfer extends Base
         }
 
         $mode = $this->fta->getMode();
+
+        $variant = $this->razorx->getTreatment(
+          $mode,
+          RazorxTreatment::ALLOWED_TRANSFER_MODES,
+          $this->mode);
+
+        if (strtolower($variant) === 'on')
+        {
+            return [true, 'Razorx allowed mode'];
+        }
 
         $allowedModes = Mode::get24x7FtsTransferModes();
 
