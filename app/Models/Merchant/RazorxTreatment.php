@@ -141,7 +141,7 @@ final class RazorxTreatment
 
     // To decide whether a merchant without specific Instant Refunds pricing - will have the old default pricing or
     // the new default pricing applied
-    const INSTANT_REFUNDS_DEFAULT_PRICING_V2 = 'instant_refunds_default_pricing_v2';
+    const INSTANT_REFUNDS_DEFAULT_PRICING_V1 = 'instant_refunds_default_pricing_v1';
 
     // Check whether Payout Link Service is up or not.
     // If the feature is mapped to a merchant, the Service is down for that merchant

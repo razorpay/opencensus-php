@@ -1035,6 +1035,29 @@ class RefundPricingTest extends TestCase
 
         $this->fixtures->pricing->createInstantRefundsDefaultPricingV2Plan();
 
+        //
+        // Instant Refunds v2 pricing is now default - not behind a razorx anymore
+        // Instant Refunds v1 Pricing is behind razorx for merchants in transition phase
+        //
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'instant_refunds_default_pricing_v1')
+                    {
+                        return 'on';
+                    }
+
+                    return 'off';
+                }));
+
         $this->ba->proxyAuth();
 
         $this->startTest();
@@ -1042,6 +1065,10 @@ class RefundPricingTest extends TestCase
 
     public function testCreateAndFetchDefaultPricingV2PlanAndNoMerchantSpecificPlan()
     {
+        //
+        // Instant Refunds v2 pricing is now default - not behind a razorx anymore
+        //
+
         $this->createPricingPlan();
 
         $this->fixtures->merchant->editPricingPlanId('1hDYlICobzOCYt');
@@ -1049,25 +1076,6 @@ class RefundPricingTest extends TestCase
         $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
 
         $this->fixtures->pricing->createInstantRefundsDefaultPricingV2Plan();
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                            function ($mid, $feature, $mode)
-                            {
-                                if ($feature === 'instant_refunds_default_pricing_v2')
-                                {
-                                    return 'on';
-                                }
-
-                                return 'off';
-                            }));
 
         $this->ba->proxyAuth();
 

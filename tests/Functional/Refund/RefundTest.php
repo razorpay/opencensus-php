@@ -3190,6 +3190,8 @@ class RefundTest extends TestCase
 
         $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
 
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingV2Plan();
+
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
         $refund = $this->refundPayment(
             $payment['id'],
@@ -3226,8 +3228,8 @@ class RefundTest extends TestCase
         $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($refund['id'], 5)])->last();
 
         $this->assertEquals(3471, $transaction['amount']);
-        $this->assertEquals(589, $transaction['fee']);
-        $this->assertEquals(90, $transaction['tax']);
+        $this->assertEquals(943, $transaction['fee']);
+        $this->assertEquals(144, $transaction['tax']);
         $this->assertEquals($transaction['amount'] + $transaction['fee'], $transaction['debit']);
         $this->assertEquals(0, $transaction['credit']);
 
@@ -3235,8 +3237,8 @@ class RefundTest extends TestCase
 
         $this->assertEquals('refund', $feesBreakup[0]['name']);
         $this->assertEquals('tax', $feesBreakup[1]['name']);
-        $this->assertEquals(499, $feesBreakup[0]['amount']);
-        $this->assertEquals(90, $feesBreakup[1]['amount']);
+        $this->assertEquals(799, $feesBreakup[0]['amount']);
+        $this->assertEquals(144, $feesBreakup[1]['amount']);
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('captured', $payment['status']);
@@ -3254,8 +3256,8 @@ class RefundTest extends TestCase
 
         $this->assertEquals('processed', $refund['status']);
         $this->assertEquals('instant', $refund['speed_processed']);
-        $this->assertEquals(589, $refund['fee']);
-        $this->assertEquals(90, $refund['tax']);
+        $this->assertEquals(943, $refund['fee']);
+        $this->assertEquals(144, $refund['tax']);
     }
 
     public function testInstantRefundSuccessfulWithDefaultPricingUnconfiguredMode()
@@ -3295,6 +3297,10 @@ class RefundTest extends TestCase
         $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
 
         $this->fixtures->pricing->createInstantRefundsModeLevelPricingPlan();
+
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingV2Plan();
+
+        $this->fixtures->pricing->createInstantRefundsModeLevelPricingPlanV2();
 
         $scroogeResponse = json_decode('{
             "mode": "NEFT"
@@ -3346,8 +3352,8 @@ class RefundTest extends TestCase
         $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($refund['id'], 5)])->last();
 
         $this->assertEquals(3471, $transaction['amount']);
-        $this->assertEquals(589, $transaction['fee']);
-        $this->assertEquals(90, $transaction['tax']);
+        $this->assertEquals(943, $transaction['fee']);
+        $this->assertEquals(144, $transaction['tax']);
         $this->assertEquals($transaction['amount'] + $transaction['fee'], $transaction['debit']);
         $this->assertEquals(0, $transaction['credit']);
 
@@ -3355,8 +3361,8 @@ class RefundTest extends TestCase
 
         $this->assertEquals('refund', $feesBreakup[0]['name']);
         $this->assertEquals('tax', $feesBreakup[1]['name']);
-        $this->assertEquals(499, $feesBreakup[0]['amount']);
-        $this->assertEquals(90, $feesBreakup[1]['amount']);
+        $this->assertEquals(799, $feesBreakup[0]['amount']);
+        $this->assertEquals(144, $feesBreakup[1]['amount']);
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('captured', $payment['status']);
@@ -3374,8 +3380,8 @@ class RefundTest extends TestCase
 
         $this->assertEquals('processed', $refund['status']);
         $this->assertEquals('instant', $refund['speed_processed']);
-        $this->assertEquals(589, $refund['fee']);
-        $this->assertEquals(90, $refund['tax']);
+        $this->assertEquals(943, $refund['fee']);
+        $this->assertEquals(144, $refund['tax']);
     }
 
     public function createUpiPayment()
@@ -4742,6 +4748,11 @@ class RefundTest extends TestCase
 
     public function testPaymentInstantRefundFee()
     {
+        //
+        // Instant Refunds v2 pricing is now default - not behind a razorx anymore
+        // Instant Refunds v1 Pricing is behind razorx for merchants in transition phase
+        //
+
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
@@ -4764,8 +4775,8 @@ class RefundTest extends TestCase
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
         $refundFee = $this->paymentRefundFetchFee($payment['id'], 3471);
 
-        $this->assertEquals(589, $refundFee['fee']);
-        $this->assertEquals(90, $refundFee['tax']);
+        $this->assertEquals(943, $refundFee['fee']);
+        $this->assertEquals(144, $refundFee['tax']);
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
@@ -4778,7 +4789,7 @@ class RefundTest extends TestCase
                           ->will($this->returnCallback(
                               function ($mid, $feature, $mode)
                               {
-                                  if ($feature === 'instant_refunds_default_pricing_v2')
+                                  if ($feature === 'instant_refunds_default_pricing_v1')
                                   {
                                       return 'on';
                                   }
@@ -4789,8 +4800,8 @@ class RefundTest extends TestCase
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
         $refundFee = $this->paymentRefundFetchFee($payment['id'], 3471);
 
-        $this->assertEquals(943, $refundFee['fee']);
-        $this->assertEquals(144, $refundFee['tax']);
+        $this->assertEquals(589, $refundFee['fee']);
+        $this->assertEquals(90, $refundFee['tax']);
     }
 
     public function testInstantRefundFTAWithNullMerchantBillingLabel()
@@ -4810,7 +4821,7 @@ class RefundTest extends TestCase
 
         $this->fixtures->merchant->addFeatures('card_transfer_refund');
 
-        $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingV2Plan();
 
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
         $refund = $this->refundPayment(
@@ -4856,7 +4867,7 @@ class RefundTest extends TestCase
 
         $this->fixtures->merchant->addFeatures('card_transfer_refund');
 
-        $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingV2Plan();
 
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
         $refund = $this->refundPayment(

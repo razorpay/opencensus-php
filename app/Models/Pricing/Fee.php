@@ -82,11 +82,15 @@ class Fee extends Base\Core
 
         $variant = $this->app->razorx->getTreatment(
             $merchantId,
-            Merchant\RazorxTreatment::INSTANT_REFUNDS_DEFAULT_PRICING_V2,
+            Merchant\RazorxTreatment::INSTANT_REFUNDS_DEFAULT_PRICING_V1,
             $this->mode
         );
 
-        if ($variant === RefundConstants::RAZORX_VARIANT_ON)
+        //
+        // Instant Refunds v2 pricing is now default - not behind a razorx anymore
+        // Instant Refunds v1 Pricing is behind razorx for merchants in transition phase
+        //
+        if ($variant !== RefundConstants::RAZORX_VARIANT_ON)
         {
             $planId = Fee::DEFAULT_INSTANT_REFUNDS_PLAN_V2_ID;
         }
