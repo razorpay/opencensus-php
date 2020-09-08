@@ -14,10 +14,13 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\FundTransfer\Holidays;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Gateway\File\Constants;
 use RZP\Exception\GatewayFileException;
+use RZP\Exception\GatewayErrorException;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Service as BeamService;
 use RZP\Services\Beam\Constants as BeamConstants;
+use RZP\Mail\Gateway\EMandate\Base as EmandateMail;
 use RZP\Models\Gateway\File\Processor\Emandate\Debit;
 use RZP\Gateway\Enach\Npci\Netbanking\IciciSponsorBank\FieldsLength;
 use RZP\Gateway\Enach\Npci\Netbanking\IciciSponsorBank\HeadingsLength;
@@ -31,7 +34,7 @@ class EnachNbIcici extends Debit\Base
     const FILE_NAME         = 'icici/nach/debit/ACH-DR-ICIC-ICIC401790-{$date}-{$batchCode}-INP';
     const STEP              = 'debit';
     const GATEWAY           = Payment\Gateway::ENACH_NPCI_NETBANKING;
-    const USER_NAME         = 'RAZORPAY';
+    const USER_NAME         = 'RZP';
 
     // not required anymore. keeping for historical reasons
     const FILE_METADATA = [
@@ -42,11 +45,15 @@ class EnachNbIcici extends Debit\Base
 
     protected $fileStore;
 
+    protected $mailData;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->gatewayRepo = $this->repo->enach;
+
+        $this->mailData = [];
     }
 
     public function createFile($data)
@@ -92,6 +99,12 @@ class EnachNbIcici extends Debit\Base
                 $fileStoreIds[] = $file->getId();
 
                 $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
+
+                $fullFileName = $fileName . '.' . self::EXTENSION;
+
+                $this->mailData[$fullFileName] = $this->formatDataForMail($fileData);
+
+                $this->mailData[$fullFileName]['sr_no'] = $index;
             }
 
             $this->fileStore = $fileStoreIds;
@@ -187,8 +200,28 @@ class EnachNbIcici extends Debit\Base
             'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE]
         ];
 
-        $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+        $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
 
+        if ((isset($beamResponse['success']) === false) or
+            ($beamResponse['success'] === null))
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+                null,
+                null,
+                [
+                    'beam_response' => $beamResponse,
+                    'gateway_file'  => $this->gatewayFile->getId(),
+                    'target'        => 'enach_nb_icici',
+                ]
+            );
+        }
+
+        $type = Constants::ENACH_NB_ICICI . '_' . self::STEP;
+
+        $mailable = new EmandateMail($this->mailData, $type, $this->gatewayFile->getRecipients());
+
+        Mail::queue($mailable);
     }
 
     protected function getFileToWriteNameWithoutExt(array $data)
@@ -270,7 +303,9 @@ class EnachNbIcici extends Debit\Base
         $fieldLength = FieldsLength::BENEFICIARY_ACCOUNT_HOLDER_NAME;
         $accountName = $this->getPaddedValue($accountName, $fieldLength, ' ', STR_PAD_RIGHT);
 
-        $userName = self::USER_NAME;
+        $label = $token->merchant->getBillingLabel();
+        $filteredLabel = preg_replace('/[^a-zA-Z0-9]+/', '', $label);
+        $userName = self::USER_NAME . $filteredLabel;
         $fieldLength = FieldsLength::USER_NAME;
         $userName = $this->getPaddedValue($userName, $fieldLength, ' ', STR_PAD_RIGHT);
 
@@ -434,5 +469,23 @@ class EnachNbIcici extends Debit\Base
         }
 
         return $date->timestamp;
+    }
+
+    protected function formatDataForMail($fileData)
+    {
+        $amount = 0;
+
+        $date = Carbon::now(Timezone::IST)->format('d/m/Y');
+
+        foreach ($fileData as $row)
+        {
+            $amount = $amount + (int) $row[Headings::AMOUNT];
+        }
+
+        return [
+            'amount' => number_format($amount / 100, 2, '.', ','),
+            'count'  => count($fileData),
+            'date'   => $date
+        ];
     }
 }

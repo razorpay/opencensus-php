@@ -2,12 +2,15 @@
 
 namespace RZP\Tests\Functional\Gateway\Enach\Netbanking;
 
+use Mail;
 use Excel;
 use Queue;
 
-use RZP\Jobs\BeamJob;
+use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
+use RZP\Constants\Timezone;
+use RZP\Mail\Gateway\EMandate\Base as EmandateMail;
 use Illuminate\Http\Testing\File as TestingFile;
 
 class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
@@ -43,6 +46,7 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
         $this->ba->adminAuth();
 
         Queue::fake();
+        Mail::fake();
 
         $content = $this->startTest($this->testData['testDebitFileGenerationIcici']);
 
@@ -88,7 +92,7 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
             'ACH Transaction Code' => '67',
             'Destination Account Type' => '10',
             'Beneficiary Account Holder\'s Name' => 'Test account',
-            'User Name' => 'RAZORPAY',
+            'User Name' => 'RZPTestMerchant',
             'Amount' => '0000000300000',
             'Destination Bank IFSC / MICR / IIN' => 'UTIB0000123',
             'Beneficiary\'s Bank Account number' => '1111111111111',
@@ -105,7 +109,7 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
             'ACH Transaction Code' => '67',
             'Destination Account Type' => '10',
             'Beneficiary Account Holder\'s Name' => 'Test account',
-            'User Name' => 'RAZORPAY',
+            'User Name' => 'RZPTestMerchant',
             'Amount' => '0000000040000',
             'Destination Bank IFSC / MICR / IIN' => 'UTIB0000123',
             'Beneficiary\'s Bank Account number' => '1111111111111',
@@ -119,10 +123,30 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
         $this->assertArraySelectiveEquals($expectedDebitRow1, $debit1);
         $this->assertArraySelectiveEquals($expectedDebitRow2, $debit2);
 
+        Mail::assertQueued(EmandateMail::class, function ($mail)
+        {
+            $body = 'Dear Sir/Madam,' . "\n" . 'We have kept the transaction file on the SFTP/H2H folder.';
 
-        Queue::assertPushed(BeamJob::class, 1);
+            $fileName = 'icici/nach/debit/ACH-DR-ICIC-ICIC401790-{$date}-RZ0001-INP.txt';
 
-        Queue::assertPushedOn('beam_test', BeamJob::class);
+            $date = Carbon::now(Timezone::IST)->format('dmY');
+
+            $fileName = strtr($fileName, ['{$date}' => $date]);
+
+            $this->assertEquals($fileName, (array_keys($mail->viewData))[1]);
+
+            $this->assertEquals($body, $mail->viewData['body']);
+
+            $this->assertEquals(1, $mail->viewData[$fileName]['sr_no']);
+
+            $this->assertEquals('3,400.00', $mail->viewData[$fileName]['amount']);
+
+            $this->assertEquals('2', $mail->viewData[$fileName]['count']);
+
+            $this->assertEquals('emails.admin.icici_enach_npci', $mail->view);
+
+            return true;
+        });
     }
 
     public function testDebitFileGenerationMultipleSponsorBanks()
@@ -142,6 +166,7 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
         $this->ba->adminAuth();
 
         Queue::fake();
+        Mail::fake();
 
         $content = $this->startTest($this->testData['testDebitFileGenerationIcici']);
 
@@ -168,10 +193,6 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
 
         $this->assertFalse(strpos($fileContent, $citiTerminalPaymentResponse['razorpay_payment_id']));
 
-        Queue::assertPushed(BeamJob::class, 1);
-
-        Queue::assertPushedOn('beam_test', BeamJob::class);
-
         $this->fixtures->terminal->disableTerminal($this->sharedCitiTerminal['id']);
 
         $this->fixtures->terminal->enableTerminal($this->sharedTerminal['id']);
@@ -191,6 +212,7 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
         $this->ba->adminAuth();
 
         Queue::fake();
+        Mail::fake();
 
         $this->testData[__FUNCTION__] = $this->testData['testDebitFileGenerationIcici'];
 
@@ -221,9 +243,12 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
 
         $this->assertTrue($fileNamesSequential);
 
-        Queue::assertPushed(BeamJob::class, 1);
+        Mail::assertQueued(EmandateMail::class, function ($mail)
+        {
+            $this->assertEquals(3, count($mail->viewData));
 
-        Queue::assertPushedOn('beam_test', BeamJob::class);
+            return true;
+        });
     }
 
     protected function getBatchDebitFile($payment, $status)
