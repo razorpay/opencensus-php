@@ -42,7 +42,7 @@ class PaymentTransfer extends  AbstractTransfer
                     $this->processOrderTransfers($this->payment);
                 },
                 self::MUTEX_LOCK_TIMEOUT,
-                ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_PROCESS_IN_PROGRESS);
+                ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_PROCESS_IN_PROGRESS, 0,100,200 ,true);
 
             $this->trace->info(
                 TraceCode::PAYMENT_TRANSFER_PROCESS_SUCCESS,
