@@ -24,6 +24,7 @@ use RZP\Models\SubscriptionRegistration;
  * @property Invoice\Entity  $invoice
  * @property Transfer\Entity $transfer
  * @property UpiMandate\Entity $upiMandate
+ * @property Product\Entity $products
  */
 class Entity extends Base\PublicEntity
 {
@@ -154,6 +155,8 @@ class Entity extends Base\PublicEntity
 
     const APP_OFFER = 'app_offer';
 
+    const PRODUCTS = 'products';
+
     protected $fillable = [
         self::DISCOUNT,
         self::AMOUNT,
@@ -213,6 +216,7 @@ class Entity extends Base\PublicEntity
         self::OFFERS,
         self::STATUS,
         self::ATTEMPTS,
+        self::PRODUCTS,
         self::NOTES,
         self::VIRTUAL_ACCOUNT,
         self::CREATED_AT,
@@ -251,6 +255,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::OFFERS,
         self::CHECKOUT_CONFIG_ID,
+        self::PRODUCTS,
         // This is likely needed for the merchant,
         // but still needs to be discussed.
         // self::DISCOUNT,
@@ -339,6 +344,11 @@ class Entity extends Base\PublicEntity
     public function transfers()
     {
         return $this->morphMany(Transfer\Entity::class, 'source');
+    }
+
+    public function products()
+    {
+        return $this->hasMany(Product\Entity::class);
     }
 
 /** End Related Models */
@@ -738,6 +748,19 @@ class Entity extends Base\PublicEntity
                 unset($array[self::CHECKOUT_CONFIG_ID]);
             }
         }
+
+    public function setPublicProductsAttribute(array & $array)
+    {
+        if (($this->products !== null) and
+            (count($this->products) > 0))
+        {
+            $array[self::PRODUCTS] = $this->products->toArrayPublic()['items'];
+        }
+        else
+        {
+            unset($array[self::PRODUCTS]);
+        }
+    }
 
     protected function modifyCheckoutConfigId(& $input)
     {

@@ -32,6 +32,7 @@ class Table
     const QR_CODE               = 'qr_code';
     const BALANCE               = 'balance';
     const PRICING               = 'pricing';
+    const PRODUCT               = 'product';
     const INVOICE               = 'invoices';
     const PAYMENT               = 'payments';
     const FEATURE               = 'features';

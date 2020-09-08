@@ -29,7 +29,7 @@ class Core extends Base\Core
         $inputTrace = $input;
 
         unset($inputTrace['bank_account']['account_number'], $inputTrace['bank_account']['name'],
-                $inputTrace['notes'], $inputTrace['receipt'], $inputTrace['cardnumber']);
+                $inputTrace['notes'], $inputTrace['receipt'], $inputTrace['cardnumber'], $inputTrace['products']);
 
         $this->trace->info(
             TraceCode::ORDER_CREATE_REQUEST,
@@ -81,6 +81,8 @@ class Core extends Base\Core
             }
 
             $this->associateOffers($order, $input);
+
+            $this->associateProducts($order, $input);
 
             $this->repo->saveOrFail($order);
 
@@ -166,6 +168,16 @@ class Core extends Base\Core
         {
             $this->validateAndAssociateOffer($order, $offerId);
         }
+    }
+
+    protected function associateProducts(Entity $order, array $input)
+    {
+        if (isset($input[Entity::PRODUCTS]) === false)
+        {
+            return;
+        }
+
+        (new Product\Core)->createMany($order, $input[Entity::PRODUCTS]);
     }
 
     protected function validateAndAssociateOffer(Entity $order, string $offerId)

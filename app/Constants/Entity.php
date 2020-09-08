@@ -50,6 +50,8 @@ class Entity
     const METHODS                    = 'methods';
     const PAYMENT                    = 'payment';
     const PRICING                    = 'pricing';
+    const PRODUCT                    = 'product';
+    const WEBHOOK                    = 'webhook';
     const QR_CODE                    = 'qr_code';
     const OPTIONS                    = 'options';
     const ACCOUNT                    = 'account';
@@ -483,6 +485,7 @@ class Entity
         self::CREDITS                   => \RZP\Models\Merchant\Credits::class,
         self::METHODS                   => \RZP\Models\Merchant\Methods::class,
         self::PRICING                   => \RZP\Models\Pricing::class,
+        self::PRODUCT                   => \RZP\Models\Order\Product::class,
         self::FEATURE                   => \RZP\Models\Feature::class,
         self::DISPUTE                   => \RZP\Models\Dispute::class,
         self::CUSTOMER                  => \RZP\Models\Customer::class,
