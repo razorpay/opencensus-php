@@ -7,17 +7,18 @@ use RZP\Error\Error;
 use RZP\Models\Bank;
 use RZP\Models\Base;
 use RZP\Models\Card;
-use RZP\Models\Payment\Method;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
+use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Processor;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Pricing\Feature as PricingFeature;
 
 class Service extends Base\Service
 {
@@ -79,6 +80,8 @@ class Service extends Base\Service
                     $merchant = $this->repo->merchant->findByPublicId($item[Entity::MERCHANT_ID]);
 
                     unset($item[Entity::MERCHANT_ID], $item['idempotency_key'], $item['update']);
+
+                    $item = $this->setFeeBearerIfApplicable($item, $merchant);
 
                     array_walk($item, function (&$value, &$key)
                     {
@@ -198,6 +201,16 @@ class Service extends Base\Service
         }
 
         return $pricingRulesCollection->toArrayWithItems();
+    }
+
+    protected function setFeeBearerIfApplicable(array $input, $merchant)
+    {
+        if($input[Pricing\Entity::FEATURE] === PricingFeature::ESAUTOMATIC)
+        {
+            $input[Pricing\Entity::FEE_BEARER] = $merchant->getFeeBearer();
+        }
+
+        return $input;
     }
 
     public function replicatePlanAndAssign($merchant, $plan)

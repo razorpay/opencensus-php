@@ -614,6 +614,90 @@ return [
         ]
     ],
 
+    'testAddBulkEsPlanRulesForCustomerFeeBearerMerchant' => [
+        'request'  => [
+            'content' => [
+                [
+                    'merchant_id'           => '10000000000000',
+                    'product'               => 'primary',
+                    'feature'               => 'esautomatic',
+                    'payment_method'        => 'netbanking',
+                    'payment_method_type'   => '',
+                    'payment_method_subtype'=> '',
+                    'payment_network'       => '',
+                    'percent_rate'          => '10',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLfM',
+                    'amount_range_active'   => '',
+                    'amount_range_min'      => '',
+                    'amount_range_max'      => '',
+                    'update'                => ''
+                ],
+                [
+                    'merchant_id'           => '10000000000000',
+                    'product'               => 'primary',
+                    'feature'               => 'payment',
+                    'payment_method'        => 'card',
+                    'payment_method_type'   => 'credit',
+                    'payment_method_subtype'=> '',
+                    'payment_network'       => 'DICL',
+                    'percent_rate'          => '10',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLfM',
+                    'amount_range_active'   => '',
+                    'amount_range_min'      => '',
+                    'amount_range_max'      => '',
+                    'update'                => '1'
+                ],
+                [
+                    'merchant_id'           => '10000000000000',
+                    'product'               => 'primary',
+                    'feature'               => 'esautomatic',
+                    'payment_method'        => 'wallet',
+                    'payment_method_type'   => '',
+                    'payment_method_subtype'=> '',
+                    'payment_network'       => '',
+                    'percent_rate'          => '',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLfM',
+                    'amount_range_active'   => true,
+                    'amount_range_min'      => 900,
+                    'amount_range_max'      => 1000,
+                    'update'                => ''
+                ],
+            ],
+            'url'       => '/pricing/rules/bulk',
+            'method'    => 'POST',
+        ],
+        'response' => [
+            'content'     => [
+                'entity'    => 'collection',
+                'count'     => 3,
+                'items'=> [
+                    [
+                        'idempotency_key'   => 'batch_DZtFGiJXmcdLfM',
+                        'success'           => true
+                    ],
+                    [
+                        'idempotency_key'   => 'batch_DZtFGiJXmcdLfM',
+                        'success'           => false,
+                        'error'             => [
+                            'description' => 'Unable to add rule to plan TestPlan1. ' .
+                                              'Rule has fee_bearer platform. ' .
+                                              'Merchant 10000000000000 on this plan has fee_bearer customer',
+                            'code'        => 'BAD_REQUEST_VALIDATION_FAILURE',
+                        ]
+                    ],
+                    [
+                        'idempotency_key'   => 'batch_DZtFGiJXmcdLfM',
+                        'success'           => true
+                    ],
+                ]
+            ],
+            'status_code'   => 200,
+        ]
+    ],
+
     'testBulkPricingPlanOfMultipleTypes' => [
         'request'  => [
             'content' => [

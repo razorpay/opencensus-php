@@ -11,6 +11,7 @@ use RZP\Models\Transaction;
 use RZP\Error\PublicErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\FeeBearer;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Cache\Events\CacheMissed;
@@ -969,7 +970,42 @@ class PricingTest extends TestCase
 
         $response = $this->startTest();
 
+        $esAutomaticPricingRules = $this->getDbEntities('pricing', [
+                                                            'feature'        => 'esautomatic',
+                                                            'product'        => 'primary',
+                                                            'plan_id'        => $content['id']
+                                                        ])->toArray();
+
+        foreach ($esAutomaticPricingRules as $esAutomaticPricingRule)
+        {
+            $this->assertEquals(FeeBearer::PLATFORM, $esAutomaticPricingRule['fee_bearer']);
+        }
+
         $this->assertEquals($response['items'][0]['plan_id'],$content['id']);
+    }
+
+    public function testAddBulkEsPlanRulesForCustomerFeeBearerMerchant()
+    {
+        $content = $this->assignPricingPlanToMerchant();
+
+        $this->ba->batchAuth();
+
+        $this->fixtures->merchant->setFeeBearer(FeeBearer::CUSTOMER);
+
+        $response = $this->startTest();
+
+        $esAutomaticPricingRules = $this->getDbEntities('pricing', [
+                                                            'feature'        => 'esautomatic',
+                                                            'product'        => 'primary',
+                                                            'plan_id'        => $content['id']
+                                                        ])->toArray();
+
+        foreach ($esAutomaticPricingRules as $esAutomaticPricingRule)
+        {
+            $this->assertEquals(FeeBearer::CUSTOMER, $esAutomaticPricingRule['fee_bearer']);
+        }
+
+        $this->assertEquals($response['items'][0]['plan_id'], $content['id']);
     }
 
     public function testAddBulkPlanRulesReplicatePlan()
