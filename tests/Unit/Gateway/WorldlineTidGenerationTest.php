@@ -22,9 +22,7 @@ class WorldlineTidGenerationTest extends TestCase
 
         $this->generator = new Worldline\TidGenerator();
 
-        $this->redis = Redis::connection()->client();
-
-        $this->redisEc = Redis::connection('mutex_redis')->client();
+        $this->redis = Redis::connection('mutex_redis')->client();
 
         $ranges = [
             [123800, 123899],
@@ -43,15 +41,7 @@ class WorldlineTidGenerationTest extends TestCase
             {
                 $this->redis->rpush($this->generator->redisTidKey, json_encode($range));
             }    
-        }
-
-        if (empty($this->redisEc->lrange($this->generator->redisTidKey, 0, -1)))
-        {
-            foreach ($ranges as $range)
-            {    
-                $this->redisEc->rpush($this->generator->redisTidKey, json_encode($range));
-            }    
-        }    
+        }  
     }
 
     public function testGenerateTid()
@@ -99,8 +89,6 @@ class WorldlineTidGenerationTest extends TestCase
 
     public function tearDown()
     {
-        $this->redis->flushall();
-
         parent::tearDown();
     }
 }

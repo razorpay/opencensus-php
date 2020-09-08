@@ -24,35 +24,21 @@ class TidGenerator extends core
     public function __construct()
     {
         parent::__construct();
-    
-        $this->redis = $this->app['redisdualwrite'];
-
-        $this->redisOld = Redis::Connection();
-        
-        $this->redisEc = Redis::Connection('mutex_redis');
+            
+        $this->redis = Redis::Connection('mutex_redis');
 
         $this->redisTidKey = $this->mode . '_' . self::WORLDLINE_TID_RANGE_LIST;
     }
 
     protected function insertTidRangesIntoRedisIfEmpty()
     {   
-        if (empty($this->redisOld->lrange($this->redisTidKey, 0, -1)))
+        if (empty($this->redis->lrange($this->redisTidKey, 0, -1)))
         {
             $staticTidRanges = Cache::get(ConfigKey::WORLDLINE_TID_RANGE_LIST, false);
 
             foreach ($staticTidRanges as $tidRange)
             {
-                $this->redisOld->rpush($this->redisTidKey, json_encode($tidRange));
-            }
-        }
-
-        if (empty($this->redisEc->lrange($this->redisTidKey, 0, -1)))
-        {
-            $staticTidRanges = Cache::get(ConfigKey::WORLDLINE_TID_RANGE_LIST, false);
-
-            foreach ($staticTidRanges as $tidRange)
-            {
-                $this->redisEc->rpush($this->redisTidKey, json_encode($tidRange));
+                $this->redis->rpush($this->redisTidKey, json_encode($tidRange));
             }
         }
     }

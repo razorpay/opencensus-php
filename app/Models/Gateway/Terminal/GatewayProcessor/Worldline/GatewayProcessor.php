@@ -44,7 +44,7 @@ class GatewayProcessor extends BaseGatewayProcessor
 
         $this->app = App::getFacadeRoot();
 
-        $this->redis = $this->app['redisdualwrite'];
+        $this->redis = $this->app['redis']->Connection('mutex_redis');
 
         $this->trace = $this->app['trace'];
 
