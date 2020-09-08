@@ -24,6 +24,8 @@ class Mailgun extends Base
     const STRIPPED_HTML   = 'stripped-html';
     const STRIPPED_TEXT   = 'stripped-text';
     const MESSAGE_HEADERS = 'message-headers';
+    const RECEIVED_SPF    = 'Received-Spf';
+    const SPF_PASS        = 'pass';
 
     /**
      * Gateways for which we run validations on email content

@@ -61,6 +61,8 @@ class Service extends Base\Service
     {
         $this->traceReconRequest($input);
 
+        $this->validateSpf($input);
+
         try
         {
             $source = $this->getRequestSource($input);
@@ -799,6 +801,29 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::RECON_REQUEST,
             $input);
+    }
+
+    /**
+     * Validates spf record of incoming request
+     *
+     * @param array $input
+     */
+    protected function validateSpf(array $input)
+    {
+        if (isset($input[RequestProcessor\Mailgun::RECEIVED_SPF]) === true)
+        {
+            $spfStatus = strtolower(substr($input[RequestProcessor\Mailgun::RECEIVED_SPF], 0, 4));
+            if ($spfStatus === RequestProcessor\Mailgun::SPF_PASS)
+            {
+                return;
+            }
+        }
+
+        $this->trace->info(TraceCode::RECON_EMAIL_VALIDATION_FAILED,
+            [
+                'message'      => 'Spf validation for request failed',
+                'received-spf' => $input[RequestProcessor\Mailgun::RECEIVED_SPF] ?? null
+            ]);
     }
 
     /**

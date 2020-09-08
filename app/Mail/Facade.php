@@ -5,7 +5,7 @@ namespace RZP\Mail;
 use Illuminate\Support\Facades\Mail as BaseFacade;
 
 /**
- * This facade class extednds the Illuminate Mail as we want to replace
+ * This facade class extends the Illuminate Mail as we want to replace
  * the MailFake class with our own instance as the Illuminate MailFake doesn't
  * call the build method on Mailables
  */
