@@ -16,6 +16,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_UPDATED_WITH_CPS_RESPONSE                     = 'PAYMENT_UPDATED_WITH_CPS_RESPONSE';
     const PAYMENT_CREATED_RESPONSE                              = 'PAYMENT_CREATED_RESPONSE';
     const PAYMENT_CREATE_FAILED                                 = 'PAYMENT_CREATE_FAILED';
+    const PAYMENT_AUTHENTICATION_SUCCESS                        = 'PAYMENT_AUTHENTICATION_SUCCESS';
     const PAYMENT_AUTH_SUCCESS                                  = 'PAYMENT_AUTH_SUCCESS';
     const PAYMENT_ID_NULL                                       = 'PAYMENT_ID_NULL';
     const PAYMENT_AUTH_PENDING                                  = 'PAYMENT_AUTH_PENDING';
@@ -281,6 +282,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_PROCESSED                                      = 'REFUND_PROCESSED';
     const PAYMENT_STATUS_FAILED                                 = 'PAYMENT_STATUS_FAILED';
     const ORDER_STATUS_AUTHORIZED                               = 'ORDER_STATUS_AUTHORIZED';
+    const PAYMENT_STATUS_AUTHENTICATED                          = 'PAYMENT_STATUS_AUTHENTICATED';
     const PAYMENT_STATUS_AUTHORIZED                             = 'PAYMENT_STATUS_AUTHORIZED';
     const PAYMENT_STATUS_CAPTURED                               = 'PAYMENT_STATUS_CAPTURED';
     const ORDER_STATUS_PAID                                     = 'ORDER_STATUS_PAID';
@@ -2646,6 +2648,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_PAYMENT_SERVICE_EMI_INVALID_MIGRATION_ATTEMPT    = 'CARD_PAYMENT_SERVICE_EMI_INVALID_MIGRATION_ATTEMPT';
     const CARD_PAYMENT_SERVICE_EMI_REQUEST_RESPONSE_ERROR       = 'CARD_PAYMENT_SERVICE_EMI_REQUEST_RESPONSE_ERROR';
     const CARD_PAYMENT_SERVICE_EMI_RESPONSE_DURATION_MISSING    = 'CARD_PAYMENT_SERVICE_EMI_RESPONSE_DURATION_MISSING';
+    const CARD_PAYMENT_SERVICE_RESPONSE_DIFFERENCE              = 'CARD_PAYMENT_SERVICE_RESPONSE_DIFFERENCE';
+    const CARD_PAYMENT_SERVICE_PAY_ERROR                        = 'CARD_PAYMENT_SERVICE_PAY_ERROR';
 
 
     // Nb Plus Service

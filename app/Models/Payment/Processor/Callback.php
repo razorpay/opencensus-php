@@ -15,6 +15,7 @@ use RZP\Models\Emi;
 use RZP\Models\Card;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal;
 use RZP\Models\Customer;
@@ -348,6 +349,36 @@ trait Callback
             $this->processPaymentCallbackException($e);
         }
 
+        if ($this->shouldCallPayAction($input, $data) === true)
+        {
+            try
+            {
+                $data2 = $this->callGatewayPay($input);
+
+                $this->trace->info(
+                    TraceCode::CARD_PAYMENT_SERVICE_RESPONSE_DIFFERENCE,
+                    [
+                        'callback_data' => $data,
+                        'pay_data'      => $data2,
+                        'diff'          => $data === $data2,
+                    ]
+                );
+            }
+            catch (Exception\BaseException $e)
+            {
+                // TODO: Uncomment pay action error handling
+                // $this->processPaymentPayException($e);
+
+                $this->trace->info(
+                    TraceCode::CARD_PAYMENT_SERVICE_PAY_ERROR,
+                    [
+                        'payment_id'    => $payment->getId(),
+                        'error'         => $e,
+                    ]
+                );
+            }
+        }
+
         $shouldLateAuthorize = false;
 
         // This condition has been added for upi recurring payments.For upi recurring payments we get two callbacks,
@@ -360,6 +391,17 @@ trait Callback
         }
 
         $this->updateAndNotifyPaymentAuthorized($data, $shouldLateAuthorize);
+    }
+
+    protected function shouldCallPayAction($input, $data)
+    {
+        if ($this->isRoutedThroughCardPayments(Payment\Action::PAY, $input))
+        {
+            return true;
+        }
+
+        // TODO: Put a check on response of Callback
+        return false;
     }
 
     // headless exception handling
@@ -432,6 +474,11 @@ trait Callback
                                     ],
                                     $payment->merchant,
                                     $callback = true);
+    }
+
+    protected function callGatewayPay($input)
+    {
+        return $this->callGatewayFunction(Payment\Action::PAY, $input);
     }
 
     protected function callGatewayCallback($input)
@@ -566,7 +613,7 @@ trait Callback
         $this->repo->saveOrFail($payment);
     }
 
-    protected function processPaymentCallbackException($e)
+    protected function processPaymentException($e)
     {
         // Refresh and check that payment is in created state only
         // This is because significant time has elapsed during
@@ -609,23 +656,35 @@ trait Callback
                 $this->payment->incrementOtpAttempts();
 
                 $this->app['segment']->trackPayment($payment,
-                                                    ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT);
+                    ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT);
 
                 break;
 
             case ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE:
                 $this->trace->info(TraceCode::PAYMENT_WALLET_LOW_BALANCE, [
-                        'id'     => $payment->getId(),
-                        'wallet' => $payment->getWallet(),
-                        'amount' => $payment->getAmount()
-                    ]);
+                    'id'     => $payment->getId(),
+                    'wallet' => $payment->getWallet(),
+                    'amount' => $payment->getAmount()
+                ]);
                 break;
         }
+    }
+
+    protected function processPaymentPayException($e)
+    {
+        $this->processPaymentException($e);
+
+        $this->updatePaymentOnExceptionAndThrow($e, 'authorization');
+    }
+
+    protected function processPaymentCallbackException($e)
+    {
+        $this->processPaymentException($e);
 
         $this->updatePaymentOnExceptionAndThrow($e);
     }
 
-    protected function updatePaymentOnExceptionAndThrow($e)
+    protected function updatePaymentOnExceptionAndThrow($e, $step = 'authorization')
     {
         $internalErrorCode = $e->getError()->getInternalErrorCode();
 
@@ -636,7 +695,14 @@ trait Callback
 
         if (Error\Error::hasAction($internalErrorCode) === false)
         {
-            $this->updatePaymentAuthFailed($e);
+            if ($step === 'authentication')
+            {
+                $this->updatePaymentAuthenticationFailed($e);
+            }
+            else
+            {
+                $this->updatePaymentAuthFailed($e);
+            }
         }
         else
         {

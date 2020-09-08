@@ -14,6 +14,7 @@ class Action
     const ENROLL                        = 'enroll';
     const AUTHORIZE                     = 'authorize';
     const CALLBACK                      = 'callback';
+    const PAY                           = 'pay';
     const CAPTURE                       = 'capture';
     const OTP_GENERATE                  = 'otp_generate';
     const REFUND                        = 'refund';

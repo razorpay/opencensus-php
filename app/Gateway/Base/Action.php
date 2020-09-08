@@ -13,6 +13,7 @@ class Action
     const VOID             = 'void';
     const VERIFY           = 'verify';
     const CALLBACK         = 'callback';
+    const PAY              = 'pay';
     const REVERSE          = 'reverse';
     const OTP_RESEND       = 'otp_resend';
     const OTP_GENERATE     = 'otp_generate';
@@ -44,6 +45,7 @@ class Action
     public static $cardPaymentsSupportedActions = [
         self::AUTHORIZE,
         self::CALLBACK,
+        self::PAY,
         self::CAPTURE,
         self::VERIFY,
         self::DEBIT,

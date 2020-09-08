@@ -36,6 +36,7 @@ class Server extends Base\Mock\Server
 
         return $response;
     }
+
     public function advice($input)
     {
         $content = json_decode($input, true);

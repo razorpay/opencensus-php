@@ -677,6 +677,13 @@ trait Authorize
         throw $e;
     }
 
+    public function updatePaymentAuthenticationFailed(Exception\BaseException $e)
+    {
+        $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
+
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_PROCESSED, $this->payment, $e);
+    }
+
     public function updatePaymentAuthFailed(Exception\BaseException $e)
     {
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);

@@ -122,8 +122,6 @@ trait CardPaymentService
 
             throw $exc;
         }
-
-
     }
 
     protected function pushDimensions($action, $input, $status, $gateway, $excData = null)
@@ -212,7 +210,6 @@ trait CardPaymentService
         // set Terminal
         if (empty($input['terminal_id']) === false)
         {
-
             foreach ($this->selectedTerminals as $terminal)
             {
                 if ($terminal->getId() === $input['terminal_id'])
