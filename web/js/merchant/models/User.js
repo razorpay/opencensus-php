@@ -480,7 +480,7 @@ export default class User {
   }
 
   get isRegAutoKYCEnabled() {
-    return this.getExpStatus('registered_onboarding_auto_kyc');
+    return true;
   }
 
   get getCurrencyList() {

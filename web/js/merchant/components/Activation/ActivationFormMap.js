@@ -152,8 +152,9 @@ const businessModel = [
       label: 'Business Category',
       name: 'business_category',
       _cmp: Input.Select,
+      _autoRenderImpure: true,
       options: [],
-      _disabledWhen: function(activation) {
+      _disabledWhen: function (activation) {
         if (isRXV2Onboarding(activation)) {
           const { activated, activation_flow } = activation.props.user;
           return activated || !!activation_flow;
@@ -189,7 +190,7 @@ const businessModel = [
 
         return businessCategory === 'others'; // If businessCategory is selected to others, then Business Model is to be filled
       },
-      _disabledWhen: function(form) {
+      _disabledWhen: function (form) {
         return isL1Completed(form) && !!form.props.user.showInstantActivation;
       },
     },
@@ -199,7 +200,7 @@ const businessModel = [
       _cmp: Input.Select,
       _autoRenderImpure: true,
       options: [],
-      _optionsFn: function(activation, categories) {
+      _optionsFn: function (activation, categories) {
         // For setting options dynamically on basis some condition or other field selection
         const userSelection =
           activation.state.dirty.business_category || activation.props.data.business_category;
@@ -215,7 +216,7 @@ const businessModel = [
                 name: c,
                 label: typeof label === 'string' ? label : label.description,
               };
-            })
+            }),
           );
         }
 
@@ -346,7 +347,7 @@ const businessDetails = [
           activation.props.data,
           'company_pan_verification_status',
           'incorrect_details',
-          errMsg
+          errMsg,
         );
       },
       _when: (activation) => displayCompanyPAN(activation),
@@ -356,7 +357,7 @@ const businessDetails = [
       name: 'business_name',
       info: getBusinessNameInfo,
       placeholder: 'Registered name',
-      validator: function(value) {
+      validator: function (value) {
         let contactName = this.state.dirty['contact_name'] || this.props.data['contact_name'],
           showCompanyName = this.props.user.isCompanyNameHiddenRazorX;
         return isUnregisteredBusiness(this)
@@ -373,7 +374,7 @@ const businessDetails = [
       className: 'Input--capitalize',
       getPlaceholder: (activation) =>
         isUnregisteredBusiness(activation) ? 'Business owner’s PAN' : 'PAN of one of the directors',
-      validator: function(value) {
+      validator: function (value) {
         const isUnregBusiness = isUnregisteredBusiness(this);
         return validatePersonalPAN(value, isUnregBusiness);
       },
@@ -386,7 +387,7 @@ const businessDetails = [
           activation.props.data,
           'poi_verification_status',
           'incorrect_details',
-          errMsg
+          errMsg,
         );
       },
       _disabledWhen: isPANVerified,
@@ -397,7 +398,7 @@ const businessDetails = [
       },
       name: 'promoter_pan_name',
       placeholder: 'Name as per PAN',
-      info: function() {
+      info: function () {
         return isUnregisteredBusiness(this) || !this.props.user.isRegAutoKYCEnabled
           ? ''
           : 'We verify the details with the central PAN database. Please ensure you enter the correct PAN details';
@@ -413,7 +414,7 @@ const businessDetails = [
           activation.props.data,
           'poi_verification_status',
           'not_matched',
-          errMsg
+          errMsg,
         );
       },
       _disabledWhen: isPANVerified,
@@ -495,7 +496,7 @@ const businessDetails = [
           activation.props.data,
           'gstin_verification_status',
           'incorrect_details',
-          'Please provide the correct GSTIN details'
+          'Please provide the correct GSTIN details',
         );
       },
     },
@@ -523,7 +524,7 @@ const bankAccountFields = [
   {
     name: 'bank_branch_ifsc',
     label: 'Branch IFSC Code',
-    info: function(e) {
+    info: function (e) {
       if (!e) {
         return null;
       }
@@ -542,7 +543,7 @@ const bankAccountFields = [
       onFocus: (e) => {
         document.getElementsByName('bank_account_number')[0].type = 'text';
       },
-      onBlur: function(e) {
+      onBlur: function (e) {
         document.getElementsByName('bank_account_number')[0].type = 'password';
 
         const bankAccountNumber = this.state.dirty.bank_account_number;
@@ -563,7 +564,7 @@ const bankAccountFields = [
       autoComplete: 'new-password',
       info: 'Please re-enter the bank account number.',
       _autoRenderImpure: true, // Re-render to show the error
-      validator: function(value) {
+      validator: function (value) {
         if (!value) {
           return;
         }
@@ -861,7 +862,7 @@ export const getBusinessTypeOptions = (activation) => {
  * Note: If some Form Tab is removed from `tabsData`, then it's corresponding fields must also be removed from formNamesMeta.
  * The same you can check for data.need_kyc LA accounts
  */
-export const mainFormFieldNamesMeta = (function() {
+export const mainFormFieldNamesMeta = (function () {
   const formNames = [];
 
   for (let t = 0; t < tabsData.length; t++) {

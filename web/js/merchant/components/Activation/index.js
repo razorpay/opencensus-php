@@ -5,19 +5,11 @@ import Input from 'common/new-ui/Input';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Alert from 'common/new-ui/Alert';
 import { ModalAsideNav } from 'common/new-ui/Wizard';
-import {
-  autoPrefixUrls,
-  isPresent,
-  prevent,
-  classList,
-} from 'common/utils/rzp-utils';
+import { autoPrefixUrls, isPresent, prevent, classList } from 'common/utils/rzp-utils';
 import { trackDiffInFormFields } from 'merchant/utils/track-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 
-import {
-  addDropShield,
-  removeDropShield,
-} from 'merchant/components/File/Upload';
+import { addDropShield, removeDropShield } from 'merchant/components/File/Upload';
 import { fireAnalyticsEvents } from 'common/utils/googleAnalytics'; // fb, bing, linkedin, twitter
 import * as trackers from 'merchant/containers/Activation/ga_new';
 import {
@@ -105,7 +97,7 @@ const SAVE_BUTTON_DISABLED_STEPS = [BUSINESS_DETAILS_STEP];
 
 @withRouter
 @connect(
-  state => ({
+  (state) => ({
     session: state.session,
     user: state.session.user,
   }),
@@ -119,7 +111,7 @@ const SAVE_BUTTON_DISABLED_STEPS = [BUSINESS_DETAILS_STEP];
     submitL1FormSuccess,
     showKYCStatusModal,
     setCurrentTab,
-  }
+  },
 )
 @RTracking(() => window.rzpQ.component('ActivationWizard'))
 export default class ActivationWizard extends React.Component {
@@ -129,12 +121,10 @@ export default class ActivationWizard extends React.Component {
     tabs: [],
     same_address:
       this.props.data &&
-      this.props.data.business_operation_pin ==
-        this.props.data.business_registered_pin
+      this.props.data.business_operation_pin == this.props.data.business_registered_pin
         ? '1'
         : '0', // '1' => checkbox ticked
-    has_url:
-      this.props.data && this.props.data.business_website === '' ? '1' : '0', // '0' => 0th radio button, value exists
+    has_url: this.props.data && this.props.data.business_website === '' ? '1' : '0', // '0' => 0th radio button, value exists
     has_gstin: this.props.data && this.props.data.gstin === '' ? '1' : '0', // '0' => 0th radio button, value exists
     account_no: this.props.data && this.props.data.bank_account_number,
     activeTab: 0, // Fallback for all cases.
@@ -155,23 +145,16 @@ export default class ActivationWizard extends React.Component {
       // recording new activation form in hotjar for New accounts (non-LA account)
       if (typeof window.hj === 'function') {
         window.hj('trigger', 'activation_form_open');
-        window.hj('tagRecording', [
-          'activation_form_open',
-          this.props.user.current,
-        ]);
+        window.hj('tagRecording', ['activation_form_open', this.props.user.current]);
       }
     }
 
     this.formName = 'Activation Form';
     this.formDescription = 'Complete and submit the form to accept payments.';
     this.trackingType = 'act';
-    if (
-      props.user.showInstantActivation &&
-      props.user.instantActivation.isL1Submitted
-    ) {
+    if (props.user.showInstantActivation && props.user.instantActivation.isL1Submitted) {
       this.formName = 'KYC Form';
-      this.formDescription =
-        'Complete and submit the form to enable settlements.';
+      this.formDescription = 'Complete and submit the form to enable settlements.';
       this.trackingType = 'kyc';
     }
   }
@@ -219,12 +202,10 @@ export default class ActivationWizard extends React.Component {
         const ndcFields =
           getNeedsClarificationTabsData(
             mainFormTabsContent,
-            props.data.kyc_clarification_reasons
+            props.data.kyc_clarification_reasons,
           ) || [];
         FORM_TABS_CONTENT.push(ndcFields);
-        FORM_TABS_NAMES.push(
-          ndcFields.map(f => f.name).filter(f => Boolean(f))
-        );
+        FORM_TABS_NAMES.push(ndcFields.map((f) => f.name).filter((f) => Boolean(f)));
         NEEDS_CLARIFICATION_STEP = 5;
       }
 
@@ -238,10 +219,10 @@ export default class ActivationWizard extends React.Component {
 
       // Business Category in "Business Model" exists in main activation form. Setting value dynamically from props.
       FORM_TABS_CONTENT[1][1][0].options = ['--Select--'].concat(
-        Object.keys(props.categories).map(c => ({
+        Object.keys(props.categories).map((c) => ({
           name: c,
           label: props.categories[c].description,
-        }))
+        })),
       );
 
       // Set Biz type options dynamically based on current activation stage
@@ -264,7 +245,7 @@ export default class ActivationWizard extends React.Component {
 
     defaultFieldProps.call(this, FORM_TABS_CONTENT); // Set the default props for all tab content views
 
-    const prepareFileFields = a => {
+    const prepareFileFields = (a) => {
       if (a._cmp === Input.File) {
         a._cmp = Input.File;
         a._accept = ['pdf', 'image'];
@@ -278,23 +259,21 @@ export default class ActivationWizard extends React.Component {
         a.onChange = (file, progressTracker) => {
           const filename = a.getName ? a.getName(this) : a.name;
 
-          return props
-            .saveFile(filename, file, progressTracker, a.uploadAs || null)
-            .then(() => {
-              updateHubSpotContactsProperties({
-                [filename]: true,
-              });
-
-              tracking.trackEvent(
-                window.rzpQ.onbr().initiated('kyc.upload_document', {
-                  name: filename,
-                })
-              );
-              if (!this.isOnKYCTab()) {
-                this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
-              }
-              this.updateFileInDirty(filename);
+          return props.saveFile(filename, file, progressTracker, a.uploadAs || null).then(() => {
+            updateHubSpotContactsProperties({
+              [filename]: true,
             });
+
+            tracking.trackEvent(
+              window.rzpQ.onbr().initiated('kyc.upload_document', {
+                name: filename,
+              }),
+            );
+            if (!this.isOnKYCTab()) {
+              this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
+            }
+            this.updateFileInDirty(filename);
+          });
         };
       }
     };
@@ -302,8 +281,7 @@ export default class ActivationWizard extends React.Component {
      * All document fields in activation form to have same footprint.
      * Adding onChange listener to all document upload fields.
      * */
-    DOCUMENT_UPLOAD_STEP &&
-      FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].forEach(prepareFileFields);
+    DOCUMENT_UPLOAD_STEP && FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].forEach(prepareFileFields);
 
     /* This calls for all fields instead of just file fields */
     NEEDS_CLARIFICATION_STEP &&
@@ -314,8 +292,8 @@ export default class ActivationWizard extends React.Component {
     return this.props.handleUIUpdate && this.props.handleUIUpdate();
   }
 
-  updateFileInDirty = filename => {
-    this.setState(prevState => ({
+  updateFileInDirty = (filename) => {
+    this.setState((prevState) => ({
       dirty: { ...prevState.dirty, [filename]: 'fakepath' },
     }));
   };
@@ -335,11 +313,9 @@ export default class ActivationWizard extends React.Component {
     this.handleActionBasedOnQuery(query);
   }
 
-  handleActionBasedOnQuery = query => {
+  handleActionBasedOnQuery = (query) => {
     if (query['auto-submit'] == 'l1-form') {
-      const submitButton = document.querySelector(
-        'footer button[name=submit-and-verify]'
-      );
+      const submitButton = document.querySelector('footer button[name=submit-and-verify]');
       if (submitButton) {
         submitButton.click();
       }
@@ -405,15 +381,13 @@ export default class ActivationWizard extends React.Component {
     const currenActiveTab = this.state.activeTab;
     const tracker = () =>
       this.props.tracking.trackEvent(
-        window.rzpQ
-          .onbr()
-          .initiated(`${this.trackingType}.save_modifications`, {
-            clickSource: 'save',
-          })
+        window.rzpQ.onbr().initiated(`${this.trackingType}.save_modifications`, {
+          clickSource: 'save',
+        }),
       );
     let callBack =
       onAction &&
-      function(result, error) {
+      function (result, error) {
         tracker();
         onAction.trackSave({
           tabId: currenActiveTab,
@@ -429,19 +403,17 @@ export default class ActivationWizard extends React.Component {
     this.goto(null, callBack);
   };
 
-  next = e => {
+  next = (e) => {
     const currenActiveTab = this.state.activeTab;
     const tracker = () =>
       this.props.tracking.trackEvent(
-        window.rzpQ
-          .onbr()
-          .initiated(`${this.trackingType}.save_modifications`, {
-            clickSource: 'save-next',
-          })
+        window.rzpQ.onbr().initiated(`${this.trackingType}.save_modifications`, {
+          clickSource: 'save-next',
+        }),
       );
     let callBack =
       onAction &&
-      function(result, error) {
+      function (result, error) {
         tracker();
         onAction.trackSaveAndNext({
           tabId: currenActiveTab,
@@ -457,12 +429,12 @@ export default class ActivationWizard extends React.Component {
     this.goto(this.state.activeTab + 1, callBack);
   };
 
-  prev = e => {
+  prev = (e) => {
     const currenActiveTab = this.state.activeTab;
 
     let callBack =
       onAction &&
-      function(result, error) {
+      function (result, error) {
         onAction.trackBack({
           tabId: currenActiveTab,
           type: result, // result = true for Success, false for Error, null for no api call
@@ -484,11 +456,11 @@ export default class ActivationWizard extends React.Component {
       this.props.tracking.trackEvent(
         window.rzpQ.onbr().initiated(`${this.trackingType}.nav_action`, {
           clickSource: mainFormTabs[tabId],
-        })
+        }),
       );
     let callBack =
       onAction &&
-      function(result, error) {
+      function (result, error) {
         onAction.trackTabClick(tabId); // Tracks current tab clicked
         tracker();
         if (typeof result !== 'undefined') {
@@ -508,17 +480,17 @@ export default class ActivationWizard extends React.Component {
   };
 
   //newActiveTab = null -> clicked on Save btn / 'Submit Form' tab
-  trackFieldsChange = currentActive => {
+  trackFieldsChange = (currentActive) => {
     try {
       const { tracking } = this.props;
       let eventName = this.trackingType + '.' + tabToEventNames[currentActive];
       const fields = trackDiffInFormFields(this.props.data, this.state.dirty);
-      return fields.forEach(field =>
+      return fields.forEach((field) =>
         tracking.trackEvent(
           window.rzpQ.onbr().initiated(eventName, {
             ...field,
-          })
-        )
+          }),
+        ),
       );
     } catch (err) {}
   };
@@ -563,7 +535,7 @@ export default class ActivationWizard extends React.Component {
     const reqData = {};
 
     /* Send only those fields which belongs to the TAB being saved */
-    Object.keys(currentDirty).forEach(name => {
+    Object.keys(currentDirty).forEach((name) => {
       if (
         currentDirty.hasOwnProperty(name) &&
         FORM_TABS_NAMES[currentActive].indexOf(name) !== -1 &&
@@ -591,15 +563,14 @@ export default class ActivationWizard extends React.Component {
       },
       () => {
         window.clearTimeout(this.loaderTimeout); // Reset the previous removeLoader-call timer on each new Pending
-      }
+      },
     );
 
     /* Check validity of 'Bank account no.' before saving */
     if (currentActive == BANK_ACCOUNT_TAB) {
       if (
         reqData.hasOwnProperty('bank_account_number') &&
-        (!reqData.bank_account_number ||
-          reqData.bank_account_number != this.state.account_no)
+        (!reqData.bank_account_number || reqData.bank_account_number != this.state.account_no)
       ) {
         this.handleBankAccountMismatch(newActiveTab !== currentActive); // Tab is changed
 
@@ -617,7 +588,7 @@ export default class ActivationWizard extends React.Component {
 
     this.trackFieldsChange(currentActive);
 
-    this.props.save(reqData).then(data => {
+    this.props.save(reqData).then((data) => {
       if (this.unMounted) {
         return; // No further actions if component unmounted. To handle cross btn close, where only hit Api without doing then.
       }
@@ -651,7 +622,7 @@ export default class ActivationWizard extends React.Component {
         // TODO: This is to avoid too many api calls and consequent ERROR even when user is not intending to save.
         if (savingWhichTab && savingWhichTab !== this.state.activeTab) {
           const latestDirty = { ...this.state.dirty };
-          Object.keys(savingDataOfWhichTab).forEach(key => {
+          Object.keys(savingDataOfWhichTab).forEach((key) => {
             if (
               savingDataOfWhichTab.hasOwnProperty(key) &&
               savingDataOfWhichTab[key] == this.state.dirty[key]
@@ -697,7 +668,7 @@ export default class ActivationWizard extends React.Component {
         updateHubSpotContactsProperties(reqData, {}, prefix);
 
         const latestDirty = { ...this.state.dirty };
-        Object.keys(savingDataOfWhichTab).forEach(key => {
+        Object.keys(savingDataOfWhichTab).forEach((key) => {
           if (
             savingDataOfWhichTab.hasOwnProperty(key) &&
             savingDataOfWhichTab[key] == this.state.dirty[key]
@@ -745,8 +716,7 @@ export default class ActivationWizard extends React.Component {
     // Step 2:
     this.setState({
       same_address:
-        this.props.data.business_operation_pin ==
-        this.props.data.business_registered_pin
+        this.props.data.business_operation_pin == this.props.data.business_registered_pin
           ? '1'
           : '0', // '1' => checkbox ticked
     });
@@ -757,8 +727,7 @@ export default class ActivationWizard extends React.Component {
   }
 
   get isUnregBiz() {
-    const businessType =
-      this.state.dirty.business_type || this.props.data.business_type;
+    const businessType = this.state.dirty.business_type || this.props.data.business_type;
 
     return businessType == 2 || businessType == 11;
   }
@@ -778,9 +747,7 @@ export default class ActivationWizard extends React.Component {
           return `${state.address_proof}_back`;
         },
       };
-      const hasFilledEverything = FORM_TABS_NAMES[
-        NEEDS_CLARIFICATION_STEP
-      ].every(field => {
+      const hasFilledEverything = FORM_TABS_NAMES[NEEDS_CLARIFICATION_STEP].every((field) => {
         if (dynamicFieldName[field]) {
           field = dynamicFieldName[field]();
         }
@@ -792,15 +759,12 @@ export default class ActivationWizard extends React.Component {
   }
 
   get canSubmitL1Form() {
-    const promoterPan =
-      this.state.dirty.promoter_pan || this.props.data.promoter_pan;
+    const promoterPan = this.state.dirty.promoter_pan || this.props.data.promoter_pan;
     const showCompanyName = this.props.user.isCompanyNameHiddenRazorX;
-    const businessName =
-      this.state.dirty.business_name || this.props.data.business_name;
-    const contactName =
-      this.state.dirty.contact_name || this.props.data.contact_name;
-    const companyPAN =
-      this.state.dirty.company_pan || this.props.data.company_pan;
+    const businessName = this.state.dirty.business_name || this.props.data.business_name;
+    const contactName = this.state.dirty.contact_name || this.props.data.contact_name;
+    const companyPAN = this.state.dirty.company_pan || this.props.data.company_pan;
+    const promoterPANName = this.state.dirty.promoter_pan_name || this.props.data.promoter_pan_name;
     const isCompanyPANValid = displayCompanyPAN(this)
       ? companyPAN && !validateCompanyPAN(companyPAN)
       : true;
@@ -813,7 +777,8 @@ export default class ActivationWizard extends React.Component {
       !hasSelectedBlacklistedCategory(this) &&
       isPromoterPANValid &&
       isCompanyPANValid &&
-      isCompanyNameValid
+      isCompanyNameValid &&
+      promoterPANName
     );
   }
 
@@ -902,23 +867,23 @@ export default class ActivationWizard extends React.Component {
     });
   }
 
-  trackSubmitL1 = data => {
+  trackSubmitL1 = (data) => {
     const { tracking } = this.props;
     try {
       const fields = trackDiffInFormFields(this.props.data, this.state.dirty);
       fields &&
-        fields.forEach(field =>
+        fields.forEach((field) =>
           tracking.trackEvent(
             window.rzpQ.onbr().initiated('act.business_details', {
               ...field,
-            })
-          )
+            }),
+          ),
         );
       tracking.trackEvent(window.rzpQ.onbr().initiated('act.submit_form'));
     } catch (e) {}
   };
 
-  submitL1 = async currenActiveTab => {
+  submitL1 = async (currenActiveTab) => {
     const data = this.formData;
 
     this.trackSubmitL1(data);
@@ -963,8 +928,7 @@ export default class ActivationWizard extends React.Component {
         if (
           !hasAPIL1Error({
             poi_verification_status: user.poi_verification_status,
-            company_pan_verification_status:
-              user.company_pan_verification_status,
+            company_pan_verification_status: user.company_pan_verification_status,
             is_unreg: this.isUnregBiz,
           })
         ) {
@@ -992,12 +956,12 @@ export default class ActivationWizard extends React.Component {
     }
   };
 
-  isValidL1Field = field_name => {
+  isValidL1Field = (field_name) => {
     let field;
     for (let i = 1; i < FORM_TABS_CONTENT.length; i++) {
-      FORM_TABS_CONTENT[i].every(f => {
+      FORM_TABS_CONTENT[i].every((f) => {
         if (Array.isArray(f)) {
-          f.every(_f => {
+          f.every((_f) => {
             if (_f.name === field_name) {
               field = _f;
             }
@@ -1025,7 +989,7 @@ export default class ActivationWizard extends React.Component {
     const currentDirty = this.state.dirty;
     const reqData = {};
 
-    L1FormFieldNames.forEach(field => {
+    L1FormFieldNames.forEach((field) => {
       if (this.isValidL1Field(field)) {
         this.populateReqData(field, reqData, currentDirty);
       }
@@ -1045,8 +1009,7 @@ export default class ActivationWizard extends React.Component {
       return;
     }
 
-    const fieldVal =
-      name in currentDirty ? currentDirty[name] : this.props.data[name];
+    const fieldVal = name in currentDirty ? currentDirty[name] : this.props.data[name];
 
     reqData[name] = fieldVal;
 
@@ -1058,10 +1021,8 @@ export default class ActivationWizard extends React.Component {
   }
 
   submitForm = () => {
-    this.props.tracking.trackEvent(
-      window.rzpQ.onbr().initiated('kyc.submit_form')
-    );
-    return this.props.submitForm().then(data => {
+    this.props.tracking.trackEvent(window.rzpQ.onbr().initiated('kyc.submit_form'));
+    return this.props.submitForm().then((data) => {
       if (data.errors) {
         // Track session for any error on submission (non-LA account)
         if (!this.isLinkedAccountForm && typeof window.hj === 'function') {
@@ -1096,8 +1057,8 @@ export default class ActivationWizard extends React.Component {
     };
 
     if (hasFilledDetails) {
-      const fieldNames = needsClarificationFields.map(field => field.name);
-      fieldNames.forEach(fieldName => {
+      const fieldNames = needsClarificationFields.map((field) => field.name);
+      fieldNames.forEach((fieldName) => {
         if (this.state.dirty[fieldName]) {
           reqData[fieldName] = this.state.dirty[fieldName];
         }
@@ -1106,7 +1067,7 @@ export default class ActivationWizard extends React.Component {
 
     // State will contain file fields which have already been uploaded
     // Delete file field from request data
-    Object.keys(reqData).forEach(key => {
+    Object.keys(reqData).forEach((key) => {
       if (reqData[key] === 'fakepath') {
         delete reqData[key];
       }
@@ -1139,13 +1100,13 @@ export default class ActivationWizard extends React.Component {
    * Fadeout based loader text.
    * Default delay = 7 sec
    * */
-  removeLoader = delay => {
+  removeLoader = (delay) => {
     this.loaderTimeout = setTimeout(() => {
       this.setState({ isSaving: LOADING.INITIAL });
     }, delay || 7000); // Success states can be removed in 3sec.
   };
 
-  getSingleSubcategory = fieldValue => {
+  getSingleSubcategory = (fieldValue) => {
     const subcategories = this.props.categories[fieldValue].subcategories;
     if (!subcategories) {
       return null;
@@ -1207,12 +1168,9 @@ export default class ActivationWizard extends React.Component {
     }
 
     /* Step 4: Auto fill city and state based on pin */
-    if (
-      fieldName === 'business_operation_pin' ||
-      fieldName === 'business_registered_pin'
-    ) {
+    if (fieldName === 'business_operation_pin' || fieldName === 'business_registered_pin') {
       if (fieldValue.length === 6) {
-        this.props.getPincodeDetails(fieldValue).then(data => {
+        this.props.getPincodeDetails(fieldValue).then((data) => {
           if (data) {
             const cityField = `${fieldName.slice(0, -3)}city`; // It can be operation_ / registered_
             const stateField = `${fieldName.slice(0, -3)}state`;
@@ -1222,17 +1180,12 @@ export default class ActivationWizard extends React.Component {
             sideEffectFieldsToUpdate[stateField] = data.state_code;
             if (this.state.same_address == '1') {
               sideEffectFieldsToUpdate.business_operation_city = data.city;
-              sideEffectFieldsToUpdate.business_operation_state =
-                data.state_code;
+              sideEffectFieldsToUpdate.business_operation_state = data.state_code;
             }
 
             // Input fields are uncontrolled, so needs to be updated directly. Updating dependent field visible in view.
-            document.querySelector(
-              `.form-container [name=${cityField}]`
-            ).value = data.city;
-            document.querySelector(
-              `.form-container [name=${stateField}]`
-            ).value = data.state_code;
+            document.querySelector(`.form-container [name=${cityField}]`).value = data.city;
+            document.querySelector(`.form-container [name=${stateField}]`).value = data.state_code;
 
             this.setState({
               dirty: {
@@ -1257,9 +1210,7 @@ export default class ActivationWizard extends React.Component {
         sideEffectFieldsToUpdate.business_subcategory = '';
         // Update Business Subcategory in view
       }
-      let el = document.querySelector(
-        '.form-container [name=business_subcategory]'
-      );
+      let el = document.querySelector('.form-container [name=business_subcategory]');
       el && (el.value = '');
       // Update Business Model in view
       el = document.querySelector('.form-container [name=business_model]');
@@ -1270,24 +1221,16 @@ export default class ActivationWizard extends React.Component {
       sideEffectFieldsToUpdate.business_category =
         dirty.business_category || data.business_category;
 
-      const bizCatSubCatPair = [
-        sideEffectFieldsToUpdate.business_category,
-        fieldValue,
-      ];
+      const bizCatSubCatPair = [sideEffectFieldsToUpdate.business_category, fieldValue];
 
       if (doesHaveAdditionalDocs(this, bizCatSubCatPair)) {
         const additionalDoc = getDefaultAdditionalDoc(this, bizCatSubCatPair);
-        const additionalDocOptions = getAdditionalDocOptions(
-          this,
-          bizCatSubCatPair
-        );
+        const additionalDocOptions = getAdditionalDocOptions(this, bizCatSubCatPair);
         const ADDITIONAL_DOC_SELECT_FIELD_INDEX = 9;
 
         if (
           FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP] &&
-          FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP][
-            ADDITIONAL_DOC_SELECT_FIELD_INDEX
-          ]
+          FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP][ADDITIONAL_DOC_SELECT_FIELD_INDEX]
         ) {
           FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP][
             ADDITIONAL_DOC_SELECT_FIELD_INDEX
@@ -1314,7 +1257,7 @@ export default class ActivationWizard extends React.Component {
           if (stateName === 'additional_doc') {
             this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
           }
-        }
+        },
       );
 
       if (Object.keys(sideEffectFieldsToUpdate).length) {
@@ -1359,7 +1302,7 @@ export default class ActivationWizard extends React.Component {
    * - By default is opens the submit layer.
    * - Closes the layer if false passed explicitly
    * */
-  toggleSubmitLayer = e => {
+  toggleSubmitLayer = (e) => {
     if (!this.isAllTabsValid()) {
       return; // Now allowed to go to submit form unless all tabs are valid
     }
@@ -1382,7 +1325,7 @@ export default class ActivationWizard extends React.Component {
 
       const callBack =
         onAction &&
-        function(result, error) {
+        function (result, error) {
           onAction.trackSubmitFormTabClick();
 
           if (typeof result !== 'undefined') {
@@ -1459,11 +1402,7 @@ export default class ActivationWizard extends React.Component {
     if (activeTab !== DOCUMENT_UPLOAD_STEP) {
       content = FORM_TABS_CONTENT[activeTab].map((field, i) => {
         if (Array.isArray(field)) {
-          return (
-            <Input.Group key={i}>
-              {field.map(ActivationField, this)}
-            </Input.Group>
-          );
+          return <Input.Group key={i}>{field.map(ActivationField, this)}</Input.Group>;
         }
 
         return ActivationField.call(this, field);
@@ -1474,11 +1413,7 @@ export default class ActivationWizard extends React.Component {
       DOCUMENT_UPLOAD_STEP &&
       FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].map((field, i) => {
         if (Array.isArray(field)) {
-          return (
-            <Input.Group key={i}>
-              {field.map(ActivationField, this)}
-            </Input.Group>
-          );
+          return <Input.Group key={i}>{field.map(ActivationField, this)}</Input.Group>;
         }
 
         return ActivationField.call(this, field);
@@ -1492,14 +1427,14 @@ export default class ActivationWizard extends React.Component {
           className={classList(
             !this.isAllTabsValid() && 'disabled',
             this.state.showSubmitLayer && 'active',
-            'li--submit'
+            'li--submit',
           )}
         >
           Submit Form
           {!this.isAllTabsValid() && (
             <div className="description small">Complete the form to submit</div>
           )}
-        </li>
+        </li>,
       );
     }
     return (
@@ -1508,8 +1443,7 @@ export default class ActivationWizard extends React.Component {
         <ModalAsideNav
           title={this.formName}
           description={
-            !this.isLinkedAccountForm &&
-            !isFormSubmitted && <p>{this.formDescription}</p>
+            !this.isLinkedAccountForm && !isFormSubmitted && <p>{this.formDescription}</p>
           }
           tabs={FORM_TABS}
           moreTabs={moreTabs}
@@ -1524,7 +1458,7 @@ export default class ActivationWizard extends React.Component {
           className={classList(
             'form-container',
             this.state.showSubmitLayer && 'block-scroll',
-            isFormLocked && 'main--full'
+            isFormLocked && 'main--full',
           )}
         >
           {/* Active tab title */}
@@ -1539,12 +1473,10 @@ export default class ActivationWizard extends React.Component {
             <span
               className={classList(
                 'device--mobile main-title-icon',
-                isCurrentTabValid && 'text-success '
+                isCurrentTabValid && 'text-success ',
               )}
             >
-              <i
-                className={classList('i-check', isCurrentTabValid && 'drishy')}
-              />
+              <i className={classList('i-check', isCurrentTabValid && 'drishy')} />
               {FORM_TABS[activeTab]}
             </span>
 
@@ -1553,9 +1485,7 @@ export default class ActivationWizard extends React.Component {
 
           {/* Alert: For linked account if activated */}
           {this.isLinkedAccountForm && isFormActivated && (
-            <Alert.Info iconBefore="i-done-all">
-              The account has been activated
-            </Alert.Info>
+            <Alert.Info iconBefore="i-done-all">The account has been activated</Alert.Info>
           )}
 
           {/* Alerts: for MAIN activation form */}
@@ -1571,15 +1501,13 @@ export default class ActivationWizard extends React.Component {
             const ticketLink = <Link to="#ticket">write to support</Link>;
 
             if (showFormDisabledAlert && !this.isOnKYCTab()) {
-              if (isFormActivated) {
+              if (isFormActivated && data.activation_status === 'activated') {
                 // **1. Alert: Account Activated
 
                 icon = 'i-done-all';
                 msg = 'Your account is activated.';
                 secondaryMsg = (
-                  <React.Fragment>
-                    For any changes, please {ticketLink}.
-                  </React.Fragment>
+                  <React.Fragment>For any changes, please {ticketLink}.</React.Fragment>
                 );
               } else if (this.isNeedsClarificationMode()) {
                 // **2. Alert: Need clarification
@@ -1587,9 +1515,7 @@ export default class ActivationWizard extends React.Component {
                 Component = Alert.Warning;
                 msg = `There are issues with your activation form. Please check your mail and respond at the earliest.`;
                 secondaryMsg = (
-                  <React.Fragment>
-                    In case of any queries, please {ticketLink}
-                  </React.Fragment>
+                  <React.Fragment>In case of any queries, please {ticketLink}</React.Fragment>
                 );
               } else if (data.activation_status === 'rejected') {
                 // **3. Alert: Form Rejected
@@ -1608,17 +1534,14 @@ export default class ActivationWizard extends React.Component {
                 msg =
                   'Your activation form is under review. We will let you know once your account gets activated.';
                 secondaryMsg = (
-                  <React.Fragment>
-                    In case of any queries, please {ticketLink}
-                  </React.Fragment>
+                  <React.Fragment>In case of any queries, please {ticketLink}</React.Fragment>
                 );
               } else if (isFormSubmitted) {
                 // **5. Alert: Form is Submitted
 
                 icon = 'i-check';
                 msg = 'Our team will review the form and submitted documents.';
-                secondaryMsg =
-                  'We will reach out on your contact email for all updates.';
+                secondaryMsg = 'We will reach out on your contact email for all updates.';
               }
 
               {
@@ -1638,12 +1561,10 @@ export default class ActivationWizard extends React.Component {
             {content}
 
             {/* Document content is always in DOM */}
-            <div style={{ display: content ? 'none' : 'inherit' }}>
-              {documentContent}
-            </div>
+            <div style={{ display: content ? 'none' : 'inherit' }}>{documentContent}</div>
           </Form>
           <ShowWhen
-            additionalCondition={user =>
+            additionalCondition={(user) =>
               user.isOrgAllowedFunctionality('external_links') &&
               this.state.activeTab == 2 &&
               !this.props.user.instantActivation.isL1Submitted
@@ -1665,12 +1586,7 @@ export default class ActivationWizard extends React.Component {
 
         {/* Submit form overlay view, Lock check not necessary here. Just ensured, 'Submit Form' checkbox must be disabled if locked */}
         {!isFormSubmitted && this.state.showSubmitLayer && (
-          <main
-            className={classList(
-              'overlay-container',
-              isFormLocked && 'main--full'
-            )}
-          >
+          <main className={classList('overlay-container', isFormLocked && 'main--full')}>
             <SubmitFormLayer
               closeActivationForm={() => {
                 this.goto(FORM_TABS.length - 1);
@@ -1688,9 +1604,7 @@ export default class ActivationWizard extends React.Component {
           defaultMsg={this.state.defaultMsg}
           footerButtons={footerButtons}
           canSubmitL1Form={this.canSubmitL1Form && !this.state.callingAPI}
-          canSubmitNeedsClarification={
-            this.hasFilledClarificationDetails && !this.state.callingAPI
-          }
+          canSubmitNeedsClarification={this.hasFilledClarificationDetails && !this.state.callingAPI}
           isUnregBiz={this.isUnregBiz}
           isAllTabsValid={this.isAllTabsValid}
           submitL1={this.submitL1}
@@ -1710,10 +1624,8 @@ export default class ActivationWizard extends React.Component {
     if (i === NEEDS_CLARIFICATION_STEP) {
       return false;
     }
-    return FORM_TABS_CONTENT[i].every(c =>
-      Array.isArray(c)
-        ? c.every(d => isFieldValid(d, this))
-        : isFieldValid(c, this)
+    return FORM_TABS_CONTENT[i].every((c) =>
+      Array.isArray(c) ? c.every((d) => isFieldValid(d, this)) : isFieldValid(c, this),
     );
   }
 }
@@ -1804,9 +1716,7 @@ function ActivationField(field) {
     if (this.isOnKYCTab()) {
       defaultValue = this.state.dirty[key] || null;
     } else if (Component === Input.File) {
-      defaultValue =
-        this.state.dirty[key] ||
-        (documents && documents[key] && documents[key][0].id);
+      defaultValue = this.state.dirty[key] || (documents && documents[key] && documents[key][0].id);
     } else {
       defaultValue = this.state.dirty[key] || this.props.data[key];
     }
@@ -1906,8 +1816,7 @@ function isFieldValid(field, activation) {
   }
 
   const value =
-    data[name] ||
-    (data.documents && data.documents[name] && data.documents[name][0].id);
+    data[name] || (data.documents && data.documents[name] && data.documents[name][0].id);
 
   let isFieldRequired = field.required;
 
