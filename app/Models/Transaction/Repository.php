@@ -1943,7 +1943,7 @@ class Repository extends Base\Repository
 
         $query = $this->newQuery()
             ->select($txnId, $txnBalanceId, $txnMerchantId, $txnEntityId, $txnType,
-                $txnCurrency, $txnCredit, $txnDebit, $txnFee, $txnTax, $txnOnHold)
+                $txnCurrency, $txnCredit, $txnDebit, $txnFee, $txnTax, $txnOnHold, $txnCreatedAt)
             ->where($txnBalanceId, $balance->getId())
             ->whereNotNull($txnSettledAt)
             ->where($txnSettled, 0)

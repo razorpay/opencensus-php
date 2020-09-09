@@ -127,7 +127,8 @@ class Validator extends Base\Validator
         'from'                => 'sometimes|epoch',
         'to'                  => 'sometimes|epoch|with:from',
         'transaction_ids'     => 'sometimes|array',
-        'transaction_ids.*'   => 'required|string|size:14'
+        'transaction_ids.*'   => 'required|string|size:14',
+        'initial_ramp'        => 'sometimes|bool',
     ];
 
     protected static $settlementStatusUpdateRules = [

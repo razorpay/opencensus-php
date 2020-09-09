@@ -236,8 +236,9 @@ class Core extends Base\Core
      *
      * @param Transaction\Entity $txn
      * @param Balance\Entity|null $balance
+     * @param bool $initialRamp
      */
-    public function publishForSettlement(Transaction\Entity $txn, Balance\Entity $balance = null)
+    public function publishForSettlement(Transaction\Entity $txn, Balance\Entity $balance = null, $initialRamp = false)
     {
         $meta         = null;
         $balance      = $txn->accountBalance;
@@ -289,6 +290,11 @@ class Core extends Base\Core
             'on_hold_reason'    => $onHoldReason,
             'meta'              => $meta,
         ];
+
+        if ($initialRamp === true)
+        {
+            $payload['created_at'] = $txn->getCreatedAt();
+        }
 
         try
         {
@@ -455,7 +461,7 @@ class Core extends Base\Core
                 $stat[$txn->getType()]['count']++;
                 $stat[$txn->getType()]['amount'] += $txn->getCredit() - $txn->getDebit();
 
-                $this->publishForSettlement($txn, $balance);
+                $this->publishForSettlement($txn, $balance, $opt['initial_ramp']);
             }
 
             $batch++;
