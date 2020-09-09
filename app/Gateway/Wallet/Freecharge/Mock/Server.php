@@ -109,6 +109,8 @@ class Server extends Base\Mock\Server
             $response['checksum'] = $this->generateHash($response);
         }
 
+        $this->content($response,'verify');
+
         return $this->makeResponse($response);
     }
 
@@ -135,6 +137,8 @@ class Server extends Base\Mock\Server
         {
             return $this->getErrorResponse('E018');
         }
+
+        $this->content($response,'refund');
 
         return $this->makeResponse($response);
     }

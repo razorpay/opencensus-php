@@ -15,6 +15,7 @@ use RZP\Constants\HashAlgo;
 use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Base\Verify;
 use RZP\Models\Customer\Token;
+use RZP\Gateway\Billdesk\Fields;
 use RZP\Models\Payment\Processor;
 use RZP\Gateway\Base\VerifyResult;
 use Razorpay\Trace\Logger as Trace;
@@ -321,50 +322,14 @@ class Gateway extends Base\Gateway
         }
         catch (Exception\GatewayErrorException $ex)
         {
-            //
-            // Irrespective of what the exception is, always throw
-            // it, when this is being called in a retry refund flow.
-            //
-            if ($retry === true)
-            {
-                throw new Exception\GatewayErrorException(
-                    ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR
-                );
-            }
-
-            //
-            // If the error thrown by the gateway is
-            // `unknown status` (E018 - Fatal Error),
-            // we don't throw an exception.
-            // In every other case, we throw the exception.
-            //
-            if ($this->isStatusUnknown($ex) === false)
-            {
-                throw new Exception\GatewayErrorException(
-                    ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR
-                    );
-            }
-
-            $this->trace->traceException(
-                $ex,
-                Trace::ERROR,
-                TraceCode::GATEWAY_REFUND_STATUS_UNKNOWN_SUCCESS,
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING,
+                null,
+                null,
                 [
-                    'payment_id'    => $input['payment']['id'],
-                    'refund_id'     => $input['refund']['id'],
-                    'refund_amount' => $input['refund']['amount'],
-                    'gateway'       => $this->gateway
+                    PaymentModel\Gateway::GATEWAY_RESPONSE   => json_encode($content),
+                    PaymentModel\Gateway::GATEWAY_KEYS       => $this->getGatewayData($content)
                 ]);
-
-            //
-            // Return without creating gateway refund entity as refund failed.
-            // We would create the refund for this later, via cron `create_refund_record`.
-            // For now, we would be marking this as successful on the API refund entity.
-            //
-            return [
-                PaymentModel\Gateway::GATEWAY_RESPONSE => json_encode($content),
-                PaymentModel\Gateway::GATEWAY_KEYS     => $this->getGatewayData($content)
-            ];
         }
 
         $this->verifyCheckSumForResponse($content);
@@ -387,6 +352,22 @@ class Gateway extends Base\Gateway
         else
         {
             $this->createGatewayRefundEntity($attributes);
+        }
+
+        $errorCode = $content[Fields::ERROR_CODE] ?? null;
+
+        $errorReason = $content[Fields::ERROR_REASON] ?? null;
+
+        if ((isset($content[ResponseFields::STATUS]) === false) or ($content[ResponseFields::STATUS] !== Status::TRANSACTION_SUCCESS))
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING,
+                $errorCode,
+                $errorReason,
+                [
+                    PaymentModel\Gateway::GATEWAY_RESPONSE   => json_encode($content),
+                    PaymentModel\Gateway::GATEWAY_KEYS       => $this->getGatewayData($content)
+                ]);
         }
 
         return [
@@ -463,23 +444,29 @@ class Gateway extends Base\Gateway
     public function verifyRefund(array $input)
     {
         $scroogeResponse = new GatewayBase\ScroogeResponse();
-        
-        if ($this->isUnprocessedRefund($input) === true)
+
+        list($refunded, $verifyResponse) = $this->verifyIfRefunded($input);
+
+        if ($refunded === true)
+        {
+            $wallet = $this->repo->findByRefundId($input['refund']['id']);
+
+            if ($wallet !== null)
+            {
+                $this->validateRefundOnSuccess($wallet);
+            }
+
+            return $scroogeResponse->setSuccess(true)
+                                   ->setGatewayVerifyResponse($verifyResponse)
+                                   ->toArray();
+        }
+        else
         {
             return $scroogeResponse->setSuccess(false)
-                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                   ->setGatewayVerifyResponse($verifyResponse)
+                                   ->setStatusCode(ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING)
                                    ->toArray();
         }
-
-        if ($this->isProcessedRefund($input) === true)
-        {
-            return $scroogeResponse->setSuccess(true)
-                                   ->toArray();
-        }
-
-        return $scroogeResponse->setSuccess(false)
-                               ->setStatusCode(ErrorCode::GATEWAY_ERROR_VERIFY_REFUND_NOT_SUPPORTED)
-                               ->toArray();
 
     }
 
@@ -1416,10 +1403,11 @@ class Gateway extends Base\Gateway
      */
     protected function handleRequestFailed($response)
     {
+        $content = $this->jsonToArray($response->body);
+
         if (($response->status_code === 202 ) or ((isset($content[ResponseFields::ERROR_CODE]) === true) and
-        (isset($content[ResponseFields::ERROR_CODE]) !== ResponseCode::SUCCESS_CODE)))
+            ($content[ResponseFields::ERROR_CODE] !== ResponseCode::SUCCESS_CODE)))
         {
-            $content = $this->jsonToArray($response->body);
 
             throw new Exception\GatewayErrorException(
                 ResponseCodeMap::getApiErrorCode($content[ResponseFields::ERROR_CODE]),

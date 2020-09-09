@@ -992,12 +992,19 @@ class Service extends Base\Service
 
         $refunds = $this->repo->refund->fetchMissingRefundsOfGateway($gateway, $createdAfter);
 
+        $this->trace->info(
+            TraceCode::CREATE_GATEWAY_REFUND_RECORD_CRON_REFUNDS,
+            [
+                'gateway' => $gateway,
+                'refunds' => $refunds
+            ]);
+
         $data = [];
 
         // We get all the gateway refunds. We return back data for applicable and if success.
         foreach ($refunds as $refund)
         {
-            if ($refund->isScrooge() === true and $gateway === Payment\Gateway::BILLDESK)
+            if ($refund->isScrooge() === true)
             {
                 continue;
             }
@@ -1194,6 +1201,13 @@ class Service extends Base\Service
         $repoFunc = 'fetch' . studly_case($gateway) . 'RefundsForValidation';
 
         $refunds = $this->repo->refund->$repoFunc();
+
+        $this->trace->info(
+            TraceCode::UNKNOWN_REFUND_VALIDATE_CRON_REFUNDS,
+            [
+                'gateway' => $gateway,
+                'refunds' => $refunds
+            ]);
 
         $failed = $unknown = $success = 0;
         $failedRefundData = [];

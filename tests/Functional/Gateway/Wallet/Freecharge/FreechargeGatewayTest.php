@@ -405,19 +405,13 @@ class FreechargeGatewayTest extends TestCase
     {
         $payment = $this->makeAndCapturePayment();
 
+        $this->mockContentFunction();
+
         $this->refundPayment($payment['id']);
 
         $wallet = $this->getLastEntity('wallet', true);
 
-        $this->assertEquals('INITIATED', $wallet['status_code']);
-
-        // Run the cron to verify the refund status and edit gateway refund
-        // entity status_code to SUCCESS
-        $this->startGatewayRefundValidateCron($this->gateway);
-
-        $wallet = $this->getLastEntity('wallet', true);
-
-        $this->assertTestResponse($wallet);
+        $this->assertEquals('SUCCESS', $wallet['status_code']);
     }
 
     public function testPartialRefundPayment()
@@ -428,16 +422,37 @@ class FreechargeGatewayTest extends TestCase
 
         $wallet = $this->getLastEntity('wallet', true);
 
-        $this->assertEquals('INITIATED', $wallet['status_code']);
+        $this->mockContentFunction();
 
-        // Run the cron to verify the refund status and edit gateway refund
-        // entity status_code to SUCCESS
-        $this->startGatewayRefundValidateCron($this->gateway);
-
-        $wallet = $this->getLastEntity('wallet', true);
-
-        $this->assertTestResponse($wallet);
+        $this->assertEquals('SUCCESS', $wallet['status_code']);
     }
+
+   public  function testInitiatedRefund()
+   {
+       $this->mockServerContentFunction(function (& $content, $action = null)
+       {
+           if ($action === 'verify')
+           {
+               $content['status'] = 'Failed';
+           }
+       });
+
+       $payment = $this->makeAndCapturePayment();
+
+       $refund = $this->refundPayment($payment['id']);
+
+       $refund = $this->getLastEntity('refund', true);
+
+       $this->assertEquals('created', $refund['status']);
+
+       $this->clearMock();
+
+       $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+
+       $refund = $this->getLastEntity('refund', true);
+
+       $this->assertEquals('processed', $refund['status']);
+   }
 
     protected function runPaymentCallbackFlowWalletFreecharge($response, &$callback = null)
     {
@@ -464,106 +479,6 @@ class FreechargeGatewayTest extends TestCase
         return null;
     }
 
-    public function testCreateRefundRecord()
-    {
-        $payment = $this->makeAndCapturePayment();
-
-        $refund = $this->refundPayment($payment['id'], 200);
-
-        // delete the refund gateway payment entity
-        $this->deleteGatewayRefundEntity($refund['id']);
-
-        $result = $this->startGatewayRefundRecordCron($this->gateway);
-
-        $wallet = $this->getLastEntity('wallet', true);
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals(200, $payment['amount_refunded']);
-        $this->assertEquals(
-            Refund\Entity::verifyIdAndStripSign($refund['id']),
-            $wallet['refund_id']);
-        $this->assertEquals(1, $result['total_applicable_refunds']);
-        $this->assertEquals(1, $result['total_success_refunds']);
-    }
-
-    public function testRefundRecordFailed()
-    {
-        $payment = $this->makeAndCapturePayment();
-
-        $refund = $this->refundPayment($payment['id'], 100);
-
-        // Freecharge failed this refund explicitly after initiating it
-        $data = [
-            'id'     => 'failedRefund12',
-        ];
-
-        $refund = $this->updateRefundEntity($refund['id'], $data);
-
-        $result = $this->startGatewayRefundRecordCron($this->gateway);
-
-        $this->assertEquals(1, $result['total_applicable_refunds']);
-        $this->assertEquals(0, $result['total_success_refunds']);
-    }
-
-    public function testRefundRecordFailed2()
-    {
-        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
-
-        $capturePayment = $this->doAuthAndCapturePayment($payment);
-
-        $refund = $this->refundPayment($capturePayment['id'], 100);
-
-        // When freecharge did not handle the refund request
-        // i.e Freecharge does not have any refund transaction for razorpay
-        // refund ID
-        $data = [
-            'id'     => 'failedRefund13',
-            'amount' => 300,
-        ];
-
-        $refund = $this->updateRefundEntity($refund['id'], $data);
-
-        $result = $this->startGatewayRefundRecordCron($this->gateway);
-
-        $wallet = $this->getLastEntity('wallet', true);
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals(100, $payment['amount_refunded']);
-        $this->assertequals($refund['id'], $wallet['refund_id']);
-        $this->assertEquals(1, $result['total_applicable_refunds']);
-        $this->assertEquals(1, $result['total_success_refunds']);
-    }
-
-    public function testRefundRecordAbsentRefund()
-    {
-        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
-
-        $capturePayment = $this->doAuthAndCapturePayment($payment);
-
-        $refund = $this->refundPayment($capturePayment['id'], 100);
-
-        // Freecharge failed this refund explicitly after initiating it
-        // refund fails when amount is 100, Changing it to trigger successful refund
-        $data = [
-            'id'     => 'failedRefund12',
-            'amount' => 300,
-        ];
-
-        $refund = $this->updateRefundEntity($refund['id'], $data);
-
-        (new Refund\Repository)->saveOrFail($refund);
-
-        $result = $this->startGatewayRefundRecordCron($this->gateway);
-
-        $wallet = $this->getLastEntity('wallet', true);
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals(100, $payment['amount_refunded']);
-        $this->assertequals($refund['id'], $wallet['refund_id']);
-        $this->assertEquals(1, $result['total_applicable_refunds']);
-        $this->assertEquals(1, $result['total_success_refunds']);
-    }
-
     public function deleteGatewayRefundEntity($id)
     {
         $id = Refund\Entity::verifyIdAndStripSign($id);
@@ -571,57 +486,6 @@ class FreechargeGatewayTest extends TestCase
         $wallet = $this->walletRepo->findByRefundId($id);
 
         $this->walletRepo->deleteOrFail($wallet);
-    }
-
-    public function testRefundValidationFailed()
-    {
-        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
-
-        $capturePayment = $this->doAuthAndCapturePayment($payment);
-
-        $refund = $this->refundPayment($capturePayment['id']);
-
-        // Freecharge failed this refund explicitly after initiating it
-        $data['id'] = 'failedRefund12';
-
-        $refund = $this->updateRefundEntity($refund['id'], $data);
-        $wallet = $this->getLastEntity('wallet', true);
-
-        // Run the cron to verify the refund status and edit gateway refund
-        // entity status_code to SUCCESS
-        $result = $this->startGatewayRefundValidateCron($this->gateway);
-        $newWallet = $this->getLastEntity('wallet', true);
-
-        $this->assertNotEquals(
-            $wallet['gateway_refund_id'],
-            $newWallet['gateway_refund_id']);
-        $this->assertEquals(1, $result['total_refunds']);
-        $this->assertEquals(1, $result['total_failed_refunds']);
-        $this->assertEquals(0, $result['total_success_refunds']);
-        $this->assertEquals(0, $result['total_unknown_refunds']);
-    }
-
-    public function testRefundValidationUnknown()
-    {
-        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
-
-        $capturePayment = $this->doAuthAndCapturePayment($payment);
-
-        $refund = $this->refundPayment($capturePayment['id']);
-
-        // Freecharge failed this refund explicitly after initiating it
-        $data['id'] = 'initiatedRfnd1';
-
-        $refund = $this->updateRefundEntity($refund['id'], $data);
-
-        // Run the cron to verify the refund status and edit gateway refund
-        // entity status_code to SUCCESS
-        $result = $this->startGatewayRefundValidateCron($this->gateway);
-
-        $this->assertEquals(1, $result['total_refunds']);
-        $this->assertEquals(0, $result['total_failed_refunds']);
-        $this->assertEquals(0, $result['total_success_refunds']);
-        $this->assertEquals(1, $result['total_unknown_refunds']);
     }
 
     protected function updateRefundEntity($refundId, $attributes)
@@ -680,6 +544,22 @@ class FreechargeGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function(&$input)
         {
+        });
+    }
+
+    protected function mockContentFunction()
+    {
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['status'] = 'Failed';
+            }
+
+            if ($action === 'refund')
+            {
+                $content['status'] = 'SUCCESS';
+            }
         });
     }
 }
