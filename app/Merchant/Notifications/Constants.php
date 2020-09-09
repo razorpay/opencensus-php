@@ -472,6 +472,8 @@ class Constants
             'description' => 'With Cash Advance, get access to additional source of cash at ZERO fee!',
             'start_ts'    => 1599550916,
             'end_ts'      => 1601510400,
+            'track_event' => true,
+            'id'          => 'CashAdvanceGTM',
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/cash_advance_icon.svg',
             'buttons'     => [
                 [
