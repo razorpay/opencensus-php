@@ -218,7 +218,6 @@ class Gateway extends Base\Gateway
     protected function getSecureData($input)
     {
         $date = Carbon::createFromTimestamp($input['payment'][Payment\Entity::CREATED_AT], Timezone::IST)
-                        ->addDay()
                         ->format('Y-m-d+05:30');
 
         $finalCollection = Carbon::createFromTimestamp($input['token']->getExpiredAt(), Timezone::IST)
