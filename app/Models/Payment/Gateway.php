@@ -1717,6 +1717,7 @@ class Gateway
         IFSC::IOBA => Gateway::NETBANKING_IOB,
         IFSC::FSFB => Gateway::NETBANKING_FSB,
         IFSC::JAKA => Gateway::NETBANKING_JKB,
+        IFSC::IBKL => Gateway::NETBANKING_IDBI,
     ];
 
     /**

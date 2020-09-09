@@ -36,4 +36,12 @@ return [
         'REAL'               => 'Y',
         'ITC'                => 'RAZORPAY'
     ],
-];
+    'testIdbiSuccessRecon' => [
+        'Bank'                          => 'IDBI',
+        'TRANSACTIONDATE'               => '',
+        'PaymentGateway'                => 'RAZORPAY',
+        'TransactionAmount'             => '500.00',
+        'PaymentGatewayReferenceNumber' => '',
+        'BankTransactionReferenceNo'    => '1234'
+        ]
+    ];

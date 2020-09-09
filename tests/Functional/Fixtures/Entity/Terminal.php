@@ -2610,7 +2610,7 @@ class Terminal extends Base
             'netbanking'           => 1,
         ];
 
-        $attributes = array_merge($defaultValues,$attributes);
+        $attributes = array_merge($defaultValues, $attributes);
 
         return $this->create($attributes);
     }

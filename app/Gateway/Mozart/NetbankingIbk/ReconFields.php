@@ -17,15 +17,15 @@ class ReconFields
     const PAID_STATUS       = 'Paidstatus';
 
     const ReconFields = [
-        self::PID,            
-        self::BILLER_NAME,    
-        self::DATE_TIME,      
+        self::PID,
+        self::BILLER_NAME,
+        self::DATE_TIME,
         self::MERCHANT_REF_NO,
-        self::AMOUNT,         
-        self::CUSTOMER_NO,    
-        self::DATE_BANK,   
-        self::BANK_REF_NO,  
-        self::JOURNAL_NO, 
+        self::AMOUNT,
+        self::CUSTOMER_NO,
+        self::DATE_BANK,
+        self::BANK_REF_NO,
+        self::JOURNAL_NO,
         self::PAID_STATUS,
     ];
 }
