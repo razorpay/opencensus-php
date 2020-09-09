@@ -58,6 +58,10 @@ class PaperMandatePaymentTest extends TestCase
         $this->assertEquals($payment->getPublicId(), $response['razorpay_payment_id'] ?? null);
 
         $this->assertNotNull($response['razorpay_signature']);
+
+        $invoice = $this->getDbLastEntity('invoice');
+
+        $this->assertEquals('pending', $invoice->toArrayPublic()['auth_link_status'] ?? null);
     }
 
     public function testCreatePaymentForNachAuto()
