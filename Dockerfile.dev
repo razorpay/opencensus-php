@@ -4,6 +4,9 @@ FROM razorpay/onggi:php-7.2-apache-api
 
 COPY --from=wkhtmltopdf /bin/wkhtmltopdf /usr/bin/wkhtmltopdf
 
+RUN pear config-set php_ini /etc/php7/php.ini
+RUN pecl install opencensus-alpha
+
 VOLUME ['/app']
 
 WORKDIR /app

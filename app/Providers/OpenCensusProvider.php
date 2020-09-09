@@ -1,0 +1,115 @@
+<?php
+
+// reference: https://opencensus.io/api/php
+// https://github.com/nenad/opencensus-php/tree/master/src
+
+namespace RZP\Providers;
+
+use RZP\Constants\Tracing;
+
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Route;
+
+use OpenCensus\Trace\Exporter\JaegerExporter;
+use OpenCensus\Trace\Tracer;
+use OpenCensus\Trace\Integrations\Laravel;
+use OpenCensus\Trace\Integrations\PDO;
+use OpenCensus\Trace\Integrations\Redis;
+use OpenCensus\Trace\Integrations\Curl;
+use OpenCensus\Trace\Propagator\JaegerPropagator;
+
+
+class OpenCensusProvider extends ServiceProvider
+{
+    public function boot()
+    {
+        if ((php_sapi_name() == 'cli') or
+            ($this->app['config']->get('applications.jaeger.enabled') === false)
+           )
+        {
+            return;
+        }
+
+        // Enable OpenCensus extension integrations
+        PDO::load();
+        Redis::load();
+        Curl::load();
+
+        Route::matched(function($event){
+            $currentRoute = $event->route;
+            $spanOptions = self::getSpanOptions($currentRoute);
+
+            $propagator = new JaegerPropagator();
+            $tracerOptions = ['propagator'          => $propagator,
+                                'root_span_options' => $spanOptions];
+
+            $serviceName = Tracing::getServiceName($this->app);
+
+            $jaegeOptions = ['host' =>  $this->app['config']->get('applications.jaeger.host'),
+                             'port' =>  $this->app['config']->get('applications.jaeger.port')];
+
+            Tracer::start(new JaegerExporter($serviceName, $jaegeOptions), $tracerOptions);
+        });
+    }
+
+    private function getSpanOptions($route)
+    {
+        $parametrizedRoute = $route->uri();
+
+        $attrs = Tracing::getBasicSpanAttributes($this->app);
+
+        $spanOptions = ['name' => $parametrizedRoute, 'attributes' => $attrs];
+
+        /*
+        route parameters that need to go as a main attribute name,
+        to be able to do tag search/aggregate go here.
+
+        Following map allows renaming of them, to standardize across routes.
+        */
+
+        $routeParamTagMap = ['merchantId'       => 'merchants_id',
+                                'merchant_id'   => 'merchants_id',
+                                'mid'           => 'merchants_id',
+                                'paymentId'     => 'payments_id',
+                                'payment_id'    => 'payments_id',
+                                'gateway'       => 'gateway',
+                                'bank'          => 'bank',
+                                'channel'       => 'channel',
+                                'customer_id'   => 'customers_id'
+                            ];
+
+        // extract route parameters and add them as span attributes
+        $routeParamPrefix = 'http.route.params.';
+        if($route->hasParameters())
+        {
+            foreach ($route->parameters as $key => $value)
+            {
+                $spanOptions['attributes'][$routeParamPrefix . $key] = $value;
+
+                if (array_key_exists($key, $routeParamTagMap))
+                {
+                    $attrName = $routeParamTagMap[$key];
+                    $spanOptions['attributes'][$attrName] = $value;
+                }
+            }
+        }
+
+        // if route has pattern "/<resourceName>/{id}" in it, add <resourceName>_id as span attribute
+        // handles /payments/{id}, /customers/{id}, /merchants/{id}, /refunds/{id} etc
+
+        // if there are multiple {id}'s in route, take only the first
+
+        if (strpos($parametrizedRoute, '{id}') !== false)
+        {
+            $routeParts = explode('/', $parametrizedRoute);
+            $resourceIndex = array_search('{id}', $routeParts)-1;
+            if ($resourceIndex >= 0)
+            {
+                $resourceName = $routeParts[$resourceIndex];
+                $spanOptions['attributes'][$resourceName . '_id'] = $route->parameters['id'];
+            }
+        }
+
+        return $spanOptions;
+    }
+}

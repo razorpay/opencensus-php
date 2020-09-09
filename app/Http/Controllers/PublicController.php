@@ -6,8 +6,11 @@ use View, Request, ApiResponse;
 use Illuminate\Support\Facades\DB;
 
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 use RZP\Base\JitValidator;
 use RZP\Services\EsClient;
+use RZP\Http\Request\Requests;
+
 
 class PublicController extends Controller
 {
@@ -15,6 +18,31 @@ class PublicController extends Controller
     {
         $response['message'] = "Welcome to Razorpay API.";
 
+        return ApiResponse::json($response);
+    }
+
+    // test route - will be removed
+    public function makeExternalRequest()
+    {
+
+        $url = $_SERVER['REQUEST_URI'];
+        $urlInfo = parse_url($url);
+
+        // redis test
+        $cache = $this->app['redis']->connection();
+        $cache->set('url', $url);
+        $cachedUrl = $cache->get('url');
+
+        // trace propagation test
+        if (!array_key_exists('query', $urlInfo)){
+            $rurl = 'http://localhost:80/_external_request?foo=bar';
+        }else{
+            $rurl = 'https://httpbin.org/get';
+        }
+        $r = Requests::request($rurl) ;
+
+        $response = [];
+        $response['body'] = $r->body;
         return ApiResponse::json($response);
     }
 

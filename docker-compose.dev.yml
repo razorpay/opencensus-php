@@ -1,5 +1,13 @@
 version: '2.2'
 services:
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.18
+    environment:
+      COLLECTOR_ZIPKIN_HTTP_PORT: 9411
+    ports:
+      - 16686:16686
+
   api:
     build:
       context: .
@@ -72,6 +80,7 @@ services:
       HEIMDALL_WORKFLOWS_MOCK: "false"
       MUTEX_MOCK: "false"
       APP_MODE: dev
+      JAEGER_HOST: 'jaeger'
   api_db:
     image: mysql:5.7
     ports:

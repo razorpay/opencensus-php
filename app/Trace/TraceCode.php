@@ -3297,6 +3297,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const PAYMENTS_BULK_FETCH = 'PAYMENTS_BULK_FETCH';
 
+    // Tracing error logs
+    const OPENCENSUS_ERROR = 'OPENCENSUS_ERROR';
+
     // Logs for tracing payout to amex failures
     const PAYOUT_TO_AMEX_FAILURE = 'PAYOUT_TO_AMEX_FAILURE';
 

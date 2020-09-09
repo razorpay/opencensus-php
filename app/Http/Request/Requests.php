@@ -2,7 +2,13 @@
 
 namespace RZP\Http\Request;
 
+
 use Requests as Req;
+use RZP\Trace\Tracer;
+
+use OpenCensus\Trace\Span;
+use OpenCensus\Trace\SpanContext;
+use OpenCensus\Trace\Propagator\ArrayHeaders;
 
 class Requests
 {
@@ -65,13 +71,93 @@ class Requests
 
     const TRACE_REQUEST_FEATURE = 'request_trace';
 
+    private static function getRequestSpanOptions(string $url)
+    {
+        $urlInfo = parse_url($url);
+
+        $name = $urlInfo['host'];
+
+        if (array_key_exists('path', $urlInfo)){
+            $name = $name . $urlInfo['path'];
+        }
+
+        $spanOptions = ['name' => $name,
+                        'kind'=> Span::KIND_CLIENT,
+                        'sameProcessAsParentSpan' => false
+                    ];
+
+        $attrs = [];
+        if (array_key_exists('query', $urlInfo)){
+            parse_str($urlInfo['query'], $queryParams);
+            $attrs += $queryParams;
+        }
+
+        $spanOptions['attributes'] = $attrs;
+        return $spanOptions;
+    }
+
+    private static function wrapRequestInSpan($methodName, $methodArgs, $defaultSpanOptions = array())
+    {
+        $response = null;
+        $span = Tracer::startSpan($defaultSpanOptions);
+        $scope = Tracer::withSpan($span);
+
+        // inject spanContext into trace propagation headers
+        $headers = [];
+        if(count($methodArgs) > 1)
+        {
+            $headers = $methodArgs[1];
+        }
+
+        $arrHeaders = new ArrayHeaders($headers);
+        Tracer::injectContext($arrHeaders);
+        $headers = $arrHeaders->toArray();
+        $methodArgs[1] = $headers;
+
+        $methodTag = ($methodName == 'request') ? $methodArgs[3] : $methodName;
+        $span->addAttribute('http.method', $methodTag);
+
+        // handle actual request
+        try
+        {
+            $response = Req::$methodName(...$methodArgs);
+        }
+        catch(\Throwable $e)
+        {
+            $span->addAttribute('error', 'true');
+            throw $e;
+        }
+
+        if (!is_null($response))
+        {
+            // add response status as a span tags
+            $statusCode = $response->status_code;
+            $span->addAttribute('http.status_code', $statusCode);
+            if ($statusCode >= 400)
+            {
+                $span->addAttribute('error', 'true');
+            }
+        }
+
+        $scope->close();
+        return $response;
+    }
+
     public static function request($url, $headers = array(), $data = array(), $type = self::GET, $options = array())
     {
         $hooks = new Hooks($url);
 
         $hooks->addCurlProperties($options);
 
-        return Req::request($url, $headers, $data, $type, $options);
+        $spanOptions = self::getRequestSpanOptions($url);
+
+        $response = self::wrapRequestInSpan(
+                        'request',
+                        array($url, $headers, $data, $type, $options),
+                        $spanOptions
+                    );
+
+        return $response;
     }
 
     public static function get($url, $headers = array(), $options = array())
@@ -80,62 +166,133 @@ class Requests
 
         $hooks->addCurlProperties($options);
 
-        return Req::get($url, $headers, $options);
+        $spanOptions = self::getRequestSpanOptions($url);
+
+        $response = self::wrapRequestInSpan(
+                        'get',
+                        array($url, $headers, $options),
+                        $spanOptions
+                    );
+
+        return $response;
     }
 
-    public static function head($url, $headers = array(), $options = array()) {
+    public static function head($url, $headers = array(), $options = array())
+    {
         $hooks = new Hooks($url);
 
         $hooks->addCurlProperties($options);
 
-        return Req::head($url, $headers, $options);
+        $spanOptions = self::getRequestSpanOptions($url);
+
+        $response = self::wrapRequestInSpan(
+                        'head',
+                        array($url, $headers, $options),
+                        $spanOptions
+                    );
+
+        return $response;
     }
 
-    public static function delete($url, $headers = array(), $options = array()) {
+    public static function delete($url, $headers = array(), $options = array())
+    {
         $hooks = new Hooks($url);
 
         $hooks->addCurlProperties($options);
 
-        return Req::delete($url, $headers, $options);
+        $spanOptions = self::getRequestSpanOptions($url);
+
+        $response = self::wrapRequestInSpan(
+                        'delete',
+                        array($url, $headers, $options),
+                        $spanOptions
+                    );
+
+        return $response;
     }
 
-    public static function trace($url, $headers = array(), $options = array()) {
+    public static function trace($url, $headers = array(), $options = array())
+    {
         $hooks = new Hooks($url);
 
         $hooks->addCurlProperties($options);
 
-        return Req::trace($url, $headers, $options);
+        $spanOptions = self::getRequestSpanOptions($url);
+
+        $response = self::wrapRequestInSpan(
+                        'trace',
+                        array($url, $headers, $options),
+                        $spanOptions
+                    );
+
+        return $response;
     }
 
-    public static function post($url, $headers = array(), $data = array(), $options = array()) {
+    public static function post($url, $headers = array(), $data = array(), $options = array())
+    {
         $hooks = new Hooks($url);
 
         $hooks->addCurlProperties($options);
 
-        return Req::post($url, $headers, $data, $options);
+        $spanOptions = self::getRequestSpanOptions($url);
+
+        $response = self::wrapRequestInSpan(
+                        'post',
+                        array($url, $headers, $data, $options),
+                        $spanOptions
+                    );
+
+        return $response;
     }
 
-    public static function put($url, $headers = array(), $data = array(), $options = array()) {
+    public static function put($url, $headers = array(), $data = array(), $options = array())
+    {
         $hooks = new Hooks($url);
 
         $hooks->addCurlProperties($options);
 
-        return Req::put($url, $headers, $data, $options);
+        $spanOptions = self::getRequestSpanOptions($url);
+
+        $response = self::wrapRequestInSpan(
+                        'put',
+                        array($url, $headers, $data, $options),
+                        $spanOptions
+                    );
+
+        return $response;
     }
 
-    public static function options($url, $headers = array(), $data = array(), $options = array()) {
+    public static function options($url, $headers = array(), $data = array(), $options = array())
+    {
         $hooks = new Hooks($url);
 
         $hooks->addCurlProperties($options);
 
-        return Req::options($url, $headers, $data, $options);
+        $spanOptions = self::getRequestSpanOptions($url);
+
+        $response = self::wrapRequestInSpan(
+                        'options',
+                        array($url, $headers, $data, $options),
+                        $spanOptions
+                    );
+
+        return $response;
     }
 
-    public static function patch($url, $headers, $data = array(), $options = array()) {
+    public static function patch($url, $headers, $data = array(), $options = array())
+    {
         $hooks = new Hooks($url);
 
         $hooks->addCurlProperties($options);
 
-        return Req::patch($url, $headers, $data, $options);
+        $spanOptions = self::getRequestSpanOptions($url);
+
+        $response = self::wrapRequestInSpan(
+                        'patch',
+                        array($url, $headers, $data, $options),
+                        $spanOptions
+                    );
+
+        return $response;
     }
 }

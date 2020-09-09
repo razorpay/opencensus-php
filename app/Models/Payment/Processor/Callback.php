@@ -23,6 +23,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Card\IIN;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Trace\Tracer;
 use RZP\Models\UpiMandate;
 use RZP\Gateway\GooglePay;
 use RZP\Models\Transaction;
@@ -50,7 +51,7 @@ trait Callback
      * @return Payment\Entity Updated payment entity
      * @throws Exception\BadRequestException
      */
-    public function callback($id, $hash, array $gatewayInput)
+    private function coreCallback($id, $hash, array $gatewayInput)
     {
         $gatewayInputLog = $gatewayInput;
 
@@ -85,6 +86,26 @@ trait Callback
 
         $response = $this->acquireLockAndProcessCallback($payment, $gatewayInput);
 
+        return $response;
+    }
+
+    /**
+     * Wrap logic of `coreCallback` with tracing instrumentation
+     *
+     * @param string $id Payment id
+     * @param string $hash
+     * @param array  $gatewayInput contains fields provided
+     *                             by bank
+     *
+     * @return Payment\Entity Updated payment entity
+     * @throws Exception\BadRequestException
+     */
+    public function callback($id, $hash, array $gatewayInput)
+    {
+        $response = Tracer::inSpan(['name' => 'payment.callback'],
+            function() use ($id, $hash, $gatewayInput){
+                return $this->coreCallback($id, $hash, $gatewayInput);
+            });
         return $response;
     }
 

@@ -29,6 +29,7 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Address;
 use RZP\Trace\TraceCode;
+use RZP\Trace\Tracer;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency;
 use RZP\Models\Merchant;
@@ -93,7 +94,7 @@ trait Authorize
      *
      * @return array
      */
-    public function authorize(Payment\Entity $payment, array $input, array $gatewayInput = []): array
+    private function coreAuthorize(Payment\Entity $payment, array $input, array $gatewayInput = []): array
     {
         $this->verifyMerchantIsLiveForLiveRequest();
 
@@ -145,6 +146,24 @@ trait Authorize
         $this->runPaymentInputValidations($payment, $input);
 
         return $this->gatewayRelatedProcessing($payment, $input, $gatewayInput);
+    }
+
+    /**
+     * Wrap core logic of `coreAuthorize` with tracing instrumentation
+     *
+     * @param Payment\Entity $payment
+     * @param array          $input
+     * @param array          $gatewayInput
+     *
+     * @return array
+     */
+    public function authorize(Payment\Entity $payment, array $input, array $gatewayInput = []): array
+    {
+        $response = Tracer::inSpan(['name' => 'payment.authorize'],
+            function() use ($payment, $input, $gatewayInput){
+                return $this->coreAuthorize($payment, $input, $gatewayInput);
+            });
+        return $response;
     }
 
     //

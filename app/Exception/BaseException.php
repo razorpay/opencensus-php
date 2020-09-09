@@ -5,6 +5,7 @@ namespace RZP\Exception;
 use Exception;
 use ApiResponse;
 use RZP\Error\Error;
+use RZP\Trace\Tracer;
 
 class BaseException extends Exception
 {
@@ -42,6 +43,14 @@ class BaseException extends Exception
         $this->setError($error);
 
         $this->setData($data);
+
+        $this->setTracingAttributes();
+    }
+
+    protected function setTracingAttributes()
+    {
+        Tracer::addAttribute('error', 'true');
+        Tracer::addAttribute('error.code', $this->code);
     }
 
     protected function setError($error)

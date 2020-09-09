@@ -102,6 +102,18 @@ if you pull master, api will now need redis-cluster to run locally.
   last container in docker-compose.dev.yml (https://github.com/razorpay/api/blob/master/docker-compose.dev.yml#L122-L129 ). just run make build after making this change.
 * if you get error `No connections available in the pool` in docker setup. run `make build` again.
 
+### Setup distributed tracing
+
+* Set `DISTRIBUTED_TRACING_ENABLED` to 'true' in the respective `environment/.env.<xxx>` file.
+* Opencensus lib is already taken care by `composer.json`.
+  Install Opencensus extension by running following:
+
+        pear config-set php_ini /etc/php7/php.ini
+        pecl install opencensus-alpha
+
+* Run `jaegertracing/all-in-one:1.18` container on docker.
+
+
 # Docs
 
 To generate documentation, run the following:

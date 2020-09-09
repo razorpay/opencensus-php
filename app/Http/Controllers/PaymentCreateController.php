@@ -17,6 +17,7 @@ use RZP\Constants\Environment;
 use RZP\Diag\EventCode;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Trace\Tracer;
 
 class PaymentCreateController extends Controller
 {
@@ -129,7 +130,7 @@ class PaymentCreateController extends Controller
                 ->with('data', $templateData);
     }
 
-    protected function createPayment()
+    protected function coreCreatePayment()
     {
         $input = Request::all();
 
@@ -152,6 +153,16 @@ class PaymentCreateController extends Controller
         $this->logResponseIfApplicable($response);
 
         return $response;
+    }
+
+    /*
+     * Wrap core logic of `coreCreatePayment` with tracing instrumentation
+     */
+    protected function createPayment()
+    {
+        return Tracer::inSpan(['name' => 'payment.create'], function() {
+           return $this->coreCreatePayment();
+        });
     }
 
     /**
@@ -908,13 +919,18 @@ class PaymentCreateController extends Controller
 
                 if ($responseToTrace !== null)
                 {
-                    $this->trace->info(
-                        TraceCode::PAYMENT_CREATED_RESPONSE,
-                        [
+                    $traceContext = [
                             'response'      => $responseToTrace,
                             'merchant_id'   => $merchant->getId(),
                             'route_name'    => $this->app['router']->currentRouteName(),
-                        ]);
+                        ];
+                    $this->trace->info(
+                        TraceCode::PAYMENT_CREATED_RESPONSE,
+                        $traceContext
+                    );
+                    foreach ($traceContext as $key => $value) {
+                        Tracer::addAttribute($key, $value);
+                    }
                 }
             }
         }

@@ -16,6 +16,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Currency;
 use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
+use RZP\Trace\Tracer;
 use RZP\Models\Transaction;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Partner\Commission;
@@ -37,7 +38,7 @@ trait Capture
      *
      * @return Payment\Entity Payment\Entity object
      */
-    public function capture(Payment\Entity $payment, array $input = [])
+    private function coreCapture(Payment\Entity $payment, array $input = [])
     {
         $inputTrace = $input;
 
@@ -85,6 +86,23 @@ trait Capture
         $data = $this->getCaptureData($payment, $amount, $currency);
 
         $this->dispatchAsyncCapture($data);
+    }
+
+    /**
+     * Wrap logic of `coreCapture` with tracing instrumentation
+     *
+     * @param Payment\Entity $payment to be captured
+     * @param  array         $input
+     *
+     * @return Payment\Entity Payment\Entity object
+     */
+    public function capture(Payment\Entity $payment, array $input = [])
+    {
+        return Tracer::inSpan(['name' => 'payment.capture'],
+            function() use ($payment, $input){
+                return $this->coreCapture($payment, $input);
+            }
+        );
     }
 
     /**

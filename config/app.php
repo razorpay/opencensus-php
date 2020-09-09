@@ -177,8 +177,10 @@ return array(
         RZP\Services\ApiServiceProvider::class,
         RZP\Providers\EventServiceProvider::class,
         RZP\Providers\RouteServiceProvider::class,
+        RZP\Providers\OpenCensusProvider::class,
         RZP\Http\BasicAuth\ServiceProvider::class,
         RZP\Services\DashboardServiceProvider::class,
+
         // Makes blade sharper
         RZP\Providers\KnifeServiceProvider::class,
         \Conner\Tagging\Providers\TaggingServiceProvider::class,

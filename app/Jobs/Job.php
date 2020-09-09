@@ -12,6 +12,7 @@ use Razorpay\Trace\Logger;
 use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Trace\Tracer;
 
 class Job implements ShouldQueue
 {
@@ -125,7 +126,15 @@ class Job implements ShouldQueue
 
     public function handle()
     {
-        $this->init();
+        $attrs = ['jobName'         =>  $this->jobName,
+                    'mode'          =>  $this->mode,
+                    'originProduct' =>  $this->originProduct,
+                    'taskId'        =>  $this->taskId
+                ];
+
+        Tracer::inSpan(['name' => 'SQS/init', 'attributes' => $attrs], function() {
+           $this->init();
+        });
     }
 
     /**

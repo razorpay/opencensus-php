@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "280e0fb6bddbb01b18f1038ce141ec41",
+    "content-hash": "63aca3296611309cb3482a8404ddd4fb",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -64,6 +64,47 @@
                 "source": "https://github.com/razorpay/laravel-settings/tree/v0.5.5"
             },
             "time": "2020-06-11T16:18:36+00:00"
+        },
+        {
+            "name": "apache/thrift",
+            "version": "0.11.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/apache/thrift.git",
+                "reference": "327ebb6c2b6df8bf075da02ef45a2a034e9b79ba"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/apache/thrift/zipball/327ebb6c2b6df8bf075da02ef45a2a034e9b79ba",
+                "reference": "327ebb6c2b6df8bf075da02ef45a2a034e9b79ba",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": []
+            },
+            "autoload": {
+                "psr-0": {
+                    "Thrift": "lib/php/lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Apache Thrift Developers",
+                    "email": "dev@thrift.apache.org",
+                    "homepage": "http://thrift.apache.org"
+                }
+            ],
+            "description": "Apache Thrift RPC system",
+            "homepage": "http://thrift.apache.org/",
+            "time": "2017-12-03T17:27:58+00:00"
         },
         {
             "name": "aws/aws-sdk-php",
@@ -426,6 +467,122 @@
                 "push"
             ],
             "time": "2019-11-26T16:14:39+00:00"
+        },
+        {
+            "name": "cache/adapter-common",
+            "version": "1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-cache/adapter-common.git",
+                "reference": "6320bb5f5574cb88438059b59f8708da6b6f1d32"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-cache/adapter-common/zipball/6320bb5f5574cb88438059b59f8708da6b6f1d32",
+                "reference": "6320bb5f5574cb88438059b59f8708da6b6f1d32",
+                "shasum": ""
+            },
+            "require": {
+                "cache/tag-interop": "^1.0",
+                "php": "^5.6 || ^7.0",
+                "psr/cache": "^1.0",
+                "psr/log": "^1.0",
+                "psr/simple-cache": "^1.0"
+            },
+            "require-dev": {
+                "cache/integration-tests": "^0.16",
+                "phpunit/phpunit": "^5.7.21"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.1-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Cache\\Adapter\\Common\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Aaron Scherer",
+                    "email": "aequasi@gmail.com",
+                    "homepage": "https://github.com/aequasi"
+                },
+                {
+                    "name": "Tobias Nyholm",
+                    "email": "tobias.nyholm@gmail.com",
+                    "homepage": "https://github.com/Nyholm"
+                }
+            ],
+            "description": "Common classes for PSR-6 adapters",
+            "homepage": "http://www.php-cache.com/en/latest/",
+            "keywords": [
+                "cache",
+                "psr-6",
+                "tag"
+            ],
+            "time": "2018-07-08T13:04:33+00:00"
+        },
+        {
+            "name": "cache/tag-interop",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-cache/tag-interop.git",
+                "reference": "c7496dd81530f538af27b4f2713cde97bc292832"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-cache/tag-interop/zipball/c7496dd81530f538af27b4f2713cde97bc292832",
+                "reference": "c7496dd81530f538af27b4f2713cde97bc292832",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^5.5 || ^7.0",
+                "psr/cache": "^1.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.0-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Cache\\TagInterop\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Tobias Nyholm",
+                    "email": "tobias.nyholm@gmail.com",
+                    "homepage": "https://github.com/Nyholm"
+                },
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com",
+                    "homepage": "https://github.com/nicolas-grekas"
+                }
+            ],
+            "description": "Framework interoperable interfaces for tags",
+            "homepage": "http://www.php-cache.com/en/latest/",
+            "keywords": [
+                "cache",
+                "psr",
+                "psr6",
+                "tag"
+            ],
+            "time": "2017-03-13T09:14:27+00:00"
         },
         {
             "name": "cebe/markdown",
@@ -3865,7 +4022,7 @@
             "time": "2017-07-22T07:25:06+00:00"
         },
         {
-            "name": "mikey179/vfsStream",
+            "name": "mikey179/vfsstream",
             "version": "v1.3.0",
             "source": {
                 "type": "git",
@@ -4460,6 +4617,127 @@
                 "validation"
             ],
             "time": "2016-08-09T11:04:18+00:00"
+        },
+        {
+            "name": "opencensus/opencensus",
+            "version": "v0.7.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/razorpay/opencensus-php.git",
+                "reference": "2e5ee2366ef81642586c5dc990223a481eb854a4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/razorpay/opencensus-php/zipball/2e5ee2366ef81642586c5dc990223a481eb854a4",
+                "reference": "2e5ee2366ef81642586c5dc990223a481eb854a4",
+                "shasum": ""
+            },
+            "archive": {
+                "exclude": [
+                    "ext/",
+                    "scripts/"
+                ]
+            },
+            "require": {
+                "cache/adapter-common": "^1.0",
+                "php": ">=7.0",
+                "psr/cache": "^1.0",
+                "psr/log": "^1.0"
+            },
+            "conflict": {
+                "ext-opencensus": "< 0.1.0"
+            },
+            "require-dev": {
+                "guzzlehttp/guzzle": "^5 || ^6",
+                "guzzlehttp/psr7": "^1.4",
+                "phpunit/phpunit": "^5.0",
+                "squizlabs/php_codesniffer": "2.*",
+                "symfony/yaml": "^3.3",
+                "twig/twig": "~2.0 || ~1.35"
+            },
+            "suggest": {
+                "cache/apc-adapter": "Enable QpsSampler to use apc cache.",
+                "cache/apcu-adapter": "Enable QpsSampler to use apcu cache.",
+                "cache/memcached-adapter": "Enable QpsSampler to use memcached cache.",
+                "ext-json": "For using LoggerExporter",
+                "ext-opencensus": "Enable tracing arbitrary functions.",
+                "opencensus/opencensus-exporter-jaeger": "Export data to Jaeger",
+                "opencensus/opencensus-exporter-stackdriver": "Export data to Stackdriver",
+                "opencensus/opencensus-exporter-zipkin": "Export data to Zipkin"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "OpenCensus\\": "src/"
+                }
+            },
+            "scripts": {
+                "tests": [
+                    "scripts/run_local_tests.sh"
+                ]
+            },
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Jeff Ching",
+                    "email": "chingor@google.com"
+                },
+                {
+                    "name": "Bas van Beek",
+                    "email": "bas.vanbeek@gmail.com"
+                }
+            ],
+            "description": "OpenCensus Trace Client for PHP",
+            "support": {
+                "source": "https://github.com/razorpay/opencensus-php/tree/v0.7.3"
+            },
+            "time": "2020-07-29T05:28:43+00:00"
+        },
+        {
+            "name": "opencensus/opencensus-exporter-jaeger",
+            "version": "v0.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/census-ecosystem/opencensus-php-exporter-jaeger.git",
+                "reference": "29480c3e77a4e7a1359cd9e66e32da7446d18bb6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/census-ecosystem/opencensus-php-exporter-jaeger/zipball/29480c3e77a4e7a1359cd9e66e32da7446d18bb6",
+                "reference": "29480c3e77a4e7a1359cd9e66e32da7446d18bb6",
+                "shasum": ""
+            },
+            "require": {
+                "apache/thrift": "^0.11",
+                "ext-sockets": "*",
+                "opencensus/opencensus": "~0.4",
+                "php-64bit": ">=5.6"
+            },
+            "require-dev": {
+                "guzzlehttp/guzzle": "~6.0",
+                "phpunit/phpunit": "^5.0",
+                "squizlabs/php_codesniffer": "2.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "OpenCensus\\Trace\\Exporter\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Jeff Ching",
+                    "email": "chingor@google.com"
+                }
+            ],
+            "description": "OpenCensus Jaeger Exporter for PHP",
+            "time": "2018-11-26T18:31:31+00:00"
         },
         {
             "name": "paragonie/random_compat",
@@ -6157,17 +6435,17 @@
             ],
             "authors": [
                 {
+                    "name": "Ben Ramsey",
+                    "email": "ben@benramsey.com",
+                    "homepage": "https://benramsey.com"
+                },
+                {
                     "name": "Marijn Huizendveld",
                     "email": "marijn.huizendveld@gmail.com"
                 },
                 {
                     "name": "Thibaud Fabre",
                     "email": "thibaud@aztech.io"
-                },
-                {
-                    "name": "Ben Ramsey",
-                    "email": "ben@benramsey.com",
-                    "homepage": "https://benramsey.com"
                 }
             ],
             "description": "Formerly rhumsaa/uuid. A PHP 5.4+ library for generating RFC 4122 version 1, 3, 4, and 5 universally unique identifiers (UUID).",
@@ -11202,5 +11480,6 @@
         "php": ">=7.1",
         "ext-gmp": "*"
     },
-    "platform-dev": []
+    "platform-dev": [],
+    "plugin-api-version": "1.1.0"
 }
