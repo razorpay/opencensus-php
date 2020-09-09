@@ -2140,6 +2140,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PARTNER_CONFIG_EDITED                                 = 'PARTNER_CONFIG_EDITED';
     const SUBMERCHANT_PROMOTIONAL_PRICING_PLAN                  = 'SUBMERCHANT_PROMOTIONAL_PRICING_PLAN';
 
+    const SUBMERCHANT_ACCOUNT_CREATE_RESPONSE                   = 'SUBMERCHANT_ACCOUNT_CREATE_RESPONSE';
+
+    const RATE_LIMIT_BATCH_PARTNER_SUBMERCHANT_INVITE           = 'RATE_LIMIT_BATCH_PARTNER_SUBMERCHANT_INVITE';
+
     const FEE_CREDITS_THRESHOLD_ALERT                           = 'FEE_CREDITS_THRESHOLD_ALERT';
 
     // Excel reader debug trace codes

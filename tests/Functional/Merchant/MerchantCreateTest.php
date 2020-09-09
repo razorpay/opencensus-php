@@ -17,6 +17,8 @@ use RZP\Models\Settlement\Channel;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Pricing\DefaultPlan;
+use Illuminate\Support\Facades\Redis;
+use RZP\Models\Partner\RateLimitBatch;
 use RZP\Models\Merchant\Methods\Entity;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Mail\User\LinkedAccountUserAccess;
@@ -650,6 +652,66 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals(1, count($mapping));
 
         $this->verifyAccessMapEntries($app, $submerchant);
+    }
+
+    public function testCreateSubMerchantByAggregatorBatch()
+    {
+        Mail::fake();
+
+        $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
+
+        $configAttributes = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $redis = Redis::connection('mutex_redis')->client();
+
+        $redisKey = (new RateLimitBatch())->getRateLimitRedisKey("10000000000000");
+
+        $response = $this->startTest();
+
+        $submerchant = $this->getLastEntity('merchant', true);
+
+        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], 'MerchantUser01');
+
+        $this->assertEquals(1, count($mapping));
+
+        $this->verifyAccessMapEntries($app, $submerchant);
+
+        $counter = $redis->get($redisKey);
+
+        $this->assertEquals(1, $counter);
+
+        $submerchantUser = $this->getLastEntity('user', true);
+
+        $this->assertEquals('testsub@razorpay.com', $submerchantUser['email']);
+    }
+
+    public function testCreateSubMerchantByAggregatorBatchRatelimitExceeded()
+    {
+        Mail::fake();
+
+        $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
+
+        $configAttributes = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $redis = Redis::connection('mutex_redis')->client();
+
+        $redisKey = (new RateLimitBatch())->getRateLimitRedisKey("10000000000000");
+
+        $counter = $redis->set($redisKey, RateLimitBatch::THRESHOLD_RATE_LIMIT_COUNT+1);
+
+        $this->startTest();
     }
 
     public function testCreateSubMerchantByAggregatorWithDefaultPaymentMethods()

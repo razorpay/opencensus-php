@@ -6,6 +6,8 @@ use RZP\Models\Merchant;
 
 class Constants
 {
+    const RATE_LIMIT_SUBMERCHANT_INVITE_BATCH_PREFIX  = 'rate_limit_submerchant_invite_batch_prefix:';
+
     /**
      * List of partner types that can get a settlement on behalf of a submerchant
      *

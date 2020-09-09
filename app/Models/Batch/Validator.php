@@ -115,6 +115,13 @@ class Validator extends Base\Validator
         Entity::SCHEDULE                => 'sometimes|numeric',
     ];
 
+    protected static $partnerSubmerchantInviteCreateRules = [
+        Entity::TYPE                    => 'required|in:partner_submerchant_invite',
+        Entity::NAME                    => 'filled|string|max:255',
+        Entity::FILE                    => 'required_without:file_id|file|max:60720' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID                 => 'required_without:file|public_id',
+    ];
+
     protected static $paymentLinkV2CreateRules = [
         Entity::TYPE                    => 'required|in:payment_link_v2',
         Entity::NAME                    => 'filled|string|max:255',

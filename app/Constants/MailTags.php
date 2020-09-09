@@ -77,6 +77,9 @@ class MailTags
     const BATCH_MERCHANT_ONBOARDING_FILE   = 'batch_merchant_onboarding_file';
     const BATCH_BANKING_ACCOUNT_ACTIVATION_COMMENTS_FILE
                                            = 'batch_banking_account_activation_comments_file';
+
+    const BATCH_PARTNER_SUBMERCHANT_INVITE_FILE = 'batch_partner_submerchant_invite_file';
+
     const PAYOUT_APPROVAL                  = 'payout_approval';
 
     const PAYMENT_SUCCESSFUL               = 'payment_successful';

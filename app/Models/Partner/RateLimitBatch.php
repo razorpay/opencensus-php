@@ -1,0 +1,100 @@
+<?php
+
+namespace RZP\Models\Partner;
+
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Base;
+use RZP\Models\Merchant\Entity;
+use RZP\Models\Merchant\Service as MerchantService;
+use RZP\Trace\TraceCode;
+
+class RateLimitBatch extends Base\Core
+{
+    protected $redis;
+
+    const RATE_LIMIT_TTL = 86400; // 24 hours
+
+    const THRESHOLD_RATE_LIMIT_COUNT = 10000;
+
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->redis = $this->app['redis']->Connection('mutex_redis');
+    }
+
+    public function partnerSubmerchantInvite(Entity $merchant, array $input)
+    {
+        $allow = $this->allowPartnerToAddSubmerchant($merchant);
+
+        if ($allow === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_DAILY_LIMIT_SUBMERCHANT_INVITE_EXCEEDED, null,
+                                          ['merchant_id' => $merchant->getMerchantId(), 'email' => $merchant->getEmail(),]);
+        }
+
+        $this->incrementRateLimitCount($merchant);
+
+        $merchantService = new MerchantService;
+
+        $output = $merchantService->createSubMerchant($input, $merchant);
+
+        $data = [
+            'account_id'   => $output['id'] ?? null,
+            'account_name' => $output['name'] ?? null,
+            'email'        => $output['email'] ?? null
+        ];
+
+        $this->trace->info(TraceCode::SUBMERCHANT_ACCOUNT_CREATE_RESPONSE, $data);
+
+        return $data;
+    }
+
+    public function allowPartnerToAddSubmerchant(Entity $merchant)
+    {
+        $value = $this->getRateLimitCount($merchant);
+
+        if ($value > self::THRESHOLD_RATE_LIMIT_COUNT)
+        {
+            $data = [
+                'count'                 => $value,
+                'merchant_id'           => $merchant->getId(),
+                'merchant_name'         => $merchant->getName(),
+            ];
+
+            $this->trace->info(TraceCode::RATE_LIMIT_BATCH_PARTNER_SUBMERCHANT_INVITE, $data);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getRateLimitCount(Entity $merchant): int
+    {
+        $rateLimitRedisKey = $this->getRateLimitRedisKey($merchant->getMerchantId());
+
+        return $this->redis->get($rateLimitRedisKey) ?? 0;
+    }
+
+    public function getRateLimitRedisKey(string $merchantId): string
+    {
+        return Constants::RATE_LIMIT_SUBMERCHANT_INVITE_BATCH_PREFIX . $merchantId;
+    }
+
+    public function incrementRateLimitCount(Entity $merchant)
+    {
+        $rateLimitRedisKey = $this->getRateLimitRedisKey($merchant->getMerchantId());
+
+        $index = $this->redis->incr($rateLimitRedisKey);
+
+        // add expiry for first increment of the key
+        if ($index == 1)
+        {
+            $this->redis->expire($rateLimitRedisKey, self::RATE_LIMIT_TTL);
+        }
+    }
+
+}

@@ -230,6 +230,7 @@ class Route
         'merchant_edit_config_logo'                => ['post',     'account/config/logo',                            'MerchantController@postMerchantConfigLogo'                         ],
         'merchant_delete_config_logo'              => ['delete',   'account/config/logo',                            'MerchantController@deleteMerchantConfigLogo'                       ],
         'merchant_sub_create'                      => ['post',     'submerchants',                                   'MerchantController@postCreateSubMerchant'                          ],
+        'merchant_sub_create_batch'                => ['post',     'submerchants/batch',                             'MerchantController@postCreateSubMerchantViaBatch'                  ],
         'merchant_sub_send_password_link'          => ['post',     'submerchants/{id}/reset_password',               'MerchantController@sendSubmerchantPasswordResetLink'               ],
         'merchant_pre_signup_details'              => ['get',      'pre_signup',                                     'MerchantController@getPreSignupDetails'                            ],
         'merchant_edit_pre_signup_details'         => ['put',      'pre_signup',                                     'MerchantController@putPreSignupDetails'                            ],
@@ -2335,6 +2336,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'merchant_sub_create_batch',
         'currency_fetch_rates_internal',
         'loc_mail',
         'cps_backfill_entities',
@@ -5214,6 +5216,7 @@ class Route
             'subscription_registration_nach_migration',
             'invoice_create',
             'batch_send_mail',
+            'merchant_sub_create_batch',
             'bulk_invoice_create',
             'bulk_contact_create',
             'bulk_submerchant_assign',

@@ -37,6 +37,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postCreateSubMerchantViaBatch()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createSubMerchantViaBatch($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postSwitchProductMerchant()
     {
         $this->service()->switchProductMerchant();

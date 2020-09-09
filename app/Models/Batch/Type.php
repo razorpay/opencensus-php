@@ -83,6 +83,8 @@ class Type
 
     const PARTNER_SUBMERCHANTS  = 'partner_submerchants';
 
+    const PARTNER_SUBMERCHANT_INVITE = 'partner_submerchant_invite';
+
     const CONTACT               = 'contact';
 
     const FUND_ACCOUNT          = 'fund_account';
@@ -334,6 +336,7 @@ class Type
         self::MPAN,
         self::REFUND,
         self::ADJUSTMENT,
+        self::PARTNER_SUBMERCHANT_INVITE,
     ];
 
     /**
@@ -366,6 +369,7 @@ class Type
         self::INTERNAL_INSTRUMENT_REQUEST,
         self::ADJUSTMENT,
         self::CAPTURE_SETTING,
+        self::PARTNER_SUBMERCHANT_INVITE,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data

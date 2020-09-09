@@ -56,6 +56,7 @@ use RZP\Services\SalesForceClient;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Partner\RateLimitBatch;
 use RZP\Models\Settlement\SettlementTrait;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Mail\Base\Constants as MailConstants;
@@ -135,6 +136,17 @@ class Service extends Base\Service
        $this->app['terminals_service']->requestDefaultMerchantInstruments($merchant->getId());
 
         return $merchantData;
+    }
+
+    public function createSubMerchantViaBatch(array $input)
+    {
+        $merchantId = $this->app['request']->header(RequestHeader::X_ENTITY_ID) ?? null;
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $data = (new RateLimitBatch())->partnerSubmerchantInvite($merchant, $input);
+
+        return $data;
     }
 
     /**

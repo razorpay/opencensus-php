@@ -60,6 +60,7 @@ class Limit
         Type::TERMINAL_CREATION                     => 5000,
         Type::MERCHANT_ACTIVATION                   => 5000,
         Type::CAPTURE_SETTING                       => 1100000,
+        Type::PARTNER_SUBMERCHANT_INVITE            => 50000,
     ];
 
     /**

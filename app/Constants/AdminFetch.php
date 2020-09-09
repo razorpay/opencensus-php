@@ -295,7 +295,8 @@ class AdminFetch
                         'merchant_status_action',
                         'admin_batch',
                         'merchant_activation',
-                        'banking_account_activation_comments'
+                        'banking_account_activation_comments',
+                        'partner_submerchant_invite',
                     ],
                 ],
             ],
