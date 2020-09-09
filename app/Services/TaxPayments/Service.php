@@ -25,14 +25,17 @@ use RZP\Models\Settings\Service as SettingsService;
  */
 class Service
 {
-    const BASE_PATH                = 'twirp/razorpay.vendorpayments.taxpayments.Taxpayments';
-    const GET_ALL_SETTINGS         = 'GetAllSettings';
-    const ADD_OR_UPDATE_SETTINGS   = 'AddOrUpdateSettings';
-    const GET_TAX_PAYMENT_BY_ID    = 'GetTaxPayment';
-    const LIST_TAX_PAYMENTS        = 'ListTaxPayments';
-    const PAY_TAX_PAYMENTS         = 'PayTaxPayment';
+    // MS endpoints
+    const BASE_PATH                 = 'twirp/razorpay.vendorpayments.taxpayments.Taxpayments';
+    const GET_ALL_SETTINGS          = 'GetAllSettings';
+    const ADD_OR_UPDATE_SETTINGS    = 'AddOrUpdateSettings';
+    const GET_TAX_PAYMENT_BY_ID     = 'GetTaxPayment';
+    const LIST_TAX_PAYMENTS         = 'ListTaxPayments';
+    const PAY_TAX_PAYMENTS          = 'PayTaxPayment';
     const BULK_PAY_TAX_PAYMENTS    = 'BulkPayTaxPayments';
+    const CANCEL_QUEUED_PAYOUT_CRON = 'CancelQueuedPayoutCron';
     const INITIATE_MONTHLY_PAYOUTS = 'InitiateMonthlyPayouts';
+    const MONTHLY_SUMMARY          = 'MonthlySummary';
     const ADMIN_ACTIONS            = 'AdminActions';
     const EMAIL_CRON               = 'EmailCron';
     const TAX_PAYMENT_ENABLED_KEY  = 'tax_payment_enabled';
@@ -40,18 +43,18 @@ class Service
     const UPLOAD_CHALLAN           = 'UploadChallan';
     const EDIT_TP                  = 'EditTp';
 
-    const DATA                     = 'data';
-    const TEMPLATE_NAME            = 'template_name';
-    const SUBJECT                  = 'subject';
-    const NAME                     = 'name';
-    const TYPE                     = 'type';
-    const ACCOUNT_NUMBER           = 'account_number';
-    const BALANCE                  = 'balance';
-    const MERCHANT_ID              = 'merchant_id';
-    const SETTINGS                 = 'settings';
-    const BANKING_ACCOUNT          = 'banking_account';
-    const MERCHANT_EMAIL           = 'merchant_email';
-
+    // general constants
+    const DATA                      = 'data';
+    const TEMPLATE_NAME             = 'template_name';
+    const SUBJECT                   = 'subject';
+    const NAME                      = 'name';
+    const TYPE                      = 'type';
+    const ACCOUNT_NUMBER            = 'account_number';
+    const BALANCE                   = 'balance';
+    const MERCHANT_ID               = 'merchant_id';
+    const SETTINGS                  = 'settings';
+    const BANKING_ACCOUNT           = 'banking_account';
+    const MERCHANT_EMAIL            = 'merchant_email';
 
     protected $app;
 
@@ -83,6 +86,13 @@ class Service
                                                $input[self::DATA]));
 
         return ['success' => true];
+    }
+
+    public function monthlySummary(MerchantEntity $merchant)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::MONTHLY_SUMMARY);
+
+        return $this->makeRequest($merchant, $url, []);
     }
 
     public function mailCron(array $input)
@@ -177,6 +187,13 @@ class Service
     public function initiateMonthlyPayouts()
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::INITIATE_MONTHLY_PAYOUTS);
+
+        return $this->makeRequest(null, $url, ['time' => now()]);
+    }
+
+    public function cancelQueuedPayouts()
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CANCEL_QUEUED_PAYOUT_CRON);
 
         return $this->makeRequest(null, $url, ['time' => now()]);
     }

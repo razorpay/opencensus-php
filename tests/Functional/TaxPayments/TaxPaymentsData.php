@@ -384,6 +384,18 @@ return [
             'content' => []
         ]
     ],
+    'testInternalPayoutCancelAPI'                                         => [
+        'request'  => [
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'method' => 'POST',
+            'url'    => '',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
     'testEnabledMerchantSettingInternalApiCall'                           => [
         'request'  => [
             'method'  => 'GET',
@@ -454,10 +466,28 @@ return [
             'content' => []
         ]
     ],
+    'testQueuedPayoutCronAPICallsServiceMethod'                           => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/tax-payments/cancelQueuedPayouts',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
     'testSendMailServiceMethodIsCalled'                                   => [
         'request'  => [
             'method' => 'POST',
             'url'    => '/tax-payments/sendMail',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testMonthlySummaryServiceMethodIsCalled'                             => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/tax-payments/_meta/summary',
         ],
         'response' => [
             'content' => []
@@ -571,7 +601,7 @@ return [
             ],
             'url'     => '/tax-payments/mark-as-paid',
             'content' => [
-                'tax_payment_id'         => ['txpy_F2qwMZe97QTGG1'],
+                'tax_payment_id' => ['txpy_F2qwMZe97QTGG1'],
                 'manually_paid_metadata' => [
                     'notes1' => 'smoething'
                 ],

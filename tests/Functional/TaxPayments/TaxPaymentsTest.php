@@ -258,6 +258,38 @@ class TaxPaymentsTest extends TestCase
         $tpMock->shouldHaveReceived('bulkPayTaxPayment');
     }
 
+    public function testInternalPayoutCancelAPI()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $payout = $this->fixtures->create('payout', ['status' => 'queued']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf('/payouts_internal/%s/cancel', $payout->getPublicId());
+
+        $this->startTest();
+
+        $payout = $this->getDbEntity('payout', ['id' => $payout->getId()]);
+
+        $this->assertEquals(Status::CANCELLED, $payout->getStatus());
+
+    }
+
+    public function testQueuedPayoutCronAPICallsServiceMethod()
+    {
+        $this->ba->appAuthTest($this->config['applications.cron.secret']);
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
+
+        $tpMock->shouldReceive('cancelQueuedPayouts')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('cancelQueuedPayouts');
+
+    }
+
     public function testPayoutInternalPayoutRouteFailsWhenFundAccountIdMissing()
     {
         $this->setUpMerchantForBusinessBanking(false, 10000000);
@@ -417,6 +449,21 @@ class TaxPaymentsTest extends TestCase
         $this->startTest();
 
         $tpMock->shouldHaveReceived('sendMail');
+    }
+
+    public function testMonthlySummaryServiceMethodIsCalled()
+    {
+        $this->ba->proxyAuth();
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
+
+        $tpMock->shouldReceive('monthlySummary')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('monthlySummary');
     }
 
     public function testSendEmailValidation()

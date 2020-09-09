@@ -14,6 +14,16 @@ class TaxPaymentController extends Controller
         $this->service = $this->app['tax-payments'];
     }
 
+    public function cancelQueuedPayouts()
+    {
+        return $this->service->cancelQueuedPayouts();
+    }
+
+    public function monthlySummary()
+    {
+        return $this->service->monthlySummary($this->ba->getMerchant());
+    }
+    
     public function adminActions()
     {
         return $this->service->adminActions($this->input);
