@@ -2,6 +2,8 @@
 
 namespace RZP\Services;
 
+use Config;
+
 use Requests;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -10,6 +12,7 @@ use RZP\Constants\Environment;
 use RZP\Models\FundAccount\Type;
 use RZP\Http\Response\StatusCode;
 use RZP\Models\PayoutLink\Entity;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\PayoutLink\Validator;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Vpa\Entity as VpaEntity;
@@ -148,7 +151,11 @@ class PayoutLinks
 
         $response = $this->makeRequest($url, $request);
 
-        return array_pull($response, self::MODE, []);
+        $settings = array_pull($response, self::MODE, []);
+
+        $this->processSettingsParameters($settings);
+
+        return $settings;
     }
 
     public function updateSettings(string $merchantId, array $input)
@@ -165,9 +172,17 @@ class PayoutLinks
             self::MODE         => $input
         ];
 
+        $oldSettings = $this->getSettings($merchantId);
+
         $response = $this->makeRequest($url, $request);
 
-        return array_pull($response, self::MODE, []);
+        $newSettings = array_pull($response, self::MODE, []);
+
+        $this->processSettingsParameters($newSettings);
+
+        $this->notifySettingsChangeOnSlack($merchantId, $oldSettings, $newSettings);
+
+        return $newSettings;
     }
 
     public function cancel(string $payoutLinkId)
@@ -671,6 +686,17 @@ class PayoutLinks
 
     }
 
+    protected function processSettingsParameters(array &$settings)
+    {
+        $impsValue = array_pull($settings, Entity::IMPS, "true");
+
+        $settings[Entity::IMPS] = boolval($impsValue);
+
+        $upiValue = array_pull($settings, Entity::UPI, "true");
+
+        $settings[Entity::UPI] = boolval($upiValue);
+    }
+
     protected function appendPublicSignForPayoutLink(string $payoutlinkid) : string
     {
         if(!str_contains($payoutlinkid, 'poutlk_'))
@@ -682,4 +708,100 @@ class PayoutLinks
             return $payoutlinkid;
         }
     }
+
+    protected function notifySettingsChangeOnSlack(string $merchantId, array $oldSettings, array $newSettings)
+    {
+        $validKeysForSlackNotification = [Entity::IMPS, Entity::UPI];
+
+        foreach ($validKeysForSlackNotification as $key)
+        {
+            //not stopping the UpdateSettings request Logging the error
+            try
+            {
+                if(array_key_exists($key, $newSettings) === true)
+                {
+                    $isValueChanged = $this->isValueChanged($key, $oldSettings, $newSettings);
+
+                    if($isValueChanged === true)
+                    {
+                        $this->sendSlackNotification($merchantId, $key, $newSettings[$key]);
+                    }
+                }
+            }
+            catch (\Exception $exception)
+            {
+                $this->trace->traceException(
+                    $exception,
+                    Trace::ERROR,
+                    TraceCode::PAYOUT_LINK_SETTINGS_SLACK_NOTIFICATION_FAILED,
+                    [
+                        'failed_slack_notification_key' => $key,
+                        'merchant_id' => $merchantId,
+                    ]);
+            }
+
+        }
+    }
+
+    protected function isValueChanged(string $key, array $oldArray, array $newArray)
+    {
+        $isValueChanged = false;
+
+        $oldArrayValue = array_pull($oldArray, $key);
+
+        $newArrayValue = array_pull($newArray, $key, $oldArrayValue);
+
+        if ($oldArrayValue !== $newArrayValue)
+        {
+            $isValueChanged = true;
+        }
+
+        return $isValueChanged;
+    }
+
+    protected function sendSlackNotification(string $merchantId, string $key, $newValue)
+    {
+        $message = 'Payout Mode ';
+
+        $message .= $key;
+
+        if (boolval($newValue) === true)
+        {
+            $message .= ' enabled for ';
+        }
+        else
+        {
+            $message .= ' disabled for ';
+        }
+
+        $user = $this->getInternalUsernameOrEmail();
+
+        $message .= $merchantId . ' by ' . $user;
+
+        $this->trace->info(
+            TraceCode::PAYOUT_LINK_SETTINGS_UPDATE_SLACK_NOTIFICATION,
+            [
+                'merchant_id' => $merchantId,
+                'message'     => $message
+            ]
+        );
+
+        $this->app['slack']->queue(
+            $message,
+            [],
+            [
+                'channel'  => Config::get('slack.channels.operations_log'),
+                'username' => 'Jordan Belfort',
+                'icon'     => ':boom:'
+            ]
+        );
+    }
+
+    private function getInternalUsernameOrEmail()
+    {
+        $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
+
+        return $dashboardInfo['admin_username'] ?? $dashboardInfo['user_email'] ?? 'DASHBOARD_INTERNAL';
+    }
+
 }
