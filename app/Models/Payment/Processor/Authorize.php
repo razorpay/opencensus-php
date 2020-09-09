@@ -764,14 +764,7 @@ trait Authorize
             }
         }
 
-        $data = ['razorpay_payment_id' => $payment->getPublicId()];
-
-        if ($payment->hasOrder())
-        {
-            $this->fillReturnDataWithOrder($payment, $data);
-        }
-
-        return $data;
+        return ['razorpay_payment_id' => $payment->getPublicId()];
     }
 
     protected function processPaymentFinal(Payment\Entity $payment, array & $gatewayInput, array $data): array

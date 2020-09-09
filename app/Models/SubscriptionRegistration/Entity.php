@@ -5,9 +5,7 @@ namespace RZP\Models\SubscriptionRegistration;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
-use RZP\Models\Order;
 use RZP\Models\Invoice;
-use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\PaperMandate;
@@ -259,32 +257,6 @@ class Entity extends Base\PublicEntity
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
-    }
-
-    public function getAuthLinkStatus(Invoice\Entity $invoice, Order\Entity $order)
-    {
-        $invoiceStatus = $invoice->getStatus();
-
-        if ($invoiceStatus === Invoice\Status::ISSUED)
-        {
-            //
-            // if any payment created for auth link
-            // is still not in terminal status then
-            // auth link status should be pending
-            //
-            $payments = $order->payments;
-
-            foreach ($payments as $payment)
-            {
-                if (($payment->getStatus() === Payment\Status::CREATED) or
-                    ($payment->getStatus() === Payment\Status::AUTHORIZED))
-                {
-                    return SubscriptionRegistrationConstants::PENDING;
-                }
-            }
-        }
-
-        return $invoiceStatus;
     }
 
     public function getAttempts()

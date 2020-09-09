@@ -371,10 +371,6 @@ class SubscriptionRegistrationTest extends TestCase
         $this->assertEquals($payment->getStatus(), "authorized");
 
         $this->assertEquals($order->getStatus(), "attempted");
-
-        $invoice = $this->getDbLastEntity('invoice');
-
-        $this->assertEquals('pending', $invoice->toArrayPublic()['auth_link_status'] ?? null);
     }
 
     public function testPayAuthLink()

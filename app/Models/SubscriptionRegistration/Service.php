@@ -537,9 +537,11 @@ class Service extends Base\Service
 
             $this->repo->paper_mandate->saveOrFail($paperMandate);
 
+            // assign the merchant with private auth for further processing
             // this route is called from admin
             $this->merchant = $this->repo->merchant->findOrFail($paperMandateUpload->merchant->getId());;
             $this->app['basicauth']->setMerchant( $this->merchant);
+            $this->app['basicauth']->setBasicType(BasicAuth\Type::PUBLIC_AUTH);
 
             // create payment
             $this->createPaymentForPaperMandate($input);
@@ -656,22 +658,11 @@ class Service extends Base\Service
 
             $paymentInput[Payment\Entity::AUTH_TYPE]   = $subscriptionRegistration->getAuthType();
 
-            $this->app['basicauth']->setBasicType(BasicAuth\Type::PUBLIC_AUTH);
-
-            $key = $this->repo->key->getFirstActiveKeyForMerchant($this->merchant->getId());
-
-            if (empty($key) === false)
-            {
-                $publicKey = $key->getPublicKey($this->mode);
-
-                $this->app['basicauth']->setAuthDetailsUsingPublicKey($publicKey);
-            }
-
             $paymentService = new Payment\Service();
 
             $payment = $paymentService->process($paymentInput);
         }
-        catch (\Throwable $ex) {
+        catch (Exception\BadRequestValidationFailureException | \Throwable $ex) {
             $this->trace->traceException(
                 $ex,
                 Trace::ERROR,

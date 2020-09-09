@@ -185,7 +185,6 @@ class Entity extends Base\PublicEntity
     const SUPPLY_STATE_NAME        = 'supply_state_name';
     const BILLING_ADDRESS_TEXT     = 'billing_address_text';
     const SHIPPING_ADDRESS_TEXT    = 'shipping_address_text';
-    const AUTH_LINK_STATUS         = 'auth_link_status';
 
     const DEFAULT_DUE_DAYS         = 60;
 
@@ -635,16 +634,6 @@ class Entity extends Base\PublicEntity
         }
 
         $order = $this->order;
-
-        if ($order !== null)
-        {
-            $tokenRegistration = $order->getTokenRegistration();
-
-            if ($tokenRegistration !== null)
-            {
-                $publicArray[self::AUTH_LINK_STATUS] = $tokenRegistration->getAuthLinkStatus($this, $order);
-            }
-        }
 
         if (($order !== null) and
             ($order->getMethod() === Payment\Method::NACH))
