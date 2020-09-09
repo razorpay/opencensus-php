@@ -61,6 +61,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FILE_STORE_ID);
     }
 
+    public function getPublicFileStoreId()
+    {
+        return 'file_'.$this->getAttribute(self::FILE_STORE_ID);
+    }
+
     public function getDocumentType()
     {
         return $this->getAttribute(self::DOCUMENT_TYPE);

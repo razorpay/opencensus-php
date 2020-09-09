@@ -17,7 +17,7 @@ class Core extends Base\Core
      * @param string $documentType
      * @param array  $input
      */
-    public function Verify(string $merchantId, string $documentType, array $input)
+    public function verify(string $merchantId, string $documentType, array $input)
     {
         $input[Constant::OWNER_ID] = $merchantId;
 

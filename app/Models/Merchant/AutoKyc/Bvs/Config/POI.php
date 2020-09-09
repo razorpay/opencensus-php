@@ -7,7 +7,7 @@ class POI extends BaseConfig
     protected $enrichment = [
         'online_provider' => [
             'required_fields' => [
-                'pan_owner_name'
+                'name'
             ],
         ],
     ];
@@ -18,7 +18,7 @@ class POI extends BaseConfig
             '0' => [
                 'rule_type' => 'string_comparison_rule',
                 'rule_def'  => [
-                    'fuzzy_match' => [
+                    'fuzzy_wuzzy' => [
                         [
                             'var' => 'artefact.details.name.value'
                         ],

@@ -39,7 +39,7 @@ class KafkaMessageProcessor extends Job
 
             switch ($topicName) {
                 //
-                //BVS Validation Results
+                // BVS Validation Results
                 //
                 case self::API_BVS_EVENTS:
                     $core = new Core();

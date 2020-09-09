@@ -10,10 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\AutoKyc;
 use RZP\Exception\BadRequestException;
-use RZP\Models\FileStore\Core as FileStoreCore;
-use RZP\Models\Merchant\AutoKyc\Verifiers\POAVerifier;
 use RZP\Models\Merchant\Detail\Constants as DetailConstant;
-use RZP\Models\Merchant\AutoKyc\MozartService\ProcessorFactoryImpl;
 
 class Core extends Base\Core
 {
@@ -127,7 +124,7 @@ class Core extends Base\Core
 
             $document = $uploadedDocuments[$documentType];
 
-            $this->handleAndPerformOcrForUnRegisteredBusinessType(
+            $this->PerformOcrIfApplicable(
                 $merchantDetails,
                 $document,
                 $merchant);
@@ -225,12 +222,11 @@ class Core extends Base\Core
         return $documentsResponse;
     }
 
-    protected function handleAndPerformOcrForUnRegisteredBusinessType(
+    protected function PerformOcrIfApplicable(
         Merchant\Detail\Entity $merchantDetails,
         Entity $document,
         Merchant\Entity $merchant)
     {
-
         $merchantCore = new Merchant\Core();
 
         if ((Type::isDocumentTypeToPerformOcr($document->getDocumentType()) === false) or
@@ -239,7 +235,14 @@ class Core extends Base\Core
             return;
         }
 
-        $this->verifyPOA($document, $merchantDetails);
+        if ((new Detail\Core())->isOcrEnabledThroughBvs($merchantDetails) === true)
+        {
+            (new Detail\Core())->performOcrWithBvs($document, $merchantDetails);
+        }
+        else
+        {
+            $this->verifyPOA($document, $merchantDetails);
+        }
 
         $this->trace->count(Detail\Metric::MERCHANT_DOCUMENT_OCR_PERFORMED_TOTAL,
                             [

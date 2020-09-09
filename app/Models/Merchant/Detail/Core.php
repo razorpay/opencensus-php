@@ -34,7 +34,9 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\LegalEntity;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Jobs\OnboardingKycVerification;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Action as Action;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
@@ -243,7 +245,8 @@ class Core extends Base\Core
      */
     public function updatePoaVerificationStatusIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant) : void
     {
-        if ((new Merchant\Core)->isAutoKycEnabled($merchantDetails, $merchant) === false)
+        if (((new Merchant\Core)->isAutoKycEnabled($merchantDetails, $merchant) === false) or
+            ($this->isOcrEnabledThroughBvs($merchantDetails) === true))
         {
             return;
         }
@@ -655,7 +658,6 @@ class Core extends Base\Core
      */
     protected function verifyPOIDetailsIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant, array $input)
     {
-
         if ((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false)
         {
             $merchantDetails->setPoiVerificationStatus(null);
@@ -2887,5 +2889,44 @@ class Core extends Base\Core
         }
 
         return $activationFlow;
+    }
+
+    /**
+     * @param Document\Entity $document
+     * @param Entity          $merchantDetails
+     */
+    public function performOcrWithBvs(Document\Entity $document, Entity $merchantDetails)
+    {
+        $payload = [
+            Constant::ARTEFACT_TYPE => Constant::AADHAAR,
+            Constant::DETAILS       => [
+                Constant::NAME => $merchantDetails->getPromoterPanName(),
+            ],
+            Constant::PROOFS        => [
+                '3' => [Constant::UFH_FILE_ID => $document->getPublicFileStoreId()],
+            ],
+        ];
+
+        (new AutoKyc\Bvs\Core())->verify($merchantDetails->getId(), DEConstants::POA, $payload);
+    }
+
+    /**
+     * Route controlled traffic to BVS
+     * if 1) business should be unregistered and
+     *    2) a) experiment is enabled
+     *
+     * @param Entity $merchantDetails
+     *
+     * @return bool
+     */
+    public function isOcrEnabledThroughBvs(Entity $merchantDetails): bool
+    {
+        $variant = $this->app->razorx->getTreatment($merchantDetails->getId(),
+                                                    RazorxTreatment::BVS_AUTO_KYC_OCR,
+                                                    $this->mode
+        );
+
+        return (($merchantDetails->isUnregisteredBusiness() === false) and
+                (strtolower($variant) === 'on'));
     }
 }

@@ -76,7 +76,7 @@ class Core extends Base\Core
                 ],
             ];
 
-            (new Bvs\Core())->Verify($entity->getEntityId(), DEConstants::POI, $payload);
+            (new Bvs\Core())->verify($entity->getEntityId(), DEConstants::POI, $payload);
         }
 
         $response = $this->process($poiInput, DEConstants::POI);

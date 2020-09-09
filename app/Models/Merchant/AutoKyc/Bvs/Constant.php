@@ -20,6 +20,7 @@ class Constant
     const OWNER_TYPE  = 'owner_type';
     const PROOFS      = 'proofs';
     const NOTES       = 'notes';
+    const UFH_FILE_ID = 'ufh_file_id';
 
     //
     // Response fields

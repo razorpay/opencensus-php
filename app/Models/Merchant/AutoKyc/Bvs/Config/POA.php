@@ -4,7 +4,7 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs\Config;
 
 class POA extends BaseConfig
 {
-    private $enrichment = [
+    protected $enrichment = [
         "ocr" => [
             "required_fields" => [
                 "name",
@@ -12,30 +12,20 @@ class POA extends BaseConfig
         ],
     ];
 
-    private $rule = [
-        "version"   => "v1",
-        "rule_list" => [
+    protected $rule = [
+        "version"    => "v1",
+        "rules_list" => [
             "0" => [
                 "rule_type" => "string_comparison_rule",
                 "rule_def"  => [
-                    "equals" => [
+                    "fuzzy_wuzzy" => [
                         [
                             "var" => "artefact.details.name.value",
                         ],
                         [
-                            "var" => "enrichments.ocr.details.1.name.value",
-                        ]
-                    ],
-                ],
-            ],
-            "1" => [
-                "rule_type" => "numeric_rule",
-                "rule_def"  => [
-                    ">" => [
-                        [
-                            "var" => "enrichments.ocr.details.1.name.score",
+                            "var" => "enrichments.ocr.details.3.name.value",
                         ],
-                        0.97
+                        70
                     ],
                 ],
             ],
