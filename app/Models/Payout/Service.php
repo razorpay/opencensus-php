@@ -112,12 +112,14 @@ class Service extends Base\Service
 
         if ($isCompositePayout === true)
         {
-            $payout = $this->createCompositePayoutToFundAccount($input);
+            $input = $this->createContactAndFundAccountAndGetPayoutInputForCompositeRequest($input);
         }
 
-        else
+        $payout = $this->core->createPayoutToFundAccount($input, $this->merchant, null, $internal);
+
+        if ($isCompositePayout === true)
         {
-            $payout = $this->core->createPayoutToFundAccount($input, $this->merchant, null, $internal);
+            $payout = $this->postCreationProcessingForCompositePayout($payout);
         }
 
         return $payout->toArrayPublic();
@@ -1145,7 +1147,7 @@ class Service extends Base\Service
      *
      * @return array
      */
-    protected function getPayoutInputForCompositeRequest(array $input): array
+    protected function createContactAndFundAccountAndGetPayoutInputForCompositeRequest(array $input): array
     {
         $traceRequest = $this->unsetSensitiveCardDetails($input);
 
@@ -1153,23 +1155,17 @@ class Service extends Base\Service
 
         (new Validator)->validateInput(Validator::FUND_ACCOUNT_PAYOUT_COMPOSITE, $input);
 
-        $compositeInput = $this->repo->transaction(
-            function () use ($input)
-            {
-                $contactData = $this->createContactForCompositePayout($input);
+        $contactData = $this->createContactForCompositePayout($input);
 
-                $contactId = $contactData[Contact\Entity::ID];
+        $contactId = $contactData[Contact\Entity::ID];
 
-                $fundAccountData = $this->createFundAccountForCompositePayout($input, $contactId);
+        $fundAccountData = $this->createFundAccountForCompositePayout($input, $contactId);
 
-                $fundAccountId = $fundAccountData[FundAccount\Entity::ID];
+        $fundAccountId = $fundAccountData[FundAccount\Entity::ID];
 
-                $payoutInput = $this->getInputForPayoutCreateFromComposite($input, $fundAccountId);
+        $payoutInput = $this->getInputForPayoutCreateFromComposite($input, $fundAccountId);
 
-                return $payoutInput;
-            });
-
-        return $compositeInput;
+        return $payoutInput;
     }
 
     // @TODO: refactor this/move it to FundAccount entity.
@@ -1327,66 +1323,27 @@ class Service extends Base\Service
         $validator->validateUpdateAction($payoutUpdateAction);
     }
 
-    protected function createCompositePayoutToFundAccount(array $input)
+    protected function postCreationProcessingForCompositePayout(Entity $compositePayout)
     {
-        /** @var Balance\Entity $balance */
-        $balance = $this->repo->balance->findOrFailById($input[Balance\Entity::BALANCE_ID]);
+        $this->trace->info(
+            TraceCode::COMPOSITE_PAYOUT_CREATED,
+            [
+                'payout_id'       => $compositePayout->getId(),
+                'fund_account_id' => $compositePayout->fundAccount->getId(),
+                'contact_id'      => $compositePayout->fundAccount->source->getId(),
+            ]);
 
-        $feeType = null;
+        // Setting $composite field for payout entity to deny unsetting of fund_account field in a
+        // strictPrivateAuth composite payout request
+        $compositePayout->setComposite(true);
 
-        if ($balance->getType() === Balance\Type::BANKING)
-        {
-            $feeType = $this->core->updateFreePayoutsConsumedAndGetFeeType($balance);
-        }
+        $compositePayout = $compositePayout->load('fundAccount.contact');
 
-        try
-        {
-            $payout = $this->repo->transaction(
-                function() use ($input, $feeType, $balance)
-                {
-                    $input = $this->getPayoutInputForCompositeRequest($input);
+        // Setting $composite field for fund_account entity to deny unsetting of contact field in a
+        // strictPrivateAuth composite payout request
+        $compositePayout->fundAccount->setComposite(true);
 
-                    if ($balance->getType() === Balance\Type::BANKING)
-                    {
-                        $input = array_merge($input, [Payout\Entity::FEE_TYPE => $feeType]);
-                    }
-
-                    /** @var Entity $payout */
-                    $payout = $this->core->createPayoutToFundAccount($input, $this->merchant);
-
-                    $this->trace->info(
-                        TraceCode::COMPOSITE_PAYOUT_CREATED,
-                        [
-                            'payout_id'       => $payout->getId(),
-                            'fund_account_id' => $payout->fundAccount->getId(),
-                            'contact_id'      => $payout->fundAccount->source->getId(),
-                        ]);
-
-                    // Setting $composite field for payout entity to deny unsetting of fund_account field in a
-                    // strictPrivateAuth composite payout request
-                    $payout->setComposite(true);
-
-                    $payout = $payout->load('fundAccount.contact');
-
-                    // Setting $composite field for fund_account entity to deny unsetting of contact field in a
-                    // strictPrivateAuth composite payout request
-                    $payout->fundAccount->setComposite(true);
-
-                    return $payout;
-                }
-            );
-
-            return $payout;
-        }
-
-        catch (\Throwable $throwable)
-        {
-            $balanceId = $input[Balance\Entity::BALANCE_ID];
-
-            (new Payout\Core)->decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable($balanceId, $feeType);
-
-            throw $throwable;
-        }
+        return $compositePayout;
     }
 
     public function getFreePayoutsAttributes(string $balanceId)

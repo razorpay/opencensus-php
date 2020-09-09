@@ -156,10 +156,12 @@ class CompositePayoutTest extends TestCase
 
         $contacts = $this->getDbEntities('contact');
 
-        // Assert that none of contact, fund account or payout are created.
+        // Assert that none of fund account or payout are created.
         $this->assertEquals(count($payouts), 0);
         $this->assertEquals(count($fundAccounts), 0);
-        $this->assertEquals(count($contacts), 0);
+
+        // Assert that contact is created even though the request failed.
+        $this->assertEquals(count($contacts), 1);
     }
 
     public function testCreateCompositePayoutWithPayoutValidationFailure()
@@ -277,5 +279,76 @@ class CompositePayoutTest extends TestCase
     public function testCreateCompositePayoutWithSkipWfAtPayoutAndSkipWorkflowFalse()
     {
         $this->startTest();
+
+        $payouts = $this->getDbEntities('payout');
+
+        $fundAccounts = $this->getDbEntities('fund_account');
+
+        $contacts = $this->getDbEntities('contact');
+
+        // Assert that payout is not created.
+        $this->assertEquals(count($payouts), 0);
+
+        // Assert that contact and fund account are created even though the request failed. This is to verify that if
+        // validation in the start doesn't fail the request, contact and fund account will be created even if payout
+        // creation fails at later stage.
+        $this->assertEquals(count($fundAccounts), 1);
+        $this->assertEquals(count($contacts), 1);
+    }
+
+    public function testCreateCompositePayoutWithInsufficientBalanceAndQueueFlagUnset()
+    {
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->fixtures->edit(
+            'balance',
+            $balanceId,
+            [
+                'balance' => 2000,
+            ]);
+
+        $this->startTest();
+
+        $payouts = $this->getDbEntities('payout');
+
+        $fundAccounts = $this->getDbEntities('fund_account');
+
+        $contacts = $this->getDbEntities('contact');
+
+        // Assert that payout is not created.
+        $this->assertEquals(count($payouts), 0);
+
+        // Assert that contact and fund account are created even though the request failed. This is to verify that if
+        // validation in the start doesn't fail the request, contact and fund account will be created even if payout
+        // creation fails at later stage.
+        $this->assertEquals(count($fundAccounts), 1);
+        $this->assertEquals(count($contacts), 1);
+    }
+
+    public function testRetryCompositePayoutCreate()
+    {
+        $this->testCreateCompositePayoutWithInsufficientBalanceAndQueueFlagUnset();
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->fixtures->edit(
+            'balance',
+            $balanceId,
+            [
+                'balance' => 2000000000,
+            ]);
+
+        $this->startTest();
+
+        $payouts = $this->getDbEntities('payout');
+
+        $fundAccounts = $this->getDbEntities('fund_account');
+
+        $contacts = $this->getDbEntities('contact');
+
+        // Assert that only one of each of payout, fund account and contact are created.
+        $this->assertEquals(count($payouts), 1);
+        $this->assertEquals(count($fundAccounts), 1);
+        $this->assertEquals(count($contacts), 1);
     }
 }

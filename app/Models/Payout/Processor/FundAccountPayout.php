@@ -252,21 +252,9 @@ class FundAccountPayout extends Base
 
     protected function createBankingPayout(array $input, Balance\Entity $balance)
     {
-        $isComposite = false;
+        $feeType = (new Payout\Core)->updateFreePayoutsConsumedAndGetFeeType($balance);
 
-        $feeType = null;
-
-        if (array_key_exists(Payout\Entity::FEE_TYPE, $input) === true)
-        {
-            $isComposite = true;
-        }
-
-        if ($isComposite === false)
-        {
-            $feeType = (new Payout\Core)->updateFreePayoutsConsumedAndGetFeeType($balance);
-
-            $input = array_merge($input, [Payout\Entity::FEE_TYPE => $feeType]);
-        }
+        $input = array_merge($input, [Payout\Entity::FEE_TYPE => $feeType]);
 
         try
         {
@@ -277,13 +265,9 @@ class FundAccountPayout extends Base
 
         catch (\Throwable $throwable)
         {
-            if ($isComposite === false)
-            {
-                $balanceId = $input[Balance\Entity::BALANCE_ID];
+            $balanceId = $input[Balance\Entity::BALANCE_ID];
 
-                (new Payout\Core)->decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable($balanceId,
-                                                                                                     $feeType);
-            }
+            (new Payout\Core)->decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable($balanceId, $feeType);
 
             throw $throwable;
         }
