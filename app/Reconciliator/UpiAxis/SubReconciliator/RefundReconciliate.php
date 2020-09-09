@@ -17,7 +17,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     const COLUMN_REFUND_AMOUNT    = 'refund_amount';
     const ACOUNT_CUST_NAME        = 'acnt_custname';
 
-    const SUCCESS = 'Success';
+    const SUCCESS = ['success', 'refund accepted successfully'];
 
     const BLACKLISTED_COLUMNS = [
         self::ACOUNT_CUST_NAME,
@@ -77,9 +77,9 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
     protected function getReconRefundStatus(array $row)
     {
-        $rowStatus = $row[self::RESPONSE] ?? null;
+        $rowStatus = strtolower($row[self::RESPONSE] ?? null);
 
-        if ($rowStatus === self::SUCCESS)
+        if (in_array($rowStatus, self::SUCCESS) === true)
         {
             return Payment\Refund\Status::PROCESSED;
         }

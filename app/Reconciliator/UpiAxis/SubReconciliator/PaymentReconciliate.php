@@ -34,7 +34,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const ACCOUNT_DETAILS_IFSC  = 'ifsc';
     const ACCOUNT_DETAILS_NAME  = 'name';
 
-    const SUCCESS = 'success';
+    const SUCCESS = ['success', 'deemed'];
 
     //
     // This field is manually added in MIS for creating unexpected payment
@@ -246,9 +246,9 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getReconPaymentStatus(array $row)
     {
-        $rowStatus = $row[self::RESPONSE] ?? null;
+        $rowStatus = strtolower($row[self::RESPONSE] ?? null);
 
-        if (strtolower($rowStatus) === self::SUCCESS)
+        if (in_array($rowStatus, self::SUCCESS) === true)
         {
             return Payment\Status::AUTHORIZED;
         }
