@@ -16,6 +16,7 @@
   "scripts": {
     "postinstall": "cd web && npm ci",
     "start": "node signup.js; cd web && npm start",
+    "serve": "REDIRECTOR=true npm run start",
     "build": "node signup.js; cd web && npm run production:build",
     "test": "node test.js; cd web && npm run test",
     "test:jest": "cd web && npm run test:jest"
@@ -39,13 +40,8 @@
     }
   },
   "lint-staged": {
-    "web/v2/**/*.(js|jsx|ts|tsx)": [
-      "eslint",
-      "stylelint"
-    ],
-    "*.(js|json|jsx|ts|tsx)": [
-      "prettier --write"
-    ]
+    "web/v2/**/*.(js|jsx|ts|tsx)": ["eslint", "stylelint"],
+    "*.(js|json|jsx|ts|tsx)": ["prettier --write"]
   },
   "config": {
     "commitizen": {

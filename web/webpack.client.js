@@ -112,6 +112,11 @@ module.exports = ({ config, project }) => {
       version: JSON.stringify(process.env.VERSION),
       templateContent: ({ htmlWebpackPlugin }) => {
         return `(function(){
+          ${
+            process.env.REDIRECTOR === 'true'
+              ? "window.cdnDashboardUrl = 'http://localhost:8000';"
+              : ''
+          }
           var websiteAssets = {
             js : ${JSON.stringify(htmlWebpackPlugin.files.js)},
             css : ${JSON.stringify(htmlWebpackPlugin.files.css)}
