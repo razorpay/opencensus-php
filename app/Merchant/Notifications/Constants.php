@@ -444,6 +444,25 @@ class Constants
             ],
         ],
         [
+            'title'       => 'Special Pricing Unlocked!',
+            'description' => 'Accept your first payment before 30th September to unlock a special 1.85% lifetime slashed pricing.',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/surgesept.svg',
+            'id'          => 'surgeSept',
+            'track_event' => true,
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Learn More',
+                    'url'   => 'https://lp.razorpay.com/links/surge-sept-terms-conditions',
+                ]
+            ],
+            'start_ts'    => 1598898600,
+            'end_ts'      => 1601490599,
+            'filters'     => [
+                'campaigns' => ['SURGESEPT'],
+            ]
+        ],
+        [
             'title'       => 'Introducing Payment Buttons',
             'description' => 'Start accepting payments on your website or blog in less than 5 minutes. No coding needed.',
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/payment-button.svg',
