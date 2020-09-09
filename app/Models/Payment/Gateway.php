@@ -2627,6 +2627,15 @@ class Gateway
         return (in_array($gateway, $gateways, true));
     }
 
+    public static function gatewaysPartiallyMigratedToNbPlusWithBankCode($gateway)
+    {
+        $gatewayPartiallyMigrated = [
+            self::NETBANKING_BOB,
+        ];
+
+        return (in_array($gateway, $gatewayPartiallyMigrated, true));
+    }
+
     public static function isNbPlusServiceGateway($gateway)
     {
         $gateways = [

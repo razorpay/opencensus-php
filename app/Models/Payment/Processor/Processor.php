@@ -1368,6 +1368,11 @@ class Processor
 
             $prefix = $payment->getMethod() . '_' . self::NB_PLUS_PAYMENTS_PREFIX;
 
+            if (Payment\Gateway::gatewaysPartiallyMigratedToNbPlusWithBankCode($payment->getGateway()))
+            {
+                $prefix .= '_' . strtolower($payment->getBank());
+            }
+
             $variant = $this->getRazorxVariant($payment, $prefix);
 
             $this->setPaymentService($payment, $variant);
