@@ -2,7 +2,7 @@
 
 namespace RZP\Models\BankingAccount\Gateway;
 
-use Redis;
+use Illuminate\Support\Facades\Redis;
 
 use RZP\Constants;
 use Razorpay\Trace;
@@ -70,14 +70,14 @@ abstract class Processor extends Base\Core
 
     public function addServiceablePincodes(array $pincodes)
     {
-        $redis = Redis::connection();
+        $redis = Redis::connection('mutex_redis');
 
         $redis->sadd(static::PINCODES_REDIS_KEY, $pincodes);
     }
 
     public function deleteServiceablePincodes(array $pincodes)
     {
-        $redis = Redis::connection();
+        $redis = Redis::connection('mutex_redis');
 
         $redis->srem(static::PINCODES_REDIS_KEY, $pincodes);
     }
@@ -395,7 +395,7 @@ abstract class Processor extends Base\Core
      */
     protected function isPincodeServiceable(string $pincode): bool
     {
-        $redis = Redis::connection();
+        $redis = Redis::connection('mutex_redis');
 
         $isAvailable = $redis->sismember(static::PINCODES_REDIS_KEY, $pincode);
 

@@ -1057,7 +1057,7 @@ class Base extends BaseCore
          */
         if (empty($mutexResource) === false)
         {
-            $redis = $this->app['redis']->connection();
+            $redis = $this->app['redis']->connection('mutex_redis');
 
             $mutexResource = Mutex::PREFIX . $mutexResource;
 
