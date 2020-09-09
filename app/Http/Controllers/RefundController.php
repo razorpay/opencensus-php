@@ -85,13 +85,6 @@ class RefundController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postManualGatewayRefund($refundIds)
-    {
-        $data = $this->service()->manualGatewayRefund($refundIds);
-
-        return ApiResponse::json($data);
-    }
-
     /**
      * This is a little similar to manual gateway refund and verify refund (a combination).
      *

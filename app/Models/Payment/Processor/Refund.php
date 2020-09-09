@@ -627,67 +627,6 @@ trait Refund
         ]);
     }
 
-    public function manualGatewayRefund(RefundEntity $refund)
-    {
-        $payment = $refund->payment;
-
-        $this->setPaymentAndRefundInfo($refund, $payment);
-
-        $gateway = $payment->getGateway();
-
-        Payment\Refund\Validator::validateManualGatewayRefundAllowed($gateway);
-
-        // The refund should have already been successful and everything on the api side.
-        assertTrue ($refund->getTransactionId() !== null);
-
-        // Just making sure that the payment also has the transaction id. Refund will not have a transaction
-        // if payment does not have a transaction, anyway.
-        assertTrue ($payment->getTransactionId() !== null);
-
-        // The payment should have been captured. Otherwise, refund transaction should not have been created.
-        // Though, there are some edge cases where refund transaction was created even though the payment has not
-        // been captured. Check PR #905 and #909.
-
-        // Commenting this because we have reached past this stage.
-        // A refund transaction could have been created even if the payment is not captured.
-        // assert (($payment->hasBeenCaptured() === true) or
-        //         (in_array($payment->card->getNetworkCode(),
-        //                   [Card\Network::MAES, Card\Network::RUPAY, Card\Network::DICL]) === true));
-
-        $data = $this->getGatewayDataForRefund($refund, $payment);
-
-        if ($payment->isMethodCardOrEmi())
-        {
-            $data['card'] = $payment->card->toArray();
-        }
-
-        // The reason for NOT using verifyRefund Gateway function is because in ManualRefund, we want to add
-        // more checks and validations in the gateway function. VerifyRefund takes care of the checks specific
-        // to verifyRefund only. Since manualRefund is a very exceptional case and hopefully a one-time execution,
-        // we want to add more asserts around it.
-        $manualGatewayRefundResult = $this->callGatewayForManualRefund($data);
-
-        // Here, $manualGatewayRefundResult=true means that the payment is refunded on the gateway side.
-        if ($manualGatewayRefundResult === true)
-        {
-            $msg = 'Successfully created a refund on gateway';
-        }
-        else if ($manualGatewayRefundResult === false)
-        {
-            $msg = 'DID NOT CREATE A REFUND ON GATEWAY. ISSUE!';
-        }
-        else
-        {
-            $msg = 'THIS IS UNEXPECTED!';
-        }
-
-        return [
-            'manual_gateway_refund' => $msg,
-            'payment_id'            => $payment->getId(),
-            'refund_id'             => $refund->getId(),
-        ];
-    }
-
     /**
      * Calls verifyRefund on gateway.
      * Identifies if the refund passed here was processed
@@ -1135,34 +1074,6 @@ trait Refund
         $gatewayRefunded = $this->callGatewayFunction(Payment\Action::ALREADY_REFUNDED, $data);
 
         return $gatewayRefunded;
-    }
-
-    protected function callGatewayForManualRefund($data)
-    {
-        $manualGatewayRefundResult = null;
-
-        $this->trace->info(
-            TraceCode::MANUAL_GATEWAY_REFUND_INITIATED,
-            [
-                'payment_id'    => $data['payment']['id'],
-                'refund_id'     => $data['refund']['id'],
-            ]);
-
-        try
-        {
-            $manualGatewayRefundResult = $this->callGatewayFunction(Payment\Action::MANUAL_GATEWAY_REFUND, $data);
-        }
-        catch (Exception\BaseException $ex)
-        {
-            $this->tracePaymentFailed(
-                $ex->getError(),
-                TraceCode::MANUAL_GATEWAY_REFUND_FAILURE
-            );
-
-            throw $ex;
-        }
-
-        return $manualGatewayRefundResult;
     }
 
     protected function callGatewayForCreateRefundRecord(array $data)

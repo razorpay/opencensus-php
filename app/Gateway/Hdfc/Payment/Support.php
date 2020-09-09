@@ -398,59 +398,6 @@ trait Support
         }
     }
 
-    protected function canForceRefund($input)
-    {
-        if ($this->isRefundRequired($input) === false)
-        {
-            return false;
-        }
-
-        $paymentId = $input['payment'][PaymentModel\Entity::ID];
-        $refundId = $input['refund'][PaymentModel\Refund\Entity::ID];
-
-        $gatewayPaymentEntities = $this->repo->findByPaymentId($paymentId);
-
-        //
-        // There should be at least one authorized entity and one refund/capture entity.
-        // In purchase transactions, there will be only one or two entities (capture, refund).
-        // In others, there will be 2 or 3 (authorize, capture, refund).
-        //
-        // We allow refunds for only captured entities too if there is a refund transaction present
-        // on the api side.
-        //
-        if ($gatewayPaymentEntities->count() < 2)
-        {
-            if ($gatewayPaymentEntities->count() === 0)
-            {
-                return false;
-            }
-
-            if ($gatewayPaymentEntities->count() === 1)
-            {
-                // If there is only one entity, it must be a purchase transaction.
-                if (($gatewayPaymentEntities[0]->getStatus() !== Status::CAPTURED) or
-                    ($gatewayPaymentEntities[0]->getAction() !== Action::PURCHASE) or
-                    ($gatewayPaymentEntities[0]->getResult() !== Result::CAPTURED))
-                {
-                    return false;
-                }
-            }
-        }
-
-        $valid = $this->hasValidRefundOrCaptureEntityForAllowingRefund($refundId, $paymentId);
-
-        if ($valid === false)
-        {
-            return false;
-        }
-
-        // The transaction id for the refund should be present. Otherwise, it means that
-        // the refund should come via normal flow and not via manualGatewayRefund.
-        assertTrue ($input['refund'][PaymentModel\Refund\Entity::TRANSACTION_ID] !== null);
-
-        return true;
-    }
-
     protected function hasValidRefundOrCaptureEntityForAllowingRefund($refundId, $paymentId)
     {
         $response = true;

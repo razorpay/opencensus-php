@@ -170,7 +170,6 @@ class Route
         'refund_verify_multiple'                   => ['post',     'refunds/{ids}/verify',                           'RefundController@postRefundVerifyMultiple'                         ],
         'refund_create_missing_txn'                => ['post',     'refunds/transaction',                            'RefundController@postRefundsTransactions'                          ],
         'refund_gateway_refunded_txns'             => ['post',     'refunds/gateway_refunded/transaction',           'RefundController@postGatewayRefundedTransactions'                  ],
-        'refund_gateway_manual'                    => ['post',     'refunds/{ids}/gateway',                          'RefundController@postManualGatewayRefund'                          ],
         'refund_retry_failed'                      => ['post',     'refunds/retry/failed',                           'RefundController@postRetryFailedRefunds'                           ],
         'refund_verify_failed'                     => ['post',     'refunds/{id}/retry',                             'RefundController@postRefundRetry'                                  ],
         'refund_verify_failed_bulk'                => ['post',     'refunds/retry/bulk',                             'RefundController@postRefundRetryBulk'                              ],
@@ -3316,7 +3315,6 @@ class Route
         'promotion_deactivate',
         'promotion_create_for_event',
         'refund_create_missing_txn',
-        'refund_gateway_manual',
         'risk_fetch_multiple',
         'risk_get',
         'schedule_fetch',
@@ -4070,7 +4068,6 @@ class Route
         // this permission and so it won't be required to assign them a new promotion
         'promotion_deactivate'                     => Permission::DEACTIVATE_PROMOTION,
         'refund_create_missing_txn'                => '*',
-        'refund_gateway_manual'                    => '*',
         'risk_fetch_multiple'                      => '*',
         'risk_get'                                 => '*',
         'refund_reference1_bulk_update'            => Permission::UPDATE_REFUND_REFERENCE1,

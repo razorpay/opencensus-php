@@ -115,12 +115,6 @@ class Validator extends Base\Validator
         Payment\Gateway::AXIS_MIGS,
     ];
 
-    protected static $manualRefundGateways = [
-        Payment\Gateway::HDFC,
-        Payment\Gateway::BILLDESK,
-        Payment\Gateway::AXIS_MIGS,
-    ];
-
     protected static $scroogeGatewayRefundRules = [
         'id'                                        => 'required|unsigned_id',
         'merchant_id'                               => 'required|unsigned_id',
@@ -331,14 +325,6 @@ class Validator extends Base\Validator
                 [
                     'gateway' => $gateway
                 ]);
-        }
-    }
-
-    public static function validateManualGatewayRefundAllowed(string $gateway)
-    {
-        if (in_array($gateway, self::$manualRefundGateways, true) === false)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
         }
     }
 
