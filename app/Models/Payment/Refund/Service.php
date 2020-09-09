@@ -2460,89 +2460,6 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function backfillUpiMindgateReference1(array $input)
-    {
-        if (isset($input[RefundConstants::DB_FETCH_LIMIT]) === true)
-        {
-            $limit = intval($input[RefundConstants::DB_FETCH_LIMIT]);
-        }
-        else
-        {
-            $limit = 5000;
-        }
-
-        if (isset($input['from']) === true)
-        {
-            $from = $input['from'];
-        }
-        else
-        {
-            // Hard coding it to 25th June - this is the first Upi Mindgate refund
-            $from = 1529865000;
-        }
-
-        if (isset($input['to']) === true)
-        {
-            $to = $input['to'];
-        }
-        else
-        {
-            // Hard coding it to 13th December 3:00 pm - this is when scrooge started sending RRN for Upi Mindgate
-            // in the mark processed route - to fill the reference1
-            $to = 1544693490;
-        }
-
-        if (isset($input['delay']) === true)
-        {
-            $delay = $input['delay'];
-        }
-        else
-        {
-            $delay = 3600;
-        }
-
-        $start = microtime(true);
-
-        $this->trace->info(
-            TraceCode::REFUND_UPDATE_RRN_INITIATED,
-            [
-                'start_time'                    => $start,
-                'from'                          => $from,
-                'to'                            => $to,
-                'delay'                         => $delay,
-                RefundConstants::DB_FETCH_LIMIT => $limit
-            ]);
-
-        $successCount  = 0;
-
-        $time = $to;
-
-        while ($time >= $from)
-        {
-            $successCount += $this->repo->refund->backfillUpiMindgateReference1($limit, ($time - $delay), $time);
-
-            $time -= $delay;
-        }
-
-        $end = microtime(true);
-
-        $processingTime = $end - $start;
-
-        $this->trace->info(
-            TraceCode::REFUND_UPDATE_RRN_SUMMARY,
-            [
-                'end_time'      => $end,
-                'time_taken'    => $processingTime,
-                'success_count' => $successCount
-            ]
-        );
-
-        return [
-            'success_count' => $successCount,
-            'time_taken'    => $processingTime,
-        ];
-    }
-
     public function verifyScroogeRefundsBulk(array $input)
     {
         $gateways = [Payment\Gateway::UPI_MINDGATE, Payment\Gateway::UPI_ICICI];
@@ -2752,83 +2669,6 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function isScroogeBackFill(array $input)
-    {
-        $mode = $input['mode'] ?? Mode::LIVE;
-
-        $this->auth->setModeAndDbConnection($mode);
-
-        $limit = (isset($input[RefundConstants::DB_FETCH_LIMIT]) === true)? intval($input[RefundConstants::DB_FETCH_LIMIT]) : 5000;
-
-        $isScrooge = (empty($input[RefundEntity::IS_SCROOGE]) === false) ?
-                     ($input[RefundEntity::IS_SCROOGE] === 'true') : true;
-
-        $updatedCount = 0;
-
-        $requestData = [
-            RefundConstants::DB_FETCH_LIMIT => $limit,
-
-            RefundEntity::IS_SCROOGE => $isScrooge,
-
-            RefundConstants::ENTITIES => []
-        ];
-
-        $responseData = [];
-
-        if (empty($input[RefundConstants::ENTITIES]) === false)
-        {
-            foreach ($input[RefundConstants::ENTITIES] as $gateways)
-            {
-                if ($limit <= 0)
-                {
-                    break;
-                }
-
-                $fromTime = (empty($gateways['from']) === false) ? intval($gateways['from']) : time();
-
-                $toTime = (empty($gateways['to']) === false) ?
-                          intval($gateways['to']) : RefundConstants::SCROOGE_TAGGING_LIVE_TIMESTAMP;
-
-                $data = [
-                    'to'                            => $toTime,
-                    'from'                          => $fromTime,
-                    RefundEntity::GATEWAY           => $gateways[RefundEntity::GATEWAY],
-                    RefundConstants::DB_FETCH_LIMIT => $limit,
-                ];
-
-                $requestData[RefundConstants::ENTITIES][] = $data;
-
-                if ($fromTime > $toTime)
-                {
-                    continue;
-                }
-
-                $count = $this->repo->refund->backfillIsScrooge($data, $isScrooge, true);
-
-                $updatedCount += $count;
-
-                $limit -= $count;
-            }
-        }
-
-        if (empty($input[RefundConstants::REFUND_IDS]) === false)
-        {
-            $count = $this->repo->refund->backfillIsScrooge($input[RefundConstants::REFUND_IDS], $isScrooge, false);
-
-            $requestData[RefundConstants::REFUND_IDS] = $input[RefundConstants::REFUND_IDS];
-
-            $updatedCount += $count;
-        }
-
-        $responseData['refunds_updated'] = $updatedCount;
-
-        $this->trace->info(TraceCode::REFUND_UPDATE_IS_SCROOGE_REQUEST, $requestData);
-
-        $this->trace->info(TraceCode::REFUND_IS_SCROOGE_UPDATED_COUNT, $responseData);
-
-        return $responseData;
-    }
-
     protected function addParamsForDashboard(array &$refundArray)
     {
         if (isset($refundArray[Entity::STATUS]) === true)
@@ -2990,22 +2830,6 @@ class Service extends Base\Service
                 $refundArray[RefundConstants::SPEED_CHANGE_TIME] = $speedChangeTime;
             }
         }
-    }
-
-    public function speedProcessedBackfill(array $input)
-    {
-        $mode = $input['mode'] ?? Mode::LIVE;
-
-        $this->auth->setModeAndDbConnection($mode);
-
-        $limit = (isset($input[RefundConstants::DB_FETCH_LIMIT]) === true) ?
-                  intval($input[RefundConstants::DB_FETCH_LIMIT]) : 5000;
-
-        $updatedCount = $this->repo->refund->backfillSpeedProcessed($limit);
-
-        $responseData['refunds_updated'] = $updatedCount;
-
-        return $responseData;
     }
 
     /**

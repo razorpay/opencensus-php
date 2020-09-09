@@ -304,15 +304,6 @@ class RefundController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function backfillUpiMindgateReference1()
-    {
-        $input = Request::all();
-
-        $data = $this->service()->backfillUpiMindgateReference1($input);
-
-        return ApiResponse::json($data);
-    }
-
     public function bulkUpdateRefundsReference1()
     {
         $input = Request::all();
@@ -354,24 +345,6 @@ class RefundController extends Controller
         $input = Request::all();
 
         $data = $this->service()->setUnprocessedRefundsConfig($input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function scroogeTaggingBackfill()
-    {
-        $input = Request::all();
-
-        $data = $this->service()->isScroogeBackFill($input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function speedProcessedBackfill()
-    {
-        $input = Request::all();
-
-        $data = $this->service()->speedProcessedBackfill($input);
 
         return ApiResponse::json($data);
     }

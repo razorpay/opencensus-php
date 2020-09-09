@@ -966,54 +966,6 @@ class Repository extends Base\Repository
         return $count;
     }
 
-    /**
-     *
-     * update `refunds` inner join
-     * (select `npci_reference_id`, `refund_id` from `upi` where `npci_reference_id` is not null
-     * and `created_at` <= $to and `created_at` >= $from and
-     * `status_code` = "00" order by `created_at` desc limit $limit) as `upi` on `refunds`.`id` = `upi`.`refund_id`
-     * set `reference1` = upi.npci_reference_id
-     * where `reference1` is null and `refunds`.`gateway` = "upi_mindgate" and `refunds`.`status` = "processed"
-     *
-     * @param $limit
-     * @param $createdAt
-     * @return int Numbers of rows affected
-     */
-    public function backfillUpiMindgateReference1($limit, $from, $to)
-    {
-        $refundIdColumn = $this->repo->refund->dbColumn(Refund\Entity::ID);
-
-        $upiRefundIdColumn = Table::UPI . '.' . UpiEntity::REFUND_ID;
-
-        $subQuery = $this->newQuery()
-                         ->select(UpiEntity::NPCI_REFERENCE_ID, UpiEntity::REFUND_ID)
-                         ->from(Table::UPI)
-                         ->whereNotNull(UpiEntity::NPCI_REFERENCE_ID)
-                         ->whereNotNull(UpiEntity::REFUND_ID)
-                         ->where(UpiEntity::CREATED_AT, '<=', $to)
-                         ->where(UpiEntity::CREATED_AT, '>=', $from)
-                         ->whereIn(UpiEntity::STATUS_CODE, ['00', 'SUCCESS'])
-                         ->orderBy(UpiEntity::CREATED_AT, 'desc')
-                         ->limit($limit);
-
-        $count = $this->newQueryWithoutTimestamps()
-                      ->joinSub(
-                          $subQuery,
-                          Table::UPI,
-                          function ($join) use($refundIdColumn, $upiRefundIdColumn)
-                          {
-                              $join->on($refundIdColumn, '=', $upiRefundIdColumn);
-                          })
-                      ->whereNull(Refund\Entity::REFERENCE1)
-                      ->where(Table::REFUND . '.' . Refund\Entity::GATEWAY, Payment\Gateway::UPI_MINDGATE)
-                      ->where(Table::REFUND . '.' . Refund\Entity::STATUS, Refund\Status::PROCESSED)
-                      ->update([
-                          Refund\Entity::REFERENCE1 => DB::raw(Table::UPI . '.' . UpiEntity::NPCI_REFERENCE_ID),
-                      ]);
-
-        return $count;
-    }
-
     public function updateRefundReference1(array $refund)
     {
         return $this->newQueryWithoutTimestamps()
@@ -1044,46 +996,5 @@ class Repository extends Base\Repository
         }
 
         return $dbColumns;
-    }
-
-    public function backfillIsScrooge(array $data, bool $isScrooge, bool $withTimestamps)
-    {
-        $count = 0;
-
-        if ($withTimestamps === true)
-        {
-            $count += $this->newQuery()
-                           ->where(RefundEntity::GATEWAY, $data[RefundEntity::GATEWAY])
-                           ->where(RefundEntity::CREATED_AT, '>=', $data['from'])
-                           ->where(RefundEntity::CREATED_AT, '<=', $data['to'])
-                           ->where(RefundEntity::IS_SCROOGE, '!=', $isScrooge)
-                           ->orderBy(RefundEntity::CREATED_AT)
-                           ->limit($data['limit'])
-                           ->update([
-                               RefundEntity::IS_SCROOGE => $isScrooge
-                           ]);
-        }
-        else
-        {
-            $count += $this->newQuery()
-                           ->whereIn(RefundEntity::ID, $data)
-                           ->update([
-                               RefundEntity::IS_SCROOGE => $isScrooge
-                           ]);
-        }
-
-        return $count;
-    }
-
-    public function backfillSpeedProcessed($limit)
-    {
-        return $this->newQuery()
-                    ->where(RefundEntity::SPEED_DECISIONED, Speed::NORMAL)
-                    ->whereNull(RefundEntity::SPEED_PROCESSED)
-                    ->orderBy(RefundEntity::CREATED_AT, 'desc')
-                    ->limit($limit)
-                    ->update([
-                        RefundEntity::SPEED_PROCESSED => Speed::NORMAL
-                    ]);
     }
 }
