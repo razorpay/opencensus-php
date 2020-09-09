@@ -121,11 +121,11 @@ class Core extends Base\Core
 
         $commissionInvoice = new CommissionInvoice($data);
 
-        Mail::queue($commissionInvoice);
+        Mail::send($commissionInvoice);
 
         $opsInvoice = new CommissionOpsInvoice($data);
 
-        Mail::queue($opsInvoice);
+        Mail::send($opsInvoice);
     }
 
     public function sendCommissionProcessedMail(Entity $invoice, string $pdfPath)
@@ -134,7 +134,7 @@ class Core extends Base\Core
 
         $commissionInvoice = new CommissionProcessed($data);
 
-        Mail::queue($commissionInvoice);
+        Mail::send($commissionInvoice);
     }
 
     public function getTemplateData(Entity $invoice, $pdfPath = null): array

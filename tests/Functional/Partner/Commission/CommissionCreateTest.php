@@ -152,8 +152,8 @@ class CommissionCreateTest extends TestCase
 
         $this->assertEquals('under_review', $invoice['status']);
 
-        Mail::assertQueued(CommissionOpsInvoice::class, 1);
-        Mail::assertQueued(CommissionInvoice::class, 1);
+        Mail::assertSent(CommissionOpsInvoice::class, 1);
+        Mail::assertSent(CommissionInvoice::class, 1);
 
         $testData = $this->testData['testInvoiceFetch'];
 
