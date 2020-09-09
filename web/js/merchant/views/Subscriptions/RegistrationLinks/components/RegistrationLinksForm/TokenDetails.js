@@ -27,7 +27,7 @@ export default ({
   };
 
   if (isUPIPayment) {
-    maxAmountProps.placeholder = `Max ${UPI_AVL_LIMIT}`;
+    maxAmountProps.placeholder = `Max ${getFormattedAmount(UPI_AVL_LIMIT)}`;
     maxAmountProps.validator = maxAmountValidator(amount, UPI_AVL_LIMIT);
     maxAmountProps.description = `Max Amount for Mandate`;
   }
