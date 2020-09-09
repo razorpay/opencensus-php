@@ -906,11 +906,13 @@ class Repository extends Base\Repository
     {
         $status = $params[Entity::STATUS];
 
+        $statusColumn = $this->dbColumn(Entity::STATUS);
+
         $status = explode(',', $status);
 
         Payment\Validator::validateStatusArray($status);
 
-        $query->whereIn(Entity::STATUS, $status);
+        $query->whereIn($statusColumn, $status);
     }
 
     protected function addQueryParamAmount($query, $params)
