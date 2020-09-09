@@ -223,7 +223,7 @@ class Verify extends Base\Core
 
         $this->mutex = $this->app['api.mutex'];
 
-        $this->redis = $this->app['redisdualwrite'];
+        $this->redis = $this->app['redis']->connection('mutex_redis');
 
         $this->slack = $this->app['slack'];
 

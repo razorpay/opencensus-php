@@ -7,7 +7,6 @@ use Redis;
 use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Constants\Timezone;
-use RZP\Services\RedisDualWrite;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -1761,12 +1760,12 @@ class VerifyTest extends TestCase
 
     protected function setupRedisMockForBlockedGateway($paymentArray = [])
     {
-        $redisMock = $this->getMockBuilder(RedisDualWrite::class)
-            ->setConstructorArgs([$this->app])
+        $redisMock = $this->getMockBuilder(Redis::class)
             ->setMethods(['hGetAll','set', 'get', 'setex', 'client', 'exists', 'hDel', 'hSet', 'incr', 'expire', 'hGet'])
             ->getMock();
 
-        $this->app->instance('redisdualwrite', $redisMock);
+        Redis::shouldReceive('connection')
+            ->andReturn($redisMock);
 
         $redisMock->method('hGetAll')
             ->willReturn(
@@ -1808,17 +1807,17 @@ class VerifyTest extends TestCase
                 });
 
         $redisMock->method('get')
-            ->willReturn(true);
+            ->willReturn(1);
     }
 
     protected function setupRedisMockForBlockedPayments()
     {
-        $redisMock = $this->getMockBuilder(RedisDualWrite::class)
-            ->setConstructorArgs([$this->app])
+        $redisMock = $this->getMockBuilder(Redis::class)
             ->setMethods(['hGetAll','set', 'get', 'setex', 'client', 'exists', 'hDel', 'hSet', 'incr', 'expire', 'hGet'])
             ->getMock();
 
-        $this->app->instance('redisdualwrite', $redisMock);
+        Redis::shouldReceive('connection')
+            ->andReturn($redisMock);
 
         $redisMock->method('hGetAll')
             ->willReturn(
@@ -1837,10 +1836,10 @@ class VerifyTest extends TestCase
             ->willReturn(null);
 
         $redisMock->method('set')
-            ->willReturn(true);
+            ->willReturn(1);
 
         $redisMock->method('get')
-            ->willReturn(true);
+            ->willReturn(1);
     }
 
     protected function runCreateVerify()
