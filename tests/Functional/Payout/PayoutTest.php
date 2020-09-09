@@ -6995,4 +6995,46 @@ class PayoutTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testFailPayoutWithErrorCodeAsPbankValidationError()
+    {
+        $this->createDirectAccountPayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit(
+            'payout',
+            $payout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]);
+
+        $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
+                                             [
+                                                 'source_id'   => $payout->getId(),
+                                                 'source_type' => 'payout',
+                                                 'is_fts'      => true,
+                                             ])->first();
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $ftaForPayout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['source_id'] = $payout->getId();
+
+        $this->ba->appAuth();
+        $this->startTest();
+
+        $payout->reload();
+
+        $this->assertEquals('failed', $payout->getStatus());
+        $this->assertEquals('Invalid Beneficiary details', $payout->getFailureReason());
+    }
 }
