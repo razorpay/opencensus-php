@@ -120,6 +120,7 @@ class Repository extends Base\Repository
         return $this->newQueryWithConnection($mode)
                     ->merchantId($merchant->getId())
                     ->where(Entity::TYPE, '=', $type)
+                    ->with('schedule')
                     ->get();
     }
 }

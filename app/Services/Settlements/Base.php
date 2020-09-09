@@ -8,6 +8,7 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
 use RZP\Http\Request\Requests;
+use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 
 class Base
@@ -17,6 +18,12 @@ class Base
 
     const TRANSACTION_HOLD           = '/twirp/rzp.settlements.transaction.v1.TransactionService/Hold';
     const TRANSACTION_RELEASE        = '/twirp/rzp.settlements.transaction.v1.TransactionService/Release';
+
+    const MERCHANT_CONFIG_CREATE     = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Create';
+    const MERCHANT_CONFIG_UPDATE     = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Update';
+
+    const BANK_ACCOUNT_CREATE        = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Create';
+
 
     protected $trace;
 
@@ -247,5 +254,28 @@ class Base
 
             throw new Exception\TwirpException($body);
         }
+    }
+
+    /**
+     * this method returns the bank account request
+     * @param $ba
+     * @return array
+     */
+    public function getBankAccountCreateRequestForSettlementService($ba)
+    {
+        return [
+            'merchant_id'         => $ba->getMerchantId(),
+            'account_number'      => $ba->getAccountNumber(),
+            'account_type'        => $ba->getAccountType() !== null ? $ba->getAccountType() : 'current',
+            'ifsc_code'           => $ba->getIfscCode(),
+            'beneficiary_name'    => $ba->getBeneficiaryName(),
+            'beneficiary_address' => $ba->getBeneficiaryAddress1(),
+            'beneficiary_city'    => $ba->getBeneficiaryCity(),
+            'beneficiary_state'   => $ba->getBeneficiaryState(),
+            'beneficiary_country' => $ba->getBeneficiaryCountry(),
+            'beneficiary_email'   => $ba->getBeneficiaryEmail(),
+            'beneficiary_mobile'  => $ba->getBeneficiaryMobile(),
+            'accepted_currency'   => Currency::INR
+        ];
     }
 }

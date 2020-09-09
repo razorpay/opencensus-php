@@ -2604,6 +2604,7 @@ class Route
         'razorflow_admin_fetch_entity_by_id',
         'razorflow_admin_fetch_entity_multiple',
         'scrooge_refunds_get_multiple_razorflow',
+        'setl_service_migration',
         'create_payment_config_bulk_via_batch',
     ];
 
@@ -3715,8 +3716,6 @@ class Route
 
         // Get free_payout attributes for balance
         'admin_get_free_payouts_attributes',
-
-        'setl_service_migration',
         'tax_payments_admin_auth_api',
     ];
 
@@ -3909,10 +3908,10 @@ class Route
         'setl_merchant_config_create'              => '*',
         'setl_merchant_config_update'              => '*',
         'setl_get_scheduleableEntities'            => '*',
-        'setl_bank_account_create'                 => '*',
-        'setl_bank_account_update'                 => '*',
+        'setl_bank_account_create'                 => Permission::EDIT_MERCHANT_BANK_DETAIL,
+        'setl_bank_account_update'                 => Permission::EDIT_MERCHANT_BANK_DETAIL,
         'setl_bank_account_get'                    => '*',
-        'setl_bank_account_delete'                 => '*',
+        'setl_bank_account_delete'                 => Permission::EDIT_MERCHANT_BANK_DETAIL,
         'setl_execution_register'                  => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_trigger_multiple'                    => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_execution_resume'                    => Permission::SETTLEMENT_BULK_UPDATE,

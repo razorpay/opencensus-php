@@ -549,7 +549,7 @@ class Core extends Base\Core
             return;
         }
 
-        app('settlements_dashboard')->createBankAccount($ba, $mode);
+        app('settlements_api')->migrateBankAccount($ba, $mode);
 
         $this->trace->info(
             TraceCode::SETTLEMENT_SERVICE_BA_MIGRATION_SUCCESS,
