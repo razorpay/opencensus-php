@@ -324,7 +324,9 @@ class Name
     // Perform various support operation e.g. processing bulk webhook events via csv etc.
     const STORK_SUPPORT_OPERATION             = 'stork_support_operation';
 
-    // Permissions for P2P Service
+    // Permissions for UPI/P2P Service
+    const UPI_MANAGE_PSPS                     = 'upi_manage_psps';
+    const UPI_MANAGE_DATA                     = 'upi_manage_data';
     const P2P_MANAGE_MERCHANT                 = 'p2p_manage_merchant';
 
     const EDIT_MERCHANT_WEBSITE_DETAIL        = 'edit_merchant_website_detail';

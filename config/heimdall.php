@@ -997,6 +997,18 @@ return [
             ],
         ],
 
+        PermissionCategory::UPI => [
+            Permission::UPI_MANAGE_DATA => [
+                'description'   => 'Manage UPI data in UPI/UPS entities',
+                'assignable'    => true,
+            ],
+
+            Permission::UPI_MANAGE_PSPS => [
+                'description'   => 'Manage UPI PSPs and configurations',
+                'assignable'    => true,
+            ],
+        ],
+
         PermissionCategory::P2P => [
             Permission::P2P_MANAGE_MERCHANT => [
                 'description'   => 'Allows to manage merchant setup',
