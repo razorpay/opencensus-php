@@ -51,7 +51,40 @@ class PaperMandatePaymentTest extends TestCase
             ],
         ]);
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals($payment->getPublicId(), $response['razorpay_payment_id'] ?? null);
+
+        $this->assertNotNull($response['razorpay_signature']);
+    }
+
+    public function testCreatePaymentForNachAuto()
+    {
+        $this->testCreatePaymentForNach();
+
+        $token = $this->getDbLastEntity('token');
+        $token->setRecurringStatus('confirmed');
+        $token->setRecurring(true);
+        $token->saveOrFail();
+
+        $this->fixtures->create(E::ORDER,[
+            'id'     => '100000001order',
+            'amount' => 10000
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['token'] = $token->getPublicId();
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals($payment->getPublicId(), $response['razorpay_payment_id'] ?? null);
+
+        $this->assertNotNull($response['razorpay_signature'] ?? null);
     }
 
     public function testCreatePaymentForNachFormNotSubmitted()
