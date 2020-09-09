@@ -27,6 +27,8 @@ class Entity extends Base\PublicEntity
     const BANKING                   = 'banking';
     const CREDITS                   = 'credits';
     const DEAFULT                   = 'default';
+    const FETCH_EXPIRED             = 'fetch_expired';
+    const IS_PROMOTION              = 'is_promotion';
 
     protected $entity               = 'credits';
 

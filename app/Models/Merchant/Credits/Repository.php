@@ -2,10 +2,13 @@
 
 namespace RZP\Models\Merchant\Credits;
 
+use Carbon\Carbon;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Promotion;
+use RZP\Constants\Timezone;
 
 class Repository extends Base\Repository
 {
@@ -16,12 +19,16 @@ class Repository extends Base\Repository
         Entity::CAMPAIGN                => 'sometimes|string|max:255',
         Entity::MERCHANT_ID             => 'sometimes|string',
         Entity::TYPE                    => 'sometimes|string|max:20',
+        Entity::FETCH_EXPIRED           => 'sometimes|boolean',
+        Entity::IS_PROMOTION            => 'sometimes|boolean',
     );
 
     // These are proxy allowed params to search on.
     protected $proxyFetchParamRules = array(
         Entity::CAMPAIGN                => 'sometimes|string|max:255',
         Entity::TYPE                    => 'sometimes|string|max:20',
+        Entity::FETCH_EXPIRED           => 'sometimes|boolean',
+        Entity::IS_PROMOTION            => 'sometimes|boolean',
     );
 
     /**
@@ -222,5 +229,38 @@ class Repository extends Base\Repository
         return Entity::lockForUpdate()->newQuery()
                                       ->where(Entity::ID, $credit->getId())
                                       ->firstOrFail();
+    }
+
+    protected function addQueryParamFetchExpired($query, $params)
+    {
+        // by default, fetch expired credits
+        $fetchExpired = (bool) ($params[Entity::FETCH_EXPIRED] ?? false);
+
+        if ($fetchExpired === true)
+        {
+            return;
+        }
+
+        $timestamp = Carbon::now(Timezone::IST)->timestamp;
+
+        $query->where(function ($query) use ($timestamp)
+        {
+            $query->where(Entity::EXPIRED_AT, '>', $timestamp)
+                  ->orWhereNull(Entity::EXPIRED_AT);
+        });
+    }
+
+    protected function addQueryParamIsPromotion($query, $params)
+    {
+        $isPromotion = (bool) ($params[Entity::IS_PROMOTION] ?? false);
+
+        if ($isPromotion === true)
+        {
+            $query->whereNotNull(Entity::PROMOTION_ID);
+        }
+        else
+        {
+            $query->whereNull(Entity::PROMOTION_ID);
+        }
     }
 }
