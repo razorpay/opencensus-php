@@ -47,4 +47,11 @@ return [
     'trace_code_class' => RZP\Trace\TraceCode::class,
 
     'metrics' => require __DIR__ . '/metrics.php',
+
+    'regex' => [
+        'card_regex'            => env('CREDIT_CARD_REGEX_FOR_REDACTING'),
+        'email_regex'           => env('EMAIL_REGEX_FOR_REDACTING'),
+        'cvv_regex'             => env('CVV_REGEX_FOR_REDACTING'),
+        'phone_number_regex'    => env('PHONE_NUMBER_REGEX_FOR_REDACTING'),
+    ]
 ];

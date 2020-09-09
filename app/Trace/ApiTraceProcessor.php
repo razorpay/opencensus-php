@@ -239,38 +239,28 @@ class ApiTraceProcessor
                 return;
             }
 
-            $adminService = new AdminService();
-
-            $cardRegex = $adminService->getConfigKey([
-                                                         'key' => ConfigKey::CREDIT_CARD_REGEX_FOR_REDACTING
-                                                     ]);
+            $cardRegex = $this->app['config']['trace']['regex']['card_regex'];
 
             if (empty($cardRegex) === true)
             {
                 $cardRegex = self::CARD_REGEX;
             }
 
-            $emailRegex = $adminService->getConfigKey([
-                                                          'key' => ConfigKey::EMAIL_REGEX_FOR_REDACTING
-                                                      ]);
+            $emailRegex = $this->app['config']['trace']['regex']['email_regex'];
 
             if (empty($emailRegex) === true)
             {
                 $emailRegex = self::EMAIL_REGEX;
             }
 
-            $cvvRegex = $adminService->getConfigKey([
-                                                        'key' => ConfigKey::CVV_REGEX_FOR_REDACTING
-                                                    ]);
+            $cvvRegex = $this->app['config']['trace']['regex']['cvv_regex'];
 
             if (empty($cvvRegex) === true)
             {
                 $cvvRegex = self::CVV_REGEX;
             }
 
-            $phoneNumberRegex = $adminService->getConfigKey([
-                                                                'key' => ConfigKey::PHONE_NUMBER_REGEX_FOR_REDACTING
-                                                            ]);
+            $phoneNumberRegex = $this->app['config']['trace']['regex']['phone_number_regex'];
 
             if (empty($phoneNumberRegex) === true)
             {
