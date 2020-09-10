@@ -97,6 +97,31 @@ class Gateway extends Base\Gateway
         return $entity;
     }
 
+    protected function createGatewayEntityForMozartGateway($attributes, $action = null)
+    {
+        $entity = $this->getNewGatewayPaymentEntity();
+
+        $action = $action ?? $this->action;
+
+        $entity->setAmount($this->input['payment']['amount']);
+
+        $entity->setPaymentId($this->input['payment']['id']);
+
+        $entity->setAction($action);
+
+        $entity->setAcquirer(static::ACQUIRER);
+
+        $entity->setGateway($this->input['payment']['gateway']);
+
+        $entity->generate($attributes);
+
+        $entity->fill($attributes);
+
+        $this->repo->saveOrFail($entity);
+
+        return $entity;
+    }
+
     protected function getActionsToRetry()
     {
         return self::RETRIABLE_ACTIONS;

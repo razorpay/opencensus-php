@@ -3068,6 +3068,7 @@ class Terminal extends Base
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'upi_airtel',
             'gateway_merchant_id'       => 'razorpay upi airtel',
+            'gateway_merchant_id2'      => 'razorpay@mairtel',
             'gateway_terminal_password' => 'upipassword',
             'upi'                       => 1,
         ];

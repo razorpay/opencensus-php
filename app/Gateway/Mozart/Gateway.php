@@ -9,9 +9,11 @@ use RZP\Constants\Mode;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Upi\Mozart;
 use RZP\Gateway\Base\Verify;
 use RZP\Models\Customer\Token;
 use RZP\Constants\Entity as E;
+use RZP\Gateway\Upi\Base\Type;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Upi\Mindgate\Crypto;
 use RZP\Gateway\Base\AuthorizeFailed;
@@ -158,6 +160,16 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_AUTHORIZE_REQUEST,
             TraceCode::GATEWAY_AUTHORIZE_RESPONSE,
             false);
+
+        if ((isset($input['payment']['gateway']) === true) and
+            ($this->isUpiGateway($input['payment']['gateway']) === true))
+        {
+            $mozart = new Mozart\Gateway();
+
+            $upiAttributes = $response['data']['upi'] ?? [];
+
+            $mozart->createOrUpdateUpiEntityForMozartGateways($input, $upiAttributes, Action::AUTHORIZE);
+        }
 
         $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input, Action::AUTHORIZE);
 
@@ -738,6 +750,16 @@ class Gateway extends Base\Gateway
             ($input['payment']['recurring_type'] === 'initial'))
         {
             $action = Action::MANDATE_CREATE;
+        }
+
+        if ((isset($input['payment']['gateway']) === true) and
+            ($this->isUpiGateway($input['payment']['gateway']) === true))
+        {
+            $mozart = new Mozart\Gateway();
+
+            $attributes = $response['data']['upi'] ?? [];
+
+            $mozart->createOrUpdateUpiEntityForMozartGateways($input, $attributes, Action::AUTHORIZE);
         }
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
@@ -1669,7 +1691,7 @@ class Gateway extends Base\Gateway
                 Action::INTENT        => null,
                 Action::PAY_INIT      => null,
                 Action::PAY_VERIFY    => null,
-                Action::VERIFY        => Action::PAY_VERIFY,
+                Action::VERIFY        => null,
                 Action::REFUND        => Action::PAY_VERIFY,
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
@@ -1814,7 +1836,7 @@ class Gateway extends Base\Gateway
                 Action::INTENT => null,
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => null,
-                Action::VERIFY => Action::AUTHORIZE,
+                Action::VERIFY => null,
                 Action::REFUND => Action::AUTHORIZE,
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
@@ -2677,6 +2699,16 @@ class Gateway extends Base\Gateway
 
         $gateway = $gatewayPayment->getGateway();
 
+        if ($this->isUpiGateway($gateway) === true)
+        {
+            $data = $gatewayPayment->getDataAttribute();
+
+            if (isset($data['rrn']) === true)
+            {
+                $response['acquirer'][Payment\Entity::REFERENCE16] = $data['rrn'];
+            }
+        }
+
         if ($this->isNetbankingGateway($gateway) === true)
         {
             $data = $gatewayPayment->getDataAttribute();
@@ -2693,6 +2725,11 @@ class Gateway extends Base\Gateway
     protected function isNetbankingGateway($gateway)
     {
         return in_array($gateway, Payment\Gateway::$methodMap[Payment\Method::NETBANKING], true);
+    }
+
+    protected function isUpiGateway($gateway)
+    {
+        return in_array($gateway, Payment\Gateway::$methodMap[Payment\Method::UPI], true);
     }
 
     protected function sendMozartRequestAndGetResponse(
@@ -2754,5 +2791,143 @@ class Gateway extends Base\Gateway
         ];
 
         return (in_array($wallet, $wallets, true));
+    }
+
+    public function getParsedDataFromUnexpectedCallback($callbackData)
+    {
+        $payment = [
+            'method'   => 'upi',
+            'amount'   => (int) ($callbackData['amount'] * 100),
+            'currency' => 'INR',
+            'contact'  => '+919999999999',
+            'email'    => 'void@razorpay.com',
+            'vpa'      => $callbackData['payerVPA'],
+        ];
+
+        $terminal = $this->getTerminalDetailsFromCallback($callbackData);
+
+        return [
+            'payment'  => $payment,
+            'terminal' => $terminal
+        ];
+    }
+
+    public function getTerminalDetailsFromCallback($callbackData)
+    {
+        return [
+            'gateway'              => 'upi_airtel',
+            'gateway_merchant_id2' => $callbackData['payeeVPA'],
+        ];
+    }
+
+    public function validatePush($input)
+    {
+        parent::action($input, Base\Action::VALIDATE_PUSH);
+
+        $this->isDuplicateUnexpectedPayment($input);
+
+        $this->isValidUnexpectedPayment($input);
+    }
+
+    protected function isDuplicateUnexpectedPayment($callbackData)
+    {
+        $merchantReference = $callbackData['hdnOrderID'];
+
+        $mozart = new Mozart\Gateway();
+
+        $gatewayPayment = $mozart->fetchByMerchantReference($merchantReference);
+
+        if ($gatewayPayment !== null)
+        {
+            throw new Exception\LogicException(
+                'Duplicate Gateway payment found',
+                null,
+                [
+                    'callbackData' => $callbackData
+                ]
+            );
+        }
+    }
+
+    protected function isValidUnexpectedPayment($callbackData)
+    {
+        //
+        // Verifies if the payload specified in the server callback is valid.
+        //
+        $input = [
+            'payment' => [
+                'id'      => $callbackData['hdnOrderID'],
+                'gateway' => 'upi_airtel',
+                'amount'  => (int) ($callbackData['amount']),
+                'vpa'     => $callbackData['payerVPA'],
+            ],
+            'terminal' => $this->terminal,
+        ];
+
+        $this->action = Action::VERIFY;
+
+        $verify = new Verify($this->gateway, $input);
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $paymentAmount = $verify->input['payment']['amount'];
+
+        $content = $verify->verifyResponseContent;
+
+        $actualAmount = $content['data']['amount'];
+
+        $this->assertAmount($paymentAmount, $actualAmount);
+
+        $status = $content['data']['txnStatus'];
+
+        $this->checkResponseStatus($status);
+    }
+
+    public function authorizePush($input)
+    {
+        list($paymentId , $callbackData) = $input;
+
+        $gatewayInput = [
+            'payment' => [
+                'id'      => $paymentId,
+                'vpa'     => $callbackData['payerVPA'],
+                'amount'  => $callbackData['amount'],
+                'gateway' => 'upi_airtel',
+            ],
+        ];
+
+        parent::action($gatewayInput, Action::AUTHORIZE);
+
+        $attributes = [
+            UpiEntity::TYPE                    => Type::PAY,
+            UpiEntity::MERCHANT_REFERENCE      => $callbackData['hdnOrderID'],
+            UpiEntity::RECEIVED                => 1,
+            UpiEntity::VPA                     => $callbackData['payerVPA'],
+        ];
+
+        $attributes = array_merge($callbackData, $attributes);
+
+        $mozart = new Mozart\Gateway();
+
+        $gatewayPayment = $mozart->createOrUpdateUpiEntityForMozartGateways($gatewayInput, $attributes, Action::AUTHORIZE);
+
+        $result = $callbackData['txnStatus'];
+
+        $this->checkResponseStatus($result);
+
+        return [
+            'acquirer' => [
+                Payment\Entity::VPA           => $gatewayPayment->getVpa(),
+                Payment\Entity::REFERENCE16   => $gatewayPayment->getNpciReferenceId(),
+            ]
+        ];
+    }
+
+    protected function checkResponseStatus($status)
+    {
+        if ($status !== 'SUCCESS')
+        {
+            $ex = new Exception\GatewayErrorException();
+        }
     }
 }

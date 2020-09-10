@@ -24,6 +24,10 @@ class PayVerifyData extends Base\Mock\Server
                         'amount'    => $entities['payment']['amount'] / 100,
                         'hash'      => 'abcd',
                         '_raw'      => 'eee',
+                        'upi'       => [
+                            'npci_reference_id' => '09321',
+                            'vpa'               => $entities['payment']['vpa'],
+                        ]
                     ],
                     'error'             => null,
                     'external_trace_id' => '',
@@ -50,6 +54,10 @@ class PayVerifyData extends Base\Mock\Server
                             'amount'    => $entities['payment']['amount'] / 100,
                             'hash'      => 'abcd',
                             '_raw'      => 'ddd',
+                            'upi'       => [
+                                'npci_reference_id' => '09321',
+                                'vpa'               => $entities['payment']['vpa'],
+                            ]
                         ],
                     'error'             => null,
                     'success'           => true,

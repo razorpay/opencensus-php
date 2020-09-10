@@ -299,6 +299,7 @@ class Entity
     const NETBANKING_ALLAHABAD   = 'netbanking_allahabad';
     const ENACH_NPCI_NETBANKING  = 'enach_npci_netbanking';
     const NETBANKING_CORPORATION = 'netbanking_corporation';
+    const UPI_MOZART             = 'upi_mozart';
 
     // P2P Service Entities
     const P2P_VPA                = 'p2p_vpa';
@@ -591,6 +592,7 @@ class Entity
         self::UPI_HULK               => \RZP\Gateway\Upi\Hulk::class,
         self::UPI_RBL                => \RZP\Gateway\Upi\Rbl::class,
         self::UPI_YESBANK            => \RZP\Gateway\Upi\Yesbank::class,
+        self::UPI_MOZART             => \RZP\Gateway\Upi\Mozart::class,
         self::AEPS                   => \RZP\Gateway\Aeps\Base::class,
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Icici::class,
         self::AXIS_MIGS              => \RZP\Gateway\AxisMigs::class,
@@ -761,6 +763,7 @@ class Entity
         self::UPI_NPCI               => \RZP\Gateway\Upi\Base::class,
         self::UPI_RBL                => \RZP\Gateway\Upi\Base::class,
         self::UPI_YESBANK            => \RZP\Gateway\Upi\Base::class,
+        self::UPI_MOZART             => \RZP\Gateway\Upi\Base::class,
 
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Base::class,
 

@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Mozart;
 
+use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Mozart;
 use RZP\Models\Merchant\Account;
@@ -36,13 +37,15 @@ class UpiAirtelGatewayTest extends TestCase
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_airtel_terminal');
 
+        $this->fixtures->merchant->createAccount(Account::DEMO_ACCOUNT);
+
         $this->fixtures->merchant->enableMethod(Account::TEST_ACCOUNT, Method::UPI);
+
+        $this->fixtures->merchant->enableMethod(Account::DEMO_ACCOUNT, Method::UPI);
 
         $this->fixtures->merchant->activate();
 
         $this->payment = $this->getDefaultUpiPaymentArray();
-
-        $this->fixtures->merchant->createAccount(Account::DEMO_ACCOUNT);
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
@@ -192,8 +195,6 @@ class UpiAirtelGatewayTest extends TestCase
 
     public function testPaymentVerifyFailed()
     {
-        $this->markTestSkipped();
-
         $payment = $this->testPayment();
 
         $paymentId = $payment['id'];
@@ -204,7 +205,7 @@ class UpiAirtelGatewayTest extends TestCase
             {
                 $content['success'] = false;
             }
-        });
+        }, 'mozart');
 
         $data = $this->testData[__FUNCTION__];
 
@@ -213,7 +214,42 @@ class UpiAirtelGatewayTest extends TestCase
             $this->verifyPayment($paymentId);
         });
 
-        $this->assertSame($this->payment['payment']['verified'], 0);
+        $payment = $this->getDbLastPayment();
+
+        $this->assertSame($payment['verified'], 0);
+    }
+
+    public function testLateAuthorizePayment()
+    {
+        $now  = Carbon::now();
+
+        Carbon::setTestNow(Carbon::parse('15 minutes ago'));
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:sharedUpiAirtelIntentTerminal');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+        $this->payment['_']['flow'] = 'intent';
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertSame('created', $payment->getStatus());
+
+        Carbon::setTestNow($now);
+
+        $this->timeoutOldPayment();
+
+        $this->assertNull($payment->getReference16());
+
+        $this->authorizedFailedPayment($payment->getPublicId());
+
+        $payment->reload();
+
+        $this->assertNotNull($payment->getReference16());
+        $this->assertTrue($payment->isAuthorized());
+        $this->assertTrue($payment->isLateAuthorized());
     }
 
     public function testRefundPayment()
@@ -328,5 +364,37 @@ class UpiAirtelGatewayTest extends TestCase
         $status = $response['status'];
 
         $this->assertEquals($expectedStatus, $status);
+    }
+
+    public function testUnexpectedPaymentSuccess()
+    {
+        $content = $this->mockServer()->getUnexpectedAsyncCallbackContentForAirtel();
+
+        $this->makeS2SCallbackAndGetContent($content);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $authorizeUpiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertNotNull($authorizeUpiEntity['merchant_reference']);
+
+        $paymentTransactionEntity = $this->getLastEntity('transaction', true);
+
+        $assertEqualsMap = [
+            'authorized'                           => $paymentEntity['status'],
+            'authorize'                            => $authorizeUpiEntity['action'],
+            'pay'                                  => $authorizeUpiEntity['type'],
+            $paymentEntity['id']                   => 'pay_' . $authorizeUpiEntity['payment_id'],
+            $paymentTransactionEntity['id']        => 'txn_' . $paymentEntity['transaction_id'],
+            $paymentTransactionEntity['entity_id'] => $paymentEntity['id'],
+            $paymentTransactionEntity['type']      => 'payment',
+            $paymentTransactionEntity['amount']    => $paymentEntity['amount'],
+            Account::DEMO_ACCOUNT                  => $paymentEntity['merchant_id'],
+        ];
+
+        foreach ($assertEqualsMap as $matchLeft => $matchRight)
+        {
+            $this->assertEquals($matchLeft, $matchRight);
+        }
     }
 }

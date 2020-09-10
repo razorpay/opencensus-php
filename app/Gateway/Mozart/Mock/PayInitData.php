@@ -275,6 +275,10 @@ class PayInitData extends Base\Mock\Server
                     'hash' => 'abcd',
                     '_raw' => '{"rrn":"910501000855","txnStatus":"PENDING","hdnOrderID":"ablxasabsjahskajkg","hash":"abcd","messageText":"Success","code":"0","errorCode":"000","txnId":"AIR461D026C5D8A48C8AED25897B9AB1877"}',
                     'status' => 'authorization_successful',
+                    'upi'    => [
+                        'npci_reference_id' => '987654321',
+                        'vpa'               => $entities['payment']['vpa'],
+                    ]
                 ],
             'error'             => null,
             'success'           => true,
