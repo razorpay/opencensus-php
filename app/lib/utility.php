@@ -658,7 +658,7 @@ if (! function_exists('strtoepoch'))
      * @param  string $format
      * @return string
      */
-    function strtoepoch(string $dateStr, string $format = 'd/m/Y h:i:s A'): string
+    function strtoepoch(string $dateStr, string $format = 'd-M-Y'): string
     {
         try
         {

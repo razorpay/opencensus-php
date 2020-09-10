@@ -6,13 +6,23 @@ namespace RZP\Models\BankingAccount\Activation\MIS;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Models\Admin\Admin;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\BankingAccount\Activation\Comment;
+use RZP\Models\BankingAccount\Activation\Detail;
 use RZP\Models\BankingAccount;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 
 class ExternalComments extends Base
 {
+    // Headers
+    const RZP_REF_NO = 'RZP Ref No';
+    const CUSTOMER_NAME = 'Customer Name';
+    const COMMENTS = 'Comments';
+    const SPOC_NAME = 'Sales POC Name';
+    const SPOC_NUMBER = 'Sales POC Number';
+
     public function __construct(array $input)
     {
         $timestamp = Carbon::createFromTimestamp(time(), Timezone::IST)->format('Y-m-d--H-i');
@@ -82,11 +92,15 @@ class ExternalComments extends Base
         /** @var BankingAccount\Entity $ba */
         foreach ($bankingAccountinfoMap as $baId => $baInfo)
         {
-            $commentsString =  $this->formatCommentsString($baInfo['comments']);
+            $commentsString = $this->formatCommentsString($baInfo['comments']);
+            $bankingAccount = $baInfo['entity'];
 
             $fileInput[] = [
-                'RZP Ref No' => $baInfo['entity']->getBankReferenceNumber(),
-                'Comments'   => $commentsString
+                self::RZP_REF_NO    => $bankingAccount->getBankReferenceNumber(),
+                self::CUSTOMER_NAME => $bankingAccount->merchant[Merchant\Entity::NAME],
+                self::COMMENTS      => $commentsString,
+                self::SPOC_NAME     => $bankingAccount->spocs()->first()[Admin\Entity::NAME],
+                self::SPOC_NUMBER   => $bankingAccount->bankingAccountActivationDetails[Detail\Entity::SALES_POC_PHONE_NUMBER],
             ];
         }
         return $fileInput;

@@ -1456,6 +1456,18 @@ return [
         ],
     ],
 
+    'assertUpdateViaBatch' => [
+        'request' => [
+            'url'     => '/banking_accounts/activation/details/batch',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'success'
+            ],
+        ],
+    ],
+
     'testCitiesForAutoComplete' => [
         'request' => [
             'url'     => '/cities',

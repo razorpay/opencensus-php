@@ -2279,14 +2279,11 @@ class BankingAccountTest extends TestCase
 
     public function testBankingAccountExternalCommentsMIS()
     {
-//        Mail::fake();
-//
-//        $this->ba->publicAuth();
-//
-//        $this->makeEmiPaymentOnCard('4111460212312338', 3);
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
         $bankingAccount = $this->createBankingAccount();
+
+        $bankingAccountEntity = $this->getDbLastEntity('banking_account');
 
         $this->prepareActivationDetail([
             'assignee_team' => 'bank'
@@ -2320,11 +2317,53 @@ class BankingAccountTest extends TestCase
                 'RZP Ref No' => '10000',
                 'Comments'   => $today.' Sample external comment
 '.$today. ' Sample external comment 2
-'
+',
+                'Customer Name' => $bankingAccountEntity->merchant->name,
+                'Sales POC Name' => $bankingAccountEntity->spocs()->first()->name,
+                'Sales POC Number' => $bankingAccountEntity->bankingAccountActivationDetails[ActivationDetail\Entity::SALES_POC_PHONE_NUMBER]
             ]
         ];
 
         $this->assertEquals($expectedFileInput, $fileInput);
+    }
+
+    public function assertUpdateViaBatch(array $content)
+    {
+        $admin = $this->getDbLastEntity('admin');
+
+        $dataToReplace = [
+            'request'  => [
+                'content' => [
+                    'admin_id' => $admin['id'],
+                    'channel' => 'rbl',
+                ]
+            ],
+        ];
+
+        $dataToReplace['request']['content'] = array_merge($dataToReplace['request']['content'], $content);
+
+        $this->ba->batchAuth();
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testUpdateAccountOpenDateViaBatch()
+    {
+        $this->testCreateBankingAccountWithActivationDetail();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $content = [
+            'bank_reference_number' => $bankingAccount['bank_reference_number'],
+            'comment' => 'sample comment from batch',
+            'source_team' => 'bank',
+            'source_team_type' => 'external',
+            'added_at' => 1594800229,
+            'assignee_team' => 'sales',
+            'account_open_date' => '23-Jun-2020'
+        ];
+
+        $this->assertUpdateViaBatch($content);
     }
 
     public function testCitiesForAutoComplete()
