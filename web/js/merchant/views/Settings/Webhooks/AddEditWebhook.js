@@ -167,7 +167,7 @@ export default class webhookForm extends Component {
 
   save = formData => {
     // if no events selected throw an error and do not save the form
-    const { webhookFormData } = this.props;
+    const { webhookFormData, webhookList } = this.props;
     let noOfEventsSelected = 0;
     if (webhookFormData && webhookFormData.values) {
       noOfEventsSelected = Object.values(webhookFormData.values.events).reduce(
@@ -273,6 +273,7 @@ export default class webhookForm extends Component {
                   .success('Webhook.setupCompleted', {
                     secret: data.secret,
                     alert_email: data.alert_email || '',
+                    webhook_count: webhookList.length || '' ,
                   })
               );
         })
