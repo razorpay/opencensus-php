@@ -33,4 +33,5 @@ class Constants
     const CREATOR_ID             = 'creator_id';
     const CREATOR_TYPE           = 'creator_type';
     const IS_PAYMENT_CAPTURED    = 'is_payment_captured';
+    const IS_ADMIN_AUTH          = 'is_admin_auth';
 }

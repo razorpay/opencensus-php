@@ -2174,7 +2174,8 @@ trait Refund
             Constants::IS_BATCH                => $isBatch,
             Constants::CREATOR_ID              => $this->request->header(RequestHeader::X_Creator_Id) ?? null,
             Constants::CREATOR_TYPE            => $this->request->header(RequestHeader::X_Creator_Type) ?? null,
-            Constants::IS_PAYMENT_CAPTURED     => (empty($payment->getCapturedAt()) === false)
+            Constants::IS_PAYMENT_CAPTURED     => (empty($payment->getCapturedAt()) === false),
+            Constants::IS_ADMIN_AUTH           => $this->ba->isAdminAuth()
         ];
 
         return $metaData;
