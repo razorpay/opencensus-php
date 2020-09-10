@@ -117,9 +117,13 @@ class Gateway extends Base\Gateway
         {
             $attributes = $this->getBharatqrGatewayAttributes($input);
 
-            $this->createGatewayPaymentEntity($attributes, Action::AUTHORIZE);
+            $paymentData = $this->createGatewayPaymentEntity($attributes, Action::AUTHORIZE);
 
-            return null;
+            return [
+                'acquirer' => [
+                    Payment\Entity::REFERENCE16 => $paymentData->getNpciReferenceId(),
+                ],
+            ];
         }
 
         if ((isset($input['upi']['flow']) === true) and

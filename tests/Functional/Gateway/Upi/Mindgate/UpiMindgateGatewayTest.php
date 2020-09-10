@@ -1183,7 +1183,7 @@ class UpiMindgateGatewayTest extends TestCase
 
         $qrCodeId = substr($this->qrCode['id'], 3);
 
-        $request = $this->mockServer()->getAsyncCallbackContentForBharatQr($qrCodeId);
+        $request = $this->mockServer()->getAsyncCallbackContentForBharatQr($qrCodeId, 100, ['rrn' => '025403043687']);
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -1201,6 +1201,13 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals('upi', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals(100, $payment['amount']);
+        $this->assertEquals('025403043687', $payment['reference16']);
+
+        $this->assertArraySubset([
+            'acquirer_data' => [
+                'rrn' => '025403043687'
+            ]
+        ], $payment);
 
         $this->assertEquals($bharatQr['payment_id'], $payment['id']);
 

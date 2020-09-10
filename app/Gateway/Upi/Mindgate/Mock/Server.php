@@ -223,9 +223,17 @@ class Server extends Base\Mock\Server
         ];
     }
 
-    public function getAsyncCallbackContentForBharatQr($qrCodeId, $amount = 100)
+    public function getAsyncCallbackContentForBharatQr($qrCodeId, $amount = 100, $meta = [])
     {
         $this->action = Action::CALLBACK;
+
+        $rrn = random_integer(16);
+
+        if (isset($meta['rrn']) === true)
+        {
+            $rrn = $meta['rrn'];
+        }
+
 
         $content = [
             random_integer(10),
@@ -239,7 +247,7 @@ class Server extends Base\Mock\Server
             random_integer(5),
             'sample@icici',
             // NPCI Reference Id
-            random_integer(16),
+            $rrn,
             'NA',
             'NA',
             'NA',
