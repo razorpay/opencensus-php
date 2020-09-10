@@ -832,6 +832,7 @@ class UpiAxisGatewayTest extends TestCase
             'gateway'           => 'upi_axis',
             'terminal_id'       => '100UPIAXISTmnl',
             'gateway_captured'  => true,
+            'reference16'       => '714513318376'
         ], $payment->toArray());
 
         $upi = $this->getDbLastEntity('upi');

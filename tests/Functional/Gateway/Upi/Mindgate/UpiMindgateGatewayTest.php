@@ -933,6 +933,7 @@ class UpiMindgateGatewayTest extends TestCase
             $paymentTransactionEntity['entity_id'] => $paymentEntity['id'],
             $paymentTransactionEntity['type']      => 'payment',
             $paymentTransactionEntity['amount']    => $paymentEntity['amount'],
+            '826115528405'                         => $paymentEntity['reference16']
         ];
 
         foreach ($assertEqualsMap as $matchLeft => $matchRight)

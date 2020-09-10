@@ -785,6 +785,8 @@ class UpiSbiGatewayTest extends TestCase
 
         $this->assertNotNull($authorizeUpiEntity['merchant_reference']);
 
+        $this->assertSame('99999', $paymentEntity['reference16']);
+
         $paymentTransactionEntity = $this->getLastEntity('transaction', true);
 
         $assertEqualsMap = [

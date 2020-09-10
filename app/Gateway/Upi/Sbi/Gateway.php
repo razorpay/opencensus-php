@@ -829,7 +829,8 @@ class Gateway extends Base\Gateway
 
         return [
             'acquirer' => [
-                Payment\Entity::VPA => $gatewayPayment->getVpa()
+                Payment\Entity::VPA         => $gatewayPayment->getVpa(),
+                Payment\Entity::REFERENCE16 => $gatewayPayment->getNpciReferenceId(),
             ]
         ];
     }

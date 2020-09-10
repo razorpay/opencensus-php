@@ -114,7 +114,9 @@ trait AuthorizePush
         {
             $input = [$payment->getId(), $callbackData];
 
-            $this->callGatewayFunction(Payment\Action::AUTHORIZE_PUSH, $input);
+            $data = $this->callGatewayFunction(Payment\Action::AUTHORIZE_PUSH, $input);
+
+            $this->processAuth($payment, $data);
         }
         catch (\Throwable $e)
         {
@@ -128,7 +130,5 @@ trait AuthorizePush
 
             throw $ex;
         }
-
-        $this->processAuth($payment);
     }
 }
