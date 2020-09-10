@@ -1597,7 +1597,9 @@ class Service extends Base\Service
 
     public function updateMethodsForMultipleMerchants($input)
     {
-        $this->trace->info(TraceCode::MERCHANT_METHODS_BULK_UPDATE);
+        $this->trace->info(
+            TraceCode::MERCHANT_METHODS_BULK_UPDATE,
+            $input);
 
         (new Methods\Validator)->validateInput('bulk_assign_methods', $input);
 

@@ -195,6 +195,25 @@ return [
         ],
     ],
 
+    'testFetchAllEmiPlansOnPublicAuthViaCps' => [
+        'request' => [
+            'content' => [
+            ],
+            'url'    => '/emi',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'HDFC' => [
+                    'min_amount' => 500000,
+                    'plans' => [
+                        9 => 12,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testFetchAllEmiPlansWithSbiOnPublicAuth' => [
         'request' => [
             'content' => [

@@ -745,7 +745,7 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals(true, $submerchantMethods[Entity::DEBIT_CARD]);
         $this->assertEquals(true, $submerchantMethods[Entity::NETBANKING]);
 
-        $arraySubtract = [Entity::CREDIT_CARD, Entity::DEBIT_CARD, Entity::NETBANKING, Entity::DISABLED_BANKS, Entity::CARD_SUBTYPE];
+        $arraySubtract = [Entity::CREDIT_CARD, Entity::DEBIT_CARD, Entity::NETBANKING, Entity::DISABLED_BANKS, Entity::CARD_SUBTYPE, Entity::EMI];
 
         $arrayAssertFalse = array_diff(array_keys(Entity::$defaultPaymentMethodsForSubmerchantByPartner), $arraySubtract);
 

@@ -205,6 +205,16 @@ class TestCase extends IlluminateTestCase
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::CARD_PAYMENT_SERVICE_ENABLED => 0]);
     }
 
+    public function enableCpsEmiFetch()
+    {
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::CARD_PAYMENT_SERVICE_EMI_FETCH => 1]);
+    }
+
+    public function disableCpsEmiFetch()
+    {
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::CARD_PAYMENT_SERVICE_EMI_FETCH => 0]);
+    }
+
     public function enableNbPlusConfig()
     {
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::NB_PLUS_SERVICE_ENABLED => 1]);

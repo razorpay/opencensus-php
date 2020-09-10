@@ -12,6 +12,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Account;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Support\Collection;
+use RZP\Models\Base\PublicCollection;
 
 class Service extends Base\Service
 {
@@ -387,60 +388,108 @@ class Service extends Base\Service
 
     private function fetchEmiPlans()
     {
-        $sharedEmiPlans = null;
-        $merchantEmiPlans = null;
+        $sharedCreditEmiPlans = new PublicCollection();
 
-        if ((new Migration)->isCpsFetchEnabled() == true)
+        $sharedDebitEmiPlans = new PublicCollection();
+
+        $merchantCreditEmiPlans = new PublicCollection();
+
+        $merchantDebitEmiPlans = new PublicCollection();
+
+        $id = $this->merchant->getId();
+
+        $methods = $this->merchant->getMethods();
+
+        if (empty($methods) === true)
         {
-            $sharedEmiPlans = $this->fetchEmiPlansFromCardPaymentsService(Account::SHARED_ACCOUNT);
-
-            $merchantEmiPlans = $this->fetchEmiPlansFromCardPaymentsService($this->merchant->getId());
+            return [];
         }
 
-        // Adding check again to handle the fallback condition where config key is turned off due to issue on cps.
-        if (($sharedEmiPlans === null) or ($merchantEmiPlans === null))
-        {
-            $sharedEmiPlans = $this->repo->emi_plan->fetchEmiPlansByMerchantId(Account::SHARED_ACCOUNT);
+        // Fetch emi plans from CPS/repo based for shared merchant
+        $sharedPlans = $this->repo->emi_plan->fetchEmiPlanByMerchantId(Account::SHARED_ACCOUNT);
 
-            $merchantEmiPlans = $this->repo->emi_plan->fetchEmiPlansByMerchantId($this->merchant->getId());
+        // Fetch emi plans from CPS/repo based for current merchant
+        $merchantEmiPlans = $this->repo->emi_plan->fetchEmiPlanByMerchantId($id);
+
+        // Filter emi plans for shared/current merchant based on the emi plan type in each entities in the collection
+        if ($methods->isCreditEmiEnabled() === true)
+        {
+            $emiType = Type::CREDIT;
+
+            $sharedCreditEmiPlans = $sharedPlans->reject(function($plan) use ($emiType) {
+                return $plan->type !== $emiType;
+            });
+
+            $merchantCreditEmiPlans = $merchantEmiPlans->reject(function($plan) use ($emiType) {
+                return $plan->type !== $emiType;
+            });
+        }
+
+        if ($methods->isDebitEmiEnabled() === true)
+        {
+            $emiType = Type::DEBIT;
+
+            $sharedDebitEmiPlans = $sharedPlans->reject(function($plan) use ($emiType) {
+                return $plan->type !== $emiType;
+            });
+
+            $merchantDebitEmiPlans = $merchantEmiPlans->reject(function($plan) use ($emiType) {
+                return $plan->type !== $emiType;
+            });
         }
 
         $issuers = [];
 
-        foreach ($merchantEmiPlans as $plan)
+        if ($merchantCreditEmiPlans->isEmpty() !== true)
         {
-            $issuer = $plan->getIssuer();
-            $type = $plan->getType();
+            foreach ($merchantCreditEmiPlans as $plan)
+            {
+                $issuer = $plan->getIssuer();
+                $type   = $plan->getType();
 
-            $issuers[$issuer][$type] = 1;
+                $issuers[$issuer][$type] = 1;
+            }
         }
 
-        $sharedEmiPlans = $sharedEmiPlans->reject(function ($sharedPlan) use ($issuers)
+        if ($merchantDebitEmiPlans->isEmpty() !== true)
         {
-            $issuer = $sharedPlan->getIssuer();
-            $type   = $sharedPlan->getType();
+            foreach ($merchantDebitEmiPlans as $plan)
+            {
+                $issuer = $plan->getIssuer();
+                $type   = $plan->getType();
 
-            return (isset($issuers[$issuer][$type]) === true);
-        });
-
-        $emiPlans = $merchantEmiPlans->merge($sharedEmiPlans);
-
-        return $emiPlans;
-    }
-
-    private function fetchEmiPlansFromCardPaymentsService($mid)
-    {
-        $input = [
-            Entity::MERCHANT_ID => $mid
-        ];
-
-        $plans = (new Migration)->handleMigration(Migration::QUERY, null, '', $input);
-
-        if ($plans === null)
-        {
-            return $plans;
+                $issuers[$issuer][$type] = 1;
+            }
         }
 
-        return (new Migration)->getEntityList($plans[Migration::EMI_PLANS]);
+        // If EMI plan for the issuer and type exists for merchant directly, ignore the shared merchant's emi plan
+        if ($sharedCreditEmiPlans->isEmpty() !== true)
+        {
+            $sharedCreditEmiPlans = $sharedCreditEmiPlans->reject(function ($sharedPlan) use ($issuers)
+            {
+                $issuer = $sharedPlan->getIssuer();
+                $type   = $sharedPlan->getType();
+
+                return (isset($issuers[$issuer][$type]) === true);
+            });
+        }
+
+        // If EMI plan for the issuer and type exists for merchant directly, ignore the shared merchant's emi plan
+        if ($sharedDebitEmiPlans->isEmpty() !== true)
+        {
+            $sharedDebitEmiPlans = $sharedDebitEmiPlans->reject(function ($sharedPlan) use ($issuers)
+            {
+                $issuer = $sharedPlan->getIssuer();
+                $type   = $sharedPlan->getType();
+
+                return (isset($issuers[$issuer][$type]) === true);
+            });
+        }
+
+        $merchantEmiPlans = $merchantCreditEmiPlans->merge($merchantDebitEmiPlans);
+
+        $sharedEmiPlans = $sharedCreditEmiPlans->merge($sharedDebitEmiPlans);
+
+        return $merchantEmiPlans->merge($sharedEmiPlans);
     }
 }

@@ -35,7 +35,7 @@ class Validator extends Base\Validator
         Entity::FREECHARGE         => 'sometimes|boolean',
         Entity::JIOMONEY           => 'sometimes|boolean',
         Entity::SBIBUDDY           => 'sometimes|boolean',
-        Entity::EMI                => 'sometimes|boolean',
+        Entity::EMI                => 'sometimes|numeric|in:0,1,2,3',
         Entity::CREDIT_CARD        => 'sometimes|boolean',
         Entity::DEBIT_CARD         => 'sometimes|boolean',
         Entity::CARD_SUBTYPE       => 'sometimes|array',

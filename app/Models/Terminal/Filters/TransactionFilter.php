@@ -10,6 +10,8 @@ use RZP\Models\Card;
 use RZP\Models\Admin;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Feature;
+use RZP\Models\Merchant\Methods\EmiType;
+use RZP\Models\Merchant\Methods\Entity as MerchantMethod;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
@@ -533,7 +535,7 @@ class TransactionFilter extends Terminal\Filter
         if ((empty($bank) === false) and
             (in_array($bank, Gateway::$emiBanksUsingCardTerminals)))
         {
-            return (($terminal->isCardEnabled()) and
+            return (($this->isMerchantEmiTypeEnabled() and $terminal->isCardEnabled()) and
                     ($terminal->isEmiEnabled() === false) and
                     ($terminal->supportsCurrency(Currency::INR) === true));
         }
@@ -558,7 +560,23 @@ class TransactionFilter extends Terminal\Filter
 
         $emiDuration = $this->input['payment']->emiPlan->getDuration();
 
-        return $terminal->isValidEmiTerminal($gateway, $emiDuration);
+        return ($this->isMerchantEmiTypeEnabled() and $terminal->isValidEmiTerminal($gateway, $emiDuration));
+    }
+
+    protected function isMerchantEmiTypeEnabled()
+    {
+        $payment = $this->input['payment'];
+
+        $methods = $this->input['merchant']->getMethods();
+
+        $emi = $methods[MerchantMethod::EMI];
+
+        if ($emi !== EmiType::NONE_ENABLED)
+        {
+            return (($payment->card->isCredit() &&  $methods->isCreditEmiEnabled()) || ($payment->card->isDebit() && $methods->isDebitEmiEnabled()));
+        }
+
+        return true;
     }
 
     public function pharmaFilter(Terminal\Entity $terminal)

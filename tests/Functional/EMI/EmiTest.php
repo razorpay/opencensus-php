@@ -2,7 +2,10 @@
 
 namespace RZP\Tests\Functional\EMI;
 
+use RZP\Models\Admin;
+use RZP\Models\Merchant;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Emi\Entity as EmiEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class EmiTest extends TestCase
@@ -91,6 +94,13 @@ class EmiTest extends TestCase
      */
     public function testFetchAllEmiPlansOnPublicAuth()
     {
+        $this->fixtures->edit(
+            'methods',
+            '10000000000000',
+            [
+                'emi' => 1,
+            ]);
+
         $this->fixtures->create('emi_plan');
 
         $this->ba->publicAuth();
@@ -98,8 +108,101 @@ class EmiTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchAllEmiPlansOnPublicAuthViaCps()
+    {
+        $this->enableCpsConfig();
+
+        $this->enableCpsEmiFetch();
+
+        $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
+
+        $this->app->instance('card.payments', $cardService);
+
+        $cardService->shouldReceive('query')
+            ->andReturnUsing(function (string $entityName, $query)
+            {
+                if ($query['merchant_id'] === Merchant\Account::TEST_ACCOUNT)
+                {
+                    return [
+                        'success'   => true,
+                        'emi_plans' => [
+                            [
+                                EmiEntity::ID               => 'emipln12345679',
+                                EmiEntity::MERCHANT_ID      => Merchant\Account::TEST_ACCOUNT,
+                                EmiEntity::BANK             => 'HDFC',
+                                EmiEntity::TYPE             => 'credit',
+                                EmiEntity::RATE             => 1200,
+                                EmiEntity::DURATION         => 9,
+                                EmiEntity::METHODS          => 'card',
+                                EmiEntity::MIN_AMOUNT       => 500000,
+                                EmiEntity::ISSUER_PLAN_ID   => null,
+                                EmiEntity::SUBVENTION       => 'customer',
+                                EmiEntity::MERCHANT_PAYBACK => 123,
+                                EmiEntity::CREATED_AT       => 0,
+                                EmiEntity::UPDATED_AT       => 0,
+                                EmiEntity::DELETED_AT       => 0,
+                            ],
+                        ],
+                    ];
+                }
+                else if ($query['merchant_id'] === Merchant\Account::SHARED_ACCOUNT)
+                {
+                    return [
+                        'success'   => true,
+                        'emi_plans' => [
+                            [
+                                EmiEntity::ID               => 'emipln33345679',
+                                EmiEntity::MERCHANT_ID      => Merchant\Account::SHARED_ACCOUNT,
+                                EmiEntity::BANK             => 'HDFC',
+                                EmiEntity::TYPE             => 'credit',
+                                EmiEntity::RATE             => 1200,
+                                EmiEntity::DURATION         => 9,
+                                EmiEntity::METHODS          => 'card',
+                                EmiEntity::MIN_AMOUNT       => 500000,
+                                EmiEntity::ISSUER_PLAN_ID   => null,
+                                EmiEntity::SUBVENTION       => 'customer',
+                                EmiEntity::MERCHANT_PAYBACK => 123,
+                                EmiEntity::CREATED_AT       => 0,
+                                EmiEntity::UPDATED_AT       => 0,
+                                EmiEntity::DELETED_AT       => 0,
+                            ],
+                        ],
+                    ];
+                }
+                return null;
+            });
+
+        $this->fixtures->edit(
+            'methods',
+            '10000000000000',
+            [
+                'emi' => 1,
+            ]);
+
+        $this->fixtures->create('emi_plan');
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+
+        $this->disableCpsEmiFetch();
+
+        $this->disbaleCpsConfig();
+
+        // If we don't reset fetched keys, it'll get the cps config from this instead of from cache for
+        // further tests
+        Admin\ConfigKey::resetFetchedKeys();
+    }
+
     public function testFetchAllEmiPlansWithSbiOnPublicAuth()
     {
+        $this->fixtures->edit(
+            'methods',
+            '10000000000000',
+            [
+                'emi' => 1,
+            ]);
+
         $this->fixtures->emiPlan->createDefaultEmiPlans();
 
         $this->fixtures->emiPlan->createMerchantSpecificEmiPlans();

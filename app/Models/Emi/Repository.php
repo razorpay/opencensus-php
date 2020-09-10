@@ -8,6 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Card\IIN;
 use RZP\Models\Card\Network;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Base\PublicCollection;
 
 class Repository extends Base\Repository
 {
@@ -20,11 +21,43 @@ class Repository extends Base\Repository
         Entity::NETWORK         => 'sometimes|string|max:12',
     );
 
-    public function fetchEmiPlansByMerchantId(string $merchantId)
+    private function fetchEmiPlansFromCardPaymentsService(string $merchantId): PublicCollection
     {
-        return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
-                    ->get();
+        $input = [
+            Entity::MERCHANT_ID => $merchantId
+        ];
+
+        $plans = (new Migration)->handleMigration(Migration::QUERY, null, '', $input);
+
+        // If the CPS call fails or if CPS returns empty plans
+        if (empty($plans) === true)
+        {
+            return new PublicCollection;
+        }
+
+        return (new Migration)->getEntityList($plans[Migration::EMI_PLANS]);
+    }
+
+    public function fetchEmiPlanByMerchantId(string $merchantId): PublicCollection
+    {
+        $emiPlans = new PublicCollection();
+
+        // If CPS fetch enabled, fetch from CPS
+        if ((new Migration)->isCpsFetchEnabled() == true)
+        {
+            $emiPlans = $this->fetchEmiPlansFromCardPaymentsService($merchantId);
+        }
+
+        // If CPS fetch disabled or CPS fetch failed, fetch from db
+        if ($emiPlans->isEmpty() === true)
+        {
+            $emiPlans = $this->newQuery()
+                ->where([
+                    [Entity::MERCHANT_ID, '=', $merchantId],
+                ])->get();
+        }
+
+        return $emiPlans;
     }
 
     public function fetchRelevantMerchantEmiPlan(IIN\Entity $iin, int $duration, $merchant, $type = null)

@@ -19,7 +19,7 @@ class Repository extends Base\Repository
         Entity::AMEX                => 'sometimes|in:0,1',
         Entity::DISABLED_BANKS      => 'sometimes|in:0,1',
         Entity::CARD                => 'sometimes|in:0,1',
-        Entity::EMI                 => 'sometimes|in:0,1',
+        Entity::EMI                 => 'sometimes|numeric',
         Entity::MERCHANT_ID         => 'sometimes|alpha_num',
         Entity::MOBIKWIK            => 'sometimes|in:0,1',
         Entity::PAYTM               => 'sometimes|in:0,1',

@@ -482,6 +482,11 @@ class Merchant extends Base
 
     public function disableMethod($id = '10000000000000', $method)
     {
+        if ($method === Methods\Entity::EMI)
+        {
+            return $this->fixtures->edit('methods', $id, [$method => Methods\EmiType::NONE_ENABLED]);
+        }
+
         return $this->fixtures->edit('methods', $id, [$method => false]);
     }
 
@@ -562,12 +567,12 @@ class Merchant extends Base
 
     public function enableEmi($id = '10000000000000')
     {
-        return $this->fixtures->edit('methods', $id, ['emi' => true]);
+        return $this->fixtures->edit('methods', $id, ['emi' => Methods\EmiType::CREDIT_DEBIT_ENABLED]);
     }
 
     public function disableEmi($id = '10000000000000')
     {
-        return $this->fixtures->edit('methods', $id, ['emi' => false]);
+        return $this->fixtures->edit('methods', $id, ['emi' => Methods\EmiType::NONE_ENABLED]);
     }
 
     public function enableMobikwik($id = '10000000000000')

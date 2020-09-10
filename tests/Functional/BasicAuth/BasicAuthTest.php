@@ -306,6 +306,13 @@ class BasicAuthTest extends TestCase
 
         $this->fixtures->create('emi_plan');
 
+        $this->fixtures->create('methods', [
+            'merchant_id'    => '100000Razorpay',
+            'emi'            => 1,
+            'disabled_banks' => [],
+            'banks'          => '[]',
+        ]);
+
         $this->ba->publicAuth('rzp_test_partner_' . $client->getId());
 
         $this->startTest();

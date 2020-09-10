@@ -68,7 +68,7 @@ class Migration
 
     public function handleMigration($action, $emiPlan, $id = '', $input = [])
     {
-        if( $this->isCpsFetchEnabled() == false )
+        if ($this->isCpsFetchEnabled() == false)
         {
             return null;
         }

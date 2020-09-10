@@ -196,7 +196,7 @@ class Entity extends Base\PublicEntity
         self::MPESA          => false,
         self::DISABLED_BANKS => NetbankingProcessor::DEFAULT_DISABLED_BANKS,
         self::BANKS          => '[]',
-        self::EMI            => false,
+        self::EMI            => 0,
         self::UPI            => true,
         self::AEPS           => false,
         self::EMANDATE       => false,
@@ -230,7 +230,7 @@ class Entity extends Base\PublicEntity
         self::OPENWALLET     => false,
         self::MPESA          => false,
         self::DISABLED_BANKS => [],
-        self::EMI            => false,
+        self::EMI            => 0,
         self::UPI            => false,
         self::AEPS           => false,
         self::EMANDATE       => false,
@@ -312,7 +312,7 @@ class Entity extends Base\PublicEntity
         self::SBIBUDDY      => 'bool',
         self::OPENWALLET    => 'bool',
         self::MPESA         => 'bool',
-        self::EMI           => 'bool',
+        self::EMI           => 'int',
         self::UPI           => 'bool',
         self::BANK_TRANSFER => 'bool',
         self::AEPS          => 'bool',
@@ -510,7 +510,27 @@ class Entity extends Base\PublicEntity
 
     public function isEmiEnabled()
     {
-        return $this->getAttribute(self::EMI);
+        return ($this->isCreditEmiEnabled() || $this->isDebitEmiEnabled());
+    }
+
+    public function isCreditEmiEnabled()
+    {
+        $enabledEmi = $this->getAttribute(self::EMI);
+
+        // Remove this after migration
+        return $enabledEmi;
+
+        return in_array(EmiType::CREDIT, $enabledEmi, true);
+    }
+
+    public function isDebitEmiEnabled()
+    {
+        $enabledEmi = $this->getAttribute(self::EMI);
+
+        // Remove this after migration
+        return $enabledEmi;
+
+        return in_array(EmiType::DEBIT, $enabledEmi, true);
     }
 
     public function isEmandateEnabled()
@@ -556,6 +576,22 @@ class Entity extends Base\PublicEntity
     }
 
     // ----------------------- Getters --------------------------------------------
+
+    /**
+     * Commenting this for now, since it requires dashboard changes
+     * This enables us to set the Emi attributes
+     */
+//    protected function setEmiAttribute($type)
+//    {
+//        $hex = 0;
+//
+//        if (isset($this->attributes[self::EMI]) === true)
+//        {
+//            $hex = $this->attributes[self::EMI];
+//        }
+//
+//        $this->attributes[self::EMI] = EmiType::getHexValue($type, $hex);
+//    }
 
     protected function setCardSubTypeAttribute($subtypes)
     {
@@ -669,11 +705,6 @@ class Entity extends Base\PublicEntity
     public function getOpenwallet()
     {
         return $this->getAttribute(self::OPENWALLET);
-    }
-
-    public function getEmi()
-    {
-        return $this->getAttribute(self::EMI);
     }
 
     public function getWallets()
@@ -919,6 +950,21 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Accessors --------------------------------------------
 
+    public function getEmiAttribute()
+    {
+        $emi = $this->attributes[self::EMI];
+
+        // Remove this once migration is done
+        if ($emi > 0)
+        {
+            return true;
+        }
+
+        return false;
+
+        return EmiType::getEnabledTypes($emi);
+    }
+
     protected function getWalletAttribute()
     {
         $wallets = array();
@@ -1002,6 +1048,11 @@ class Entity extends Base\PublicEntity
         {
             $this->attributes[self::APPS] = $apps;
         }
+    }
+
+    protected function setEmiAttribute(int $emi)
+    {
+        $this->attributes[self::EMI] = $emi;
     }
 
     protected function setDisabledBanksAttribute(array $banks)

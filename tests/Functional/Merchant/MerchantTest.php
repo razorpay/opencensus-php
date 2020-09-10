@@ -3247,6 +3247,13 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $this->fixtures->edit(
+            'methods',
+            '10000000000000',
+            [
+                'emi' => 1,
+            ]);
+
         $this->fixtures->create('emi_plan:default_emi_plans');
 
         $offer = $this->fixtures->create('offer:emi_subvention');
@@ -3263,6 +3270,13 @@ class MerchantTest extends TestCase
     public function testGetCheckoutWithMultipleSubEmiOffers()
     {
         $this->ba->publicAuth();
+
+        $this->fixtures->edit(
+            'methods',
+            '10000000000000',
+            [
+                'emi' => 1,
+            ]);
 
         $this->fixtures->create('emi_plan:default_emi_plans');
 

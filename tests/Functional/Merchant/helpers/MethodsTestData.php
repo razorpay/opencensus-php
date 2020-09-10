@@ -262,12 +262,12 @@ return [
             'url' => '/merchant/methods',
             'method' => 'put',
             'content'   => [
-                'emi'  => true,
+                'emi'  => 1,
             ]
         ],
         'response' => [
             'content' => [
-                'emi' => true
+                'emi' => true,
             ],
         ],
     ],
@@ -282,7 +282,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'emi' => false
+                'emi' => false,
             ],
         ],
     ],
