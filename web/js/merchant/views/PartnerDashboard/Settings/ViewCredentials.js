@@ -23,7 +23,7 @@ export default class ViewCredentials extends Component {
     const { credentials } = this.props;
 
     return ajax({
-      url: 'keys/csv',
+      url: '/keys/csv',
       method: 'post',
       appendModeInQueryParam: true,
       data: {
