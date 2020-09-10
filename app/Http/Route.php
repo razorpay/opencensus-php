@@ -1965,7 +1965,9 @@ class Route
         'merchant_verify_attributes'              => ['post',    'merchant/verify/{verificationType}',                      'MerchantController@postVerifyMerchantAttributes'              ],
         'checkout_personalisation'                => ['get',     'personalisation',                                         'MerchantController@getPersonalisedMethods'                    ],
         'update_payout_status'                    => ['patch',   'payouts/{id}/manual/status',                              'PayoutController@updatePayoutStatusManually'                          ],
-        'salesforce_event'                        => ['post',    'merchant/{mid}/salesforce_event',                         'SalesForceController@sendSalesForceEvent']
+        'salesforce_event'                        => ['post',    'merchant/{mid}/salesforce_event',                         'SalesForceController@sendSalesForceEvent'],
+        'banking_account_statement_process_admin' => ['post',     'banking_account_statement/admin/process',                 'BankingAccountStatementController@fetchStatementForAccount'],
+
     ];
 
     public static $public = [
@@ -3052,6 +3054,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'banking_account_statement_process_admin',
         'd2c_bureau_report_delete',
         'correct_merchant_owners_products',
         'paper_nach_fetch_failure',
@@ -4481,7 +4484,7 @@ class Route
         'admin_get_free_payouts_attributes'           => Permission::VIEW_FREE_PAYOUTS_ATTRIBUTES,
 
         'setl_service_migration'                      => '*',
-
+        'banking_account_statement_process_admin'     => Permission::BANKING_ACCOUNT_STATEMENT_RUN_MANUALLY,
         'tax_payments_admin_auth_api'                 => Permission::TAX_PAYMENT_ADMIN_AUTH_EXECUTE,
     ];
 

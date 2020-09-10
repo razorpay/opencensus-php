@@ -467,6 +467,7 @@ class Name
 
     const PAYOUT_STATUS_UPDATE_MANUALLY       = 'payout_status_update_manually';
 
+    const BANKING_ACCOUNT_STATEMENT_RUN_MANUALLY = 'banking_account_statement_run_manually';
     // Update Free Payout Permission
     const UPDATE_FREE_PAYOUTS_ATTRIBUTES      = 'update_free_payouts_attributes';
 

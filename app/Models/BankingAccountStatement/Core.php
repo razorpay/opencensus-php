@@ -626,6 +626,8 @@ class Core extends Base\Core
 
         $utr = $basEntity->getUtr();
 
+        $unlinkedPayouts = [];
+
         if (empty($utr) === false)
         {
             if ($basEntity->getType() === Type::CREDIT)
@@ -656,8 +658,6 @@ class Core extends Base\Core
 
             $payouts = $this->repo->payout->fetchFromUtr($utr, $basEntity->getAmount(), $balance->getId());
 
-            $unlinkedPayouts = [];
-
             if ($basEntity->getType() === Type::CREDIT)
             {
                 if ($payouts->count() === 1)
@@ -675,7 +675,7 @@ class Core extends Base\Core
                 }
             }
 
-            foreach ($payouts as $payout)
+            foreach ($payouts as $key => $payout)
             {
                 if ($payout->getTransactionId() !== null)
                 {
@@ -687,7 +687,7 @@ class Core extends Base\Core
                     ];
 
                     $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_UTR, [
-                        'data'  => $data,
+                        'data' => $data,
                     ]);
 
                     $operation = 'duplicate UTR in account statement fetch for a linked payout';
@@ -698,6 +698,8 @@ class Core extends Base\Core
                                                 null,
                                                 1,
                                                 'rx_ca_rbl_alerts');
+
+                    unset($payouts[$key]);
                 }
                 else
                 {

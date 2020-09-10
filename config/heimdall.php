@@ -983,6 +983,9 @@ return [
             ],
             Permission::PAYOUT_STATUS_UPDATE_MANUALLY => [
                 'assignable' => true,
+            ],
+            Permission::BANKING_ACCOUNT_STATEMENT_RUN_MANUALLY => [
+                'assignable' => true,
             ]
         ],
 
