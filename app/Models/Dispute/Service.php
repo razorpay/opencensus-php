@@ -180,7 +180,14 @@ class Service extends Base\Service
                     $disputeData[$disputeEntity[Entity::ID]] = $this->getDisputeDataForMail($disputeEntity, $disputeReason);
 
                     // add payment notes field
-                    $disputeData[$disputeEntity[Entity::ID]]['payment_notes'] = $payment->getNotes()->toArray();
+                    $disputeData[$disputeEntity[Entity::ID]]['payment_notes']    = $payment->getNotes()->toArray();
+                    $disputeData[$disputeEntity[Entity::ID]]['customer_contact'] = $payment->getContact();
+                    $disputeData[$disputeEntity[Entity::ID]]['order_receipt']    = '';
+
+                    if ($payment->hasOrder() === true)
+                    {
+                        $disputeData[$disputeEntity[Entity::ID]]['order_receipt'] = $payment->order->getReceipt();
+                    }
                 }
 
                 $row[] = $disputeEntity[Entity::ID];
