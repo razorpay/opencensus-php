@@ -32,6 +32,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\BankingAccount;
 use RZP\Services\DiagClient;
+use RZP\Services\HubspotClient;
 use RZP\Services\RazorXClient;
 use RZP\Models\Feature\Constants;
 use RZP\Mail\User\MappedToAccount;
@@ -64,6 +65,7 @@ use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 use function Clue\StreamFilter\fun;
+use function foo\func;
 
 class MerchantTest extends TestCase
 {
@@ -6280,21 +6282,25 @@ class MerchantTest extends TestCase
         $this->testMerchantSwitchProductWhenMerchantNotActivatedAndXOnboardingExperimentOff('off', 'school', $banking);
     }
 
-    public function testMerchantProductSwitchSendsMetricsWithUTMParams($shouldFireEvents = true, $bankingEnabled = false) {
+    public function testMerchantProductSwitchFiresEvents($shouldFireEvents = true, $bankingEnabled = false) {
         //Given
-        $methodsToObserve = ['trackOnboardingEvent'];
 
         $diagClient = $this->getMockBuilder(DiagClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods($methodsToObserve)
+                           ->setMethods(['trackOnboardingEvent'])
                            ->getMock();
 
+        $hubspotClient = $this->getMockBuilder(HubspotClient::class)
+                              ->setConstructorArgs([$this->app])
+                              ->getMock();
+
         $this->app->instance('diag', $diagClient);
+        $this->app->instance('hubspot', $hubspotClient);
 
         $eventsCalled = [];
 
         $diagClient->expects($this->any())
-                   ->method($methodsToObserve[0])
+                   ->method('trackOnboardingEvent')
                    ->will($this->returnCallback(
                        function (array $eventData, Merchant\Entity $merchant = null,
                                  \Throwable $ex = null, array $customProperties = [])
@@ -6302,6 +6308,18 @@ class MerchantTest extends TestCase
                            $eventsCalled[] = $eventData;
                            return true;
                        }));
+
+        $hubspotCalled = false;
+
+        $hubspotClient->expects($this->any())
+                      ->method('trackProductSwitchEvent')
+                      ->will($this->returnCallback(
+                          function (Merchant\Entity $merchant)
+                          use (&$hubspotCalled) {
+                              $hubspotCalled = true;
+                              return;
+                          }
+                      ));
 
         //When
         $this->testMerchantSwitchProductWhenMerchantNotActivatedAndXOnboardingExperimentOff('off', 'school', $bankingEnabled);
@@ -6314,13 +6332,15 @@ class MerchantTest extends TestCase
 
         if ($shouldFireEvents) {
             $this->assertContains($expectedEvents, $eventsCalled);
+            $this->assertTrue($hubspotCalled);
         } else {
             $this->assertNotContains($expectedEvents, $eventsCalled);
+            $this->assertFalse($hubspotCalled);
         }
     }
 
     public function testMerchantProductSwitchDoesntFireIfBankingAlreadyEnabled() {
-        $this->testMerchantProductSwitchSendsMetricsWithUTMParams(false, true);
+        $this->testMerchantProductSwitchFiresEvents(false, true);
     }
 
     /**

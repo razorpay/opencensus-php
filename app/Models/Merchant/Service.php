@@ -31,6 +31,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Schedule;
 use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
+use RZP\Services\HubspotClient;
 use RZP\Trace\TraceCode;
 use RZP\Models\Promotion;
 use RZP\Models\Admin\Org;
@@ -4221,23 +4222,26 @@ class Service extends Base\Service
             }
         }
 
-        $wasEnabledNow = false;
+        $wasBankingEnabledNow = false;
+        $wasSwitchToPG = false;
 
-        $this->repo->transactionOnLiveAndTest(function() use ($product, &$wasEnabledNow)
+        $this->repo->transactionOnLiveAndTest(function() use ($product, &$wasBankingEnabledNow, &$wasSwitchToPG)
         {
 
             // Add Banking Role for the current merchant User.
             (new User\Service)->addProductSwitchRole($product);
 
+            $wasSwitchToPG = $this->auth->getRequestOriginProduct() === Product::PRIMARY;
+
             $merchant = $this->auth->getMerchant();
 
             $currentlyEnabled = $merchant->isBusinessBankingEnabled();
 
-            $wasEnabledNow = $this->enableBusinessBankingIfApplicable($merchant);
+            $wasBankingEnabledNow = $this->enableBusinessBankingIfApplicable($merchant);
 
             $this->repo->saveOrFail($merchant);
 
-            if ($wasEnabledNow === true)
+            if ($wasBankingEnabledNow === true)
             {
                 $this->assignOnboardingCategoryForBankingMerchant($merchant);
 
@@ -4252,7 +4256,7 @@ class Service extends Base\Service
                 return;
             }
 
-            (new Activate)->activateBusinessBankingIfApplicable($merchant, $wasEnabledNow);
+            (new Activate)->activateBusinessBankingIfApplicable($merchant, $wasBankingEnabledNow);
 
             // creating a user mapping for a merchant on X is equivalent to him signing up on X
             // platform, so we will check if sign up has any promotion running and will assign rewards
@@ -4261,7 +4265,27 @@ class Service extends Base\Service
 
         // At this point the product switch has happened, and if there were exceptions it
         // wouldn't have come till here
-        if ($wasEnabledNow) {
+
+
+        $this->trace->info(TraceCode::PRODUCT_SWITCH, [
+            'merchant' => $merchant,
+            'wasSwitchToPg' => $wasSwitchToPG,
+            'wasBankingEnabledNow' => $wasBankingEnabledNow
+        ]);
+
+        if ($wasBankingEnabledNow or $wasSwitchToPG) {
+            $this->postProductSwitchActions($wasSwitchToPG, $wasBankingEnabledNow, $merchant);
+        }
+
+    }
+
+    private function postProductSwitchActions(bool $wasSwitchtoPG, bool  $wasBankingEnabledNow, Merchant\Entity $merchant){
+
+        // Keeping this for only PG -> X for now, since the current event dashboard are built with that assumption
+        // need to change this once the expectation is clear.
+
+        if ($wasBankingEnabledNow) {
+            //1. Capture this Product Switch Event in the Datalake
             /** @var $diagClient DiagClient */
             $diagClient = $this->app['diag'];
             $utmParams = [];
@@ -4269,6 +4293,10 @@ class Service extends Base\Service
             $diagClient->trackOnboardingEvent(EventCode::PRODUCT_SWITCH, $merchant, null, $utmParams);
         }
 
+        //2. Send this Event to Hubspot
+        /** @var HubspotClient $hubspotClient */
+        $hubspotClient = $this->app->hubspot;
+        $hubspotClient->trackProductSwitchEvent($merchant);
     }
 
     public function migrationBankingVAs(array $input)

@@ -167,6 +167,14 @@ class HubspotClient
         $this->dispatchRequestJob($payloadData);
     }
 
+    public function trackProductSwitchEvent(Merchant\Entity  $merchant){
+        $payload = [
+            'product_switch' => true
+        ];
+        $this->addMerchantContext($payload, $merchant);
+        $this->dispatchRequestJob($payload);
+    }
+
     protected function appendPrefixToArray(array & $payloadData, $prefix)
     {
         $prefix_array = array_fill(0, count($payloadData), $prefix);
