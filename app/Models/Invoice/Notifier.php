@@ -927,18 +927,6 @@ class Notifier extends Base\Core
             $receipt = $this->invoice->getNotes()['loan_number'] ?? $receipt;
         }
 
-        $subscriptionRegistration = $this->invoice->entity;
-
-        if ($subscriptionRegistration->isMethodCard() === true)
-        {
-            $template = 'sms.custom_invoice.subr_card';
-        }
-
-        if ($subscriptionRegistration->isMethodEmandate() === true)
-        {
-            $template = 'sms.custom_invoice.subr_emandate';
-        }
-
         $merchantName = $merchant->getBillingLabel();
 
         $merchantName = substr($merchantName, 0, 30);
@@ -1069,7 +1057,7 @@ class Notifier extends Base\Core
                 break;
 
             case Preferences::MID_ADITYA_BIRLA_HEALTH:
-                
+
                 $sender = 'ABCPRO';
                 $template = 'sms.custom_invoice.adityabirla_health';
                 $params   = [
@@ -1090,6 +1078,11 @@ class Notifier extends Base\Core
                 }
 
                 if ($subscriptionRegistration->isMethodEmandate() === true)
+                {
+                    $template = 'sms.custom_invoice.subr_emandate';
+                }
+
+                if ($subscriptionRegistration->isMethodNach() === true)
                 {
                     $template = 'sms.custom_invoice.subr_emandate';
                 }

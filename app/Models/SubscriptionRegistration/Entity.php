@@ -302,6 +302,11 @@ class Entity extends Base\PublicEntity
         return ($this->getMethod() === self::METHOD_TYPE_EMANDATE);
     }
 
+    public function isMethodNach(): bool
+    {
+        return ($this->getMethod() === Method::NACH);
+    }
+
     public function hasAutoPayment()
     {
         return ($this->getAmount() > 0);
