@@ -45,7 +45,7 @@ class Repository extends Base\Repository
                     ->merchantId($merchant->getId())
                     ->where(DB::raw('trim('. $contactTypeColumn .')'), ($input[Entity::TYPE] ?? null))
                     ->where(DB::raw('trim('. $contactNameColumn .')'), ($input[Entity::NAME] ?? null))
-                    ->latest()
+                    ->where(Entity::ACTIVE, 1)
                     ->first();
     }
 
@@ -70,7 +70,7 @@ class Repository extends Base\Repository
                     ->merchantId($merchant->getId())
                     ->where(Entity::TYPE, $input[Entity::TYPE] ?? null)
                     ->where(Entity::NAME, $input[Entity::NAME] ?? null)
-                    ->latest()
+                    ->where(Entity::ACTIVE, 1)
                     ->first();
     }
 
