@@ -2326,4 +2326,11 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals($expectedFileInput, $fileInput);
     }
+
+    public function testCitiesForAutoComplete()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
 }

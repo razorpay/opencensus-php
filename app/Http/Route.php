@@ -1517,6 +1517,7 @@ class Route
 
         // Pincode Service
         'pincode_get'                              => ['get',      'pincodes/{id}',                                  'PincodeSearchController@get'                                       ],
+        'cities_get'                               => ['get',      'cities',                                         'CityController@getCities'                                       ],
         'db_meta_query'                            => ['post',     'db_meta_query',                                  'AdminController@dbMetaDataQuery'                                   ],
 
         // Deprecated feature routes - maintaining for BC - Remove after dashboard changes
@@ -3708,6 +3709,7 @@ class Route
 
         'update_payout_status',
         'pincode_get',
+        'cities_get',
         'admin_key_migrate_to_credcase',
         'admin_access_maps_bootstrap_cache',
 
@@ -3728,6 +3730,7 @@ class Route
         'add_ondemand_pricing_if_absent'           => '*',
         'payout_reject_admin_bulk'                 => Permission::REJECT_PAYOUT_BULK,
         'pincode_get'                              => '*',
+        'cities_get'                               => '*',
         'loc_service_admin'                        => Permission::LOC,
         'ufh_admin_upload_file'                    => '*',
         'los_service_admin'                        => Permission::LOANS_EDIT,

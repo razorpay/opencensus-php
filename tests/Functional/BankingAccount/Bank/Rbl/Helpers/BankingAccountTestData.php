@@ -1454,5 +1454,18 @@ return [
 
             ]
         ],
+    ],
+
+    'testCitiesForAutoComplete' => [
+        'request' => [
+            'url'     => '/cities',
+            'method'  => 'GET',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ],
     ]
 ];
