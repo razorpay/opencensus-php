@@ -1049,6 +1049,7 @@ class Validator extends Base\Validator
         Entity::CORPORATE                   => 'sometimes|int|in:0,1,2',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
         Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
+        Entity::TPV                         => 'sometimes|in:0,1,2',
     ];
 
     protected static $netbankingSbiTerminalRules = [
