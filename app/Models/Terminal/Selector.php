@@ -874,6 +874,11 @@ class Selector extends Base\Core
             return false;
         }
 
+        if ($feature === self::RAZORX_SYNC)
+        {
+            return true;
+        }
+
         $response = $this->app->razorx->getTreatment($paymentId, $feature, $this->mode);
 
         if ($response === 'on')
