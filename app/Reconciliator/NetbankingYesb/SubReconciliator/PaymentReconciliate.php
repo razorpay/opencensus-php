@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator\NetbankingYesb\SubReconciliator;
 
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Action;
@@ -131,5 +132,20 @@ class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
         }
 
         return $status;
+    }
+
+    protected function getArn($row)
+    {
+        return $this->getReferenceNumber($row);
+    }
+
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            'gateway_payment_id' => $this->getReferenceNumber($row),
+            'acquirer'           => [
+                Payment\Entity::REFERENCE1 => $this->getReferenceNumber($row),
+            ]
+        ];
     }
 }

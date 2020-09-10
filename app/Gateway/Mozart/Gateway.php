@@ -1275,6 +1275,11 @@ class Gateway extends Base\Gateway
             return true;
         }
 
+        if ($this->isForceAuthMozartGateway($input) === true)
+        {
+            return true;
+        }
+
         return false;
     }
 
@@ -2929,5 +2934,14 @@ class Gateway extends Base\Gateway
         {
             $ex = new Exception\GatewayErrorException();
         }
+    }
+
+    protected function isForceAuthMozartGateway($input)
+    {
+        $forceAuthMozartGateways = [
+            Payment\Gateway::NETBANKING_YESB,
+        ];
+
+        return in_array($input['payment'][Payment\Entity::GATEWAY], $forceAuthMozartGateways, true);
     }
 }

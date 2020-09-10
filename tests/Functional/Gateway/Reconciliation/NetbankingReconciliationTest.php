@@ -1154,6 +1154,40 @@ class NetbankingReconciliationTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testYesbReconForceAuthorizePayment()
+    {
+        $this->gateway = 'netbanking_yesb';
+
+        $payment = $this->createFailedPayment($this->gateway);
+
+        $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_yesb');
+
+        $fileContents = $this->generateFile('yesb', ['gateway' => 'netbanking_yesb']);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingYesb', $uploadedFile, [$payment['public_id']]);
+
+        $gatewayEntity = $this->getDbLastEntity('mozart');
+
+        $data = json_decode($gatewayEntity['raw'], true);
+
+        $this->assertNotNull($data['bank_payment_id']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals(true, $payment['late_authorized']);
+        $this->assertEquals($data['bank_payment_id'], $payment['reference1']);
+        $this->assertEquals($data['bank_payment_id'], $payment['acquirer_data']['bank_transaction_id']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     public function testKvbSuccessRecon()
     {
         $this->gateway = 'netbanking_kvb';
