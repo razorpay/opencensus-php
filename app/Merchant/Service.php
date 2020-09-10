@@ -7,7 +7,6 @@ use Hash;
 use Queue;
 use Session;
 use Request;
-use Carbon\Carbon;
 use Razorpay\Api\Errors\ErrorCode;
 use Razorpay\Api\Errors\BadRequestError;
 
@@ -589,28 +588,6 @@ class Service extends Base\Service
         }, array_values($validFeatures));
 
         return $featureNames;
-    }
-
-    public function getMerchantActiveCampaigns(): array
-    {
-        $request = new ApiRequestAny(['client_type' => 'merchant']);
-
-        list($error, $data) = $request->send("credits?fetch_expired=0&is_promotion=1", 'GET');
-
-        if (empty($error) === false)
-        {
-            throw new BadRequestError(
-                $error[0],
-                ErrorCode::BAD_REQUEST_ERROR,
-                400
-            );
-        }
-
-        $campaigns = array_map(function($val) {
-            return $val['campaign'];
-        }, array_values($data['items']));
-
-        return $campaigns;
     }
 
     public function addMerchantTagsOnAPI($merchantId, $tags)

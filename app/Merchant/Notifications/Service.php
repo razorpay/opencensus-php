@@ -65,7 +65,6 @@ class Service extends Base\Service
             {
                 case 'tags':
                 case 'features':
-                case 'campaigns':
 
                     if (isset($user[$key]) === false)
                     {

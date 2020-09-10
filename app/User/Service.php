@@ -823,8 +823,6 @@ class Service extends Base\Service
 
                     $data['features'] = $merchantService->getMerchantFeatures();
 
-                    $data['campaigns'] = $merchantService->getMerchantActiveCampaigns();
-
                     $isBankingRequest = ApiUrl::isBankingOriginRequest();
 
                     //
