@@ -77,8 +77,7 @@ class Core extends Base\Core
 
     public function getGatewaysForMethod(string $method)
     {
-        $gateways = $this->fetchOrderedGatewaysForMethod($method) ??
-                    Defaults::GATEWAY_ORDER[$method][Mode::LIVE];
+        $gateways = Defaults::GATEWAY_ORDER[$method][Mode::LIVE];
 
         if ($this->mode === Mode::TEST)
         {
