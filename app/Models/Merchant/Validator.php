@@ -355,6 +355,12 @@ class Validator extends Base\Validator
         'products' => 'required|array|filled',
     ];
 
+    protected static $accessMapBatchRules = [
+        Constants::BATCH_ACTION  => 'required|string|custom',
+        Constants::ENTITY        => 'required|string|custom',
+        Constants::IDEMPOTENT_ID => 'required',
+    ];
+
     public function validateMerchantForProductInternational(Entity $merchant)
     {
         $merchant = $merchant?: $this->entity;

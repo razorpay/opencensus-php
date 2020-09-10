@@ -3082,6 +3082,21 @@ class Header
             ]
         ],
 
+        Type::SUBMERCHANT_LINK => [
+            self::INPUT => [
+                self::MERCHANT_ID,
+                self::SUBMERCHANT_ID,
+            ],
+
+            self::OUTPUT => [
+                self::MERCHANT_ID,
+                self::SUBMERCHANT_ID,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
+        ],
+
         'banking_account_activation_comments' => [
             self::INPUT => [
                 self::RZP_REF_NO,

@@ -48,6 +48,7 @@ use RZP\Models\Pricing\Plan;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Workflow\Action;
 use RZP\Modules\Migrate\Migrate;
+use RZP\Exception\BaseException;
 
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Admin as MainAdmin;
@@ -4881,5 +4882,55 @@ class Service extends Base\Service
         $targetOpts = $input['target'] ?? [];
 
         return $migrate->migrateAsync($sourceOpts, $targetOpts, false);
+    }
+
+    public function partnerAccessMapBulkBulkUpdate(array $input)
+    {
+        $response = new Base\PublicCollection();
+
+        foreach ($input as $record)
+        {
+            try
+            {
+                $this->actionOnAccessMap($record);
+
+                $response->push($record);
+            }
+            catch (BaseException $exception)
+            {
+                $this->setErrorAttributesToResponse($record, $exception, $response);
+            }
+        }
+
+        return $response->toArrayWithItems();
+    }
+
+    /**
+     * @param array $record
+     *
+     * @return mixed
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function actionOnAccessMap(array $record)
+    {
+        $attribute = [];
+
+        $settings = [];
+
+        $this->segregateInputFieldsAndSettings($record, $attribute, $settings);
+
+        (new Validator)->validateInput('access_map_batch', $settings);
+
+        $core = CE::getEntityCoreClass($settings[Constants::ENTITY]);
+
+        $batch_action = $settings[Constants::BATCH_ACTION];
+
+        $function = camel_case($batch_action);
+
+        $partner =$this->repo->merchant->findOrFailPublic($attribute[Constants::MERCHANT_ID]);
+
+        $subMerchant = $this->repo->merchant->findOrFailPublic($attribute[Constants::SUBMERCHANT_ID]);
+
+        return $core->$function($partner, $subMerchant);
     }
 }

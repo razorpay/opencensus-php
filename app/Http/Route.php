@@ -1545,6 +1545,7 @@ class Route
         // Partner routes
         'merchants_access_map_create'              => ['post',     'merchants/{id}/access_maps',                     'MerchantController@createPartnerAccessMap'                         ],
         'merchants_access_map_delete'              => ['delete',   'merchants/{id}/access_maps',                     'MerchantController@deletePartnerAccessMap'                         ],
+        'merchants_access_map_create_bulk'         => ['post',     'access_map/bulk',                                'MerchantController@postPartnerAccessMapBulk'                       ],
         'partner_submerchant_map'                  => ['post',     'partner_submerchant_map',                        'MerchantController@createPartnerSubmerchantMap'                    ],
         'fetch_partner_intent'                     => ['get',      'merchant/partner-intent',                        'MerchantController@fetchPartnerIntent'                             ],
         'update_partner_intent'                    => ['patch',    'merchant/partner-intent',                        'MerchantController@updatePartnerIntent'                            ],
@@ -2583,6 +2584,7 @@ class Route
         'fts_bulk_attempts_initiate',
         'merchants_update_onboarding_category_to_normal_cron',
         'entity_bulk_update',
+        'merchants_access_map_create_bulk',
         'settings_fetch_internal',
         'settings_upsert_internal',
         'setl_transaction_replay',
@@ -5247,6 +5249,7 @@ class Route
             'merchant_inheritance_parent_set_bulk',
             'mdr_adjustment',
             'entity_bulk_update',
+            'merchants_access_map_create_bulk',
             'adj_add_batch',
             'bank_transfer_process_icici_internal',
             'reporting_log_create',

@@ -257,9 +257,9 @@ class Validator extends Base\Validator
         Entity::SCHEDULE                => 'sometimes|numeric',
     ];
 
-    protected static $adjustmentCreateRules = [	
-        Entity::TYPE         => 'required|in:adjustment',	
-        Entity::FILE         => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,	
+    protected static $adjustmentCreateRules = [
+        Entity::TYPE         => 'required|in:adjustment',
+        Entity::FILE         => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
         Entity::FILE_ID      => 'required_without:file',
         Entity::NAME         => 'filled|string|max:255',
         Entity::SCHEDULE     => 'sometimes|numeric',
@@ -526,6 +526,13 @@ class Validator extends Base\Validator
 
     protected static $merchantActivationCreateRules = [
         Entity::TYPE   => 'required|in:merchant_activation',
+        Entity::NAME   => 'filled|string|max:255',
+        Entity::FILE   => 'required|file|max:3072' . self::DEFAULT_MIME_RULE,
+        Entity::CONFIG => 'required|array|custom',
+    ];
+
+    protected static $submerchantLinkCreateRules = [
+        Entity::TYPE   => 'required|in:submerchant_link',
         Entity::NAME   => 'filled|string|max:255',
         Entity::FILE   => 'required|file|max:3072' . self::DEFAULT_MIME_RULE,
         Entity::CONFIG => 'required|array|custom',

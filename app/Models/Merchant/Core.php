@@ -1621,11 +1621,10 @@ class Core extends Base\Core
                 'submerchant_id' => $submerchant->getId(),
             ]);
 
-        $accessMap = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant)
-        {
+        $accessMap = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant) {
             $partnerApp = $this->getInternalPartnerApp($partner);
 
-            $config     = (new PartnerConfig\Core)->fetch($partnerApp);
+            $config = (new PartnerConfig\Core)->fetch($partnerApp);
 
             if (($config !== null) and
                 ($config->getDefaultPlanId() !== null) and
@@ -1649,11 +1648,11 @@ class Core extends Base\Core
 
             // If the mapping already exists, the existing entity is returned
             $accessMap = (new AccessMap\Core)->addMappingForOAuthApp(
-                            $partner,
-                            $submerchant,
-                            [
-                                AccessMap\Entity::APPLICATION_ID => $partnerApp->getId(),
-                            ]);
+                $partner,
+                $submerchant,
+                [
+                    AccessMap\Entity::APPLICATION_ID => $partnerApp->getId(),
+                ]);
 
             return $accessMap;
         });
@@ -3778,4 +3777,8 @@ class Core extends Base\Core
             Constants::$internationalActionMapping[\RZP\Models\Merchant\Action::DISABLE_INTERNATIONAL]);
     }
 
+    public function submerchantLink(Entity $partner, Entity $submerchant)
+    {
+        return $this->createPartnerSubmerchantAccessMap($partner, $submerchant);
+    }
 }

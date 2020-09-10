@@ -61,6 +61,7 @@ class Limit
         Type::MERCHANT_ACTIVATION                   => 5000,
         Type::CAPTURE_SETTING                       => 1100000,
         Type::PARTNER_SUBMERCHANT_INVITE            => 50000,
+        Type::SUBMERCHANT_LINK                      => 50000,
     ];
 
     /**

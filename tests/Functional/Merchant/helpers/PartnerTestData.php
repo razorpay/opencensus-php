@@ -433,6 +433,38 @@ return [
         ],
     ],
 
+    'testPartnerSubmerchantLinkViaBatch' => [
+        'request'  => [
+            'url'     => '/access_map/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'batch_action'   => 'submerchant_link',
+                    'entity'         => 'merchant',
+                    'merchant_id'    => '10000000000000',
+                    'submerchant_id' => '10000000000009',
+                    'idempotent_id'  => 'random',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'batch_action'   => 'submerchant_link',
+                        'entity'         => 'merchant',
+                        'merchant_id'    => '10000000000000',
+                        'submerchant_id' => '10000000000009',
+                        'idempotent_id'  => 'random',
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testPartnerLinkItselfAsSubmerchant' => [
         'request'   => [
             'url'     => '/merchants/10000000000000/access_maps',

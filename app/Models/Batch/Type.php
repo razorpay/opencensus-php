@@ -106,6 +106,8 @@ class Type
 
     const MERCHANT_ACTIVATION   = 'merchant_activation';
 
+    const SUBMERCHANT_LINK      = 'submerchant_link';
+
     const MERCHANT_STATUS_ACTION  = 'merchant_status_action';
 
     const ADJUSTMENT            = 'adjustment';
@@ -170,6 +172,7 @@ class Type
         self::NACH_MIGRATION,
         self::MERCHANT_ACTIVATION,
         self::INTERNAL_INSTRUMENT_REQUEST,
+        self::SUBMERCHANT_LINK,
     ];
 
     /**
@@ -370,6 +373,7 @@ class Type
         self::ADJUSTMENT,
         self::CAPTURE_SETTING,
         self::PARTNER_SUBMERCHANT_INVITE,
+        self::SUBMERCHANT_LINK,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data

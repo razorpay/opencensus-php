@@ -44,6 +44,9 @@ final class Constants
     const IDEMPOTENT_ID                           = 'idempotent_id';
     const BATCH_ACTION                            = 'batch_action';
 
+    const MERCHANT_ID                             = 'merchant_id';
+    const SUBMERCHANT_ID                          = 'submerchant_id';
+
     // Used in partners flows
     const APPLICATION_ID                          = 'application_id';
 

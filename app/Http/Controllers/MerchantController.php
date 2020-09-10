@@ -1731,4 +1731,14 @@ class MerchantController extends Controller
 
         return ApiResponse::json($summary);
     }
+
+    public function postPartnerAccessMapBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->partnerAccessMapBulkBulkUpdate($input);
+
+        return ApiResponse::json($response);
+    }
+
 }
