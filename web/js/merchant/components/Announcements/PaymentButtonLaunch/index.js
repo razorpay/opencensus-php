@@ -52,7 +52,7 @@ function _track(source) {
   };
 }
 
-export default function ({ productName }) {
+export default React.memo(({ productName }) => {
   const track = _track(productName);
 
   track.onViewBanner();
@@ -72,4 +72,4 @@ export default function ({ productName }) {
       </Link>
     </AnnouncementBanner>
   );
-}
+});
