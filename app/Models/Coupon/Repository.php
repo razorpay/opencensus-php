@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Coupon;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Constants\Timezone;
 
 class Repository extends Base\Repository
 {
@@ -22,6 +24,16 @@ class Repository extends Base\Repository
                     ->where(Entity::ENTITY_ID, '=', $entityId)
                     ->where(Entity::ENTITY_TYPE,'=',$entityType)
                     ->first();
+    }
+
+    public function isPromoCodeActiveForMerchant(string $merchantId, string $couponCode) : bool
+    {
+        return $this->newQuery()
+            ->where(Entity::CODE, '=', $couponCode)
+            ->whereIn(Entity::MERCHANT_ID, [$merchantId, Merchant\Account::SHARED_ACCOUNT])
+            ->where(Entity::ENTITY_TYPE, '=', Entity::ENTITY_TYPE_PROMOTION)
+            ->where(Entity::END_AT, '>=', Carbon::now(Timezone::IST)->getTimestamp())
+            ->exists();
     }
 
     public function fetchByCodeWithRelations(string $code, string $merchantId)

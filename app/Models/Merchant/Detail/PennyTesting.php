@@ -217,7 +217,19 @@ class PennyTesting extends Base\Core
 
                 $merchantDetails->setKycClarificationReasons($kycClarification);
 
-                $detailCore->sendOnboardingJourneySms($merchantDetails, SmsTemplates::PENNY_TESTING_FAILURE);
+                $unregistered = BusinessType::isUnregisteredBusiness($merchantDetails->getBusinessType());
+                $promoCodeActive = $detailCore->isPromoCodeActive($merchantDetails->getMerchantId());
+
+                if ($unregistered === true && $promoCodeActive === true)
+                {
+                    $detailCore->sendOnboardingJourneySms(
+                        $merchantDetails, SmsTemplates::PROMO_PENNY_TESTING_FAILURE);
+                }
+                else
+                {
+                    $detailCore->sendOnboardingJourneySms(
+                        $merchantDetails, SmsTemplates::PENNY_TESTING_FAILURE);
+                }
 
                 break;
             default:

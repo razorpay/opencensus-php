@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
     const DELETED_AT  = 'deleted_at';
 
     const COUPON_CODE = 'coupon_code';
+    const ENTITY_TYPE_PROMOTION = 'promotion';
 
     protected $entity = 'coupon';
 

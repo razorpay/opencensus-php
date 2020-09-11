@@ -12,6 +12,7 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\State;
+use RZP\Models\Coupon;
 use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\RequestJob;
@@ -41,7 +42,6 @@ use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
 use RZP\Mail\Merchant\Rejection as RejectionEmail;
-use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Mail\Merchant\RazorpayX\L2SubmissionGreylist;
 use RZP\Mail\Merchant\RazorpayX\L2SubmissionWhitelist;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
@@ -2778,50 +2778,103 @@ class Core extends Base\Core
             return;
         }
 
+        $promoCodeActive = $this->isPromoCodeActive($merchantDetail->getMerchantId());
+
+        $this->trace->info(
+            TraceCode::MERCHANT_ONBOARDING_PROMO_CODE_ACTIVE,
+            [
+                'promo_active' => $promoCodeActive,
+                'merchant_id'  => $merchantDetail->getMerchantId(),
+            ]);
+
+        $smsTemplateName = '';
+
         switch ($newActivationStatus)
         {
             case Status::INSTANTLY_ACTIVATED:
                 {
                     if ((Detail\BusinessType::isUnregisteredBusiness($merchantDetail->getBusinessType()) === true))
                     {
-                        $this->sendOnboardingJourneySms($merchantDetail,
-                                                        SmsTemplates::UNREGISTERED_PAYMENTS_ENABLED);
+                        if ($promoCodeActive === false)
+                        {
+                            $smsTemplateName = SmsTemplates::UNREGISTERED_PAYMENTS_ENABLED;
+                        }
+                        else
+                        {
+                            $smsTemplateName = SmsTemplates::PROMO_UNREGISTERED_PAYMENTS_ENABLED;
+                        }
                     }
                     else
                     {
-                        $this->sendOnboardingJourneySms($merchantDetail,
-                                                        SmsTemplates::REGISTERED_PAYMENTS_ENABLED);
+                        if ($promoCodeActive === false)
+                        {
+                            $smsTemplateName = SmsTemplates::REGISTERED_PAYMENTS_ENABLED;
+                        }
+                        else
+                        {
+                            $smsTemplateName = SmsTemplates::PROMO_REGISTERED_PAYMENTS_ENABLED;
+                        }
                     }
                 }
                 break;
             case Status::NEEDS_CLARIFICATION:
                 {
-                    $this->sendOnboardingJourneySms($merchantDetail,
-                                                    SmsTemplates::NEEDS_CLARIFICATION);
+                    if (($promoCodeActive === true) &&
+                        (Detail\BusinessType::isUnregisteredBusiness($merchantDetail->getBusinessType()) === false))
+                    {
+                        $smsTemplateName = SmsTemplates::PROMO_NEEDS_CLARIFICATION;
+                    }
+                    else
+                    {
+                        $smsTemplateName = SmsTemplates::NEEDS_CLARIFICATION;
+                    }
                 }
                 break;
             case Status::ACTIVATED:
                 {
-                    if ((Detail\BusinessType::isUnregisteredBusiness($merchantDetail->getBusinessType()) === true))
+                    if (Detail\BusinessType::isUnregisteredBusiness($merchantDetail->getBusinessType()) === true)
                     {
-                        $this->sendOnboardingJourneySms($merchantDetail,
-                                                        SmsTemplates::UNREGISTERED_SETTLEMENTS_ENABLED);
+                        $smsTemplateName = SmsTemplates::UNREGISTERED_SETTLEMENTS_ENABLED;
                     }
                     else
                     {
                         if ($oldActivationStatus !== Status::INSTANTLY_ACTIVATED)
                         {
-                            $this->sendOnboardingJourneySms($merchantDetail,
-                                                            SmsTemplates::REGISTERED_PAYMENTS_SETTLEMENTS_ENABLED);
+                            if ($promoCodeActive === false)
+                            {
+                                $smsTemplateName = SmsTemplates::REGISTERED_SETTLEMENTS_ENABLED;
+                            }
+                            else
+                            {
+                                $smsTemplateName = SmsTemplates::PROMO_REGISTERED_SETTLEMENTS_ENABLED;
+                            }
                         }
                         else
                         {
-                            $this->sendOnboardingJourneySms($merchantDetail,
-                                                            SmsTemplates::UNREGISTERED_SETTLEMENTS_ENABLED);
+                            if ($promoCodeActive === false)
+                            {
+                                $smsTemplateName = SmsTemplates::UNREGISTERED_SETTLEMENTS_ENABLED;
+                            }
+                            else
+                            {
+                                $smsTemplateName = SmsTemplates::PROMO_UNREGISTERED_SETTLEMENTS_ENABLED;
+                            }
                         }
                     }
                 }
                 break;
+        }
+
+        if(empty($smsTemplateName) === false)
+        {
+            $this->sendOnboardingJourneySms($merchantDetail, $smsTemplateName);
+
+            $this->trace->info(
+                TraceCode::MERCHANT_ONBOARDING_SMS_TEMPLATE_NAME,
+                [
+                    'sms_template_name' => $smsTemplateName,
+                    'merchant_id'       => $merchantDetail->getMerchantId(),
+                ]);
         }
     }
 
@@ -2889,6 +2942,19 @@ class Core extends Base\Core
         }
 
         return $activationFlow;
+    }
+
+    /**
+     * Check if promotional coupon campaign is enabled
+     *
+     * @param string $merchantId
+     *
+     * @return bool
+     */
+    public function isPromoCodeActive(string $merchantId) : bool
+    {
+        return (new Coupon\Repository())
+            ->isPromoCodeActiveForMerchant($merchantId, Entity::PROMO_COUPON_CODE);
     }
 
     /**

@@ -156,6 +156,9 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const APPROVED = 'approved';
     const REJECTED = 'rejected';
 
+    // Details for PROMO campaign for onboarding.
+    const PROMO_COUPON_CODE = "SURGESEPT";
+
     // For mailers
     const ACTIVATION_DURATION = '4-5 working days';
 
