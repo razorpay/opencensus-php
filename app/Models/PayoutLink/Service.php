@@ -9,7 +9,6 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity as E;
-use RZP\Models\Feature\Constants;
 use Illuminate\Support\Facades\Mail;
 use RZP\Models\Payout\SourceUpdater;
 use RZP\Models\User\Core as UserCore;
@@ -348,6 +347,11 @@ class Service extends Base\Service
         }
 
         return $this->app['payout-links']->updateSettings($this->merchant->getPublicId(), $input);
+    }
+
+    public function getMerchantSupportSettings(Merchant\Entity $merchant)
+    {
+        return $this->core->getMerchantSupportSettings($merchant);
     }
 
     public function getSettings(string $merchantId = null)

@@ -7,6 +7,7 @@ use Mockery;
 use RZP\Models\Contact\Type;
 use RZP\Models\Payout\Status;
 use RZP\Models\Payout\Purpose;
+use RZP\Models\Settings\Module;
 use RZP\Models\Settings\Accessor;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -559,6 +560,30 @@ class TaxPaymentsTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->ba->setProxyHeader(null);
+
+        $this->startTest();
+    }
+
+    public function testGetInternalMerchantWhenNoSettingsPresent()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->startTest();
+    }
+
+    public function testGetInternalMerchantWhenSettingsArePresent()
+    {
+        $merchant = $this->getDbEntity('merchant', ['id' => '10000000000000']);
+
+        $settingAccessor = Accessor::for($merchant, Module::PAYOUT_LINK);
+
+        $settingAccessor->upsert('support_email' , 'test@email.com')->save();
+
+        $settingAccessor->upsert('support_url' , 'test.com')->save();
+
+        $settingAccessor->upsert('support_contact' , '1234')->save();
+
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
 
         $this->startTest();
     }

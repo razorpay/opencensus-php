@@ -601,9 +601,9 @@ return [
             ],
             'url'     => '/tax-payments/mark-as-paid',
             'content' => [
-                'tax_payment_id' => ['txpy_F2qwMZe97QTGG1'],
-                'manually_paid_metadata' => [
-                    'notes1' => 'smoething'
+                'tax_payment_id'         => ['txpy_F2qwMZe97QTGG1'],
+                "manually_paid_metadata" => [
+                    "notes1" => "smoething"
                 ],
             ],
         ],
@@ -642,8 +642,8 @@ return [
             'url'     => '/tax-payments/mark-as-paid',
             'content' => [
                 'tax_payment_id'         => ['txpy_F2qwMZe97QTGG1'],
-                'manually_paid_metadata' => [
-                    'notes1' => 'smoething'
+                "manually_paid_metadata" => [
+                    "notes1" => "smoething"
                 ],
             ],
         ],
@@ -659,6 +659,38 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST,
+        ]
+    ],
+    'testGetInternalMerchantWhenNoSettingsPresent'                                             => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/internal/merchants/10000000000000',
+        ],
+        'response' => [
+            'content' => [
+                "support_details" => [
+                    "support_contact" => null,
+                    "support_email"   => null,
+                    "support_url"     => null,
+                    "contrast_color"  => "#FFFFFF"
+                ],
+            ]
+        ]
+    ],
+    'testGetInternalMerchantWhenSettingsArePresent'                                             => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/internal/merchants/10000000000000',
+        ],
+        'response' => [
+            'content' => [
+                "support_details" => [
+                    "support_contact" => '1234',
+                    "support_email"   => 'test@email.com',
+                    "support_url"     => 'test.com',
+                    "contrast_color"  => "#FFFFFF"
+                ],
+            ]
         ]
     ],
 ];

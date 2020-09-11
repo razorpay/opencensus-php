@@ -68,6 +68,7 @@ use RZP\Mail\Merchant\CreateSubMerchantPartner;
 use RZP\Constants\{Mode, Entity as CE, Product};
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
+use RZP\Models\PayoutLink\Service as PayoutLinkService;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
@@ -78,8 +79,9 @@ class Service extends Base\Service
     use Notify;
     use SettlementTrait;
 
-    const COUPON_RESPONSE = 'apply_coupon';
-    const OAUTH_MAIL      = 'oauth_mail';
+    const COUPON_RESPONSE               = 'apply_coupon';
+    const OAUTH_MAIL                    = 'oauth_mail';
+    const SUPPORT_DETAILS               = 'support_details';
     const ES_ON_DEMAND_ANNOUNCEMENT_TAG = 'es-on-demand.announcement-early-settlement';
 
     const DEFAULT_SUBMERCHANT_FETCH_LIMIT = 100;
@@ -3113,6 +3115,10 @@ class Service extends Base\Service
 
         $data[EntityConstants::MERCHANT_DETAIL] = isset($merchantDetail) === true ? $merchantDetail->toArrayPublic() : [];
 
+        $supportInformation = (new PayoutLinkService())->getMerchantSupportSettings($merchant);
+
+        $data[self::SUPPORT_DETAILS] = $supportInformation;
+        
         $data[EntityConstants::MERCHANT][EntityConstants::FEATURE] = $merchant->getEnabledFeatures();
 
         return $data;

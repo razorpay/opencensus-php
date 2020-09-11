@@ -86,7 +86,12 @@ class VendorPaymentController extends Controller
      */
     public function compositeExpandsHelper()
     {
-        return $this->service->compositeExpandsHelper($this->input, $this->ba->getMerchant());
+        return $this->service->compositeExpandsHelper($this->input);
+    }
+
+    public function sendUpcomingMailCron()
+    {
+        return $this->service->sendUpcomingMailCron();
     }
 
     /**
@@ -102,6 +107,11 @@ class VendorPaymentController extends Controller
         Mail::queue($unpaidEmail);
 
         return ApiResponse::json(['success' => true]);
+    }
+
+    public function sendMailGeneric()
+    {
+        return $this->service->sendMail($this->input);
     }
 
     public function getInvoiceSignedUrl(string $fileId)

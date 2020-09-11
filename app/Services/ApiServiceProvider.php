@@ -65,6 +65,7 @@ use RZP\Models\PaymentLink\PaymentPageItem;
 use RZP\Services\Beam\Service as BeamService;
 use RZP\Base\Database\Connectors\MySqlConnector;
 use RZP\Models\Merchant\Request as MerchantRequest;
+use RZP\Services\VendorPayments\Service as VendorPaymentService;
 
 class ApiServiceProvider extends BaseServiceProvider
 {
@@ -128,7 +129,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->app->singleton('vendor-payment', function($app)
         {
-            return new VendorPayment($app);
+            return new VendorPaymentService($app);
         });
 
         $this->app->singleton('tax-payments', function($app)

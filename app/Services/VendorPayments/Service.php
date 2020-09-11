@@ -1,9 +1,9 @@
 <?php
 
-namespace RZP\Services;
+namespace RZP\Services\VendorPayments;
 
+use Mail;
 use Requests;
-
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\User\Entity;
@@ -11,6 +11,7 @@ use RZP\Http\Response\StatusCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Mail\VendorPayments\GenericVendorPaymentEmail;
 
 /**
  * This class will be the main file that will talk to
@@ -18,30 +19,37 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
  * This will be as dummy as possible, and will only do conversions
  * Between the Restful API calls and the RPC API calls that the MS understands
  */
-class VendorPayment
+class Service
 {
-    const LIST_CONTACTS             = 'SearchContacts';
-    const LIST_VENDOR_PAYMENTS      = 'ListVendorPayments';
-    const PUSH_PAYOUT_STATUS_UPDATE = 'PayoutStatusChange';
-    const GET_VENDOR_PAYMENT        = 'GetVendorPayment';
-    const EXECUTE_VENDOR_PAYMENT    = 'ExecuteVendorPayment';
-    const CREATE_CONTACT            = 'CreateContact';
-    const UPDATE_CONTACT            = 'UpdateContactById';
-    const GET_CONTACT               = 'GetContactById';
-    const CREATE_VENDOR_PAYMENT     = 'CreateVendorPayment';
-    const CONTACT_ID                = 'contact_id';
-    const ID                        = 'id';
-    const UPLOAD_INVOICE            = 'UploadInvoice';
-    const GET_TDS_CATEGORIES        = 'GetTdsCategory';
-    const EDIT_VENDOR_PAYMENTS      = 'EditVendorPayment';
-    const CANCEL_VENDOR_PAYMENTS    = 'CancelVendorPayment';
-    const BULK_CANCEL_VENDOR_PAYMENTS    = 'BulkCancelVP';
-    const GET_INVOICE_SIGNED_URL    = 'GetInvoiceSignedURL';
-    const VP_SUMMARY_API            = 'SummaryApi';
-    const GET_OCR_DATA              = 'GetOcrData';
-    const OCR_ACCURACY_CHECK        = 'GetOcrAccuracy';
-    const MARK_AS_PAID              = 'MarkAsPaid';
-    const BASE_PATH                 = 'twirp/vendorpayments.Vendorpayments';
+    const LIST_CONTACTS               = 'SearchContacts';
+    const LIST_VENDOR_PAYMENTS        = 'ListVendorPayments';
+    const PUSH_PAYOUT_STATUS_UPDATE   = 'PayoutStatusChange';
+    const GET_VENDOR_PAYMENT          = 'GetVendorPayment';
+    const EXECUTE_VENDOR_PAYMENT      = 'ExecuteVendorPayment';
+    const CREATE_CONTACT              = 'CreateContact';
+    const UPDATE_CONTACT              = 'UpdateContactById';
+    const GET_CONTACT                 = 'GetContactById';
+    const CREATE_VENDOR_PAYMENT       = 'CreateVendorPayment';
+    const CONTACT_ID                  = 'contact_id';
+    const ID                          = 'id';
+    const UPLOAD_INVOICE              = 'UploadInvoice';
+    const GET_TDS_CATEGORIES          = 'GetTdsCategory';
+    const UPCOMING_MAIL_CRON          = 'UpcomingMailCron';
+    const EDIT_VENDOR_PAYMENTS        = 'EditVendorPayment';
+    const CANCEL_VENDOR_PAYMENTS      = 'CancelVendorPayment';
+    const BULK_CANCEL_VENDOR_PAYMENTS = 'BulkCancelVP';
+    const GET_INVOICE_SIGNED_URL      = 'GetInvoiceSignedURL';
+    const VP_SUMMARY_API              = 'SummaryApi';
+    const GET_OCR_DATA                = 'GetOcrData';
+    const OCR_ACCURACY_CHECK          = 'GetOcrAccuracy';
+    const MARK_AS_PAID                = 'MarkAsPaid';
+    const BASE_PATH                   = 'twirp/vendorpayments.Vendorpayments';
+
+    const DATA                        = 'data';
+    const TEMPLATE_NAME               = 'template_name';
+    const SUBJECT                     = 'subject';
+    const NAME                        = 'name';
+    const TO_EMAIL                    = 'to_email';
 
     protected $app;
 
@@ -62,42 +70,74 @@ class VendorPayment
         $this->repo =  $app['repo'];
     }
 
-    public function compositeExpandsHelper(array $input, MerchantEntity $merchant)
+
+
+    public function sendMail(array $input)
+    {
+        (new Validator())->validateInput(Validator::SEND_MAIL, $input);
+
+        Mail::queue(new GenericVendorPaymentEmail($input[self::TO_EMAIL],
+                                                  $input[self::SUBJECT],
+                                                  $input[self::TEMPLATE_NAME],
+                                                  $input[self::DATA]));
+
+        return ['success' => true];
+    }
+
+    public function compositeExpandsHelper(array $input)
     {
         $result = [
         ];
 
         $this->expandUsers($result, $input);
 
-        $this->expandContact($result, $input, $merchant);
+        $this->expandContacts($result, $input);
 
-        $this->expandFundAccount($result, $input, $merchant);
+        $this->expandFundAccount($result, $input);
 
-        $this->expandPayouts($result, $input, $merchant);
+        $this->expandPayouts($result, $input);
 
-        $result['merchant'] = $merchant->toArrayPublic();
+        $this->expandMerchants($result, $input);
 
         return $result;
     }
 
-    protected function expandContact(array &$result, array $input, MerchantEntity $merchant)
+    protected function expandContacts(array &$result, array $input)
     {
-        $contactId = array_pull($input, 'contact_id', null);
+        $contactId = array_pull($input, 'contact_ids', null);
 
         if ($contactId === null)
         {
             return;
         }
 
-        $contact = $this->repo->contact->findByPublicIdAndMerchant($contactId, $merchant);
+        $contacts = $this->repo->contact->findManyByPublicIds($contactId);
 
-        if (empty($contact) === false)
+        foreach ($contacts as $contact)
         {
             $result['contacts'][$contact->getPublicId()] = $contact->toArrayPublic();
         }
     }
 
-    protected function expandFundAccount(array &$result, array $input, MerchantEntity $merchant)
+    protected function expandMerchants(array &$result, array $input)
+    {
+        $merchantIds = array_pull($input, 'merchant_ids', null);
+
+        if ($merchantIds === null)
+        {
+            return;
+        }
+
+        $merchants = $this->repo->merchant->findManyByPublicIds($merchantIds);
+
+        foreach ($merchants as $merchant)
+        {
+            $result['merchants'][$merchant->getPublicId()] = $merchant->toArrayPublic();
+        }
+    }
+
+
+    protected function expandFundAccount(array &$result, array $input)
     {
         $fundAccountId = array_pull($input, 'fund_account_id', null);
 
@@ -108,7 +148,7 @@ class VendorPayment
 
         $fundAccount = $this->repo
                             ->fund_account
-                            ->findByPublicIdAndMerchant($fundAccountId, $merchant, ['expand' => ['contact']]);
+                            ->findByPublicId($fundAccountId, ['expand' => ['contact']]);
 
         if (empty($fundAccount) === false)
         {
@@ -120,7 +160,7 @@ class VendorPayment
         }
     }
 
-    protected function expandPayouts(array &$result, array $input, MerchantEntity $merchant)
+    protected function expandPayouts(array &$result, array $input)
     {
         $payoutIds = array_pull($input, 'payout_ids', []);
 
@@ -128,9 +168,10 @@ class VendorPayment
         {
             return;
         }
-        $payouts = $this->repo->payout->findManyByPublicIdsAndMerchant($payoutIds,
-                                                                       $merchant,
-                                                                       ['expand' => ['fund_account.contact']]);
+
+        $payouts = $this->repo->payout->findManyByPublicIds($payoutIds,
+                                                            ['expand' => ['fund_account.contact']]);
+
         foreach ($payouts as $payout)
         {
             $fa = $payout->fundAccount;
@@ -225,6 +266,13 @@ class VendorPayment
         return $this->makeRequest($merchant, $url);
     }
 
+    public function sendUpcomingMailCron()
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::UPCOMING_MAIL_CRON);
+
+        return $this->makeRequest(null, $url, ['time' => now()]);
+    }
+
     /**
      * This is being called from Payout Source Updater
      * @param PayoutEntity $payout
@@ -271,7 +319,7 @@ class VendorPayment
         return $this->makeRequest($merchant, $url, $input);
     }
 
-    public function uploadInvoice(MerchantEntity $merchant,array $input)
+    public function uploadInvoice(MerchantEntity $merchant, array $input)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::UPLOAD_INVOICE);
         // The MS we are calling, expects JSON content,
@@ -279,8 +327,8 @@ class VendorPayment
         // base_64 encoded byte array
 
         $input['file'] = base64_encode(file_get_contents($_FILES['file']['tmp_name']));
-        $input['file_name'] = $_FILES['file']['name'];
 
+        $input['file_name'] = $_FILES['file']['name'];
 
         return $this->makeRequest($merchant, $url, $input);
 
@@ -382,12 +430,13 @@ class VendorPayment
     }
 
     protected function makeRequest(MerchantEntity $merchant = null,
-                                   string $url = "",
+                                   string $url = '',
                                    array $data = [],
                                    array $headers = [],
                                    string $method = 'POST')
     {
-        if ($merchant !== null) {
+        if ($merchant !== null)
+        {
             $data = array_merge($data, ['merchant_id' => $merchant->getId()]);
         }
 
@@ -398,6 +447,7 @@ class VendorPayment
         $options = ['auth' => ['api', $this->config['secret']]];
 
         $dataLogged = $data;
+
         unset($dataLogged['file']);
 
         $this->trace->info(TraceCode::VENDOR_PAYMENT_REQUEST,
@@ -420,7 +470,8 @@ class VendorPayment
                 'response' => $responseBody
             ]);
 
-        if ($response->status_code !== StatusCode::SUCCESS) {
+        if ($response->status_code !== StatusCode::SUCCESS)
+        {
             $description = array_pull($responseBody, 'msg', $responseBody);
 
             throw new BadRequestException(ErrorCode::BAD_REQUEST_VENDOR_PAYMENT_MICRO_SERVICE_FAILED,

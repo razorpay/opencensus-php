@@ -23,7 +23,7 @@ class TaxPaymentController extends Controller
     {
         return $this->service->monthlySummary($this->ba->getMerchant());
     }
-    
+
     public function adminActions()
     {
         return $this->service->adminActions($this->input);

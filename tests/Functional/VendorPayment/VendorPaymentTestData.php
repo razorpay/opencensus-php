@@ -15,13 +15,14 @@ return [
             'content' => [
                 'user_ids' => ['10000000000000'],
                 'fund_account_id' => 'fa_D6Z9Jfir2egAUT',
-                'contact_id' => 'cont_Dsp92d4N1Mmm6Q',
-                'payout_ids' => ['pout_DuuYxmO7Yegu3x']
+                'contact_ids' => ['cont_Dsp92d4N1Mmm6Q'],
+                'payout_ids' => ['pout_DuuYxmO7Yegu3x'],
+                'merchant_ids' => ['10000000000000'],
             ],
         ],
         'response' => [
             'content' => [
-                'merchant' => [],
+                'merchants' => [],
                 'users' => [
                     'entity' => 'collection',
                     'count' => 1,
@@ -74,12 +75,13 @@ return [
             ],
             'url' => '/vendor-payments/composite-expands',
             'content' => [
-                'payout_ids' => ['pout_DuuYxmO7Yegu3x']
+                'payout_ids' => ['pout_DuuYxmO7Yegu3x'],
+                'merchant_ids' => ['10000000000000']
             ],
         ],
         'response' => [
             'content' => [
-                'merchant' => [],
+                'merchants' => [],
                 'fund_accounts' => [
                     'fa_D6Z9Jfir2egAUT' => [
                         'id'           => 'fa_D6Z9Jfir2egAUT',
@@ -168,9 +170,9 @@ return [
             'url'    => '/vendor-payments/mark-as-paid',
             'content' => [
                 'vendor_payment_id' => ['vdpm_F2qwMZe97QTGG1'],
-                "manually_paid_metadata" => [
-                    "notes1"=> "smoething"
-                    ],
+                'manually_paid_metadata' => [
+                    'notes1' => 'smoething'
+                ],
             ],
         ],
         'response' => [
@@ -186,8 +188,8 @@ return [
             'url'    => '/vendor-payments/mark-as-paid',
             'content' => [
                 'vendor_payment_id' => ['vdpm_F2qwMZe97QTGG1'],
-                "manually_paid_metadata" => [
-                    "notes1"=> "smoething"
+                'manually_paid_metadata' => [
+                    'notes1' => 'smoething'
                 ],
             ],
         ],
@@ -245,4 +247,44 @@ return [
             ],
         ],
     ],
+    'testVendorPaymentGenericEmailRouteCallsServiceMethod' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/vendor-payments/sendMailGeneric',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testUpcomingMailCronRouteCallsServiceMethod' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/vendor-payments/sendUpcomingMailCron',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testVendorPaymentSendMailValidation' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/vendor-payments/sendMailGeneric',
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The to email field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ]
 ];

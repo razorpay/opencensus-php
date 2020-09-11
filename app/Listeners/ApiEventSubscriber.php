@@ -2,10 +2,6 @@
 
 namespace RZP\Listeners;
 
-use Throwable;
-use Razorpay\Trace\Logger;
-
-use RZP\Error;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Event;
@@ -16,10 +12,11 @@ use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transfer;
+use RZP\Models\Terminal;
+use Razorpay\Trace\Logger;
 use RZP\Models\PaymentLink;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
-use RZP\Models\Terminal;
 use RZP\Models\Customer\Token;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Payment\Downtime;

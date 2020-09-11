@@ -1060,7 +1060,9 @@ class Route
         'payouts_scheduled_time_slots'             => ['get',      'payouts/schedule/timeslots',                     'PayoutController@getScheduleSlotsForPayouts'                       ],
 
         //Vendor Payments
-        'vendor_payment_composite_expands_helper'  => ['get',      'vendor-payments/composite-expands',             'VendorPaymentController@compositeExpandsHelper'                     ],
+        'vendor_payment_upcoming_mail_cron'        => ['post',     'vendor-payments/sendUpcomingMailCron',           'VendorPaymentController@sendUpcomingMailCron'                      ],
+        'vendor_payment_send_email_generic'        => ['post',     'vendor-payments/sendMailGeneric',                'VendorPaymentController@sendMailGeneric'                           ],
+        'vendor_payment_composite_expands_helper'  => ['get',      'vendor-payments/composite-expands',              'VendorPaymentController@compositeExpandsHelper'                    ],
         'vendor_payment_send_failure_email'        => ['post',     'vendor-payments/send-failure-email',             'VendorPaymentController@internalSendFailureEmail'                  ],
         'vendor_payment_summary'                   => ['get',      'vendor-payments/_meta/summary',                  'VendorPaymentController@summary'                                   ],
         'vendor_payment_contact_list'              => ['get',      'vendor-payments/contacts',                       'VendorPaymentController@listContacts'                              ],
@@ -2606,6 +2608,8 @@ class Route
         'razorflow_admin_fetch_entity_by_id',
         'razorflow_admin_fetch_entity_multiple',
         'scrooge_refunds_get_multiple_razorflow',
+        'vendor_payment_send_email_generic',
+        'vendor_payment_upcoming_mail_cron',
         'setl_service_migration',
         'create_payment_config_bulk_via_batch',
     ];
@@ -4834,6 +4838,7 @@ class Route
             'payout_cancel_internal',
             'tax_payments_send_email',
             'banking_accounts_list_internal',
+            'vendor_payment_send_email_generic',
         ],
 
         'dashboard' => [
@@ -5034,6 +5039,7 @@ class Route
             'mpans_tokenize_existing',
             'terminal_mpans_tokenize_existing',
             'setl_service_migration',
+            'vendor_payment_upcoming_mail_cron',
         ],
 
         'subscriptions' => [

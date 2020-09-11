@@ -103,7 +103,7 @@ class VendorPaymentTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+        $vpMock = Mockery::mock('RZP\Services\VendorPayments\Service');
 
         $vpMock->shouldReceive('bulkCancel')->andReturn([]);
 
@@ -118,7 +118,7 @@ class VendorPaymentTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+        $vpMock = Mockery::mock('RZP\Services\VendorPayments\Service');
 
         $vpMock->shouldReceive('getOcrData')->andReturn([]);
 
@@ -133,7 +133,7 @@ class VendorPaymentTest extends TestCase
     {
         $this->ba->appAuthTest($this->config['applications.cron.secret']);
 
-        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+        $vpMock = Mockery::mock('RZP\Services\VendorPayments\Service');
 
         $vpMock->shouldReceive('ocrAccuracyCheck')->andReturn([]);
 
@@ -148,7 +148,7 @@ class VendorPaymentTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+        $vpMock = Mockery::mock('RZP\Services\VendorPayments\Service');
 
         $vpMock->shouldReceive('markAsPaid')->andReturn([]);
 
@@ -168,6 +168,41 @@ class VendorPaymentTest extends TestCase
         $this->startTest();
     }
 
+    public function testVendorPaymentGenericEmailRouteCallsServiceMethod()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
 
+        $vpMock = Mockery::mock('RZP\Services\VendorPayments\Service');
+
+        $vpMock->shouldReceive('sendMail')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('sendMail');
+    }
+
+    public function testUpcomingMailCronRouteCallsServiceMethod()
+    {
+        $this->ba->appAuthTest($this->config['applications.cron.secret']);
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayments\Service');
+
+        $vpMock->shouldReceive('sendUpcomingMailCron')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('sendUpcomingMailCron');
+    }
+
+    public function testVendorPaymentSendMailValidation()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->startTest();
+    }
 
 }

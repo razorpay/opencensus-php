@@ -46,6 +46,7 @@ class Core extends Base\Core
     const SUCCESS             = 'success';
     const MUTEX_TIMEOUT       = 60;
     const SLACK_CHANNEL_COLOR = 'danger';
+    const CONTRAST_COLOR      = "contrast_color";
 
     protected $elfin;
 
@@ -954,6 +955,23 @@ class Core extends Base\Core
         $settingsAccessor = Settings\Accessor::for($merchant, Settings\Module::PAYOUT_LINK);
 
         return $settingsAccessor;
+    }
+
+    /**
+     *
+     * @param MerchantEntity $merchant
+     * @return array
+     */
+    public function getMerchantSupportSettings(MerchantEntity $merchant): array
+    {
+        $settingsAttributeArray = $this->getSettingsAttributeArray($merchant);
+
+        return [
+            Entity::SUPPORT_CONTACT => $settingsAttributeArray[Entity::SUPPORT_CONTACT] ?? null,
+            Entity::SUPPORT_EMAIL   => $settingsAttributeArray[Entity::SUPPORT_EMAIL] ?? null,
+            Entity::SUPPORT_URL     => $settingsAttributeArray[Entity::SUPPORT_URL] ?? null,
+            self::CONTRAST_COLOR    => $merchant->getContrastOfBrandColor(),
+        ];
     }
 
     protected function getSettingsAttributeArray($merchant)

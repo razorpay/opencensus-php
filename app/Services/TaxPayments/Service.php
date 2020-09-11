@@ -33,12 +33,13 @@ class Service
     const LIST_TAX_PAYMENTS         = 'ListTaxPayments';
     const PAY_TAX_PAYMENTS          = 'PayTaxPayment';
     const BULK_PAY_TAX_PAYMENTS    = 'BulkPayTaxPayments';
+
+    const INITIATE_MONTHLY_PAYOUTS  = 'InitiateMonthlyPayouts';
     const CANCEL_QUEUED_PAYOUT_CRON = 'CancelQueuedPayoutCron';
-    const INITIATE_MONTHLY_PAYOUTS = 'InitiateMonthlyPayouts';
-    const MONTHLY_SUMMARY          = 'MonthlySummary';
+    const TAX_PAYMENT_ENABLED_KEY   = 'tax_payment_enabled';
+    const MONTHLY_SUMMARY           = 'MonthlySummary';
     const ADMIN_ACTIONS            = 'AdminActions';
     const EMAIL_CRON               = 'EmailCron';
-    const TAX_PAYMENT_ENABLED_KEY  = 'tax_payment_enabled';
     const MARK_AS_PAID             = 'MarkAsPaid';
     const UPLOAD_CHALLAN           = 'UploadChallan';
     const EDIT_TP                  = 'EditTp';
