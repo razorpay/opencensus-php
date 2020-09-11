@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "63aca3296611309cb3482a8404ddd4fb",
+    "content-hash": "14434376e0d2429d7281ad383b7a7066",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -4022,7 +4022,7 @@
             "time": "2017-07-22T07:25:06+00:00"
         },
         {
-            "name": "mikey179/vfsstream",
+            "name": "mikey179/vfsStream",
             "version": "v1.3.0",
             "source": {
                 "type": "git",
@@ -4691,7 +4691,8 @@
             ],
             "description": "OpenCensus Trace Client for PHP",
             "support": {
-                "source": "https://github.com/razorpay/opencensus-php/tree/v0.7.3"
+                "source": "https://github.com/razorpay/opencensus-php/tree/v0.7.3",
+                "issues": "https://github.com/razorpay/opencensus-php/issues"
             },
             "time": "2020-07-29T05:28:43+00:00"
         },
@@ -5760,12 +5761,12 @@
             "version": "v1.1.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/nrk/predis.git",
+                "url": "https://github.com/predis/predis.git",
                 "reference": "f0210e38881631afeafb56ab43405a92cafd9fd1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nrk/predis/zipball/f0210e38881631afeafb56ab43405a92cafd9fd1",
+                "url": "https://api.github.com/repos/predis/predis/zipball/f0210e38881631afeafb56ab43405a92cafd9fd1",
                 "reference": "f0210e38881631afeafb56ab43405a92cafd9fd1",
                 "shasum": ""
             },
@@ -7112,16 +7113,16 @@
         },
         {
             "name": "razorpay/trace",
-            "version": "2.4.3",
+            "version": "2.4.5",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/trace.git",
-                "reference": "11169b611c717dc5b81888716e62b8814cb20630"
+                "reference": "b65f31d34a5f7d7dceb24caa323205cd39f8b3cd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/trace/zipball/11169b611c717dc5b81888716e62b8814cb20630",
-                "reference": "11169b611c717dc5b81888716e62b8814cb20630",
+                "url": "https://api.github.com/repos/razorpay/trace/zipball/b65f31d34a5f7d7dceb24caa323205cd39f8b3cd",
+                "reference": "b65f31d34a5f7d7dceb24caa323205cd39f8b3cd",
                 "shasum": ""
             },
             "require": {
@@ -7130,7 +7131,7 @@
                 "illuminate/support": "5.*",
                 "monolog/monolog": "1.*",
                 "razorpay/ec2-metadata": "2.*",
-                "razorpay/metrics-php": "2.0.*",
+                "razorpay/metrics-php": "2.*",
                 "symfony/psr-http-message-bridge": "0.2.*"
             },
             "require-dev": {
@@ -7182,10 +7183,10 @@
                 "trace"
             ],
             "support": {
-                "source": "https://github.com/razorpay/trace/tree/2.4.3",
+                "source": "https://github.com/razorpay/trace/tree/master",
                 "issues": "https://github.com/razorpay/trace/issues"
             },
-            "time": "2020-04-17T10:22:09+00:00"
+            "time": "2020-09-08T11:12:39+00:00"
         },
         {
             "name": "razorpay/ufh-sdk-php",
@@ -10650,6 +10651,7 @@
             "keywords": [
                 "tokenizer"
             ],
+            "abandoned": true,
             "time": "2017-08-20T05:47:52+00:00"
         },
         {
@@ -11478,8 +11480,8 @@
     "prefer-lowest": false,
     "platform": {
         "php": ">=7.1",
-        "ext-gmp": "*"
+        "ext-gmp": "*",
+        "ext-rdkafka": "*"
     },
-    "platform-dev": [],
-    "plugin-api-version": "1.1.0"
+    "platform-dev": []
 }
