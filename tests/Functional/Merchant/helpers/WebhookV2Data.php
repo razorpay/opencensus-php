@@ -2,32 +2,344 @@
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
+
+$sampleApiWebhookRequest = [
+    'url'    => 'http://webhook.com/v1/dummy/route',
+    'secret' => 'xxxxx',
+    'events' => [
+        'payment.authorized' => '1',
+    ],
+];
+
+$sampleApiWebhookResponse = [
+    'entity'           => 'webhook',
+    'id'               => 'webhook0000001',
+    'created_at'       => 1585711930,
+    // 'updated_at'       => ,
+    'context'          => [],
+    // TODO: Gets fixed in next pr.
+    // 'disabled_at'      => null,
+    'url'              => 'http://webhook.com/v1/dummy/route',
+    'secret_exists'    => true,
+    'created_by'       => 'MerchantUser01',
+    'created_by_email' => 'merchantuser01@razorpay.com',
+    // TODO: Gets fixed in next pr.
+    // 'updated_by'       => 'MerchantUser01',
+    // 'updated_by_email' => 'merchantuser01@razorpay.com',
+    'active'           => true,
+    'events'           => [
+        'payment.authorized' => true,
+        'payment.captured'   => false,
+        // Other key values are not asserted..
+    ],
+];
+
+$sampleApiWebhookRequestForBanking = array_merge($sampleApiWebhookRequest, [
+    'events' => [
+        'payout.failed' => '1',
+    ],
+]);
+
+$sampleApiWebhookResponseForBanking = array_merge($sampleApiWebhookResponse, [
+    'events' => [
+        'payout.failed' => true,
+    ],
+]);
+
+$sampleApiWebhookResponseForApp = array_merge($sampleApiWebhookResponse, [
+    'application_id' => '10000000000App',
+]);
+
+$sampleStorkWebhookRequest = [
+    'service'       => 'api-test',
+    'owner_id'      => '10000000000000',
+    'owner_type'    => 'merchant',
+    'created_by'    => 'MerchantUser01',
+    // TODO: Gets fixed/removed in next pr.
+    // 'context'       =>  json_decode('{}'),
+    'url'           => 'http://webhook.com/v1/dummy/route',
+    'secret'        => 'xxxxx',
+    'subscriptions' => [
+        [
+            'eventmeta'  => ['name' => 'payment.authorized'],
+        ],
+    ],
+];
+
+$sampleStorkWebhookResponse = [
+    'id'            => 'webhook0000001',
+    'created_at'    => '2020-04-01T03:32:10Z',
+    'service'       => 'api-test',
+    'owner_id'      => '10000000000000',
+    'owner_type'    => 'merchant',
+    'created_by'    => 'MerchantUser01',
+    'context'       =>  [],
+    'disabled_at'   => '1970-01-01T00:00:00Z',
+    'url'           => 'http://webhook.com/v1/dummy/route'  ,
+    'secret_exists' => true,
+    'subscriptions' => [
+        [
+            'id'         => 'EZ4ezhzqgKNjxI',
+            'created_at' => '2020-04-01T03:32:10Z',
+            'eventmeta'  => ['name' => 'payment.authorized'],
+        ],
+    ],
+];
+
+$sampleStorkWebhookRequestForApp = array_merge($sampleStorkWebhookRequest, [
+    'owner_id'   => '10000000000App',
+    'owner_type' => 'application',
+]);
+
+$sampleStorkWebhookResponseForApp = array_merge($sampleStorkWebhookResponse, [
+    'owner_id'   => '10000000000App',
+    'owner_type' => 'application',
+]);
+
+$sampleStorkWebhookRequestForBanking = array_merge($sampleStorkWebhookRequest, [
+    'service' => 'rx-test',
+    'subscriptions' => [
+        [
+            'eventmeta' => ['name' => 'payout.failed'],
+        ],
+    ],
+]);
+
+$sampleStorkWebhookResponseForBanking = array_merge($sampleStorkWebhookResponse, [
+    'service' => 'rx-test',
+    'subscriptions' => [
+        [
+            'id'         => 'EZ4ezhzqgKNjxI',
+            'created_at' => '2020-04-01T03:32:10Z',
+            'eventmeta'  => ['name' => 'payout.failed'],
+        ],
+    ],
+]);
 
 return [
 
-    'testCreateWebhookForPartner' => [
-        'request' => [
-            'url'  => '/v1/oauth/applications/10000000000App/webhooks',
-            'content' => [],
-            'method' => 'POST',
+    'testCreateAppWebhookInvalidPartnerType' => [
+        'request'   => [
+            'url'     => '/oauth/applications/10000000000Appp/webhooks',
+            'content' => [
+                'url'    => 'http://webhook.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method'  => 'POST'
         ],
-        'response' => []
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
     ],
 
-    'testCreateWebhookForOauth' => [
+    'testCreateAppWebhookPurePlatform' => [
         'request' => [
-            'url'  => '/v1/oauth/applications/10000000000App/webhooks',
-            'content' => [],
-            'method' => 'POST',
+            'url' => '/oauth/applications/10000000000App/webhooks',
+            'content' => [
+                'url' => 'http://webhook.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method' => 'POST'
         ],
-        'response' => []
+        'response' => [
+            // This test just validates success response and skips contents(which requires mocking and covered elsewhere).
+            'content' => [],
+        ],
+    ],
+
+    'testCreateAppWebhookOAuthTag' => [
+        'request' => [
+            'url' => '/oauth/applications/10000000000App/webhooks',
+            'content' => [
+                'url' => 'http://webhook.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            // This test just validates success response and skips contents(which requires mocking and covered elsewhere).
+            'content' => [],
+        ],
+    ],
+
+    'testCreateAppWebhookBankWithOAuthTag' => [
+        'request' => [
+            'url' => '/oauth/applications/10000000000App/webhooks',
+            'content' => [
+                'url' => 'http://webhook.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
+    'testCreateAppWebhookFullyManagedWithOAuthTag' => [
+        'request' => [
+            'url' => '/oauth/applications/10000000000App/webhooks',
+            'content' => [
+                'url' => 'http://webhook.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            // This test just validates success response and skips contents(which requires mocking and covered elsewhere).
+            'content' => [],
+        ],
+    ],
+
+    'testGetWebhookEvents' => [
+        'request' => [
+            'url'   => '/webhooks/events/all',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'payment.authorized',
+                'payment.failed',
+                'payment.captured',
+                'payment.dispute.created',
+                'order.paid',
+                'invoice.paid',
+                'invoice.partially_paid',
+                'invoice.expired',
+            ]
+        ]
+    ],
+
+    'testGetWebhookEventsForProductBanking' => [
+        'request' => [
+            'url'       => '/webhooks/events/all',
+            'method'    => 'GET',
+            'server'    => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'transaction.created',
+                'payout.created',
+                'payout.processed',
+                'payout.reversed',
+                'payout.failed',
+            ],
+        ],
+    ],
+
+    'testEditWebhookByNonOwnerUser' => [
+        'request' => [
+            'url' => '/webhooks/webhook0000001',
+            'content' => [
+                'url' => 'https://example.com',
+                'events' => [
+                    'payment.authorized' => '0',
+                ],
+                'active' => '0',
+            ],
+            'method' => 'put',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testCreateWebhookForPartner' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/v1/oauth/applications/10000000000App/webhooks',
+            'content' => $sampleApiWebhookRequest,
+        ],
+        'response' => [
+            'content' => $sampleApiWebhookResponseForApp,
+        ],
+    ],
+
+    'createWebhookForPartnerStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/Create',
+            'payload' => [
+                'webhook' => $sampleStorkWebhookRequestForApp,
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhook' => $sampleStorkWebhookResponseForApp,
+            ],
+        ],
+    ],
+
+    'testCreateWebhookForOAuth' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/v1/oauth/applications/10000000000App/webhooks',
+            'content' => $sampleApiWebhookRequest,
+        ],
+        'response' => [
+            'content' => $sampleApiWebhookResponseForApp,
+        ],
+    ],
+
+    'createWebhookForOAuthStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/Create',
+            'payload' => [
+                'webhook' => $sampleStorkWebhookRequestForApp,
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhook' => $sampleStorkWebhookResponseForApp,
+            ],
+        ],
     ],
 
     'testCreateWebhookForPartnerMerchantNoAppAccessFailure' => [
         'request' => [
-            'url'  => '/v1/oauth/applications/10000000000App/webhooks',
+            'url'     => '/v1/oauth/applications/10000000000App/webhooks',
             'content' => [],
-            'method' => 'POST',
+            'method'  => 'POST',
         ],
         'response' => [
             'content'  => [
@@ -43,11 +355,11 @@ return [
         ],
     ],
 
-    'testCreateWebhookForOauthFailure' => [
+    'testCreateWebhookForOAuthFailure' => [
         'request' => [
-            'url'  => '/v1/oauth/applications/10000000000App/webhooks',
+            'url'     => '/v1/oauth/applications/10000000000App/webhooks',
             'content' => [],
-            'method' => 'POST',
+            'method'  => 'POST',
         ],
         'response' => [
             'content'  => [
@@ -65,24 +377,57 @@ return [
 
     'testCreateWebhookForBanking' => [
         'request' => [
-            'url'  => '/v1/webhooks',
+            'method' => 'POST',
+            'url'    => '/v1/webhooks',
             'server' => [
                 'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
             ],
-            'content' => [],
-            'method' => 'POST',
+            'content' => $sampleApiWebhookRequestForBanking,
         ],
-        'response' => []
+        'response' => [
+            'content' => $sampleApiWebhookResponseForBanking,
+        ],
+    ],
+
+    'listWebhookForBankingWhenReturnsNoWebhooksStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/List',
+            'payload' => [
+                'offset'   => 0,
+                'limit'    => 2,
+                'service'  => 'rx-test',
+                'owner_id' => '10000000000000',
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [],
+        ],
+    ],
+
+    'createWebhookForBankingStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/Create',
+            'payload' => [
+                'webhook' => $sampleStorkWebhookRequestForBanking,
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhook' => $sampleStorkWebhookResponseForBanking,
+            ],
+        ],
     ],
 
     'testCreateWebhookForBankingAlreadyExistsFailure' => [
         'request' => [
-            'url'  => '/v1/webhooks',
+            'method' => 'POST',
+            'url'    => '/v1/webhooks',
             'server' => [
                 'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
             ],
-            'content' => [],
-            'method' => 'POST',
+            'content' => $sampleApiWebhookRequestForBanking,
         ],
         'response' => [
             'content'  => [
@@ -98,20 +443,55 @@ return [
         ],
     ],
 
+    'listWebhookForBankingBeforeCreateStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/List',
+            'payload' => [
+                'offset'   => 0,
+                'limit'    => 2,
+                'service'  => 'rx-test',
+                'owner_id' => '10000000000000',
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhooks' => [$sampleStorkWebhookResponseForBanking],
+            ],
+        ],
+    ],
+
     'testCreateWebhookForPrimary' => [
         'request' => [
-            'url'  => '/v1/webhooks',
-            'content' => [],
-            'method' => 'POST',
+            'method'  => 'POST',
+            'url'     => '/v1/webhooks',
+            'content' => $sampleApiWebhookRequest,
         ],
-        'response' => []
+        'response' => [
+            'content' => $sampleApiWebhookResponse,
+        ],
+    ],
+
+    'createWebhookForPrimaryStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/Create',
+            'payload' => [
+                'webhook' => $sampleStorkWebhookRequest,
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhook' => $sampleStorkWebhookResponse,
+            ],
+        ],
     ],
 
     'testCreateWebhookInvalidProductEventFailure' => [
         'request' => [
-            'url' => '/v1/webhooks',
-            'content' => [],
-            'method' => 'POST',
+            'url'     => '/v1/webhooks',
+            'content' => $sampleApiWebhookRequestForBanking,
+            'method'  => 'POST',
         ],
         'response' => [
             'content'  => [
@@ -130,34 +510,89 @@ return [
 
     'testGetWebhookForHosted' => [
         'request' => [
-            'url'  => '/v1/webhooks/primaryWebhookId',
+            'url'  => '/v1/webhooks/webhook0000001',
             'method' => 'GET',
         ],
         'response' => [
-            'content'  => [],
+            'content'  => array_merge($sampleApiWebhookResponse, [
+                'secret' => 'xxxxx',
+            ]),
+        ],
+    ],
+
+    'getWebhookWithSecretStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/GetWithSecret',
+            'payload' => [
+                'webhook_id' => 'webhook0000001',
+                'service'    => 'api-test',
+                'owner_id'   => '10000000000000',
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhook' => array_merge($sampleStorkWebhookResponse, [
+                    'secret' => 'xxxxx',
+                ]),
+            ],
         ],
     ],
 
     'testGetWebhookForBanking' => [
         'request' => [
-            'url'  => '/v1/webhooks/bankingWebhookId',
+            'url'  => '/v1/webhooks/webhook0000001',
             'server' => [
                 'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
             ],
             'method' => 'GET',
         ],
         'response' => [
-            'content'  => [],
+            'content'  => $sampleApiWebhookResponseForBanking,
+        ],
+    ],
+
+    'getWebhookForBankingStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/Get',
+            'payload' => [
+                'webhook_id' => 'webhook0000001',
+                'service'    => 'rx-test',
+                'owner_id'   => '10000000000000',
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhook' => $sampleStorkWebhookResponseForBanking,
+            ],
         ],
     ],
 
     'testGetWebhookForPrimary' => [
         'request' => [
-            'url'  => '/v1/webhooks/primaryWebhookId',
+            'url'  => '/v1/webhooks/webhook0000001',
             'method' => 'GET',
         ],
         'response' => [
-            'content'  => [],
+            'content'  => $sampleApiWebhookResponse,
+        ],
+    ],
+
+    'getWebhookForPrimaryStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/Get',
+            'payload' => [
+                'webhook_id' => 'webhook0000001',
+                'service'    => 'api-test',
+                'owner_id'   => '10000000000000',
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhook' => $sampleStorkWebhookResponse,
+            ],
         ],
     ],
 
@@ -167,7 +602,35 @@ return [
             'method' => 'GET',
         ],
         'response' => [
-            'content'  => [],
+            'content'  => [
+                // 'entity' => 'collection',
+                // 'count'  => 1,
+                // 'items'  => [
+                    array_merge($sampleApiWebhookResponse, [
+                        'secret' => 'xxxxx',
+                    ]),
+                // ],
+            ],
+        ],
+    ],
+
+    'listWebhookWithSecretStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/ListWithSecret',
+            'payload' => [
+                'service'  => 'api-test',
+                'owner_id' => '10000000000000',
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhooks' => [
+                    array_merge($sampleStorkWebhookResponse, [
+                        'secret' => 'xxxxx',
+                    ]),
+                ],
+            ],
         ],
     ],
 
@@ -180,7 +643,39 @@ return [
             'method' => 'GET',
         ],
         'response' => [
-            'content'  => [],
+            'content'  => [
+                'entity' => 'collection',
+                'count' => 2,
+                'items' => [
+                    $sampleApiWebhookResponseForBanking,
+                    array_merge($sampleApiWebhookResponseForBanking, [
+                        'id'  => 'webhook0000002',
+                        'url' => 'http://webhook.com/v1/dummy/route/2',
+                    ]),
+                ],
+            ],
+        ],
+    ],
+
+    'listWebhookForBankingStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/List',
+            'payload' => [
+                'service'  => 'rx-test',
+                'owner_id' => '10000000000000',
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhooks' => [
+                    $sampleStorkWebhookResponseForBanking,
+                    array_merge($sampleStorkWebhookResponseForBanking, [
+                        'id'  => 'webhook0000002',
+                        'url' => 'http://webhook.com/v1/dummy/route/2',
+                    ]),
+                ],
+            ],
         ],
     ],
 
@@ -190,7 +685,39 @@ return [
             'method' => 'GET',
         ],
         'response' => [
-            'content'  => [],
+            'content'  => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    $sampleApiWebhookResponse,
+                    array_merge($sampleApiWebhookResponse, [
+                        'id'  => 'webhook0000002',
+                        'url' => 'http://webhook.com/v1/dummy/route/2',
+                    ]),
+                ],
+            ],
+        ],
+    ],
+
+    'listWebhookForPrimaryStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/List',
+            'payload' => [
+                'service'  => 'api-test',
+                'owner_id' => '10000000000000',
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhooks' => [
+                    $sampleStorkWebhookResponse,
+                    array_merge($sampleStorkWebhookResponse, [
+                        'id'  => 'webhook0000002',
+                        'url' => 'http://webhook.com/v1/dummy/route/2',
+                    ]),
+                ],
+            ],
         ],
     ],
 
@@ -200,9 +727,34 @@ return [
             'method' => 'GET',
         ],
         'response' => [
-            'content'  => [],
+            'content'  => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    $sampleApiWebhookResponseForApp,
+                ],
+            ],
         ],
     ],
+
+    'listWebhookForPartnerStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/List',
+            'payload' => [
+                'service'  => 'api-test',
+                'owner_id' => '10000000000App',
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhooks' => [
+                    $sampleStorkWebhookResponseForApp,
+                ],
+            ],
+        ],
+    ],
+
 
     'testListWebhookForPartnerMerchantNotPartnerFailure' => [
         'request' => [
@@ -244,57 +796,103 @@ return [
 
     'testUpdateWebhookForBanking' => [
         'request' => [
-            'url'  => '/v1/webhooks/bankingWebhookId',
+            'url'  => '/v1/webhooks/webhook0000001',
             'server' => [
                 'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
             ],
             'method' => 'PUT',
-        ],
-        'response' => [],
-    ],
-
-    'testUpdateWebhookForBankingNotExistsFailure' => [
-        'request' => [
-            'url'  => '/v1/webhooks/bankingWebhookId',
-            'server' => [
-                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
-            ],
-            'method' => 'PUT',
+            'content' => $sampleApiWebhookRequestForBanking,
         ],
         'response' => [
-            'content'  => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                ],
-            ],
-            'status_code' => 400,
+            'content' => $sampleApiWebhookResponseForBanking,
         ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_STORK_WEBHOOK_NOT_FOUND,
+    ],
+
+    'updateWebhookForBankingStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/Update',
+            'payload' => [
+                'webhook' => array_merge(array_except($sampleStorkWebhookRequestForBanking, 'created_by'), [
+                    'id'         => 'webhook0000001',
+                    'updated_by' => 'MerchantUser01',
+                ]),
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhook' => $sampleStorkWebhookResponseForBanking,
+            ],
         ],
     ],
 
     'testUpdateWebhookForPrimary' => [
         'request' => [
-            'url'  => '/v1/webhooks/primaryWebhookId',
+            'url' => '/v1/webhooks/webhook0000001',
             'method' => 'PUT',
+            'content' => $sampleApiWebhookRequest,
         ],
-        'response' => [],
+        'response' => [
+            'content' => $sampleApiWebhookResponse,
+        ],
     ],
 
-    'testUpdateWebhookForOauth' => [
+    'updateWebhookForPrimaryStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/Update',
+            'payload' => [
+                'webhook' => array_merge(array_except($sampleStorkWebhookRequest, 'created_by'), [
+                    'id'         => 'webhook0000001',
+                    'updated_by' => 'MerchantUser01',
+                ]),
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhook' => $sampleStorkWebhookResponse,
+            ],
+        ],
+    ],
+
+    'testUpdateWebhookForOAuth' => [
+        'request' => [
+            'url'  => '/v1/webhooks/webhook0000001',
+            'method' => 'PUT',
+            'content' => array_merge($sampleApiWebhookRequest, [
+                'application_id' => '10000000000App',
+            ]),
+        ],
+        'response' => [
+            'content' => $sampleApiWebhookResponseForApp,
+        ],
+    ],
+
+    'updateWebhookForOAuthStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/Update',
+            'payload' => [
+                'webhook' => array_merge(array_except($sampleStorkWebhookRequestForApp, 'created_by'), [
+                    'id'         => 'webhook0000001',
+                    'updated_by' => 'MerchantUser01',
+                ]),
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhook' => $sampleStorkWebhookResponseForApp,
+            ],
+        ],
+    ],
+
+    'testUpdateWebhookForOAuthMerchantNotPartnerFailure' => [
         'request' => [
             'url'  => '/v1/webhooks/primaryWebhookId',
             'method' => 'PUT',
-        ],
-        'response' => [],
-    ],
-
-    'testUpdateWebhookForOauthMerchantNotPartnerFailure' => [
-        'request' => [
-            'url'  => '/v1/webhooks/primaryWebhookId',
-            'method' => 'PUT',
+            'content' => array_merge($sampleApiWebhookRequest, [
+                'application_id' => '10000000000App',
+            ]),
         ],
         'response' => [
             'content'  => [
@@ -310,10 +908,13 @@ return [
         ],
     ],
 
-    'testUpdateWebhookForOauthMerchantNoAppAccessFailure' => [
+    'testUpdateWebhookForOAuthMerchantNoAppAccessFailure' => [
         'request' => [
             'url'  => '/v1/webhooks/primaryWebhookId',
             'method' => 'PUT',
+            'content' => array_merge($sampleApiWebhookRequest, [
+                'application_id' => '10000000000App',
+            ]),
         ],
         'response' => [
             'content'  => [
@@ -331,12 +932,8 @@ return [
 
     'testUpdateWebhookInvalidProductEventFailure' => [
         'request' => [
-            'url' => '/v1/webhooks/primaryWebhookId',
-            'content' => [
-                'url'    => 'http://webhook.com/v1/dummy/route',
-                'secret' => 'secret',
-                'events' => ['payout.failed' => '1'],
-            ],
+            'url' => '/v1/webhooks/webhook0000001',
+            'content' => $sampleApiWebhookRequestForBanking,
             'method' => 'PUT',
         ],
         'response' => [

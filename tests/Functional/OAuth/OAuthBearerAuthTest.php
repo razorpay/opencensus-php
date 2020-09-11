@@ -14,7 +14,7 @@ use Illuminate\Cache\Events\CacheMissed;
 use RZP\Models\Feature;
 use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
-use RZP\Tests\Functional\Helpers\WebhookV2Trait;
+use RZP\Tests\Traits\TestsStorkServiceRequests;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 use RZP\Http\OAuthCache;
@@ -24,8 +24,8 @@ class OAuthBearerAuthTest extends OAuthTestCase
 {
     use OAuthCache;
     use PaymentTrait;
-    use WebhookV2Trait;
     use VirtualAccountTrait;
+    use TestsStorkServiceRequests;
 
     public function setUp()
     {
@@ -444,13 +444,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $this->ba->oauthBearerAuth($accessToken);
 
-        $this->mockStorkService();
-        $this->mockServiceStorkRequest(
-            function ($path, $payload)
-            {
-                return $this->getStorkResponse(['webhook' => $this->getStorkCreateResponseBodyForPrimary()]);
-            }
-        )->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/Create', Mockery::any());
+        $this->expectStorkServiceRequestForAction('createWebhook');
 
         $this->startTest();
     }

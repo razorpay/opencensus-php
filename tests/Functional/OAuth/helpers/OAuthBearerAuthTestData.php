@@ -201,6 +201,43 @@ return [
         ],
     ],
 
+    'createWebhookStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/Create',
+            'payload' => [
+                'webhook' => [
+                    'service'       => 'api-test',
+                    'owner_id'      => '10000000000000',
+                    'owner_type'    => 'merchant',
+                    'url'           => 'http://webhook.com/v1/dummy/route',
+                    'subscriptions' => [
+                        [
+                            'eventmeta'  => ['name' => 'payment.authorized'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhook' => [
+                    'id'            => 'webhook0000001',
+                    'created_at'    => '2020-04-01T03:32:10Z',
+                    'service'       => 'api-test',
+                    'owner_id'      => '10000000000000',
+                    'owner_type'    => 'merchant',
+                    'url'           => 'http://webhook.com/v1/dummy/route'  ,
+                    'subscriptions' => [
+                        [
+                            'eventmeta'  => ['name' => 'payment.authorized'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testBearerAuthWriteAccessReadRoute' => [
         'request'  => [
             'url'     => '/payments/pay_10000000000000',

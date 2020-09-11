@@ -6,27 +6,9 @@ use Mockery;
 use Requests_Response;
 use PHPUnit\Framework\ExpectationFailedException;
 
-use RZP\Services\Mock\Stork;
-
 trait TestsWebhookEvents
 {
-    /**
-     * Mock instance for \RZP\Services\Stork.
-     * @var Mockery\MockInterface
-     */
-    protected $storkMock;
-
-    /**
-     * Creates stork service mock to set webhook event expectations.
-     * @return Mockery\MockInterface
-     */
-    protected function createStorkMock(): Mockery\MockInterface
-    {
-        $this->storkMock = Mockery::mock(Stork::class)->makePartial();
-        $this->app->instance('stork_service', $this->storkMock);
-
-        return $this->storkMock;
-    }
+    use TestsStorkServiceRequests;
 
     /**
      * Sets expectation for new webhook event.

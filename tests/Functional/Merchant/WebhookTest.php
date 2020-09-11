@@ -16,27 +16,28 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\Partner\PartnerTrait;
-use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 
+/**
+ * This file is a central place between modules e.g. order, invoice, payout,
+ * and settlements etc, of tests asserting that expected webhook events are
+ * dispatched on actions.
+ *
+ * Recommend not to write more tests here! Instead put assertions in respective
+ * module itself using TestsWebhookEvents trait.
+ */
 class WebhookTest extends TestCase
 {
     use AttemptTrait;
     use AttemptReconcileTrait;
-    use WebhookTrait;
     use TestsWebhookEvents;
     use DbEntityFetchTrait;
     use PartnerTrait;
-    use TestsBusinessBanking;
 
     protected $sharedTerminal;
-
-    // Used in webhook trait
-    protected $storkMock;
 
     public function setUp()
     {
@@ -49,131 +50,6 @@ class WebhookTest extends TestCase
         $this->app->make(Factory::class)->load($factoryPath);
 
         $this->ba->proxyAuth();
-
-        $this->mockStorkService();
-    }
-
-    /*
-     * Partner type reseller, cannot create webhook
-     */
-    public function testCreateAppWebhookInvalidPartnerType()
-    {
-        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'reseller']);
-
-        $this->startTest();
-    }
-
-    /*
-     * Partner type pure platform, can create webhook
-     */
-    public function testCreateAppWebhookPurePlatform()
-    {
-        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'pure_platform']);
-        $this->addOAuthTag();
-        $this->createOAuthApplication(['id' => '10000000000App', 'merchant_id' => '10000000000000']);
-
-        $this->startTest();
-    }
-
-    /*
-     * Not partner yet but tagged OAuth, can create webhook
-     */
-    public function testCreateAppWebhookOAuthTag()
-    {
-        $this->addOAuthTag();
-        $this->createOAuthApplication(['id' => '10000000000App', 'merchant_id' => '10000000000000']);
-
-        $this->startTest();
-    }
-
-    /*
-     * Partner type bank, also tagged OAuth, cannot create webhook
-     * as this should ideally not happen and we should prevent by default
-     */
-    public function testCreateAppWebhookBankWithOAuthTag()
-    {
-        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'bank']);
-        $this->addOAuthTag();
-        $this->createOAuthApplication(['id' => '10000000000App', 'merchant_id' => '10000000000000']);
-
-        $this->startTest();
-    }
-
-    /*
-     * Partner type fully managed, can create webhook irrespective
-     * of the oauth tag
-     */
-    public function testCreateAppWebhookFullyManagedWithOAuthTag()
-    {
-        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
-        $this->addOAuthTag();
-        $this->createOAuthApplication(['id' => '10000000000App', 'merchant_id' => '10000000000000']);
-
-        $this->startTest();
-    }
-
-    public function testCreateWebhookForProductBankingWithInvalidEventsWithStork()
-    {
-        $this->fixtures->merchant->addFeatures(['payout']);
-
-        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
-
-        $this->mockServiceStorkRequest(
-            function ($path, $payload)
-            {
-                return $this->getStorkListResponseEmpty();
-            })->times(1);
-
-        $this->startTest();
-    }
-
-    public function testEditWebhookByNonOwnerUser()
-    {
-        $user = $this->fixtures->create('user');
-
-        $this->fixtures->user->createUserMerchantMapping([
-            'user_id'     => $user->id,
-            'merchant_id' => '10000000000000',
-            'role'        => 'support',
-        ]);
-
-        $this->ba->proxyAuth('rzp_test_10000000000000', $user->toArrayPublic(), 'support');
-
-        $this->startTest();
-    }
-
-    public function testEditWebhookForProductBankingWithInvalidEvents()
-    {
-        $this->startTest();
-    }
-
-    public function testGetWebhookEvents()
-    {
-        $this->fixtures->merchant->addFeatures(['virtual_accounts']);
-
-        $response = $this->startTest();
-
-        $this->assertContains('order.paid', $response);
-        $this->assertContains('virtual_account.credited', $response);
-        $this->assertNotContains('subscription.charged', $response);
-
-        // Events of other products (e.g. banking) should not come in response.
-        $this->assertNotContains('transaction.created', $response);
-        $this->assertNotContains('payout.created', $response);
-        $this->assertNotContains('payout.processed', $response);
-        $this->assertNotContains('payout.reversed', $response);
-    }
-
-    public function testGetWebhookEventsForProductBanking()
-    {
-        // This is required, because this is going to on board the merchant on X on the test mode
-        // which requires the terminal entity to be present
-        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
-            ['merchant_id' => '100000Razorpay']);
-
-        $this->fixtures->merchant->addFeatures(['payout']);
-
-        $this->startTest();
     }
 
     public function testWebhookEventData()

@@ -6,28 +6,20 @@ use Illuminate\Http\UploadedFile;
 
 use Mail;
 use RZP\Models\Merchant;
-use RZP\Error\ErrorCode;
-use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
-use RZP\Exception\ServerErrorException;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
-use RZP\Tests\Functional\Helpers\WebhookV2Trait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 
 class WebhookV2Test extends TestCase
 {
-    use WebhookV2Trait;
     use RequestResponseFlowTrait;
     use OAuthTrait;
     use TestsBusinessBanking;
     use TestsWebhookEvents;
-
-    // Used in webhook trait
-    protected $storkMock;
 
     public function setUp()
     {
@@ -41,33 +33,115 @@ class WebhookV2Test extends TestCase
 
         $this->ba->proxyAuth();
 
-        $this->mockStorkService();
-
-        // this is required so that traffic to webhook APIs can be routed to
-        // the v2 path.
-        $this->mockRazorxToReturnOn();
-
         $this->fixtures->merchant->addFeatures(['payout']);
+    }
+
+    /*
+     * Partner type reseller, cannot create webhook
+     */
+    public function testCreateAppWebhookInvalidPartnerType()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'reseller']);
+
+        $this->startTest();
+    }
+
+    /*
+     * Partner type pure platform, can create webhook
+     */
+    public function testCreateAppWebhookPurePlatform()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'pure_platform']);
+        $this->addOAuthTag();
+        $this->createOAuthApplication(['id' => '10000000000App', 'merchant_id' => '10000000000000']);
+
+        $this->startTest();
+    }
+
+    /*
+     * Not partner yet but tagged OAuth, can create webhook
+     */
+    public function testCreateAppWebhookOAuthTag()
+    {
+        $this->addOAuthTag();
+        $this->createOAuthApplication(['id' => '10000000000App', 'merchant_id' => '10000000000000']);
+
+        $this->startTest();
+    }
+
+    /*
+     * Partner type bank, also tagged OAuth, cannot create webhook
+     * as this should ideally not happen and we should prevent by default
+     */
+    public function testCreateAppWebhookBankWithOAuthTag()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'bank']);
+        $this->addOAuthTag();
+        $this->createOAuthApplication(['id' => '10000000000App', 'merchant_id' => '10000000000000']);
+
+        $this->startTest();
+    }
+
+    /*
+     * Partner type fully managed, can create webhook irrespective
+     * of the oauth tag
+     */
+    public function testCreateAppWebhookFullyManagedWithOAuthTag()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
+        $this->addOAuthTag();
+        $this->createOAuthApplication(['id' => '10000000000App', 'merchant_id' => '10000000000000']);
+
+        $this->startTest();
+    }
+
+    public function testEditWebhookByNonOwnerUser()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => $user->id,
+            'merchant_id' => '10000000000000',
+            'role'        => 'support',
+        ]);
+
+        $this->dontExpectAnyStorkServiceRequest();
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->toArrayPublic());
+
+        $this->startTest();
+    }
+
+    public function testGetWebhookEvents()
+    {
+        $this->fixtures->merchant->addFeatures(['virtual_accounts']);
+
+        $response = $this->startTest();
+
+        $this->assertContains('order.paid', $response);
+        $this->assertContains('virtual_account.credited', $response);
+        $this->assertNotContains('subscription.charged', $response);
+
+        // Events of other products (e.g. banking) should not come in response.
+        $this->assertNotContains('transaction.created', $response);
+    }
+
+    public function testGetWebhookEventsForProductBanking()
+    {
+        // This is required, because this is going to on board the merchant on X on the test mode
+        // which requires the terminal entity to be present
+        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
+            ['merchant_id' => '100000Razorpay']);
+
+        $this->startTest();
     }
 
     public function testCreateWebhookForPartner()
     {
         $this->assignMerchantAsPartnerAggregator();
-
         $this->addMerchantApplicationMapping();
 
-        $this->testData[__FUNCTION__]['request']['content']  = $this->getApiCreatePayloadForPrimary();
-        $this->testData[__FUNCTION__]['response']['content'] = $this->addCreatedUpdatedByEmail($this->convertAllToUnixTimestamp($this->getApiCreateResponseBodyForOauth()));
-
-        $expected  = $this->getExpectedArgsForRequestMethod($this->getStorkCreatePayloadForPrimary(), '10000000000App', 'application', 'api-test');
-        $mockeryOn = $this->attachEmptyWKCtxMatcherToArgsMatcher($this->getArgsMatcherForWebhook($expected));
-
-        $this->mockServiceStorkRequest(
-            function ($path, $payload)
-            {
-                return $this->getStorkResponse(['webhook' => $this->getStorkCreateResponseBodyForOauth()]);
-            })
-            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/Create', \Mockery::on($mockeryOn));
+        $this->expectStorkServiceRequestForAction('createWebhookForPartner');
 
         $this->startTest();
     }
@@ -76,34 +150,25 @@ class WebhookV2Test extends TestCase
     {
         $this->assignMerchantAsPartnerAggregator();
 
-        $this->testData[__FUNCTION__]['request']['content']  = $this->getApiCreatePayloadForPrimary();
+        $this->dontExpectAnyStorkServiceRequest();
+
         $this->startTest();
     }
 
-    public function testCreateWebhookForOauth()
+    public function testCreateWebhookForOAuth()
     {
         $this->addOAuthTag();
         $this->addMerchantApplicationMapping();
 
-        $this->testData[__FUNCTION__]['request']['content']  = $this->getApiCreatePayloadForPrimary();
-        $this->testData[__FUNCTION__]['response']['content'] = $this->addCreatedUpdatedByEmail($this->convertAllToUnixTimestamp($this->getApiCreateResponseBodyForOauth()));
-
-        $expected  = $this->getExpectedArgsForRequestMethod($this->getStorkCreatePayloadForPrimary(), '10000000000App', 'application', 'api-test');
-        $mockeryOn = $this->attachEmptyWKCtxMatcherToArgsMatcher($this->getArgsMatcherForWebhook($expected));
-
-        $this->mockServiceStorkRequest(
-                function ($path, $payload)
-                {
-                    return $this->getStorkResponse(['webhook' => $this->getStorkCreateResponseBodyForOauth()]);
-                })
-            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/Create', \Mockery::on($mockeryOn));
+        $this->expectStorkServiceRequestForAction('createWebhookForOAuth');
 
         $this->startTest();
     }
 
-    public function testCreateWebhookForOauthFailure()
+    public function testCreateWebhookForOAuthFailure()
     {
-        $this->testData[__FUNCTION__]['request']['content']  = $this->getApiCreatePayloadForPrimary();
+        $this->dontExpectAnyStorkServiceRequest();
+
         $this->startTest();
     }
 
@@ -111,24 +176,8 @@ class WebhookV2Test extends TestCase
     {
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
-        $this->testData[__FUNCTION__]['request']['content']  = $this->getApiCreatePayloadForBanking();
-        $this->testData[__FUNCTION__]['response']['content'] = $this->addCreatedUpdatedByEmail($this->convertAllToUnixTimestamp($this->getApiCreateResponseBodyForBanking()));
-
-        $this->mockServiceStorkRequest(
-            function ($path, $payload)
-            {
-                if ($path === '/twirp/rzp.stork.webhook.v1.WebhookAPI/Create')
-                {
-                    $this->assertArraySelectiveEquals(['webhook' => $this->getStorkCreatePayloadForBanking()], $payload);
-                    $this->assertEquals('rx-test', $payload['webhook']['service']);
-                    $this->assertEquals('10000000000000', $payload['webhook']['owner_id']);
-                    $this->assertEquals('merchant', $payload['webhook']['owner_type']);
-                    $this->assertEquals(json_decode('{}'), $payload['webhook']['context']);
-
-                    return $this->getStorkResponse(['webhook' => $this->getStorkCreateResponseBodyForBanking()]);
-                }
-                return new \Requests_Response();
-            })->times(3);
+        $this->expectStorkServiceRequestForAction('listWebhookForBankingWhenReturnsNoWebhooks');
+        $this->expectStorkServiceRequestForAction('createWebhookForBanking');
 
         $this->startTest();
     }
@@ -137,59 +186,15 @@ class WebhookV2Test extends TestCase
     {
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
-        $this->testData[__FUNCTION__]['request']['content']  = $this->getApiCreatePayloadForBanking();
+        $this->expectStorkServiceRequestForAction('listWebhookForBankingBeforeCreate');
+        $this->dontExpectStorkServiceRequest('/twirp/rzp.stork.webhook.v1.WebhookAPI/Create');
 
-        $this->mockServiceStorkRequest(
-            function ($path, $payload)
-            {
-                if ($path === '/twirp/rzp.stork.webhook.v1.WebhookAPI/List')
-                {
-                    return $this->getStorkResponse(['webhooks' => $this->getStorkListResponseBody()]);
-                }
-                return new \Requests_Response();
-            });
         $this->startTest();
     }
-
 
     public function testCreateWebhookForPrimary()
     {
-        $this->testData[__FUNCTION__]['request']['content']  = $this->getApiCreatePayloadForPrimary();
-        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getApiCreateResponseBodyForPrimary());
-
-        $expected  = $this->getExpectedArgsForRequestMethod($this->getStorkCreatePayloadForPrimary(), '10000000000000', 'merchant', 'api-test');
-        $mockeryOn = $this->attachEmptyWKCtxMatcherToArgsMatcher($this->getArgsMatcherForWebhook($expected));
-
-        $this->mockServiceStorkRequest(
-                function ($path, $payload)
-                {
-                    return $this->getStorkResponse(['webhook' => $this->getStorkCreateResponseBodyForPrimary()]);
-                })
-            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/Create', \Mockery::on($mockeryOn));
-
-        $this->startTest();
-    }
-
-    public function testCreateWebhookOverrideToImplictValues()
-    {
-        $this->testData[__FUNCTION__] = $this->testData['testCreateWebhookForPrimary'];
-
-        $this->testData[__FUNCTION__]['request']['content']  = $this->getApiCreatePayloadForPrimary();
-        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getApiCreateResponseBodyForPrimary());
-
-        $this->testData[__FUNCTION__]['request']['content']['context']     = 'wrong_context';
-        $this->testData[__FUNCTION__]['request']['content']['owner_id']    = 'wrong_owner_id';
-        $this->testData[__FUNCTION__]['request']['content']['owner_type']  = 'wrong_owner_type';
-
-        $expected  = $this->getExpectedArgsForRequestMethod($this->getStorkCreatePayloadForPrimary(), '10000000000000', 'merchant');
-        $mockeryOn = $this->attachEmptyWKCtxMatcherToArgsMatcher($this->getArgsMatcherForWebhook($expected));
-
-        $this->mockServiceStorkRequest(
-                function ($path, $payload)
-                {
-                    return $this->getStorkResponse(['webhook' => $this->getStorkCreateResponseBodyForPrimary()]);
-                })
-            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/Create', \Mockery::on($mockeryOn));
+        $this->expectStorkServiceRequestForAction('createWebhookForPrimary');
 
         $this->startTest();
     }
@@ -197,28 +202,14 @@ class WebhookV2Test extends TestCase
     //event is not valid for the product
     public function testCreateWebhookInvalidProductEventFailure()
     {
-        $this->testData[__FUNCTION__]['request']['content']  = $this->getApiCreatePayloadForBanking();
-
         $this->startTest();
     }
 
     public function testGetWebhookForHosted()
     {
-        $this->addOAuthTag();
+        $this->expectStorkServiceRequestForAction('getWebhookWithSecret');
+
         $this->ba->hostedAuth();
-
-        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getApiGetResponseBodyWithSecret());
-
-        $expected  = $this->getStorkGetPayloadForPrimary();
-        $mockeryOn = $this->getArgsMatcherForWebhook($expected);
-
-        $this->mockServiceStorkRequest(
-                function ($path, $payload)
-                {
-                    return $this->getStorkResponse(['webhook' => $this->getStorkGetResponseBodyWithSecret()]);
-                })
-            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/GetWithSecret', \Mockery::on($mockeryOn));
-
         $this->startTest();
     }
 
@@ -226,98 +217,38 @@ class WebhookV2Test extends TestCase
     {
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
-        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getApiGetResponseBody());
-
-        $expected  = $this->getStorkGetPayloadForBanking();
-        $mockeryOn = $this->getArgsMatcherForWebhook($expected);
-
-        $this->mockServiceStorkRequest(
-                function ($path, $payload)
-                {
-                    return $this->getStorkResponse(['webhook' => $this->getStorkGetResponseBody()]);
-                })
-            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/Get', \Mockery::on($mockeryOn));
+        $this->expectStorkServiceRequestForAction('getWebhookForBanking');
 
         $this->startTest();
     }
 
     public function testGetWebhookForPrimary()
     {
-        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getApiGetResponseBody());
-
-        $expected  = $this->getStorkGetPayloadForPrimary();
-        $mockeryOn = $this->getArgsMatcherForWebhook($expected);
-
-        $this->mockServiceStorkRequest(
-                function ($path, $payload)
-                {
-                    return $this->getStorkResponse(['webhook' => $this->getStorkGetResponseBody()]);
-                })
-            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/Get', \Mockery::on($mockeryOn));
+        $this->expectStorkServiceRequestForAction('getWebhookForPrimary');
 
         $this->startTest();
     }
 
     public function testListWebhookForHosted()
     {
-        $this->addOAuthTag();
+        $this->expectStorkServiceRequestForAction('listWebhookWithSecret');
+
         $this->ba->hostedAuth();
-
-        $this->testData[__FUNCTION__]['response']['content'] = array_map(function ($v) { return $this->convertAllToUnixTimestamp($v); }, $this->getApiListResponseBodyWithSecret());
-
-        $expected  = $this->getStorkListPayloadForPrimary();
-        $mockeryOn = $this->getArgsMatcherForWebhook($expected);
-
-        $this->mockServiceStorkRequest(
-                function ($path, $payload)
-                {
-                    return $this->getStorkResponse(['webhooks' => $this->getStorkListResponseBodyWithSecret()]);
-                })
-            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/ListWithSecret', \Mockery::on($mockeryOn));
-
         $this->startTest();
     }
 
     public function testListWebhookForBanking()
     {
-        $this->testData[__FUNCTION__]['response']['content'] = [
-            'entity' => 'collection',
-            'count'  => 2,
-            'items'  => array_map(function ($v) { return $this->convertAllToUnixTimestamp($v); }, $this->getApiListResponseBody()),
-        ];
-
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
-        $expected  = $this->getStorkListPayloadForBanking();
-        $mockeryOn = $this->getArgsMatcherForWebhook($expected);
-
-        $this->mockServiceStorkRequest(
-                function ($path, $payload)
-                {
-                    return $this->getStorkResponse(['webhooks' => $this->getStorkListResponseBody()]);
-                })
-            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/List', \Mockery::on($mockeryOn));
+        $this->expectStorkServiceRequestForAction('listWebhookForBanking');
 
         $this->startTest();
     }
 
     public function testListWebhookForPrimary()
     {
-        $this->testData[__FUNCTION__]['response']['content'] = [
-            'entity' => 'collection',
-            'count'  => 2,
-            'items'  => array_map(function ($v) { return $this->convertAllToUnixTimestamp($v); }, $this->getApiListResponseBody()),
-        ];
-
-        $expected  = $this->getStorkListPayloadForPrimary();
-        $mockeryOn = $this->getArgsMatcherForWebhook($expected);
-
-        $this->mockServiceStorkRequest(
-                function ($path, $payload)
-                {
-                    return $this->getStorkResponse(['webhooks' => $this->getStorkListResponseBody()]);
-                })
-            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/List', \Mockery::on($mockeryOn));
+        $this->expectStorkServiceRequestForAction('listWebhookForPrimary');
 
         $this->startTest();
     }
@@ -327,21 +258,7 @@ class WebhookV2Test extends TestCase
         $this->assignMerchantAsPartnerAggregator();
         $this->addMerchantApplicationMapping();
 
-        $this->testData[__FUNCTION__]['response']['content'] = [
-            'entity' => 'collection',
-            'count'  => 2,
-            'items'  => array_map(function ($v) { return $this->convertAllToUnixTimestamp($v); }, $this->getApiListResponseBodyForApplication()),
-        ];
-
-        $expected  = $this->getStorkListPayloadForApplication();
-        $mockeryOn = $this->getArgsMatcherForWebhook($expected);
-
-        $this->mockServiceStorkRequest(
-            function ($path, $payload)
-            {
-                return $this->getStorkResponse(['webhooks' => $this->getStorkListResponseBodyForApplication()]);
-            })
-            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/List', \Mockery::on($mockeryOn));
+        $this->expectStorkServiceRequestForAction('listWebhookForPartner');
 
         $this->startTest();
     }
@@ -354,6 +271,7 @@ class WebhookV2Test extends TestCase
     public function testListWebhookForPartnerMerchantNoAppAccessFailure()
     {
         $this->assignMerchantAsPartnerAggregator();
+
         $this->startTest();
     }
 
@@ -361,106 +279,40 @@ class WebhookV2Test extends TestCase
     {
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
-        $this->testData[__FUNCTION__]['request']['content'] = $this->getApiUpdatePayloadForBanking();
-        $this->testData[__FUNCTION__]['response']['content'] = $this->addCreatedUpdatedByEmail($this->convertAllToUnixTimestamp($this->getApiUpdateResponseBodyForBanking()));
-
-        $this->mockServiceStorkRequest(
-            function ($path, $payload)
-            {
-                if ($path === '/twirp/rzp.stork.webhook.v1.WebhookAPI/Update')
-                {
-                    $this->assertArraySelectiveEquals(['webhook' => $this->getStorkUpdatePayloadForBanking()], $payload);
-                    $this->assertEquals('rx-test', $payload['webhook']['service']);
-                    $this->assertEquals('10000000000000', $payload['webhook']['owner_id']);
-                    $this->assertEquals('merchant', $payload['webhook']['owner_type']);
-                    $this->assertEquals(json_decode('{}'), $payload['webhook']['context']);
-
-                    return $this->getStorkResponse(['webhook' => $this->getStorkUpdateResponseBodyForBanking()]);
-                }
-                if ($path === '/twirp/rzp.stork.webhook.v1.WebhookAPI/Get')
-                {
-                    return $this->getStorkResponse(['webhook' => $this->getStorkUpdateResponseBodyForBanking()]);
-                }
-
-                return new \Requests_Response();
-
-            })->times(2);
+        $this->expectStorkServiceRequestForAction('updateWebhookForBanking');
 
         $this->startTest();
     }
 
     public function testUpdateWebhookForPrimary()
     {
-        $this->testData[__FUNCTION__]['request']['content'] = $this->getApiUpdatePayloadForPrimary();
-        $this->testData[__FUNCTION__]['response']['content'] = $this->addCreatedUpdatedByEmail($this->convertAllToUnixTimestamp($this->getApiUpdateResponseBodyForPrimary()));
-
-        $expected  = $this->getExpectedArgsForRequestMethod($this->getStorkUpdatePayloadForPrimary(), '10000000000000', 'merchant', 'api-test');
-        $mockeryOn = $this->attachEmptyWKCtxMatcherToArgsMatcher($this->getArgsMatcherForWebhook($expected));
-
-        $this->mockServiceStorkRequest(
-                function ($path, $payload)
-                {
-                    return $this->getStorkResponse(['webhook' => $this->getStorkUpdateResponseBodyForPrimary()]);
-                })
-            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/Update', \Mockery::on($mockeryOn));
+        $this->expectStorkServiceRequestForAction('updateWebhookForPrimary');
 
         $this->startTest();
     }
 
-    public function testUpdateWebhookForOauth()
+    public function testUpdateWebhookForOAuth()
     {
         $this->addOAuthTag();
         $this->addMerchantApplicationMapping();
 
-        $this->testData[__FUNCTION__]['request']['content'] = $this->getApiUpdatePayloadForOauth();
-        $this->testData[__FUNCTION__]['response']['content'] = $this->addCreatedUpdatedByEmail($this->convertAllToUnixTimestamp($this->getApiCreateResponseBodyForOauth()));
-
-        $expected  = $this->getExpectedArgsForRequestMethod($this->getStorkUpdatePayloadForPrimary(), '10000000000App', 'application', 'api-test');
-        $mockeryOn = $this->attachEmptyWKCtxMatcherToArgsMatcher($this->getArgsMatcherForWebhook($expected));
-
-        $this->mockServiceStorkRequest(
-            function ($path, $payload)
-            {
-                return $this->getStorkResponse(['webhook' => $this->getStorkCreateResponseBodyForOauth()]);
-            })
-            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/Update', \Mockery::on($mockeryOn));
+        $this->expectStorkServiceRequestForAction('updateWebhookForOAuth');
 
         $this->startTest();
     }
 
-    public function testUpdateWebhookForOauthMerchantNotPartnerFailure()
+    public function testUpdateWebhookForOAuthMerchantNotPartnerFailure()
     {
-        $this->testData[__FUNCTION__]['request']['content'] = $this->getApiUpdatePayloadForOauth();
+        $this->dontExpectAnyStorkServiceRequest();
+
         $this->startTest();
     }
 
-    public function testUpdateWebhookForOauthMerchantNoAppAccessFailure()
+    public function testUpdateWebhookForOAuthMerchantNoAppAccessFailure()
     {
         $this->addOAuthTag();
-        $this->testData[__FUNCTION__]['request']['content'] = $this->getApiUpdatePayloadForOauth();
-        $this->startTest();
-    }
 
-    public function testUpdateWebhookOverrideToImplictValues()
-    {
-        $this->testData[__FUNCTION__] = $this->testData['testUpdateWebhookForPrimary'];
-
-        $this->testData[__FUNCTION__]['request']['content']  = $this->getApiUpdatePayloadForPrimary();
-        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getApiUpdateResponseBodyForPrimary());
-
-        $this->testData[__FUNCTION__]['request']['content']['context']     = 'wrong_context';
-        $this->testData[__FUNCTION__]['request']['content']['owner_id']    = 'wrong_owner_id';
-        $this->testData[__FUNCTION__]['request']['content']['owner_type']  = 'wrong_owner_type';
-
-        $expected  = $this->getExpectedArgsForRequestMethod([], '10000000000000', 'merchant');
-        $mockeryOn = $this->attachEmptyWKCtxMatcherToArgsMatcher($this->getArgsMatcherForWebhook($expected));
-
-        $this->mockServiceStorkRequest(
-                function ($path, $payload)
-                {
-                    return $this->getStorkResponse(['webhook' => $this->getStorkUpdateResponseBodyForPrimary()]);
-                })
-            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/Update', \Mockery::on($mockeryOn));
+        $this->dontExpectAnyStorkServiceRequest();
 
         $this->startTest();
     }
@@ -468,6 +320,8 @@ class WebhookV2Test extends TestCase
     //event is not valid for the product
     public function testUpdateWebhookInvalidProductEventFailure()
     {
+        $this->dontExpectAnyStorkServiceRequest();
+
         $this->startTest();
     }
 
@@ -542,88 +396,5 @@ class WebhookV2Test extends TestCase
                 'merchant_id' => $merchantId,
             ]
         );
-
-    }
-
-    protected function mockRazorxToReturnOn()
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->willReturn('on');
-    }
-
-    /**
-     * it uses assertArrayEquals which internally uses assertSame on keys. Hence if you are
-     * using this method, make be aware of this if $expected contain an object. It's because
-     * in case of objects assertSame makes sure that object has the same reference.
-     */
-    protected function getArgsMatcherForWebhook($expected)
-    {
-        return function(array $actual) use ($expected)
-        {
-            try
-            {
-                $this->assertArraySelectiveEquals($expected, $actual);
-            }
-            catch (ExpectationFailedException $e)
-            {
-                return false;
-            }
-            return true;
-        };
-    }
-
-    // pass an args matcher to this method. This method returns a function which
-    // asserts for empty context. And also calls the args matcher with the actual arguments.
-    protected function attachEmptyWKCtxMatcherToArgsMatcher($argsMatcher)
-    {
-        return function(array $actual) use ($argsMatcher)
-        {
-            try
-            {
-                $this->assertEquals(json_decode('{}'), $actual['webhook']['context']);
-            }
-            catch (ExpectationFailedException $e)
-            {
-                return false;
-            }
-            return $argsMatcher($actual);
-        };
-    }
-
-    // CREATE/UPDATE only sends the following information.
-    // helper method to build the expected arguments for the stork service's request method. If a key is empty, it doesn't
-    // add it in the payload. Hence flexibility to use/not use a key.
-    protected function getExpectedArgsForRequestMethod($payload, $ownerId = '', $ownerType = '', $service = '')
-    {
-        $args = $payload;
-        $ownerId   !== '' ? $args['owner_id']   = $ownerId   : null;
-        $ownerType !== '' ? $args['owner_type'] = $ownerType : null;
-        $service   !== '' ? $args['service']    = $service   : null;
-        return ['webhook' => $args];
-    }
-
-    protected function addCreatedUpdatedByEmail(array $input): array
-    {
-        $user = $this->app['repo']->user->find('MerchantUser01');
-        if (is_null($user) === true)
-        {
-            return $input;
-        }
-        if (isset($input['created_by']) === true)
-        {
-            $input['created_by_email'] = $user->email;
-        }
-        if (isset($input['updated_by']) === true)
-        {
-            $input['updated_by_email'] = $user->email;
-        }
-        return $input;
     }
 }
