@@ -204,13 +204,16 @@ class TerminalsService
 
     public function proxyTerminalService($input, $method, $path, $options = [], $headers = []) : array
     {
-        if ($input === [] || $input == '')
-        {
-            $input = '';
-        }
-        else
-        {
-            $input = json_encode($input);
+        if ($method !== "DELETE"){
+
+            if ($input === [] || $input == '')
+            {
+                $input = '';
+            }
+            else
+            {
+                $input = json_encode($input);
+            }
         }
 
         $response = $this->sendRequest($path, $input, $method, $options, $headers);

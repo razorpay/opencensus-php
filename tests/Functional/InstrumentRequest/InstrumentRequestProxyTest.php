@@ -191,7 +191,7 @@ class InstrumentRequestProxyTest extends TestCase
                 ],
                 self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/internal_instrument_request/0123456789abcd',
                 self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::DELETE,
-                self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   =>  '',
+                self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   =>  [],
             ],
             [
                 self::REQUEST                              => [
@@ -250,7 +250,14 @@ class InstrumentRequestProxyTest extends TestCase
 
                 $this->assertEquals($testCase[self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE], $method);
 
-                $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], json_decode($content, true));
+                if ($method !== \Requests::DELETE)
+                {
+                    $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], json_decode($content, true));
+                }
+                else
+                {
+                    $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], $content);
+                }
 
                 $this->assertArrayHasKey('X-Dashboard-Admin-Email', $additionalHeaders);
 
