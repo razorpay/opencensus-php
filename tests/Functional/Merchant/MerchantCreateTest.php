@@ -183,6 +183,7 @@ class MerchantCreateTest extends TestCase
             'airtelmoney'   => true,
             'paylater'      => true,
             'phonepeswitch' => true,
+            'olamoney'      => true,
             'card_subtype'  => 3 // consumer + business
         ];
 

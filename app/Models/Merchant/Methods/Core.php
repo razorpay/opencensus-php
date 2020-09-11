@@ -400,10 +400,7 @@ class Core extends Base\Core
                 $methods->setMobikwik(true);
                 $methods->setPayzapp(true);
                 $methods->setPayumoney(true);
-                // OlaMoney is facing fraud issues, not going to
-                // enable by default for new merchants anymore.
-                // Ref: https://razorpay.slack.com/archives/C0X84TUTH/p1568200366022300
-                // $methods->setOlamoney(false);
+                $methods->setOlamoney(true);
                 $methods->setFreecharge(true);
                 $methods->setAirtelmoney(true);
                 $methods->setAmazonpay(false);
