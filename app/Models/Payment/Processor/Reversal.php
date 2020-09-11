@@ -43,13 +43,30 @@ trait Reversal
         $input[ReversalEntity::AMOUNT] = $input[ReversalEntity::AMOUNT] ?? $transfer->getAmountUnreversed();
 
         //
-        // If the transfer source was a payment, we decrement the payment.amount_transferred
-        // with the amount of the reversal. This is to allow further transfers to be made on
-        // the payment
+        // If the transfer source is a payment or an order, we decrement
+        // the payment.amount_transferred with the amount of the reversal.
+        // This is to allow further transfers to be made on the payment.
         //
         if ($transfer->getSourceType() === E::PAYMENT)
         {
             $sourcePayment = $transfer->source;
+
+            $sourcePayment->decrementAmountTransferred($input[ReversalEntity::AMOUNT]);
+        }
+        else if ($transfer->getSourceType() === E::ORDER)
+        {
+            $sourceOrderId = $transfer->getSourceId();
+
+            $sourcePayment = $this->repo->payment->fetchPaymentsForOrderId($sourceOrderId);
+
+            if (count($sourcePayment) !== 1)
+            {
+                throw new Exception\LogicException(
+                    'More than 1 payment found for order!'
+                );
+            }
+
+            $sourcePayment = $sourcePayment->pop();
 
             $sourcePayment->decrementAmountTransferred($input[ReversalEntity::AMOUNT]);
         }

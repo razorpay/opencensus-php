@@ -115,6 +115,10 @@ class OrderTransferTest extends TestCase
         $transfer = $this->getLastEntity('transfer', true);
 
         $this->assertEquals('reversed', $transfer['status']);
+
+        $payment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals(0, $payment['amount_transferred']);
     }
 
     public function testWebhookOrderTransferProcessed()
