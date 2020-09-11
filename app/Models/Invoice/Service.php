@@ -132,6 +132,25 @@ class Service extends Base\Service
         return $invoice->toArrayPublic();
     }
 
+    public function checkForInvoiceTypeForPlServiceForwarding(string $id, array $input): bool
+    {
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
+            $id,
+            $this->merchant,
+            $this->userId,
+            $this->userRole,
+            $input);
+
+        if (($invoice->isTypeInvoice() === true) ||
+            ($invoice->isTypeOfSubscriptionRegistration() === true))
+        {
+            // we dont want to forward invoice and auth links requests to pl service
+            return false;
+        }
+
+        return true;
+    }
+
     public function fetchMultiple(array $input): array
     {
         // Appends USER_ID in query input if userId available in headers via

@@ -152,7 +152,7 @@ class InvoiceController extends Controller
     {
         $input = Request::all();
 
-        if ($this->shouldForwardToPaymentLinkService() === true)
+        if ($this->shouldForwardToPaymentLinkService([], false, $id) === true)
         {
             try
             {
@@ -592,7 +592,7 @@ class InvoiceController extends Controller
         return ApiResponse::json($response);
     }
 
-    protected function shouldForwardToPaymentLinkService(array $input = [], bool $checkForInput = false): bool
+    protected function shouldForwardToPaymentLinkService(array $input = [], bool $checkForInput = false, string $id = null): bool
     {
         if ($this->app['basicauth']->isPaymentLinkServiceApp() === true)
         {
@@ -611,6 +611,18 @@ class InvoiceController extends Controller
             if ($checkForInput === true)
             {
                 return $this->checkInputHasTypeLink($input);
+            }
+
+            if ($id !== null)
+            {
+                try
+                {
+                    return $this->service()->checkForInvoiceTypeForPlServiceForwarding($id, []);
+                }
+                catch (\Exception $e)
+                {
+                    // do nothing. will return true since id doesnt exist in api
+                }
             }
 
             return true;
