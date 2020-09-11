@@ -43,7 +43,7 @@ class OrderTransfer extends  AbstractTransfer
                     $this->processOrderTransfers($this->payment);
                 },
                 self::MUTEX_LOCK_TIMEOUT,
-                ErrorCode::BAD_REQUEST_ORDER_TRANSFER_PROCESS_IN_PROGRESS);
+                ErrorCode::BAD_REQUEST_ORDER_TRANSFER_PROCESS_IN_PROGRESS, 0,100,200 ,true);
 
             $this->trace->info(
                 TraceCode::ORDER_TRANSFER_PROCESS_SUCCESS,
