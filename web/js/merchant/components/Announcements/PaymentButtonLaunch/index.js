@@ -60,13 +60,13 @@ export default React.memo(({ productName }) => {
   return (
     <AnnouncementBanner title="Introducing Payment Button" canBeClosed={true} theme="warning">
       <span class="display-inline">{bannerText}</span>
-      <a class="btn btn-link" href={cta2Link} target="_blank" onClick={_track.onClickCTA2}>
+      <a class="btn btn-link" href={cta2Link} target="_blank" onClick={track.onClickCTA2}>
         {cta2Text}
       </a>{' '}
       <Link
         to={cta1Link}
         class="Button--secondary Button scheduled-btn-act btn-border"
-        onClick={_track.onClickCTA1}
+        onClick={track.onClickCTA1}
       >
         {cta1Text}
       </Link>
