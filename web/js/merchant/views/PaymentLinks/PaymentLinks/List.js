@@ -12,6 +12,7 @@ import { fetchReminders } from 'merchant/reducers/reminders';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import List from 'merchant/views/Invoices/Invoices/components/List';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import ListFilter from 'merchant/views/Invoices/Invoices/components/ListFilter';
@@ -22,7 +23,7 @@ import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
 import { trackSearchFilterForInternational } from './ga';
 
 @withRouter
-@connect(state => ({ ...state.paymentlinks, ...state.session }), {
+@connect((state) => ({ ...state.paymentlinks, ...state.session }), {
   fetchPaymentLinks,
   fetchReminders,
 })
@@ -53,7 +54,7 @@ export default class PaymentLinksContainer extends ListContainer {
     return notes;
   }
 
-  onSearchAnalytics = params => {
+  onSearchAnalytics = (params) => {
     const label = getKeysSeparatedByPipe(params);
 
     if (label && label.length > 0) {
@@ -64,12 +65,12 @@ export default class PaymentLinksContainer extends ListContainer {
       });
     }
 
-    Object.keys(params).forEach(param => {
+    Object.keys(params).forEach((param) => {
       this.props.tracking.trackEvent(
         window.rzpQ.paymentLinks().interaction('pl.search.status', {
           origin: 'dashboard',
           modified: this.searchFilters[param] !== params[param],
-        })
+        }),
       );
     });
   };
@@ -83,7 +84,7 @@ export default class PaymentLinksContainer extends ListContainer {
     this.props.tracking.trackEvent(
       window.rzpQ.paymentLinks().interaction('pl.search.clear', {
         origin: 'dashboard',
-      })
+      }),
     );
   };
 
@@ -95,7 +96,7 @@ export default class PaymentLinksContainer extends ListContainer {
     });
   };
 
-  onDuplicate = invoiceId => {
+  onDuplicate = (invoiceId) => {
     this.props.history.push(`/paymentlinks/new?duplicate_id=${invoiceId}`);
   };
 
@@ -104,13 +105,31 @@ export default class PaymentLinksContainer extends ListContainer {
       window.rzpQ.paymentLinks().interaction('pl.search.error', {
         origin: 'dashboard',
         response: this.state.status.message[1],
-      })
+      }),
     );
   };
 
   render() {
     let { loading, paymentlinks, user, mode, tracking } = this.props;
     let status = this.state.status;
+
+    const docsLinkProps = {
+      url: 'https://razorpay.com/docs/payment-links/',
+    };
+
+    if (user.isPaymentlinksV2Enabled) {
+      docsLinkProps.url = 'https://razorpay.com/docs/payment-links/api/new/';
+      docsLinkProps.title = (
+        <span>
+          Documentation <span class="badge bg-success m-r">new</span>
+          <Popover theme="dark" parentQuerySelector=".tether-element">
+            <PopoverBody>
+              New API Contract is applicable for your <br /> merchant profile
+            </PopoverBody>
+          </Popover>
+        </span>
+      );
+    }
 
     return (
       <div class="content-wrapper">
@@ -126,12 +145,11 @@ export default class PaymentLinksContainer extends ListContainer {
               <TakeATourButton feature={RZPFeatures.PL} />  // TODO: Re-enable it after few weeks, check [PAYAPPS-839] for full details
             */}
 
-            <DocsLink url="https://razorpay.com/docs/payment-links/" />
+            <DocsLink {...docsLinkProps} />
 
             <ShowWhen
-              additionalCondition={user =>
-                (mode !== 'live' || !user.isRejected) &&
-                user.isAllowedEdit('payment_links')
+              additionalCondition={(user) =>
+                (mode !== 'live' || !user.isRejected) && user.isAllowedEdit('payment_links')
               }
             >
               <NavLink class="btn btn-primary" to="/paymentlinks/new">
@@ -141,7 +159,7 @@ export default class PaymentLinksContainer extends ListContainer {
                     tracking.trackEvent(
                       window.rzpQ.onbr().success('dash.pl_action', {
                         action: 'Initiate_PL_Creation',
-                      })
+                      }),
                     )
                   }
                 >
@@ -164,11 +182,7 @@ export default class PaymentLinksContainer extends ListContainer {
           isPaymentlinksV2Enabled={user.isPaymentlinksV2Enabled}
         />
 
-        <Alert
-          type={status.type}
-          message={status.message}
-          onCloseClick={this.onAlertCloseClick}
-        />
+        <Alert type={status.type} message={status.message} onCloseClick={this.onAlertCloseClick} />
 
         <List
           invoices={paymentlinks}
@@ -189,7 +203,7 @@ export default class PaymentLinksContainer extends ListContainer {
               window.rzpQ.paymentLinks().interaction(`pl.browse.${type}`, {
                 origin: 'dashboard',
                 page: params.skip % params.count,
-              })
+              }),
             );
 
             this.paginate(params);
