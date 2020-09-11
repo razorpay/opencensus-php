@@ -195,6 +195,9 @@ return array(
         'card_payments_alert'    => 'CTB3BPENR',
 
         'rx_rbl_recon_alerts'    => 'C019AKLLQAH',
+
+        //payout alerts
+        'xp_payouts_alert'       => 'C01AA7PCR6J',
     ],
 
     'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true,

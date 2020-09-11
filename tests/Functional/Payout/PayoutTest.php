@@ -27,6 +27,7 @@ use RZP\Models\Payout\Status;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Jobs\PayoutSourceUpdaterJob;
 use RZP\Models\Base\PublicCollection;
 use RZP\Mail\Banking\LowBalanceAlert;
 use RZP\Models\Payout\WorkflowFeature;
@@ -97,28 +98,10 @@ class PayoutTest extends TestCase
 
     public function testCreatePayout(): array
     {
-        Mail::fake();
 
         $this->ba->privateAuth();
 
-        (new Admin\Service)->setConfigKeys(
-            [
-                Admin\ConfigKey::LOW_BALANCE_RX_EMAIL => [
-                    '10000000000000' =>
-                        [
-                            'low_balance_threshold' => 10000000000,
-                            'email_ids'             => ['a@a.com', 'b@b.com']
-                        ]
-                ]
-            ]);
-
         $this->startTest();
-
-        Mail::assertQueued(LowBalanceAlert::class);
-
-        $config = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::LOW_BALANCE_RX_EMAIL]);
-
-        $this->assertArrayHasKey('notify_at', $config['10000000000000']);
 
         $payout = $this->getLastEntity('payout', true);
 
@@ -5123,70 +5106,6 @@ class PayoutTest extends TestCase
         $this->assertEquals('created', $ftaForPayout->getStatus());
     }
 
-    public function testLowBalanceAlertForQueuedPayouts()
-    {
-        Mail::fake();
-
-        $this->ba->privateAuth();
-
-        (new Admin\Service)->setConfigKeys(
-            [
-                Admin\ConfigKey::LOW_BALANCE_RX_EMAIL => [
-                    '10000000000000' =>
-                        [
-                            'low_balance_threshold' => 10000000000,
-                            'email_ids'             => ['a@a.com', 'b@b.com']
-                        ]
-                ]
-            ]);
-
-        $queuedPayoutAttributes = [
-            'account_number'        =>  '2224440041626905',
-            'amount'                =>  20000099,
-            'queue_if_low_balance'  =>  1,
-        ];
-
-        $this->createQueuedOrPendingPayout($queuedPayoutAttributes);
-
-        Mail::assertQueued(LowBalanceAlert::class);
-
-        $config = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::LOW_BALANCE_RX_EMAIL]);
-
-        $this->assertArrayHasKey('notify_at', $config['10000000000000']);
-
-        $payout = $this->getDbLastEntity('payout');
-
-        $this->assertEquals('queued', $payout->getStatus());
-    }
-
-    public function testLowBalanceAlertForPayoutsWhenBalanceIsAboveThreshold()
-    {
-        Mail::fake();
-
-        $this->ba->privateAuth();
-
-        (new Admin\Service)->setConfigKeys(
-            [
-                Admin\ConfigKey::LOW_BALANCE_RX_EMAIL => [
-                    '10000000000000' =>
-                        [
-                            'low_balance_threshold' => 1000,
-                            'email_ids'             => ['a@a.com', 'b@b.com']
-                        ]
-                ]
-            ]);
-
-        $queuedPayoutAttributes = [
-            'account_number'        =>  '2224440041626905',
-            'amount'                =>  2000,
-            'queue_if_low_balance'  =>  1,
-        ];
-
-        $this->createQueuedOrPendingPayout($queuedPayoutAttributes);
-
-        Mail::assertNotQueued(LowBalanceAlert::class);
-    }
-
     // TODO: Remove this test once we remove bulk throttling (when file based uploads are started by FTS)
     // Test creates 4 payouts (NEFT, RTGS, UPI and IMPS) [First 2 go to batch_submitted, remaining go to created]
     public function testBulkPayoutWithThrottling()
@@ -7036,5 +6955,14 @@ class PayoutTest extends TestCase
 
         $this->assertEquals('failed', $payout->getStatus());
         $this->assertEquals('Invalid Beneficiary details', $payout->getFailureReason());
+    }
+
+    public function testCreatePayoutWithDelayedSourceUpdater()
+    {
+        Queue::fake();
+
+        $this->testCreatePayout();
+
+        Queue::assertPushed(PayoutSourceUpdaterJob::class, 1);
     }
 }

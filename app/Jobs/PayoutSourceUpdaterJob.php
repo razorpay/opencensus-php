@@ -6,6 +6,7 @@ use App;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payout\SourceUpdater;
+use Jitendra\Lqext\TransactionAware;
 
 /***
  * NOTE: In case the Payout Status updates are out of order, the PayoutLink State Machine may fail.
@@ -16,6 +17,8 @@ use RZP\Models\Payout\SourceUpdater;
  */
 class PayoutSourceUpdaterJob extends Job
 {
+    use TransactionAware;
+
     const MAX_RETRIES = 5;
 
     const MAX_RETRY_DELAY   = 300;

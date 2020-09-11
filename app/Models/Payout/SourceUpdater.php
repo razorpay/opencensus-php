@@ -8,6 +8,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Feature\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\PayoutSourceUpdaterJob;
+use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\PayoutLink\Core as PayoutLinkCore;
 
@@ -43,12 +44,34 @@ class SourceUpdater
                          'previous_status'         => $previousStatus,
                          'expected_current_status' => $expectedCurrentStatus
                      ]);
+        try
+        {
+            PayoutSourceUpdaterJob::dispatch($mode,
+                                             $payout->getPublicId(),
+                                             $previousStatus,
+                                             $expectedCurrentStatus)
+                                  ->delay(self::DELAY);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FAILED_TO_PUSH_PAYOUT_SOURCE_UPDATER_QUEUE
+            );
 
-        PayoutSourceUpdaterJob::dispatch($mode,
-                                         $payout->getPublicId(),
-                                         $previousStatus,
-                                         $expectedCurrentStatus)
-                              ->delay(self::DELAY);
+            $alertData = [
+                'payout_id'               => $payout->getPublicId(),
+                'previous_status'         => $previousStatus,
+                'expected_current_status' => $expectedCurrentStatus
+            ];
+
+             (new SlackNotification)->send(
+                    'Failed to enqueue payout status update for app',
+                    $alertData,
+                    $e,
+                    'xp_payouts_alert');
+        }
     }
 
     /**

@@ -134,6 +134,7 @@ jobs:
         THROTTLE_REDIS_PORT: 6379
         ES_HOST: elasticsearch
         ES_AUDIT_HOST: elasticsearch
+        LQEXT_TESTING_TXN_SKIP_COUNT: 3
     services:
       redis:
         image: redis
@@ -186,6 +187,7 @@ jobs:
         THROTTLE_REDIS_PORT: 6379
         ES_HOST: elasticsearch
         ES_AUDIT_HOST: elasticsearch
+        LQEXT_TESTING_TXN_SKIP_COUNT: 3
     services:
       redis:
         image: redis
@@ -238,6 +240,7 @@ jobs:
         THROTTLE_REDIS_PORT: 6379
         ES_HOST: elasticsearch
         ES_AUDIT_HOST: elasticsearch
+        LQEXT_TESTING_TXN_SKIP_COUNT: 3
     services:
       redis:
         image: redis
@@ -290,6 +293,7 @@ jobs:
         THROTTLE_REDIS_PORT: 6379
         ES_HOST: elasticsearch
         ES_AUDIT_HOST: elasticsearch
+        LQEXT_TESTING_TXN_SKIP_COUNT: 3
     services:
       redis:
         image: redis
@@ -342,6 +346,7 @@ jobs:
         THROTTLE_REDIS_PORT: 6379
         ES_HOST: elasticsearch
         ES_AUDIT_HOST: elasticsearch
+        LQEXT_TESTING_TXN_SKIP_COUNT: 3
     services:
       redis:
         image: redis
@@ -397,6 +402,7 @@ jobs:
         THROTTLE_REDIS_PORT: 6379
         ES_HOST: elasticsearch
         ES_AUDIT_HOST: elasticsearch
+        LQEXT_TESTING_TXN_SKIP_COUNT: 5
     services:
       redis:
         image: redis
@@ -454,6 +460,7 @@ jobs:
         THROTTLE_REDIS_PORT: 6379
         ES_HOST: elasticsearch
         ES_AUDIT_HOST: elasticsearch
+        LQEXT_TESTING_TXN_SKIP_COUNT: 3
     services:
       redis:
         image: redis
@@ -509,6 +516,7 @@ jobs:
         THROTTLE_REDIS_PORT: 6379
         ES_HOST: elasticsearch
         ES_AUDIT_HOST: elasticsearch
+        LQEXT_TESTING_TXN_SKIP_COUNT: 5
     services:
       redis:
         image: redis
@@ -564,6 +572,7 @@ jobs:
         THROTTLE_REDIS_PORT: 6379
         ES_HOST: elasticsearch
         ES_AUDIT_HOST: elasticsearch
+        LQEXT_TESTING_TXN_SKIP_COUNT: 5
     services:
       redis:
         image: redis
@@ -619,6 +628,7 @@ jobs:
         THROTTLE_REDIS_PORT: 6379
         ES_HOST: elasticsearch
         ES_AUDIT_HOST: elasticsearch
+        LQEXT_TESTING_TXN_SKIP_COUNT: 5
     services:
       redis:
         image: redis
