@@ -8,6 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestException;
 use RZP\Foundation\Application;
+use Illuminate\Support\Facades\Redis;
 
 /**
  * Class Token
@@ -28,7 +29,7 @@ class TokenService
 
     public function __construct(Application $app)
     {
-        $this->redis = $app['redis'];
+        $this->redis = Redis::connection('mutex_redis');
     }
 
     /**
