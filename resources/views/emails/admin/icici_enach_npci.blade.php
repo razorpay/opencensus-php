@@ -1,10 +1,5 @@
 <!DOCTYPE html>
 <html style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; margin: 0; padding: 0;">
-<head>
-    <meta name="viewport" content="width=device-width">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>{{{$subject}}}</title>
-</head>
 <body bgcolor="#f6f6f6" style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; -webkit-font-smoothing: antialiased; height: 100%; -webkit-text-size-adjust: none; width: 100% !important; margin: 0; padding: 0;">
 
 <!-- body -->
@@ -16,6 +11,8 @@
             <div class="content" style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; display: block; max-width: 600px; margin: 0 auto; padding: 0;">
                 <table style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; width: 100%; margin: 0; padding: 0;"><tr style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; margin: 0; padding: 0;">
                         <td style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; margin: 0; padding: 0;">
+                            <p>Dear Sir/Madam,</p>
+                            <p>We have kept the transaction file on the SFTP/H2H folder.</p>
                             <p>Below are the file wise details. Request you to please process the same & confirm.</p>
                             <table style="border: 1px solid grey;">
                                 <thead>
@@ -28,21 +25,15 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-
                                 @foreach ($mailData as $fileName => $data)
-
                                     <tr>
-
                                         <td>{{ $data['sr_no'] }}</td>
                                         <td>{{ $fileName }}</td>
                                         <td>{{ $data['count'] }}</td>
                                         <td>{{ $data['amount'] }}</td>
                                         <td>{{ $data['date'] }}</td>
-
                                     </tr>
-
                                 @endforeach
-
                                 </tbody>
                             </table>
                         </td>

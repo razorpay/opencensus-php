@@ -100,11 +100,11 @@ class EnachNbIcici extends Debit\Base
 
                 $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
 
-                $fullFileName = $fileName . '.' . self::EXTENSION;
+                $fileNameForMail = basename($fileName) . '.' . self::EXTENSION;
 
-                $this->mailData[$fullFileName] = $this->formatDataForMail($fileData);
+                $this->mailData[$fileNameForMail] = $this->formatDataForMail($fileData);
 
-                $this->mailData[$fullFileName]['sr_no'] = $index;
+                $this->mailData[$fileNameForMail]['sr_no'] = $index;
             }
 
             $this->fileStore = $fileStoreIds;
@@ -219,7 +219,7 @@ class EnachNbIcici extends Debit\Base
 
         $type = Constants::ENACH_NB_ICICI . '_' . self::STEP;
 
-        $mailable = new EmandateMail($this->mailData, $type, $this->gatewayFile->getRecipients());
+        $mailable = new EmandateMail(['mailData' => $this->mailData], $type, $this->gatewayFile->getRecipients());
 
         Mail::queue($mailable);
     }

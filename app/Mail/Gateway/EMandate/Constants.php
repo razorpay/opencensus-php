@@ -29,7 +29,7 @@ class Constants extends Base\Constants
         Gateway::ENACH_RBL                   . '_' . self::DEBIT        => 'RBL ENach Debit',
         Gateway::ENACH_RBL                   . '_' . self::REGISTER     => 'RBL ENach Register',
         Gateway::NETBANKING_SBI              . '_' . self::DEBIT        => 'SBI EMandate Debit',
-        GatewayFileConstants::ENACH_NB_ICICI . '_' . self::DEBIT        => 'ICICI ENach Debit',
+        GatewayFileConstants::ENACH_NB_ICICI . '_' . self::DEBIT        => 'ICICI Nach Debit',
     ];
 
     const SUBJECT_MAP = [
@@ -59,7 +59,7 @@ class Constants extends Base\Constants
         Gateway::ENACH_RBL                   . '_' . self::DEBIT    => 'PFA ENach Debit request file.',
         Gateway::ENACH_RBL                   . '_' . self::REGISTER => 'PFA ENach Register request file.',
         Gateway::NETBANKING_SBI              . '_' . self::DEBIT    => 'PFA EMandate Debit request file.',
-        GatewayFileConstants::ENACH_NB_ICICI . '_' . self::DEBIT    => 'Dear Sir/Madam,' . "\n" . 'We have kept the transaction file on the SFTP/H2H folder.',
+        GatewayFileConstants::ENACH_NB_ICICI . '_' . self::DEBIT    => 'EMandate Debit request file',
     ];
 
     const MAIL_TEMPLATE_MAP = [

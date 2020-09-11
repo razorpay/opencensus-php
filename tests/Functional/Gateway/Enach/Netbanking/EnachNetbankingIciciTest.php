@@ -125,23 +125,21 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
 
         Mail::assertQueued(EmandateMail::class, function ($mail)
         {
-            $body = 'Dear Sir/Madam,' . "\n" . 'We have kept the transaction file on the SFTP/H2H folder.';
-
-            $fileName = 'icici/nach/debit/ACH-DR-ICIC-ICIC401790-{$date}-RZ0001-INP.txt';
+            $fileName = 'ACH-DR-ICIC-ICIC401790-{$date}-RZ0001-INP.txt';
 
             $date = Carbon::now(Timezone::IST)->format('dmY');
 
             $fileName = strtr($fileName, ['{$date}' => $date]);
 
-            $this->assertEquals($fileName, (array_keys($mail->viewData))[1]);
+            $this->assertEquals($fileName, (array_keys($mail->viewData['mailData']))[0]);
 
-            $this->assertEquals($body, $mail->viewData['body']);
+            $mailData = $mail->viewData['mailData'];
 
-            $this->assertEquals(1, $mail->viewData[$fileName]['sr_no']);
+            $this->assertEquals(1, $mailData[$fileName]['sr_no']);
 
-            $this->assertEquals('3,400.00', $mail->viewData[$fileName]['amount']);
+            $this->assertEquals('3,400.00', $mailData[$fileName]['amount']);
 
-            $this->assertEquals('2', $mail->viewData[$fileName]['count']);
+            $this->assertEquals('2', $mailData[$fileName]['count']);
 
             $this->assertEquals('emails.admin.icici_enach_npci', $mail->view);
 
@@ -245,7 +243,7 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
 
         Mail::assertQueued(EmandateMail::class, function ($mail)
         {
-            $this->assertEquals(3, count($mail->viewData));
+            $this->assertEquals(2, count($mail->viewData['mailData']));
 
             return true;
         });
