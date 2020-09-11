@@ -7,6 +7,7 @@ use Illuminate\Database\Query\JoinClause;
 use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Base\BuilderEx;
+use RZP\Base\ConnectionType;
 use RZP\Models\Merchant;
 use RZP\Models\Reversal;
 use RZP\Models\External;
@@ -90,10 +91,9 @@ class Repository extends Transaction\Repository
      */
     public function fetch(array $input,
                           string $merchantId = null,
-                          bool $useSlave = false,
-                          bool $useMasterReplica = false): PublicCollection
+                          string $connectionType = null): PublicCollection
     {
-        $statements = parent::fetch($input, $merchantId, $useSlave, $useMasterReplica);
+        $statements = parent::fetch($input, $merchantId, $connectionType);
 
         // After fetching settlement collection, we lazy load source relations for payout.
         $statements->where(Entity::TYPE, E::PAYOUT)->load($this->expandsForTypePayout);

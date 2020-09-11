@@ -133,8 +133,7 @@ trait RepositoryFetch
      */
     public function fetch(array $params,
                           string $merchantId = null,
-                          bool $useSlave = false,
-                          bool $useMasterEsReplica = false): PublicCollection
+                          string $connectionType = null): PublicCollection
     {
         // Process params (sanitization, validation, modification, etc.)
         $this->processFetchParams($params);
@@ -143,32 +142,14 @@ trait RepositoryFetch
 
         $query = $this->newQuery();
 
-        $routeThroughMasterReplica = false;
+        $connection = null;
 
-        $routeThroughDataWarehouse = false;
-
-        if ($useMasterEsReplica === true)
-        {
-            $routeThroughMasterReplica = $this->app['api.route']->routeThroughMasterReplica();
-        }
-
-        if (($useMasterEsReplica === true) and
-            ($routeThroughMasterReplica === true) and
+        if ((is_null($connectionType) === false) and
             ($this->app['env'] !== Environment::TESTING))
         {
-            $query = $this->newQueryWithConnection($this->getMasterReplicaConnection());
+            $connection = $this->getConnectionFromType($connectionType);
 
-            if ($this->useDataWarehouse() === true)
-            {
-                $routeThroughDataWarehouse = true;
-
-                $query = $this->newQueryWithConnection($this->getDataWarehouseConnection());
-            }
-        }
-
-        if ($useSlave === true)
-        {
-            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+            $query = $this->newQueryWithConnection($connection);
         }
 
         $query = $query->with($expands);
@@ -214,12 +195,41 @@ trait RepositoryFetch
         $endTimeMs = round(microtime(true) * 1000);
 
         $this->trace->info(TraceCode::DATA_WAREHOUSE_RESPONSE_DURATION, [
-            'data_warehouse' => $routeThroughDataWarehouse,
+            'data_warehouse' => ($connection === Connection::DATA_WAREHOUSE),
+            'connection'     => $connection,
             'duration_ms'    => $endTimeMs - $startTimeMs,
             'query'          => $query->toSql(),
         ]);
 
         return $entities;
+    }
+
+    protected function getConnectionFromType(string $connection): string
+    {
+        switch ($connection)
+        {
+            case ConnectionType::REPLICA:
+                if ($this->app['api.route']->routeThroughMasterReplica())
+                {
+                    if ($this->useDataWarehouse() === true)
+                    {
+                       return $this->getDataWarehouseConnection();
+                    }
+                    return $this->getMasterReplicaConnection();
+                }
+
+            case ConnectionType::SLAVE:
+                return $this->getSlaveConnection();
+
+            case ConnectionType::DATA_WAREHOUSE:
+                if ($this->useDataWarehouseForFetch() === true)
+                {
+                    return $this->getDataWarehouseConnection();
+                }
+                return $this->getSlaveConnection();
+        }
+
+        return null;
     }
 
     protected function getPaginated(BuilderEx $query, array $params = [])

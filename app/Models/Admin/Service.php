@@ -20,6 +20,7 @@ use RZP\Constants\Entity;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
+use RZP\Base\ConnectionType;
 use RZP\Constants\AdminFetch;
 use RZP\Models\Payment\Method;
 use RZP\Jobs\SFMerchantPocUpdate;
@@ -268,11 +269,7 @@ class Service extends Base\Service
 
         Entity::validateEntityOrFailPublic($entity);
 
-        $entities = $this->repo->$entity->fetch(
-            $input,
-            null,
-            false,
-            true);
+        $entities = $this->repo->$entity->fetch($input, null, ConnectionType::REPLICA);
 
         $this->traceActiveDbConnections();
 

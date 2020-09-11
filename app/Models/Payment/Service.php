@@ -39,6 +39,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Settlement\Bucket;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Base\ConnectionType;
 use RZP\Models\Payment\Verify\Verify;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Exception\BadRequestException;
@@ -1172,7 +1173,7 @@ class Service extends Base\Service
 
         $this->addInputTrace($input);
 
-        $payments = $this->repo->payment->fetch($input, $merchantId, true);
+        $payments = $this->repo->payment->fetch($input, $merchantId, ConnectionType::SLAVE);
 
         return $payments->toArrayPublic();
     }

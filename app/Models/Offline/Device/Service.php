@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use LaravelFCM\Message\PayloadDataBuilder;
 use LaravelFCM\Message\PayloadNotificationBuilder;
+use RZP\Base\ConnectionType;
 
 class Service extends Base\Service
 {
@@ -15,7 +16,7 @@ class Service extends Base\Service
     {
         $merchantId = $this->merchant->getId();
 
-        $devices = $this->repo->offline_device->fetch($input, $merchantId, true);
+        $devices = $this->repo->offline_device->fetch($input, $merchantId, ConnectionType::SLAVE);
 
         return $devices->toArrayPublic();
     }

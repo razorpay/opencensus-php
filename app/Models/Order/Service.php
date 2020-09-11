@@ -8,6 +8,7 @@ use RZP\Models\Payment;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
+use RZP\Base\ConnectionType;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -281,7 +282,7 @@ class Service extends Base\Service
 
     public function fetchMultiple($input)
     {
-        $orders = $this->repo->order->fetch($input, $this->merchant->getId(), true);
+        $orders = $this->repo->order->fetch($input, $this->merchant->getId(), ConnectionType::SLAVE);
 
         return $orders->toArrayPublic();
     }

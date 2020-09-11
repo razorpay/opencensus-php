@@ -986,6 +986,15 @@ class Repository extends \Razorpay\Spine\Repository
         return (($this->auth->isAdminAuth() === true) and ($dataWarehouseEnabled === 'enable'));
     }
 
+    protected function useDataWarehouseForFetch(): bool
+    {
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        $dataWarehouseEnabled = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), "data_warehouse_fetch_enabled", $mode);
+
+        return ($dataWarehouseEnabled === 'enable');
+    }
+
     protected function getDataWarehouseConnection()
     {
         if ($this->app['env'] === Environment::TESTING)

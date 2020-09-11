@@ -17,6 +17,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Constants\Timezone;
 use RZP\Models\BankTransfer;
+use RZP\Base\ConnectionType;
 use RZP\Models\Currency\Currency;
 use RZP\Models\VirtualAccountProducts;
 use RZP\Models\Offline\Device as OfflineDevice;
@@ -254,7 +255,7 @@ class Service extends Base\Service
 
         $merchantId = $this->merchant->getId();
 
-        $payments = $this->repo->payment->fetch($input, $merchantId, true);
+        $payments = $this->repo->payment->fetch($input, $merchantId, ConnectionType::SLAVE);
 
         return $payments->toArrayPublic();
     }
