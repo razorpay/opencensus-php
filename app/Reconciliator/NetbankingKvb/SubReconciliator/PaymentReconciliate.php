@@ -24,6 +24,11 @@ class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
         return $row[ReconFields::BANK_REFERENCE_NUMBER] ?? null;
     }
 
+    protected function getArn($row)
+    {
+        return $row[ReconFields::BANK_REFERENCE_NUMBER] ?? null;
+    }
+
     protected function getAccountDetails($row)
     {
         return [
@@ -67,5 +72,14 @@ class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
         $raw = json_encode($data);
 
         $gatewayPayment->setRaw($raw);
+    }
+
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            'acquirer'            =>  [
+                'reference1' => $this->getReferenceNumber($row),
+            ]
+        ];
     }
 }

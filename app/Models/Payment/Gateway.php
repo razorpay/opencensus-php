@@ -333,6 +333,7 @@ class Gateway
         self::UPI_AXIS,
         self::NETBANKING_SVC,
         self::ATOM,
+        self::NETBANKING_KVB,
         self::NETBANKING_YESB,
     ];
 
