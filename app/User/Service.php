@@ -847,24 +847,32 @@ class Service extends Base\Service
                         $data = $this->updateUserDetails($data, $user);
                     }
 
-                    // if the merchant is a partner
-                    if (($isBankingRequest === false) and (empty($data['merchants'][$merchant['id']]['partner_type']) === false))
+                    if (($isBankingRequest === false))
                     {
-                        $data['merchants'][$merchant['id']]['partner'] = [];
+                        // adding this only for PG, if moving campaigns to X, an extra parameter merchant=x is being sent
+                        // which is causing validation failure
+                        // refer this: https://razorpay.slack.com/archives/C6QPQKVLZ/p1599729634355800
+                        $data['campaigns'] = $merchantService->getMerchantActiveCampaigns();
 
-                        $configs = $merchantService->fetchPartnerConfigs();
-
-                        if (empty($configs) === false)
+                        // if the merchant is a partner
+                        if (empty($data['merchants'][$merchant['id']]['partner_type']) === false)
                         {
-                            foreach ($configs as $config)
+                            $data['merchants'][$merchant['id']]['partner'] = [];
+
+                            $configs = $merchantService->fetchPartnerConfigs();
+
+                            if (empty($configs) === false)
                             {
-                                if ($config[Merchant\Constants::COMMISSION_MODEL] === Merchant\Constants::COMMISSION)
+                                foreach ($configs as $config)
                                 {
-                                    $data['merchants'][$merchant['id']]['partner']['has_commission_configs'] = true;
-                                }
-                                else if ($config[Merchant\Constants::COMMISSION_MODEL] === Merchant\Constants::SUBVENTION)
-                                {
-                                    $data['merchants'][$merchant['id']]['partner']['has_subvention_configs'] = true;
+                                    if ($config[Merchant\Constants::COMMISSION_MODEL] === Merchant\Constants::COMMISSION)
+                                    {
+                                        $data['merchants'][$merchant['id']]['partner']['has_commission_configs'] = true;
+                                    }
+                                    else if ($config[Merchant\Constants::COMMISSION_MODEL] === Merchant\Constants::SUBVENTION)
+                                    {
+                                        $data['merchants'][$merchant['id']]['partner']['has_subvention_configs'] = true;
+                                    }
                                 }
                             }
                         }
