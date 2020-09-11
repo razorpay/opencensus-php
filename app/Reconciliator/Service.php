@@ -810,9 +810,9 @@ class Service extends Base\Service
      */
     protected function validateSpf(array $input)
     {
-        if (isset($input[RequestProcessor\Mailgun::RECEIVED_SPF]) === true)
+        if (isset($input[RequestProcessor\Mailgun::X_MAILGUN_SPF]) === true)
         {
-            $spfStatus = strtolower(substr($input[RequestProcessor\Mailgun::RECEIVED_SPF], 0, 4));
+            $spfStatus = strtolower(substr($input[RequestProcessor\Mailgun::X_MAILGUN_SPF], 0, 4));
             if ($spfStatus === RequestProcessor\Mailgun::SPF_PASS)
             {
                 return;
@@ -822,7 +822,7 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::RECON_EMAIL_VALIDATION_FAILED,
             [
                 'message'      => 'Spf validation for request failed',
-                'received-spf' => $input[RequestProcessor\Mailgun::RECEIVED_SPF] ?? null
+                'received-spf' => $input[RequestProcessor\Mailgun::X_MAILGUN_SPF] ?? null
             ]);
     }
 
