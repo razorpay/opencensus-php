@@ -61,7 +61,6 @@ services:
       SLAVE_DB_UPI_PAYMENTS_TEST_PASSWORD: 123
       DB_UPI_PAYMENTS_MOCKED: "false"
       REDIS_HOST: api_cache
-      REDIS_LABS_HOST: api_cache
       QUERY_CACHE_REDIS_HOST: api-redis-cluster
       QUERY_CACHE_REDIS_PORT: 7000
       MUTEX_REDIS_HOST: api-redis-cluster

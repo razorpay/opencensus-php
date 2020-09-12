@@ -321,25 +321,17 @@ return array(
             'cluster' => env('REDIS_CLUSTER', 'redis'),
         ],
 
-        'default' => [
-            'host'     => env('REDIS_LABS_HOST'),
-            'port'     => env('REDIS_LABS_PORT'),
+        // NOTE: DO NOT use this connection in any environment!!
+        //
+        // We use 1 redis node in clustered mode for unit tests, for which
+        // iterating over nodes to flush doesn't work. So, instead we connect
+        // to redis in single node mode and run FLUSHDB.
+        // See \RZP\Tests\Functional\TestCase::flushCache
+        'unit_tests_connection' => [
+            'host'     => env('MUTEX_REDIS_HOST'),
+            'port'     => env('MUTEX_REDIS_PORT'),
             'timeout'  => 1,
             'read_write_timeout' => 1,
-            'options'  => [
-                'parameters' => (empty(env('REDIS_LABS_PASSWORD')) === false) ? ['password' => env('REDIS_LABS_PASSWORD')] : [],
-            ],
-            'persistent' => true,
-        ],
-
-        'default_with_high_timeout' => [
-            'host'     => env('REDIS_LABS_HOST'),
-            'port'     => env('REDIS_LABS_PORT'),
-            'timeout'  => 10,
-            'read_write_timeout' => 10,
-            'options'  => [
-                'parameters' => (empty(env('REDIS_LABS_PASSWORD')) === false) ? ['password' => env('REDIS_LABS_PASSWORD')] : [],
-            ],
             'persistent' => true,
         ],
 
@@ -353,6 +345,16 @@ return array(
         ],
 
         'clusters' => [
+            'default' => [
+                [
+                    'host'     => env('MUTEX_REDIS_HOST'),
+                    'port'     => env('MUTEX_REDIS_PORT'),
+                    'timeout'  => 1,
+                    'read_write_timeout' => 1,
+                    'persistent' => true,
+                ],
+            ],
+
             'query_cache_redis' => [
                 [
                     'host'     => env('QUERY_CACHE_REDIS_HOST'),

@@ -33,7 +33,6 @@ services:
       DB_AUTH_USERNAME: api_user
       DB_AUTH_PASSWORD: 123
       REDIS_HOST: cache
-      REDIS_LABS_HOST: cache
       QUERY_CACHE_REDIS_HOST: cache
       MUTEX_REDIS_HOST: cache
       SECURE_REDIS_HOST: cache

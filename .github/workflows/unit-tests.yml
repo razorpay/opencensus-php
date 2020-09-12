@@ -125,7 +125,6 @@ jobs:
         DB_TEST_DATABASE: api_test
         DB_AUTH_DATABASE: api_auth
         REDIS_HOST: redis
-        REDIS_LABS_HOST: redis
         QUERY_CACHE_REDIS_HOST: redis
         QUERY_CACHE_REDIS_PORT: 6379
         MUTEX_REDIS_HOST: redis
@@ -178,7 +177,6 @@ jobs:
         DB_TEST_DATABASE: api_test
         DB_AUTH_DATABASE: api_auth
         REDIS_HOST: redis
-        REDIS_LABS_HOST: redis
         QUERY_CACHE_REDIS_HOST: redis
         QUERY_CACHE_REDIS_PORT: 6379
         MUTEX_REDIS_HOST: redis
@@ -231,7 +229,6 @@ jobs:
         DB_TEST_DATABASE: api_test
         DB_AUTH_DATABASE: api_auth
         REDIS_HOST: redis
-        REDIS_LABS_HOST: redis
         QUERY_CACHE_REDIS_HOST: redis
         QUERY_CACHE_REDIS_PORT: 6379
         MUTEX_REDIS_HOST: redis
@@ -284,7 +281,6 @@ jobs:
         DB_TEST_DATABASE: api_test
         DB_AUTH_DATABASE: api_auth
         REDIS_HOST: redis
-        REDIS_LABS_HOST: redis
         QUERY_CACHE_REDIS_HOST: redis
         QUERY_CACHE_REDIS_PORT: 6379
         MUTEX_REDIS_HOST: redis
@@ -337,7 +333,6 @@ jobs:
         DB_TEST_DATABASE: api_test
         DB_AUTH_DATABASE: api_auth
         REDIS_HOST: redis
-        REDIS_LABS_HOST: redis
         QUERY_CACHE_REDIS_HOST: redis
         QUERY_CACHE_REDIS_PORT: 6379
         MUTEX_REDIS_HOST: redis
@@ -393,7 +388,6 @@ jobs:
         DB_UPI_PAYMENTS_LIVE_HOST: mysql
         DB_UPI_PAYMENTS_TEST_HOST: mysql
         REDIS_HOST: redis
-        REDIS_LABS_HOST: redis
         QUERY_CACHE_REDIS_HOST: redis-cluster
         QUERY_CACHE_REDIS_PORT: 7000
         MUTEX_REDIS_HOST: redis
@@ -451,7 +445,6 @@ jobs:
         DB_UPI_PAYMENTS_LIVE_HOST: mysql
         DB_UPI_PAYMENTS_TEST_HOST: mysql
         REDIS_HOST: redis
-        REDIS_LABS_HOST: redis
         QUERY_CACHE_REDIS_HOST: redis
         QUERY_CACHE_REDIS_PORT: 6379
         MUTEX_REDIS_HOST: redis
@@ -507,7 +500,6 @@ jobs:
         DB_UPI_PAYMENTS_LIVE_HOST: mysql
         DB_UPI_PAYMENTS_TEST_HOST: mysql
         REDIS_HOST: redis
-        REDIS_LABS_HOST: redis
         QUERY_CACHE_REDIS_HOST: redis
         QUERY_CACHE_REDIS_PORT: 6379
         MUTEX_REDIS_HOST: redis
@@ -563,7 +555,6 @@ jobs:
         DB_UPI_PAYMENTS_LIVE_HOST: mysql
         DB_UPI_PAYMENTS_TEST_HOST: mysql
         REDIS_HOST: redis
-        REDIS_LABS_HOST: redis
         QUERY_CACHE_REDIS_HOST: redis
         QUERY_CACHE_REDIS_PORT: 6379
         MUTEX_REDIS_HOST: redis
@@ -619,7 +610,6 @@ jobs:
         DB_UPI_PAYMENTS_LIVE_HOST: mysql
         DB_UPI_PAYMENTS_TEST_HOST: mysql
         REDIS_HOST: redis
-        REDIS_LABS_HOST: redis
         QUERY_CACHE_REDIS_HOST: redis
         QUERY_CACHE_REDIS_PORT: 6379
         MUTEX_REDIS_HOST: redis

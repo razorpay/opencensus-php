@@ -51,7 +51,6 @@ pipeline:
       - DB_TEST_DATABASE=api_test_application
       - DB_AUTH_DATABASE=api_auth_applicaiton
       - REDIS_HOST=redis
-      - REDIS_LABS_HOST=redis
       - QUERY_CACHE_REDIS_HOST=redis
       - QUERY_CACHE_REDIS_PORT=6379
       - MUTEX_REDIS_HOST=redis
@@ -82,7 +81,6 @@ pipeline:
       - DB_TEST_DATABASE=api_test_feature_1
       - DB_AUTH_DATABASE=api_auth_feature_1
       - REDIS_HOST=redis2
-      - REDIS_LABS_HOST=redis2
       - QUERY_CACHE_REDIS_HOST=redis2
       - QUERY_CACHE_REDIS_PORT=6379
       - MUTEX_REDIS_HOST=redis2
@@ -116,7 +114,6 @@ pipeline:
       - DB_TEST_DATABASE=api_test_feature_2
       - DB_AUTH_DATABASE=api_auth_feature_2
       - REDIS_HOST=redis3
-      - REDIS_LABS_HOST=redis3
       - QUERY_CACHE_REDIS_HOST=redis3
       - QUERY_CACHE_REDIS_PORT=6379
       - MUTEX_REDIS_HOST=redis3
@@ -150,7 +147,6 @@ pipeline:
       - DB_TEST_DATABASE=api_test_feature_3
       - DB_AUTH_DATABASE=api_auth_feature_3
       - REDIS_HOST=redis4
-      - REDIS_LABS_HOST=redis4
       - QUERY_CACHE_REDIS_HOST=redis4
       - QUERY_CACHE_REDIS_PORT=6379
       - MUTEX_REDIS_HOST=redis4
@@ -183,7 +179,6 @@ pipeline:
       - DB_TEST_DATABASE=api_test_feature_4
       - DB_AUTH_DATABASE=api_auth_feature_4
       - REDIS_HOST=redis5
-      - REDIS_LABS_HOST=redis5
       - QUERY_CACHE_REDIS_HOST=redis5
       - QUERY_CACHE_REDIS_PORT=6379
       - MUTEX_REDIS_HOST=redis5
@@ -226,7 +221,6 @@ pipeline:
     - ES_ENTITY_TYPE_PREFIX=testing_feature_6_
     - ES_HOST=elasticsearch
     - REDIS_HOST=redis6
-    - REDIS_LABS_HOST=redis6
     - QUERY_CACHE_REDIS_HOST=redis6
     - QUERY_CACHE_REDIS_PORT=6379
     - MUTEX_REDIS_HOST=redis6
@@ -260,7 +254,6 @@ pipeline:
     - ES_ENTITY_TYPE_PREFIX=testing_features_5_
     - ES_HOST=elasticsearch
     - REDIS_HOST=redis7
-    - REDIS_LABS_HOST=redis7
     - QUERY_CACHE_REDIS_HOST=redis7
     - QUERY_CACHE_REDIS_PORT=6379
     - MUTEX_REDIS_HOST=redis7
@@ -294,7 +287,6 @@ pipeline:
     - ES_ENTITY_TYPE_PREFIX=testing_payments_
     - ES_HOST=elasticsearch
     - REDIS_HOST=redis8
-    - REDIS_LABS_HOST=redis8
     - QUERY_CACHE_REDIS_HOST=redis8
     - QUERY_CACHE_REDIS_PORT=6379
     - MUTEX_REDIS_HOST=redis8
@@ -329,7 +321,6 @@ pipeline:
     - ES_ENTITY_TYPE_PREFIX=testing_gateway_1_
     - ES_HOST=elasticsearch
     - REDIS_HOST=redis9
-    - REDIS_LABS_HOST=redis9
     - QUERY_CACHE_REDIS_HOST=redis9
     - QUERY_CACHE_REDIS_PORT=6379
     - MUTEX_REDIS_HOST=redis9
@@ -363,7 +354,6 @@ pipeline:
     - ES_ENTITY_TYPE_PREFIX=testing_gateway_2_
     - ES_HOST=elasticsearch
     - REDIS_HOST=redis10
-    - REDIS_LABS_HOST=redis10
     - QUERY_CACHE_REDIS_HOST=redis10
     - QUERY_CACHE_REDIS_PORT=6379
     - MUTEX_REDIS_HOST=redis10

@@ -100,7 +100,7 @@ class TestCase extends ParentTestCase
         }
         else
         {
-            Redis::connection()->flushall();
+            Redis::connection('unit_tests_connection')->flushall();
 
             foreach ($this->config->get('database.redis.clusters') as $cluster => $config)
             {

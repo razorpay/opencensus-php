@@ -48,7 +48,7 @@ class GatewayDowntimeDetectionTest extends TestCase
 
     public function tearDown()
     {
-        $this->redis->flushall();
+        $this->flushCache();
 
         parent::tearDown();
     }
