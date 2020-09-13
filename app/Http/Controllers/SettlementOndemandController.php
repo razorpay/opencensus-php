@@ -27,6 +27,20 @@ class SettlementOndemandController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function createFundAccountForMerchantId(string $id)
+    {
+        $data = $this->service(Entity::SETTLEMENT_ONDEMAND_FUND_ACCOUNT)->addOndemandFundAccountForMerchant($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function addDefaultOndemandPricingIfNotPresent(string $id)
+    {
+        $data = $this->service(Entity::SETTLEMENT_ONDEMAND)->addDefaultOndemandPricingIfNotPresent($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function addOndemandPricingIfAbscent()
     {
         $data = $this->service(Entity::SETTLEMENT_ONDEMAND)->addOndemandPricingIfAbscent();

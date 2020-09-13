@@ -1402,7 +1402,9 @@ class Route
 
         //Ondemand routes
         'settlement_ondemand_create'               => ['post',      'settlements/ondemand',                          'SettlementOndemandController@postSettlementOndemand'               ],
-        'bulk_create_fund_accounts'                => ['post',      'settlement/ondemand/create_fund_account',       'SettlementOndemandController@createFundAccount'                    ],
+        'bulk_create_fund_accounts'                => ['post',      'settlements/ondemand/create_fund_account',      'SettlementOndemandController@createFundAccount'                    ],
+        'setl_ondemand_fund_accounts'              => ['post',      'settlements/ondemand/fund_account/{id}',        'SettlementOndemandController@createFundAccountForMerchantId'       ],
+        'setl_ondemand_pricing'                    => ['post',      'settlements/ondemand/pricing/{id}',             'SettlementOndemandController@addDefaultOndemandPricingIfNotPresent'],
         'add_ondemand_pricing_if_absent'           => ['post',      'settlements/ondemand/add_ondemand_pricing',     'SettlementOndemandController@addOndemandPricingIfAbscent'          ],
         'settlement_ondemand_razorpayx_webhook'    => ['post',      'settlement/ondemand/update',                    'SettlementOndemandController@ondemandPayoutUpdate'                 ],
         'settlement_ondemand_fees'                 => ['get',       'settlements/ondemand/fees',                     'SettlementOndemandController@calculateFees'                        ],
@@ -2612,6 +2614,8 @@ class Route
         'vendor_payment_upcoming_mail_cron',
         'setl_service_migration',
         'create_payment_config_bulk_via_batch',
+        'bulk_create_fund_accounts',
+        'add_ondemand_pricing_if_absent',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -3055,6 +3059,8 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'setl_ondemand_pricing',
+        'setl_ondemand_fund_accounts',
         'banking_account_statement_process_admin',
         'd2c_bureau_report_delete',
         'correct_merchant_owners_products',
@@ -3066,8 +3072,6 @@ class Route
         'los_service_admin',
         'emi_plans_migrate',
         'ufh_admin_upload_file',
-        'bulk_create_fund_accounts',
-        'add_ondemand_pricing_if_absent',
         'd2c_create_csv_report',
         'offline_verification_service_get',
         'offline_verification_service_put',
@@ -3725,6 +3729,8 @@ class Route
     ];
 
     public static $routePermission = [
+        'setl_ondemand_pricing'                    => '*',
+        'setl_ondemand_fund_accounts'              => '*',
         'd2c_bureau_report_delete'                 => '*',
         'correct_merchant_owners_products'         => Permission::CORRECT_MERCHANT_OWNER_MISMATCH,
         'paper_nach_fetch_failure'                 => Permission::VERIFY_NACH_UPLOADS,
@@ -5040,6 +5046,8 @@ class Route
             'terminal_mpans_tokenize_existing',
             'setl_service_migration',
             'vendor_payment_upcoming_mail_cron',
+            'bulk_create_fund_accounts',
+            'add_ondemand_pricing_if_absent',
         ],
 
         'subscriptions' => [

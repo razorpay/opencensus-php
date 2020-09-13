@@ -64,7 +64,7 @@ class RazorpayXClient
                 'bank_account_name, bank_branch_ifsc and bank_account_number are mandatory');
         }
 
-        $bankAccountDetails =[
+        $bankAccountDetails = [
                 'name'           => $data['name'],
                 'ifsc'           => $data['ifsc'],
                 'account_number' => $data['account_number'],
@@ -82,11 +82,16 @@ class RazorpayXClient
 
         if (isset($responseMap['id']) === false)
         {
+            $data['bank_account']['account_number'] = 'xxx. length:' . strlen($data['bank_account']['account_number']);
+
             throw new Exception\GatewayErrorException(
                 ErrorCode::SERVER_ERROR_RAZORPAYX_FUND_ACCOUNT_CREATION_FAILURE,
                 null,
                 null,
-                ['response' => $responseMap]);
+                [
+                    'response' => $responseMap,
+                    'request'  => $data,
+                ]);
         }
 
         return $responseMap;
@@ -110,7 +115,10 @@ class RazorpayXClient
                 ErrorCode::SERVER_ERROR_RAZORPAYX_CONTACT_CREATION_FAILURE,
                 null,
                 null,
-                ['response' => $responseMap]);
+                [
+                    'response' => $responseMap,
+                    'request'  => $data,
+                ]);
         }
 
         return $responseMap;

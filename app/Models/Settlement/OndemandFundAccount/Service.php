@@ -17,7 +17,7 @@ class Service extends Base\Service
     public function createFundAccount()
     {
         CreateOndemandFundAccounts::dispatch($this->mode);
-    
+
         $response = [
             'response'  => 'create fund account job dispatched',
         ];
@@ -34,6 +34,6 @@ class Service extends Base\Service
 
     public function addOndemandFundAccountForMerchant($merchantId)
     {
-        $this->core()->addOndemandFundAccountForMerchant($merchantId);
+        return $this->core()->addOndemandFundAccountForMerchant($merchantId);
     }
 }

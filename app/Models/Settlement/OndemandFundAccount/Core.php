@@ -46,9 +46,9 @@ class Core extends Base\Core
             $name = str_limit(preg_replace('/[^a-zA-Z0-9 ]+/', '', $merchantDetails[Detail\Entity::CONTACT_NAME]), 50, '');
 
             $data = [
-                'name'      => $name,
-                'email'     => $merchantDetails[Detail\Entity::CONTACT_EMAIL],
-                'contact'   => $merchantDetails[Detail\Entity::CONTACT_MOBILE],
+                'name'      => trim($name) ?: 'Razorpay',
+                'email'     => trim($merchantDetails[Detail\Entity::CONTACT_EMAIL]) ?: 'void@razorpay.com',
+                'contact'   => trim(substr($merchantDetails[Detail\Entity::CONTACT_MOBILE], -10, 10)) ?: '9876543210',
                 'type'      => self::CUSTOMER,
             ];
 
@@ -59,7 +59,7 @@ class Core extends Base\Core
                 OndemandFundAccount\Entity::CONTACT_ID      => $contactId,
             ];
 
-            $fundAccount = (new OndemandFundAccount\Entity)->build($input); 
+            $fundAccount = (new OndemandFundAccount\Entity)->build($input);
 
             $fundAccount->generateId();
 
@@ -70,11 +70,13 @@ class Core extends Base\Core
 
         $data = $this->getBankAccountDetails($merchantId);
 
-        $fundAccount[OndemandFundAccount\Entity::FUND_ACCOUNT_ID] = 
+        $fundAccount[OndemandFundAccount\Entity::FUND_ACCOUNT_ID] =
         $razorpayXClientService->createFundAccount($fundAccount[OndemandFundAccount\Entity::CONTACT_ID],
                                                    $data)['id'];
 
         $this->repo->saveOrFail($fundAccount);
+
+        return $fundAccount;
     }
 
     public function getBankAccountDetails($merchantId)
@@ -87,13 +89,11 @@ class Core extends Base\Core
                                                   50,
                                                   '');
 
-        $data =[
-            'name'           => $benificiaryName,
+        return [
+            'name'           => trim($benificiaryName) ?: 'Razorpay',
             'ifsc'           => $accountDetails[BankAccount\Entity::IFSC_CODE],
             'account_number' => $accountDetails[BankAccount\Entity::ACCOUNT_NUMBER],
             'account_type'   => self::ACCOUNT_TYPE,
         ];
-
-        return $data;
     }
 }
