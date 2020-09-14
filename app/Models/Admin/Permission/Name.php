@@ -301,6 +301,7 @@ class Name
     const CREATE_BULK_ADJUSTMENT              = 'create_bulk_adjustment';
     const REPORTING_BATCH_UPLOAD              = 'reporting_batch_upload';
     const DOWNLOAD_CREDIT_BUREAU_REPORTS      = 'download_credit_bureau_reports';
+    const CAPITAL_DEVELOPER                   = 'capital_developer';
 
     // UFH permission
     const DOWNLOAD_UFH_FILE_BY_MID            = 'download_ufh_file_by_mid';

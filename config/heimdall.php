@@ -878,14 +878,6 @@ return [
             ]
         ],
 
-        // Razorpay Capital
-        PermissionCategory::RAZORPAY_CAPITAL => [
-            Permission::FINANCIAL_DATA_SERVICE => [
-                'description' => 'Allow access to Financial Data Service routes from dashboard',
-                'assignable'  => true,
-            ],
-        ],
-
         // RazorpayX
         PermissionCategory::RAZORPAYX_BANKING => [
             Permission::BANKING_UPDATE_ACCOUNT => [
@@ -919,6 +911,7 @@ return [
             ]
         ],
 
+        // Razorpay Capital Services
         PermissionCategory::RAZORPAY_CAPITAL => [
             Permission::LOANS_EDIT => [
                 'description' => 'Allow access to capital-los service routes/actions from dashboard',
@@ -957,6 +950,14 @@ return [
 
             Permission::OFFLINE_VERIFICATION_SERVICE_EDIT => [
                 'description' => 'Allow edit access to Offline Verification Service routes/actions from dashboard',
+                'assignable'  => true,
+            ],
+            Permission::FINANCIAL_DATA_SERVICE => [
+                'description' => 'Allow access to Financial Data Service routes from dashboard',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_DEVELOPER => [
+                'description' => 'Allow access to admin APIs for ES On Demand',
                 'assignable'  => true,
             ],
         ],
