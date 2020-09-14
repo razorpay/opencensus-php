@@ -122,6 +122,7 @@ class Base extends Core
     const YES_BANK               = 'YesBank';
     const HDFC_DEBIT_EMI         = 'HdfcDebitEmi';
     const UPI_JUSPAY             = 'UpiJuspay';
+    const UPI_AIRTEL             = 'UpiAirtel';
 
     const BT_RBL                 = 'BtRbl';
 
@@ -203,6 +204,7 @@ class Base extends Core
         self::YES_BANK               => ['yesacquirer@insolutionsglobal.com'],
         self::HDFC_DEBIT_EMI         => ['emailintimation@hdfcbank.com'],
         self::UPI_JUSPAY             => ['crs.upimerchantsettlement@axisbank.com'],
+        self::UPI_AIRTEL             => [],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
@@ -266,6 +268,7 @@ class Base extends Core
         Gateway::UPI_MINDGATE           => self::UPI_HDFC,
         Gateway::UPI_SBI                => self::UPI_SBI,
         Gateway::UPI_AXIS               => self::UPI_AXIS,
+        Gateway::UPI_AIRTEL             => self::UPI_AIRTEL,
         Gateway::UPI_ICICI              => self::UPI_ICICI,
         Gateway::UPI_JUSPAY             => self::UPI_JUSPAY,
         Gateway::UPI_HULK               => self::UPI_HULK,

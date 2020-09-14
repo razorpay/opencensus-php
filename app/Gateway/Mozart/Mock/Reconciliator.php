@@ -512,6 +512,118 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         return;
     }
 
+    protected function upi_airtel($input)
+    {
+        $this->fileToWriteName = 'TXN_REPORT';
+
+        $data = [];
+
+        // Check refunds first
+        $refunds = $this->repo->refund->fetch([
+            'gateway' => 'upi_airtel',
+        ]);
+
+        foreach ($refunds as $row)
+        {
+            $row = [
+                'SNO'                       => '1',
+                'Date and Time'             => '14-08-2020 12:41',
+                'Transaction Id'            => 'FT2022712537204137',
+                'Customer Mobile No'        => '',
+                'Customer Category'         => '',
+                'PARTNER_TXN_ID'            => '22712135190',
+                'Original Input Amt'        => ($row['amount'] / 100),
+                'Commision(DR)'             => '0',
+                'Commision(CR)'             => '0',
+                'UGST(DR)'                  => '',
+                'UGST(CR)'                  => '',
+                'IGST(DR)'                  => '',
+                'IGST(CR)'                  => '',
+                'CGST(DR)'                  => '0',
+                'CGST(CR)'                  => '0',
+                'SGST(DR)'                  => '0',
+                'SGST(CR)'                  => '',
+                'TDS(DR)'                   => '0',
+                'TDS(CR)'                   => '0',
+                'GDS(DR)'                   => '0',
+                'GDS(CR)'                   => '0',
+                'Net Amount Payable(DR)'    => '',
+                'Net Amount Payable(CR)'    => '500',
+                'MERCHANT_STATE'            => 'KARNATAKA',
+                'COUNTERPARTY_STATE'        => '',
+                'Store Id'                  => '',
+                'Till ID'                   => $row['id'],
+                'REF_TXN_NO_ORG'            => '',
+                'Transaction Status'        => 'Refund',
+                'Merchant MSISDN'           => '1000012114',
+                'Merchant ID'               => '69637659',
+                'Merchant Account Number'   => '1045576778',
+                'Merchant Name'             => 'RAZORPAY SORTWARE PVT LTD',
+                'Merchant Settlement Type'  => '2'
+            ];
+
+            $data[] = $row;
+        }
+
+        // Put payment rows only if refunds are not there.
+        // so make it Refund MIS file. Just return the data.
+        if (empty($data) === false)
+        {
+            return $data;
+        }
+
+        // If no refunds, then it is payment MIS file
+        // put payment rows in data
+        foreach ($input as $row)
+        {
+            $row = [
+                'SNO'                       => '1',
+                'Date and Time'             => '14-08-2020 12:41',
+                'Transaction Id'            => 'FT2022712537204137',
+                'Customer Mobile No'        => '',
+                'Customer Category'         => '',
+                'PARTNER_TXN_ID'            => '22712135190',
+                'Original Input Amt'        => (string)ceil($row['payment']['amount'] / 100),
+                'Commision(DR)'             => '0',
+                'Commision(CR)'             => '0',
+                'UGST(DR)'                  => '',
+                'UGST(CR)'                  => '',
+                'IGST(DR)'                  => '',
+                'IGST(CR)'                  => '',
+                'CGST(DR)'                  => '0',
+                'CGST(CR)'                  => '0',
+                'SGST(DR)'                  => '0',
+                'SGST(CR)'                  => '',
+                'TDS(DR)'                   => '0',
+                'TDS(CR)'                   => '0',
+                'GDS(DR)'                   => '0',
+                'GDS(CR)'                   => '0',
+                'Net Amount Payable(DR)'    => '',
+                'Net Amount Payable(CR)'    => '500',
+                'MERCHANT_STATE'            => 'KARNATAKA',
+                'COUNTERPARTY_STATE'        => '',
+                'Store Id'                  => '',
+                'Till ID'                   => $row['payment']['id'],
+                'REF_TXN_NO_ORG'            => '',
+                'Transaction Status'        => 'Misc Cr',
+                'Merchant MSISDN'           => '1000012114',
+                'Merchant ID'               => '69637659',
+                'Merchant Account Number'   => '1045576778',
+                'Merchant Name'             => 'RAZORPAY SORTWARE PVT LTD',
+                'Merchant Settlement Type'  => '2'
+            ];
+
+            if (empty($row) === true)
+            {
+                continue;
+            }
+
+            $data[] = $row;
+        }
+
+        return $data;
+    }
+
     protected function wallet_phonepe($input)
     {
         $this->fileExtension = FileStore\Format::CSV;
