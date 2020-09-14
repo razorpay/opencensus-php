@@ -1343,6 +1343,8 @@ class Service extends Base\Service
             'capital_loans_announcement_aug2020',
             'instrument_request_merchant_dashboard',
             'rx_view_only_update',
+            'rx_accounting_payouts_active',
+            'rx_accounting_payouts_ask_clientID',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
