@@ -497,4 +497,13 @@ class PaymentController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function postPaymentMetaReference()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->postPaymentMetaReference($input);
+
+        return ApiResponse::json($data);
+    }
 }

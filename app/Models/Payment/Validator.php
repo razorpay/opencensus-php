@@ -123,6 +123,7 @@ class Validator extends Base\Validator
         'dcc_currency'                  => 'required_with:currency_request_id|string|max:3|custom',
         'charge_account'                => 'sometimes|string',
         'app_present'                   => 'sometimes_if:method,app|boolean',
+        'meta'                          => 'sometimes|array'
     ];
 
     protected static $editAcquirerRules = [

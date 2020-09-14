@@ -5966,3 +5966,8 @@ ALTER TABLE paper_mandates
 
 ALTER TABLE payouts
     ADD COLUMN origin TINYINT(1) default 1;
+
+ALTER TABLE payments_meta
+    ADD COLUMN action_type VARCHAR(255) DEFAULT NULL,
+    ADD COLUMN reference_id VARCHAR(255) DEFAULT NULL,
+    ADD INDEX payments_meta_reference_id_action_type_index (reference_id,action_type);

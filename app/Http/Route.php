@@ -159,6 +159,7 @@ class Route
         'payment_validate_vpa_old'                 => ['post',     'payment/validate/vpa',                           'PaymentController@postPaymentValidateVpa'                          ],
         'payment_validate_vpa'                     => ['post',     'payments/validate/vpa',                          'PaymentController@postPaymentValidateVpa'                          ],
         'payment_validate_account'                 => ['post',     'payments/validate/account',                      'PaymentController@postPaymentValidateEntity'                       ],
+        'payment_meta_search'                      => ['post',     'payments/meta/reference',                        'PaymentController@postPaymentMetaReference'                        ],
         'refund_create'                            => ['post',     'refunds',                                        'RefundController@postRefundCreate'                                 ],
         'refund_edit_status'                       => ['put',      'refunds/{id}/status',                            'RefundController@putRefundStatus'                                  ],
         'refund_edit'                              => ['patch',    'refunds/{id}',                                   'RefundController@update'                                           ],
@@ -2614,6 +2615,7 @@ class Route
         'vendor_payment_upcoming_mail_cron',
         'setl_service_migration',
         'create_payment_config_bulk_via_batch',
+        'payment_meta_search',
         'bulk_create_fund_accounts',
         'add_ondemand_pricing_if_absent',
     ];
@@ -4913,6 +4915,7 @@ class Route
             'payment_verify_google_pay_cards',
             'webhook_fetch',
             'webhook_fetch_multiple',
+            'payment_meta_search'
         ],
 
         'cron' => [

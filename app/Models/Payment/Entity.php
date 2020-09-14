@@ -255,6 +255,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const DCC                               = 'dcc';
 
+    // meta field in the input
+    const META                              = 'meta';
+
     protected static $sign      = 'pay';
 
     protected $entity           = 'payment';

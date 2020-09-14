@@ -1,3 +1,4 @@
+
 <?php
 
 use RZP\Constants\Table;
@@ -39,6 +40,12 @@ class CreatePaymentMetaTable extends Migration
                 ->default(0);
 
             $table->integer(PaymentMeta::DCC_MARK_UP_PERCENT)
+                ->nullable();
+
+            $table->string(PaymentMeta::ACTION)
+                ->nullable();
+
+            $table->string(PaymentMeta::REFERENCE_ID)
                 ->nullable();
 
             $table->integer(Entity::CREATED_AT);

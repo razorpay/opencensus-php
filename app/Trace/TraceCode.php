@@ -3384,6 +3384,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_SOURCE_ENTITY_CREATE_REQUEST                 = 'PAYOUT_SOURCE_ENTITY_CREATE_REQUEST';
     const PAYOUT_SOURCE_ENTITY_CREATED                        = 'PAYOUT_SOURCE_ENTITY_CREATED';
 
+    const PAYMENT_META_REFERENCE_CREATION_ERROR               = 'PAYMENT_META_REFERENCE_CREATION_ERROR';
+    const PAYMENT_META_REFERENCE                              = 'PAYMENT_META_REFERENCE';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

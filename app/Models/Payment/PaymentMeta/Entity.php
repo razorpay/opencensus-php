@@ -13,6 +13,8 @@ class Entity extends Base\PublicEntity
     const FOREX_RATE             = 'forex_rate';
     const DCC_OFFERED            = 'dcc_offered';
     const DCC_MARK_UP_PERCENT    = 'dcc_mark_up_percent';
+    const ACTION                 = 'action_type';
+    const REFERENCE_ID           = 'reference_id';
 
     protected $generateIdOnCreate = true;
 
@@ -23,6 +25,8 @@ class Entity extends Base\PublicEntity
         self::FOREX_RATE,
         self::DCC_OFFERED,
         self::DCC_MARK_UP_PERCENT,
+        self::ACTION,
+        self::REFERENCE_ID,
     ];
 
     protected $public = [
@@ -33,6 +37,8 @@ class Entity extends Base\PublicEntity
         self::FOREX_RATE,
         self::DCC_OFFERED,
         self::DCC_MARK_UP_PERCENT,
+        self::ACTION,
+        self::REFERENCE_ID,
     ];
 
     protected $visible = [
@@ -43,6 +49,8 @@ class Entity extends Base\PublicEntity
         self::FOREX_RATE,
         self::DCC_OFFERED,
         self::DCC_MARK_UP_PERCENT,
+        self::ACTION,
+        self::REFERENCE_ID,
     ];
 
     protected $casts = [
@@ -52,8 +60,10 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::DCC_OFFERED => false,
-        self::FOREX_RATE => null,
+        self::DCC_OFFERED  => false,
+        self::FOREX_RATE   => null,
+        self::ACTION       => null,
+        self::REFERENCE_ID => null,
     ];
 
     protected $entity = 'payment_meta';
@@ -97,6 +107,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DCC_MARK_UP_PERCENT);
     }
 
+    public function getAction()
+    {
+        return $this->getAttribute(self::ACTION);
+    }
+
+    public function getReferenceId()
+    {
+        return $this->getAttribute(self::REFERENCE_ID);
+    }
+
     // ----------------------- Setters ---------------------------------------
 
     public function setPaymentId($paymentId)
@@ -127,5 +147,15 @@ class Entity extends Base\PublicEntity
     public function setDccMarkUpPercent($dccMarkUpPercent)
     {
         $this->setAttribute(self::DCC_MARK_UP_PERCENT, $dccMarkUpPercent);
+    }
+
+    public function setAction($action)
+    {
+        $this->setAttribute(self::ACTION, $action);
+    }
+
+    public function setReferenceId($referenceId)
+    {
+        $this->setAttribute(self::REFERENCE_ID, $referenceId);
     }
 }

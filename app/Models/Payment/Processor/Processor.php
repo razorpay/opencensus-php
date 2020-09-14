@@ -345,6 +345,8 @@ class Processor
 
             $this->preProcessDCCInputs($input, $payment);
 
+            $this->preProcessPaymentMeta($input, $payment);
+
             // This flow is being used for only hosted (Shopify).
             $this->checkSignature($input, $payment);
 
@@ -539,6 +541,16 @@ class Processor
         {
             $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($this->subscription->getCustomerId());
         }
+    }
+
+    protected function preProcessPaymentMeta(array $input, Payment\Entity $payment)
+    {
+        if (empty($input[Payment\Entity::META]) === true)
+        {
+            return;
+        }
+
+        (new Payment\PaymentMeta\Core)->addMetaInformation($payment, $input[Payment\Entity::META]);
     }
 
     protected function preProcessDCCInputs(array $input, Payment\Entity $payment)

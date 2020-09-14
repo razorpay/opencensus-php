@@ -3905,4 +3905,55 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($payment['error_code'], 'BAD_REQUEST_ERROR');
         $this->assertEquals($payment['internal_error_code'], 'BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_INVOICES');
     }
+
+    public function testPaymentCreateWithMetaInfo()
+    {
+        $this->ba->privateAuth();
+
+        $this->mockCardVault();
+
+        $payment = $this->getDefaultPaymentArray();
+
+
+        $payment['meta']  = [
+            'action_type'       => 'authenticate',
+            'reference_id' => '5081597022059105',
+        ];
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $response = $this->doS2SPrivateAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'], $response['razorpay_payment_id']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertTrue($this->redirectToAuthorize);
+
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals($payment['id'], 'pay_' . $paymentMeta['payment_id']);
+        $this->assertEquals('authenticate', $paymentMeta['action_type']);
+        $this->assertEquals('5081597022059105', $paymentMeta['reference_id']);
+
+        $this->ba->expressAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/meta/reference',
+            'content' => [
+                 'action_type'       => 'authenticate',
+                 'reference_id' => '5081597022059105',
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+
+        $this->assertEquals($paymentMeta['id'], $response['id']);
+    }
 }

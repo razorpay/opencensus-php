@@ -14,7 +14,14 @@ class Validator extends Base\Validator
         Entity::FOREX_RATE                 => 'sometimes|numeric',
         Entity::DCC_OFFERED                => 'sometimes|boolean',
         Entity::DCC_MARK_UP_PERCENT        => 'sometimes|integer',
-        Entity::PAYMENT_ID                 => 'required|string'
+        Entity::PAYMENT_ID                 => 'required|string',
+        Entity::ACTION                     => 'sometimes|string',
+        Entity::REFERENCE_ID               => 'sometimes|string'
+    ];
+
+    protected static $referenceIdRules = [
+        Entity::ACTION               => 'required|string',
+        Entity::REFERENCE_ID         => 'required|string'
     ];
 
     protected function validateGatewayCurrency($input)

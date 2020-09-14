@@ -44,6 +44,7 @@ use RZP\Models\Payment\Verify\Verify;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
+use RZP\Models\Payment\PaymentMeta;
 
 class Service extends Base\Service
 {
@@ -2827,5 +2828,13 @@ class Service extends Base\Service
         }
 
         return $data;
+    }
+
+    public function postPaymentMetaReference($input)
+    {
+        (new PaymentMeta\Validator)->validateInput('reference_id',$input);
+
+        return $this->repo->payment_meta->findByActionAndReferenceID($input[PaymentMeta\Entity::ACTION],
+                                                                     $input[PaymentMeta\Entity::REFERENCE_ID]);
     }
 }
