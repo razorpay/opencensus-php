@@ -3,6 +3,7 @@
 namespace RZP\Services\NbPlus;
 
 use App;
+use Requests_Hooks;
 use RZP\Exception;
 use Requests_Session;
 
@@ -81,6 +82,20 @@ class Service
         return $url . 'v1/';
     }
 
+    public function setCurlOptions($curl)
+    {
+        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+    }
+
+    protected function getRequestHooks()
+    {
+        $hooks = new Requests_Hooks();
+
+        $hooks->register('curl.before_send', [$this, 'setCurlOptions']);
+
+        return $hooks;
+    }
+
     protected function getDefaultOptions(): array
     {
         $options = [
@@ -89,6 +104,7 @@ class Service
                 $this->config['username'],
                 $this->config['password']
             ],
+            'hooks' => $this->getRequestHooks(),
         ];
 
         return $options;
