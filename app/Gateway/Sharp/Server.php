@@ -127,6 +127,11 @@ class Server extends Base\Mock\Server
 
         unset($content['card_number']);
 
+        if (isset($input['language_code']) === true)
+        {
+            $content['language_code'] = $input['language_code'];
+        }
+
         $url = $url . '?' . http_build_query($content);
 
         return $url;

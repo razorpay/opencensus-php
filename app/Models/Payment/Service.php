@@ -41,6 +41,7 @@ use RZP\Models\Settlement\Bucket;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Base\ConnectionType;
 use RZP\Models\Payment\Verify\Verify;
+use RZP\Models\Locale\Core as Locale;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
@@ -1298,6 +1299,8 @@ class Service extends Base\Service
     {
         $merchant = $this->merchant;
 
+        Locale::setLocale($input, $merchant->getId());
+
         if (isset($input['token']) === true)
         {
             $tokenId = $input['token'];
@@ -2269,6 +2272,8 @@ class Service extends Base\Service
 
     public function validateEntity(array $input)
     {
+        Locale::setLocale($input, $this->merchant->getId());
+
         (new Payment\Validator())->validateInput('validate_entity', $input);
 
         $validator = Payment\Validation\Factory::build($input['entity']);

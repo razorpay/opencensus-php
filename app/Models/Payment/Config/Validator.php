@@ -45,6 +45,11 @@ class Validator extends Base\Validator
 
     const LANGUAGE_CODE      = 'language_code';
 
+    const SUPPORTED_LANGUAGE_CODE = [
+        'hi',
+        'en',
+    ];
+
     protected static $createRules = [
         Entity::NAME           => 'required|string|max:255',
         Entity::CONFIG         => 'required|array',
@@ -85,7 +90,7 @@ class Validator extends Base\Validator
 
     // will add a locale class once we have more number of language code to support
     protected static $localeConfigRules= [
-        self::LANGUAGE_CODE    => 'required|string|in:hi,en',
+        self::LANGUAGE_CODE    => 'required|string|custom',
     ];
 
     protected static $editValidators = [
@@ -863,6 +868,19 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Is default field is not required for type '.$input['type']);
+        }
+    }
+
+    public function validateLanguageCode($attributes, $input)
+    {
+        if (in_array($input, self::SUPPORTED_LANGUAGE_CODE, true) === true)
+        {
+            return true;
+        }
+        else
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Language code is not supported');
         }
     }
 }

@@ -259,4 +259,30 @@ class NetbankingIdfcGatewayTest extends TestCase
                 }
             });
     }
+
+    public function testPaymentCancelledByUserForResponseInHindi()
+    {
+        $config = $this->fixtures->create('config', ['type' => 'locale', 'is_default' => '1', 'config' => '{"language_code" : "hi"}']);
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if([$action === 'authorize'])
+            {
+                $content[Fields::PAYMENT_STATUS]    = 'N';
+                $content[Fields::RESPONSE_CODE]     = 'CAN018';
+                $content[Fields::RESPONSE_MESSAGE]  = 'Transaction canceled by customer';
+            }
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+
+        $payment = $this->getDbLastEntityToArray('payment', 'test');
+
+        $this->assertEquals($payment['status'], 'failed');
+    }
 }

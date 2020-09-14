@@ -49,10 +49,12 @@ class Validator extends Base\Validator
         'method'                => 'sometimes|in:cardless_emi,paylater',
         'provider'              => 'required_if:method,cardless_emi,paylater',
         'payment_id'            => 'sometimes_if:method,cardless_emi',
+        'language_code'         => 'sometimes',
     ];
 
     protected static $contactRules = [
-        Entity::CONTACT         => 'required|contact_syntax|phone:AUTO,LENIENT,IN,mobile,fixed_line'
+        Entity::CONTACT         => 'required|contact_syntax|phone:AUTO,LENIENT,IN,mobile,fixed_line',
+        'language_code'         => 'sometimes',
     ];
 
     protected static $paymentRules = [

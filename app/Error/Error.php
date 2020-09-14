@@ -52,6 +52,7 @@ class Error extends Support\Fluent
     const PAYMENT_METHOD        = 'payment_method';
     const RECOVERABLE           = 'recoverable';
     const REASON_CODE           = 'reason_code';
+    const ENGLISH_DESCRIPTION   = 'english_description';
 
     const ERROR_CODE_FILE_PATH  = 'files/errorcodes/error_reason_%s.csv';
 
@@ -67,11 +68,11 @@ class Error extends Support\Fluent
         $field = null,
         $data = null)
     {
-        $this->fill($code, $desc, $field, $data);
-
         $this->app = App::getFacadeRoot();
 
         $this->trace = $this->app['trace'];
+
+        $this->fill($code, $desc, $field, $data);
     }
 
     public static function fromTwirpResponse($twirpResponse): Error
@@ -109,9 +110,33 @@ class Error extends Support\Fluent
 
         $this->setDesc($desc);
 
+        $this->setEnglishDescription($this->getDescription());
+
+        $locale = App::getLocale();
+
+        if ($locale !== 'en')
+        {
+            $this->setDescForLocale($locale);
+        }
+
         $this->setAction($code);
 
         $this->setAttribute(self::INTERNAL_ERROR_DESC, $internalDesc);
+    }
+
+    private function setDescForLocale($locale)
+    {
+        $localeDescription = __($this->getDescription());
+
+        $this->trace->info(TraceCode::SET_LOCALE_TRACE,
+            [
+                'actual description'    => $this->getDescription(),
+                'locale description'    => $localeDescription,
+                'locale'                => $locale
+            ]
+        );
+
+        $this->setDesc($localeDescription);
     }
 
     public function appendToField(string $string)
@@ -267,6 +292,11 @@ class Error extends Support\Fluent
         $this->readMappingFromFile($method, $errorCodeMap);
 
         $this->setErrorParamsIfApplicable($errorCodeMap, $code, $method);
+    }
+
+    protected function setEnglishDescription($desc)
+    {
+        $this->setAttribute(self::ENGLISH_DESCRIPTION, $desc);
     }
 
     public function readMappingFromFile($method, & $errorCodeMap)
@@ -482,6 +512,11 @@ class Error extends Support\Fluent
         $code = $this->getInternalErrorCode();
 
         return $this->getCustomerDescriptionFromErrorCode($code);
+    }
+
+    public function getEnglishDescription()
+    {
+        return $this->getAttribute(self::ENGLISH_DESCRIPTION);
     }
 
     protected function handleBadRequestErrors()

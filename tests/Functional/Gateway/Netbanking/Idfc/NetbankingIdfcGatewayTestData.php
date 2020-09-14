@@ -178,4 +178,22 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
     ],
+    'testPaymentCancelledByUserForResponseInHindi' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'उपयोगकर्ता द्वारा पेमेंट प्रोसेसिंग को रद्द किया गया',
+                    'reason'        => 'payment_cancelled',
+                    'source'        => 'customer',
+                    'step'          => 'payment_authentication'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER,
+        ],
+    ],
 ];

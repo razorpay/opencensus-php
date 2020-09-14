@@ -32,6 +32,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
 use RZP\Gateway\Upi\Base\RecurringTrait;
+use RZP\Models\Locale\Core as LocaleCore;
 
 trait Callback
 {
@@ -53,6 +54,8 @@ trait Callback
      */
     private function coreCallback($id, $hash, array $gatewayInput)
     {
+        LocaleCore::setLocale($gatewayInput, $this->merchant->getId());
+
         $gatewayInputLog = $gatewayInput;
 
         unset($gatewayInputLog['otp']);

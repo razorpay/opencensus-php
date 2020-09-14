@@ -18,6 +18,7 @@ use RZP\Diag\EventCode;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Trace\Tracer;
+use RZP\Models\Locale\Core as LocaleCore;
 
 class PaymentCreateController extends Controller
 {
@@ -196,11 +197,21 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
+        $languageCode = App::getLocale() !== null ? App::getLocale() : LocaleCore::setLocale($input, $this->app['basicauth']->getMerchant()->getId());
+
         unset($input['callback']);
 
         $this->logPaymentRequestEvent($input);
 
         $data = $this->service(E::PAYMENT)->process($input);
+
+        if ((isset($data) === true) and
+            (isset($data['request']) === true) and
+            (isset($data['request']['content']) === true) and
+            (is_array($data['request']['content']) === true))
+        {
+            $data['request']['content']['language_code'] = $languageCode;
+        }
 
         return ApiResponse::json($data);
     }
@@ -524,11 +535,14 @@ class PaymentCreateController extends Controller
 
     protected function processCoprotoData($data)
     {
+        $languageCode = App::getLocale() !== null ? App::getLocale() : LocaleCore::setLocale($data, $this->app['basicauth']->getMerchant()->getId());
         //
         // Check for call from API
         //
         if (isset($data['request']))
         {
+            $data['language_code'] = $languageCode;
+
             if (empty($data['request']['method']) === false)
             {
                 $data['request']['method'] = strtolower($data['request']['method']);
@@ -608,9 +622,10 @@ class PaymentCreateController extends Controller
                 }
 
                 $templateData = [
-                   'data' => $data,
-                   'cdn'  => $this->config->get('url.cdn.production'),
-                   'production' => $this->app->environment() === Environment::PRODUCTION,
+                   'data'          => $data,
+                   'cdn'           => $this->config->get('url.cdn.production'),
+                   'production'    => $this->app->environment() === Environment::PRODUCTION,
+                   'language_code' => $languageCode,
                 ];
 
                 return View::make('gateway.gatewayOtpPostForm')
@@ -654,9 +669,10 @@ class PaymentCreateController extends Controller
                 {
                     return View::make('gateway.gatewayUpiForm')
                                ->with('data', [
-                                    'key'  => $this->ba->getPublicKey(),
-                                    'data' => $data,
-                                    'cdn'  => $this->config->get('url.cdn.production')
+                                    'key'          => $this->ba->getPublicKey(),
+                                    'data'         => $data,
+                                    'cdn'          => $this->config->get('url.cdn.production'),
+                                    'language_code' => $languageCode
                                ]);
                 }
                 else if (($data['method'] === Payment\Method::CARDLESS_EMI) or
@@ -671,9 +687,10 @@ class PaymentCreateController extends Controller
                                    ->with('data', $data);
                     }
                     $templateData = [
-                       'data'       => $data,
-                       'cdn'        => $this->config->get('url.cdn.production'),
-                       'production' => $this->app->environment() === Environment::PRODUCTION,
+                       'data'          => $data,
+                       'cdn'           => $this->config->get('url.cdn.production'),
+                       'production'    => $this->app->environment() === Environment::PRODUCTION,
+                       'language_code' => $languageCode,
                     ];
 
                     return View::make('gateway.gatewayOtpPostForm')
@@ -694,6 +711,8 @@ class PaymentCreateController extends Controller
             }
             else if ($data['type'] === 'application')
             {
+                unset($data['language_code']);
+
                 if ((isset($data['application_name']) === true) and
                     ($data['application_name'] === 'google_pay'))
                 {
@@ -949,6 +968,7 @@ class PaymentCreateController extends Controller
         $postFormData['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
         $postFormData['production'] = $this->app->environment() === Environment::PRODUCTION;
         $postFormData['merchant_id'] = $merchant->getId();
+        $postFormData['language_code'] = $data['language_code'];
 
         return View::make('gateway.gatewayPostForm')
                    ->with('data', $postFormData);

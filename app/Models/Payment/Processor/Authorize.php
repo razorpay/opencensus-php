@@ -67,6 +67,7 @@ use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Customer\GatewayToken;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\TerminalAnalytics;
+use RZP\Models\Locale\Core as LocaleCore;
 use RZP\Gateway\Mozart\GetSimpl\Constants;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -814,6 +815,8 @@ trait Authorize
 
     protected function getOtpPaymentCreatedResponse($request, $payment)
     {
+        $languageCode = App::getLocale() !== null ? App::getLocale() : LocaleCore::setLocale($request, $payment->merchant->getId());
+
         if ((isset($request['type']) === true) and
             ($request['type'] === 'respawn'))
         {
@@ -906,9 +909,10 @@ trait Authorize
             $response = $this->buildGatewayOtpResponse($response, $payment);
 
             $templateData = [
-               'data'       => $response,
-               'cdn'        => $this->app['config']->get('url.cdn.production'),
-               'production' => $this->app->environment() === Environment::PRODUCTION,
+               'data'          => $response,
+               'cdn'           => $this->app['config']->get('url.cdn.production'),
+               'production'    => $this->app->environment() === Environment::PRODUCTION,
+               'language_code' => $languageCode
             ];
 
             $content = $this->app['view']

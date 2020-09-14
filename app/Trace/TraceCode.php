@@ -3338,6 +3338,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const CREDIT_BALANCE_CREATE_REQUEST = 'CREDIT_BALANCE_CREATE_REQUEST';
 
+    const SET_LOCALE_TRACE               = 'SET_LOCALE_TRACE';
+
     const VAULT_PING_REQUEST_FAILED = 'VAULT_PING_REQUEST_FAILED';
 
     //

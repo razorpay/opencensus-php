@@ -60,6 +60,7 @@ class Validator extends Base\Validator
         'iin'                       => 'required|numeric|digits:6',
         '_'                         => 'sometimes|array',
         'order_id'                  => 'sometimes|filled',
+        'language_code'             => 'sometimes',
     ];
 
     protected static $createValidators = [

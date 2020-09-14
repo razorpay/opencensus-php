@@ -9,6 +9,7 @@ use RZP\Models\Card;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Locale\Core as Locale;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\AuthType as AuthType;
 
@@ -39,6 +40,8 @@ class Service extends Base\Service
     public function getIinDetails($input)
     {
         $merchant = $this->merchant;
+
+        Locale::setLocale($input, $merchant->getId());
 
         (new Validator)->validateInput('get_iin_details', $input);
 

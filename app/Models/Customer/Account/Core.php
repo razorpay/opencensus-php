@@ -16,6 +16,7 @@ use RZP\Models\Upi;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Models\Locale\Core as Locale;
 
 class Core extends Base\Core
 {
@@ -194,6 +195,8 @@ class Core extends Base\Core
 
     public function sendOtp($input, $merchant)
     {
+        Locale::setLocale($input, $merchant->getId());
+
         $input = Customer\Validator::validateAndParseContactInInput($input);
 
         $data = (new Customer\Raven)->sendOtp($input, $merchant);
@@ -203,6 +206,8 @@ class Core extends Base\Core
 
     public function verifyOtp($input, $merchant)
     {
+        Locale::setLocale($input, $merchant->getId());
+
         Customer\Validator::validateGlobalCustomerCreateInput($input);
 
         // Parse contact

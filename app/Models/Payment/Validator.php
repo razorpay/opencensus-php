@@ -123,6 +123,7 @@ class Validator extends Base\Validator
         'dcc_currency'                  => 'required_with:currency_request_id|string|max:3|custom',
         'charge_account'                => 'sometimes|string',
         'app_present'                   => 'sometimes_if:method,app|boolean',
+        'language_code'                 => 'sometimes|string',
         'meta'                          => 'sometimes|array'
     ];
 
@@ -218,7 +219,8 @@ class Validator extends Base\Validator
         'order_id'                  => 'sometimes|filled',
         'currency'                  => 'sometimes|string|size:3',
         'amount'                    => 'sometimes|integer',
-        'token'                     => 'sometimes|string|max:20'
+        'token'                     => 'sometimes|string|max:20',
+        'language_code'             => 'sometimes'
     ];
 
     protected static $postFlowsRules = [
@@ -238,8 +240,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $validateEntityRules = [
-        'entity'   => 'required|string|in:vpa',
-        'value'    => 'required',
+        'entity'           => 'required|string|in:vpa',
+        'value'            => 'required',
+        'language_code'    => 'sometimes|string',
     ];
 
     protected static $callbackUrlValidationRules = [

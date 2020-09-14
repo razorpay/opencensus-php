@@ -9,6 +9,7 @@ use ApiResponse;
 use RZP\Gateway\Hdfc;
 use RZP\Constants\Mode;
 use RZP\Gateway\GatewayManager;
+use RZP\Models\Locale\Core as LocaleCore;
 
 class MockGatewayController extends Controller
 {
@@ -196,6 +197,8 @@ class MockGatewayController extends Controller
     {
         $input = Request::all();
 
+        $languageCode = LocaleCore::setLocale($input, $this->app['basicauth']->getMerchant()->getId());
+
         $server = $this->gateway->server('sharp');
 
         list($data, $error) = $server->action($input);
@@ -207,6 +210,8 @@ class MockGatewayController extends Controller
 
         if ($data['action'] === 'authorize')
         {
+            $data['language_code'] = $languageCode;
+
             return View::make('gateway.sharpBankPage')
                        ->with($data);
         }

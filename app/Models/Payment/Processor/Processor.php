@@ -53,6 +53,7 @@ use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Locale\Core as LocaleCore;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Transfer\Core as TransferCore;
@@ -1761,6 +1762,8 @@ class Processor
      */
     public function cancel($id, $input)
     {
+        LocaleCore::setLocale($input, $this->merchant->getId());
+
         $status = null;
 
         $payment = $this->retrieve($id);
@@ -2012,7 +2015,7 @@ class Processor
 
         $code = $error->getPublicErrorCode();
 
-        $desc = $error->getDescription();
+        $desc = $error->getEnglishDescription() !== null ? $error->getEnglishDescription() : $error->getDescription();
 
         $internalCode = $error->getInternalErrorCode();
 

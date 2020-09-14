@@ -54,6 +54,9 @@
       @endif
       <button data-val="F" class="danger">Failure</button>
       <input type="hidden" name="callback_url" value="{{{ $content['callback_url'] }}}">
+      @if (isset($language_code) === true && str_contains($url, '/gateway/mocksharp/payment/submit'))
+        <input type="hidden" name="language_code" value="{{{ $language_code }}}">
+      @endif
       <input type="hidden" name="success">
     </form>
     <script>

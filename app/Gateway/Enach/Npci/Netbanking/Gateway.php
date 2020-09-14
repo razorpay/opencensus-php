@@ -21,6 +21,7 @@ use RZP\Constants\Environment;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Enach\Base\CategoryCode;
+use RZP\Models\Locale\Core as LocaleCore;
 use RZP\Models\Feature\Constants as Feature;
 
 class Gateway extends Base\Gateway
@@ -863,6 +864,8 @@ class Gateway extends Base\Gateway
             );
         }
 
+        $languageCode = LocaleCore::setLocale($input, $input['merchant']->getId());
+
         $postFormData['type'] = 'first';
 
         $postFormData['request'] = $request;
@@ -886,6 +889,8 @@ class Gateway extends Base\Gateway
         $postFormData['production'] = $this->app->environment() === Environment::PRODUCTION;
 
         $postFormData['merchant_id'] = $input['merchant']->getId();
+
+        $postFormData['language_code'] = $languageCode;
 
         $postFormData['emandate_details'] = self::fetchEmandateDisplayDetails(
                                                                               $input['payment'],

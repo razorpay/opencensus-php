@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use App;
 use Request;
+use RZP\Models\Locale\Core as Locale;
 use Session;
 use Razorpay\Trace\Logger as Trace;
 
@@ -71,6 +72,8 @@ class Checkout
 
     public function getPreferences(Entity $merchant, $mode, array $input)
     {
+        Locale::setLocale($input, $merchant->getId());
+
         $this->tracePreferencesRequest($merchant, $mode, $input);
 
         $this->isCardVaultUp = $this->app['card.cardVault']->ping();
@@ -598,6 +601,8 @@ class Checkout
         $data['fee_bearer'] = $merchant->isFeeBearerCustomerOrDynamic();
 
         $data['version'] = 1;
+
+        $data['language_code'] = App::getLocale();
 
         /*
         if hdfc merchant, sending redirect true. Done specificially
