@@ -681,17 +681,14 @@ class Processor
 
         $merchant = $payment->merchant;
 
-        $terminal = $this->repo
-                         ->terminal
-                         ->getByMerchantProviderAndMethod($input[Payment\Entity::PROVIDER],
-                                                          $merchant[Merchant\Entity::ID],
-                                                          Payment\Method::CARDLESS_EMI);
+        $terminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
+
         try
         {
             // merchant id is required to fetch details from cache
             $input['merchant_id'] = $merchant[Merchant\Entity::ID];
 
-            $checkAccountData = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
+            $checkAccountData = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminals[0]);
 
             unset($input['merchant_id']);
         }
@@ -832,15 +829,12 @@ class Processor
             return $coproto;
         }
 
-        $terminal = $this->repo
-                         ->terminal
-                         ->getByMerchantProviderAndMethod($input[Payment\Entity::PROVIDER],
-                                                          $merchant[Merchant\Entity::ID],
-                                                          Payment\Method::PAYLATER);
+        $terminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
+
         // merchant id is required to fetch details from cache
         $input['merchant_id'] = $merchant[Merchant\Entity::ID];
 
-        $response = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
+        $response = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminals[0]);
 
         unset ($input['merchant_id']);
 

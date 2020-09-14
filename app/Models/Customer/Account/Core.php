@@ -4,6 +4,7 @@ namespace RZP\Models\Customer;
 
 use RZP\Constants\Mode;
 use RZP\Models\Base;
+use RZP\Models\Terminal;
 use RZP\Models\Customer;
 use RZP\Models\Address;
 use RZP\Models\Device;
@@ -687,9 +688,18 @@ class Core extends Base\Core
 
     protected function fetchCardlessEmiPlansForCustomer($input, $merchant)
     {
-        $terminal = $this->repo
-                         ->terminal
-                         ->getByMerchantProviderAndMethod($input['provider'], $merchant['id'], $input['method']);
+        // we make use of cache to fetch the plans. The terminal passed here is used only to set the gateway
+        // We are not fetching terminal here as this would require routing logic and is not necessary here
+        $terminal = [];
+
+        if (Payment\Processor\PayLater::exists($input['provider']) === true)
+        {
+            $terminal[Terminal\Entity::GATEWAY] = Payment\Gateway::PAYLATER;
+        }
+        else
+        {
+            $terminal[Terminal\Entity::GATEWAY] = Payment\Gateway::CARDLESS_EMI;
+        }
 
         // merchant id is required to fetch details from cache
         $input['merchant_id'] = $merchant['id'];
