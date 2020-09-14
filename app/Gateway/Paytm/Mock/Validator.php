@@ -26,13 +26,26 @@ class Validator extends Base\Validator
         'BANK_CODE'             => 'required_if:AUTH_MODE,USRPWD',
     );
 
-    protected static $refundRules = array(
-        'MID'           => 'required|alpha_num',
-        'REFID'         => 'required|alpha_num',
-        'TXNID'         => 'required|',
-        'ORDERID'       => 'required|size:14|alpha_num',
-        'TXNTYPE'       => 'required|in:REFUND',
-        'REFUNDAMOUNT'  => 'required|numeric',
-        'CHECKSUM'      => 'required|',
+    protected static $refundBodyRules = array(
+        'mid'           => 'required',
+        'refId'         => 'required|alpha_num',
+        'txnId'         => 'required|',
+        'orderId'       => 'required|size:14|alpha_num',
+        'txnType'       => 'required|in:REFUND',
+        'refundAmount'  => 'required|numeric',
+    );
+
+    protected static $refundHeadRules = array(
+        'signature' => 'required'
+    );
+
+    protected static $verifyRefundBodyRules = array(
+        'mid'           => 'required',
+        'refId'         => 'required|alpha_num',
+        'orderId'       => 'required|size:14|alpha_num',
+    );
+
+    protected static $verifyRefundHeadRules = array(
+        'signature' => 'required'
     );
 }

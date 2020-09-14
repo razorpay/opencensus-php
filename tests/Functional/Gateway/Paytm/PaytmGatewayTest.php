@@ -89,11 +89,41 @@ class PaytmGatewayTest extends TestCase
 
         $payment = $this->doAuthAndCapturePayment($payment);
 
-        $this->refundPayment($payment['id']);
+        $this->mockServerContentFunction(function (& $content, $action = null) {
+            if ($action === 'verify_refund')
+            {
+                $content['body']['resultInfo'] = [
+                    'resultStatus' => 'TXN_FAILURE',
+                    'resultCode'   => '631',
+                    'resultMsg'    => 'Record not found'
+                ];
+            }
 
-        $refund = $this->getLastEntity('paytm', true);
+            return $content;
+        });
 
-        $this->assertTestResponse($refund);
+        $refundResponse = $this->refundPayment($payment['id']);
+
+        $refundEntity = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('created', $refundEntity['status']);
+
+        return $refundResponse;
+    }
+
+    public function testVerifyRefund()
+    {
+        $refund = $this->testRefundPayment();
+
+        $this->mockServerContentFunction(function (& $content, $action = null) {
+            return $content;
+        });
+
+        $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('processed', $refund['status']);
     }
 
     public function testPaytmWhenNotEnabled()

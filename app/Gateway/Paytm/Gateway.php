@@ -74,33 +74,28 @@ class Gateway extends Base\Gateway
 
         $amount = $input['refund']['amount']/100;
 
-        $content = array(
-            'MID'           => $input['terminal']['gateway_merchant_id'],
-            'ORDERID'       => $input['payment']['id'],
-            'TXNTYPE'       => Type::REFUND,
-            'REFUNDAMOUNT'  => sprintf('%0.2f',$amount),
-            'TXNID'         => $payment['txnid'],
-            'REFID'         => $input['refund']['id'],
+        $body = array(
+            'mid'           => $input['terminal']['gateway_merchant_id'],
+            'txnType'       => Type::REFUND,
+            'orderId'       => $input['payment']['id'],
+            'txnId'         => $payment['txnid'],
+            'refId'         => $input['refund']['id'],
+            'refundAmount'  => sprintf('%0.2f', $amount),
         );
 
+        if ($this->mode === Mode::TEST)
+        {
+            $content['mid'] = $this->config['test_merchant_id'];
+        }
 
-        $this->addTestMerchantIdIfTestMode($content);
+        $checksum = Checksum::getChecksumFromString(json_encode($body), $this->getSecret());
 
-        $storeContent = $content;
-        $storeContent['CUST_ID'] = $payment['cust_id'];
-        $storeContent['CHANNEL_ID'] = $payment['channel_id'];
-        $storeContent['INDUSTRY_TYPE_ID'] = $payment['industry_type_id'];
-        $storeContent['REQUEST_TYPE'] = RequestType::THEDEFAULT;
-        $storeContent['TXN_AMOUNT'] = $payment['txn_amount'];
-        $storeContent['PAYMENTMODE'] = $payment['paymentmode'];
-        $storeContent['PAYMENT_MODE_ONLY'] = $payment['payment_mode_only'];
-        $storeContent['AUTH_MODE'] = $payment['auth_mode'];
-        $storeContent['PAYMENT_TYPE_ID'] = $payment['payment_type_id'];
-        $storeContent['BANK_CODE'] = $payment['bank_code'];
-
-        $refund = $this->createGatewayRefundEntity($storeContent, $input);
-
-        $content['CHECKSUM'] = urlencode($this->getHashOfArrayForRefund($content));
+        $content = [
+            'body' => $body,
+            'head' => [
+                'signature' => $checksum
+            ],
+        ];
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_REQUEST,
@@ -108,7 +103,7 @@ class Gateway extends Base\Gateway
                 'paytm' => $content
             ]);
 
-        $content = $this->postRequestToPaytm($content);
+        $content = $this->postRequestToPaytmV2($content);
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
@@ -116,32 +111,43 @@ class Gateway extends Base\Gateway
                 'paytm' => $content
             ]);
 
-        $attr = $this->lowerArrayKeys($content);
+        $this->verifySecureHashV2($content);
 
-        $attr['received'] = 1;
-
-        $refund->fill($attr);
-        $this->repo->saveOrFail($refund);
-
-        if ($content['STATUS'] !== Status::SUCCESS)
+        if (isset($content['body']['resultInfo']['resultCode']) === false)
         {
-            if ($content['RESPCODE'] === '610')
-            {
-                // This means payment is already refunded fully or partially.
-                $refundAmt = (int) ($content['REFUNDAMOUNT'] * 100);
-
-                if ($refundAmt === $input['refund']['amount'])
-                {
-                    return;
-                }
-            }
-
-            // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_REFUND_FAILED,
-                    $content['RESPCODE'],
-                    $content['RESPMSG']);
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                null,
+                null,
+                [
+                    Payment\Gateway::GATEWAY_RESPONSE => json_encode($content['body']),
+                    Payment\Gateway::GATEWAY_KEYS     => [],
+                ]);
         }
+
+        $responseCode = $content['body']['resultInfo']['resultCode'];
+
+        $gatewayData = $this-> getGatewayKeysForRefund($content);
+
+        if ($responseCode === '601')
+        {
+            $internalErrorCode = ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING;
+        }
+        else
+        {
+            $internalErrorCode = ResponseCodeMap::getApiErrorCode($responseCode);
+        }
+
+        $responseMessage = ResponseCode::getResponseMessage($responseCode);
+
+        throw new Exception\GatewayErrorException(
+            $internalErrorCode,
+            $responseCode,
+            $responseMessage,
+            [
+              Payment\Gateway::GATEWAY_RESPONSE => json_encode($content['body']),
+              Payment\Gateway::GATEWAY_KEYS     => $gatewayData,
+            ]);
     }
 
     public function verify(array $input)
@@ -155,17 +161,85 @@ class Gateway extends Base\Gateway
 
     public function verifyRefund(array $input)
     {
-        if ($this->isUnprocessedRefund($input) === true)
+        parent::action($input, Action::VERIFY_REFUND);
+
+        $scroogeResponse = new Base\ScroogeResponse();
+
+        $body = array(
+            'mid'           => $input['terminal']['gateway_merchant_id'],
+            'orderId'       => $input['payment']['id'],
+            'refId'         => $input['refund']['id'],
+        );
+
+        if ($this->mode === Mode::TEST)
         {
-            return false;
+            $content['mid'] = $this->config['test_merchant_id'];
         }
 
-        if ($this->isProcessedRefund($input) === true)
+        $checksum = Checksum::getChecksumFromString(json_encode($body), $this->getSecret());
+
+        $content = [
+            'body' => $body,
+            'head' => [
+                'signature' => $checksum
+            ],
+        ];
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
+            [
+                'paytm' => $content
+            ]);
+
+        $content = $this->postRequestToPaytmV2($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
+            [
+                'paytm' => $content
+            ]);
+
+        $this->verifySecureHashV2($content);
+
+        if (isset($content['body']['resultInfo']['resultCode']) === false)
         {
-            return true;
+            throw new Exception\LogicException(
+                'Unrecognized verify refund status',
+                ErrorCode::GATEWAY_ERROR_UNEXPECTED_STATUS,
+                [
+                    'gateway'  => 'paytm',
+                    Payment\Gateway::GATEWAY_RESPONSE => json_encode($content['body']),
+                    Payment\Gateway::GATEWAY_KEYS     => [],
+                ]);
         }
 
-        parent::verifyRefund($input);
+        $gatewayData = $this-> getGatewayKeysForRefund($content);
+
+        $scroogeResponse->setGatewayVerifyResponse(json_encode($content['body']))
+                        ->setGatewayKeys($gatewayData);
+
+        if ($gatewayData['resultCode'] === '10')
+        {
+            return $scroogeResponse->setSuccess(true)->toArray();
+        }
+        else if ($gatewayData['resultCode'] === '601')
+        {
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING)
+                                   ->toArray();
+        }
+        else if ($gatewayData['resultCode'] === '631')
+        {
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
+                                   ->toArray();
+        }
+        else
+        {
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::BAD_REQUEST_REFUND_FAILED)
+                                   ->toArray();
+        }
     }
 
     protected function sendPaymentVerifyRequest($verify)
@@ -282,6 +356,25 @@ class Gateway extends Base\Gateway
             'url' => $this->getUrl($this->action).'?'.$content,
             'content' => [],
             'method' => 'get');
+
+        $response = $this->sendGatewayRequest($request);
+        $content = json_decode($response->body, true);
+
+        $this->response = $response;
+
+        return $content;
+    }
+
+    protected function postRequestToPaytmV2($content)
+    {
+        $request = [
+            'url'     => $this->getUrl($this->action),
+            'content' => json_encode($content),
+            'method'  => 'post',
+            'headers' => [
+                'Content-Type' => 'application/json',
+            ]
+        ];
 
         $response = $this->sendGatewayRequest($request);
         $content = json_decode($response->body, true);
@@ -497,6 +590,24 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function verifySecureHashV2(array $content)
+    {
+        $res = false;
+
+        if (isset($content['head']['signature']) === true)
+        {
+            $actual = $content['head']['signature'];
+
+            $res = Checksum::verifychecksum_eFromStr(json_encode($content['body']), $this->getSecret(), $actual);
+        }
+
+        if ($res === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Failed checksum verification');
+        }
+    }
+
     protected function verifyPaymentCallbackResponse($input)
     {
         $content = $input['gateway'];
@@ -564,5 +675,15 @@ class Gateway extends Base\Gateway
     protected function getFormattedAmount($amount)
     {
         return number_format($amount / 100, 2, '.', '');
+    }
+
+    protected function getGatewayKeysForRefund($content)
+    {
+        return [
+            'resultStatus'                   => $content['body']['resultInfo']['resultStatus'] ?? null,
+            'resultCode'                     => $content['body']['resultInfo']['resultCode'],
+            'refundId'                       => $content['body']['refundId'] ?? null,
+            'rrn'                            => $content['body']['refundDetailInfoList']['rrn'] ?? null,
+        ];
     }
 }

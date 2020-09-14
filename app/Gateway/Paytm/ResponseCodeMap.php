@@ -161,7 +161,7 @@ class ResponseCodeMap
         332     => 'Order id can\'t be greater than 50 characters.',
         333     => 'Customer id can\'t be greater than 50 characters.',
         334     => 'Invalid Order Id.',
-        335     => 'Invalid merchant Id.',
+        335     => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
         336     => 'Invalid transaction type.',
         337     => 'From Date is invalid.',
         338     => 'To Date is invalid.',
@@ -182,7 +182,17 @@ class ResponseCodeMap
         501     => 'System Error.',
         502     => 'Json Encoding error.',
         503     => 'Fee not configured for this card category type.',
+        600     => ErrorCode::GATEWAY_ERROR_INVALID_REQUEST_BODY,
+        601     => ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING,
+        607     => ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED,
         610     => 'Transaction fully refunded already',
+        617     => ErrorCode::GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST,
+        619     => ErrorCode::GATEWAY_ERROR_REFUND_INVALID_AMOUNT,
+        626     => ErrorCode::GATEWAY_ERROR_ANOTHER_REFUND_IN_PROGRESS_FOR_SAME_PAYMENT,
+        627     => ErrorCode::GATEWAY_ERROR_TRANSACTION_DETAILS_MISMATCH,
+        628     => ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING,
+        629     => ErrorCode::GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST,
+        635     => ErrorCode::GATEWAY_ERROR_REFUND_INVALID_AMOUNT,
         701     => 'Invalid Ref ID',
         8000    => 'Invalid Response Code',
         8001    => 'Beneficiary is non-reloadable card',
@@ -284,7 +294,7 @@ class ResponseCodeMap
 
     public static function getResponseMessage($code)
     {
-        $codes = self::$codes;
+        $codes = ResponseCode::$codes;
 
         return $codes[(int) $code];
     }

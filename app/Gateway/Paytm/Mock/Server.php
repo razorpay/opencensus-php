@@ -106,26 +106,69 @@ class Server extends Base\Mock\Server
 
     public function refund($input)
     {
-        $input = json_decode($input['JsonData'], true);
+        $input = json_decode($input, true);
 
         parent::refund($input);
 
-        $this->validateActionInput($input, 'refund');
+        $this->validateActionInput($input['body'], 'refund_body');
+        $this->validateActionInput($input['head'], 'refund_head');
 
-        $content = array(
-            'MID'           => $input['MID'],
-            'ORDERID'       => $input['ORDERID'],
-//            'TXNAMOUNT'     => $input['TXN_AMOUNT'],
-            'CURRENCY'      => 'INR',
-            'TXNID'         => random_integer(6),
-            'BANKTXNID'     => $this->getBankTxnId(),
-            'STATUS'        => Paytm\Status::SUCCESS,
-            'RESPCODE'      => '01',
-            'TXNDATE'       => $this->getTxnDate(),
-            'RESPMSG'       => 'Txn Successful.',
-            'GATEWAYNAME'   => 'INDB',
-            'BANKNAME'      => 'Axis Bank',
-        );
+        $content = [
+            'body' => [
+                'txnTimestamp' => $this->getTxnDate(),
+                'orderId'      => $input['body']['orderId'],
+                'mid'          => $input['body']['mid'],
+                'refId'        => $input['body']['refId'],
+                'resultInfo'   => [
+                    'resultStatus'=> 'PENDING',
+                    'resultCode'  => '601',
+                    'resultMsg'   => 'Refund request was raised for this transaction. But it is pending state'
+                ],
+                'refundId'     => $this->getBankTxnId(),
+                'txnId'        => $input['body']['txnId'],
+                'refundAmount' => $input['body']['refundAmount']
+            ]
+        ];
+
+        $content['head']['signature'] = Paytm\Checksum::getChecksumFromString(json_encode($content['body']), $this->getSecret());
+
+        return $this->makeResponse(json_encode($content));
+    }
+
+    public function verifyRefund($input)
+    {
+        $input = json_decode($input, true);
+
+        parent::verifyRefund($input);
+
+        $this->validateActionInput($input['body'], 'verify_refund_body');
+        $this->validateActionInput($input['head'], 'verify_refund_head');
+
+        $content = [
+            'body' => [
+                'orderId'                        => $input['body']['orderId'],
+                'userCreditInitiateStatus'       => 'SUCCESS',
+                'mid'                            => $input['body']['mid'],
+                'merchantRefundRequestTimestamp' => $this->getTxnDate(),
+                'source'                         => 'MERCHANT',
+                'resultInfo'                     => [
+                    'resultStatus' => 'TXN_SUCCESS',
+                    'resultCode'   => '10',
+                    'resultMsg'    => 'Refund successful'
+                ],
+                'txnTimestamp'                   => $this->getTxnDate(),
+                'acceptRefundStatus'             => 'SUCCESS',
+                'totalRefundAmount'              => '500.00',
+                'refId'                          => $input['body']['refId'],
+                'txnAmount'                      => '500.00',
+                'refundId'                       => $this->getBankTxnId(),
+                'txnId'                          => $input['body']['orderId']
+            ]
+        ];
+
+        $content = $this->content($content, 'verify_refund');
+
+        $content['head']['signature'] = Paytm\Checksum::getChecksumFromString(json_encode($content['body']), $this->getSecret());
 
         return $this->makeResponse(json_encode($content));
     }

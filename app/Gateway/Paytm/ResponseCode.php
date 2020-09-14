@@ -229,6 +229,11 @@ class ResponseCode
         617     => 'Refund request is already in process for the same id.',
         618     => 'Wallet of user not created.',
         619     => 'Invalid refund amount.',
+        626     => 'Another Refund on same order is already in Progress, please retry after few minutes',
+        627     => 'Order Details Mismatch',
+        628     => 'Refund request was raised to respective bank. But it is in pending state from bank side.',
+        629     => 'Refund is already Successful',
+        635     => 'Partial Refund under Rupee 1 is not allowed',
         699     => 'Wallet Refund Failed. It will be retried for next 48 hr.',
         700     => 'Auto Refund Failed. It will be retried for next 48 hr.',
         701     => 'Invalid Ref ID',
@@ -334,7 +339,7 @@ class ResponseCode
     {
         $codes = self::$codes;
 
-        return $codes[(int) $code];
+        return $codes[(int) $code] ?? null;
     }
 
     public static function getStatus($code)

@@ -45,6 +45,18 @@ class Checksum
         return $random;
     }
 
+    public static function generateSaltV2_e($length)
+    {
+        $random = "";
+        srand((double) microtime() * 1000000);
+        $data = "9876543210ZYXWVUTSRQPONMLKJIHGFEDCBAabcdefghijklmnopqrstuvwxyz!@#$&_";
+        for ($i = 0; $i < $length; $i++)
+        {
+            $random .= substr($data, (rand() % (strlen($data))), 1);
+        }
+        return $random;
+    }
+
     public static function checkString_e($value)
     {
         if ($value == 'null')
@@ -107,16 +119,7 @@ class Checksum
         $finalString = $str . "|" . $salt;
         $website_hash = hash("sha256", $finalString);
         $website_hash .= $salt;
-        $validFlag = "FALSE";
-        if ($website_hash == $paytm_hash)
-        {
-            $validFlag = "TRUE";
-        }
-        else
-        {
-            $validFlag = "FALSE";
-        }
-        return $validFlag;
+        return hash_equals($paytm_hash, $website_hash);
     }
 
     public static function getArray2Str($arrayList)

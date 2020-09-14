@@ -9,5 +9,6 @@ class Url
 
     const PAY           = '/theia/processTransaction';
     const VERIFY        = '/merchant-status/getTxnStatus';
-    const REFUND        = '/refund/HANDLER_INTERNAL/REFUND';
+    const REFUND        = '/refund/apply';
+    const VERIFY_REFUND = '/v2/refund/status';
 }
