@@ -205,10 +205,7 @@ class Service extends Base\Service
 
     protected function setFeeBearerIfApplicable(array $input, $merchant)
     {
-        if($input[Pricing\Entity::FEATURE] === PricingFeature::ESAUTOMATIC)
-        {
-            $input[Pricing\Entity::FEE_BEARER] = $merchant->getFeeBearer();
-        }
+        $input[Pricing\Entity::FEE_BEARER] = $merchant->getFeeBearer();
 
         return $input;
     }
