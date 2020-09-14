@@ -124,6 +124,7 @@ class Validator extends Base\Validator
         'merchant_ids'        => 'required|array',
         'merchant_ids.*'      => 'required|string|size:14',
         'balance_type'        => 'required|string|in:primary,commission',
+        'source_type'         => 'sometimes',
         'from'                => 'sometimes|epoch',
         'to'                  => 'sometimes|epoch|with:from',
         'transaction_ids'     => 'sometimes|array',

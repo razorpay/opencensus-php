@@ -629,6 +629,7 @@ class Core extends Base\Core
     /**
      * Used to analyse while dispatching it to settlement service
      * @param $payment
+     * @throws \Throwable
      */
     public function dispatchForSettlementService($payment)
     {
@@ -647,7 +648,7 @@ class Core extends Base\Core
                 $reason = 'transfer put on hold';
             }
 
-            (new Bucket\Core)->settlementServiceToggleTransactionHold([$txn->getId()], $reason);
+            $bucketCore->settlementServiceToggleTransactionHold([$txn->getId()], $reason);
         }
         else
         {

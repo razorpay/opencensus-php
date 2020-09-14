@@ -1940,6 +1940,7 @@ class Repository extends Base\Repository
         $txnSettledAt       = $this->dbColumn(Entity::SETTLED_AT);
         $txnSettled         = $this->dbColumn(Entity::SETTLED);
         $txnCreatedAt       = $this->dbColumn(Entity::CREATED_AT);
+        $txnType            = $this->dbColumn(Entity::TYPE);
 
         $query = $this->newQuery()
             ->select($txnId, $txnBalanceId, $txnMerchantId, $txnEntityId, $txnType,
@@ -1965,6 +1966,10 @@ class Repository extends Base\Repository
             } else {
                 $query->where($txnId, '>=', $opt['from']);
             }
+        }
+
+        if ($opt['source_type'] !== null) {
+            $query->where($txnType, $opt['source_type']);
         }
 
         return $query->get();

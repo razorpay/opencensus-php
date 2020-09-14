@@ -756,6 +756,7 @@ class Core extends Base\Core
             'balance_type'        => $input['balance_type'],
             'transaction_ids'     => $input['transaction_ids'] ?? [],
             'initial_ramp'        => $input['initial_ramp'] ?? false,
+            'source_type'         => $input['source_type'] ?? null,
         ];
 
         foreach ($input['merchant_ids'] as $mid)

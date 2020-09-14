@@ -149,7 +149,10 @@ abstract class Base extends BaseCore
         // there are cases where transaction is create before payment capture
         // such transaction shouldn't be settled
         //
-        if ($this->txn->getType() != Transaction\Type::PAYMENT)
+        // and all the source migrated to respective changes
+        // those will be added to the `DO_NOT_DISPATCH_FOR_SETTLEMENT` list
+        //
+        if (in_array($this->txn->getType(), Constants::DO_NOT_DISPATCH_FOR_SETTLEMENT, true) === false)
         {
             (new Transaction\Core)->dispatchForSettlementBucketing($this->txn);
         }
