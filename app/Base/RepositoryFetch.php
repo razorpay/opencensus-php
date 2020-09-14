@@ -197,6 +197,7 @@ trait RepositoryFetch
         $this->trace->info(TraceCode::DATA_WAREHOUSE_RESPONSE_DURATION, [
             'data_warehouse' => ($connection === Connection::DATA_WAREHOUSE),
             'connection'     => $connection,
+            'query_ctx'      => is_null($merchantId) ? 'admin' : 'merchant',
             'duration_ms'    => $endTimeMs - $startTimeMs,
             'query'          => $query->toSql(),
         ]);
