@@ -31,8 +31,10 @@ class Core extends Base\Core
         return $product;
     }
 
-    public function createMany(Order\Entity $order, array $productsArray)
+    public function createMany(Order\Entity $order, $productsArray)
     {
+        (new Validator)->validateCreateMany($productsArray);
+
         $this->repo->product->transaction(function() use ($order, $productsArray){
             foreach ($productsArray as $productArray)
             {

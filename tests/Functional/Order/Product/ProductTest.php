@@ -60,6 +60,12 @@ class ProductTest extends TestCase
         $this->startTest();
     }
 
+    // send products as an (assoc) array instead of list of products
+    public function testCreateOrderProductsAssocArrayFail()
+    {
+        $this->startTest();
+    }
+
     public function testGetOrderByIdWithProducts()
     {
         $orderId = $this->createOrderWithProducts()['id'];

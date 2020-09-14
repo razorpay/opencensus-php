@@ -183,6 +183,35 @@ return [
         ],
     ],
 
+    'testCreateOrderProductsAssocArrayFail' => [
+        'request' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'products'      => [
+                    'type'  => 'mutual_fund',
+                    'ihno'  => '123',
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response'  => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'code'          => 'BAD_REQUEST_ERROR',
+                    'description'   => "'products' must be a list of 'product' objects and not an object",
+                    'field'         => 'products'
+                ],
+            ],
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE'
+        ],
+    ],
+
     'testCreateOrderNoProducts' => [
         'request' => [
             'content' => [

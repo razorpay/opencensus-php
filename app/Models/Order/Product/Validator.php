@@ -4,9 +4,10 @@
 namespace RZP\Models\Order\Product;
 
 use RZP\Base;
+use RZP\Models\Order;
+use Illuminate\Support\Arr;
 use RZP\Exception\ExtraFieldsException;
 use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Models\Order\ProductType;
 
 class Validator extends Base\Validator
 {
@@ -14,7 +15,7 @@ class Validator extends Base\Validator
 
     protected static $createRules = [
         Entity::ORDER_ID         => 'required|string|size:14',
-        Entity::PRODUCT          => 'required|array',
+        Entity::PRODUCT          => 'array',
         Entity::PRODUCT_TYPE     => 'required|string',
     ];
 
@@ -62,6 +63,18 @@ class Validator extends Base\Validator
             $message = $exception->getMessage() . ' for product of type ' . $input[Entity::TYPE];
 
             $field = $exception->getExtraFields();
+
+            throw new BadRequestValidationFailureException($message, $field);
+        }
+    }
+
+    public function validateCreateMany($input)
+    {
+        if (Arr::isAssoc($input) === true)
+        {
+            $message = "'products' must be a list of 'product' objects and not an object";
+
+            $field = Order\Entity::PRODUCTS;
 
             throw new BadRequestValidationFailureException($message, $field);
         }
