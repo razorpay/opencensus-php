@@ -100,6 +100,7 @@ class Entity extends Merchant\Entity
     protected static $generators = [
         self::ID,
         self::INVOICE_CODE,
+        self::ACCOUNT_CODE,
     ];
 
     public static $bankAccountToDetailAttributesMap = [

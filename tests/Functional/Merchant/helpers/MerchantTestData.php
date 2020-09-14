@@ -6543,4 +6543,52 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testCreateSubmerchantWithCode' => [
+        'request' => [
+            'url' => '/submerchants',
+            'method' => 'post',
+            'content' => [
+                'name' => 'Linked Account 1',
+                'code' => 'linked_account-1',
+                'account' => true,
+                'email' => 'linked1@account.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'Linked Account 1',
+                'email' => 'linked1@account.com',
+                'entity' => 'merchant',
+                'activated' => false,
+                'code' => 'linked_account-1',
+            ],
+        ],
+    ],
+
+    'testCreateSubmerchantWithInvalidCode' => [
+        'request' => [
+            'url' => '/submerchants',
+            'method' => 'post',
+            'content' => [
+                'name' => 'Linked Account 1',
+                'code' => 'la',
+                'account' => true,
+                'email' => 'linked1@account.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The code must be at least 3 characters.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

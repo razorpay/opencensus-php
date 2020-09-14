@@ -32,6 +32,26 @@ return [
         'on_hold_until' => 2122588614,
     ],
 
+    'testTransferToAccountUsingAccountCode' => [
+        'request' => [
+            'url' => '/transfers',
+            'method' => 'post',
+            'content' => [
+                'account_code' => 'code-007',
+                'amount' => 10000,
+                'currency' => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'recipient' => 'acc_10000000000001',
+                'account_code' => 'code-007',
+                'amount' => 10000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
+
     'createCustomerTransferRequest' => [
         'customer'      => 'cust_200000customer',
         'amount'        => 1000,
@@ -138,7 +158,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The account field is required when customer is not present.',
+                    'description' => 'Exactly one of account, account_code & customer to be passed.',
                 ],
             ],
             'status_code' => 400,

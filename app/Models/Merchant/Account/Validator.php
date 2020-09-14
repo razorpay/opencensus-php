@@ -10,17 +10,19 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Merchant\Validator
 {
     protected static $createRules = [
-         Entity::NAME                                          => 'required|alpha_space_num|max:200',
-         Entity::EMAIL                                         => 'required|email',
-         Entity::TNC_ACCEPTED                                  => 'required|boolean|in:1',
-         Entity::NOTES                                         => 'sometimes|array|max:15',
-         Entity::ACCOUNT_DETAILS                               => 'required|array',
-         Entity::ACCOUNT_DETAILS . '.' . Entity::BUSINESS_NAME => 'required|string|max:255',
-         Entity::ACCOUNT_DETAILS . '.' . Entity::BUSINESS_TYPE => 'required|string|max:100',
+        Entity::NAME                                          => 'required|alpha_space_num|max:200',
+        Entity::EMAIL                                         => 'required|email',
+        Entity::TNC_ACCEPTED                                  => 'required|boolean|in:1',
+        Entity::NOTES                                         => 'sometimes|array|max:15',
+        Entity::ACCOUNT_DETAILS                               => 'required|array',
+        Entity::ACCOUNT_DETAILS . '.' . Entity::BUSINESS_NAME => 'required|string|max:255',
+        Entity::ACCOUNT_DETAILS . '.' . Entity::BUSINESS_TYPE => 'required|string|max:100',
 
-         // For following only key presence is validated here.
-         // Sub keys are validated in respective validators.
-         Entity::BANK_ACCOUNT                                  => 'required|array',
+        // For following only key presence is validated here.
+        // Sub keys are validated in respective validators.
+        Entity::BANK_ACCOUNT                                  => 'required|array',
+
+        Entity::CODE                                          => 'sometimes|string|min:3|max:25|regex:"^([0-9A-Za-z-._])+$"',
      ];
 
     protected static $fetchRules = [
@@ -30,6 +32,7 @@ class Validator extends Merchant\Validator
         Fetch::SKIP               => 'sometimes|integer',
         Fetch::COUNT              => 'sometimes|integer',
         Entity::ID                => 'sometimes|string|min:14',
+        Entity::CODE              => 'sometimes|string|min:3|max:25|regex:"^([0-9A-Za-z-._])+$"',
     ];
 
     protected static $createAccountRules = [

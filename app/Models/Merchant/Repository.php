@@ -1054,4 +1054,42 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()->findManyOrFailPublic($ids);
     }
+
+    public function countAccountCodeForMerchant(string $accountCode, string $parentId)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->where(Entity::PARENT_ID, $parentId)
+                    ->where(Entity::ACCOUNT_CODE, $accountCode)
+                    ->limit(1)
+                    ->count(Entity::ACCOUNT_CODE);
+    }
+
+    public function getIdByAccountCodeAndParent(string $accountCode, string $parentId)
+    {
+        $id = $this->dbColumn(Entity::ID);
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                      ->select($id)
+                      ->where(Entity::PARENT_ID, $parentId)
+                      ->where(Entity::ACCOUNT_CODE, $accountCode)
+                      ->limit(1)
+                      ->get()
+                      ->pluck(Entity::ID);
+
+        return $query->pop();
+    }
+
+    public function getAccountCodeById(string $id)
+    {
+        $accountCode = $this->dbColumn(Entity::ACCOUNT_CODE);
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                      ->select($accountCode)
+                      ->where(Entity::ID, $id)
+                      ->limit(1)
+                      ->get()
+                      ->pluck(Entity::ACCOUNT_CODE);
+
+        return $query->pop();
+    }
 }

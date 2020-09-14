@@ -47,6 +47,50 @@ return [
         ],
     ],
 
+    'testCreateOrderTransfersUsingAccountCode' => [
+        'request' => [
+            'url' => '/orders',
+            'method' => 'POST',
+            'content' => [
+                'amount' => '50000',
+                'currency' => 'INR',
+                'transfers' => [
+                    [
+                        'account_code' => 'code-007',
+                        'amount' => '20000',
+                        'currency' => 'INR',
+                        'notes' => [
+                            'roll_no' => '150104062',
+                        ],
+                        'linked_account_notes' => [
+                            'roll_no',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount' => 50000,
+                'currency' => 'INR',
+                'transfers' => [
+                    [
+                        'recipient' => 'acc_10000000000001',
+                        'account_code' => 'code-007',
+                        'amount' => 20000,
+                        'currency' => 'INR',
+                        'notes' => [
+                            'roll_no' => '150104062',
+                        ],
+                        'linked_account_notes' => [
+                            'roll_no',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testGetOrderTransfers' => [
         'request'  => [
             'method'  => 'GET',

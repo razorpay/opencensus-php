@@ -11,6 +11,7 @@ use RZP\Models\User\Role;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\RefundSource;
+use RZP\Exception\BadRequestException;
 use RZP\Mail\Merchant\NegativeBalanceAlert;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -93,6 +94,32 @@ class TransferTest extends TestCase
         $this->checkTransferAndTxnRecords($transfer, ['fees' => 0, 'tax' => 0]);
 
         $this->checkPaymentAndTxnRecords($transfer);
+    }
+
+    public function testTransferToAccountUsingAccountCode()
+    {
+        $this->fixtures->merchant->addFeatures('route_code_support');
+        $this->fixtures->edit('merchant', '10000000000001', ['account_code' => 'code-007']);
+
+        $this->ba->privateAuth();
+        $this->startTest();
+    }
+
+    public function testTransferToAccountUsingAccountCodeWhenFeatureDisabled()
+    {
+        $this->fixtures->edit('merchant', '10000000000001', ['account_code' => 'code-007']);
+
+        $request = $this->testData['testTransferToAccountUsingAccountCode']['request'];
+
+        $this->makeRequestAndCatchException(
+            function() use ($request)
+            {
+                $this->ba->privateAuth();
+                $this->makeRequestAndGetContent($request);
+            },
+            BadRequestException::class,
+            'account_code is not allowed for this merchant.'
+        );
     }
 
     public function testTransferToAccountWithPricing()

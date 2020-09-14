@@ -2,16 +2,19 @@
 
 namespace RZP\Tests\Functional\Payment\Transfers;
 
-use RZP\Models\Merchant\FeeBearer;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\FeeBearer;
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\Payment\Transfers\TransferTrait;
 
 class PaymentMarketplaceTransferTest extends TestCase
 {
     use PaymentTrait;
     use TransferTrait;
+
     const STANDARD_PRICING_PLAN_ID  = '1A0Fkd38fGZPVC';
 
     public function setUp()
@@ -277,5 +280,90 @@ class PaymentMarketplaceTransferTest extends TestCase
             ]
         ];
         $this->assertArraySelectiveEquals($expected, $content);
+    }
+
+    public function testTransferPaymentUsingAccountCode()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace', 'route_code_support']);
+        $this->fixtures->edit('merchant', '10000000000001', ['account_code' => 'code-007']);
+
+        $transfers[0] = [
+            'account_code'  => 'code-007',
+            'amount'        => $this->payment['amount'],
+            'currency'      => 'INR',
+        ];
+
+        $response = $this->transferPayment($this->payment['id'], $transfers);
+        $transfer = $response['items'][0];
+
+        $this->assertEquals('transfer', $transfer['entity']);
+        $this->assertEquals($this->payment['id'], $transfer['source']);
+        $this->assertEquals('acc_10000000000001', $transfer['recipient']);
+        $this->assertEquals('code-007', $transfer['account_code']);
+        $this->assertEquals($this->payment['amount'], $transfer['amount']);
+    }
+
+    public function testTransferPaymentUsingAccountCodeWhenFeatureDisabled()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+        $this->fixtures->edit('merchant', '10000000000001', ['account_code' => 'code-007']);
+
+        $transfers[0] = [
+            'account_code'  => 'code-007',
+            'amount'        => $this->payment['amount'],
+            'currency'      => 'INR',
+        ];
+
+        $this->makeRequestAndCatchException(
+            function() use ($transfers)
+            {
+                $this->transferPayment($this->payment['id'], $transfers);
+            },
+            BadRequestException::class,
+            'account_code is not allowed for this merchant.'
+        );
+    }
+
+    public function testTransferPaymentUsingAccountAndAccountCode()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace', 'route_code_support']);
+        $this->fixtures->edit('merchant', '10000000000001', ['account_code' => 'code-007']);
+
+        $transfers[0] = [
+            'account'       => 'acc_10000000000001',
+            'account_code'  => 'code-007',
+            'amount'        => $this->payment['amount'],
+            'currency'      => 'INR',
+        ];
+
+        $this->makeRequestAndCatchException(
+            function() use ($transfers)
+            {
+                $this->transferPayment($this->payment['id'], $transfers);
+            },
+            BadRequestValidationFailureException::class,
+            'Exactly one of account, account_code & customer to be passed.'
+        );
+    }
+
+    public function testTransferPaymentUsingInvalidAccountCode()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace', 'route_code_support']);
+        $this->fixtures->edit('merchant', '10000000000001', ['account_code' => 'code-007']);
+
+        $transfers[0] = [
+            'account_code'  => 'bro_code',
+            'amount'        => $this->payment['amount'],
+            'currency'      => 'INR',
+        ];
+
+        $this->makeRequestAndCatchException(
+            function() use ($transfers)
+            {
+                $this->transferPayment($this->payment['id'], $transfers);
+            },
+            BadRequestException::class,
+            'bro_code is an invalid account_code.'
+        );
     }
 }

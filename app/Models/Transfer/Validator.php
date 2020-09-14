@@ -15,8 +15,9 @@ use RZP\Models\Merchant\Balance\BalanceConfig;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        ToType::ACCOUNT              => 'required_without:customer|string|size:18',
-        ToType::CUSTOMER             => 'required_without:account|string|size:19',
+        ToType::ACCOUNT              => 'sometimes|string|size:18',
+        ToType::CUSTOMER             => 'sometimes|string|size:19',
+        Entity::ACCOUNT_CODE         => 'sometimes|custom',
         Entity::AMOUNT               => 'required|integer|min:100',
         Entity::CURRENCY             => 'required|size:3|in:INR',
         Entity::NOTES                => 'sometimes|notes',
@@ -25,6 +26,10 @@ class Validator extends Base\Validator
         Entity::ON_HOLD_UNTIL        => 'sometimes|nullable|epoch',
         Entity::STATUS               => 'sometimes|string',
         Entity::ORIGIN               => 'filled',
+    ];
+
+    protected static $accountCodeRules = [
+        Entity::ACCOUNT_CODE        => 'string|min:3|max:25|regex:"^([0-9A-Za-z-._])+$"',
     ];
 
     protected static $createValidators = [
@@ -233,7 +238,7 @@ class Validator extends Base\Validator
             {
                 $errorCode = $e->getCode();
             }
-            
+
             throw new Exception\BadRequestException(
                 $errorCode,
                 Entity::AMOUNT,
@@ -303,7 +308,7 @@ class Validator extends Base\Validator
 
             // Fail if at least one of the values in
             // ToType::$allowedTypes is not set for a transfer
-            if (isset($transfer[ToType::ACCOUNT])  === false)
+            if (isset($transfer[ToType::ACCOUNT]) === false)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_ORDER_TRANSFER_ENTITIES_NOT_SET);
@@ -318,6 +323,29 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_TRANSFER_AMOUNT_GREATER_THAN_ORDER_AMOUNT);
+        }
+    }
+
+    public function validateAccountCode($key, $value)
+    {
+        $this->validateInput('account_code', [$key => $value]);
+    }
+
+    public function validateToType(array $transferInput)
+    {
+        $countKeys = 0;
+
+        $countKeys += (int) array_key_exists(ToType::ACCOUNT, $transferInput);
+
+        $countKeys += (int) array_key_exists(ToType::CUSTOMER, $transferInput);
+
+        $countKeys += (int) array_key_exists(Entity::ACCOUNT_CODE, $transferInput);
+
+        if ($countKeys !== 1)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Exactly one of account, account_code & customer to be passed.'
+            );
         }
     }
 }

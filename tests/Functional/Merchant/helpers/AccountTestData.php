@@ -196,6 +196,126 @@ return [
         ],
     ],
 
+    'testCreateLinkedAccountWithCode' => [
+        'request' => [
+            'url' => '/beta/accounts',
+            'method' => 'post',
+            'content' => [
+                'name' => 'Linked Account 1',
+                'code' => 'linked_account-1',
+                'email' => 'linked1@account.com',
+                'tnc_accepted' => true,
+                'account_details' => [
+                    'business_name' => 'Business',
+                    'business_type' => 'individual',
+                ],
+                'bank_account' => [
+                    'ifsc_code' => 'SBIN0000002',
+                    'beneficiary_name' => 'Beneficiary',
+                    'account_type' => 'current',
+                    'account_number' => '9876543210',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'Business',
+                'email' => 'linked1@account.com',
+                'entity' => 'account',
+                'live' => true,
+                'tnc_accepted' => true,
+                'activation_details' => [
+                    'status' => 'activated',
+                ],
+                'code' => 'linked_account-1',
+            ],
+        ],
+    ],
+
+    'testCreateLinkedAccountWithInvalidCode' => [
+        'request' => [
+            'url' => '/beta/accounts',
+            'method' => 'post',
+            'content' => [
+                'name' => 'Linked Account 1',
+                'code' => 'linked_account 1',
+                'email' => 'linked1@account.com',
+                'tnc_accepted' => true,
+                'account_details' => [
+                    'business_name' => 'Business',
+                    'business_type' => 'individual',
+                ],
+                'bank_account' => [
+                    'ifsc_code' => 'SBIN0000002',
+                    'beneficiary_name' => 'Beneficiary',
+                    'account_type' => 'current',
+                    'account_number' => '9876543210',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The code format is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testFetchLinkedAccountByCode' => [
+        'request' => [
+            'url' => '/beta/accounts/?code=linked_account-1',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity' => 'account',
+                        'name' => 'Business',
+                        'email' => 'linked1@account.com',
+                        'live' => true,
+                        'tnc_accepted' => true,
+                        'code' => 'linked_account-1',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchLinkedAccountByCodeProxyAuth' => [
+        'request' => [
+            'url' => '/linked_accounts/?code=linked_account-1',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity' => 'account',
+                        'name' => 'Business',
+                        'email' => 'linked1@account.com',
+                        'live' => true,
+                        'tnc_accepted' => true,
+                        'code' => 'linked_account-1',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'addSettlementDestination' => [
         'request'  => [
             'content' => [

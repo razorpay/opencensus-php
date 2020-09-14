@@ -8129,5 +8129,60 @@ class MerchantTest extends TestCase
         $this->assertNotEquals($contact['type'], $contactUpdated['type']);
         $this->assertEquals(trim($contact['type']), $contactUpdated['type']);
     }
-}
 
+    public function testCreateSubmerchantWithCode()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace', 'route_code_support']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateSubmerchantWithInvalidCode()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace', 'route_code_support']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateSubmerchantWithCodeWhenFeatureDisabled()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $testData = $this->testData['testCreateSubmerchantWithCode'];
+
+        $this->makeRequestAndCatchException(
+            function() use ($testData)
+            {
+                $this->ba->proxyAuth();
+
+                $this->runRequestResponseFlow($testData);
+            },
+            BadRequestException::class,
+            'code is not allowed for this merchant.'
+        );
+    }
+
+    public function testCreateSubmerchantWithCodeAlreadyInUse()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace', 'route_code_support']);
+
+        $testData = $this->testData['testCreateSubmerchantWithCode'];
+
+        $this->makeRequestAndCatchException(
+            function() use ($testData)
+            {
+                $this->ba->proxyAuth();
+
+                $this->runRequestResponseFlow($testData);
+
+                $this->runRequestResponseFlow($testData);
+            },
+            BadRequestException::class,
+            'This code is already in use, please try another.'
+        );
+    }
+}

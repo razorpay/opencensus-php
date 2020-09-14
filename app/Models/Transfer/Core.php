@@ -52,6 +52,14 @@ class Core extends Base\Core
 
         $validator = new Validator;
 
+        $validator->validateToType($input);
+
+        $inputArray = array($input);
+
+        $this->addAccountFromAccountCodeIfApplicable($inputArray);
+
+        $input = $inputArray[0];
+
         $validator->validateInput('create', $input);
 
         $validator->validateTransferMaxAmount($input[Entity::AMOUNT], $merchant);
@@ -87,6 +95,8 @@ class Core extends Base\Core
         $transfers = new Base\PublicCollection;
 
         $this->validateMerchantForTransfer($merchant);
+
+        $this->addAccountFromAccountCodeIfApplicable($input);
 
         $orderTransfers = [];
 
@@ -142,11 +152,16 @@ class Core extends Base\Core
 
             $input[Entity::ORIGIN] = Origin::ORDER_AUTOMATION;
 
-            $accountId = $input[ToType::ACCOUNT];
+            if (isset($input[Entity::ACCOUNT_CODE]) === true)
+            {
+                $accountId = $this->repo->merchant->getIdByAccountCodeAndParent($input[Entity::ACCOUNT_CODE], $this->merchant->getId());
+
+                $input[ToType::ACCOUNT] = Merchant\Account\Entity::getSignedId($accountId);
+            }
 
             $to = $this->repo
                        ->account
-                       ->findByPublicIdAndMerchant($accountId, $this->merchant);
+                       ->findByPublicIdAndMerchant($input[ToType::ACCOUNT], $this->merchant);
 
             // extracts linked account notes and validates.
             $this->getLinkedAccountNotes($input);
@@ -246,7 +261,26 @@ class Core extends Base\Core
 
         $transfer->to()->associate($to);
 
+        $this->setAccountCodeIfApplicable($transfer);
+
         return $transfer;
+    }
+
+    protected function setAccountCodeIfApplicable(Entity $transfer)
+    {
+        if (($transfer->getToType() !== Constants\Entity::MERCHANT) or
+            ($transfer->getAccountCode() !== null) or
+            ($this->merchant->isRouteCodeEnabled() === false))
+        {
+            return;
+        }
+
+        $accountCode = $this->repo->merchant->getAccountCodeById($transfer->getToId());
+
+        if ($accountCode !== null)
+        {
+            $transfer->setAccountCode($accountCode);
+        }
     }
 
     /**
@@ -514,6 +548,8 @@ class Core extends Base\Core
 
         $validator = new Validator();
 
+        $this->addAccountFromAccountCodeIfApplicable($transfers);
+
         $validator->validateTransferForOrder($transfers, $orderAmount);
 
         foreach ($transfers as $transfer)
@@ -616,6 +652,57 @@ class Core extends Base\Core
         else
         {
             (new Transaction\Core)->dispatchForSettlementBucketing($txn);
+        }
+    }
+
+    protected function addAccountFromAccountCodeIfApplicable(array & $transfers)
+    {
+        $flag = false;
+
+        foreach ($transfers as & $transfer)
+        {
+            (new Validator())->validateToType($transfer);
+
+            if (isset($transfer[Entity::ACCOUNT_CODE]) === true)
+            {
+                $accountCode = $transfer[Entity::ACCOUNT_CODE];
+
+                if ($flag === false)
+                {
+                    $this->isAccountCodeAllowed($accountCode);
+
+                    $flag = true;
+                }
+
+                (new Validator())->validateAccountCode(Entity::ACCOUNT_CODE, $accountCode);
+
+                $accountId = $this->repo->merchant->getIdByAccountCodeAndParent($accountCode, $this->merchant->getId());
+
+                if ($accountId === null)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_INVALID_ACCOUNT_CODE,
+                        Entity::ACCOUNT_CODE,
+                        $accountCode,
+                        $accountCode . ' is an invalid account_code.'
+                    );
+                }
+
+                $transfer[ToType::ACCOUNT] = Merchant\Account\Entity::getSignedId($accountId);
+            }
+        }
+    }
+
+    public function isAccountCodeAllowed(string $accountCode)
+    {
+        if ($this->merchant->isRouteCodeEnabled() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCOUNT_CODE_NOT_ENABLED,
+                Entity::ACCOUNT_CODE,
+                $accountCode,
+                'account_code is not allowed for this merchant.'
+            );
         }
     }
 }

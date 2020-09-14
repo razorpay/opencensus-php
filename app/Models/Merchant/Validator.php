@@ -59,6 +59,7 @@ class Validator extends Base\Validator
         Constants::PARTNER_INTENT           => 'sometimes|boolean',
         Entity::EXTERNAL_ID                 => 'sometimes|string|max:255',
         Entity::SIGNUP_SOURCE               => 'sometimes|string|max:32',
+        Entity::CODE                        => 'custom',
     ];
 
     protected static $editRules = [
@@ -359,6 +360,10 @@ class Validator extends Base\Validator
         Constants::BATCH_ACTION  => 'required|string|custom',
         Constants::ENTITY        => 'required|string|custom',
         Constants::IDEMPOTENT_ID => 'required',
+    ];
+
+    protected static $codeRules = [
+        Entity::CODE            => 'sometimes|string|min:3|max:25|regex:"^([0-9A-Za-z-._])+$"',
     ];
 
     public function validateMerchantForProductInternational(Entity $merchant)
@@ -1605,5 +1610,10 @@ class Validator extends Base\Validator
         }
 
         return;
+    }
+
+    public function validateCode($key, $value)
+    {
+        $this->validateInput('code', [$key => $value]);
     }
 }

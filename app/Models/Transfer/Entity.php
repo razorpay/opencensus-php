@@ -121,6 +121,7 @@ class Entity extends Base\PublicEntity
         self::SOURCE,
         self::RECIPIENT,
         self::RECIPIENT_DETAILS,
+        self::ACCOUNT_CODE,
         self::AMOUNT,
         self::CURRENCY,
         self::AMOUNT_REVERSED,
@@ -193,6 +194,15 @@ class Entity extends Base\PublicEntity
         'source',
         'to',
     ];
+
+    protected static $generators = [
+        self::ACCOUNT_CODE_USED,
+    ];
+
+    public function generateAccountCodeUsed($input)
+    {
+        $this->setAttribute(self::ACCOUNT_CODE_USED, isset($input[self::ACCOUNT_CODE]));
+    }
 
     // -------------------- Relations ---------------------------
 
@@ -353,6 +363,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ATTEMPTS);
     }
 
+    public function getAccountCode()
+    {
+        return $this->getAttribute(self::ACCOUNT_CODE);
+    }
+
     // -------------------- End Getters ---------------------------
 
     // -------------------- Setters ---------------------------
@@ -419,6 +434,12 @@ class Entity extends Base\PublicEntity
     {
         $this->increment(self::ATTEMPTS);
     }
+
+    public function setAccountCode(string $accountCode)
+    {
+        $this->setAttribute(self::ACCOUNT_CODE, $accountCode);
+    }
+
     // -------------------- End Setters ---------------------------
 
     /**
@@ -648,12 +669,11 @@ class Entity extends Base\PublicEntity
 
     public function toArrayPublic()
     {
-        $app = \App::getFacadeRoot();
-
         if ($this->isCreated() === true)
         {
             $this->public = [
                 self::RECIPIENT,
+                self::ACCOUNT_CODE,
                 self::AMOUNT,
                 self::CURRENCY,
                 self::NOTES,
@@ -663,6 +683,13 @@ class Entity extends Base\PublicEntity
             ];
         }
 
-        return parent::toArrayPublic();
+        $data = parent::toArrayPublic();
+
+        if (empty($data[Entity::ACCOUNT_CODE]) === true)
+        {
+            unset($data[Entity::ACCOUNT_CODE]);
+        }
+
+        return $data;
     }
 }

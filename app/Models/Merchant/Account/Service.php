@@ -4,8 +4,10 @@ namespace RZP\Models\Merchant\Account;
 
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Notify;
+use RZP\Exception\BadRequestException;
 
 class Service extends Merchant\Service
 {
@@ -34,6 +36,8 @@ class Service extends Merchant\Service
      */
     public function fetchMultiple(array $input): array
     {
+        $this->setAccountCodeIfApplicable($input);
+
         $accounts = $this->repo->account->fetch($input, $this->merchant->getId());
 
         return $accounts->toArrayPublic();
@@ -100,6 +104,8 @@ class Service extends Merchant\Service
     public function listLinkedAccounts(array $input)
     {
         (new Validator)->validateInput('fetch', $input);
+
+        $this->setAccountCodeIfApplicable($input);
 
         $input[Entity::PARENT_ID] = $this->merchant->getId();
 
@@ -185,5 +191,19 @@ class Service extends Merchant\Service
         }
 
         return $this->response;
+    }
+
+    protected function setAccountCodeIfApplicable(array & $input)
+    {
+        if (isset($input[Entity::CODE]) === false)
+        {
+            return;
+        }
+
+        $this->core()->checkRouteCodeFeature($this->merchant);
+
+        $input[Entity::ACCOUNT_CODE] = $input[Entity::CODE];
+
+        unset($input[Entity::CODE]);
     }
 }

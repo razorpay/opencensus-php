@@ -7,6 +7,7 @@ use Mail;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
@@ -50,6 +51,75 @@ class AccountTest extends TestCase
     public function testCreateLinkedAccountInvalidBusinessType()
     {
         $this->startTest();
+    }
+
+    public function testCreateLinkedAccountWithCode()
+    {
+        $this->fixtures->merchant->addFeatures(['route_code_support']);
+
+        $this->startTest();
+    }
+
+    public function testCreateLinkedAccountWithInvalidCode()
+    {
+        $this->fixtures->merchant->addFeatures(['route_code_support']);
+
+        $this->startTest();
+    }
+
+    public function testCreateLinkedAccountWithCodeAndFeatureDisabled()
+    {
+        $testData = $this->testData['testCreateLinkedAccountWithCode'];
+
+        $this->makeRequestAndCatchException(
+            function() use ($testData)
+            {
+                $this->runRequestResponseFlow($testData);
+            },
+            BadRequestException::class,
+            'code is not allowed for this merchant.'
+        );
+    }
+
+    public function testCreateLinkedAccountWithCodeAlreadyInUse()
+    {
+        $this->fixtures->merchant->addFeatures(['route_code_support']);
+
+        $testData = $this->testData['testCreateLinkedAccountWithCode'];
+
+        $this->makeRequestAndCatchException(
+            function() use ($testData)
+            {
+                $this->runRequestResponseFlow($testData);
+
+                $this->runRequestResponseFlow($testData);
+            },
+            BadRequestException::class,
+            'This code is already in use, please try another.'
+        );
+    }
+
+    public function testFetchLinkedAccountByCode()
+    {
+        $this->testCreateLinkedAccountWithCode();
+
+        $response = $this->startTest();
+
+        $accountId = $this->getDbLastEntity('account')->getId();
+        $account = $response['items'][0];
+        $this->assertEquals('acc_' . $accountId, $account['id']);
+    }
+
+    public function testFetchLinkedAccountByCodeProxyAuth()
+    {
+        $this->testCreateLinkedAccountWithCode();
+
+        $this->ba->proxyAuth();
+        $response = $this->startTest();
+
+        $accountId = $this->getDbLastEntity('account')->getId();
+        $account = $response['items'][0];
+        $this->assertEquals('acc_' . $accountId, $account['id']);
     }
 
     public function testRetrieveAccount()

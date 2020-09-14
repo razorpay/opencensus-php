@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -38,6 +39,48 @@ class OrderTransferTest extends TestCase
         $order = $this->startTest();
 
         return $order;
+    }
+
+    public function testCreateOrderTransfersUsingAccountCode()
+    {
+        $this->fixtures->merchant->addFeatures('route_code_support');
+        $this->fixtures->edit('merchant', '10000000000001', ['account_code' => 'code-007']);
+
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testCreateOrderTransfersUsingAccountCodeWhenFeatureDisabled()
+    {
+        $request = $this->testData['testCreateOrderTransfersUsingAccountCode']['request'];
+
+        $this->makeRequestAndCatchException(
+            function() use ($request)
+            {
+                $this->makeRequestAndGetContent($request);
+            },
+            BadRequestException::class,
+            'account_code is not allowed for this merchant.'
+        );
+    }
+
+    public function testCreateOrderTransfersUsingInvalidAccountCode()
+    {
+        $this->fixtures->merchant->addFeatures('route_code_support');
+        $this->fixtures->edit('merchant', '10000000000001', ['account_code' => 'code-007']);
+
+        $request = $this->testData['testCreateOrderTransfersUsingAccountCode']['request'];
+        $request['content']['transfers'][0]['account_code'] = 'bro_code';
+
+        $this->makeRequestAndCatchException(
+            function() use ($request)
+            {
+                $this->makeRequestAndGetContent($request);
+            },
+            BadRequestException::class,
+            'bro_code is an invalid account_code.'
+        );
     }
 
     public function testCreateOrderTransfersInsufficientBalance()
@@ -72,6 +115,18 @@ class OrderTransferTest extends TestCase
         $payment = $this->getDbEntity('payment', ['transfer_id' => $transfer['id']]);
 
         $this->assertArraySelectiveEquals(['roll_no' => 'iec2011025'], $payment->getNotes()->toArray());
+    }
+
+    public function testProcessOrderTransfersWithAccountCode()
+    {
+        $order = $this->testCreateOrderTransfersUsingAccountCode();
+
+        $this->capturePaymentProcessOrderTransfers($order);
+
+        $transfer = $this->getDbLastEntity('transfer');
+        $this->assertEquals($order['id'], 'order_' . $transfer['source_id']);
+        $this->assertEquals('processed', $transfer['status']);
+        $this->assertEquals('code-007', $transfer['account_code']);
     }
 
     public function testProcessOrderTransfersPartialPayment()

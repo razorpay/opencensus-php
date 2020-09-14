@@ -183,6 +183,8 @@ class Core extends Base\Core
         bool $linkedAccount = true,
         bool $accountEntity = false)
     {
+        $this->validateCodeIfPresent($input, $aggregatorMerchant, $linkedAccount);
+
         $aggregatorMerchant->getValidator()->validateSubMerchantInput($input, $linkedAccount);
 
         // validate that external id passed is unique for that partner
@@ -3780,5 +3782,61 @@ class Core extends Base\Core
     public function submerchantLink(Entity $partner, Entity $submerchant)
     {
         return $this->createPartnerSubmerchantAccessMap($partner, $submerchant);
+    }
+
+    protected function validateCodeIfPresent(array $input, Entity $parentMerchant, bool $isLinkedAccount)
+    {
+        if (isset($input[Entity::CODE]) === true)
+        {
+            $this->validateCode($input[Entity::CODE], $parentMerchant, $isLinkedAccount);
+        }
+    }
+
+    protected function validateCode(string $code, Entity $parentMerchant, bool $isLinkedAccount)
+    {
+        if (($isLinkedAccount === false) or
+            ($parentMerchant->isMarketplace() === false))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCOUNT_CODE_NOT_ENABLED,
+                Entity::CODE,
+                $code,
+                'code is not allowed for this merchant.'
+            );
+        }
+
+        $this->checkRouteCodeFeature($parentMerchant);
+
+        $parentMerchant->getValidator()->validateCode(Entity::CODE, $code);
+
+        if ($this->isCodeAlreadyInUse($code, $parentMerchant) === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCOUNT_CODE_ALREADY_USED,
+                Entity::CODE,
+                $code,
+                'This code is already in use, please try another.'
+            );
+        }
+    }
+
+    public function checkRouteCodeFeature(Entity $merchant)
+    {
+        if ($merchant->isRouteCodeEnabled() === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCOUNT_CODE_NOT_ENABLED,
+                Entity::CODE,
+                null,
+                'code is not allowed for this merchant.'
+            );
+        }
+    }
+
+    protected function isCodeAlreadyInUse(string $code, Entity $parentMerchant) : bool
+    {
+        $count = $this->repo->merchant->countAccountCodeForMerchant($code, $parentMerchant->getId());
+
+        return ($count !== 0);
     }
 }

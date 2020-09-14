@@ -131,6 +131,7 @@ class Entity extends Base\PublicEntity
     const BUSINESS_BANKING         = 'business_banking';
 
     const ACCOUNT_CODE              = 'account_code';
+    const CODE                      = 'code';
 
     // Coupon Related Data for display only
     const COUPON_CODE              = 'coupon_code';
@@ -271,6 +272,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::TRANSACTION_REPORT_EMAIL,
         self::INVOICE_CODE,
+        self::ACCOUNT_CODE,
     ];
 
     protected $embeddedRelations = [
@@ -408,7 +410,6 @@ class Entity extends Base\PublicEntity
         self::EXTERNAL_ID,
         self::PRODUCT_INTERNATIONAL,
         self::SIGNUP_SOURCE,
-        self::ACCOUNT_CODE,
      ];
 
     protected $defaults = [
@@ -563,6 +564,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::INVOICE_CODE, $invoiceCode);
     }
 
+    protected function generateAccountCode($input)
+    {
+        if (isset($input[self::CODE]) === true)
+        {
+            $this->setAttribute(self::ACCOUNT_CODE, $input[self::CODE]);
+        }
+    }
+
     public function isActivated()
     {
         return $this->getAttribute(self::ACTIVATED);
@@ -706,7 +715,7 @@ class Entity extends Base\PublicEntity
         return $this->isFeatureEnabled(Feature\Constants::PAYMENT_ONHOLD);
     }
 
-    public function isRouteAccountCodeEnabled() : bool
+    public function isRouteCodeEnabled() : bool
     {
         return $this->isFeatureEnabled(Feature\Constants::ROUTE_CODE_SUPPORT);
     }
@@ -1357,6 +1366,11 @@ class Entity extends Base\PublicEntity
     public function getExternalId()
     {
         return $this->getAttribute(self::EXTERNAL_ID);
+    }
+
+    public function getAccountCode()
+    {
+        return $this->getAttribute(self::ACCOUNT_CODE);
     }
 
     public function offers()
@@ -2214,6 +2228,19 @@ class Entity extends Base\PublicEntity
         $data = array_only($data, $reportFields);
 
         $data[self::ID] = Account\Entity::getSignedId($this->getAttribute(self::ID));
+
+        return $data;
+    }
+
+    public function toArrayPublic()
+    {
+        $data = parent::toArrayPublic();
+
+        if (($this->isLinkedAccount() === true) and
+            ($this->parent->isRouteCodeEnabled() === true))
+        {
+            $data[self::CODE] = $this->getAccountCode();
+        }
 
         return $data;
     }
