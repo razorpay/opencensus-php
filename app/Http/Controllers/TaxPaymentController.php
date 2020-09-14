@@ -19,6 +19,11 @@ class TaxPaymentController extends Controller
         return $this->service->cancelQueuedPayouts();
     }
 
+    public function addPenalty()
+    {
+        return $this->service->addPenalty();
+    }
+
     public function monthlySummary()
     {
         return $this->service->monthlySummary($this->ba->getMerchant());

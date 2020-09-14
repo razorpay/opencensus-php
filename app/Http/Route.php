@@ -1087,9 +1087,10 @@ class Route
 
 
         // Tax Payments
+        'tax_payments_add_penalty_cron'            => ['post',    'tax-payments/addPenalty',                         'TaxPaymentController@addPenalty'                                   ],
+        'tax_payments_mail_cron'                   => ['post',    'tax-payments/mailCron',                           'TaxPaymentController@mailCron'                                     ],
         'tax_payments_monthly_summary'             => ['get',     'tax-payments/_meta/summary',                      'TaxPaymentController@monthlySummary'                               ],
         'tax_payments_admin_auth_api'              => ['post',    'tax-payments/admin',                              'TaxPaymentController@adminActions'                                 ],
-        'tax_payments_mail_cron'                   => ['post',    'tax-payments/mailCron',                           'TaxPaymentController@mailCron'                                     ],
         'tax_payments_payout_cron'                 => ['post',    'tax-payments/initiateMonthlyPayouts',             'TaxPaymentController@initiateMonthlyPayouts'                       ],
         'tax_payments_payout_cancel_cron'          => ['post',    'tax-payments/cancelQueuedPayouts',                'TaxPaymentController@cancelQueuedPayouts'                          ],
         'tax_payments_send_email'                  => ['post',    'tax-payments/sendMail',                           'TaxPaymentController@sendMail'                                     ],
@@ -2613,6 +2614,7 @@ class Route
         'scrooge_refunds_get_multiple_razorflow',
         'vendor_payment_send_email_generic',
         'vendor_payment_upcoming_mail_cron',
+        'tax_payments_add_penalty_cron',
         'setl_service_migration',
         'create_payment_config_bulk_via_batch',
         'payment_meta_search',
@@ -5049,6 +5051,7 @@ class Route
             'terminal_mpans_tokenize_existing',
             'setl_service_migration',
             'vendor_payment_upcoming_mail_cron',
+            'tax_payments_add_penalty_cron',
             'bulk_create_fund_accounts',
             'add_ondemand_pricing_if_absent',
         ],

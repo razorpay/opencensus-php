@@ -693,4 +693,15 @@ return [
             ]
         ]
     ],
+    'testTaxPaymentAddPenaltyCronCallsServiceMethod'                      => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/tax-payments/addPenalty',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];

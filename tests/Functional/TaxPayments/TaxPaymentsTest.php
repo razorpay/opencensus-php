@@ -587,4 +587,19 @@ class TaxPaymentsTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testTaxPaymentAddPenaltyCronCallsServiceMethod()
+    {
+        $this->ba->proxyAuth();
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+
+        $tpMock->shouldReceive('addPenalty')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('addPenalty');
+    }
 }

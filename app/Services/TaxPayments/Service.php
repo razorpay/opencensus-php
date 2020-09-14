@@ -32,17 +32,18 @@ class Service
     const GET_TAX_PAYMENT_BY_ID     = 'GetTaxPayment';
     const LIST_TAX_PAYMENTS         = 'ListTaxPayments';
     const PAY_TAX_PAYMENTS          = 'PayTaxPayment';
-    const BULK_PAY_TAX_PAYMENTS    = 'BulkPayTaxPayments';
-
+    const BULK_PAY_TAX_PAYMENTS     = 'BulkPayTaxPayments';
     const INITIATE_MONTHLY_PAYOUTS  = 'InitiateMonthlyPayouts';
     const CANCEL_QUEUED_PAYOUT_CRON = 'CancelQueuedPayoutCron';
     const TAX_PAYMENT_ENABLED_KEY   = 'tax_payment_enabled';
     const MONTHLY_SUMMARY           = 'MonthlySummary';
-    const ADMIN_ACTIONS            = 'AdminActions';
-    const EMAIL_CRON               = 'EmailCron';
-    const MARK_AS_PAID             = 'MarkAsPaid';
-    const UPLOAD_CHALLAN           = 'UploadChallan';
-    const EDIT_TP                  = 'EditTp';
+    const ADD_PENALTY_CRON          = 'AddPenaltyCron';
+    const MARK_AS_PAID              = 'MarkAsPaid';
+    const UPLOAD_CHALLAN            = 'UploadChallan';
+    const EDIT_TP                   = 'EditTp';
+    const ADMIN_ACTIONS             = 'AdminActions';
+    const EMAIL_CRON                = 'EmailCron';
+
 
     // general constants
     const DATA                      = 'data';
@@ -96,6 +97,13 @@ class Service
         return $this->makeRequest($merchant, $url, []);
     }
 
+    public function addPenalty()
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::ADD_PENALTY_CRON);
+
+        return $this->makeRequest(null, $url, ['time' => now()]);
+    }
+
     public function mailCron(array $input)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::EMAIL_CRON);
@@ -116,7 +124,7 @@ class Service
 
         foreach ($settings as $setting)
         {
-            if (boolval($setting['value']) === true)
+            if ($this->getBooleanValue($setting['value']) === true)
             {
                 $merchant = $this->repo->merchant->find($setting['entity_id']);
 
@@ -154,6 +162,27 @@ class Service
             }
         }
         return $settingsOfEnabledMerchants;
+    }
+
+    public function getBooleanValue(string $value) :bool
+    {
+        if (empty($value) === true)
+        {
+            return false;
+        }
+
+        // convert to a json string and then apply json_decode
+        $jsonStr = sprintf('{"key" : %s}', strtolower($value));
+
+        $jsonDecoded = json_decode($jsonStr, true);
+
+        if ($jsonDecoded === null )
+        {
+            return false;
+        }
+
+        return $jsonDecoded["key"];
+
     }
 
     public function adminActions(array $input)
