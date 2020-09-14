@@ -160,6 +160,9 @@ class CreatePayments extends Migration
             $table->integer(Payment::AUTHORIZED_AT)
                   ->nullable();
 
+            $table->integer(Payment::AUTHENTICATED_AT)
+                ->nullable();
+
             $table->tinyInteger(Payment::AUTO_CAPTURED)
                   ->default(0);
 

@@ -116,6 +116,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const EMI_SUBVENTION        = 'emi_subvention';
     const TRANSACTION_ID        = 'transaction_id';
     const AUTO_CAPTURED         = 'auto_captured';
+    const AUTHENTICATED_AT      = 'authenticated_at';
     const AUTHORIZED_AT         = 'authorized_at';
     const CAPTURED_AT           = 'captured_at';
     const GATEWAY               = 'gateway';
@@ -473,6 +474,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::AMOUNT_REFUNDED,
         self::REFUND_AT,
         self::CREATED_AT,
+        self::AUTHENTICATED_AT,
         self::AUTHORIZED_AT,
         self::UPDATED_AT,
         self::ERROR_DESCRIPTION,
@@ -537,6 +539,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     protected $dates = [
         self::UPDATED_AT,
         self::CREATED_AT,
+        self::AUTHENTICATED_AT,
         self::AUTHORIZED_AT,
         self::CAPTURED_AT,
         self::VERIFY_AT,
@@ -1110,6 +1113,25 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
         $this->setAttribute(self::CAPTURED_AT, $timestamp);
+    }
+
+    public function setAuthenticatedTimestamp($authenticateTimestamp = null)
+    {
+        if (is_null($authenticateTimestamp))
+        {
+            $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+            $this->setAttribute(self::AUTHENTICATED_AT, $timestamp);
+        }
+        else
+        {
+            $this->setAttribute(self::AUTHENTICATED_AT, $authenticateTimestamp);
+        }
+    }
+
+    public function setAuthenticatedAtNull()
+    {
+        $this->setAttribute(self::AUTHENTICATED_AT, null);
     }
 
     public function setAuthorizeTimestamp($authTimestamp = null)
@@ -1810,6 +1832,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->isCreated() or $this->isAuthorized());
     }
 
+    public function hasBeenAuthenticated()
+    {
+        return ($this->isAttributeNotNull(self::AUTHENTICATED_AT));
+    }
+
     public function hasBeenAuthorized()
     {
         return ($this->isAttributeNotNull(self::AUTHORIZED_AT));
@@ -2344,6 +2371,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getCaptureTimestamp()
     {
         return $this->getAttribute(self::CAPTURED_AT);
+    }
+
+    protected function getAuthenticatedTimestamp()
+    {
+        return $this->getAttribute(self::AUTHENTICATED_AT);
     }
 
     public function getAuthorizeTimestamp()
