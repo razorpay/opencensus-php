@@ -1209,8 +1209,8 @@ class PublicErrorDescription
     const BAD_REQUEST_CRED_PENDING_USER                                             = "You are not eligible to pay via CRED as you are not a CRED member.\n Please use another method to complete your payment.";
     const BAD_REQUEST_CRED_CARD_NOT_VERIFIED                                        = "You do not have a verified card on CRED to use this payment method.\n Please use another method to complete your payment.";
     const BAD_REQUEST_CRED_WAITLISTED_USER                                          = "You are not eligible to pay via CRED as you are not a CRED member.\n Please use another method to complete your payment.";
-    const BAD_REQUEST_CRED_UNSUPPORTED_APP_VERSION                                  = "You are not eligible to pay via CRED as you are not a CRED member.\n Please use another method to complete your payment.";
-    const BAD_REQUEST_CRED_NO_SUPPORTED_APP_VERSION                                 = "You are not eligible to pay via CRED as you are not a CRED member.\n Please use another method to complete your payment.";
+    const BAD_REQUEST_CRED_UNSUPPORTED_APP_VERSION                                  = "You do not have the latest CRED app version to make this payment via CRED.\n Please use another method to complete your payment.";
+    const BAD_REQUEST_CRED_NO_SUPPORTED_APP_VERSION                                 = "You do not have the latest CRED app version to make this payment via CRED.\n Please use another method to complete your payment.";
     const BAD_REQUEST_CRED_INACTIVE_USER                                            = "You are not eligible to pay via CRED as you are not a CRED member.\n Please use another method to complete your payment.";
     const BAD_REQUEST_CRED_BLOCKED_USER                                             = 'You CRED account is blocked. Please reach out to support@cred.club to unblock your account and enable this payment method';
     const GATEWAY_ERROR_CRED_RESERVED_ERROR                                         = 'Download CRED app and activate your membership to unlock this payment option and avail exclusive discounts.';
