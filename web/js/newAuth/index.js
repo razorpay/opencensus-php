@@ -2,7 +2,7 @@ __webpack_public_path__ = (window.cdnDashboardUrl || '') + `/dist/`;
 import 'regenerator-runtime/runtime.js';
 import 'core-js/es/map';
 import 'core-js/es/set';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { render } from 'react-dom';
 import Styled, { ThemeProvider } from 'styled-components';
 import { lightTheme as theme } from '@razorpay/blade/src/tokens/theme';
@@ -14,6 +14,10 @@ import Button from '@commander/shield/src/shared/Button';
 import Link from '@commander/shield/src/shared/Link';
 import Flex from '@razorpay/blade/src/atoms/Flex';
 import View from '@razorpay/blade/src/atoms/View';
+
+const BANNER_TEXT_MOB = 'Get ₹1 lakh free credits & special 1.85% pricing. Sign up now.';
+const BANNER_TEXT_DESK =
+  'Sign up now and get ₹1,00,000 in free credits and a special slashed pricing of 1.85%!';
 
 const Container = Styled(View)`
   overflow-y: auto;
@@ -61,7 +65,7 @@ const HeaderView = Styled(View)`
     }
     @media (min-width: 769px) {
       justify-content: space-between;
-      padding: 48px 0 60px 0;
+      padding: 32px 0 36px 0;
     }
   }
 `;
@@ -146,139 +150,218 @@ const CustomLoginButton = Styled(Button)`
    background-color: ${({ theme }) => theme.colors.background[600]};
    border: 1px solid ${({ theme }) => theme.colors.background[600]};
    }
+`;
 
+const DesktopBannerBg = Styled(View)`
+  background: url('/dist/css/assets/banner.svg')
+`;
+
+const MobileBannerBg = Styled(View)`
+  background: rgba(65, 164, 19, 0.03);
+`;
+
+const MobileBannerView = Styled(View)`
+  display: none;
+  @media (max-width: 767px) {
+    display: block;
+  }
+`;
+
+const DesktopBannerView = Styled(View)`
+  display: none;
+  @media (min-width: 768px) {
+    display: block;
+  }
 `;
 
 const FullHeightFlex = Styled(Flex)`
   height: 100%;
 `;
 
-const handleContactUsClick = () => {
-  window.rzpQ.push(
-    window.rzpQ
-      .now()
-      .onbr()
-      .initiated('signup.secondary_links', { source: 'Contact us' })
-  );
-  window.rzpAnalytics({
-    eventCategory: 'Signup - Steps',
-    eventAction: 'Click - Contact Us',
-  });
-};
+const App = () => {
+  const [showBanner, setShowBanner] = useState(false);
+  const [hasCouponCode, setHasCouponCode] = useState(false);
 
-const handleLoginClick = () => {
-  window.rzpQ.push(
-    window.rzpQ
-      .now()
-      .onbr()
-      .initiated('signup.secondary_links', { source: 'Login' })
-  );
+  useEffect(() => {
+    if (window.location.href.includes('coupon_code')) {
+      setHasCouponCode(true);
+    }
+  }, []);
 
-  window.rzpAnalytics({
-    eventCategory: 'Signup - Email Password',
-    eventAction: 'Click - Login',
-  });
+  let routesForBanner = ['business_type', 'monthly_revenue', 'contact_details'];
 
-  window.location.href = '/#/access/signin';
-};
+  const handleRouteChange = (route) => {
+    if (routesForBanner.includes(route) && isCampaignLive() && !hasCouponCode) {
+      setShowBanner(true);
+    } else {
+      setShowBanner(false);
+    }
+  };
 
-render(
-  <ThemeProvider theme={theme}>
-    <Size height="100%">
-      <Container>
-        <Size maxWidth="830px" height="100%">
-          <Flex flexDirection="column">
-            <ContentContainer>
-              <DesktopOnlyView>
-                <Flex justifyContent="space-between">
-                  <HeaderView>
-                    <Size maxWidth="150px">
-                      <img src="/img/logo_full.png" alt="Razorpay" />
-                    </Size>
-                    <Flex alignItems="center">
-                      <View>
-                        <Text color="background.100" weight="bold">
-                          Already a user?
-                        </Text>
-                        <Space margin={[0, 0, 0, 2.25]}>
-                          <Button onClick={handleLoginClick}>Log In</Button>
-                        </Space>
-                      </View>
-                    </Flex>
-                  </HeaderView>
-                </Flex>
-              </DesktopOnlyView>
+  const isCampaignLive = () => {
+    const startDate = new Date('September 09, 2020 00:00:01').getTime();
+    const endDate = new Date('September 30, 2020 00:00:59').getTime();
+    const now = new Date().getTime();
+    return now > startDate && now < endDate;
+  };
 
-              <MobileOnlyView>
-                <HeaderView>
-                  <FullHeightFlex justifyContent="space-around" alignItems="center">
-                    <View>
-                      <Size maxWidth="120px">
+  const handleContactUsClick = () => {
+    window.rzpQ.push(
+      window.rzpQ.now().onbr().initiated('signup.secondary_links', { source: 'Contact us' }),
+    );
+    window.rzpAnalytics({
+      eventCategory: 'Signup - Steps',
+      eventAction: 'Click - Contact Us',
+    });
+  };
+
+  const handleLoginClick = () => {
+    window.rzpQ.push(
+      window.rzpQ.now().onbr().initiated('signup.secondary_links', { source: 'Login' }),
+    );
+
+    window.rzpAnalytics({
+      eventCategory: 'Signup - Email Password',
+      eventAction: 'Click - Login',
+    });
+
+    window.location.href = '/#/access/signin';
+  };
+
+  const MobileBanner = () => {
+    return (
+      <MobileBannerView>
+        <Flex justifyContent="center">
+          <Space padding={[1.5, 4]}>
+            <MobileBannerBg>
+              <Text color="positive.900" size="small">
+                {BANNER_TEXT_MOB}
+              </Text>
+            </MobileBannerBg>
+          </Space>
+        </Flex>
+      </MobileBannerView>
+    );
+  };
+
+  const DesktopBanner = () => {
+    return (
+      <DesktopBannerView>
+        <Flex justifyContent="center">
+          <Space padding={[2.25, 0, 1.75, 0]}>
+            <DesktopBannerBg>
+              <Text color="background.100">{BANNER_TEXT_DESK}</Text>
+            </DesktopBannerBg>
+          </Space>
+        </Flex>
+      </DesktopBannerView>
+    );
+  };
+
+  return (
+    <ThemeProvider theme={theme}>
+      <Size height="100%">
+        <Container>
+          {showBanner && <DesktopBanner />}
+          <Size maxWidth="830px" height="100%">
+            <Flex flexDirection="column">
+              <ContentContainer>
+                <DesktopOnlyView>
+                  <Flex justifyContent="space-between">
+                    <HeaderView>
+                      <Size maxWidth="150px">
                         <img src="/img/logo_full.png" alt="Razorpay" />
                       </Size>
-                      <Space margin={[3, 0, 0, 8]}>
-                        <CustomLoginButton size="small" onClick={handleLoginClick}>
-                          Log in
-                        </CustomLoginButton>
-                      </Space>
-                    </View>
-                  </FullHeightFlex>
-                </HeaderView>
-              </MobileOnlyView>
-
-              <RelativeView>
-                <AbsoluteView>
-                  <SignUp appName="dashboard" />
-                </AbsoluteView>
-                <DesktopOnlyView>
-                  <Space padding={[8, 5.5, 4, 0]}>
-                    <View>
-                      <Flex flexDirection="column" justifyContent="center" alignItems="center">
+                      <Flex alignItems="center">
                         <View>
-                          <Space margin={[0, 0, 1, 0]}>
-                            <Text size="large" weight="bold">
-                              Why choose Razorpay?
-                            </Text>
-                          </Space>
-                          <Text size="small" color="shade.960">
-                            8,00,000+ businesses trust their payments with Razorpay
+                          <Text color="background.100" weight="bold">
+                            Already a user?
                           </Text>
+                          <Space margin={[0, 0, 0, 2.25]}>
+                            <Button onClick={handleLoginClick}>Log In</Button>
+                          </Space>
                         </View>
                       </Flex>
-                      <Space margin={[3.5, 0, 3.75, 0]}>
-                        <Size maxWidth="100%">
-                          <img src="/img/client-logos.png" alt="Clients" />
+                    </HeaderView>
+                  </Flex>
+                </DesktopOnlyView>
+
+                <MobileOnlyView>
+                  <HeaderView>
+                    <FullHeightFlex justifyContent="space-around" alignItems="center">
+                      <View>
+                        <Size maxWidth="120px">
+                          <img src="/img/logo_full.png" alt="Razorpay" />
                         </Size>
-                      </Space>
-                      <BorderView />
-                      <Space margin={[2.5, 0, 0, 0]}>
-                        <Flex justifyContent="center">
+                        <Space margin={[3, 0, 0, 8]}>
+                          <CustomLoginButton size="small" onClick={handleLoginClick}>
+                            Log in
+                          </CustomLoginButton>
+                        </Space>
+                      </View>
+                    </FullHeightFlex>
+                  </HeaderView>
+                </MobileOnlyView>
+
+                <RelativeView>
+                  <AbsoluteView>
+                    <SignUp
+                      appName="dashboard"
+                      header={showBanner && <MobileBanner />}
+                      onRouteChange={handleRouteChange}
+                    />
+                  </AbsoluteView>
+                  <DesktopOnlyView>
+                    <Space padding={[8, 5.5, 4, 0]}>
+                      <View>
+                        <Flex flexDirection="column" justifyContent="center" alignItems="center">
                           <View>
-                            <Space margin={[0, 0.5, 0, 0]}>
-                              <Text as="span" size="xsmall" color="shade.960">
-                                Need help? We are just a click away.
+                            <Space margin={[0, 0, 1, 0]}>
+                              <Text size="large" weight="bold">
+                                Why choose Razorpay?
                               </Text>
                             </Space>
-                            <CustomLink
-                              size="xsmall"
-                              href="https://razorpay.com/support/#request/merchant"
-                              target="_blank"
-                              onClick={handleContactUsClick}
-                            >
-                              Contact Us
-                            </CustomLink>
+                            <Text size="small" color="shade.960">
+                              8,00,000+ businesses trust their payments with Razorpay
+                            </Text>
                           </View>
                         </Flex>
-                      </Space>
-                    </View>
-                  </Space>
-                </DesktopOnlyView>
-              </RelativeView>
-            </ContentContainer>
-          </Flex>
-        </Size>
-      </Container>
-    </Size>
-  </ThemeProvider>,
-  document.getElementById('react-root')
-);
+                        <Space margin={[3.5, 0, 3.75, 0]}>
+                          <Size maxWidth="100%">
+                            <img src="/img/client-logos.png" alt="Clients" />
+                          </Size>
+                        </Space>
+                        <BorderView />
+                        <Space margin={[2.5, 0, 0, 0]}>
+                          <Flex justifyContent="center">
+                            <View>
+                              <Space margin={[0, 0.5, 0, 0]}>
+                                <Text as="span" size="xsmall" color="shade.960">
+                                  Need help? We are just a click away.
+                                </Text>
+                              </Space>
+                              <CustomLink
+                                size="xsmall"
+                                href="https://razorpay.com/support/#request/merchant"
+                                target="_blank"
+                                onClick={handleContactUsClick}
+                              >
+                                Contact Us
+                              </CustomLink>
+                            </View>
+                          </Flex>
+                        </Space>
+                      </View>
+                    </Space>
+                  </DesktopOnlyView>
+                </RelativeView>
+              </ContentContainer>
+            </Flex>
+          </Size>
+        </Container>
+      </Size>
+    </ThemeProvider>
+  );
+};
+
+render(<App />, document.getElementById('react-root'));
