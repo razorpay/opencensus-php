@@ -7,6 +7,7 @@ use Mail;
 use Mockery;
 use Carbon\Carbon;
 
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Services\Scrooge;
 use RZP\Constants\Timezone;
@@ -15,6 +16,7 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Mail\Payment\Refunded as RefundedMail;
@@ -3302,18 +3304,21 @@ class RefundTest extends TestCase
 
         $this->fixtures->pricing->createInstantRefundsModeLevelPricingPlanV2();
 
-        $scroogeResponse = json_decode('{
-            "mode": "NEFT"
-        }', true);
+        $scroogeResponse = [
+            'mode' => 'NEFT',
+            'gateway_refund_support' => true,
+            'instant_refund_support' => true,
+            'payment_age_limit_for_gateway_refund' => null
+        ];
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['getInstantRefundsMode'])
+                            ->setMethods(['fetchRefundCreateData'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
 
-        $this->app->scrooge->method('getInstantRefundsMode')
+        $this->app->scrooge->method('fetchRefundCreateData')
                            ->willReturn($scroogeResponse);
 
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
@@ -5180,7 +5185,7 @@ class RefundTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['initiateRefund'])
+                            ->setMethods(['initiateRefund', 'fetchRefundCreateData'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -5191,6 +5196,14 @@ class RefundTest extends TestCase
                                {
                                    $scroogeInput = $input;
                                }));
+
+        $this->app->scrooge->method('fetchRefundCreateData')
+                           ->willReturn([
+                               'mode' => 'IMPS',
+                               'gateway_refund_support' => true,
+                               'instant_refund_support' => true,
+                               'payment_age_limit_for_gateway_refund' => null
+                           ]);
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
@@ -5251,7 +5264,7 @@ class RefundTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['initiateRefund'])
+                            ->setMethods(['initiateRefund', 'fetchRefundCreateData'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -5262,6 +5275,14 @@ class RefundTest extends TestCase
                                {
                                    $scroogeInput = $input;
                                }));
+
+        $this->app->scrooge->method('fetchRefundCreateData')
+                           ->willReturn([
+                               'mode' => 'IMPS',
+                               'gateway_refund_support' => true,
+                               'instant_refund_support' => true,
+                               'payment_age_limit_for_gateway_refund' => null
+                           ]);
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
@@ -5315,7 +5336,7 @@ class RefundTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['initiateRefund', 'initiateRefundRetry'])
+                            ->setMethods(['initiateRefund', 'initiateRefundRetry', 'fetchRefundCreateData'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -5333,6 +5354,14 @@ class RefundTest extends TestCase
                                {
                                    $scroogeRetryInput = $input;
                                }));
+
+        $this->app->scrooge->method('fetchRefundCreateData')
+                           ->willReturn([
+                               'mode' => 'IMPS',
+                               'gateway_refund_support' => true,
+                               'instant_refund_support' => true,
+                               'payment_age_limit_for_gateway_refund' => null
+                           ]);
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
@@ -5392,5 +5421,292 @@ class RefundTest extends TestCase
 
         $this->assertEquals('normal', $scroogeRetryInput['speed_requested']);
         $this->assertEquals('normal', $scroogeRetryInput['speed_processed']);
+    }
+
+    public function testInstantDecisioningWhenGatewayRefundNotSupported()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'credit');
+
+        $this->assertEquals($iin['issuer'], 'HDFC');
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+
+        $this->gateway = 'hdfc';
+
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
+
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingV2Plan();
+
+        $this->fixtures->pricing->createInstantRefundsModeLevelPricingPlan();
+
+        $scroogeResponse = [
+            'mode' => 'IMPS',
+            'gateway_refund_support' => false,
+            'instant_refund_support' => true,
+            'payment_age_limit_for_gateway_refund' => 180
+        ];
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['fetchRefundCreateData'])
+            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('fetchRefundCreateData')
+            ->willReturn($scroogeResponse);
+
+        // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
+        $refund = $this->refundPayment(
+            $payment['id'],
+            3471,
+            [
+                'speed'    => 'optimum',
+                'is_fta'   => true,
+                'fta_data' => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
+            ]
+        );
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(true, $refund['gateway_refunded']);
+        $this->assertEquals('optimum', $refund['speed_requested']);
+        $this->assertEquals('instant', $refund['speed_decisioned']);
+        $this->assertEquals(RefundStatus::PROCESSED, $refund['status']);
+        $this->assertEquals(RefundSpeed::INSTANT, $refund['speed_processed']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals('refund', $fta['purpose']);
+        $this->assertEquals('processed', $fta['status']);
+    }
+
+    public function testGatewayRefundNotSupportedWhenRequestedNormalRefund()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'credit');
+
+        $this->assertEquals($iin['issuer'], 'HDFC');
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+
+        $this->gateway = 'hdfc';
+
+        $scroogeResponse = [
+            'mode' => 'IMPS',
+            'gateway_refund_support' => false,
+            'instant_refund_support' => true,
+            'payment_age_limit_for_gateway_refund' => 180
+        ];
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['fetchRefundCreateData'])
+                            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('fetchRefundCreateData')
+                           ->willReturn($scroogeResponse);
+
+        $failed = false;
+
+        try
+        {
+            $this->refundPayment(
+                $payment['id'],
+                3471,
+                [
+                    'speed'    => 'normal',
+                    'is_fta'   => true,
+                    'fta_data' => [
+                        'card_transfer' => [
+                            'card_id' => $payment['card_id']
+                        ]
+                    ]
+                ]
+            );
+        }
+        catch (BadRequestException $ex)
+        {
+            $failed = true;
+
+            $this->assertEquals(ErrorCode::BAD_REQUEST_ONLY_INSTANT_REFUND_SUPPORTED, $ex->getCode());
+            $this->assertEquals('Payment is more than 6 months old, only instant refund is supported', $ex->getMessage());
+        }
+
+        $this->assertTrue($failed);
+    }
+
+    public function testNoRefundModeSupportedOnRefund()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'credit');
+
+        $this->assertEquals($iin['issuer'], 'HDFC');
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+
+        $this->gateway = 'hdfc';
+
+        $scroogeResponse = [
+            'mode' => null,
+            'gateway_refund_support' => false,
+            'instant_refund_support' => false,
+            'payment_age_limit_for_gateway_refund' => 180
+        ];
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['fetchRefundCreateData'])
+                            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('fetchRefundCreateData')
+                           ->willReturn($scroogeResponse);
+
+        $failed = false;
+
+        try
+        {
+            $this->refundPayment(
+                $payment['id'],
+                3471,
+                [
+                    'speed'    => 'normal',
+                    'is_fta'   => true,
+                    'fta_data' => [
+                        'card_transfer' => [
+                            'card_id' => $payment['card_id']
+                        ]
+                    ]
+                ]
+            );
+        }
+        catch (BadRequestException $ex)
+        {
+            $failed = true;
+
+            $this->assertEquals(ErrorCode::BAD_REQUEST_REFUND_NOT_SUPPORTED_BY_THE_BANK, $ex->getCode());
+            $this->assertEquals('Refund is not supported by the bank because the payment is more than 6 months old', $ex->getMessage());
+        }
+
+        $this->assertTrue($failed);
+
+        $failed = false;
+
+        try
+        {
+            $this->refundPayment(
+                $payment['id'],
+                3471,
+                [
+                    'speed'    => 'optimum',
+                    'is_fta'   => true,
+                    'fta_data' => [
+                        'card_transfer' => [
+                            'card_id' => $payment['card_id']
+                        ]
+                    ]
+                ]
+            );
+        }
+        catch (BadRequestException $ex)
+        {
+            $failed = true;
+
+            $this->assertEquals(ErrorCode::BAD_REQUEST_REFUND_NOT_SUPPORTED_BY_THE_BANK, $ex->getCode());
+            $this->assertEquals('Refund is not supported by the bank because the payment is more than 6 months old', $ex->getMessage());
+        }
+
+        $this->assertTrue($failed);
+    }
+
+    public function testErrorMessageOnRefundsBlockedPayment()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'credit');
+
+        $this->assertEquals($iin['issuer'], 'HDFC');
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+
+        $this->gateway = 'hdfc';
+
+        $scroogeResponse = [
+            'mode' => null,
+            'gateway_refund_support' => false,
+            'instant_refund_support' => false,
+            'payment_age_limit_for_gateway_refund' => 170
+        ];
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['fetchRefundCreateData'])
+                            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('fetchRefundCreateData')
+                           ->willReturn($scroogeResponse);
+
+        $failed = false;
+
+        try
+        {
+            $this->refundPayment(
+                $payment['id'],
+                3471,
+                [
+                    'speed'    => 'normal',
+                    'is_fta'   => true,
+                    'fta_data' => [
+                        'card_transfer' => [
+                            'card_id' => $payment['card_id']
+                        ]
+                    ]
+                ]
+            );
+        }
+        catch (BadRequestException $ex)
+        {
+            $failed = true;
+
+            $this->assertEquals(ErrorCode::BAD_REQUEST_REFUND_NOT_SUPPORTED_BY_THE_BANK, $ex->getCode());
+            $this->assertEquals('Refund is not supported by the bank because the payment is more than 5 months old', $ex->getMessage());
+        }
+
+        $this->assertTrue($failed);
     }
 }

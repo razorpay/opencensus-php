@@ -21,6 +21,7 @@ use RZP\Models\Base\Traits\NotesTrait;
 use Razorpay\Spine\DataTypes\Dictionary;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\Refund\Metric as RefundMetric;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 /**
  * @property Payment\Entity     $payment
@@ -1127,6 +1128,22 @@ class Entity extends Base\PublicEntity
         return intval(($this->getCreatedAt() - $this->payment->getAuthorizeTimestamp()) / 60);
     }
 
+    public function wasGatewayRefundNotSupportedAtCreation($refundId): bool
+    {
+        $app = App::getFacadeRoot();
+
+        $scroogeRefund = $app['scrooge']->getRefund($refundId);
+
+        if ((isset($scroogeRefund[RefundConstants::RESPONSE_BODY]) === true) and
+            (isset($scroogeRefund[RefundConstants::RESPONSE_BODY][RefundConstants::META]) === true) and
+            (isset($scroogeRefund[RefundConstants::RESPONSE_BODY][RefundConstants::META][RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * @param TransactionTrackerMessages $transactionTrackerMessages
      * @param int $days
@@ -1138,9 +1155,18 @@ class Entity extends Base\PublicEntity
     {
         $messageLateAuth = null;
         $messageEntity = Constants::REFUND;
-        $messageSlaDone = ($days < 0 === true) ? false : true;
+        $messageSlaDone = ($days < 0) ? false : true;
         $messageStatus = ($this->isProcessed() === true) ? Status::PROCESSED: Status::INITIATED;
         $messageVoidRefund = !$this->payment->isGatewayCaptured();
+
+        if (($this->isStatusReversed() === true) and
+            ($this->getSpeedDecisioned() === Speed::INSTANT) and
+            ($this->wasGatewayRefundNotSupportedAtCreation($this->getId()) === true))
+        {
+            $messageStatus = RefundConstants::FAILED_AGED;
+
+            $messageSlaDone = false;
+        }
 
         $message = $transactionTrackerMessages->getMessage($messageEntity, $messageStatus, $messageType, $messageSlaDone, $messageLateAuth, $messageVoidRefund);
 
@@ -1233,7 +1259,6 @@ class Entity extends Base\PublicEntity
 
         $response[self::SPEED_REQUESTED] = $this->getSpeedRequested();
 
-
         $eligibleForScroogeCall = ($response[self::STATUS] === Status::PENDING) and ($this->isScrooge() === true);
 
         $callScroogeForStatus = (($refundPublicStatusFeatureEnabled === true) or
@@ -1292,6 +1317,7 @@ class Entity extends Base\PublicEntity
         if ((Payment\Refund\Core::isRefundsPublicStatusMerchant($this->getMerchantId()) === false) and
             ($refundPublicStatusFeatureEnabled === false) and
             ($refundPendingStatusFeatureEnabled === false) and
+            ($response[self::STATUS] === Status::PENDING) and
             ($response[self::SPEED_PROCESSED] === Speed::NORMAL))
         {
             $response[self::STATUS] = Status::PROCESSED;

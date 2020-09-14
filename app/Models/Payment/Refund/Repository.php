@@ -28,7 +28,7 @@ class Repository extends Base\Repository
 
     protected $entityFetchParamRules = [
         Entity::PAYMENT_ID    => 'sometimes|alpha_dash|min:14|max:18',
-        Entity::PUBLIC_STATUS => 'sometimes|filled|in:processed,processing',
+        Entity::PUBLIC_STATUS => 'sometimes|filled|in:processed,processing,failed',
         Entity::NOTES         => 'sometimes|notes_fetch',
     ];
 
@@ -159,6 +159,11 @@ class Repository extends Base\Repository
             case Status::PROCESSING:
                 ($showApiRefundStatus === true) ?
                     $query->where(Entity::STATUS, '!=', Status::PROCESSED) : $query->whereNull(Entity::SPEED_PROCESSED);
+
+                break;
+
+            case Status::FAILED:
+                $query->where(Entity::STATUS, '=', Status::REVERSED);
 
                 break;
         }

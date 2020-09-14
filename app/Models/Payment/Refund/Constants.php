@@ -4,19 +4,22 @@ namespace RZP\Models\Payment\Refund;
 
 class Constants
 {
-    const MODE                           = 'mode';
-    const IS_FTA                         = 'is_fta';
-    const MOZART                         = 'mozart';
-    const ENTITIES                       = 'entities';
-    const REFUND_IDS                     = 'refund_ids';
-    const DB_FETCH_LIMIT                 = 'limit';
-    const GATEWAY_ENTITY                 = 'gateway_entity';
-    const SPEED_CHANGE_TIME              = 'speed_change_time';
-    const REFUND_REFERENCE1              = 'refund_reference1';
-    const INSTANT_REFUND_SUPPORT         = 'instant_refund_support';
-    const MAX_REFUND_RETRY_ATTEMPTS      = 3;
-    const MAX_REFUND_VERIFY_REQUESTS     = 100;
-    const SCROOGE_TAGGING_LIVE_TIMESTAMP = 1552646209;
+    const META                                 = 'meta';
+    const MODE                                 = 'mode';
+    const IS_FTA                               = 'is_fta';
+    const MOZART                               = 'mozart';
+    const ENTITIES                             = 'entities';
+    const REFUND_IDS                           = 'refund_ids';
+    const DB_FETCH_LIMIT                       = 'limit';
+    const GATEWAY_ENTITY                       = 'gateway_entity';
+    const SPEED_CHANGE_TIME                    = 'speed_change_time';
+    const REFUND_REFERENCE1                    = 'refund_reference1';
+    const INSTANT_REFUND_SUPPORT               = 'instant_refund_support';
+    const GATEWAY_REFUND_SUPPORT               = 'gateway_refund_support';
+    const MAX_REFUND_RETRY_ATTEMPTS            = 3;
+    const MAX_REFUND_VERIFY_REQUESTS           = 100;
+    const SCROOGE_TAGGING_LIVE_TIMESTAMP       = 1552646209;
+    const PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND = 'payment_age_limit_for_gateway_refund';
     /**
      * We get the last 10 days refunds created of a gateway.
      * We run the cron for this once a day.
@@ -46,12 +49,14 @@ class Constants
     const LATE_AUTH          = 'late_auth';
     const REFUND_ID          = 'refund_id';
     const PAYMENT_ID         = 'payment_id';
+    const FAILED_AGED        = 'failed_aged';
     const MERCHANT_ID        = 'merchant_id';
     const MERCHANT_NAME      = 'merchant_name';
     const PRIMARY_MESSAGE    = 'primary_message';
     const TERTIARY_MESSAGE   = 'tertiary_message';
     const SECONDARY_MESSAGE  = 'secondary_message';
     const MERCHANT_REFERENCE = 'merchant_reference';
+    const PAYMENT_CREATED_AT = 'payment_created_at';
 
     const RESPONSE_CODE          = 'code';
     const RESPONSE_BODY          = 'body';
@@ -136,4 +141,23 @@ class Constants
     // Default refund amount value set for mode decisioning when actual refund amount is unknown
     // Set tentatively to 100 rupees since no modes are restricted for this amount
     const DEFAULT_REFUND_AMOUNT_FOR_MODE_DECISIONING = 10000;
+
+    // Dynamic error messages for refund creation blocking
+    // type 0 for neither instant nor gateway refund supported
+    // type 1 for only instant refund supported
+    public static function getBlockRefundsMessage($type = 0, $days = 180)
+    {
+        $months = intdiv($days, 30);
+
+        switch ($type)
+        {
+            case 0 :
+                return 'Refund is not supported by the bank because the payment is more than ' . $months . ' months old';
+
+            case 1 :
+                return 'Payment is more than ' . $months . ' months old, only instant refund is supported';
+        }
+
+        return '';
+    }
 }

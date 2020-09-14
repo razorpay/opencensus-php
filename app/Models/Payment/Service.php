@@ -1295,6 +1295,11 @@ class Service extends Base\Service
                                                                 ->isInstantRefundSupportedOnPayment($payment);
     }
 
+    protected function addDashboardFlagRefundCreateData(array &$entity, $payment)
+    {
+        $this->getNewProcessor($this->merchant)->getRefundCreationDataForDashboard($payment, $entity);
+    }
+
     public function getPaymentFlows(array $input)
     {
         $merchant = $this->merchant;

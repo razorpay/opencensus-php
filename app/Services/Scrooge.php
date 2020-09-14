@@ -54,6 +54,7 @@ class Scrooge
         'instant_refunds_mode'               => 'instant_refunds_mode',
         'get_file_based_refunds'             => 'file_based_refunds',
         'refresh_fta_modes'                  => 'fta_modes_refresh',
+        'fetch_refund_create_data'           => 'fetch/refund_create_data',
         'fetch_instant_refunds_modes'        => 'fetch/instant_refund_mode_configs',
         'instant-refunds-decisioning-helper' => 'instant-refunds-decisioning-helper',
         'fetch-from-gateway-reference-value' => 'fetch_from_gateway_reference_value',
@@ -382,6 +383,32 @@ class Scrooge
 
         return [
             'mode' => null
+        ];
+    }
+
+    /**
+     * @param array $body
+     * @return array
+     */
+    public function fetchRefundCreateData(array $body): array
+    {
+        $scroogeResponse = $this->sendRequest(
+            self::MerchantsBaseURL . '/' . self::URLS['fetch_refund_create_data'],
+            Requests::POST,
+            $body);
+
+        $scroogeResponseCode = $scroogeResponse[self::RESPONSE_CODE];
+
+        if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
+        {
+            return $scroogeResponse[self::RESPONSE_BODY];
+        }
+
+        return [
+            RefundConstants::GATEWAY_REFUND_SUPPORT => true,
+            RefundConstants::INSTANT_REFUND_SUPPORT => false,
+            RefundConstants::MODE => null,
+            RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND => null,
         ];
     }
 

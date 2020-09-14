@@ -846,6 +846,8 @@ class ErrorCode
 
     const BAD_REQUEST_REFUND_FAILED                                                 = 'BAD_REQUEST_REFUND_FAILED';
     const BAD_REQUEST_REFUND_NOT_ALLOWED                                            = 'BAD_REQUEST_REFUND_NOT_ALLOWED';
+    const BAD_REQUEST_REFUND_NOT_SUPPORTED_BY_THE_BANK                              = 'BAD_REQUEST_REFUND_NOT_SUPPORTED_BY_THE_BANK';
+    const BAD_REQUEST_ONLY_INSTANT_REFUND_SUPPORTED                                 = 'BAD_REQUEST_ONLY_INSTANT_REFUND_SUPPORTED';
     const BAD_REQUEST_CARD_REFUND_NOT_ALLOWED                                       = 'BAD_REQUEST_CARD_REFUND_NOT_ALLOWED';
     const BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE                                     = 'BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE';
     const BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS                                     = 'BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS';

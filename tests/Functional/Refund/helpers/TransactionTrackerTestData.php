@@ -997,4 +997,18 @@ return [
             'status_code' => 400,
         ],
     ],
+
+    'testInstantFailedOnGatewayUnsupportedRefundMessage' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/customer/refunds',
+            'content' => [
+                'captcha'    => 'dummy',
+                'mode'       => 'test',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];

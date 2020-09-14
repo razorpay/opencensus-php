@@ -504,11 +504,6 @@ class WebhookTest extends TestCase
 
     public function testRefundFailedWebhookEventData()
     {
-        $this->fixtures->merchant->addFeatures(['show_refund_public_status']);
-
-        $expectedEvent = $this->testData[__FUNCTION__]['event'];
-        $this->expectWebhookEventWithContents('refund.failed', $expectedEvent);
-
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
@@ -531,6 +526,9 @@ class WebhookTest extends TestCase
 
             return $content;
         });
+
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
+        $this->expectWebhookEventWithContents('refund.failed', $expectedEvent);
 
         // Adding specific amount to refund - this is meant to test failed refunds on scrooge -
         // in which case we have reversal of refund transactions as well

@@ -391,7 +391,7 @@ class Service extends Base\Service
     {
         $refundArray = $this->repo->refund->fetchAndReturnPublicArray($id, $this->merchant);
 
-        // Adding `processed_at`, `failed_at`, `speed_change_time` params only for dashboard
+        // Adding `processed_at`, `failed_at`, `speed_change_time`, `gateway_refund_support` params only for dashboard
         if ($this->app['basicauth']->isProxyAuth() === true)
         {
             $this->addParamsForDashboard($refundArray);
@@ -788,8 +788,6 @@ class Service extends Base\Service
         {
             foreach ($refundsArray[Base\PublicCollection::ITEMS] as $key => $refundArray)
             {
-                $refundsArray[Base\PublicCollection::ITEMS][$key][Entity::PUBLIC_STATUS] = $input[Entity::PUBLIC_STATUS];
-
                 $refundsArray[Base\PublicCollection::ITEMS][$key][Entity::STATUS] = $input[Entity::PUBLIC_STATUS];
             }
         }
@@ -800,8 +798,6 @@ class Service extends Base\Service
             foreach ($refundsArray[Base\PublicCollection::ITEMS] as &$refundArray)
             {
                 $refundId = $refundArray[Entity::ID];
-
-                $refundArray[Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
 
                 $refundArray[Entity::STATUS] = $refundStatus[$refundId];
             }
@@ -2650,8 +2646,8 @@ class Service extends Base\Service
             // Adds Processed At timestamp based on refund status and merchant type
             $this->addProcessedAtTime($refundArray, $refund);
 
-            // Adding failed at time only when refund status shown to merchant is failed
-            $this->addFailedAtTime($refundArray, $refund);
+            // Adding failed refund attributes only when refund status shown to merchant is failed
+            $this->addFailedRefundAttributes($refundArray, $refund);
         }
         catch(\Throwable $exception)
         {
@@ -2740,7 +2736,7 @@ class Service extends Base\Service
         return $processedAt;
     }
 
-    protected function addFailedAtTime(array &$refundArray, Entity $refund)
+    protected function addFailedRefundAttributes(array &$refundArray, Entity $refund)
     {
         // Adding failed at only when status is failed
         if ((isset($refundArray[Entity::STATUS]) === true) and ($refundArray[Entity::STATUS] === Status::FAILED))
@@ -2760,6 +2756,12 @@ class Service extends Base\Service
             }
 
             $refundArray[RefundConstants::FAILED_AT] = $failedAt;
+
+            if (($refund->getSpeedDecisioned() === RefundSpeed::INSTANT) and
+                ($refund->wasGatewayRefundNotSupportedAtCreation($refund->getId()) === true))
+            {
+                $refundArray[RefundConstants::GATEWAY_REFUND_SUPPORT] = false;
+            }
         }
     }
 

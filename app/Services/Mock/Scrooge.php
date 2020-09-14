@@ -3,6 +3,7 @@
 namespace RZP\Services\Mock;
 
 use RZP\Services\Scrooge as BaseScrooge;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 class Scrooge extends BaseScrooge
 {
@@ -197,6 +198,16 @@ class Scrooge extends BaseScrooge
         return json_decode('{
             "mode": "IMPS"
         }', true);
+    }
+
+    public function fetchRefundCreateData(array $params): array
+    {
+        return [
+            RefundConstants::MODE => 'IMPS',
+            RefundConstants::GATEWAY_REFUND_SUPPORT => true,
+            RefundConstants::INSTANT_REFUND_SUPPORT => true,
+            RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND => null,
+        ];
     }
 
     public function getFileBasedRefunds(array $input): array
