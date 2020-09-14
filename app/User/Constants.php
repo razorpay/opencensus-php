@@ -48,6 +48,24 @@ class Constants
     const OAUTH_MERCHANT_OAUTH_CLIENT_ID = 'oauth.merchant_oauth_client_id';
 
     /**
+     *  Different Google Oauth Client Ids for epos, android, ios applications
+     */
+    const OAUTH_MERCHANT_OAUTH_CLIENT_ID_EPOS = 'oauth.merchant_oauth_client_id_epos';
+
+    const OAUTH_MERCHANT_OAUTH_CLIENT_ID_ANDROID = 'oauth.merchant_oauth_client_id_android';
+
+    const OAUTH_MERCHANT_OAUTH_CLIENT_ID_IOS = 'oauth.merchant_oauth_client_id_ios';
+
+    const IOS = 'ios';
+
+    const EPOS = 'epos';
+
+    const ANDROID = 'android';
+
+    const DASHBOARD = 'dashboard';
+
+
+    /**
      * determines the 2fa verification state of user in session
      * If true, means routes requiring 2fa in API will pass
      */

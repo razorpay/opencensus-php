@@ -2,7 +2,9 @@
 
 namespace App\User;
 
+use Request;
 use Google_Client;
+use App\Http\Headers;
 use App\Trace\TraceCode;
 
 class OauthHelper
@@ -53,6 +55,29 @@ class OauthHelper
         }
     }
 
+    protected function getOauthClientIdFromSource()
+    {
+        $oauthSource = Request::header(Headers::OAUTH_SOURCE) ?? Constants::DASHBOARD;
+
+        switch ($oauthSource)
+        {
+            case Constants::IOS:
+                return $this->getMerchantOauthClientIdIos();
+
+            case Constants::ANDROID:
+                return $this->getMerchantOauthClientIdAndroid();
+
+            case Constants::EPOS:
+                return $this->getMerchantOauthClientIdEpos();
+
+            default:
+                //
+                // default is dashboard.
+                //
+                return $this->getMerchantOauthClientId();
+        }
+    }
+
     /**
      * verify Google Id_token using google oauth client Id
      * which make sure any data coming from FE is not by spoofing
@@ -64,8 +89,10 @@ class OauthHelper
      */
     protected function verifyGoogleIdToken(array &$input): bool
     {
+        $clientId = $this->getOauthClientIdFromSource();
+
         // Specify the CLIENT_ID of the app that accesses the backend
-        $client = new Google_Client([Constants::CLIENT_ID => $this->getMerchantOauthClientId()]);
+        $client = new Google_Client([Constants::CLIENT_ID => $clientId]);
 
         $idToken = $input[Constants::ID_TOKEN];
 
@@ -101,5 +128,20 @@ class OauthHelper
     protected function getMerchantOauthClientId()
     {
         return config(Constants::OAUTH_MERCHANT_OAUTH_CLIENT_ID);
+    }
+
+    protected function getMerchantOauthClientIdEpos()
+    {
+        return config(Constants::OAUTH_MERCHANT_OAUTH_CLIENT_ID_EPOS);
+    }
+
+    protected function getMerchantOauthClientIdAndroid()
+    {
+        return config(Constants::OAUTH_MERCHANT_OAUTH_CLIENT_ID_ANDROID);
+    }
+
+    protected function getMerchantOauthClientIdIos()
+    {
+        return config(Constants::OAUTH_MERCHANT_OAUTH_CLIENT_ID_IOS);
     }
 }
