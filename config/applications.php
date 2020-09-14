@@ -254,6 +254,10 @@ return [
         'secret' => env('LOC_PASSWORD'),
     ],
 
+    'capital_cards_client' => [
+        'secret' => env('CAPITAL_CARDS_PASSWORD'),
+    ],
+
     'leegality' => [
         'secret' => env('LEEGALITY_WEBHOOK_SECRET')
     ],
@@ -479,6 +483,13 @@ return [
         'username'      => 'key',
         'secret'        => env('APP_LINE_OF_CREDIT_SECRET'),
         'timeout'       => env('APP_LINE_OF_CREDIT_TIMEOUT', 60),
+    ],
+
+    'capital_cards' => [
+        'url'           => env('APP_CAPITAL_CARDS_URL'),
+        'username'      => 'api',
+        'secret'        => env('APP_CAPITAL_CARDS_SECRET', 'api'),
+        'timeout'       => env('APP_CAPITAL_CARDS_TIMEOUT', 60),
     ],
 
     'offline_verification' => [

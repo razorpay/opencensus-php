@@ -337,6 +337,9 @@ class Name
     // Permission to access capital-los service
     const LOANS_EDIT                          = 'loans_edit';
 
+    // Permission to access capital-cards service
+    const CAPITAL_CARDS                       = 'capital_cards';
+
     const LOC                                 = 'loc';
     const LOC_CONFIG_EDIT                     = 'loc_config_edit';
     const LOC_CONFIG_VIEW                     = 'loc_config_view';

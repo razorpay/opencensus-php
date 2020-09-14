@@ -733,6 +733,8 @@ class Route
         'loc_service'                              => ['post',     'loc/service/{path?}',                            'LOCController@handleProxyRequests'                                 ],
         'loc_service_admin'                        => ['post',     'loc/admin/{path?}',                              'LOCController@handleAdminRequests'                                 ],
         'loc_mail'                                 => ['post',     'loc/mail',                                       'LOCController@sendMail'                                            ],
+        'capital_cards_service'                    => ['any',      'capital_cards/service/{path?}',                  'CapitalCardsController@handleProxyRequests'                        ],
+        'capital_cards_admin'                      => ['any',      'capital_cards/admin/{path?}',                    'CapitalCardsController@handleAdminRequests'                        ],
         'loc_bulk_withdrawal_update'               => ['post',     'loc/withdrawals/bulk/update',                    'LOCController@postLocBulkWithdrawalUpdate'                         ],
         'leegality_webhook'                        => ['post',     'leegality/webhook',                              'LOSController@handleLeegalityWebhook'                              ],
         'reminder_admin'                           => ['any',      'reminders/admin/{path?}',                        'RemindersController@remindersAdmin'                                ],
@@ -2696,6 +2698,7 @@ class Route
         'settlement_ondemand_create_dashboard',
         'settlement_ondemand_fees_dashboard',
         'loc_service',
+        'capital_cards_service',
         'merchant_verify_attributes',
         'feature_get_status',
         'feature_get_all',
@@ -3071,6 +3074,7 @@ class Route
         'paper_nach_fetch_failure',
         'paper_nach_approve_failure',
         'loc_service_admin',
+        'capital_cards_admin',
         'payout_reject_admin_bulk',
         'emi_plans_migrate',
         'los_service_admin',
@@ -3733,6 +3737,7 @@ class Route
     ];
 
     public static $routePermission = [
+        'capital_cards_service'                    => '*',
         'setl_ondemand_pricing'                    => '*',
         'setl_ondemand_fund_accounts'              => '*',
         'd2c_bureau_report_delete'                 => '*',
@@ -3745,6 +3750,7 @@ class Route
         'pincode_get'                              => '*',
         'cities_get'                               => '*',
         'loc_service_admin'                        => Permission::LOC,
+        'capital_cards_admin'                      => Permission::CAPITAL_CARDS,
         'ufh_admin_upload_file'                    => '*',
         'los_service_admin'                        => Permission::LOANS_EDIT,
         'offline_verification_service_get'         => Permission::OFFLINE_VERIFICATION_SERVICE_VIEW,
@@ -4494,6 +4500,8 @@ class Route
     ];
 
     public static $bankingRoutePermissions = [
+        'capital_cards_service'                        => '*',
+        'capital_cards_admin'                          => '*',
         // common routes between banking and admin dashboard
         'merchant_balance_fetch'                       => Permission::VIEW_MERCHANT_BALANCE,
         'merchant_balance_fetch_admin'                 => Permission::VIEW_MERCHANT_BALANCE,
@@ -5142,6 +5150,10 @@ class Route
             'los_d2c_bureau_report_fetch',
         ],
 
+        'capital_cards_client' => [
+            'user_fetch',
+        ],
+
         'loc'  => [
             'loc_mail',
         ],
@@ -5364,6 +5376,7 @@ class Route
      * A route can belong to multiple features, mapped here
      */
     public static $routeNameToFeaturesMap = [
+        'capital_cards_service'                => [Feature::CAPITAL_CARDS],
         'loc_service'                          => [Feature::WITHDRAW_LOC],
         'los_service'                          => [Feature::LOAN],
         'feature_dummy'                        => [Feature::DUMMY],

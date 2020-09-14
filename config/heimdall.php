@@ -918,6 +918,11 @@ return [
                 'assignable'  => true,
             ],
 
+            Permission::CAPITAL_CARDS => [
+                'description' => 'Allow access to capital-cards service from dashboard',
+                'assignable'  => true,
+            ],
+
             Permission::LOC => [
                 'description' => 'Allow access to capital-loc service from dashboard',
                 'assignable'  => true,

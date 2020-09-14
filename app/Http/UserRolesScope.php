@@ -192,6 +192,7 @@ class UserRolesScope
             'update_partner_type'         => [Role::OWNER],
 
             'loc_service'                 => [Role::OWNER, Role::ADMIN],
+            'capital_cards_service'       => [Role::OWNER, Role::ADMIN],
 
             // Reporting
             'reporting_config_get'        => array_merge(Role::ALL_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR], BankingRole::getAllRoles()),

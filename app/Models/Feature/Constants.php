@@ -320,6 +320,11 @@ class Constants
     const WITHDRAW_LOC = 'withdraw_loc';
 
     /**
+     * Gives access to loc service
+     */
+    const CAPITAL_CARDS = 'capital_cards';
+
+    /**
      * Gives access to apply for line of credit service
      */
     const LOC_STAGE_1 = 'loc_stage_1';
@@ -669,6 +674,7 @@ class Constants
         self::USE_SETTLEMENT_ONDEMAND         => true,
         self::IVR_DISABLE                     => true,
         self::WITHDRAW_LOC                    => true,
+        self::CAPITAL_CARDS                   => true,
         self::LOC_STAGE_1                     => true,
         self::LOC_STAGE_2                     => true,
         self::NPS_SURVEY_PAYMENT_PAGES        => true,
@@ -785,6 +791,11 @@ class Constants
         self::LOC_STAGE_2               => [
             'feature'       => self::LOC_STAGE_2,
             'display_name'  => 'Line of credit Stage 2',
+            'documentation' => '',
+        ],
+        self::CAPITAL_CARDS              => [
+            'feature'       => self::CAPITAL_CARDS,
+            'display_name'  => 'Capital Cards',
             'documentation' => '',
         ],
         self::PL_FIRST_MIN_AMOUNT       => [
