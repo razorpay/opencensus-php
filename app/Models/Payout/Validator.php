@@ -58,6 +58,8 @@ class Validator extends Base\Validator
 
     const ACCEPTED_ORIGIN_VALUES = 'accepted_origin_values';
 
+    const VALIDATE_PAYOUT_PURPOSE = 'validate_payout_purpose';
+
     //
     // This is required for build. Currently, build does not
     // accept ruleName as a parameter. Hence, this list needs
@@ -243,6 +245,10 @@ class Validator extends Base\Validator
 
     protected static $skipWorkflowValidators = [
         'skip_workflow'
+    ];
+
+    protected static $validatePayoutPurposeRules = [
+        Entity::PURPOSE         => 'required|string',
     ];
 
     protected function validateMethod($attribute, $method)

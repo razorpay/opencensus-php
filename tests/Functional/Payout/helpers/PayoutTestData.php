@@ -7682,4 +7682,40 @@ return [
             ],
         ],
     ],
+
+    'testPayoutValidatePurposeForValidPurpose' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'url'     => '/payouts/purpose/validate',
+            'content' => [
+                'purpose'  => 'refund',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'is_valid_purpose' => true,
+            ],
+        ],
+    ],
+
+    'testPayoutValidatePurposeForInvalidPurpose' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'url'     => '/payouts/purpose/validate',
+            'content' => [
+                'purpose'  => 'testing-purpose',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'is_valid_purpose' => false,
+            ],
+        ],
+    ],
 ];

@@ -6957,6 +6957,20 @@ class PayoutTest extends TestCase
         $this->assertEquals('Invalid Beneficiary details', $payout->getFailureReason());
     }
 
+    public function testPayoutValidatePurposeForValidPurpose()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->startTest();
+    }
+
+    public function testPayoutValidatePurposeForInvalidPurpose()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->startTest();
+    }
+
     public function testCreatePayoutWithDelayedSourceUpdater()
     {
         Queue::fake();

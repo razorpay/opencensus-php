@@ -1051,7 +1051,7 @@ class Route
         'payout_fetch_multiple_internal'           => ['get',      'payouts_internal',                               'PayoutController@getPayouts'                                       ],
         'payout_retry'                             => ['post',     'payouts/{id}/retry',                             'PayoutController@postPayoutRetry'                                  ],
         'payout_purpose_get'                       => ['get',      'payouts/purposes',                               'PayoutController@getPurposes'                                      ],
-        'payout_purpose_get_internal'              => ['get',      'payouts/purposes_internal',                      'PayoutController@getPurposes'                                      ],
+        'payout_purpose_validate_internal'         => ['post',     'payouts/purpose/validate',                       'PayoutController@validatePurpose'                                  ],
         'payout_purpose_post'                      => ['post',     'payouts/purposes',                               'PayoutController@postPurpose'                                      ],
         'payout_fetch_reversals'                   => ['get',      'payouts/{id}/reversals',                         'PayoutController@getPayoutReversal'                                ],
         'payouts_process_queued_new'               => ['post',     'payouts/queued/process/new',                     'PayoutController@processInitiateForQueuedPayouts'                  ],
@@ -2557,7 +2557,7 @@ class Route
         'payout_create_internal',
         'payout_fetch_multiple_internal',
         'payout_links_send_email',
-        'payout_purpose_get_internal',
+        'payout_purpose_validate_internal',
         'commissions_invoice_generate',
         'banking_account_gateway_balance_fetch',
         'fee_recovery_payout_process',
@@ -4919,7 +4919,7 @@ class Route
             'merchant_fetch_internal',
             'payout_links_send_email',
             'user_fetch',
-            'payout_purpose_get_internal'
+            'payout_purpose_validate_internal'
         ],
 
         'express' => [

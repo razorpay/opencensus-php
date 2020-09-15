@@ -42,6 +42,8 @@ class Service extends Base\Service
      */
     protected $contactCore;
 
+    protected const IS_VALID_PURPOSE = "is_valid_purpose";
+
     public function __construct()
     {
         parent::__construct();
@@ -376,6 +378,32 @@ class Service extends Base\Service
     public function getPurposes(): array
     {
         return (new Purpose)->getAll($this->merchant);
+    }
+
+    public function validatePurpose(array $input): array
+    {
+        try
+        {
+            (new Validator)->validateInput(Validator::VALIDATE_PAYOUT_PURPOSE, $input);
+
+            $this->trace->info(TraceCode::PAYOUT_PURPOSE_VALIDATE_REQUEST, [
+                Entity::PURPOSE         => $input[Entity::PURPOSE],
+                Entity::MERCHANT_ID     => $this->merchant->getPublicId()
+            ]);
+
+            (new Purpose())->validatePurpose($this->merchant, $input[Entity::PURPOSE]);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYOUT_PURPOSE_VALIDATE_EXCPETION, [
+                Entity::PURPOSE         => $input[Entity::PURPOSE],
+                Entity::MERCHANT_ID     => $this->merchant->getPublicId()
+            ]);
+
+            return array(self::IS_VALID_PURPOSE => false);
+        }
+
+        return array(self::IS_VALID_PURPOSE => true);
     }
 
     public function postPurpose(array $input): array
