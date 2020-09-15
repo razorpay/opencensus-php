@@ -1175,7 +1175,7 @@ class Service extends Base\Service
 
         $this->addInputTrace($input);
 
-        $payments = $this->repo->payment->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE);
+        $payments = $this->repo->payment->fetch($input, $merchantId, ConnectionType::SLAVE);
 
         return $payments->toArrayPublic();
     }
