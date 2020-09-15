@@ -162,6 +162,22 @@ final class Constants
 
     const IS_BATCH                       = 'is_batch';
 
+    const BANK_STATUS_CODE               = 'bank_status_code';
+
+    const GATEWAY_ERROR_CODE             = 'gateway_error_code';
+
+    const REMARKS                        = 'remarks';
+
+    const UTR                            = 'utr';
+
+    const RETURN_UTR                     = 'return_utr';
+
+    const FAILURE_REASON                 = 'failure_reason';
+
+    const SOURCE_ACCOUNT_ID              = 'source_account_id';
+
+
+
     public static function getProducts(): array
     {
         return [

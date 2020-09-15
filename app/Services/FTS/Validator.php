@@ -25,7 +25,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $fetchTransferStatusRules = [
-      'fta_ids'   => 'required|array|min:1,max:100',
-      'fta_ids.*' => 'required|string|filled|size:14'
+      'source_ids'   => 'required|array|min:1,max:100',
+      'source_ids.*' => 'required|string|filled|size:14'
     ];
 }

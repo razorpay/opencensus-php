@@ -18,10 +18,10 @@ class FundTransfer extends BaseFundTransfer
     public function requestFundTransfer(): array
     {
         $mockResponse = [
-            Constants::STATUS           => Constants::STATUS_CREATED,
-            Constants::MESSAGE          => 'fund transfer sent to fts.',
-            Constants::FUND_TRANSFER_ID => random_integer(2),
-            Constants::FUND_ACCOUNT_ID  => random_integer(2),
+          Constants::STATUS           => Constants::STATUS_CREATED,
+          Constants::MESSAGE          => 'fund transfer sent to fts.',
+          Constants::FUND_TRANSFER_ID => random_integer(2),
+          Constants::FUND_ACCOUNT_ID  => random_integer(2),
         ];
 
         $this->FTACore = new FundTransferAttempt\Core;
@@ -58,12 +58,29 @@ class FundTransfer extends BaseFundTransfer
     public function createAndSendRequest(
       string $endpoint, string $method, array $data = []): array
     {
-        $mockResponse = [
-          Constants::STATUS           => strtoupper(Constants::STATUS_CREATED),
-          Constants::FUND_TRANSFER_ID => random_integer(2),
-          Constants::FUND_ACCOUNT_ID  => random_integer(2),
-        ];
+        $mockResponse = [];
 
+        if ($endpoint === BaseFundTransfer::FUND_TRANSFER_ATTEMPTS_STATUS_FETCH)
+        {
+            $mockResponse += [
+              'transfers' => [
+                '0' => [
+                  Constants::STATUS           => strtoupper(Constants::STATUS_FAILED),
+                  Constants::FUND_TRANSFER_ID => random_integer(2),
+                  Constants::FUND_ACCOUNT_ID  => random_integer(2),
+                  Constants::SOURCE_ID        => 'FbOISsUCxyxpmN',
+                ]
+              ]
+            ];
+        }
+        else
+        {
+            $mockResponse += [
+              Constants::STATUS           => strtoupper(Constants::STATUS_CREATED),
+              Constants::FUND_TRANSFER_ID => random_integer(2),
+              Constants::FUND_ACCOUNT_ID  => random_integer(2),
+            ];
+        }
         return [
           'body' => $mockResponse,
           'code' => 201,

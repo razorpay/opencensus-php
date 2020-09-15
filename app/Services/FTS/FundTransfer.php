@@ -2,6 +2,7 @@
 
 namespace RZP\Services\FTS;
 
+use App;
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
@@ -25,10 +26,15 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Holidays as TransferHoliday;
 use RZP\Models\Settlement\Holidays as SettlementHoliday;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
+use RZP\Models\Payout as Payout;
 
 class FundTransfer extends Base
 {
     protected $FTACore;
+
+    protected $payout;
+
+    protected $app;
 
     /**
      * @var FundTransferAttempt\Entity
@@ -155,6 +161,10 @@ class FundTransfer extends Base
         parent::__construct($app);
 
         $this->FTACore = new FundTransferAttempt\Core;
+
+        $this->payout  = new Payout\Core;
+
+        $this->app     = $app;
     }
 
     /**
@@ -1033,18 +1043,23 @@ class FundTransfer extends Base
 
         try
         {
-            $attempts = $this->FTACore->getAttemptsFromIds($input['fta_ids']);
+            $payouts = $this->repo->payout->findMany($input['source_ids']);
 
-            $ftsTransferIds = $this->getFtsTransferIdFromAttempts($attempts);
+            $ids = implode(",",$input['source_ids']);
 
-            $response  = $this->createAndSendRequest(
-                parent::FUND_TRANSFER_ATTEMPTS_STATUS_FETCH,
-                Requests::GET,
-                [ 'id' => $ftsTransferIds ])['body']['transfers'];
+            $request = [
+              'source_id'   => $ids,
+              'source_type' => 'payout',
+            ];
+
+            $response  = $this->app['fts_fund_transfer']->createAndSendRequest(
+              parent::FUND_TRANSFER_ATTEMPTS_STATUS_FETCH,
+              Requests::GET,
+              $request)['body']['transfers'];
 
             $data = $this->extractFtsResponse($response);
 
-            return $this->combineStatusForApiAndFTS($attempts, $data);
+            return $this->combineStatusForApiAndFTS($payouts, $data);
 
         }
         catch (\Throwable $ex)
@@ -1082,40 +1097,47 @@ class FundTransfer extends Base
         foreach ($response as $val)
         {
 
-          $result[$val['id']] = $val['status'];
+          $result[$val['source_id']] = $val;
         }
 
         return $result;
     }
 
-    protected function combineStatusForApiAndFTS(PublicCollection $attempts, array $response)
+    protected function combineStatusForApiAndFTS(PublicCollection $source, array $response)
     {
         $responseData = [];
 
-        $ftsFetchedIds = array_keys($response);
-
-        foreach ($attempts as $attempt)
+        foreach ($source as $entity)
         {
-            $ftsTransferId = $attempt->getFtsTransferId();
+            $responseData = $response[$entity->getId()];
 
-            $ftsTransferStatus = '';
-
-            $source = $attempt->source;
-
-            if (array_key_exists($ftsTransferId, $ftsFetchedIds) === true)
-            {
-                $ftsTransferStatus = $response[ $ftsTransferId ];
-            }
-
-            $responseData[$attempt->getId()] = [
-                'fta_status'          => $attempt->getStatus(),
-                'source_id'           => $attempt->getSourceId(),
-                'source_type'         => $attempt->getSourceType(),
-                'source_status'       => $source->getStatus(),
-                'gateway_ref_no'      => $attempt->getGatewayRefNo(),
-                'fts_transfer_id'     => $ftsTransferId,
-                'fts_transfer_status' => $ftsTransferStatus,
-            ];
+            $responseData[$entity->getId()] = [
+                'source_id'           => $entity->getId(),
+                'source_status'       => $entity->getStatus(),
+                'payout_remarks'      => $entity->getRemarks(),
+                'fund_account_ID'     => $entity->getFundAccountId(),
+                'merchant_ID'         => $entity->getMerchantId(),
+                'method'              => $entity->getMethod(),
+                'purpose'             => $entity->getPurpose(),
+                'purpose_type'        => $entity->getPurposeType(),
+                'amount'              => $entity->getAmount(),
+                'status'              => $entity->getStatus(),
+                'channel'             => $entity->getChannel(),
+                'utr'                 => $entity->getUtr(),
+                'return_utr'          => $entity->getReturnUtr(),
+                'failure_reason'      => $entity->getFailureReason(),
+                'fts_status'          => $responseData[Constants::STATUS],
+                'fts_transfer_id'     => $responseData[Constants::FUND_TRANSFER_ID],
+                'bank_status_code'    => $responseData[Constants::BANK_STATUS_CODE],
+                'fts_channel'         => $responseData[Constants::CHANNEL],
+                'fts_fund_account_ID' => $responseData[Constants::FUND_ACCOUNT_ID],
+                'source_account_ID'   => $responseData[Constants::SOURCE_ACCOUNT_ID],
+                'gateway_error_code'  => $responseData[Constants::GATEWAY_ERROR_CODE],
+                'fts_utr'             => $responseData[Constants::UTR],
+                'fts_return_utr'      => $responseData[Constants::RETURN_UTR],
+                'fts_failure_reason'  => $responseData[Constants::FAILURE_REASON],
+                'fts_remarks'         => $responseData[Constants::REMARKS],
+             ];
         }
 
         return $responseData;
