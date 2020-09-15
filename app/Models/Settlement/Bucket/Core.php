@@ -420,23 +420,20 @@ class Core extends Base\Core
      */
     public function shouldProcessViaNewService(string $merchantId)
     {
-        $variant = $this->app->razorx->getTreatment($merchantId,
-            ME\RazorxTreatment::SETTLEMENT_SERVICE_RAMP,
-            $this->mode);
+        $result = $this->repo->feature->getMerchantIdsHavingFeature(
+            Feature\Constants::NEW_SETTLEMENT_SERVICE,
+            [
+                $merchantId
+            ]);
 
-        $result = (strtolower($variant) === 'on');
+        $this->trace->info(
+            TraceCode::SETTLEMENT_SERVICE_RAMP,
+            [
+                'merchantId' => $merchantId,
+                'status'     => (empty($result) === false),
+            ]);
 
-        if ($result === true)
-        {
-            $this->trace->info(
-                TraceCode::MERCHANT_ADDED_TO_BUCKET_SKIPPED,
-                [
-                    'merchantId' => $merchantId,
-                    'reason' => 'transaction will be settled via new service',
-                ]);
-        }
-
-        return $result;
+        return (empty($result) === false);
     }
 
     public function migrateSettlableTransactions(string $merchantId, array $opt)

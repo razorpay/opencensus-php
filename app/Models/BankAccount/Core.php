@@ -14,6 +14,7 @@ use RZP\Traits\TrimSpace;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Document;
+use RZP\Models\Settlement\Bucket;
 use RZP\Models\Merchant\Document\FileHandler;
 use RZP\Models\Settlement\OndemandFundAccount;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -524,11 +525,7 @@ class Core extends Base\Core
 
     public function settlementServiceRamp(string $merchantId)
     {
-        $variant = $this->app->razorx->getTreatment($merchantId,
-            Merchant\RazorxTreatment::SETTLEMENT_SERVICE_RAMP,
-            $this->mode);
-
-        return (strtolower($variant) === 'on');
+        return (new Bucket\Core)->shouldProcessViaNewService($merchantId);
     }
 
     public function MigrateBankAccountsToSettlementService($merchantId, $mode)

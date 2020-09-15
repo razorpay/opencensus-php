@@ -107,9 +107,6 @@ final class RazorxTreatment
 
     const RAZORPAY_X_ENABLE_YESBANK_PAYOUTS = 'razorpay_x_enable_yesbank_payouts';
 
-    // This is to enable the settlements to go via new settlement service
-    const SETTLEMENT_SERVICE_RAMP = 'settlement_service_ramp';
-
     // allow pre_signup data to send to salesforce
     const PRE_SIGNUP_DETAILS_TO_SALESFORCE = 'pre_signup_details_to_salesforce';
 

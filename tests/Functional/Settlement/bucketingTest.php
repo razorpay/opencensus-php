@@ -39,7 +39,7 @@ class BucketingTest extends TestCase
 
         $this->ba->appAuth();
 
-        $this->mockRazorXForSettlementRamp(false);
+        $this->mockSettlementServiceRamp(false);
 
         $request = [
             'url'     => '/nodal/transfer',
@@ -70,7 +70,7 @@ class BucketingTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $this->mockRazorXForSettlementRamp(false);
+        $this->mockSettlementServiceRamp(false);
 
         $request = [
             'url'     => '/merchants/10000000000000/action',
@@ -103,7 +103,7 @@ class BucketingTest extends TestCase
     {
         $this->setTestTime();
 
-        $this->mockRazorXForSettlementRamp(false);
+        $this->mockSettlementServiceRamp(false);
 
         $this->createPaymentAndAssert(10000000000000, 1569195000, 1569195000);
     }
@@ -112,7 +112,7 @@ class BucketingTest extends TestCase
     {
         $this->setTestTime();
 
-        $this->mockRazorXForSettlementRamp(true);
+        $this->mockSettlementServiceRamp(true);
 
         $this->createPayment(10000000000000, true);
 
@@ -129,7 +129,7 @@ class BucketingTest extends TestCase
 
         $this->initializeEarlySettlementMerchant('10000000000000');
 
-        $this->mockRazorXForSettlementRamp(false);
+        $this->mockSettlementServiceRamp(false);
 
         $this->createPaymentAndAssert(10000000000000, 1568863800, 1568863800);
     }
@@ -142,7 +142,7 @@ class BucketingTest extends TestCase
 
         $this->initializeEarlySettlementMerchant('10000000000000');
 
-        $this->mockRazorXForSettlementRamp(false);
+        $this->mockSettlementServiceRamp(false);
 
         $this->createPaymentAndAssert(10000000000000, 1568896200, 1568950200);
     }
@@ -155,7 +155,7 @@ class BucketingTest extends TestCase
 
         $this->initializeEarlySettlementMerchant('10000000000000');
 
-        $this->mockRazorXForSettlementRamp(false);
+        $this->mockSettlementServiceRamp(false);
 
         $this->createPaymentAndAssert(10000000000000, 1568871000, 1568892600);
     }
@@ -168,7 +168,7 @@ class BucketingTest extends TestCase
 
         $this->initializeEarlySettlementMerchant('10000000000000', true);
 
-        $this->mockRazorXForSettlementRamp(false);
+        $this->mockSettlementServiceRamp(false);
 
         $this->createPaymentAndAssert(10000000000000, 1568881800, 1568885400);
     }
@@ -181,7 +181,7 @@ class BucketingTest extends TestCase
 
         $this->initializeMutualFundMerchants(Preferences::MID_PAISABAZAAR, 10000000000000);
 
-        $this->mockRazorXForSettlementRamp(false);
+        $this->mockSettlementServiceRamp(false);
 
         $this->createPaymentAndAssert(10000000000000, 1568871000, 1568878200);
 
@@ -201,7 +201,7 @@ class BucketingTest extends TestCase
 
         $this->initializeMutualFundMerchants(Preferences::MID_WEALTHAPP, 10000000000000);
 
-        $this->mockRazorXForSettlementRamp(false);
+        $this->mockSettlementServiceRamp(false);
 
         $this->createPaymentAndAssert(10000000000000, 1568871000, 1568878200);
 
@@ -228,7 +228,7 @@ class BucketingTest extends TestCase
 
         $this->initializeMutualFundMerchants(Preferences::MID_KARVY, 10000000000000);
 
-        $this->mockRazorXForSettlementRamp(false);
+        $this->mockSettlementServiceRamp(false);
 
         $this->createPaymentAndAssert(10000000000000, 1568871000, 1568878200);
 
@@ -259,7 +259,7 @@ class BucketingTest extends TestCase
 
         $this->initializeMutualFundMerchants(Preferences::MID_WEALTHY, 10000000000000);
 
-        $this->mockRazorXForSettlementRamp(false);
+        $this->mockSettlementServiceRamp(false);
 
         $this->createPaymentAndAssert(10000000000000, 1569043800, 1569209400);
     }
@@ -401,18 +401,14 @@ class BucketingTest extends TestCase
         Carbon::setTestNow($timestamp);
     }
 
-    protected function mockRazorXForSettlementRamp(bool $status)
+    protected function mockSettlementServiceRamp(bool $status)
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $return = ($status === true) ? 'on' : 'off';
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn($return);
+        if ($status === true)
+        {
+            $this->fixtures->feature->create([
+                'entity_type' => 'merchant',
+                'entity_id' => '10000000000000',
+                'name' => Constants::NEW_SETTLEMENT_SERVICE]);
+        }
     }
 }

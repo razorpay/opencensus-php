@@ -119,6 +119,7 @@ class Constants
     const S2S_OTP_JSON                    = 's2s_otp_json';
     const ALLOW_REVERSALS_FROM_LA         = 'allow_reversals_from_la';
     const ADHOC_SETTLEMENT                = 'adhoc_settlement';
+    const NEW_SETTLEMENT_SERVICE          = 'new_settlement_service';
     const SUB_TERMINAL_OPTIMIZE           = 'sub_terminal_optimize';
     const SHOW_REFUND_PUBLIC_STATUS       = 'show_refund_public_status';
     const REFUND_PENDING_STATUS           = 'refund_pending_status';
@@ -607,6 +608,7 @@ class Constants
         self::ALLOW_REVERSALS_FROM_LA         => true,
         self::BLOCK_PL_PAY_POST_EXPIRY        => true,
         self::ADHOC_SETTLEMENT                => true,
+        self::NEW_SETTLEMENT_SERVICE          => true,
         self::SUB_TERMINAL_OPTIMIZE           => true,
         self::SHOW_REFUND_PUBLIC_STATUS       => true,
         self::REFUND_PENDING_STATUS           => true,
