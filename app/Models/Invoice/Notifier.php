@@ -921,8 +921,10 @@ class Notifier extends Base\Core
 
         $receipt = $this->invoice->getReceipt();
 
-        if ($merchant->getId() === Preferences::MID_RBL_RETAIL_ASSETS or
-            $merchant->getId() === Preferences::MID_RBL_INTERIM_PROCESS2)
+        if (($merchant->getId() === Preferences::MID_RBL_RETAIL_ASSETS) or
+            ($merchant->getId() === Preferences::MID_RBL_INTERIM_PROCESS2) or
+            ($merchant->getId() === Preferences::MID_RBL_RETAIL_CUSTOMER) or
+            ($merchant->getId() === Preferences::MID_RBL_RETAIL_PRODUCT))
         {
             $receipt = $this->invoice->getNotes()['loan_number'] ?? $receipt;
         }
@@ -976,6 +978,32 @@ class Notifier extends Base\Core
                     'invoice_link'     => $invoiceLink,
                     'rejection_reason' => $notes['rejection_reason'] ?? '',
                     'rejection_date'   => $notes['rejection_date'] ?? '',
+                ];
+
+                break;
+
+            case Preferences::MID_RBL_RETAIL_CUSTOMER:
+
+                $template = 'sms.custom_invoice.rbl_retail_customer';
+
+                $sender = 'RBLBNK';
+
+                $params   = [
+                    'receipt'          => $receipt,
+                    'invoice_link'     => $invoiceLink,
+                ];
+
+                break;
+
+            case Preferences::MID_RBL_RETAIL_PRODUCT:
+
+                $template = 'sms.custom_invoice.rbl_retail_product';
+
+                $sender = 'RBLBNK';
+
+                $params   = [
+                    'receipt'          => $receipt,
+                    'invoice_link'     => $invoiceLink,
                 ];
 
                 break;
