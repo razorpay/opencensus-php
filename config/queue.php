@@ -56,6 +56,10 @@ return [
         'test'       =>  env('AWS_SCHEDULED_PAYOUTS_PROCESS_TEST_QUEUE'),
         'live'       =>  env('AWS_SCHEDULED_PAYOUTS_PROCESS_LIVE_QUEUE'),
     ],
+    'payout_post_create_process' => [
+        'test'       =>  env('AWS_PAYOUT_POST_PROCESS_TEST_QUEUE'),
+        'live'       =>  env('AWS_PAYOUT_POST_PROCESS_LIVE_QUEUE'),
+    ],
     'es_sync' => [
         'test'       => env('AWS_ES_SYNC_QUEUE'),
         'live'       => env('AWS_ES_SYNC_QUEUE'),

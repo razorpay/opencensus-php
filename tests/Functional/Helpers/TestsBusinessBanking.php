@@ -304,7 +304,8 @@ trait TestsBusinessBanking
                                            string $webhookArrayPublicPayload = 'off',
                                            string $defaultBehaviour = 'off',
                                            string $payoutToAmexCards = 'on',
-                                           string $payoutToPrepaidCards = 'on')
+                                           string $payoutToPrepaidCards = 'on',
+                                           string $createPayoutWithoutTxn = 'off')
     {
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -322,7 +323,8 @@ trait TestsBusinessBanking
                     $webhookArrayPublicPayload,
                     $defaultBehaviour,
                     $payoutToAmexCards,
-                    $payoutToPrepaidCards
+                    $payoutToPrepaidCards,
+                    $createPayoutWithoutTxn
                 )
                 {
                     if (ends_with($feature, 'mode_payout_filter'))
@@ -348,6 +350,12 @@ trait TestsBusinessBanking
                     if ($feature === 'payout_to_prepaid_cards')
                     {
                         return strtolower($payoutToPrepaidCards);
+                    }
+
+                    if (($feature === 'queue_payout_create_request') and
+                        ($createPayoutWithoutTxn === 'on'))
+                    {
+                        return "on";
                     }
 
                     return strtolower($defaultBehaviour);

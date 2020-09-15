@@ -774,6 +774,15 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
     }
 
+    public function processPayoutPostCreate(Entity $payout)
+    {
+        $payout = $this->getProcessor('fund_account_payout')
+                        ->setMerchant($payout->merchant)
+                        ->processPayoutPostCreate($payout);
+
+        return $payout;
+    }
+
     public function processScheduledPayout(string $payoutId): Entity
     {
         return $this->mutex->acquireAndRelease(
@@ -2056,7 +2065,7 @@ class Core extends Base\Core
         return ($input[Entity::TYPE] ?? Entity::DEFAULT);
     }
 
-    protected function getProcessor(string $type): Processor\Base
+    public function getProcessor(string $type): Processor\Base
     {
         $processor = __NAMESPACE__ . '\\' . 'Processor';
 

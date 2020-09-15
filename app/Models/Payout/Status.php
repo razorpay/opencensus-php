@@ -14,18 +14,19 @@ class Status
     // FTA module to update the source status. Things will
     // get wrecked if these are removed.
     //
-    const PROCESSED         = 'processed';
-    const INITIATED         = Attempt\Status::INITIATED;
-    const REVERSED          = 'reversed';
-    const FAILED            = 'failed';
+    const PROCESSED                          = 'processed';
+    const INITIATED                          = Attempt\Status::INITIATED;
+    const REVERSED                           = 'reversed';
+    const FAILED                             = 'failed';
 
-    const CREATED           = 'created';
-    const PENDING           = 'pending';
-    const REJECTED          = 'rejected';
-    const QUEUED            = 'queued';
-    const CANCELLED         = 'cancelled';
-    const BATCH_SUBMITTED   = 'batch_submitted';
-    const SCHEDULED         = 'scheduled';
+    const CREATED                            = 'created';
+    const PENDING                            = 'pending';
+    const REJECTED                           = 'rejected';
+    const QUEUED                             = 'queued';
+    const CANCELLED                          = 'cancelled';
+    const BATCH_SUBMITTED                    = 'batch_submitted';
+    const SCHEDULED                          = 'scheduled';
+    const CREATE_REQUEST_SUBMITTED           = 'create_request_submitted';
 
     /**
      * Used only to expose publicly.
@@ -47,16 +48,17 @@ class Status
     ];
 
     public static $internalToPublicStatusMap = [
-        self::PENDING           => self::PENDING,
-        self::CREATED           => self::PROCESSING,
-        self::INITIATED         => self::PROCESSING,
-        self::PROCESSED         => self::PROCESSED,
-        self::REVERSED          => self::REVERSED,
-        self::REJECTED          => self::REJECTED,
-        self::QUEUED            => self::QUEUED,
-        self::CANCELLED         => self::CANCELLED,
-        self::FAILED            => self::FAILED,
-        self::BATCH_SUBMITTED   => self::PROCESSING
+        self::PENDING                      => self::PENDING,
+        self::CREATED                      => self::PROCESSING,
+        self::INITIATED                    => self::PROCESSING,
+        self::PROCESSED                    => self::PROCESSED,
+        self::REVERSED                     => self::REVERSED,
+        self::REJECTED                     => self::REJECTED,
+        self::QUEUED                       => self::QUEUED,
+        self::CANCELLED                    => self::CANCELLED,
+        self::FAILED                       => self::FAILED,
+        self::BATCH_SUBMITTED              => self::PROCESSING,
+        self::CREATE_REQUEST_SUBMITTED     => self::PROCESSING
     ];
 
     /**
@@ -74,6 +76,7 @@ class Status
             self::QUEUED,
             self::BATCH_SUBMITTED,
             self::SCHEDULED,
+            self::CREATE_REQUEST_SUBMITTED,
         ],
         self::QUEUED => [
             self::CREATED,
@@ -85,6 +88,7 @@ class Status
             self::CREATED,
             self::SCHEDULED,
             self::BATCH_SUBMITTED,
+            self::CREATE_REQUEST_SUBMITTED,
         ],
         self::CREATED => [
             self::INITIATED,
@@ -109,13 +113,18 @@ class Status
         ],
         self::BATCH_SUBMITTED => [
             self::CREATED,
-            self::FAILED
+            self::FAILED,
         ],
         self::SCHEDULED => [
             self::CREATED,
             self::CANCELLED,
             self::FAILED,
             self::BATCH_SUBMITTED,
+        ],
+        self::CREATE_REQUEST_SUBMITTED => [
+            self::CREATED,
+            self::FAILED,
+            self::INITIATED,
         ],
     ];
 
@@ -135,6 +144,7 @@ class Status
         self::QUEUED,
         self::CANCELLED,
         self::BATCH_SUBMITTED,
+        self::CREATE_REQUEST_SUBMITTED,
     ];
 
     /**
@@ -160,6 +170,7 @@ class Status
         self::SCHEDULED,
         self::REJECTED,
         self::FAILED,
+        self::CREATE_REQUEST_SUBMITTED,
     ];
 
     /**

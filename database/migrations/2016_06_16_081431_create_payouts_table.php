@@ -164,6 +164,9 @@ class CreatePayoutsTable extends Migration
             $table->integer(Payout::BATCH_SUBMITTED_AT)
                   ->nullable();
 
+            $table->integer(Payout::CREATE_REQUEST_SUBMITTED_AT)
+                  ->nullable();
+
             $table->integer(Payout::SCHEDULED_ON)
                   ->nullable();
 

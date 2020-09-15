@@ -49,71 +49,72 @@ class Entity extends Base\PublicEntity
     use HasBalance;
     use NotesTrait;
 
-    const ID                     = 'id';
-    const MERCHANT_ID            = 'merchant_id';
-    const CUSTOMER_ID            = 'customer_id';
-    const FUND_ACCOUNT_ID        = 'fund_account_id';
-    const METHOD                 = 'method';
-    const BALANCE_ID             = 'balance_id';
-    const DESTINATION_ID         = 'destination_id';
-    const DESTINATION_TYPE       = 'destination_type';
-    const USER_ID                = 'user_id';
-    const PURPOSE                = 'purpose';
-    const PURPOSE_TYPE           = 'purpose_type';
-    const AMOUNT                 = 'amount';
-    const CURRENCY               = 'currency';
-    const NOTES                  = 'notes';
-    const FEES                   = 'fees';
-    const TAX                    = 'tax';
-    const PAYMENT_ID             = 'payment_id';
-    const TRANSACTION_ID         = 'transaction_id';
-    const TRANSACTION_TYPE       = 'transaction_type';
-    const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
-    const STATUS                 = 'status';
-    const CHANNEL                = 'channel';
-    const ATTEMPTS               = 'attempts';
-    const UTR                    = 'utr';
-    const FAILURE_REASON         = 'failure_reason';
-    const RETURN_UTR             = 'return_utr';
-    const REMARKS                = 'remarks';
-    const PENDING_AT             = 'pending_at';
-    const PROCESSED_AT           = 'processed_at';
-    const REVERSED_AT            = 'reversed_at';
-    const FAILED_AT              = 'failed_at';
-    const REJECTED_AT            = 'rejected_at';
-    const QUEUED_AT              = 'queued_at';
-    const CANCELLED_AT           = 'cancelled_at';
-    const BATCH_SUBMITTED_AT     = 'batch_submitted_at';
-    const SETTLED_ON             = 'settled_on';
-    const TYPE                   = 'type';
-    const MODE                   = 'mode';
-    const REFERENCE_ID           = 'reference_id';
-    const NARRATION              = 'narration';
-    const FTS_TRANSFER_ID        = 'fts_transfer_id';
-    const BATCH_ID               = 'batch_id';
-    const IDEMPOTENCY_KEY        = 'idempotency_key';
-    const INITIATED_AT           = 'initiated_at';
-    const PAYOUT_LINK_ID         = 'payout_link_id';
-    const PRICING_RULE_ID        = 'pricing_rule_id';
-    const FEE_TYPE               = 'fee_type';
-    const WORKFLOW_FEATURE       = 'workflow_feature';
-    const ORIGIN                 = 'origin';
+    const ID                                    = 'id';
+    const MERCHANT_ID                           = 'merchant_id';
+    const CUSTOMER_ID                           = 'customer_id';
+    const FUND_ACCOUNT_ID                       = 'fund_account_id';
+    const METHOD                                = 'method';
+    const BALANCE_ID                            = 'balance_id';
+    const DESTINATION_ID                        = 'destination_id';
+    const DESTINATION_TYPE                      = 'destination_type';
+    const USER_ID                               = 'user_id';
+    const PURPOSE                               = 'purpose';
+    const PURPOSE_TYPE                          = 'purpose_type';
+    const AMOUNT                                = 'amount';
+    const CURRENCY                              = 'currency';
+    const NOTES                                 = 'notes';
+    const FEES                                  = 'fees';
+    const TAX                                   = 'tax';
+    const PAYMENT_ID                            = 'payment_id';
+    const TRANSACTION_ID                        = 'transaction_id';
+    const TRANSACTION_TYPE                      = 'transaction_type';
+    const BATCH_FUND_TRANSFER_ID                = 'batch_fund_transfer_id';
+    const STATUS                                = 'status';
+    const CHANNEL                               = 'channel';
+    const ATTEMPTS                              = 'attempts';
+    const UTR                                   = 'utr';
+    const FAILURE_REASON                        = 'failure_reason';
+    const RETURN_UTR                            = 'return_utr';
+    const REMARKS                               = 'remarks';
+    const PENDING_AT                            = 'pending_at';
+    const PROCESSED_AT                          = 'processed_at';
+    const REVERSED_AT                           = 'reversed_at';
+    const FAILED_AT                             = 'failed_at';
+    const REJECTED_AT                           = 'rejected_at';
+    const QUEUED_AT                             = 'queued_at';
+    const CANCELLED_AT                          = 'cancelled_at';
+    const BATCH_SUBMITTED_AT                    = 'batch_submitted_at';
+    const CREATE_REQUEST_SUBMITTED_AT           = 'create_request_submitted_at';
+    const SETTLED_ON                            = 'settled_on';
+    const TYPE                                  = 'type';
+    const MODE                                  = 'mode';
+    const REFERENCE_ID                          = 'reference_id';
+    const NARRATION                             = 'narration';
+    const FTS_TRANSFER_ID                       = 'fts_transfer_id';
+    const BATCH_ID                              = 'batch_id';
+    const IDEMPOTENCY_KEY                       = 'idempotency_key';
+    const INITIATED_AT                          = 'initiated_at';
+    const PAYOUT_LINK_ID                        = 'payout_link_id';
+    const PRICING_RULE_ID                       = 'pricing_rule_id';
+    const FEE_TYPE                              = 'fee_type';
+    const WORKFLOW_FEATURE                      = 'workflow_feature';
+    const ORIGIN                                = 'origin';
 
     // scheduled_at is the timestamp for when the merchant schedules the payout to be processed
-    const SCHEDULED_AT           = 'scheduled_at';
+    const SCHEDULED_AT                          = 'scheduled_at';
     // scheduled_on is the timestamp of when the payout changes state to scheduled
-    const SCHEDULED_ON           = 'scheduled_on';
+    const SCHEDULED_ON                          = 'scheduled_on';
     // Public attribute
-    const DESTINATION            = 'destination';
+    const DESTINATION                           = 'destination';
 
 
     // These are used while creating merchant payouts.
     // Min amount refers to the minimum amount payout has to be
     // Modulo refers to the multiples in which amount should be
     // Buffer Amount specifies the remaining merchant balance (buffer balance) after the payout
-    const MIN_AMOUNT             = 'min_amount';
-    const MODULO                 = 'modulo';
-    const BUFFER_AMOUNT          = 'buffer_amount';
+    const MIN_AMOUNT                            = 'min_amount';
+    const MODULO                                = 'modulo';
+    const BUFFER_AMOUNT                         = 'buffer_amount';
 
     // Constants for payout types
     const DEFAULT   = 'default';
@@ -280,6 +281,7 @@ class Entity extends Base\PublicEntity
         self::SCHEDULED_AT,
         self::SCHEDULED_ON,
         self::ORIGIN,
+        self::CREATE_REQUEST_SUBMITTED_AT,
     ];
 
     protected $visible = [
@@ -336,6 +338,7 @@ class Entity extends Base\PublicEntity
         self::SCHEDULED_AT,
         self::SCHEDULED_ON,
         self::ORIGIN,
+        self::CREATE_REQUEST_SUBMITTED_AT,
     ];
 
     protected $public = [
@@ -488,6 +491,7 @@ class Entity extends Base\PublicEntity
         self::BATCH_SUBMITTED_AT,
         self::SCHEDULED_AT,
         self::SCHEDULED_ON,
+        self::CREATE_REQUEST_SUBMITTED_AT,
     ];
 
     protected $appends = [
@@ -802,6 +806,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BATCH_SUBMITTED_AT);
     }
 
+    public function getCreateRequestSubmittedAt()
+    {
+        return $this->getAttribute(self::CREATE_REQUEST_SUBMITTED_AT);
+    }
+
     public function getScheduledAt()
     {
         return $this->getAttribute(self::SCHEDULED_AT);
@@ -852,6 +861,11 @@ class Entity extends Base\PublicEntity
     public function isStatusBatchSubmitted()
     {
         return ($this->getStatus() === Status::BATCH_SUBMITTED);
+    }
+
+    public function isStatusCreateRequestSubmitted()
+    {
+        return ($this->getStatus() === Status::CREATE_REQUEST_SUBMITTED);
     }
 
     public function isStatusScheduled()
@@ -1135,6 +1149,11 @@ class Entity extends Base\PublicEntity
     public function setProcessedAt($date)
     {
         $this->setAttribute(self::PROCESSED_AT, $date);
+    }
+
+    public function setCreateRequestSubmittedAt($date)
+    {
+        $this->setAttribute(self::CREATE_REQUEST_SUBMITTED_AT, $date);
     }
 
     public function setPendingAt($date)

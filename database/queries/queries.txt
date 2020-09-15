@@ -5967,6 +5967,10 @@ ALTER TABLE paper_mandates
 ALTER TABLE payouts
     ADD COLUMN origin TINYINT(1) default 1;
 
+
+ALTER TABLE payouts
+    ADD COLUMN create_request_submitted_at INT DEFAULT NULL;
+
 ALTER TABLE payments
     ADD COLUMN authenticated_at INTEGER;
 

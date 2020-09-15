@@ -175,4 +175,7 @@ final class RazorxTreatment
 
     // Timings update changes
     const ALLOWED_TRANSFER_MODES = 'allowed_transfer_modes';
+
+    // Ledger Async For payouts
+    const QUEUE_PAYOUT_CREATE_REQUEST = 'queue_payout_create_request';
 }

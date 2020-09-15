@@ -12,17 +12,18 @@ use RZP\Models\Merchant\Balance\Entity as Balance;
 final class Metric
 {
     // Counters
-    const PAYOUT_CREATED_TOTAL          = 'payout_created_total';
-    const PAYOUT_PENDING_TOTAL          = 'payout_pending_total';
-    const PAYOUT_QUEUED_TOTAL           = 'payout_queued_total';
-    const PAYOUT_FAILED_TOTAL           = 'payout_failed_total';
-    const PAYOUT_REVERSED_TOTAL         = 'payout_reversed_total';
-    const PAYOUT_PROCESSED_TOTAL        = 'payout_processed_total';
-    const PAYOUT_INITIATED_TOTAL        = 'payout_initiated_total';
-    const PAYOUT_REJECTED_TOTAL         = 'payout_rejected_total';
-    const PAYOUT_CANCELLED_TOTAL        = 'payout_cancelled_total';
-    const PAYOUT_BATCH_SUBMITTED_TOTAL  = 'payout_batch_submitted_total';
-    const PAYOUT_SCHEDULED_TOTAL        = 'payout_scheduled_total';
+    const PAYOUT_CREATED_TOTAL                         = 'payout_created_total';
+    const PAYOUT_PENDING_TOTAL                         = 'payout_pending_total';
+    const PAYOUT_QUEUED_TOTAL                          = 'payout_queued_total';
+    const PAYOUT_FAILED_TOTAL                          = 'payout_failed_total';
+    const PAYOUT_REVERSED_TOTAL                        = 'payout_reversed_total';
+    const PAYOUT_PROCESSED_TOTAL                       = 'payout_processed_total';
+    const PAYOUT_INITIATED_TOTAL                       = 'payout_initiated_total';
+    const PAYOUT_REJECTED_TOTAL                        = 'payout_rejected_total';
+    const PAYOUT_CANCELLED_TOTAL                       = 'payout_cancelled_total';
+    const PAYOUT_BATCH_SUBMITTED_TOTAL                 = 'payout_batch_submitted_total';
+    const PAYOUT_SCHEDULED_TOTAL                       = 'payout_scheduled_total';
+    const PAYOUT_CREATE_REQUEST_SUBMITTED_TOTAL        = 'payout_create_request_submitted_total';
 
     // Histograms
     const PAYOUT_QUEUED_TO_CREATED_DURATION_SECONDS             = 'payout_queued_to_created_duration_seconds.histogram';

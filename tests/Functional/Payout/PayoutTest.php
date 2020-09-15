@@ -5286,6 +5286,10 @@ class PayoutTest extends TestCase
                 {
                     return 'yesbank';
                 }
+                if($featureFlag === (RazorxTreatment::QUEUE_PAYOUT_CREATE_REQUEST))
+                {
+                    return 'off';
+                }
                 return 'on';
             });
 
@@ -5329,6 +5333,10 @@ class PayoutTest extends TestCase
                    if($featureFlag === (RazorxTreatment::IMPS_MODE_PAYOUT_FILTER))
                    {
                        return 'yesbank';
+                   }
+                   if($featureFlag === (RazorxTreatment::QUEUE_PAYOUT_CREATE_REQUEST))
+                   {
+                       return 'off';
                    }
                    return 'on';
                });
@@ -6913,6 +6921,38 @@ class PayoutTest extends TestCase
         $this->testData[__FUNCTION__] = $testData;
 
         $this->startTest();
+    }
+
+
+    public function testCreatePayoutForRequestSubmitted()
+    {
+        $this->ba->privateAuth();
+
+        $this->mockRazorxTreatment('yesbank',
+                                            'on',
+                                            'off',
+                                            'off',
+                                            'off',
+                                            'on',
+                                            'on',
+                                            'on');
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals('create_request_submitted', $payout['internal_status']);
+        $this->assertEquals('processing', $payout['status']);
+        $this->assertNotNull($payout['create_request_submitted_at']);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertNull($payoutAttempt);
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertNull($txn);
     }
 
     public function testFailPayoutWithErrorCodeAsPbankValidationError()

@@ -14,6 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
+use Razorpay\Trace\Logger;
 use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
@@ -24,8 +25,10 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\Payout\Notifications;
 use RZP\Models\Payout\CounterHelper;
 use RZP\Models\Base\Core as BaseCore;
+use RZP\Jobs\PayoutPostCreateProcess;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Workflow\PayoutAmountRules;
+use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
@@ -152,6 +155,17 @@ class Base extends BaseCore
                 $this->repo->saveOrFail($payout);
 
                 return $payout;
+            }
+
+            if ($this->shouldDelayTransactionCreationForPayout() === true)
+            {
+                    $this->dispatchForPreCreatedPayouts($payout);
+
+                    $payout->setStatus(Status::CREATE_REQUEST_SUBMITTED);
+
+                    $this->repo->saveOrFail($payout);
+
+                    return $payout;
             }
 
             $payoutType = $this->getPayoutType();
@@ -359,6 +373,107 @@ class Base extends BaseCore
             ($payout->getBalanceAccountType() === AccountType::SHARED))
         {
             (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+        }
+
+        return $payout;
+    }
+
+    public function processPayoutPostCreate(Payout\Entity $payout): Payout\Entity
+    {
+        $payout = $this->incrementCounterAndSetExpectedFeeTypeForFundAccountPayouts($payout);
+
+        $feeType = $payout->getExpectedFeeType();
+
+        try
+        {
+            $payout = $this->repo->transaction(
+                function() use ($payout)
+                {
+                    $this->fundTransferDestination = $payout->fundAccount->account;
+
+                    $payoutType = $this->getPayoutType();
+
+                    $downstreamProcessor = new DownstreamProcessor($payoutType,
+                        $payout,
+                        $this->mode,
+                        $this->fundTransferDestination);
+
+                    $downstreamProcessor->process();
+
+                    if ($payout->getStatus() === Status::CREATE_REQUEST_SUBMITTED)
+                    {
+                        $payout->setStatus(Status::CREATED);
+                    }
+
+                    $this->repo->saveOrFail($payout);
+
+                    $this->trace->info(
+                        TraceCode::PAYOUT_CREATED,
+                        [
+                            'payout_id'      => $payout->getId(),
+                            'transaction_id' => $payout->getTransactionId(),
+                            'payout_status'  => $payout->getStatus(),
+                        ]);
+
+                    return $payout;
+                });
+        }
+
+        catch (\Throwable $ex)
+        {
+            $balanceId = $payout->getBalanceId();
+
+            (new Payout\Core)->decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable($balanceId, $feeType);
+
+            $payout->setStatus(Status::FAILED);
+
+            if ($ex->getError()->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING)
+            {
+                $payout->setFailureReason('Insufficient balance to process payout');
+            }
+            else
+            {
+                $alertData = [
+                    'payout_id' => $payout->getId(),
+                ];
+
+                (new SlackNotification)->send(
+                    'Payout with intermediate state failed due to some other error than balance failure',
+                            $alertData,
+                            null,
+                            'xp_payouts_alert');
+
+                $payout->setFailureReason('Payout failed. Contact support for help');
+            }
+
+            $this->repo->saveOrFail($payout);
+
+            $this->trace->info(
+                TraceCode::PAYOUT_CREATE_SUBMITTED_PROCESS_FAILED,
+                [
+                    'payout_id'      => $payout->getId(),
+                    'payout_status'  => $payout->getStatus(),
+                ]);
+        }
+
+        // We only have to send mail/webhook if the payout fails.
+        if ($payout->getStatus() === Status::FAILED)
+        {
+            $this->app->events->fire('api.payout.failed', [$payout]);
+        }
+        else
+        {
+            $payoutType = $this->getPayoutType();
+
+            $processor = (new Payout\Core)->getProcessor($payoutType);
+
+            $processor->fireEventForPayoutStatus($payout);
+
+            if (($payout->isStatusBeforeCreate() === false) and
+                ($payout->getBalanceAccountType() === AccountType::SHARED))
+            {
+                (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+            }
         }
 
         return $payout;
@@ -1141,5 +1256,56 @@ class Base extends BaseCore
         }
 
         return $payout;
+    }
+
+    protected function shouldDelayTransactionCreationForPayout()
+    {
+        $variant = $this->app['razorx']->getTreatment(
+                                  $this->merchant->getId(),
+                                  Merchant\RazorxTreatment::QUEUE_PAYOUT_CREATE_REQUEST,
+                                  $this->app['rzp.mode'] ?? 'live');
+
+        if ($variant === 'on')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function dispatchForPreCreatedPayouts(Entity $payout)
+    {
+        try
+        {
+            PayoutPostCreateProcess::dispatch($this->mode, $payout->getId());
+
+            $this->trace->info(
+                TraceCode::PAYOUT_CREATE_SUBMITTED_REQUEST_ENQUEUED,
+                [
+                    'payout_id' => $payout->getId(),
+                ]);
+
+        }
+        catch (\Throwable $e)
+        {
+
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FAILED_TO_ENQUEUE_PAYOUT_CREATE_REQUEST
+            );
+
+            $alertData = [
+                'payout_id' => $payout->getId(),
+            ];
+
+            (new SlackNotification)->send(
+                    'Failed to enqueue payout create request',
+                    $alertData,
+                    $e,
+                    'xp_payouts_alert');
+
+            throw $e;
+        }
     }
 }
