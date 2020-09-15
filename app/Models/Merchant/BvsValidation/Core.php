@@ -90,9 +90,10 @@ class Core extends Base\Core
     /**
      * @param array $input
      *
+     * @return Entity
      * @throws \RZP\Exception\LogicException
      */
-    public function create(array $input)
+    public function create(array $input): Entity
     {
         $this->trace->info(TraceCode::BVS_CREATE_VALIDATION_PAYLOAD, $input);
 
@@ -101,6 +102,8 @@ class Core extends Base\Core
         $validation->build($input);
 
         $this->repo->bvs_validation->saveOrFail($validation);
+
+        return $validation;
     }
 
     /**
@@ -110,7 +113,7 @@ class Core extends Base\Core
      *
      * @return array
      */
-    public function getValidationObject(array $payload)
+    public function getValidationObject(array $payload): array
     {
         return [
             Entity::VALIDATION_ID     => $payload[Constants::VALIDATION_ID],

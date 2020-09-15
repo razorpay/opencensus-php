@@ -5,19 +5,19 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs;
 use RZP\Models\Base;
 use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\AutoKyc\Response;
-use RZP\Models\Merchant\BvsValidation\Entity;
 
 class Core extends Base\Core
 {
     /**
      * All BVS Artefact verification should be triggered from this function.
-     * this function triggers request to bvs and creates new entry in bvs_validation table if no error
-     *
+     * This function triggers request to bvs and creates new entry in bvs_validation table if no error.
+     * Return null if verification failed because of any reason.
      * @param string $merchantId
      * @param string $documentType
-     * @param array  $input
+     * @param array $input
+     * @return BvsValidation\Entity|null
      */
-    public function verify(string $merchantId, string $documentType, array $input)
+    public function verify(string $merchantId, string $documentType, array $input): ?BvsValidation\Entity
     {
         $input[Constant::OWNER_ID] = $merchantId;
 
@@ -29,12 +29,14 @@ class Core extends Base\Core
 
             $validationObject = $this->getValidationObject($merchantId, $input[Constant::ARTEFACT_TYPE], $response);
 
-            (new BvsValidation\Core())->create($validationObject);
+            return (new BvsValidation\Core())->create($validationObject);
         }
         catch (\Exception $ex)
         {
             $this->trace->traceException($ex);
         }
+
+        return null;
     }
 
     /**
@@ -49,10 +51,10 @@ class Core extends Base\Core
     private function getValidationObject(string $merchantID, string $artefactType, Response $response): array
     {
         $validationObject = [
-            Entity::OWNER_ID      => $merchantID,
-            Entity::OWNER_TYPE    => Constant::MERCHANT,
-            Entity::PLATFORM      => Constant::PG,
-            Entity::ARTEFACT_TYPE => $artefactType,
+            BvsValidation\Entity::OWNER_ID      => $merchantID,
+            BvsValidation\Entity::OWNER_TYPE    => Constant::MERCHANT,
+            BvsValidation\Entity::PLATFORM      => Constant::PG,
+            BvsValidation\Entity::ARTEFACT_TYPE => $artefactType,
         ];
 
         $validationObject = array_merge($validationObject, $response->getResponseData());

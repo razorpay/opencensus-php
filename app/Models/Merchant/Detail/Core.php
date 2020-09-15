@@ -2973,7 +2973,15 @@ class Core extends Base\Core
             ],
         ];
 
-        (new AutoKyc\Bvs\Core())->verify($merchantDetails->getId(), DEConstants::POA, $payload);
+        $bvsValidation = (new AutoKyc\Bvs\Core())->verify(
+            $merchantDetails->getId(),
+            DEConstants::POA,
+            $payload);
+
+        if($bvsValidation !== null)
+        {
+            $document->setValidationId($bvsValidation->getValidationId());
+        }
     }
 
     /**

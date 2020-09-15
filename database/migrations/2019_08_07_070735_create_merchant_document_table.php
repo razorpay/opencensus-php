@@ -37,6 +37,9 @@ class CreateMerchantDocumentTable extends Migration
             $table->string(Document::OCR_VERIFY, 30)
                   ->nullable();
 
+            $table->char(Document::VALIDATION_ID, Document::ID_LENGTH)
+                ->nullable();
+
             $table->integer(Document::CREATED_AT);
 
             $table->integer(Document::UPDATED_AT);

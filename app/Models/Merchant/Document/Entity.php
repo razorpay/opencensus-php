@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Document;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\FileStore;
+use RZP\Models\Merchant\BvsValidation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
@@ -17,6 +18,7 @@ class Entity extends Base\PublicEntity
     const FILE          = 'file';
     const SIGNED_URL    = 'signed_url';
     const OCR_VERIFY    = 'ocr_verify';
+    const VALIDATION_ID = 'validation_id';
 
     protected static $sign = 'doc';
 
@@ -114,5 +116,20 @@ class Entity extends Base\PublicEntity
     public function fileStore()
     {
         return $this->belongsTo(FileStore\Entity::class);
+    }
+
+    public function setValidationId(string $validationId)
+    {
+        return $this->setAttribute(self::VALIDATION_ID, $validationId);
+    }
+
+    public function getValidationId(): ?string
+    {
+        return $this->getAttribute(self::VALIDATION_ID);
+    }
+
+    public function bvsValidation()
+    {
+        return $this->belongsTo(BvsValidation\Entity::class, self::VALIDATION_ID);
     }
 }

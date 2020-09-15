@@ -107,6 +107,10 @@ class BvsValidationTest extends TestCase
         ];
 
         $this->validateBvsValidation($bvsValidation, $input);
+
+        $document = $this->getDbEntity('merchant_document', ['merchant_id' => $mid]);
+
+        $this->assertNotNull($document->getValidationId());
     }
 
     public function testUpdateBvsValidationStatusPoa()
