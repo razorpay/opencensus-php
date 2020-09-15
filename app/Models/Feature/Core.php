@@ -201,8 +201,7 @@ class Core extends Base\Core
 
         else if(($feature->getName() === Constants::ES_ON_DEMAND) and
                 (in_array(Constants::ES_AUTOMATIC, $merchant->getEnabledFeatures()) === false) and
-                ($isLiveMode === true) and
-                ($shouldSync === true))
+                ($isLiveMode === true))
         {
             $merchantEmail = $merchant->getEmail();
 
@@ -224,8 +223,7 @@ class Core extends Base\Core
                 ]);
         }
         else if (($feature->getName() === Constants::LOC_STAGE_1) and
-                 ($isLiveMode === true) and
-                 ($shouldSync === true))
+                 ($isLiveMode === true))
         {
             $merchantEmail = $merchant->getEmail();
 
