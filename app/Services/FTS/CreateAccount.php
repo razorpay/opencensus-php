@@ -581,4 +581,12 @@ class CreateAccount extends Base
     {
         return $this->account;
     }
+
+    public function initiateBulkBeneficiary(array $input)
+    {
+        return $this->createAndSendRequest(
+            parent::FUND_ACCOUNT_REGISTER_URI,
+            Requests::POST,
+            $input);
+    }
 }

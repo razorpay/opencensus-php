@@ -96,4 +96,11 @@ class FTSController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function initiateBulkBeneficiary()
+    {
+        $response = $this->app['fts_create_account']->initiateBulkBeneficiary($this->input);
+
+        return ApiResponse::json($response);
+    }
 }
