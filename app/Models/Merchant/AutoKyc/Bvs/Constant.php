@@ -33,11 +33,13 @@ class Constant
     //
     const PERSONAL_PAN = 'personal_pan';
     const AADHAAR      = 'aadhaar';
+    const VOTER_ID     = 'voter_id';
+    const PASSPORT     = 'passport';
 
     const PG       = 'pg';
     const MERCHANT = 'merchant';
 
-    const ARTEFACT_TYPE = 'aretafct_type';
+    const ARTEFACT_TYPE = 'artefact_type';
 
     const SUCCESS = 'success';
     const FAILURE = 'failure';

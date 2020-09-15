@@ -27,7 +27,7 @@ class Core extends Base\Core
 
             $response = $processor->Process();
 
-            $validationObject = $this->getValidationObject($merchantId, $documentType, $response);
+            $validationObject = $this->getValidationObject($merchantId, $input[Constant::ARTEFACT_TYPE], $response);
 
             (new BvsValidation\Core())->create($validationObject);
         }

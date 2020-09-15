@@ -17,4 +17,19 @@ return [
             ],
         ],
     ],
+
+    'testAadhaarDocumentUpload' => [
+        'request'  => [
+            'url'     => '/merchant/documents/upload',
+            'method'  => 'POST',
+            'content' => [
+                'document_type' => 'aadhar_front',
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
 ];

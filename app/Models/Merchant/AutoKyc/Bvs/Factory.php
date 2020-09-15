@@ -14,6 +14,7 @@ class Factory
      * @param array  $input
      *
      * @return Processor
+     * @throws \RZP\Exception\LogicException
      */
     public function getProcessor(string $documentType, array $input): Processor
     {
@@ -28,7 +29,7 @@ class Factory
             //
             // This config is not defined in application config , this is used in test case only
             //
-            $mockStatus = $app['config']['services.bvs.pan_authentication'] ?? Constant::SUCCESS;
+            $mockStatus = $app['config']['services.bvs.response'] ?? Constant::SUCCESS;
 
             $processorMock->setMockStatus($mockStatus);
 

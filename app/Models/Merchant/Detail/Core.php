@@ -2964,7 +2964,7 @@ class Core extends Base\Core
     public function performOcrWithBvs(Document\Entity $document, Entity $merchantDetails)
     {
         $payload = [
-            Constant::ARTEFACT_TYPE => Constant::AADHAAR,
+            Constant::ARTEFACT_TYPE => Document\Type::DOCUMENT_TYPE_ARTEFACT_TYPE_MAP[$document->getDocumentType()],
             Constant::DETAILS       => [
                 Constant::NAME => $merchantDetails->getPromoterPanName(),
             ],

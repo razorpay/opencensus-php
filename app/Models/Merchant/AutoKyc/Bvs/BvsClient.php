@@ -71,7 +71,7 @@ class BvsClient
 
         $requestSuccess = false;
 
-        $artefactType = $validation[Constant::ARTEFACT][Constant::ARTEFACT_TYPE] ?? '';
+        $artefactType = $validation[Constant::ARTEFACT][Constant::TYPE] ?? '';
 
         try
         {

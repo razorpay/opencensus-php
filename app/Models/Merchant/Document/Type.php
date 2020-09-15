@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\Document;
 
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+
 class Type
 {
     const SEBI_REGISTRATION_CERTIFICATE  = 'sebi_registration_certificate';
@@ -51,6 +53,15 @@ class Type
     const PASSPORT                       = 'passport';
     const VOTERS_ID                      = 'voters_id';
     const DRIVERS_LICENSE                = 'drivers_license';
+
+    //
+    // Artefact Type refers to BVS module Artefact types
+    //
+    const DOCUMENT_TYPE_ARTEFACT_TYPE_MAP = [
+        self::AADHAR_FRONT   => Constant::AADHAAR,
+        self::VOTER_ID_FRONT => Constant::VOTER_ID,
+        self::PASSPORT_FRONT => Constant::PASSPORT,
+    ];
 
     const VALID_DOCUMENTS = [
         self::SEBI_REGISTRATION_CERTIFICATE,
