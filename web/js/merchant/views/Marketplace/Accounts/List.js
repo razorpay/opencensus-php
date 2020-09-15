@@ -23,7 +23,7 @@ import AccountCreation from 'merchant/views/Marketplace/Accounts/New';
 import AccountDetails from 'merchant/views/Marketplace/Accounts/Details';
 
 @connect(
-  state => {
+  (state) => {
     return {
       ...state.accounts,
       user: state.session.user,
@@ -34,7 +34,7 @@ import AccountDetails from 'merchant/views/Marketplace/Accounts/Details';
     ...ModalActions,
     showNotification,
     luminateRow,
-  }
+  },
 )
 export default class AccountsListContainer extends ListContainer {
   static contextTypes = {
@@ -55,15 +55,15 @@ export default class AccountsListContainer extends ListContainer {
         action: () => {
           return this.props
             .toggleDashboardAccess(data)
-            .then(resp => {
+            .then((resp) => {
               cb(true);
 
               if (resp) {
                 this.props.showNotification({
                   type: 'success',
-                  message: `Dashboard access ${
-                    checked ? 'Enabled' : 'Disabled'
-                  } for merchant "${account.name}"`,
+                  message: `Dashboard access ${checked ? 'Enabled' : 'Disabled'} for merchant "${
+                    account.name
+                  }"`,
                 });
 
                 this.props.updateAccount({
@@ -77,11 +77,7 @@ export default class AccountsListContainer extends ListContainer {
               }
             })
             .catch(({ errors }) => {
-              if (
-                !errors ||
-                (errors instanceof Array === true &&
-                  (!errors.length || !errors[0]))
-              ) {
+              if (!errors || (errors instanceof Array === true && (!errors.length || !errors[0]))) {
                 errors = 'Some network error has occurred';
               }
 
@@ -103,10 +99,7 @@ export default class AccountsListContainer extends ListContainer {
 
   onToggleAllowRefunds = (account, cb) => {
     const checked = !account.allow_reversals,
-      { header, message, data } = validateAllowRefundsMessages(
-        account,
-        checked
-      );
+      { header, message, data } = validateAllowRefundsMessages(account, checked);
 
     return this.context
       .confirm({
@@ -118,15 +111,15 @@ export default class AccountsListContainer extends ListContainer {
         action: () => {
           return this.props
             .toggleAllowRefunds(data)
-            .then(resp => {
+            .then((resp) => {
               cb(true);
 
               if (resp) {
                 this.props.showNotification({
                   type: 'success',
-                  message: `Dashboard access ${
-                    checked ? 'Enabled' : 'Disabled'
-                  } for merchant "${account.name}"`,
+                  message: `Dashboard access ${checked ? 'Enabled' : 'Disabled'} for merchant "${
+                    account.name
+                  }"`,
                 });
 
                 this.props.updateAccount({
@@ -140,11 +133,7 @@ export default class AccountsListContainer extends ListContainer {
               }
             })
             .catch(({ errors }) => {
-              if (
-                !errors ||
-                (errors instanceof Array === true &&
-                  (!errors.length || !errors[0]))
-              ) {
+              if (!errors || (errors instanceof Array === true && (!errors.length || !errors[0]))) {
                 errors = 'Some network error has occurred';
               }
 
@@ -175,12 +164,12 @@ export default class AccountsListContainer extends ListContainer {
     this.props.fetchAccounts({ skip, count });
   };
 
-  onAccountCreation = account => {
+  onAccountCreation = (account) => {
     this.resetPagination();
     this.showAccountDetailsModal(account); // Open activation modal
   };
 
-  resetPagination = account => {
+  resetPagination = (account) => {
     // Reset pagination and fetch results of updated pagination
     const paginationSkip = 0;
     this.setState({ skip: paginationSkip });
@@ -194,21 +183,19 @@ export default class AccountsListContainer extends ListContainer {
     });
   };
 
-  showEditAccountModal = account => {
+  showEditAccountModal = (account) => {
     this.props.openModal({
       size: 'small',
-      component: (
-        <AccountCreation onSave={this.resetPagination} accountData={account} />
-      ),
+      component: <AccountCreation onSave={this.resetPagination} accountData={account} />,
     });
   };
 
-  showAccountDetailsModal = account => {
+  showAccountDetailsModal = (account) => {
     this.props.closeModal();
     this.setState({ showAccountDetailsFor: account.id });
   };
 
-  highlightRowAndClose = accountId => {
+  highlightRowAndClose = (accountId) => {
     this.props.luminateRow(accountId);
     this.setState({ showAccountDetailsFor: null });
     this.props.closeModal();
@@ -223,7 +210,7 @@ export default class AccountsListContainer extends ListContainer {
 
     return this.props
       .exportAccountsCSV()
-      .then(response => {
+      .then((response) => {
         window.location.href = response.data.url;
       })
       .catch(({ errors }) => {
@@ -236,7 +223,7 @@ export default class AccountsListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, accounts } = this.props;
+    let { loading, accounts, user } = this.props;
     let status = this.state.status;
 
     return (
@@ -245,23 +232,15 @@ export default class AccountsListContainer extends ListContainer {
           <div class="btn-toolbar pull-right">
             <TakeATourButton feature={RZPFeatures.ROUTE} />
 
-            <DocsLink
-              title="Documentation"
-              url="https://razorpay.com/docs/route/"
-            />
+            <DocsLink title="Documentation" url="https://razorpay.com/docs/route/" />
 
             <button class="btn btn-default" onClick={this.exportAccountsCSV}>
               <i class="i i-download" />
               <span>Export All (CSV)</span>
             </button>
 
-            <ShowWhen
-              additionalCondition={user => user.isAllowedEdit('accounts')}
-            >
-              <button
-                class="btn btn-primary"
-                onClick={this.showAddAccountModal}
-              >
+            <ShowWhen additionalCondition={(user) => user.isAllowedEdit('accounts')}>
+              <button class="btn btn-primary" onClick={this.showAddAccountModal}>
                 <i class="i i-plus" />
                 <span>Add Account</span>
               </button>
@@ -273,6 +252,7 @@ export default class AccountsListContainer extends ListContainer {
           form="accountsListFilter"
           count={this.state.count}
           onSubmit={this.search}
+          isRouteCodeSupportEnabled={user.isRouteCodeSupportEnabled}
         />
 
         <Alert type={status.type} message={status.message} />
@@ -282,16 +262,17 @@ export default class AccountsListContainer extends ListContainer {
           isLoading={loading}
           showEditAccountModal={this.showEditAccountModal}
           onEdit={this.showAccountDetailsModal}
+          isRouteCodeSupportEnabled={user.isRouteCodeSupportEnabled}
           onToggleDashboardAccess={
             showWhenUtil({
-              additionalCondition: user => user.isAllowedEdit('accounts'),
+              additionalCondition: (user) => user.isAllowedEdit('accounts'),
             })
               ? this.onToggleDashboardAccess
               : undefined
           }
           onToggleAllowRefunds={
             showWhenUtil({
-              additionalCondition: user => user.isAllowedEdit('accounts'),
+              additionalCondition: (user) => user.isAllowedEdit('accounts'),
             })
               ? this.onToggleAllowRefunds
               : undefined

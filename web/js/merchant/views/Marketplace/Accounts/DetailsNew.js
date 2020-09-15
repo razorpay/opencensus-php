@@ -21,7 +21,7 @@ import Amount from 'common/ui/Amount';
 import { validateDashboardAccess, validateAllowRefundsMessages } from './List';
 
 @connect(
-  state => {
+  (state) => {
     return {
       user: state.session.user,
     };
@@ -30,7 +30,7 @@ import { validateDashboardAccess, validateAllowRefundsMessages } from './List';
     showNotification,
     ...AccountActions,
     ...ModalActions,
-  }
+  },
 )
 export default class Details extends Component {
   static contextTypes = {
@@ -61,15 +61,15 @@ export default class Details extends Component {
         action: () => {
           return this.props
             .toggleDashboardAccess(data)
-            .then(resp => {
+            .then((resp) => {
               cb(true);
 
               if (resp) {
                 this.props.showNotification({
                   type: 'success',
-                  message: `Dashboard access ${
-                    checked ? 'Enabled' : 'Disabled'
-                  } for merchant "${account.name}"`,
+                  message: `Dashboard access ${checked ? 'Enabled' : 'Disabled'} for merchant "${
+                    account.name
+                  }"`,
                 });
 
                 this.setState(
@@ -84,7 +84,7 @@ export default class Details extends Component {
                       ...account,
                       ...data,
                     });
-                  }
+                  },
                 );
 
                 return resp;
@@ -93,11 +93,7 @@ export default class Details extends Component {
               }
             })
             .catch(({ errors }) => {
-              if (
-                !errors ||
-                (errors instanceof Array === true &&
-                  (!errors.length || !errors[0]))
-              ) {
+              if (!errors || (errors instanceof Array === true && (!errors.length || !errors[0]))) {
                 errors = 'Some network error has occurred';
               }
 
@@ -120,10 +116,7 @@ export default class Details extends Component {
   onToggleAllowRefunds = (isChecked, cb) => {
     const { account } = this.state,
       checked = !account.allow_reversals,
-      { header, message, data } = validateAllowRefundsMessages(
-        account,
-        checked
-      );
+      { header, message, data } = validateAllowRefundsMessages(account, checked);
 
     return this.context
       .confirm({
@@ -135,15 +128,15 @@ export default class Details extends Component {
         action: () => {
           return this.props
             .toggleAllowRefunds(data)
-            .then(resp => {
+            .then((resp) => {
               cb(true);
 
               if (resp) {
                 this.props.showNotification({
                   type: 'success',
-                  message: `Dashboard access ${
-                    checked ? 'Enabled' : 'Disabled'
-                  } for merchant "${account.name}"`,
+                  message: `Dashboard access ${checked ? 'Enabled' : 'Disabled'} for merchant "${
+                    account.name
+                  }"`,
                 });
 
                 this.setState(
@@ -158,7 +151,7 @@ export default class Details extends Component {
                       ...account,
                       ...data,
                     });
-                  }
+                  },
                 );
                 return resp;
               } else {
@@ -166,11 +159,7 @@ export default class Details extends Component {
               }
             })
             .catch(({ errors }) => {
-              if (
-                !errors ||
-                (errors instanceof Array === true &&
-                  (!errors.length || !errors[0]))
-              ) {
+              if (!errors || (errors instanceof Array === true && (!errors.length || !errors[0]))) {
                 errors = 'Some network error has occurred';
               }
 
@@ -196,13 +185,13 @@ export default class Details extends Component {
     });
 
     return fetchAccountApi(id)
-      .then(resp => {
+      .then((resp) => {
         this.setState({
           account: resp.data,
         });
         return fetchBalance(id);
       })
-      .then(resp => {
+      .then((resp) => {
         this.setState({
           account: {
             ...this.state.account,
@@ -212,7 +201,7 @@ export default class Details extends Component {
           isLoading: false,
         });
       })
-      .catch(e => {
+      .catch((e) => {
         this.setState({
           isLoading: false,
         });
@@ -229,17 +218,14 @@ export default class Details extends Component {
     }
   }
 
-  showEditAccountModal = account => _ => {
+  showEditAccountModal = (account) => (_) => {
     this.props.openModal({
       size: 'small',
-      component: (
-        <AccountCreation onSave={this.fetchData} accountData={account} />
-      ),
+      component: <AccountCreation onSave={this.fetchData} accountData={account} />,
     });
   };
 
-  showActivationForm = () =>
-    this.setState({ showActivationForm: !this.state.showActivationForm });
+  showActivationForm = () => this.setState({ showActivationForm: !this.state.showActivationForm });
 
   render() {
     const { onClose, id } = this.props,
@@ -252,7 +238,7 @@ export default class Details extends Component {
       user = getUser(),
       noLAEmail = user.merchants[user.current].email === account.email,
       isAllowToEdit = showWhenUtil({
-        additionalCondition: user => user.isAllowedEdit('accounts'),
+        additionalCondition: (user) => user.isAllowedEdit('accounts'),
       });
 
     return (
@@ -265,11 +251,7 @@ export default class Details extends Component {
           <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
               {onClose && (
-                <button
-                  type="button"
-                  class="close close-secondary"
-                  onClick={onClose}
-                >
+                <button type="button" class="close close-secondary" onClick={onClose}>
                   <i class="i i-arrow-back" />
                   <i class="i i-close" />
                 </button>
@@ -300,6 +282,11 @@ export default class Details extends Component {
                   )}
                 </EntityDetailRow>
                 <EntityDetailRow label="Name">{account.name}</EntityDetailRow>
+
+                {user.isRouteCodeSupportEnabled && (
+                  <EntityDetailRow label="Account Alias" value={account.code} />
+                )}
+
                 <EntityDetailRow label="Account Status">
                   <span
                     class={`status-label label ${
@@ -322,17 +309,11 @@ export default class Details extends Component {
                   )}
                 </EntityDetailRow>
                 <EntityDetailRow label="Refund Credits">
-                  <Amount
-                    value={account.refund_credits}
-                    currency={account.currency}
-                  />
+                  <Amount value={account.refund_credits} currency={account.currency} />
                 </EntityDetailRow>
                 {isAllowToEdit && (
                   <EntityDetailRow label="Dashboard Access">
-                    <ToggleField
-                      onEdit={this.showEditAccountModal(account)}
-                      isDisabled={noLAEmail}
-                    >
+                    <ToggleField onEdit={this.showEditAccountModal(account)} isDisabled={noLAEmail}>
                       <SwitchField
                         checked={!!account.dashboard_access}
                         onChange={this.onToggleDashboardAccess}
@@ -347,16 +328,12 @@ export default class Details extends Component {
                     label={
                       <span>
                         Allow Customer Refund
-                        <small
-                          class="help-content"
-                          style={{ paddingLeft: '4px' }}
-                        >
+                        <small class="help-content" style={{ paddingLeft: '4px' }}>
                           <i class="i i-help" />
                           <Popover align="right" theme="dark">
                             <PopoverBody>
                               <div style={{ textAlign: 'left' }}>
-                                This allows Linked account to refund to the
-                                customer for a transfer.
+                                This allows Linked account to refund to the customer for a transfer.
                               </div>
                             </PopoverBody>
                           </Popover>
@@ -364,10 +341,7 @@ export default class Details extends Component {
                       </span>
                     }
                   >
-                    <ToggleField
-                      onEdit={this.showEditAccountModal(account)}
-                      isDisabled={noLAEmail}
-                    >
+                    <ToggleField onEdit={this.showEditAccountModal(account)} isDisabled={noLAEmail}>
                       <SwitchField
                         checked={!!account.allow_reversals}
                         onChange={this.onToggleAllowRefunds}
@@ -381,30 +355,27 @@ export default class Details extends Component {
             </div>
           </div>
         )}
-        {!isLoading &&
-          showActivationForm && (
-            <ModalMask
-              maskClosable={true}
+        {!isLoading && showActivationForm && (
+          <ModalMask
+            maskClosable={true}
+            onClose={this.showActivationForm}
+            class={'Account-Activation'}
+          >
+            <ActivationForm
               onClose={this.showActivationForm}
-              class={'Account-Activation'}
-            >
-              <ActivationForm
-                onClose={this.showActivationForm}
-                accountId={id}
-                callback={() => {
-                  this.props.showNotification({
-                    type: 'success',
-                    message: 'The account has been activated',
-                  });
+              accountId={id}
+              callback={() => {
+                this.props.showNotification({
+                  type: 'success',
+                  message: 'The account has been activated',
+                });
 
-                  this.fetchData(id);
-                }}
-                defaultMsg={
-                  <HelpText msg="Complete the details to Activate this account." />
-                }
-              />
-            </ModalMask>
-          )}
+                this.fetchData(id);
+              }}
+              defaultMsg={<HelpText msg="Complete the details to Activate this account." />}
+            />
+          </ModalMask>
+        )}
       </div>
     );
   }

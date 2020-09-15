@@ -43,10 +43,9 @@ const AccountsListItem = ({
   onEdit,
   onToggleDashboardAccess,
   onToggleAllowRefunds,
+  isRouteCodeSupportEnabled,
 }) => {
-  let status = account.activation_details
-    ? account.activation_details.status
-    : account.activated;
+  let status = account.activation_details ? account.activation_details.status : account.activated;
   let timeStamp = account.activation_details
     ? account.activation_details.activated_at
     : account.activated_at;
@@ -63,10 +62,7 @@ const AccountsListItem = ({
       </td>
       <td>
         {showEditAccountModal && noLAEmail ? (
-          <button
-            class="btn btn-link no-padding"
-            onClick={() => showEditAccountModal(account)}
-          >
+          <button class="btn btn-link no-padding" onClick={() => showEditAccountModal(account)}>
             Add Email
           </button>
         ) : (
@@ -74,15 +70,14 @@ const AccountsListItem = ({
         )}
       </td>
       <td>{account.name}</td>
+      {isRouteCodeSupportEnabled && <td>{account.code || '-'}</td>}
       <td>
         <small class="help-content">
           <span>
             <span
               class={classList(
                 'ModeIndicator',
-                status == 'activated'
-                  ? 'ModeIndicator--live'
-                  : 'ModeIndicator--inactive'
+                status == 'activated' ? 'ModeIndicator--live' : 'ModeIndicator--inactive',
               )}
             />
             {status === 'activated' ? 'Activated' : 'Not Activated'}
@@ -91,8 +86,7 @@ const AccountsListItem = ({
             <PopoverBody>
               {status === 'activated' ? (
                 <div>
-                  Activated on{' '}
-                  <Time value={timeStamp} format="DD MMM YYYY, hh:mm:A" />
+                  Activated on <Time value={timeStamp} format="DD MMM YYYY, hh:mm:A" />
                 </div>
               ) : (
                 <div>
@@ -128,10 +122,7 @@ const AccountsListItem = ({
       {onToggleAllowRefunds && (
         <td style={{ textAlign: 'center' }}>
           {
-            <ToggleField
-              onEdit={() => showEditAccountModal(account)}
-              isDisabled={noLAEmail}
-            >
+            <ToggleField onEdit={() => showEditAccountModal(account)} isDisabled={noLAEmail}>
               <SwitchField
                 checked={!!account.allow_reversals}
                 onChange={onToggleAllowRefunds}
@@ -153,6 +144,7 @@ export default ({
   onEdit,
   onToggleDashboardAccess,
   onToggleAllowRefunds,
+  isRouteCodeSupportEnabled,
 }) => {
   return (
     <div class="table-responsive">
@@ -162,10 +154,9 @@ export default ({
             <th>Account Id</th>
             <th>Email</th>
             <th>Name</th>
+            {isRouteCodeSupportEnabled && <th>Alias</th>}
             <th>Account Status</th>
-            {onToggleDashboardAccess && (
-              <th style={{ textAlign: 'center' }}>Dashboard Access</th>
-            )}
+            {onToggleDashboardAccess && <th style={{ textAlign: 'center' }}>Dashboard Access</th>}
             {onToggleAllowRefunds && (
               <th style={{ textAlign: 'center' }}>
                 Allow Refunds
@@ -174,8 +165,7 @@ export default ({
                   <Popover align="right" theme="dark">
                     <PopoverBody>
                       <div style={{ textAlign: 'left' }}>
-                        This allows Linked account to refund to the customer for
-                        a transfer.
+                        This allows Linked account to refund to the customer for a transfer.
                       </div>
                     </PopoverBody>
                   </Popover>
@@ -190,10 +180,11 @@ export default ({
           rows={accounts}
           emptyTableMsg="No Accounts found!"
         >
-          {accounts.map(account => (
+          {accounts.map((account) => (
             <AccountsListItem
               key={account.id}
               account={account}
+              isRouteCodeSupportEnabled={isRouteCodeSupportEnabled}
               showEditAccountModal={showEditAccountModal}
               onEdit={() => onEdit(account)}
               onToggleDashboardAccess={

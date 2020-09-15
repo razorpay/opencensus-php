@@ -17,13 +17,28 @@ const CustomTag = ({ tag, tagIcon }) => {
 
 const AccountItem = ({ account, hideTagInfo }) => (
   <div className="rzp-account-item">
-    <b class={`account-name ${account.tag ? '' : 'tag-invisible'}`}>
-      {account.name}
-    </b>
+    <b class={`account-name ${account.tag ? '' : 'tag-invisible'}`}>{account.name}</b>
     <span class="account-id"> - {account.id}</span>
     {!hideTagInfo && <CustomTag tag={account.tag} tagIcon={account.tagIcon} />}
   </div>
 );
+
+const AccountItemDetailsPreview = ({ account, hideTagInfo }) => {
+  return (
+    <div className="rzp-account-item rzp-account-item-preview">
+      <div>
+        <b class={`account-name ${account.tag ? '' : 'tag-invisible'}`}>{account.name}</b>
+        {account.code && `( ${account.code} )`}
+        {!hideTagInfo && <CustomTag tag={account.tag} tagIcon={account.tagIcon} />}
+      </div>
+      <div class="id-email">
+        <span class="account-id">{account.id}</span>
+        <span class="dot-separator"></span>
+        <span>{account.email}</span>
+      </div>
+    </div>
+  );
+};
 
 class AccountsList extends React.Component {
   state = {
@@ -40,7 +55,7 @@ class AccountsList extends React.Component {
 
   searchInAccountList(val) {
     fetchAccountsApi(null, { q: val, search_hits: 1 })
-      .then(resp => {
+      .then((resp) => {
         let accountsList = null;
         if (resp.data && resp.data.items && resp.data.items.length) {
           accountsList = resp.data.items;
@@ -48,17 +63,14 @@ class AccountsList extends React.Component {
 
         this.setState({ accountsList });
       })
-      .catch(err => {
+      .catch((err) => {
         this.setState({ accountsList: null });
       });
   }
 
-  debounce_searchInAccountList = debounce(
-    this.searchInAccountList.bind(this),
-    50
-  );
+  debounce_searchInAccountList = debounce(this.searchInAccountList.bind(this), 50);
 
-  handleKeyDown = e => {
+  handleKeyDown = (e) => {
     const target = e.target;
 
     setTimeout(() => {
@@ -84,7 +96,7 @@ class AccountsList extends React.Component {
     return (
       <div className="custom-select rzp-accounts-list">
         <i className="i i-search custom-icon" />
-        <div className="typeAheadSkin" ref={c => (this.typeAheadSkin = c)}>
+        <div className="typeAheadSkin" ref={(c) => (this.typeAheadSkin = c)}>
           {!!selectedAccount && <AccountItem account={selectedAccount} />}
         </div>
 
@@ -92,9 +104,7 @@ class AccountsList extends React.Component {
           options={accountsList}
           disabled={!accountsList}
           placeholder={`${
-            !accountsList
-              ? 'Loading...'
-              : 'Account ID, Account Name, Email Address'
+            !accountsList ? 'Loading...' : 'Account ID, Account Name, Email Address'
           }`}
           showClear={true}
           selected={selectedAccount}
@@ -102,12 +112,10 @@ class AccountsList extends React.Component {
           searchIndices={['name', 'id', 'email']}
           optionComponent={({ option }) => (
             <div className="rzp-option-component">
-              <AccountItem account={option} />
+              <AccountItemDetailsPreview account={option} />
             </div>
           )}
-          selectedOptionComponent={({ option }) => (
-            <AccountItem account={option} />
-          )}
+          selectedOptionComponent={({ option }) => <AccountItem account={option} />}
           onClick={() => {
             this.typeAheadSkin.classList.add('hide');
           }}

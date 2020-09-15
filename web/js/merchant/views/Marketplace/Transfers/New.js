@@ -21,10 +21,7 @@ import { required } from 'common/utils/validators';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { titleCase, rupeesToPaise } from 'common/utils/rzp-utils';
 
-import {
-  fetchAccountsApi,
-  fetchAccounts,
-} from 'merchant/reducers/marketplace/accounts';
+import { fetchAccountsApi, fetchAccounts } from 'merchant/reducers/marketplace/accounts';
 import FormItem from 'merchant/components/FormItem';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
 import { createTransfer } from 'merchant/reducers/payments/details';
@@ -46,7 +43,7 @@ let Label = ({ text, htmlFor, required }) => {
 const selector = formValueSelector('createPaymentTransfer');
 
 @connect(
-  state => {
+  (state) => {
     return {
       accounts: state.accounts,
       onHold: selector(state, 'onHold'),
@@ -60,7 +57,7 @@ const selector = formValueSelector('createPaymentTransfer');
     createTransfer,
     showNotification,
     fetchAccounts,
-  }
+  },
 )
 @reduxForm({
   form: 'createPaymentTransfer',
@@ -104,7 +101,7 @@ export default class TransferNew extends Component {
     });
   }
 
-  save = props => {
+  save = (props) => {
     if (!this.state.selectedAccount) {
       return this.props.showNotification({
         type: 'error',
@@ -164,7 +161,7 @@ export default class TransferNew extends Component {
         },
       ],
     }).then(
-      data => {
+      (data) => {
         this.props.showNotification({
           type: 'success',
           message: 'Transfer created Successfully',
@@ -181,7 +178,7 @@ export default class TransferNew extends Component {
           this.props.onCreate();
         }
       },
-      ({ errors }) => this.showTransferCreationError(errors)
+      ({ errors }) => this.showTransferCreationError(errors),
     );
   };
 
@@ -200,7 +197,7 @@ export default class TransferNew extends Component {
 
   searchInAccountList(val) {
     fetchAccountsApi(null, { q: val, search_hits: 1 })
-      .then(resp => {
+      .then((resp) => {
         let accountsList = null;
         if (resp.data && resp.data.items && resp.data.items.length) {
           accountsList = resp.data.items;
@@ -208,17 +205,14 @@ export default class TransferNew extends Component {
 
         this.setState({ accountsList });
       })
-      .catch(err => {
+      .catch((err) => {
         this.setState({ accountsList: null });
       });
   }
 
-  debounce_searchInAccountList = debounce(
-    this.searchInAccountList.bind(this),
-    50
-  );
+  debounce_searchInAccountList = debounce(this.searchInAccountList.bind(this), 50);
 
-  handleKeyDown = e => {
+  handleKeyDown = (e) => {
     const target = e.target;
 
     setTimeout(() => {
@@ -242,29 +236,19 @@ export default class TransferNew extends Component {
       accountsList = this.state.accountsList || accounts.accounts;
     }
 
-    const nextWorkingDate = nextWorkingDay(
-      moment()
-        .startOf('day')
-        .toDate(),
-      3
-    );
+    const nextWorkingDate = nextWorkingDay(moment().startOf('day').toDate(), 3);
 
     return (
       <div class="content-wrapper content-sm txn-details">
         <div class="panel panel-default SliderPanel">
           <div class="panel-heading">
             {this.props.onClose && (
-              <button
-                type="button"
-                class="close close-secondary"
-                onClick={this.props.onClose}
-              >
+              <button type="button" class="close close-secondary" onClick={this.props.onClose}>
                 <i class="i i-arrow-back" />
                 <i class="i i-close" />
               </button>
             )}
-            <i class="i i-plan text-main icon--formal" />{' '}
-            <strong>Create New Transfer</strong>
+            <i class="i i-plan text-main icon--formal" /> <strong>Create New Transfer</strong>
           </div>
 
           <div class="SliderPanel__Body">
@@ -276,19 +260,14 @@ export default class TransferNew extends Component {
               <FormItem
                 label={() => <Label text="Account" required />}
                 field={() => (
-                  <div
-                    class="custom-select transfers-accounts"
-                    style={{ position: 'relative' }}
-                  >
+                  <div class="custom-select transfers-accounts" style={{ position: 'relative' }}>
                     <TypeAhead
                       options={accountsList}
                       disabled={!accountsList}
                       class="ps-in-modal"
                       searchIndices={['id', 'name', 'email']}
                       placeholder={`${
-                        !accountsList
-                          ? 'Loading...'
-                          : 'Account ID, Account Name, Email Address'
+                        !accountsList ? 'Loading...' : 'Account ID, Account Name, Email Address'
                       }`}
                       showClear={true}
                       selected={this.state.selectedAccount}
@@ -297,27 +276,20 @@ export default class TransferNew extends Component {
                         return (
                           <div class="custom-powerselect-options">
                             <div>
-                              <b>{titleCase(option.name)}</b> ({option.id})
+                              <b>{titleCase(option.name)}</b> ({option.code || option.id})
                             </div>
                             {option.email}
                           </div>
                         );
                       }}
-                      beforeOptionsComponent={() => (
-                        <div class="heading">Recent</div>
-                      )}
+                      beforeOptionsComponent={() => <div class="heading">Recent</div>}
                       onChange={this.handleSelect}
                       onKeyDown={this.handleKeyDown}
                     />
-                    <div
-                      class="typeAheadSkin"
-                      ref={c => (this.typeAheadSkin = c)}
-                    >
+                    <div class="typeAheadSkin" ref={(c) => (this.typeAheadSkin = c)}>
                       {this.state.selectedAccount ? (
                         <div>
-                          <b class="option-title">
-                            {this.state.selectedAccount.name}
-                          </b>
+                          <b class="option-title">{this.state.selectedAccount.name}</b>
                           <span> - {this.state.selectedAccount.id} </span>
                         </div>
                       ) : null}
@@ -327,8 +299,8 @@ export default class TransferNew extends Component {
               />
 
               <FormItem
-                label={_ => <Label text="Billing Amount" required />}
-                field={_ => (
+                label={(_) => <Label text="Billing Amount" required />}
+                field={(_) => (
                   <div>
                     <Field
                       name="amount"
@@ -348,20 +320,19 @@ export default class TransferNew extends Component {
               />
 
               <FormItem
-                label={_ => <Label text="Settlement schedule" />}
-                field={_ => (
+                label={(_) => <Label text="Settlement schedule" />}
+                field={(_) => (
                   <div>
                     <Field
                       component={RadioButton}
                       name="onHold"
                       htmlValue="false"
                       checked={this.props.onHold === 'false'}
-                      label={_ => (
+                      label={(_) => (
                         <div>
                           <span>Settle Now</span>
                           <div class="text-fade">
-                            This transfer will be settled in next available
-                            settlement slot.
+                            This transfer will be settled in next available settlement slot.
                           </div>
                         </div>
                       )}
@@ -371,7 +342,7 @@ export default class TransferNew extends Component {
                       name="onHold"
                       htmlValue="on_hold_until"
                       checked={this.props.onHold === 'on_hold_until'}
-                      label={_ => (
+                      label={(_) => (
                         <div>
                           <span>Schedule settlement on</span>
                         </div>
@@ -384,11 +355,8 @@ export default class TransferNew extends Component {
                         required
                         placeholder="Select Date"
                         disabled={this.props.onHold !== 'on_hold_until'}
-                        isDayBlocked={date => {
-                          date = date
-                            .clone()
-                            .startOf('day')
-                            .toDate();
+                        isDayBlocked={(date) => {
+                          date = date.clone().startOf('day').toDate();
 
                           return date < nextWorkingDate || isHoliday(date);
                         }}
@@ -399,12 +367,11 @@ export default class TransferNew extends Component {
                       name="onHold"
                       htmlValue="on_hold"
                       checked={this.props.onHold === 'on_hold'}
-                      label={_ => (
+                      label={(_) => (
                         <div>
                           <span>Put on hold</span>
                           <div class="text-fade">
-                            The settlement will be on hold till specified
-                            otherwise.
+                            The settlement will be on hold till specified otherwise.
                           </div>
                         </div>
                       )}
@@ -414,8 +381,8 @@ export default class TransferNew extends Component {
               />
 
               <FormItem
-                label={_ => <Label text="Internal Notes" />}
-                field={_ => (
+                label={(_) => <Label text="Internal Notes" />}
+                field={(_) => (
                   <FieldArray
                     name="notes"
                     component={NotesFieldArray}

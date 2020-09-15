@@ -18,7 +18,7 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 const selector = formValueSelector('newAccount');
 
 @connect(
-  state => {
+  (state) => {
     const dashboard_access = selector(state, 'dashboard_access');
     const allow_reversals = selector(state, 'allow_reversals');
     return {
@@ -32,7 +32,7 @@ const selector = formValueSelector('newAccount');
     ...ModalActions,
     ...NotificationsActions,
     fromChange: (...args) => change('newAccount', ...args),
-  }
+  },
 )
 @reduxForm({
   form: 'newAccount',
@@ -54,10 +54,7 @@ export default class AddAccount extends Component {
     const { accountData, user } = this.props;
     let email = null;
     //check whether the LA has its own email or not
-    if (
-      accountData &&
-      user.merchants[user.current].email !== accountData.email
-    ) {
+    if (accountData && user.merchants[user.current].email !== accountData.email) {
       email = accountData.email;
     }
 
@@ -65,19 +62,18 @@ export default class AddAccount extends Component {
       this.props.initialize({
         name: accountData.name,
         ...(email && { email: accountData.email }),
+        code: accountData.code,
       });
     }
   }
 
   componentDidMount() {
     this.props.tracking.trackEvent(
-      window.rzpQ
-        .routeActions()
-        .interaction('route.linked_account.add_account.started')
+      window.rzpQ.routeActions().interaction('route.linked_account.add_account.started'),
     );
   }
 
-  save = props => {
+  save = (props) => {
     const { accountData } = this.props;
     let requestData = { ...props };
     let reqFunc = accountData ? this.props.updateEmail : this.props.saveAccount;
@@ -96,17 +92,15 @@ export default class AddAccount extends Component {
     this.props.tracking.trackEvent(
       window.rzpQ.routeActions().initiated('route.linked_account.add_account', {
         source: 'merchant_dashboard',
-      })
+      }),
     );
 
     return reqFunc(requestData)
-      .then(account => {
+      .then((account) => {
         this.props.onSave(account);
         this.props.showNotification({
           type: 'success',
-          message: accountData
-            ? 'Email added successfully'
-            : 'Account created successfully',
+          message: accountData ? 'Email added successfully' : 'Account created successfully',
         });
         this.props.closeModal();
       })
@@ -117,7 +111,7 @@ export default class AddAccount extends Component {
       });
   };
 
-  confirmDashboardAccess = checked => {
+  confirmDashboardAccess = (checked) => {
     const { fromChange, allow_reversals } = this.props;
 
     fromChange('dashboard_access', checked);
@@ -129,8 +123,8 @@ export default class AddAccount extends Component {
           message: () => (
             <div class="text-semi-muted">
               <p>
-                Disabling Dashboard Access will also disable the refund to
-                customer to the Linked Account.
+                Disabling Dashboard Access will also disable the refund to customer to the Linked
+                Account.
               </p>
             </div>
           ),
@@ -142,13 +136,13 @@ export default class AddAccount extends Component {
             fromChange('allow_reversals', false);
           },
         })
-        .catch(e => {
+        .catch((e) => {
           fromChange('dashboard_access', checked);
         });
     }
   };
 
-  confirmAllowRefunds = checked => {
+  confirmAllowRefunds = (checked) => {
     const { dashboard_access, fromChange } = this.props;
 
     fromChange('allow_reversals', checked);
@@ -160,8 +154,7 @@ export default class AddAccount extends Component {
           message: () => (
             <div class="text-semi-muted">
               <p>
-                Enabling Refund to customer will also enable Dashboard access to
-                the Linked Account.
+                Enabling Refund to customer will also enable Dashboard access to the Linked Account.
               </p>
             </div>
           ),
@@ -173,7 +166,7 @@ export default class AddAccount extends Component {
             fromChange('allow_reversals', true);
           },
         })
-        .catch(e => {
+        .catch((e) => {
           fromChange('dashboard_access', false);
           fromChange('allow_reversals', false);
         });
@@ -184,24 +177,16 @@ export default class AddAccount extends Component {
     this.props.closeModal();
 
     this.props.tracking.trackEvent(
-      window.rzpQ.routeActions().dropped('route.linked_account.add_account')
+      window.rzpQ.routeActions().dropped('route.linked_account.add_account'),
     );
   };
 
   render() {
-    const {
-      handleSubmit,
-      user,
-      accountData,
-      allow_reversals,
-      dashboard_access,
-    } = this.props;
+    const { handleSubmit, user, accountData, allow_reversals, dashboard_access } = this.props;
     let noLAEmail;
 
     if (!accountData) {
-      noLAEmail =
-        !this.state.email ||
-        user.merchants[user.current].email === this.state.email;
+      noLAEmail = !this.state.email || user.merchants[user.current].email === this.state.email;
     }
 
     return (
@@ -227,8 +212,7 @@ export default class AddAccount extends Component {
                   disabled={!!accountData}
                 />
                 <small class="help-block">
-                  The business/individual name for the account, which will
-                  appear on all reports
+                  The business/individual name for the account, which will appear on all reports
                 </small>
               </div>
             </div>
@@ -241,19 +225,34 @@ export default class AddAccount extends Component {
                   component="input"
                   class="form-control"
                   value={this.state.email}
-                  onChange={e => this.setState({ email: e.target.value })}
+                  onChange={(e) => this.setState({ email: e.target.value })}
                 />
                 <small class="help-block">
-                  Your linked-account user can access their dashboard using this
-                  email id. You may Add/Edit the email later.
+                  Your linked-account user can access their dashboard using this email id. You may
+                  Add/Edit the email later.
                 </small>
               </div>
             </div>
 
+            {user.isRouteCodeSupportEnabled && (
+              <div class="form-group">
+                <label>Account Alias (Nickname)</label>
+                <div>
+                  <Field
+                    name="code"
+                    component="input"
+                    class="form-control"
+                    value={this.state.code}
+                    onChange={(e) => this.setState({ code: e.target.value })}
+                    maxLength={25}
+                  />
+                  <small class="help-block">Maximum 25 characters. Alphanumeric only</small>
+                </div>
+              </div>
+            )}
+
             {!accountData && (
-              <ShowWhen
-                additionalCondition={user => user.isAllowedEdit('accounts')}
-              >
+              <ShowWhen additionalCondition={(user) => user.isAllowedEdit('accounts')}>
                 <div class="form-group">
                   <EnableDashboardField isDisabled={noLAEmail}>
                     <div class="rzpCheckbox">
@@ -315,15 +314,11 @@ const EnableDashboardField = ({ children, isDisabled }) => {
     return (
       <small class="help-content">
         {children}
-        <Popover
-          align="top"
-          parentQuerySelector={`.accounts-edit-new`}
-          theme="dark"
-        >
+        <Popover align="top" parentQuerySelector={`.accounts-edit-new`} theme="dark">
           <PopoverBody>
             <div>
-              Please add Email id to enable dashboard access and customer
-              refunds for this linked account
+              Please add Email id to enable dashboard access and customer refunds for this linked
+              account
             </div>
           </PopoverBody>
         </Popover>

@@ -594,6 +594,10 @@ export default class User {
     return this.getExpStatus('support_call') && this.isActivated;
   }
 
+  get isRouteCodeSupportEnabled() {
+    return this.isFeatureEnabled('route_code_support');
+  }
+
   get isUPICAWEnabled() {
     return this.getExpStatus('upi_caw');
   }
