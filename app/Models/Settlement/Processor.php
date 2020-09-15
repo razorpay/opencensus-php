@@ -808,7 +808,7 @@ class Processor extends Base\Core
 
         list ($status, $_) = $this->isMerchantSettlementAllowed($merchant, $forceFlag);
 
-        if (($status === false) or ((new Bucket\Core)->shouldProcessViaNewService($merchant->getId()) === true))
+        if ($status === false)
         {
             return [
                 'settlement_count' => 0,
@@ -864,6 +864,21 @@ class Processor extends Base\Core
         MerchantModel\Entity $merchant, string $channel, string $balanceType, array $params = []): array
     {
         RuntimeManager::setMemoryLimit('4096M');
+
+        if ((new Bucket\Core)->shouldProcessViaNewService($merchant->getId()) === true)
+        {
+            $this->traceMerchantSettlementSkip(
+                $merchant,
+                [
+                    'reason' => 'settlement will process via new service',
+                ]);
+
+            return [
+                'settlement_count'  => 0,
+                'attempt_count'     => 0,
+                'txn_count'         => 0,
+            ];
+        }
 
         $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $balanceType);
 
