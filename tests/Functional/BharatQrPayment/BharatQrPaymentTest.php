@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\QrPayment;
 
 use RZP\Gateway\Upi\Icici\Fields;
+use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Hitachi\ResponseFields;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -581,6 +582,73 @@ class BharatQrPaymentTest extends TestCase
         //Check RRN capture
         $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
         $this->assertEquals($rrn, $payment['reference16']);
+    }
+
+    public function testUpiQrPaymentProcessAmountMismatch()
+    {
+        $this->testData['createVirtualAccount']['content']['amount_expected'] = 10001;
+
+        $this->qrCode = $this->createVirtualAccount();
+
+        $va = $this->getDbLastEntity('virtual_account');
+
+        $this->assertSame(10001, $va->getAmountExpected());
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        // For VPA type receiver as the shared sharp terminal is not seeded
+//        $this->fixtures->create('terminal:vpa_shared_terminal');
+        $this->fixtures->create('terminal:shared_bank_account_terminal');
+
+        $this->ba->directAuth();
+
+        $request = $this->testData['testUpiQrPaymentProcess'];
+
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId;
+
+        $content = $this->getMockServer('upi_icici')->getAsyncCallbackContentForBharatQr($request['content']);
+
+        $request['raw'] = $content;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        //Created Qr Entity As Expected
+        $bharatQr = $this->getDbLastEntity('bharat_qr');
+        // Payment is automatically captured
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals(10000, $payment['amount']);
+        $this->assertEquals($bharatQr['payment_id'], $payment['id']);
+
+        $upi = $this->getLastEntity('upi', true);
+
+        $this->assertNotNull($upi['payment_id']);
+
+        $this->assertEquals($bharatQr['expected'], false);
+
+        //Check RRN capture
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+
+        $va = $this->getDbLastEntity('virtual_account');
+        $this->assertSame('ShrdVirtualAcc', $va->getId());
+
+        $qrCode = $this->getDbLastEntity('qr_code');
+        $this->assertSame($qrCode->getId(), $payment->receiver_id);
+
+        $this->assertSame($va->getId(), $qrCode->entity_id);
     }
 
     public function testUpiQrPaymentProcessForFailedPayment()

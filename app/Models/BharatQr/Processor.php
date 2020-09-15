@@ -120,6 +120,20 @@ class Processor extends VirtualAccount\Processor
             return true;
         }
 
+        $amountExpected = $this->virtualAccount->getAmountExpected();
+
+        $amountReceived = $bharatQr->getAmount();
+
+        // If amount expected is not null or 0
+        if (empty($amountExpected) === false)
+        {
+            // If amount is not same as expected, we will refund the payment
+            if ($amountExpected !== $amountReceived)
+            {
+                return true;
+            }
+        }
+
         return parent::useSharedVirtualAccount($bharatQr);
     }
 
