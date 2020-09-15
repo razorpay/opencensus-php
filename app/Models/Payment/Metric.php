@@ -30,6 +30,13 @@ class Metric extends Base\Core
     const LABEL_TRACE_SOURCE                    = 'source';
     const LABEL_TRACE_EXCEPTION_CLASS           = 'exception_class';
 
+    const LABEL_CHECKOUT_ID                     = 'checkout_id';
+    const LABEL_BUILD                           = 'build';
+    const LABEL_LIBRARY                         = 'library';
+    const LABEL_PLATFORM                        = 'platform';
+    const LABEL_REQUEST_INDEX                   = 'request_index';
+
+
     // Metric Names
     const PAYMENT_CREATED                       = 'payment_created';
     const PAYMENT_AUTHORIZED                    = 'payment_authorized_v1';
@@ -42,6 +49,10 @@ class Metric extends Base\Core
     const SHIELD_FRAUD_DETECTION_FAILED         = 'shield_fraud_detection_failed';
 
     const PAYMENT_CREATION_AMOUNT_VALIDATION_FAILURE_COUNT = 'payment_creation_amount_validation_failure_count';
+
+    const API_CHECKOUT_PREFERENCES_REQUEST_COUNT           = 'api_checkout_preferences_request_count';
+
+    const API_CHECKOUT_SUBMIT_REQUEST_COUNT                = 'api_checkout_submit_request_count';
 
     public function pushCreateMetrics(Entity $payment)
     {
@@ -110,6 +121,34 @@ class Metric extends Base\Core
         $captureTime = ($payment->getCapturedAt() - $payment->getCreatedAt());
 
         $this->trace->histogram(self::PAYMENT_CAPTURED, $captureTime, $dimensions);
+    }
+
+    public function pushCheckoutPreferenceRequestMetrics($input, $requestTime)
+    {
+        if ((isset($input['_']) === true) and
+            ((isset($input['_']['request_index']) === true)) and
+            ($input['_']['request_index'] === "0"))
+        {
+            $dimensions = $this->getCheckoutPreferenceDimensions($input);
+
+            $this->trace->histogram(self::API_CHECKOUT_PREFERENCES_REQUEST_COUNT, $requestTime, $dimensions);
+        }
+    }
+
+    public function pushCheckoutSubmitRequestMetrics($input, $requestTime)
+    {
+        if ((isset($input['_']) === true) and
+            ((isset($input['_']['request_index']) === true)) and
+            ($input['_']['request_index'] === "0"))
+        {
+            $paymentDimensions = $this->getCheckoutSubmitDimensions($input);
+
+            $checkoutDimensions = $this->getCheckoutPreferenceDimensions($input);
+
+            $dimensions = array_merge($paymentDimensions, $checkoutDimensions);
+
+            $this->trace->histogram(self::API_CHECKOUT_SUBMIT_REQUEST_COUNT, $requestTime, $dimensions);
+        }
     }
 
     protected function getDefaultDimentions(Entity $payment)
@@ -203,6 +242,48 @@ class Metric extends Base\Core
             self::LABEL_PAYMENT_AUTO_CAPTURED       => $payment->getAutoCaptured(),
             self::LABEL_PAYMENT_GATEWAY_CAPTURED    => $payment->getGatewayCaptured(),
         ];
+
+        return $dimensions;
+    }
+
+    protected function getCheckoutPreferenceDimensions($input)
+    {
+        $dimensions = [];
+
+        if (isset($input['_']) === true)
+        {
+            if (isset($input['_']['checkout_id']) === true)
+            {
+                $dimensions[self::LABEL_CHECKOUT_ID] = $input['_']['checkout_id'];
+            }
+
+            if (isset($input['_']['build']) === true)
+            {
+                $dimensions[self::LABEL_BUILD] = $input['_']['build'];
+            }
+
+            if (isset($input['_']['library']) === true)
+            {
+                $dimensions[self::LABEL_LIBRARY] = $input['_']['library'];
+            }
+
+            if (isset($input['_']['platform']) === true)
+            {
+                $dimensions[self::LABEL_PLATFORM] = $input['_']['platform'];
+            }
+        }
+
+        return $dimensions;
+    }
+
+    protected function getCheckoutSubmitDimensions($input)
+    {
+        $dimensions = [];
+
+        if (isset($input['method']) === true)
+        {
+            $dimensions[self::LABEL_PAYMENT_METHOD] = $input['method'];
+        }
 
         return $dimensions;
     }
