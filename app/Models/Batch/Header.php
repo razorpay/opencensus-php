@@ -578,6 +578,7 @@ class Header
     // Partner submerchant headers
     const PARTNER_TYPE         = 'partner_type';
     const SUBMERCHANT_ID       = 'submerchant_id';
+    const PARTNER_ID           = 'partner_id';
     const PARTNER_MERCHANT_ID  = 'partner_merchant_id';
     const ACCOUNT_NAME         = 'account_name';
 
@@ -3084,13 +3085,13 @@ class Header
 
         Type::SUBMERCHANT_LINK => [
             self::INPUT => [
+                self::PARTNER_ID,
                 self::MERCHANT_ID,
-                self::SUBMERCHANT_ID,
             ],
 
             self::OUTPUT => [
+                self::PARTNER_ID,
                 self::MERCHANT_ID,
-                self::SUBMERCHANT_ID,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,

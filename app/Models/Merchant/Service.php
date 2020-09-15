@@ -4963,9 +4963,21 @@ class Service extends Base\Service
 
         $function = camel_case($batch_action);
 
-        $partner =$this->repo->merchant->findOrFailPublic($attribute[Constants::MERCHANT_ID]);
+        $partner = $this->repo->merchant->find($attribute[Constants::PARTNER_ID]);
 
-        $subMerchant = $this->repo->merchant->findOrFailPublic($attribute[Constants::SUBMERCHANT_ID]);
+        if (empty($partner) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PARTNER_ID_DOES_NOT_EXIST);
+        }
+
+        $subMerchant = $this->repo->merchant->find($attribute[Constants::MERCHANT_ID]);
+
+        if (empty($subMerchant) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ID_DOES_NOT_EXIST);
+        }
 
         return $core->$function($partner, $subMerchant);
     }

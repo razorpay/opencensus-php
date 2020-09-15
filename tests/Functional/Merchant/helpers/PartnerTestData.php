@@ -439,11 +439,11 @@ return [
             'method'  => 'POST',
             'content' => [
                 [
-                    'batch_action'   => 'submerchant_link',
-                    'entity'         => 'merchant',
-                    'merchant_id'    => '10000000000000',
-                    'submerchant_id' => '10000000000009',
-                    'idempotent_id'  => 'random',
+                    'batch_action'  => 'submerchant_link',
+                    'entity'        => 'merchant',
+                    'partner_id'    => '10000000000000',
+                    'merchant_id'   => '10000000000009',
+                    'idempotent_id' => 'random',
                 ]
             ],
         ],
@@ -453,11 +453,11 @@ return [
                 'count'  => 1,
                 'items'  => [
                     [
-                        'batch_action'   => 'submerchant_link',
-                        'entity'         => 'merchant',
-                        'merchant_id'    => '10000000000000',
-                        'submerchant_id' => '10000000000009',
-                        'idempotent_id'  => 'random',
+                        'batch_action'  => 'submerchant_link',
+                        'entity'        => 'merchant',
+                        'partner_id'    => '10000000000000',
+                        'merchant_id'   => '10000000000009',
+                        'idempotent_id' => 'random',
                     ],
                 ],
             ],
