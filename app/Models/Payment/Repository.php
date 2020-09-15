@@ -108,7 +108,7 @@ class Repository extends Base\Repository
 
     public function fetchPendingCapturePaymentsBetweenTimestamps($from, $to, $limit = 100)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
                     ->whereBetween(Payment\Entity::CAPTURED_AT, array($from, $to))
                     ->whereNull(Payment\Entity::GATEWAY_CAPTURED)
                     ->limit($limit)
@@ -302,7 +302,7 @@ class Repository extends Base\Repository
      */
     public function fetchOldCreatedPaymentsForMethodForTimeout(int $fromTimestamp, int $toTimestamp, int $limit, string $method)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
                     ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
                     ->status(Payment\Status::CREATED)
                     ->where(Payment\Entity::CREATED_AT, '>=', $fromTimestamp)
@@ -398,7 +398,7 @@ class Repository extends Base\Repository
     {
         $refundAt = $this->repo->payment->dbColumn(Payment\Entity::REFUND_AT);
 
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getDataWarehouseConnection())
                       ->select($this->dbColumn('*'))
                       ->where($refundAt, '<=', $timestamp)
                       ->orderBy($refundAt, 'DESC')
@@ -409,7 +409,7 @@ class Repository extends Base\Repository
 
     public function getAuthorizedPaymentsBetweenTimestamps($timeLowerLimit, $timeUpperLimit)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
                     ->status(Payment\Status::AUTHORIZED)
                     ->where(Payment\Entity::CREATED_AT, '<=', $timeUpperLimit)
                     ->where(Payment\Entity::CREATED_AT, '>', $timeLowerLimit)
@@ -459,7 +459,7 @@ class Repository extends Base\Repository
 
         $orderPaymentCaptureFlag = $orderRepo->dbColumn(Order\Entity::PAYMENT_CAPTURE);
 
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getDataWarehouseConnection())
                         ->select($this->dbColumn('*'))
                         ->join(Table::MERCHANT, $paymentMerchantId, '=', $merchantId)
                         ->join(Table::ORDER, $paymentOrderId, '=', $orderId)
@@ -489,7 +489,7 @@ class Repository extends Base\Repository
 
     public function getPaymentsToVerifyByGatewayAndTime(array $timestamps, $gateway, $count, $disabledGateways)
     {
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getDataWarehouseConnection())
                       ->whereBetween(Payment\Entity::VERIFY_AT, $timestamps);
 
         if ($gateway !== null)
@@ -529,7 +529,7 @@ class Repository extends Base\Repository
                         array $disabledGateways = [],
                         bool $random = true)
     {
-        $query = $this->newQuery();
+        $query = $this->newQueryWithConnection($this->getDataWarehouseConnection());
 
         if ($gateway === null)
         {
@@ -1153,7 +1153,7 @@ class Repository extends Base\Repository
 
         $minCreatedAt = Carbon::yesterday(Timezone::IST)->getTimestamp();
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
                     ->selectRaw(Entity::MERCHANT_ID . ','.
                        'COUNT(*) AS count,' .
                        'DATE_FORMAT(FROM_UNIXTIME(created_at + 19800),' . $dateFormat . ') as dates'
@@ -1336,7 +1336,7 @@ class Repository extends Base\Repository
 
         $nowMinus10Days = Carbon::today(Timezone::IST)->subDays(10)->getTimestamp();
 
-        $results = $this->newQuery()
+        $results = $this->newQueryWithConnection($this->getDataWarehouseConnection())
                         ->join($orderTable, $orderId, '=', $paymentOrderId)
                         ->select($paymentCols)
                         ->where($paymentCreatedAt, '>', $nowMinus10Days)
