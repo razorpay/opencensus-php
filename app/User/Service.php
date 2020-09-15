@@ -1345,6 +1345,7 @@ class Service extends Base\Service
             'rx_view_only_update',
             'rx_accounting_payouts_active',
             'rx_accounting_payouts_ask_clientID',
+            'rx_ca_self_serve_flow',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
