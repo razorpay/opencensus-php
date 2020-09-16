@@ -539,6 +539,8 @@ class BatchMicroService
 
         $this->checkAndInsert('status',$inputQueryParams, $queryParams);
 
+        $this->checkAndInsert('settings',$inputQueryParams, $queryParams);
+
         if ($merchant != null)
         {
             $queryParams['entityId'] = $merchant->getId();
