@@ -78,7 +78,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function alertUnexpectedBankTransferIfApplicable(array $row)
     {
-
         $this->trace->info(TraceCode::BANK_TRANSFER_UNEXPECTED, [
             'message'       => 'Unexpected bank transfer',
             'info_code'     => Base\InfoCode::PAYMENT_ABSENT,
@@ -140,11 +139,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      */
     public function getGatewayPayment($paymentId)
     {
-        $bankTransfer = $this->repo
-                             ->bank_transfer
-                             ->findByPaymentId($paymentId);
-
-        return $bankTransfer;
+        return $this->repo->bank_transfer->findByPaymentId($paymentId);
     }
 
     /**

@@ -123,6 +123,7 @@ class Base extends Core
     const HDFC_DEBIT_EMI         = 'HdfcDebitEmi';
     const UPI_JUSPAY             = 'UpiJuspay';
     const UPI_AIRTEL             = 'UpiAirtel';
+    const CRED                   = 'Cred';
 
     const BT_RBL                 = 'BtRbl';
 
@@ -205,6 +206,7 @@ class Base extends Core
         self::HDFC_DEBIT_EMI         => ['emailintimation@hdfcbank.com'],
         self::UPI_JUSPAY             => ['crs.upimerchantsettlement@axisbank.com'],
         self::UPI_AIRTEL             => [],
+        self::CRED                   => [],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.

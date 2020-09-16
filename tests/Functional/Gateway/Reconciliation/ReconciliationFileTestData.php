@@ -598,6 +598,7 @@ return [
             'Payment Date'                => '31-07-2018',
             'Transaction Status'          => 'PAID',
         ],
+
         'testFssBobNewFormatRecon' => [
             'transactionid'                 =>  '8052020000000314',
             'merchantaggregatorid'          =>  '',
@@ -832,6 +833,20 @@ return [
                 'AMOUNT'                    => '20000',
                 'ARN'                       => '75446970077000297248714',
             ],
+
+        'cred' =>
+            [
+                'Merchant ID'               => '',
+                'Transaction Amount'        => '1000',
+                'Transaction Type'          => 'payment',
+                'P1 Transaction Id'         => '',
+                'P2 Transaction Id'         => '',
+                'Payment Leg'               => 'P1 and P2',
+                'Amount'                    => '',
+                'CRED COIN BURN'            => '',
+                'CARD NETWORK'              => 'Visa',
+                'Creation Time'             => '',
+            ],
         ],
 
     'reconciliate' => [
@@ -858,7 +873,7 @@ return [
                 [
                     'id'                => "C3fzDCb4hA4F6b",
                     'created_at'        => 1551782255,
-                    'updated_at'        =>  1551782255,
+                    'updated_at'        => 1551782255,
                     'entity_id'         => "C28Q0mJgoSfWC1",
                     'name'              =>  0,
                     'batch_type_id'     => "payment_link", //As type is hardcoded in batch service mock response

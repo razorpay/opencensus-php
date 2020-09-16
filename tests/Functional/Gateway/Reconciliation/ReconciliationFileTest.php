@@ -2023,6 +2023,27 @@ class ReconciliationFileTest extends TestCase
         return $this->getDbLastRefund()->toArrayAdmin();
     }
 
+    private function doCredPayment()
+    {
+        $this->gateway = 'cred';
+        $this->payment = $this->getDefaultCredPayment();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments',
+            'content' => $this->payment
+        ];
+
+        $this->ba->publicAuth();
+        $this->makeRequestAndGetContent($request);
+        $payment = $this->getLastPayment('payment', 'true');
+        $content = $this->getMockServer()->getAsyncCallbackContentCred($payment);
+        $this->makeS2SCallbackAndGetContent($content, 'cred');
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        return $payment;
+    }
+
     private function overrideFirstDataPayment(array $payment, array $forceOverride = [])
     {
         $facade = $this->testData['facades']['first_data'];
@@ -3238,7 +3259,7 @@ class ReconciliationFileTest extends TestCase
     {
         $this->fixtures->create('terminal:shared_olamoney_terminal', ['type' => ['non_recurring' => '1', 'ivr' => '1']]);
 
-        $gatewayPayment1 = $this->getNewWalletEntity('10000000000000', 'olamoney');
+        $this->getNewWalletEntity('10000000000000', 'olamoney');
 
         $wallet = $this->getLastEntity('wallet', true);
 
@@ -4389,6 +4410,27 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testCredPaymentReconciliation()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:direct_cred_terminal');
+        $this->fixtures->merchant->enableApp('10000000000000', 'cred');
+
+        $this->doCredPayment();
+
+        $gatewayPayment = $this->getLastEntity('cred', true);
+
+        $entries[] = $this->overrideCredPayment($gatewayPayment);
+
+        $file = $this->writeToExcelFile($entries, 'cred');
+
+        $this->runForFiles([$file], 'Cred');
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNotNull($transaction['reconciled_at']);
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     private function overrideIsgRecon($gatewayInput, $reconType = 'payment', $refundId = '')
     {
         if ($reconType === 'payment') {
@@ -4501,6 +4543,15 @@ class ReconciliationFileTest extends TestCase
         $facade = $this->overrideAmexPayment($gatewayPayment);
 
         $facade['Charge amount'] = strval(-1 * $amount/100);
+
+        return $facade;
+    }
+
+    private function overrideCredPayment(array $gatewayPayment)
+    {
+        $facade = $this->testData['facades']['cred'];
+
+        $facade['P1 Transaction Id'] = $gatewayPayment['payment_id'];
 
         return $facade;
     }

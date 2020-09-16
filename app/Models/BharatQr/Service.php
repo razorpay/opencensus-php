@@ -9,7 +9,6 @@ use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Entity;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Mpan\Entity as MpanEntity;
 
@@ -155,7 +154,7 @@ class Service extends Base\Service
         if ($terminal === null)
         {
             $gatewayResponseTrace = $gatewayResponse;
-            
+
             if (is_array($gatewayResponseTrace) === true)
             {
                 unset($gatewayResponseTrace['mpan']);

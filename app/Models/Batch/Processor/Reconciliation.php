@@ -369,8 +369,6 @@ class Reconciliation extends Base
 
         $source = $entries[0][Orchestrator::EXTRA_DETAILS][Batch\Entity::CONFIG][Constants::SOURCE];
 
-        $batchId = $entries[0][Orchestrator::EXTRA_DETAILS][Batch\Entity::CONFIG][Constants::BATCH_ID];
-
         $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
 
         $this->gatewayReconciliator = new $gatewayReconciliatorClassName($gateway);

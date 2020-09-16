@@ -821,8 +821,8 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::RECON_EMAIL_VALIDATION_FAILED,
             [
-                'message'      => 'Spf validation for request failed',
-                'received-spf' => $input[RequestProcessor\Mailgun::X_MAILGUN_SPF] ?? null
+                'message'       => 'Spf validation for request failed',
+                'x-mailgun-spf' => $input[RequestProcessor\Mailgun::X_MAILGUN_SPF] ?? null
             ]);
     }
 

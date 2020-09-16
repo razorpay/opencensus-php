@@ -14,8 +14,7 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
         self::REFUND_TXN   => Base\Reconciliate::REFUND
     ];
 
-    const BLACKLISTED_COLUMNS = [
-    ];
+    const BLACKLISTED_COLUMNS = [];
 
     protected function getReconciliationTypeForRow($row)
     {
