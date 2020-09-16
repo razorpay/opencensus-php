@@ -159,7 +159,7 @@ class Entity extends Base\PublicEntity
                     $instrument[self::PSP] = $psp;
 
                 }
-                else if( empty($vpaHandle) === false && $vpaHandle != self::ALL)
+                else if( empty($vpaHandle) === false)
                 {
                     $instrument[self::VPA_HANDLE] = $vpaHandle;
                 }
