@@ -957,6 +957,11 @@ class Constants
             'display_name'  => 'Email optional in checkout',
             'documentation' => '',
         ],
+        self::RAAS => [
+            'feature'       => self::RAAS,
+            'display_name'  => 'Optimizer',
+            'documentation' => '',
+        ],
     ];
 
     /**
