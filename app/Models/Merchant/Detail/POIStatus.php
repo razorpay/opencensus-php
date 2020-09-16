@@ -24,5 +24,5 @@ class POIStatus
      */
     const INCORRECT_DETAILS = 'incorrect_details';
 
-    const POI_VERIFICATION_THRESHOLD = 100.0;
+    const POI_VERIFICATION_THRESHOLD = 81.0;
 }

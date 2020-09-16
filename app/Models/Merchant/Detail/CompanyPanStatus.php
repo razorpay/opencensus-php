@@ -24,5 +24,5 @@ class CompanyPanStatus
      */
     const INCORRECT_DETAILS = 'incorrect_details';
 
-    const VERIFICATION_THRESHOLD = 90;
+    const VERIFICATION_THRESHOLD = 81;
 }
