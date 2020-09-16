@@ -4,8 +4,9 @@ import RTracking from 'react-tracking';
 
 import { updatePPInReduxList } from 'merchant/reducers/invoices/list';
 import { classList } from 'common/utils/rzp-utils';
-import TestModeBanner from 'merchant/components/TestModeBanner';
 
+import TestModeBanner from 'merchant/components/TestModeBanner';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import Definition from 'common/ui/Definition';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
@@ -19,6 +20,7 @@ import { addPollInstance, saveReportConfigs } from 'merchant/reducers/reports';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { trackDetailViewEdits, trackShareActions } from '../ga';
 import { sendLink, exportReportCSV } from '../model';
+import { reportFormatOptions } from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/SelectFormat';
 
 import EditStock from 'merchant/views/PaymentPages/PaymentPages/components/EditStock';
 
@@ -97,7 +99,7 @@ export default class PaymentPagesV3Entity extends React.Component {
     this.props.addPollInstance(reportId, pollInstance);
   };
 
-  downloadReport = () => {
+  downloadReport = extension => {
     const { user, paymentPageEntity, reportConfigs } = this.props;
     let configId;
 
@@ -107,7 +109,7 @@ export default class PaymentPagesV3Entity extends React.Component {
 
     for (let i = 0; i < reportConfigs.length; i++) {
       const config = reportConfigs[i];
-      if (config.type === 'payment_links') {
+      if (config.type === 'payment_links' && config.name.toLowerCase() === 'payment page') {
         configId = config.id;
         break;
       }
@@ -117,7 +119,8 @@ export default class PaymentPagesV3Entity extends React.Component {
       user,
       paymentPageEntity,
       configId,
-      this.saveLongPollInstances
+      this.saveLongPollInstances,
+      extension
     );
 
     if (promise && promise.then) {
@@ -476,16 +479,28 @@ export default class PaymentPagesV3Entity extends React.Component {
               </div>
             ))}
 
-            <div class="btn-toolbar pull-right">
-              <button
-                type="button"
-                class="btn Button--primary--invert btn-sm"
-                onClick={this.downloadReport}
-                disabled={this.state.isExportInProgress}
-              >
-                <i class="i i-download m-r" />
-                Export All (CSV)
-              </button>
+            <div class="report-download btn-toolbar pull-right">
+              <div class="btn btn-default Button--invert report-download-trigger" disabled={this.state.isExportInProgress}>
+                <i class="i i-download m-r"/>
+                {this.state.isExportInProgress ? 'Downloading...' : 'Download Report'}
+              </div>
+              <Popover align="bottom">
+                <PopoverBody>
+                  {
+                    reportFormatOptions.map((o, index) => (
+                      <li
+                        key={index}
+                        type="button"
+                        class="btn"
+                        onClick={() => this.downloadReport(o.name)}
+                        disabled={this.state.isExportInProgress}
+                      >
+                        {o.label}
+                      </li>
+                    ))
+                  }
+                </PopoverBody>
+              </Popover>
             </div>
           </div>
 

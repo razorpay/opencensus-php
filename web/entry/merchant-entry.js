@@ -1,5 +1,7 @@
 function merchantEntry() {
   function executeJS() {
+    window.cdnDashboardUrl = 'http://dashboard.razorpay.in';
+
     var cdnDashboardUrl = window.cdnDashboardUrl || '';
     if (typeof Sentry !== 'undefined') {
       Sentry.onLoad(function () {

@@ -21,6 +21,7 @@ import { addPollInstance, saveReportConfigs } from 'merchant/reducers/reports';
 import { updateHighlightButtonSettings } from 'merchant/reducers/paymentbuttons/create';
 import { setReceiptDetails, exportReportCSV } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { reportFormatOptions } from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/SelectFormat';
 
 import PaymentsList from './PaymentsList';
 import GetCodeModal from '../components/GetCodeModal';
@@ -97,7 +98,7 @@ export default class PaymentButtonEntity extends React.Component {
     this.props.addPollInstance(reportId, pollInstance);
   };
 
-  downloadReport = () => {
+  downloadReport = (extension) => {
     const { user, paymentButtonEntity, reportConfigs } = this.props;
     let configId;
 
@@ -107,7 +108,7 @@ export default class PaymentButtonEntity extends React.Component {
 
     for (const idx in reportConfigs) {
       const config = reportConfigs[idx];
-      if (config.type === 'payment_links') {
+      if (config.type === 'payment_links' && config.name.toLowerCase() === 'payment button report') {
         configId = config.id;
         break;
       }
@@ -117,7 +118,8 @@ export default class PaymentButtonEntity extends React.Component {
       user,
       paymentButtonEntity,
       configId,
-      this.saveLongPollInstances
+      this.saveLongPollInstances,
+      extension
     );
 
     if (promise && promise.then) {
@@ -438,15 +440,28 @@ export default class PaymentButtonEntity extends React.Component {
               </div>
             ))}
 
-            <div class="btn-toolbar pull-right">
-              <Button
-                class="Button--primary--invert"
-                onClick={this.downloadReport}
-                disabled={this.state.isExportInProgress}
-              >
-                <i class="i i-download m-r" />
-                Export All (CSV)
-              </Button>
+            <div class="report-download btn-toolbar pull-right">
+              <div class="btn btn-default Button--invert report-download-trigger" disabled={this.state.isExportInProgress}>
+                <i class="i i-download m-r"/>
+                {this.state.isExportInProgress ? 'Downloading...' : 'Download Report'}
+              </div>
+              <Popover align="bottom">
+                <PopoverBody>
+                  {
+                    reportFormatOptions.map((o, index) => (
+                      <li
+                        key={index}
+                        type="button"
+                        class="btn"
+                        onClick={() => this.downloadReport(o.name)}
+                        disabled={this.state.isExportInProgress}
+                      >
+                        {o.label}
+                      </li>
+                    ))
+                  }
+                </PopoverBody>
+              </Popover>
             </div>
           </div>
 

@@ -129,7 +129,7 @@ export function sendLink(id, data) {
     data: reqPayload,
   });
 }
-export function exportReportCSV(user, paymentPageEntity, configId, saveLongPollInstances) {
+export function exportReportCSV(user, paymentPageEntity, configId, saveLongPollInstances, extension) {
   if (!configId) {
     return;
   }
@@ -142,14 +142,14 @@ export function exportReportCSV(user, paymentPageEntity, configId, saveLongPollI
     generated_by: user.current,
     start_time: entityCreatedAt - 1, // Duration here doesn't make sense (as per API). So, start and end time is ~same as entity created_at
     end_time: entityCreatedAt + 1,
-    template_overrides: _prepareTemplate(paymentPageEntity),
+    template_overrides: _prepareTemplate(paymentPageEntity, extension),
   };
 
   // Similar as in merchant_common/views/Reports/index.js
   return generateReportV2(reqPayload, true, null, saveLongPollInstances, false);
 }
 
-export function _prepareTemplate(paymentPageEntity) {
+export function _prepareTemplate(paymentPageEntity, extension) {
   const UDF_SCHEMA = JSON.parse(paymentPageEntity.settings.udf_schema);
   const udfKeys = {};
 
@@ -170,6 +170,9 @@ export function _prepareTemplate(paymentPageEntity) {
     //order of these column doesnt matter right now
     output_fields: Object.keys(udfKeys),
     fields_map: udfKeys,
+    file_meta: {
+      extension,
+    },
   };
 
   return templateOverrides;

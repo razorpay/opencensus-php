@@ -52,7 +52,7 @@ export default class SelectFormat extends React.Component {
         class="Input--vTop"
         name="selectedFormat"
         value={this.state.value}
-        options={formatOptions}
+        options={reportFormatOptions}
         size="half_big"
         onChange={this.onChange}
         disabled={this.props.isFormDisabled}
@@ -70,7 +70,7 @@ function getDefaultFileFormatOfConfig(selectedConfigId, allConfigs) {
   );
 }
 
-const formatOptions = [
+export const reportFormatOptions = [
   { name: 'csv', label: 'CSV' },
   { name: 'xlsx', label: 'Excel (xlsx)' },
   { name: 'xls', label: 'Old Excel (xls)' },
