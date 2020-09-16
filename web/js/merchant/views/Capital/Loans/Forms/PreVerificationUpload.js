@@ -182,7 +182,7 @@ class PreVerificationUpload extends Component {
     const data = {
       file,
       display_name: file.name,
-      name: file.name,
+      name: `${this.props.user.current}-${Date.now()}-${file.name}`,
       store: 's3',
       type: documentType,
       'entity[type]': isAadhaarDocument ? 'MERCHANT' : 'applicant',
