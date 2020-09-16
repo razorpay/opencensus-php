@@ -2364,6 +2364,10 @@ class BankingAccountTest extends TestCase
         ];
 
         $this->assertUpdateViaBatch($content);
+
+        $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
+
+        $this->assertEquals('1592850600', $bankingAccountActivationDetail[ActivationDetail\Entity::ACCOUNT_OPEN_DATE]);
     }
 
     public function testCitiesForAutoComplete()

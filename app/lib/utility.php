@@ -656,13 +656,19 @@ if (! function_exists('strtoepoch'))
      * Converts given human readable string representation to epoch
      * @param  string $dateStr
      * @param  string $format
+     * @param  bool $startOfDay
      * @return string
      */
-    function strtoepoch(string $dateStr, string $format = 'd-M-Y'): string
+    function strtoepoch(string $dateStr, string $format = 'd-M-Y', bool $startOfDay = false): string
     {
         try
         {
             $dt = Carbon::createFromFormat($format, $dateStr, Timezone::IST);
+
+            if ($startOfDay === true)
+            {
+                $dt = $dt->startOfDay();
+            }
         }
         catch (Throwable $e)
         {

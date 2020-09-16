@@ -275,7 +275,8 @@ class Service extends Base\Service
         {
             if (isset($updateInput['activation_detail'][$dateField]) === true)
             {
-                $updateInput['activation_detail'][$dateField] = strtoepoch($updateInput['activation_detail'][$dateField]);
+                $updateInput['activation_detail'][$dateField] =
+                    strtoepoch($updateInput['activation_detail'][$dateField], 'd-M-Y', true);
             }
         }
 
