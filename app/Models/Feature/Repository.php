@@ -90,6 +90,16 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function findMerchantWithFeaturesOnConnection(string $merchantId, array $featureNames, $mode)
+    {
+        return $this->newQueryWithConnection($mode)
+                    ->whereIn(Entity::NAME, $featureNames)
+                    ->where(Entity::ENTITY_TYPE, 'merchant')
+                    ->where(Entity::ENTITY_ID, $merchantId)
+                    ->pluck(Entity::NAME)
+                    ->toArray();
+    }
+
     public function findMerchantIdsHavingFeatures(array $featureNames): array
     {
         /** @var PublicCollection $featureEntities */

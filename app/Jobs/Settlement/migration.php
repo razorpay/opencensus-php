@@ -7,6 +7,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement\Core;
+use RZP\Models\Feature\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankAccount\Core as BankAccount;
 
@@ -44,6 +45,15 @@ class migration extends Job
     public function handle()
     {
         parent::handle();
+
+        $featureResult = $this->repoManager
+                              ->feature
+                              ->findMerchantWithFeatures($this->merchantId, [Constants::DAILY_SETTLEMENT]);
+
+        if ($featureResult->isEmpty() === false)
+        {
+            return ;
+        }
 
         try
         {

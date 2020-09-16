@@ -249,31 +249,6 @@ class Dashboard extends Base
     }
 
     /**
-     * This is used to update the bank account
-     * @param $newBankAccount
-     * @return mixed
-     * @throws RuntimeException
-     * @throws \Throwable
-     */
-    public function changeBankAccount($newBankAccount)
-    {
-        if ($newBankAccount->getType() !== Type::MERCHANT)
-        {
-            return $newBankAccount;
-        }
-
-        $input = ['merchant_id' => $newBankAccount->getMerchantId()];
-
-        $old = $this->bankAccountGet($input);
-
-        $request = $this->getBankAccountCreateRequestForSettlementService($newBankAccount);
-
-        $request = array_merge(['id' => $old['bankAccounts'][0]['id']], $request);
-
-        return $this->bankAccountUpdate($request);
-    }
-
-    /**
      * used to trigger multiple executions at once
      * @param array $input
      * @return array
