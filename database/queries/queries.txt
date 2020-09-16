@@ -5964,9 +5964,11 @@ ALTER TABLE paper_mandates
 	ADD COLUMN generated_form_url varchar(255),
 	ADD COLUMN generated_form_url_expire int(11);
 
+ALTER table banking_account_state
+    ADD COLUMN assignee_team varchar(64);
+
 ALTER TABLE payouts
     ADD COLUMN origin TINYINT(1) default 1;
-
 
 ALTER TABLE payouts
     ADD COLUMN create_request_submitted_at INT DEFAULT NULL;

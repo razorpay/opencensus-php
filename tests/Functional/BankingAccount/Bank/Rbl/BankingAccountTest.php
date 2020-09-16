@@ -2236,6 +2236,10 @@ class BankingAccountTest extends TestCase
             ];
         }
 
+        $startingState = $this->getDbLastEntity('banking_account_state');
+
+        $this->assertNotEquals($startingState->getAssigneeTeam(), $content['activation_detail']['assignee_team']);
+
         $dataToReplace = [
             'request'  => [
                 'url'     => '/banking_accounts/' . $bankingAccount->getPublicId(),
@@ -2252,6 +2256,10 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals($content['activation_detail']['assignee_team'], $bankingAccountActivationDetails[ActivationDetail\Entity::ASSIGNEE_TEAM]);
 
+        $finalState = $this->getDbLastEntity('banking_account_state');
+
+        $this->assertEquals($finalState->getAssigneeTeam(), $content['activation_detail']['assignee_team']);
+
         return $bankingAccount;
     }
 
@@ -2264,6 +2272,69 @@ class BankingAccountTest extends TestCase
                 'assignee_team' => 'sales',
             ]
         ]);
+    }
+
+    public function testUpdateBankingAccountAsigneeWithStatusSubStatusChangeCapturedInChangeLog()
+    {
+        $content = [
+            'status' => Status::PICKED,
+            'sub_status' => Status::MERCHANT_PREPARING_DOCS,
+            'activation_detail' => [
+                'assignee_team' => 'sales',
+                'comment' => [
+                    'comment' => 'sample comment while changing assignee',
+                    'source_team' => 'ops',
+                    'source_team_type' => 'internal',
+                    'type' => 'internal',
+                    'added_at' => 1597217557
+                ]
+            ]
+        ];
+
+        $this->testUpdateBankingAccountAssignee($content);
+
+        $finalState = $this->getDbLastEntity('banking_account_state');
+
+        $this->assertEquals($finalState->getStatus(), $content['status']);
+        $this->assertEquals($finalState->getSubStatus(), $content['sub_status']);
+    }
+
+    public function assertUpdateViaBatch(array $content)
+    {
+        $admin = $this->getDbLastEntity('admin');
+
+        $dataToReplace = [
+            'request'  => [
+                'content' => [
+                    'admin_id' => $admin['id'],
+                    'channel' => 'rbl',
+                ]
+            ],
+        ];
+
+        $dataToReplace['request']['content'] = array_merge($dataToReplace['request']['content'], $content);
+
+        $this->ba->batchAuth();
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testUpdateBankingAccountAssigneeTeamViaBatch()
+    {
+        $this->testCreateBankingAccountWithActivationDetail();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $content = [
+            'bank_reference_number' => $bankingAccount['bank_reference_number'],
+            'comment' => 'sample comment from batch',
+            'source_team' => 'bank',
+            'source_team_type' => 'external',
+            'added_at' => 1594800229,
+            'assignee_team' => 'sales',
+        ];
+
+        $this->assertUpdateViaBatch($content);
     }
 
     public function assertBankingAccountFetchCommon(array $baAttributes, $searchBody)
@@ -2357,26 +2428,6 @@ class BankingAccountTest extends TestCase
         ];
 
         $this->assertEquals($expectedFileInput, $fileInput);
-    }
-
-    public function assertUpdateViaBatch(array $content)
-    {
-        $admin = $this->getDbLastEntity('admin');
-
-        $dataToReplace = [
-            'request'  => [
-                'content' => [
-                    'admin_id' => $admin['id'],
-                    'channel' => 'rbl',
-                ]
-            ],
-        ];
-
-        $dataToReplace['request']['content'] = array_merge($dataToReplace['request']['content'], $content);
-
-        $this->ba->batchAuth();
-
-        $this->startTest($dataToReplace);
     }
 
     public function testUpdateAccountOpenDateViaBatch()

@@ -37,6 +37,9 @@ class CreateBankingAccountState extends Migration
             $table->char(Entity::BANK_STATUS, 255)
                   ->nullable();
 
+            $table->string(Entity::ASSIGNEE_TEAM, 64)
+                  ->nullable();
+
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);

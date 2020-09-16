@@ -5,6 +5,7 @@ namespace RZP\Models\BankingAccount;
 use Mail;
 use Carbon\Carbon;
 
+use RZP\Base\Common;
 use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 
@@ -29,6 +30,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Gateway;
+use RZP\Models\BankingAccount\State;
 use RZP\Mail\BankingAccount\XProActivation;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
@@ -51,11 +53,16 @@ class Core extends Base\Core
     const DEFAULT_SCHEDULE_PERIOD   = Period::DAILY;
     const DEFAULT_SCHEDULE_INTERVAL = 7;
 
+    /** @var ActivationDetail\Service $activationDetailService */
+    protected $activationDetailService;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->config = $this->app['config']->get('banking_account');
+
+        $this->activationDetailService = new Activation\Detail\Service;
     }
 
     public function createOrFetchSharedBankingAccountFromVA(VirtualAccount\Entity $virtualAccount): Entity
@@ -503,15 +510,6 @@ class Core extends Base\Core
             // Updating BankingAccount
             $this->repo->saveOrFail($bankingAccount);
 
-            // Updating BankingAccountActivation Details
-            if (empty($activationDetailInput) === false)
-            {
-                $activationDetailService = new Activation\Detail\Service;
-
-                // if ActivationDetail is passed with comment in input, entity will always be admin, not merchant.
-                $activationDetailService->updateForBankingAccount($bankingAccount->getPublicId(), $activationDetailInput, $isAutomatedUpdate);
-            }
-
             // Updating BankingAccountDetails
             if ((isset($input[Entity::DETAILS]) === true) and
                 (empty($input[Entity::DETAILS])) === false)
@@ -541,6 +539,13 @@ class Core extends Base\Core
                 $stateCore = new State\Core;
 
                 $stateCore->captureNewBankingAccountState($bankingAccount, $entity);
+            }
+
+            // Updating BankingAccountActivation Details
+            if (empty($activationDetailInput) === false)
+            {
+                // if ActivationDetail is passed with comment in input, entity will always be admin, not merchant.
+                $this->activationDetailService->updateForBankingAccount($bankingAccount->getPublicId(), $activationDetailInput, $isAutomatedUpdate, $entity);
             }
         });
 
@@ -627,6 +632,10 @@ class Core extends Base\Core
 
             (new Counter\Core)->fetchOrCreate($balance);
 
+            $stateCore = new State\Core;
+
+            $stateCore->captureNewBankingAccountState($bankingAccount, $admin);
+
             // updating assignee to null
             $updateInput = [
                 'activation_detail' => [
@@ -634,11 +643,7 @@ class Core extends Base\Core
                 ]
             ];
 
-            $this->updateBankingAccount($bankingAccount, $updateInput, null, true);
-
-            $stateCore = new State\Core;
-
-            $stateCore->captureNewBankingAccountState($bankingAccount, $admin);
+            $this->updateBankingAccount($bankingAccount, $updateInput, $admin, true);
 
             return $bankingAccount;
         });
@@ -917,7 +922,9 @@ class Core extends Base\Core
 
     public function getActivationStatusChangeLog(Entity $bankingAccount)
     {
-        return $bankingAccount->getActivationStatusChangeLog();
+        $statusChangeLog = $bankingAccount->getActivationStatusChangeLog();
+
+        return $statusChangeLog;
     }
 
     protected function getBalanceAttributesToSave(Entity $bankingAccount)

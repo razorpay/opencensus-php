@@ -1375,6 +1375,18 @@ return [
         ],
     ],
 
+    'assertUpdateViaBatch' => [
+        'request' => [
+            'url'     => '/banking_accounts/activation/details/batch',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'success'
+            ],
+        ],
+    ],
+
     'testGetBankingAccountActivationComment' => [
         'request' => [
             'url'     => '/banking_accounts/activation/{id}/comments?expand[]=admin',
@@ -1451,18 +1463,6 @@ return [
             'content' => [
 
             ]
-        ],
-    ],
-
-    'assertUpdateViaBatch' => [
-        'request' => [
-            'url'     => '/banking_accounts/activation/details/batch',
-            'method'  => 'POST',
-        ],
-        'response' => [
-            'content' => [
-                'status' => 'success'
-            ],
         ],
     ],
 

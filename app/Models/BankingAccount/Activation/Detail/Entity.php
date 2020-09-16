@@ -191,4 +191,14 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttributeValue(self::ASSIGNEE_TEAM);
     }
+
+    public function isAssigneeTeamChanged()
+    {
+        return $this->isDirty(self::ASSIGNEE_TEAM);
+    }
+
+    public function isAssigneeTeamUpdated()
+    {
+        return array_key_exists(self::ASSIGNEE_TEAM, $this->getChanges());
+    }
 }

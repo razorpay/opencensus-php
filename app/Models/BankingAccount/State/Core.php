@@ -39,6 +39,11 @@ class Core extends Base\Core
             Entity::BANK_STATUS => $bankingAccount->getBankInternalStatus()
         ];
 
+        if ($bankingAccount->bankingAccountActivationDetails !== null)
+        {
+            $content['assignee_team'] = $bankingAccount->bankingAccountActivationDetails->getAssigneeTeam();
+        }
+
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_UPDATE_ACTIVATION_STATUS,
             [

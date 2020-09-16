@@ -17,6 +17,8 @@ class Entity extends Base\PublicEntity
 
     const BANK_STATUS = 'bank_status';
 
+    const ASSIGNEE_TEAM = 'assignee_team';
+
     const ADMIN_ID = 'admin_id';
 
     const BANKING_ACCOUNT_ID = 'banking_account_id';
@@ -30,6 +32,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::SUB_STATUS,
         self::BANK_STATUS,
+        self::ASSIGNEE_TEAM,
         self::MERCHANT_ID,
         self::ADMIN_ID,
         self::BANKING_ACCOUNT_ID,
@@ -40,6 +43,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::SUB_STATUS,
         self::BANK_STATUS,
+        self::ASSIGNEE_TEAM,
         self::MERCHANT_ID,
         self::ADMIN_ID,
         self::BANKING_ACCOUNT_ID,
@@ -51,6 +55,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::SUB_STATUS,
         self::BANK_STATUS,
+        self::ASSIGNEE_TEAM,
         self::MERCHANT_ID,
         self::ADMIN_ID,
         self::BANKING_ACCOUNT_ID,
@@ -70,5 +75,20 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
+    public function getSubStatus()
+    {
+        return $this->getAttribute(self::SUB_STATUS);
+    }
+
+    public function getAssigneeTeam()
+    {
+        return $this->getAttribute(self::ASSIGNEE_TEAM);
     }
 }

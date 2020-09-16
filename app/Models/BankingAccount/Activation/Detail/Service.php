@@ -9,6 +9,7 @@ use RZP\Models\Admin\Admin;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankingAccount;
 use RZP\Models\BankingAccount\Activation\Comment;
+use RZP\Models\BankingAccount\State;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 
@@ -57,10 +58,15 @@ class Service extends Base\Service
     }
 
 
-    public function updateForBankingAccount(string $bankingAccountId, array $input, bool $isAutomatedUpdate = false)
+    public function updateForBankingAccount(string $bankingAccountId,
+                                            array $input,
+                                            bool $isAutomatedUpdate = false,
+                                            Base\PublicEntity $entity = null)
     {
         /** @var BankingAccount\Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
+
+        $admin = $this->app['basicauth']->getAdmin() ?? (($this->app->bound('batchAdmin') === true)? $this->app['batchAdmin'] : null);
 
         // while updating, the comment field of activationDetailInput is not to be updated,
         // because of the way we handle comments (only for create, it is accepted, and is present
@@ -87,7 +93,13 @@ class Service extends Base\Service
             (new Validator())->validateCommentOnAssigneeTeamChange($activationDetail, $input, $commentInput);
         }
 
-        $updatedActivationDetail = $this->repo->transaction(function() use ($bankingAccount, $activationDetail, $input, $commentInput, $salesPocId)
+        $updatedActivationDetail = $this->repo->transaction(function() use ($bankingAccount,
+            $activationDetail,
+            $input,
+            $commentInput,
+            $salesPocId,
+            $admin,
+            $entity)
         {
             // Adding Sales POC to admin_audit_map table
             if (empty($salesPocId) === false)
@@ -97,10 +109,16 @@ class Service extends Base\Service
 
             $activationDetail = $this->core->update($activationDetail, $input);
 
+            if ($activationDetail->isAssigneeTeamUpdated() === true)
+            {
+                // if entity is passed, use that, else use admin.
+                $entity = $entity ?? $admin;
+
+                (new State\Core())->captureNewBankingAccountState($activationDetail->bankingAccount, $entity);
+            }
+
             if (empty($commentInput) === false)
             {
-                $admin = $this->app['basicauth']->getAdmin() ?? (($this->app->bound('batchAdmin') === true)? $this->app['batchAdmin'] : null);
-
                 (new Comment\Core())->create($bankingAccount, $admin, $commentInput);
             }
 

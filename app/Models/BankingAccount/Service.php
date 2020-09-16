@@ -174,6 +174,44 @@ class Service extends Base\Service
         return $response;
     }
 
+    protected function filterOutAssigneeChanges(array $statusChangeLog)
+    {
+        $itemsToRetain = [];
+
+        $previousStatusChange = null;
+
+        foreach ($statusChangeLog['items'] as $currentStatusChange)
+        {
+            if ($previousStatusChange === null)
+            {
+                $previousStatusChange = $currentStatusChange;
+                $itemsToRetain[] = $currentStatusChange;
+                continue;
+            }
+            $columnsToIgnore = [State\Entity::ID, State\Entity::CREATED_AT, State\Entity::UPDATED_AT];
+
+            $diffWithPreviousStatusChange = array_diff_assoc(
+                array_diff_key($previousStatusChange, array_flip($columnsToIgnore)),
+                array_diff_key($currentStatusChange, array_flip($columnsToIgnore))
+            );
+
+            // if there are changes other that *just* assignee_team, then include it in the list.
+            if (array_keys($diffWithPreviousStatusChange) !== [State\Entity::ASSIGNEE_TEAM])
+            {
+                $itemsToRetain[] = $currentStatusChange;
+            }
+
+            $previousStatusChange = $currentStatusChange;
+        }
+
+        $statusChangeLog['items'] = $itemsToRetain;
+
+        $statusChangeLog['count'] = count($statusChangeLog['items']);
+
+        return $statusChangeLog;
+    }
+
+
     public function getActivationStatusChangeLog(string $bankingAccountId)
     {
         /** @var Entity $bankingAccount */
@@ -181,7 +219,9 @@ class Service extends Base\Service
 
         $activationStatusChangeLog = $this->core->getActivationStatusChangeLog($bankingAccount);
 
-        return $activationStatusChangeLog->toArrayPublic();
+        $activationStatusChangeLog = $activationStatusChangeLog->toArrayPublic();
+
+        return $this->filterOutAssigneeChanges($activationStatusChangeLog);
     }
 
     protected function checkIfAccountAlreadyActivated(Entity $bankingAccount)
