@@ -22,6 +22,7 @@ use RZP\Models\Payout\Status;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Balance;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payout\Notifications;
 use RZP\Models\Payout\CounterHelper;
 use RZP\Models\Base\Core as BaseCore;
@@ -421,6 +422,15 @@ class Base extends BaseCore
 
         catch (\Throwable $ex)
         {
+            $this->trace->traceException(
+                $ex,
+                Trace::CRITICAL,
+                TraceCode::PAYOUT_CREATE_SUBMITTED_PROCESS_FAILED,
+                [
+                    'payout_id'      => $payout->getId(),
+                    'payout_status'  => $payout->getStatus(),
+                ]);
+
             $balanceId = $payout->getBalanceId();
 
             (new Payout\Core)->decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable($balanceId, $feeType);
@@ -447,13 +457,6 @@ class Base extends BaseCore
             }
 
             $this->repo->saveOrFail($payout);
-
-            $this->trace->info(
-                TraceCode::PAYOUT_CREATE_SUBMITTED_PROCESS_FAILED,
-                [
-                    'payout_id'      => $payout->getId(),
-                    'payout_status'  => $payout->getStatus(),
-                ]);
         }
 
         // We only have to send mail/webhook if the payout fails.
