@@ -9,6 +9,13 @@ use RZP\Models\Merchant\AutoKyc\KycService\BaseProcessor;
 
 class POIProcessor extends BaseProcessor
 {
+    /**
+     * Personal pan verification api timeout in seconds
+     *
+     * @var int
+     */
+    protected $timeout = 12;
+
     public function process(): Response
     {
         $requestDetails = $this->getApplicableRequestDetails(Constants::DOCUMENT_TYPES[Constants::PERSONAL_PAN]);
