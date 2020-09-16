@@ -668,30 +668,16 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
-    public function testUpdateBankingAccount()
+    public function updateBankingAccount(Entity $bankingAccount, array $attrs)
     {
-        $attribute = ['activation_status' => 'activated'];
-
-        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $bankingAccount = $this->createBankingAccount();
-
-        $this->fixtures->edit('banking_account',
-            $bankingAccount['id'],
-            [
-                'status' => 'picked',
-            ]);
-
         $dataToReplace = [
             'request'  => [
-                'url'     => '/banking_accounts/' . $bankingAccount['id'],
-                'method'  => 'PATCH',
+                'url'     => '/banking_accounts/' . $bankingAccount->getPublicId(),
+                'content' => $attrs
             ],
             'response' => [
                 'content' => [
-                    'merchant_id' => $merchantDetail->merchant['id'],
+                    'id' => $bankingAccount->getPublicId(),
                 ],
             ],
         ];
@@ -699,9 +685,12 @@ class BankingAccountTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest($dataToReplace);
+    }
 
+    public function getStatusChangeLog(Entity $bankingAccount)
+    {
         $request  = [
-            'url'     => '/banking_accounts/activation/' . $bankingAccount['id'] . '/status_change_log',
+            'url'     => '/banking_accounts/activation/' . $bankingAccount->getPublicId() . '/status_change_log',
             'method'  => 'GET',
             'content' => []
         ];
@@ -710,8 +699,37 @@ class BankingAccountTest extends TestCase
 
         $logs = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals('created', $logs['items'][0]['status']);
-        $this->assertEquals('initiated', $logs['items'][1]['status']);
+        return $logs;
+    }
+
+    public function testStatusLastUpdatedAt()
+    {
+        $this->ba->proxyAuth();
+
+        $this->testCreateBankingAccount();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->updateBankingAccount($bankingAccount, [
+            'status' => Status::PICKED
+        ]);
+
+        $logs = $this->getStatusChangeLog($bankingAccount);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(end($logs['items'])[Entity::CREATED_AT],
+            $bankingAccount->getStatusLastUpdatedAt());
+
+        // updating substatus should not affect the status last updated at
+        $this->updateBankingAccount($bankingAccount, [
+            'sub_status' => Status::MERCHANT_NOT_AVAILABLE
+        ]);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(end($logs['items'])[Entity::CREATED_AT],
+            $bankingAccount->getStatusLastUpdatedAt());
     }
 
     protected function assertUpdateBankingAccountStatusFromTo(string $initialStatus, string $finalStatus, string $initialSubStatus = null, string $finalSubStatus = null)
@@ -996,6 +1014,7 @@ class BankingAccountTest extends TestCase
 
     public function testUpdateBankingAccountToInitiated()
     {
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
         $bankingAccount = $this->createBankingAccount();
 
         $this->fixtures->edit('banking_account',
@@ -1018,6 +1037,19 @@ class BankingAccountTest extends TestCase
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $this->assertEquals(RZP\Models\BankingAccount\Status::INITIATED, $bankingAccount->getStatus());
+
+        $request  = [
+            'url'     => '/banking_accounts/activation/' . $bankingAccount->getPublicId() . '/status_change_log',
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $this->ba->adminAuth();
+
+        $logs = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('created', $logs['items'][0]['status']);
+        $this->assertEquals('initiated', $logs['items'][1]['status']);
     }
 
     public function testUpdateBankingAccountToPicked()

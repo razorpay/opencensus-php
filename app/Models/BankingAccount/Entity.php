@@ -46,6 +46,7 @@ class Entity extends Base\PublicEntity
     const BALANCE_LAST_FETCHED_AT           = 'balance_last_fetched_at';
 
     const ACCOUNT_STATEMENT_LAST_UPDATED_AT = 'account_statement_last_updated_at';
+    const STATUS_LAST_UPDATED_AT            = 'status_last_updated_at';
 
     // For tracking Last statement fetch attempt for merchant
     // This field is being used to schedule merchant next fetch using cron
@@ -267,11 +268,12 @@ class Entity extends Base\PublicEntity
         self::BALANCE,
         self::FEE_RECOVERY_DETAILS,
         self::ACCOUNT_STATEMENT_LAST_UPDATED_AT,
+        self::STATUS_LAST_UPDATED_AT
     ];
 
     protected $relations = [
         self::BANKING_ACCOUNT_DETAILS,
-        self::BANKING_ACCOUNT_ACTIVATION_DETAILS
+        self::BANKING_ACCOUNT_ACTIVATION_DETAILS,
     ];
 
     protected $publicSetters = [
@@ -280,6 +282,7 @@ class Entity extends Base\PublicEntity
         self::BANKING_ACCOUNT_DETAILS,
         self::FEE_RECOVERY_DETAILS,
         self::ACCOUNT_STATEMENT_LAST_UPDATED_AT,
+        self::STATUS_LAST_UPDATED_AT
     ];
 
     // ---------------------------- Setters ----------------------------------- //
@@ -527,6 +530,29 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BALANCE_LAST_FETCHED_AT);
     }
 
+    public function getStatusLastUpdatedAt()
+    {
+        $lastUpdatedAt = null;
+
+        $statusChangeLog = $this->activationStates()->get()->toArray();
+
+        $currentStatus = $this->getStatus();
+
+        foreach (array_reverse($statusChangeLog) as $statusChange)
+        {
+            if ($statusChange[self::STATUS] === $currentStatus)
+            {
+                $lastUpdatedAt = $statusChange[self::CREATED_AT];
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return $lastUpdatedAt;
+    }
+
     // --------------------------- Relations ---------------------------------- //
 
     public function merchant()
@@ -667,6 +693,14 @@ class Entity extends Base\PublicEntity
             {
                 $array[self::ACCOUNT_STATEMENT_LAST_UPDATED_AT] = $balance->getLastFetchedAtAttribute();
             }
+        }
+    }
+
+    public function setPublicStatusLastUpdatedAtAttribute(array &$array)
+    {
+        if (app('basicauth')->isProxyAuth() === true)
+        {
+            $array[self::STATUS_LAST_UPDATED_AT] = $this->getStatusLastUpdatedAt();
         }
     }
 
