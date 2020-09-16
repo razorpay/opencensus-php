@@ -240,7 +240,7 @@ class Core extends Base\Core
     {
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        if ($merchant->isPostpaid() === false && $merchant->getFeeBearer() === FeeBearer::PLATFORM)
+        if ($merchant->isPostpaid() === false)
         {
             $pricingPlanId = $merchant->getPricingPlanId();
 
@@ -277,13 +277,14 @@ class Core extends Base\Core
                     if($settlementOndemandPricing->count() < 1)
                     {
                         $settlementOndemandPricingRule = [
-                            'product'             => Product::PRIMARY,
-                            'feature'             => PricingFeature::SETTLEMENT_ONDEMAND,
-                            'payment_method'      => Payout\Method::FUND_TRANSFER,
-                            'percent_rate'        => 25,
-                            'amount_range_active' => 0,
-                            'amount_range_max'    => 0,
-                            'amount_range_min'    => 0
+                            Pricing\Entity::PRODUCT             => Product::PRIMARY,
+                            Pricing\Entity::FEATURE             => PricingFeature::SETTLEMENT_ONDEMAND,
+                            Pricing\Entity::PAYMENT_METHOD      => Payout\Method::FUND_TRANSFER,
+                            Pricing\Entity::PERCENT_RATE        => 25,
+                            Pricing\Entity::AMOUNT_RANGE_ACTIVE => 0,
+                            Pricing\Entity::AMOUNT_RANGE_MAX    => 0,
+                            Pricing\Entity::AMOUNT_RANGE_MIN    => 0,
+                            Pricing\Entity::FEE_BEARER          => $merchant->getFeeBearer(),
                         ];
 
                         $updatedPlanRule = (new Pricing\Service())->addPlanRule($pricingPlanId, $settlementOndemandPricingRule);
@@ -292,19 +293,20 @@ class Core extends Base\Core
                             'merchant_id'   => $merchant->getId(),
                             'pricing_type'  => 'settlement_ondemand',
                         ]);
-                
+
                     }
 
                     if($onDemandPayoutPricing->count() < 1)
                     {
                         $onDemandPayoutPricingRule = [
-                            'product'             => Product::PRIMARY,
-                            'feature'             => PricingFeature::PAYOUT,
-                            'payment_method'      => Payout\Method::FUND_TRANSFER,
-                            'percent_rate'        => 25,
-                            'amount_range_active' => 0,
-                            'amount_range_max'    => 0,
-                            'amount_range_min'    => 0
+                            Pricing\Entity::PRODUCT             => Product::PRIMARY,
+                            Pricing\Entity::FEATURE             => PricingFeature::PAYOUT,
+                            Pricing\Entity::PAYMENT_METHOD      => Payout\Method::FUND_TRANSFER,
+                            Pricing\Entity::PERCENT_RATE        => 25,
+                            Pricing\Entity::AMOUNT_RANGE_ACTIVE => 0,
+                            Pricing\Entity::AMOUNT_RANGE_MAX    => 0,
+                            Pricing\Entity::AMOUNT_RANGE_MIN    => 0,
+                            Pricing\Entity::FEE_BEARER          => $merchant->getFeeBearer(),
                         ];
 
                         $updatedPlanRule = (new Pricing\Service())->addPlanRule($pricingPlanId, $onDemandPayoutPricingRule);
