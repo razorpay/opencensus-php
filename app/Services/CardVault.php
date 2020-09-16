@@ -27,8 +27,6 @@ class CardVault
     const X_RAZORPAY_TASKID = 'X-Razorpay-TaskId';
     const TOKENEX_VAULT_MAPPING = 'tokenex_vault_mapping';
 
-    const TRACE_REQUEST_FEATURE = 'cardvault_dns_trace';
-
     const REQUEST_TIMEOUT = 20;
 
     const MAX_RETRY_COUNT = 1;
@@ -308,17 +306,7 @@ class CardVault
 
         $hooks->register('curl.before_send', [$this, 'setCurlOptions']);
 
-        $variant = $this->app->razorx->getTreatment('10000000000000', self::TRACE_REQUEST_FEATURE, $this->mode);
-
-        $this->trace->info(TraceCode::CARD_VAULT_FEATURE_VARIANT,[
-            'feature' => self::TRACE_REQUEST_FEATURE,
-            'variant' => $variant,
-        ]);
-
-        if ($variant === 'on')
-        {
-            $hooks->register('curl.after_request', [$this, 'traceCurlInfo']);
-        }
+        $hooks->register('curl.after_request', [$this, 'traceCurlInfo']);
 
         return $hooks;
     }
