@@ -15,10 +15,6 @@ import Link from '@commander/shield/src/shared/Link';
 import Flex from '@razorpay/blade/src/atoms/Flex';
 import View from '@razorpay/blade/src/atoms/View';
 
-const BANNER_TEXT_MOB = 'Get ₹1 lakh free credits & special 1.85% pricing. Sign up now.';
-const BANNER_TEXT_DESK =
-  'Sign up now and get ₹1,00,000 in free credits and a special slashed pricing of 1.85%!';
-
 const Container = Styled(View)`
   overflow-y: auto;
   background: linear-gradient(0deg, rgba(2, 42, 156, 0.3), rgba(2, 42, 156, 0.3)), linear-gradient(232.85deg, #020529 -52%, #000B8E 198.1%);
@@ -178,6 +174,15 @@ const FullHeightFlex = Styled(Flex)`
   height: 100%;
 `;
 
+const InlineText = Styled(Text)`
+  display: inline;
+`;
+
+const StrikedInlineText = Styled(Text)`
+  display: inline;
+  text-decoration: line-through;
+`;
+
 const App = () => {
   const [showBanner, setShowBanner] = useState(false);
   const [hasCouponCode, setHasCouponCode] = useState(false);
@@ -231,15 +236,19 @@ const App = () => {
   const MobileBanner = () => {
     return (
       <MobileBannerView>
-        <Flex justifyContent="center">
-          <Space padding={[1.5, 4]}>
-            <MobileBannerBg>
-              <Text color="positive.900" size="small">
-                {BANNER_TEXT_MOB}
-              </Text>
-            </MobileBannerBg>
-          </Space>
-        </Flex>
+        <Space padding={[1.5, 4]}>
+          <MobileBannerBg>
+            <InlineText color="positive.900" size="small">
+              Complete the next steps now to unlock&nbsp;
+            </InlineText>
+            <StrikedInlineText color="positive.900" size="small">
+              2%
+            </StrikedInlineText>
+            <InlineText color="positive.900" size="small">
+              &nbsp;1.85% pricing & ₹1 lakh free credits!
+            </InlineText>
+          </MobileBannerBg>
+        </Space>
       </MobileBannerView>
     );
   };
@@ -250,7 +259,13 @@ const App = () => {
         <Flex justifyContent="center">
           <Space padding={[2.25, 0, 1.75, 0]}>
             <DesktopBannerBg>
-              <Text color="background.100">{BANNER_TEXT_DESK}</Text>
+              <InlineText color="background.100">
+                Complete the next steps now to unlock&nbsp;
+              </InlineText>
+              <StrikedInlineText color="background.100">2%</StrikedInlineText>
+              <InlineText color="background.100">
+                &nbsp;1.85% pricing & ₹1 lakh free credits!
+              </InlineText>
             </DesktopBannerBg>
           </Space>
         </Flex>
