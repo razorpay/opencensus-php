@@ -152,6 +152,7 @@ class Constants
 
     const COVID                           = 'covid';
     const SR_SENSITIVE                    = 'sr_sensitive';
+    const RAAS                            = 'raas';
 
     const PAYMENT_STATUS_AGGREGATE        = 'payment_status_aggregate';
 
@@ -660,6 +661,7 @@ class Constants
         self::CHECKOUT_DISABLE_RETRY          => true,
         self::COVID                           => true,
         self::SR_SENSITIVE                    => true,
+        self::RAAS                            => true,
         self::PAYMENTLINKS_V2                 => true,
         self::RECURRING_DEBIT_UMRN            => true,
         self::PAYMENTLINKS_COMPATIBILITY_V2   => true,

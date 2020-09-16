@@ -397,9 +397,30 @@ class GovernorService
 
         $auth = $this->getAdminAuthDetails();
 
-        if($method == 'POST'){
-            $userId = $this->app['basicauth']->getAdmin()->getId();
-            $data['created_by'] = $userId;
+        $isRaaSRequest = false;
+
+        // For merchant dashboard requests : RaaS
+        if (strpos($path, "merchant/mid/") !== false)
+        {
+            $isRaaSRequest = true;
+
+            $mid = $this->app['basicauth']->getMerchant()->getId();
+
+            $url =  str_replace_first('/mid/', "/" . $mid . "/", $url);
+        }
+
+        if ($method == 'POST')
+        {
+            if ($isRaaSRequest === true)
+            {
+                $userEmail = $this->app['basicauth']->getUser()->getEmail();
+            }
+            else
+            {
+                $userEmail = $this->app['basicauth']->getAdmin()->getEmail();
+            }
+
+            $content['created_by'] = $userEmail;
         }
 
         $headers[self::X_RAZORPAY_TASKID_HEADER] = $this->app['request']->getTaskId();

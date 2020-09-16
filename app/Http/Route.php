@@ -1764,7 +1764,17 @@ class Route
         'governor_update_rule_group_v1'           => ['put',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}',                  'GovernorController@proxy'              ],
 
         // Governor Proxy APIs New - Search
-        'governor_search_rules'                   => ['post',     'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/search',                                       'GovernorController@proxy'              ],
+        'governor_search_rules'                     => ['post',     'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/search',                                     'GovernorController@proxy'              ],
+
+        // Governor Navigator
+        'governor_list_merchant_providers'          => ['get',      'merchant/mid/providers',                                                                           'GovernorController@proxy'              ],
+        'governor_list_merchant_rule_groups'        => ['get',      'merchant/mid/rule_groups',                                                                         'GovernorController@proxy'              ],
+        'governor_get_merchant_rule_group'          => ['get',      'merchant/mid/rule_groups/{rule_group_id}',                                                         'GovernorController@proxy'              ],
+        'governor_reorder_merchant_rule_groups'     => ['put',      'merchant/mid/reorder_rule_groups',                                                                 'GovernorController@proxy'              ],
+        'governor_update_merchant_rule_group'       => ['put',      'merchant/mid/rule_groups/{rule_group_id}',                                                         'GovernorController@proxy'              ],
+        'governor_update_merchant_rule_group_mode'  => ['put',      'merchant/mid/rule_groups/{rule_group_id}/mode/{mode}',                                             'GovernorController@proxy'              ],
+        'governor_create_merchant_rule_group'       => ['post',     'merchant/mid/rule_groups',                                                                         'GovernorController@proxy'              ],
+        'governor_delete_merchant_rule_group'       => ['delete',   'merchant/mid/rule_groups/{rule_group_id}',                                                         'GovernorController@proxy'              ],
 
         'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                           ],
         'banking_account_create_admin'            => ['post',     'banking_accounts_admin',                                    'BankingAccountController@create'                           ],
@@ -3060,6 +3070,17 @@ class Route
         'payouts_scheduled_time_slots',
         'proxy_merchant_get_pricing',
         'payment_links_sign_payload',
+
+        // governor merchant dashboard
+        'governor_list_merchant_providers',
+        'governor_list_merchant_rule_groups',
+        'governor_get_merchant_rule_group',
+        'governor_reorder_merchant_rule_groups',
+        'governor_update_merchant_rule_group',
+        'governor_update_merchant_rule_group_mode',
+        'governor_create_merchant_rule_group',
+        'governor_delete_merchant_rule_group',
+
         'currency_fetch_rates_proxy',
         'invoice_send_notification_proxy',
 
@@ -3522,8 +3543,8 @@ class Route
         'banking_account_activation_detail_create',
         'banking_account_activation_detail_update',
 
-        'governor_create_namespace_v1',
         'governor_get_client_v1',
+        'governor_create_namespace_v1',
         'governor_list_namespace_v1',
         'governor_get_namespace_v1',
         'governor_update_namespace_v1',
@@ -4283,6 +4304,8 @@ class Route
 
         'governor_create_namespace_v1'             => Permission::CREATE_GATEWAY_RULE,
         'governor_get_client_v1'                   => Permission::VIEW_GATEWAY_RULE,
+        'governor_get_merchant_rule_group'         => Permission::VIEW_GATEWAY_RULE,
+        'governor_list_merchant_providers'         => Permission::VIEW_GATEWAY_RULE,
         'governor_list_namespace_v1'               => Permission::VIEW_GATEWAY_RULE,
         'governor_get_namespace_v1'                => Permission::VIEW_GATEWAY_RULE,
         'governor_update_namespace_v1'             => Permission::EDIT_GATEWAY_RULE,
@@ -4308,11 +4331,18 @@ class Route
         'governor_update_chain_group_sequence_v1'  => Permission::EDIT_GATEWAY_RULE,
         'governor_list_rule_groups_v1'             => Permission::VIEW_GATEWAY_RULE,
         'governor_create_rule_group_v1'            => Permission::CREATE_GATEWAY_RULE,
+        'governor_create_merchant_rule_group'      => Permission::CREATE_GATEWAY_RULE,
         'governor_create_bulk_rule_group_v1'       => Permission::CREATE_GATEWAY_RULE,
         'governor_get_rule_group_v1'               => Permission::VIEW_GATEWAY_RULE,
         'governor_delete_rule_group_v1'            => Permission::DELETE_GATEWAY_RULE,
         'governor_update_rule_group_v1'            => Permission::EDIT_GATEWAY_RULE,
+        'governor_update_merchant_rule_group'      => Permission::EDIT_GATEWAY_RULE,
+        'governor_list_merchant_rule_groups'       => Permission::VIEW_GATEWAY_RULE,
+        'governor_reorder_merchant_rule_groups'    => Permission::EDIT_GATEWAY_RULE,
         'governor_search_rules'                    => Permission::VIEW_GATEWAY_RULE,
+        'governor_delete_merchant_rule_group'      => Permission::DELETE_GATEWAY_RULE,
+        'governor_update_merchant_rule_group_mode' => Permission::EDIT_GATEWAY_RULE,
+
 
 
         //Enable maker/checker for payouts
