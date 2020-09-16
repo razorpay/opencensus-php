@@ -16,7 +16,7 @@ const CURRENT_BALANCE_FETCH = 'CURRENT_BALANCE_FETCH';
 const FETCH_REFUND_FEE = 'FETCH_REFUND_FEE';
 const MERCHANT_MANUAL_PAYMENT_ACTION = 'MERCHANT_MANUAL_PAYMENT_ACTION';
 
-export const fetchItem = id => {
+export const fetchItem = (id) => {
   let payment = new Payment();
 
   return {
@@ -25,55 +25,49 @@ export const fetchItem = id => {
       id,
       {},
       {
-        expand: [
-          'card',
-          'emi_plan',
-          'disputes',
-          'transaction',
-          'transaction.settlement',
-        ],
-        dashboard_flag: ['instant_refund_support'],
+        expand: ['card', 'emi_plan', 'disputes', 'transaction', 'transaction.settlement'],
+        dashboard_flag: ['refund_create_data'],
       }
     ),
   };
 };
 
-export const fetchCardDetails = payment => {
+export const fetchCardDetails = (payment) => {
   return {
     type: PAYMENT_FETCH_CARD_DETAILS,
     payload: payment.fetchCardDetails(),
   };
 };
 
-export const fetchRefunds = payment => {
+export const fetchRefunds = (payment) => {
   return {
     type: PAYMENT_FETCH_REFUNDS,
     payload: payment.fetchRefunds(),
   };
 };
 
-export const fetchTransfers = payment => {
+export const fetchTransfers = (payment) => {
   return {
     type: PAYMENT_FETCH_TRANSFERS,
     payload: payment.fetchTransfers(),
   };
 };
 
-export const capturePayment = payment => {
+export const capturePayment = (payment) => {
   return {
     type: PAYMENT_CAPTURE,
     payload: payment.capture(),
   };
 };
 
-export const fetchBankTransfer = payment => {
+export const fetchBankTransfer = (payment) => {
   return {
     type: PAYMENT_FETCH_BANK_TRANSFER,
     payload: payment.fetchBankTransfer(),
   };
 };
 
-export const fetchUPITransfer = payment => {
+export const fetchUPITransfer = (payment) => {
   return {
     type: PAYMENT_FETCH_UPI_TRANSFER,
     payload: payment.fetchUPITransfer(),
@@ -113,7 +107,7 @@ export const fetchRefundFee = (payment, amount) => {
   };
 };
 
-export const fetchMerchantManualAction = payment_id => {
+export const fetchMerchantManualAction = (payment_id) => {
   return {
     type: MERCHANT_MANUAL_PAYMENT_ACTION,
     payload: merchantFetch(`payment/${payment_id}/merchant/actions`),

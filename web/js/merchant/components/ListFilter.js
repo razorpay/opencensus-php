@@ -1,10 +1,7 @@
 import { Component } from 'react';
 import { reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import {
-  stringifyQueryParams,
-  getURLQueryParams,
-} from 'common/utils/rzp-utils';
+import { stringifyQueryParams, getURLQueryParams } from 'common/utils/rzp-utils';
 import { withRouter } from 'react-router-dom';
 
 @reduxForm({})
@@ -17,10 +14,7 @@ export default class ListFilter extends Component {
 
   // update search query
   componentWillReceiveProps(nextProps) {
-    if (
-      decodeURI(this.props.location.search) !==
-      decodeURI(nextProps.location.search)
-    ) {
+    if (decodeURI(this.props.location.search) !== decodeURI(nextProps.location.search)) {
       this.initSearchForm(nextProps);
     }
   }
@@ -47,7 +41,7 @@ export default class ListFilter extends Component {
   }
 
   // update query params in url before search
-  handleOnSubmit = props => {
+  handleOnSubmit = (props) => {
     this.props.history.push({
       pathname: this.props.location.pathname,
       search: stringifyQueryParams(props),
@@ -81,16 +75,10 @@ export default class ListFilter extends Component {
       >
         {this.props.children}
         <div class="form-group list-filter-item btn-toolbar">
-          <AsyncButton
-            class="btn-sm btn-default"
-            onClick={handleSubmit(this.handleOnSubmit)}
-            text="Search"
-          />
-          <AsyncButton
-            class="btn btn-sm btn-link"
-            onClick={this.resetForm}
-            text="Clear"
-          />
+          <button class="btn btn-primary btn-sm" onClick={handleSubmit(this.handleOnSubmit)}>
+            Search
+          </button>
+          <AsyncButton class="btn btn-sm btn-link" onClick={this.resetForm} text="Clear" />
         </div>
       </form>
     );

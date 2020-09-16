@@ -5,12 +5,7 @@ import * as id from './id';
 import { getAmount, getTime } from 'common/ui/item';
 import { makeIdLink } from 'common/ui/item/id';
 import { getIntervalCycle, subString } from 'common/utils/rzp-utils';
-import {
-  roles,
-  agentRole,
-  RBLRoles,
-  RegistrationLinkRoles,
-} from 'merchant/helpers/data';
+import { roles, agentRole, RBLRoles, RegistrationLinkRoles } from 'merchant/helpers/data';
 
 const allRoles = {
   ...roles,
@@ -20,7 +15,7 @@ const allRoles = {
 };
 import { RefundStatusLabel } from 'merchant/components/StatusLabel';
 
-export const withClick = onClick => ({ value, ...rest }) => {
+export const withClick = (onClick) => ({ value, ...rest }) => {
   return {
     value: <span onClick={onClick}>{value}</span>,
     ...rest,
@@ -47,7 +42,7 @@ export const amountTransferred = {
 
 export const customer = {
   title: 'Customer',
-  value: item => (
+  value: (item) => (
     <div>
       <span class="contact">{item.contact}</span>
       <br />
@@ -56,17 +51,17 @@ export const customer = {
   ),
 };
 
-export const email = { title: 'Email', value: item => item.email };
-export const contact = { title: 'Contact', value: item => item.contact };
-export const currency = { title: 'Currency', value: item => item.currency };
+export const email = { title: 'Email', value: (item) => item.email };
+export const contact = { title: 'Contact', value: (item) => item.contact };
+export const currency = { title: 'Currency', value: (item) => item.currency };
 export const status = { title: 'Status', value: items.status };
 export const public_status = {
   title: 'Status',
-  value: item => <RefundStatusLabel status={item.public_status} />,
+  value: (item) => <RefundStatusLabel status={item.public_status} />,
 };
 export const paidCount = {
   title: 'Paid Count',
-  value: item => item.paid_count,
+  value: (item) => item.paid_count,
 };
 export const paidOn = { title: 'Paid On', value: items.createdAt };
 export const createdAt = { title: 'Created At', value: items.createdAt };
@@ -74,9 +69,9 @@ export const createdAtShort = {
   title: createdAt.title,
   value: items.createdAtShort,
 };
-export const attempts = { title: 'Attempts', value: item => item.attempts };
-export const receipt = { title: 'Receipt', value: item => item.receipt };
-export const totalCount = { title: 'Count', value: item => item.total_count };
+export const attempts = { title: 'Attempts', value: (item) => item.attempts };
+export const receipt = { title: 'Receipt', value: (item) => item.receipt };
+export const totalCount = { title: 'Count', value: (item) => item.total_count };
 
 export const paymentId = { title: 'Payment Id', value: id.payment };
 export const orderId = { title: 'Order Id', value: id.order };
@@ -84,19 +79,19 @@ export const rzpOrderId = { title: 'Razorpay Order Id', value: id.order };
 export const refundId = { title: 'Refund Id', value: id.refund };
 export const refundMode = {
   title: 'Mode',
-  value: item => item.mode,
+  value: (item) => item.mode,
 };
 export const refundSpeed = {
   title: 'Speed',
-  value: item => item.speed,
+  value: (item) => item.speed,
 };
 export const refundStatus = {
   title: 'Status',
-  value: item => <RefundStatusLabel status={item.public_status} />,
+  value: (item) => <RefundStatusLabel status={item.status} />,
 };
 export const customerRefundId = {
   title: 'Refund Id',
-  value: item => item.customer_refund_id,
+  value: (item) => item.customer_refund_id,
 };
 export const settlementId = { title: 'Settlemt Id', value: id.settlement };
 export const transferId = { title: 'Transfer Id', value: id.transfer };
@@ -113,15 +108,15 @@ export const submerchantId = { title: 'Account ID', value: id.submerchantId };
 export const earningId = { title: 'Earning ID', value: id.commission };
 export const subventionId = { title: 'Subvention Id', value: id.commission };
 
-export const mapValues = values => title => {
-  return { title, value: item => values[item.id] };
+export const mapValues = (values) => (title) => {
+  return { title, value: (item) => values[item.id] };
 };
 
 // this is notes order_id mixed
-export const paymentOrder = orders => mapValues(orders)(orderId.title);
+export const paymentOrder = (orders) => mapValues(orders)(orderId.title);
 
 // Razorpay order_id
-export const rzpPaymentOrder = orders => mapValues(orders)(rzpOrderId.title);
+export const rzpPaymentOrder = (orders) => mapValues(orders)(rzpOrderId.title);
 
 // Virtual Accounts
 export const virtualAccountId = {
@@ -130,7 +125,7 @@ export const virtualAccountId = {
 };
 export const accountDescription = {
   title: 'Account Description',
-  value: item => item.description,
+  value: (item) => item.description,
 };
 export const amountPaid = {
   title: 'Amount Paid',
@@ -146,7 +141,7 @@ export const subscriptionId = {
 
 export const customerId = {
   title: 'Customer Id',
-  value: item => item.customer_id,
+  value: (item) => item.customer_id,
 };
 
 export const nextDueOn = {
@@ -162,7 +157,7 @@ export const planId = {
 
 export const planName = {
   title: 'Plan Name',
-  value: item => item.item.name,
+  value: (item) => item.item.name,
 };
 
 export const planAmount = {
@@ -173,41 +168,39 @@ export const planAmount = {
 
 export const planBillingCycle = {
   title: 'Billing Cycle',
-  value: item => getIntervalCycle(item.interval, item.period),
+  value: (item) => getIntervalCycle(item.interval, item.period),
 };
 
 //Batch
 
 export const batchName = {
   title: 'Batch Name',
-  value: item => subString(item.name, 50),
+  value: (item) => subString(item.name, 50),
 };
 
 export const role = {
   title: 'Role',
-  value: item => (allRoles[item.role] || {}).label,
+  value: (item) => (allRoles[item.role] || {}).label,
 };
 
 // Payment Button
 export const buttonTitle = {
   title: 'Title',
-  value: item => (
-    <NavLink to={`/paymentbuttons/${item.id}/payments#paymentbuttons`}>
-      {item.title}
-    </NavLink>
+  value: (item) => (
+    <NavLink to={`/paymentbuttons/${item.id}/payments#paymentbuttons`}>{item.title}</NavLink>
   ),
 };
 export const itemName = {
   title: 'Item Name',
-  value: item =>
-    item.payment_page_items.map(payment_page_item => (
+  value: (item) =>
+    item.payment_page_items.map((payment_page_item) => (
       <div class="item-ellipsis">{payment_page_item.item.name}</div>
     )),
 };
 export const unitsSold = {
   title: 'Units Sold',
-  value: item =>
-    item.payment_page_items.map(payment_page_item => (
+  value: (item) =>
+    item.payment_page_items.map((payment_page_item) => (
       <div class="item-ellipsis">{payment_page_item.quantity_sold}</div>
     )),
 };

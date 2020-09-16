@@ -3,7 +3,7 @@ import { Field } from 'redux-form';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { connect } from 'react-redux';
 
-@connect(state => {
+@connect((state) => {
   return {
     rs_filter: state.config.config.rs_filter,
   };
@@ -19,23 +19,16 @@ export default class RefundListFilter extends React.Component {
 
         <div class="form-group list-filter-item">
           <label>Payment Id</label>
-          <Field
-            name="payment_id"
-            component="input"
-            class="form-control input-sm"
-          />
+          <Field name="payment_id" component="input" class="form-control input-sm" />
         </div>
         {this.props.rs_filter ? (
           <div class="form-group list-filter-item">
             <label>Status</label>
-            <Field
-              name="public_status"
-              component="select"
-              class="form-control input-sm"
-            >
+            <Field name="public_status" component="select" class="form-control input-sm">
               <option value="">All</option>
               <option value="processed">Processed</option>
               <option value="processing">Processing</option>
+              <option value="failed">Failed</option>
             </Field>
           </div>
         ) : null}
