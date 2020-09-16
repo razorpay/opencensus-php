@@ -855,7 +855,7 @@ class Header
     const LOC_WITHDRAWAL_CHEQUE_NUMBER              = 'Cheque Number';
     const LOC_WITHDRAWAL_TRN_DATE                   = 'Chq / Trn Date';
     const LOC_WITHDRAWAL_MICR_NUMBER                = 'MICR Number';
-    const LOC_WITHDRAWAL_IFC_CODE                   = 'IFC Code';
+    const LOC_WITHDRAWAL_IFSC_CODE                   = 'IFSC Code';
     const LOC_WITHDRAWAL_BENE_BANK_NAME             = 'Bene Bank Name';
     const LOC_WITHDRAWAL_BENE_BANK_BRANCH_NAME      = 'Bene Bank Branch Name';
     const LOC_WITHDRAWAL_BENE_EMAIL_ID              = 'Beneficiary email id';
@@ -2789,7 +2789,7 @@ class Header
                 self::LOC_WITHDRAWAL_CHEQUE_NUMBER,
                 self::LOC_WITHDRAWAL_TRN_DATE,
                 self::LOC_WITHDRAWAL_MICR_NUMBER,
-                self::LOC_WITHDRAWAL_IFC_CODE,
+                self::LOC_WITHDRAWAL_IFSC_CODE,
                 self::LOC_WITHDRAWAL_BENE_BANK_NAME,
                 self::LOC_WITHDRAWAL_BENE_BANK_BRANCH_NAME,
                 self::LOC_WITHDRAWAL_BENE_EMAIL_ID,
@@ -2824,7 +2824,7 @@ class Header
                 self::LOC_WITHDRAWAL_CHEQUE_NUMBER,
                 self::LOC_WITHDRAWAL_TRN_DATE,
                 self::LOC_WITHDRAWAL_MICR_NUMBER,
-                self::LOC_WITHDRAWAL_IFC_CODE,
+                self::LOC_WITHDRAWAL_IFSC_CODE,
                 self::LOC_WITHDRAWAL_BENE_BANK_NAME,
                 self::LOC_WITHDRAWAL_BENE_BANK_BRANCH_NAME,
                 self::LOC_WITHDRAWAL_BENE_EMAIL_ID,
