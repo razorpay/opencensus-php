@@ -16,6 +16,8 @@ class Issued extends Base
         Type::ECOD                              => ' Requesting payment of %s %s (via Razorpay)',
         Type::INVOICE                           => ' Invoice from %s',
         Preferences::MID_RBL_RETAIL_ASSETS      => ' Mandate registration link from RBL Bank',
+        Preferences::MID_RBL_RETAIL_CUSTOMER    => ' Mandate registration link from RBL Bank',
+        Preferences::MID_RBL_RETAIL_PRODUCT     => ' Mandate registration link from RBL Bank',
         Preferences::MID_RBL_INTERIM_PROCESS2   => ' Mandate registration link from RBL Bank',
         Preferences::MID_ADITYA_BIRLA_HEALTH    => ' Auto Debit Registration for Policy - %s',
         'pp_invoice'                            => ' Payment Page',
@@ -39,6 +41,18 @@ class Issued extends Base
             case Preferences::MID_RBL_RETAIL_ASSETS:
 
                 $this->view('emails.invoice.customer.custom.rbl_retail_assets');
+
+                break;
+
+            case Preferences::MID_RBL_RETAIL_CUSTOMER:
+
+                $this->view('emails.invoice.customer.custom.rbl_retail_customer');
+
+                break;
+
+            case Preferences::MID_RBL_RETAIL_PRODUCT:
+
+                $this->view('emails.invoice.customer.custom.rbl_retail_product');
 
                 break;
 

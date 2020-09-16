@@ -436,6 +436,8 @@ class ViewDataSerializer extends Base\Core
         switch ($this->merchant->getId())
         {
             case Preferences::MID_RBL_RETAIL_ASSETS:
+            case Preferences::MID_RBL_RETAIL_CUSTOMER:
+            case Preferences::MID_RBL_RETAIL_PRODUCT:
 
                 $serialized['rbl_emandate_retail_asset'] = true;
 

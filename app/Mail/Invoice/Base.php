@@ -137,6 +137,8 @@ class Base extends Mailable
         switch ($merchantId)
         {
             case Preferences::MID_RBL_RETAIL_ASSETS:
+            case Preferences::MID_RBL_RETAIL_CUSTOMER:
+            case Preferences::MID_RBL_RETAIL_PRODUCT:
 
                 if (empty(static::SUBJECT_TEMPLATES[$merchantId]) === false)
                 {
