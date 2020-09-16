@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Services\Mozart;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Services\UfhService;
 use RZP\Models\D2cBureauDetail;
 use Illuminate\Http\UploadedFile;
@@ -34,33 +35,57 @@ class Core extends Base\Core
         /** @var Mozart $mozartService */
         $mozartService = $this->app->mozart;
 
-        try
+        $retryCount = 3;
+
+        while (true)
         {
-            $response = $mozartService->sendMozartRequest(self::MOZART_NAMESPACE,
-                                                          Provider::EXPERIAN,
-                                                          self::MOZART_GET_REPORT_ACTION,
-                                                          $request,
-                                                          Mozart::DEFAULT_MOZART_VERSION,
-                                                          true);
-        }
-        catch (\RZP\Exception\GatewayErrorException $e)
-        {
-            $input = [
-                Entity::PROVIDER    => Provider::EXPERIAN,
-                Entity::ERROR_CODE  => $e->getError()->getInternalErrorCode(),
-            ];
+            try
+            {
+                $response = $mozartService->sendMozartRequest(self::MOZART_NAMESPACE,
+                                                              Provider::EXPERIAN,
+                                                              self::MOZART_GET_REPORT_ACTION,
+                                                              $request,
+                                                              Mozart::DEFAULT_MOZART_VERSION,
+                                                              true);
 
-            $report = (new Entity)->build($input);
+                break;
+            }
+            catch (\RZP\Exception\GatewayErrorException $e)
+            {
+                if (($e->getError()->getInternalErrorCode() === ErrorCode::GATEWAY_ERROR_REQUEST_ERROR) and
+                    ($retryCount > 0))
+                {
+                    $retryCount--;
 
-            $report->merchant()->associate($merchant);
+                    continue;
+                }
 
-            $report->user()->associate($user);
+                $input = [
+                    Entity::PROVIDER    => Provider::EXPERIAN,
+                    Entity::ERROR_CODE  => $e->getError()->getInternalErrorCode(),
+                ];
 
-            $report->d2cBureauDetail()->associate($bureauDetail);
+                $report = (new Entity)->build($input);
 
-            $this->repo->saveOrFail($report);
+                $report->merchant()->associate($merchant);
 
-            throw $e;
+                $report->user()->associate($user);
+
+                $report->d2cBureauDetail()->associate($bureauDetail);
+
+                $this->repo->saveOrFail($report);
+
+                throw $e;
+            }
+            catch (\Requests_Exception $e)
+            {
+                if ($retryCount > 0)
+                {
+                    $retryCount--;
+
+                    continue;
+                }
+            }
         }
 
         // Response contains 4 keys:
