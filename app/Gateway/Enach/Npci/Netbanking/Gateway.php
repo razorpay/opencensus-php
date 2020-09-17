@@ -754,8 +754,8 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        if ((isset($content[ResponseXmlTags::ACCEPTED]) === true) and
-            ($content[ResponseXmlTags::ACCEPTED] === RegistrationStatus::SUCCESS))
+        if ((isset($content[ResponseXmlTags::REJECTION_CODE]) === true) and
+            ($content[ResponseXmlTags::REJECTION_CODE] === RegistrationStatus::VERIFY_SUCCESS))
         {
             $verify->gatewaySuccess = true;
         }

@@ -99,7 +99,7 @@ class Server extends Base\Mock\Server
                     ResponseXmlTags::ACCEPTED           => 'true',
                     ResponseXmlTags::ACCEPT_REF_NO      => self::ACCEPT_REF_NO,
                     ResponseXmlTags::MANDATE_ID         => 'YESB12390812477',
-                    'ReasonCode'                        => '',
+                    'ReasonCode'                        => '000',
                     'ReasonDesc'                        => '',
                     'RejectBy'                          => '',
                     'ErrorCode'                         => '',

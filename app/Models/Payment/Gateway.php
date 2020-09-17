@@ -1242,7 +1242,6 @@ class Gateway
         self::NETBANKING_CORPORATION,
         self::NETBANKING_IDFC,
         self::NETBANKING_VIJAYA,
-        self::ENACH_NPCI_NETBANKING,
         self::NETBANKING_CBI,
         self::HDFC_DEBIT_EMI,
         self::NETBANKING_SVC,

@@ -13,6 +13,8 @@ class RegistrationStatus
     const SUCCESS = 'true';
     const FAILURE = 'false';
 
+    const VERIFY_SUCCESS = '000';
+
     const STATUS_TO_RECURRING_STATUS_MAP = [
         self::SUCCESS => Token\RecurringStatus::CONFIRMED,
         self::FAILURE => Token\RecurringStatus::REJECTED
