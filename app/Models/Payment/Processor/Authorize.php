@@ -784,7 +784,16 @@ trait Authorize
             }
         }
 
-        return ['razorpay_payment_id' => $payment->getPublicId()];
+        $data = ['razorpay_payment_id' => $payment->getPublicId()];
+
+        if (($payment->hasOrder() === true) and
+            ($this->app['basicauth']->isProxyOrPrivilegeAuth() === false) and
+            ($this->app->runningInQueue() === false))
+        {
+            $this->fillReturnDataWithOrder($payment, $data);
+        }
+
+        return $data;
     }
 
     protected function processPaymentFinal(Payment\Entity $payment, array & $gatewayInput, array $data): array

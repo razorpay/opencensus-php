@@ -285,7 +285,52 @@ return [
         ],
         'response'  => [
             'content'     => [
+                'razorpay_order_id' => 'order_100000000order',
             ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testCreatePaymentForNachAuto' => [
+        'request' => [
+            'content' => [
+                "amount"      => 10000,
+                "currency"    => "INR",
+                "order_id"    => "order_100000001order",
+                "customer_id" => "cust_1000000000cust",
+                "recurring"   => true,
+                "contact"     => "9483159238",
+                "email"       => "r@g.c",
+                "token"       => 'token_id',
+            ],
+            'method'    => 'POST',
+            'url'       => '/payments/create/recurring',
+        ],
+        'response'  => [
+            'content'     => [
+                'razorpay_order_id' => 'order_100000001order',
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testCreatePaymentForNachAutoProxyAuth' => [
+        'request' => [
+            'content' => [
+                "amount"      => 10000,
+                "currency"    => "INR",
+                "order_id"    => "order_100000001order",
+                "customer_id" => "cust_1000000000cust",
+                "recurring"   => true,
+                "contact"     => "9483159238",
+                "email"       => "r@g.c",
+                "token"       => 'token_id',
+            ],
+            'method'    => 'POST',
+            'url'       => '/subscription_registration/tokens/{id}/charge',
+        ],
+        'response'  => [
+            'content'     => [],
             'status_code' => 200,
         ]
     ],

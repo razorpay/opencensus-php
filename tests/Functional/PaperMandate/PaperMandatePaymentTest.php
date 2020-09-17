@@ -51,7 +51,66 @@ class PaperMandatePaymentTest extends TestCase
             ],
         ]);
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals($payment->getPublicId(), $response['razorpay_payment_id'] ?? null);
+
+        $this->assertNotNull($response['razorpay_signature']);
+    }
+
+    public function testCreatePaymentForNachAuto()
+    {
+        $this->testCreatePaymentForNach();
+
+        $token = $this->getDbLastEntity('token');
+        $token->setRecurringStatus('confirmed');
+        $token->setRecurring(true);
+        $token->saveOrFail();
+
+        $this->fixtures->create(E::ORDER,[
+            'id'     => '100000001order',
+            'amount' => 10000
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['token'] = $token->getPublicId();
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals($payment->getPublicId(), $response['razorpay_payment_id'] ?? null);
+
+        $this->assertNotNull($response['razorpay_signature'] ?? null);
+    }
+
+    public function testCreatePaymentForNachAutoProxyAuth()
+    {
+        $this->testCreatePaymentForNach();
+
+        $token = $this->getDbLastEntity('token');
+        $token->setRecurringStatus('confirmed');
+        $token->setRecurring(true);
+        $token->saveOrFail();
+
+        $this->fixtures->create(E::ORDER,[
+            'id'     => '100000001order',
+            'amount' => 10000
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/subscription_registration/tokens/' .
+            $token->getPublicId() . '/charge';
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals($payment->getPublicId(), $response['razorpay_payment_id'] ?? null);
     }
 
     public function testCreatePaymentForNachFormNotSubmitted()
@@ -335,8 +394,10 @@ class PaperMandatePaymentTest extends TestCase
         $bankAccount = array_pull($overrideWith, E::BANK_ACCOUNT, []);
 
         $this->fixtures->create(
-            E::CUSTOMER,
-            ['id' => '1000000000cust']
+            E::CUSTOMER,[
+                'id'    => '1000000000cust',
+                'email' => 'r@g.c',
+            ]
         );
 
         $paperMandate = $this->fixtures
