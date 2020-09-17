@@ -123,7 +123,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     protected function getInputForForceAuthorize($row)
     {
         return [
-            'gateway_payment_id'    => $this->getGatewayTransactionId($row)
+            'gateway_payment_id'    => $this->getGatewayTransactionId($row),
+            'acquirer'              =>  [
+                'reference1' => $this->getGatewayTransactionId($row),
+            ]
         ];
     }
 }

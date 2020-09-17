@@ -105,6 +105,12 @@ class NbplusNetbankingSvcReconciliationTest extends NbPlusPaymentServiceTest
 
         $this->reconcile($uploadedFile, Base::NETBANKING_SVC, [$payment['public_id']]);
 
+        $paymentEntity = $this->getDbLastEntity('payment');
+
+        $this->assertEquals($paymentEntity['acquirer_data']['bank_transaction_id'], 1234);
+
+        $this->assertEquals($paymentEntity['reference1'], 1234);
+
         $transactionEntity = $this->getDbLastEntity(Entity::TRANSACTION);
 
         $this->assertNotNull($transactionEntity[Txn::RECONCILED_AT]);

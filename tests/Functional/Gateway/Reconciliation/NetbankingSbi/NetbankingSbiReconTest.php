@@ -131,6 +131,41 @@ class NetbankingSbiReconTest extends TestCase
         $this->assertPaymentReconSkipped($payment, $netbanking);
     }
 
+    public function testReconPaymentForceAuth()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $payment = $this->makePaymentsSince($createdAt, 1)[0];
+
+        $this->ba->appAuth();
+
+        $fileContents = $this->generateReconFile();
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path'], 'razorpay.txt');
+
+        $this->fixtures->payment->edit($payment,
+            [
+                'status'        => 'failed',
+                'authorized_at' => null,
+                'error_code'    => 'BAD_REQUEST_ERROR',
+            ]);
+
+        $this->reconcile($uploadedFile, Recon::NETBANKING_SBI, [ 'pay_'. $payment ]);
+
+        $paymentEntity = $this->getDbLastEntity('payment');
+
+        $this->assertEquals($paymentEntity['reference1'], 9999999999);
+
+        $this->assertEquals($paymentEntity['acquirer_data']['bank_transaction_id'], 9999999999);
+
+        $batch = $this->getLastEntity('batch', true);
+
+        $this->assertEquals(1, $batch['total_count']);
+        $this->assertEquals(1, $batch['success_count']);
+        $this->assertEquals(0, $batch['failure_count']);
+        $this->assertEquals(Status::PROCESSED, $batch['status']);
+    }
+
     //----------------------------------------------- Refund Recon ----------------------------------------------------
 
     public function testRefundRecon()

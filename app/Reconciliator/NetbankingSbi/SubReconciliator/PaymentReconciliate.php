@@ -75,4 +75,14 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         return PaymentStatus::FAILED;
     }
+
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            'gateway_payment_id'  => $this->getReferenceNumber($row),
+            'acquirer'            =>  [
+                'reference1' => $this->getReferenceNumber($row),
+            ]
+        ];
+    }
 }

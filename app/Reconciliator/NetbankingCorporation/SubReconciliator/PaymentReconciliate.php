@@ -67,6 +67,9 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         return [
             'gateway_payment_id' => $row[ReconciliationFields::BANK_TXN_ID],
+            'acquirer'           =>  [
+                'reference1' => $this->getReferenceNumber($row),
+            ]
         ];
     }
 }

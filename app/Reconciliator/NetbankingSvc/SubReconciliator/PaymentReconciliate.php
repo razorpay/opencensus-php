@@ -49,4 +49,13 @@ class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
     {
         return $row[Reconciliate::PAYMENT_DATE] ?? null;
     }
+
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            'acquirer'            =>  [
+                'reference1' => $this->getReferenceNumber($row),
+            ]
+        ];
+    }
 }

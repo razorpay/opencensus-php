@@ -83,4 +83,13 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         return null;
     }
+
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            'acquirer' =>  [
+                'reference1' => $this->getReferenceNumber($row),
+            ]
+        ];
+    }
 }

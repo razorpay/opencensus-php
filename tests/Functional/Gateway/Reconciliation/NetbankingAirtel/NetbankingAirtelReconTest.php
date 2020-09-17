@@ -91,6 +91,7 @@ class NetbankingAirtelReconTest extends TestCase
             $this->fixtures->payment->edit($payment,
                 [
                     'status' => 'failed',
+                    'authorized_at' => null,
                     'error_code' => 'BAD_REQUEST_ERROR',
                 ]);
 
@@ -115,6 +116,10 @@ class NetbankingAirtelReconTest extends TestCase
         foreach ($netbanking['items'] as $id => $netbankingEntity)
         {
             $payment = $this->getEntityById('payment', $payments[$id], true);
+
+            $this->assertNotNull($payment['reference1']);
+
+            $this->assertNotNull($payment['acquirer_data']['bank_transaction_id']);
 
             $this->assertEquals(true, $payment['gateway_captured']);
 

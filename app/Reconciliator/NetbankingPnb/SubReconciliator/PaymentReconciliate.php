@@ -35,6 +35,18 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return null;
     }
 
+    protected function getArn($row)
+    {
+        if (isset($row[ReconFields::BANK_PAYMENT_ID]) === true)
+        {
+            $referenceNumber = $row[ReconFields::BANK_PAYMENT_ID];
+
+            return $referenceNumber;
+        }
+
+        return null;
+    }
+
     protected function getGatewayPaymentDate($row)
     {
         return $row[ReconFields::DATE] ?? null;
@@ -50,5 +62,15 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     public function getGatewayPayment($paymentId)
     {
         return $this->repo->netbanking->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
+    }
+
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            'gateway_payment_id' => $this->getReferenceNumber($row),
+            'acquirer'           =>       [
+                'reference1' => $this->getReferenceNumber($row),
+            ]
+        ];
     }
 }

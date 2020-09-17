@@ -6,7 +6,7 @@ class PaymentReconFields
 {
     const MERCHANT_ID        = 'merchant_id';
     const GATEWAY_REF_NO     = 'gateway_reference_number';
-    const BANK_TRAN_REF_NO   = 'bank_transaction_referenceNo';
+    const BANK_TRAN_REF_NO   = 'bank_transaction_referenceno';
     const TRANSACTION_AMOUNT = 'transaction_amount';
     const STATUS             = 'status';
     const TRANSACTION_DATE   = 'transaction_date';
