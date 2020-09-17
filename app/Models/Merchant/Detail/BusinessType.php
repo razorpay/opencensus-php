@@ -114,7 +114,6 @@ class BusinessType
     protected static $ValidateCINBusinessType = [
         self::PRIVATE_LIMITED,
         self::PUBLIC_LIMITED,
-        self::LLP,
     ];
 
     public static function isBusinessTypeGreylistedForInternational($businessType = null)
