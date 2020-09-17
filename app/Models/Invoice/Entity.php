@@ -967,18 +967,14 @@ class Entity extends Base\PublicEntity
 
    public function isFullyPaid(Payment\Entity $payment)
     {
-        // PAYAPPS-1541 : mark PL as paid if offer was applied
-        if ($this->getType() === Type::LINK)
+        if($payment->discount !== null)
         {
-            if($payment->discount !== null)
-            {
-                $discount = $payment->discount->getAmount();
+            $discount = $payment->discount->getAmount();
 
-                // logic : paid amount + offer discount amount = PL amount
-                if (($payment->getAmount() + $discount) === $this->getAmount())
-                {
-                    return true;
-                }
+            // logic : paid amount + offer discount amount = PL amount
+            if (($payment->getAmount() + $discount) === $this->getAmount())
+            {
+                return true;
             }
         }
 
