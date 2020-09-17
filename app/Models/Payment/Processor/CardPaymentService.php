@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Constants\Environment;
 use RZP\Gateway\Base\Metric;
 use RZP\Diag\EventCode;
 use RZP\Exception;
@@ -45,6 +46,11 @@ trait CardPaymentService
             return false;
         }
 
+        if ($this->app['env'] === Environment::PRODUCTION)
+        {
+            return false;
+        }
+
         $variant = $this->app->razorx->getTreatment($payment->getMerchantId(), self::CARD_PAYMENTS_AUTHORIZE_ALL_TERMINALS, $this->mode);
 
         $this->trace->info(TraceCode::CPS_RAZORX_VARIANT, [
@@ -52,8 +58,7 @@ trait CardPaymentService
             'merchant_id'    => $payment->getMerchantId(),
             'razorx_variant' => $variant,
         ]);
-
-
+        
         if (strtolower($variant) !== 'on')
         {
             return false;
