@@ -572,4 +572,13 @@ class SettlementController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function replaySettlementsStatusUpdate()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->replaySettlementsStatusUpdate($input);
+
+        return ApiResponse::json($data);
+    }
 }

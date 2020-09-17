@@ -842,4 +842,11 @@ class Service extends Base\Service
 
         return (new Core)->migrateConfigurations($input);
     }
+
+    public function replaySettlementsStatusUpdate(array $input)
+    {
+        (new Validator)->validateInput('settlements_status_replay', $input);
+
+        return app('settlements_dashboard')->replaySettlementsStatusUpdate($input);
+    }
 }

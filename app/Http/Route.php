@@ -558,6 +558,7 @@ class Route
         'setl_execution_resume'                    => ['post',     'settlements/execution/resume',                   'SettlementController@executionResume'                              ],
         'setl_trigger_multiple'                    => ['post',     'settlements/trigger/multiple',                   'SettlementController@executionTriggerMultiple'                     ],
         'setl_execution_register'                  => ['post',     'settlements/execution/register',                 'SettlementController@executionRegister'                            ],
+        'setl_replay_status_update'                => ['post',     'settlements/status_update/replay',               'SettlementController@replaySettlementsStatusUpdate'                ],
 
         'adj_fetch_by_id'                          => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                       => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
@@ -3741,6 +3742,7 @@ class Route
         'setl_channel_state_get',
         'setl_retry_new_service',
         'setl_schedule_rename',
+        'setl_replay_status_update',
 
         'get_irctc_settlement_file_admin',
         'fix_merchant_data_cron',
@@ -3970,6 +3972,7 @@ class Route
         'setl_channel_state_get'                   => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_retry_new_service'                   => Permission::RETRY_SETTLEMENT,
         'setl_schedule_rename'                     => Permission::SCHEDULE_UPDATE,
+        'setl_replay_status_update'                => Permission::SETTLEMENT_BULK_UPDATE,
 
         'merchant_batches'                         => Permission::MERCHANT_BATCH_UPLOAD,
         'merchant_invoice_add_bulk'                => Permission::MERCHANT_INVOICE_EDIT,

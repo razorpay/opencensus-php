@@ -33,6 +33,8 @@ class Dashboard extends Base
     const MERCHANT_CONFIG_EDIT_FEATURE             = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/UpdateFeature';
     const MERCHANT_CONFIG_GET_SCHEDULABLE_ENTITIES = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/SchedulableEntities';
 
+    const REPLAY_SETTLEMENTS_STATUS_UPDATE = '/twirp/rzp.settlements.settlement.v1.SettlementService/ReplaySettlementUpdate';
+
     public function __construct($app)
     {
         parent::__construct($app);
@@ -355,5 +357,17 @@ class Dashboard extends Base
         ];
 
         return $this->makeRequest(self::MERCHANT_CONFIG_EDIT_FEATURE, $input, self::SERVICE_DASHBOARD, $mode);
+    }
+
+    /**
+     * Used to replay the settlement status update
+     * @param array $input
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function replaySettlementsStatusUpdate(array $input) : array
+    {
+        return $this->makeRequest(self::REPLAY_SETTLEMENTS_STATUS_UPDATE, $input, self::SERVICE_DASHBOARD);
     }
 }

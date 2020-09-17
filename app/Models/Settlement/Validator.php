@@ -149,6 +149,11 @@ class Validator extends Base\Validator
         'merchant_ids.*'      => 'required|string|size:14',
     ];
 
+    protected static $settlementsStatusReplayRules = [
+        'settlement_ids'    => 'required|array',
+        'settlement_ids.*'  => 'required|string|size:14',
+    ];
+
     protected function validateBalanceType($attribute, $value)
     {
         Balance\Type::validateSettlementBalanceType($value);
