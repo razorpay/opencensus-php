@@ -162,6 +162,11 @@ class Constants
     const CHECKOUT_DISABLE_RETRY          = 'checkout_disable_retry';
 
     /**
+     * Disables vernacular in checkout
+     */
+    const CHECKOUT_DISABLE_VERNACULAR     = 'checkout_disable_vernacular';
+
+    /**
      * If applied on partner merchant then all sub merchant settlement will be settled to partner
      * this will be further aggregated and settled to partner merchant
      */
@@ -468,6 +473,7 @@ class Constants
         self::SAVE_VPA,
         self::DCC,
         self::UPI_OTM,
+        self::CHECKOUT_DISABLE_VERNACULAR,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -659,6 +665,7 @@ class Constants
         self::PAYMENT_CONFIG_ENABLED          => false,
         self::CYBERSOURCE_VAS                 => true,
         self::CHECKOUT_DISABLE_RETRY          => true,
+        self::CHECKOUT_DISABLE_VERNACULAR     => true,
         self::COVID                           => true,
         self::SR_SENSITIVE                    => true,
         self::RAAS                            => true,
