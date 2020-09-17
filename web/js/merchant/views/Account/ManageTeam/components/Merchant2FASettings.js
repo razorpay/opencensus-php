@@ -17,14 +17,11 @@ export default class Merchant2FASettings extends React.PureComponent {
   static contextType = TwoFactorVerificaionContext;
 
   onToggleComplete = (twoFaEnabled) => {
-    const { user: currentUser } = this.props.user;
     const user = new User({
       ...this.props.user,
-      user: {
-        ...currentUser,
-        second_factor_auth_enforced: twoFaEnabled,
-      },
     });
+    user.secondFactorAuthOfCurrentMerchant = twoFaEnabled;
+
     this.props.updateSession({ user });
   };
 

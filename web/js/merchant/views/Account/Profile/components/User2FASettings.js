@@ -19,14 +19,11 @@ export default class User2FASettings extends React.PureComponent {
   static contextType = TwoFactorVerificaionContext;
 
   onToggleComplete = (twoFaEnabled) => {
-    const { user: currentUser } = this.props.user;
     const user = new User({
       ...this.props.user,
-      user: {
-        ...currentUser,
-        second_factor_auth: twoFaEnabled,
-      },
     });
+    user.secondFactorAuthOfUser = twoFaEnabled;
+
     this.props.updateSession({ user });
   };
 
@@ -49,6 +46,7 @@ export default class User2FASettings extends React.PureComponent {
   render() {
     const { user } = this.props.user;
     const { toggleUser2FaEnforcement } = this.props;
+
     return (
       <Toggle2FA
         renderDescription={DescriptionForUser2Fa}

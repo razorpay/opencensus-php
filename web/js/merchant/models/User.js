@@ -4,8 +4,7 @@ import { filterBy } from 'common/utils/rzp-utils';
 import { RZPFeatures } from 'merchant/helpers/data';
 
 import { fetchFeaturesAjax } from 'merchant/reducers/config';
-import LocalStorageService from 'common/utils/localStorage';
-import { getOrg, getMode } from 'merchant/store';
+import { getOrg } from 'merchant/store';
 import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
 import { getURLQueryParams } from 'common/utils/rzp-utils';
 
@@ -657,6 +656,15 @@ export default class User {
   }
   isInstrumentRequestAllowed() {
     return this.getExpStatus('instrument_request_merchant_dashboard');
+  }
+
+  // Setter Methods
+  set secondFactorAuthOfCurrentMerchant(secondFactorAuth) {
+    this.merchants[this.current].second_factor_auth = secondFactorAuth;
+  }
+
+  set secondFactorAuthOfUser(secondFactorAuth) {
+    this.user.second_factor_auth = secondFactorAuth;
   }
 }
 
