@@ -87,6 +87,7 @@ import LoanApplicationReducer from 'merchant/reducers/capital';
 import wysiwygReducer from 'merchant/reducers/wysiwyg';
 import WithdrawalsReducer from 'merchant/reducers/capital/withdrawals';
 import instrumentRequestsReducer from 'merchant/reducers/instrumentRequests';
+import navigatorReducer from 'merchant/reducers/navigator/details';
 
 export default combineReducers({
   modal: modalReducer,
@@ -141,6 +142,7 @@ export default combineReducers({
   mpPayments: mpPaymentsReducer,
   scPayments: smartCollectPaymentsReducer,
   transfers: transfersReducer,
+  navigator: navigatorReducer,
   transfer: transferReducer,
   reversal: reversalReducer,
   reversals: reversalsReducer,

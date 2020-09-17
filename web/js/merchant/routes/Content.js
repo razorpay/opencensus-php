@@ -63,6 +63,9 @@ const Settings = lazy(() => import(/* webpackChunkName: "Settings" */ 'merchant/
 const SmartCollect = lazy(() =>
   import(/* webpackChunkName: "SmartCollect" */ 'merchant/views/SmartCollect/Index'),
 );
+const Navigator = lazy(() =>
+  import(/* webpackChunkName: "Navigator" */ 'merchant/views/Navigator/Index'),
+);
 const Offers = lazy(() => import(/* webpackChunkName: "Offers" */ 'merchant/views/Offers'));
 const PaypalOnboardRedirect = lazy(() =>
   import(
@@ -441,6 +444,7 @@ export default class Content extends Component {
               component={Offers}
               additionalCondition={(user) => user.isAllowedView('offers')}
             />
+            <ShowWhenRoute path="/navigator" component={Navigator} />
             <ShowWhenRoute path="/paypal_onboard_redirect" component={PaypalOnboardRedirect} />
             <ShowWhenRoute path="/capital/loans" component={LoanDetails} />
             <ShowWhenRoute

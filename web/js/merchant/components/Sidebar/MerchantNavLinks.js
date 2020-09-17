@@ -1,13 +1,8 @@
 import MainNavLink from 'merchant_common/components/MainNavLink';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 export default function MerchantNavLinks(props) {
-  const {
-    routes,
-    isReportsPending,
-    isChargeAtWillEnabled,
-    isSettlementEnabled,
-    user,
-  } = props;
+  const { routes, isReportsPending, isChargeAtWillEnabled, isSettlementEnabled, user } = props;
   return (
     <>
       <MainNavLink
@@ -15,22 +10,20 @@ export default function MerchantNavLinks(props) {
         icon="i i-chart text-info"
         to="/dashboard"
         exact
-        additionalCondition={user => user.isAllowedView('home')}
+        additionalCondition={(user) => user.isAllowedView('home')}
       />
       <MainNavLink
         label="Transactions"
         icon="i i-repeat text-primary"
         to={routes.transactions}
-        additionalCondition={user =>
-          user.isAllowedMultiple('payments orders refunds')
-        }
+        additionalCondition={(user) => user.isAllowedMultiple('payments orders refunds')}
       />
       <MainNavLink
         label="Settlements"
         icon="i i-done-all text-success"
         to="/settlements"
         isSettlementEnabled={isSettlementEnabled}
-        additionalCondition={user => user.isAllowedView('settlements')}
+        additionalCondition={(user) => user.isAllowedView('settlements')}
       />
 
       <div class="divider" />
@@ -39,33 +32,30 @@ export default function MerchantNavLinks(props) {
         label="Invoices"
         icon="i i-notes text-warning"
         to={routes.invoices}
-        additionalCondition={user => user.isAllowedView('invoices')}
+        additionalCondition={(user) => user.isAllowedView('invoices')}
       />
       <MainNavLink
         label="Payment Links"
         icon="i i-link text-primary"
         to={routes.paymentlinks}
-        additionalCondition={user => user.isAllowedView('payment_links')}
+        additionalCondition={(user) => user.isAllowedView('payment_links')}
       />
       <MainNavLink
         label="Payment Pages"
         icon="i i-payment-pages text-warm temp-icon-style"
         to={routes.paymentpages}
-        additionalCondition={user => user.isAllowedView('payment_pages')}
+        additionalCondition={(user) => user.isAllowedView('payment_pages')}
       />
       <MainNavLink
         isNew
         label="Payment Button"
         icon="i i-payment-button"
         to={
-          user.isPaymentButtonEnabledByRazorX
-            ? routes.paymentbuttons
-            : routes.subscription_buttons
+          user.isPaymentButtonEnabledByRazorX ? routes.paymentbuttons : routes.subscription_buttons
         }
-        additionalCondition={user =>
+        additionalCondition={(user) =>
           user.isAllowedMultiple('payment_buttons subscription_buttons') &&
-          (user.isPaymentButtonEnabledByRazorX ||
-            user.isSubscriptionButtonEnabledByRazorX)
+          (user.isPaymentButtonEnabledByRazorX || user.isSubscriptionButtonEnabledByRazorX)
         }
         isNew
       />
@@ -73,33 +63,41 @@ export default function MerchantNavLinks(props) {
         label="Route"
         icon="i i-store text-success"
         to={routes.marketplace}
-        additionalCondition={user => user.isAllowedView('marketplace')}
+        additionalCondition={(user) => user.isAllowedView('marketplace')}
       />
       <MainNavLink
         label="Subscriptions"
         icon="i i-refresh text-info"
-        additionalCondition={user => user.isAllowedView('subscriptions')}
+        additionalCondition={(user) => user.isAllowedView('subscriptions')}
         to={routes[isChargeAtWillEnabled ? 'chargeAtWill' : 'subscriptions']}
       />
       <MainNavLink
         label="Smart Collect"
         icon="i i-account-balance text-danger"
         to={routes.smartCollect}
-        additionalCondition={user => user.isAllowedView('virtual_accounts')}
+        additionalCondition={(user) => user.isAllowedView('virtual_accounts')}
       />
+
+      <ShowWhen featureEnabled="raas">
+        <MainNavLink
+          label="Optimizer"
+          icon="i i-routing text-warm temp-icon-style"
+          to="/navigator/rules"
+        />
+      </ShowWhen>
 
       <MainNavLink
         label="Customers"
         icon="i i-people text-warning"
         to="/customers"
-        additionalCondition={user => user.isAllowedView('customers')}
+        additionalCondition={(user) => user.isAllowedView('customers')}
       />
 
       <MainNavLink
         label="Offers"
         icon="i i-offer text-success"
         to="/offers"
-        additionalCondition={user => user.isAllowedView('settlements')}
+        additionalCondition={(user) => user.isAllowedView('settlements')}
       />
 
       <MainNavLink
@@ -107,9 +105,7 @@ export default function MerchantNavLinks(props) {
         icon="i fa fa-inr text-warm"
         to="/capital/loans"
         isNew={true}
-        additionalCondition={user =>
-          user.isAllowedView('loans') && user.isLoansEnabled
-        }
+        additionalCondition={(user) => user.isAllowedView('loans') && user.isLoansEnabled}
       />
 
       <MainNavLink
@@ -117,7 +113,7 @@ export default function MerchantNavLinks(props) {
         icon="i fa fa-star text-warning"
         to="/capital/cash-advance"
         isNew={true}
-        additionalCondition={user =>
+        additionalCondition={(user) =>
           user.isAllowedView('cash_advance') &&
           user.isWithdrawEnabled &&
           user.isFlashCreditStage1Enabled
@@ -130,13 +126,13 @@ export default function MerchantNavLinks(props) {
         label="Reports"
         icon="i i-books text-danger"
         to="/reports"
-        additionalCondition={user => user.isAllowedView('reports')}
+        additionalCondition={(user) => user.isAllowedView('reports')}
         isPending={isReportsPending}
       />
       <MainNavLink
         label="My Account"
         icon="i i-account text-primary"
-        additionalCondition={user =>
+        additionalCondition={(user) =>
           user.isAllowedMultiple('profile credits add_funds team referrals')
         }
         to={routes.account}
@@ -145,7 +141,7 @@ export default function MerchantNavLinks(props) {
         label="Settings"
         icon="i i-settings text-warning"
         to={routes.settings}
-        additionalCondition={user =>
+        additionalCondition={(user) =>
           user.isAllowedMultiple('webhooks applications configuration api_keys')
         }
       />

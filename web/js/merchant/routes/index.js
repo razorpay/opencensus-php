@@ -48,6 +48,7 @@ import UpdateSubscriptionLink from 'merchant/views/Subscriptions/SubscriptionLin
 import CreditSubDetails from 'merchant/views/Account/Credits/components/CreditSubDetails';
 import WebhookDetails from 'merchant/views/Settings/Webhooks/components/WebhookDetails';
 import WithdrawalDetails from '../views/Capital/CashAdvance/WithdrawalDetails';
+import RuleDetail from 'merchant/views/Navigator/components/RuleDetail';
 
 /*
  * NOTE: entityDetailsMap and entityModalsMap must be mutually exclusive sets
@@ -56,42 +57,45 @@ import WithdrawalDetails from '../views/Capital/CashAdvance/WithdrawalDetails';
 const entityDetailsMap = {
   '/payments/:id(pay_.+)/:entity_name(transfers)/new': {
     component: PaymentsDetails,
-    additionalCondition: user => user.isAllowedEdit('payments'),
+    additionalCondition: (user) => user.isAllowedEdit('payments'),
   },
   '/payments/:id(pay_.+)': {
     component: PaymentsDetails,
-    additionalCondition: user => user.isAllowedView('payments'),
+    additionalCondition: (user) => user.isAllowedView('payments'),
   },
 
   '/refunds/:id(rfnd_.+)': {
     component: RefundDetails,
-    additionalCondition: user => user.isAllowedView('refunds'),
+    additionalCondition: (user) => user.isAllowedView('refunds'),
+  },
+  '/navigator/rules/:id': {
+    component: RuleDetail,
   },
   '/offers/:id(offer_.+)': {
     component: OfferEntity,
-    additionalCondition: user => user.isAllowedView('offers'),
+    additionalCondition: (user) => user.isAllowedView('offers'),
   },
   '/orders/:id': {
     component: OrderDetails,
-    additionalCondition: user => user.isAllowedView('orders'),
+    additionalCondition: (user) => user.isAllowedView('orders'),
   },
   '/settlements/:id': {
     component: SettlementDetails,
-    additionalCondition: user => user.isAllowedView('settlements'),
+    additionalCondition: (user) => user.isAllowedView('settlements'),
   },
   '/paymentlinks/:id(inv_.+|plink_.+)': {
     component: PaymentLinkDetails,
-    additionalCondition: user => user.isAllowedView('payment_links'),
+    additionalCondition: (user) => user.isAllowedView('payment_links'),
   },
   '/paymentlinks/batchuploads/:id(batch_.+)': {
     component: PaymentLinkBatchUploadDetails,
-    additionalCondition: user =>
+    additionalCondition: (user) =>
       user.isAllowedView('payment_links_batch_uploads') &&
       (!user.isSellerAppRole || user.isPaymentLinkBatchEnabledForSellerAppRole),
   },
   '/invoices/:id/details': {
     component: PaymentLinkDetails,
-    additionalCondition: user => user.isAllowedView('invoices'),
+    additionalCondition: (user) => user.isAllowedView('invoices'),
   },
 
   '/route/payments/:id': { component: PaymentsDetails },
@@ -102,17 +106,17 @@ const entityDetailsMap = {
   '/plans/:id': { component: PlanDetails },
   '/registration_links/:id(inv_.+)': {
     component: RegistrationLinkDetails,
-    additionalCondition: user => user.isChargeAtWillEnabled,
+    additionalCondition: (user) => user.isChargeAtWillEnabled,
   },
 
   '/tokens/:id(token_.+)': {
     component: TokenDetails,
-    additionalCondition: user => user.isChargeAtWillEnabled,
+    additionalCondition: (user) => user.isChargeAtWillEnabled,
   },
 
   '/capital/cash-advance/withdrawals/:id': {
     component: WithdrawalDetails,
-    additionalCondition: user => user.isFlashCreditStage2Enabled,
+    additionalCondition: (user) => user.isFlashCreditStage2Enabled,
   },
   '/subscriptions/:id(sub_.+)/:invoice_id(inv_.+)': {
     component: SubscriptionDetails,
@@ -137,34 +141,30 @@ const entityDetailsMap = {
   '/partners/submerchants/:id(acc_.+)': { component: SubmerchantDetails },
   '/partners/earnings/transactional/:id(comm_.+)': {
     component: EarningTransactionalDetails,
-    additionalCondition: user =>
-      user.isAllowedView('earnings') && user.isHavingPartnerConfigs,
+    additionalCondition: (user) => user.isAllowedView('earnings') && user.isHavingPartnerConfigs,
   },
   '/partners/subventions/transactional/:id(comm_.+)': {
     component: SubventionTransactionalDetails,
-    additionalCondition: user =>
-      user.isAllowedView('earnings') && user.isHavingSubventionConfigs,
+    additionalCondition: (user) => user.isAllowedView('earnings') && user.isHavingSubventionConfigs,
   },
   '/partners/earnings/daily/:timestamp': {
     component: EarningDailyDetails,
-    additionalCondition: user =>
-      user.isAllowedView('earnings') && user.isHavingPartnerConfigs,
+    additionalCondition: (user) => user.isAllowedView('earnings') && user.isHavingPartnerConfigs,
   },
   '/partners/subventions/daily/:timestamp': {
     component: SubventionDailyDetails,
-    additionalCondition: user =>
-      user.isAllowedView('earnings') && user.isHavingSubventionConfigs,
+    additionalCondition: (user) => user.isAllowedView('earnings') && user.isHavingSubventionConfigs,
   },
   '/partners/earnings/invoices/:id': {
     component: CommissionInvoiceDetails,
-    additionalCondition: user =>
+    additionalCondition: (user) =>
       user.isAllowedView('earnings') &&
       user.isCommissionInvoicesEnabled &&
       user.isHavingPartnerConfigs,
   },
   '/disputes/:id(disp_.+)': {
     component: DisputeDetails,
-    additionalCondition: user => user.isAllowedView('payments'),
+    additionalCondition: (user) => user.isAllowedView('payments'),
   },
   '/credits/:id(credits_.+)': { component: CreditSubDetails },
   '/webhooks/:id': { component: WebhookDetails },
@@ -177,23 +177,23 @@ const entityDetailsMap = {
 const entityModalsMap = {
   '/activation': {
     component: ActivationContainer,
-    additionalCondition: user => user.isAllowedEdit('activation'),
+    additionalCondition: (user) => user.isAllowedEdit('activation'),
   },
   '/offers/new': {
     component: OffersNew,
-    additionalCondition: user => user.isAllowedEdit('offers'),
+    additionalCondition: (user) => user.isAllowedEdit('offers'),
   },
   '/paymentlinks/new': {
     component: PaymentLinkCreate,
-    additionalCondition: user => user.isAllowedEdit('payment_links'),
+    additionalCondition: (user) => user.isAllowedEdit('payment_links'),
   },
   '/registration_links/:id(inv_.+)/upload_nach': {
     component: UploadNACHForm,
-    additionalCondition: user => user.isChargeAtWillEnabled,
+    additionalCondition: (user) => user.isChargeAtWillEnabled,
   },
   '/registration_links/new': {
     component: NewRegistrationLink,
-    additionalCondition: user => user.isChargeAtWillEnabled,
+    additionalCondition: (user) => user.isChargeAtWillEnabled,
   },
   '/subscriptions/new': {
     component: NewSubscriptionLink,
@@ -222,35 +222,31 @@ export const supportHashMapping = {
 const fullPageViewsMap = {
   '/paymentpages/new': {
     component: PaymentPagesWysiwyg,
-    additionalCondition: user => user.isAllowedEdit('payment_pages'),
+    additionalCondition: (user) => user.isAllowedEdit('payment_pages'),
   },
   '/paymentpages/:id(pl_.+)/edit': {
     component: PaymentPagesWysiwyg,
-    additionalCondition: user => user.isAllowedEdit('payment_pages'),
+    additionalCondition: (user) => user.isAllowedEdit('payment_pages'),
   },
   '/paymentbuttons/new': {
     component: PaymentButtonCreate,
-    additionalCondition: user =>
-      user.isAllowedEdit('payment_pages') &&
-      user.isPaymentButtonEnabledByRazorX,
+    additionalCondition: (user) =>
+      user.isAllowedEdit('payment_pages') && user.isPaymentButtonEnabledByRazorX,
   },
   '/paymentbuttons/:id(pl_.+)/edit': {
     component: PaymentButtonCreate,
-    additionalCondition: user =>
-      user.isAllowedEdit('payment_pages') &&
-      user.isPaymentButtonEnabledByRazorX,
+    additionalCondition: (user) =>
+      user.isAllowedEdit('payment_pages') && user.isPaymentButtonEnabledByRazorX,
   },
   '/subscription_buttons/new': {
     component: SubscriptionButtonCreate,
-    additionalCondition: user =>
-      user.isAllowedEdit('subscription_buttons') &&
-      user.isSubscriptionButtonEnabledByRazorX,
+    additionalCondition: (user) =>
+      user.isAllowedEdit('subscription_buttons') && user.isSubscriptionButtonEnabledByRazorX,
   },
   '/subscription_buttons/:id(pl_.+)/edit': {
     component: SubscriptionButtonCreate,
-    additionalCondition: user =>
-      user.isAllowedEdit('subscription_buttons') &&
-      user.isSubscriptionButtonEnabledByRazorX,
+    additionalCondition: (user) =>
+      user.isAllowedEdit('subscription_buttons') && user.isSubscriptionButtonEnabledByRazorX,
   },
 };
 

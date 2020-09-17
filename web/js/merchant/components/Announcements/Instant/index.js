@@ -14,13 +14,16 @@ export default class InstantActivationAnnouncements extends Component {
     tracking.trackEvent(
       window.rzpQ.onbr().initiated(`act.${eventOrigin}`, {
         clickSource: 'Instant_Announcement_Banner',
-      })
+      }),
     );
   };
 
   render() {
     const { user, mode, payments } = this.props;
-    const surgeSeptCampaign = user.campaigns.includes('SURGESEPT') && new Date() <= new Date("2020-09-30T23:59:00.000"); // end date for 'SURGESEPT' campaign is 30 sep
+    const surgeSeptCampaign =
+      user.campaigns &&
+      user.campaigns.includes('SURGESEPT') &&
+      new Date() <= new Date('2020-09-30T23:59:00.000'); // end date for 'SURGESEPT' campaign is 30 sep
     let theme = 'warning',
       title,
       content,
@@ -32,17 +35,21 @@ export default class InstantActivationAnnouncements extends Component {
           if (surgeSeptCampaign) {
             content = (
               <span>
-                You can now accept payments! Start doing so by 30 September to unlock ₹1 lakh free credits & a special lifetime <span style={{textDecoration: 'line-through'}}>2%</span> 1.85% pricing. Submit your KYC to enable settlements. &nbsp;
+                You can now accept payments! Start doing so by 30 September to unlock ₹1 lakh free
+                credits & a special lifetime{' '}
+                <span style={{ textDecoration: 'line-through' }}>2%</span> 1.85% pricing. Submit
+                your KYC to enable settlements. &nbsp;
                 <Link to="/activation">Fill KYC Form</Link>
               </span>
-            )
+            );
           } else {
             content = (
               <span>
-                You can start using our products to accept payments right away. Meanwhile we will await your KYC details to enable settlements for your account. &nbsp;
+                You can start using our products to accept payments right away. Meanwhile we will
+                await your KYC details to enable settlements for your account. &nbsp;
                 <Link to="/activation">Fill KYC Form</Link>
               </span>
-            )
+            );
           }
         } else if (payments && payments.items.length > 0) {
           title = 'Enable Settlements';
@@ -82,17 +89,22 @@ export default class InstantActivationAnnouncements extends Component {
           if (surgeSeptCampaign) {
             content = (
               <span>
-                Your PAN is verified, accept your first payment before 30th Sep to unlock ₹1 lakh free credits & a special lifetime <span style={{textDecoration: 'line-through'}}>2%</span> 1.85% pricing. Settlements will be processed post KYC verification &nbsp;
+                Your PAN is verified, accept your first payment before 30th Sep to unlock ₹1 lakh
+                free credits & a special lifetime{' '}
+                <span style={{ textDecoration: 'line-through' }}>2%</span> 1.85% pricing.
+                Settlements will be processed post KYC verification &nbsp;
                 <Link to="/activation">Fill KYC Form</Link>
               </span>
-            )
+            );
           } else {
             content = (
               <span>
-                Your PAN was successfully verified and you can start accepting domestic payments now. Meanwhile we will await your KYC details to enable settlements for your account. &nbsp;
+                Your PAN was successfully verified and you can start accepting domestic payments
+                now. Meanwhile we will await your KYC details to enable settlements for your
+                account. &nbsp;
                 <Link to="/activation">Fill KYC Form</Link>
               </span>
-            )
+            );
           }
         } else if (user.poi_verification_status == 'failed') {
           theme = 'danger';
@@ -142,9 +154,11 @@ export default class InstantActivationAnnouncements extends Component {
           theme = 'success';
           title = 'Settlements Enabled';
           if (surgeSeptCampaign) {
-            content =  'Your KYC verification was successful and settlements are enabled for your account, Start accepting payments by 30 Sep to unlock ₹1 lakh free credits & a special lifetime <span style={{textDecoration: "line-through"}}>2%</span> 1.85% pricing.'
+            content =
+              'Your KYC verification was successful and settlements are enabled for your account, Start accepting payments by 30 Sep to unlock ₹1 lakh free credits & a special lifetime <span style={{textDecoration: "line-through"}}>2%</span> 1.85% pricing.';
           } else {
-            content = 'Your KYC verification was successful. Payments will be settled to your bank account as per settlement cycle.'
+            content =
+              'Your KYC verification was successful. Payments will be settled to your bank account as per settlement cycle.';
             if (user.instantActivation.isGraylistFlow) {
               content = content + ' ' + 'Go ahead and accept your first payment.';
             }

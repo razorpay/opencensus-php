@@ -1,0 +1,595 @@
+import { Operand } from '../models/Operand';
+
+export const getValue = (type, value) => {
+  let r;
+  if (type == 'parameter') {
+    r = parameters;
+  }
+  if (type == 'operator') {
+    r = operators;
+  }
+  return r.find((p) => p.value == value) || '';
+};
+
+export const operators = [
+  {
+    name: 'One Of',
+    description: 'You can select multiple comparing value',
+    id: 1,
+    type: 'comparator',
+    input_type: 'list',
+    value: 'in',
+  },
+  {
+    name: 'Equal to',
+    description: 'You can select only one comparing value',
+    id: 2,
+    input_type: 'input',
+    value: '==',
+    type: 'comparator',
+  },
+  {
+    name: 'Not equal to',
+    description: 'You can select only one comparing value',
+    input_type: 'input',
+    id: 3,
+    value: '!=',
+    type: 'comparator',
+  },
+  {
+    name: 'Between',
+    description: 'You can select only one comparing value',
+    id: 4,
+    input_type: 'between-input',
+    value: 'between',
+    type: 'comparator',
+  },
+  {
+    name: 'Starting With',
+    description: 'You can select only one comparing value',
+    id: 5,
+    input_type: 'input',
+    value: 'starting_with',
+    type: 'comparator',
+  },
+  {
+    name: 'Ending With',
+    description: 'You can select only one comparing value',
+    id: 6,
+    input_type: 'input',
+    value: 'ending_with',
+    type: 'comparator',
+  },
+  {
+    name: 'Less Than',
+    description: 'You can select only one comparing value',
+    input_type: 'input',
+    id: 7,
+    value: '<',
+    type: 'comparator',
+  },
+  {
+    name: 'Greater Than',
+    description: 'You can select only one comparing value',
+    input_type: 'input',
+    id: 8,
+    value: '>',
+    type: 'comparator',
+  },
+  {
+    name: 'Contains',
+    description: 'You can select only one comparing value',
+    id: 9,
+    input_type: 'input',
+    value: 'contains',
+    type: 'comparator',
+  },
+  {
+    name: 'Greater Than Equal',
+    description: 'You can select only one comparing value',
+    input_type: 'input',
+    id: 10,
+    value: '>=',
+    type: 'comparator',
+  },
+  {
+    name: 'Less Than Equal',
+    description: 'You can select only one comparing value',
+    input_type: 'input',
+    id: 11,
+    value: '<=',
+    type: 'comparator',
+  },
+];
+export const parameters = [
+  {
+    name: 'Channels',
+    value: '$payment.navigator_channel',
+    values: ['website', 'android', 'ios'],
+    operators: {
+      '==': {
+        multiple: false,
+        type: 'dropdown',
+      },
+      in: {
+        multiple: true,
+        type: 'dropdown',
+      },
+      '!=': {
+        multiple: false,
+        type: 'dropdown',
+      },
+    },
+    description: 'Website, Android, iOS',
+    type: 'string',
+    id: 1,
+  },
+  {
+    name: 'Payment Method',
+    value: '$payment.navigator_method',
+    description: 'Card, Netbanking, UPI Intent, UPI Collect',
+    id: 2,
+    values: ['card', 'netbanking', 'upi_intent', 'upi_collect'],
+    operators: {
+      '==': {
+        multiple: false,
+        type: 'dropdown',
+      },
+      in: {
+        multiple: true,
+        type: 'dropdown',
+      },
+      '!=': {
+        multiple: false,
+        type: 'dropdown',
+      },
+    },
+    type: 'string',
+  },
+  {
+    name: 'BIN Number',
+    value: '$payment.navigator_bin_number',
+    description: 'Card IIN number',
+    id: 4,
+    values: [],
+    operators: {
+      '==': {
+        type: 'input',
+        number: true,
+      },
+      starting_with: {
+        type: 'input',
+        number: true,
+      },
+      ending_with: {
+        type: 'input',
+        number: true,
+      },
+    },
+    type: 'numeric',
+  },
+  {
+    name: 'Card Type',
+    value: '$payment.navigator_card_type',
+    description: 'Debit, Credit, Prepaid, Corporate',
+    id: 5,
+    values: ['debit', 'credit', 'prepaid', 'corporate'],
+    operators: {
+      '==': {
+        multiple: false,
+        type: 'dropdown',
+      },
+      in: {
+        multiple: true,
+        type: 'dropdown',
+      },
+      '!=': {
+        multiple: false,
+        type: 'dropdown',
+      },
+    },
+    type: 'string',
+  },
+  {
+    name: 'Card Brand',
+    value: '$payment.navigator_card_brand',
+    description: 'American Express,Diners Club,Discover',
+    id: 6,
+    values: ['AMEX', 'DICL', 'DISC', 'JCB', 'MAES', 'MC', 'RUPAY', 'UNP', 'VISA', 'BAJAJ'],
+    operators: {
+      '==': {
+        multiple: false,
+        type: 'dropdown',
+      },
+      in: {
+        multiple: true,
+        type: 'dropdown',
+      },
+      '!=': {
+        multiple: false,
+        type: 'dropdown',
+      },
+    },
+    type: 'string',
+  },
+  {
+    name: 'Card Issuer',
+    value: '$payment.navigator_card_issuer',
+    description: 'SBIN,HDFC,ICIC,UTIB,KKBK',
+    id: 7,
+    values: [
+      'SBIN',
+      'HDFC',
+      'ICIC',
+      'UTIB',
+      'KKBK',
+      'BARB_R',
+      'BKID',
+      'CNRB',
+      'PUNB_R',
+      'UBIN',
+      'IDIB',
+      'ALLA',
+      'CBIN',
+      'IOBA',
+      'IBKL',
+      'YESB',
+      'ANDB',
+      'AIRP',
+      'FDRL',
+      'MAHB',
+    ],
+    operators: {
+      '==': {
+        multiple: false,
+        type: 'dropdown',
+      },
+      in: {
+        multiple: true,
+        type: 'dropdown',
+      },
+      '!=': {
+        multiple: false,
+        type: 'dropdown',
+      },
+    },
+    type: 'string',
+  },
+  {
+    name: 'Banks',
+    value: '$payment.navigator_bank',
+    description: 'SBIN,HDFC,ICIC,UTIB',
+    id: 8,
+    values: [
+      'SBIN',
+      'HDFC',
+      'ICIC',
+      'UTIB',
+      'KKBK',
+      'BARB_R',
+      'BKID',
+      'CNRB',
+      'PUNB_R',
+      'UBIN',
+      'IDIB',
+      'ALLA',
+      'CBIN',
+      'IOBA',
+      'IBKL',
+      'YESB',
+      'ANDB',
+      'AIRP',
+      'FDRL',
+      'MAHB',
+    ],
+    operators: {
+      '==': {
+        multiple: false,
+        type: 'dropdown',
+      },
+      in: {
+        multiple: true,
+        type: 'dropdown',
+      },
+      '!=': {
+        multiple: false,
+        type: 'dropdown',
+      },
+    },
+    type: 'string',
+  },
+  {
+    name: 'Amount',
+    value: '$payment.navigator_amount',
+    description: 'In Paise',
+    id: 9,
+    values: ['card', 'netbanking', 'upi_intent', 'upi_collect'],
+    operators: {
+      '==': {
+        number: true,
+        type: 'input',
+      },
+
+      '>': {
+        number: true,
+        type: 'input',
+      },
+
+      '<': {
+        number: true,
+        type: 'input',
+      },
+
+      '>=': {
+        number: true,
+        type: 'input',
+      },
+
+      '<=': {
+        number: true,
+        type: 'input',
+      },
+
+      between: {
+        number: true,
+        between: true,
+        type: 'input',
+      },
+    },
+    type: 'numeric',
+  },
+];
+
+export const PROVIDERS = [
+  { name: 'Smart Router1', id: 1, value: 'smartrouter' },
+  { name: 'Razorpay', id: 2, value: 'razorpay' },
+  { name: 'Smart Router2', id: 3, value: 'smartrouter2' },
+];
+
+export const logical_operators = [
+  {
+    name: 'AND',
+    description: 'All conditions must match',
+    value: '&&',
+    id: 1,
+  },
+  {
+    name: 'OR',
+    description: 'At least one condition must match',
+    value: '||',
+    id: 2,
+  },
+];
+
+export const isExpressionValid = (expression) => {
+  return (
+    expression.operands[0] &&
+    expression.operands[0].value &&
+    expression.operands[1].value &&
+    expression.value
+  );
+};
+
+export const getConditionOn = (precondition) => {
+  let val;
+  if (precondition.type == 'logical') {
+    val = precondition.operands
+      .map((o) => getValue('parameter', o.operands[0].value).name)
+      .join(', ');
+  } else {
+    val = getValue('parameter', precondition.operands[0].value).name;
+  }
+};
+
+export const domain_model_to_object = (ns = namespace) => {
+  var obj = {};
+  const keys = [...ns.domain_model.entities];
+  const O = appendKeyToObject(keys, obj);
+  return O;
+};
+
+export const namespace = {
+  name: 'Navigator',
+  description: 'Routing as a service',
+  domain_model: {
+    entities: [
+      {
+        name: 'payment',
+        attributes: [
+          {
+            name: 'navigator_amount',
+            type: 'numeric',
+            score: 0,
+            primary: false,
+            sub_type: '',
+            eventable: false,
+            indexable: false,
+            attributes: null,
+            default_value: '',
+            entity_values: null,
+            dependent_attribute: '',
+          },
+          {
+            name: 'navigator_method',
+            type: 'string',
+            score: 0,
+            primary: false,
+            sub_type: '',
+            eventable: false,
+            indexable: false,
+            attributes: null,
+            default_value: '',
+            entity_values: null,
+            dependent_attribute: '',
+          },
+          {
+            name: 'rule_mode',
+            type: 'list',
+            score: 0,
+            primary: false,
+            sub_type: 'string',
+            eventable: false,
+            indexable: false,
+            attributes: null,
+            default_value: '',
+            entity_values: null,
+            dependent_attribute: '',
+          },
+          {
+            name: 'id',
+            type: 'string',
+            score: 0,
+            primary: true,
+            sub_type: '',
+            eventable: false,
+            indexable: false,
+            attributes: null,
+            default_value: '',
+            entity_values: null,
+            dependent_attribute: '',
+          },
+        ],
+      },
+      {
+        name: 'merchant',
+        attributes: [
+          {
+            name: 'id',
+            type: 'string',
+            score: 0,
+            primary: false,
+            sub_type: '',
+            eventable: false,
+            indexable: false,
+            attributes: null,
+            default_value: '',
+            entity_values: null,
+            dependent_attribute: '',
+          },
+          {
+            name: 'features',
+            type: 'list',
+            score: 0,
+            primary: false,
+            sub_type: 'string',
+            eventable: false,
+            indexable: false,
+            attributes: null,
+            default_value: '',
+            entity_values: null,
+            dependent_attribute: '',
+          },
+        ],
+      },
+    ],
+    evaluating_entity: {
+      name: 'provider',
+      type: 'list',
+      sub_type: 'object',
+      attributes: [
+        {
+          name: 'id',
+          type: 'string',
+          score: 0,
+          primary: false,
+          sub_type: '',
+          eventable: false,
+          indexable: false,
+          attributes: null,
+          default_value: '',
+          entity_values: null,
+          dependent_attribute: '',
+        },
+      ],
+    },
+  },
+  created_by: 'Raas',
+};
+
+export const getRuleScore = (rule) => {
+  let score = rule.rules.length ? rule.rules[0].score : null;
+  return score;
+};
+
+export const rule = {
+  name: '',
+  description: '',
+  created_by: '',
+  last_edited_by: '',
+  outcome_type: '',
+  strategy: 'default',
+  mandatory_attributes: [],
+  additional_attributes: [{ name: 'rule_mode', type: 'string', values: [''] }],
+  precondition: {
+    operands: [new Operand(), new Operand()],
+    value: null,
+    type: null,
+  },
+  rules: [],
+};
+
+export const mapRulesObjectToArray = (e) => {
+  const rules = [];
+  Object.keys(e).forEach((key) => {
+    rules.push(...e[key]);
+  });
+  return rules;
+};
+
+export const mapRulesArrayToObject = (RULES) => {
+  const rules = {};
+  RULES.forEach((r) => {
+    const provider_priority = r.additional_attribute[0].value;
+    if (!rules[provider_priority]) {
+      rules[provider_priority] = [];
+    }
+    rules[provider_priority].push(r);
+  });
+  return rules;
+};
+
+export const appendMid = (value) => {
+  return value + '_' + window.rzp_user.current;
+};
+
+export const removeMid = (value) => {
+  let temp = value.split('_');
+  temp.pop();
+  return temp.join('_');
+  // here we remove mid at the end one
+};
+
+export const DEFAULT_RULE = 'Default Rule';
+export const TOTAL_RULE_LIMIT = 15;
+
+export const setRuleMode = (rules, mode) => {
+  rules.forEach((r) => {
+    r.expression.operands[1].operands[0].value = mode;
+  });
+  return rules;
+};
+export const total_live_rules = (rules) => {
+  return rules.filter((r) => getRuleStatus(r) === 'live');
+};
+
+export const getRuleStatus = (rule) => {
+  let status;
+  status = rule.additional_attributes[0].values[0] || 'test';
+  return status;
+};
+
+export const get_unique = () => Math.floor(Math.random() * 100000000000);
+
+export const uniqueArray = function (arr) {
+  var o = {},
+    a = [],
+    i,
+    e;
+  for (i = 0; (e = arr[i]); i++) {
+    o[e] = 1;
+  }
+  for (e in o) {
+    a.push(e);
+  }
+  return a;
+};

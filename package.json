@@ -40,8 +40,13 @@
     }
   },
   "lint-staged": {
-    "web/v2/**/*.(js|jsx|ts|tsx)": ["eslint", "stylelint"],
-    "*.(js|json|jsx|ts|tsx)": ["prettier --write"]
+    "web/v2/**/*.(js|jsx|ts|tsx)": [
+      "eslint",
+      "stylelint"
+    ],
+    "*.(js|json|jsx|ts|tsx)": [
+      "prettier --write"
+    ]
   },
   "config": {
     "commitizen": {
