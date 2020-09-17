@@ -158,6 +158,13 @@ class Preferences
     const MID_BALAJI_TRADERS           = 'EAFMzRGMFH7GHa';
     const MID_TRUEVENTURE_TECH_PVT_LTD = 'EHhGINJDXP39jk';
     const MID_ASHISH_TRADING_COMPANY   = 'E2hBu7TFTKWi2p';
+    const MID_VISION_ENTERPRISES       = 'EcGUwvUuLnsAkZ';
+    const MID_HARMODE_OVERSEAS         = 'E7VLZYcXf53sn3';
+    const MID_NANCY_ENTERPRISES        = 'E2LpblTR74gXko';
+    const MID_VSHOP_ZONE               = 'F6mioBF6tWNsZX';
+    const MID_MOBILE_STREET            = 'FMggLzFFDOUiXi';
+    const MID_TREASURE_DEALS           = 'Exg6hvE8d3hAqU';
+    const MID_BULKBAZAR                = 'EHwQQQErNniPV6';
 
     const MID_ADITYA_BIRLA_HEALTH   = 'F0sFCmi0LOeeGc';
 
@@ -344,6 +351,13 @@ class Preferences
         self::MID_BALAJI_TRADERS,
         self::MID_TRUEVENTURE_TECH_PVT_LTD,
         self::MID_ASHISH_TRADING_COMPANY,
+        self::MID_VISION_ENTERPRISES,
+        self::MID_HARMODE_OVERSEAS,
+        self::MID_NANCY_ENTERPRISES,
+        self::MID_VSHOP_ZONE,
+        self::MID_MOBILE_STREET,
+        self::MID_TREASURE_DEALS,
+        self::MID_BULKBAZAR,
     ];
 
     // MSwipe Configurations
