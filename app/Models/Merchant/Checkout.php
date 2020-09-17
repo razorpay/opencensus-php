@@ -604,6 +604,8 @@ class Checkout
 
         $data['language_code'] = App::getLocale();
 
+        $data['merchant_id'] = $merchant->getId();
+
         /*
         if hdfc merchant, sending redirect true. Done specificially
         for shopify merchants of HDFC.
