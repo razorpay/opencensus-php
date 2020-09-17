@@ -53,12 +53,12 @@ class VendorPaymentTest extends TestCase
         $this->fixtures->create('contact', ['id' => 'Dsp92d4N1Mmm6Q', 'name' => 'test_contact']);
 
         $this->fixtures->create('fund_account:bank_account',
-                                [
-                                    'id'          => 'D6Z9Jfir2egAUT',
-                                    'source_type' => 'contact',
-                                    'source_id'   => 'Dsp92d4N1Mmm6Q',
-                                    'merchant_id' => '10000000000000'
-                                ]);
+            [
+                'id'          => 'D6Z9Jfir2egAUT',
+                'source_type' => 'contact',
+                'source_id'   => 'Dsp92d4N1Mmm6Q',
+                'merchant_id' => '10000000000000'
+            ]);
 
         $this->fixtures->create('payout', ['id' => 'DuuYxmO7Yegu3x', 'fund_account_id' => 'D6Z9Jfir2egAUT']);
 
@@ -75,12 +75,12 @@ class VendorPaymentTest extends TestCase
         $this->fixtures->create('contact', ['id' => 'Dsp92d4N1Mmm6Q', 'name' => 'test_contact']);
 
         $this->fixtures->create('fund_account:bank_account',
-                                [
-                                    'id'          => 'D6Z9Jfir2egAUT',
-                                    'source_type' => 'contact',
-                                    'source_id'   => 'Dsp92d4N1Mmm6Q',
-                                    'merchant_id' => '10000000000000'
-                                ]);
+            [
+                'id'          => 'D6Z9Jfir2egAUT',
+                'source_type' => 'contact',
+                'source_id'   => 'Dsp92d4N1Mmm6Q',
+                'merchant_id' => '10000000000000'
+            ]);
 
         $this->fixtures->create('payout', ['id' => 'DuuYxmO7Yegu3x', 'fund_account_id' => 'D6Z9Jfir2egAUT']);
 
@@ -203,6 +203,21 @@ class VendorPaymentTest extends TestCase
         $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
 
         $this->startTest();
+    }
+
+    public function testGetReportingInfo()
+    {
+        $this->ba->proxyAuth();
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('getReportingInfo')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('getReportingInfo');
     }
 
 }

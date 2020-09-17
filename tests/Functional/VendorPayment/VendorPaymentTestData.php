@@ -208,6 +208,23 @@ return [
         ]
     ],
 
+    'testGetReportingInfo' => [
+        'request'  => [
+            'method' => 'GET',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'    => '/vendor-payments/_meta/get-reporting-info',
+            'content' => [
+                'status'      => 'unpaid',
+                'payout_mode' => 'IMPS',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
     'testCreatePayout' => [
         'request'  => [
             'method'  => 'POST',

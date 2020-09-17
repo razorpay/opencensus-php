@@ -50,6 +50,7 @@ class Service
     const SUBJECT                     = 'subject';
     const NAME                        = 'name';
     const TO_EMAIL                    = 'to_email';
+    const GET_REPORTING_INFO          = 'GetReportingInfo';
 
     protected $app;
 
@@ -425,6 +426,13 @@ class Service
         }
 
         $input['manually_paid_user_id'] = $user->getPublicId();
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function getReportingInfo(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_REPORTING_INFO);
 
         return $this->makeRequest($merchant, $url, $input);
     }

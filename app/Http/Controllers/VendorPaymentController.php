@@ -198,4 +198,9 @@ class VendorPaymentController extends Controller
     {
         return $this->service->markAsPaid($this->ba->getMerchant(), $this->input, $this->ba->getUser());
     }
+
+    public function getReportingInfo()
+    {
+        return $this->service->getReportingInfo($this->ba->getMerchant(), $this->input);
+    }
 }
