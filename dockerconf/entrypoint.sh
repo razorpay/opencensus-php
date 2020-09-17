@@ -178,7 +178,7 @@ main() {
     topics=$4
     mkdir -p /opt/razorpay/certs/kafka
     chown 0775 /opt/razorpay/certs/kafka
-    php artisan "${command}" "${mode}" "${topics}"
+    php artisan "${command}" "${mode}" "${APP_MODE}-${topics}"
   elif [[ "${app_type}" == "sqs" ]]; then
     change_db_user_for_workers
     sleep_time=$2

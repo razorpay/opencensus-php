@@ -14,12 +14,13 @@ class KafkaMessageProcessor extends Job
      * Message Processor for Kafka Message,
      * Identifies and call modules/service based on the topicName
      *
-     * @param string $topicName
+     * @param string $topic
      * @param array $payload
+     * @param string $appEnv Environment in which worker is running
      * @param string|null $mode
      * @return bool <TRUE/FALSE> - True - processing success, False - in case of failure
      */
-    public function process(string $topicName, array $payload, string $mode = null): bool
+    public function process(string $topic, array $payload, string $mode = null): bool
     {
         $this->mode = $mode;
 
@@ -37,7 +38,8 @@ class KafkaMessageProcessor extends Job
 
             $this->trace->info(TraceCode::ONBOARDING_BVS_VERIFICATION_JOB_REQUEST, $tracePayload);
 
-            switch ($topicName) {
+
+            switch ($topic) {
                 //
                 // BVS Validation Results
                 //
@@ -48,7 +50,7 @@ class KafkaMessageProcessor extends Job
 
                     return true;
                 default:
-                    $this->trace->error('no processor defined for the topic - ' . $topicName);
+                    $this->trace->error('no processor defined for the topic - ' . $topic);
                     return false;
             }
         }

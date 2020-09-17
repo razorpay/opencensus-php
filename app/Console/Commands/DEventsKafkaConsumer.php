@@ -247,7 +247,11 @@ class DEventsKafkaConsumer extends Command
         $this->info('processing message from - '.
             $kafkaMessage->topic_name. ' topic with payload - '. $kafkaMessage->payload);
 
-        $isProcessed = $this->messageProcessor->process($kafkaMessage->topic_name, $payload, $this->mode);
+        $appEnv = env('APP_ENV', 'production');
+
+        $topic = str_replace($appEnv . '-', '', $kafkaMessage->topic_name);
+
+        $isProcessed = $this->messageProcessor->process($topic, $payload, $this->mode);
 
         $infoMessage = ($isProcessed === true) ? 'successful' : 'failed';
 
