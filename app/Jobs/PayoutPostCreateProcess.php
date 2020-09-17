@@ -7,6 +7,8 @@ use RZP\Trace\TraceCode;
 
 class PayoutPostCreateProcess extends Job
 {
+    const MAX_RETRY_ATTEMPT = 3;
+
     protected $payoutId;
 
     protected $mode;
@@ -36,6 +38,8 @@ class PayoutPostCreateProcess extends Job
             $payout = $this->repoManager->payout->find($this->payoutId);
 
             (new Payout\Core)->processPayoutPostCreate($payout);
+
+            $this->delete();
         }
         catch (\Throwable $ex)
         {
@@ -44,10 +48,32 @@ class PayoutPostCreateProcess extends Job
                 null,
                 TraceCode::PAYOUT_CREATE_SUBMITTED_PROCESS_FAILED,
                 $traceData);
+
+            $this->checkRetry();
         }
-        finally
+    }
+
+    protected function checkRetry()
+    {
+        $data = [
+                'payout_id'      => $this->payoutId,
+            ];
+
+        if ($this->attempts() < self::MAX_RETRY_ATTEMPT)
+        {
+            $this->release();
+
+            $this->trace->info(TraceCode::PAYOUT_CREATE_SUBMITTED_PROCESS_JOB_RELEASED, $data);
+        }
+        else
         {
             $this->delete();
+
+            $this->trace->error(TraceCode::PAYOUT_CREATE_SUBMITTED_PROCESS_JOB_DELETED, $data);
+
+            $operation = 'Post payout create process fetch job failed';
+
+            (new SlackNotification)->send($operation, $data, null, 1, 'xp_payouts_alert');
         }
     }
 }
