@@ -111,9 +111,10 @@ class CapitalCardsController extends Controller
             'x-otp'            => $body['otp'] ?? '',
         ];
 
-        if ($request->getQueryString() !== null)
+        if (($request->method() === 'GET') and
+            (empty($body) === false))
         {
-            $url .= '?' . $request->getQueryString();
+            $url .= '?' . http_build_query($body);
         }
 
         $response = $this->sendRequestAndParseResponse($url, $body, $headers, $request->method());
