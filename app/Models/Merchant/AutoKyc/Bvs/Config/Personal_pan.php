@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs\Config;
 
-class POI extends BaseConfig
+class Personal_pan extends BaseConfig
 {
     protected $enrichment = [
         'online_provider' => [

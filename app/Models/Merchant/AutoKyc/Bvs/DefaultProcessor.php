@@ -27,11 +27,11 @@ class DefaultProcessor implements Processor
 
     /**
      * @param array  $input
-     * @param string $documentType
+     * @param string $artefactType
      *
      * @throws LogicException
      */
-    public function __construct(array $input, string $documentType)
+    public function __construct(array $input, string $artefactType)
     {
         $app = App::getFacadeRoot();
 
@@ -39,7 +39,7 @@ class DefaultProcessor implements Processor
 
         $this->input = $input;
 
-        $configClass = $this->getConfigClass($documentType);
+        $configClass = $this->getConfigClass($artefactType);
 
         $this->bvsRuleConfig = new $configClass();
 
@@ -62,7 +62,7 @@ class DefaultProcessor implements Processor
      *
      * @return Response
      * @throws \ErrorException
-     * @throws IntegrationException
+     * @throws IntegrationException|\RZP\Exception\AssertionException
      */
     public function Process(): Response
     {
@@ -118,14 +118,16 @@ class DefaultProcessor implements Processor
     }
 
     /**
-     * @param string $documentType
+     * The config class name would be lowercase(artefactType)
+     *
+     * @param string $artefactType
      *
      * @return string
      * @throws LogicException
      */
-    private function getConfigClass(string $documentType)
+    private function getConfigClass(string $artefactType)
     {
-        $configClass = self::BVS_CONFIG_NAME_SPACE . '\\' . (strtoupper($documentType));
+        $configClass = self::BVS_CONFIG_NAME_SPACE . '\\' . ucfirst(strtolower($artefactType));
 
         if (class_exists($configClass) === true)
         {
@@ -133,10 +135,10 @@ class DefaultProcessor implements Processor
         }
 
         throw new LogicException(
-            ErrorCode::SERVER_ERROR_BVS_CONFIG_FILE_MISSING_FOR_DOCUMENT_TYPE,
+            ErrorCode::SERVER_ERROR_BVS_CONFIG_FILE_MISSING_FOR_ARTEFACT_TYPE,
             null,
             [
-                Constants::DOCUMENT_TYPE => $documentType,
+                Constant::ARTEFACT_TYPE => $artefactType,
             ]);
     }
 }

@@ -9,14 +9,14 @@ use RZP\Models\Merchant\AutoKyc\Processor;
 class Factory
 {
     /**
-     * @param string $documentType
+     * @param string $artefactType
      *
      * @param array  $input
      *
      * @return Processor
      * @throws \RZP\Exception\LogicException
      */
-    public function getProcessor(string $documentType, array $input): Processor
+    public function getProcessor(string $artefactType, array $input): Processor
     {
         $app = $app = App::getFacadeRoot();
 
@@ -24,7 +24,7 @@ class Factory
 
         if ($mock === true)
         {
-            $processorMock = new DefaultProcessorMock($input, $documentType);
+            $processorMock = new DefaultProcessorMock($input, $artefactType);
 
             //
             // This config is not defined in application config , this is used in test case only
@@ -36,6 +36,6 @@ class Factory
             return $processorMock;
         }
 
-        return new DefaultProcessor($input, $documentType);
+        return new DefaultProcessor($input, $artefactType);
     }
 }

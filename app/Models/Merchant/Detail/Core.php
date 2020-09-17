@@ -2963,19 +2963,23 @@ class Core extends Base\Core
      */
     public function performOcrWithBvs(Document\Entity $document, Entity $merchantDetails)
     {
+        $artefactDetails = Constant::DOCUMENT_TYPE_ARTEFACT_DETAILS_MAP[$document->getDocumentType()] ?? [];
+
+        $artefactType       = $artefactDetails[Constant::ARTEFACT_TYPE] ?? '';
+        $artefactProofIndex = $artefactDetails[Constant::PROOF_INDEX] ?? '1';
+
         $payload = [
-            Constant::ARTEFACT_TYPE => Document\Type::DOCUMENT_TYPE_ARTEFACT_TYPE_MAP[$document->getDocumentType()],
+            Constant::ARTEFACT_TYPE => $artefactType,
             Constant::DETAILS       => [
                 Constant::NAME => $merchantDetails->getPromoterPanName(),
             ],
             Constant::PROOFS        => [
-                '3' => [Constant::UFH_FILE_ID => $document->getPublicFileStoreId()],
+                $artefactProofIndex => [Constant::UFH_FILE_ID => $document->getPublicFileStoreId()],
             ],
         ];
 
         $bvsValidation = (new AutoKyc\Bvs\Core())->verify(
             $merchantDetails->getId(),
-            DEConstants::POA,
             $payload);
 
         if($bvsValidation !== null)

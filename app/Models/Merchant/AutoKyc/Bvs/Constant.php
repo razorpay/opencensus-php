@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs;
 
+use RZP\Models\Merchant\Document\Type;
+
 class Constant
 {
     //
@@ -21,6 +23,7 @@ class Constant
     const PROOFS      = 'proofs';
     const NOTES       = 'notes';
     const UFH_FILE_ID = 'ufh_file_id';
+    const PROOF_INDEX = 'proof_index';
 
     //
     // Response fields
@@ -43,4 +46,19 @@ class Constant
 
     const SUCCESS = 'success';
     const FAILURE = 'failure';
+
+    const DOCUMENT_TYPE_ARTEFACT_DETAILS_MAP = [
+        Type::AADHAR_FRONT => [
+            self::ARTEFACT_TYPE => self::AADHAAR,
+            self::PROOF_INDEX   => '3',
+        ],
+        Type::VOTER_ID_FRONT => [
+            self::ARTEFACT_TYPE => self::VOTER_ID,
+            self::PROOF_INDEX   => '1',
+        ],
+        Type::PASSPORT_FRONT => [
+            self::ARTEFACT_TYPE => self::PASSPORT,
+            self::PROOF_INDEX   => '1',
+        ],
+    ];
 }

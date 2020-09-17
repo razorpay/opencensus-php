@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs\Config;
 
-class POA extends BaseConfig
+class Passport extends BaseConfig
 {
     protected $enrichment = [
         "ocr" => [
@@ -23,7 +23,7 @@ class POA extends BaseConfig
                             "var" => "artefact.details.name.value",
                         ],
                         [
-                            "var" => "enrichments.ocr.details.3.name.value",
+                            "var" => "enrichments.ocr.details.1.name.value",
                         ],
                         70
                     ],

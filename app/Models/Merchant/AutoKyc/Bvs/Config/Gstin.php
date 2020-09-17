@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs\Config;
 
-class GSTIN extends BaseConfig
+class Gstin extends BaseConfig
 {
     protected $enrichment = [
         'online_provider' => [

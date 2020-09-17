@@ -13,21 +13,22 @@ class Core extends Base\Core
      * This function triggers request to bvs and creates new entry in bvs_validation table if no error.
      * Return null if verification failed because of any reason.
      * @param string $merchantId
-     * @param string $documentType
      * @param array $input
      * @return BvsValidation\Entity|null
      */
-    public function verify(string $merchantId, string $documentType, array $input): ?BvsValidation\Entity
+    public function verify(string $merchantId, array $input): ?BvsValidation\Entity
     {
         $input[Constant::OWNER_ID] = $merchantId;
 
+        $artefactType = $input[Constant::ARTEFACT_TYPE];
+
         try
         {
-            $processor = (new Factory())->getProcessor($documentType, $input);
+            $processor = (new Factory())->getProcessor($artefactType, $input);
 
             $response = $processor->Process();
 
-            $validationObject = $this->getValidationObject($merchantId, $input[Constant::ARTEFACT_TYPE], $response);
+            $validationObject = $this->getValidationObject($merchantId, $artefactType, $response);
 
             return (new BvsValidation\Core())->create($validationObject);
         }
