@@ -39,12 +39,12 @@ class CounterHelper extends Base\Core
         /** @var Counter\Entity $counter */
         $counter = (new Counter\Core)->fetchOrCreate($balance);
 
+        $freePayoutsCount = (new Balance\FreePayout)->getFreePayoutsCount($balance);
+
         /** @var Counter\Entity $counter */
         $counter = $this->repo->counter->lockForUpdate($counter->getId());
 
         $counter = $this->resetFreePayoutsConsumedIfApplicable($counter);
-
-        $freePayoutsCount = (new Balance\FreePayout)->getFreePayoutsCount($balance);
 
         $freePayoutsConsumed = $counter->getFreePayoutsConsumed();
 
