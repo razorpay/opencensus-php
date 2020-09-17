@@ -2080,6 +2080,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED                 = 'FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED';
     const ES_ELIGIBLE_MERCHANT_NOTIFIED                         = 'ES_ELIGIBLE_MERCHANT_NOTIFIED';
     const LOC_ELIGIBLE_MERCHANT_NOTIFIED                        = 'LOC_ELIGIBLE_MERCHANT_NOTIFIED';
+    const LOAN_ELIGIBLE_MERCHANT_NOTIFIED                        = 'LOAN_ELIGIBLE_MERCHANT_NOTIFIED';
 
     const MAILCHIMP_JOB_ERROR                                   = 'MAILCHIMP_JOB_ERROR';
 

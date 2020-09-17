@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Mail\Los\LoanEligible;
 use RZP\Jobs\MailingListUpdate;
 use RZP\Exception\LogicException;
 use RZP\Models\Settings\Accessor;
@@ -236,6 +237,28 @@ class Core extends Base\Core
 
             $this->trace->info(
                 TraceCode::LOC_ELIGIBLE_MERCHANT_NOTIFIED,
+                [
+                    PublicEntity::MERCHANT_ID => $entityId,
+                    Entity::SHOULD_SYNC       => $shouldSync,
+                    Mode::LIVE                => $isLiveMode,
+                    Entity::NEW_FEATURE       => $feature,
+                    Merchant\Entity::EMAIL    => $merchantEmail
+                ]);
+        }
+        else if (($feature->getName() === Constants::LOAN) and
+            ($isLiveMode === true))
+        {
+            $merchantEmail = $merchant->getEmail();
+
+            $data['contact_name']  = $merchant->getName();
+            $data['contact_email'] = $merchantEmail;
+
+            $loanEligibleEmail = new LoanEligible($data);
+
+            Mail::queue($loanEligibleEmail);
+
+            $this->trace->info(
+                TraceCode::LOAN_ELIGIBLE_MERCHANT_NOTIFIED,
                 [
                     PublicEntity::MERCHANT_ID => $entityId,
                     Entity::SHOULD_SYNC       => $shouldSync,
