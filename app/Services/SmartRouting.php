@@ -105,16 +105,6 @@ class SmartRouting
         return $this->sendRequest(self::DELETE_GATEWAY_RULE, null, $id, $params, self::REQUEST_TIMEOUT);
     }
 
-    public function sendNonBlockingPaymentData($data, $params)
-    {
-        $this->sendRequest(self::SEND_PAYMENT_DATA, $data, null, $params, self::REQUEST_TIMEOUT_ASYNC);
-    }
-
-    public function sendNonBlockingPaymentDataAuthN($data, $params)
-    {
-        $this->sendRequest(self::SEND_PAYMNENT_AUTHN, $data, null, $params, self::REQUEST_TIMEOUT_ASYNC);
-    }
-
     protected function sendNonBlockingRequest($action, $data = null, $id = null, $params)
     {
         $url = $this->getUrl($action, $id, $params);

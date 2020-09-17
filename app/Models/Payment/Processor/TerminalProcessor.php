@@ -100,37 +100,6 @@ class TerminalProcessor extends Base\Core
 
         $gatewayInput['auth_type'] = $terminal['auth_type'];
 
-        ////// Async call to Smart Rounting To select AuthNterminals
-        try
-        {
-            $input = [
-                'payment'  => $this->payment,
-                'merchant' => $this->payment->merchant,
-            ];
-
-            $options = $this->getTerminalSelectionOptions();
-
-            $terminalSelector = new Terminal\Selector($input, $options);
-
-            $terminalAuthZ = $this->payment->terminal->toArray();
-
-            $terminalsAuthZ = [$terminalAuthZ];
-
-            $terminals = [$terminal];
-
-            $terminalSelector->sendAuthenticationData($terminalsAuthZ, $terminals);
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->error(
-                TraceCode::SMART_ROUTING_AUTHN_REQUEST_FAILED,
-                [
-                    'message' => 'Failed to send authentication data to smart routing',
-                    'paymnet_id' => $payment->getId(),
-                ]
-            );
-        }
-
         if (empty($terminal['authentication_gateway'] === false))
         {
             $gatewayInput['authenticate'] = [
