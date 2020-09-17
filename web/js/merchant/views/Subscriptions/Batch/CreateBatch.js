@@ -16,7 +16,7 @@ import RegistrationLinksBatchForm from './components/RegistrationLinkBatchCreati
 
 const gaEvents = setGaTrack('Dashboard - Subscriptions - BU');
 
-@connect(state => ({ user: state.session.user }), {
+@connect((state) => ({ user: state.session.user }), {
   createRecurringChargeBatch,
   validateRecurringChargeBatch,
   createRegistrationLinkBatch,
@@ -29,7 +29,8 @@ export default class CreateHostedMandateBatch extends Component {
       createBatch={this.props.createRecurringChargeBatch}
       validateBatch={this.props.validateRecurringChargeBatch}
       gaEvents={gaEvents}
-      maxRows="10,000"
+      maxRows="5,00,000"
+      maxFileSize={57671680}
       batchType="recurring_charge"
       docUrl="https://razorpay.com/docs/recurring-payments/"
       sampleUrl="https://cdn.razorpay.com/dashboard/sample_recurring_payments.csv"
