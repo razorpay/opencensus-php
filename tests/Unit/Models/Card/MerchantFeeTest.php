@@ -476,8 +476,8 @@ class MerchantFeeTest extends TestCase
             'payment_network'     => 'HDFC',
             'payment_issuer'      => null,
             'amount_range_active' => true,
-            'amount_range_min'    => 0,
-            'amount_range_max'    => 100000000000,
+            'amount_range_min'    => 100000000000,
+            'amount_range_max'    => 300000000000,
             'percent_rate'        => 0,
             'fixed_rate'          => 500,
             'international'       => 0,
@@ -1068,7 +1068,7 @@ class MerchantFeeTest extends TestCase
         $this->fixtures->merchant->setFeeBearer('customer');
 
 
-        $this->runMerchantFeeTestNetB('100', 'HDFC', ['payment' => '1fq0OXpgrfrt4z']);
+        $this->runMerchantFeeTestNetB('200000000000', 'HDFC', ['payment' => '1fq0OXpgrfrt4z']);
 
         $this->fixtures->merchant->setFeeBearer('platform');
 

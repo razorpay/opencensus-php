@@ -41,36 +41,6 @@ class Payment extends Base
 
     protected function getPricingRule($rules, $method)
     {
-        $merchant = $this->entity->merchant;
-
-        $mode = $this->app['rzp.mode'] ?? \RZP\Constants\Mode::LIVE;
-
-        /*
-         * removing the fee bearer filter via razorx.
-         * at the beginning, the variant will be at 0(control) -> behavior is same as current behavior with the filter
-         * slowly, the variant will be ramped up to 100%.
-         * at this stage, the filter is no longer applicable -> fee bearer is decided by merchants fee bearer
-         * attribute for customer/platform merchants. for dynamic merchants, it would be decided by
-         * pricing rule selected
-         */
-        if ($merchant !== null)
-        {
-            $variant = $this->app['razorx']->getTreatment($merchant->getId(), 'removeFeeBearerFilter', $mode);
-
-            if ($variant === 'control')
-            {
-                $rules = $this->getRelevantPricingRulesForFeeBearer($rules);
-            }
-            else
-            {
-                $data = [
-                    'merchant_id'  => $merchant->getId(),
-                ];
-
-                $this->app['trace']->info(TraceCode::PRICING_FEE_BEARER_FILTER_REMOVAL_VARIANT, $data);
-            }
-        }
-
         $rules = $this->getRelevantPricingRuleForProcurer($rules);
 
         $rule = $this->getRelevantPricingRuleForMethod($rules, $method);
