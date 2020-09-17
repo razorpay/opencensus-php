@@ -72,6 +72,8 @@ final class Constants
 
     const ALL_SETTLEMENT_DEFAULT                  = 'all_settlement_default';
 
+    const RAZORX_EXPERIMENT_ON                    = 'on';
+
     // Instant Refunds Pricing Fetch related constants
     const RULES                     = 'rules';
     const CUSTOM_PRICING            = 'custom_pricing';

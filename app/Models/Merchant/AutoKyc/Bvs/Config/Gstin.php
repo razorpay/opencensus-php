@@ -25,7 +25,7 @@ class Gstin extends BaseConfig
                             [
                                 'fuzzy_wuzzy' => [
                                     [
-                                        'var' => 'artefact.details.promoter_pan_name.value',
+                                        'var' => 'artefact.details.legal_name.value',
                                     ],
                                     [
                                         'var' => 'enrichments.online_provider.details.legal_name.value',
@@ -36,7 +36,7 @@ class Gstin extends BaseConfig
                             [
                                 'fuzzy_wuzzy' => [
                                     [
-                                        'var' => 'artefact.details.company_name.value',
+                                        'var' => 'artefact.details.trade_name.value',
                                     ],
                                     [
                                         'var' => 'enrichments.online_provider.details.trade_name.value',
@@ -58,7 +58,7 @@ class Gstin extends BaseConfig
                                     'var' => '',
                                 ],
                                 [
-                                    'var' => 'artefact.details.promoter_pan_name.value',
+                                    'var' => 'artefact.details.legal_name.value',
                                 ],
                                 70,
                             ],

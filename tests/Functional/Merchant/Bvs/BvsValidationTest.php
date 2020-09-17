@@ -40,7 +40,16 @@ class BvsValidationTest extends TestCase
 
         $bvsValidation = $this->triggerBvsVerification(__FUNCTION__, $merchantDetailsData);
 
-        $this->validateBvsValidation($bvsValidation);
+        $expectedValues = [
+            'artefact_type'     => 'personal_pan',
+            'owner_id'          => '10000000000000',
+            'owner_type'        => 'merchant',
+            'platform'          => 'pg',
+            'validation_status' => 'captured',
+        ];
+
+        $this->validateSuccessBvsValidation($bvsValidation, $expectedValues);
+
     }
 
     public function testCreateBvsValidationPoiFailed()
@@ -101,25 +110,58 @@ class BvsValidationTest extends TestCase
 
         $bvsValidation = $this->triggerBvsVerification($test, $merchantDetailsData);
 
-        $input = [
+        $expectedValues = [
             'artefact_type' => 'aadhaar',
             'owner_id'      => $mid,
         ];
 
-        $this->validateBvsValidation($bvsValidation, $input);
+        $this->validateSuccessBvsValidation($bvsValidation, $expectedValues);
 
         $document = $this->getDbEntity('merchant_document', ['merchant_id' => $mid]);
 
         $this->assertNotNull($document->getValidationId());
     }
 
-    public function testUpdateBvsValidationStatusPoa()
+    public function testCreateBvsValidationForGstin()
     {
         $mid = '10000000000000';
 
-        $bvsResponse = $this->getBvsResponse();
+        $merchantDetailsData = [
+            'merchant_id'       => $mid,
+            'business_type'     => '1',
+            'business_name'     => 'Razorpay',
+            'promoter_pan_name' => 'Shk',
+        ];
 
-        $this->updateBvsValidationStatusCheck($mid, 'aadhaar', $bvsResponse);
+        $this->mockRazorX(__FUNCTION__, 'bvs_gstin_validation', 'on', $mid);
+
+        $bvsValidation = $this->triggerBvsVerification(__FUNCTION__, $merchantDetailsData);
+
+        $expectedValues = [
+            'artefact_type'     => 'gstin',
+            'owner_id'          => $mid,
+            'owner_type'        => 'merchant',
+            'platform'          => 'pg',
+            'validation_status' => 'captured',
+        ];
+
+        $this->validateSuccessBvsValidation($bvsValidation, $expectedValues);
+    }
+
+    public function testUpdateBvsValidationStatusPoa()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+
+        $mid = $merchantDetail->getId();
+
+        $capturedBvsValidation = $this->fixtures->create('bvs_validation', [
+            'owner_id'      => $mid,
+            'artefact_type' => 'aadhaar',
+        ]);
+
+        $bvsResponse = $this->getBvsResponse($capturedBvsValidation->getValidationId());
+
+        $this->processBvsResponseAndValidate($bvsResponse, $capturedBvsValidation->getValidationId());
     }
 
     private function updateUploadDocumentData(string $callee)
@@ -135,47 +177,38 @@ class BvsValidationTest extends TestCase
             true);
     }
 
-    private function updateBvsValidationStatusCheck(string $mid, string $artefact_type, array $bvsResponse)
+    private function processBvsResponseAndValidate(array $bvsResponse, string $validationId)
     {
-        $this->fixtures->create('bvs_validation', [
-            'validation_id'     => '1234567890abcd',
-            'owner_id'          => $mid,
-            'owner_type'        => 'merchant',
-            'validation_status' => 'captured',
-            'artefact_type'     => $artefact_type,
-        ]);
-
-        $app = App::getFacadeRoot();
-
-        $app['rzp.mode'] = 'test';
-
-        KafkaMessageProcessor::dispatch('test');
-
         (new KafkaMessageProcessor())->process('api-bvs-validation-result-events',
-                                               $bvsResponse);
+                                               $bvsResponse, 'test');
 
-        $bvsValidation = $this->getDbEntity('bvs_validation', ['owner_id' => $mid, 'owner_type' => 'merchant']);
+        $bvsValidationPostResponse = $this->getDbEntity('bvs_validation',
+                                                        ['validation_id' => $validationId]);
 
-        $input = [
-            'artefact_type' => 'aadhaar',
-            'owner_id'      => $mid,
-        ];
+        $expectedValues                      = $bvsResponse['data'];
+        $expectedValues['validation_status'] = $expectedValues['status'];
 
-        $input = array_merge($input, $bvsResponse);
+        //
+        // Unsetting status because field is different in bvs kafka response and bvs validation entity
+        //
+        unset($expectedValues['status']);
 
-        $this->validateBvsValidation($bvsValidation, $input);
+        $this->bvsValidation($bvsValidationPostResponse, $expectedValues);
     }
 
-    private function getBvsResponse(string $status = 'success', string $errorCode = null, string $errorDesc = null)
+    private function getBvsResponse(string $validationId,
+                                    string $status = 'success',
+                                    string $errorCode = '',
+                                    string $errorDesc = '')
     {
-        $bvsSuccessResponse['data'] = [
-            'validation_id'     => '1234567890abcd',
-            'validation_status' => $status,
+        $bvsResponse['data'] = [
+            'validation_id'     => $validationId,
+            'status'            => $status,
             'error_code'        => $errorCode,
             'error_description' => $errorDesc,
         ];
 
-        return $bvsSuccessResponse;
+        return $bvsResponse;
     }
 
     private function triggerBvsVerification(string $test,
@@ -200,15 +233,28 @@ class BvsValidationTest extends TestCase
         return $this->getDbEntity('bvs_validation', ['owner_id' => $mid, 'owner_type' => 'merchant']);
     }
 
-    private function validateBvsValidation(Entity $bvsValidation,
-                                           array $input = [])
+    private function bvsValidation(Entity $bvsValidation,
+                                   array $expectedValues = [])
+    {
+        //
+        // resetting time based data
+        //
+        unset($expectedValues['created_at']);
+        unset($expectedValues['updated_at']);
+
+        foreach ($expectedValues as $key => $value)
+        {
+            $this->assertEquals($value, $bvsValidation->getAttribute($key));
+        }
+    }
+
+
+    private function validateSuccessBvsValidation(Entity $bvsValidation,
+                                                  array $expectedValues = [])
     {
         $this->assertNotNull($bvsValidation->getValidationId());
-        $this->assertEquals($input['validation_status'] ?? 'captured', $bvsValidation->getValidationStatus());
-        $this->assertEquals($input['artefact_type'] ?? 'personal_pan', $bvsValidation->getArtefactType());
-        $this->assertEquals($input['owner_id'] ?? '10000000000000', $bvsValidation->getOwnerId());
-        $this->assertEquals($input['owner_type'] ?? 'merchant', $bvsValidation->getOwnerType());
-        $this->assertEquals($input['error_code'] ?? null, $bvsValidation->getErrorCode());
-        $this->assertEquals($input['error_description'] ?? null, $bvsValidation->getErrorDescription());
+        $this->assertNull($bvsValidation->getErrorCode());
+        $this->assertNull($bvsValidation->getErrorDescription());
+        $this->bvsValidation($bvsValidation, $expectedValues);
     }
 }

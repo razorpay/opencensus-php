@@ -2415,6 +2415,46 @@ class Core extends Base\Core
             return;
         }
 
+        $shouldVerifyGstinFromBVS = (new Merchant\Core)->isRazorxExperimentEnable(
+            $merchant,
+            RazorxTreatment::BVS_GSTIN_VALIDATION);
+
+        if ($shouldVerifyGstinFromBVS === true)
+        {
+            $this->verifyGstinFromBvs($merchantDetails);
+        }
+        else
+        {
+            $this->verifyGstinFromKycService($merchantDetails);
+        }
+    }
+
+    /**
+     * Verifies Gstin from BVS
+     *
+     * @param Entity $merchantDetails
+     */
+    protected function verifyGstinFromBvs(Entity $merchantDetails)
+    {
+        $payload = [
+            Constant::ARTEFACT_TYPE => Constant::GSTIN,
+            Constant::IDENTIFIER    => $merchantDetails->getGstin(),
+            Constant::DETAILS       => [
+                Constant::LEGAL_NAME => $merchantDetails->getPromoterPanName() ?? '',
+                Constant::TRADE_NAME => $merchantDetails->getBusinessName() ?? ''
+            ],
+        ];
+
+        (new AutoKyc\Bvs\Core())->verify($merchantDetails->getEntityId(), $payload);
+    }
+
+    /**
+     * Verifies Gstin from KYC Service
+     *
+     * @param Entity $merchantDetails
+     */
+    protected function verifyGstinFromKycService(Entity $merchantDetails): void
+    {
         $verificationStatus = GSTINVerificationStatus::FAILED;
         try
         {

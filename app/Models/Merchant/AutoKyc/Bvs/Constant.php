@@ -23,6 +23,8 @@ class Constant
     const PROOFS      = 'proofs';
     const NOTES       = 'notes';
     const UFH_FILE_ID = 'ufh_file_id';
+    const LEGAL_NAME  = 'legal_name';
+    const TRADE_NAME  = 'trade_name';
     const PROOF_INDEX = 'proof_index';
 
     //
@@ -36,6 +38,7 @@ class Constant
     //
     const PERSONAL_PAN = 'personal_pan';
     const AADHAAR      = 'aadhaar';
+    const GSTIN        = 'gstin';
     const VOTER_ID     = 'voter_id';
     const PASSPORT     = 'passport';
 

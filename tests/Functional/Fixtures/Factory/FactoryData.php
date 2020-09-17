@@ -1473,16 +1473,18 @@ final class FactoryData
             ]
         );
 
-        $factory(\RZP\Models\Merchant\BvsValidation\Entity::class, [
-               'validation_id'     => $faker->uniqueid,
-               'owner_id'          => '10000000000000',
-               'owner_type'        => 'merchant',
-               'artefact_type'     => 'poi',
-               'error_code'        => null,
-               'error_description' => null,
-               'created_at'        => $faker->timestamp,
-               'updated_at'        => $faker->timestamp,
-            ]
+        $factory(\RZP\Models\Merchant\BvsValidation\Entity::class,
+                 [
+                     'validation_id'     => $faker->uniqueid,
+                     'owner_id'          => '10000000000000',
+                     'owner_type'        => 'merchant',
+                     'artefact_type'     => 'personal_pan',
+                     'error_code'        => null,
+                     'error_description' => null,
+                     'validation_status' => 'captured',
+                     'created_at'        => $faker->timestamp,
+                     'updated_at'        => $faker->timestamp,
+                 ]
         );
 
         $factory(\RZP\Models\PayoutSource\Entity::class, [

@@ -35,7 +35,9 @@ final class RazorxTreatment
     //
     const BVS_AUTO_KYC = 'bvs_auto_kyc';
 
-    const BVS_AUTO_KYC_OCR = 'bvs_auto_kyc_ocr';
+    const BVS_AUTO_KYC_OCR     = 'bvs_auto_kyc_ocr';
+    const BVS_GSTIN_VALIDATION = 'bvs_gstin_validation';
+    const BVS_CIN_VALIDATION   = 'bvs_cin_validation';
 
     // Decides if increased cap for allowed line items in invoice to be used for merchant's invoice.
     const INV_INCREASED_LINE_ITEMS_CAP = 'inv_increased_line_items_cap';
