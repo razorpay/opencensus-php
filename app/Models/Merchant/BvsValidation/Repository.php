@@ -10,4 +10,24 @@ class Repository extends Base\Repository
 
     protected $entity = 'bvs_validation';
 
+    /**
+     * Returns Most recent artefact validation for owner id
+     *
+     * @param string $ownerId
+     * @param string $artefactType
+     *
+     * @return mixed
+     */
+    public function getLatestArtefactValidationForOwnerId(string $ownerId, string $artefactType)
+    {
+        $ownerIdColumn      = $this->repo->bvs_validation->dbColumn(Entity::OWNER_ID);
+        $artefactTypeColumn = $this->repo->bvs_validation->dbColumn(Entity::ARTEFACT_TYPE);
+
+        return $this->newQuery()
+                    ->where($ownerIdColumn, $ownerId)
+                    ->where($artefactTypeColumn, $artefactType)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->first();
+    }
+
 }

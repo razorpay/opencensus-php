@@ -38,10 +38,11 @@ class Constant
     //
     const PERSONAL_PAN = 'personal_pan';
     const AADHAAR      = 'aadhaar';
+    const CIN          = 'cin';
     const GSTIN        = 'gstin';
     const VOTER_ID     = 'voter_id';
     const PASSPORT     = 'passport';
-
+    
     const PG       = 'pg';
     const MERCHANT = 'merchant';
 

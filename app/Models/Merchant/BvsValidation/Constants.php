@@ -37,4 +37,36 @@ class Constants
         self::FAILED,
         self::CAPTURED,
     ];
+
+
+    // Validation status
+    const VERIFIED = 'verified';
+    const INCORRECT_DETAILS = 'incorrect_details';
+    const NOT_MATCHED = 'not_matched';
+
+    const ERROR_MAPPING = [
+        self::FAILED            => [
+            'NO_PROVIDER_ERROR',
+            'RETRIES_EXCEEDED',
+            'PROCESSOR_ERROR',
+            'DATA_CROSS_CHECK_ERROR',
+            'EXTERNAL_SERVICE_ERROR',
+            'INTERNAL_ERROR',
+        ],
+        self::INCORRECT_DETAILS => [
+            'VALIDATION_ERROR',
+            'ARTEFACT_INVALIDATED',
+            'DOCUMENT_UNIDENTIFIABLE',
+            'INPUT_DATA_ISSUE',
+            'INPUT_IMAGE_ISSUE',
+            'DATA_UNAVAILABLE',
+            'REMOTE_RECORDS_INCONSISTENT',
+            'DATA_CROSS_CHECK_ERROR',
+            'NOT_SUPPORTED',
+        ],
+
+        self::NOT_MATCHED => [
+            'RULE_EXECUTION_FAILURE'
+        ]
+    ];
 }

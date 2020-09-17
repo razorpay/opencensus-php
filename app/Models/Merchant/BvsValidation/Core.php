@@ -5,10 +5,19 @@ namespace RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
-use RZP\Models\Merchant\AutoKyc\Bvs;
+use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 
 class Core extends Base\Core
 {
+    protected $mutex;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
+
     /**
      * this function is called to process the response pushed to kafka queue by BVS,
      * here we update the bvs_validation entity status based on the response
@@ -25,66 +34,25 @@ class Core extends Base\Core
 
         $validation = $this->repo->bvs_validation->findOrFail($validationObj[Entity::VALIDATION_ID]);
 
-        $validation->edit($validationObj);
-
         $merchantId = $validation->getOwnerId();
 
-        [$merchant, $merchantDetails] = (New Detail\Core())->getMerchantAndSetBasicAuth($merchantId);
+        $validation->edit($validationObj);
 
-        $this->UpdateDocumentVerificationStatus($validation, $merchantDetails);
+        $this->mutex->acquireAndRelease(
+            $merchantId,
+            function() use ($validation, $merchantId) {
 
-        $this->repo->bvs_validation->saveOrFail($validation);
-    }
+                $this->repo->transactionOnLiveAndTest(
+                    function() use ($validation, $merchantId) {
 
-    /**
-     * @param Entity        $validation
-     * @param Detail\Entity $merchantDetails
-     */
-    private function UpdateDocumentVerificationStatus(Entity $validation, Detail\Entity $merchantDetails)
-    {
-        switch ($validation->getArtefactType())
-        {
-            case Bvs\Constant::PERSONAL_PAN :
-                $this->PersonalPanVerify($validation, $merchantDetails);
-        }
-    }
+                        $this->repo->bvs_validation->saveOrFail($validation);
 
-    /**
-     * @param Entity        $validation
-     * @param Detail\Entity $merchantDetails
-     *
-     * this function is monitor how bvs is verifying the documents
-     * the verification metrics will be published.
-     */
-    private function PersonalPanVerify(Entity $validation, Detail\Entity $merchantDetails)
-    {
-        $panBvsToKycVerificationResult = Constants::MATCH;
-
-        if (($validation->getValidationStatus() === Constants::SUCCESS) and
-            ($merchantDetails->getPoiVerificationStatus() != Detail\POIStatus::VERIFIED))
-        {
-            $panBvsToKycVerificationResult = Constants::MISMATCH;
-        }
-
-        if (($merchantDetails->getPoiVerificationStatus() === Detail\POIStatus::NOT_MATCHED) and
-            ($validation->getErrorCode() != Constants::BVS_RULE_EXECUTION_ERROR))
-        {
-            $panBvsToKycVerificationResult = Constants::MISMATCH;
-        }
-
-        if ((($merchantDetails->getPoiVerificationStatus() === Detail\POIStatus::FAILED) or
-             ($merchantDetails->getPoiVerificationStatus() === Detail\POIStatus::INCORRECT_DETAILS)) and
-            ($validation->getValidationStatus() != Constants::FAILED))
-        {
-            $panBvsToKycVerificationResult = Constants::MISMATCH;
-        }
-
-        $bvsPoiVerificationMetrics = [
-            Constants::BVS_KYC_VERIFICATION_RESULT      => $panBvsToKycVerificationResult,
-            Detail\Constants::POI_STATUS                => $merchantDetails->getPoiVerificationStatus(),
-            Constants::BVS_DOCUMENT_VERIFICATION_STATUS => $validation->getValidationStatus()
-        ];
-        $this->trace->count(Detail\Metric::BVS_VALIDATION_STATUS_TOTAL, $bvsPoiVerificationMetrics);
+                        $this->updateValidationStatusForMerchant(
+                            $merchantId,
+                            $validation->getArtefactType(),
+                            $validation->getValidationId());
+                    });
+            });
     }
 
     /**
@@ -113,6 +81,7 @@ class Core extends Base\Core
      *
      * @return array
      */
+
     public function getValidationObject(array $payload): array
     {
         return [
@@ -121,5 +90,30 @@ class Core extends Base\Core
             Entity::ERROR_CODE        => $payload[Constants::ERROR_CODE] ?? null,
             Entity::ERROR_DESCRIPTION => $payload[Constants::ERROR_DESCRIPTION] ?? null,
         ];
+    }
+
+    /**
+     * Updates Document validation status for merchant
+     * (multiple artefact can belongs to same document type for example for poa document type
+     * artefact can be aadhaar, passport, voterId)
+     *
+     * @param string $merchantId
+     * @param string $artefactType
+     *
+     * @param string $validationId
+     *
+     * @throws \RZP\Exception\LogicException
+     */
+    protected function updateValidationStatusForMerchant(string $merchantId, string $artefactType, string $validationId): void
+    {
+        [$merchant, $merchantDetails] = (New Detail\Core())->getMerchantAndSetBasicAuth($merchantId);
+
+        $statusUpdateFactory = new DocumentStatusUpdater\Factory();
+
+        $statusUpdater = $statusUpdateFactory->getInstance($merchantDetails, $artefactType, $validationId);
+
+        $statusUpdater->updateValidationStatus();
+
+        $this->repo->saveOrFail($merchantDetails);
     }
 }

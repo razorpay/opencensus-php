@@ -5981,5 +5981,9 @@ ALTER TABLE payments_meta
     ADD COLUMN reference_id VARCHAR(255) DEFAULT NULL,
     ADD INDEX payments_meta_reference_id_action_type_index (reference_id,action_type);
 
+
+ALTER TABLE bvs_validation
+    ADD INDEX bvs_validation_owner_id_index (owner_id);
+
 ALTER TABLE merchant_documents
     ADD COLUMN validation_id varchar(14) DEFAULT NULL;

@@ -40,6 +40,8 @@ class CreateBvsValidationTable extends Migration
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);
+
+            $table->index([Entity::OWNER_ID]);
         });
     }
 

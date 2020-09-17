@@ -32,5 +32,6 @@ final class Metric
     const EXTERNAL_VERIFIER_API_CALL_DURATION_MS = 'external_verifier_api_call_duration_ms';
 
     //BVS Valdiation Metrics
-    const BVS_VALIDATION_STATUS_TOTAL          = 'bvs_validation_status_total';
+    const BVS_VALIDATION_STATUS_TOTAL         = 'bvs_validation_status_total';
+    const VALIDATION_STATUS_BY_ARTEFACT_TOTAL = 'validation_status_by_artefact_total';
 }

@@ -164,6 +164,144 @@ class BvsValidationTest extends TestCase
         $this->processBvsResponseAndValidate($bvsResponse, $capturedBvsValidation->getValidationId());
     }
 
+    public function testUpdateBvsValidationStatusGstin()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+
+        $mid = $merchantDetail->getId();
+
+        $capturedBvsValidation = $this->fixtures->create('bvs_validation', [
+            'owner_id'      => $mid,
+            'artefact_type' => 'gstin',
+        ]);
+
+        $documentTypeStatusKey = 'gstin_verification_status';
+
+        $possibleScenarios = [
+            [
+                'documentVerificationStatus' => 'verified',
+                'validationStatus'           => 'success',
+                'errorCode'                  => ''
+            ],
+            [
+                'documentVerificationStatus' => 'failed',
+                'validationStatus'           => 'failed',
+                'errorCode'                  => 'NO_PROVIDER_ERROR',
+            ],
+            [
+                'validationStatus'           => 'failed',
+                'documentVerificationStatus' => 'not_matched',
+                'errorCode'                  => 'RULE_EXECUTION_FAILURE',
+            ],
+            [
+                'validationStatus'           => 'failed',
+                'documentVerificationStatus' => 'incorrect_details',
+                'errorCode'                  => 'REMOTE_RECORDS_INCONSISTENT',
+            ],
+            [
+                'validationStatus'           => 'failed',
+                'documentVerificationStatus' => 'failed',
+                'errorCode'                  => 'UNDEFINED_ERROR_CODE',
+            ],
+        ];
+
+        foreach ($possibleScenarios as $scenario)
+        {
+            $this->verifyDocumentVerificationStatus(
+                $capturedBvsValidation,
+                $mid,
+                $documentTypeStatusKey,
+                $scenario['documentVerificationStatus'],
+                $scenario['validationStatus'],
+                $scenario['errorCode']
+            );
+        }
+    }
+
+    public function testUpdateBvsValidationStatusCinInCaseOfOutOfOrderEvents()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+
+        $mid = $merchantDetail->getId();
+
+        $capturedBvsValidation = $this->fixtures->create('bvs_validation', [
+            'owner_id'      => $mid,
+            'artefact_type' => 'cin',
+        ]);
+
+        $this->fixtures->create('bvs_validation', [
+            'owner_id'          => $mid,
+            'artefact_type'     => 'cin',
+            'validation_status' => 'success',
+            //
+            // Adding time else both timestamp will be same and we want this to be most recent entry
+            //
+            'created_at'        => time() + 100
+        ]);
+
+        $documentTypeStatusKey = 'cin_verification_status';
+
+        $possibleScenarios = [
+            [
+                'documentVerificationStatus' => 'verified',
+                'validationStatus'           => 'failed',
+                'errorCode'                  => 'NO_PROVIDER_ERROR'
+            ],
+            [
+                'documentVerificationStatus' => 'verified',
+                'validationStatus'           => 'failed',
+                'errorCode'                  => 'RULE_EXECUTION_FAILURE',
+            ],
+            [
+                'validationStatus'           => 'failed',
+                'documentVerificationStatus' => 'verified',
+                'errorCode'                  => 'UNDEFINED_ERROR_CODE',
+            ],
+        ];
+
+        foreach ($possibleScenarios as $scenario)
+        {
+            $this->verifyDocumentVerificationStatus(
+                $capturedBvsValidation,
+                $mid,
+                $documentTypeStatusKey,
+                $scenario['documentVerificationStatus'],
+                $scenario['validationStatus'],
+                $scenario['errorCode']
+            );
+        }
+    }
+
+    /**
+     * @param Entity $capturedBvsValidation
+     * @param string $mid
+     *
+     * @param string $documentTypeStatusKey
+     * @param string $documentValidationStatus
+     * @param string $validationStatus
+     * @param string $errorCode
+     *
+     */
+    private function verifyDocumentVerificationStatus(
+        Entity $capturedBvsValidation,
+        string $mid,
+        string $documentTypeStatusKey,
+        string $documentValidationStatus,
+        string $validationStatus,
+        string $errorCode = '') :void
+    {
+        $bvsResponse = $this->getBvsResponse(
+            $capturedBvsValidation->getValidationId(),
+            $validationStatus,
+            $errorCode);
+
+        $this->processBvsResponseAndValidate($bvsResponse, $capturedBvsValidation->getValidationId());
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $mid);
+
+        $this->assertEquals($documentValidationStatus, $merchantDetail->getAttribute($documentTypeStatusKey));
+    }
+
     private function updateUploadDocumentData(string $callee)
     {
         $testData = &$this->testData[$callee];
