@@ -6,9 +6,11 @@ use RZP\Models\PaymentsUpi\Base;
 
 class Entity extends Base\Entity
 {
-    const USERNAME  = 'username';
-    const HANDLE    = 'handle';
-    const NAME      = 'name';
+    const USERNAME      = 'username';
+    const HANDLE        = 'handle';
+    const NAME          = 'name';
+    const STATUS        = 'status';
+    const RECEIVED_AT   = 'received_at';
 
     const AROBASE = '@';
 
@@ -24,9 +26,21 @@ class Entity extends Base\Entity
         self::USERNAME,
         self::HANDLE,
         self::NAME,
+        self::STATUS,
+        self::RECEIVED_AT,
     ];
 
     protected $generateIdOnCreate = true;
+
+    public function setStatus($status)
+    {
+        return $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setReceivedAt($receivedAt)
+    {
+        return $this->setAttribute(self::RECEIVED_AT, $receivedAt);
+    }
 
     public function getUsername()
     {

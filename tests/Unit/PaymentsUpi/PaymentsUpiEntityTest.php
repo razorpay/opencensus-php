@@ -96,6 +96,21 @@ class PaymentsUpiEntityTest extends TestCase
         $this->assertTrue(true);
     }
 
+    public function testVpaEntity()
+    {
+        $this->createVpa();
+
+        $this->vpa->setStatus(PaymentsUpi\Vpa\Status::VALID);
+        $this->vpa->setReceivedAt(1234567890);
+
+        $this->vpa->save();
+
+        $this->assertArraySubset([
+            PaymentsUpi\Vpa\Entity::STATUS          => PaymentsUpi\Vpa\Status::VALID,
+            PaymentsUpi\Vpa\Entity::RECEIVED_AT     => 1234567890,
+        ], $this->vpa->toArray());
+    }
+
     /************************ Helpers ****************************/
 
     protected function createVpa(array $values = [])

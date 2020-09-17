@@ -32,6 +32,14 @@ class CreatePaymentsUpiVpaTable extends Migration
 
             $table->unsignedInteger(Entity::CREATED_AT);
             $table->unsignedInteger(Entity::UPDATED_AT);
+
+            $table->char(Entity::STATUS, 40)
+                  ->nullable();
+
+            $table->unsignedInteger(Entity::RECEIVED_AT)
+                  ->nullable();
+
+            $table->index(Entity::USERNAME);
         });
     }
 

@@ -5987,3 +5987,9 @@ ALTER TABLE bvs_validation
 
 ALTER TABLE merchant_documents
     ADD COLUMN validation_id varchar(14) DEFAULT NULL;
+
+--- Payments UPI Database Changes
+ALTER TABLE `vpas`
+    ADD `status` CHAR(40) NULL DEFAULT NULL,
+    ADD `received_at` INT UNSIGNED NULL DEFAULT NULL,
+    ADD INDEX vpas_username_index (`username`);
