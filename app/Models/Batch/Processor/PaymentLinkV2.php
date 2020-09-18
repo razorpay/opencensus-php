@@ -28,5 +28,11 @@ class PaymentLinkV2 extends Base
             // Inserting just before amount in paise thingy
             array_splice($headers, 4, 0, Batch\Header::CURRENCY);
         }
+
+        if ((empty($entry) === false) and (array_key_exists(Batch\Header::PL_V2_UPI_LINK, $entry) === true))
+        {
+            // Inserting just before amount in paise thingy
+            array_splice($headers, 4, 0, Batch\Header::PL_V2_UPI_LINK);
+        }
     }
 }

@@ -950,6 +950,7 @@ class Header
     const TYPE                      = 'Type';
     // PL Service
     const PL_V2_REFERENCE_ID        = 'Reference Id';
+    const PL_V2_UPI_LINK            = 'Upi Link';
 
     //Merchant activation Header
     const BUSINESS_TYPE            = Detail\Entity::BUSINESS_TYPE;
@@ -3231,6 +3232,12 @@ class Header
             ((in_array(self::CURRENCY, $actualHeaders, true) === true)))
         {
             $expectedHeaders[] = self::CURRENCY;
+        }
+
+        if (($type === Type::PAYMENT_LINK_V2) and
+            ((in_array(self::PL_V2_UPI_LINK, $actualHeaders, true) === true)))
+        {
+            $expectedHeaders[] = self::PL_V2_UPI_LINK;
         }
 
         //
