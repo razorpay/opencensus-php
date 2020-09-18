@@ -5945,6 +5945,11 @@ ALTER TABLE users
     MODIFY COLUMN password VARCHAR(100) COLLATE utf8_bin NULL,
     ADD COLUMN oauth_provider json DEFAULT NULL;
 
+ALTER TABLE tokens
+    MODIFY COLUMN customer_id CHAR(14) NULL,
+    ADD COLUMN entity_id CHAR(14),
+    ADD COLUMN entity_type VARCHAR(255);
+
 ALTER TABLE merchants
     ADD COLUMN account_code VARCHAR(255) DEFAULT NULL;
 

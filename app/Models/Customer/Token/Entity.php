@@ -68,6 +68,8 @@ class Entity extends Base\PublicEntity
     const MRN                       = 'mrn';
     const DEBIT_TYPE                = 'debit_type';
     const FREQUENCY                 = 'frequency';
+    const ENTITY_ID                 = 'entity_id';
+    const ENTITY_TYPE               = 'entity_type';
 
     const CUSTOMER                  = 'customer';
 

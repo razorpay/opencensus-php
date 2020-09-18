@@ -28,7 +28,14 @@ class CreateTokens extends Migration
             $table->char(Token::ID, 14)
                   ->primary();
 
-            $table->char(Token::CUSTOMER_ID, Token::ID_LENGTH);
+            $table->char(Token::CUSTOMER_ID, Token::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(Token::ENTITY_ID, Token::ID_LENGTH)
+                  ->nullable();
+
+            $table->string(Token::ENTITY_TYPE, 255)
+                  ->nullable();
 
             $table->char(Token::MERCHANT_ID, Token::ID_LENGTH);
 
