@@ -3,6 +3,7 @@
 namespace RZP\Models\VirtualAccount;
 
 use App;
+use Exception;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -478,5 +479,32 @@ abstract class Processor extends Base\Core
         );
 
         return false;
+    }
+
+    protected function createPaymentOrUnexpected(Base\PublicEntity $entity, array $input, array $gatewayData = [])
+    {
+        try
+        {
+            return $this->createPayment($input, $gatewayData);
+        }
+        catch (Exception $ex)
+        {
+            if (UnexpectedPaymentReason::shouldCreateUnexpectedPayment($ex->getMessage()) === true)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    null,
+                    TraceCode::VIRTUAL_ACCOUNT_FAILED_PAYMENT_REROUTED_TO_SHARED
+                );
+
+                $entity->setExpected(false);
+
+                $entity->setUnexpectedReason($ex->getMessage());
+
+                return $this->createUnexpectedPayment($entity, $gatewayData);
+            }
+
+            throw $ex;
+        }
     }
 }

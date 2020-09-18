@@ -47,6 +47,8 @@ class UpiTransferTest extends TestCase
 
         $this->fixtures->on('live')->create('terminal:vpa_shared_terminal');
 
+        $this->fixtures->create('terminal:vpa_shared_terminal_icici');
+
         $this->vpa = $this->createVirtualAccount();
     }
 
@@ -297,8 +299,6 @@ class UpiTransferTest extends TestCase
 
     public function testProcessIciciUpiTransferPayment()
     {
-        $terminal = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
-
         $this->enableRazorXTreatmentForRazorXVpaIcici();
 
         $vpa = $this->createVirtualAccount('test', '10000000000000', 'vpVpaIcici');
@@ -314,7 +314,6 @@ class UpiTransferTest extends TestCase
         $this->assertEquals(4000, $payment['amount']);
         $this->assertEquals(Gateway::UPI_ICICI, $payment['gateway']);
         $this->assertEquals('vpa', $payment['receiver_type']);
-        $this->assertEquals($terminal->getId(), $payment['terminal_id']);
 
         $this->assertEquals($upiTransfer['payment_id'], $payment['id']);
         $this->assertEquals($vpa['address'], $upiTransfer['payee_vpa']);
@@ -339,8 +338,6 @@ class UpiTransferTest extends TestCase
     }
     public function testProcessIciciUpiTransferUnexpectedPayment()
     {
-        $this->fixtures->create('terminal:vpa_shared_terminal_icici');
-
         $this->processUpiTransfer('testProcessIciciUpiTransferPayment', true, Gateway::UPI_ICICI);
 
         $upiTransfer = $this->getDbLastEntity('upi_transfer');
@@ -459,29 +456,29 @@ class UpiTransferTest extends TestCase
 
     public function testProcessMindgateUpiTransferWithPaymentLessThanFee()
     {
-        $this->fixtures->pricing->editDefaultPlan(
-            [
-                'percent_rate' => '0',
-                'fixed_rate' => '1000',
-            ]
-        );
+        $this->createMerchantAndAssignVirtualVpa('20000000000000', 'rzpy.test000001virtualvpa@hdfcbank');
+
+        $pricingPlanId = $this->fixtures->create('pricing:upi_transfer_pricing_plan', [
+            'percent_rate' => '0',
+            'fixed_rate'   => '5000',
+        ]);
+
+        $this->fixtures->merchant->edit('20000000000000', ['pricing_plan_id' => $pricingPlanId]);
 
         $response = $this->processUpiTransfer(
             'processMindgateUpiTransferWithSmallPaymentAmount',
-            false
+            true
         );
+
         $this->assertNull($response['message']);
 
         $this->runUpiTransferRequestAssertions(
-            'upi_mindgate',
-            false,
+            Gateway::UPI_MINDGATE,
+            true,
             'The fees calculated for payment is greater than the payment amount. Please provide a higher amount',
             [
-                'intended_virtual_account_id'   => $this->virtualAccountId,
-                'actual_virtual_account_id'     => null,
-                'merchant_id'                   => '10000000000000',
-                'upi_transfer_id'               => null,
-                'payment_id'                    => null,
+                'actual_virtual_account_id'     => 'va_ShrdVirtualAcc',
+                'merchant_id'                   => '20000000000000',
             ]
         );
     }
@@ -511,32 +508,26 @@ class UpiTransferTest extends TestCase
 
     public function testProcessIciciUpiTransferWithPaymentLessThanFee()
     {
-        $this->fixtures->pricing->editDefaultPlan(
-            [
-                'percent_rate' => '0',
-                'fixed_rate' => '5000',
-            ]
-        );
+        $this->createMerchantAndAssignVirtualVpa('20000000000000', 'rzr.payto00000vpvpaicici@icici');
 
-        $this->fixtures->create('terminal:vpa_shared_terminal_icici');
+        $pricingPlanId = $this->fixtures->create('pricing:upi_transfer_pricing_plan', [
+            'percent_rate' => '0',
+            'fixed_rate' => '5000',
+        ]);
 
-        $this->enableRazorXTreatmentForRazorXVpaIcici();
+        $this->fixtures->merchant->edit('20000000000000', ['pricing_plan_id' => $pricingPlanId]);
 
-        $this->createVirtualAccount('test', '10000000000000', 'vpVpaIcici');
+        $response = $this->processUpiTransfer('testProcessIciciUpiTransferPayment', true, Gateway::UPI_ICICI);
 
-        $response = $this->processUpiTransfer('testProcessIciciUpiTransferPayment', false, Gateway::UPI_ICICI);
         $this->assertNull($response['message']);
 
         $this->runUpiTransferRequestAssertions(
-            'upi_icici',
-            false,
+            Gateway::UPI_ICICI,
+            true,
             'The fees calculated for payment is greater than the payment amount. Please provide a higher amount',
             [
-                'intended_virtual_account_id'   => $this->virtualAccountId,
-                'actual_virtual_account_id'     => null,
-                'merchant_id'                   => '10000000000000',
-                'upi_transfer_id'               => null,
-                'payment_id'                    => null,
+                'actual_virtual_account_id'   => 'va_ShrdVirtualAcc',
+                'merchant_id'                 => '20000000000000',
             ]
         );
     }
@@ -546,8 +537,6 @@ class UpiTransferTest extends TestCase
         $this->fixtures->merchant->enableConvenienceFeeModel('10000000000000');
 
         $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => 'customer']);
-
-        $this->fixtures->create('terminal:vpa_shared_terminal_icici');
 
         $this->enableRazorXTreatmentForRazorXVpaIcici();
 
@@ -621,5 +610,37 @@ class UpiTransferTest extends TestCase
 
         $paymentStatus = ($tpvStatus === true) ? 'captured' : 'refunded';
         $this->assertEquals($paymentStatus, $payment['status']);
+    }
+
+    protected function createMerchantAndAssignVirtualVpa(string $merchantId, string $vpaAddress)
+    {
+        $this->fixtures->merchant->createAccount($merchantId);
+        $this->fixtures->merchant->addFeatures(['virtual_accounts'], $merchantId);
+        $this->fixtures->merchant->enableMethod($merchantId, 'upi');
+
+        $virtualAccount = $this->fixtures->create(
+            'virtual_account',
+            [
+                'merchant_id' => $merchantId,
+                'status'      => 'active',
+            ]
+        );
+
+        $vpa = $this->fixtures->create(
+            'vpa',
+            [
+                'merchant_id' => $merchantId,
+                'entity_id'   => $virtualAccount->getId(),
+                'entity_type' => 'virtual_account',
+                'username'    => explode('@', $vpaAddress)[0],
+                'handle'      => explode('@', $vpaAddress)[1],
+            ]
+        );
+
+        $this->fixtures->edit('virtual_account', $virtualAccount->getId(),
+                              [
+                                  'vpa_id' => $vpa->getId()
+                              ]
+        );
     }
 }

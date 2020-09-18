@@ -1543,13 +1543,13 @@ class Pricing extends Base
         }
     }
 
-    public function createUpiTransferPricingPlan()
+    public function createUpiTransferPricingPlan(array $attributes = [])
     {
         $pricingPlanId = 'upiTrnsfrPrcng';
 
-        $rows = [
+        $rows = array_merge(
             [
-                'id'             => '1zE31zbybacaaa',
+                //'id'             => '1zE31zbybacaaa',
                 'plan_id'        => $pricingPlanId,
                 'plan_name'      => 'Upi Transfer pricing',
                 'feature'        => 'payment',
@@ -1560,9 +1560,10 @@ class Pricing extends Base
                 'receiver_type'  => 'vpa',
                 'org_id'         => '100000razorpay',
             ],
-        ];
+            $attributes
+        );
 
-        $this->addPricingRulesToDb($rows);
+        $this->addPricingRulesToDb(array($rows));
 
         return $pricingPlanId;
     }

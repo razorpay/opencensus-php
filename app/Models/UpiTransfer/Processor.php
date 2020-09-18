@@ -60,7 +60,7 @@ class Processor extends VirtualAccount\Processor
 
                     $this->callbackData[Payment\Entity::TERMINAL_ID] = $this->getTerminal()->getId();
 
-                    $this->createPayment($paymentInput, $this->callbackData);
+                    $this->createPaymentOrUnexpected($upiTransfer, $paymentInput, $this->callbackData);
 
                     $payment = $this->getPaymentProcessor()->getPayment();
 
@@ -170,5 +170,20 @@ class Processor extends VirtualAccount\Processor
         }
 
         return parent::useSharedVirtualAccount($upiTransfer);
+    }
+
+    protected function createUnexpectedPayment(Base\PublicEntity $upiTransfer, array $gatewayData = [])
+    {
+        $this->virtualAccount = (new VirtualAccount\Core())->createOrFetchSharedVirtualAccount();
+
+        $this->setMerchant();
+
+        $upiTransfer->virtualAccount()->associate($this->virtualAccount);
+
+        $input = $this->getPaymentArray($upiTransfer);
+
+        $this->paymentProcessor = new Payment\Processor\Processor($this->merchant);
+
+        return $this->createPayment($input, $gatewayData);
     }
 }

@@ -1,11 +1,11 @@
 <?php
 
 
-namespace RZP\Models\BankTransfer;
+namespace RZP\Models\VirtualAccount;
 
 use RZP\Error\PublicErrorDescription;
 
-class UnexpectedReason
+class UnexpectedPaymentReason
 {
     const VIRTUAL_ACCOUNT_PAYMENT_FAILED_FEE_OR_TAX_TAMPERED                = 'Payment failed because fees or tax was tampered';
     const VIRTUAL_ACCOUNT_PAYMENT_FAILED_INVOICE_ALREADY_PAID               = 'Invoice is not payable in paid status.';

@@ -204,33 +204,6 @@ class Processor extends VirtualAccount\Processor
         }
     }
 
-    protected function createPaymentOrUnexpected(Entity $bankTransfer, array $input, array $gatewayData = [])
-    {
-        try
-        {
-            return $this->createPayment($input, $gatewayData);
-        }
-        catch (Exception $ex)
-        {
-            if (UnexpectedReason::shouldCreateUnexpectedPayment($ex->getMessage()) === true)
-            {
-                $this->trace->traceException(
-                    $ex,
-                    null,
-                    TraceCode::VIRTUAL_ACCOUNT_FAILED_PAYMENT_REROUTED_TO_SHARED
-                );
-
-                $bankTransfer->setExpected(false);
-
-                $bankTransfer->setUnexpectedReason($ex->getMessage());
-
-                return $this->createUnexpectedPayment($bankTransfer, $gatewayData);
-            }
-
-            throw $ex;
-        }
-    }
-
     protected function createUnexpectedPayment(Entity $bankTransfer, array $gatewayData = [])
     {
         $this->virtualAccount = (new VirtualAccount\Core())->createOrFetchSharedVirtualAccount();

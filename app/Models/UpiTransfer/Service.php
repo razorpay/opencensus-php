@@ -199,7 +199,7 @@ class Service extends Base\Service
 
     protected function determineAndSetMode()
     {
-        if (isset($this->app['rzp.mode']) === true)
+        if ($this->app['basicauth']->getMode() !== null)
         {
             return;
         }
