@@ -282,6 +282,59 @@ class CaptureTest extends TestCase
         $this->assertEquals('paysecure', $payment['gateway']);
     }
 
+    public function testDelayCaptureRupay()
+    {
+        Mail::fake();
+        Queue::fake();
+
+        $this->enableRupayCaptureDelayConfig();
+
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'RuPay',
+            'message_type' => 'DMS',
+            'flows'   => [
+                '3ds'          => '1',
+                'otp'          => '1',
+                'ivr'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '5567630000002004';
+
+        $response = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment['gateway_captured']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('paysecure', $payment['gateway']);
+
+        Queue::assertPushed(CaptureJob::class, function ($job) use ($payment)
+        {
+            $data = $job->getData();
+
+            return $payment['id'] === $data['payment']['public_id'];
+        });
+
+        Queue::assertPushedOn('capture_test', CaptureJob::class);
+
+        Mail::assertQueued(CapturedMail::class);
+    }
+
     public function testCaptureFailedWithoutQueue()
     {
         $payment = $this->defaultAuthPayment();

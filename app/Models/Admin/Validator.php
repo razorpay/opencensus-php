@@ -128,6 +128,7 @@ class Validator extends Base\Validator
         ConfigKey::FREE_SHARED_ACCOUNT_PAYOUTS_COUNT      => 'filled|integer',
         ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL  => 'filled|integer',
         ConfigKey::FREE_PAYOUTS_SUPPORTED_MODES           => 'filled|array',
+        ConfigKey::DELAY_RUPAY_CAPTURE                    => 'filled|boolean',
     ];
 
     protected static $setRedisKeysRules = [

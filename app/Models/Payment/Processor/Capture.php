@@ -6,6 +6,7 @@ use RZP\Jobs;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Card;
+use RZP\Models\Admin;
 use RZP\Diag\EventCode;
 use RZP\Models\Order;
 use RZP\Models\Invoice;
@@ -515,7 +516,8 @@ trait Capture
         {
             if ($this->payment->isGatewayCaptured() === false)
             {
-                if ($this->merchant->isFeatureEnabled(Feature\Constants::ASYNC_CAPTURE) === true)
+                if (($this->merchant->isFeatureEnabled(Feature\Constants::ASYNC_CAPTURE) === true) or
+                    ($this->shouldDelayCapture() === true))
                 {
                     $this->dispatchAsyncCapture($data);
                 }
@@ -543,6 +545,19 @@ trait Capture
 
             $this->handleExceptionOnCapture($data, $ex);
         }
+    }
+
+    protected function shouldDelayCapture()
+    {
+        if (($this->payment->isMethodCardOrEmi() === false) or
+            ($this->payment->hasCard() === false) or
+            ($this->payment->card->isRuPay() === false) or
+            ($this->payment->getGateway() !== Payment\Gateway::PAYSECURE))
+        {
+            return false;
+        }
+
+        return (bool) Admin\ConfigKey::get(Admin\ConfigKey::DELAY_RUPAY_CAPTURE, false);
     }
 
     /**

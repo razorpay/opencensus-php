@@ -943,6 +943,23 @@ class AdminTest extends TestCase
         $this->makeRequestAndGetContent($request);
     }
 
+    public function testConfigKeysSetRupayCaptureDelay()
+    {
+        $this->ba->adminAuth();
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:delay_rupay_capture' => '1',
+            ],
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('1', $content[0]['new_value']);
+    }
+
     public function testAdminAllEntitiesApi()
     {
         $result = $this->startTest();

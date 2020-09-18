@@ -200,6 +200,11 @@ class TestCase extends IlluminateTestCase
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::CARD_PAYMENT_SERVICE_ENABLED => 1]);
     }
 
+    public function enableRupayCaptureDelayConfig()
+    {
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::DELAY_RUPAY_CAPTURE => 1]);
+    }
+
     public function disbaleCpsConfig()
     {
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::CARD_PAYMENT_SERVICE_ENABLED => 0]);

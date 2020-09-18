@@ -146,6 +146,8 @@ class ConfigKey
 
     const FREE_PAYOUTS_SUPPORTED_MODES = self::PREFIX . FreePayout::FREE_PAYOUTS_SUPPORTED_MODES;
 
+    const DELAY_RUPAY_CAPTURE    = self::PREFIX . 'delay_rupay_capture';
+
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
         self::PRICING_RULE_SELECTION_LOG_VERBOSE,
@@ -215,6 +217,7 @@ class ConfigKey
         self::ENABLE_PAYMENT_DOWNTIME_NETBANKING,
         self::ENABLE_PAYMENT_DOWNTIME_UPI,
         self::ENABLE_PAYMENT_DOWNTIME_WALLET,
+        self::DELAY_RUPAY_CAPTURE,
     ];
 
     const REDIS_CONFIG_MAP = [
