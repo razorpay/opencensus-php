@@ -3,7 +3,7 @@ import GenericEntity from './GenericEntity';
 export default class Subscription extends GenericEntity {
   resourceUrl = 'subscriptions';
 
-  serializeResponse = response => new Subscription(response.data);
+  serializeResponse = (response) => new Subscription(response.data);
 
   getRouteName() {
     return this.isNew ? 'subscription_create' : 'subscription_update';
@@ -40,4 +40,11 @@ export default class Subscription extends GenericEntity {
       },
     });
   }
+
+  pauseOrResume = () => {
+    return this.makeGenericAjaxCall({
+      url: `subscriptions/${this.id}/${this.status === 'paused' ? 'resume' : 'pause'}`,
+      method: 'post',
+    }).then(this.serializeResponse);
+  };
 }

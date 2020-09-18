@@ -16,10 +16,7 @@ import { fetchCustomer } from 'merchant/reducers/customers';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
-import {
-  fetchInvoice,
-  fetchCreditNote,
-} from 'merchant/reducers/invoices/details';
+import { fetchInvoice, fetchCreditNote } from 'merchant/reducers/invoices/details';
 import {
   fetchInvoices,
   paymentManualAttempt,
@@ -27,6 +24,7 @@ import {
   cancelUpdateSubscription,
   fetchSubscriptionCreditNotes,
   fetchSubscription as fetchItem,
+  pauseAndResumeSubscription,
 } from 'merchant/reducers/subscriptions';
 
 import fetchKeysAndCheckout from 'merchant/utils/fetchKeysAndCheckout';
@@ -54,7 +52,7 @@ const scheduledChangesInitValue = {
 
 @withRouter
 @connect(
-  state => ({
+  (state) => ({
     ...state.session,
     ...state.subscription,
     ...state.app,
@@ -70,7 +68,8 @@ const scheduledChangesInitValue = {
     fetchInvoices,
     fetchCustomer,
     showNotification,
-  }
+    pauseAndResumeSubscription,
+  },
 )
 export default class SubscriptionDetailsContainer extends React.Component {
   static contextTypes = {
@@ -121,10 +120,10 @@ export default class SubscriptionDetailsContainer extends React.Component {
     // fetching key and checkout js
     fetchKeysAndCheckout(
       this.props.user.current,
-      key => {
+      (key) => {
         this.key = key;
       },
-      () => {}
+      () => {},
     );
   }
 
@@ -140,10 +139,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
       this.fetchInvoice(nextProps.invoice_id);
     }
 
-    if (
-      nextProps.credit_note_id &&
-      nextProps.credit_note_id !== this.props.credit_note_id
-    ) {
+    if (nextProps.credit_note_id && nextProps.credit_note_id !== this.props.credit_note_id) {
       this.fetchCreditNote(nextProps.credit_note_id);
     }
 
@@ -189,7 +185,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
     }
   }
 
-  fetchCreditNote = id => {
+  fetchCreditNote = (id) => {
     this.props.expandSlider();
 
     this.setState({
@@ -202,7 +198,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
     });
 
     fetchCreditNote(id)
-      .then(resp => {
+      .then((resp) => {
         this.setState({
           creditNote: {
             statusMsg: {},
@@ -239,7 +235,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
     if (id !== 'inv_upcoming') {
       this.props
         .fetchInvoice(id)
-        .then(invoice => {
+        .then((invoice) => {
           this.setState({
             invoice,
             invoiceLoading: false,
@@ -291,7 +287,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
   }
 
   fetchAddOns(subscriptionId) {
-    return fetchSubscriptionAddOns(subscriptionId).then(response => {
+    return fetchSubscriptionAddOns(subscriptionId).then((response) => {
       this.setState({
         addons: response.data.items,
       });
@@ -300,9 +296,9 @@ export default class SubscriptionDetailsContainer extends React.Component {
     });
   }
 
-  fetchScheduledChanges = id => {
+  fetchScheduledChanges = (id) => {
     return fetchScheduledChanges(id)
-      .then(res => {
+      .then((res) => {
         this.setState({
           scheduledChanges: {
             ...this.state.scheduledChanges,
@@ -313,7 +309,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
         const plan = new Plan();
         return plan.fetch(res.plan_id);
       })
-      .then(resp => {
+      .then((resp) => {
         this.setState({
           scheduledChanges: {
             ...this.state.scheduledChanges,
@@ -332,12 +328,12 @@ export default class SubscriptionDetailsContainer extends React.Component {
     });
 
     fetchItem(id)
-      .then(subscription => {
+      .then((subscription) => {
         return Promise.all([
           fetchPlan(subscription.plan_id),
           subscription.customer_id && fetchCustomer(subscription.customer_id),
           this.fetchAddOns(subscription.id),
-        ]).then(response => {
+        ]).then((response) => {
           this.setState(
             {
               isLoading: false,
@@ -350,7 +346,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
               if (subscription.has_scheduled_changes) {
                 this.fetchScheduledChanges(id);
               }
-            }
+            },
           );
 
           this.fetchInvoicesList(id, true);
@@ -361,13 +357,11 @@ export default class SubscriptionDetailsContainer extends React.Component {
       });
   }
 
-  goToLink = type => (itemId, index) => {
+  goToLink = (type) => (itemId, index) => {
     if (type === 'invoice') {
       this.setState({ curInvoiceIndex: index });
 
-      this.props.history.push(
-        `/subscriptions/${this.props.entity.id}/${itemId}`
-      );
+      this.props.history.push(`/subscriptions/${this.props.entity.id}/${itemId}`);
 
       if (this.invoiceView && findDOMNode(this.invoiceView)) {
         findDOMNode(this.invoiceView).classList.add('toggle-slider');
@@ -385,7 +379,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
     return;
   };
 
-  onCancellationModalMount = id => {
+  onCancellationModalMount = (id) => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Subscriptions',
       eventAction: 'Open Form - Cancel Subscription',
@@ -393,7 +387,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
     });
   };
 
-  onCancellationModalUnmount = id => {
+  onCancellationModalUnmount = (id) => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Subscriptions',
       eventAction: 'Close Form - Cancel Subscription',
@@ -402,8 +396,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
   };
 
   onSubscriptionCancel = (id, type) => {
-    type =
-      type === '1' ? 'cancel_at_end_of_billing_cycle' : 'cancel_immediately';
+    type = type === '1' ? 'cancel_at_end_of_billing_cycle' : 'cancel_immediately';
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Subscriptions',
       eventAction: 'Submit Form - Cancel Subscription',
@@ -451,7 +444,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
     // addOnsList to calculate the total amount for invoice
     const totalAddOnsAmount = addOnsList.reduce(
       (sum, addOn) => sum + addOn.quantity * addOn.item.amount,
-      0
+      0,
     );
 
     // TODO: Add addons list as well depending upon type in line_items (Will help in updating invoices list)
@@ -474,7 +467,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
       abortLabel: "No, don't!",
       action: () => {
         return paymentManualAttempt(subscriptionId, invoiceId)
-          .then(response => {
+          .then((response) => {
             window.rzpAnalytics({
               eventCategory: 'Dashboard - Subscriptions',
               eventAction: 'Submit Form - Charge Now',
@@ -502,7 +495,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
 
             return response;
           })
-          .catch(err => {
+          .catch((err) => {
             this.props.showNotification({
               type: 'error',
               message: err.errors,
@@ -566,7 +559,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
         dashboard: true,
       },
       subscription_id: this.props.entity.id,
-      handler: status => {
+      handler: (status) => {
         this.postChargeAttempt();
       },
     });
@@ -584,22 +577,21 @@ export default class SubscriptionDetailsContainer extends React.Component {
   // Check if next due invoice is valid for current subscription
   checkNextDueInvoiceValidity(subsStatus, subsType) {
     return (
-      (['authenticated', 'active', 'halted', 'pending'].indexOf(subsStatus) >
-        -1 ||
+      (['authenticated', 'active', 'halted', 'pending'].indexOf(subsStatus) > -1 ||
         (subsStatus === 'created' && (subsType === 0 || subsType === 2))) &&
       this.props.invoices.items.length < this.props.entity.total_count
     );
   }
 
   // Only next_due addons will have delete btn
-  deleteAddOn = id => {
+  deleteAddOn = (id) => {
     this.context.confirm({
       message: 'Are you sure to delete this addon?', // TODO: Show name and id of Addon to be deleted
       affirmativeLabel: 'Delete',
       affirmativePendingLabel: 'Deleting...',
       action: () =>
         deleteAddOn(id)
-          .then(response => {
+          .then((response) => {
             this.fetchAddOns(this.props.entity.id);
 
             this.props.showNotification({
@@ -607,7 +599,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
               message: 'Add-on details successfully deleted',
             });
           })
-          .catch(err => {
+          .catch((err) => {
             this.setState({
               errors: err.errors,
             });
@@ -636,7 +628,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
     });
   };
 
-  handleCancelUpdateSubscription = id => () => {
+  handleCancelUpdateSubscription = (id) => () => {
     return this.context.confirm({
       header: 'Cancel Update',
       message: 'Are you sure you want to cancel the update?',
@@ -653,7 +645,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
 
             this.resetScheduledChanges();
           })
-          .catch(err => {
+          .catch((err) => {
             this.props.showNotification({
               type: 'error',
               message: err.errors,
@@ -663,8 +655,40 @@ export default class SubscriptionDetailsContainer extends React.Component {
     });
   };
 
-  resetScheduledChanges = () =>
-    this.setState({ scheduledChanges: scheduledChangesInitValue });
+  onClickPauseAndResume = () => {
+    const { id, status } = this.props.entity;
+    const isStatusPaused = status === 'paused';
+    const type = isStatusPaused ? 'Resume' : 'Pause';
+    const message = isStatusPaused
+      ? 'This subscription will getting charged till it is paused. Are you sure you want to resume it?'
+      : 'This subscription will not be charged till it is resumed. Are you sure you want to pause it?';
+
+    this.context.confirm({
+      header: `${type} Subscription?`,
+      message,
+      affirmativeLabel: `Yes, ${type} Now`,
+      affirmativePendingLabel: `${type}ing...`,
+      abortLabel: 'No, Don’t!',
+      action: () => {
+        return this.props
+          .pauseAndResumeSubscription({ id, status })
+          .then(() => {
+            this.props.showNotification({
+              type: 'success',
+              message: `Subscription is ${isStatusPaused ? 'resumed' : 'paused'} successfully`,
+            });
+          })
+          .catch((err) => {
+            this.props.showNotification({
+              type: 'error',
+              message: err.errors,
+            });
+          });
+      },
+    });
+  };
+
+  resetScheduledChanges = () => this.setState({ scheduledChanges: scheduledChangesInitValue });
 
   render() {
     let {
@@ -696,17 +720,10 @@ export default class SubscriptionDetailsContainer extends React.Component {
 
     // Add 'next_due' invoice in the Invoices list
     if (!invoices.loading && !invoices.error) {
-      const subscriptionData = scheduledChanges.data
-          ? scheduledChanges.data
-          : entity,
+      const subscriptionData = scheduledChanges.data ? scheduledChanges.data : entity,
         planData = scheduledChanges.plan.id ? scheduledChanges.plan : plan;
 
-      if (
-        this.checkNextDueInvoiceValidity(
-          subscriptionData.status,
-          subscriptionData.type
-        )
-      ) {
+      if (this.checkNextDueInvoiceValidity(subscriptionData.status, subscriptionData.type)) {
         invoicesList = { ...invoices };
         invoicesList.items = [...invoices.items]; // To avoid multiple additions when render is called multiple times
 
@@ -724,7 +741,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
         let nextDueInvoice = this.getUpcomingInvoiceDetails(
           chargeAt,
           planData.item ? planData.item.amount * subscriptionData.quantity : 0,
-          this.state.addons
+          this.state.addons,
         );
 
         nextDueInvoice && invoicesList.items.unshift(nextDueInvoice);
@@ -740,18 +757,11 @@ export default class SubscriptionDetailsContainer extends React.Component {
         Object.keys(entity).length && // Helps to simulate the loader for 'inv_upcoming' invoice
         !invoices.loading // To display upcoming invoice rightly
       ) {
-        const subscriptionData = scheduledChanges.data
-            ? scheduledChanges.data
-            : entity,
+        const subscriptionData = scheduledChanges.data ? scheduledChanges.data : entity,
           planData = scheduledChanges.plan.id ? scheduledChanges.plan : plan;
 
         // inv_upcoming exists only for these subscriptions status only
-        if (
-          this.checkNextDueInvoiceValidity(
-            subscriptionData.status,
-            subscriptionData.type
-          )
-        ) {
+        if (this.checkNextDueInvoiceValidity(subscriptionData.status, subscriptionData.type)) {
           // Charge at is not available in such type of subscriptions
           let chargeAt =
             subscriptionData.status === 'created' &&
@@ -766,7 +776,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
           invoiceData = this.getUpcomingInvoiceDetails(
             chargeAt,
             planData.item.amount * subscriptionData.quantity,
-            this.state.addons
+            this.state.addons,
           );
         } else {
           isValidInvoice = false; // '/inv_upcoming' is invalid url for such subscriptions
@@ -780,7 +790,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
         if (invoiceData.status === 'next_due' && this.state.addons) {
           addonsList = this.state.addons;
         } else if (invoiceData.line_items) {
-          invoiceData.line_items.forEach(item => {
+          invoiceData.line_items.forEach((item) => {
             if (item.type === 'addon') {
               addonsList.push({
                 quantity: item.quantity,
@@ -823,7 +833,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
           subscription={subscriptionDetails}
           showAddOnModal={this.showAddOnModal}
           onManualAttempt={this.onManualAttempt}
-          ref={comp => {
+          ref={(comp) => {
             this.invoiceView = comp;
           }}
           statusMsg={makeErrorStatus(invoiceErrors)}
@@ -839,7 +849,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
           creditNote={creditNote.data}
           statusMsg={creditNote.statusMsg}
           isLoading={creditNote.isLoading}
-          ref={comp => {
+          ref={(comp) => {
             this.creditNoteView = comp;
           }}
         />
@@ -870,6 +880,8 @@ export default class SubscriptionDetailsContainer extends React.Component {
           }
           customer={entity && entity.customer_id ? customer : {}}
           cancelUpdateSubscription={this.handleCancelUpdateSubscription}
+          onClickPauseAndResume={this.onClickPauseAndResume}
+          isSubscriptionPauseAndResumeEnabled={user.isSubscriptionPauseAndResumeEnabled}
         />
 
         {invoice_id && invoiceSecView}

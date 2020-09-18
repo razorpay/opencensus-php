@@ -27,7 +27,7 @@ import ManualChargeModal from './ManualChargeModal';
 
 import { trackClickDuplicateSubscription } from '../ga';
 
-export default props => {
+export default (props) => {
   const {
     mode,
     plan,
@@ -45,14 +45,13 @@ export default props => {
     activeSecEntityId,
     onTestChargeAttempt,
     cancelUpdateSubscription,
+    onClickPauseAndResume,
   } = props;
 
   let showTestChargeBtn =
     !isLoading &&
     onTestChargeAttempt &&
-    (['authenticated', 'active', 'halted', 'pending'].indexOf(
-      subscription.status
-    ) > -1 ||
+    (['authenticated', 'active', 'halted', 'pending'].indexOf(subscription.status) > -1 ||
       subscription.status === 'created');
 
   const testModeMsg = getTestModeMessage(subscription.status) || {};
@@ -61,9 +60,7 @@ export default props => {
     ['authenticated', 'active'].includes(subscription.status) &&
     subscription.payment_method !== 'upi';
 
-  const hideCancelUpdate = ['cancelled', 'completed', 'expired'].includes(
-    subscription.status
-  );
+  const hideCancelUpdate = ['cancelled', 'completed', 'expired'].includes(subscription.status);
 
   const style = {
     marginRight: isSideView ? 30 : 0,
@@ -81,13 +78,13 @@ export default props => {
 
   const subTitle =
     subscription.total_count &&
-    `${subscription.paid_count} of ${
-      subscription.total_count
-    } invoices charged`;
+    `${subscription.paid_count} of ${subscription.total_count} invoices charged`;
 
-  const showCancelBtn =
-    ['cancelled', 'completed', 'expired'].indexOf(subscription.status) === -1;
+  const showCancelBtn = ['cancelled', 'completed', 'expired'].indexOf(subscription.status) === -1;
 
+  const showPauseAndResumeBtn =
+    ['active', 'paused'].indexOf(subscription.status) !== -1 &&
+    props.isSubscriptionPauseAndResumeEnabled;
   return (
     <div class="content-wrapper content-sm txn-details SubscriptionLinks--Details">
       {isLoading ? (
@@ -97,14 +94,10 @@ export default props => {
       ) : (
         <div class="panel panel-default SliderPanel">
           <div class="panel-heading">
-            <i class="i i-refresh text-main icon--formal" />{' '}
-            <strong>{subscription.id}</strong>
+            <i class="i i-refresh text-main icon--formal" /> <strong>{subscription.id}</strong>
             {allowUpdateSubscription && (
               <div class="pull-right" style={style}>
-                <NavLink
-                  class="btn btn-primary"
-                  to={`/subscriptions/${subscription.id}/edit`}
-                >
+                <NavLink class="btn btn-primary" to={`/subscriptions/${subscription.id}/edit`}>
                   Update
                 </NavLink>
               </div>
@@ -125,21 +118,15 @@ export default props => {
             <div class="panel-body">
               <Alert type={statusMsg.type} message={statusMsg.message} />
 
-              <EntityDetailRow label="Customer">
-                {getCustomerDetail(customer)}
-              </EntityDetailRow>
+              <EntityDetailRow label="Customer">{getCustomerDetail(customer)}</EntityDetailRow>
 
               <EntityDetailRow label="Plan">
                 <div>
-                  <Link to={`/plans/${subscription.plan_id}`}>
-                    {subscription.plan_id}
-                  </Link>
+                  <Link to={`/plans/${subscription.plan_id}`}>{subscription.plan_id}</Link>
                   <div style={{ marginTop: '4px' }}>
                     <div class="label--primary">{plan.item.name}</div>
                     <div class="label--secondary">{plan.item.description}</div>
-                    <div class="label--secondary">
-                      {getDescription(plan.interval, plan.period)}
-                    </div>
+                    <div class="label--secondary">{getDescription(plan.interval, plan.period)}</div>
                   </div>
                 </div>
               </EntityDetailRow>
@@ -158,11 +145,7 @@ export default props => {
                   </div>
                   <small class="label--secondary">
                     {subscription.quantity} x{' '}
-                    <Amount
-                      currency={plan.item.currency}
-                      value={plan.item.unit_amount}
-                    />{' '}
-                    per unit
+                    <Amount currency={plan.item.currency} value={plan.item.unit_amount} /> per unit
                   </small>
                 </div>
               </EntityDetailRow>
@@ -172,8 +155,17 @@ export default props => {
                   <SubscriptionStatusLabel status={subscription.status} />
 
                   <span>
+                    {showPauseAndResumeBtn && (
+                      <button class="btn btn-default btn-xs m-l" onClick={onClickPauseAndResume}>
+                        {subscription.status === 'paused' ? 'Resume' : 'Pause'}
+                      </button>
+                    )}
+
                     {showCancelBtn && (
-                      <button class="btn-link" onClick={onCancelClick}>
+                      <button
+                        class={showPauseAndResumeBtn ? 'm-l btn btn-default btn-xs' : 'btn-link'}
+                        onClick={onCancelClick}
+                      >
                         Cancel
                       </button>
                     )}
@@ -182,10 +174,7 @@ export default props => {
               </EntityDetailRow>
 
               <EntityDetailRow label="Created At">
-                <Time
-                  value={subscription.created_at}
-                  format="DD MMM YYYY, hh:mm:ss a"
-                />
+                <Time value={subscription.created_at} format="DD MMM YYYY, hh:mm:ss a" />
               </EntityDetailRow>
 
               <EntityDetailRow label="Next Due on">
@@ -208,14 +197,11 @@ export default props => {
                     <b>Test Mode:</b>
                     {testModeMsg.infoMsg}
                     <ShowWhen
-                      additionalCondition={user =>
+                      additionalCondition={(user) =>
                         user.isOrgAllowedFunctionality('external_links')
                       }
                     >
-                      <a
-                        href="https://razorpay.com/docs/subscriptions"
-                        target="_blank"
-                      >
+                      <a href="https://razorpay.com/docs/subscriptions" target="_blank">
                         View docs >
                       </a>{' '}
                     </ShowWhen>
@@ -225,37 +211,32 @@ export default props => {
 
               {scheduledChanges.isLoading && <PlaceholderLoader />}
 
-              {!scheduledChanges.isLoading &&
-                scheduledChanges.data && (
-                  <div
-                    class="update-subscription-preview alert alert-warning custom-banner"
-                    style={{ width: '100%' }}
-                  >
-                    <div>
-                      The subscription will be updated on{' '}
-                      {moment
-                        .unix(scheduledChanges.data.change_scheduled_at)
-                        .format('DD MMM, YYYY')}
-                      {!hideCancelUpdate && (
-                        <Button.Transparent
-                          onClick={cancelUpdateSubscription(subscription.id)}
-                          class="pull-right"
-                        >
-                          Cancel Update
-                        </Button.Transparent>
-                      )}
-                    </div>
-                    <ContentToggler>
-                      <span>View Details</span>
-                      <div class="full-width-item">
-                        <strong>Update Summary</strong>
-                        <UpdatedSubscriptionPreview
-                          data={subscriptionChanges}
-                        />
-                      </div>
-                    </ContentToggler>
+              {!scheduledChanges.isLoading && scheduledChanges.data && (
+                <div
+                  class="update-subscription-preview alert alert-warning custom-banner"
+                  style={{ width: '100%' }}
+                >
+                  <div>
+                    The subscription will be updated on{' '}
+                    {moment.unix(scheduledChanges.data.change_scheduled_at).format('DD MMM, YYYY')}
+                    {!hideCancelUpdate && (
+                      <Button.Transparent
+                        onClick={cancelUpdateSubscription(subscription.id)}
+                        class="pull-right"
+                      >
+                        Cancel Update
+                      </Button.Transparent>
+                    )}
                   </div>
-                )}
+                  <ContentToggler>
+                    <span>View Details</span>
+                    <div class="full-width-item">
+                      <strong>Update Summary</strong>
+                      <UpdatedSubscriptionPreview data={subscriptionChanges} />
+                    </div>
+                  </ContentToggler>
+                </div>
+              )}
 
               <EntityDetailList
                 mode={mode}
@@ -288,7 +269,7 @@ export default props => {
   );
 };
 
-const getTestModeMessage = status => {
+const getTestModeMessage = (status) => {
   switch (status) {
     case 'halted': {
       return {
@@ -324,7 +305,7 @@ const UpdatedSubscriptionPreview = ({ data }) => {
   return data.map(({ heading, changes }) => (
     <div class="changed-values">
       <div>
-        {changes.map(e => (
+        {changes.map((e) => (
           <div class="current-change" key={e.current}>
             <b>{heading} :</b>
             <span>
@@ -340,7 +321,7 @@ const UpdatedSubscriptionPreview = ({ data }) => {
 };
 
 // Customer component
-const getCustomerDetail = customer => (
+const getCustomerDetail = (customer) => (
   <Definition placeholder="--">
     {customer.name}
     {customer.email && <span>{customer.email}</span>}

@@ -597,6 +597,10 @@ export default class User {
     return this.isFeatureEnabled('route_code_support');
   }
 
+  get isSubscriptionPauseAndResumeEnabled() {
+    return this.getExpStatus('pause_resume_enabled');
+  }
+
   get isUPICAWEnabled() {
     return this.getExpStatus('upi_caw');
   }
