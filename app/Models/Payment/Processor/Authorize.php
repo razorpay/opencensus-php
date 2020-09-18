@@ -2669,7 +2669,19 @@ trait Authorize
             // for now use api only for bin based blocking until shield is not live 100%
             $this->validateBlockedCard($payment);
 
-            $razorxResult = $this->app->razorx->getTreatment($payment->getId(), 'shield_risk_evaluation', $this->mode);
+            $razorxConfig = $this->app['config']->get('applications.razorx');
+
+            //Remove redundant razorx calls on prod. ramp-up is 100%
+            if (($this->app['env'] === Environment::PRODUCTION) and
+                ($this->mode === Mode::LIVE) and
+                ($razorxConfig['mock'] !== true))
+            {
+                $razorxResult = 'shield_on';
+            }
+            else
+            {
+                $razorxResult = $this->app->razorx->getTreatment($payment->getId(), 'shield_risk_evaluation', $this->mode);
+            }
 
             $this->trace->info(TraceCode::RAZORX_VARIANT_SHIELD, [
                 'payment_id'     => $payment->getId(),
