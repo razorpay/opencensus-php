@@ -522,29 +522,7 @@
 
                     <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
 
-                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
-                            <tbody>
-                            <tr>
-                                <td style="vertical-align:top;padding:0px;">
 
-                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
-
-                                        <tr>
-                                            <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
-
-                                                <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="footer" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; margin-top: 8px; margin-bottom: 8px;"><div class="footer-text" style="font-size: 12px; line-height: 1.5; color: #7B8199; text-align: center; padding: 8px 0;">If a refund has been initiated for this payment, you can check the&nbsp;<a class="link" href="https://razorpay.com/support/?utm_source=customer_mailer&amp;utm_medium=email&amp;utm_campaign=payment_success#refund/{{$invoice['payment_page']['payment']['public_id']}}" target="_blank" style="text-decoration: none; color: #528FF0;">refund status here.</a></div><div class="footer-text" style="font-size: 12px; line-height: 1.5; color: #7B8199; text-align: center; padding: 8px 0; border-top: 1px solid #EBEDF2;">If {{ $merchant['billing_label'] }} is unable to resolve your issue, please go through our&nbsp;<a class="link" href="https://razorpay.com/dispute-guide/?utm_source=customer_mailer&amp;utm_medium=email&amp;utm_campaign=payment_success" target="_blank" style="text-decoration: none; color: #528FF0;">Customer Dispute Guide.</a></div></div>
-                                                </div>
-
-                                            </td>
-                                        </tr>
-
-                                    </table>
-
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
 
                     </div>
 
