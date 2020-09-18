@@ -782,16 +782,14 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $verify->payment;
 
-        $gatewayRefId  = $gatewayPayment->getGatewayReferenceId();
-        $gatewayRefId2 = $gatewayPayment->getGatewayReferenceId2();
-
         $attributes = [];
 
-        if ((empty($gatewayRefId) === true) or (empty($gatewayRefId2) === true))
+        if ((isset($content[ResponseXmlTags::ACCEPTED]) === true) and
+            (($content[ResponseXmlTags::ACCEPTED] === 'true') or ($content[ResponseXmlTags::ACCEPTED] === 'false')))
         {
             $attributes[Base\Entity::GATEWAY_REFERENCE_ID]  = $content[ResponseXmlTags::VER_NPCI_REF_ID];
             $attributes[Base\Entity::GATEWAY_REFERENCE_ID2] = $content[ResponseXmlTags::ACCEPT_REF_NO];
-            $attributes[Base\Entity::UMRN]                  = $content[ResponseXmlTags::MANDATE_ID];
+            $attributes[Base\Entity::UMRN]                  = $content[ResponseXmlTags::MANDATE_ID] ?? null;
         }
 
         if ((isset($gatewayPayment[Base\Entity::STATUS]) === false) or
