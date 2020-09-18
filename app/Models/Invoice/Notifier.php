@@ -976,7 +976,7 @@ class Notifier extends Base\Core
                 $params   = [
                     'receipt'          => $receipt,
                     'invoice_link'     => $invoiceLink,
-                    'rejection_reason' => $notes['rejection_reason'] ?? '',
+                    'rejection_reason' => $notes['rejection_reason'] ?? 'technical reasons',
                     'rejection_date'   => $notes['rejection_date'] ?? '',
                 ];
 

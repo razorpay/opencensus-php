@@ -60,7 +60,9 @@
                         <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; white-space: pre-wrap;word-wrap: break-word;">
 Dear {{$invoice['customer_details']['name']}},</div>
                         <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; white-space: pre-wrap;word-wrap: break-word;">
-                            Congratulations! Your loan application  is currently being processed. For ease of your loan repayment, we request you to register an auto debit mandate for your RBL loan application no. {{$invoice['subscription_registration']['notes']['loan_number'] ?? ''}} by clicking on the <b>AUTHORIZE</b> tab at the bottom of this mail.
+Greetings from RBL Bank!
+
+Congratulations! Your loan application  is currently being processed. For ease of your loan repayment, we request you to register an auto debit mandate for your RBL loan application no. {{$invoice['subscription_registration']['notes']['loan_number'] ?? ''}}.  Please  click on the “AUTHORIZE” tab on this mail.
                         </div>
                     </div>
                 </td>
