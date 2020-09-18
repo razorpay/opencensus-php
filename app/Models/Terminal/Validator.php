@@ -467,6 +467,7 @@ class Validator extends Base\Validator
         Entity::IFSC_CODE                  => 'sometimes|string|size:11',
         Entity::STATUS                     => 'sometimes|string|in:deactivated,activated',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::MODE                       => 'sometimes|in:2,3',
     ];
 
     protected static $mpgsEditTerminalRules = [
