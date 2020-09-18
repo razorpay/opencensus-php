@@ -68,6 +68,11 @@ class Core extends Base\Core
         {
             $transfer = $this->makeTransfer($input, $merchant, $merchant);
 
+            if ($transfer->isProcessed() === true)
+            {
+                $this->eventTransferProcessed($transfer);
+            }
+
             $this->trace->info(
                 TraceCode::TRANSFER_CREATE_SUCCESS,
                 ['transfer_id' => $transfer->getId()]);
@@ -705,5 +710,14 @@ class Core extends Base\Core
                 'account_code is not allowed for this merchant.'
             );
         }
+    }
+
+    public function eventTransferProcessed(Entity $transfer)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $transfer
+        ];
+
+        $this->app['events']->fire('api.transfer.processed', $eventPayload);
     }
 }

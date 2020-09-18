@@ -184,7 +184,7 @@ abstract class AbstractTransfer
                     {
                         $this->repo->reload($transfer);
 
-                        $this->eventOrderTransferProcessed($transfer);
+                        (new Core())->eventTransferProcessed($transfer);
                     }
                 }
             }
@@ -235,15 +235,6 @@ abstract class AbstractTransfer
         }
 
         return $laNotes;
-    }
-
-    private function eventOrderTransferProcessed(Entity $transfer)
-    {
-        $eventPayload = [
-            ApiEventSubscriber::MAIN => $transfer
-        ];
-
-        $this->app['events']->fire('api.transfer.processed', $eventPayload);
     }
 
     private function updatePaymentAmountTransferred(Payment\Entity $payment, int $amount)
