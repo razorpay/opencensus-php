@@ -117,9 +117,22 @@ $isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'
                 return;
             }
 
-            analytics.init(['ga', 'hotjar', 'lj'], {
-                lj: "{{ $data['lumberjack_key'] }}"
-            });
+            
+
+            analytics.init(
+                ['ga', 'hotjar', 'lj', 'perf'], 
+                {
+                    lj: "{{ $data['lumberjack_key'] }}"
+                },
+                false,
+                undefined,
+                false,
+                {
+                    pref: {
+                        route: 'payment_link'
+                    }
+                }
+            );
 
             analytics.track('ga', 'pageview');
 

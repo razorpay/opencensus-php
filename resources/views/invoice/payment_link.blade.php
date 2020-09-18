@@ -83,11 +83,22 @@ $view_preferences               = $data['view_preferences'];
                 return;
             }
 
-            analytics.init(['ga', 'hotjar', 'lj'], {
-                lj: data.is_test_mode
-                ? '96df432a283745908a06f711acd9e5eb' // 'feb51cc8168711ea8d71362b9e155667' Please add this key when data analytics issue fixed
-                : '96df432a283745908a06f711acd9e5eb'
-            });
+            analytics.init(
+                ['ga', 'hotjar', 'lj', 'perf'], 
+                {
+                    lj: data.is_test_mode
+                    ? '96df432a283745908a06f711acd9e5eb' // 'feb51cc8168711ea8d71362b9e155667' Please add this key when data analytics issue fixed
+                    : '96df432a283745908a06f711acd9e5eb'
+                },
+                false,
+                undefined,
+                false,
+                {
+                    pref: {
+                        route: 'payment_link'
+                    }
+                }
+            );
 
             analytics.track('ga', 'pageview');
 
