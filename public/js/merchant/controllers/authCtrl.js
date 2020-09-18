@@ -363,7 +363,7 @@ app
           showSpinner();
           if (!isInitiatedEventFired) {
             fireDLInitiatedEvents('login.google_oauth');
-            fireDLInitiatedEvents('login.login', { method: 'google-oauth' });
+            fireDLInitiatedEvents('login.login', { method: 'google_oauth' });
             isInitiatedEventFired = true;
           }
         }
@@ -416,7 +416,7 @@ app
           if (triggerButton) {
             if (!isInitiatedEventFired) {
               fireDLInitiatedEvents('login.google_oauth');
-              fireDLInitiatedEvents('login.login', { method: 'google-oauth' });
+              fireDLInitiatedEvents('login.login', { method: 'google_oauth' });
             }
 
             button.click();
@@ -966,14 +966,21 @@ app
       $scope.goToDashboard = function (data) {
         fireDLSuccessEvents('login.login', {
           source: 'sign_in',
-          method: $scope.isGoogleAuth ? 'google-oauth' : 'email',
+          method: $scope.isGoogleAuth ? 'google_oauth' : 'email',
           emailId: data.user.email,
           userid: data.user.id,
           mid: data.current,
         });
-        location.hash = '';
-        location.pathname = '/app';
-        location.reload();
+
+        /**
+         * Adding the redirection to queue so that the
+         * datalake event finishes to completion.
+         */
+        setTimeout(() => {
+          location.hash = '';
+          location.pathname = '/app';
+          location.reload();
+        }, 0);
       };
 
       $scope.onLoginInputFocus = function (type) {
@@ -1844,7 +1851,7 @@ app
             hideSpinner();
 
             fireDLFailureEvents('login.login', {
-              emailId: email,
+              emailId: $scope.login.data.email,
               error: errors[0],
               method: 'email',
             });
