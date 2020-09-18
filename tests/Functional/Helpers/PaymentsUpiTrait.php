@@ -42,4 +42,28 @@ trait PaymentsUpiTrait
 
         return $vpa;
     }
+
+    /************************* HELPERS ****************************/
+
+    protected function validateVpa($vpa, $success = true)
+    {
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $request = [
+            'url'       => '/payment/validate/vpa',
+            'method'    => 'post',
+            'content'   => [
+                'vpa' => $vpa,
+            ]
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        if (is_bool($success) === true)
+        {
+            $this->assertSame($success, $response['success']);
+        }
+    }
 }

@@ -27,4 +27,49 @@ class Core extends Base\Core
 
         return $vpa;
     }
+
+    public function updateOrCreate(array $input)
+    {
+        $address = strtolower(array_pull($input, Entity::VPA));
+
+        // We can now add username and handle to input
+        $parsed = Entity::getUsernameAndHandle($address);
+
+        $vpa = $this->repo()->firstByUsernameAndHandle($parsed[Entity::USERNAME], $parsed[Entity::HANDLE]);
+
+        if ($vpa instanceof Entity)
+        {
+            if ($vpa->getReceivedAt() >= $input[Entity::RECEIVED_AT])
+            {
+                return $vpa;
+            }
+
+            // In case of failures, where we are not sure about VPA's status
+            // We will need to save that vpa, but if it is already saved, we
+            // will not update the VPA
+            if ($input[Entity::STATUS] === Status::UNKNOWN)
+            {
+                return $vpa;
+            }
+
+            $vpa->edit($input);
+
+            $this->repo->saveOrFail($vpa);
+
+            return $vpa;
+        }
+
+        $vpa = new Entity();
+
+        $vpa->build(array_merge($input, $parsed));
+
+        $this->repo->saveOrFail($vpa);
+
+        return $vpa;
+    }
+
+    public function repo(): Repository
+    {
+        return $this->repo->payments_upi_vpa;
+    }
 }

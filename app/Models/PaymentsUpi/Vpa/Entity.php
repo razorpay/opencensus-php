@@ -12,13 +12,17 @@ class Entity extends Base\Entity
     const STATUS        = 'status';
     const RECEIVED_AT   = 'received_at';
 
-    const AROBASE = '@';
+    const VPA           = 'vpa';
+    const AROBASE       = '@';
 
     protected $entity = 'payments_upi_vpa';
 
     protected $fillable = [
         self::USERNAME,
-        self::HANDLE
+        self::HANDLE,
+        self::NAME,
+        self::STATUS,
+        self::RECEIVED_AT,
     ];
 
     protected $public = [
@@ -57,6 +61,21 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::USERNAME) . self::AROBASE . $this->getAttribute(self::HANDLE);
     }
 
+    public function getName()
+    {
+        return $this->getAttribute(self::NAME);
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
+    public function getReceivedAt()
+    {
+        return $this->getAttribute(self::RECEIVED_AT);
+    }
+
     public function toArrayToken()
     {
         $attributes = $this->toArrayPublic();
@@ -70,9 +89,8 @@ class Entity extends Base\Entity
     {
         $addressArray = explode('@', $vpa);
 
-        $vpaInput['username'] = $addressArray[0];
-
-        $vpaInput['handle'] = $addressArray[1];
+        $vpaInput[self::USERNAME]   = $addressArray[0];
+        $vpaInput[self::HANDLE]     = $addressArray[1] ?? null;
 
         return $vpaInput;
     }

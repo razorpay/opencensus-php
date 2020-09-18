@@ -44,6 +44,10 @@ class SavedVpaPaymentCreateTest extends TestCase
 
     public function testLocalSavedVpaPaymentCreateWithSaveFlag()
     {
+        // To verify that save vpa flow does not get affected by validateVpa
+        $this->validateVpa('vishnu@icici');
+        $validated = $this->getDbLastEntity('payments_upi_vpa');
+
         // set payment data using token
         $this->payment = $this->getDefaultUpiPaymentArray();
 
@@ -77,6 +81,7 @@ class SavedVpaPaymentCreateTest extends TestCase
 
         // Vpa got created against the token
         $this->assertArraySubset([
+            Vpa::ID                         => $validated->getId(),
             Vpa::USERNAME                   => 'vishnu',
             Vpa::HANDLE                     => 'icici',
             Vpa::NAME                       => null,

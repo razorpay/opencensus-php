@@ -2,11 +2,13 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\PaymentsUpi;
 use Razorpay\Trace\Logger as Trace;
 
 trait Vpa
@@ -27,12 +29,16 @@ trait Vpa
 
         $terminalIds = Payment\Gateway::getTerminalsForValidateVpaForMode($this->mode);
 
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), 'validate_vpa_routing_v2', Mode::LIVE);
+        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
+                                                    'validate_vpa_routing_v2',
+                                                    Mode::LIVE);
 
-        $this->trace->info(TraceCode::VALIDATE_VPA_REQUEST, [
-            'variant'     => $variant,
-            'vpa'         => mask_vpa($input['vpa']),
-        ]);
+        $tracable = [
+            'code'          => TraceCode::VALIDATE_VPA_REQUEST,
+            'variant'       => $variant,
+            'vpa'           => mask_vpa($input['vpa']),
+            'success'       => false,
+        ];
 
         if (($this->mode === Mode::LIVE) and ($variant === Payment\Gateway::UPI_SBI))
         {
@@ -70,12 +76,21 @@ trait Vpa
 
         foreach ($terminals as $index => $terminal)
         {
+            $startTime = Carbon::now();
+
             try
             {
                 $gateway = $terminal->getGateway();
 
+                $tracable['gateway'] = $gateway;
+
                 // Invalid vpa on MindGate and SBI thrown back with GatewayError
                 $gatewayResponse = $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
+
+                $tracable['time'] = Carbon::now()->diffInRealSeconds($startTime);
+                $tracable['success'] = true;
+
+                $this->trace->info(TraceCode::VALIDATE_VPA_REQUEST, $tracable);
 
                 $success = true;
 
@@ -90,8 +105,9 @@ trait Vpa
                 {
                     break;
                 }
+                $tracable['time'] = Carbon::now()->diffInRealSeconds($startTime);
 
-                $this->trace->traceException($exception, Trace::INFO, TraceCode::RECOVERABLE_EXCEPTION);
+                $this->trace->traceException($exception, Trace::INFO, TraceCode::RECOVERABLE_EXCEPTION, $tracable);
 
                 // Throwing gateway exception now as we couldn't validate vpa on any of the applicable terminals
                 if ($index === ($count - 1))
@@ -104,6 +120,8 @@ trait Vpa
         $response['success'] = $success;
 
         $response['customer_name'] = $gatewayResponse;
+
+        (new PaymentsUpi\Vpa\Service)->handleValidateVpaResponse($response);
 
         return $response;
     }
