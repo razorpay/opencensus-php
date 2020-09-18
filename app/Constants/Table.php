@@ -220,9 +220,10 @@ class Table
 
     const NODAL_BENEFICIARIES    = 'nodal_beneficiaries';
 
-    const GATEWAY_DOWNTIME      = 'gateway_downtimes';
-    const PAYMENT_DOWNTIME      = 'payment_downtimes';
-    const TERMINAL_ACTION       = 'terminal_action_logs';
+    const GATEWAY_DOWNTIME          = 'gateway_downtimes';
+    const GATEWAY_DOWNTIME_ARCHIVE  = 'gateway_downtimes_archive';
+    const PAYMENT_DOWNTIME          = 'payment_downtimes';
+    const TERMINAL_ACTION           = 'terminal_action_logs';
 
     const GATEWAY_RULE          = 'gateway_rules';
     const GATEWAY_FILE          = 'gateway_files';

@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Jobs\PaymentDowntime;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\PublicCollection;
 
 class Repository extends Base\Repository
@@ -86,6 +87,13 @@ class Repository extends Base\Repository
         {
             PaymentDowntime::dispatch($this->app['rzp.mode']);
         }
+    }
+
+    public function archive(Entity $entity)
+    {
+        $entity->archive();
+
+        $this->syncToEs($entity, EsRepository::DELETE);
     }
 
     public function isMerchantIdRequiredForFetch()
@@ -205,6 +213,15 @@ class Repository extends Base\Repository
         }
 
         return $query->get();
+    }
+
+    public function fetchPastDowntimes(): PublicCollection
+    {
+        $query = $this->newQuery();
+
+        $query->where(Entity::END, '<', Carbon::now()->getTimestamp());
+
+        return $query->limit(1000)->get();
     }
 
     public function fetchDowntimesWithoutTerminal(array $input, array $methods): PublicCollection

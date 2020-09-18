@@ -148,6 +148,34 @@ class Core extends Base\Core
         return $downtimes;
     }
 
+    public function archiveGatewayDowntimes(): array
+    {
+        $downtimes = $this->repo->gateway_downtime
+            ->fetchPastDowntimes();
+
+        $this->trace->info(TraceCode::GATEWAY_DOWNTIME_ARCHIVE_STARTED,
+            [
+                'total_records' => $downtimes->count(),
+            ]);
+
+        foreach ($downtimes as $downtime)
+        {
+            $this->repo->transaction(function () use ($downtime)
+            {
+                $this->repo->gateway_downtime->archive($downtime);
+            });
+        }
+
+        $this->trace->info(TraceCode::GATEWAY_DOWNTIME_ARCHIVE_COMPLETED,
+            [
+                'total_records' => $downtimes->count(),
+            ]);
+
+        return [
+            'total_records' => $downtimes->count(),
+        ];
+    }
+
     /**
      * Fetches downtime information at the current time
      * @param  array  $methods Array of methods for which to fetch downtime

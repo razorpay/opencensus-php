@@ -115,6 +115,7 @@ class Entity
     const MERCHANT_REQUEST           = 'merchant_request';
     const CUSTOMER_BALANCE           = 'customer_balance';
     const GATEWAY_DOWNTIME           = 'gateway_downtime';
+    const GATEWAY_DOWNTIME_ARCHIVE   = 'gateway_downtime_archive';
     const MERCHANT_INVOICE           = 'merchant_invoice';
     const INVOICE_REMINDER           = 'invoice_reminder';
     const MERCHANT_REMINDERS         = 'merchant_reminders';
@@ -522,6 +523,7 @@ class Entity
         self::MERCHANT_REQUEST          => \RZP\Models\Merchant\Request::class,
         self::CUSTOMER_BALANCE          => \RZP\Models\Customer\Balance::class,
         self::GATEWAY_DOWNTIME          => \RZP\Models\Gateway\Downtime::class,
+        self::GATEWAY_DOWNTIME_ARCHIVE  => \RZP\Models\Gateway\Downtime\Archive::class,
         self::PAYMENT_DOWNTIME          => \RZP\Models\Payment\Downtime::class,
         self::GATEWAY_RULE              => \RZP\Models\Gateway\Rule::class,
         self::GATEWAY_FILE              => \RZP\Models\Gateway\File::class,

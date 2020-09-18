@@ -968,6 +968,13 @@ class GatewayController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function archiveGatewayDowntimes(Downtime\Service $service)
+    {
+        $data = $service->archiveGatewayDowntimes();
+
+        return ApiResponse::json($data);
+    }
+
     /**
      * Method to create a gateway downtime entity
      *

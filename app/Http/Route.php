@@ -847,6 +847,7 @@ class Route
         'gateway_update_priorities'                => ['patch',    'gateway/priorities/{method}/add',                'GatewayController@addOrUpdateGatewayPriority'                      ],
         'gateway_remove_priorities'                => ['patch',    'gateway/priorities/{method}/remove',             'GatewayController@removeGatewayPriority'                           ],
         'gateway_fetch_downtimes'                  => ['get',      'gateway/downtimes',                              'GatewayController@getGatewayDowntimes'                             ],
+        'gateway_downtimes_archive'                => ['post',     'gateway/downtimes/archive',                      'GatewayController@archiveGatewayDowntimes'                             ],
         'gateway_create_downtime'                  => ['post',     'gateway/downtimes',                              'GatewayController@postGatewayDowntime'                             ],
         'gateway_update_downtime'                  => ['put',      'gateway/downtimes/{id}',                         'GatewayController@putGatewayDowntime'                              ],
         'gateway_delete_downtime'                  => ['delete',   'gateway/downtimes/{id}',                         'GatewayController@deleteGatewayDowntime'                           ],
@@ -2640,6 +2641,7 @@ class Route
         'payment_meta_search',
         'bulk_create_fund_accounts',
         'add_ondemand_pricing_if_absent',
+        'gateway_downtimes_archive'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -5105,6 +5107,7 @@ class Route
             'tax_payments_add_penalty_cron',
             'bulk_create_fund_accounts',
             'add_ondemand_pricing_if_absent',
+            'gateway_downtimes_archive',
         ],
 
         'subscriptions' => [

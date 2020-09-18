@@ -4,9 +4,10 @@ namespace RZP\Tests\Functional\Payment;
 
 use Carbon\Carbon;
 
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Constants\Timezone;
-use RZP\Http\RequestHeader;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\MockHttpResponseTrait;
@@ -14,6 +15,7 @@ use RZP\Tests\Functional\Helpers\MockHttpResponseTrait;
 class GatewayDowntimeTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     protected $gatewayBankMap = [
         'netbanking_hdfc'  => 'HDFC',
@@ -1480,6 +1482,52 @@ class GatewayDowntimeTest extends TestCase
         $this->assertNull($response['end']);
 
         $this->assertEquals($response['reason_code'], "ISSUER_DOWN");
+    }
+
+    public function testGatewayDowntimeArchival()
+    {
+        $begin = Carbon::now()->subMinutes(120)->timestamp;
+        $end   = Carbon::now()->subMinutes(60)->timestamp;
+
+        $request = [
+            'content' => [
+                'begin'       => $begin,
+                'end'         => $end,
+                'gateway'     => 'axis_migs',
+                'reason_code' => 'LOW_SUCCESS_RATE',
+                'method'      => 'card',
+                'source'      => 'other',
+                'acquirer'    => 'axis',
+                'network'     => 'VISA',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($response['network'], 'VISA');
+        $this->assertEquals($response['begin'], $begin);
+        $this->assertEquals($response['end'], $end);
+
+        $downtimeEntity = $this->getDbLastEntity('gateway_downtime');
+        $this->assertNotNull($downtimeEntity);
+
+        $request = [
+            'content' => [],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/archive'
+        ];
+
+        $this->ba->cronAuth();
+        $this->makeRequestAndGetContent($request);
+
+        $downtimeEntityAfterTest = $this->getDbLastEntity('gateway_downtime');
+        $this->assertNull($downtimeEntityAfterTest);
+
+        $downtimeEntityArchived = $this->getDbLastEntity('gateway_downtime_archive');
+        $this->assertEquals($downtimeEntity->getId(), $downtimeEntityArchived->getId());
+        $this->assertEquals($downtimeEntity->getCreatedAt(), $downtimeEntityArchived->getCreatedAt());
     }
 
     protected function getDowntimeCreationRequest(): array

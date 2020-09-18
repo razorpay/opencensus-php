@@ -10,6 +10,9 @@ use RZP\Models\Payment\Processor\Netbanking;
 class Entity extends Base\PublicEntity
 {
     use HardDeletes;
+    use Base\Traits\Archive;
+
+    protected $archivalEntity = false;
 
     const ID            = 'id';
     const GATEWAY       = 'gateway';
