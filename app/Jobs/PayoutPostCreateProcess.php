@@ -9,6 +9,8 @@ class PayoutPostCreateProcess extends Job
 {
     const MAX_RETRY_ATTEMPT = 3;
 
+    const MAX_RETRY_DELAY = 10;
+
     protected $payoutId;
 
     protected $mode;
@@ -61,7 +63,7 @@ class PayoutPostCreateProcess extends Job
 
         if ($this->attempts() < self::MAX_RETRY_ATTEMPT)
         {
-            $this->release();
+            $this->release(self::MAX_RETRY_DELAY);
 
             $this->trace->info(TraceCode::PAYOUT_CREATE_SUBMITTED_PROCESS_JOB_RELEASED, $data);
         }
