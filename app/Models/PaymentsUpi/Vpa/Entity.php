@@ -15,6 +15,9 @@ class Entity extends Base\Entity
     const VPA           = 'vpa';
     const AROBASE       = '@';
 
+    // Starting with 7 days
+    const VPA_EXPIRY    = 604800;
+
     protected $entity = 'payments_upi_vpa';
 
     protected $fillable = [
@@ -74,6 +77,20 @@ class Entity extends Base\Entity
     public function getReceivedAt()
     {
         return $this->getAttribute(self::RECEIVED_AT);
+    }
+
+    public function isExpired(): bool
+    {
+        $receivedAt = $this->getReceivedAt();
+
+        $diff = ($this->freshTimestamp() - (int) $receivedAt);
+
+        return ($diff > self::VPA_EXPIRY);
+    }
+
+    public function isValid(): bool
+    {
+        return ($this->getStatus() === Status::VALID);
     }
 
     public function toArrayToken()

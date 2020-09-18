@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\PaymentsUpi;
 
+use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\PaymentsUpiTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -65,7 +66,7 @@ class UpiSharpGatewayTest extends TestCase
         $this->assertSame('razorpay', $vpa->getHandle());
         $this->assertSame('tobeupdated', $vpa->getName());
         $this->assertSame(null, $vpa->getStatus());
-        $this->assertGreaterThanOrEqual(null, $vpa->getReceivedAt());
+        $this->assertSame(null, $vpa->getReceivedAt());
 
         $this->validateVpa('withname@razorpay');
 
@@ -76,5 +77,65 @@ class UpiSharpGatewayTest extends TestCase
         $this->assertSame('Razorpay Customer', $vpa2->getName());
         $this->assertSame('valid', $vpa2->getStatus());
         $this->assertGreaterThanOrEqual(1600000000, $vpa2->getReceivedAt());
+    }
+
+    public function testValidateVpaExpired()
+    {
+        $this->createUpiPaymentsLocalCustomerVpa([
+            'username'      => 'withname',
+            'handle'        => 'razorpay',
+            'name'          => 'tobeupdated',
+            'status'        => 'valid',
+            'received_at'   => Carbon::now()->subSeconds(604805)->getTimestamp(),
+        ]);
+
+        $vpa = $this->getDbLastEntity('payments_upi_vpa');
+
+        $this->assertSame('withname', $vpa->getUsername());
+        $this->assertSame('razorpay', $vpa->getHandle());
+        $this->assertSame('tobeupdated', $vpa->getName());
+        $this->assertSame('valid', $vpa->getStatus());
+        $this->assertGreaterThan(null, $vpa->getReceivedAt());
+
+        $this->validateVpa('withname@razorpay');
+
+        $vpa2 = $this->getDbLastEntity('payments_upi_vpa');
+
+        $this->assertSame($vpa->getId(), $vpa2->getId());
+
+        $this->assertSame('Razorpay Customer', $vpa2->getName());
+        $this->assertSame('valid', $vpa2->getStatus());
+        $this->assertGreaterThanOrEqual(1600000000, $vpa2->getReceivedAt());
+    }
+
+    public function testValidateVpaCached()
+    {
+        $receivedAt = Carbon::now()->subSeconds(600005)->getTimestamp();
+
+        $this->createUpiPaymentsLocalCustomerVpa([
+            'username'      => 'withname',
+            'handle'        => 'razorpay',
+            'status'        => 'valid',
+            'name'          => 'nottobeupdated',
+            'received_at'   => $receivedAt,
+        ]);
+
+        $vpa = $this->getDbLastEntity('payments_upi_vpa');
+
+        $this->assertSame('withname', $vpa->getUsername());
+        $this->assertSame('razorpay', $vpa->getHandle());
+        $this->assertSame('nottobeupdated', $vpa->getName());
+        $this->assertSame('valid', $vpa->getStatus());
+        $this->assertGreaterThan(null, $vpa->getReceivedAt());
+
+        $this->validateVpa('withname@razorpay');
+
+        $vpa2 = $this->getDbLastEntity('payments_upi_vpa');
+
+        $this->assertSame($vpa->getId(), $vpa2->getId());
+
+        $this->assertSame('nottobeupdated', $vpa2->getName());
+        $this->assertSame('valid', $vpa2->getStatus());
+        $this->assertSame($receivedAt, $vpa2->getReceivedAt());
     }
 }

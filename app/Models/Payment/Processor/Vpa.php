@@ -27,6 +27,13 @@ trait Vpa
         // This will throw bad request validation error
         (new Payment\Validator)->validateInput($action, $input);
 
+        $existing = $this->validateVpaCheckForExisting($input);
+
+        if (empty($existing) === false)
+        {
+            return $existing;
+        }
+
         $terminalIds = Payment\Gateway::getTerminalsForValidateVpaForMode($this->mode);
 
         $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
@@ -124,5 +131,30 @@ trait Vpa
         (new PaymentsUpi\Vpa\Service)->handleValidateVpaResponse($response);
 
         return $response;
+    }
+
+    public function validateVpaCheckForExisting(array $input)
+    {
+        $vpa = (new PaymentsUpi\Vpa\Service)->handleValidateVpaRequest($input);
+
+        if (empty($vpa) === true)
+        {
+            return false;
+        }
+
+        $tracable = [
+            'code'          => TraceCode::VALIDATE_VPA_REQUEST,
+            'variant'       => 'cache',
+            'vpa'           => mask_vpa($input['vpa']),
+            'success'       => true,
+        ];
+
+        $this->trace->info(TraceCode::VALIDATE_VPA_REQUEST, $tracable);
+
+        return [
+            'vpa'               => $vpa->getAddress(),
+            'success'           => true,
+            'customer_name'     => $vpa->getName(),
+        ];
     }
 }

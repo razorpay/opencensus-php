@@ -68,6 +68,19 @@ class Core extends Base\Core
         return $vpa;
     }
 
+    /**
+     * @param $address
+     * @return Entity
+     */
+    public function firstByAddress($address)
+    {
+        $parsed = Entity::getUsernameAndHandle($address);
+
+        $vpa = $this->repo()->firstByUsernameAndHandle($parsed[Entity::USERNAME], $parsed[Entity::HANDLE]);
+
+        return $vpa;
+    }
+
     public function repo(): Repository
     {
         return $this->repo->payments_upi_vpa;

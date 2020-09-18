@@ -7,6 +7,34 @@ use RZP\Models\Base;
 
 class Service extends Base\Service
 {
+    public function handleValidateVpaRequest(array $input)
+    {
+        // For few test suites we have disabled this database
+        if (env('DB_UPI_PAYMENTS_MOCKED') === true)
+        {
+            return null;
+        }
+
+        $vpa = $this->firstByAddress($input[Entity::VPA]);
+
+        if (($vpa instanceof Entity) === false)
+        {
+            return null;
+        }
+
+        if ($vpa->isExpired() === true)
+        {
+            return null;
+        }
+
+        if ($vpa->isValid() === false)
+        {
+            return null;
+        }
+
+        return $vpa;
+    }
+
     public function handleValidateVpaResponse(array $input)
     {
         // For few test suites we have disabled this database
@@ -38,6 +66,18 @@ class Service extends Base\Service
         try
         {
             return (new Core())->updateOrCreate($input);
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->traceException($exception);
+        }
+    }
+
+    public function firstByAddress($address)
+    {
+        try
+        {
+            return (new Core())->firstByAddress($address);
         }
         catch (\Exception $exception)
         {
