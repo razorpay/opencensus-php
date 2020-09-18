@@ -13,6 +13,7 @@ class AppResponse
     const NON_JSON_ROUTES = [
         'admin_catchall',
         'dashboard',
+        'signup',
         'admin_merchant_stats',
         'razorx_catchall',
         'report_download',
