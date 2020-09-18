@@ -24,7 +24,10 @@ class Base extends Mailable
     protected function addSender()
     {
         $email  = $this->getSenderEmail();
-        $header = $this->getSenderHeader();
+
+        // hardcoding this for fraud relates issues will change this with some dynamic value.
+        //$header = $this->getSenderHeader();
+        $header = 'Payments';
 
         $this->from($email, $header);
 

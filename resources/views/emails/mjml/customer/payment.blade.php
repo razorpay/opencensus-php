@@ -68,21 +68,6 @@
       }
     }
   </style>
-  <!--<![endif]-->
-  <!--[if mso]>
-        <xml>
-        <o:OfficeDocumentSettings>
-          <o:AllowPNG/>
-          <o:PixelsPerInch>96</o:PixelsPerInch>
-        </o:OfficeDocumentSettings>
-        </xml>
-        <![endif]-->
-  <!--[if lte mso 11]>
-        <style type="text/css">
-          .outlook-group-fix { width:100% !important; }
-        </style>
-        <![endif]-->
-
 
   <style type="text/css">
     @media only screen and (min-width:480px) {
@@ -92,30 +77,10 @@
       }
     }
   </style>
-
-
-  <style type="text/css">
-
-
-  </style>
-
-
 </head>
 
 <body style="background-color:#FAFAFA;">
-
-
   <div style="background-color:#FAFAFA;">
-
-
-    <!--[if mso | IE]>
-      <table
-         align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
-      >
-        <tr>
-          <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
-      <![endif]-->
-
 
     <div class="max-width-override"
       style="background: #FBFDFF; background-color: #FBFDFF; Margin: 0px auto; max-width: unset;">
@@ -125,43 +90,12 @@
         <tbody>
           <tr>
             <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
-              <!--[if mso | IE]>
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-
-        <tr>
-
-            <td
-               class="" style="vertical-align:top;width:600px;"
-            >
-          <![endif]-->
-
-              <!--[if mso | IE]>
-            </td>
-
-        </tr>
-
-                  </table>
-                <![endif]-->
             </td>
           </tr>
         </tbody>
       </table>
 
     </div>
-
-
-    <!--[if mso | IE]>
-          </td>
-        </tr>
-      </table>
-
-      <table
-         align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
-      >
-        <tr>
-          <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
-      <![endif]-->
-
 
     <div class="max-width-override"
       style="background: {{ $merchant['brand_color'] }}; background-color: {{ $merchant['brand_color'] }}; Margin: 0px auto; max-width: unset;">
@@ -171,15 +105,6 @@
         <tbody>
           <tr>
             <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
-              <!--[if mso | IE]>
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-
-        <tr>
-
-            <td
-               class="" style="vertical-align:top;width:600px;"
-            >
-          <![endif]-->
 
               <div class="mj-column-per-100 outlook-group-fix"
                 style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
@@ -240,14 +165,6 @@
                 </table>
 
               </div>
-
-              <!--[if mso | IE]>
-            </td>
-
-        </tr>
-
-                  </table>
-                <![endif]-->
             </td>
           </tr>
         </tbody>
@@ -255,35 +172,12 @@
 
     </div>
 
-
-    <!--[if mso | IE]>
-          </td>
-        </tr>
-      </table>
-
-      <table
-         align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
-      >
-        <tr>
-          <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
-      <![endif]-->
-
-
     <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
 
       <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
         <tbody>
           <tr>
             <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
-              <!--[if mso | IE]>
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-
-        <tr>
-
-            <td
-               class="" style="vertical-align:top;width:600px;"
-            >
-          <![endif]-->
 
               <div class="mj-column-per-100 outlook-group-fix"
                 style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
@@ -327,14 +221,6 @@
                 </table>
 
               </div>
-
-              <!--[if mso | IE]>
-            </td>
-
-        </tr>
-
-                  </table>
-                <![endif]-->
             </td>
           </tr>
         </tbody>
@@ -342,35 +228,12 @@
 
     </div>
 
-
-    <!--[if mso | IE]>
-          </td>
-        </tr>
-      </table>
-
-      <table
-         align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
-      >
-        <tr>
-          <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
-      <![endif]-->
-
-
     <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
 
       <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
         <tbody>
           <tr>
             <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
-              <!--[if mso | IE]>
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-
-        <tr>
-
-            <td
-               class="" style="vertical-align:top;width:600px;"
-            >
-          <![endif]-->
 
               <div class="mj-column-per-100 outlook-group-fix"
                 style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
@@ -430,14 +293,6 @@
                 </table>
 
               </div>
-
-              <!--[if mso | IE]>
-            </td>
-
-        </tr>
-
-                  </table>
-                <![endif]-->
             </td>
           </tr>
         </tbody>
@@ -445,44 +300,12 @@
 
     </div>
 
-
-    <!--[if mso | IE]>
-          </td>
-        </tr>
-      </table>
-
-      <table
-         align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
-      >
-        <tr>
-          <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
-      <![endif]-->
-
-
     <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
 
       <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
         <tbody>
           <tr>
             <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
-              <!--[if mso | IE]>
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-
-        <tr>
-
-            <td
-               class="" style="vertical-align:top;width:600px;"
-            >
-          <![endif]-->
-
-
-              <!--[if mso | IE]>
-            </td>
-
-        </tr>
-
-                  </table>
-                <![endif]-->
             </td>
           </tr>
         </tbody>
@@ -490,34 +313,12 @@
 
     </div>
 
-
-    <!--[if mso | IE]>
-          </td>
-        </tr>
-      </table>
-
-      <table
-         align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
-      >
-        <tr>
-          <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
-      <![endif]-->
-
     <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
 
       <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
         <tbody>
           <tr>
             <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
-              <!--[if mso | IE]>
-                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-
-          <tr>
-
-              <td
-                 class="" style="vertical-align:top;width:600px;"
-              >
-            <![endif]-->
 
               <div class="mj-column-per-100 outlook-group-fix"
                 style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
@@ -567,15 +368,6 @@
                 </table>
 
               </div>
-
-
-              <!--[if mso | IE]>
-              </td>
-
-          </tr>
-
-                    </table>
-                  <![endif]-->
             </td>
           </tr>
         </tbody>
@@ -583,20 +375,10 @@
 
     </div>
     <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
-
       <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
         <tbody>
           <tr>
             <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
-              <!--[if mso | IE]>
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-
-        <tr>
-
-            <td
-               class="" style="vertical-align:top;width:600px;"
-            >
-          <![endif]-->
 
               <div class="mj-column-per-100 outlook-group-fix"
                 style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
@@ -618,11 +400,9 @@
                                   <div class="description"
                                     style="text-align: center; color: #515978; font-size: 14px; line-height: 1.5;">
                                     <!-- For any product or service related queries, please contact {{$merchant['billing_label']}} support. -->
-                                    For any order related queries, please reach out to {{$merchant['billing_label']}}. <br />
-                                    If you do not get a satisfactory response within 15 days, you may then raise a <a
-                                      class="link" href="https://razorpay.com/dispute-guide" target="_blank"
-                                      style="text-decoration: none; color: #528FF0;">chargeback</a> with your bank and
-                                    Razorpay will assist to amicably resolve the chargeback.
+                                    For any order related queries, please reach out to {{$merchant['billing_label']}}. 
+                                    <br />
+                                  
                                   </div>
                                 </div>
                               </div>
@@ -638,14 +418,6 @@
                 </table>
 
               </div>
-
-              <!--[if mso | IE]>
-            </td>
-
-        </tr>
-
-                  </table>
-                <![endif]-->
             </td>
           </tr>
         </tbody>
@@ -653,170 +425,14 @@
 
     </div>
 
-
-    <!--[if mso | IE]>
-          </td>
-        </tr>
-      </table>
-
-      <table
-         align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
-      >
-        <tr>
-          <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
-      <![endif]-->
-
-
-    <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
-
-      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
-        <tbody>
-          <tr>
-            <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
-              <!--[if mso | IE]>
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-
-        <tr>
-
-            <td
-               class="" style="vertical-align:top;width:600px;"
-            >
-          <![endif]-->
-
-
-              <div class="mj-column-per-100 outlook-group-fix"
-                style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-
-                <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
-                  <tbody>
-                    <tr>
-                      <td style="vertical-align:top;padding:0px;">
-
-                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
-
-                          <tr>
-                            <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
-
-                              <div
-                                style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                <div class="header" style="box-sizing: border-box; max-width: 100%;margin-top:15px;">
-                                  <div class="content branding rzp"
-                                    style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; padding-top: 12px; padding-bottom: 12px;">
-                                    <div class="branding-content"
-                                      style="text-align: center; width: fit-content; margin: 0 auto; font-size: 12px; line-height: 1.5; color: #8D92A4;">
-                                      <div class="content-element"
-                                        style="display: inline-block; vertical-align: middle;">Powered by</div>
-                                      <div class="content-element logo"
-                                        style="display: inline-block; vertical-align: middle; height: 18px; width: 85px; margin-left: 5px;">
-                                        <img src="https://cdn.razorpay.com/logo.png" style="height: 100%; width: 100%;">
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-
-                            </td>
-                          </tr>
-
-                        </table>
-
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-
-              </div>
-
-              <!--[if mso | IE]>
-            </td>
-
-        </tr>
-
-                  </table>
-                <![endif]-->
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-    </div>
-
-
-    <!--[if mso | IE]>
-          </td>
-        </tr>
-      </table>
-      <![endif]-->
-
-
   </div>
 
-  <div class="mj-column-per-100 outlook-group-fix"
-    style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-
-    <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
-      <tbody>
-        <tr>
-          <td style="vertical-align:top;padding:0px;">
-
-            <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
-
-              <tr>
-                <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
-
-                  <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                    <div class="footer"
-                      style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; margin-top: 8px; margin-bottom: 8px;">
-                      <div class="footer-text"
-                        style="font-size: 12px; line-height: 1.5; color: #7B8199; text-align: center; padding: 8px 0;">
-                        Razorpay is a payment gateway and only facilitates {{$merchant['billing_label']}} with online payments.
-                        If you want to dispute this payment, please go through our <a class="link"
-                          href="https://razorpay.com/dispute-guide/?utm_source=customer_mailer&amp;utm_medium=email&amp;utm_campaign=payment_refund"
-                          target="_blank" style="text-decoration: none; color: #528FF0;"> Customer Dispute Guide</a>.
-                      </div>
-                      <div class="footer-text"
-                        style="font-size: 12px; line-height: 1.5; color: #7B8199; text-align: center; padding: 8px 0; border-top: 1px solid #EBEDF2;">
-                        If a refund has been initiated for this payment, you can check the&nbsp;
-                        <a class="link"
-                          href="https://razorpay.com/support/?utm_source=customer_mailer&amp;utm_medium=email&amp;utm_campaign=payment_success#refund/{{$payment['public_id']}}"
-                          target="_blank" style="text-decoration: none; color: #528FF0;">refund status here.</a>
-                      </div>
-                    </div>
-                  </div>
-
-                </td>
-              </tr>
-
-            </table>
-
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-  </div>
-
-  <!--[if mso | IE]>
-            </td>
-
-        </tr>
-
-                  </table>
-                <![endif]-->
   </td>
   </tr>
   </tbody>
   </table>
 
   </div>
-
-
-  <!--[if mso | IE]>
-          </td>
-        </tr>
-      </table>
-      <![endif]-->
-
 
   </div>
 
