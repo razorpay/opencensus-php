@@ -721,7 +721,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MAILER_SET_DRIVER                                     = 'MAILER_SET_DRIVER';
     const MAILER_SENDING_REQUEST                                = 'MAILER_SENDING_REQUEST';
     const MAILER_INVALID_DRIVER                                 = 'MAILER_INVALID_DRIVER';
-    const MAILER_SET_DEFAULT_DRIVER                             = 'MAILER_SET_DEFAULT_DRIVER';
     const MAILER_JOB_ERROR                                      = 'MAILER_JOB_ERROR';
     const INVOICE_ACTION_JOB_ERROR                              = 'INVOICE_ACTION_JOB_ERROR';
     const INVOICE_PDF_GEN_FAILED                                = 'INVOICE_PDF_GEN_FAILED';

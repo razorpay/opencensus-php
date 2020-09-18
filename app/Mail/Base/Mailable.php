@@ -93,34 +93,12 @@ class Mailable extends BaseMailable
         $mailerContract->setSwiftMailer($mailer);
     }
 
-    private function shouldSetSesDriver(): bool
-    {
-        return (($this->isEmailTemplateWhitelistedForSes() === true) and
-            ($this->shouldRouteEmailViaSes() === true));
-    }
-
-    /**
-     * Checks the config if the template has been whitelisted for ses.
-     */
-    private function isEmailTemplateWhitelistedForSes(): bool
-    {
-        $app = App::getFacadeRoot();
-
-        if ($app->environment(Environment::PRODUCTION) === false)
-        {
-            return false;
-        }
-
-        $sesWhitelistedViews = config('mail_template.ses_whitelist');
-        return in_array($this->view ?? '', $sesWhitelistedViews, true);
-    }
-
     protected function evaluateAndSetMailDriver(MailerContract &$mailer)
     {
         $app = App::getFacadeRoot();
         $trace = $app['trace'];
 
-        if ($this->shouldSetSesDriver() === true)
+        if ($this->shouldRouteEmailViaSes() === true)
         {
             $this->emailDriverName = self::SES_EMAIL_DRIVER;
 
@@ -158,17 +136,8 @@ class Mailable extends BaseMailable
         {
             Container::getInstance()->call([$this, 'build']);
 
-            if ($this->doesDriverNeedToBeChangedDynamically() === true)
-            {
-                $this->evaluateAndSetMailDriver($mailer);
-                $trace->info(TraceCode::MAILER_SET_DRIVER, ['driver_name' => $this->emailDriverName]);
-            }
-            else if ($this->shouldSetToDefaultDriver() === true)
-            {
-                $this->setDefaultDriver($mailer);
-                $this->emailDriverName = self::DEFAULT_EMAIL_DRIVER;
-                $trace->info(TraceCode::MAILER_SET_DEFAULT_DRIVER);
-            }
+            $this->evaluateAndSetMailDriver($mailer);
+            $trace->info(TraceCode::MAILER_SET_DRIVER, ['driver_name' => $this->emailDriverName]);
 
             if ($this->isValidRecipient() === true)
             {
@@ -421,9 +390,8 @@ class Mailable extends BaseMailable
     }
 
     /**
-     * some email templates are to be sent via ses. Following
-     * makes a call to razorX to gradually ramp up to ses for
-     * those templates
+     * some emails are to be sent via ses. Following makes a
+     * call to razorX to decide if email is to be sent via ses.
      */
     protected function shouldRouteEmailViaSes(): bool
     {
@@ -435,36 +403,7 @@ class Mailable extends BaseMailable
         }
 
         $variant  =  app('razorx')->getTreatment($app['request']->getTaskId(),
-                            Merchant\RazorxTreatment::API_EMAIL_SES_DRIVER, $this->mode);
-
-        return strtolower($variant) === 'on';
-    }
-
-    protected function doesDriverNeedToBeChangedDynamically(): bool
-    {
-        $app = App::getFacadeRoot();
-
-        if ($app->environment(Environment::PRODUCTION) === false)
-        {
-            return false;
-        }
-
-        $variant  =  app('razorx')->getTreatment($app['request']->getTaskId(),
-            Merchant\RazorxTreatment::API_EMAIL_DRIVER_CHANGE_DYNAMICALLY, $this->mode);
-
-        return strtolower($variant) === 'on';
-    }
-
-    protected function shouldSetToDefaultDriver(): bool
-    {
-        $app = App::getFacadeRoot();
-        if ($app->environment(Environment::PRODUCTION) === false)
-        {
-            return false;
-        }
-
-        $variant  =  app('razorx')->getTreatment($app['request']->getTaskId(),
-            Merchant\RazorxTreatment::API_EMAIL_SHOULD_SET_TO_DEFAULT_DRIVER, $this->mode);
+                            Merchant\RazorxTreatment::API_ALL_EMAILS_SES_DRIVER, $this->mode);
 
         return strtolower($variant) === 'on';
     }

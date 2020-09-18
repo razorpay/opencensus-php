@@ -159,24 +159,19 @@ final class RazorxTreatment
 
     const CREDCASE_DUAL_WRITE_ENABLED = 'credcase_dual_write_enabled';
 
-    // New driver of ses to be used for some templates. Following flag
-    // helps in ramping up to ses for those templates
-    const API_EMAIL_SES_DRIVER = 'api_email_ses_driver';
-
     // Check whether skip_workflow_payout_specific feature is allowed for merchant or not.
     const SKIP_WORKFLOW_PAYOUT_SPECIFIC_FEATURE = 'skip_workflow_payout_specific_feature';
 
     const PUBLIC_KEY_SIGNATURE_GENERATION = 'public_key_signature_generation';
-
-    const API_EMAIL_DRIVER_CHANGE_DYNAMICALLY = 'api_email_driver_set_dynamically';
-
-    const API_EMAIL_SHOULD_SET_TO_DEFAULT_DRIVER = 'api_email_should_set_default_driver';
 
     // experiment for merchant when trim migration in progress
     const TRIM_MIGRATION_IN_PROGRESS = 'trim_migration_in_progress';
 
     // Timings update changes
     const ALLOWED_TRANSFER_MODES = 'allowed_transfer_modes';
+
+    // experiment controls whether the email is to be sent via ses or the default driver.
+    const API_ALL_EMAILS_SES_DRIVER = 'api_all_emails_ses_driver';
 
     // Ledger Async For payouts
     const QUEUE_PAYOUT_CREATE_REQUEST = 'queue_payout_create_request';
