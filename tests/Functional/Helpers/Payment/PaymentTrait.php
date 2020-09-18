@@ -897,7 +897,7 @@ trait PaymentTrait
             'url'     => '/payments/verify/all',
             'method'  => 'POST');
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 

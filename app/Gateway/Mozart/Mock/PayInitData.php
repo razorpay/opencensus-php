@@ -357,7 +357,7 @@ class PayInitData extends Base\Mock\Server
             'external_trace_id' => 'DUMMY_REQUEST_ID',
         ];
 
-        if ($vpa === 'failedcollect@sbi')
+        if (($vpa === 'failedcollect@sbi') or ($vpa === 'blockverify@sbi'))
         {
             $response['data']['gateway_response']['status'] = 'F';
             $response['data']['gateway_response']['statusDesc'] = 'Payment failed';

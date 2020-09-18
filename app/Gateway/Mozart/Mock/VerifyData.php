@@ -558,6 +558,14 @@ class VerifyData extends Base\Mock\Server
             $response['success'] = false;
             $response['error']['internal_error_code'] = 'BAD_REQUEST_PAYMENT_TIMED_OUT';
         }
+        else if ($vpa === 'blockverify@sbi')
+        {
+            $response['data']['status'] = 'verification_failed';
+            $response['data']['gateway_response']['status'] = 'R';
+            $response['data']['gateway_response']['statusDesc'] = 'Collect Request Rejected';
+            $response['success'] = false;
+            $response['error']['internal_error_code'] = 'BAD_REQUEST_PAYMENT_REJECTED';
+        }
 
         return $response;
     }

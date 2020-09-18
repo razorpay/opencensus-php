@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Base;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\Action;
 use RZP\Exception\BaseException;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Encryption\PGPEncryption;
@@ -314,6 +315,16 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
 
         $status = $content[ResponseFields::STATUS];
+
+        $definiteErrorCodes = ['X', 'R'];
+
+        if (in_array($status, $definiteErrorCodes) === true)
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify,
+                Payment\Verify\Action::FINISH);
+        }
 
         $verify->gatewaySuccess = (Status::isStatusSuccess($status, $this->action) === true);
     }

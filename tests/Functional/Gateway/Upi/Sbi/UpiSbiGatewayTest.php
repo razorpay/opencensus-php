@@ -277,9 +277,9 @@ class UpiSbiGatewayTest extends TestCase
      * Force the gateway to raise a failure on trying
      * to initiate web collect
      */
-    public function testFailedCollect()
+    public function testFailedCollect($vpa = null)
     {
-        $this->payment[Payment\Entity::VPA] = Constants::FAILED_VPA;
+        $this->payment[Payment\Entity::VPA] = $vpa ? $vpa : Constants::FAILED_VPA;
 
         $data = $this->testData[__FUNCTION__];
 
@@ -626,6 +626,27 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertNotEquals([], $upiEntity[Upi::GATEWAY_DATA]);
     }
 
+    public function testPaymentVerifyBlock()
+    {
+        $payment = $this->testFailedCollect('blockverify@sbi');
+
+        $data = $this->testData['testVerifyFailed'];
+
+        $this->mockVerifyBlock();
+
+        $time = Carbon::now(Timezone::IST)->addMinutes(4);
+
+        Carbon::setTestNow($time);
+
+        $this->ba->cronAuth();
+
+        $this->verifyAllPayments();
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals(9, $payment['verify_bucket']);
+    }
+
     public function testAmountAssertionFailure()
     {
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
@@ -860,6 +881,20 @@ class UpiSbiGatewayTest extends TestCase
                 if ($action === 'verify')
                 {
                     $content[ResponseFields::API_RESPONSE][ResponseFields::STATUS] = SbiStatus::FAILED;
+                    $content[ResponseFields::ADDITIONAL_INFO] = [];
+                }
+            }
+        );
+    }
+
+    protected function mockVerifyBlock()
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'verify')
+                {
+                    $content[ResponseFields::API_RESPONSE][ResponseFields::STATUS] = SbiStatus::REJECTED;
                     $content[ResponseFields::ADDITIONAL_INFO] = [];
                 }
             }
