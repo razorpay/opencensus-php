@@ -212,7 +212,7 @@ trait RepositoryFetch
             case ConnectionType::REPLICA:
                 if ($this->app['api.route']->routeThroughMasterReplica())
                 {
-                    if ($this->useDataWarehouse() === true)
+                    if ($this->useDataWarehouseConnection(Repository::ADMIN_FETCH) === true)
                     {
                        return $this->getDataWarehouseConnection();
                     }
@@ -223,7 +223,7 @@ trait RepositoryFetch
                 return $this->getSlaveConnection();
 
             case ConnectionType::DATA_WAREHOUSE:
-                if ($this->useDataWarehouseForFetch() === true)
+                if ($this->useDataWarehouseConnection(Repository::MERCHANT_FETCH) === true)
                 {
                     return $this->getDataWarehouseConnection();
                 }

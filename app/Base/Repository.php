@@ -53,6 +53,11 @@ class Repository extends \Razorpay\Spine\Repository
     const SKIP         = 'skip';
     const DELETED      = 'deleted';
 
+    // Data Warehouse
+    const ADMIN_FETCH         = "data_warehouse_admin_fetch";
+    const MERCHANT_FETCH      = "data_warehouse_merchant_fetch";
+    const ASYNC_PROCESS_FETCH = "data_warehouse_async_process_fetch";
+
     protected $app;
 
     protected $db;
@@ -977,22 +982,13 @@ class Repository extends \Razorpay\Spine\Repository
         return $connection;
     }
 
-    protected function useDataWarehouse(): bool
+    protected function useDataWarehouseConnection(string $experiment): bool
     {
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
-        $dataWarehouseEnabled = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), "data_warehouse_enabled", $mode);
+        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), $experiment, $mode);
 
-        return (($this->auth->isAdminAuth() === true) and ($dataWarehouseEnabled === 'enable'));
-    }
-
-    protected function useDataWarehouseForFetch(): bool
-    {
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-        $dataWarehouseEnabled = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), "data_warehouse_fetch_enabled", $mode);
-
-        return ($dataWarehouseEnabled === 'enable');
+        return ($experimentResult === 'enable');
     }
 
     protected function getDataWarehouseConnection()
@@ -1003,6 +999,18 @@ class Repository extends \Razorpay\Spine\Repository
         }
 
         return Connection::DATA_WAREHOUSE;
+    }
+
+    protected function getDataWarehouseConnectionWithRazorX()
+    {
+        if ($this->useDataWarehouseConnection(self::ASYNC_PROCESS_FETCH) === true)
+        {
+            return $this->getDataWarehouseConnection();
+        }
+        else
+        {
+            return $this->getSlaveConnection();
+        }
     }
 
     public function getSlaveConnection(string $mode = null)
