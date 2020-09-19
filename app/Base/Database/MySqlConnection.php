@@ -86,14 +86,7 @@ class MySqlConnection extends BaseMySqlConnection
 
         $heartbeatCheckConfig = $config['heartbeat_check'];
 
-        try
-        {
-            $this->heartbeatForceRun = (bool) Cache::get($heartbeatCheckConfig['force_run']);
-        }
-        catch (\Throwable $t)
-        {
-            $this->trace->traceException($t, Trace::CRITICAL, TraceCode::HEARTBEAT_CONFIG_FETCH_FAILED);
-        }
+        $this->heartbeatForceRun = $heartbeatCheckConfig['force_run'];
 
         $this->heartbeatLagChecker = $this->getLagChecker($heartbeatCheckConfig);
 

@@ -18,8 +18,6 @@ class ConfigKey
 
     const PREFIX                                = 'config:';
 
-    const HEARTBEAT_CONFIG_PREFIX               = '{heartbeat}:';
-
     // Logs
     const TERMINAL_SELECTION_LOG_VERBOSE        = self::PREFIX . 'terminal_selection_log_verbose';
     const PRICING_RULE_SELECTION_LOG_VERBOSE    = self::PREFIX . 'pricing_rule_selection_log_verbose';
@@ -33,15 +31,6 @@ class ConfigKey
     const SKIP_SLAVE                            = self::PREFIX . 'skip_slave';
 
     const MASTER_PERCENT                        = self::PREFIX . 'master_percent';
-
-    const HEARTBEAT_MOCK                        = self::PREFIX . self::HEARTBEAT_CONFIG_PREFIX . 'heartbeat_mock';
-    const HEARTBEAT_ROUTES                      = self::PREFIX . self::HEARTBEAT_CONFIG_PREFIX . 'heartbeat_routes';
-    const HEARTBEAT_ENABLED                     = self::PREFIX . self::HEARTBEAT_CONFIG_PREFIX . 'heartbeat_enabled';
-    const HEARTBEAT_FORCE_RUN                   = self::PREFIX . self::HEARTBEAT_CONFIG_PREFIX . 'heartbeat_force_run';
-    const HEARTBEAT_LOG_VERBOSE                 = self::PREFIX . self::HEARTBEAT_CONFIG_PREFIX . 'heartbeat_log_verbose';
-    const HEARTBEAT_TIME_THRESHOLD              = self::PREFIX . self::HEARTBEAT_CONFIG_PREFIX . 'heartbeat_time_threshold';
-    const HEARTBEAT_TRAFFIC_PERCENTAGE          = self::PREFIX . self::HEARTBEAT_CONFIG_PREFIX . 'heartbeat_traffic_percentage';
-    const HEARTBEAT_SLAVE_TIME_THRESHOLD        = self::PREFIX . self::HEARTBEAT_CONFIG_PREFIX . 'heartbeat_slave_time_threshold';
 
     const DISABLE_MAGIC                         = self::PREFIX . 'disable_magic';
     const NPCI_UPI_DEMO                         = self::PREFIX . 'npci_upi_demo';
@@ -151,19 +140,12 @@ class ConfigKey
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
         self::PRICING_RULE_SELECTION_LOG_VERBOSE,
-        self::HEARTBEAT_LOG_VERBOSE,
         self::THROTTLE_MOCK_LOG_VERBOSE,
         self::GATEWAY_PROCESSED_REFUNDS,
         self::GATEWAY_UNPROCESSED_REFUNDS,
         self::BLOCK_BANK_TRANSFERS_FOR_CRYPTO,
-        self::HEARTBEAT_FORCE_RUN,
         self::SKIP_SLAVE,
         self::MASTER_PERCENT,
-        self::HEARTBEAT_TRAFFIC_PERCENTAGE,
-        self::HEARTBEAT_ENABLED,
-        self::HEARTBEAT_MOCK,
-        self::HEARTBEAT_TIME_THRESHOLD,
-        self::HEARTBEAT_SLAVE_TIME_THRESHOLD,
         self::DISABLE_MAGIC,
         self::NPCI_UPI_DEMO,
         self::BLOCK_SMART_COLLECT,

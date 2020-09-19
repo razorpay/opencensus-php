@@ -65,13 +65,6 @@ class Validator extends Base\Validator
         ConfigKey::BLOCK_AADHAAR_REG                    => 'filled|boolean',
         ConfigKey::NPCI_UPI_DEMO                        => 'filled|array',
         ConfigKey::MERCHANT_ENACH_CONFIGS               => 'filled|array',
-        ConfigKey::HEARTBEAT_ENABLED                    => 'filled|boolean',
-        ConfigKey::HEARTBEAT_FORCE_RUN                  => 'filled|boolean',
-        ConfigKey::HEARTBEAT_MOCK                       => 'filled|boolean',
-        ConfigKey::HEARTBEAT_TIME_THRESHOLD             => 'filled|integer',
-        ConfigKey::HEARTBEAT_TRAFFIC_PERCENTAGE         => 'filled|integer',
-        ConfigKey::HEARTBEAT_SLAVE_TIME_THRESHOLD       => 'filled|integer',
-        ConfigKey::HEARTBEAT_ROUTES                     => 'filled|array',
         ConfigKey::HITACHI_DYNAMIC_DESCR_ENABLED        => 'filled|boolean',
         ConfigKey::CPS_SERVICE_ENABLED                  => 'filled|boolean',
         ConfigKey::SETTLEMENT_TRANSACTION_LIMIT         => 'filled|integer',
@@ -132,7 +125,6 @@ class Validator extends Base\Validator
     ];
 
     protected static $setRedisKeysRules = [
-        ConfigKey::HEARTBEAT_ROUTES                 => 'filled|array',
         ConfigKey::DOWNTIME_THROTTLE                => 'filled|array',
         ConfigKey::DOWNTIME_DETECTION_CONFIGURATION_V2 => 'filled|array',
         ConfigKey::FTS_BENEFICIARY                  => 'filled|array',
@@ -144,15 +136,6 @@ class Validator extends Base\Validator
         'config:{downtime}:detection:configuration_v2.*.key'       => 'required|string',
         'config:{downtime}:detection:configuration_v2.*.value'     => 'required|array',
         'config:{downtime}:detection:configuration_v2.*.value.*.*' => 'required|string',
-    ];
-
-    protected static $updateRedisKeysRules = [
-        'key'   => 'required|in:config:'.ConfigKey::HEARTBEAT_CONFIG_PREFIX.'heartbeat_routes',
-        'value' => 'array',
-    ];
-
-    protected static $getRedisKeyRules = [
-        'key'   => 'required|in:config:'.ConfigKey::HEARTBEAT_CONFIG_PREFIX.'heartbeat_routes'
     ];
 
     protected static $scorecardRules = [

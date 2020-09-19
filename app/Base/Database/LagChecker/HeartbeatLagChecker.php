@@ -229,7 +229,7 @@ class HeartbeatLagChecker implements LagChecker
 
         $currentRoute = $this->reqCtx->getRoute() ?? $this->workerContext->getJobName();
 
-        $connectionIdentifier = $this->redis->hget($this->config['routes'], $currentRoute);
+        $connectionIdentifier = \RZP\Http\Route::$heartbeatRoutesConfig[$currentRoute] ?? null;
 
         //
         // if connection identifier set is invalid then use master
@@ -388,29 +388,12 @@ class HeartbeatLagChecker implements LagChecker
      */
     private function loadConfigs()
     {
-        $heartbeatConfig = $this->cache->many([
-            $this->config['mock'],
-            $this->config['enabled'],
-            $this->config['time_threshold'],
-            $this->config['slave_time_threshold'],
-            $this->config['traffic_percentage'],
-            $this->config['log_verbose'],
-        ]);
-
-        list(
-            $this->mock,
-            $this->enabled,
-            $this->timeThreshold,
-            $this->slaveTimeThreshold,
-            $this->trafficPercent,
-            $this->shouldTraceSuccess,
-            ) = array_values($heartbeatConfig);
-
-        $this->mock = (bool) $this->mock;
-
-        $this->enabled = (bool) $this->enabled;
-
-        $this->shouldTraceSuccess = (bool) ($this->shouldTraceSuccess ?? true);
+        $this->mock                 = $this->config['mock'];
+        $this->enabled              = $this->config['enabled'];
+        $this->timeThreshold        = $this->config['time_threshold'];
+        $this->slaveTimeThreshold   = $this->config['slave_time_threshold'];
+        $this->trafficPercent       = $this->config['traffic_percentage'];
+        $this->shouldTraceSuccess   = $this->config['log_verbose'];
     }
 
     /**
