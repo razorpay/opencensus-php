@@ -197,21 +197,11 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
-        $languageCode = App::getLocale() !== null ? App::getLocale() : LocaleCore::setLocale($input, $this->app['basicauth']->getMerchant()->getId());
-
         unset($input['callback']);
 
         $this->logPaymentRequestEvent($input);
 
         $data = $this->service(E::PAYMENT)->process($input);
-
-        if ((isset($data) === true) and
-            (isset($data['request']) === true) and
-            (isset($data['request']['content']) === true) and
-            (is_array($data['request']['content']) === true))
-        {
-            $data['request']['content']['language_code'] = $languageCode;
-        }
 
         return ApiResponse::json($data);
     }
