@@ -147,12 +147,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $updateRedisKeysRules = [
-        'key'   => 'required|in:config:heartbeat_routes',
+        'key'   => 'required|in:config:'.ConfigKey::HEARTBEAT_CONFIG_PREFIX.'heartbeat_routes',
         'value' => 'array',
     ];
 
     protected static $getRedisKeyRules = [
-        'key'   => 'required|in:config:heartbeat_routes'
+        'key'   => 'required|in:config:'.ConfigKey::HEARTBEAT_CONFIG_PREFIX.'heartbeat_routes'
     ];
 
     protected static $scorecardRules = [
