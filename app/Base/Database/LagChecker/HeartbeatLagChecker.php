@@ -276,10 +276,10 @@ class HeartbeatLagChecker implements LagChecker
         //
         $query = 'SELECT ROUND(( ROUND(UNIX_TIMESTAMP(Now(6)) * 1000000) - (
                         UNIX_TIMESTAMP(SUBSTR(ts, 1, 19)) * 1000000 +
-                        SUBSTR(ts, 21, 6) )
+                        SUBSTR(ts, 21, 6))
                      ) / 1000) AS replica_lag_milli, ts, CONNECTION_ID() as connection_id
-                FROM   heartbeat.heartbeat
-                LIMIT  1';
+                FROM heartbeat.heartbeat ORDER BY ts DESC
+                LIMIT 1';
 
         try
         {
