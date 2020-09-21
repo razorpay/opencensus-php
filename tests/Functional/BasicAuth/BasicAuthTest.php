@@ -308,7 +308,7 @@ class BasicAuthTest extends TestCase
 
         $this->fixtures->create('methods', [
             'merchant_id'    => '100000Razorpay',
-            'emi'            => 1,
+            'emi'            => [Merchant\Methods\EmiType::CREDIT => '1'],
             'disabled_banks' => [],
             'banks'          => '[]',
         ]);

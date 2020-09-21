@@ -98,7 +98,7 @@ class EmiTest extends TestCase
             'methods',
             '10000000000000',
             [
-                'emi' => 1,
+                'emi' => [Merchant\Methods\EmiType::CREDIT => '1'],
             ]);
 
         $this->fixtures->create('emi_plan');
@@ -106,6 +106,14 @@ class EmiTest extends TestCase
         $this->ba->publicAuth();
 
         $this->startTest();
+
+        $this->disableCpsEmiFetch();
+
+        $this->disbaleCpsConfig();
+
+        // If we don't reset fetched keys, it'll get the cps config from this instead of from cache for
+        // further tests
+        Admin\ConfigKey::resetFetchedKeys();
     }
 
     public function testFetchAllEmiPlansOnPublicAuthViaCps()
@@ -176,7 +184,9 @@ class EmiTest extends TestCase
             'methods',
             '10000000000000',
             [
-                'emi' => 1,
+                'emi' => [
+                    Merchant\Methods\EmiType::CREDIT => '1'
+                ],
             ]);
 
         $this->fixtures->create('emi_plan');
@@ -200,7 +210,7 @@ class EmiTest extends TestCase
             'methods',
             '10000000000000',
             [
-                'emi' => 1,
+                'emi' => [Merchant\Methods\EmiType::CREDIT => '1'],
             ]);
 
         $this->fixtures->emiPlan->createDefaultEmiPlans();

@@ -119,7 +119,7 @@ class Core extends Base\Core
         if ((empty($category) === false) and
             (Emi\Constants::isCategoryOrSubcategoryBlacklisted($category, $subcategory) === false))
         {
-            $methods->setMethods([Entity::EMI => EmiType::CREDIT_DEBIT_ENABLED]);
+            $methods->setMethods([Entity::EMI => [EmiType::CREDIT => '1', EmiType::DEBIT => '1']]);
 
             $this->repo->saveOrFail($methods);
         }

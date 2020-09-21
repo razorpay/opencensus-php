@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use Config;
 use RZP\Models\Card\Network;
+use RZP\Models\Merchant\Methods\EmiType;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Feature\Constants as Feature;
 use Symfony\Component\HttpFoundation\HeaderBag as Headers;
@@ -374,7 +375,7 @@ class Preferences
         Methods\Entity::CREDIT_CARD   => 1,
         Methods\Entity::DEBIT_CARD    => 1,
         Methods\Entity::NETBANKING    => 1,
-        Methods\Entity::EMI           => 0,
+        Methods\Entity::EMI           => [EmiType::DEFAULT_TYPES],
         Methods\Entity::UPI           => 0,
         Methods\Entity::BANK_TRANSFER => 0,
         Methods\Entity::MOBIKWIK      => 1,

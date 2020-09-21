@@ -3756,7 +3756,9 @@ return [
             'url' => '/merchants/10000000000000/methods',
             'method' => 'put',
             'content' => [
-                'emi' => true,
+                'emi' => [
+                    'credit' => 1,
+                ],
             ],
             'server' => [
                 'HTTP_X-Dashboard'            => 'true',

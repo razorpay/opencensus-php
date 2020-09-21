@@ -109,6 +109,30 @@ class MethodsTest extends TestCase
         $this->assertEquals($content['card_networks']['RUPAY'], false);
     }
 
+    public function testBulkMethodUpdateCreditEmiEnable()
+    {
+        $this->fixtures->merchant->disableAllMethods('10000000000000');
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->disableEmi('10000000000000');
+
+        $this->startTest();
+
+        $methods = $this->getDbEntityById('methods', '10000000000000')->toArray();
+
+        $this->assertEquals(
+            [
+                'credit'
+            ],
+            $methods['emi']);
+
+    }
+
     public function testBulkMethodUpdateEnableBanks()
     {
         $this->fixtures->merchant->disableAllMethods('10000000000000');
@@ -329,7 +353,29 @@ class MethodsTest extends TestCase
         $this->assertTrue($response[MerchantMethods::GOOGLE_PAY_CARDS]);
     }
 
-    public function testEnableEmi()
+    public function testEnableCreditEmi()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::EDIT_METHODS]);
+
+        $this->fixtures->merchant->disableEmi('10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testEnableDebitEmi()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::EDIT_METHODS]);
+
+        $this->fixtures->merchant->disableEmi('10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testEnableCreditAndDebitEmi()
     {
         $this->ba->proxyAuth();
 
@@ -345,6 +391,31 @@ class MethodsTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::EDIT_METHODS]);
+
+        $this->fixtures->merchant->enableEmi('10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testDisableCreditEmi()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::EDIT_METHODS]);
+
+        $this->fixtures->merchant->enableEmi('10000000000000');
+
+        $this->startTest();
+    }
+
+    // Ensure credit emi does not gets disabled when we disable debit emi
+    public function testDisableDebitEmi()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::EDIT_METHODS]);
+
+        $this->fixtures->merchant->enableEmi('10000000000000');
 
         $this->startTest();
     }

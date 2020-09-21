@@ -67,6 +67,27 @@ return [
         ],
     ],
 
+    'testBulkMethodUpdateCreditEmiEnable' => [
+        'request' => [
+            'url' => '/methods/bulkupdate',
+            'method' => 'put',
+            'content' => [
+                'merchants' => ['10000000000000'],
+                'methods' => [
+                    'emi' => [
+                        'credit' => '1',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total' => 1,
+                'success' => 1,
+            ],
+        ],
+    ],
+
     'testBulkMethodUpdateEnableBanks' => [
         'request' => [
             'url' => '/methods/bulkupdate',
@@ -257,17 +278,61 @@ return [
         ],
     ],
 
-    'testEnableEmi' => [
+    'testEnableCreditEmi' => [
         'request' => [
             'url' => '/merchant/methods',
             'method' => 'put',
             'content'   => [
-                'emi'  => 1,
+                'emi'  => [
+                    'credit' => '1',
+                ],
             ]
         ],
         'response' => [
             'content' => [
-                'emi' => true,
+                'emi' => [
+                    'credit',
+                ]
+            ],
+        ],
+    ],
+
+    'testEnableDebitEmi' => [
+        'request' => [
+            'url' => '/merchant/methods',
+            'method' => 'put',
+            'content'   => [
+                'emi'  => [
+                    'debit' => '1',
+                ],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'emi' => [
+                    'debit',
+                ]
+            ],
+        ],
+    ],
+
+    'testEnableCreditAndDebitEmi' => [
+        'request' => [
+            'url' => '/merchant/methods',
+            'method' => 'put',
+            'content'   => [
+                'emi'  => [
+                    'credit' => '1',
+                    'debit' => '1',
+                ],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'emi' => [
+                    'credit',
+                    'debit',
+                ],
             ],
         ],
     ],
@@ -277,12 +342,53 @@ return [
             'url' => '/merchant/methods',
             'method' => 'put',
             'content'   => [
-                'emi'  => 0,
+                'emi'  => [
+                    'credit' => '0',
+                    'debit'  => '0',
+                ],
             ]
         ],
         'response' => [
             'content' => [
-                'emi' => false,
+                'emi' => [],
+            ],
+        ],
+    ],
+
+    'testDisableCreditEmi' => [
+        'request' => [
+            'url' => '/merchant/methods',
+            'method' => 'put',
+            'content'   => [
+                'emi'  => [
+                    'credit' => '0',
+                ],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'emi' => [
+                    'debit',
+                ],
+            ],
+        ],
+    ],
+
+    'testDisableDebitEmi' => [
+        'request' => [
+            'url' => '/merchant/methods',
+            'method' => 'put',
+            'content'   => [
+                'emi'  => [
+                    'debit'  => '0',
+                ],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'emi' => [
+                    'credit',
+                ],
             ],
         ],
     ],

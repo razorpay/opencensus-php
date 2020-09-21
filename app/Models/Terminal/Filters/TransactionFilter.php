@@ -571,7 +571,7 @@ class TransactionFilter extends Terminal\Filter
 
         $emi = $methods[MerchantMethod::EMI];
 
-        if ($emi !== EmiType::NONE_ENABLED)
+        if (empty($emi) === false)
         {
             return (($payment->card->isCredit() &&  $methods->isCreditEmiEnabled()) || ($payment->card->isDebit() && $methods->isDebitEmiEnabled()));
         }

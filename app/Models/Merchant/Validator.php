@@ -232,7 +232,7 @@ class Validator extends Base\Validator
 
     protected static $editMethodsRules = [
         //only this method editing is allowed for now
-        Methods\Entity::EMI => 'required|integer',
+        Methods\Entity::EMI => 'required|array',
     ];
 
     //only paypal method is allowed for now, change validation to allow more methods

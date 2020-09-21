@@ -4,14 +4,7 @@ namespace RZP\Models\Merchant\Methods;
 
 class EmiType
 {
-    // Remove these once the dashboard contract changes
-    const NONE_ENABLED = 0;
-
-    const CREDIT_ENABLED = 1;
-
-    const DEBIT_ENABLED = 2;
-
-    const CREDIT_DEBIT_ENABLED = 3;
+    const DEFAULT_TYPES = [];
 
     // Credit card EMI
     const CREDIT    = 'credit';
@@ -31,15 +24,6 @@ class EmiType
 
     public static function isTypeEnabled($types, $type)
     {
-        // Uncomment after DB migration
-        if (empty($types) === false)
-        {
-            return true;
-        }
-
-        // Uncomment after DB migration
-        return false;
-
         if ((isset($types[$type]) === true) and
             ($types[$type] === '1'))
         {
@@ -56,14 +40,6 @@ class EmiType
 
     public static function getEnabledTypes($hex)
     {
-        // Uncomment after DB migration
-        if ($hex !== 0)
-        {
-            return self::$types;
-        }
-        // Uncomment after DB migration
-        return [];
-
         $types = [];
 
         foreach (self::$types as $type)

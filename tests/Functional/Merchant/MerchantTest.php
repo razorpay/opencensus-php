@@ -3251,7 +3251,9 @@ class MerchantTest extends TestCase
             'methods',
             '10000000000000',
             [
-                'emi' => 1,
+                'emi' => [
+                    Merchant\Methods\EmiType::CREDIT => '1',
+                ],
             ]);
 
         $this->fixtures->create('emi_plan:default_emi_plans');
@@ -3275,7 +3277,7 @@ class MerchantTest extends TestCase
             'methods',
             '10000000000000',
             [
-                'emi' => 1,
+                'emi' => [Merchant\Methods\EmiType::CREDIT => '1'],
             ]);
 
         $this->fixtures->create('emi_plan:default_emi_plans');
