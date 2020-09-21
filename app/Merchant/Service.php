@@ -593,7 +593,11 @@ class Service extends Base\Service
 
     public function getMerchantActiveCampaigns(): array
     {
-        $request = new ApiRequestAny(['client_type' => 'merchant']);
+        $request = new ApiRequestAny(
+            [
+                'client_type'   => 'merchant',
+                'process_input' => false,
+            ]);
 
         list($error, $data) = $request->send("credits?fetch_expired=0&is_promotion=1", 'GET');
 
