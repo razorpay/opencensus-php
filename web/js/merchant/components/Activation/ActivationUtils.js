@@ -118,6 +118,12 @@ function getBillingLabelInfo() {
   return text;
 }
 
+function getBusinessTypeInfo() {
+  if(isUnregisteredBusiness(this)){
+    return 'Your business type can\'t be changed later, please ensure you have added the right business type';
+  } 
+}
+
 function getAccountNumberInfo() {
   let text = '';
   if (isUnregisteredBusiness(this)) {
@@ -305,6 +311,7 @@ export {
   getPANDescription,
   getBeneficiaryInfo,
   getBillingLabelInfo,
+  getBusinessTypeInfo,
   getAccountNumberInfo,
   getBusinessNameInfo,
   hasSelectedBlacklistedCategory,

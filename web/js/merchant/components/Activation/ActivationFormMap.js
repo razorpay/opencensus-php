@@ -11,6 +11,7 @@ import {
   validateCompanyPAN,
   validateCompanyAB,
   isUrlLenient,
+  isValidName,
 } from 'common/utils/validators';
 import { trackLinkClick } from 'merchant/containers/Activation/ga_new';
 
@@ -29,6 +30,7 @@ import {
   getPANDescription,
   getBeneficiaryInfo,
   getBillingLabelInfo,
+  getBusinessTypeInfo,
   getAccountNumberInfo,
   getBusinessNameInfo,
   hasSelectedBlacklistedCategory,
@@ -146,6 +148,7 @@ const businessModel = [
     name: 'business_type',
     _cmp: Input.Select,
     options: [], // options will be filled dynamically based on current activation stage
+    info: getBusinessTypeInfo,
   },
   [
     {
@@ -265,7 +268,7 @@ const businessModel = [
               <li>
                 You can accept payments by sending out Payment Links and Invoices from Dashboard.
               </li>
-              <li>You will not get access to live APIs.</li>
+              <li style={{fontWeight: 'bold'}}>You will not get access to live APIs.</li>
               <li>You can upgrade anytime later by adding your website/app.</li>
             </ul>
           ),
@@ -360,6 +363,9 @@ const businessDetails = [
       validator: function (value) {
         let contactName = this.state.dirty['contact_name'] || this.props.data['contact_name'],
           showCompanyName = this.props.user.isCompanyNameHiddenRazorX;
+        if (!isValidName(value)) { 
+          return 'Business Name should not have any numbers or special characters.';
+        }
         return isUnregisteredBusiness(this)
           ? false
           : validateCompanyAB(value, contactName, showCompanyName);
@@ -405,6 +411,11 @@ const businessDetails = [
       },
       description: (activation) =>
         isUnregisteredBusiness(activation) ? getPANDescription(activation.props.data) : '',
+      validator: (value) => {
+        if (!isValidName(value)) { 
+          return 'PAN Name should not have any numbers or special characters.';
+        }
+      },
       checkValidityFromAPI: (activation) => {
         if (!isUnregisteredBusiness(activation)) {
           return null;
