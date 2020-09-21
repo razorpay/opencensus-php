@@ -84,7 +84,6 @@ class CapitalCardsController extends Controller
 
         $this->trace->info(TraceCode::CAPITAL_CARDS_PROXY_REQUEST, [
             'request' => $url,
-            'body'    => $body,
         ]);
 
          $isMerchantAccessible = false;
@@ -213,7 +212,6 @@ RequestInterface
     {
         $this->trace->info(TraceCode::CAPITAL_CARDS_PROXY_REQUEST, [
             'url'     => $url,
-            'body'    => $body,
             'method'  => $method,
         ]);
 
@@ -225,7 +223,6 @@ RequestInterface
 
         $this->trace->info(TraceCode::CAPITAL_CARDS_PROXY_RESPONSE, [
             'status_code'   => $resp->getStatusCode(),
-            'body'          => $resp->getBody(),
         ]);
 
         return $this->parseResponse($resp->getStatusCode(), $resp->getBody());
