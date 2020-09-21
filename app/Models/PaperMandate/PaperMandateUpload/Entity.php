@@ -421,8 +421,9 @@ class Entity extends Base\PublicEntity
             $this->saveBeforeExit($fieldsNotMatching);
 
             throw new BadRequestValidationFailureException(
-                'The data on the form does not match our records.' .
-                'Please verify the details on the form and upload it again',
+                'The uploaded form does not match with that in our records. ' .
+                'Expected Form ID - '. $this->paperMandate->getFormChecksum() . '. ' .
+                'Please verify the form and upload again.',
                 ''
             );
         }
