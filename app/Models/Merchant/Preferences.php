@@ -134,6 +134,7 @@ class Preferences
     const MID_RBL_BANK              = 'Er3H2qzJ3EVt4u';
     const MID_RBL_BANK_LTD          = 'Er4CQHti6YfgOG';
     const MID_RBL_BANK_1            = 'Er3owFcMpDfMvD';
+    const MID_RBL_BANK_2            = 'FG3uzKzif6law5';
     const MID_STASHFIN              = 'Ao42qLIgNsuREt';
     const MID_VOCATIONAL_EDU        = 'F5NF8QNN7XAJ2w';
 

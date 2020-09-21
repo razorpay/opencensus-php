@@ -864,6 +864,15 @@ class Notifier extends Base\Core
 
                 break;
 
+            case Preferences::MID_RBL_BANK_2:
+                $template = 'sms.custom_invoice.rbl_bank_2';
+                $params = [
+                    'receipt'       	      => $receipt,
+                    'invoice_link'            => $invoiceLink,
+                ];
+
+                break;
+
             case Preferences::MID_STASHFIN:
                 $template = 'sms.custom_invoice.stashfin_eqx';
                 $params = [
