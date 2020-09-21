@@ -512,7 +512,7 @@ const bankAccountFields = [
     minLength: '4',
     validator: (val) => {
       if (val && !/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]{3,119}$/.test(val)) {
-        return 'Invalid name format';
+        return 'Name should contain at least 4 characters. Exclude numbers and special characters';
       }
     },
     description: (activation) =>

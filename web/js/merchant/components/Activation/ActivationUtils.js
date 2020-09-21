@@ -98,13 +98,13 @@ function getBeneficiaryInfo(value) {
   const currentBusinessType = this.state.dirty.business_type || this.props.data.business_type;
 
   if (currentBusinessType == PROPRIETORSHIP) {
-    return 'Please ensure that the bank details shared belongs to the business or the owner of the company';
+    return 'Bank A/C Beneficiary Name should be the same as the name on Authorised Signatory PAN or Business PAN.';
   }
   if (isUnregisteredBusiness(this)) {
-    return 'It is recommended to have beneficiary name same as the owner name';
+    return 'Bank Account beneficiary name should be same as the name on your PAN Card.';
   }
 
-  return 'It is recommended to have beneficiary name same as the company name';
+  return 'Bank A/C Beneficiary Name should be the same as the name on Authorised Signatory PAN or Business PAN.';
 }
 
 function getBillingLabelInfo() {
@@ -184,7 +184,7 @@ function getDefaultAdditionalDoc(activation, bizCatSubCatPair) {
 
   const allDocs = Object.keys(activation.props.data.documents);
   const allAdditionalDocs = Object.keys(
-    ADDITIONAL_DOCS_LABEL_VALUE_MAP[defaultAdditionalDocMapKey]
+    ADDITIONAL_DOCS_LABEL_VALUE_MAP[defaultAdditionalDocMapKey],
   );
   const hasUploadedAdditionalDocs = allAdditionalDocs.filter((doc) => allDocs.includes(doc));
 
