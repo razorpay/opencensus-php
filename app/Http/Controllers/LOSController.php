@@ -106,7 +106,6 @@ class LOSController extends Controller
 
         $this->trace->info(TraceCode::LOAN_ORIGINATION_SYSTEM_PROXY_REQUEST, [
             'request' => $url,
-            'body'    => $body,
         ]);
 
         $isMerchantAccessible = false;
@@ -140,7 +139,6 @@ class LOSController extends Controller
 
         $this->trace->info(TraceCode::LOAN_ORIGINATION_SYSTEM_PROXY_REQUEST, [
             'request' => $url,
-            'body'    => $body,
         ]);
 
         $headers = [
@@ -182,7 +180,6 @@ class LOSController extends Controller
 
         $this->trace->info(TraceCode::LOAN_ORIGINATION_SYSTEM_PROXY_REQUEST, [
             'request' => $url,
-            'body'    => $body,
         ]);
 
         $response = $this->sendRequestAndParseResponse($url, $body, $headers);
@@ -259,7 +256,6 @@ class LOSController extends Controller
 
         $this->trace->info(TraceCode::LOAN_ORIGINATION_SYSTEM_PROXY_RESPONSE, [
             'status_code' => $code,
-            'body' => $body,
         ]);
 
         if (isset($body['code']) === true)
