@@ -36,7 +36,8 @@ class LowBalanceConfigTest extends TestCase
 
         $this->setUpMerchantForBusinessBankingLive(true, 10000000);
 
-        $this->fixtures->on('live')->merchant->edit('10000000000000', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
+        $this->fixtures->on('live')->merchant->edit(
+            '10000000000000', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
 
         // Merchant needs to be activated to make live requests
         $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1]);
@@ -50,7 +51,8 @@ class LowBalanceConfigTest extends TestCase
                 'role'        => 'owner',
             ], 'live');
 
-        $this->fixtures->user->createBankingUserForMerchant('10000000000000', ['id' => 'MerchantUser02'], 'Finance L3', 'live');
+        $this->fixtures->user->createBankingUserForMerchant(
+            '10000000000000', ['id' => 'MerchantUser02'], 'Finance L3', 'live');
         $this->nonOwnerUser =  $this->getDbLastEntity('user', 'live');
     }
 
@@ -338,6 +340,15 @@ class LowBalanceConfigTest extends TestCase
     // 2 shared account with config enabled
     public function createSampleLowBalanceConfigs()
     {
+        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail', [
+            'merchant_id'                   => '10000000000000',
+            'contact_name'                  => 'Test Account',
+            'contact_email'                 => 'test@razorpay.com',
+            'contact_mobile'                => '9876543210',
+            'business_name'                 => 'PB_Test',
+            'business_registered_address'   => 'Flat no 12, opp Adugodi Police Station',
+        ]);
+
         // direct account 1 with gateway_balance more updated
         $balance1 = $this->fixtures->on('live')->create('balance', [
             'id'             => 'xbalance000003',
@@ -472,6 +483,8 @@ class LowBalanceConfigTest extends TestCase
             'status'              => 'enabled',
             'created_at'          => 1591796314
         ]);
+
+        $merchantDetail->save();
 
         $balance2->save();
         $bankingAccount2->balance()->associate($balance2);

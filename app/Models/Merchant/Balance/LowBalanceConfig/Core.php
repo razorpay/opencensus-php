@@ -335,7 +335,7 @@ class Core extends Base\Core
             $this->dispatchLowBalanceAlertsForMerchants($lowBalanceConfigIds);
         }
 
-        for ($counter = 1; $counter < (int)ceil($totalConfigsCount/$limit); $counter++)
+        for ($counter = 1; $counter < (int) ceil($totalConfigsCount / $limit); $counter++)
         {
             $lowBalanceConfigs = $this->repo->low_balance_config
                                       ->getBalanceConfigsForAlertUsingLastFetchedConfig($limit, $lastFetchedConfig);
@@ -444,6 +444,8 @@ class Core extends Base\Core
             'masked_account_number' => mask_except_last4($balanceEntity->getAccountNumber()),
             'available_balance'     => (float) $balanceAmount / 100,
             'threshold'             => (float) $thresholdAmount / 100,
+            'merchant_id'           => $entity->getMerchantId(),
+            'business_name'         => $entity->merchant->merchantDetail->getBusinessName(),
         ];
 
         $this->trace->info(
