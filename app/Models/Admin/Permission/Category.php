@@ -43,4 +43,6 @@ class Category
     const PAYOUT_DOWNTIME               = 'payout_downtime';
     const GATEWAY_CREDENTIAL            = 'gateway_credential';
     const UPI                           = 'upi';
+    const ROUTE                         = 'route';
+    const VIRTUAL_ACCOUNT               = 'virtual_account';
 }

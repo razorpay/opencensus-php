@@ -420,6 +420,7 @@ class Route
         'virtual_account_bulk_close_for_banking'   => ['post',     'virtual_accounts/banking/close/bulk',            'VirtualAccountController@bulkCloseForBanking'                      ],
         'virtual_account_validate_vpa'             => ['post',     'live/ecollect/validate/{gateway}/{vpa_root}',    'VirtualAccountController@validateVpa'                              ],
         'virtual_account_validate_vpa_test'        => ['post',     'test/ecollect/validate/{gateway}/{vpa_root}',    'VirtualAccountController@validateVpa'                              ],
+        'virtual_account_debug'                    => ['post',     'virtual_account_debug',                          'VirtualAccountController@debugVA'                                  ],
         'upi_transfer_process'                     => ['post',     'live/upi/callback/{acquirer}/{gateway}',         'UpiTransferController@processUpiTransferPayment'                   ],
         'upi_transfer_process_test'                => ['post',     'test/upi/callback/{acquirer}/{gateway}',         'UpiTransferController@processUpiTransferPayment'                   ],
         'payment_upi_transfer_fetch'               => ['get',      'payments/{id}/upi_transfer',                     'UpiTransferController@fetchForPayment'                             ],
@@ -1165,6 +1166,7 @@ class Route
         'transfer_fetch_reversals'                 => ['get',      'transfers/{id}/reversals',                       'TransferController@getTransferReversals'                           ],
         'reversal_fetch'                           => ['get',      'reversals/{id}',                                 'ReversalController@getReversal'                                    ],
         'reversal_fetch_multiple'                  => ['get',      'reversals',                                      'ReversalController@getReversals'                                   ],
+        'transfer_debug'                           => ['post',     'transfer_debug',                                 'TransferController@debugRoute'                                     ],
 
         'payment_update_on_hold'                   => ['post',     'payments/on_hold/update',                        'PaymentController@updateOnHold'                                    ],
         'payment_on_hold_bulk_update'              => ['post',     'payments/on_hold/bulk_update',                   'PaymentController@updateOnHoldBulkUpdate'                          ],
@@ -3099,6 +3101,8 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'virtual_account_debug',
+        'transfer_debug',
         'setl_ondemand_pricing',
         'setl_ondemand_fund_accounts',
         'banking_account_statement_process_admin',
@@ -3772,6 +3776,8 @@ class Route
     ];
 
     public static $routePermission = [
+        'transfer_debug'                           => Permission::DEBUG_TRANSFERS_ROUTES,
+        'virtual_account_debug'                    => Permission::DEBUG_VIRTUAL_ACCOUNT,
         'capital_cards_service'                    => '*',
         'setl_ondemand_pricing'                    => '*',
         'setl_ondemand_fund_accounts'              => '*',

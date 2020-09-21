@@ -478,6 +478,12 @@ class Name
     // View Free Payout Permission
     const VIEW_FREE_PAYOUTS_ATTRIBUTES        = 'view_free_payouts_attributes';
 
+    // Transfer/Route Debug Permission
+
+    const DEBUG_TRANSFERS_ROUTES              = 'debug_transfers_routes';
+
+    const DEBUG_VIRTUAL_ACCOUNT               = 'debug_virtual_account';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

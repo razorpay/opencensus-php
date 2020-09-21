@@ -878,6 +878,20 @@ return [
             ]
         ],
 
+        PermissionCategory::ROUTE => [
+            Permission::DEBUG_TRANSFERS_ROUTES => [
+                'description' => 'Debug Transfers/Route from admin dashboard',
+                'assignable'  => true
+            ]
+        ],
+
+        PermissionCategory::VIRTUAL_ACCOUNT => [
+            Permission::DEBUG_VIRTUAL_ACCOUNT => [
+                'description' => 'Debug virtual accounts from admin dashboard',
+                'assignable'  => true
+            ]
+        ],
+
         // RazorpayX
         PermissionCategory::RAZORPAYX_BANKING => [
             Permission::BANKING_UPDATE_ACCOUNT => [

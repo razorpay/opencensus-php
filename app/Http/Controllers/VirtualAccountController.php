@@ -193,4 +193,14 @@ class VirtualAccountController extends Controller
 
         return $response;
     }
+
+    public function debugVA()
+    {
+        $input = Request::all();
+
+        return ApiResponse::json(
+            ['msg' => 'Virtual Account debug route. Use this route for debugging/data corrections via dark',
+                'input' => $input]
+        );
+    }
 }

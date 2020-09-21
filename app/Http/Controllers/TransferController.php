@@ -133,4 +133,14 @@ class TransferController extends Controller
 
         return ApiResponse::json($orderIds);
     }
+
+    public function debugRoute()
+    {
+        $input = Request::all();
+
+        return ApiResponse::json(
+            ['msg' => 'Transfer/Route debug route. Use this route for debugging/data corrections via dark',
+             'input' => $input]
+        );
+    }
 }
