@@ -894,10 +894,12 @@ class Route
         'subscription_item_fetch_multiple'         => ['get',      'subscriptions/items',                            'SubscriptionController@getItems'                                   ],
         'subscription_item_update'                 => ['patch',    'subscriptions/items/{id}',                       'SubscriptionController@postUpdateItem'                             ],
         'subscription_item_delete'                 => ['delete',   'subscriptions/items/{id}',                       'SubscriptionController@postDeleteItem'                             ],
-        'subscription_settings'                    => ['post',     'subscriptions/settings',                         'SubscriptionController@postSubscriptionSettings'                    ],
-        'subscription_settings_get'                => ['get',      'subscriptions/settings',                         'SubscriptionController@getSubscriptionSettings'                    ],
+        'subscription_settings'                    => ['post',     'subscriptions/settings',                         'SubscriptionController@postSubscriptionSettings'                   ],
+        'subscription_settings_get'                => ['get',      'subscriptions/settings',                        'SubscriptionController@getSubscriptionSettings'                    ],
+        'subscription_clear_feature'               => ['delete',   'invalidate/feature',                             'SubscriptionController@invalidateFeature'                          ],
         'subscription_pause'                       => ['post',     'subscriptions/{id}/pause',                       'SubscriptionController@pauseSubscription'                           ],
         'subscription_resume'                      => ['post',     'subscriptions/{id}/resume',                      'SubscriptionController@resumeSubscription'                          ],
+
         'addon_fetch'                              => ['get',      'addons/{addonId}',                               'SubscriptionController@getAddon'                                   ],
         'token_fetch_card'                         => ['get',      'tokens/{id}/card',                               'CustomerController@fetchTokenCard'                                 ],
         'token_fetch_vpa'                          => ['get',      'tokens/{id}/vpa',                                'CustomerController@fetchTokenVpa'                                 ],
@@ -3764,6 +3766,9 @@ class Route
         // Get free_payout attributes for balance
         'admin_get_free_payouts_attributes',
         'tax_payments_admin_auth_api',
+
+        // subscriptions admin route
+        'subscription_clear_feature',
     ];
 
     public static $routePermission = [
@@ -5664,6 +5669,7 @@ class Route
         'subscription_fetch_hosted_live',
         'subscription_settings',
         'subscription_settings_get',
+        'subscription_clear_feature',
         'subscription_pause',
         'subscription_resume',
     ];
