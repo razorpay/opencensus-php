@@ -71,6 +71,11 @@ trait DbEntityFetchTrait
         return $this->getDbLastEntity('payment');
     }
 
+    protected function getDbLastUpi(): Gateway\Upi\Base\Entity
+    {
+        return $this->getDbLastEntity('upi');
+    }
+
     protected function getDbLastRefund(): Models\Payment\Refund\Entity
     {
         return $this->getDbLastEntity('refund');

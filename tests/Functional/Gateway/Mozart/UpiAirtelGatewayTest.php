@@ -7,6 +7,8 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Mozart;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Method;
+use RZP\Gateway\Upi\Base as UpiBase;
+use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -81,6 +83,14 @@ class UpiAirtelGatewayTest extends TestCase
 
         $this->capturePayment($paymentId, $payment['amount']);
 
+        $upi = $this->getDbLastUpi();
+
+        $this->assertArraySubset([
+            UpiEntity::TYPE    => UpiBase\Type::COLLECT,
+            UpiEntity::ACTION  => 'authorize',
+            UpiEntity::GATEWAY => 'upi_airtel',
+        ], $upi->toArray());
+
         return $payment;
     }
 
@@ -111,6 +121,15 @@ class UpiAirtelGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals('authorized', $payment['status']);
+
+        $upi = $this->getDbLastUpi();
+
+        $this->assertArraySubset([
+            UpiEntity::TYPE    => UpiBase\Type::PAY,
+            UpiEntity::ACTION  => 'authorize',
+            UpiEntity::GATEWAY => 'upi_airtel',
+        ], $upi->toArray());
+
     }
 
     public function testIntentFailedPayment()

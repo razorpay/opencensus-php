@@ -8,7 +8,9 @@ use RZP\Models\Payment\Refund;
 use RZP\Models\Payment\Method;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Upi\Base as UpiBase;
 use RZP\Exception\GatewayErrorException;
+use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Payment\Refund\Status as RefundStatus;
@@ -65,6 +67,14 @@ class UpiJuspayGatewayTest extends TestCase
 
         $this->assertTrue($payment->isAuthorized());
         $this->assertNotNull($payment->getRefundAt());
+
+        $upi = $this->getDbLastUpi();
+
+        $this->assertArraySubset([
+          UpiEntity::TYPE    => UpiBase\Type::COLLECT,
+          UpiEntity::ACTION  => 'authorize',
+          UpiEntity::GATEWAY => 'upi_juspay',
+        ], $upi->toArray());
 
         return $payment;
     }
@@ -207,6 +217,14 @@ class UpiJuspayGatewayTest extends TestCase
         $this->assertNotNull($payment->getVpa());
 
         $this->assertSame('customer@xyz', $payment->getVpa());
+
+        $upi = $this->getDbLastUpi();
+
+        $this->assertArraySubset([
+            UpiEntity::TYPE    => UpiBase\Type::PAY,
+            UpiEntity::ACTION  => 'authorize',
+            UpiEntity::GATEWAY => 'upi_juspay',
+        ], $upi->toArray());
     }
 
     public function testIntentPaymentWhenRefIdAbsent()
