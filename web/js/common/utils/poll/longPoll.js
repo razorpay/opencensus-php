@@ -64,7 +64,7 @@ const poll = options => {
    * than `minWaitTime` , the next call is made immediately , else
    * the next call will be made with `minWaitTime` from the previous call
    *
-   * The return value is an object with two keys, 
+   * The return value is an object with two keys,
    * `promise` - Promise to be be resolved when polling is stopped
    * `abort` - Function to call to manually stop polling at any point of time
    *  , the promise would never resolve when `abort` is called
@@ -80,8 +80,7 @@ const poll = options => {
     throw { message: 'validator need to be a function' };
   }
 
-  let currentTimer = null,
-    isPollAborted = false;
+  let isPollAborted = false;
 
   const shouldAbortPoll = () => {
     return isPollAborted;

@@ -16,7 +16,9 @@ export default class LogItem extends React.PureComponent {
     const { status, id, consumer, generated_by } = this.props;
     const accountId = consumer !== generated_by ? consumer : undefined;
     if (isLogInProgress(status)) {
-      this.props.pollLog(id, accountId);
+      this.props.pollLog(id, accountId, ({ abort }) => {
+        this.abortPolling = abort;
+      });
     }
   }
 
@@ -77,6 +79,12 @@ export default class LogItem extends React.PureComponent {
         )}
       </div>
     );
+  }
+
+  componentWillUnmount() {
+    if (this.abortPolling) {
+      this.abortPolling();
+    }
   }
 }
 

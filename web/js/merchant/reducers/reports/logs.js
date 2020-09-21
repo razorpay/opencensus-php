@@ -81,9 +81,9 @@ export const createMerchantReportLog = createLog('merchant');
 
 const pollLog = reportType => {
   const actionName = `${reportType.toUpperCase()}_LOGS_POLLING`;
-  return (logId, accountId) => ({
+  return (logId, accountId, onPollInitiated) => ({
     type: actionName,
-    payload: new Log({ reportType, accountId }).poll(logId),
+    payload: new Log({ reportType, accountId }).poll(logId, onPollInitiated),
   });
 };
 
