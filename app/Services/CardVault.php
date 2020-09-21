@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use Requests;
 use Requests_Hooks;
+use Aws\Kms\KmsClient;
 
 use RZP\Exception;
 use RZP\Models\Base;
@@ -49,6 +50,8 @@ class CardVault
 
     protected $namespace;
 
+    protected $kmsClient;
+
     public function __construct($app, $namespace = 'card')
     {
         $this->app = $app;
@@ -64,6 +67,11 @@ class CardVault
         $this->request = $app['request'];
 
         $this->namespace = $namespace;
+
+        $this->kmsClient = new KmsClient([
+             'version' => $this->config['version'],
+             'region'  => $this->config['region']
+        ]);
 
         if ($namespace === self::CARD)
         {
@@ -115,6 +123,7 @@ class CardVault
         }
 
         return false;
+
     }
 
     public function tokenize($input)
@@ -421,6 +430,7 @@ class CardVault
         return $response;
     }
 
+
     public function renewVaultToken(): array
     {
         $this->trace->info(TraceCode::VAULT_TOKEN_RENEWAL_REQUEST);
@@ -440,5 +450,34 @@ class CardVault
         }
 
         return $response;
+    }
+
+    public function encrypt(array $input)
+    {
+        if ($this->config['kms_mock'] === true)
+        {
+            return $this->app['encrypter']->encrypt($input['card']);
+        }
+
+        $result = $this->kmsClient->encrypt([
+            'KeyId' => $this->config['key_id'],
+            'Plaintext' => $input['card'],
+        ]);
+
+        return base64_encode($result->get('CiphertextBlob'));
+    }
+
+    public function decrypt($token)
+    {
+        if ($this->config['kms_mock'] === true)
+        {
+            return $this->app['encrypter']->decrypt($token);
+        }
+
+       $result = $this->kmsClient->decrypt([
+            'CiphertextBlob' => base64_decode($token),
+        ]);
+
+       return $result->get('Plaintext');
     }
 }

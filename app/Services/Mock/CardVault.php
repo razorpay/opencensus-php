@@ -83,4 +83,18 @@ class CardVault extends BaseCardVault
 
         return $response;
     }
+
+    public function encrypt($input)
+    {
+        $token = base64_encode($input['card']);
+
+        return $token;
+    }
+
+    public function decrypt($token)
+    {
+        $data = base64_decode($token);
+
+        return $data;
+    }
 }

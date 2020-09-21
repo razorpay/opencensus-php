@@ -7916,8 +7916,6 @@ class MerchantTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertArrayNotHasKey('customer', $response);
-        $this->assertArrayNotHasKey('tokens', $response);
 
         $this->assertEquals($response['options']['remember_customer'], false);
 
@@ -7940,8 +7938,6 @@ class MerchantTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertArrayNotHasKey('customer', $response);
-        $this->assertArrayNotHasKey('tokens', $response);
 
         $this->assertEquals($response['options']['remember_customer'], false);
 

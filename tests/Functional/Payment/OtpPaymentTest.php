@@ -5,7 +5,9 @@ namespace RZP\Tests\Functional\Payment;
 use Redis;
 use Cache;
 use Crypt;
+use Mockery;
 
+use RZP\Exception;
 use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
@@ -935,6 +937,179 @@ class OtpPaymentTest extends TestCase
         self::assertEquals('hitachi', $payment['gateway']);
         self::assertEquals('100HitaDirTmnl', $payment['terminal_id']);
         self::assertEquals('authorized', $payment['status']);
+    }
+
+    public function testHeadlessOtpAuthenticationPaymentS2SJsonExtendedFlowVaultDown()
+    {
+        $this->fixtures->create('terminal:direct_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'otp_auth_default', 'json_v2']);
+
+        $cardVault = Mockery::mock('RZP\Services\CardVault')->makePartial();
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $this->count = 0;
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing(function ($route, $method, $input)
+            {
+                throw new Exception\BadRequestException(ErrorCode::SERVER_ERROR_VAULT_TOKENIZE_FAILED);
+
+            });
+
+        $cardVault->shouldReceive('encrypt')
+            ->with(Mockery::type('array'))
+            ->andReturnUsing(function ($input)
+            {
+                return base64_encode($input['card']);
+            });
+
+
+        $cardVault->shouldReceive('decrypt')
+            ->with(Mockery::type('string'))
+            ->andReturnUsing(function ($token)
+            {
+                return base64_decode($token);
+            });
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $this->mockOtpElf();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/json',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertArrayHasKey('next', $content);
+
+        $this->assertArrayHasKey('action', $content['next'][0]);
+        $this->assertEquals('redirect', $content['next'][0]['action']);
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($content['next'][0]['url']));
+
+        $this->assertArrayHasKey('action', $content['next'][1]);
+        $this->assertEquals('otp_generate', $content['next'][1]['action']);
+        $this->assertTrue($this->isOtpGenerateUrlPublic($content['next'][1]['url']));
+
+        $url = $this->getUri($content['next'][1]['url']);
+
+        $this->ba->publicAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => $url,
+            'content' => []
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertArrayHasKey('next', $content);
+
+        $this->assertArrayHasKey('action', $content['next'][0]);
+        $this->assertEquals('otp_submit', $content['next'][0]['action']);
+        $this->assertTrue($this->isOtpCallbackUrl($content['next'][0]['url']));
+
+        $this->assertArrayHasKey('action', $content['next'][1]);
+        $this->assertEquals('otp_resend', $content['next'][1]['action']);
+
+        $url = $this->getUri($content['next'][0]['url']);
+
+        $this->ba->publicAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => $url,
+            'content' => [
+                'otp' => 123456
+            ]
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        self::assertNotNull($content['razorpay_payment_id']);
+
+        $payment = $this->getEntityById('payment', $content['razorpay_payment_id'], true);
+
+        self::assertEquals('headless_otp', $payment['auth_type']);
+        self::assertEquals('hitachi', $payment['gateway']);
+        self::assertEquals('100HitaDirTmnl', $payment['terminal_id']);
+        self::assertEquals('authorized', $payment['status']);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/json',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertArrayHasKey('next', $content);
+
+        $this->assertArrayHasKey('action', $content['next'][0]);
+        $this->assertEquals('redirect', $content['next'][0]['action']);
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($content['next'][0]['url']));
+
+        $this->assertArrayHasKey('action', $content['next'][1]);
+        $this->assertEquals('otp_generate', $content['next'][1]['action']);
+        $this->assertTrue($this->isOtpGenerateUrlPublic($content['next'][1]['url']));
+
+        $response = $this->makeRedirectToAuthorize($content['next'][0]['url']);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        self::assertNotNull($content['razorpay_payment_id']);
+
+        $payment = $this->getEntityById('payment', $content['razorpay_payment_id'], true);
+
+        self::assertEquals('headless_otp', $payment['auth_type']);
+        self::assertEquals('hitachi', $payment['gateway']);
+        self::assertEquals('100HitaDirTmnl', $payment['terminal_id']);
+        self::assertEquals('authorized', $payment['status']);
+
+        $card = $this->getLastEntity('card',true);
+
+        self::assertNull($card['vault_token']);
+        self::assertNull($card['vault']);
     }
 
     public function testHeadlessOtpAuthenticationPaymentS2SJsonExtendedFlowOtpGenerateFailure()

@@ -179,6 +179,10 @@ return [
         'mpan_key'      => env('CARD_VAULT_MPAN_KEY'),
         'mpan_secret'   => env('CARD_VAULT_MPAN_SECRET'),
         'url'           => env('CARD_VAULT_URL'),
+        'key_id'        => env('CARD_KMS_KEY_ID'),
+        'region'        => env('AWS_REGION'),
+        'version'       => env('CARD_KMS_VERSION'),
+        'kms_mock'      => env('CARD_KMS_MOCK'),
     ],
 
     'cps' => [

@@ -392,11 +392,6 @@ class Checkout
             $this->doCustomerProcessingForSubscription($input, $data, $merchant);
         }
 
-        if ($this->isCardVaultUp === false)
-        {
-            return;
-        }
-
         //
         // To recognize the flow as local, the only way is, to check
         // if `customer_id` is present in the input.

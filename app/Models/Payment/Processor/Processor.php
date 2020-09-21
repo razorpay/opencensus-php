@@ -4267,4 +4267,8 @@ class Processor
         return (($this->payment->isUpi() === true) and ($this->merchant->shouldSaveVpa() === true));
     }
 
+    protected function getCardCacheTtl($input)
+    {
+        return self::REDIRECT_CACHE_TTL;
+    }
 }

@@ -4075,8 +4075,21 @@ trait Authorize
     }
 
     protected function savePaymentMethod(
-        Customer\Entity $customer, Payment\Entity $payment, $savedCardId = null, array $input = []): Token\Entity
+        Customer\Entity $customer, Payment\Entity $payment, $savedCardId = null, array $input = [])
     {
+        if ($payment->isMethodCardOrEmi() === true)
+        {
+            // Check whether token exists in card entity
+            $card = $payment->card;
+
+            if (($card != null) and
+                (empty($card->getVaultToken()) === true))
+            {
+                return null;
+            }
+
+        }
+
         $this->trace->info(
             TraceCode::PAYMENT_SAVE_METHOD,
             [

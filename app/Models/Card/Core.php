@@ -13,6 +13,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FundTransfer;
 use RZP\Models\FundAccount;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankAccount\Beneficiary;
 use RZP\Models\FundAccount\Type as FundAccountType;
 
@@ -190,11 +191,26 @@ class Core extends Base\Core
             return;
         }
 
-        $cardVault = (new Card\CardVault);
+        try
+        {
+            $cardVault = (new Card\CardVault);
 
-        $tempInput['card'] = $input['number'];
+            $tempInput['card'] = $input['number'];
 
-        $response = $cardVault->getTokenAndFingerprint($tempInput);
+            $response = $cardVault->getTokenAndFingerprint($tempInput);
+        }
+        catch (\Throwable $e)
+        {
+           $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::VAULT_ENCRYPTION_FAILED
+            );
+
+           $card->setVault(null);
+
+           return;
+        }
 
         $card->setVaultToken($response['token']);
 

@@ -17,6 +17,8 @@ class CardVault extends Base\Core
 
     public function getCardNumber($vaultToken)
     {
+        $vaultEx = null;
+
         try
         {
             $cardNumber = $this->cardVault->detokenize($vaultToken);
@@ -37,7 +39,24 @@ class CardVault extends Base\Core
                 ]
             );
 
-            throw $e;
+            $vaultEx = $e;
+        }
+
+        try
+        {
+          return $this->cardVault->decrypt($vaultToken);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->error(
+                TraceCode::CARD_VAULT_REQUEST,
+                [
+                    'vault_token'   => $vaultToken,
+                    'message'       => 'Failed to decrypt data'
+                ]
+            );
+
+            throw $vaultEx;
         }
     }
 
@@ -65,6 +84,28 @@ class CardVault extends Base\Core
             throw $e;
         }
     }
+
+    public function getVaultTokenOrEncryptionToken($input)
+    {
+        try
+        {
+            return $this->getVaultToken($input);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::CARD_VAULT_REQUEST,
+                [
+                    'message' => 'Failed to tokenize data'
+                ]
+            );
+
+        }
+
+        return $this->cardVault->encrypt($input);
+    }
+
+
 
     public function getVaultTokenFromTempToken($tempVaultToken)
     {
