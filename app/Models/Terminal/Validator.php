@@ -130,6 +130,7 @@ class Validator extends Base\Validator
         Payment\Gateway::WORLDLINE,
         Payment\Gateway::CRED,
         Payment\Gateway::WALLET_PAYZAPP,
+        Payment\Gateway::PAYU,
     ];
 
     protected static $createValidators = [
@@ -219,6 +220,7 @@ class Validator extends Base\Validator
         Entity::TYPE                                    => 'required|array',
         Entity::TYPE . '.direct_settlement_with_refund' => 'required|in:1',
         Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
+        Entity::MODE                                    => 'sometimes|in:2'
     ];
 
     protected static $hdfcTerminalRules = [
@@ -468,6 +470,12 @@ class Validator extends Base\Validator
         Entity::STATUS                     => 'sometimes|string|in:deactivated,activated',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::MODE                       => 'sometimes|in:2,3',
+    ];
+
+    protected static $payuEditTerminalRules = [
+        Entity::MODE                       => 'sometimes|in:2',
+        Entity::STATUS                     => 'sometimes|string|in:deactivated,activated',
+        Entity::ENABLED                    => 'sometimes|in:0,1',
     ];
 
     protected static $mpgsEditTerminalRules = [
