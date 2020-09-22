@@ -590,8 +590,11 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         // always use that, instead of verify. There's no
         // need for running verify if force authorization is present.
         //
-        if (($this->allowForceAuthorization === true) or
-            ($this->isforceAuthFlagSetInRow($row) === true))
+        // Disabling force auth if request from mailgun because of
+        // vulnerability mentioned in SBB-330.
+        if ((($this->allowForceAuthorization === true) or
+             ($this->isforceAuthFlagSetInRow($row) === true)) and
+            ($this->source !== RequestProcessor\Base::MAILGUN))
         {
             return $this->handleForceAuthorization($row);
         }

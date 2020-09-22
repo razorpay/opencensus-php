@@ -61,8 +61,6 @@ class Service extends Base\Service
     {
         $this->traceReconRequest($input);
 
-        $this->validateSpf($input);
-
         try
         {
             $source = $this->getRequestSource($input);
@@ -766,6 +764,11 @@ class Service extends Base\Service
                 'gateway'       => $gateway
             ]);
 
+        if ($source === RequestProcessor\Base::MAILGUN)
+        {
+            $this->validateSpf($input, $gateway);
+        }
+
         $gatewayReconciliator = $requestProcessor->getGatewayReconciliator();
 
         $orchestrator = new Orchestrator($gateway, $gatewayReconciliator);
@@ -807,8 +810,9 @@ class Service extends Base\Service
      * Validates spf record of incoming request
      *
      * @param array $input
+     * @param $gateway
      */
-    protected function validateSpf(array $input)
+    protected function validateSpf(array $input, $gateway)
     {
         if (isset($input[RequestProcessor\Mailgun::X_MAILGUN_SPF]) === true)
         {
@@ -822,7 +826,8 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::RECON_EMAIL_VALIDATION_FAILED,
             [
                 'message'       => 'Spf validation for request failed',
-                'x-mailgun-spf' => $input[RequestProcessor\Mailgun::X_MAILGUN_SPF] ?? null
+                'x-mailgun-spf' => $input[RequestProcessor\Mailgun::X_MAILGUN_SPF] ?? null,
+                'gateway'       => $gateway,
             ]);
     }
 

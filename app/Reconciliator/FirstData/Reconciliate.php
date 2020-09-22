@@ -4,6 +4,7 @@ namespace RZP\Reconciliator\FirstData;
 
 use App;
 
+use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Gateway;
@@ -95,6 +96,12 @@ class Reconciliate extends Base\Reconciliate
 
         $responseFromCps = App::getFacadeRoot()['card.payments']->fetchPaymentIdFromCapsPIDs($capsPaymentIds);
 
+        $this->trace->info(TraceCode::RECON_INFO_ALERT,
+            [
+                'message'   => 'Response received from cps for request to fetch pid from caps pid',
+                'response'  =>  $responseFromCps,
+            ]);
+
         foreach ($capsPaymentIds as $key => $value)
         {
             if (empty($responseFromCps[$value]) === false)
@@ -108,6 +115,12 @@ class Reconciliate extends Base\Reconciliate
 
         if (count($capsPaymentIds) > 0)
         {
+            $this->trace->info(TraceCode::RECON_INFO_ALERT,
+                [
+                    'message'   => 'Successful response not received for some caps pids',
+                    'capsPids'  =>  $capsPaymentIds,
+                ]);
+
             $pIdsFromPaymentsRepoFd = $this->repo->payment->fetchPaymentIdsbyCapsPaymentIds($capsPaymentIds, Gateway::FIRST_DATA);
 
             if (count($pIdsFromPaymentsRepoFd) !== count($capsPaymentIds))

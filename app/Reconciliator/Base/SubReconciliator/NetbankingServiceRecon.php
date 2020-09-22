@@ -7,6 +7,7 @@ use App;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
+use RZP\Reconciliator\RequestProcessor;
 use RZP\Jobs\NbPlusRecon\NetbankingRecon;
 use RZP\Models\Payment\Verify\Result as VerifyResult;
 use RZP\Services\NbPlus\Netbanking as NetbankingService;
@@ -63,7 +64,10 @@ class NetbankingServiceRecon extends PaymentReconciliate
         // always use that, instead of verify. There's no
         // need for running verify if force authorization is present.
         //
-        if ($this->allowForceAuthorization === true)
+        // Disabling force auth if request from mailgun because of
+        // vulnerability mentioned in SBB-330.
+        if (($this->allowForceAuthorization === true) and
+            ($this->source !== RequestProcessor\Base::MAILGUN))
         {
             return $this->handleForceAuthorization($row);
         }
