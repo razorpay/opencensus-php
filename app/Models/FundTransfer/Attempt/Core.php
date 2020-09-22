@@ -386,6 +386,11 @@ class Core extends Base\Core
 
     public function updateFTA(Entity $fta, $ftsTransferId, string $status = null, string $failureReason = null)
     {
+        if ($status !== null && AttemptStatus::isValidStateTransition($fta->getStatus(), $status) === false)
+        {
+            throw new LogicException('Not a valid state transition');
+        }
+
         if (empty($failureReason) === false)
         {
             $fta->setFailureReason($failureReason);
