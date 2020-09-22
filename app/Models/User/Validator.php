@@ -4,6 +4,7 @@ namespace RZP\Models\User;
 
 use App;
 use Hash;
+use Request;
 use Illuminate\Hashing\BcryptHasher;
 
 use RZP\Base;
@@ -24,6 +25,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     const DISABLE_CAPTCHA_SECRET = 'DISABLE_THE_CAPTCHA_YOU_SHALL';
+    const CAPTCHA_MODE_HEADER    = 'X-RECAPTCHA-MODE';
 
     protected static $createRules = [
         Entity::ID                              => 'sometimes|max:14',
@@ -353,17 +355,12 @@ class Validator extends Base\Validator
         {
             $captchaResponse = $input[Entity::CAPTCHA] ?? null;
 
+            $captchaSecret = $this->getCaptchaSecret($input);
+
             $clientIpAddress = $_SERVER['HTTP_X_IP_ADDRESS'];
 
-            $noCaptchaSecret = config('app.signup.nocaptcha_secret');
-
-            if ((empty($input[Entity::APP]) === false) and ($input[Entity::APP] === 'android'))
-            {
-                $noCaptchaSecret = config('app.signup.android_captcha_secret');
-            }
-
             $input = [
-                'secret'   => $noCaptchaSecret,
+                'secret'   => $captchaSecret,
                 'response' => $captchaResponse,
                 'remoteip' => $clientIpAddress,
             ];
@@ -561,6 +558,24 @@ class Validator extends Base\Validator
                     ErrorCode::BAD_REQUEST_NEW_PASSWORD_SAME_AS_OLD_PASSWORD);
             }
         }
+    }
+
+    private function getCaptchaSecret(array $input): string
+    {
+        if (empty($input[Entity::APP]) === false and $input[Entity::APP] === 'android')
+        {
+            return config('app.signup.android_captcha_secret');
+        }
+
+        $captchaMode = Request::header(self::CAPTCHA_MODE_HEADER);
+
+        if ($captchaMode === 'invisible')
+        {
+            return config('app.signup.invisible_captcha_secret');
+        }
+
+        return config('app.signup.nocaptcha_secret');
+
     }
 
     protected static function validatePassword($input)
