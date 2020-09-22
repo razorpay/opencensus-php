@@ -203,7 +203,7 @@ class Validator extends Base\Validator
         'transfers'                        => 'required|array',
         'transfers.*.customer'             => 'sometimes|public_id',
         'transfers.*.account'              => 'sometimes|public_id',
-        'transfers.*.account_code'         => 'sometimes|string|min:3|max:25|regex:"^([0-9A-Za-z-._])+$"',
+        'transfers.*.account_code'         => 'sometimes|string|min:3|max:20|regex:"^([0-9A-Za-z-._])+$"',
         'transfers.*.amount'               => 'required|integer|min:100',
         'transfers.*.currency'             => 'required|string|size:3',
         'transfers.*.notes'                => 'sometimes|notes',

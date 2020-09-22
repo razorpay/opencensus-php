@@ -363,7 +363,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $codeRules = [
-        Entity::CODE            => 'sometimes|string|min:3|max:25|regex:"^([0-9A-Za-z-._])+$"',
+        Entity::CODE            => 'sometimes|string|min:3|max:20|regex:"^([0-9A-Za-z-._])+$"',
     ];
 
     public function validateMerchantForProductInternational(Entity $merchant)

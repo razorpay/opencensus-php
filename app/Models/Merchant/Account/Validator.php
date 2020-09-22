@@ -22,7 +22,7 @@ class Validator extends Merchant\Validator
         // Sub keys are validated in respective validators.
         Entity::BANK_ACCOUNT                                  => 'required|array',
 
-        Entity::CODE                                          => 'sometimes|string|min:3|max:25|regex:"^([0-9A-Za-z-._])+$"',
+        Entity::CODE                                          => 'sometimes|string|min:3|max:20|regex:"^([0-9A-Za-z-._])+$"',
      ];
 
     protected static $fetchRules = [
@@ -32,7 +32,7 @@ class Validator extends Merchant\Validator
         Fetch::SKIP               => 'sometimes|integer',
         Fetch::COUNT              => 'sometimes|integer',
         Entity::ID                => 'sometimes|string|min:14',
-        Entity::CODE              => 'sometimes|string|min:3|max:25|regex:"^([0-9A-Za-z-._])+$"',
+        Entity::CODE              => 'sometimes|string|min:3|max:20|regex:"^([0-9A-Za-z-._])+$"',
     ];
 
     protected static $createAccountRules = [

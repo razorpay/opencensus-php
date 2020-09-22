@@ -16,7 +16,7 @@ class Repository extends Merchant\Repository
         Entity::PARENT_ID          => 'sometimes|string|size:14',
         EsRepository::SEARCH_HITS  => 'filled|boolean',
         EsRepository::QUERY        => 'filled|string|min:2|max:100',
-        Entity::ACCOUNT_CODE       => 'sometimes|string|min:3|max:25|regex:"^([0-9A-Za-z-._])+$"',
+        Entity::ACCOUNT_CODE       => 'sometimes|string|min:3|max:20|regex:"^([0-9A-Za-z-._])+$"',
     ];
 
     protected function addQueryParamId($query, $params)
