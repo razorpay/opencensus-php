@@ -660,8 +660,8 @@ export default class SubscriptionDetailsContainer extends React.Component {
     const isStatusPaused = status === 'paused';
     const type = isStatusPaused ? 'Resume' : 'Pause';
     const message = isStatusPaused
-      ? 'This subscription will getting charged till it is paused. Are you sure you want to resume it?'
-      : 'This subscription will not be charged till it is resumed. Are you sure you want to pause it?';
+      ? 'Are you sure you want to resume the subscription?'
+      : 'This subscription will not be charged till it is resumed. Are you sure you want to pause the subscription?';
 
     this.context.confirm({
       header: `${type} Subscription?`,
