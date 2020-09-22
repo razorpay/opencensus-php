@@ -217,19 +217,6 @@ class Gateway extends Base\Gateway
 
         $scroogeResponse = new ScroogeResponse();
 
-        if ($this->isUnprocessedRefund($input) === true)
-        {
-            return $scroogeResponse->setSuccess(false)
-                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
-                                   ->toArray();
-        }
-
-        if ($this->isProcessedRefund($input) === true)
-        {
-            return $scroogeResponse->setSuccess(true)
-                                   ->toArray();
-        }
-
         $verify = new Verify($this->gateway, $input);
 
         $refund = $this->getLatestGatewayRefund($verify->input['refund']['id']);

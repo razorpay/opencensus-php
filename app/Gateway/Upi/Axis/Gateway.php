@@ -886,20 +886,6 @@ class Gateway extends Base\Gateway
      */
     public function verifyRefund(array $input)
     {
-        if ($this->isUnprocessedRefund($input) === true)
-        {
-            return (new GatewayBase\ScroogeResponse)->setSuccess(false)
-                                                    ->setStatusCode(
-                                                        Error\ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
-                                                    ->toArray();
-        }
-
-        if ($this->isProcessedRefund($input) === true)
-        {
-            return (new GatewayBase\ScroogeResponse)->setSuccess(true)
-                                                    ->toArray();
-        }
-
         parent::action($input, Action::VERIFY_REFUND);
 
         $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail($input['refund']['payment_id'], Action::AUTHORIZE);

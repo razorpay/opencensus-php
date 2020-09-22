@@ -1508,20 +1508,6 @@ class Gateway
         return $this->gateway . '_' . $input['payment']['id'];
     }
 
-    protected function isProcessedRefund($input)
-    {
-        $processedRefunds = $this->getProcessedRefunds();
-
-        return (in_array($input['refund']['id'], $processedRefunds) === true);
-    }
-
-    protected function isUnprocessedRefund($input)
-    {
-        $unprocessedRefunds = $this->getUnprocessedRefunds();
-
-        return (in_array($input['refund']['id'], $unprocessedRefunds) === true);
-    }
-
     protected function getProcessedRefunds()
     {
         $refunds = $this->cache->get(ConfigKey::GATEWAY_PROCESSED_REFUNDS);

@@ -859,20 +859,6 @@ class Gateway extends Base\Gateway
     {
         $scroogeResponse = new Base\ScroogeResponse();
 
-        if ($this->isUnprocessedRefund($input) === true)
-        {
-            return $scroogeResponse->setSuccess(false)
-                ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
-                ->toArray();
-
-        }
-
-        if ($this->isProcessedRefund($input) === true)
-        {
-            return $scroogeResponse->setSuccess(true)
-                ->toArray();
-        }
-
         $content = $this->sendMozartRequest($input, false);
 
         $rawResponse=$content['data']['_raw'] ?? '';
@@ -946,20 +932,6 @@ class Gateway extends Base\Gateway
     protected function verifyRefundApi(array $input)
     {
         $scroogeResponse = new Base\ScroogeResponse();
-
-        if ($this->isUnprocessedRefund($input) === true)
-        {
-            return $scroogeResponse->setSuccess(false)
-                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
-                                   ->toArray();
-
-        }
-
-        if ($this->isProcessedRefund($input) === true)
-        {
-            return $scroogeResponse->setSuccess(true)
-                                   ->toArray();
-        }
 
         $content = $this->sendRefundVerifyRequest($input);
 

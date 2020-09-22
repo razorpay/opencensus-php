@@ -165,16 +165,6 @@ class Gateway extends Base\Gateway
 
     public function verifyRefund(array $input)
     {
-        if ($this->isUnprocessedRefund($input) === true)
-        {
-            return false;
-        }
-
-        if ($this->isProcessedRefund($input) === true)
-        {
-            return true;
-        }
-
         parent::verifyRefund($input);
     }
 

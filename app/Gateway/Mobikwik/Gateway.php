@@ -206,19 +206,6 @@ class Gateway extends Base\Gateway
 
         $scroogeResponse = new Base\ScroogeResponse();
 
-        if ($this->isUnprocessedRefund($input) === true)
-        {
-            return $scroogeResponse->setSuccess(false)
-                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
-                                   ->toArray();
-        }
-
-        if ($this->isProcessedRefund($input) === true)
-        {
-            return $scroogeResponse->setSuccess(true)
-                                   ->toArray();
-        }
-
         // Mobikwik returns an error when refund amount exceeds the remaining amount
         // on Mobikwik's end. We take advantage of this error and initiate refunds
         // for all the pending refunds whose amount is either equal to payment, i.e,
