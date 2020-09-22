@@ -153,22 +153,12 @@ return array(
         ],
 
         'data-warehouse' => [
-            'read'  => [
-                'driver'    => env('DB_WAREHOUSE_DRIVER'),
-                'host'      => env('DB_WAREHOUSE_HOST'),
-                'port'      => env('DB_WAREHOUSE_PORT'),
-                'database'  => env('DB_WAREHOUSE_DATABASE'),
-                'username'  => env('DB_WAREHOUSE_USERNAME'),
-                'password'  => env('DB_WAREHOUSE_PASSWORD'),
-            ],
-            'write' => [
-                'driver'    => env('DB_LIVE_DRIVER'),
-                'host'      => env('DB_LIVE_HOST'),
-                'port'      => env('DB_LIVE_PORT'),
-                'database'  => env('DB_LIVE_DATABASE'),
-                'username'  => env('DB_LIVE_USERNAME'),
-                'password'  => env('DB_LIVE_PASSWORD'),
-            ],
+            'driver'    => env('DB_WAREHOUSE_DRIVER'),
+            'host'      => env('DB_WAREHOUSE_HOST'),
+            'port'      => env('DB_WAREHOUSE_PORT'),
+            'database'  => env('DB_WAREHOUSE_DATABASE'),
+            'username'  => env('DB_WAREHOUSE_USERNAME'),
+            'password'  => env('DB_WAREHOUSE_PASSWORD'),
             'charset'   => 'utf8',
             'collation' => 'utf8_bin',
             'prefix'    => '',

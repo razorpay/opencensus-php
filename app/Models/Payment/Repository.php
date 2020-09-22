@@ -489,7 +489,7 @@ class Repository extends Base\Repository
 
     public function getPaymentsToVerifyByGatewayAndTime(array $timestamps, $gateway, $count, $disabledGateways)
     {
-        $query = $this->newQueryWithConnection($this->getDataWarehouseConnectionWithRazorX())
+        $query = $this->newQuery()
                       ->whereBetween(Payment\Entity::VERIFY_AT, $timestamps);
 
         if ($gateway !== null)
