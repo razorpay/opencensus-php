@@ -125,6 +125,7 @@ class Status
             self::CREATED,
             self::FAILED,
             self::INITIATED,
+            self::QUEUED,
         ],
     ];
 

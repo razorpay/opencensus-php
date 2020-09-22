@@ -13,16 +13,20 @@ class PayoutPostCreateProcess extends Job
 
     protected $payoutId;
 
+    protected $queueFlag;
+
     protected $mode;
     /**
      * @param string $mode
      * @param string $payoutId
      */
-    public function __construct(string $mode, string $payoutId)
+    public function __construct(string $mode, string $payoutId, bool $queueFlag)
     {
         parent::__construct($mode);
 
         $this->payoutId = $payoutId;
+
+        $this->queueFlag = $queueFlag;
     }
 
     public function handle()
@@ -39,7 +43,7 @@ class PayoutPostCreateProcess extends Job
         {
             $payout = $this->repoManager->payout->find($this->payoutId);
 
-            (new Payout\Core)->processPayoutPostCreate($payout);
+            (new Payout\Core)->processPayoutPostCreate($payout, $this->queueFlag);
 
             $this->delete();
         }

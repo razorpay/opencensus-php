@@ -774,11 +774,11 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
     }
 
-    public function processPayoutPostCreate(Entity $payout)
+    public function processPayoutPostCreate(Entity $payout, bool $queueFlag)
     {
         $payout = $this->getProcessor('fund_account_payout')
                         ->setMerchant($payout->merchant)
-                        ->processPayoutPostCreate($payout);
+                        ->processPayoutPostCreate($payout, $queueFlag);
 
         return $payout;
     }

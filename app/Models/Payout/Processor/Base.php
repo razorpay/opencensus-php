@@ -386,11 +386,13 @@ class Base extends BaseCore
         return $payout;
     }
 
-    public function processPayoutPostCreate(Payout\Entity $payout): Payout\Entity
+    public function processPayoutPostCreate(Payout\Entity $payout, bool $queueFlag): Payout\Entity
     {
         $payout = $this->incrementCounterAndSetExpectedFeeTypeForFundAccountPayouts($payout);
 
         $feeType = $payout->getExpectedFeeType();
+
+        $payout->setQueueFlag($queueFlag);
 
         try
         {
@@ -419,7 +421,6 @@ class Base extends BaseCore
                         TraceCode::PAYOUT_CREATED,
                         [
                             'payout_id'      => $payout->getId(),
-                            'transaction_id' => $payout->getTransactionId(),
                             'payout_status'  => $payout->getStatus(),
                         ]);
 
@@ -1291,7 +1292,7 @@ class Base extends BaseCore
     {
         try
         {
-            PayoutPostCreateProcess::dispatch($this->mode, $payout->getId());
+            PayoutPostCreateProcess::dispatch($this->mode, $payout->getId(), $payout->toBeQueued());
 
             $this->trace->info(
                 TraceCode::PAYOUT_CREATE_SUBMITTED_REQUEST_ENQUEUED,
