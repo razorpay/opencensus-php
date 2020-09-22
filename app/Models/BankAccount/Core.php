@@ -35,7 +35,7 @@ class Core extends Base\Core
 
             if ($this->settlementServiceRamp($ba->getMerchantId()) === true)
             {
-                app('settlements_dashboard')->createBankAccount($ba);
+                app('settlements_dashboard')->createBankAccount($ba, $this->mode);
             }
 
             return $ba;
@@ -59,7 +59,7 @@ class Core extends Base\Core
 
         if ($this->settlementServiceRamp($ba->getMerchantId()) === true)
         {
-            app('settlements_dashboard')->createBankAccount($ba);
+            app('settlements_dashboard')->createBankAccount($ba, $this->mode);
         }
 
         return $ba;
