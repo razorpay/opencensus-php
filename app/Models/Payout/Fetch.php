@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Base\Fetch as BaseFetch;
 use RZP\Models\Settlement\Channel;
 use RZP\Http\BasicAuth\Type as AuthType;
+use RZP\Models\PayoutSource\Entity as PayoutSource;
 
 class Fetch extends BaseFetch
 {
@@ -49,8 +50,10 @@ class Fetch extends BaseFetch
             Entity::PENDING_ON_ROLES . '.*' => 'filled|string|in:finance_l1,finance_l2,finance_l3,owner,admin',
         ],
         AuthType::PRIVILEGE_AUTH => [
-            Entity::PRODUCT                 => 'sometimes|string',
-            Entity::PAYOUT_LINK_ID          => 'sometimes|string',
+            Entity::PRODUCT           => 'sometimes|string',
+            Entity::PAYOUT_LINK_ID    => 'sometimes|string',
+            PayoutSource::SOURCE_ID   => 'sometimes|string',
+            PayoutSource::SOURCE_TYPE => 'sometimes|string',
         ],
     ];
 
@@ -94,6 +97,8 @@ class Fetch extends BaseFetch
             Entity::METHOD,
             Entity::CHANNEL,
             Entity::PAYOUT_LINK_ID,
+            PayoutSource::SOURCE_ID,
+            PayoutSource::SOURCE_TYPE,
         ],
     ];
 

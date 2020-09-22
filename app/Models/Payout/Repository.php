@@ -21,6 +21,7 @@ use RZP\Models\Admin\Org;
 use RZP\Constants\Timezone;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
+use RZP\Models\PayoutSource;
 use RZP\Models\Workflow\Step;
 use RZP\Constants\Entity as E;
 use RZP\Models\Workflow\Action;
@@ -848,6 +849,26 @@ class Repository extends Base\Repository
             });
     }
 
+    protected function joinQueryPayoutSource(BuilderEx $query)
+    {
+        $payoutSourceTable = $this->repo->payout_source->getTableName();
+
+        if ($query->hasJoin($payoutSourceTable) === true)
+        {
+            return;
+        }
+
+        $query->join(
+            $payoutSourceTable,
+            function(JoinClause $join)
+            {
+                $payoutSourcePayoutIdColumn = $this->repo->payout_source->dbColumn(PayoutSource\Entity::PAYOUT_ID);
+                $payoutIdColumn             = $this->dbColumn(Entity::ID);
+
+                $join->on($payoutSourcePayoutIdColumn, $payoutIdColumn);
+            });
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -946,6 +967,28 @@ class Repository extends Base\Repository
         $sortedOn  = $params[Entity::SORTED_ON];
 
         $query->orderBy($sortedOn, 'desc');
+    }
+
+    protected function addQueryParamSourceId($query, $params)
+    {
+        $sourceId                   = $params[PayoutSource\Entity::SOURCE_ID];
+        $payoutSourceSourceIdColumn = $this->repo->payout_source->dbColumn(PayoutSource\Entity::SOURCE_ID);
+
+        $query->select($this->getTableName() . '.*');
+        $this->joinQueryPayoutSource($query);
+
+        $query->where($payoutSourceSourceIdColumn, $sourceId);
+    }
+
+    protected function addQueryParamSourceType($query, $params)
+    {
+        $sourceType                   = $params[PayoutSource\Entity::SOURCE_TYPE];
+        $payoutSourceSourceTypeColumn = $this->repo->payout_source->dbColumn(PayoutSource\Entity::SOURCE_TYPE);
+
+        $query->select($this->getTableName() . '.*');
+        $this->joinQueryPayoutSource($query);
+
+        $query->where($payoutSourceSourceTypeColumn, $sourceType);
     }
 
     // fetches when fee recovery was last made for CA

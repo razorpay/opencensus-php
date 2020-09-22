@@ -7088,4 +7088,117 @@ class PayoutTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testFetchPayoutWithSourceIdAndSourceTypeOnInternalAuth()
+    {
+        $this->testCreatePayoutLinkPayoutWithSourceDetails();
+
+        /** @var Payout\Entity $payout2 */
+        $payout1 = $this->getDbLastEntity('payout');
+
+        $this->testCreatePayoutLinkPayoutWithSourceDetails();
+
+        /** @var Payout\Entity $payout1 */
+        $payout2 = $this->getDbLastEntity('payout');
+
+        $payoutSources = $payout2->getSourceDetails();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payouts_internal?product=banking&source_id=' . $payoutSources[0]['source_id'] .
+                                      '&source_type=' . $payoutSources[0]['source_type'];
+
+        $response = $this->startTest();
+
+        // Assert that 2 payouts are found
+        $this->assertEquals(2, $response['count']);
+
+        $responsePayoutIds = [$response['items'][0]['id'], $response['items'][1]['id']];
+
+        $payoutIds = [$payout1->getPublicId(), $payout2->getPublicId()];
+
+        $this->assertCount(0, array_diff($responsePayoutIds, $payoutIds));
+
+        $sourceDetails = [Payout\Entity::SOURCE_DETAILS => $payoutSources];
+
+        $this->assertArraySelectiveEquals($sourceDetails, $response['items'][0]);
+
+        $this->assertArraySelectiveEquals($sourceDetails, $response['items'][1]);
+    }
+
+    public function testFetchPayoutsOnProxyAuth()
+    {
+        $this->testCreatePayoutLinkPayoutWithSourceDetails();
+
+        /** @var Payout\Entity $payout2 */
+        $payout1 = $this->getDbLastEntity('payout');
+
+        $this->testCreatePayoutLinkPayoutWithSourceDetails();
+
+        /** @var Payout\Entity $payout1 */
+        $payout2 = $this->getDbLastEntity('payout');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payouts?product=banking';
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        // Assert that 2 payouts are found
+        $this->assertEquals(2, $response['count']);
+
+        $responsePayoutIds = [$response['items'][0]['id'], $response['items'][1]['id']];
+
+        $payoutIds = [$payout1->getPublicId(), $payout2->getPublicId()];
+
+        $this->assertCount(0, array_diff($responsePayoutIds, $payoutIds));
+
+        $sourceDetails = [Payout\Entity::SOURCE_DETAILS => $payout1->getSourceDetails()];
+
+        $this->assertArraySelectiveEquals($sourceDetails, $response['items'][0]);
+
+        $this->assertArraySelectiveEquals($sourceDetails, $response['items'][1]);
+    }
+
+    public function testFetchPayoutsOnPrivateAuth()
+    {
+        $this->testCreatePayoutLinkPayoutWithSourceDetails();
+
+        /** @var Payout\Entity $payout2 */
+        $payout1 = $this->getDbLastEntity('payout');
+
+        $this->testCreatePayoutLinkPayoutWithSourceDetails();
+
+        /** @var Payout\Entity $payout1 */
+        $payout2 = $this->getDbLastEntity('payout');
+
+        $this->testData[__FUNCTION__] = $this->testData['testFetchPayoutsOnProxyAuth'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $accountNumber = $this->bankingBalance->getAccountNumber();
+
+        $testData['request']['url'] = '/payouts?account_number=' . $accountNumber;
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        // Assert that 2 payouts are found
+        $this->assertEquals(2, $response['count']);
+
+        $responsePayoutIds = [$response['items'][0]['id'], $response['items'][1]['id']];
+
+        $payoutIds = [$payout1->getPublicId(), $payout2->getPublicId()];
+
+        $this->assertCount(0, array_diff($responsePayoutIds, $payoutIds));
+
+        $this->assertFalse(array_key_exists(Payout\Entity::SOURCE_DETAILS, $response['items'][0]));
+        $this->assertFalse(array_key_exists(Payout\Entity::SOURCE_DETAILS, $response['items'][1]));
+
+        $this->assertFalse(array_key_exists(Payout\Entity::ORIGIN, $response['items'][0]));
+        $this->assertFalse(array_key_exists(Payout\Entity::ORIGIN, $response['items'][0]));
+    }
 }

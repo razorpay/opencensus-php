@@ -8137,4 +8137,27 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_SOURCE_ALREADY_EXISTS,
         ],
     ],
+
+    'testFetchPayoutWithSourceIdAndSourceTypeOnInternalAuth' => [
+        'request'   => [
+            'method'  => 'GET',
+            'url'     => '/payouts',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testFetchPayoutsOnProxyAuth' => [
+        'request'   => [
+            'method'  => 'GET',
+            'url'     => '/payouts',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
 ];
