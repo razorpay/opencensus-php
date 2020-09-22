@@ -125,15 +125,15 @@ class Service extends Base\Service
 
         $allCustomKeys = $typeObj->getCustom($merchant);
 
-        $keysWithWhiteSpace = [];
+        $keysWithWhiteSpaceAlreadyTrimmed = [];
 
         foreach ($allCustomKeys as  $type)
         {
             if (strlen($type) !== strlen(trim($type)))
             {
-                array_push($keysWithWhiteSpace, $type);
-
                 $typeObj->trimType($type, $merchant);
+
+                array_push($keysWithWhiteSpaceAlreadyTrimmed, $type);
             }
         }
 
@@ -153,15 +153,21 @@ class Service extends Base\Service
 
                 $trimmedContactName = trim(str_replace('\n', '', $contactName));
 
-                if (($contactType > $trimmedContactType) or
-                    ($contactName > $trimmedContactName))
+                if ((strlen($contactType) > strlen($trimmedContactType)) or
+                    (strlen($contactName) > strlen($trimmedContactName)))
                 {
-                    if (in_array($contactType, $keysWithWhiteSpace, false) === false)
+                    if (is_null($contactType) === false)
                     {
-                        $typeObj->trimType($contactType, $merchant);
-                    }
+                        //check if some type is missed from trimming.
+                        if (in_array($contactType, $keysWithWhiteSpaceAlreadyTrimmed, true) === false)
+                        {
+                            $typeObj->trimType($contactType, $merchant);
 
-                    $contact->setType($trimmedContactType);
+                            array_push($keysWithWhiteSpaceAlreadyTrimmed, $contactType);
+                        }
+
+                        $contact->setType($trimmedContactType);
+                    }
 
                     $contact->setName($trimmedContactName);
 

@@ -8074,6 +8074,18 @@ class MerchantTest extends TestCase
 
         $contact = $this->getLastEntity('contact', true);
 
+        $this->fixtures->create('contact',
+            [
+                'id'          => '1000012contact',
+                'contact'     => '8888888888',
+                'email'       => '',
+                'name'        => 'test user   ',
+                'type'        => null,
+                'merchant_id' => $createdMerchant['id']
+            ]);
+
+        $contact2 = $this->getLastEntity('contact', true);
+
         $this->assertTrue(in_array($customPurpose, $payoutPurposeBeforeUpdate['items'], true));
 
         $this->assertTrue(in_array($customType, $contactTypeBeforeUpdate['items'], true));
@@ -8088,7 +8100,9 @@ class MerchantTest extends TestCase
 
         $payoutUpdated = $this->getLastEntity('payout', true);
 
-        $contactUpdated = $this->getLastEntity('contact', true);
+        $contactUpdated = $this->getDbEntityById('contact', $contact['id']);
+
+        $contactUpdated2 = $this->getDbEntityById('contact', $contact2['id']);
 
         $this->ba->privateAuth();
 
@@ -8123,6 +8137,9 @@ class MerchantTest extends TestCase
 
         $this->assertNotEquals($contact['name'], $contactUpdated['name']);
         $this->assertEquals(trim($contact['name']), $contactUpdated['name']);
+
+        $this->assertNotEquals($contact2['name'], $contactUpdated2['name']);
+        $this->assertEquals(trim($contact2['name']), $contactUpdated2['name']);
 
         $this->assertNotEquals($contact['type'], $contactUpdated['type']);
         $this->assertEquals(trim($contact['type']), $contactUpdated['type']);
