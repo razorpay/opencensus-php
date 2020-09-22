@@ -31,6 +31,7 @@ use RZP\Models\Admin\Permission;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Merchant\Constants;
+use RZP\Models\Merchant\Promotion;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\LegalEntity;
 use RZP\Listeners\ApiEventSubscriber;
@@ -2993,8 +2994,16 @@ class Core extends Base\Core
      */
     public function isPromoCodeActive(string $merchantId) : bool
     {
-        return (new Coupon\Repository())
-            ->isPromoCodeActiveForMerchant($merchantId, Entity::PROMO_COUPON_CODE);
+        $isCouponActive = (new Coupon\Repository())
+                ->isPromoCodeActiveForMerchant($merchantId, Entity::PROMO_COUPON_CODE);
+
+        if ($isCouponActive === true)
+        {
+            return (new Promotion\Repository())
+                ->isMerchantAssociatedWithPromoCode($merchantId, Entity::PROMO_COUPON_CODE);
+        }
+
+        return false;
     }
 
     /**

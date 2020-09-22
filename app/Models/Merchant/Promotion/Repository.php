@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Promotion;
 
 use RZP\Models\Base;
+use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Promotion;
 
@@ -44,5 +45,17 @@ class Repository extends Base\Repository
                     ->merchantId($merchant->getId())
                     ->where(Entity::PROMOTION_ID, $promotion->getId())
                     ->first();
+    }
+
+    public function isMerchantAssociatedWithPromoCode(string $merchantId, string $couponCode) : bool
+    {
+        $merchantPromotionId = $this->dbColumn(Entity::PROMOTION_ID);
+        $promotionId = $this->repo->promotion->dbColumn(Promotion\Entity::ID);
+
+        return $this->newQuery()
+            ->join(TABLE::PROMOTION, $promotionId, '=', $merchantPromotionId)
+            ->where(Promotion\Entity::NAME, '=', $couponCode)
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->exists();
     }
 }

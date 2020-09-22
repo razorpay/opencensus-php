@@ -100,6 +100,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\UpiTransfer\Repository                       $upi_transfer
  * @property Models\UpiTransferRequest\Repository                $upi_transfer_request
  * @property Models\PayoutSource\Repository                      $payout_source
+ * @property Models\Promotion\Repository                         $promotion
  */
 
 class RepositoryManager extends Illuminate\Support\Manager
