@@ -45,6 +45,8 @@ class Service extends Base\Service
 
     const MERCHANT_ACTIVATED  = 'merchant_activated';
 
+    const CAPTCHA_MODE_HEADER = 'X-RECAPTCHA-MODE';
+
     // Users who signed up before this date
     // are not exposed to the pre signup flow
     const PRE_SIGNUP_TIMESTAMP = 1488306600;
@@ -88,6 +90,7 @@ class Service extends Base\Service
         // PG FE is sending this header
         // we are forwarding this header to PG backend so we can send otp for verify email
         $options['headers']['X-Send-Email-Otp'] = Request::header('X-Send-Email-OTP') ?? 'false';
+        $options['headers'][self::CAPTCHA_MODE_HEADER] = Request::header(self::CAPTCHA_MODE_HEADER);
 
         $request = new \App\Admin\ApiRequestAny($options);
 
@@ -1045,7 +1048,11 @@ class Service extends Base\Service
 
     public function loginOnApi(array $input)
     {
-        return $this->loginOnApiOnRoute($input,'users/login', 'POST');
+        $headers = [
+            self::CAPTCHA_MODE_HEADER   => Request::header(self::CAPTCHA_MODE_HEADER),
+        ];
+
+        return $this->loginOnApiOnRoute($input,'users/login', 'POST', [ 'headers' => $headers ]);
     }
 
     // Another route for a successful login. If a uses 2fa is not setup
@@ -1058,7 +1065,11 @@ class Service extends Base\Service
 
     public function loginOnApiNo2faSetup(array $input)
     {
-        return $this->loginOnApiOnRoute($input,'users/login/no2fa', 'POST');
+        $headers = [
+            self::CAPTCHA_MODE_HEADER   => Request::header(self::CAPTCHA_MODE_HEADER),
+        ];
+
+        return $this->loginOnApiOnRoute($input,'users/login/no2fa', 'POST', ['headers' => $headers]);
     }
 
     public function getUserFromApi($userId)
