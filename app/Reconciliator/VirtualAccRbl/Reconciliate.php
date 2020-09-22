@@ -3,13 +3,13 @@
 namespace RZP\Reconciliator\VirtualAccRbl;
 
 use RZP\Reconciliator\Base;
+use RZP\Reconciliator\FileProcessor;
 use RZP\Reconciliator\VirtualAccRbl\SubReconciliator\ReconciliationFields;
 
 class Reconciliate extends Base\Reconciliate
 {
     const HEADERS = [
         ReconciliationFields::TRANSACTION_TYPE,
-        ReconciliationFields::TRAN_ID,
         ReconciliationFields::AMOUNT,
         ReconciliationFields::UTR_NUMBER,
         ReconciliationFields::RRN_NUMBER,
@@ -24,6 +24,7 @@ class Reconciliate extends Base\Reconciliate
         ReconciliationFields::CREDIT_ACCOUNT_NUMBER,
         ReconciliationFields::CORPORATE_CODE,
         ReconciliationFields::SENDER_INFORMATION,
+        ReconciliationFields::TRAN_ID,
     ];
 
     /**
@@ -46,5 +47,13 @@ class Reconciliate extends Base\Reconciliate
     public function getColumnHeadersForType($type)
     {
         return self::HEADERS;
+    }
+
+    public function getNumLinesToSkip(array $fileDetails)
+    {
+        return [
+            FileProcessor::LINES_FROM_TOP    => 1,
+            FileProcessor::LINES_FROM_BOTTOM => 0,
+        ];
     }
 }
