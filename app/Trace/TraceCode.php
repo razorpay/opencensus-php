@@ -2098,6 +2098,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GEOLOCATION_FAILURE                                   = 'GEOLOCATION_FAILURE';
 
     const QR_CODE_URL                                           = 'QR_CODE_URL';
+    const SETTING_QR_STRING_WITH_MPANS_TOKENIZED                = 'SETTING_QR_STRING_WITH_MPANS_TOKENIZED';
+    const SETTING_QR_CODE_MPANS_TOKENIZED_TO_TRUE               = 'SETTING_QR_CODE_MPANS_TOKENIZED_TO_TRUE';
     const QUERY_CACHE_STORE_ERROR                               = 'QUERY_CACHE_STORE_ERROR';
     const QUERY_CACHE_FLUSH_ERROR                               = 'QUERY_CACHE_FLUSH_ERROR';
     const METRIC_CACHE_EVENT_ERROR                              = 'METRIC_CACHE_EVENT_ERROR';
@@ -2962,6 +2964,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MPAN_TOKENIZATION_FAILED                                 = 'MPAN_TOKENIZATION_FAILED';
     const TERMINAL_TOKENIZE_EXISTING_MPANS_REQUEST                 = 'TERMINAL_TOKENIZE_EXISTING_MPANS_REQUEST';
     const TERMINAL_TOKENIZE_EXISTING_MPANS_RESPONSE                = 'TERMINAL_TOKENIZE_EXISTING_MPANS_RESPONSE';
+    const TOKENIZE_QR_STRING_MPANS_REQUEST                         = 'TOKENIZE_QR_STRING_MPANS_REQUEST';
+    const TOKENIZE_QR_STRING_MPANS_RESPONSE                        = 'TOKENIZE_QR_STRING_MPANS_RESPONSE';
 
     // Smart Routing
     const SMART_ROUTING_SERVICE_ERROR                           = 'SMART_ROUTING_SERVICE_ERROR';

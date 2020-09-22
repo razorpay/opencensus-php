@@ -44,4 +44,19 @@ class Repository extends Base\Repository
 
         return null;
     }
+
+    public function fetchQrCodesForMpanTokenization($count)
+    {
+        $mpanTokenized = $this->dbColumn(Entity::MPANS_TOKENIZED);
+
+        $provider = $this->dbColumn(Entity::PROVIDER);
+
+        // using slave connection as there are too many qr_codes and the query columns below are not indexed
+        $query = $this->newQueryWithConnection($this->getSlaveConnection());
+
+        return $query->take($count)
+                     ->where($provider, '=', 'bharat_qr')
+                     ->whereNull($mpanTokenized)
+                     ->get();
+    }
 }

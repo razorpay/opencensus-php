@@ -2,10 +2,14 @@
 
 namespace RZP\Models\QrCode;
 
+use App;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Models\VirtualAccount;
+use RZP\Models\BharatQr\Tags;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\VirtualAccount\Provider;
 
 class Entity extends Base\PublicEntity
@@ -32,6 +36,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT                    = 'amount';
     const QR_STRING                 = 'qr_string';
     const SHORT_URL                 = 'short_url';
+    const MPANS_TOKENIZED           = 'mpans_tokenized';
 
     protected static $sign = 'qr';
 
@@ -44,6 +49,7 @@ class Entity extends Base\PublicEntity
         self::PROVIDER,
         self::REFERENCE,
         self::QR_STRING,
+        self::MPANS_TOKENIZED,
     ];
 
     protected $visible = [
@@ -150,9 +156,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFERENCE);
     }
 
-    public function getQrString()
+    // get original qr_string which is stored in db
+    public function getOriginalQrString()
     {
         return $this->getAttribute(self::QR_STRING);
+    }
+
+    public function getQrString()
+    {
+        $qrStringFromDb = $this->getOriginalQrString();
+
+        if ($this->getMpansTokenized() !== true)
+        {
+            return $qrStringFromDb;
+        }
+        return $this->getQrStringWithDetokenizedMpans($qrStringFromDb);
     }
 
     public function getProvider()
@@ -188,6 +206,12 @@ class Entity extends Base\PublicEntity
         return ($this->getReference() !== $this->getId());
     }
 
+    // returns true if mpans stored in qr_string are tokenized
+    public function getMpansTokenized()
+    {
+        return (bool) $this->getAttribute(self::MPANS_TOKENIZED);
+    }
+
     // --------------------- END GETTERS ---------------------
 
     // --------------------- SETTERS ---------------------
@@ -204,7 +228,49 @@ class Entity extends Base\PublicEntity
 
     public function setQrString(string $qrString)
     {
-        $this->setAttribute(self::QR_STRING, $qrString);
+        // only bharat_qr provider have mpans in qr_string
+        if ($this->getProvider() !== 'bharat_qr')
+        {
+            $this->setAttribute(self::QR_STRING, $qrString);
+
+            return;
+        }
+
+        $app = App::getFacadeRoot();
+
+        $mode = $app['rzp.mode'];
+
+        $variant  =  $app['razorx']->getTreatment($app['request']->getTaskId(),
+            RazorxTreatment::TOKENIZE_QR_STRING_MPANS, $mode, 2);
+
+        if (strtolower($variant) !== 'on')
+        {
+            $this->setAttribute(self::QR_STRING, $qrString);
+
+            return;
+        }
+
+        $tokenizedMpansQrString = self::getQrStringWithTokenizedMpans($qrString);
+
+        $app['trace']->info(TraceCode::SETTING_QR_STRING_WITH_MPANS_TOKENIZED, [
+            'qr_code_id'       => $this->getId(),
+            'input_string'     => $qrString,
+            'tokenized_string' => $tokenizedMpansQrString,
+        ]);
+
+        $this->setAttribute(self::QR_STRING, $tokenizedMpansQrString);
+
+        if(strlen($qrString) !== strlen($tokenizedMpansQrString))
+        {
+            $app['trace']->info(TraceCode::SETTING_QR_CODE_MPANS_TOKENIZED_TO_TRUE, []);
+
+            $this->setMpansTokenized(true);
+        }
+    }
+
+    public function setMpansTokenized(bool $areMpansTokenized)
+    {
+        $this->setAttribute(self::MPANS_TOKENIZED, $areMpansTokenized);
     }
 
     public function generateQrString()
@@ -217,4 +283,121 @@ class Entity extends Base\PublicEntity
     }
 
     // --------------------- END SETTERS ---------------------
+    public static function getQrStringWithTokenizedMpans(string $qrString)
+    {
+        $app = App::getFacadeRoot();
+
+        $mpanVaultApp = $app['mpan.cardVault'];
+
+        $tagValueMap = self::getTagValueMapFromQrString($qrString);
+
+        foreach($tagValueMap as $tag => $value)
+        {
+            if (in_array($tag, [Tags::VISA, TAGS::MASTERCARD, TAGS::RUPAY]) === true)
+            {
+                // tokenize the mpan, if not already tokenized
+                // We store only 15 characters of mastercard mpan in qr_strings
+                if ((strlen($value) === 16) or (($tag === Tags::MASTERCARD) and (strlen($value) === 15)))
+                {
+                    $tokenizedMpan = $mpanVaultApp->tokenize(['secret' => $value]);
+
+                    $tagValueMap[$tag] = $tokenizedMpan;
+                }
+            }
+        }
+
+        $qrStringWithTokenizedMpans = self::getQrStringFromTagValueMap($tagValueMap);
+
+        return $qrStringWithTokenizedMpans;
+    }
+
+    public static function getQrStringWithDetokenizedMpans($qrString)
+    {
+        if (empty($qrString) === true)
+        {
+            return $qrString;
+        }
+
+        $app = App::getFacadeRoot();
+
+        $mpanVaultApp = $app['mpan.cardVault'];
+
+        $tagValueMap = self::getTagValueMapFromQrString($qrString);
+
+        foreach($tagValueMap as $tag => $value)
+        {
+            if (in_array($tag, [Tags::VISA, TAGS::MASTERCARD, TAGS::RUPAY]) === true)
+            {
+                // detokenize the mpan, if tokenized
+                // We store only 15 characters of mastercard mpan in qr_strings
+                if ((($tag !== Tags::MASTERCARD) and (strlen($value) !== 16))
+                    or (($tag === Tags::MASTERCARD) and (strlen($value) !== 15)))
+                {
+                    $detokenizedMpan = $mpanVaultApp->detokenize($value);
+
+                    /*
+                    * Masterpass specifications indicate only 15 digits of mastercard mpan be populated in the qr
+                    * string. The last digit is generated by the bank/app at the time of scanning and validated using
+                    * luhn formula. Since many apps follows Masterpass specifications, we are making this change at
+                    * our end as well.
+                    */
+                    if ($tag == Tags::MASTERCARD)
+                    {
+                        $detokenizedMpan = substr($detokenizedMpan, 0, 15);
+                    }
+
+                    $tagValueMap[$tag] = $detokenizedMpan;
+                }
+            }
+        }
+
+        $qrStringWithTokenizedMpans = self::getQrStringFromTagValueMap($tagValueMap);
+
+        return $qrStringWithTokenizedMpans;
+    }
+
+    public static function getTagValueMapFromQrString(string $qrString)
+    {
+        $tlvArray = [];
+
+        $length = strlen($qrString);
+
+        $index = 0;
+
+        while ($index < $length)
+        {
+            $tlvTag = substr($qrString, $index, 2);
+
+            $index += 2;
+
+            $tlvLength = (int) substr($qrString, $index, 2);
+
+            $index += 2;
+
+            $tlvArray[$tlvTag] = substr($qrString, $index, $tlvLength);
+
+            $index += $tlvLength;
+        }
+
+        return $tlvArray;
+    }
+
+    public static function getQrStringFromTagValueMap(array $tagValueMap)
+    {
+        $qrString = '';
+
+        foreach($tagValueMap as $tag => $value)
+        {
+            $tagString = $tag . self::getLengthAndValue($value);
+
+            $qrString .= $tagString;
+        }
+
+        return $qrString;
+    }
+
+    protected static function getLengthAndValue(string $str)
+    {
+        return str_pad(strlen($str), 2, '0', STR_PAD_LEFT) . $str;
+    }
 }

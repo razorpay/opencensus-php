@@ -14,6 +14,16 @@ class Validator extends Base\Validator
         Entity::PROVIDER  => 'required|in:bharat_qr,upi_qr',
         Entity::REFERENCE => 'sometimes|string|custom',
     ];
+    
+    // only used in tokenizing mpans of existing qr_strings
+    protected static $editRules = [
+        Entity::QR_STRING       => 'required|string',
+        Entity::MPANS_TOKENIZED => 'required|in:1',  
+    ];
+
+    protected static $tokenizeExistingQrStringMpansRules = [
+        'count'   =>  'sometimes|integer',
+    ];
 
     protected function validateReference($attribute, $value)
     {

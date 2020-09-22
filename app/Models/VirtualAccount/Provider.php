@@ -449,12 +449,14 @@ class Provider
 
             $terminal = $terminal->toArray();
 
+            // Note: terminal at this point will have tokenized mpans, we are storing tokenized mpans in qr_string,
+            // We will be detokenizing them as and when required (to generate actual qr_string for qr_code)
             $identifiers[$mpanAttr] = $terminal[$mpanAttr];
 
             // If the mpan is tokenized, detokenize it
             if ((empty($identifiers[$mpanAttr]) === false) and (strlen($identifiers[$mpanAttr]) !== 16))
             {
-                $identifiers[$mpanAttr] = $app['mpan.cardVault']->detokenize($identifiers[$mpanAttr]);        
+                $identifiers[$mpanAttr] = $app['mpan.cardVault']->detokenize($identifiers[$mpanAttr]);
             }
             /*
              * Masterpass specifications indicate only 15 digits of mastercard mpan be populated in the qr

@@ -17,6 +17,8 @@ use RZP\Models\VirtualAccount\Core;
 use RZP\Models\VirtualAccount\Status;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\QrCode\Repository as QrCodeRepo;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -69,6 +71,8 @@ class VirtualAccountTest extends TestCase
         $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
         $this->app->make(Factory::class)->load($factoryPath);
+
+        $this->enableRazorXTreatmentForTokenizeQrStringMpans();
     }
 
     /**
@@ -508,13 +512,13 @@ class VirtualAccountTest extends TestCase
 
         $qrCode = $this->getLastEntity('qr_code', true);
 
-        $this->assertEquals($qrCode['id'], 'qr_' . $qrCode['reference']);
+        $qrCodeEntity = (new QrCodeRepo())->findOrFailPublic(substr($qrCode['id'], 3));
 
-        $qrString = $qrCode['qr_string'];
+        $this->assertEquals($qrCode['id'], 'qr_' . $qrCode['reference']);
 
         $this->assertRegExp('^http://dwarf.razorpay.in/^', $qrCode['short_url']);
 
-        $tlvArray = $this->getTagMappedValues($qrString);
+        $tlvArray = $this->getTagMappedValues($qrCodeEntity->getQrString());
 
         $masterCardValue = $tlvArray['04'];
 
@@ -531,6 +535,13 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals('528734', $visaAcquirerCode);
 
         $this->assertEquals('428734', $masterCardAcquirerCode);
+
+        $this->assertEquals(1, $qrCodeEntity['mpans_tokenized']);
+
+        $qrStringWithTokenizedMpans = (new \RZP\Models\QrCode\Entity())::getQrStringWithTokenizedMpans($qrCodeEntity->getQrString());
+
+        // asserting that actual string stored in db have tokenized mpans
+        $this->assertEquals($qrStringWithTokenizedMpans, $qrCodeEntity['qr_string']);
     }
 
     public function testCreateVirtualAccountWithReference()
@@ -2013,6 +2024,23 @@ class VirtualAccountTest extends TestCase
 
                                   return 'off';
                               }));
+    }
+
+    protected function enableRazorXTreatmentForTokenizeQrStringMpans()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if ($featureFlag === (RazorxTreatment::TOKENIZE_QR_STRING_MPANS))
+                {
+                    return 'on';
+                }
+                return 'control';
+            });
     }
 
     public function testCreateVirtualBankAccountWithTpv()

@@ -46,6 +46,9 @@ class CreateQrCodeTable extends Migration
             $table->string(QrCode::SHORT_URL, 255)
                   ->nullable();
 
+            $table->tinyInteger(QrCode::MPANS_TOKENIZED)
+                  ->nullable();
+
             $table->integer(QrCode::CREATED_AT);
 
             $table->integer(QrCode::UPDATED_AT);

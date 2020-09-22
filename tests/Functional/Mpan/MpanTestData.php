@@ -267,4 +267,65 @@ return [
             ]
         ]
     ],
+
+    'testQrCodeTokenizeExistingMpans' => [
+        'request' => [
+            'url'     => '/qr_code/mpans/tokenize',
+            'method'  => 'POST',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'qr_string_mpan_tokenization_success_count' =>  1,
+                'qr_string_mpan_tokenization_failed_count'  =>  0,
+            ]
+        ]
+    ],
+
+    'testQrCodeTokenizeExistingMpansHavingNoMpanTag' => [
+        'request' => [
+            'url'     => '/qr_code/mpans/tokenize',
+            'method'  => 'POST',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'qr_string_mpan_tokenization_success_count' => 1,
+                'qr_string_mpan_tokenization_failed_count'  => 0,
+            ]
+        ]
+    ],
+
+    'testQrCodeTokenizeExistingMpansHavingOneMpanTag' => [
+        'request' => [
+            'url'     => '/qr_code/mpans/tokenize',
+            'method'  => 'POST',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'qr_string_mpan_tokenization_success_count' => 1,
+                'qr_string_mpan_tokenization_failed_count'  => 0,
+            ]
+        ]
+    ],
+
+    'testQrCodeTokenizeExistingMpansCardVaultRequestFails' => [
+        'request' => [
+            'url'     => '/qr_code/mpans/tokenize',
+            'method'  => 'POST',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'qr_string_mpan_tokenization_success_count' => 0,
+                'qr_string_mpan_tokenization_failed_count'  => 1,
+            ]
+        ]
+    ],
+
 ];

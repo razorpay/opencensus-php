@@ -173,7 +173,7 @@ class MpanTest extends TestCase
     }
 
     public function testMpanTokenizeExistingMpans()
-    {   
+    {
         // adds mpans in table original form(non tokenized) to test mpan migration cron
         $mpanData = [
             [
@@ -208,14 +208,14 @@ class MpanTest extends TestCase
     }
 
     public function testMpanTokenizeExistingMpansInputValidationFailure()
-    {   
+    {
         $this->ba->cronAuth();
 
         $res = $this->startTest();
     }
 
     public function testMpanTokenizeExistingMpansOneCardVaultRequestFails()
-    {   
+    {
         // adds mpans in table original form(non tokenized) to test mpan migration cron
         $mpanData = [
             [
@@ -253,7 +253,7 @@ class MpanTest extends TestCase
                             'Request timedout at card vault service',
                             ErrorCode::SERVER_ERROR);
                     }
-    
+
                     $token = base64_encode($input['secret']);
 
                     return $token;
@@ -278,5 +278,125 @@ class MpanTest extends TestCase
 
             $this->assertNotNull($mpanFromDb);
         }
+    }
+
+    public function testQrCodeTokenizeExistingMpans()
+    {
+        $this->ba->cronAuth();
+
+        $originalQrString = '000201010211021652873468239864230415428734682398642061662873468239864230827YESB0CMSNOC222333004882700126300010A0000005240112random@icici27350010A0000005240117RZPFRu0HVS8RAvIgU5204539953033565802IN5905atque6009BANGALORE610656003062270514FRu0HVS8RAvIgU0705abcde6304E308';
+
+        $qrCode = $this->fixtures->create('qr_code', [
+            'qr_string' => $originalQrString,
+            ]);
+
+        $this->startTest();
+
+        $qrCode->reload();
+
+        $this->assertEquals(1, $qrCode['mpans_tokenized']);
+
+        $dbQrString = $qrCode['qr_string'];
+        $qrString = $qrCode->getQrString();
+
+        $this->assertEquals($originalQrString, $qrString);
+        $this->assertNotEquals($originalQrString, $dbQrString);
+
+        $this->assertEquals($qrString, \RZP\Models\QrCode\Entity::getQrStringWithDetokenizedMpans($dbQrString));
+    }
+
+    // qr_string does not have mpan tags
+    public function testQrCodeTokenizeExistingMpansHavingNoMpanTag()
+    {
+        $this->ba->cronAuth();
+
+        $originalQrString = '0002010102110827YESB0CMSNOC222333004882700126300010A0000005240112random@icici27350010A0000005240117RZPFRu0HVS8RAvIgU5204539953033565802IN5905atque6009BANGALORE610656003062270514FRu0HVS8RAvIgU0705abcde6304E308';
+
+        $qrCode = $this->fixtures->create('qr_code', [
+            'qr_string' => $originalQrString,
+            ]);
+
+        $this->startTest();
+
+        $qrCode->reload();
+
+        $this->assertEquals(1, $qrCode['mpans_tokenized']);
+
+        $dbQrString = $qrCode['qr_string'];
+
+        $qrString = $qrCode->getQrString();
+
+        $this->assertEquals($originalQrString, $qrString);
+        $this->assertEquals($originalQrString, $dbQrString);
+    }
+
+    // qr_string have mpan tags only for 1 network
+    public function testQrCodeTokenizeExistingMpansHavingOneMpanTag()
+    {
+        $this->ba->cronAuth();
+
+        $originalQrString = '000201021652873468239864230102110827YESB0CMSNOC222333004882700126300010A0000005240112random@icici27350010A0000005240117RZPFRu0HVS8RAvIgU5204539953033565802IN5905atque6009BANGALORE610656003062270514FRu0HVS8RAvIgU0705abcde6304E308';
+
+        $qrCode = $this->fixtures->create('qr_code', [
+            'qr_string' => $originalQrString,
+            ]);
+
+        $res = $this->startTest();
+
+        $qrCode->reload();
+
+        $this->assertEquals(1, $qrCode['mpans_tokenized']);
+        $this->assertEquals([$qrCode->getId()], $res['qr_string_mpan_tokenization_success_ids']);
+        $dbQrString = $qrCode['qr_string'];
+
+        $qrString = $qrCode->getQrString();
+
+        $this->assertEquals($originalQrString, $qrString);
+        $this->assertNotEquals($originalQrString, $dbQrString);
+    }
+
+    public function testQrCodeTokenizeExistingMpansCardVaultRequestFails()
+    {
+        $this->ba->cronAuth();
+
+        $originalQrString = '000201010211021652873468239864230415428734682398642061662873468239864230827YESB0CMSNOC222333004882700126300010A0000005240112random@icici27350010A0000005240117RZPFRu0HVS8RAvIgU5204539953033565802IN5905atque6009BANGALORE610656003062270514FRu0HVS8RAvIgU0705abcde6304E308';
+
+        $qrCode = $this->fixtures->create('qr_code', [
+            'qr_string' => $originalQrString,
+            ]);
+
+        $cardVault = Mockery::mock('RZP\Services\CardVault');
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $cardVault->shouldReceive('tokenize')
+                ->with(Mockery::type('array'))
+                ->andReturnUsing
+                (function ($input)
+                {
+                    // fail tokenization for one mpan
+                    if ($input['secret'] === '428734682398642')
+                    {
+                        throw new Exception\ServerErrorException(
+                            'Request timedout at card vault service',
+                            ErrorCode::SERVER_ERROR);
+                    }
+
+                    $token = base64_encode($input['secret']);
+
+                    return $token;
+                });
+
+
+        $res = $this->startTest();
+        $this->assertEquals([$qrCode->getId()], $res['qr_string_mpan_tokenization_failed_ids']);
+
+        $qrCode->reload();
+
+        $this->assertNull($qrCode['mpans_tokenized']);
+
+        $dbQrString = $qrCode['qr_string'];
+
+        $this->assertEquals($originalQrString, $dbQrString);
     }
 }

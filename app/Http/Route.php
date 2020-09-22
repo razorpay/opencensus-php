@@ -1853,7 +1853,8 @@ class Route
         'mpans_bulk'                              => ['post',     'mpans/bulk',                                                'MpanController@postMpansBulk'                             ],
         'mpans_tokenize_existing'                 => ['post',     'mpans/tokenize',                                            'MpanController@postTokenizeMpans'                         ],
         'terminal_mpans_tokenize_existing'        => ['post',     'terminals/mpans/tokenize',                                  'TerminalController@postTokenizeMpans'                     ],
-
+        'qr_code_mpans_tokenize_existing'         => ['post',     'qr_code/mpans/tokenize',                                    'QrCodeController@postTokenizeQrStringMpans'               ],
+        
         // Core Payment Service Routes
         'cps_sync_gateway_entities_cron'          => ['post',     'cps/sync_gateway_entities',                                 'CpsController@syncGatewayEntities'                        ],
 
@@ -2632,6 +2633,7 @@ class Route
         'banking_accounts_list_internal',
         'mpans_tokenize_existing',
         'terminal_mpans_tokenize_existing',
+        'qr_code_mpans_tokenize_existing',
         'scrooge_refunds_get_razorflow',
         'razorflow_admin_fetch_entity_by_id',
         'razorflow_admin_fetch_entity_multiple',
@@ -5108,6 +5110,7 @@ class Route
             'vendor_payment_ocr_accuracy_cron',
             'mpans_tokenize_existing',
             'terminal_mpans_tokenize_existing',
+            'qr_code_mpans_tokenize_existing',
             'setl_service_migration',
             'vendor_payment_upcoming_mail_cron',
             'tax_payments_add_penalty_cron',
