@@ -95,6 +95,10 @@ class PaymentCreateController extends Controller
 
         $this->logPaymentRequestEvent($input);
 
+        $startTime = microtime(true);
+
+        (new Payment\Metric())->pushCheckoutSubmitRequestMetrics($input, $startTime);
+
         $data = $this->service(E::PAYMENT)->process($input);
 
         $response = $this->processCoprotoJsonData($data);
@@ -136,6 +140,10 @@ class PaymentCreateController extends Controller
         $input = Request::all();
 
         $this->logPaymentRequestEvent($input);
+
+        $startTime = microtime(true);
+
+        (new Payment\Metric())->pushCheckoutSubmitRequestMetrics($input, $startTime);
 
         $this->setMerchantCallbackUrlIfApplicable($input);
 
@@ -200,6 +208,10 @@ class PaymentCreateController extends Controller
         unset($input['callback']);
 
         $this->logPaymentRequestEvent($input);
+
+        $startTime = microtime(true);
+
+        (new Payment\Metric())->pushCheckoutSubmitRequestMetrics($input, $startTime);
 
         $data = $this->service(E::PAYMENT)->process($input);
 

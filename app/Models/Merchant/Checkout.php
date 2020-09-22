@@ -281,6 +281,10 @@ class Checkout
                 'session'     => $sessionData,
                 'input'       => $input
             ]);
+
+        $startTime = microtime(true);
+
+        (new Payment\Metric())->pushCheckoutPreferenceRequestMetrics($input, $startTime);
     }
 
     protected function tracePersonalisationRequest(Entity $merchant, $mode, array $input)
