@@ -18,6 +18,7 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\ExtraFieldsException;
 use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\FundTransfer\Attempt\Constants;
+use RZP\Models\PayoutSource\Entity as PayoutSource;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 use RZP\Models\Workflow\Action\Checker\Entity as ActionChecker;
@@ -134,9 +135,13 @@ class Validator extends Base\Validator
     ];
 
     protected static $beforeCreateFundAccountPayoutRules = [
-        Entity::FUND_ACCOUNT_ID => 'required_without:fund_account|public_id',
-        Entity::FUND_ACCOUNT    => 'required_without:fund_account_id|array',
-        Entity::ORIGIN          => 'sometimes|filled',
+        Entity::FUND_ACCOUNT_ID                                    => 'required_without:fund_account|public_id',
+        Entity::FUND_ACCOUNT                                       => 'required_without:fund_account_id|array',
+        Entity::ORIGIN                                             => 'sometimes|filled',
+        Entity::SOURCE_DETAILS                                     => 'sometimes|filled|array',
+        Entity::SOURCE_DETAILS . '.*.' . PayoutSource::SOURCE_ID   => 'required|string',
+        Entity::SOURCE_DETAILS . '.*.' . PayoutSource::SOURCE_TYPE => 'required|string|',
+        Entity::SOURCE_DETAILS . '.*.' . PayoutSource::PRIORITY    => 'required|integer|min:1'
     ];
 
     protected static $beforeCreateFundAccountPayoutWithOtpRules = [
@@ -144,7 +149,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $beforeCreateFundAccountPayoutValidators = [
-        'origin'
+        'origin',
+        'source_details',
+    ];
+
+    protected static $beforeCreateFundAccountPayoutWithOtpValidators = [
+        'source_details',
     ];
 
     // Both regular(type:default) and on demand(type:on_demand) payouts are validated through merchantPayoutRules.
@@ -743,20 +753,11 @@ class Validator extends Base\Validator
     {
         if (isset($input[Entity::ORIGIN]) === true)
         {
-            if (isset($input[Entity::FUND_ACCOUNT]) === true)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    "Origin field is/are not required and should not be sent.",
-                    Entity::ORIGIN,
-                    [
-                        Entity::ORIGIN => $input[Entity::ORIGIN],
-                    ]
-                );
-            }
-
             $origin = $input[Entity::ORIGIN];
 
-            $this->validateIfOriginShouldBeSentBasedOnAuth($origin);
+            $this->validateIfFieldShouldBeSentWithCompositeApi($input, Entity::ORIGIN, $origin);
+
+            $this->validateIfFieldShouldBeSentBasedOnAuth(Entity::ORIGIN, $origin);
 
             $origin               = strtolower($origin);
             $acceptedOriginValues = array_keys(Entity::ORIGIN_SERIALIZER);
@@ -775,22 +776,66 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateIfOriginShouldBeSentBasedOnAuth($origin)
+    protected function validateIfFieldShouldBeSentWithCompositeApi(array $input, string $fieldName, $fieldValue)
     {
-        $app = App::getFacadeRoot();
+        if (isset($input[Entity::FUND_ACCOUNT]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $fieldName . " is/are not required and should not be sent",
+                $fieldName,
+                [
+                    $fieldName => $fieldValue,
+                ]
+            );
+        }
+    }
 
-        /** @var BasicAuth $auth */
-        $auth = $app['basicauth'];
-
-        $auth->isInternalApp();
-
+    protected function validateIfFieldShouldBeSentBasedOnAuth(string $fieldName, $fieldValue)
+    {
         if ((new Service)->isAllowedInternalApp() === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                "Origin field is/are not required and should not be sent.",
-                Entity::ORIGIN,
+                $fieldName . " is/are not required and should not be sent",
+                $fieldName,
                 [
-                    Entity::ORIGIN => $origin,
+                    $fieldName => $fieldValue,
+                ]
+            );
+        }
+    }
+
+    protected function validateSourceDetails($input)
+    {
+        if (isset($input[Entity::SOURCE_DETAILS]) === true)
+        {
+            $sourceDetails = $input[Entity::SOURCE_DETAILS];
+
+            $this->validateIfFieldShouldBeSentWithCompositeApi($input, Entity::SOURCE_DETAILS, $sourceDetails);
+
+            $this->validateIfFieldShouldBeSentBasedOnAuth(Entity::SOURCE_DETAILS, $sourceDetails);
+
+            $this->validatePrioritySequence($input[Entity::SOURCE_DETAILS]);
+        }
+    }
+
+    protected function validatePrioritySequence(array $sourceDetails)
+    {
+        $priorities = [];
+
+        foreach ($sourceDetails as $sourceDetail)
+        {
+            array_push($priorities, $sourceDetail[PayoutSource::PRIORITY]);
+        }
+
+        $priorities = array_unique($priorities);
+
+        if (count($priorities) !== count($sourceDetails))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "source_details has sources with duplicate priorities",
+                Entity::SOURCE_DETAILS,
+                [
+                    Entity::SOURCE_DETAILS => $sourceDetails,
                 ]
             );
         }

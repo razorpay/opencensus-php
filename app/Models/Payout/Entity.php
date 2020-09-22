@@ -22,6 +22,7 @@ use RZP\Models\Transaction;
 use RZP\Models\FeeRecovery;
 use RZP\Models\FundAccount;
 use RZP\Constants\Timezone;
+use RZP\Models\PayoutSource;
 use RZP\Models\FundTransfer;
 use RZP\Models\BankingAccount;
 use RZP\Base\RepositoryManager;
@@ -99,6 +100,7 @@ class Entity extends Base\PublicEntity
     const FEE_TYPE                              = 'fee_type';
     const WORKFLOW_FEATURE                      = 'workflow_feature';
     const ORIGIN                                = 'origin';
+    const SOURCE_DETAILS                        = 'source_details';
 
     // scheduled_at is the timestamp for when the merchant schedules the payout to be processed
     const SCHEDULED_AT                          = 'scheduled_at';
@@ -229,6 +231,26 @@ class Entity extends Base\PublicEntity
      */
     protected $expectedFeeType = null;
 
+    /*
+    This variable is defined to store the source_details that came in the input request. It is later used to create the
+    payout_source for all those details and associate them with the payout.
+    Example:
+
+    $inputSourceDetails = [
+        [
+            "source_id"   => "100000000000sa",
+            "source_type" => "payout_link",
+            "priority"    => 1
+        ],
+        [
+            "source_id"   => "100000000001sa",
+            "source_type" => "vendor_payment",
+            "priority"    => 2
+        ]
+    ];
+     */
+    protected $inputSourceDetails = null;
+
     /**
      * In case of direct banking, we get the transactions directly from the bank. We don't create transactions
      * from our system. Sometimes, we are not able to map a transaction to one of the payouts in our system.
@@ -339,6 +361,7 @@ class Entity extends Base\PublicEntity
         self::SCHEDULED_ON,
         self::ORIGIN,
         self::CREATE_REQUEST_SUBMITTED_AT,
+        self::SOURCE_DETAILS,
     ];
 
     protected $public = [
@@ -381,6 +404,7 @@ class Entity extends Base\PublicEntity
         self::SCHEDULED_AT,
         self::SCHEDULED_ON,
         self::ORIGIN,
+        self::SOURCE_DETAILS,
     ];
 
     protected $webhook = [
@@ -439,6 +463,7 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION,
         self::SCHEDULED_ON,
         self::ORIGIN,
+        self::SOURCE_DETAILS,
     ];
 
     protected $defaults = [
@@ -586,6 +611,11 @@ class Entity extends Base\PublicEntity
     public function batch()
     {
         return $this->belongsTo(Batch\Entity::class);
+    }
+
+    public function payoutSources()
+    {
+        return $this->hasMany(PayoutSource\Entity::class);
     }
 
     // ============================= END RELATIONS =============================
@@ -1002,6 +1032,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ORIGIN);
     }
 
+    public function getSourceDetails()
+    {
+        return $this->getAttribute(self::SOURCE_DETAILS);
+    }
+
+    public function getInputSourceDetails()
+    {
+        return $this->inputSourceDetails;
+    }
+
     // ============================= END GETTERS =============================
 
     // ============================= SETTERS =============================
@@ -1255,6 +1295,13 @@ class Entity extends Base\PublicEntity
         return $this;
     }
 
+    public function setInputSourceDetails($inputSourceDetails)
+    {
+        $this->inputSourceDetails = $inputSourceDetails;
+
+        return $this;
+    }
+
     public function setWorkflowFeature($workflowFeature)
     {
         if ($workflowFeature !== null)
@@ -1345,6 +1392,22 @@ class Entity extends Base\PublicEntity
         $origin = $this->attributes[self::ORIGIN];
 
         return self::ORIGIN_DESERIALIZER[$origin];
+    }
+
+    public function getSourceDetailsAttribute()
+    {
+        $visibleKeys = [
+            PayoutSource\Entity::SOURCE_ID,
+            PayoutSource\Entity::SOURCE_TYPE,
+            PayoutSource\Entity::PRIORITY,
+        ];
+
+        $sourceDetails = $this->payoutSources()->select($visibleKeys)
+                                               ->orderBy(PayoutSource\Entity::PRIORITY)
+                                               ->get()
+                                               ->toArray();
+
+        return $sourceDetails;
     }
 
     // ============================= END ACCESSORS =============================
@@ -1728,6 +1791,14 @@ class Entity extends Base\PublicEntity
         if (app('basicauth')->isStrictPrivateAuth() === true)
         {
             unset($attributes[self::ORIGIN]);
+        }
+    }
+
+    public function setPublicSourceDetailsAttribute(array & $attributes)
+    {
+        if (app('basicauth')->isStrictPrivateAuth() === false)
+        {
+            $attributes[self::SOURCE_DETAILS] = $this->getSourceDetailsAttribute();
         }
     }
 

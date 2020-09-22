@@ -29,24 +29,9 @@ class Core extends Base\Core
 
         (new Validator)->validateInput(Validator::PAYOUT_SOURCE_CREATE, $input);
 
-        /** @var Entity $payoutSource */
-        $payoutSource = $this->repo->payout_source->getPayoutSourceByPayoutIdAndPriority(
-            $payoutId,
-            $input[Entity::PRIORITY]);
+        $this->validateIfSameSourceIsNotAlreadyPresentForThePayout($input, $payoutId);
 
-
-        if ($payoutSource !== null)
-        {
-            throw new BadRequestException(
-                ErrorCode::PAYOUT_SOURCE_ALREADY_EXISTS,
-                null,
-                [
-                    self::EXISTING_SOURCE => $payoutSource->toArrayInternal(),
-                    self::INPUT           => $input,
-                    Entity::PAYOUT_ID     => $payoutId,
-                ]
-            );
-        }
+        $this->validateIfSourceIsNotPresentForThePayoutWithSamePriority($input, $payoutId);
 
         $payoutSource = (new Entity);
 
@@ -60,5 +45,48 @@ class Core extends Base\Core
             TraceCode::PAYOUT_SOURCE_ENTITY_CREATED,
             $payoutSource->toArrayInternal()
         );
+    }
+
+    protected function validateIfSameSourceIsNotAlreadyPresentForThePayout(array $input, string $payoutId)
+    {
+        /** @var Entity $payoutSource */
+        $payoutSource = $this->repo->payout_source->getPayoutSourceBySourceIdSourceTypePayoutId(
+            $input[Entity::SOURCE_ID],
+            $input[Entity::SOURCE_TYPE],
+            $payoutId);
+
+        if ($payoutSource !== null)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_SOURCE_ALREADY_EXISTS,
+                null,
+                [
+                    self::EXISTING_SOURCE => $payoutSource->toArrayInternal(),
+                    self::INPUT           => $input,
+                    Entity::PAYOUT_ID     => $payoutId,
+                ]
+            );
+        }
+    }
+
+    protected function validateIfSourceIsNotPresentForThePayoutWithSamePriority(array $input, string $payoutId)
+    {
+        /** @var Entity $payoutSource */
+        $payoutSource = $this->repo->payout_source->getPayoutSourceByPayoutIdAndPriority(
+            $payoutId,
+            $input[Entity::PRIORITY]);
+
+        if ($payoutSource !== null)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ANOTHER_PAYOUT_SOURCE_EXISTS_WITH_SAME_PRIORITY,
+                null,
+                [
+                    self::EXISTING_SOURCE => $payoutSource->toArrayInternal(),
+                    self::INPUT           => $input,
+                    Entity::PAYOUT_ID     => $payoutId,
+                ]
+            );
+        }
     }
 }

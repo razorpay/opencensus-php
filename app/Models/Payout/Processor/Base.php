@@ -18,11 +18,11 @@ use Razorpay\Trace\Logger;
 use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
+use RZP\Models\PayoutSource;
 use RZP\Models\Payout\Status;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Balance;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payout\Notifications;
 use RZP\Models\Payout\CounterHelper;
 use RZP\Models\Base\Core as BaseCore;
@@ -184,6 +184,13 @@ class Base extends BaseCore
             }
 
             $this->repo->saveOrFail($payout);
+
+            $sourceDetails = $payout->getInputSourceDetails();
+
+            if (empty($sourceDetails) === false)
+            {
+                $this->processSourceDetails($sourceDetails, $payout);
+            }
 
             $this->trace->info(
                 TraceCode::PAYOUT_CREATED,
@@ -424,7 +431,7 @@ class Base extends BaseCore
         {
             $this->trace->traceException(
                 $ex,
-                Trace::CRITICAL,
+                Logger::CRITICAL,
                 TraceCode::PAYOUT_CREATE_SUBMITTED_PROCESS_FAILED,
                 [
                     'payout_id'      => $payout->getId(),
@@ -978,6 +985,10 @@ class Base extends BaseCore
             unset($input[Payout\Entity::FEE_TYPE]);
         }
 
+        $sourceDetails = $this->pullSourceDetails($input);
+
+        $payout->setInputSourceDetails($sourceDetails);
+
         $this->runInputValidations($payout, $input);
 
         $this->processPayoutLinkId($payout, $input);
@@ -1309,6 +1320,26 @@ class Base extends BaseCore
                     'xp_payouts_alert');
 
             throw $e;
+        }
+    }
+
+    protected function pullSourceDetails(array & $input)
+    {
+        $sourceDetails = null;
+
+        if (isset($input[Entity::SOURCE_DETAILS]) === true)
+        {
+            $sourceDetails = array_pull($input, Entity::SOURCE_DETAILS);
+        }
+
+        return $sourceDetails;
+    }
+
+    protected function processSourceDetails(array $sourceDetails, Entity $payout)
+    {
+        foreach ($sourceDetails as $sourceDetail)
+        {
+            (new PayoutSource\Core)->create($sourceDetail, $payout);
         }
     }
 }

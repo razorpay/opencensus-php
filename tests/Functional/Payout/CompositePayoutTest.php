@@ -351,4 +351,14 @@ class CompositePayoutTest extends TestCase
         $this->assertEquals(count($fundAccounts), 1);
         $this->assertEquals(count($contacts), 1);
     }
+
+    public function testCreateCompositePayoutWithOriginField()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateCompositePayoutWithSourceDetailsField()
+    {
+        $this->startTest();
+    }
 }

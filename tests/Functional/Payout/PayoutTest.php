@@ -98,7 +98,6 @@ class PayoutTest extends TestCase
 
     public function testCreatePayout(): array
     {
-
         $this->ba->privateAuth();
 
         $this->startTest();
@@ -6955,6 +6954,69 @@ class PayoutTest extends TestCase
         $this->assertNull($txn);
     }
 
+    public function testCreatePayoutLinkPayoutWithoutSourceDetails()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutLinkPayoutWithSourceDetails()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutLinkPayoutWithExtraFieldsInSourceDetails()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutLinkPayoutWithIncorrectPriorityInSourceDetails()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutLinkPayoutWithIncorrectPrioritySequenceInSourceDetails()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutOnPrivateAuthWithSourceDetails()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutOnProxyAuthWithSourceDetails()
+    {
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData['testCreatePayoutOnPrivateAuthWithSourceDetails'];
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']   = '0007';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutLinkPayoutWithSourceDetailsAsNotAnArray()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->startTest();
+    }
+
     public function testFailPayoutWithErrorCodeAsPbankValidationError()
     {
         $this->createDirectAccountPayout();
@@ -7018,5 +7080,12 @@ class PayoutTest extends TestCase
         $this->testCreatePayout();
 
         Queue::assertPushed(PayoutSourceUpdaterJob::class, 1);
+    }
+
+    public function testCreateVendorPaymentPayoutWithDuplicateSourceDetailsButDifferentPriorities()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->startTest();
     }
 }
