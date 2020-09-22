@@ -971,16 +971,10 @@ app
           userid: data.user.id,
           mid: data.current,
         });
-
-        /**
-         * Adding the redirection to queue so that the
-         * datalake event finishes to completion.
-         */
-        setTimeout(() => {
+        
           location.hash = '';
           location.pathname = '/app';
           location.reload();
-        }, 0);
       };
 
       $scope.onLoginInputFocus = function (type) {
