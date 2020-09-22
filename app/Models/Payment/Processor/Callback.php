@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Processor;
 
 use Mail;
 
+use Razorpay\Trace\Logger;
 use RZP\Jobs;
 use RZP\Error;
 use Carbon\Carbon;
@@ -377,29 +378,37 @@ trait Callback
         {
             try
             {
-                $data2 = $this->callGatewayPay($input);
+                $payData = $this->callGatewayPay($input);
 
-                $this->trace->info(
-                    TraceCode::CARD_PAYMENT_SERVICE_RESPONSE_DIFFERENCE,
-                    [
-                        'callback_data' => $data,
-                        'pay_data'      => $data2,
-                        'diff'          => $data === $data2,
-                    ]
-                );
+                //For Cred we receive the discount in the callback event.
+                $this->addDiscountToPaymentIfApplicable($payment, $payData);
+
+                if (isset($payData[Payment\Entity::TWO_FACTOR_AUTH]) === true)
+                {
+                    $twoFactorAuth = $payData[Payment\Entity::TWO_FACTOR_AUTH];
+
+                    $payment->setTwoFactorAuth($twoFactorAuth);
+
+                    $this->repo->saveOrFail($payment);
+                }
+
+                $data = $payData;
             }
             catch (Exception\BaseException $e)
             {
-                // TODO: Uncomment pay action error handling
-                // $this->processPaymentPayException($e);
+                $traceData = [
+                    'callbackData' => $data,
+                    'payment_id'   => $payment->getId(),
+                    'gateway'      => $payment->getGateway(),
+                ];
 
-                $this->trace->info(
+                $this->trace->traceException(
+                    $e,
+                    null,
                     TraceCode::CARD_PAYMENT_SERVICE_PAY_ERROR,
-                    [
-                        'payment_id'    => $payment->getId(),
-                        'error'         => $e,
-                    ]
-                );
+                    $traceData);
+
+                $this->processPaymentPayException($e);
             }
         }
 
@@ -419,12 +428,13 @@ trait Callback
 
     protected function shouldCallPayAction($input, $data)
     {
-        if ($this->isRoutedThroughCardPayments(Payment\Action::PAY, $input))
+        if ($this->isRoutedThroughCardPayments(Payment\Action::PAY, $input) and
+            (isset($data['status']) === true) and
+            ($data['status'] === Payment\Status::AUTHENTICATED))
         {
             return true;
         }
 
-        // TODO: Put a check on response of Callback
         return false;
     }
 
