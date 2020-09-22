@@ -284,7 +284,7 @@ export default class Details extends Component {
                 <EntityDetailRow label="Name">{account.name}</EntityDetailRow>
 
                 {user.isRouteCodeSupportEnabled && (
-                  <EntityDetailRow label="Account Alias" value={account.code} />
+                  <EntityDetailRow label="Account Code" value={account.code} />
                 )}
 
                 <EntityDetailRow label="Account Status">

@@ -154,7 +154,7 @@ export default ({
             <th>Account Id</th>
             <th>Email</th>
             <th>Name</th>
-            {isRouteCodeSupportEnabled && <th>Alias</th>}
+            {isRouteCodeSupportEnabled && <th>Account Code</th>}
             <th>Account Status</th>
             {onToggleDashboardAccess && <th style={{ textAlign: 'center' }}>Dashboard Access</th>}
             {onToggleAllowRefunds && (

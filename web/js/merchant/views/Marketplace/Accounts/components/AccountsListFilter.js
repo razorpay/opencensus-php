@@ -16,7 +16,7 @@ export default (props) => {
 
       {props.isRouteCodeSupportEnabled && (
         <div class="form-group list-filter-item">
-          <label>Account Alias</label>
+          <label>Account Code</label>
           <Field name="code" component="input" class="form-control input-sm" />
         </div>
       )}

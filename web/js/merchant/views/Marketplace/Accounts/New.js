@@ -236,7 +236,7 @@ export default class AddAccount extends Component {
 
             {user.isRouteCodeSupportEnabled && (
               <div class="form-group">
-                <label>Account Alias (Nickname)</label>
+                <label>Account Code</label>
                 <div>
                   <Field
                     name="code"
@@ -244,9 +244,9 @@ export default class AddAccount extends Component {
                     class="form-control"
                     value={this.state.code}
                     onChange={(e) => this.setState({ code: e.target.value })}
-                    maxLength={25}
+                    maxLength={20}
                   />
-                  <small class="help-block">Maximum 25 characters. Alphanumeric only</small>
+                  <small class="help-block">Maximum 20 characters. Alphanumeric and _ . - only</small>
                 </div>
               </div>
             )}
