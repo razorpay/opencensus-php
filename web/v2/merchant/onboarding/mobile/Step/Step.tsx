@@ -12,7 +12,7 @@ import CompletedIcon from './Icons/completed.svg';
 import ErrorIcon from './Icons/error.svg';
 import PendingIcon from './Icons/pending.svg';
 
-interface StepProps {
+export interface StepPropsT {
   name: string;
   id: string;
   hasErrorText?: string;
@@ -71,7 +71,7 @@ const StatusIndicatorIcon = ({ isComplete, hasErrorText, isLocked }) => {
   return <img src={icon} alt={alt} />;
 };
 
-const Step: React.FC<StepProps> = ({
+const Step: React.FC<StepPropsT> = ({
   id,
   name,
   hasErrorText = '',
