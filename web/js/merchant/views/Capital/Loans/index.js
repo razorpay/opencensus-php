@@ -11,7 +11,7 @@ import {
 } from 'merchant/reducers/capital';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { Redirect, withRouter } from 'react-router-dom';
 import LoanEntity from './LoanEntity';
 import ApplicationStatusOverview from './ApplicationStatusOverview';
 import CircularProgress from 'common/new-ui/CircularProgress';
@@ -161,7 +161,9 @@ class LoanApplicationOverview extends React.Component {
   };
 
   render() {
-    const { loanApplicationDetails } = this.props;
+    const { loanApplicationDetails, user } = this.props;
+
+    if (!user.isLoansEnabled) return <Redirect to="/" />;
 
     return (
       <OnBoardingWrapper class="Loans">

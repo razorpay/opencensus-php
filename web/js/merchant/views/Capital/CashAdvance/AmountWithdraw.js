@@ -229,7 +229,7 @@ export default class AmountWithdraw extends React.Component {
       eventLabel: 'Withdraw | Withdraw Now',
     });
 
-    if (this.isTCMandatoryLender()) {
+    if (this.isLenderApolloFinvest()) {
       this.setState({
         isConfirmingWithdrawalTC: true,
       });
@@ -366,15 +366,18 @@ export default class AmountWithdraw extends React.Component {
     return this.getInternalCreditBalance() > this.getMinWithdrawableAmount();
   };
 
-  isTCMandatoryLender = () => {
-    // TODO: take this WC
-    const lender = 'APOLLO_FINVEST';
+  isLenderApolloFinvest = () => {
+    const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
 
-    return lender === 'APOLLO_FINVEST';
+    return (
+      withdrawalConfigurationDetails &&
+      withdrawalConfigurationDetails.configuration.custom_partner_fields.partner_id ===
+        'APOLLOFINVEST'
+    );
   };
 
   isTCAccepted = () => {
-    if (this.isTCMandatoryLender()) {
+    if (this.isLenderApolloFinvest()) {
       return this.state.isWithdrawalTCAccepted;
     } else {
       return true;
@@ -444,7 +447,7 @@ export default class AmountWithdraw extends React.Component {
     if (!this.isMinWithdrawalBalanceAvailable()) {
       return this.getCannotWithdrawDueToLowBalanceCTA();
     }
-    if (this.isTCMandatoryLender() && !this.isLenderServiceable()) {
+    if (this.isLenderApolloFinvest() && !this.isLenderServiceable()) {
       return this.getCannotWithdrawDueToUnserviceableCTA();
     }
 
