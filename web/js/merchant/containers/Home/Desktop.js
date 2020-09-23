@@ -136,6 +136,10 @@ class AnalyticsDesktop extends Component {
       trafficSectionTitle,
       merchantBalanceConfigs,
       lateAuthConfig,
+      numberOfTransaction,
+      isValueFilled,
+      roleToShowSupportDetailForm,
+      openSupportDetailModal,
     } = this.props;
 
     const {
@@ -206,6 +210,22 @@ class AnalyticsDesktop extends Component {
               <Link to={'/addfunds'} target="_blank">
                 {' '}
                 Add Funds
+              </Link>
+            </AnnouncementBanner>
+          )}
+          {!!numberOfTransaction && !isValueFilled && roleToShowSupportDetailForm && (
+            <AnnouncementBanner title="Add Support Details" theme="primary" canBeClosed={true}>
+              <span className="support-tagline">
+                Let your customers know how to reach you for any queries.
+              </span>
+              <Link to={'/profile'}>
+                <button
+                  className="pull-right primary btn-support"
+                  type="button"
+                  onClick={() => openSupportDetailModal(false)}
+                >
+                  Add Details
+                </button>
               </Link>
             </AnnouncementBanner>
           )}

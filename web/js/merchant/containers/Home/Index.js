@@ -21,11 +21,7 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
 import * as HomeActions from 'merchant/reducers/home';
 import { fetch } from 'merchant/reducers/pokedex';
 import { fetchPayments } from 'merchant/reducers/collection';
-import {
-  API_ERROR,
-  API_INVALID_RESP,
-  isMobileDevice,
-} from 'merchant/components/Home/data';
+import { API_ERROR, API_INVALID_RESP, isMobileDevice } from 'merchant/components/Home/data';
 import WelcomeModal from 'merchant/components/Home/WelcomeModal';
 
 import InstantActivationSuccess from 'merchant/components/Home/InstantActivationSuccess';
@@ -45,6 +41,7 @@ import {
   trackTryDashboard,
   trackIAClose,
   iaActivations,
+  trackSupportDetailPopupDisplay,
 } from './ga';
 
 import Banner from 'common/ui/Banner';
@@ -53,6 +50,8 @@ import Mobile from './Mobile';
 import ShowWhen from 'merchant/components/ShowWhen';
 import RTracking from 'react-tracking';
 import { fetchVirtualAccounts } from 'merchant/reducers/virtualaccounts';
+import MerchantDataCollectionModal from 'merchant/views/Settings/SupportDetails/MerchantDataCollectionModal';
+import { fetchSupportDetail, fetchNoOfTransaction } from 'merchant/reducers/support_detail';
 
 const dateRangePresets = [
     ['Past 7 Days', -7, 'days'],
@@ -67,11 +66,7 @@ const getPreviousDates = ({ startDate, endDate }) => {
 
   return {
     startDate: startDate.clone().subtract(diff, 'ms'),
-    endDate: endDate
-      .clone()
-      .subtract(1, 'day')
-      .subtract(diff, 'ms')
-      .endOf('day'),
+    endDate: endDate.clone().subtract(1, 'day').subtract(diff, 'ms').endOf('day'),
   };
 };
 
@@ -84,14 +79,13 @@ const keymetricsSectionTitle = 'Transactions Overview',
   recentActivityTitle = 'Recent Activity';
 
 @connect(
-  state => {
+  (state) => {
     return {
       user: state.session.user,
       mode: state.session.mode,
       current_balance: state.home.current_balance,
       merchantBalanceConfigs: state.home.merchantBalanceConfigs,
-      showInstantActivationSuccess:
-        state.home.instantActivations.showInstantActivationSuccess,
+      showInstantActivationSuccess: state.home.instantActivations.showInstantActivationSuccess,
       showKYCDetails: state.home.instantActivations.showKYCDetails,
       showPANStatus: state.home.instantActivations.showPANStatus,
       showKYCStatus: state.home.instantActivations.showKYCStatus,
@@ -99,6 +93,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
       settlement_amount: state.home.settlement_amount,
       virtualAccounts: state.virtualaccounts,
       lateAuthConfig: state.config.lateAuthConfig,
+      support_detail: state.supportdetails.merchantSupportDetail,
     };
   },
   {
@@ -108,7 +103,8 @@ const keymetricsSectionTitle = 'Transactions Overview',
     fetchPayments,
     fetchVirtualAccounts,
     fetchLateAuthConfig,
-  }
+    fetchSupportDetail,
+  },
 )
 @RTracking(() => window.rzpQ.component('HomeContainer'))
 export default class HomeContainer extends Component {
@@ -144,7 +140,7 @@ export default class HomeContainer extends Component {
      * converting them specific to the merchants the current user can switch to
      */
     if (LocalStorageService.getItem(onboardingCardToken)) {
-      Object.keys(user.merchants).forEach(key => {
+      Object.keys(user.merchants).forEach((key) => {
         LocalStorageService.setItem(`${onboardingCardToken}--${key}`, 'true');
       });
 
@@ -152,7 +148,7 @@ export default class HomeContainer extends Component {
     }
 
     if (LocalStorageService.getItem(firstStepToken)) {
-      Object.keys(user.merchants).forEach(key => {
+      Object.keys(user.merchants).forEach((key) => {
         LocalStorageService.setItem(`${firstStepToken}--${key}`, 'true');
       });
 
@@ -160,16 +156,36 @@ export default class HomeContainer extends Component {
     }
 
     const hasAccessToOnboardingBanner = (this.hasAccessToOnboardingBanner =
-      [rolesList.MANAGER, rolesList.OWNER, rolesList.ADMIN].indexOf(
-        user.role
-      ) >= 0);
+      [rolesList.MANAGER, rolesList.OWNER, rolesList.ADMIN].indexOf(user.role) >= 0);
 
     const showOnboardingBanner =
-        hasAccessToOnboardingBanner &&
-        LocalStorageService.getItem(this.onboardingBannerToken),
-      showOnboardingBannerFirstStep = LocalStorageService.getItem(
-        this.firstStepToken
+        hasAccessToOnboardingBanner && LocalStorageService.getItem(this.onboardingBannerToken),
+      showOnboardingBannerFirstStep = LocalStorageService.getItem(this.firstStepToken);
+
+    const roleToShowSupportDetailForm =
+      [
+        rolesList.MANAGER,
+        rolesList.OPERATIONS,
+        rolesList.ADMIN,
+        rolesList.SUPPORT,
+        rolesList.OWNER,
+      ].indexOf(user.role) >= 0;
+    const SUPPORT_DETAIL_LAST_POP_DISPLAY_DATE = LocalStorageService.getItem(
+      `SUPPORT_DETAIL_LAST_POP_DISPLAY_DATE--${user.current}`,
+    );
+    if (!SUPPORT_DETAIL_LAST_POP_DISPLAY_DATE && roleToShowSupportDetailForm) {
+      LocalStorageService.setItem(
+        `SUPPORT_DETAIL_LAST_POP_DISPLAY_DATE--${user.current}`,
+        moment().subtract(1, 'days').format('DD/MM/YYYY'),
       );
+    }
+
+    if (
+      !LocalStorageService.getItem(`SUPPORT_DETAIL_CURRENT_POPUP_COUNT--${user.current}`) &&
+      roleToShowSupportDetailForm
+    ) {
+      LocalStorageService.setItem(`SUPPORT_DETAIL_CURRENT_POPUP_COUNT--${user.current}`, 10);
+    }
 
     this.state = {
       startDate,
@@ -193,8 +209,8 @@ export default class HomeContainer extends Component {
         items: [],
       },
       dismissDiwaliPromotion: false,
-      hideDiwaliPromotion:
-        LocalStorageService.getItem('hide_diwali_promotional_banner') || false,
+      hideDiwaliPromotion: LocalStorageService.getItem('hide_diwali_promotional_banner') || false,
+      numberOfTransaction: 0,
     };
 
     /*
@@ -223,7 +239,7 @@ export default class HomeContainer extends Component {
           LocalStorageService.setItem(this.firstStepToken, 'true');
         }
       } else if (mode !== 'live') {
-        this.props.fetchPayments({ mode: 'live' }).then(data => {
+        this.props.fetchPayments({ mode: 'live' }).then((data) => {
           data = data.data;
 
           if (data && data.items && data.items.length === 0) {
@@ -236,16 +252,12 @@ export default class HomeContainer extends Component {
     this.oldestTxnReqId = 0;
     this.onDatesChange = this.onDatesChange.bind(this);
     this.onFetchPayments = this.onFetchPayments.bind(this);
-    this.setScrollAmountToStickHeader = this.setScrollAmountToStickHeader.bind(
-      this
-    );
+    this.setScrollAmountToStickHeader = this.setScrollAmountToStickHeader.bind(this);
     this.onHideOnboardingBanner = this.onHideOnboardingBanner.bind(this);
     this.onFirstStepClose = this.onFirstStepClose.bind(this);
     this.onExtraContentMount = this.onExtraContentMount.bind(this);
     this.onResize = debounce(this.onResize.bind(this), 500);
-    this.onInstantActivationSuccess = this.onInstantActivationSuccess.bind(
-      this
-    );
+    this.onInstantActivationSuccess = this.onInstantActivationSuccess.bind(this);
     this.onHideDiwaliPromotion = this.onHideDiwaliPromotion.bind(this);
   }
 
@@ -280,7 +292,7 @@ export default class HomeContainer extends Component {
     };
 
     return (analyticsFetch || fetch)(query, this.props.mode)
-      .then(data => {
+      .then((data) => {
         if (!data.success) {
           return API_ERROR;
         }
@@ -293,12 +305,12 @@ export default class HomeContainer extends Component {
 
         return data;
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
 
         return API_ERROR;
       })
-      .then(data => {
+      .then((data) => {
         if (data.error) {
           trackError(`While Fetching Txns Grouped by Ptfm`);
 
@@ -371,7 +383,7 @@ export default class HomeContainer extends Component {
     });
 
     return (analyticsFetch || fetch)(oldestTransactionQuery, this.props.mode)
-      .then(data => {
+      .then((data) => {
         if (oldestTxnReqId !== this.oldestTxnReqId) {
           return null;
         }
@@ -389,12 +401,12 @@ export default class HomeContainer extends Component {
 
         return { value };
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
 
         return API_ERROR;
       })
-      .then(data => {
+      .then((data) => {
         oldestTransactionDate.loading = false;
 
         if (!data || data.error) {
@@ -481,9 +493,7 @@ export default class HomeContainer extends Component {
   }
 
   setScrollAmountToStickHeader() {
-    const scrollAmountToStickHeader = this.extraContent
-      ? this.extraContent.clientHeight
-      : 0;
+    const scrollAmountToStickHeader = this.extraContent ? this.extraContent.clientHeight : 0;
 
     this.setState({ scrollAmountToStickHeader });
   }
@@ -501,11 +511,17 @@ export default class HomeContainer extends Component {
     this.props.fetchBalanceConfig();
     this.props.fetchLateAuthConfig();
     this.setScrollAmountToStickHeader();
+    //fetch number of transaction in live mode
+    fetchNoOfTransaction({ skip: '2', count: '1' })
+      .then(({ data }) => this.setState({ numberOfTransaction: data.items.length }))
+      .catch((err) => console.log('transaction not found'));
+
+    this.props.fetchSupportDetail();
 
     window.addEventListener('resize', this.onResize);
 
     const shouldShowMobileHotjarSurvey = showWhenUtil({
-      additionalCondition: user => user.isMobileHotjarSurveyEnabled,
+      additionalCondition: (user) => user.isMobileHotjarSurveyEnabled,
     });
 
     if (shouldShowMobileHotjarSurvey) {
@@ -529,7 +545,7 @@ export default class HomeContainer extends Component {
         // adjusting the scroll amount when the datepicker bar should stick
         // on top of the page
         this.setScrollAmountToStickHeader();
-      }
+      },
     );
 
     LocalStorageService.removeItem(this.firstStepToken);
@@ -546,7 +562,7 @@ export default class HomeContainer extends Component {
         });
 
         this.setScrollAmountToStickHeader();
-      }
+      },
     );
 
     LocalStorageService.removeItem(this.onboardingBannerToken);
@@ -570,9 +586,9 @@ export default class HomeContainer extends Component {
           },
           () => {
             this.setScrollAmountToStickHeader();
-          }
+          },
         );
-      }
+      },
     );
 
     if (showOnboardingBannerFirstStep) {
@@ -623,9 +639,54 @@ export default class HomeContainer extends Component {
             hideDiwaliPromotion: true,
           });
         }, 500);
-      }
+      },
     );
   }
+
+  compareDate = (curr, prev) => {
+    const currDate = moment(curr, 'DD/MM/YYYY');
+    const prevDate = moment(prev, 'DD/MM/YYYY');
+    if (currDate > prevDate) return true;
+    else return false;
+  };
+
+  openSupportDetailModal = (isHomePage) => {
+    const { tracking, user } = this.props;
+    if (isHomePage) {
+      LocalStorageService.setItem(
+        `SUPPORT_DETAIL_LAST_POP_DISPLAY_DATE--${user.current}`,
+        moment().format('DD/MM/YYYY'),
+      );
+      let remainigCount = LocalStorageService.getItem(
+        `SUPPORT_DETAIL_CURRENT_POPUP_COUNT--${user.current}`,
+      );
+      if (remainigCount > 0) {
+        LocalStorageService.setItem(
+          `SUPPORT_DETAIL_CURRENT_POPUP_COUNT--${user.current}`,
+          remainigCount - 1,
+        );
+      }
+    }
+    setTimeout(() => {
+      return this.props.openModal({
+        size: 'small',
+        component: (
+          <MerchantDataCollectionModal closeModal={this.props.closeModal} supportModal={true} />
+        ),
+      });
+    }, 500);
+    trackSupportDetailPopupDisplay();
+    tracking.trackEvent(
+      window.rzpQ.onbr().success('support_details.popup_displayed', {
+        action: 'display_support_detail_popup',
+      }),
+    );
+    tracking.trackEvent(
+      window.rzpQ.onbr().initiated('action_popup', {
+        clickSource: 'Display popup',
+      }),
+    );
+  };
 
   render() {
     let {
@@ -648,6 +709,7 @@ export default class HomeContainer extends Component {
       settlement_amount,
       merchantBalanceConfigs,
       lateAuthConfig,
+      support_detail,
     } = this.props;
 
     const { activation_flow } = user;
@@ -664,6 +726,7 @@ export default class HomeContainer extends Component {
       payments,
       showOnboardingBannerFirstStep,
       isMobile,
+      numberOfTransaction,
     } = this.state;
 
     const {
@@ -673,7 +736,22 @@ export default class HomeContainer extends Component {
       onFetchPayments,
       onExtraContentMount,
       setScrollAmountToStickHeader,
+      openSupportDetailModal,
     } = this;
+
+    const roleToShowSupportDetailForm =
+      [
+        rolesList.MANAGER,
+        rolesList.OPERATIONS,
+        rolesList.ADMIN,
+        rolesList.SUPPORT,
+        rolesList.OWNER,
+      ].indexOf(user.role) >= 0;
+    const maxPopupCountOfSupportDetail = LocalStorageService.getItem(
+      `SUPPORT_DETAIL_CURRENT_POPUP_COUNT--${user.current}`,
+    );
+    const isValueFilled =
+      !!support_detail.data.email || !!support_detail.data.phone || !!support_detail.data.url;
 
     const commonProps = {
       mode,
@@ -713,13 +791,15 @@ export default class HomeContainer extends Component {
       settlement_amount,
       merchantBalanceConfigs,
       lateAuthConfig,
+      numberOfTransaction,
+      isValueFilled,
+      roleToShowSupportDetailForm,
+      openSupportDetailModal,
     };
 
     const { dismissDiwaliPromotion, hideDiwaliPromotion } = this.state;
 
-    const isPartnerOnBoardingModalShown = LocalStorageService.getItem(
-      this.partnerOnBoardingToken
-    );
+    const isPartnerOnBoardingModalShown = LocalStorageService.getItem(this.partnerOnBoardingToken);
 
     if (user.isPartnerIntent() && !isPartnerOnBoardingModalShown) {
       LocalStorageService.setItem(this.partnerOnBoardingToken, true);
@@ -749,9 +829,7 @@ export default class HomeContainer extends Component {
                 </span>
                 <span class="m-l btn-link">
                   <ShowWhen
-                    additionalCondition={user =>
-                      user.isOrgAllowedFunctionality('external_links')
-                    }
+                    additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
                   >
                     <a href="https://razorpay.com/pricing" target="_blank">
                       <b>View T&Cs</b>
@@ -761,10 +839,7 @@ export default class HomeContainer extends Component {
               </Banner>
             </div>
             <div className="banner-close">
-              <a
-                className="banner-close-icon"
-                onClick={this.onHideDiwaliPromotion}
-              >
+              <a className="banner-close-icon" onClick={this.onHideDiwaliPromotion}>
                 <i className="i i-close" />
               </a>
             </div>
@@ -785,12 +860,12 @@ export default class HomeContainer extends Component {
                   tracking.trackEvent(
                     window.rzpQ.onbr().success('login.first_login_modal', {
                       action: 'Close_Popup',
-                    })
+                    }),
                   );
                   tracking.trackEvent(
                     window.rzpQ.onbr().initiated('act.popup', {
                       clickSource: 'Close',
-                    })
+                    }),
                   );
                 }}
               >
@@ -810,13 +885,26 @@ export default class HomeContainer extends Component {
               </Modal>
             </ModalMask>
           )}
+
+        {/* merchant support details data collection modal */}
+        {/*numberOfTransaction is the threshold value to show popup. initially set to 3 */}
+        {this.compareDate(
+          moment().format('DD/MM/YYYY'),
+          LocalStorageService.getItem(`SUPPORT_DETAIL_LAST_POP_DISPLAY_DATE--${user.current}`),
+        ) &&
+        numberOfTransaction &&
+        roleToShowSupportDetailForm &&
+        !isValueFilled &&
+        maxPopupCountOfSupportDetail > 0 &&
+        !showOnboardingBannerFirstStep
+          ? openSupportDetailModal(true)
+          : null}
+
         {showInstantActivationSuccess && (
           <InstantActivationSuccess
             onClose={() => {
               iaActivations.trackClose(activation_flow);
-              tracking.trackEvent(
-                window.rzpQ.onbr().dropped('act.whitelist_popup_action')
-              );
+              tracking.trackEvent(window.rzpQ.onbr().dropped('act.whitelist_popup_action'));
               this.closeOnboardingStep();
               this.onInstantActivationSuccess();
             }}
@@ -824,7 +912,7 @@ export default class HomeContainer extends Component {
               tracking.trackEvent(
                 window.rzpQ.onbr().initiated('act.whitelist_popup_action', {
                   actions: 'Go to Dashboard',
-                })
+                }),
               );
               iaActivations.trackGoToDashboard();
               this.closeOnboardingStep();
@@ -834,10 +922,10 @@ export default class HomeContainer extends Component {
               tracking.trackEvent(
                 window.rzpQ.onbr().initiated('kyc.form_fill', {
                   clickSource: 'Complete_kyc',
-                })
+                }),
               );
               this.onInstantActivationSuccess(
-                `/app/activation?basePath=${encodeURIComponent('/dashboard')}`
+                `/app/activation?basePath=${encodeURIComponent('/dashboard')}`,
               );
             }}
             user={user}
@@ -869,10 +957,10 @@ export default class HomeContainer extends Component {
               tracking.trackEvent(
                 window.rzpQ.onbr().initiated('kyc.form_fill', {
                   clickSource: 'Complete_kyc',
-                })
+                }),
               );
               this.onInstantActivationSuccess(
-                `/app/activation?basePath=${encodeURIComponent('/dashboard')}`
+                `/app/activation?basePath=${encodeURIComponent('/dashboard')}`,
               );
             }}
             user={user}
@@ -882,9 +970,7 @@ export default class HomeContainer extends Component {
           <KycDetailsModal
             onClose={() => {
               iaActivations.trackCloseKYCDetails();
-              tracking.trackEvent(
-                window.rzpQ.onbr().dropped('act.greylist_popup_action')
-              );
+              tracking.trackEvent(window.rzpQ.onbr().dropped('act.greylist_popup_action'));
               hideKYCDetailsModal();
             }}
             onGiveDetails={() => {
@@ -892,12 +978,12 @@ export default class HomeContainer extends Component {
               tracking.trackEvent(
                 window.rzpQ.onbr().initiated('act.greylist_popup_action', {
                   actions: 'Give Details',
-                })
+                }),
               );
               tracking.trackEvent(
                 window.rzpQ.onbr().initiated('kyc.form_fill', {
                   actions: 'GreyList Popup',
-                })
+                }),
               );
               hideKYCDetailsModal();
             }}
