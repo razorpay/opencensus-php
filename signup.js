@@ -20,7 +20,6 @@ let content = [].concat.apply([], [
   'public/js/themes/init.js',
   'public/js/themes/theme.js',
   'public/js/libs/select2.min.js',
-  'public/js/libs/angular-recaptcha.js',
   'public/js/merchant/**/*.js',
   'public/js/*.js',
   'web/node_modules/moment/min/moment.min.js'

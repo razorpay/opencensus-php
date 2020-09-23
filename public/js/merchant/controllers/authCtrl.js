@@ -113,6 +113,8 @@ app
       var email = $location.search().email;
       var role = $location.search().r;
       var referral_code = $location.search().referral_code;
+      $scope.isInvisibleCaptcha = true;
+      $scope.checkboxCaptcha = 'Faked';
       try {
         email = atob(decodeURIComponent(email));
       } catch (e) {
@@ -200,7 +202,7 @@ app
         showMore: false,
 
         // disable signup/login submission before captcha only in prod
-        submissionDisabled: isProd,
+        submissionDisabled: true,
       };
 
       // login state container
@@ -211,9 +213,7 @@ app
         },
         currentStep: 1, // 3 -> verification, 2 -> questions, 1 -> login, 0 -> forgotpwd
         currentSubStep: 0, // 0 -> email+pwd, 1 -> provision for OTP screen
-        disableLogInSubmission: isProd,
-        isCaptchaLoaded: false,
-        captchaControl: {},
+        isCaptchaSuccess: false,
       };
 
       $scope.secondFA = {
@@ -222,24 +222,29 @@ app
         },
       };
 
-      // wait for recaptcha response
-      $scope.$watch('signup.data.captcha', function (newVal) {
-        if (newVal && newVal.length !== 0) {
-          $scope.signup.submissionDisabled = false;
+      $scope.loadCaptcha = function (loadCheckbox = false) {
+        renderRecaptchaScript();
+        if (loadCheckbox) {
+          let checkboxCaptchaElement = document.getElementById('checkbox-recaptcha');
+          checkboxCaptchaElement.setAttribute('data-sitekey', window.CHECKBOX_CAPTCHA_SITE_KEY);
+          window.grecaptcha &&
+            grecaptcha.render('checkbox-recaptcha', {
+              sitekey: window.CHECKBOX_CAPTCHA_SITE_KEY,
+            });
+        } else {
+          let invisibleCaptchaElement = document.getElementById('login-recaptcha');
+          invisibleCaptchaElement.setAttribute('data-sitekey', window.INVISIBLE_CAPTCHA_SITE_KEY);
         }
-      });
+      };
 
-      $scope.$watch('login.data.captcha', function (newVal) {
-        if (newVal && newVal.length !== 0) {
-          $scope.login.disableLogInSubmission = false;
-          tracking.pushEvents({
-            event_name: 'recaptcha',
-            event_type: 'success',
-          });
-        } else if (newVal === null && isProd) {
-          $scope.login.disableLogInSubmission = true;
+      const checkScriptExists = function (url) {
+        if (document.scripts) {
+          let hasScript = function (script) {
+            return script.getAttribute('src') === url;
+          };
+          return Array.from(document.scripts).some(hasScript);
         }
-      });
+      };
 
       $scope.inlineError = '';
 
@@ -342,7 +347,7 @@ app
 
       $scope.onShowGAuth = function () {
         fireDLInitiatedEvents('login.login_actions', { actions: 'login_options' });
-
+        removeRecaptchaScript();
         $scope.alerts.resetAlerts();
         $scope.isGoogleAuth = true;
         $scope.showGAuthPopup = false;
@@ -802,13 +807,11 @@ app
 
         pushToDrip();
 
-        if (
-          window.location.hostname !== 'dashboard.razorpay.com' &&
-          window.location.hostname !== 'betadashboard.razorpay.com' &&
-          !$scope.signup.data.captcha
-        ) {
-          $scope.signup.data.captcha = 'Faked';
-        }
+        signup($scope.checkboxCaptcha);
+      };
+
+      const signup = function (captchaVal) {
+        $scope.signup.data.captcha = captchaVal;
 
         var data = $scope.signup.data;
 
@@ -898,6 +901,9 @@ app
             });
           } else {
             hideSpinner();
+            window.grecaptcha && grecaptcha.reset();
+            $scope.signup.submissionDisabled = true;
+            $scope.checkboxCaptcha = '';
 
             var signupError = 'Something went wrong. Please try again.';
             if (data.errors && data.errors.length) {
@@ -971,10 +977,10 @@ app
           userid: data.user.id,
           mid: data.current,
         });
-        
-          location.hash = '';
-          location.pathname = '/app';
-          location.reload();
+
+        location.hash = '';
+        location.pathname = '/app';
+        location.reload();
       };
 
       $scope.onLoginInputFocus = function (type) {
@@ -1469,6 +1475,7 @@ app
           },
         );
         $scope.showTopbar = false;
+        removeRecaptchaScript();
         return $scope.onShowSignin && $scope.onShowSignin();
       };
 
@@ -1681,6 +1688,23 @@ app
         $scope.alerts.resetAlerts();
       };
 
+      const renderRecaptchaScript = function () {
+        const captchaScript = 'https://www.google.com/recaptcha/api.js';
+        if (!checkScriptExists(captchaScript)) {
+          let script = document.createElement('script');
+          script.src = captchaScript;
+          script.id = 'recaptcha';
+          script.async = true;
+          script.defer = true;
+          document.documentElement.appendChild(script);
+        }
+      };
+
+      const removeRecaptchaScript = function () {
+        let element = document.getElementById('recaptcha');
+        element.parentNode.removeChild(element);
+      };
+
       $scope.sendLoginCredentials = function ($valid) {
         $scope.inlineError = '';
 
@@ -1698,76 +1722,113 @@ app
           $scope.inlineError = '';
           $scope.isGoogleAuth = false;
         } else {
-          if (
-            !$scope.login.isCaptchaLoaded ||
-            (window.location.hostname !== 'dashboard.razorpay.com' && !$scope.login.data.captcha)
-          ) {
-            $scope.login.data.captcha = 'Faked';
+          if ($scope.isInvisibleCaptcha) {
+            window.grecaptcha && grecaptcha.execute();
+          } else {
+            login($scope.checkboxCaptcha);
           }
-
-          fireDLInitiatedEvents('login.login', { method: 'email' });
-
-          var payload = {
-            method: 'post',
-            url: '/user/signin',
-            transformRequest: transformRequestAsFormPost,
-            data: $scope.login.data,
-          };
-
-          var request = $http(payload);
-          showSpinner();
-          $scope.alerts.resetAlerts();
-          request.success(function (data) {
-            if (data.success) {
-              if (payload.data.otp && payload.data.otp.length) {
-                window.rzpQ.push(
-                  window.rzpQ.now().onbr().success('login.2fa_otp', {
-                    source: 'sign_in',
-                    sessionId: window.session_id,
-                    emailId: $scope.login.data.email,
-                    mode: $scope.eventsMode,
-                  }),
-                );
-              }
-              $scope.successFullSignin();
-            } else {
-              if (payload.data.otp && payload.data.otp.length) {
-                window.rzpQ.push(
-                  window.rzpQ.now().onbr().failed('login.2fa_otp', {
-                    source: 'sign_in',
-                    sessionId: window.session_id,
-                    emailId: $scope.login.data.email,
-                    mode: $scope.eventsMode,
-                    error: data.errors[0],
-                  }),
-                );
-              }
-              hideSpinner();
-              var firstError = data.errors[0];
-
-              if ($scope.login.captchaControl.reset) {
-                $scope.login.captchaControl.reset();
-              }
-
-              if (typeof firstError === 'string') {
-                // errors to be displayed directly
-                if (firstError.includes('email not confirmed')) {
-                  // go to email not verified screen
-                  $scope.email_not_verified = true;
-                  $scope.login.currentStep = 2;
-                } else {
-                  angular.forEach(data.errors, function (value) {
-                    if (typeof value === 'string') {
-                      $scope.alerts.addAlert('danger', value);
-                    }
-                  });
-                }
-              } else if (typeof firstError === 'object' && !!firstError.internal_error_code) {
-                $scope.handleErrorsWithInternalCode(firstError);
-              }
-            }
-          });
         }
+      };
+
+      const login = function (captchaVal) {
+        fireDLInitiatedEvents('login.login', { method: 'email' });
+
+        $scope.login.data.captcha = captchaVal;
+
+        var payload = {
+          method: 'post',
+          url: '/user/signin',
+          transformRequest: transformRequestAsFormPost,
+          data: $scope.login.data,
+        };
+
+        if ($scope.isInvisibleCaptcha) {
+          payload.headers = {
+            'X-RECAPTCHA-MODE': 'invisible',
+          };
+        }
+
+        var request = $http(payload);
+        showSpinner();
+        $scope.alerts.resetAlerts();
+        request.success(function (data) {
+          if (data.success) {
+            if (payload.data.otp && payload.data.otp.length) {
+              window.rzpQ.push(
+                window.rzpQ.now().onbr().success('login.2fa_otp', {
+                  source: 'sign_in',
+                  sessionId: window.session_id,
+                  emailId: $scope.login.data.email,
+                  mode: $scope.eventsMode,
+                }),
+              );
+            }
+            $scope.successFullSignin();
+          } else {
+            if (payload.data.otp && payload.data.otp.length) {
+              window.rzpQ.push(
+                window.rzpQ.now().onbr().failed('login.2fa_otp', {
+                  source: 'sign_in',
+                  sessionId: window.session_id,
+                  emailId: $scope.login.data.email,
+                  mode: $scope.eventsMode,
+                  error: data.errors[0],
+                }),
+              );
+            }
+            hideSpinner();
+            window.grecaptcha && grecaptcha.reset();
+            var firstError = data.errors[0];
+
+            if (typeof firstError === 'string') {
+              // errors to be displayed directly
+              if (firstError.includes('email not confirmed')) {
+                // go to email not verified screen
+                $scope.email_not_verified = true;
+                $scope.login.currentStep = 2;
+              } else {
+                angular.forEach(data.errors, function (value) {
+                  if (typeof value === 'string') {
+                    $scope.alerts.addAlert('danger', value);
+                  }
+                });
+              }
+            } else if (typeof firstError === 'object' && !!firstError.internal_error_code) {
+              $scope.handleErrorsWithInternalCode(firstError);
+            }
+          }
+        });
+      };
+
+      /**
+       * This func is being called as captcha callback
+       * @param val
+       */
+      onCaptchaSubmit = function (val) {
+        if (window.location.href.includes('access/signin')) {
+          login(val);
+        } else if (window.location.href.includes('access/signup')) {
+          signup(val);
+        }
+      };
+
+      /**
+       * This func is being called as checkbox captcha callback
+       * @param val
+       */
+      onCheckboxCaptchaSubmit = function (val) {
+        $scope.login.isCaptchaSuccess = true;
+        $scope.signup.submissionDisabled = false;
+        $scope.checkboxCaptcha = val;
+        $scope.$apply();
+      };
+
+      onCheckboxCaptchaExpire = function () {
+        debugger;
+        $scope.signup.submissionDisabled = true;
+        $scope.login.isCaptchaSuccess = false;
+        $scope.checkboxCaptcha = '';
+        $scope.$apply();
       };
 
       $scope.successFullSignin = function () {

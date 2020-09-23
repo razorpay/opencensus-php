@@ -15,14 +15,16 @@
           <input tabindex=1 type="email" placeholder="example@xyz.com" name="email" id="email" ng-model="signup.data.email" class="form-control auth-form-input" required ng-readonly="lock_email">
           <label class="form-label auth-subheading" for="password">Create a Password</label>
           <input tabindex=2 type="password" placeholder="Min 8 char, 1 letter & 1 number" name="password" id="password" ng-model="signup.data.password" class="form-control auth-form-input" required>
-          <div class="google-captcha"
-            no-captcha
-            g-recaptcha-response="signup.data.captcha"
-            captcha-loaded="signup.isCaptchaLoaded"
-            theme="light"
-            control="signup.captchaControl"
-            site-key="6LdsmwETAAAAADmNGCLvbrjL09O_Fv7WOVTngbO4">
+
+          <div class="checkbox-captcha" ng-if="!rightLayout && !isLoggedIn">
+            <div
+              ng-init="loadCaptcha(true)"
+              id="checkbox-recaptcha"
+              class="g-recaptcha"
+              data-callback = "onCheckboxCaptchaSubmit"
+              data-expired-callback= "onCheckboxCaptchaExpire"/>
           </div>
+
           <div class="auth-subtext">
             By signing up you agree to our <a ng-if="isOrgRZP" class="highlight" target="_blank" href="https://razorpay.com/privacy/" ng-click="onPrivacyClick()">privacy policy</a> <span ng-if="!isOrgRZP">privacy policy</span> and
             <a ng-if="isOrgRZP" class="highlight" target="_blank" href="https://razorpay.com/terms/" ng-click="onTermsClick()">terms of use</a>

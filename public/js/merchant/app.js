@@ -16,7 +16,6 @@ var app = angular
     'app.controllers',
     'ngIdle',
     'ngBusy',
-    'noCAPTCHA',
   ])
   .run([
     '$rootScope',

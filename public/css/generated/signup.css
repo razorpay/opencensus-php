@@ -589,6 +589,17 @@
     width: 24px;
 }
 
+.checkbox-captcha .g-recaptcha {
+    width: 240px;
+    height: 78px;
+    transform: scale(.79);
+    transform-origin: top left;
+}
+
+.invisible-captcha .g-recaptcha{
+    visibility: hidden;
+}
+
 @media (max-width: 767px) {
     .overlay-container{
         text-align: center;
