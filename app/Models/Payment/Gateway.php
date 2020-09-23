@@ -81,6 +81,7 @@ class Gateway
     const NETBANKING_IOB         = 'netbanking_iob';
     const NETBANKING_FSB         = 'netbanking_fsb';
     const NACH_CITI              = 'nach_citi';
+    const NACH_ICICI             = 'nach_icici';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
@@ -784,6 +785,7 @@ class Gateway
         Payment\Gateway::CRED,
         Payment\Gateway::ENACH_RBL,
         Payment\Gateway::NACH_CITI,
+        Payment\Gateway::NACH_ICICI,
         Payment\Gateway::ENACH_NPCI_NETBANKING,
         Payment\Gateway::PAYLATER,
         Payment\Gateway::PAYLATER_ICICI,
@@ -1026,6 +1028,7 @@ class Gateway
         self::ENACH_NPCI_NETBANKING,
         self::NETBANKING_SBI,
         self::NACH_CITI,
+        self::NACH_ICICI,
     ];
 
     /**
@@ -1483,6 +1486,7 @@ class Gateway
         Gateway::ENACH_NPCI_NETBANKING,
         Gateway::UPI_MINDGATE,
         Gateway::NACH_CITI,
+        Gateway::NACH_ICICI,
         Gateway::AMEX,
         Gateway::UPI_ICICI,
     ];

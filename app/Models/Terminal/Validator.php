@@ -131,6 +131,7 @@ class Validator extends Base\Validator
         Payment\Gateway::CRED,
         Payment\Gateway::WALLET_PAYZAPP,
         Payment\Gateway::PAYU,
+        Payment\Gateway::NACH_ICICI,
     ];
 
     protected static $createValidators = [
@@ -945,6 +946,26 @@ class Validator extends Base\Validator
     ];
 
     protected static $nachCitiEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string|alpha_num|max:18',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string|alpha_num|max:11',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+    ];
+
+    protected static $nachIciciTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:nach_icici',
+        Entity::NACH                       => 'required|boolean|in:1',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'required|string|alpha_num|max:18',
+        Entity::GATEWAY_ACCESS_CODE        => 'required|string|alpha_num|max:11',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_ACQUIRER           => 'sometimes|string',
+    ];
+
+    protected static $nachIciciEditTerminalRules = [
         Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string|alpha_num|max:18',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string|alpha_num|max:11',

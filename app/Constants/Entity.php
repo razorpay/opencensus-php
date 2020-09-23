@@ -232,6 +232,7 @@ class Entity
     const AXIS_MIGS              = 'axis_migs';
     const MPI_BLADE              = 'mpi_blade';
     const NACH_CITI              = 'nach_citi';
+    const NACH_ICICI             = 'nach_icici';
     const PAYSECURE              = 'paysecure';
     const WORLDLINE              = 'worldline';
     const ENACH_RBL              = 'enach_rbl';
@@ -610,6 +611,7 @@ class Entity
         self::ESIGNER_LEGALDESK      => \RZP\Gateway\Esigner\Legaldesk::class,
         self::ENACH_NPCI_NETBANKING  => \RZP\Gateway\Enach\Npci\Netbanking::class,
         self::NACH_CITI              => \RZP\Gateway\Enach\Citi::class,
+        self::NACH_ICICI             => \RZP\Gateway\Enach\Npci\Physical\Icici::class,
         self::WALLET_PAYZAPP         => \RZP\Gateway\Wallet\Payzapp::class,
         self::WALLET_OLAMONEY        => \RZP\Gateway\Wallet\Olamoney::class,
         self::WALLET_JIOMONEY        => \RZP\Gateway\Wallet\Jiomoney::class,

@@ -1,10 +1,9 @@
 <?php
 
-namespace RZP\Gateway\Enach\Citi;
+namespace RZP\Gateway\Enach\Npci\Physical\Icici;
 
 use RZP\Gateway\Enach\Base;
 
-// TODO : Move to Enach/Npci/Physical
 class Gateway extends Base\Gateway
 {
 
