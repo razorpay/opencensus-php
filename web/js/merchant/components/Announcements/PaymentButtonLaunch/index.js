@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
+import { getMode, getUser } from 'merchant/store';
+
 const bannerText = 'Accept payments on your website, in less than 5 minutes.';
 const cardId = 'Payment Button Launch';
 
@@ -11,9 +13,12 @@ const cta1Text = 'Try Now';
 const cta1Link = '/paymentbuttons/new';
 
 function _track(source) {
+  const mode = getMode();
+
   function onViewBanner() {
     window.rzpQ.push(
-      window.rzpQ.now().paymentButtons().success('merchant_dashboard.display_banner', {
+      window.rzpQ.paymentButtons().success('merchant_dashboard.display_banner', {
+        mode,
         banner_text: bannerText,
         card_id: cardId,
         source,
@@ -23,7 +28,8 @@ function _track(source) {
 
   function onClickCTA1() {
     window.rzpQ.push(
-      window.rzpQ.now().paymentButtons().initiated('merchant_dashboard.click_banner_cta1', {
+      window.rzpQ.paymentButtons().initiated('merchant_dashboard.click_banner_cta1', {
+        mode,
         banner_text: bannerText,
         card_id: cardId,
         cta_value: cta1Text,
@@ -35,7 +41,8 @@ function _track(source) {
 
   function onClickCTA2() {
     window.rzpQ.push(
-      window.rzpQ.now().paymentButtons().initiated('merchant_dashboard.click_banner_cta2', {
+      window.rzpQ.paymentButtons().initiated('merchant_dashboard.click_banner_cta2', {
+        mode,
         banner_text: bannerText,
         card_id: cardId,
         cta_value: cta2Text,
@@ -57,8 +64,15 @@ export default React.memo(({ productName }) => {
 
   track.onViewBanner();
 
+  const user = getUser();
+
   return (
-    <AnnouncementBanner title="Introducing Payment Button" canBeClosed={true} theme="warning">
+    <AnnouncementBanner
+      title="Introducing Payment Button"
+      canBeClosed={true}
+      theme="warning"
+      bannerKey={`payment-button-launch-${user.current}`}
+    >
       <span class="display-inline">{bannerText}</span>
       <a class="btn btn-link" href={cta2Link} target="_blank" onClick={track.onClickCTA2}>
         {cta2Text}
