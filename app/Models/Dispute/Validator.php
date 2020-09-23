@@ -39,6 +39,7 @@ class Validator extends Base\Validator
         Entity::MERCHANT_EMAILS        => 'sometimes|array',
         Entity::MERCHANT_EMAILS . '.*' => 'filled|email',
         Entity::SKIP_EMAIL             => 'sometimes|boolean',
+        Entity::BACKFILL               => 'sometimes|boolean',
     ];
 
     protected static $editRules = [
@@ -48,6 +49,7 @@ class Validator extends Base\Validator
         Entity::PARENT_ID              => 'sometimes|alpha_num|size:14',
         Entity::SKIP_DEDUCTION         => 'sometimes|boolean',
         Entity::COMMENTS               => 'sometimes|string|min:5|max:255|utf8',
+        Entity::BACKFILL               => 'sometimes|boolean',
     ];
 
     protected static $createValidators = [
@@ -62,6 +64,7 @@ class Validator extends Base\Validator
     protected static $merchantEditRules = [
         Entity::ACCEPT_DISPUTE         => 'sometimes|boolean',
         Entity::SUBMIT                 => 'sometimes|boolean',
+        Entity::BACKFILL               => 'sometimes|boolean',
     ];
 
     protected function validatePhase(string $attribute, string $value)

@@ -85,6 +85,64 @@ class Service extends Base\Service
         Reason\Entity::GATEWAY_DESCRIPTION,
     ];
 
+    // The 3 bulk dispute column name constants defined below BULK_CREATE_DISPUTES_COLUMNS_SILENT,
+    // BULK_CREATE_DISPUTES_COLUMNS_NEW_SILENT, and BULK_EDIT_DISPUTES_COLUMNS_SILENT
+    // are the bulk create and update file column names, with an additional column for the silent flag
+
+    const BULK_CREATE_DISPUTES_COLUMNS_SILENT = [
+        Entity::PAYMENT_ID,
+        Entity::GATEWAY_DISPUTE_ID,
+        Entity::GATEWAY_DISPUTE_STATUS,
+        Reason\Entity::NETWORK_CODE,
+        Reason\Entity::REASON_CODE,
+        Entity::PHASE,
+        Entity::RAISED_ON,
+        Entity::EXPIRES_ON,
+        Entity::AMOUNT,
+        Entity::SKIP_EMAIL,
+        Entity::BACKFILL,
+    ];
+
+    const BULK_CREATE_DISPUTES_COLUMNS_NEW_SILENT = [
+        Entity::PAYMENT_ID,
+        Entity::GATEWAY_DISPUTE_ID,
+        Entity::GATEWAY_DISPUTE_STATUS,
+        Reason\Entity::NETWORK_CODE,
+        Reason\Entity::REASON_CODE,
+        Entity::PHASE,
+        Entity::RAISED_ON,
+        Entity::EXPIRES_ON,
+        Entity::GATEWAY_AMOUNT,
+        Entity::GATEWAY_CURRENCY,
+        Entity::SKIP_EMAIL,
+        Entity::BACKFILL,
+    ];
+
+    const BULK_EDIT_DISPUTES_COLUMNS_SILENT = [
+        Entity::ID,
+        Entity::GATEWAY_DISPUTE_STATUS,
+        Entity::STATUS,
+        Entity::SKIP_DEDUCTION,
+        Entity::COMMENTS,
+        Entity::BACKFILL,
+    ];
+
+    // mapping of bulk action to file header values
+    const ACTION_HEADERS_MAP = [
+        self::BULK_CREATE_ACTION => [
+            self::BULK_CREATE_DISPUTES_COLUMNS,
+            self::BULK_CREATE_DISPUTES_COLUMNS_NEW,
+            self::BULK_CREATE_DISPUTES_COLUMNS_SILENT,
+            self::BULK_CREATE_DISPUTES_COLUMNS_NEW_SILENT,
+        ],
+        self::BULK_EDIT_ACTION => [
+            self::BULK_EDIT_DISPUTES_COLUMNS,
+            self::BULK_EDIT_DISPUTES_COLUMNS_SILENT,
+        ]
+    ];
+
+    const BACKFILL_COMMENT = "Note: This dispute is created by backfilling.";
+
     public function create(array $input, string $paymentId, Payment\Entity $payment = null): array
     {
         if ($payment === null)
@@ -96,6 +154,8 @@ class Service extends Base\Service
 
         $reason = $this->repo->dispute_reason->findOrFail($input[Entity::REASON_ID]);
 
+        $this->addBackfillIfNotPresent($input);
+
         $dispute = $this->core()->create($payment, $reason, $input);
 
         return $dispute->toArrayAdmin();
@@ -104,6 +164,8 @@ class Service extends Base\Service
     public function update(string $id, array $input): array
     {
         $dispute = $this->repo->dispute->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $this->addBackfillIfNotPresent($input);
 
         if ($this->auth->isAdminAuth() === true)
         {
@@ -171,7 +233,7 @@ class Service extends Base\Service
                 $disputeEntity = $this->create($createInput, $paymentId, $payment);
 
                 // Prepares Mail body data
-                if ($input[Entity::SKIP_EMAIL] === false)
+                if ($input[Entity::SKIP_EMAIL] === false && $createInput[Entity::BACKFILL] === false)
                 {
                     $merchantData[$disputeEntity[Entity::MERCHANT_ID]][MerchantEntity::NAME]  = $merchant->getName();
                     $merchantData[$disputeEntity[Entity::MERCHANT_ID]][MerchantEntity::EMAIL] = $merchant->getEmail();
@@ -349,25 +411,21 @@ class Service extends Base\Service
             );
         }
 
-        $headersList = [];
-
-        switch ($action)
-        {
-            case self::BULK_CREATE_ACTION :
-                $headersList = [self::BULK_CREATE_DISPUTES_COLUMNS, self::BULK_CREATE_DISPUTES_COLUMNS_NEW];
-                break;
-            case self::BULK_EDIT_ACTION :
-                $headersList = [self::BULK_EDIT_DISPUTES_COLUMNS];
-                break;
-        }
-
         $headerMatch = false;
 
+        if (array_key_exists($action, self::ACTION_HEADERS_MAP) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid value of action ' . $action);
+        }
+
+        $headersList = self::ACTION_HEADERS_MAP[$action];
         foreach ($headersList as $headers)
         {
             if ($validator->validateArrayEqual($data[0], $headers) === true)
             {
                 $headerMatch = true;
+                break;
             }
         }
 
@@ -412,6 +470,7 @@ class Service extends Base\Service
         // skipping individual dispute email for each creation
         $input[Entity::SKIP_EMAIL] = true;
         $input[Entity::REASON_ID] = $disputeReasonId;
+        $this->addBackfillIfNotPresent($input);
 
         unset($input[Entity::PAYMENT_ID]);
         unset($input[Reason\Entity::NETWORK]);
@@ -428,6 +487,10 @@ class Service extends Base\Service
      */
     public function prepareInputForEdit(array $input) : array
     {
+        $this->addBackfillIfNotPresent($input);
+
+        $this->updateBackfillComment($input);
+
         unset($input[Entity::ID]);
 
         $status = $input[Entity::STATUS] ?? null;
@@ -435,7 +498,11 @@ class Service extends Base\Service
         if ($status !== Status::LOST)
         {
             unset($input[Entity::SKIP_DEDUCTION]);
-            unset($input[Entity::COMMENTS]);
+
+            if ($input[Entity::BACKFILL] === false)
+            {
+                unset($input[Entity::COMMENTS]);
+            }
         }
         else if ($input[Entity::SKIP_DEDUCTION] === true)
         {
@@ -448,8 +515,52 @@ class Service extends Base\Service
                 );
             }
         }
-
         return $input;
+    }
+
+    private function updateBackfillComment(array &$input)
+    {
+        if ($input[Entity::BACKFILL] === false)
+        {
+            return;
+        }
+
+        if ((array_key_exists(Entity::COMMENTS, $input) === false))
+        {
+            $input[Entity::COMMENTS] = self::BACKFILL_COMMENT;
+        }
+        else
+        {
+            $comment = strval($input[Entity::COMMENTS]);
+
+            if (strlen($comment) === 0)
+            {
+                $input[Entity::COMMENTS] = self::BACKFILL_COMMENT;
+            }
+            else
+            {
+                $input[Entity::COMMENTS] = $comment . PHP_EOL . self::BACKFILL_COMMENT;
+            }
+        }
+    }
+
+    private function addBackfillIfNotPresent(array &$input)
+    {
+        if (array_key_exists(Entity::BACKFILL, $input) === false)
+        {
+            $input[Entity::BACKFILL] = false;
+
+            return;
+        }
+
+        $val = $input[Entity::BACKFILL];
+
+        if (is_bool($val) === false)
+        {
+            throw new Exception\RecoverableException(
+                'backfill value must be a boolean'
+            );
+        }
     }
 
     /**
@@ -461,12 +572,17 @@ class Service extends Base\Service
      */
     private function convertFileRowToMap(array $row, array $keys)
     {
-        $input = [];
+        $fileInput = [];
 
         foreach ($keys as $key => $value)
         {
-            $res = $row[$key];
+            $fileInput[$value] = $row[$key];
+        }
 
+        $input = [];
+
+        foreach ($fileInput as $value => $res)
+        {
             // To handle variations in csv and excel files, empty is converted to null
             $res = (empty($res) === false) ? trim(stringify($res)) : null;
 
@@ -474,7 +590,7 @@ class Service extends Base\Service
 
             if (method_exists($this, $func))
             {
-                $res = $this->$func($res, $input);
+                $res = $this->$func($res, $input, $fileInput);
             }
 
             if ($res !== null)
@@ -599,6 +715,13 @@ class Service extends Base\Service
         return $res;
     }
 
+    public function formatValueStatus($res)
+    {
+        $status = strtolower($res);
+
+        return $status;
+    }
+
     public function formatValueRaisedOn($res)
     {
         if (empty($res) === true)
@@ -633,7 +756,7 @@ class Service extends Base\Service
         return $res;
     }
 
-    public function formatValueExpiresOn($res)
+    public function formatValueExpiresOn($res, array &$input, array &$fileInput)
     {
         if (empty($res) === true)
         {
@@ -653,6 +776,22 @@ class Service extends Base\Service
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid expires_on date. Please provide in d/m/Y format'
             );
+        }
+
+        if (array_key_exists(Entity::BACKFILL, $fileInput) === true)
+        {
+            if ($this->formatValueBackfill($fileInput[Entity::BACKFILL]) === true)
+            {
+                $raisedOnTime = $this->formatValueRaisedOn($fileInput[Entity::RAISED_ON]);
+
+                if ($raisedOnTime > $res)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'expires_on time cannot be less than or equal to raised_on time'
+                    );
+                }
+                return $res;
+            }
         }
 
         $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
@@ -694,6 +833,11 @@ class Service extends Base\Service
     }
 
     public function formatValueSkipDeduction($res)
+    {
+        return (new Validator)->validateCustomBoolean($res);
+    }
+
+    public function formatValueBackfill($res)
     {
         return (new Validator)->validateCustomBoolean($res);
     }

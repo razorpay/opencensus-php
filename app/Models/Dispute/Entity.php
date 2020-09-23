@@ -37,6 +37,7 @@ class Entity extends Base\PublicEntity
     const CREATED_AT              = 'created_at';
     const UPDATED_AT              = 'updated_at';
     const RESOLVED_AT             = 'resolved_at';
+    const BACKFILL                = 'backfill';
 
     // For emails
     const MERCHANT_EMAILS         = 'merchant_emails';
@@ -71,6 +72,8 @@ class Entity extends Base\PublicEntity
     const CONTACT                 = 'contact';
 
     const DISPUTE_PRECISION_FACTOR = 1000000;
+
+    private $backfill = false;
 
     protected static $sign = 'disp';
 
@@ -568,5 +571,15 @@ class Entity extends Base\PublicEntity
         $array[self::AMOUNT_DEDUCTED] = $this->getAmountDeducted();
 
         return $array;
+    }
+
+    public function setBackfill(bool $val)
+    {
+        $this->backfill = $val;
+    }
+
+    public function isBackfill(): bool
+    {
+        return $this->backfill;
     }
 }

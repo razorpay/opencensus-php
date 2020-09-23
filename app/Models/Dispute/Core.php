@@ -83,6 +83,8 @@ class Core extends Base\Core
 
                 $dispute->build($input);
 
+                $dispute->setBackfill($input[Entity::BACKFILL]);
+
                 (new Validator)->validateGatewayAmount($dispute);
 
                 // entity id is required to create associated transaction
@@ -133,6 +135,8 @@ class Core extends Base\Core
             TraceCode::DISPUTE_EDIT_REQUEST,
             array_merge($input, [Entity::ID => $dispute->getId()])
         );
+
+        $dispute->setBackfill($input[Entity::BACKFILL]);
 
         $paymentId = $dispute->getPaymentId();
 
@@ -424,7 +428,10 @@ class Core extends Base\Core
             Adjustment\Entity::DESCRIPTION => self::DEBIT_ADJUSTMENT_DESCRIPTION,
         ];
 
-        (new Adjustment\Core)->createAdjustmentForSource($input, $dispute);
+        if ($dispute->isBackfill() === false)
+        {
+            (new Adjustment\Core)->createAdjustmentForSource($input, $dispute);
+        }
 
         $dispute->setAmountDeducted($amount);
     }
@@ -442,7 +449,10 @@ class Core extends Base\Core
             Adjustment\Entity::DESCRIPTION => self::CREDIT_ADJUSTMENT_DESCRIPTION,
         ];
 
-        (new Adjustment\Core)->createAdjustmentForSource($input, $dispute);
+        if ($dispute->isBackfill() === false)
+        {
+            (new Adjustment\Core)->createAdjustmentForSource($input, $dispute);
+        }
 
         $dispute->setAmountReversed($amount);
     }
@@ -588,7 +598,7 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         array $input)
     {
-        if (empty($input[Entity::SKIP_EMAIL]) === false)
+        if ((empty($input[Entity::SKIP_EMAIL]) === false) or ($dispute->isBackfill() === true))
         {
             return;
         }
@@ -741,6 +751,11 @@ class Core extends Base\Core
 
     protected function firePaymentDisputeWebhookEvent(Payment\Entity $payment, Entity $dispute, string $event)
     {
+        if ($dispute->isBackfill() === true)
+        {
+            return;
+        }
+
         //
         // `reason_description` should not be exposed on API or webhook responses.
         // However, since the dispute is created via admin dashboard, the publicSetter
