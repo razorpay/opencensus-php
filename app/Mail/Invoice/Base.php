@@ -150,6 +150,7 @@ class Base extends Mailable
                 break;
 
             case Preferences::MID_RBL_INTERIM_PROCESS2:
+            case Preferences::MID_BOB_FIN:
 
                 if ($this->data['invoice']['entity_type'] === C\Entity::SUBSCRIPTION_REGISTRATION)
                 {

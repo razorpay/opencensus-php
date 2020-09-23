@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\Base;
 
+use RZP\Models\Merchant\Preferences;
+
 class Constants
 {
     const SUPPORT                       = 'support';
@@ -107,6 +109,10 @@ class Constants
         self::PG_NOTIFICATION_WALLET    => 'pg-notifications-wallets@razorpay.com',
         self::BANKING_ACCOUNT           => 'x.support@razorpay.com',
         self::PARTNER_SUBMERCHANT_INVITE => 'partnercommunication@razorpay.com',
+    ];
+
+    const MERCHANT_CUSTOM_MAIL_ADDRESSES = [
+        Preferences::MID_BOB_FIN => 'noreply@bobfinancial.com',
     ];
 
     const HEADERS = [

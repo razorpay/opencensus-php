@@ -20,6 +20,7 @@ class Issued extends Base
         Preferences::MID_RBL_RETAIL_PRODUCT     => ' Mandate registration link from RBL Bank',
         Preferences::MID_RBL_INTERIM_PROCESS2   => ' Mandate registration link from RBL Bank',
         Preferences::MID_ADITYA_BIRLA_HEALTH    => ' Auto Debit Registration for Policy - %s',
+        Preferences::MID_BOB_FIN                => ' Direct Debit registration (e-Mandate) for BoB Credit Card monthly bill payment',
         'pp_invoice'                            => ' Payment Page',
     ];
 
@@ -121,6 +122,22 @@ class Issued extends Base
         }
 
         $this->subject($subject);
+
+        return $this;
+    }
+
+    protected function addReplyTo()
+    {
+        $replyTo = Constants::MAIL_ADDRESSES[Constants::SUPPORT];
+
+        $merchantId = $this->data['merchant']['id'] ?? '';
+
+        if ($merchantId === Preferences::MID_BOB_FIN)
+        {
+            $replyTo = Constants::MERCHANT_CUSTOM_MAIL_ADDRESSES[$merchantId] ?? $replyTo;
+        }
+
+        $this->replyTo($replyTo);
 
         return $this;
     }
