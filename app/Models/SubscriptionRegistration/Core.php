@@ -489,6 +489,7 @@ class Core extends Base\Core
         $subr->setStatus(Status::AUTHENTICATED);
 
         if (($token->getRecurringStatus() === Customer\Token\RecurringStatus::REJECTED) or
+            ($subr->getAmount() === null) or
             ($subr->getAmount() === 0))
         {
             $subr->setStatus(Status::COMPLETED);
@@ -621,6 +622,17 @@ class Core extends Base\Core
 
     public function processAutoCharge(Entity $tokenRegistration)
     {
+        if (($tokenRegistration->getStatus() === Status::AUTHENTICATED) and
+            (($tokenRegistration->getAmount() === null) or
+            ($tokenRegistration->getAmount() === 0)))
+        {
+            $tokenRegistration->setStatus(Status::COMPLETED);
+
+            $this->repo->saveOrFail($tokenRegistration);
+
+            return [];
+        }
+
         if ($this->isValidForAutoCharge($tokenRegistration) === false)
         {
             $this->trace->info(TraceCode::TOKEN_REGISTRATION_NOT_VALID_FOR_AUTO_CHARGE,

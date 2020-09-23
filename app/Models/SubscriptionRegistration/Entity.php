@@ -86,7 +86,8 @@ class Entity extends Base\PublicEntity
         self::MAX_AMOUNT                => null,
         self::EXPIRE_AT                 => null,
         self::NOTES                     => [],
-        self::STATUS                    => Status::CREATED
+        self::STATUS                    => Status::CREATED,
+        self::AMOUNT                    => 0,
     ];
 
     protected $visible = [
