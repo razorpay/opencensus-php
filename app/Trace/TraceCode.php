@@ -392,6 +392,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USER_ROLE_MAPPING_ADD                                 = 'USER_ROLE_MAPPING_ADD';
     const USER_ROLE_MAPPING_UPDATE                              = 'USER_ROLE_MAPPING_UPDATE';
 
+    const USER_REGISTER                                         = 'USER_REGISTER';
+
     const AUTO_CAPTURE_REFUND_DELAY                             = 'AUTO_CAPTURE_REFUND_DELAY';
 
     const MPESA_GATEWAY_PARAM_ARRAY                             = 'MPESA_GATEWAY_PARAM_ARRAY';

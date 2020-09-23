@@ -28,6 +28,8 @@ class Service extends Base\Service
 {
     public function register(array $input): array
     {
+        $this->traceRegisterInput($input);
+
         $data = [];
 
         $referrer = $input['ref'] ?? '';
@@ -169,6 +171,27 @@ class Service extends Base\Service
         $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS, $this->merchant, null, $customProperties);
 
         return $data;
+    }
+
+    protected function traceRegisterInput($input) {
+        $notLogKeys = [
+            Entity::PASSWORD,
+            Entity::PASSWORD_CONFIRMATION,
+            Entity::REMEMBER_TOKEN,
+            Entity::CONFIRM_TOKEN,
+            Entity::OAUTH_PROVIDER,
+            Entity::CONTACT_MOBILE,
+            Entity::CAPTCHA,
+        ];
+
+        $logData = $input;
+
+        foreach ($notLogKeys as $key)
+        {
+            unset($logData[$key]);
+        }
+
+        $this->trace->info(TraceCode::USER_REGISTER, $logData);
     }
 
     /**
