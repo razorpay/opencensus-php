@@ -516,6 +516,8 @@ class Event
         self::SUBSCRIPTION_ACTIVATED            => Feature\Constants::SUBSCRIPTIONS,
         self::SUBSCRIPTION_PENDING              => Feature\Constants::SUBSCRIPTIONS,
         self::SUBSCRIPTION_HALTED               => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_PAUSED               => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_RESUMED              => Feature\Constants::SUBSCRIPTIONS,
         self::SUBSCRIPTION_CHARGED              => Feature\Constants::SUBSCRIPTIONS,
         self::SUBSCRIPTION_CANCELLED            => Feature\Constants::SUBSCRIPTIONS,
         self::SUBSCRIPTION_COMPLETED            => Feature\Constants::SUBSCRIPTIONS,
