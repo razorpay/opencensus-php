@@ -39,8 +39,8 @@ class Limit
         Type::ELFIN                                 => 5000,
         Type::PARTNER_SUBMERCHANTS                  => 5000,
         Type::ENTITY_MAPPING                        => 10000,
-        Type::AUTH_LINK                             => 10000,
-        Type::RECURRING_CHARGE                      => 50000,
+        Type::AUTH_LINK                             => 500100,
+        Type::RECURRING_CHARGE                      => 500100,
         Type::SUB_MERCHANT                          => 5000,
         Type::SUBMERCHANT_ASSIGN                    => 50000,
         TYPE::IIN_NPCI_RUPAY                        => 50000,
@@ -62,6 +62,7 @@ class Limit
         Type::CAPTURE_SETTING                       => 1100000,
         Type::PARTNER_SUBMERCHANT_INVITE            => 50000,
         Type::SUBMERCHANT_LINK                      => 50000,
+        Type::NACH_MIGRATION                        => 500100,
     ];
 
     /**

@@ -374,6 +374,8 @@ class Type
         self::CAPTURE_SETTING,
         self::PARTNER_SUBMERCHANT_INVITE,
         self::SUBMERCHANT_LINK,
+        self::RECURRING_CHARGE,
+        self::AUTH_LINK,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data

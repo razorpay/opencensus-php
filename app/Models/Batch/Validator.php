@@ -152,7 +152,7 @@ class Validator extends Base\Validator
 
     protected static $recurringChargeCreateRules = [
         Entity::TYPE            => 'required|in:recurring_charge',
-        Entity::FILE            => 'required_without:file_id|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::FILE            => 'required_without:file_id|file|max:60720' . self::DEFAULT_MIME_RULE, // 60MB
         Entity::NAME            => 'filled|string|max:255',
         Entity::FILE_ID         => 'required_without:file|public_id',
         Entity::SCHEDULE        => 'sometimes|numeric',
@@ -249,7 +249,7 @@ class Validator extends Base\Validator
     protected static $authLinkCreateRules = [
         Entity::TYPE                    => 'required|in:auth_link',
         Entity::NAME                    => 'filled|string|max:255',
-        Entity::FILE                    => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::FILE                    => 'required_without:file_id|file|max:60720' . self::DEFAULT_MIME_RULE, // 60MB
         Entity::FILE_ID                 => 'required_without:file|public_id',
         Entity::CONFIG                  => 'filled|array',
         Invoice\Entity::SMS_NOTIFY      => 'filled|in:0,1',
