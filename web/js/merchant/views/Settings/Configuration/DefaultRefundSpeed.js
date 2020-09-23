@@ -111,10 +111,7 @@ export default class DefaultRefundSpeed extends Component {
   };
 
   updateLateAuthConfig = (speed) => {
-    const {
-      data: { items },
-      error,
-    } = this.props.lateAuthConfig;
+    const { data: { items }, error } = this.props.lateAuthConfig;
 
     if (error) return;
 
@@ -257,8 +254,7 @@ export default class DefaultRefundSpeed extends Component {
                     style={{ color: '#528ff0' }}
                   >
                     minimal fee
-                  </strong>
-                  , your customer will get refunds instantly.
+                  </strong>, your customer will get refunds instantly.
                 </p>
 
                 <br />

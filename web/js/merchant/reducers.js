@@ -88,7 +88,6 @@ import wysiwygReducer from 'merchant/reducers/wysiwyg';
 import WithdrawalsReducer from 'merchant/reducers/capital/withdrawals';
 import instrumentRequestsReducer from 'merchant/reducers/instrumentRequests';
 import navigatorReducer from 'merchant/reducers/navigator/details';
-import supportDetailReducer from 'merchant/reducers/support_detail';
 
 export default combineReducers({
   modal: modalReducer,
@@ -175,5 +174,4 @@ export default combineReducers({
   twoFactor: twoFactorReducer,
   withdrawals: WithdrawalsReducer,
   instrumentRequests: instrumentRequestsReducer,
-  supportdetails: supportDetailReducer,
 });

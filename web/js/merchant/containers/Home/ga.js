@@ -4,8 +4,9 @@ const pageTitle = 'Dashboard - Home V2';
 
 export const track = setTrackData({ eventCategory: pageTitle });
 
-export const trackError = (error) => {
-  const eventLabel = typeof error === 'object' ? JSON.stringify(error) : String(error);
+export const trackError = error => {
+  const eventLabel =
+    typeof error === 'object' ? JSON.stringify(error) : String(error);
 
   track({
     eventAction: 'Error Triggered',
@@ -13,7 +14,7 @@ export const trackError = (error) => {
   });
 };
 
-export const trackPresetChange = (preset) => {
+export const trackPresetChange = preset => {
   track({
     eventAction: 'Select - Date Dropdown',
     eventLabel: preset.name,
@@ -54,7 +55,7 @@ export const trackSettlementsClick = () => {
   trackGoToLinks('Settlements', pageTitle);
 };
 
-export const trackPlatformAnalyticsHidden = (percent) => {
+export const trackPlatformAnalyticsHidden = percent => {
   track({
     eventAction: 'Data Hide - Platform',
     eventLabel: `${percent}%`,
@@ -69,7 +70,7 @@ export const trackForceOldDashboard = () => {
   });
 };
 
-export const trackNoData = (description) => {
+export const trackNoData = description => {
   track({
     eventAction: 'No Data Found',
     eventLabel: description,
@@ -150,34 +151,4 @@ export const iaActivations = {
       eventAction: 'Click - Give details close',
     });
   },
-};
-
-const SupportDetailsTrack = setTrackData({
-  eventCategory: 'Dashboard - Support Detail Data Collection',
-});
-
-export const trackSupportDetailPopupClose = () => {
-  SupportDetailsTrack({
-    eventAction: 'Click - Close button',
-    eventLabel: 'Support detail popup _cancel',
-  });
-};
-
-export const trackSupportDetailSubmitAction = (value) => {
-  SupportDetailsTrack({
-    eventAction: 'Click - Submit button',
-    eventLabel: 'Support detail popup_submit',
-    eventValue: {
-      Email_Filled: value.email,
-      Support_Url_Filled: value.url,
-      Phone_Filled: value.phone,
-    },
-  });
-};
-
-export const trackSupportDetailPopupDisplay = () => {
-  SupportDetailsTrack({
-    eventAction: 'Displayed',
-    eventLabel: 'Support detail popup_displayed',
-  });
 };

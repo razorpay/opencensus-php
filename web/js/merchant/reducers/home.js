@@ -71,28 +71,28 @@ let initialState = {
 
 const getTransactionCountData = (data, mode) => {
   return createLineData(
-    data.filter((d) => d.mode === mode),
+    data.filter(d => d.mode === mode),
     'count',
-    'Successful Transactions',
+    'Successful Transactions'
   );
 };
 
 const getTransactionAmountData = (data, mode) => {
   data = JSON.parse(JSON.stringify(data));
-  data = data.filter((d) => {
+  data = data.filter(d => {
     d.amount = d.amount / 100;
     return d.mode === mode;
   });
   return createLineData(data, 'amount', 'Transaction Volume');
 };
 
-export const closeOnboardingStep = (_) => {
+export const closeOnboardingStep = _ => {
   return {
     type: 'CLOSE_ONBOARDING_STEP',
   };
 };
 
-export const fetchAnalytics = (params) => {
+export const fetchAnalytics = params => {
   return {
     type: ANALYTICS_FETCH,
     payload: ajax({
@@ -102,12 +102,15 @@ export const fetchAnalytics = (params) => {
         from: params.from,
         to: params.to,
       },
-    }).then((response) => {
+    }).then(response => {
       let transaction_count = null,
         transaction_amount = null;
       if (response.data) {
         transaction_count = getTransactionCountData(response.data, params.mode);
-        transaction_amount = getTransactionAmountData(response.data, params.mode);
+        transaction_amount = getTransactionAmountData(
+          response.data,
+          params.mode
+        );
       }
       return {
         transaction_count,
@@ -211,7 +214,7 @@ export const fetchBalanceConfig = () => {
   };
 };
 
-export default function (state = initialState, action) {
+export default function(state = initialState, action) {
   switch (action.type) {
     case `${ANALYTICS_FETCH}::PENDING`:
       return set(state, 'analytics', initialState.analytics);

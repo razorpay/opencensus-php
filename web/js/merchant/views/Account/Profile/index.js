@@ -29,7 +29,7 @@ import { updateDisplayName } from 'merchant/reducers/profile';
 import { updateSession } from 'merchant/reducers/session';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import UpdateSelfContactMobile from 'merchant/views/Account/Profile/components/UpdateSelfContactMobile';
-import SupportDetails from 'merchant/views/Account/Profile/components/SupportDetails';
+
 import User2FASettings from './components/User2FASettings';
 
 @connect(
@@ -50,7 +50,7 @@ import User2FASettings from './components/User2FASettings';
     updateContactMobile,
     verifyTwoFactorOtp,
     updateUser,
-  },
+  }
 )
 @RTracking(() => window.rzpQ.component('Profile'))
 export default class Profile extends Component {
@@ -189,7 +189,7 @@ export default class Profile extends Component {
   @RTracking(() =>
     window.rzpQ.onbr().initiated('dash.my_account_actions', {
       action: 'Change_Password_Initiated',
-    }),
+    })
   )
   openChangePasswordModal = () => {
     this.props.openModal({
@@ -349,8 +349,6 @@ export default class Profile extends Component {
               />
             ) : null}
           </div>
-
-          <SupportDetails />
 
           <ShowWhen
             additionalCondition={(user) =>

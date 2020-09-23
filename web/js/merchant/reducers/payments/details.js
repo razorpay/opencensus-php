@@ -27,7 +27,7 @@ export const fetchItem = (id) => {
       {
         expand: ['card', 'emi_plan', 'disputes', 'transaction', 'transaction.settlement'],
         dashboard_flag: ['refund_create_data'],
-      },
+      }
     ),
   };
 };
@@ -162,7 +162,7 @@ let initialState = {
   error: null,
 };
 
-export default function (state = initialState, action) {
+export default function(state = initialState, action) {
   switch (action.type) {
     case `${PAYMENT_FETCH}::PENDING`:
     case `${PAYMENT_CAPTURE}::PENDING`:

@@ -7,7 +7,10 @@ import InputField from 'common/ui/Forms/InputField';
 import Alert from 'common/ui/Forms/Alert';
 import ModalHeader from 'common/ui/ModalHeader';
 import Spinner from 'common/ui/Spinner';
-import { createAppWebhook, editAppWebhook } from 'merchant/reducers/applications';
+import {
+  createAppWebhook,
+  editAppWebhook,
+} from 'merchant/reducers/applications';
 import { required, email } from 'common/utils/validators';
 import { saveWebhook } from 'merchant/reducers/webhooks';
 import { merchantFetch } from 'merchant/utils/ajax';
@@ -16,19 +19,19 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import DocsLink from 'merchant/components/DocsLink';
 
 @connect(
-  (state) => ({
+  state => ({
     userData: state.session.user,
     webhookFormData: state.form.webhookForm,
   }),
-  { saveWebhook, ...ModalActions, ...NotificationsActions },
+  { saveWebhook, ...ModalActions, ...NotificationsActions }
 )
 @reduxForm({
   form: 'webhookForm',
-  onSubmitFail: (errros) => {
+  onSubmitFail: errros => {
     window.rzpQ.push(
       window.rzpQ.merchantActions().failed('Webhook.validationError', {
         errros,
-      }),
+      })
     );
   },
 })
@@ -55,10 +58,10 @@ export default class webhookForm extends Component {
     }
 
     if (this.state.filterGroupedWebhooks) {
-      Object.entries(this.state.filterGroupedWebhooks).forEach((webhook) => {
+      Object.entries(this.state.filterGroupedWebhooks).forEach(webhook => {
         const [eventGroup, events] = webhook;
         let checkGroup = true;
-        Object.entries(eventValues).map((eventEntry) => {
+        Object.entries(eventValues).map(eventEntry => {
           const [evName, evValue] = eventEntry;
           if (evName.includes(eventGroup) && events.includes(evName)) {
             if (!evValue) checkGroup = false;
@@ -89,7 +92,7 @@ export default class webhookForm extends Component {
     }
 
     merchantFetch('webhooks/events/all')
-      .then((resp) => {
+      .then(resp => {
         if (resp.success && resp.data) {
           const allWebhooks = resp.data;
           const events = resp.data.reduce((events, rawEvent) => {
@@ -107,13 +110,13 @@ export default class webhookForm extends Component {
             },
             () => {
               this.initializeEventValues();
-            },
+            }
           );
         } else {
           this.setState({ groupedWebhooks: [], filterGroupedWebhooks: [] });
         }
       })
-      .catch((err) => {
+      .catch(err => {
         this.props.showNotification({
           type: 'error',
           message: err,
@@ -121,13 +124,13 @@ export default class webhookForm extends Component {
       });
   }
 
-  initializeEventValues = (clearAll) => {
+  initializeEventValues = clearAll => {
     const { webhook } = this.props;
     let currentValues = {};
 
     let activeEvents = [];
     if (webhook) {
-      Object.keys(webhook.events).forEach(function (key) {
+      Object.keys(webhook.events).forEach(function(key) {
         if (webhook.events[key] === true) {
           activeEvents.push(key);
         }
@@ -148,19 +151,21 @@ export default class webhookForm extends Component {
     });
   };
 
-  validateUrl = (value) => {
+  validateUrl = value => {
     const { webhookList } = this.props;
-    if (webhookList) {
+    if(webhookList){
       const existingUrlList = [];
-      webhookList.map((item) => {
+      webhookList.map(item => {
         existingUrlList.push(item.url);
       });
 
-      return existingUrlList.includes(value) ? 'Webhook URL already exists' : undefined;
-    }
+      return existingUrlList.includes(value)
+        ? 'Webhook URL already exists'
+        : undefined;
+      }
   };
 
-  save = (formData) => {
+  save = formData => {
     // if no events selected throw an error and do not save the form
     const { webhookFormData, webhookList } = this.props;
     let noOfEventsSelected = 0;
@@ -170,7 +175,7 @@ export default class webhookForm extends Component {
           if (eventValue) ++counter;
           return counter;
         },
-        noOfEventsSelected,
+        noOfEventsSelected
       );
     }
 
@@ -201,13 +206,13 @@ export default class webhookForm extends Component {
         const oldData = {};
         const newData = {};
 
-        Object.keys(webhook).forEach((key) => {
+        Object.keys(webhook).forEach(key => {
           if (requiredKeys.includes(key)) {
             oldData[key] = webhook[key];
           }
         });
 
-        Object.keys(formData).forEach((key) => {
+        Object.keys(formData).forEach(key => {
           if (requiredKeys.includes(key)) {
             newData[key] = formData[key];
           }
@@ -248,7 +253,7 @@ export default class webhookForm extends Component {
       }
 
       return submitWebhook
-        .then((resp) => {
+        .then(resp => {
           this.props.onSave(resp);
           this.props.closeModal();
           this.props.showNotification({
@@ -260,50 +265,58 @@ export default class webhookForm extends Component {
                 window.rzpQ.merchantActions().success('Webhook.editCompleted', {
                   webhook_id: webhook.id,
                   changes_made: difference,
-                }),
+                })
               )
             : tracking.trackEvent(
-                window.rzpQ.merchantActions().success('Webhook.setupCompleted', {
-                  secret: data.secret,
-                  alert_email: data.alert_email || '',
-                  webhook_count: webhookList.length || '',
-                }),
+                window.rzpQ
+                  .merchantActions()
+                  .success('Webhook.setupCompleted', {
+                    secret: data.secret,
+                    alert_email: data.alert_email || '',
+                    webhook_count: webhookList.length || '' ,
+                  })
               );
         })
-        .catch((err) => {
+        .catch(err => {
           this.setState({
             errors: err.errors,
           });
           webhook
             ? tracking.trackEvent(
-                window.rzpQ.merchantActions().failed('Webhook.editValidationError', {
-                  errors: err.errors,
-                }),
+                window.rzpQ
+                  .merchantActions()
+                  .failed('Webhook.editValidationError', {
+                    errors: err.errors,
+                  })
               )
             : tracking.trackEvent(
-                window.rzpQ.merchantActions().failed('Webhook.setupValidationError', {
-                  errors: err.errors,
-                }),
+                window.rzpQ
+                  .merchantActions()
+                  .failed('Webhook.setupValidationError', {
+                    errors: err.errors,
+                  })
               );
         });
     }
   };
 
-  toggleVisibility = (e) => {
+  toggleVisibility = e => {
     this.setState({ showSecret: !this.state.showSecret });
   };
 
-  filterWebhooks = (searchEventsQuery) => {
+  filterWebhooks = searchEventsQuery => {
     const { groupedWebhooks } = this.state;
 
     if (groupedWebhooks) {
       const newGroupedWebhooks = {};
-      Object.entries(groupedWebhooks).forEach((webhook) => {
+      Object.entries(groupedWebhooks).forEach(webhook => {
         const [eventGroup, events] = webhook;
-        const filteredEvents = events.filter((event) => event.includes(searchEventsQuery));
+        const filteredEvents = events.filter(event =>
+          event.includes(searchEventsQuery)
+        );
         if (filteredEvents.length) {
-          newGroupedWebhooks[eventGroup] = events.filter((event) =>
-            event.includes(searchEventsQuery),
+          newGroupedWebhooks[eventGroup] = events.filter(event =>
+            event.includes(searchEventsQuery)
           );
         }
       });
@@ -330,7 +343,7 @@ export default class webhookForm extends Component {
           if (eventValue) ++counter;
           return counter;
         },
-        noOfEventsSelected,
+        noOfEventsSelected
       );
     }
 
@@ -338,19 +351,24 @@ export default class webhookForm extends Component {
     if (filterGroupedWebhooks) {
       noOfEvents = Object.values(filterGroupedWebhooks).reduce(
         (eventsCount, events) => eventsCount + events.length,
-        noOfEvents,
+        noOfEvents
       );
     }
 
     return (
       <div>
-        <ModalHeader title="Webhook Setup" onCloseClick={this.props.closeModal} />
+        <ModalHeader
+          title="Webhook Setup"
+          onCloseClick={this.props.closeModal}
+        />
 
         <form className="form-horizontal" onSubmit={handleSubmit(this.save)}>
           <div className="modal-body">
             <Alert type="error" message={this.state.errors} />
             <div className="form-group">
-              <label className="col-md-3 control-label label-required">Webhook URL</label>
+              <label className="col-md-3 control-label label-required">
+                Webhook URL
+              </label>
               <div className="col-md-9">
                 <Field
                   name="url"
@@ -426,9 +444,14 @@ export default class webhookForm extends Component {
             </div>
 
             <div className="form-group">
-              <label className="col-md-3 control-label label-required">Active Events</label>
+              <label className="col-md-3 control-label label-required">
+                Active Events
+              </label>
               <div className="col-md-9">
-                <div className="search-input-container" style={{ position: 'relative' }}>
+                <div
+                  className="search-input-container"
+                  style={{ position: 'relative' }}
+                >
                   <Field
                     name="search"
                     component={InputField}
@@ -436,7 +459,7 @@ export default class webhookForm extends Component {
                     class="form-control"
                     placeholder="Search"
                     value={searchEventsQuery}
-                    onChange={(e) => this.filterWebhooks(e.target.value)}
+                    onChange={e => this.filterWebhooks(e.target.value)}
                   />
                   {searchEventsQuery ? (
                     <div
@@ -487,7 +510,7 @@ export default class webhookForm extends Component {
                       <Spinner />
                     </div>
                   ) : Object.keys(filterGroupedWebhooks).length ? (
-                    Object.entries(filterGroupedWebhooks).map((webhook) => {
+                    Object.entries(filterGroupedWebhooks).map(webhook => {
                       const [eventGroup, events] = webhook;
                       return (
                         <React.Fragment key={eventGroup}>
@@ -499,21 +522,26 @@ export default class webhookForm extends Component {
                                 type="checkbox"
                                 onChange={(e, v) => {
                                   let eventValues = {};
-                                  if (webhookFormData.values && webhookFormData.values.events) {
+                                  if (
+                                    webhookFormData.values &&
+                                    webhookFormData.values.events
+                                  ) {
                                     eventValues = {
                                       ...webhookFormData.values.events,
                                     };
                                   }
-                                  filterGroupedWebhooks[eventGroup].forEach((event) => {
-                                    eventValues[event] = !!v;
-                                  });
+                                  filterGroupedWebhooks[eventGroup].forEach(
+                                    event => {
+                                      eventValues[event] = !!v;
+                                    }
+                                  );
                                   this.props.change('events', eventValues);
                                 }}
                               />
                               {eventGroup} Events
                             </label>
                           </div>
-                          {events.map((eventName) => (
+                          {events.map(eventName => (
                             <div key={eventName} className="checkbox event">
                               <label>
                                 <Field
@@ -526,7 +554,8 @@ export default class webhookForm extends Component {
                                     dangerouslySetInnerHTML={{
                                       __html: eventName.replace(
                                         new RegExp(searchEventsQuery, 'gi'),
-                                        (match) => `<b style="background: #FEFFDE;">${match}</b>`,
+                                        match =>
+                                          `<b style="background: #FEFFDE;">${match}</b>`
                                       ),
                                     }}
                                   />
@@ -541,7 +570,9 @@ export default class webhookForm extends Component {
                       );
                     })
                   ) : (
-                    <span stlye={{ paddingTop: '10px' }}>No Webhooks available</span>
+                    <span stlye={{ paddingTop: '10px' }}>
+                      No Webhooks available
+                    </span>
                   )}
                 </div>
                 <div
@@ -557,8 +588,8 @@ export default class webhookForm extends Component {
                   }}
                 >
                   <span style={{ fontSize: '12px', padding: '8px 14px' }}>
-                    {noOfEventsSelected || 'No'} {noOfEventsSelected > 1 ? 'events' : 'event'}{' '}
-                    selected
+                    {noOfEventsSelected || 'No'}{' '}
+                    {noOfEventsSelected > 1 ? 'events' : 'event'} selected
                   </span>
 
                   <button
@@ -592,7 +623,11 @@ export default class webhookForm extends Component {
           </div>
 
           <div className="modal-footer">
-            <button type="button" className="btn btn-default" onClick={this.props.closeModal}>
+            <button
+              type="button"
+              className="btn btn-default"
+              onClick={this.props.closeModal}
+            >
               Cancel
             </button>
 
