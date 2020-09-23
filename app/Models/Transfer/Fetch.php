@@ -16,6 +16,8 @@ class Fetch extends BaseFetch
             Entity::MERCHANT_ID             => 'sometimes|alpha_num|size:14',
             Entity::SOURCE                  => 'sometimes|string|min:14',
             Entity::STATUS                  => 'sometimes|array',
+            Entity::ACCOUNT_CODE            => 'sometimes|string|min:3|max:20',
+            Entity::ACCOUNT_CODE_USED       => 'sometimes|boolean',
         ],
     ];
 
@@ -24,6 +26,8 @@ class Fetch extends BaseFetch
             Entity::TRANSACTION_ID,
             Entity::MERCHANT_ID,
             Entity::SOURCE,
+            Entity::ACCOUNT_CODE,
+            Entity::ACCOUNT_CODE_USED,
         ],
 
         AuthType::PRIVATE_AUTH => [

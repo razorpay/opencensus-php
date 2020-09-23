@@ -1689,6 +1689,10 @@ class AdminFetch
                     Fetch::LABEL  => 'Pricing Plan Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
+                'account_code' => [
+                    Fetch::LABEL    => 'Account Code',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
                 'parent_id' => [
                     Fetch::LABEL  => 'Marketplace Parent Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
@@ -2353,14 +2357,22 @@ class AdminFetch
 
             Entity::TRANSFER => [
                 'source' => [
-                    Fetch::LABEL  => 'Source Payment/Merchant Id',
+                    Fetch::LABEL  => 'Source Payment/Order/Merchant ID',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
                 'recipient' => [
-                    Fetch::LABEL  => 'Recipient Merchant/Customer Id',
+                    Fetch::LABEL  => 'Recipient Merchant/Customer ID',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'account_code' => [
+                    Fetch::LABEL    => 'Account Code',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'account_code_used' => [
+                    Fetch::LABEL    => 'Account Code Used',
+                    Fetch::TYPE     => Fetch::TYPE_BOOLEAN,
+                ],
             ],
 
             Entity::TOKEN => [
