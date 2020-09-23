@@ -84,7 +84,7 @@ export default class webhookForm extends Component {
 
       this.props.initialize({
         url: webhook.url,
-        alert_email: webhook.alert_email ? webhook.alert_email : userData.email,
+        alert_email: webhook.alert_email ? webhook.alert_email : userData.merchant.transaction_report_email,
         secret_exists: webhook.secret_exists,
         eventGroup: {},
         events: {},
@@ -237,7 +237,7 @@ export default class webhookForm extends Component {
         difference = diff(newData, oldData);
       }
 
-      if (formData.alert_email && formData.alert_email === userData.email) {
+      if (formData.alert_email && formData.alert_email === userData.merchant.transaction_report_email) {
         delete formData.alert_email;
       }
 
@@ -328,7 +328,7 @@ export default class webhookForm extends Component {
   };
 
   render() {
-    const { handleSubmit, webhookFormData, webhook } = this.props;
+    const { handleSubmit, webhookFormData, webhook , userData } = this.props;
     const {
       groupedWebhooks,
       filterGroupedWebhooks,
@@ -435,6 +435,7 @@ export default class webhookForm extends Component {
                   type="email"
                   class="form-control"
                   validate={email('Please provide a valid email')}
+                  placeholder={userData.merchant.transaction_report_email}
                 />
                 <div className="help-block" style={{ margin: '0px' }}>
                   <small>Receive email alerts for webhook failures</small>
