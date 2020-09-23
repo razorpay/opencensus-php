@@ -10,11 +10,13 @@ use RZP\Constants\Mode;
 use RZP\Events\Event;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\Utility;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Payment as PaymentMail;
 use RZP\Models\Invoice\ViewDataSerializer;
+use RZP\Models\Merchant\Email as MerchantEmail;
 
 class Notify
 {
@@ -419,6 +421,21 @@ class Notify
                 'risk'                 => $this->merchant->getRiskRating()
             ],
         ];
+
+        // add merchant support details
+        try
+        {
+            $supportDetails = (new MerchantEmail\Core)->fetchEmailsByType($this->merchant, MerchantEmail\Type::SUPPORT);
+
+            $data['merchant']['support_details'] = $supportDetails->toArrayPublic();
+        }
+        catch (\Throwable $e)
+        {
+            if ($e->getCode() !== ErrorCode::BAD_REQUEST_MERCHANT_EMAIL_DOES_NOT_EXIST)
+            {
+                $this->trace->traceException($e);
+            }
+        }
 
         if ($this->payment->hasCard())
         {

@@ -15,33 +15,27 @@
     #outlook a {
       padding: 0;
     }
-
     .ReadMsgBody {
       width: 100%;
     }
-
     .ExternalClass {
       width: 100%;
     }
-
     .ExternalClass * {
       line-height: 100%;
     }
-
     body {
       margin: 0;
       padding: 0;
       -webkit-text-size-adjust: 100%;
       -ms-text-size-adjust: 100%;
     }
-
     table,
     td {
       border-collapse: collapse;
       mso-table-lspace: 0pt;
       mso-table-rspace: 0pt;
     }
-
     img {
       border: 0;
       height: auto;
@@ -50,7 +44,6 @@
       text-decoration: none;
       -ms-interpolation-mode: bicubic;
     }
-
     p {
       display: block;
       margin: 13px 0;
@@ -62,7 +55,6 @@
       @-ms-viewport {
         width: 320px;
       }
-
       @viewport {
         width: 320px;
       }
@@ -80,8 +72,6 @@
 
 
   <style type="text/css">
-
-
   </style>
 
 
@@ -374,7 +364,7 @@
                                       style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
                                       Email</div>
                                     <div class="value" style="color: #515978; display: inline-block;">
-                                      {{ $customer['email'] }}
+                                      <a class="link" href="mailto:{{ $customer['email'] }}" target="_blank" style="text-decoration:none;color: #528ff0">{{ $customer['email'] }}</a>
                                     </div>
 
                                   </div>
@@ -412,7 +402,19 @@
                                   style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-top: 20px; padding-bottom: 20px; margin-top: 8px; border-top-width: 2px; border-top-style: solid; padding-top: 20px; padding-bottom: 20px; border-top-color: {{ $merchant['brand_color'] }};">
                                   <div class="description"
                                     style="text-align: center; color: #515978; font-size: 14px; line-height: 1.5;">
-                                    For any order related queries, please reach out to {{$merchant['billing_label']}}. <br />
+                                    For any order related queries, please reach out to 
+                                    @if ((isset($merchant['support_details']) === true) && (empty($merchant['support_details']['url']) === false))
+                                      <a class="link" href="{{$merchant['support_details']['url']}}" target="_blank" style="text-decoration: none; color: #528FF0;">{{$merchant['billing_label']}}</a>
+                                    @else
+                                      {{$merchant['billing_label']}}
+                                    @endif
+                                    @isset ($merchant['support_details'])
+                                      at <a class="link" href="mailto:{{$merchant['support_details']['email']}}" target="_blank" style="text-decoration:none;color:#528ff0">{{$merchant['support_details']['email']}}</a>
+                                    @if (empty($merchant['support_details']['phone']) === false)
+                                      or {{$merchant['support_details']['phone']}}
+                                    @endif
+                                    @endisset
+                                    . <br />
                                   </div>
                                 </div>
                               </div>

@@ -244,6 +244,9 @@ class Route
         'merchant_delete_additional_email'         => ['delete',   'merchants/{id}/additionalemail/{type}',          'MerchantEmailController@deleteMerchantEmails'                      ],
         'merchant_fetch_additional_email'          => ['get',      'merchants/{id}/additionalemail/{type}',          'MerchantEmailController@fetchMerchantEmailByType'                  ],
         'merchant_create_additional_email'         => ['post',     'merchants/{id}/additionalemail',                 'MerchantEmailController@postMerchantEmails'                        ],
+        'proxy_merchant_get_support_details'       => ['get',      'proxy/merchants/supportdetails',                 'MerchantEmailController@proxyGetSupportDetails'                    ],
+        'proxy_merchant_create_support_details'    => ['post',     'proxy/merchants/supportdetails',                 'MerchantEmailController@proxyCreateSupportDetails'                 ],
+        'proxy_merchant_edit_support_details'      => ['put',      'proxy/merchants/supportdetails',                 'MerchantEmailController@proxyEditSupportDetails'                   ],
         'merchant_fetch_all_additional_email'      => ['get',      'merchants/{id}/additionalemail',                 'MerchantEmailController@fetchMerchantEmails'                       ],
         'merchant_edit_email_la'                   => ['put',      'la-merchants/email',                             'MerchantController@updateLinkedAccountMerchantEmail'               ],
         'merchant_edit_config_la'                  => ['post',     'la-merchants/config',                            'MerchantController@updateLinkedAccountConfig'                      ],
@@ -3096,6 +3099,9 @@ class Route
 
         // Get free_payout attributes for balance
         'get_free_payouts_attributes',
+        'proxy_merchant_get_support_details',
+        'proxy_merchant_create_support_details',
+        'proxy_merchant_edit_support_details',
     ];
 
     //

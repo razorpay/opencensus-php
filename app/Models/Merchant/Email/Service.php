@@ -8,6 +8,7 @@ use Cache;
 use Config;
 use Request;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 
 class Service extends Base\Service
 {
@@ -101,5 +102,30 @@ class Service extends Base\Service
         }
 
         return $merchantEmailMap;
+    }
+
+    public function proxyGetSupportDetails(Merchant\Entity $merchant): array
+    {
+        $supportDetails = $this->core()->fetchEmailsByType($merchant, Type::SUPPORT);
+
+        return $supportDetails->toArrayPublic();
+    }
+
+    public function proxyCreateSupportDetails(Merchant\Entity $merchant, array $input): array
+    {
+        $input[Entity::TYPE] = Type::SUPPORT;
+
+        $supportDetails = $this->core()->upsert($merchant, $input);
+
+        return $supportDetails->toArrayPublic();
+    }
+
+    public function proxyEditSupportDetails(Merchant\Entity $merchant, array $input): array
+    {
+        $input[Entity::TYPE] = Type::SUPPORT;
+
+        $supportDetails = $this->core()->upsert($merchant, $input);
+
+        return $supportDetails->toArrayPublic();
     }
 }

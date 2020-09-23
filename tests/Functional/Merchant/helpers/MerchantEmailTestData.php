@@ -10,7 +10,7 @@ return [
                 'email'  => 'cvhg@gmail.com,abc@gmail.com',
                 'phone'  => '9732097320',
                 'policy' => 'tech',
-                'url'    => 'rzp.com/123SD'
+                'url'    => 'https://razorpay.com'
             ],
             'url'     => '/merchants/{$id}/additionalemail',
             'method'  => 'POST'
@@ -21,7 +21,7 @@ return [
                 'email'  => 'cvhg@gmail.com,abc@gmail.com',
                 'phone'  => '9732097320',
                 'policy' => 'tech',
-                'url'    => 'rzp.com/123SD'
+                'url'    => 'https://razorpay.com'
             ],
         ],
     ],
@@ -39,14 +39,14 @@ return [
                         'email'  => 'cvhg@gmail.com,abc@gmail.com',
                         'phone'  => '9732097320',
                         'policy' => 'tech',
-                        'url'    => 'rzp.com/123SD'
+                        'url'    => 'https://razorpay.com'
                     ],
                     [
                         'type'   => 'refund',
                         'email'  => 'cvhg@gmail.com,abc@gmail.com',
                         'phone'  => '9732097320',
                         'policy' => 'tech',
-                        'url'    => 'rzp.com/123SD'
+                        'url'    => 'https://razorpay.com'
                     ]
                 ]
             ],
@@ -76,7 +76,7 @@ return [
                 'email'  => 'cvhg@gmail.com,abc@gmail.com',
                 'phone'  => '9732097320',
                 'policy' => 'tech',
-                'url'    => 'rzp.com/123SD'
+                'url'    => 'https://razorpay.com'
             ],
         ],
     ],

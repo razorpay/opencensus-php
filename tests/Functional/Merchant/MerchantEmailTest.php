@@ -37,7 +37,7 @@ class MerchantEmailTest extends TestCase
             'email'  => 'cvhg@gmail.com,abc@gmail.com',
             'phone'  => '9732097320',
             'policy' => 'tech',
-            'url'    => 'rzp.com/123SD'
+            'url'    => 'https://razorpay.com'
         ];
 
         $newAttributes = array_merge($defaultValues,$attributes);

@@ -67,4 +67,34 @@ class MerchantEmailController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function proxyGetSupportDetails()
+    {
+        $merchant =  $this->ba->getMerchant();
+
+        $data = $this->service()->proxyGetSupportDetails($merchant);
+
+        return ApiResponse::json($data);
+    }
+
+    public function proxyCreateSupportDetails()
+    {
+        $input = Request::all();
+
+        $merchant =  $this->ba->getMerchant();
+
+        $data = $this->service()->proxyCreateSupportDetails($merchant, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function proxyEditSupportDetails()
+    {
+        $input = Request::all();
+
+        $merchant =  $this->ba->getMerchant();
+
+        $data = $this->service()->proxyEditSupportDetails($merchant, $input);
+
+        return ApiResponse::json($data);
+    }
 }
