@@ -254,7 +254,6 @@ class Entity extends Base\PublicEntity
 
         $app['trace']->info(TraceCode::SETTING_QR_STRING_WITH_MPANS_TOKENIZED, [
             'qr_code_id'       => $this->getId(),
-            'input_string'     => $qrString,
             'tokenized_string' => $tokenizedMpansQrString,
         ]);
 
