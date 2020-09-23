@@ -9,7 +9,7 @@ use RZP\Models\Payment\Status;
 use RZP\Reconciliator\NetbankingIdfc\Constants;
 use RZP\Reconciliator\Base\SubReconciliator\Helper;
 
-class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
 {
     const BLACKLISTED_COLUMNS = [];
 

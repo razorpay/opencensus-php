@@ -6,9 +6,10 @@ use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Services\NbPlus\Netbanking;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
-class Idfc extends Base
+class Idfc extends NetbankingBase
 {
     use FileHandler;
 
@@ -34,7 +35,7 @@ class Idfc extends Base
         {
             $formattedData[] = [
                 $row['payment']['id'],
-                $row['gateway']['bank_payment_id'],
+                $this->fetchBankReferenceId($row),
                 $this->getFormattedAmountString($row['payment']['amount']),
                 'SUCCESS',
                 Carbon::createFromTimestamp($row['payment']['created_at'], Timezone::IST)->format('d-M-Y H:i:s')
@@ -60,5 +61,15 @@ class Idfc extends Base
         $amt = number_format(($amount / 100), 2, '.', '');
 
         return $amt;
+    }
+
+    protected function fetchBankReferenceId($row)
+    {
+        if ($row['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $row['gateway']['bank_transaction_id']; // payment through nbplus service
+        }
+
+        return $row['gateway']['bank_payment_id'];
     }
 }

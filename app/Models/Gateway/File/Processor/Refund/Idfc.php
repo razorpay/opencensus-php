@@ -7,7 +7,7 @@ use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
-use RZP\Models\Payment\Gateway;
+use RZP\Services\NbPlus\Netbanking;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
 class Idfc extends Base
@@ -71,7 +71,7 @@ class Idfc extends Base
                 self::TXN_DATE              => $this->getDateFromTimestramp($row['payment']['created_at']),
                 self::REFUND_DATE           => $this->getDateFromTimestramp($row['refund']['created_at']),
                 self::BANK_MERCHANT_CODE    => $row['terminal']['gateway_merchant_id'],
-                self::BANK_REF_NO           => $row['gateway']['bank_payment_id'],
+                self::BANK_REF_NO           => $this->fetchBankReferenceId($row),
                 self::PGI_REF_NO            => $row['payment']['id'],
                 self::TXN_AMT               => $this->getFormattedAmountString($row['payment']['amount']),
                 self::REFUND_AMT            => $this->getFormattedAmountString($row['refund']['amount']),
@@ -111,5 +111,15 @@ class Idfc extends Base
         $amt = number_format(($amount / 100), 2, '.', '');
 
         return $amt;
+    }
+
+    protected function fetchBankReferenceId($row)
+    {
+        if ($row['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $row['gateway']['bank_transaction_id']; // payment through nbplus service
+        }
+
+        return $row['gateway']['bank_payment_id'];
     }
 }

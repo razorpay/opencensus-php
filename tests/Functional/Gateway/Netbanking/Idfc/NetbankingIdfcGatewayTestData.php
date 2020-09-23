@@ -1,6 +1,8 @@
 <?php
 
+use Carbon\Carbon;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\GatewayErrorException;
@@ -196,4 +198,36 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER,
         ],
     ],
+    'testNetbankingIdfcCombinedFile' => [
+        'request' => [
+            'content' => [
+                'type'     => 'combined',
+                'targets'  => ['idfc'],
+                'begin'    => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'      => Carbon::tomorrow(Timezone::IST)->getTimestamp()
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'file_sent',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'refunds@razorpay.com',
+                        'type'                => 'combined',
+                        'target'              => 'idfc',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ],
+                ]
+            ]
+        ]
+    ]
 ];
