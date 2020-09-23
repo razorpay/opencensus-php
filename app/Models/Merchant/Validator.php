@@ -1420,9 +1420,21 @@ class Validator extends Base\Validator
         // Replaces ACCOUNT_NUMBER with corresponding BALANCE_ID.
         $accountNumber = array_pull($input, Balance\Entity::ACCOUNT_NUMBER);
 
-        $balanceId = app('repo')->balance->getBalanceIdByAccountNumberOrFail($accountNumber);
+        try
+        {
+            $balanceId = app('repo')->balance->getBalanceIdByAccountNumberOrFail($accountNumber);
 
-        $input[Balance\Entity::BALANCE_ID] = $balanceId;
+            $input[Balance\Entity::BALANCE_ID] = $balanceId;
+        }
+        catch (\Throwable $ex)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_RAZORPAYX_ACCOUNT_NUMBER_IS_INVALID,
+                Balance\Entity::ACCOUNT_NUMBER,
+                [
+                    'account_number'   => $accountNumber
+                ]);
+        }
     }
 
     /**

@@ -346,6 +346,8 @@ class PublicErrorDescription
     const BAD_REQUEST_TRANSACTION_AMOUT_GREATER_THAN_REGISTERED_AMOUNT          = 'Transaction amount exceeds the allowed amount.';
     const BAD_REQUEST_FREQUENCY_DEBIT_LIMIT_EXCEEDED                            = 'The frequency of debit on the account has been exceeded.';
 
+    const BAD_REQUEST_RAZORPAYX_ACCOUNT_NUMBER_IS_INVALID                       = 'The RazorpayX Account number is invalid.';
+
     const BAD_REQUEST_ACTIVE_PROMOTION_FOR_EVENT_ALREADY_EXISTS                 = 'A promotion for given event already exists';
 
     const BAD_REQUEST_MERCHANT_ACTIVATION_FORM_NOT_SUBMITTED                    = 'The merchant has not submitted the activation form yet.';
