@@ -344,9 +344,10 @@ class Route
         // terminal service proxies
         'terminals_proxy_delete_submerchant'       => ['delete',   'terminals/proxy/terminal/submerchant',           'TerminalController@proxyV1TerminalService'                         ],
         'terminals_proxy_create_submerchant'       => ['post',     'terminals/proxy/terminal/submerchant',           'TerminalController@proxyV1TerminalService'                         ],
-        'terminals_proxy_create_gateway_credential'=> ['post',     'terminals/proxy/gateway_credentials',             'TerminalController@proxyV2TerminalService'                         ],
-        'terminals_proxy_fetch_gateway_credential' => ['get',      'terminals/proxy/gateway_credentials/{gateway}',   'TerminalController@proxyV2TerminalService'                         ],
-        'terminals_proxy_delete_gateway_credential'=> ['delete',   'terminals/proxy/gateway_credentials/{id}',        'TerminalController@proxyV2TerminalService'                         ],
+        'terminals_proxy_update_recurring'         => ['post',     'terminals/proxy/recurring/terminals/update',     'TerminalController@proxyV1TerminalService'                         ],
+        'terminals_proxy_create_gateway_credential'=> ['post',     'terminals/proxy/gateway_credentials',            'TerminalController@proxyV2TerminalService'                         ],
+        'terminals_proxy_fetch_gateway_credential' => ['get',      'terminals/proxy/gateway_credentials/{gateway}',  'TerminalController@proxyV2TerminalService'                         ],
+        'terminals_proxy_delete_gateway_credential'=> ['delete',   'terminals/proxy/gateway_credentials/{id}',       'TerminalController@proxyV2TerminalService'                         ],
 
         'terminal_enable'                          => ['put',      'terminals/{id}/enable',                          'TerminalOnboardingController@putTerminalEnable'                    ],
         'terminal_disable'                         => ['put',      'terminals/{id}/disable',                         'TerminalOnboardingController@putTerminalDisable'                   ],
@@ -1857,7 +1858,7 @@ class Route
         'mpans_tokenize_existing'                 => ['post',     'mpans/tokenize',                                            'MpanController@postTokenizeMpans'                         ],
         'terminal_mpans_tokenize_existing'        => ['post',     'terminals/mpans/tokenize',                                  'TerminalController@postTokenizeMpans'                     ],
         'qr_code_mpans_tokenize_existing'         => ['post',     'qr_code/mpans/tokenize',                                    'QrCodeController@postTokenizeQrStringMpans'               ],
-        
+
         // Core Payment Service Routes
         'cps_sync_gateway_entities_cron'          => ['post',     'cps/sync_gateway_entities',                                 'CpsController@syncGatewayEntities'                        ],
 
@@ -2601,6 +2602,7 @@ class Route
         'terminal_service_sync_delete',
         'terminals_proxy_delete_submerchant',
         'terminals_proxy_create_submerchant',
+        'terminals_proxy_update_recurring',
         'virtual_account_batch_migrate_yesbank',
         'create_settlement_entry',
         'get_global_config',
@@ -5121,6 +5123,7 @@ class Route
             'low_balance_config_alert_cron',
             'terminals_proxy_delete_submerchant',
             'terminals_proxy_create_submerchant',
+            'terminals_proxy_update_recurring',
             'cps_backfill_entities',
             'vault_token_renewal',
             'tax_payments_payout_cron',
