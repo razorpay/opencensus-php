@@ -31,7 +31,7 @@ export default class ViewCredentials extends Component {
         secret: credentials.secret,
       },
     })
-      .then(data => {
+      .then((data) => {
         fileDownload(data, 'rzp.csv');
       })
       .catch(({ errors }) => {
@@ -47,10 +47,7 @@ export default class ViewCredentials extends Component {
 
     return (
       <div class="Partner-Dashboard__View-Credentials">
-        <ModalHeader
-          title={`Download ${mode} token`}
-          onCloseClick={this.props.closeModal}
-        />
+        <ModalHeader title={`Download ${mode} token`} onCloseClick={this.props.closeModal} />
 
         <div class="modal-body">
           {/* client ID */}
@@ -68,19 +65,13 @@ export default class ViewCredentials extends Component {
               disabled
               class="form-control"
             />
-            <button
-              class="btn-link btn-show-secret"
-              onClick={this.toggleSecretView}
-            >
+            <button class="btn-link btn-show-secret" onClick={this.toggleSecretView}>
               {this.state.showClientSecret ? 'Hide' : 'Show'}
             </button>
           </div>
 
           <div class="Modal__Actions clearfix">
-            <button
-              class="btn btn-primary btn-block"
-              onClick={this.handleDownloadToken}
-            >
+            <button class="btn btn-primary btn-block" onClick={this.handleDownloadToken}>
               Download Token
             </button>
           </div>

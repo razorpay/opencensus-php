@@ -45,7 +45,7 @@ const inActiveStatusReasonMap = {
 };
 
 @connect(
-  state => ({
+  (state) => ({
     user: state.session.user,
     mode: state.session.mode,
     reportConfigs: state.reports.reportConfigs,
@@ -57,7 +57,7 @@ const inActiveStatusReasonMap = {
     closeModal,
     saveReportConfigs,
     addPollInstance,
-  }
+  },
 )
 @RTracking(() => window.rzpQ.component('PaymentPagesContainer'))
 export default class PaymentPagesV3Entity extends React.Component {
@@ -71,10 +71,8 @@ export default class PaymentPagesV3Entity extends React.Component {
     this.trackPaymentPageDetailsView('pp.details.page_open');
   }
 
-  trackPaymentPageDetailsView = event => {
-    return this.props.tracking.trackEvent(
-      window.rzpQ.paymentPages().interaction(event)
-    );
+  trackPaymentPageDetailsView = (event) => {
+    return this.props.tracking.trackEvent(window.rzpQ.paymentPages().interaction(event));
   };
 
   getStatsTable(paymentPageEntity) {
@@ -99,7 +97,7 @@ export default class PaymentPagesV3Entity extends React.Component {
     this.props.addPollInstance(reportId, pollInstance);
   };
 
-  downloadReport = extension => {
+  downloadReport = (extension) => {
     const { user, paymentPageEntity, reportConfigs } = this.props;
     let configId;
 
@@ -120,7 +118,7 @@ export default class PaymentPagesV3Entity extends React.Component {
       paymentPageEntity,
       configId,
       this.saveLongPollInstances,
-      extension
+      extension,
     );
 
     if (promise && promise.then) {
@@ -133,7 +131,7 @@ export default class PaymentPagesV3Entity extends React.Component {
         message: 'Your report will download shortly',
       });
 
-      promise.then(data => {
+      promise.then((data) => {
         this.setState({
           isExportInProgress: false,
         });
@@ -162,7 +160,7 @@ export default class PaymentPagesV3Entity extends React.Component {
         <CreateEmbedButton
           id={this.props.paymentPageEntity.id}
           handleClose={this.props.closeModal}
-          trackerFn={function() {}}
+          trackerFn={function () {}}
           url={this.props.paymentPageEntity.short_url}
           color={this.props.merchantColor}
         />
@@ -245,15 +243,14 @@ export default class PaymentPagesV3Entity extends React.Component {
     const isCompleted = !isActive && statusReason.toLowerCase() === 'completed';
 
     const isSmsOrEmailSent =
-      paymentPageEntity.sms_status === 'sent' ||
-      paymentPageEntity.email_status === 'sent';
+      paymentPageEntity.sms_status === 'sent' || paymentPageEntity.email_status === 'sent';
 
     return (
       <React.Fragment>
         <div
           class={classList(
             'content-sm txn-details Entity--paymentpage Entity--paymentpage-v2 Entity--paymentpage-v3',
-            this.state.detailsCollapse && 'Entity--paymentpage-collapse'
+            this.state.detailsCollapse && 'Entity--paymentpage-collapse',
           )}
         >
           <div class="content-header">
@@ -271,17 +268,11 @@ export default class PaymentPagesV3Entity extends React.Component {
                   <Link
                     class={classList(
                       'btn Button--primary--invert',
-                      isMobileResolution ? 'btn-xs' : 'btn-sm'
+                      isMobileResolution ? 'btn-xs' : 'btn-sm',
                     )}
-                    to={`/paymentpages/new?duplicate_id=${
-                      paymentPageEntity.id
-                    }`}
+                    to={`/paymentpages/new?duplicate_id=${paymentPageEntity.id}`}
                   >
-                    {isMobileResolution ? (
-                      <i class="i i-copy" />
-                    ) : (
-                      'Duplicate Page'
-                    )}
+                    {isMobileResolution ? <i class="i i-copy" /> : 'Duplicate Page'}
                   </Link>
                 )}
 
@@ -289,7 +280,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                   <Link
                     class={classList(
                       'btn Button--primary--invert',
-                      isMobileResolution ? 'btn-xs' : 'btn-sm'
+                      isMobileResolution ? 'btn-xs' : 'btn-sm',
                     )}
                     to={`/paymentpages/${paymentPageEntity.id}/edit`}
                   >
@@ -297,18 +288,14 @@ export default class PaymentPagesV3Entity extends React.Component {
                   </Link>
                 )}
 
-                {isRoleAllowedEdit &&
-                  isActive && (
-                    <button
-                      class={classList(
-                        'btn btn-primary',
-                        isMobileResolution ? 'btn-xs' : 'btn-sm'
-                      )}
-                      onClick={this.openShareView}
-                    >
-                      {isMobileResolution ? <i class="i i-share" /> : 'Share'}
-                    </button>
-                  )}
+                {isRoleAllowedEdit && isActive && (
+                  <button
+                    class={classList('btn btn-primary', isMobileResolution ? 'btn-xs' : 'btn-sm')}
+                    onClick={this.openShareView}
+                  >
+                    {isMobileResolution ? <i class="i i-share" /> : 'Share'}
+                  </button>
+                )}
               </div>
             </div>
 
@@ -334,9 +321,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                         <Button.Transparent
                           class="Button--Link"
                           style={{ marginLeft: 12 }}
-                          onClick={
-                            isActive ? toggleManualActivation : reActivateLink
-                          }
+                          onClick={isActive ? toggleManualActivation : reActivateLink}
                         >
                           {isActive ? 'Deactivate' : 'Activate'}
                         </Button.Transparent>
@@ -348,10 +333,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                   )}
                 />
 
-                <EntityDetailRow
-                  label="Payment Page ID"
-                  value={paymentPageEntity.id}
-                />
+                <EntityDetailRow label="Payment Page ID" value={paymentPageEntity.id} />
 
                 <EntityDetailRow label="Created by">
                   {!!createdByUser ? (
@@ -422,10 +404,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                         <td>
                           <div>
                             <div class="title">Price</div>
-                            <Amount
-                              value={pi.item.amount}
-                              currency={paymentPageEntity.currency}
-                            />
+                            <Amount value={pi.item.amount} currency={paymentPageEntity.currency} />
                           </div>
                         </td>
                         <td class="item-details-units">
@@ -451,9 +430,7 @@ export default class PaymentPagesV3Entity extends React.Component {
           <button
             type="button"
             class="btn-primary btn-sm panel-collapser"
-            onClick={_ =>
-              this.setState({ detailsCollapse: !this.state.detailsCollapse })
-            }
+            onClick={(_) => this.setState({ detailsCollapse: !this.state.detailsCollapse })}
           >
             {this.state.detailsCollapse ? (
               <span>
@@ -480,25 +457,26 @@ export default class PaymentPagesV3Entity extends React.Component {
             ))}
 
             <div class="report-download btn-toolbar pull-right">
-              <div class="btn btn-default Button--invert report-download-trigger" disabled={this.state.isExportInProgress}>
-                <i class="i i-download m-r"/>
+              <div
+                class="btn btn-default Button--invert report-download-trigger"
+                disabled={this.state.isExportInProgress}
+              >
+                <i class="i i-download m-r" />
                 {this.state.isExportInProgress ? 'Downloading...' : 'Download Report'}
               </div>
               <Popover align="bottom">
                 <PopoverBody>
-                  {
-                    reportFormatOptions.map((o, index) => (
-                      <li
-                        key={index}
-                        type="button"
-                        class="btn"
-                        onClick={() => this.downloadReport(o.name)}
-                        disabled={this.state.isExportInProgress}
-                      >
-                        {o.label}
-                      </li>
-                    ))
-                  }
+                  {reportFormatOptions.map((o, index) => (
+                    <li
+                      key={index}
+                      type="button"
+                      class="btn"
+                      onClick={() => this.downloadReport(o.name)}
+                      disabled={this.state.isExportInProgress}
+                    >
+                      {o.label}
+                    </li>
+                  ))}
                 </PopoverBody>
               </Popover>
             </div>

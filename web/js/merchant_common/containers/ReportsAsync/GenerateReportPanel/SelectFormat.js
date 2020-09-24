@@ -5,14 +5,8 @@ import { extractExtensionFromTemplate } from '../utils';
 const DEFAULT_FILE_FORMAT = 'csv';
 export default class SelectFormat extends React.Component {
   static getDerivedStateFromProps(nextProps, prevState = {}) {
-    if (
-      !prevState.selectedConfigId ||
-      nextProps.selectedConfigId !== prevState.selectedConfigId
-    ) {
-      const value = getDefaultFileFormatOfConfig(
-        nextProps.selectedConfigId,
-        nextProps.allConfigs
-      );
+    if (!prevState.selectedConfigId || nextProps.selectedConfigId !== prevState.selectedConfigId) {
+      const value = getDefaultFileFormatOfConfig(nextProps.selectedConfigId, nextProps.allConfigs);
       return {
         selectedConfigId: nextProps.selectedConfigId,
         value,
@@ -25,10 +19,7 @@ export default class SelectFormat extends React.Component {
 
   getValue = () => {
     const { state, props } = this;
-    if (
-      getDefaultFileFormatOfConfig(state.selectedConfigId, props.allConfigs) !==
-      state.value
-    ) {
+    if (getDefaultFileFormatOfConfig(state.selectedConfigId, props.allConfigs) !== state.value) {
       return {
         template_overrides: {
           file_meta: {
@@ -62,12 +53,9 @@ export default class SelectFormat extends React.Component {
 }
 
 function getDefaultFileFormatOfConfig(selectedConfigId, allConfigs) {
-  const selectedConfig =
-    allConfigs.find(({ id }) => id === selectedConfigId) || {};
+  const selectedConfig = allConfigs.find(({ id }) => id === selectedConfigId) || {};
 
-  return (
-    extractExtensionFromTemplate(selectedConfig.template) || DEFAULT_FILE_FORMAT
-  );
+  return extractExtensionFromTemplate(selectedConfig.template) || DEFAULT_FILE_FORMAT;
 }
 
 export const reportFormatOptions = [

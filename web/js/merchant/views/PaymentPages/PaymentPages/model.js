@@ -129,7 +129,13 @@ export function sendLink(id, data) {
     data: reqPayload,
   });
 }
-export function exportReportCSV(user, paymentPageEntity, configId, saveLongPollInstances, extension) {
+export function exportReportCSV(
+  user,
+  paymentPageEntity,
+  configId,
+  saveLongPollInstances,
+  extension,
+) {
   if (!configId) {
     return;
   }
