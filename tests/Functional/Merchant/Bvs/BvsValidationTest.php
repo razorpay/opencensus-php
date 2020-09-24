@@ -485,6 +485,10 @@ class BvsValidationTest extends TestCase
         string $validationStatus,
         string $errorCode = '') :void
     {
+        $countkey = 'bvs_validation_processing_attempt_count_' . $capturedBvsValidation->getValidationId();
+
+        $this->app['cache']->put($countkey, 0, 180);
+
         $bvsResponse = $this->getBvsResponse(
             $capturedBvsValidation->getValidationId(),
             $validationStatus,

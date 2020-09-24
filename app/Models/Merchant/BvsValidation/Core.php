@@ -9,13 +9,23 @@ use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 
 class Core extends Base\Core
 {
+    const BVS_VALIDATION_PROCESSING_ATTEMPT_COUNT  = 'bvs_validation_processing_attempt_count_';
+
+    const MAX_RETRY_COUNT = 3;
+
+    const BVS_VALIDATION_PROCESSING_ATTEMPT_COUNT_TTL_IN_MIN = 180;
+
     protected $mutex;
+
+    protected $cache;
 
     public function __construct()
     {
         parent::__construct();
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->cache = $this->app['cache'];
     }
 
     /**
@@ -24,35 +34,40 @@ class Core extends Base\Core
      *
      * @param array $payload
      *
+     * @return bool
      * @throws \Throwable
      */
-    public function Process(array $payload)
+    public function Process(array $payload) : bool
     {
         (new Validator())->validateInput('process_kafka_message', $payload);
 
         $validationObj = $this->getvalidationObject($payload);
 
-        $validation = $this->repo->bvs_validation->findOrFail($validationObj[Entity::VALIDATION_ID]);
+        $validationId = $validationObj[Entity::VALIDATION_ID];
 
-        $merchantId = $validation->getOwnerId();
+        try
+        {
+            if ($this->isValidationProcessingAttemptExceeded($validationId, $payload) === true)
+            {
+                return true;
+            }
 
-        $validation->edit($validationObj);
+            $this->incrementValidationProcessingAttempt($validationId);
 
-        $this->mutex->acquireAndRelease(
-            $merchantId,
-            function() use ($validation, $merchantId) {
+            $this->processValidation($validationId, $validationObj);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::ONBOARDING_BVS_VERIFICATION_JOB_ERROR,
+                $payload);
 
-                $this->repo->transactionOnLiveAndTest(
-                    function() use ($validation, $merchantId) {
+            return false;
+        }
 
-                        $this->repo->bvs_validation->saveOrFail($validation);
-
-                        $this->updateValidationStatusForMerchant(
-                            $merchantId,
-                            $validation->getArtefactType(),
-                            $validation->getValidationId());
-                    });
-            });
+        return true;
     }
 
     /**
@@ -118,5 +133,107 @@ class Core extends Base\Core
         }
 
         $this->repo->saveOrFail($merchantDetails);
+    }
+
+    /**
+     * @param string $validationId
+     * @param array  $validationObj
+     */
+    protected function processValidation(string $validationId, array $validationObj): void
+    {
+        $validation = $this->repo->bvs_validation->findOrFail($validationId);
+
+        $merchantId = $validation->getOwnerId();
+
+        $validation->edit($validationObj);
+
+        $this->mutex->acquireAndRelease(
+            $merchantId,
+            function() use ($validation, $merchantId) {
+
+                $this->repo->transactionOnLiveAndTest(
+                    function() use ($validation, $merchantId) {
+
+                        $this->repo->bvs_validation->saveOrFail($validation);
+
+                        $this->updateValidationStatusForMerchant(
+                            $merchantId,
+                            $validation->getArtefactType(),
+                            $validation->getValidationId());
+                    });
+            });
+    }
+
+    /**
+     * @param string $validationId
+     * @param array  $payload
+     *
+     * @return bool
+     */
+    protected function isValidationProcessingAttemptExceeded(string $validationId, array $payload): bool
+    {
+        $retryAttemptsCount = $this->getValidationProcessingAttempts($validationId);
+
+        $retryAttemptMetrics = [
+            Constants::RETRY_ATTEMPT_COUNT => $retryAttemptsCount
+        ];
+
+        $this->trace->count(Detail\Metric::BVS_VALIDATION_RETRY_ATTEMPT_TOTAL, $retryAttemptMetrics);
+
+        if ($retryAttemptsCount >= self::MAX_RETRY_COUNT)
+        {
+            $this->trace->info(TraceCode::BVS_VERIFICATION_JOB_RETRY_EXCEEDED, $payload);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param string $validationId
+     * @return int return the retry count for the validationId
+     */
+    protected function getValidationProcessingAttempts(string $validationId): int
+    {
+        $bvsValidationProcessingAttemptKey = $this->getbvsValidationProcessingAttemptKey($validationId);
+
+       return $this->cache->get($bvsValidationProcessingAttemptKey) ?? 0;
+    }
+
+
+    /**
+     * Increment the retry count.
+     *
+     * @param string $validationId
+     */
+    protected function incrementValidationProcessingAttempt(string $validationId) : void
+    {
+        $bvsValidationProcessingAttempt = $this->getValidationProcessingAttempts($validationId);
+
+        $this->updateBvsValidationProcessingAttempts($validationId, $bvsValidationProcessingAttempt + 1);
+    }
+
+    /**
+     * Updates the redis key with the retry count
+     *
+     * @param string $validationId
+     * @param int $count
+     */
+    protected function updateBvsValidationProcessingAttempts(string $validationId, int $count) : void
+    {
+        $bvsValidationProcessingAttemptRedisKey = $this->getbvsValidationProcessingAttemptKey($validationId);
+
+        $this->cache->put($bvsValidationProcessingAttemptRedisKey, $count, self::BVS_VALIDATION_PROCESSING_ATTEMPT_COUNT_TTL_IN_MIN);
+    }
+
+    /**
+     * Redis Key for BVS Validation Id retry.
+     * @param string $validationId
+     * @return string
+     */
+    protected function getbvsValidationProcessingAttemptKey(string $validationId) : string
+    {
+        return self::BVS_VALIDATION_PROCESSING_ATTEMPT_COUNT . $validationId;
     }
 }

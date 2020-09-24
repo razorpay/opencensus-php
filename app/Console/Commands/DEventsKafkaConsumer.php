@@ -91,12 +91,11 @@ class DEventsKafkaConsumer extends Command
                 switch ($message->err)
                 {
                     case RD_KAFKA_RESP_ERR_NO_ERROR:
-                        $isProcessed = $this->processMessage($message);
-                        // Commit offsets asynchronously
-                        if ($isProcessed === true)
-                        {
-                            $consumer->commitAsync($message);
-                        }
+
+                        $isProcessedSuccessfully = $this->processMessage($message);
+
+                        $this->handlePostProcessing($isProcessedSuccessfully, $message, $consumer, $topics);
+
                         break;
                     case RD_KAFKA_RESP_ERR__PARTITION_EOF:
                         echo "No more messages; will wait for more\n";
@@ -111,6 +110,35 @@ class DEventsKafkaConsumer extends Command
             {
                 $this->error('failed to consume topics from kafka');
             }
+        }
+    }
+
+    /**
+     * @param bool $isProcessed
+     * @param      $message
+     * @param      $consumer
+     * @param      $topics
+     */
+    protected function handlePostProcessing(bool $isProcessed, $message, $consumer, $topics): void
+    {
+        //
+        // Commit offsets synchronously if processing is complete
+        //
+        if ($isProcessed === true)
+        {
+            $this->info("Message Successfully Processed, Committing Offset - " .
+                        $message->offset . " Partition - " . $message->partition);
+
+            $consumer->commit($message);
+        }
+        else
+        {
+            $consumer->unsubscribe();
+
+            $consumer->subscribe($topics);
+
+            $this->info("Message processing failed, retrying" . " Offset -" .
+                        $message->offset . " Partition - " . $message->partition);
         }
     }
 
@@ -158,6 +186,7 @@ class DEventsKafkaConsumer extends Command
         $kafkaCaCertString = trim(str_replace('\n', "\n",
             env('QUEUE_KAFKA_CONSUMER_CA_CERT', '')));
 
+        $conf->set('enable.auto.commit', 'false');
 
         // export pem format cert to kafka_ca_cert.cer, pass the file path to ssl.ca.location
         // ca-cert is used verify the broker key.

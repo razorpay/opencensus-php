@@ -23,6 +23,7 @@ class Constants
     const MATCH                             = 'match';
     const MISMATCH                          = 'mismatch';
     const BVS_DOCUMENT_VERIFICATION_STATUS  = 'bvs_document_verification_status';
+    const RETRY_ATTEMPT_COUNT               = 'retry_attempt_count';
 
     const PLATFORMS = [
         self::PG,

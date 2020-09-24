@@ -16,7 +16,6 @@ class KafkaMessageProcessor extends Job
      *
      * @param string $topic
      * @param array $payload
-     * @param string $appEnv Environment in which worker is running
      * @param string|null $mode
      * @return bool <TRUE/FALSE> - True - processing success, False - in case of failure
      */
@@ -30,25 +29,31 @@ class KafkaMessageProcessor extends Job
 
         try
         {
-            $tracePayload = [
-                'job_attempts' => $this->attempts(),
+            $traceTopicDetails = [
+                'topic_name' => $topic,
                 'mode' => $this->mode,
-                'payload' => $payload['data'],
+                'payload' => $payload
             ];
 
-            $this->trace->info(TraceCode::ONBOARDING_BVS_VERIFICATION_JOB_REQUEST, $tracePayload);
-
+            $this->trace->info(TraceCode::KAFKA_MESSAGE_PROCESSOR_PAYLOAD,  $traceTopicDetails);
 
             switch ($topic) {
                 //
                 // BVS Validation Results
                 //
                 case self::API_BVS_EVENTS:
+
+                    $tracePayload = [
+                        'job_attempts' => $this->attempts(),
+                        'mode' => $this->mode,
+                        'payload' => $payload['data'],
+                    ];
+
+                    $this->trace->info(TraceCode::ONBOARDING_BVS_VERIFICATION_JOB_REQUEST, $tracePayload);
+
                     $core = new Core();
 
-                    $core->process($payload['data']);
-
-                    return true;
+                    return $core->process($payload['data']);
                 default:
                     $this->trace->error('no processor defined for the topic - ' . $topic);
                     return false;
@@ -59,8 +64,8 @@ class KafkaMessageProcessor extends Job
             $this->trace->traceException(
                 $e,
                 null,
-                TraceCode::ONBOARDING_BVS_VERIFICATION_JOB_ERROR);
-            return false;
+                TraceCode::KAFKA_MESSAGE_PROCESSING_ERROR);
+            return true;
         }
     }
 }
