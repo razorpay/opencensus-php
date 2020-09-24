@@ -159,6 +159,7 @@ class ErrorCodeMapping
         'BENE_PSP_OFFLINE'                      => 'Beneficiary PSP is down. Please retry after 30 min.',
         'NPCI_TIMEOUT_FAILURE'                  => 'Timeout between NPCI and beneficiary bank. Please retry after 30 min.',
         'PBANK_VALIDATION_ERROR'                => 'Invalid Beneficiary details',
+        'VERIFICATION_FAILED'                   => 'Payout failed. Contact support for help.',
     ];
 
     public static function getErrorMessageFromBankResponseCode(Entity $payout, string $bankStatusCode = null)
