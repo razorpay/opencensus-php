@@ -46,6 +46,7 @@ class Base
     // Account related URIs
     const FUND_ACCOUNT_CREATE_URI  = '/account';
     const FUND_ACCOUNT_REGISTER_URI  = '/account/register';
+    const FUND_TRANSFER_PUBLISH_URI = '/transfer/1/publish';
 
     // Transfer related URIs
     const FUND_TRANSFER_CREATE_URI = '/transfer';

@@ -1199,4 +1199,12 @@ class FundTransfer extends Base
             Requests::POST,
             $input);
     }
+
+    public function publishBulkTransfers(array $input)
+    {
+        return $this->createAndSendRequest(
+            parent::FUND_TRANSFER_PUBLISH_URI,
+            Requests::POST,
+            $input);
+    }
 }
