@@ -814,13 +814,7 @@ class Service extends Base\Service
         {
             $refundId = $refundArray[Entity::ID];
 
-            // Has to be removed once we start consuming speed
-            $refundArray[Entity::MODE] = $refundModes[$refundId];
-
             $refundArray[Entity::SPEED] = $refundModes[$refundId];
-
-            // Has to be removed once we start consuming status
-            $refundArray[Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
 
             $refundArray[Entity::STATUS] = $refundStatus[$refundId];
         }
