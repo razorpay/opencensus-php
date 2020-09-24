@@ -11,6 +11,7 @@ import {
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { required, isMobile, isEmail, isUrlLenient } from 'common/utils/validators';
 import InputField from 'common/ui/Forms/InputField';
+import { autoPrefixUrls } from 'common/utils/rzp-utils';
 
 @connect(null, { showNotification, createSupportDetail })
 @RTracking(() => window.rzpQ.component('MerchantDataCollectionModal'))
@@ -60,8 +61,9 @@ export default class MerchantDataCollectionModal extends Component {
       });
       return;
     }
+    const newurl = autoPrefixUrls(url);
 
-    return createSupportDetail({ email, url, phone })
+    return createSupportDetail({ email, url: newurl, phone })
       .then((res) => {
         if (res.success && supportModal) {
           showNotification({
