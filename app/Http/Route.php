@@ -4987,7 +4987,8 @@ class Route
             'merchant_fetch_internal',
             'payout_links_send_email',
             'user_fetch',
-            'payout_purpose_validate_internal'
+            'payout_purpose_validate_internal',
+            'banking_accounts_list_internal'
         ],
 
         'express' => [

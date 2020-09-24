@@ -540,7 +540,7 @@ class Service extends Base\Service
             return $payoutLink->toArrayPublic();
         }
 
-        return $this->app['payout-links']->cancel($payoutLinkId);
+        return $this->app['payout-links']->cancel($payoutLinkId, $this->merchant->getId());
     }
 
     public function viewHostedPage($payoutLinkId)

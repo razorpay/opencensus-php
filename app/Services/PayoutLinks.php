@@ -65,6 +65,9 @@ class PayoutLinks
     const NOTES                                    = 'notes';
     const COUNT                                    = 'count';
 
+    const INVALID_REQUEST_ERROR_MSG                = 'the json request could not be decoded';
+    const INVALID_REQUEST_RESPONSE_MSG             = 'Invalid request payload';
+
     protected $baseUrl;
 
     protected $secret;
@@ -185,7 +188,7 @@ class PayoutLinks
         return $newSettings;
     }
 
-    public function cancel(string $payoutLinkId)
+    public function cancel(string $payoutLinkId, string $merchantId)
     {
         $this->trace->info(TraceCode::PAYOUT_LINK_CANCEL_REQUEST,
                            [
@@ -195,7 +198,8 @@ class PayoutLinks
         $url = $this->getConstructedUrl(self::CANCEL_PAYOUT_LINK_PATH);
 
         $request = [
-            self::PAYOUT_LINK_ID => $payoutLinkId
+            self::PAYOUT_LINK_ID => $payoutLinkId,
+            self::MERCHANT_ID    => $merchantId
         ];
 
         $response = $this->makeRequest($url, $request);
@@ -480,8 +484,8 @@ class PayoutLinks
     {
         $channelSupportsUpi = true;
 
-        $upiEnabledInSettings = (key_exists('UPI', $settings) === true) and
-                                (boolval($settings['UPI']) === true);
+        $upiEnabledInSettings = ((key_exists('UPI', $settings) === true) and
+                                (boolval($settings['UPI']) === true));
 
         $bankingAccount = $this->repo
                                ->banking_account
@@ -585,6 +589,11 @@ class PayoutLinks
         if ($response->status_code !== StatusCode::SUCCESS)
         {
             $description = array_pull($responseBody, 'msg', $responseBody);
+
+            if(strpos($description, self::INVALID_REQUEST_ERROR_MSG) !== false)
+            {
+                $description = self::INVALID_REQUEST_RESPONSE_MSG;
+            }
 
             throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYOUT_LINK_MICRO_SERVICE_FAILED, null, null, $description);
         }
