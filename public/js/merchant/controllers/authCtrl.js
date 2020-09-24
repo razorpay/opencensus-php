@@ -1824,7 +1824,6 @@ app
       };
 
       onCheckboxCaptchaExpire = function () {
-        debugger;
         $scope.signup.submissionDisabled = true;
         $scope.login.isCaptchaSuccess = false;
         $scope.checkboxCaptcha = '';
