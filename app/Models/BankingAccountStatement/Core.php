@@ -511,6 +511,7 @@ class Core extends Base\Core
             // If a payout is found, then we will also check if it has is marked
             // reversed, if not we will update the payout as reversed
             //
+            /** @var Payout\Entity $existingPayout */
             $existingPayout = $this->fetchExistingPayoutForAccountStatement($basEntity);
 
             if ($existingPayout === null)
@@ -518,17 +519,17 @@ class Core extends Base\Core
                 return null;
             }
 
-            $this->trace->info(TraceCode::MANUAL_PAYOUT_REVERSAL_CREATE_REQUEST,
+            $this->trace->info(TraceCode::AUTO_RECON_PAYOUT_REVERSAL_CREATE_REQUEST,
                             [
                                 'payout_id' => $existingPayout->getId()
                             ]);
 
             (new Payout\Core)->reversePayout($existingPayout,
-                "Manually marking as reversed");
+                'REVERSAL');
 
             $reversal = $existingPayout->reversal;
 
-            $this->trace->info(TraceCode::MANUAL_PAYOUT_REVERSAL_CREATED,
+            $this->trace->info(TraceCode::AUTO_RECON_PAYOUT_REVERSAL_CREATED,
                 [
                     'payout_id'     => $existingPayout->getId(),
                     'reversal_id'   => $reversal->getId(),
