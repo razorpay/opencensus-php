@@ -1352,7 +1352,7 @@ return [
         ],
     ],
 
-    'testInstantActivationForUnregisteredBusiness' => [
+    'testInstantActivationForUnregisteredBusinessForOlderMerchant' => [
         'request'     => [
             'method'  => 'POST',
             'url'     => '/merchant/instant_activation',

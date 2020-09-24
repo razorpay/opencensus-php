@@ -666,12 +666,19 @@ class Core extends Base\Core
             return;
         }
 
-        $fields = [Detail\Entity::PROMOTER_PAN, Detail\Entity::PROMOTER_PAN_NAME, Detail\Entity::BUSINESS_TYPE];
+        $dependentFields = [Detail\Entity::PROMOTER_PAN, Detail\Entity::PROMOTER_PAN_NAME, Detail\Entity::BUSINESS_TYPE];
 
         $requiredFields = [Detail\Entity::PROMOTER_PAN, Detail\Entity::PROMOTER_PAN_NAME];
 
-        if (($merchantDetails->getPoiVerificationStatus() !== POIStatus::FAILED) and
-            ($this->checkFieldsUpdation($fields, $input, $merchant->getId(), $requiredFields) === false))
+        $isAutoKycAttemptRequired = $this->isAutoKycAttemptRequired(
+            $dependentFields,
+            $input,
+            Entity::POI_VERIFICATION_STATUS,
+            [POIStatus::FAILED],
+            $merchant->getId());
+
+        if (($isAutoKycAttemptRequired === false) or
+            ($this->hasAllRequiredFields($merchantDetails, $input, $requiredFields) === false))
         {
             return;
         }
@@ -725,10 +732,17 @@ class Core extends Base\Core
             return;
         }
 
-        $fields = [Detail\Entity::COMPANY_PAN, Detail\Entity::BUSINESS_NAME];
+        $dependentFields = [Detail\Entity::COMPANY_PAN, Detail\Entity::BUSINESS_NAME];
 
-        if (($merchantDetails->getCompanyPanVerificationStatus() !== CompanyPanStatus::FAILED) and
-            ($this->checkFieldsUpdation($fields, $input, $merchant->getId()) === false))
+        $isAutoKycAttemptRequired = $this->isAutoKycAttemptRequired(
+            $dependentFields,
+            $input,
+            Entity::COMPANY_PAN_VERIFICATION_STATUS,
+            [CompanyPanStatus::FAILED],
+            $merchant->getId());
+
+        if (($isAutoKycAttemptRequired === false) or
+            ($this->hasAllRequiredFields($merchantDetails, $input, $dependentFields) === false))
         {
             return;
         }
@@ -2259,29 +2273,48 @@ class Core extends Base\Core
     /**
      * this function takes key of the fields and return true if that fields was updated else false
      *
-     * @param array  $fields
+     * @param array  $dependentFields
      * @param array  $input
+     * @param string $documentVerificationStatusFieldKey
+     * @param array  $retriableVerificationStatus
      * @param string $merchantId
-     *
-     * @param array  $requiredFields
      *
      * @return bool
      */
-    protected function checkFieldsUpdation(array $fields, array $input, string $merchantId, array $requiredFields = [])
+    protected function isAutoKycAttemptRequired(
+        array $dependentFields,
+        array $input,
+        string $documentVerificationStatusFieldKey,
+        array $retriableVerificationStatus,
+        string $merchantId)
     {
-        $requiredFields = empty($requiredFields) === true ? $fields : $requiredFields;
 
         $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchantId);
 
-        if ($this->hasAllRequiredFields($merchantDetails, $input, $requiredFields) === false)
+        $verificationStatus = $merchantDetails->getAttribute($documentVerificationStatusFieldKey);
+
+        //
+        // Check if document verification status is not already set,
+        // This is for handling backward compatibility test, for few merchant who have filled form before autokyc
+        // Fields won't change but we still need to call
+        //
+
+        if (empty($verificationStatus) === true)
         {
-            return false;
+            return true;
         }
 
-        // check if there is any change in any field
-        foreach ($fields as $field)
+        if(array_search($verificationStatus, $retriableVerificationStatus, true) !== false)
         {
-            if ((isset($input[$field]) === true) and ($merchantDetails->getAttribute($field) !== $input[$field]))
+            return true;
+        }
+
+        //
+        // check if there is any change in any field
+        //
+        foreach ($dependentFields as $dependentField)
+        {
+            if ((isset($input[$dependentField]) === true) and ($merchantDetails->getAttribute($dependentField) !== $input[$dependentField]))
             {
                 return true;
             }
@@ -2396,7 +2429,7 @@ class Core extends Base\Core
             return;
         }
 
-        $fields = [
+        $dependentFields = [
             Entity::GSTIN,
             Entity::BUSINESS_NAME,
             Entity::PROMOTER_PAN_NAME,
@@ -2410,8 +2443,15 @@ class Core extends Base\Core
             Entity::PROMOTER_PAN_NAME,
         ];
 
-        if (($merchantDetails->getGstinVerificationStatus() !== GSTINVerificationStatus::FAILED) and
-            ($this->checkFieldsUpdation($fields, $input, $merchant->getId(), $requiredFields) === false))
+        $isAutoKycAttemptRequired = $this->isAutoKycAttemptRequired(
+            $dependentFields,
+            $input,
+            Entity::GSTIN_VERIFICATION_STATUS,
+            [GSTINVerificationStatus::FAILED],
+            $merchant->getId());
+
+        if (($isAutoKycAttemptRequired === false) or
+            ($this->hasAllRequiredFields($merchantDetails, $input, $requiredFields) === false))
         {
             return;
         }

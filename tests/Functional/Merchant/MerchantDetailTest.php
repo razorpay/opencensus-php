@@ -2145,7 +2145,7 @@ class MerchantDetailTest extends OAuthTestCase
 
     public function testGSTINVerification()
     {
-        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'business_type' => '1']);
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'business_type' => '1', 'gstin_verification_status' => '',]);
 
         $this->gstinVerification('gstinVerification', 'success', 'verified', [
                                                         'promoter_pan_name' => 'Shashank Kumar',
@@ -2173,6 +2173,19 @@ class MerchantDetailTest extends OAuthTestCase
             'promoter_pan_name' => 'random name',
             'business_name'     => 'xyz',
             'gstin'             => '07AADCB2230M1ZA',]);
+
+        $this->gstinVerification('gstinVerification', 'success', 'verified', [
+            'promoter_pan_name'         => 'Shashank Kumar',
+            'business_name'             => 'RELIANCE INDUSTRIES LIMITED',
+            'gstin'                     => '07AADCB2230M1ZV',
+            'gstin_verification_status' => 'failed']);
+
+        $this->gstinVerification('gstinVerification', 'success', 'verified', [
+            'promoter_pan_name'         => 'Shashank Kumar',
+            'business_name'             => 'RELIANCE INDUSTRIES LIMITED',
+            'gstin'                     => '07AADCB2230M1ZV',
+            'gstin_verification_status' => '',
+        ]);
     }
 
     public function testGSTINVerificationFuzzyMatchFailureOnBusinessName()

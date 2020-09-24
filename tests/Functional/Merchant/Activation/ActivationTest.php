@@ -318,7 +318,7 @@ class ActivationTest extends OAuthTestCase
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
-        $testData = $this->testData['testInstantActivationForUnregisteredBusiness'];
+        $testData = $this->testData['testInstantActivationForUnregisteredBusinessForOlderMerchant'];
 
         $this->startTest($testData);
 
@@ -328,7 +328,7 @@ class ActivationTest extends OAuthTestCase
         $this->assertNull($merchantDetail->getInternationalActivationFlow());
     }
 
-    public function testInstantActivationForUnregisteredBusiness()
+    public function testInstantActivationForUnregisteredBusinessForOlderMerchant()
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
@@ -336,7 +336,13 @@ class ActivationTest extends OAuthTestCase
 
         Config::set('applications.kyc.pan_authentication', MerchantDetailsConstant::SUCCESS);
 
-        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+        $this->fixtures->create('merchant_detail', ['merchant_id'             => $merchantId,
+                                                    'poi_verification_status' => '',
+                                                    'promoter_pan'            => 'ABCPE0000Z',
+                                                    'business_name'           => 'business_name',
+                                                    'business_dba'            => 'test123',
+                                                    'business_type'           => 11,
+        ]);
 
         $this->fixtures->on('live')->create('methods:default_methods', [
             'merchant_id' => '1cXSLlUU8V9sXl'
