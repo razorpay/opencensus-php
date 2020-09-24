@@ -17,12 +17,14 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     const SUCCESS               = 'success';
     const DECLINED              = 'declined';
     const FAILURE               = 'failure';
+    const VALIDATION_FAILURE    = 'validation failure';
     const COLUMN_REFUND_AMOUNT  = RefundReconFields::AMOUNT;
 
     const VALID_STATUS          = [
                                     self::SUCCESS,
                                     self::FAILURE,
-                                    self::DECLINED
+                                    self::DECLINED,
+                                    self::VALIDATION_FAILURE,
                                   ];
 
     const REFUND_STATUS         = 'refund_status';
