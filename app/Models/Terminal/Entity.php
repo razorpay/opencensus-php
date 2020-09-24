@@ -4,6 +4,7 @@ namespace RZP\Models\Terminal;
 
 use App;
 use Crypt;
+use RZP\Http\Route;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
@@ -770,23 +771,34 @@ class Entity extends Base\PublicEntity
     {
         $app = App::getFacadeRoot();
 
+        // mpans are sensitive and thus stored in db in tokenized form. We don't want detokenized(original) mpans to be shown in all routes (not even in admin routes),
+        // but aggregator partner need to see original mpans, so we are detokenizing mpans for these particular routes
+        $shouldTokenize = false;
+
+        $routeName = $app['api.route']->getCurrentRouteName();
+
+        if (in_array($routeName, Route::$detokenizeMpansRoutes, true) === true)
+        {
+            $shouldTokenize = true;
+        }
+
         $cardVaultApp = $app['mpan.cardVault'];
 
         $mcMpan =  $this->getMCMpan();
         $rupayMpan =  $this->getRupayMpan();
         $visaMpan =  $this->getVisaMpan();
 
-        if ((empty($mcMpan) === false) and (strlen($mcMpan) !== 16))
+        if ($shouldTokenize and (empty($mcMpan) === false) and (strlen($mcMpan) !== 16))
         {
             $mcMpan = $cardVaultApp->detokenize($mcMpan);
         }
 
-        if ((empty($rupayMpan) === false) and (strlen($rupayMpan) !== 16))
+        if ($shouldTokenize and (empty($rupayMpan) === false) and (strlen($rupayMpan) !== 16))
         {
             $rupayMpan = $cardVaultApp->detokenize($rupayMpan);
         }
 
-        if ((empty($visaMpan) === false) and (strlen($visaMpan) !== 16))
+        if ($shouldTokenize and (empty($visaMpan) === false) and (strlen($visaMpan) !== 16))
         {
             $visaMpan = $cardVaultApp->detokenize($visaMpan);
         }

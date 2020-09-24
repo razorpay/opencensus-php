@@ -2719,6 +2719,18 @@ class Route
         'fb_setl_fetch_transactions',
     ];
 
+    // Below are routes mostly used by partner aggregator and original mpans should be visible to them.
+    // For these routes, mpans are detokenized in public setters.
+    public static $detokenizeMpansRoutes = [
+        'terminal_enable',
+        'terminal_disable',
+        'terminal_onboard',
+        'terminal_fetch',
+        'mpans_issue',
+        'mpans_fetch',
+        'reminder_send', // Reminders service sends reminder to send webhook after 45 mins, webhook should have detokenized mpans
+    ];
+
     public static $proxy = [
         'fetch_order_line_items',
         'salesforce_event',

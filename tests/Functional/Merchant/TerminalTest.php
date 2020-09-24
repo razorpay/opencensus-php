@@ -2336,4 +2336,32 @@ class TerminalTest extends TestCase
 
        $this->startTest();
     }
+
+    public function testAdminFetchTerminalShouldNotHaveOriginalMpans()
+    {
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled'             => true,
+            'gateway'             => 'worldline',
+            'merchant_id'         => '10000000000000',
+            'gateway_merchant_id' => '90000000001',
+            'status'              => 'activated',
+            'mc_mpan'             => base64_encode('5234567890123456'),
+            'visa_mpan'           => base64_encode('4234567890123456'),
+            'rupay_mpan'          => base64_encode('6234567890123456'),
+        ]);
+
+        $this->ba->adminAuth();
+
+        $res = $this->startTest();
+
+        $responseTerminal = array_filter($res['items'], function ($item) use ($terminal)
+        {
+            return ($item['id'] === $terminal->getPublicId());
+        });
+
+        // asserts that detokenized mpans are not shown even to admins
+        $this->assertEquals($responseTerminal[0]['mpan']['mc_mpan'],   base64_encode('5234567890123456'));
+        $this->assertEquals($responseTerminal[0]['mpan']['visa_mpan'],   base64_encode('4234567890123456'));
+        $this->assertEquals($responseTerminal[0]['mpan']['rupay_mpan'],   base64_encode('6234567890123456'));
+    }
 }

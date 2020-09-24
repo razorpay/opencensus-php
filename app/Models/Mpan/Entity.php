@@ -4,6 +4,7 @@
 namespace RZP\Models\Mpan;
 
 use App;
+use RZP\Http\Route;
 use RZP\Models\Base;
 use RZP\Constants;
 class Entity extends Base\PublicEntity
@@ -88,7 +89,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAssigned() === true;
     }
-    
+
     public function getMaskedMpan(string $mpan = "")
     {
         // adding below condition so that this function can be called as a method on mpan object as well
@@ -98,7 +99,7 @@ class Entity extends Base\PublicEntity
         }
 
         // if mpan is not 16 digit, it means its invalid and we can return as is
-        if ( (empty($mpan) === true) 
+        if ( (empty($mpan) === true)
             or (strlen($mpan) !== 16) )
         {
             return $mpan;
@@ -112,6 +113,13 @@ class Entity extends Base\PublicEntity
     public function setPublicMpanAttribute(array &$array)
     {
         $app = App::getFacadeRoot();
+
+        $routeName = $app['api.route']->getCurrentRouteName();
+
+        if (in_array($routeName, Route::$detokenizeMpansRoutes, true) === false)
+        {
+            return;
+        }
 
         $cardVaultApp = $app['mpan.cardVault'];
 

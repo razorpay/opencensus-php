@@ -3321,7 +3321,7 @@ return [
                 ],
                 "mc_mpan"       => "5122600116743268",
                 "visa_mpan"     => "4604901116743090",
-                "rupay_mpan"    => "6100020116743712"           
+                "rupay_mpan"    => "6100020116743712"
             ],
             'method' => 'POST'
         ],
@@ -3347,7 +3347,7 @@ return [
                 ],
                 "mc_mpan"       => "5122600116743268",
                 "visa_mpan"     => "4604901116743090",
-                "rupay_mpan"    => "6100020116743712"           
+                "rupay_mpan"    => "6100020116743712"
             ],
             'method' => 'POST'
         ],
@@ -3359,6 +3359,19 @@ return [
         'exception' => [
             'class'               => RZP\Exception\ServerErrorException::class,
             'internal_error_code' => 'SERVER_ERROR',
+        ],
+    ],
+
+    'testAdminFetchTerminalShouldNotHaveOriginalMpans' => [
+        'request' => [
+            'url'     => '/admin/terminal',
+            'method'  => 'GET',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
         ],
     ],
 
