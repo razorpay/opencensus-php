@@ -185,6 +185,11 @@ class Core extends Base\Core
     {
         $this->validateCodeIfPresent($input, $aggregatorMerchant, $linkedAccount);
 
+        if (empty($input['email']) === false)
+        {
+            $input['email'] = mb_strtolower($input['email']);
+        }
+
         $aggregatorMerchant->getValidator()->validateSubMerchantInput($input, $linkedAccount);
 
         // validate that external id passed is unique for that partner
