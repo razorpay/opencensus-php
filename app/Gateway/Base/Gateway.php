@@ -1680,7 +1680,14 @@ class Gateway
 
         $gatewayMetric = new Metric;
 
-        $gatewayMetric->pushGatewayDimensions($action, $input, $status, $this->gateway, $excData);
+        $gateway = $this->gateway;
+
+        if ($gateway === 'mozart')
+        {
+            $gateway = $this->getGateway($input, $action);
+        }
+
+        $gatewayMetric->pushGatewayDimensions($action, $input, $status, $gateway, $excData);
     }
 
     protected function isDuplicateUnexpectedPayment($callbackData)
@@ -1761,6 +1768,27 @@ class Gateway
         $version = $this->getVersionForAction($input, $this->action);
 
         return $baseUrl . 'payments/' . $this->gateway . '/' . $version . '/' . snake_case($this->action);
+    }
+
+    protected function getGateway($input, $action = null)
+    {
+        if ($action === null)
+        {
+            $action = $this->action;
+        }
+
+        $nonPaymentActions = [Action::CREATE_TERMINAL, Action::DISABLE_TERMINAL, Action::ENABLE_TERMINAL,
+            \RZP\Gateway\Mozart\Action::MERCHANT_ONBOARD];
+
+        if (
+            (in_array($action, $nonPaymentActions)) or
+            ((isset($input['gateway']) === true) and ($input['gateway'] === Payment\Gateway::GOOGLE_PAY))
+        )
+        {
+            return $input['gateway'] ?? 'mozart';
+        }
+
+        return $input['payment']['gateway'] ?? 'mozart';
     }
 
     protected function getVersionForAction($input, $action)

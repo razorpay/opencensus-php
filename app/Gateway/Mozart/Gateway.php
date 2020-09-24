@@ -2517,21 +2517,6 @@ class Gateway extends Base\Gateway
         return in_array($gateway, $fileBasedGateways, true);
     }
 
-    protected function getGateway($input)
-    {
-        $nonPaymentActions = [Action::CREATE_TERMINAL, Action::DISABLE_TERMINAL, Action::ENABLE_TERMINAL, ACTION::MERCHANT_ONBOARD];
-
-        if (
-            (in_array($this->action, $nonPaymentActions)) or
-            ((isset($input['gateway']) === true) and ($input['gateway'] === Payment\Gateway::GOOGLE_PAY))
-            )
-        {
-            return $input['gateway'];
-        }
-
-        return $input['payment']['gateway'];
-    }
-
     protected function isUpiIntent($input): bool
     {
         return (isset($input['upi']['flow']) and ($input['upi']['flow'] === 'intent'));
