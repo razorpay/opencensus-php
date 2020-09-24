@@ -1960,11 +1960,13 @@ class Service extends Base\Service
 
         $count = $input['count'] ?? 200;
 
+        $bucket = $input['bucket'] ?? null;
+
         $end = Carbon::now(Timezone::IST)->subSeconds($delay)->getTimestamp();
 
         $start = $this->getStartTimestamp($delay);
 
-        return (new Verify)->verifyAllPayments([$start, $end], $gateway, $count);
+        return (new Verify)->verifyAllPayments([$start, $end], $gateway, $count, $bucket);
     }
 
     public function verifyPaymentsInBulk(array $input)
