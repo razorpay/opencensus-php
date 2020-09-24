@@ -1,149 +1,156 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Storyshots Tabs Tabs Default 1`] = `
-<div>
-  <div
-    className="Viewweb__View-sc-1cphyjf-0 Tabs__TabBar-sc-1sq2qa7-0 dWtTia Sizeweb__Size-sc-10bl685-0 bPNzzG Flexweb__Flex-ni2cjg-0 dzXWge"
-  >
-    <div
-      className="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 dYijla Flexweb__Flex-ni2cjg-0 jhuIde"
-    >
+Array [
+  <div>
+    <div>
       <div
-        className="Viewweb__View-sc-1cphyjf-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-ni2cjg-0 hKatcF"
-        onClick={[Function]}
+        className="Viewweb__View-sc-1cphyjf-0 Tabs__TabBar-sc-1sq2qa7-0 dWtTia Sizeweb__Size-sc-10bl685-0 bPNzzG Flexweb__Flex-ni2cjg-0 dzXWge"
       >
         <div
-          className="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 iKbvqg"
+          className="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 dYijla Flexweb__Flex-ni2cjg-0 jhuIde"
         >
-          <svg
-            fill="none"
-            height={12}
-            viewBox="0 0 20 19"
-            width={12}
-            xmlns="http://www.w3.org/2000/svg"
+          <div
+            className="Viewweb__View-sc-1cphyjf-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-ni2cjg-0 hKatcF"
+            onClick={[Function]}
           >
-            <path
-              d="M3.465 4.956a7.5 7.5 0 018.754-1.978.833.833 0 00.679-1.522 9.167 9.167 0 105.435 8.378v-.775a.833.833 0 10-1.666 0v.774A7.5 7.5 0 113.465 4.956z"
-              fill="rgba(31, 137, 14, 0.54)"
-            />
-            <path
-              d="M18.923 2.923a.833.833 0 10-1.179-1.179l-8.577 8.578L7.256 8.41a.833.833 0 10-1.179 1.178l2.5 2.5a.833.833 0 001.179 0l9.167-9.166z"
-              fill="rgba(31, 137, 14, 0.54)"
-            />
-          </svg>
+            <div
+              className="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 iKbvqg"
+            >
+              <svg
+                fill="none"
+                height={12}
+                viewBox="0 0 20 19"
+                width={12}
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M3.465 4.956a7.5 7.5 0 018.754-1.978.833.833 0 00.679-1.522 9.167 9.167 0 105.435 8.378v-.775a.833.833 0 10-1.666 0v.774A7.5 7.5 0 113.465 4.956z"
+                  fill="rgba(31, 137, 14, 0.54)"
+                />
+                <path
+                  d="M18.923 2.923a.833.833 0 10-1.179-1.179l-8.577 8.578L7.256 8.41a.833.833 0 10-1.179 1.178l2.5 2.5a.833.833 0 001.179 0l9.167-9.166z"
+                  fill="rgba(31, 137, 14, 0.54)"
+                />
+              </svg>
+            </div>
+            <div
+              className="Textweb__Text-sc-6jf9e4-0 ubWWF"
+              color="shade.960"
+              data-testid="ds-text"
+              size="xsmall"
+            >
+              Contact Details
+            </div>
+          </div>
         </div>
         <div
-          className="Textweb__Text-sc-6jf9e4-0 ubWWF"
-          color="shade.960"
-          data-testid="ds-text"
-          size="xsmall"
+          className="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 dYijla Flexweb__Flex-ni2cjg-0 jhuIde"
         >
-          Contact Details
-        </div>
-      </div>
-    </div>
-    <div
-      className="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 dYijla Flexweb__Flex-ni2cjg-0 jhuIde"
-    >
-      <div
-        className="Viewweb__View-sc-1cphyjf-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-ni2cjg-0 hKatcF"
-        onClick={[Function]}
-      >
-        <div
-          className="Textweb__Text-sc-6jf9e4-0 ubWWF"
-          color="shade.960"
-          data-testid="ds-text"
-          size="xsmall"
-        >
-          Business Overview
-        </div>
-      </div>
-    </div>
-    <div
-      className="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 dYijla Flexweb__Flex-ni2cjg-0 jhuIde"
-    >
-      <div
-        className="Viewweb__View-sc-1cphyjf-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-ni2cjg-0 hKatcF"
-        onClick={[Function]}
-      >
-        <div
-          className="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 iKbvqg"
-        >
-          <svg
-            fill="none"
-            height={12}
-            viewBox="0 0 20 19"
-            width={12}
-            xmlns="http://www.w3.org/2000/svg"
+          <div
+            className="Viewweb__View-sc-1cphyjf-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-ni2cjg-0 hKatcF"
+            onClick={[Function]}
           >
-            <path
-              d="M3.465 4.956a7.5 7.5 0 018.754-1.978.833.833 0 00.679-1.522 9.167 9.167 0 105.435 8.378v-.775a.833.833 0 10-1.666 0v.774A7.5 7.5 0 113.465 4.956z"
-              fill="rgba(31, 137, 14, 0.54)"
-            />
-            <path
-              d="M18.923 2.923a.833.833 0 10-1.179-1.179l-8.577 8.578L7.256 8.41a.833.833 0 10-1.179 1.178l2.5 2.5a.833.833 0 001.179 0l9.167-9.166z"
-              fill="rgba(31, 137, 14, 0.54)"
-            />
-          </svg>
+            <div
+              className="Textweb__Text-sc-6jf9e4-0 ubWWF"
+              color="shade.960"
+              data-testid="ds-text"
+              size="xsmall"
+            >
+              Business Overview
+            </div>
+          </div>
         </div>
         <div
-          className="Textweb__Text-sc-6jf9e4-0 ubWWF"
-          color="shade.960"
-          data-testid="ds-text"
-          size="xsmall"
+          className="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 dYijla Flexweb__Flex-ni2cjg-0 jhuIde"
         >
-          Business Details
+          <div
+            className="Viewweb__View-sc-1cphyjf-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-ni2cjg-0 hKatcF"
+            onClick={[Function]}
+          >
+            <div
+              className="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 iKbvqg"
+            >
+              <svg
+                fill="none"
+                height={12}
+                viewBox="0 0 20 19"
+                width={12}
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M3.465 4.956a7.5 7.5 0 018.754-1.978.833.833 0 00.679-1.522 9.167 9.167 0 105.435 8.378v-.775a.833.833 0 10-1.666 0v.774A7.5 7.5 0 113.465 4.956z"
+                  fill="rgba(31, 137, 14, 0.54)"
+                />
+                <path
+                  d="M18.923 2.923a.833.833 0 10-1.179-1.179l-8.577 8.578L7.256 8.41a.833.833 0 10-1.179 1.178l2.5 2.5a.833.833 0 001.179 0l9.167-9.166z"
+                  fill="rgba(31, 137, 14, 0.54)"
+                />
+              </svg>
+            </div>
+            <div
+              className="Textweb__Text-sc-6jf9e4-0 ubWWF"
+              color="shade.960"
+              data-testid="ds-text"
+              size="xsmall"
+            >
+              Business Details
+            </div>
+          </div>
+        </div>
+        <div
+          className="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 dYijla Flexweb__Flex-ni2cjg-0 jhuIde"
+        >
+          <div
+            className="Viewweb__View-sc-1cphyjf-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-ni2cjg-0 hKatcF"
+            onClick={[Function]}
+          >
+            <div
+              className="Textweb__Text-sc-6jf9e4-0 ubWWF"
+              color="shade.960"
+              data-testid="ds-text"
+              size="xsmall"
+            >
+              Bank Details
+            </div>
+          </div>
+        </div>
+        <div
+          className="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 dYijla Flexweb__Flex-ni2cjg-0 jhuIde"
+        >
+          <div
+            className="Viewweb__View-sc-1cphyjf-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-ni2cjg-0 hKatcF"
+            onClick={[Function]}
+          >
+            <div
+              className="Textweb__Text-sc-6jf9e4-0 bWtMIB"
+              color="primary.800"
+              data-testid="ds-text"
+              size="xsmall"
+            >
+              Documents
+            </div>
+          </div>
+          <div
+            className="Viewweb__View-sc-1cphyjf-0 Tab__Highlight-e7rfax-1 eDsppQ Sizeweb__Size-sc-10bl685-0 bxRLoi"
+          />
         </div>
       </div>
-    </div>
-    <div
-      className="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 dYijla Flexweb__Flex-ni2cjg-0 jhuIde"
-    >
       <div
-        className="Viewweb__View-sc-1cphyjf-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-ni2cjg-0 hKatcF"
-        onClick={[Function]}
+        className="Viewweb__View-sc-1cphyjf-0 Tabs__TabContentContainer-sc-1sq2qa7-1 hVlczp"
       >
         <div
-          className="Textweb__Text-sc-6jf9e4-0 ubWWF"
-          color="shade.960"
-          data-testid="ds-text"
-          size="xsmall"
+          className="Viewweb__View-sc-1cphyjf-0 TabContent__StyledTabContent-sc-2m2y0o-0 jIXWSf"
         >
-          Bank Details
+          <div>
+            Hello Documents
+          </div>
         </div>
       </div>
     </div>
-    <div
-      className="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 dYijla Flexweb__Flex-ni2cjg-0 jhuIde"
-    >
-      <div
-        className="Viewweb__View-sc-1cphyjf-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-ni2cjg-0 hKatcF"
-        onClick={[Function]}
-      >
-        <div
-          className="Textweb__Text-sc-6jf9e4-0 bWtMIB"
-          color="primary.800"
-          data-testid="ds-text"
-          size="xsmall"
-        >
-          Documents
-        </div>
-      </div>
-      <div
-        className="Viewweb__View-sc-1cphyjf-0 Tab__Highlight-e7rfax-1 eDsppQ Sizeweb__Size-sc-10bl685-0 bxRLoi"
-      />
-    </div>
-  </div>
+  </div>,
   <div
-    className="Viewweb__View-sc-1cphyjf-0 Tabs__TabContentContainer-sc-1sq2qa7-1 hVlczp"
-  >
-    <div
-      className="Viewweb__View-sc-1cphyjf-0 TabContent__StyledTabContent-sc-2m2y0o-0 jIXWSf"
-    >
-      <div>
-        Hello Documents
-      </div>
-    </div>
-  </div>
-</div>
+    id="layerHost"
+  />,
+]
 `;

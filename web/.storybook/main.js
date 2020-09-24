@@ -34,7 +34,7 @@ webpackClientConfig.module.rules.push({
 });
 
 module.exports = {
-  stories: ['../stories/**/*.stories.js', '../v2/**/*.stories.[tj]sx'],
+  stories: ['../v2/**/*.stories.[tj]sx'],
   addons: ['@storybook/addon-links', '@storybook/addon-knobs', '@storybook/addon-essentials'],
   webpackFinal: async (config) => {
     // do mutation to the config

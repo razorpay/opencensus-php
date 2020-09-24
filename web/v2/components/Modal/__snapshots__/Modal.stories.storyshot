@@ -1,0 +1,70 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Storyshots Modal Bottom Sheet 1`] = `
+Array [
+  <div>
+    <button
+      className="Buttonweb__StyledButton-gxhxmy-0 ddCfrZ Spaceweb__Space-njatzl-0 jGLucJ Sizeweb__Size-sc-10bl685-0 bPNzzG Flexweb__Flex-ni2cjg-0 dfbkqx"
+      data-testid="ds-button"
+      disabled={false}
+      id={[Function]}
+      name={[Function]}
+      onClick={[Function]}
+      onMouseUp={[Function]}
+      size="medium"
+      type="button"
+    >
+      <div
+        className="Textweb__Text-sc-6jf9e4-0 dxOYOr"
+        color="light.900"
+        data-testid="ds-text"
+        size="medium"
+      >
+         Open modal
+      </div>
+    </button>
+  </div>,
+  <div
+    id="layerHost"
+  />,
+]
+`;
+
+exports[`Storyshots Modal Default Modal 1`] = `
+Array [
+  <div>
+    <button
+      className="Buttonweb__StyledButton-gxhxmy-0 ddCfrZ Spaceweb__Space-njatzl-0 jGLucJ Sizeweb__Size-sc-10bl685-0 bPNzzG Flexweb__Flex-ni2cjg-0 dfbkqx"
+      data-testid="ds-button"
+      disabled={false}
+      id={[Function]}
+      name={[Function]}
+      onClick={[Function]}
+      onMouseUp={[Function]}
+      size="medium"
+      type="button"
+    >
+      <div
+        className="Textweb__Text-sc-6jf9e4-0 dxOYOr"
+        color="light.900"
+        data-testid="ds-text"
+        size="medium"
+      >
+         Open modal
+      </div>
+    </button>
+  </div>,
+  <div
+    id="layerHost"
+  />,
+]
+`;
+
+exports[`Storyshots Modal Modal With Controls 1`] = `
+Array [
+  <div />,
+  <div
+    id="layerHost"
+  />,
+]
+`;
