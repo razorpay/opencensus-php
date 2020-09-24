@@ -64,30 +64,14 @@
                   Forgot Password?
                 </div>
 
-                <div class="invisible-captcha" ng-if="isInvisibleCaptcha">
-                  <div
-                    ng-init="loadCaptcha()"
-                    id='login-recaptcha'
-                    class="g-recaptcha"
-                    data-callback="onCaptchaSubmit"
-                    data-size="invisible"/>
-                </div>
-
-                <!--<div class="checkbox-captcha" ng-if="!isInvisibleCaptcha">-->
-                  <!--<div-->
-                    <!--ng-init="loadCaptcha()"-->
-                    <!--id="checkbox-recaptcha"-->
-                    <!--class="g-recaptcha"-->
-                    <!--data-callback = "onCheckboxCaptchaSubmit"-->
-                    <!--data-expired-callback= "onCheckboxCaptchaExpire"/>-->
-                <!--</div>-->
-                
                 <button
                   ng-disabled="isInvisibleCaptcha ? !loginForm.$valid : !(loginForm.$valid && login.isCaptchaSuccess)"
                   override-tab
                   class="full-width btn-primary"
                   type="submit"
                   ng-click="onLogin()"
+                  id='login-recaptcha'
+                  ng-init="loadCaptcha()"
                 >
                   {{lockme ? "Unlock" : "Log in"}}
                 </button>

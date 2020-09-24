@@ -202,7 +202,7 @@ app
         showMore: false,
 
         // disable signup/login submission before captcha only in prod
-        submissionDisabled: true,
+        submissionDisabled: isProd,
       };
 
       // login state container
@@ -223,7 +223,7 @@ app
       };
 
       $scope.loadCaptcha = function (loadCheckbox = false) {
-        renderRecaptchaScript();
+        renderRecaptchaScript(loadCheckbox);
         if (loadCheckbox) {
           let checkboxCaptchaElement = document.getElementById('checkbox-recaptcha');
           checkboxCaptchaElement.setAttribute('data-sitekey', window.CHECKBOX_CAPTCHA_SITE_KEY);
@@ -231,9 +231,6 @@ app
             grecaptcha.render('checkbox-recaptcha', {
               sitekey: window.CHECKBOX_CAPTCHA_SITE_KEY,
             });
-        } else {
-          let invisibleCaptchaElement = document.getElementById('login-recaptcha');
-          invisibleCaptchaElement.setAttribute('data-sitekey', window.INVISIBLE_CAPTCHA_SITE_KEY);
         }
       };
 
@@ -902,7 +899,7 @@ app
           } else {
             hideSpinner();
             window.grecaptcha && grecaptcha.reset();
-            $scope.signup.submissionDisabled = true;
+            $scope.signup.submissionDisabled = isProd;
             $scope.checkboxCaptcha = '';
 
             var signupError = 'Something went wrong. Please try again.';
@@ -994,6 +991,7 @@ app
       };
 
       $scope.onLogin = function () {
+        showSpinner();
         tracking.pushEvents({
           event_name: 'login',
           event_type: 'initiated',
@@ -1688,8 +1686,20 @@ app
         $scope.alerts.resetAlerts();
       };
 
-      const renderRecaptchaScript = function () {
-        const captchaScript = 'https://www.google.com/recaptcha/api.js';
+      window.onloadCallback = function () {
+        grecaptcha.render('login-recaptcha', {
+          sitekey: window.INVISIBLE_CAPTCHA_SITE_KEY,
+          callback: onCaptchaSubmit,
+        });
+        if (!$scope.login.data.email || !$scope.login.data.password) {
+          document.getElementById('login-recaptcha').disabled = true;
+        }
+      };
+
+      const renderRecaptchaScript = function (loadCheckbox) {
+        let captchaScript = 'https://www.google.com/recaptcha/api.js';
+        if (!loadCheckbox)
+          captchaScript = captchaScript.concat('?onload=onloadCallback&render=explicit');
         if (!checkScriptExists(captchaScript)) {
           let script = document.createElement('script');
           script.src = captchaScript;
@@ -1722,10 +1732,10 @@ app
           $scope.inlineError = '';
           $scope.isGoogleAuth = false;
         } else {
-          if ($scope.isInvisibleCaptcha) {
-            window.grecaptcha && grecaptcha.execute();
+          if ($scope.isInvisibleCaptcha && isProd && window.grecaptcha) {
+            grecaptcha.execute();
           } else {
-            login($scope.checkboxCaptcha);
+            login('Faked');
           }
         }
       };
