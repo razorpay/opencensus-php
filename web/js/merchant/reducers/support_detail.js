@@ -17,7 +17,7 @@ let initialState = {
 export const fetchSupportDetail = () => {
   return {
     type: FETCH_MERCHANT_SUPPORT_DETAIL,
-    payload: merchantFetch('proxy/merchants/supportdetails').catch((err) => {}),
+    payload: merchantFetch('proxy/merchants/supportdetails'),
   };
 };
 
