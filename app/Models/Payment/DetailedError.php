@@ -125,5 +125,8 @@ class DetailedError
         "R070"                                   						=>				"payment_not_found",
         "R071"                                   						=>				"invalid_merchant_id",
         "R072"                                   						=>				"incorrect_request",
+        "R073"                                                          =>              "payment_mandate_not_active",
+        "R074"                                                          =>              "payment_pending_approval",
+        "R075"                                                          =>              "gateway",
         ];
 }
