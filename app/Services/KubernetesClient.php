@@ -297,6 +297,7 @@ class KubernetesClient
                             'k8s.rzp.io/logger' => 'efk',
                             'k8s.rzp.io/logs' => 'true',
                             'batch_job_type' => $batchType ?? '',
+                            'cluster-autoscaler.kubernetes.io/safe-to-evict' => 'false',
                         ]
                     ],
                     'spec' => [
@@ -415,6 +416,7 @@ class KubernetesClient
                             'k8s.rzp.io/logger' => 'efk',
                             'k8s.rzp.io/logs' => 'true',
                             'batch_job_type' => $batchType ?? '',
+                            'cluster-autoscaler.kubernetes.io/safe-to-evict' => 'false',
                         ]
                     ],
                     'spec' => [
