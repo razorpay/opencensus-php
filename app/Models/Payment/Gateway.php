@@ -2039,6 +2039,7 @@ class Gateway
         Gateway::UPI_AIRTEL,
         Gateway::UPI_JUSPAY,
         Gateway::UPI_SBI,
+        Gateway::UPI_AIRTEL,
     ];
 
     public static $upiQrGateways = [
