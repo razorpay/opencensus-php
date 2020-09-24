@@ -26,6 +26,7 @@ class Factory
         switch ($artefactType)
         {
             case Constant::CIN:
+            case Constant::LLPIN:
 
                 return new DefaultStatusUpdater(
                     $merchantDetails,

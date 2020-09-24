@@ -2544,6 +2544,110 @@ class Core extends Base\Core
             return;
         }
 
+        $shouldVerifyFromBVS = (new Merchant\Core)->isRazorxExperimentEnable(
+            $merchant,
+            RazorxTreatment::BVS_CIN_VALIDATION);
+
+        ($shouldVerifyFromBVS === true) ?
+            $this->verifyCINorLLPINFromBvs($merchantDetails) :
+            $this->verifyCINorLLPINFromKycService($merchantDetails, $isRetryFlow);
+    }
+
+    /**
+     * Verifies CIN/LLPIN from BVS
+     *
+     * @param Entity $merchantDetails
+     */
+    protected function verifyCINorLLPINFromBvs(Entity $merchantDetails): void
+    {
+        $payload = ($this->isLLPBusinessType($merchantDetails->getBusinessType()) === true) ?
+            $this->getPayloadForLLPIN($merchantDetails) :
+            $this->getPayloadForCIN($merchantDetails);
+
+        (new AutoKyc\Bvs\Core())->verify($merchantDetails->getEntityId(), $payload);
+    }
+
+    /**
+     * Returns true if llp business type
+     *
+     * @param string $businessType`
+     *
+     * @return bool
+     */
+    protected function isLLPBusinessType(string $businessType): bool
+    {
+        return $businessType === BusinessType::LLP;
+    }
+
+    /**
+     * Returns payload for CIN
+     *
+     * @param Entity $merchantDetails
+     *
+     * @return array
+     */
+    protected function getPayloadForCIN(Entity $merchantDetails): array
+    {
+        $payload = [
+            Constant::ARTEFACT_TYPE => Constant::CIN,
+            Constant::IDENTIFIER    => $merchantDetails->getCompanyCin(),
+            Constant::DETAILS       => [
+                Constant::SIGNATORY_DETAILS =>
+                    [[
+                         Constant::FULL_NAME => $merchantDetails->getPromoterPanName() ?? '',
+                     ]],
+                Constant::COMPANY_NAME      => $merchantDetails->getBusinessName() ?? '',
+                Constant::CIN               => $merchantDetails->getCompanyCin(),
+            ],
+        ];
+
+        return $payload;
+    }
+
+    /**
+     * Returns payload for LLPIN
+     *
+     * @param Entity $merchantDetails
+     *
+     * @return array
+     */
+    protected function getPayloadForLLPIN(Entity $merchantDetails): array
+    {
+        $payload = [
+            Constant::ARTEFACT_TYPE => Constant::LLPIN,
+            Constant::IDENTIFIER    => $merchantDetails->getCompanyCin(),
+            Constant::DETAILS       => [
+                Constant::SIGNATORY_DETAILS =>
+                    [[
+                         Constant::FULL_NAME => $merchantDetails->getPromoterPanName() ?? '',
+                     ]],
+                Constant::LLP_NAME          => $merchantDetails->getBusinessName() ?? '',
+                Constant::LLPIN             => $merchantDetails->getCompanyCin(),
+
+            ],
+        ];
+
+        return $payload;
+    }
+
+    /**
+     * @param Entity $merchantDetails
+     * @param bool   $isRetryFlow
+     *
+     * @throws \Throwable
+     */
+    protected function verifyCINorLLPINFromKycService(Entity $merchantDetails, bool $isRetryFlow): void
+    {
+        //
+        // Kyc Service does not support LLPIN , so not doing verification from kyc service
+        //
+        if ($this->isLLPBusinessType($merchantDetails->getBusinessType()) === true)
+        {
+            $merchantDetails->setCinVerificationStatus(null);
+
+            return;
+        }
+
         //
         // in retry flow , retry only for failed cin verification status
         //
