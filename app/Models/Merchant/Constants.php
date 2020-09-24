@@ -74,6 +74,9 @@ final class Constants
 
     const RAZORX_EXPERIMENT_ON                    = 'on';
 
+    const MERCHANT_MUTEX_LOCK_TIMEOUT                 = '60';
+    const MERCHANT_MUTEX_RETRY_COUNT                  = '2';
+
     // Instant Refunds Pricing Fetch related constants
     const RULES                     = 'rules';
     const CUSTOM_PRICING            = 'custom_pricing';

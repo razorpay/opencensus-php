@@ -130,7 +130,10 @@ class Core extends Base\Core
 
                     return $response;
                 });
-            });
+            },
+            Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
+            Constants::MERCHANT_MUTEX_RETRY_COUNT);
     }
 
     public function submitActivationForm(Merchant\Entity $merchant, string $originProduct = Product::PRIMARY)
@@ -541,7 +544,10 @@ class Core extends Base\Core
 
                     return $response;
                 });
-            });
+            },
+            Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
+            Constants::MERCHANT_MUTEX_RETRY_COUNT);
 
         $activationProgress = $response['verification']['activation_progress'];
 
@@ -2483,8 +2489,8 @@ class Core extends Base\Core
     {
         $payload = [
             Constant::ARTEFACT_TYPE => Constant::GSTIN,
-            Constant::IDENTIFIER    => $merchantDetails->getGstin(),
             Constant::DETAILS       => [
+                Constant::GSTIN      => $merchantDetails->getGstin(),
                 Constant::LEGAL_NAME => $merchantDetails->getPromoterPanName() ?? '',
                 Constant::TRADE_NAME => $merchantDetails->getBusinessName() ?? ''
             ],
@@ -2811,7 +2817,10 @@ class Core extends Base\Core
                                 ['verification_type' => $verificationType]);
                     }
                 });
-            });
+            },
+            Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
+            Constants::MERCHANT_MUTEX_RETRY_COUNT);
     }
 
     /**

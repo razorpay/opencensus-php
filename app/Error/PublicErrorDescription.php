@@ -913,6 +913,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED                                 = 'Mode is unsupported';
     const BAD_REQUEST_DAILY_LIMIT_SUBMERCHANT_INVITE_EXCEEDED                   = 'Daily limit for submerchant add exceeded';
 
+    const BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS                       = 'The information that you have filled could not be processed. Please try again later';
+
     // Free payout
     const BAD_REQUEST_FREE_PAYOUT_SUPPORTED_MODES_ARRAY_DUPLICATE_VALUE         = 'Value in free payout supported modes array is duplicate.';
     const BAD_REQUEST_FREE_PAYOUT_UPDATE_ANOTHER_OPERATION_IN_PROGRESS          = 'Request failed because another operation is in progress';
