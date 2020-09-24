@@ -81,7 +81,6 @@ class Core extends Base\Core
      *
      * @return array
      */
-
     public function getValidationObject(array $payload): array
     {
         return [
@@ -99,7 +98,6 @@ class Core extends Base\Core
      *
      * @param string $merchantId
      * @param string $artefactType
-     *
      * @param string $validationId
      *
      * @throws \RZP\Exception\LogicException
@@ -110,9 +108,14 @@ class Core extends Base\Core
 
         $statusUpdateFactory = new DocumentStatusUpdater\Factory();
 
-        $statusUpdater = $statusUpdateFactory->getInstance($merchantDetails, $artefactType, $validationId);
+        $statusUpdater = $statusUpdateFactory->getInstance($merchant, $artefactType, $validationId);
 
         $statusUpdater->updateValidationStatus();
+
+        if ($merchantDetails->isSubmitted() === true)
+        {
+            $statusUpdater->updateMerchantContext();
+        }
 
         $this->repo->saveOrFail($merchantDetails);
     }

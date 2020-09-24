@@ -10,6 +10,8 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\AutoKyc;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Detail\Constants as DetailConstant;
 
 class Core extends Base\Core
@@ -235,9 +237,13 @@ class Core extends Base\Core
             return;
         }
 
-        if ((new Detail\Core())->isOcrEnabledThroughBvs($merchantDetails) === true)
+        $isPoaBvsRazorxExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
+            $merchant,
+            RazorxTreatment::BVS_AUTO_KYC_OCR);
+
+        if ($isPoaBvsRazorxExperimentEnabled === true)
         {
-            (new Detail\Core())->performOcrWithBvs($document, $merchantDetails);
+            $this->performOcrWithBvs($document, $merchantDetails);
         }
         else
         {
@@ -328,4 +334,68 @@ class Core extends Base\Core
 
         $this->app['diag']->trackOnboardingEvent(EventCode::KYC_UPLOAD_DOCUMENT_SUCCESS, $merchant, null, $eventAttributes);
     }
+
+    /**
+     * @param Entity $document
+     * @param Detail\Entity $merchantDetails
+     */
+    public function performOcrWithBvs(Entity $document, Detail\Entity $merchantDetails)
+    {
+        $artefactDetails = Constant::DOCUMENT_TYPE_ARTEFACT_DETAILS_MAP[$document->getDocumentType()] ?? [];
+
+        $artefactType       = $artefactDetails[Constant::ARTEFACT_TYPE] ?? '';
+        $artefactProofIndex = $artefactDetails[Constant::PROOF_INDEX] ?? '1';
+
+        $payload = [
+            Constant::ARTEFACT_TYPE => $artefactType,
+            Constant::DETAILS       => [
+                Constant::NAME => $merchantDetails->getPromoterPanName(),
+            ],
+            Constant::PROOFS        => [
+                $artefactProofIndex => [Constant::UFH_FILE_ID => $document->getPublicFileStoreId()],
+            ],
+        ];
+
+        $bvsValidation = (new AutoKyc\Bvs\Core())->verify(
+            $merchantDetails->getId(),
+            $payload);
+
+        if(empty($bvsValidation) === false)
+        {
+            $document->setValidationId($bvsValidation->getValidationId());
+
+            $merchantDetails->setPoaVerificationStatus(null);
+
+            $this->repo->merchant_detail->saveOrFail($merchantDetails);
+        }
+    }
+
+    /**
+     * for a merchant, Return all Bvs_validations for all ocr documents
+     *
+     * @param Merchant\Entity $merchant
+     * @return array
+     */
+    public function fetchAllOcrDocumentsBvsValidations(Merchant\Entity $merchant): array
+    {
+        $documents = $merchant->merchantDocuments;
+
+        $bvsValidations = [];
+
+        foreach ($documents as $document)
+        {
+            if (Type::isDocumentTypeToPerformOcr($document->getDocumentType()) === false)
+            {
+                continue;
+            }
+
+            if (empty($document->getValidationId()) === false)
+            {
+                $bvsValidations[] = $document->bvsValidation;
+            }
+        }
+
+        return $bvsValidations;
+    }
+
 }

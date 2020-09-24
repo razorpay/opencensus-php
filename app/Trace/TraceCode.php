@@ -1820,6 +1820,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CREATE_MERCHANT_DETAIL_FAILED                         = 'CREATE_MERCHANT_DETAIL_FAILED';
     const MERCHANT_DETAIL_MIGRATE_FAILED                        = 'MERCHANT_DETAIL_MIGRATE_FAILED';
     const MERCHANT_DETAIL_MIGRATE_INFO                          = 'MERCHANT_DETAIL_MIGRATE_INFO';
+    const UPDATE_MERCHANT_CONTEXT_REQUEST                       = 'UPDATE_MERCHANT_CONTEXT_REQUEST';
 
     // Trace codes for offers
 
@@ -3364,6 +3365,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BVS_CREATE_VALIDATION_RESPONSE = 'BVS_CREATE_VALIDATION_RESPONSE';
     const BVS_CREATE_VALIDATION_PAYLOAD  = 'BVS_CREATE_VALIDATION_PAYLOAD';
     const BVS_INTEGRATION_ERROR          = 'BVS_INTEGRATION_ERROR';
+    const BVS_VERIFICATION_REQUEST       = 'BVS_VERIFICATION_REQUEST';
+
     //Personalisation trace codes
     const PERSONALISATION_CONTENT        = 'PERSONALISATION_CONTENT';
     const PERSONALISATION_EXCEPTION      = 'PERSONALISATION_EXCEPTION';

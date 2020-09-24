@@ -44,10 +44,10 @@ class Constant
     const AADHAAR      = 'aadhaar';
     const CIN          = 'cin';
     const GSTIN        = 'gstin';
-    const VOTER_ID     = 'voter_id';
+    const VOTERS_ID     = 'voters_id';
     const PASSPORT     = 'passport';
     const LLPIN        = 'llpin';
-    
+
     const PG       = 'pg';
     const MERCHANT = 'merchant';
 
@@ -62,7 +62,7 @@ class Constant
             self::PROOF_INDEX   => '3',
         ],
         Type::VOTER_ID_FRONT => [
-            self::ARTEFACT_TYPE => self::VOTER_ID,
+            self::ARTEFACT_TYPE => self::VOTERS_ID,
             self::PROOF_INDEX   => '1',
         ],
         Type::PASSPORT_FRONT => [

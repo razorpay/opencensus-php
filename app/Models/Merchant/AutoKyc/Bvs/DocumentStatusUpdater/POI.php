@@ -4,14 +4,21 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\BvsValidation\Constants;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class POI extends BaseStatusUpdater
 {
     protected $validationId;
 
-    public function __construct(Detail\Entity $merchantDetails, string $documentType, string $validationId)
+    /**
+     * POI constructor.
+     * @param MerchantEntity $merchant
+     * @param string         $documentType
+     * @param string         $validationId
+     */
+    public function __construct(MerchantEntity $merchant, string $documentType, string $validationId)
     {
-        parent::__construct($merchantDetails, $documentType);
+        parent::__construct($merchant, $documentType);
 
         $this->validationId = $validationId;
     }
@@ -34,6 +41,5 @@ class POI extends BaseStatusUpdater
         ];
 
         $this->trace->count(Detail\Metric::BVS_VALIDATION_STATUS_TOTAL, $bvsPoiVerificationMetrics);
-
     }
 }

@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\AutoKyc;
 use RZP\Models\Base;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
@@ -65,7 +66,11 @@ class Core extends Base\Core
             DEConstants::KYC_ID     => $entity->getKycId(),
         ];
 
-        if ($this->shouldTriggerBvsVerification() === true)
+        $isPoiBvsRazorxExperimentEnable = (new Merchant\Core())->isRazorxExperimentEnable(
+            $this->merchant,
+            RazorxTreatment::BVS_AUTO_KYC);
+
+        if ($isPoiBvsRazorxExperimentEnable === true)
         {
             $payload = [
                 Constant::ARTEFACT_TYPE => Constant::PERSONAL_PAN,
@@ -330,20 +335,5 @@ class Core extends Base\Core
                     DEConstants::PROCESSOR_TYPE => $processorType
                 ]);
         }
-    }
-
-    /**
-     * razorx experiment to control traffic to BVS
-     *
-     * @return bool
-     */
-    private function shouldTriggerBvsVerification(): bool
-    {
-        $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
-                                                    RazorxTreatment::BVS_AUTO_KYC,
-                                                    $this->mode
-        );
-
-        return (strtolower($variant) === 'on');
     }
 }

@@ -7,7 +7,7 @@ use App;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\BvsValidation\Constants;
-use RZP\Models\Merchant\Detail\Entity as DetailEntity;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 /**
  * Default status update implementation for a artefact type, ideally class name
@@ -25,13 +25,13 @@ class DefaultStatusUpdater extends BaseStatusUpdater
     /**
      * DefaultStatusUpdate constructor.
      *
-     * @param DetailEntity $merchantDetails
-     * @param string       $documentTypeStatusKey
-     * @param string       $artefactType
+     * @param MerchantEntity $merchant
+     * @param string         $documentTypeStatusKey
+     * @param string         $artefactType
      */
-    public function __construct(DetailEntity $merchantDetails, string $documentTypeStatusKey, string $artefactType)
+    public function __construct(MerchantEntity $merchant, string $documentTypeStatusKey, string $artefactType)
     {
-        parent::__construct($merchantDetails, $artefactType);
+        parent::__construct($merchant, $artefactType);
 
         $this->documentTypeStatusKey = $documentTypeStatusKey;
     }

@@ -93,7 +93,22 @@ class BvsValidationTest extends TestCase
         $this->assertNull($bvsValidation);
     }
 
-    public function testCreateBvsValidationPoa()
+    public function testCreateBvsValidationPoaAadhaar()
+    {
+        $this->checkCreateBvsValidationPoa('aadhar_front', 'aadhaar');
+    }
+
+    public function testCreateBvsValidationPoaVoterId()
+    {
+        $this->checkCreateBvsValidationPoa('voter_id_front', 'voters_id');
+    }
+
+    public function testCreateBvsValidationPoaPassport()
+    {
+        $this->checkCreateBvsValidationPoa('passport_front', 'passport');
+    }
+
+    public function checkCreateBvsValidationPoa(string $documentType, string $artefactType)
     {
         $mid = '10000000000000';
 
@@ -102,24 +117,30 @@ class BvsValidationTest extends TestCase
             'business_type' => '4',
         ];
 
-        $test = 'testAadhaarDocumentUpload';
+        $test = 'testCreateBvsValidationPoa';
 
         $this->mockRazorX($test, 'bvs_auto_kyc_ocr', 'on', $mid);
 
         $this->updateUploadDocumentData($test);
 
+        $request = &$this->testData[$test]['request'];
+
+        $request['content']['document_type'] = sprintf($request['content']['document_type'], $documentType);
+
         $bvsValidation = $this->triggerBvsVerification($test, $merchantDetailsData);
 
         $expectedValues = [
-            'artefact_type' => 'aadhaar',
+            'artefact_type' => $artefactType,
             'owner_id'      => $mid,
         ];
 
         $this->validateSuccessBvsValidation($bvsValidation, $expectedValues);
 
         $document = $this->getDbEntity('merchant_document', ['merchant_id' => $mid]);
+        $merchantDetails = $this->getDbEntity('merchant_detail', ['merchant_id' => $mid]);
 
         $this->assertNotNull($document->getValidationId());
+        $this->assertNull($merchantDetails->getPoaVerificationStatus());
     }
 
     public function testCreateBvsValidationForGstin()
@@ -154,14 +175,136 @@ class BvsValidationTest extends TestCase
 
         $mid = $merchantDetail->getId();
 
-        $capturedBvsValidation = $this->fixtures->create('bvs_validation', [
-            'owner_id'      => $mid,
-            'artefact_type' => 'aadhaar',
-        ]);
+        $capturedBvsValidation = $this->fixtures->create('bvs_validation',
+            [
+                'owner_id'      => $mid,
+                'artefact_type' => 'aadhaar',
+            ]);
 
-        $bvsResponse = $this->getBvsResponse($capturedBvsValidation->getValidationId());
+        $this->fixtures->create('merchant_document',
+            [
+                'merchant_id'   => $mid,
+                'document_type' => 'aadhar_front',
+                'validation_id' => $capturedBvsValidation->getValidationId(),
+            ]);
 
-        $this->processBvsResponseAndValidate($bvsResponse, $capturedBvsValidation->getValidationId());
+        //
+        // Poa_verification_status, activation_status are expected value used for validation
+        // MerchantDetailData is edit merchantDetails according to test case requirement.
+        //
+        // 1) POI status failed 2) form submitted false 3) activation status = null only
+        //
+        $this->updateBvsValidationStatusAndCheckMerchantDetailsPoa(
+            $capturedBvsValidation,
+            [
+                'poa_verification_status' => 'failed',              //expected status
+                'validation_status'       => 'failed',
+                'activation_status'       => null,                  //expected status
+            ],
+            ['merchant_id' => $mid]
+        );
+
+        //
+        // 1) POA status failed 2) form submitted true 3) bank details verification status = verified
+        //
+        $this->updateBvsValidationStatusAndCheckMerchantDetailsPoa(
+            $capturedBvsValidation,
+            [
+                'poa_verification_status' => 'failed',
+                'validation_status'       => 'failed',
+                'error_code'              => 'EXTERNAL_SERVICE_ERROR',
+                'activation_status'       => 'under_review',
+            ],
+            [
+                'merchant_id'       => $mid,
+                'submitted'         => 1,
+                'activation_status' => 'under_review',
+            ]
+        );
+
+        //
+        // 1) POA status failed 2) 3) activation status = under_review only
+        //
+        $this->updateBvsValidationStatusAndCheckMerchantDetailsPoa(
+            $capturedBvsValidation,
+            [
+                'poa_verification_status' => 'incorrect_details',
+                'validation_status'       => 'failed',
+                'error_code'              => 'VALIDATION_ERROR',
+                'activation_status'       => 'under_review',
+            ],
+            [
+                'merchant_id'                      => $mid,
+                'submitted'                        => 1,
+                'activation_status'                => 'under_review',
+                'bank_details_verification_status' => 'verified',
+                'poi_verification_status'          => 'verified',
+            ]
+        );
+
+        //
+        // 1) POA status Success 2) activation status = under_review only for registered businesses
+        //
+        $this->updateBvsValidationStatusAndCheckMerchantDetailsPoa(
+            $capturedBvsValidation,
+            [
+                'poa_verification_status' => 'verified',
+                'validation_status'       => 'success',
+                'error_code'              => '',
+                'activation_status'       => 'under_review',
+            ],
+            [
+                'merchant_id'                      => $mid,
+                'submitted'                        => 1,
+                'activation_status'                => 'under_review',
+                'bank_details_verification_status' => 'verified',
+                'poi_verification_status'          => 'verified',
+            ]
+        );
+
+        //
+        // 1) POA status Success 2) 3) activation status = Activated only unregistered
+        //
+        $this->updateBvsValidationStatusAndCheckMerchantDetailsPoa(
+            $capturedBvsValidation,
+            [
+                'poa_verification_status' => 'verified',
+                'validation_status'       => 'success',
+                'error_code'              => '',
+                'activation_status'       => 'activated',
+            ],
+            [
+                'merchant_id'                      => $mid,
+                'submitted'                        => 1,
+                'business_type'                    => 2,
+                'activation_status'                => 'under_review',
+                'bank_details_verification_status' => 'verified',
+                'poi_verification_status'          => 'verified',
+            ]
+        );
+    }
+
+    public function updateBvsValidationStatusAndCheckMerchantDetailsPoa($capturedBvsValidation,
+                                                                        $input,
+                                                                        $merchantDetailsData = [])
+    {
+        $mid = $merchantDetailsData['merchant_id'];
+
+        $this->fixtures->on('test')->edit('merchant_detail', $mid, $merchantDetailsData);
+        $this->fixtures->on('live')->edit('merchant_detail', $mid, $merchantDetailsData);
+
+        $this->verifyDocumentVerificationStatus(
+            $capturedBvsValidation,
+            $mid,
+            'poa_verification_status',
+            $input['poa_verification_status'],
+            $input['validation_status'],
+            $input['error_code'] ?? ''
+        );
+
+        $updatedMerchantDetails = $this->getDbEntityById('merchant_detail', $mid);
+
+        $this->assertEquals($input['activation_status'], $updatedMerchantDetails->getActivationStatus());
     }
 
     public function testUpdateBvsValidationStatusGstin()
@@ -191,7 +334,7 @@ class BvsValidationTest extends TestCase
             [
                 'validationStatus'           => 'failed',
                 'documentVerificationStatus' => 'not_matched',
-                'errorCode'                  => 'RULE_EXECUTION_FAILURE',
+                'errorCode'                  => 'RULE_EXECUTION_FAILED',
             ],
             [
                 'validationStatus'           => 'failed',
@@ -250,7 +393,7 @@ class BvsValidationTest extends TestCase
             [
                 'documentVerificationStatus' => 'verified',
                 'validationStatus'           => 'failed',
-                'errorCode'                  => 'RULE_EXECUTION_FAILURE',
+                'errorCode'                  => 'RULE_EXECUTION_FAILED',
             ],
             [
                 'validationStatus'           => 'failed',

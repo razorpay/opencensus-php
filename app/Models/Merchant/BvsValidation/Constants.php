@@ -24,9 +24,6 @@ class Constants
     const MISMATCH                          = 'mismatch';
     const BVS_DOCUMENT_VERIFICATION_STATUS  = 'bvs_document_verification_status';
 
-    //error codes
-    const BVS_RULE_EXECUTION_ERROR          = 'RULE_EXECUTION_FAILED';
-
     const PLATFORMS = [
         self::PG,
         self::CAPITAL,
@@ -66,7 +63,7 @@ class Constants
         ],
 
         self::NOT_MATCHED => [
-            'RULE_EXECUTION_FAILURE'
+            'RULE_EXECUTION_FAILED'
         ]
     ];
 }

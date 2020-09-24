@@ -246,8 +246,12 @@ class Core extends Base\Core
      */
     public function updatePoaVerificationStatusIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant) : void
     {
+        $isPoaBvsRazorxExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
+            $merchant,
+            RazorxTreatment::BVS_AUTO_KYC_OCR);
+
         if (((new Merchant\Core)->isAutoKycEnabled($merchantDetails, $merchant) === false) or
-            ($this->isOcrEnabledThroughBvs($merchantDetails) === true))
+            ($isPoaBvsRazorxExperimentEnabled === true))
         {
             return;
         }
@@ -3148,56 +3152,5 @@ class Core extends Base\Core
         }
 
         return false;
-    }
-
-    /**
-     * @param Document\Entity $document
-     * @param Entity          $merchantDetails
-     */
-    public function performOcrWithBvs(Document\Entity $document, Entity $merchantDetails)
-    {
-        $artefactDetails = Constant::DOCUMENT_TYPE_ARTEFACT_DETAILS_MAP[$document->getDocumentType()] ?? [];
-
-        $artefactType       = $artefactDetails[Constant::ARTEFACT_TYPE] ?? '';
-        $artefactProofIndex = $artefactDetails[Constant::PROOF_INDEX] ?? '1';
-
-        $payload = [
-            Constant::ARTEFACT_TYPE => $artefactType,
-            Constant::DETAILS       => [
-                Constant::NAME => $merchantDetails->getPromoterPanName(),
-            ],
-            Constant::PROOFS        => [
-                $artefactProofIndex => [Constant::UFH_FILE_ID => $document->getPublicFileStoreId()],
-            ],
-        ];
-
-        $bvsValidation = (new AutoKyc\Bvs\Core())->verify(
-            $merchantDetails->getId(),
-            $payload);
-
-        if($bvsValidation !== null)
-        {
-            $document->setValidationId($bvsValidation->getValidationId());
-        }
-    }
-
-    /**
-     * Route controlled traffic to BVS
-     * if 1) business should be unregistered and
-     *    2) a) experiment is enabled
-     *
-     * @param Entity $merchantDetails
-     *
-     * @return bool
-     */
-    public function isOcrEnabledThroughBvs(Entity $merchantDetails): bool
-    {
-        $variant = $this->app->razorx->getTreatment($merchantDetails->getId(),
-                                                    RazorxTreatment::BVS_AUTO_KYC_OCR,
-                                                    $this->mode
-        );
-
-        return (($merchantDetails->isUnregisteredBusiness() === false) and
-                (strtolower($variant) === 'on'));
     }
 }

@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\AutoKyc\Bvs;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\AutoKyc\Response;
 
@@ -12,12 +13,15 @@ class Core extends Base\Core
      * All BVS Artefact verification should be triggered from this function.
      * This function triggers request to bvs and creates new entry in bvs_validation table if no error.
      * Return null if verification failed because of any reason.
+     *
      * @param string $merchantId
      * @param array $input
      * @return BvsValidation\Entity|null
      */
     public function verify(string $merchantId, array $input): ?BvsValidation\Entity
     {
+        $this->trace->info(TraceCode::BVS_VERIFICATION_REQUEST, ['input' => $input]);
+
         $input[Constant::OWNER_ID] = $merchantId;
 
         $artefactType = $input[Constant::ARTEFACT_TYPE];

@@ -6,6 +6,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\BvsValidation\Entity as ValidationEntity;
 
 class Factory
@@ -13,15 +14,15 @@ class Factory
     /**
      * Returns StatusUpdater instance for artefact
      *
-     * @param Entity $merchantDetails
+     * @param MerchantEntity $merchant
      * @param string $artefactType
      *
-     * @param string $validationId
+     * @param string|null $validationId
      *
      * @return StatusUpdater
      * @throws LogicException
      */
-    public function getInstance(Entity $merchantDetails, string $artefactType, ?string $validationId): StatusUpdater
+    public function getInstance(MerchantEntity $merchant, string $artefactType, ?string $validationId): StatusUpdater
     {
         switch ($artefactType)
         {
@@ -29,26 +30,26 @@ class Factory
             case Constant::LLPIN:
 
                 return new DefaultStatusUpdater(
-                    $merchantDetails,
+                    $merchant,
                     Entity::CIN_VERIFICATION_STATUS,
                     $artefactType);
 
             case Constant::GSTIN:
 
                 return new DefaultStatusUpdater(
-                    $merchantDetails,
+                    $merchant,
                     Entity::GSTIN_VERIFICATION_STATUS,
                     $artefactType);
 
             case Constant::PERSONAL_PAN :
 
-                return new POI($merchantDetails, $artefactType, $validationId);
+                return new POI($merchant, $artefactType, $validationId);
 
             case Constant::AADHAAR :
-            case Constant::VOTER_ID:
+            case Constant::VOTERS_ID:
             case Constant::PASSPORT:
 
-                return new POA($merchantDetails, $artefactType);
+                return new POA($merchant, $artefactType);
 
             default :
 

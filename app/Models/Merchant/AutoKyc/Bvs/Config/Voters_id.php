@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs\Config;
 
-class Voter_id extends BaseConfig
+class Voters_id extends BaseConfig
 {
     protected $enrichment = [
         "ocr" => [

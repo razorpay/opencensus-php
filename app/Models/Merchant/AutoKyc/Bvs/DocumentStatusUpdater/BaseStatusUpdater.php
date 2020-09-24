@@ -5,9 +5,13 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 use App;
 
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
+use RZP\Models\Merchant\Detail\Core;
+use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\BvsValidation\Constants;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\BvsValidation\Entity as Validation;
 
@@ -23,6 +27,11 @@ abstract class BaseStatusUpdater implements StatusUpdater
      * @var  DetailEntity
      */
     protected $merchantDetails;
+
+    /**
+     * @var  MerchantEntity
+     */
+    protected $merchant;
 
     /**
      * @var  string
@@ -44,10 +53,10 @@ abstract class BaseStatusUpdater implements StatusUpdater
     /**
      * BaseStatusUpdater constructor.
      *
-     * @param DetailEntity $merchantDetails
+     * @param MerchantEntity $merchant
      * @param string       $artefactType
      */
-    public function __construct(DetailEntity $merchantDetails, string $artefactType)
+    public function __construct(MerchantEntity $merchant, string $artefactType)
     {
         $this->app = App::getFacadeRoot();
 
@@ -55,11 +64,41 @@ abstract class BaseStatusUpdater implements StatusUpdater
 
         $this->trace = $this->app['trace'];
 
-        $this->merchantDetails = $merchantDetails;
+        $this->merchant = $merchant;
+
+        $this->merchantDetails = $merchant->merchantDetail;
 
         $this->merchantId = $this->merchantDetails->getMerchantId();
 
         $this->artefactType = $artefactType;
+    }
+
+    /**
+     * If existing status is under review then only update activation status means if merchant is already activated or
+     * deleted do not update status
+     * And if already in needs clarification, just add needs clarification reasons
+     * Instant Activation is not covered as merchant context is triggered if form is submitted.
+     */
+    public function updateMerchantContext(): void
+    {
+        $this->trace->info(TraceCode::UPDATE_MERCHANT_CONTEXT_REQUEST, [
+            'merchant_id'   => $this->merchantDetails->getId(),
+            'artefact_type' => $this->artefactType,
+        ]);
+
+        $newActivationStatus = $this->getUpdatedActivationStatus();
+
+        $activationStatus = $this->merchantDetails->getActivationStatus();
+
+        if (($activationStatus !== $newActivationStatus) and
+            ($activationStatus === Status::UNDER_REVIEW))
+        {
+            $activationStatusData = [
+                DetailEntity::ACTIVATION_STATUS => $newActivationStatus
+            ];
+
+            (new Core())->updateActivationStatus($this->merchant, $activationStatusData, $this->merchant);
+        }
     }
 
     protected function getVerifiedStatus()
@@ -128,5 +167,13 @@ abstract class BaseStatusUpdater implements StatusUpdater
         //
 
         return null;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUpdatedActivationStatus(): string
+    {
+        return $this->merchantDetails->getActivationStatus();
     }
 }
