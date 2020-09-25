@@ -590,6 +590,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       case 2: {
         return (
           <TokenDetailsForm
+            isNACHPayment={this.isNACHPayment}
             isUPIPayment={this.isUPIPayment}
             isFirstAmountHidden={this.props.user.isFirstAmountHidden}
             amount={formFields.amount}

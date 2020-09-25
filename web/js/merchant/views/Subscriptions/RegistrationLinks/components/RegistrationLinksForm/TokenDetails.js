@@ -8,8 +8,11 @@ import { checkIfAmount, checkIfAmountForFirstCharge } from './PaymentDetails/uti
 
 const MAX_TOKEN_AMOUNT = 100000000;
 
+const MAX_TOKEN_AMOUNT_NACH = 1000000000;
+
 export default ({
   amount,
+  isNACHPayment,
   isUPIPayment,
   isFirstAmountHidden,
   defaultMandateMaxAmount,
@@ -30,6 +33,11 @@ export default ({
     maxAmountProps.placeholder = `Max ${getFormattedAmount(UPI_AVL_LIMIT)}`;
     maxAmountProps.validator = maxAmountValidator(amount, UPI_AVL_LIMIT);
     maxAmountProps.description = `Max Amount for Mandate`;
+  }
+
+  if (isNACHPayment) {
+    maxAmountProps.validator = maxAmountValidator(amount, MAX_TOKEN_AMOUNT_NACH);
+    maxAmountProps.description = `Max Amount for Nach (Up to ${getFormattedAmount(MAX_TOKEN_AMOUNT_NACH)})`;
   }
 
   return (
