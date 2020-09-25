@@ -246,7 +246,10 @@ export default class AddAccount extends Component {
                     onChange={(e) => this.setState({ code: e.target.value })}
                     maxLength={20}
                   />
-                  <small class="help-block">Maximum 20 characters. Alphanumeric and _ . - only</small>
+                  <small class="help-block">
+                    Maximum 20 characters. Alphanumeric and <span class="special-chars">_ . -</span>{' '}
+                    only
+                  </small>
                 </div>
               </div>
             )}
