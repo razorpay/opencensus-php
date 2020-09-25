@@ -13,7 +13,6 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 class CommissionTest extends OAuthTestCase
 {
     use CommissionTrait;
-    use RequestResponseFlowTrait;
 
     public function setUp()
     {

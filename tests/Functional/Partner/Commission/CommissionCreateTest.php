@@ -21,13 +21,11 @@ use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use RZP\Tests\Functional\Merchant\CommissionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Partner\Commission\Type as CommissionType;
 use RZP\Models\Partner\Commission\Constants as CommissionConstants;
 
 class CommissionCreateTest extends TestCase
 {
-    use PaymentTrait;
     use CommissionTrait;
     use DbEntityFetchTrait;
 
@@ -869,7 +867,7 @@ class CommissionCreateTest extends TestCase
 
         $this->ba->appAuth();
 
-        Carbon::setTestNow(Holidays::getNthWorkingDayFrom(Carbon::now(), 5));
+        Carbon::setTestNow(Holidays::getNthWorkingDayFrom(Carbon::now(), 5)->addHour(10));
 
         $testData = $this->testData['testInitiateCommissionSettlement'];
 
@@ -882,6 +880,12 @@ class CommissionCreateTest extends TestCase
         $this->assertEquals(Channel::YESBANK, $settlementTransaction->getChannel());
 
         $this->assertEquals($commission['credit'] - $tds, $settlementTransaction->getAmount());
+
+        $this->initiateTransfer(Channel::YESBANK, 'settlement', 'settlement');
+
+        // check that fund transfer attempt is created
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+        $this->assertEquals('NEFT', $attempt->getMode());
     }
 
     public function tearDown()

@@ -18,6 +18,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Holidays;
 use RZP\Models\Base\PublicCollection;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\FundTransfer\Attempt\Constants;
 use RZP\Models\FundTransfer\Yesbank\Request\Transfer;
 use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
@@ -238,11 +239,29 @@ class NodalAccount extends NodalBase\NodalAccount
         $ifsc = $ba->getIfscCode();
 
         $ifscFirstFour = substr($ifsc, 0, 4);
+        $ifscLastDigits = substr($ifsc, 4, strlen($ifsc)-4);
 
-        if (starts_with($ifscFirstFour, static::IFSC_IDENTIFIER) === true)
+        $sameBankIfscCode = starts_with($ifscFirstFour, static::IFSC_IDENTIFIER);
+
+        $source = $attempt->source;
+
+        // if commission settlement
+        // if same bank, then IFT else NEFT
+        if ((empty($source) === false) and
+            ($source->getEntityName() === EntityConstants::SETTLEMENT) and
+            ($source->isBalanceTypeCommission() === true)) {
+
+            if (($sameBankIfscCode === true) and (is_numeric($ifscLastDigits) === true))
+            {
+                return Mode::IFT;
+            }
+            else
+            {
+                return Mode::NEFT;
+            }
+        }
+        else if ($sameBankIfscCode === true)
         {
-            $ifscLastDigits = substr($ifsc, 4, strlen($ifsc)-4);
-
             if (is_numeric($ifscLastDigits) === true)
             {
                 return Mode::IFT;

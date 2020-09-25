@@ -15,6 +15,7 @@ use RZP\Trace\TraceCode;
 /**
  * @property mixed batchFundTransfer
  * @property mixed bankAccount
+ * @property mixed source
  * @property Card\Entity $card
  */
 class Entity extends Base\PublicEntity

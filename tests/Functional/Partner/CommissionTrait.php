@@ -4,12 +4,12 @@ namespace RZP\Tests\Functional\Merchant;
 
 use Config;
 use RZP\Constants\Mode;
-use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Partner\Commission\CommissionTrait as CommissionBaseTrait;
 
 trait CommissionTrait
 {
-    use SettlementTrait;
+    use AttemptTrait;
     use CommissionBaseTrait;
 
     public function createCommissionIndex()
