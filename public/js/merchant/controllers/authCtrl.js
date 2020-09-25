@@ -1010,7 +1010,6 @@ app
       };
 
       $scope.onLogin = function () {
-        showSpinner();
         tracking.pushEvents({
           event_name: 'login',
           event_type: 'initiated',
