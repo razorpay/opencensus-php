@@ -110,4 +110,12 @@ class FTSController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getPendingFundTransfers()
+    {
+        $response = $this->app['fts_fund_transfer']->getPendingFundTransfers($this->input);
+
+        return ApiResponse::json($response);
+    }
+
 }

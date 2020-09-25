@@ -74,6 +74,8 @@ class Base
 
     const FUND_TRANSFER_ATTEMPTS_RAW_BANK_STATUS = '/attempts/verify';
 
+    const FUND_TRANSFER_GET_PENDING_TRANSFERS = '/transfers/pending';
+
     const FUND_TRANSFER_ATTEMPTS_STATUS_FETCH = '/transfers/status';
 
     const SOURCE_ACCOUNT = '/source_account';

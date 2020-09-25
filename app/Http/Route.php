@@ -388,6 +388,7 @@ class Route
         'fts_dashboard_fund_transfer_status_bulk'  => ['post',     'fts/dashboard/fund_transfer_status/bulk',        'FTSController@getBulkTransferStatus'                               ],
         'fts_dashboard_fund_transfer_check_status' => ['post',     'fts/dashboard/fund_transfer_status/check',       'FTSController@checkTransferStatus'                                 ],
         'fts_dashboard_raw_bank_status'            => ['post',     'fts/dashboard/fund_transfer_status/raw',         'FTSController@getRawBankStatus'                                    ],
+        'fts_dashboard_pending_transfers_get'      => ['post',     'fts/dashboard/fund_transfer_status/pending',     'FTSController@getPendingFundTransfers'                             ],
         'fts_dashboard_source_account_create'      => ['post',     'fts/dashboard/source_account/create',            'FTSController@createSourceAccount'                                 ],
         'fts_dashboard_source_account_delete'      => ['post',     'fts/dashboard/source_account/delete',            'FTSController@deleteSourceAccount'                                 ],
         'fts_dashboard_source_account_update'      => ['patch',    'fts/dashboard/source_account/update',            'FTSController@updateSourceAccount'                                 ],
@@ -3678,6 +3679,7 @@ class Route
         'fts_dashboard_channel_health_delete',
         'fts_dashboard_sa_mappings_create',
         'fts_dashboard_sa_mappings_delete',
+        'fts_dashboard_pending_transfers_get',
 
         'create_merchant_options_admin',
         'read_merchant_options_admin',
@@ -4448,6 +4450,7 @@ class Route
 
         'fts_dashboard_fund_transfer_update'        => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_fund_transfer_status_bulk'   => '*',
+        'fts_dashboard_pending_transfers_get'       => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_raw_bank_status'             => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_fund_transfer_check_status'  => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_bulk_status_get'             => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,

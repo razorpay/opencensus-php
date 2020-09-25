@@ -1037,6 +1037,17 @@ class FundTransfer extends Base
             $input);
     }
 
+    public function getPendingFundTransfers(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::FUND_TRANSFER_GET_PENDING_TRANSFERS,
+            Requests::GET,
+            $input
+        );
+    }
+
     public function getBulkStatus(array $input)
     {
         (new Validator)->validateInput('fetch_transfer_status', $input);
