@@ -367,7 +367,7 @@ class CardPaymentService
 
         $response = $this->processResponse($response, $method);
 
-        $this->traceResponse($response);
+        $this->traceResponse($response, $data);
 
         return $response;
     }
@@ -438,6 +438,7 @@ class CardPaymentService
                 'payment.id'                        => 'content.input.payment.id',
                 'payment.auth_type'                 => 'content.input.payment.auth_type',
                 'payment.notes'                     => 'content.input.payment.notes',
+                'payment.gateway'                   => 'content.input.payment.gateway',
                 'merchant.id'                       => 'content.input.merchant.id',
                 'merchant.name'                     => 'content.input.merchant.name',
                 'merchant.features'                 => 'content.input.merchant.features',
@@ -495,7 +496,9 @@ class CardPaymentService
         }
         catch (\Throwable $e)
         {
-
+            $this->trace->info(TraceCode::CARD_PAYMENT_SERVICE_REQUEST_ERROR, [
+                $e->getMessage()
+            ]);
         }
     }
 
@@ -567,7 +570,7 @@ class CardPaymentService
         return $responseBody;
     }
 
-    protected function traceResponse($response)
+    protected function traceResponse($response, $data)
     {
        $traceResponse = $response;
 
@@ -607,7 +610,21 @@ class CardPaymentService
            $traceResponse[Migration::EMI_PLANS] = $emiTrace;
        }
 
-       $this->trace->info(TraceCode::CARD_PAYMENT_SERVICE_RESPONSE, $traceResponse ?? []);
+       $traceData = [];
+
+       $traceData['response']   = $traceResponse;
+
+       if (isset($data['input']['payment']['id']) === true)
+       {
+           $traceData['payment_id'] = $data['input']['payment']['id'];
+       }
+
+       if (isset($data['input']['payment']['gateway']) === true)
+       {
+           $traceData['gateway'] = $data['input']['payment']['gateway'];
+       }
+
+       $this->trace->info(TraceCode::CARD_PAYMENT_SERVICE_RESPONSE, $traceData ?? []);
     }
 
     protected function jsonToArray($json)
