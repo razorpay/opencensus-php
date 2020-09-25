@@ -416,7 +416,7 @@ export default class webhookForm extends Component {
                   component={InputField}
                   type="email"
                   class="form-control"
-                  validate={email('Please provide a valid email')}
+                  validate={email('Alert email must be a single valid email address')}
                   placeholder={userData.merchant.transaction_report_email}
                 />
                 <div className="help-block" style={{ margin: '0px' }}>
