@@ -226,43 +226,37 @@ class Core extends Base\Core
     {
         $amount = $amountInPoints = (new Credits\Core)->getCreditInPoints($amount);
 
-        $creditBalances = $this->repo->credit_balance->getCreditBalanceByTypeAndProduct($merchant, $creditType, $product);
+        $creditsAvailable = $this->repo->credits->getTypeAggregatedMerchantCreditsForProduct(
+                                                            $merchant->getId(),
+                                                            Credits\Balance\Product::BANKING);
 
-        foreach ($creditBalances as $balance)
+        $creditsAvailableValue = $creditsAvailable[$creditType] ?? 0;
+
+        if (($amountInPoints <= $creditsAvailableValue) and
+             ($amountInPoints !== 0))
         {
-            if (($amountInPoints <= $balance->getBalance()) and
-                ($amountInPoints !== 0))
+            $credits = $this->repo->credits->getCreditsSortedByExpiryForProduct(time(), $merchant->getId(), $creditType, $product);
+
+            $this->repo->transaction(function() use ($credits, $amount, $source)
             {
-                $currentTimestamp = Carbon::now()->getTimestamp();
-
-                $credits = $this->repo->credits->getCreditsSortedByExpiryWithBalance(
-                    $currentTimestamp, $merchant->getId(), $creditType, $balance->getId());
-
-                //
-                // The amount of credits to be deducted will be reflected in the credit log
-                // specifying how many credits are used from what log.
-                //
-                $this->repo->transaction(function() use ($credits, $amount, $source, $balance)
+                foreach ($credits as $credit)
                 {
-                    foreach ($credits as $credit)
+                    if ($amount === 0)
                     {
-                        // When all the credit logs are updated with used amount
-                        if ($amount === 0)
-                        {
-                            break;
-                        }
-
-                        $this->repo->credits->getCreditLockForUpdate($credit);
-
-                        // Get number of credits used from particular credit entry
-                        $creditsUsed = $this->getCreditsUsedAndUpdateCreditAmount($credit, $amount);
-
-                        $this->createTransactionForSource($credit, $source, $creditsUsed);
-
-                        $balance->decrementBalance($creditsUsed);
+                        break;
                     }
-                });
-            }
+
+                    $this->repo->credits->getCreditLockForUpdate($credit);
+
+                    $creditsUsed = $this->getCreditsUsedAndUpdateCreditAmount($credit, $amount);
+
+                    $this->createTransactionForSource($credit, $source, $creditsUsed);
+
+                    $balance = $credit->balance;
+
+                    $balance->decrementBalance($creditsUsed);
+                }
+            });
         }
     }
 

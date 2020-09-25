@@ -1672,16 +1672,13 @@ class Core extends Base\Core
 
     protected function fetchBankingCreditBalances($merchantId, $product)
     {
-        $creditBalances = $this->repo->credit_balance->getMerchantCreditBalanceByProduct($merchantId, $product);
+        $creditBalances = $this->repo
+                                ->credits
+                                ->getTypeAggregatedMerchantCreditsForProductForDashboard(
+                                    $merchantId,
+                                    $product);
 
-        $result = [];
-
-        foreach ($creditBalances as $balance)
-        {
-            $result[] = $balance->toArrayPublic();
-        }
-
-        return $result;
+        return $creditBalances;
     }
 
     /**

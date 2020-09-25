@@ -157,7 +157,7 @@ class Base extends FundAccountPayout\Base
 
     protected function adjustMerchantFeesThroughCreditsForPayout(Entity $payout, & $fees, & $tax)
     {
-        $merchantCredits = $this->repo->credits->getTypeAggregatedMerchantCredits($payout->merchant->getId());
+        $merchantCredits = $this->repo->credits->getTypeAggregatedMerchantCreditsForProduct($payout->merchant->getId(), Product::BANKING);
 
         $rewardFeeCredits = $merchantCredits[CreditType::REWARD_FEE] ?? 0;
 

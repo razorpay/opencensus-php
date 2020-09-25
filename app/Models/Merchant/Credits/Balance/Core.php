@@ -76,6 +76,7 @@ class Core extends Base\Core
                                                                                 $product);
         $data = [];
 
+
         foreach ($credits as $type => $credit)
         {
             $data[$type] = (new Credits\Core)->getCreditInAmount($credit, $product);
@@ -86,7 +87,7 @@ class Core extends Base\Core
 
     public function getCreditsBalancesOfMerchantForProduct(Merchant\Entity $merchant, string $product)
     {
-        $creditBalances = $this->repo->credit_balance->getMerchantCreditBalanceByProduct(
+        $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCreditsForProductForDashboard(
                                                                 $merchant->getId(),
                                                                 $product);
 

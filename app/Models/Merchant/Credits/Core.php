@@ -270,6 +270,13 @@ class Core extends Base\Core
         return $credit;
     }
 
+    public function getTypeAggregatedMerchantCredits(string $merchantId, string $product)
+    {
+        $credits = $this->repo->credits->getTypeAggregatedMerchantCreditsForProduct($merchantId, $product);
+
+        return $credits;
+    }
+
     protected function getFormattedAmount($amount)
     {
         $formattedAmount = number_format($amount / 100, 2, '.', '');

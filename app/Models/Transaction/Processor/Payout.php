@@ -90,9 +90,7 @@ class Payout extends Base
     {
         $merchantId = $this->txn->merchant->getId();
 
-        $credits = (new Credits\Balance\Core)->getMerchantCreditBalanceAggregatedByProductForEveryType(
-                                                                        $merchantId,
-                                                                Product::BANKING);
+        $credits = (new Credits\Core)->getTypeAggregatedMerchantCredits($merchantId, Product::BANKING);
 
         $rewardFeeCredits = $credits[CreditType::REWARD_FEE] ?? 0;
 
@@ -319,9 +317,7 @@ class Payout extends Base
 
         $merchantId = $this->txn->merchant->getId();
 
-        $credits = (new Credits\Balance\Core)->getMerchantCreditBalanceAggregatedByProductForEveryType(
-                                                                                $merchantId,
-                                                                                Product::BANKING);
+        $credits = (new Credits\Core)->getTypeAggregatedMerchantCredits($merchantId, Product::BANKING);
 
         $rewardFeeCredits = $credits[CreditType::REWARD_FEE] ?? 0;
 

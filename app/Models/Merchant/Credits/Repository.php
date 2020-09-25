@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Promotion;
+use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 
 class Repository extends Base\Repository
@@ -89,6 +90,25 @@ class Repository extends Base\Repository
                     ->orderBy(\DB::raw('-`expired_at`'), 'desc')
                     ->get();
     }
+
+    public function getCreditsSortedByExpiryForProduct(int $timestamp, string $merchantId, string $type, string $product)
+    {
+        return $this->newQuery()
+                    ->merchantId($merchantId)
+                    ->where(Entity::TYPE, '=', $type)
+                    ->whereRaw(Entity::VALUE . '>' . Entity::USED)
+                    ->where(Entity::PRODUCT, $product)
+                    ->where(function ($query) use ($timestamp)
+                    {
+                        $query->where(Entity::EXPIRED_AT, '>', $timestamp)
+                            ->orWhereNull(Entity::EXPIRED_AT);
+                    }
+                    )
+                    // This is done because we want to keep the null EXPIRED at the bottom
+                    ->orderBy(\DB::raw('-`expired_at`'), 'desc')
+                    ->get();
+    }
+
 
     public function getCreditsSortedByExpiryWithBalance(int $timestamp, string $merchantId, string $type, string $balanceId)
     {
@@ -200,6 +220,67 @@ class Repository extends Base\Repository
         foreach ($query as $record)
         {
             $data[$record[Entity::TYPE]] = $record['sum'];
+        }
+
+        return $data;
+    }
+
+    public function getTypeAggregatedMerchantCreditsForProduct(string $merchantId, string $product): array
+    {
+        $results =  $this->newQuery()
+                        ->selectRaw(
+                            Entity::TYPE . ', ' .
+                            'SUM(' . Entity::VALUE . ' - ' . Entity::USED . ') AS sum')
+                        ->where(Entity::VALUE, '>', 0)
+                        ->where(Entity::PRODUCT, $product)
+                        ->merchantId($merchantId)
+                        ->where(function ($query)
+                        {
+                            $query->where(Entity::EXPIRED_AT, '>', time())
+                                ->orWhereNull(Entity::EXPIRED_AT);
+                        })
+                        ->groupBy(Entity::TYPE)
+                        ->get();
+
+        $data = [];
+
+        foreach ($results as $record)
+        {
+            $data[$record[Entity::TYPE]] = $record['sum'];
+        }
+
+        return $data;
+    }
+
+    public function getTypeAggregatedMerchantCreditsForProductForDashboard(string $merchantId, string $product): array
+    {
+        $results =  $this->newQuery()
+                        ->selectRaw(
+                            Entity::TYPE . ', ' .
+                            'SUM(' . Entity::VALUE . ' - ' . Entity::USED . ') AS sum')
+                        ->where(Entity::VALUE, '>', 0)
+                        ->where(Entity::PRODUCT, $product)
+                        ->merchantId($merchantId)
+                        ->where(function ($query)
+                        {
+                            $query->where(Entity::EXPIRED_AT, '>', time())
+                                ->orWhereNull(Entity::EXPIRED_AT);
+                        })
+                        ->groupBy(Entity::TYPE)
+                        ->get();
+
+        $data = [];
+
+        foreach ($results as $record)
+        {
+            $data[] = [
+                Entity::PRODUCT                                 => $product,
+                Entity::MERCHANT_ID                             => $merchantId,
+                Merchant\Credits\Balance\Entity::BALANCE        => (int) $record['sum'],
+                Entity::TYPE                                    => $record[Entity::TYPE],
+                // ToDo refactor this. Expire_at should be picked from the query
+                Entity::EXPIRED_AT                              => null
+            ];
         }
 
         return $data;
