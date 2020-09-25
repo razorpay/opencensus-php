@@ -516,6 +516,20 @@ app
         return false;
       };
 
+      /**
+       * util function to set cookie
+       * @param name
+       * @param value
+       * @param expiry - in days
+       */
+      const setCookie = function (name, value, expiry = 10) {
+        const date = new Date();
+        date.setDate(date.getDate() + expiry);
+        const expires = date.toUTCString();
+        const domain = isProd ? '.razorpay.com' : '.razorpay.in';
+        document.cookie = `${name}=${value};domain=${domain};expires=${expires};`;
+      };
+
       const readUTMsCookie = function () {
         const rzpUtmCookie = getCookie('rzp_utm');
         let utms = {};
@@ -572,6 +586,7 @@ app
       };
 
       const userIdentitySuccess = function (userDetails) {
+        setCookie('midExists', !!userDetails.current);
         var signinSuccessCb = authCallbacks.getSigninCallback();
 
         setExperimentsFlags(userDetails.experiments); // set razorX experiment flags
@@ -874,6 +889,7 @@ app
               } else {
                 $scope.signup.userid = data.user.id;
                 $scope.signup.mid = data.current;
+                setCookie('midExists', !!data.current);
                 window.rzpQ &&
                   window.rzpQ.push(
                     window.rzpQ.now().onbr().success('signup.create_account', {
@@ -967,6 +983,8 @@ app
         $('.loading-animation').removeClass('active');
       }
       $scope.goToDashboard = function (data) {
+        setCookie('midExists', !!data.current);
+
         fireDLSuccessEvents('login.login', {
           source: 'sign_in',
           method: $scope.isGoogleAuth ? 'google_oauth' : 'email',
@@ -1086,6 +1104,7 @@ app
             pushToDrip();
             sendSignUpCompleteEvents();
             updateHubSpotContactProperty();
+            setCookie('midExists', !!$scope.signup.mid);
 
             // if verification is already done, go to dashboard (call /user again to check)
             user.identity(true).then(function (userDetails) {
