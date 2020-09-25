@@ -9,6 +9,7 @@ use RZP\Mail\Admin\Scorecard as ScorecardMail;
 use RZP\Models;
 use RZP\Models\Base;
 use RZP\Constants\MailTags;
+use RZP\Constants\Timezone;
 
 class Scorecard extends Base\Core
 {
@@ -18,19 +19,19 @@ class Scorecard extends Base\Core
 
         $limit = $input['count'];
 
-        $yesterdayVolume = $this->repo->payment->getYesterdayVolume();
+        $yesterdayVolume = $this->getYesterdayVolume();
 
-        $monthVolume = $this->repo->payment->getCurrentMonthVolume();
+        $monthVolume = $this->getCurrentMonthVolume();
 
-        $yesterdayMerchantVolume = $this->repo->payment->getYesterdayTopMerchantVolumeWise($limit);
+        $yesterdayMerchantVolume = $this->getYesterdayTopMerchantVolumeWise($limit);
 
-        $monthlyMerchantVolume = $this->repo->payment->getMonthTopMerchantVolumeWise($limit);
+        // $monthlyMerchantVolume = $this->getMonthlyTopMerchantVolumeWise($limit);
 
         $data =  [
             'yesterdayVolume'         => $yesterdayVolume,
             'monthVolume'             => $monthVolume,
             'yesterdayMerchantVolume' => $yesterdayMerchantVolume,
-            'monthlyMerchantVolume'   => $monthlyMerchantVolume
+            //'monthlyMerchantVolume'   => $monthlyMerchantVolume
         ];
 
         $scoreCardMail = new ScorecardMail($data);
@@ -43,5 +44,73 @@ class Scorecard extends Base\Core
         Mail::send($scoreCardMail);
 
         return ['success' => true];
+    }
+
+    private function getYesterdayVolume()
+    {
+        list($from, $to) = $this->getYesterdayTimestamps();
+
+        return $this->repo->payment->getPaymentVolumeBetweenTimestamp($from, $to);
+    }
+
+    private function getCurrentMonthVolume()
+    {
+        list($from, $end) = $this->getMonthTimestamps();
+
+        $monthlyAmountVol = 0;
+
+        $monthlyCount = 0;
+
+        while ($from < $end)
+        {
+            $to = $from + 86400*5;
+
+            $volume = $this->repo->payment->getPaymentVolumeBetweenTimestamp($from, $to);
+
+            $monthlyAmountVol += (int) $volume['amount'];
+
+            $monthlyCount += (int) $volume['count'];
+
+            $from = $to;
+        }
+
+        return [
+            'amount' => $monthlyAmountVol,
+            'count'  => $monthlyCount
+        ];
+    }
+
+    private function getYesterdayTopMerchantVolumeWise(int $limit)
+    {
+        list($from, $to) = $this->getYesterdayTimestamps();
+
+        return $this->repo->payment->getTopMerchantVolumeWiseBetweenTimestamp(
+            $from, $to, $limit);
+    }
+
+    private function getMonthlyTopMerchantVolumeWise(int $limit)
+    {
+        list($from, $to) = $this->getMonthTimestamps();
+
+        return $this->repo->payment->getTopMerchantVolumeWiseBetweenTimestamp(
+            $from, $to, $limit);
+    }
+
+    private function getYesterdayTimestamps()
+    {
+        $from = Carbon::yesterday(Timezone::IST)->getTimestamp();
+
+        $to = Carbon::today(Timezone::IST)->getTimestamp();
+
+        return [$from, $to];
+    }
+
+    private function getMonthTimestamps()
+    {
+        $from = Carbon::yesterday(Timezone::IST)->startOfMonth()->getTimestamp();
+
+        $to = Carbon::today(Timezone::IST)->getTimestamp();
+
+        return [$from, $to];
     }
 }

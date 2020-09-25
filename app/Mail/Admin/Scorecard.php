@@ -55,17 +55,17 @@ class Scorecard extends Mailable
     {
         $message = '
             Yesterday\'s Volume        - ' . $this->data['yesterdayVolume']->getAttribute('amount') / 100 . ' <br />
-            Monthly Volume till now - ' . $this->data['monthVolume']->getAttribute('amount') / 100 . ' <br /><br />';
+            Monthly Volume till now - ' . $this->data['monthVolume']['amount'] / 100 . ' <br /><br />';
 
         $message .= '
             Yesterday\'s Transactions count        - ' . $this->data['yesterdayVolume']->getAttribute('count') . ' <br />
-            Monthly Transactions count till now - ' . $this->data['monthVolume']->getAttribute('count') . ' <br /><br />';
+            Monthly Transactions count till now - ' . $this->data['monthVolume']['count'] . ' <br /><br />';
 
         $message .= 'Yesterday\'s Top Merchants By Volume - <br />';
         $message .= $this->getTabularFormattedMerchantVolumeScorecard($this->data['yesterdayMerchantVolume']);
 
-        $message .= 'Monthly Top Merchants By Volume - <br />';
-        $message .= $this->getTabularFormattedMerchantVolumeScorecard($this->data['monthlyMerchantVolume']);
+        // $message .= 'Monthly Top Merchants By Volume - <br />';
+        // $message .= $this->getTabularFormattedMerchantVolumeScorecard($this->data['monthlyMerchantVolume']);
 
         $mailData['body'] = $message;
 

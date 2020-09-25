@@ -1063,22 +1063,6 @@ class Repository extends Base\Repository
         }
     }
 
-    public function getYesterdayVolume()
-    {
-        $yesterday = Carbon::yesterday(Timezone::IST)->getTimestamp();
-        $today = Carbon::today(Timezone::IST)->getTimestamp();
-
-        return $this->getPaymentVolumeBetweenTimestamp($yesterday, $today);
-    }
-
-    public function getCurrentMonthVolume()
-    {
-        $from = Carbon::yesterday(Timezone::IST)->startOfMonth()->getTimestamp();
-        $to = Carbon::today(Timezone::IST)->getTimestamp();
-
-        return $this->getPaymentVolumeBetweenTimestamp($from, $to);
-    }
-
     public function getCreatedAndFailedPaymentsForOrder($orderId)
     {
         $ts = time() - Payment\Entity::PAYMENT_WINDOW;
@@ -1098,38 +1082,8 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function getYesterdayTopMerchantVolumeWise(int $limit)
+    public function getTopMerchantVolumeWiseBetweenTimestamp(int $from, int $to, int $limit)
     {
-        $from = Carbon::yesterday(Timezone::IST)->getTimestamp();
-        $to = Carbon::today(Timezone::IST)->getTimestamp();
-
-        $pid = $this->dbColumn(Payment\Entity::MERCHANT_ID);
-        $mid = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
-
-        return $this->newQueryWithConnection($this->getDataWarehouseConnectionWithRazorX())
-                    ->join($this->repo->merchant->getTableName(), $pid, '=', $mid)
-                    ->selectRaw(
-                       Payment\Entity::MERCHANT_ID . ','.
-                       Merchant\Entity::NAME . ','.
-                       Merchant\Entity::WEBSITE . ','.
-                       'SUM(amount) / 100 AS volume' . ','.
-                       'COUNT(*) AS count')
-                    ->betweenTime($from, $to)
-                    ->statusSuccess()
-                    ->groupBy(
-                        Payment\Entity::MERCHANT_ID,
-                        Merchant\Entity::NAME,
-                        Merchant\Entity::WEBSITE)
-                    ->orderBy('volume', 'desc')
-                    ->limit($limit)
-                    ->get();
-    }
-
-    public function getMonthTopMerchantVolumeWise(int $limit)
-    {
-        $from = Carbon::yesterday(Timezone::IST)->startOfMonth()->getTimestamp();
-        $to = Carbon::today(Timezone::IST)->getTimestamp();
-
         $pid = $this->dbColumn(Payment\Entity::MERCHANT_ID);
         $mid = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
@@ -1355,7 +1309,7 @@ class Repository extends Base\Repository
         return $results;
     }
 
-    protected function getPaymentVolumeBetweenTimestamp($from, $to)
+    public function getPaymentVolumeBetweenTimestamp($from, $to)
     {
         $vol = $this->newQueryWithConnection($this->getDataWarehouseConnectionWithRazorX())
                     ->betweenTime($from, $to)
