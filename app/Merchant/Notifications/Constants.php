@@ -434,7 +434,7 @@ class Constants
                 [
                     'type'  => 'button',
                     'label' => 'Learn More',
-                    'url'   => 'https://lp.razorpay.com/razorpayxca-anncment',
+                    'url'   => '',
                 ],
             ],
             'start_ts'    => 1597390475,

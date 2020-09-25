@@ -9,6 +9,7 @@ import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
 import { classList } from 'common/utils/rzp-utils';
 
 import { trackLoad, trackExpand, trackAnnouncement } from './ga';
+import HubspotCAForm from './HubspotCAForm';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import DebitRefundAnnouncement from 'merchant/components/Announcements/Refunds/DebitRefund';
 
@@ -175,10 +176,15 @@ export default class NotificationsDropdown extends Component {
     });
   };
 
+  toggleHubSpotCAForm = () => {
+    this.setState({ showHubSpotCAForm: !this.state.showHubSpotCAForm });
+  };
+
   handleContentScroll = debounce(::this.onScrollContent, 20);
 
   render() {
     let { user, showMobileNav, analytics = () => {} } = this.props;
+    const { showHubSpotCAForm } = this.state;
     const hasUnread = !!this.state.totalUnread;
     const eventTrackingRequired = [
       'upiAutopay',
@@ -197,6 +203,7 @@ export default class NotificationsDropdown extends Component {
           trackAnnouncement={trackAnnouncement}
           trackEvents={card.id && eventTrackingRequired.includes(card.id) ? this.trackEvents : null}
           handleHbForm={this.handleHbForm}
+          toggleHubSpotCAForm={this.toggleHubSpotCAForm}
         />
       </div>
     ));
@@ -270,6 +277,11 @@ export default class NotificationsDropdown extends Component {
           </button>
           {hubspotForm}
         </Modal>
+        <HubspotCAForm
+          shouldShowModal={showHubSpotCAForm}
+          hideModal={this.toggleHubSpotCAForm}
+          fromWhere="announcement"
+        />
       </Dropdown>
     );
   }
@@ -313,6 +325,7 @@ const NotificationCard = ({
   handleHbForm,
   ga,
   id,
+  toggleHubSpotCAForm,
 }) => {
   const isUnread = _isUnreadNotification(start_ts, end_ts, lastReadTS);
   return (
@@ -392,6 +405,10 @@ const NotificationCard = ({
                       ),
                       size: 'large',
                     });
+                  }
+                  if (btn.label === 'Learn More') {
+                    e.preventDefault();
+                    toggleHubSpotCAForm();
                   }
                 }}
                 href={urlPath}
