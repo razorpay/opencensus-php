@@ -1834,6 +1834,10 @@ app
        * @param val
        */
       onCaptchaSubmit = function (val) {
+        tracking.pushEvents({
+          event_name: 'recaptcha',
+          event_type: 'success',
+        });
         if (window.location.href.includes('access/signin')) {
           login(val);
         } else if (window.location.href.includes('access/signup')) {
