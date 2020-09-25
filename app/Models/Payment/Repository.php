@@ -1322,7 +1322,7 @@ class Repository extends Base\Repository
         // SELECT payments.*
         // FROM payments
         //     INNER JOIN orders on orders.id = payments.order_id
-        // WHERE payments.created_at > ?
+        // WHERE payments.authorized_at > ?
         //     AND orders.status = 'PAID'
         //     AND payments.status = 'AUTHORIZED'
 
@@ -1334,17 +1334,18 @@ class Repository extends Base\Repository
         $paymentStatus    = $this->dbColumn(Entity::STATUS);
         $paymentDisputed  = $this->dbColumn(Entity::DISPUTED);
         $paymentOrderId   = $this->dbColumn(Entity::ORDER_ID);
-        $paymentCreatedAt = $this->dbColumn(Entity::CREATED_AT);
+        $paymentAuthorizedAt = $this->dbColumn(Entity::AUTHORIZED_AT);
 
-        // For optimization purposes we only pick payments in last 10 days. This picked
-        // '10 days' is sufficient filter logically.
+        // For optimization purposes we only pick payments authorized in last 2 days. This picked
+        // '2 days' is sufficient filter logically.
 
-        $nowMinus10Days = Carbon::today(Timezone::IST)->subDays(10)->getTimestamp();
+        $nowMinus2Days = Carbon::today(Timezone::IST)->subDays(2)->getTimestamp();
 
         $results = $this->newQuery()
+                        ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
                         ->join($orderTable, $orderId, '=', $paymentOrderId)
                         ->select($paymentCols)
-                        ->where($paymentCreatedAt, '>', $nowMinus10Days)
+                        ->where($paymentAuthorizedAt, '>', $nowMinus2Days)
                         ->where($orderStatus, Order\Status::PAID)
                         ->where($paymentStatus, Status::AUTHORIZED)
                         ->where($paymentDisputed, 0)
