@@ -578,4 +578,95 @@ class MethodsTest extends TestCase
 
         $this->assertTrue(isset($response["emi_options"][$emiPlanEntity->getBank()][0]["merchant_payback"]));
     }
+
+    public function testEnableCredWithSubText(){
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'apps' => [
+                    'cred'  => 1,
+                ],
+                'custom_text' => [
+                    'cred' => 'discount of 20% with CRED coins'
+                ]
+            ] ,
+        ];
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $request = [
+            'url' => '/merchant/methods',
+            'method' => 'get',
+        ];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue(isset($response['custom_text']['cred']));
+        $this->assertEquals('discount of 20% with CRED coins', $response['custom_text']['cred']);
+    }
+
+    public function testEditMerchantSubTextForCred()
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'apps' => [
+                    'cred'  => 1,
+                ],
+                'custom_text' => [
+                    'cred' => 'discount of 20% with CRED coins'
+                ]
+            ] ,
+        ];
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'custom_text' => [
+                    'cred' => 'discount of 10% with CRED coins'
+                ]
+            ] ,
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $request = [
+            'url' => '/merchant/methods',
+            'method' => 'get',
+        ];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue(isset($response['custom_text']['cred']));
+        $this->assertEquals('discount of 10% with CRED coins', $response['custom_text']['cred']);
+    }
 }

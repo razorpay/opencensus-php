@@ -3346,6 +3346,41 @@ class MerchantTest extends TestCase
         $this->assertNotNull($response['features']['phonepe_intent']);
     }
 
+    public function testGetCheckoutPreferencesForCredSubtext()
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'apps' => [
+                    'cred'  => 1,
+                ],
+                'custom_text' => [
+                    'cred' => 'discount of 20% with CRED coins'
+                ]
+            ] ,
+        ];
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->ba->publicAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['methods']['custom_text']);
+
+    }
+
     public function testPutPaytmMethod()
     {
         $this->fixtures->create('pricing:standard_plan');

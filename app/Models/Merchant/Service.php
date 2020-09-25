@@ -3095,6 +3095,14 @@ class Service extends Base\Service
             $data['is_inheritance_parent']  =  $merchant->isInheritanceParent();
 
             $data['tags'] = $merchant->tagNames();
+
+            // Fetch method specific custom_text.Doing only for cred now.
+            $methods = $this->merchant->getMethods();
+
+            if (empty($methods) === false)
+            {
+                (new Methods\Core)->addCustomTextForCredIfApplicable($this->merchant, $methods,$data['methods']);
+            }
         }
 
         return $data;

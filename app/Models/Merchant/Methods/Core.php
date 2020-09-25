@@ -46,6 +46,13 @@ class Core extends Base\Core
         // Setup workflow
         $workflow = $this->app['workflow']->setOriginal(clone $methods);
 
+        if (isset($input['custom_text']) === true)
+        {
+            $this->setMerchantCustomTextForMethods($merchant->getMethods(), $input);
+
+            unset($input['custom_text']);
+        }
+
         $methods->setMethods($input);
 
         $this->checkPricing($merchant, $methods);
@@ -216,6 +223,11 @@ class Core extends Base\Core
             $data['emi_options'] = $emiPlansAndOptions['options'];
         }
 
+        if ($methods->isCredEnabled() === true)
+        {
+            $this->addCustomTextForCredIfApplicable($merchant, $methods, $data);
+        }
+
         if ($merchant->isRecurringEnabled() === true)
         {
             $data['recurring'] = [];
@@ -356,6 +368,23 @@ class Core extends Base\Core
                 }
             }
         }
+    }
+
+    public function addCustomTextForCredIfApplicable(
+        Merchant\Entity $merchant,
+        Methods\Entity $methods,
+        array & $data)
+    {
+        $key = $methods->getCustomTextCacheKey();
+
+        $text = $this->app['cache']->get($key);
+
+        if (isset($text['cred']) === true)
+        {
+            $data['custom_text']['cred'] = $text['cred'];
+        }
+
+        return;
     }
 
     public function getEnabledAndDisabledBanks($merchant)
@@ -657,5 +686,30 @@ class Core extends Base\Core
         $result = $terminals === null ? false : true;
 
         return $result;
+    }
+
+    /**
+     * Store merchant specific text to be shown on checkout in cache.Doing it only for cred for now
+     *
+     * @param Entity    $methods
+     * @param array     $customText
+     *
+     */
+    protected function setMerchantCustomTextForMethods(Methods\Entity $methods, $input)
+    {
+        if((isset($input['custom_text']['cred']) === true) &&
+           (($methods->isCredEnabled() === true) ||
+            (isset($input['apps']['cred']) === true)))
+        {
+            $key = $methods->getCustomTextCacheKey();
+
+            $data = [
+                'cred' => $input['custom_text']['cred']
+            ];
+
+            $this->app['cache']->forever($key, $data);
+        }
+
+        return;
     }
 }

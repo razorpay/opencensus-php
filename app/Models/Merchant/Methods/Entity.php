@@ -1059,4 +1059,9 @@ class Entity extends Base\PublicEntity
 
         return $cacheTags;
     }
+
+    public function getCustomTextCacheKey()
+    {
+        return 'merchant_banks:subtext.'.$this->getMerchantId().'cache';
+    }
 }

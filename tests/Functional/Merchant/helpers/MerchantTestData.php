@@ -2110,6 +2110,20 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesForCredSubtext' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesForMagicEnabledMerchant' => [
         'request'  => [
             'url'    => '/preferences',
