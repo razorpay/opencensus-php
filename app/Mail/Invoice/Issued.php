@@ -128,7 +128,7 @@ class Issued extends Base
 
     protected function addReplyTo()
     {
-        $replyTo = Constants::MAIL_ADDRESSES[Constants::SUPPORT];
+        $replyTo = Constants::MAIL_ADDRESSES[Constants::NOREPLY];
 
         $merchantId = $this->data['merchant']['id'] ?? '';
 
