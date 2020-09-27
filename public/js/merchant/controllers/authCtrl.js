@@ -121,7 +121,7 @@ app
         email = '';
       }
 
-      var isProd = $location.host() === 'dashboard.razorpay.com';
+      var isProd = window.location.hostname.includes('razorpay.com');
 
       $scope.signup = {
         currentStep: 0, // 0, 1, 2
