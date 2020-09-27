@@ -48,7 +48,7 @@ class Gstin extends BaseConfig
                     ],
             ],
             '1' => [
-                'rule_type' => 'array_comparision_rule',
+                'rule_type' => 'array_comparison_rule',
                 'rule_def'  => [
                     "some" => [
                         [

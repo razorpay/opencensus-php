@@ -8,8 +8,7 @@ class Llpin extends BaseConfig
         'online_provider' => [
             'required_fields' => [
                 'signatory_details',
-                'company_name',
-                'registered_address',
+                'llp_name',
             ],
         ],
     ];
@@ -33,17 +32,19 @@ class Llpin extends BaseConfig
                     ],
             ],
             '1' => [
-                'rule_type' => 'array_comparision_rule',
+                'rule_type' => 'array_comparison_rule',
                 'rule_def'  => [
                     "some" => [
-                        'enrichments.online_provider.details.signatory_details.value',
+                        [
+                            'var' => 'enrichments.online_provider.details.signatory_details',
+                        ],
                         [
                             'fuzzy_wuzzy' => [
                                 [
-                                    'var' => 'full_name.value',
+                                    'var' => 'each_array_element.full_name.value',
                                 ],
                                 [
-                                    'var' => 'artefact.details.signatory_name.value',
+                                    'var' => 'artefact.details.signatory_details.0.full_name.value',
                                 ],
                                 70,
                             ],
