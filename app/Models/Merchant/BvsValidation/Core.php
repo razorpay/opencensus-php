@@ -182,7 +182,7 @@ class Core extends Base\Core
 
         if ($retryAttemptsCount >= self::MAX_RETRY_COUNT)
         {
-            $this->trace->info(TraceCode::BVS_VERIFICATION_JOB_RETRY_EXCEEDED, $payload);
+            $this->trace->info(TraceCode::ONBOARDING_BVS_VERIFICATION_JOB_RETRY_EXCEEDED, $payload);
 
             return true;
         }
