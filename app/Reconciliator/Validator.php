@@ -184,9 +184,9 @@ class Validator extends Base\Core
     const MAX_FILE_SIZE = 36700160;
 
     // For batch service migrated gateways,
-    // keeping max size = 55 MB (i.e 55*1024*1024)
-    // As per batch team, their max limit is 60 MB currently.
-    const MAX_FILE_SIZE_FOR_BATCH_SERVICE = 57671680;
+    // keeping max size = 96 MB (i.e 96*1024*1024)
+    // As per batch team, their max limit is 100 MB currently.
+    const MAX_FILE_SIZE_FOR_BATCH_SERVICE = 100663296;
 
     const FORCE_UPDATE_ALLOWED = [
         RequestProcessor\Base::REFUND_ARN,
