@@ -193,7 +193,9 @@ class Core extends Base\Core
             return false;
         }
 
-        $status = $this->shouldProcessViaNewService($merchantId);
+        $balance = $this->repo->balance->getMerchantBalanceByType($merchantId, $balanceType);
+
+        $status = $this->shouldProcessViaNewService($merchantId, $balance);
 
         if ($status === true)
         {
@@ -241,7 +243,6 @@ class Core extends Base\Core
     public function publishForSettlement(Transaction\Entity $txn, Balance\Entity $balance = null, $initialRamp = false)
     {
         $meta         = null;
-        $balance      = $txn->accountBalance;
         $balanceType  = ($balance === null) ? Balance\Type::PRIMARY : $balance->getType();
 
         // Only primary and commission balance are eligible for settlement
@@ -416,9 +417,10 @@ class Core extends Base\Core
      * check if the settlement should be skipped for the merchant because it is
      * being processed by the new service
      * @param string $merchantId
+     * @param $balance
      * @return bool
      */
-    public function shouldProcessViaNewService(string $merchantId)
+    public function shouldProcessViaNewService(string $merchantId, $balance = null)
     {
         $result = $this->repo->feature->getMerchantIdsHavingFeature(
             Feature\Constants::NEW_SETTLEMENT_SERVICE,
@@ -426,14 +428,26 @@ class Core extends Base\Core
                 $merchantId
             ]);
 
+        // TODO remove this when we migrate to the yes bank to new settlement service
+
+        $balanceType = ($balance == null) ? Balance\Type::PRIMARY : $balance->getType();
+
+        $status = (empty($result) === false);
+
+        if ($balanceType === Balance\Type::COMMISSION)
+        {
+            $status =  false;
+        }
+
         $this->trace->info(
             TraceCode::SETTLEMENT_SERVICE_RAMP,
             [
-                'merchantId' => $merchantId,
-                'status'     => (empty($result) === false),
+                'merchant_id'  => $merchantId,
+                'status'       => $status,
+                'balance_type' => $balanceType,
             ]);
 
-        return (empty($result) === false);
+        return $status;
     }
 
     public function migrateSettlableTransactions(string $merchantId, array $opt)

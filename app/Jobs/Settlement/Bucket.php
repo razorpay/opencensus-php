@@ -71,10 +71,13 @@ class Bucket extends Job
 
             $core = new Core;
 
-            $status = $core->shouldProcessViaNewService($txn->getMerchantId());
+            $balance = $txn->accountBalance;
+
+            $status = $core->shouldProcessViaNewService($txn->getMerchantId(), $balance);
+
             if ($status === true)
             {
-                 $core->publishForSettlement($txn);
+                 $core->publishForSettlement($txn, $balance);
             }
             else if (in_array($txn->getType(), $this->allowedTypeForBucketing) === true)
             {

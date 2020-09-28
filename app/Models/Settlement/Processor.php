@@ -865,7 +865,9 @@ class Processor extends Base\Core
     {
         RuntimeManager::setMemoryLimit('4096M');
 
-        if ((new Bucket\Core)->shouldProcessViaNewService($merchant->getId()) === true)
+        $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $balanceType);
+
+        if ((new Bucket\Core)->shouldProcessViaNewService($merchant->getId(), $balance) === true)
         {
             $this->traceMerchantSettlementSkip(
                 $merchant,
@@ -879,8 +881,6 @@ class Processor extends Base\Core
                 'txn_count'         => 0,
             ];
         }
-
-        $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $balanceType);
 
         if ($balance === null)
         {

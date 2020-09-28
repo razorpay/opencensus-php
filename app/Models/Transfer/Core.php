@@ -642,7 +642,9 @@ class Core extends Base\Core
 
         $bucketCore = new Bucket\Core;
 
-        $newService = $bucketCore->shouldProcessViaNewService($txn->getMerchantId());
+        $balance = $txn->accountBalance;
+
+        $newService = $bucketCore->shouldProcessViaNewService($txn->getMerchantId(), $balance);
 
         if ($newService === true)
         {

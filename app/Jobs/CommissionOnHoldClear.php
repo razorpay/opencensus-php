@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Settlement\Bucket;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Partner\Commission\Invoice;
@@ -169,7 +170,9 @@ class CommissionOnHoldClear extends Job
 
                 $bucketCore = new Bucket\Core;
 
-                $newService = $bucketCore->shouldProcessViaNewService($txn->getMerchantId());
+                $balance = $txn->accountBalance;
+
+                $newService = $bucketCore->shouldProcessViaNewService($txn->getMerchantId(), $balance);
 
                 if ($newService === true)
                 {

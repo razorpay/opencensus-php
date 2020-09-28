@@ -1660,7 +1660,9 @@ class Core extends Base\Core
 
                 if (isset($mapForSettlementService[$txn->getMerchantId()]) === false)
                 {
-                    if($bucketCore->shouldProcessViaNewService($txn->getMerchantId()) === true)
+                    $balance = $txn->accountBalance;
+
+                    if($bucketCore->shouldProcessViaNewService($txn->getMerchantId(), $balance) === true)
                     {
                         $mapForSettlementService[$txn->getMerchantId()] = true;
                     }
