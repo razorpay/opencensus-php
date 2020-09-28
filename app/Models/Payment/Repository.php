@@ -151,6 +151,7 @@ class Repository extends Base\Repository
     public function fetchPaymentsWithStatus($from, $to, $gateway, $status)
     {
         return $this->newQuery()
+                    ->from(\DB::raw('`payments` FORCE INDEX (payments_authorized_at_index)'))
                     ->whereBetween(Payment\Entity::AUTHORIZED_AT, array($from, $to))
                     ->whereIn('status', $status)
                     ->where(Payment\Entity::GATEWAY, '=', $gateway)

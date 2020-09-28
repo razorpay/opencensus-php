@@ -79,7 +79,7 @@ class Base extends BaseProcessor
     protected function fetchReconciledPaymentsToClaim(int $begin, int $end, array $statuses): PublicCollection
     {
         $begin = Carbon::createFromTimestamp($begin)->addDay()->timestamp;
-        $end = Carbon::createFromTimestamp($end)->addDay()->timestamp;
+        $end   = Carbon::createFromTimestamp($end)->addDay()->timestamp;
 
         $claims = $this->repo->payment
                              ->fetchReconciledPaymentsForGateway($begin,
