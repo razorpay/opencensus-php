@@ -4,8 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-
-    "content-hash": "5f3b0f54950c049985de3e3586b33dc6",
+    "content-hash": "dc19dab5b2d05c38d37322550e834c1f",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -2868,20 +2867,20 @@
         },
         {
             "name": "razorpay/metrics-php",
-            "version": "2.1.0",
+            "version": "2.2.0",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/metrics-php.git",
-                "reference": "9ff9e31e7c31abc701659506c6412755e6ef74c3"
+                "reference": "948ed50cef19206286558529af1a6134b61b9301"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/metrics-php/zipball/9ff9e31e7c31abc701659506c6412755e6ef74c3",
-                "reference": "9ff9e31e7c31abc701659506c6412755e6ef74c3",
+                "url": "https://api.github.com/repos/razorpay/metrics-php/zipball/948ed50cef19206286558529af1a6134b61b9301",
+                "reference": "948ed50cef19206286558529af1a6134b61b9301",
                 "shasum": ""
             },
             "require": {
-                "datadog/php-datadogstatsd": "^1.0",
+                "datadog/php-datadogstatsd": "^1.5",
                 "illuminate/support": ">=5.2",
                 "php": "^7.0"
             },
@@ -2899,10 +2898,10 @@
             },
             "description": "Agent or backend agnostic php interface for collecting application metrics",
             "support": {
-                "source": "https://github.com/razorpay/metrics-php/tree/2.1.0",
+                "source": "https://github.com/razorpay/metrics-php/tree/2.2.0",
                 "issues": "https://github.com/razorpay/metrics-php/issues"
             },
-            "time": "2020-07-01T07:06:34+00:00"
+            "time": "2020-09-25T07:20:43+00:00"
         },
         {
             "name": "razorpay/razorpay",
