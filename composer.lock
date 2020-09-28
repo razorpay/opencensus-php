@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "14434376e0d2429d7281ad383b7a7066",
+    "content-hash": "86481b1ec0aa071c42b206bf8a906c7d",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -757,22 +757,26 @@
         },
         {
             "name": "datadog/php-datadogstatsd",
-            "version": "1.0.0",
+            "version": "1.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DataDog/php-datadogstatsd.git",
-                "reference": "fb210a54037ec4653751c01fe286aa21d869e6be"
+                "reference": "5c2050adcfb6e91ae05f8fd9295d0564d635c9df"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DataDog/php-datadogstatsd/zipball/fb210a54037ec4653751c01fe286aa21d869e6be",
-                "reference": "fb210a54037ec4653751c01fe286aa21d869e6be",
+                "url": "https://api.github.com/repos/DataDog/php-datadogstatsd/zipball/5c2050adcfb6e91ae05f8fd9295d0564d635c9df",
+                "reference": "5c2050adcfb6e91ae05f8fd9295d0564d635c9df",
                 "shasum": ""
             },
             "require": {
                 "ext-curl": "*",
+                "ext-sockets": "*",
                 "lib-curl": "*",
-                "php": ">=5.3.0"
+                "php": ">=5.6.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "4.8.36"
             },
             "type": "library",
             "autoload": {
@@ -791,18 +795,23 @@
                     "role": "Developer"
                 },
                 {
-                    "name": "DataDog",
+                    "name": "Datadog",
                     "email": "dev@datadoghq.com",
                     "role": "Developer"
                 }
             ],
-            "description": "This is an extremely simple PHP datadogstatsd client",
+            "description": "An extremely simple PHP datadogstatsd client",
             "homepage": "https://www.datadoghq.com/",
             "keywords": [
                 "DataDog",
-                "php"
+                "check",
+                "error-reporting",
+                "health",
+                "logging",
+                "monitoring",
+                "statsd"
             ],
-            "time": "2017-12-26T15:24:11+00:00"
+            "time": "2020-09-02T16:47:54+00:00"
         },
         {
             "name": "defuse/php-encryption",
@@ -6756,21 +6765,21 @@
         },
         {
             "name": "razorpay/metrics-php",
-            "version": "2.0.0",
+            "version": "2.2.0",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/metrics-php.git",
-                "reference": "a956a8ffefa6ffcce98714309ce82f2f36d22fad"
+                "reference": "948ed50cef19206286558529af1a6134b61b9301"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/metrics-php/zipball/a956a8ffefa6ffcce98714309ce82f2f36d22fad",
-                "reference": "a956a8ffefa6ffcce98714309ce82f2f36d22fad",
+                "url": "https://api.github.com/repos/razorpay/metrics-php/zipball/948ed50cef19206286558529af1a6134b61b9301",
+                "reference": "948ed50cef19206286558529af1a6134b61b9301",
                 "shasum": ""
             },
             "require": {
-                "datadog/php-datadogstatsd": "^1.0",
-                "illuminate/support": ">=5.4",
+                "datadog/php-datadogstatsd": "^1.5",
+                "illuminate/support": ">=5.2",
                 "php": "^7.0"
             },
             "require-dev": {
@@ -6787,10 +6796,10 @@
             },
             "description": "Agent or backend agnostic php interface for collecting application metrics",
             "support": {
-                "source": "https://github.com/razorpay/metrics-php/tree/2.0.0",
+                "source": "https://github.com/razorpay/metrics-php/tree/2.2.0",
                 "issues": "https://github.com/razorpay/metrics-php/issues"
             },
-            "time": "2018-10-05T03:13:16+00:00"
+            "time": "2020-09-25T07:20:43+00:00"
         },
         {
             "name": "razorpay/oauth",
@@ -11483,5 +11492,6 @@
         "ext-gmp": "*",
         "ext-rdkafka": "*"
     },
-    "platform-dev": []
+    "platform-dev": [],
+    "plugin-api-version": "1.1.0"
 }

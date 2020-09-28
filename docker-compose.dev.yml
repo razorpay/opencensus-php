@@ -115,7 +115,7 @@ services:
     ports:
       - 29200:9200
   statsd_exporter:
-    image: prom/statsd-exporter
+    image: prom/statsd-exporter:v0.18.0
     container_name: statsd-exporter
     volumes:
       - ./statsd_mapping.yml:/tmp/statsd_mapping.yml
