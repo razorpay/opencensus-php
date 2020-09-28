@@ -630,12 +630,12 @@ class Validator extends Base\Validator
      */
     public function validateRuleForFeeBearer(Plan $plan, Pricing\Entity $rule)
     {
-        $merchants = (new Merchant\Repository())->fetchMerchantsWithPricingPlan($rule->getPlanId());
-
-        foreach ($merchants as $merchant)
-        {
-            $this->validateRuleFeeBearerForMerchant($rule, $merchant);
-        }
+        (new Merchant\Repository())->fetchMerchantsWithPricingPlanChunked($rule->getPlanId(), function($merchants) use ($rule) {
+            foreach ($merchants as $merchant)
+            {
+                $this->validateRuleFeeBearerForMerchant($rule, $merchant);
+            }
+        });
     }
 
     /**
