@@ -24,6 +24,8 @@ return [
         'L5MOD/' . AwsServiceProvider::VERSION,
     ],
 
+    'ses_configuration_header' => env('SES_CONFIGURATION_HEADER'),
+
     'settlement_bucket'     => env('AWS_S3_SETTLEMENT_BUCKET'),
     'analytics_bucket'      => env('AWS_S3_ANALYTICS_BUCKET'),
     'logo_bucket'           => env('AWS_S3_LOGO_BUCKET'),

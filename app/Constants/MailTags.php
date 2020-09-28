@@ -6,6 +6,7 @@ class MailTags
 {
     const HEADER                           = 'X-Mailgun-Tag';
     const SES_HEADER                       = 'X-SES-MESSAGE-TAGS';
+    const SES_CONFIGURATION_HEADER         = 'X-SES-CONFIGURATION-SET';
 
     /**
      * Defines tags associated with emails, stored in the X-Mailgun-Tag header

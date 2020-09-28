@@ -351,6 +351,13 @@ class Mailable extends BaseMailable
             //remove mailgun headers
             $allHeaders->removeAll(MailTags::HEADER);
 
+            // this header is for the kinesis event stream.
+            $configHeader = config('aws.ses_configuration_header');
+            if (empty($configHeader) === false)
+            {
+                $allHeaders->addTextHeader(MailTags::SES_CONFIGURATION_HEADER, $configHeader);
+            }
+
             $allHeaders->addTextHeader(MailTags::SES_HEADER, $sesHeader);
         });
     }
