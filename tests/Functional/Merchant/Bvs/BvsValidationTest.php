@@ -457,7 +457,7 @@ class BvsValidationTest extends TestCase
         $bvsValidation = $this->triggerBvsVerification(__FUNCTION__, $merchantDetailsData);
 
         $expectedValidationValues = [
-            'artefact_type'     => 'llpin',
+            'artefact_type'     => 'llp_deed',
             'owner_id'          => $mid,
             'owner_type'        => 'merchant',
             'platform'          => 'pg',

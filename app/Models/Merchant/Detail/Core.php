@@ -2661,7 +2661,7 @@ class Core extends Base\Core
     protected function getPayloadForLLPIN(Entity $merchantDetails): array
     {
         $payload = [
-            Constant::ARTEFACT_TYPE => Constant::LLPIN,
+            Constant::ARTEFACT_TYPE => Constant::LLP_DEED,
             Constant::IDENTIFIER    => $merchantDetails->getCompanyCin(),
             Constant::DETAILS       => [
                 Constant::SIGNATORY_DETAILS =>

@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs\Config;
 
-class Llpin extends BaseConfig
+class Llp_deed extends BaseConfig
 {
     protected $enrichment = [
         'online_provider' => [

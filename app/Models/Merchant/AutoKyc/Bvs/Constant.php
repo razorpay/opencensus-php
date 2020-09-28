@@ -30,6 +30,7 @@ class Constant
     const SIGNATORY_DETAILS = 'signatory_details';
     const FULL_NAME         = 'full_name';
     const PROOF_INDEX       = 'proof_index';
+    const LLPIN             = 'llpin';
 
     //
     // Response fields
@@ -44,9 +45,9 @@ class Constant
     const AADHAAR      = 'aadhaar';
     const CIN          = 'cin';
     const GSTIN        = 'gstin';
-    const VOTERS_ID     = 'voters_id';
+    const VOTERS_ID    = 'voters_id';
     const PASSPORT     = 'passport';
-    const LLPIN        = 'llpin';
+    const LLP_DEED     = 'llp_deed';
 
     const PG       = 'pg';
     const MERCHANT = 'merchant';
