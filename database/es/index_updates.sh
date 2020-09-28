@@ -161,3 +161,20 @@ curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_payment_test/_mapping/api
         }
     }
 }'
+
+#25 Sept 2020
+curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_merchant_live/_mapping/api_merchant_live" -d '{
+    "properties": {
+        "account_code": {
+            "type": "keyword"
+        }
+    }
+}'
+
+curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_merchant_test/_mapping/api_merchant_test" -d '{
+    "properties": {
+        "account_code": {
+            "type": "keyword"
+        }
+    }
+}'

@@ -413,7 +413,10 @@ return [
             ],
             'balance' => [
                 'type' => 'long',
-            ]
+            ],
+            'account_code' => [
+                'type' => 'keyword',
+            ],
         ],
     ],
 
