@@ -472,6 +472,7 @@ class Core extends Base\Core
 
         $bankingAccountSubStatusChanged = $bankingAccount->isDirty(Entity::SUB_STATUS);
 
+        // Setting Status
         if (empty($input[Entity::STATUS]) === false)
         {
             $bankingAccount->setStatus($input[Entity::STATUS]);
@@ -484,12 +485,21 @@ class Core extends Base\Core
             }
         }
 
+        // Setting Substatus
         // Not using empty because empty(NULL)=true and NULL is a valid value.
         // Not using isset here because  isset will return false if array('key'=>NULL) and NULL is a valid value.
         // (sub_status can be set/defaulted to null for some statuses)
         if (array_key_exists(Entity::SUB_STATUS, $input) === true)
         {
             $bankingAccount->setSubStatus($input[Entity::SUB_STATUS]);
+        }
+
+        // Validating Bank Internal Status
+        if (empty($input[Entity::BANK_INTERNAL_STATUS]) === false)
+        {
+            $processor->validateStatusMapping($input[Entity::BANK_INTERNAL_STATUS], $bankingAccount->getStatus(), $bankingAccount->getSubStatus());
+
+            $bankingAccount->setBankInternalStatus($input[Entity::BANK_INTERNAL_STATUS]);
         }
 
         $admin = $this->app['basicauth']->getAdmin() ?? (($this->app->bound('batchAdmin') === true)? $this->app['batchAdmin'] : null);
@@ -995,7 +1005,7 @@ class Core extends Base\Core
         return $bankingAccount;
     }
 
-    protected function getProcessor(string $channel): Gateway\Processor
+    public function getProcessor(string $channel): Gateway\Processor
     {
         $processor = __NAMESPACE__ . '\\' . 'Gateway';
 

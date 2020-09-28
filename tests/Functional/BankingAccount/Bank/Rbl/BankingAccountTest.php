@@ -732,17 +732,30 @@ class BankingAccountTest extends TestCase
             $bankingAccount->getStatusLastUpdatedAt());
     }
 
-    protected function assertUpdateBankingAccountStatusFromTo(string $initialStatus, string $finalStatus, string $initialSubStatus = null, string $finalSubStatus = null)
+    protected function assertUpdateBankingAccountStatusFromTo(string $initialStatus,
+                                                              string $finalStatus,
+                                                              string $initialSubStatus = null,
+                                                              string $finalSubStatus = null,
+                                                              string $initialBankStatus = null,
+                                                              string $finalBankStatus = null,
+                                                              array $bankingAccount = null)
     {
         Mail::fake();
 
-        $attribute = ['activation_status' => 'activated'];
+        if ($bankingAccount === null)
+        {
+            $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+            $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+            $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
 
-        $bankingAccount = $this->createBankingAccount();
+            $bankingAccount = $this->createBankingAccount();
+        }
+        else
+        {
+            $merchantDetail = $this->getDbEntity('merchant_detail', ['merchant_id' => $bankingAccount['merchant_id']]);
+        }
 
         $dataToReplace = [
             'request'  => [
@@ -766,13 +779,20 @@ class BankingAccountTest extends TestCase
             $dataToReplace['response']['content'][RZP\Models\BankingAccount\Entity::SUB_STATUS] = $finalSubStatus;
         }
 
+        if (empty($finalBankStatus) === false)
+        {
+            $dataToReplace['request']['content'][RZP\Models\BankingAccount\Entity::BANK_INTERNAL_STATUS] = $finalBankStatus;
+            $dataToReplace['response']['content'][RZP\Models\BankingAccount\Entity::BANK_INTERNAL_STATUS] = $finalBankStatus;
+        }
+
         $this->ba->adminAuth();
 
         $this->fixtures->edit('banking_account',
             $bankingAccount['id'],
             [
-                'status'     => $initialStatus,
-                'sub_status' => $initialSubStatus
+                'status'               => $initialStatus,
+                'sub_status'           => $initialSubStatus,
+                'bank_internal_status' => $initialBankStatus
             ]);
 
         $this->startTest($dataToReplace);
@@ -786,6 +806,8 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($finalStatus, $bankingAccountStateUpdate['status']);
 
         $this->assertEquals($finalSubStatus, $bankingAccountStateUpdate['sub_status']);
+
+        $this->assertEquals($finalBankStatus, $bankingAccountStateUpdate['bank_status']);
 
         if (($finalStatus !== $initialStatus)
             and (in_array($finalStatus, [Status::INITIATED, Status::PICKED]) === false))
@@ -832,29 +854,14 @@ class BankingAccountTest extends TestCase
     {
         $this->assertUpdateBankingAccountStatusFromTo(
             \RZP\Models\BankingAccount\Status::UNSERVICEABLE,
-            \RZP\Models\BankingAccount\Status::PROCESSED);
+            \RZP\Models\BankingAccount\Status::PICKED);
     }
 
     public function testUpdateBankingAccountStatusCancelledToProcessed()
     {
         $this->assertUpdateBankingAccountStatusFromTo(
             \RZP\Models\BankingAccount\Status::CANCELLED,
-            \RZP\Models\BankingAccount\Status::PROCESSED);
-    }
-
-    public function testUpdateBankingAccountStatusRejectedToProcessed()
-    {
-        $this->assertUpdateBankingAccountStatusFromTo(
-            \RZP\Models\BankingAccount\Status::REJECTED,
-            \RZP\Models\BankingAccount\Status::PROCESSED);
-    }
-
-    public function testUpdateBankingAccountStatusCancelledToCreated()
-    {
-        $this->assertUpdateBankingAccountStatusFromTo(
-            \RZP\Models\BankingAccount\Status::CANCELLED,
-            \RZP\Models\BankingAccount\Status::CREATED);
-
+            \RZP\Models\BankingAccount\Status::PICKED);
     }
 
     public function testUpdateBankingAccountSubStatus()
@@ -1552,7 +1559,8 @@ class BankingAccountTest extends TestCase
             'method'  => 'PATCH',
             'content' => [
                 'status'               => 'processing',
-                'bank_internal_status' => 'open'
+                'sub_status'           =>  Status::DISCREPANCY_IN_DOCS,
+                'bank_internal_status' =>  Rbl\Status::DISCREPANCY_IN_DOCS,
             ]
         ];
 
@@ -1573,7 +1581,57 @@ class BankingAccountTest extends TestCase
         $this->assertEquals('processing', $logs['items'][2]['status']);
         $this->assertNull($logs['items'][2]['bank_status']);
         $this->assertEquals('processing', $logs['items'][3]['status']);
-        $this->assertEquals('open', $logs['items'][3]['bank_status']);
+        $this->assertEquals(Rbl\Status::DISCREPANCY_IN_DOCS, $logs['items'][3]['bank_status']);
+    }
+
+    public function testUpdateInvalidBankInternalStatusThrowsError()
+    {
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::INITIATED,
+            Status::INITIATED,
+            null,
+            Status::MERCHANT_NOT_AVAILABLE,
+            null,
+            Rbl\Status::MERCHANT_PREPARING_DOCS);
+    }
+
+    public function testCombinationsOfBankStatusUpdate()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $bankingAccount = $this->createBankingAccount();
+
+        $rblProcessor = new ReflectionClass(Rbl\Status::class);
+
+        $statusSubStatusBankStatusMap = $rblProcessor->getStaticProperties()['bankToInternalStatusSubStatusMap'];
+
+        foreach ($statusSubStatusBankStatusMap as $status => $substatusBankStatusMap)
+        {
+            foreach ($substatusBankStatusMap as $substatus => $bankStatuslist)
+            {
+                if ($substatus === Rbl\Status::ALL)
+                {
+                    continue;
+                }
+                foreach ($bankStatuslist as $bankStatus)
+                {
+                    $this->assertUpdateBankingAccountStatusFromTo(
+                        $status,
+                        $status,
+                        null,
+                        $substatus,
+                        null,
+                        $bankStatus,
+                        $bankingAccount);
+                }
+            }
+        }
     }
 
     public function testUpdatedStatusFromProcessingToRejected()
@@ -2451,6 +2509,42 @@ class BankingAccountTest extends TestCase
         $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
 
         $this->assertEquals('1592850600', $bankingAccountActivationDetail[ActivationDetail\Entity::ACCOUNT_OPEN_DATE]);
+    }
+
+    public function testUpdateBankStatusViaBatch()
+    {
+        $this->testCreateBankingAccountWithActivationDetail();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->fixtures->edit('banking_account',
+            $bankingAccount->getId(),
+            [
+                'status'               => Status::PROCESSING,
+                'sub_status'           => Status::DISCREPANCY_IN_DOCS,
+                'bank_internal_status' => Rbl\Status::DISCREPANCY_IN_DOCS
+            ]);
+
+        $content = [
+            'bank_reference_number' => $bankingAccount['bank_reference_number'],
+            'comment' => 'sample comment from batch',
+            'source_team' => 'bank',
+            'source_team_type' => 'external',
+            'added_at' => 1594800229,
+            'status' => Status::BANK_PROCESSING,
+            'sub_status' => Status::BANK_OPENED_ACCOUNT_EXTERNAL,
+            'bank_internal_status' => Rbl\Status::ACCOUNT_OPENED_EXTERNAL,
+            'assignee_team' => 'sales',
+            'account_open_date' => '23-Jun-2020'
+        ];
+
+        $this->assertUpdateViaBatch($content);
+
+        $statusChangeLogs = $this->getStatusChangeLog($bankingAccount);
+
+        $this->assertEquals(end($statusChangeLogs['items'])['status'], Status::PROCESSING);
+        $this->assertEquals(end($statusChangeLogs['items'])['sub_status'], Status::BANK_OPENED_ACCOUNT);
+        $this->assertEquals(end($statusChangeLogs['items'])['bank_status'], Rbl\Status::ACCOUNT_OPENED);
     }
 
     public function testCitiesForAutoComplete()

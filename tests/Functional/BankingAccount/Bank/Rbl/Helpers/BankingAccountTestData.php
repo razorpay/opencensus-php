@@ -288,6 +288,7 @@ return [
             'method'  => 'PATCH',
             'content' => [
                 BankingAccount\Entity::STATUS                         => BankingAccount\Status::PROCESSED,
+                BankingAccount\Entity::SUB_STATUS                     => BankingAccount\Status::API_ONBOARDING_PENDING,
                 BankingAccount\Entity::BANK_INTERNAL_STATUS           => BankingAccount\Gateway\Rbl\Status::CLOSED,
                 BankingAccount\Entity::ACCOUNT_IFSC                   => 'RATN0000156',
                 BankingAccount\Entity::ACCOUNT_NUMBER                 => '309002180853',

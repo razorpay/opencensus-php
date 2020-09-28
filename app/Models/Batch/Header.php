@@ -964,6 +964,7 @@ class Header
     const COMMENT                   = 'Comment';
     const NEW_STATUS                = 'New Status';
     const NEW_SUBSTATUS             = 'New SubStatus';
+    const NEW_BANK_STATUS           = 'New Bank Status';
     const NEW_ASSIGNEE              = 'New Assignee';
     const RM_NAME                   = 'RM Name';
     const RM_PHONE_NUMBER           = 'RM Phone Number';
@@ -3105,6 +3106,7 @@ class Header
                 self::COMMENT,
                 self::NEW_STATUS,
                 self::NEW_SUBSTATUS,
+                self::NEW_BANK_STATUS,
                 self::NEW_ASSIGNEE,
                 self::RM_NAME,
                 self::RM_PHONE_NUMBER,

@@ -15,6 +15,7 @@ class Status
     const ACTIVATED         = 'activated';     // CA Activated
     const UNSERVICEABLE     = 'unserviceable'; // Temp Unserviceable
     const REJECTED          = 'rejected';      // Bank Rejected
+    const ARCHIVED          = 'archived';
 
 
     // External Statuses as interpreted by Product
@@ -28,6 +29,7 @@ class Status
     const CA_ACTIVATED         = 'CAActivated';
     const TEMP_UNSERVICEABLE   = 'TempUnserviceable';
     const BANK_REJECTED        = 'BankRejected';
+    const ARCHIVED_EXTERNAL    = 'Archived';
 
     // Substatuses
     const MERCHANT_NOT_AVAILABLE = 'merchant_not_available';
@@ -92,6 +94,9 @@ class Status
         // when the user's application to open CA
         //is rejected by RBL for some reason
         self::REJECTED,
+        // merchant stops responding altogether, or loss
+        // of interest after the process is initiated.
+        self::ARCHIVED,
         // API banking has been tested. CA is activated
         // and ready to use.
         self::ACTIVATED
@@ -118,24 +123,26 @@ class Status
             self::UNSERVICEABLE,
             self::CANCELLED,
             self::PROCESSED,
+            self::ARCHIVED
         ],
         self::INITIATED => [
             self::PROCESSING,
             self::PROCESSED,
             self::CANCELLED,
             self::REJECTED,
+            self::ARCHIVED
         ],
         self::PROCESSING => [
             self::PROCESSED,
             self::CANCELLED,
             self::REJECTED,
+            self::ARCHIVED,
         ],
         self::PROCESSED => [
             self::ACTIVATED,
         ],
         self::UNSERVICEABLE => [
             self::PICKED,
-            self::PROCESSED,
         ],
 
         self::ACTIVATED => [],
@@ -143,12 +150,13 @@ class Status
             // Sometimes Sales team is able to revive leads who
             // had earlier cancelled their request. This is to
             // restart the process.
-            self::CREATED,
-            self::PROCESSED,
+            self::PICKED,
         ],
         self::REJECTED  => [
-            self::PROCESSED,
         ],
+        self::ARCHIVED  => [
+            self::PICKED
+        ]
     ];
 
     # TODO: Finalize after checking with Product
@@ -203,6 +211,7 @@ class Status
             self::API_ONBOARDING_IN_PROGRESS,
             // Sometimes API onboarding related docs are
             // processed by Bank after opening account.
+            self::MERCHANT_PREPARING_DOCS,
             self::DISCREPANCY_IN_DOCS
         ],
         self::UNSERVICEABLE => [
@@ -213,6 +222,8 @@ class Status
         ],
         self::REJECTED  => [
         ],
+        self::ARCHIVED  => [
+        ]
     ];
 
     public static $internallyEditStatuses = [
@@ -224,6 +235,7 @@ class Status
         self::UNSERVICEABLE,
         self::REJECTED,
         self::CANCELLED,
+        self::ARCHIVED,
         self::ACTIVATED,
     ];
 
@@ -249,6 +261,7 @@ class Status
         self::MERCHANT_CANCELLED   => self::CANCELLED,
         self::TEMP_UNSERVICEABLE   => self::UNSERVICEABLE,
         self::BANK_REJECTED        => self::REJECTED,
+        self::ARCHIVED_EXTERNAL    => self::ARCHIVED
     ];
 
     public static $externalToInternalSubStatusMap = [
@@ -291,7 +304,7 @@ class Status
         if (self::isValidStatus($status) === false)
         {
             throw new BadRequestValidationFailureException(
-                'Not a valid Razorpay Banking status',
+                'Not a valid Razorpay Banking status ' . $status,
                 Entity::STATUS,
                 [
                     Entity::STATUS => $status
@@ -304,7 +317,7 @@ class Status
         if (self::isValidSubStatus($subStatus) === false)
         {
             throw new BadRequestValidationFailureException(
-                'Not a valid Razorpay Banking SubStatus',
+                'Not a valid Razorpay Banking SubStatus ' . $subStatus,
                 Entity::SUB_STATUS,
                 [
                     Entity::SUB_STATUS => $subStatus

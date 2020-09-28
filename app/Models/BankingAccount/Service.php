@@ -247,11 +247,12 @@ class Service extends Base\Service
         return (new Core)->bulkAssignReviewer($reviewerId, $bankingAccountIds);
     }
 
-    public function prepareInputForUpdate(array $input)
+    public function prepareInputForUpdate(array $input, string $channel)
     {
         $requiredKeysForUpdateInput = [
             Entity::STATUS,
-            Entity::SUB_STATUS
+            Entity::SUB_STATUS,
+            Entity::BANK_INTERNAL_STATUS,
         ];
 
         $requiredKeysForActivationDetailInput = [
@@ -304,6 +305,15 @@ class Service extends Base\Service
             $updateInput[Entity::SUB_STATUS] = trim($updateInput[Entity::SUB_STATUS]);
 
             $updateInput[Entity::SUB_STATUS] = Status::transformSubStatusFromExternalToInternal($updateInput[Entity::SUB_STATUS]);
+        }
+
+        if (isset($updateInput[Entity::BANK_INTERNAL_STATUS]) === true)
+        {
+            $updateInput[Entity::BANK_INTERNAL_STATUS] = trim($updateInput[Entity::BANK_INTERNAL_STATUS]);
+
+            $gatewayProcessor = $this->core->getProcessor($channel);
+
+            $updateInput[Entity::BANK_INTERNAL_STATUS] = $gatewayProcessor->transformBankStatusFromExternalToInternal($updateInput[Entity::BANK_INTERNAL_STATUS]);
         }
 
         // Convert date strings to epoch
@@ -367,7 +377,7 @@ class Service extends Base\Service
         // TODO: solve cleanly
         try
         {
-            $updateInput = $this->prepareInputForUpdate($input);
+            $updateInput = $this->prepareInputForUpdate($input, $input[Entity::CHANNEL]);
 
             $this->update($bankingAccount->getPublicId(), $updateInput);
         }

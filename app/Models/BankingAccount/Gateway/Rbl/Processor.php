@@ -150,8 +150,11 @@ class Processor extends BankingAccount\Gateway\Processor
             ]);
 
         (new Validator)->setStrictFalse()->validateInput(Validator::ACCOUNT_UPDATE, $input);
+    }
 
-        Status::checkRblToInternalStatusMapping($input);
+    public function validateStatusMapping(string $bankInternalStatus, $status, $substatus)
+    {
+        Status::checkRblToInternalStatusMapping($bankInternalStatus, $status, $substatus);
     }
 
     public function formatInputParametersIfRequired(array $input)
@@ -468,6 +471,11 @@ class Processor extends BankingAccount\Gateway\Processor
         $status = $input[BankingAccount\Entity::STATUS];
 
         Status::validateInternalBankStatusMappingToStatus($bankInternalStatus, $status);
+    }
+
+    public function transformBankStatusFromExternalToInternal(string $bankStatus)
+    {
+        return Status::transformFromExternalToInternal($bankStatus);
     }
 
     protected function shouldRetryMozartRequest(string $errorCode): bool

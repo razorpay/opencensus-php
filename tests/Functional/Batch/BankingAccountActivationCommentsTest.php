@@ -55,6 +55,7 @@ class BankingAccountActivationCommentsTest extends TestCase
                 [
                     Batch\Header::RZP_REF_NO => $refno,
                     Batch\Header::COMMENT => $comment,
+                    Batch\Header::NEW_BANK_STATUS => 'Merchant is not available',
                     Batch\Header::NEW_STATUS => 'RazorpayProcessing',
                     Batch\Header::NEW_SUBSTATUS => 'Merchant is not Available',
                     Batch\Header::NEW_ASSIGNEE => 'sales',
