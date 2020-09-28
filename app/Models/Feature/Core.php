@@ -106,7 +106,7 @@ class Core extends Base\Core
         {
             (new Merchant\Service)->addMerchantToOnDemandEnabledMailingList($feature->getEntityId());
 
-            (new OndemandFundAccount\Service)->dispatchSettlementOndemandFundAccountUpdateJob($feature->getEntityId());
+            (new OndemandFundAccount\Service)->dispatchSettlementOndemandFundAccountCreateJob($feature->getEntityId());
         }
 
         $this->notifyMerchantOfFeatureActivationIfApplicable($entityType, $entityId, $feature, $shouldSync);

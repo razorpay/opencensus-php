@@ -21,7 +21,7 @@ class Entity extends Base\PublicEntity
 
     const ID                     = 'id';
     const MERCHANT_ID            = 'merchant_id';
-    const CONTACT_ID             = 'contact_id'; 
+    const CONTACT_ID             = 'contact_id';
     const FUND_ACCOUNT_ID        = 'fund_account_id';
     const CREATED_AT             = 'created_at';
     const UPDATED_AT             = 'updated_at';
@@ -51,5 +51,10 @@ class Entity extends Base\PublicEntity
     public function getFundAccountId(): string
     {
         return $this->getAttribute(self::FUND_ACCOUNT_ID);
+    }
+
+    public function setFundAccountIdNull()
+    {
+        $this->setAttribute(self::FUND_ACCOUNT_ID, null);
     }
 }

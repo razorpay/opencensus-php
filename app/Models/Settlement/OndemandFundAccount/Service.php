@@ -27,6 +27,23 @@ class Service extends Base\Service
 
     public function dispatchSettlementOndemandFundAccountUpdateJob($merchantId)
     {
+        /** @var Entity $fundAccount */
+        $fundAccount = (new Repository)->findByMerchantId($merchantId);
+
+        if (empty($fundAccount) === false)
+        {
+            $fundAccount->setFundAccountIdNull();
+
+            $this->repo->saveOrFail($fundAccount);
+        }
+
+        CreateSettlementOndemandFundAccount::dispatch(Mode::TEST, $merchantId);
+
+        CreateSettlementOndemandFundAccount::dispatch(Mode::LIVE, $merchantId);
+    }
+
+    public function dispatchSettlementOndemandFundAccountCreateJob($merchantId)
+    {
         CreateSettlementOndemandFundAccount::dispatch(Mode::TEST, $merchantId);
 
         CreateSettlementOndemandFundAccount::dispatch(Mode::LIVE, $merchantId);
