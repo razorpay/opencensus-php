@@ -6,13 +6,13 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import SwitchField from 'common/ui/Forms/SwitchField';
 
 @connect(
-  state => {
+  (state) => {
     return {
       user: state.session.user,
       features: state.config.features,
     };
   },
-  { updateFeatures, showNotification }
+  { updateFeatures, showNotification },
 )
 export default class FlashCheckout extends Component {
   constructor(props) {
@@ -34,14 +34,13 @@ export default class FlashCheckout extends Component {
   }
 
   getFlashCheckoutFlag(features) {
-    let noFlashCheckout =
-      features.find(feature => feature.feature === 'noflashcheckout') || {};
+    let noFlashCheckout = features.find((feature) => feature.feature === 'noflashcheckout') || {};
 
     const fcEnabled = !noFlashCheckout.value;
     return fcEnabled;
   }
 
-  analytics = action => {
+  analytics = (action) => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Settings',
       eventAction: `${action} - Flash Checkout`,
@@ -49,7 +48,7 @@ export default class FlashCheckout extends Component {
   };
 
   toggleFc = (enableFC, cb) => {
-    let shouldSync = 1;
+    let shouldSync = 0;
     var data = {
       features: {
         noflashcheckout: enableFC ? 0 : 1,
@@ -59,7 +58,7 @@ export default class FlashCheckout extends Component {
 
     return this.props
       .updateFeatures(data, this.props.user.current)
-      .then(res => {
+      .then((res) => {
         cb(true);
 
         if (enableFC) {
@@ -75,7 +74,7 @@ export default class FlashCheckout extends Component {
           fcEnabled: enableFC,
         });
       })
-      .catch(err => {
+      .catch((err) => {
         cb(false);
 
         this.props.showNotification({
@@ -95,42 +94,28 @@ export default class FlashCheckout extends Component {
 
           <span class="toggler-btn">
             <SwitchField
-              defaultChecked={!!fcEnabled}
+              defaultChecked={fcEnabled}
               onChange={(isChecked, cb) => this.toggleFc(isChecked, cb)}
               type="prime"
             />
-            {fcEnabled ? (
-              <b class="text-primary">Enabled</b>
-            ) : (
-              <b class="text-faded">Disabled</b>
-            )}
+            {fcEnabled ? <b class="text-primary">Enabled</b> : <b class="text-faded">Disabled</b>}
           </span>
         </div>
 
         <div class="panel-body">
           <form class="form-horizontal">
             <div class="description">
-              Securely save the card details of your customers, with Razorpay's
-              Flash Checkout.
+              Securely save the card details of your customers, with Razorpay's Flash Checkout.
             </div>
 
             <div class="form-group">
               <ShowWhen
-                additionalCondition={user =>
-                  user.isOrgAllowedFunctionality('external_links')
-                }
+                additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
               >
                 <div class="col-sm-10">
-                  <a
-                    class="highlight"
-                    target="_blank"
-                    href="https://razorpay.com/flashcheckout/"
-                  >
+                  <a class="highlight" target="_blank" href="https://razorpay.com/flashcheckout/">
                     Know more
-                    <i
-                      class="i i-external-link"
-                      style={{ marginLeft: '5px' }}
-                    />
+                    <i class="i i-external-link" style={{ marginLeft: '5px' }} />
                   </a>
                 </div>
               </ShowWhen>
