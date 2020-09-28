@@ -5,17 +5,17 @@
     </head>
     <body>
         <div>
-            <p>Yesterday's TPV - {{ $yesterday_tpv }} Cr.</p>
-            <p>Monthly TPV till EOD yesterday - {{ $month_tpv }} Cr.</p>
+            <p>Yesterday's TPV - @if(is_null($yesterday_tpv) === false){{ $yesterday_tpv }} Cr.@else Not available @endif</p>
+            <p>Monthly TPV till EOD yesterday - @if(is_null($month_tpv) === false){{ $month_tpv }} Cr.@else Not available @endif</p>
 
             <br>
 
-            <p>Yesterday's Payouts Count - {{ $yesterday_tax_count }}</p>
-            <p>Monthly Payouts Count - {{ $month_tax_count }}</p>
+            <p>Yesterday's Payouts Count - @if(is_null($yesterday_tax_count) === false){{ $yesterday_tax_count }}@else Not available @endif</p>
+            <p>Monthly Payouts Count - @if(is_null($month_tax_count) === false){{ $month_tax_count }}@else Not available @endif</p>
 
             <br>
-            <p>Yesterday's Fees earned - {{ $yesterday_fees_collected }}</p>
-            <p>Monthly Fees earned - {{ $month_fees_collected }}</p>
+            <p>Yesterday's Fees earned - @if(is_null($yesterday_fees_collected) === false){{ $yesterday_fees_collected }}@else Not available @endif</p>
+            <p>Monthly Fees earned - @if(is_null($month_fees_collected) === false){{ $month_fees_collected }}@else Not available @endif</p>
 
         </div>
 
@@ -26,31 +26,38 @@
                 <br />
             </p>
 
-            <table border="1">
+            @if(is_null($merchant_data)===false)
 
-                <tr>
-                    <th> Merchant Id </th>
-                    <th> Merchant Name </th>
-                    <th> Merchant Website </th>
-                    <th> Payouts Count </th>
-                    <th> Payout Amount Cr. </th>
-                </tr>
+                <table border="1">
 
-            @foreach ($merchant_data as $merchant)
+                    <tr>
+                        <th> Merchant Id </th>
+                        <th> Merchant Name </th>
+                        <th> Merchant Website </th>
+                        <th> Payouts Count </th>
+                        <th> Payout Amount Cr. </th>
+                    </tr>
 
-                <tr>
+                @foreach ($merchant_data as $merchant)
 
-                    <td>{{ $merchant['x_merchant_id'] }}</td>
-                    <td>{{ $merchant['x_merchant_display_name'] }}</td>
-                    <td>{{ $merchant['x_merchant_website'] }}</td>
-                    <td>{{ $merchant['payout_count'] }}</td>
-                    <td>{{ $merchant['payout_amount_cr'] }}</td>
+                    <tr>
 
-                </tr>
+                        <td>{{ $merchant['x_merchant_id'] }}</td>
+                        <td>{{ $merchant['x_merchant_display_name'] }}</td>
+                        <td>{{ $merchant['x_merchant_website'] }}</td>
+                        <td>{{ $merchant['payout_count'] }}</td>
+                        <td>{{ $merchant['payout_amount_cr'] }}</td>
 
-            @endforeach
+                    </tr>
 
-            </table>
+                @endforeach
+
+                </table>
+
+            @else
+                <p>Not available</p>
+
+            @endif
 
             <br />
 
