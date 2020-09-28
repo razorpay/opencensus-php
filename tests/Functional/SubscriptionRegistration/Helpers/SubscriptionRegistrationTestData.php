@@ -632,5 +632,126 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testFirstChargeAmountInAuthLinkCreate' => [
+        'request'  => [
+            'url'     => '/subscription_registration/auth_links',
+            'method'  => 'post',
+            'content' => [
+                'type'        => 'link',
+                'receipt'     => '00000000000001',
+                'amount'      => 0,
+                'customer'    => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+                'description' => 'test description',
+
+                'subscription_registration' => [
+                    'method' => 'emandate',
+                    'first_payment_amount' => 1100,
+                    'max_amount' => 10000,
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'receipt'          => '00000000000001',
+                'customer_details' => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+
+                'status'       => 'issued',
+                'sms_status'   => 'sent',
+                'email_status' => 'sent',
+                'amount'       => 0,
+                'currency'     => 'INR',
+                'payment_id'   => null,
+                'type'         => 'link',
+            ],
+        ],
+    ],
+
+    'testFirstChargeAmountGreaterThanMaxAmount' => [
+        'request'  => [
+            'url'     => '/subscription_registration/auth_links',
+            'method'  => 'post',
+            'content' => [
+                'type'        => 'link',
+                'receipt'     => '00000000000001',
+                'amount'      => 0,
+                'customer'    => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+                'description' => 'test description',
+
+                'subscription_registration' => [
+                    'method' => 'emandate',
+                    'first_payment_amount' => 11000,
+                    'max_amount' => 10000,
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'  => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'first payment amount cannot be greater than maximum amount',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDefaultMaxAmountAuthLinkCreate' => [
+        'request'  => [
+            'url'     => '/subscription_registration/auth_links',
+            'method'  => 'post',
+            'content' => [
+                'type'        => 'link',
+                'receipt'     => '00000000000001',
+                'amount'      => 0,
+                'customer'    => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+                'description' => 'test description',
+
+                'subscription_registration' => [
+                    'method' => 'emandate',
+                    'first_payment_amount' => 1100,
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'receipt'          => '00000000000001',
+                'customer_details' => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+
+                'status'       => 'issued',
+                'sms_status'   => 'sent',
+                'email_status' => 'sent',
+                'amount'       => 0,
+                'currency'     => 'INR',
+                'payment_id'   => null,
+                'type'         => 'link',
+            ],
+        ],
+    ],
+
     // ----------------------------------------------------------------------
 ];

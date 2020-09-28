@@ -34,6 +34,7 @@ class Validator extends Base\Validator
     protected static $createValidators = [
         Entity::AUTH_TYPE,
         Entity::MAX_AMOUNT,
+        Entity::FIRST_PAYMENT_AMOUNT,
     ];
 
     protected static $autochargeRules = [
@@ -309,25 +310,27 @@ class Validator extends Base\Validator
             return;
         }
 
-        if ($input[Entity::METHOD] === Method::UPI)
+        $method = $input[Entity::METHOD] ?? null;
+
+        if ($method === Method::UPI)
         {
             throw new BadRequestValidationFailureException(
                 'first payment amount not allowed'
             );
         }
 
-        if ($input[Entity::METHOD] === Method::NACH)
+        $maxAmount = empty($input[Entity::MAX_AMOUNT]) ?
+            Entity::getDefaultMaxAmountForMethod($method) : $input[Entity::MAX_AMOUNT];
+
+        $firstPaymentAmount = empty($input[Entity::FIRST_PAYMENT_AMOUNT]) ?
+            0 : $input[Entity::FIRST_PAYMENT_AMOUNT];
+
+        if ($firstPaymentAmount > $maxAmount)
         {
-            $maxAmount = $input[Entity::MAX_AMOUNT] ?? PaperMandate\Entity::DEFAULT_AMOUNT;
-
-            if ($input[Entity::FIRST_PAYMENT_AMOUNT] > $maxAmount)
-            {
-                throw new BadRequestValidationFailureException(
-                    'first payment amount cannot be greater than maximum amount'
-                );
-            }
+            throw new BadRequestValidationFailureException(
+                'first payment amount cannot be greater than maximum amount'
+            );
         }
-
     }
 
     public function validateTokenToRetry(Token\Entity $token)

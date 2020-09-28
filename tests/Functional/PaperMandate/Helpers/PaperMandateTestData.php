@@ -115,8 +115,8 @@ return [
                 'token' =>
                     [
                         'auth_type' => 'physical',
-                        'first_payment_amount' => '500000',
-                        'max_amount' => '500',
+                        'first_payment_amount' => '5000',
+                        'max_amount' => '500000',
                         'expire_at' => '2047483647',
                         'nach' => [
                             'create_form'     => true,

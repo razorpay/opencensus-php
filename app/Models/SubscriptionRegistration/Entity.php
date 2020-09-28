@@ -262,6 +262,18 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS);
     }
 
+    public static function getDefaultMaxAmountForMethod($method)
+    {
+        switch ($method)
+        {
+            case Method::NACH:
+                return PaperMandate\Entity::DEFAULT_AMOUNT;
+
+            default:
+                return self::DEFAULT_MAX_AMOUNT;
+        }
+    }
+
     public function getAuthLinkStatus(Invoice\Entity $invoice, Order\Entity $order)
     {
         $invoiceStatus = $invoice->getStatus();
@@ -392,12 +404,7 @@ class Entity extends Base\PublicEntity
 
         if (empty($subscriptionRegistration->getMaxAmount()) === true)
         {
-            $maxAmount = self::DEFAULT_MAX_AMOUNT;
-
-            if ($subscriptionRegistration->getMethod() === Method::NACH)
-            {
-                $maxAmount = PaperMandate\Entity::DEFAULT_AMOUNT;
-            }
+            $maxAmount = Entity::getDefaultMaxAmountForMethod($subscriptionRegistration->getMethod());
 
             $subscriptionRegistration->setMaxAmount($maxAmount);
         }

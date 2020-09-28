@@ -651,4 +651,29 @@ class SubscriptionRegistrationTest extends TestCase
 
         $this->assertNotNull($content['order_id']);
     }
+
+    public function testFirstChargeAmountInAuthLinkCreate()
+    {
+        $this->startTest();
+
+        $subr = $this->getDbLastEntity('subscription_registration');
+
+        $this->assertEquals(10000, $subr->max_amount);
+        $this->assertEquals(1100, $subr->amount);
+    }
+
+    public function testFirstChargeAmountGreaterThanMaxAmount()
+    {
+        $this->startTest();
+    }
+
+    public function testDefaultMaxAmountAuthLinkCreate()
+    {
+        $this->startTest();
+
+        $subr = $this->getDbLastEntity('subscription_registration');
+
+        $this->assertEquals(9999900, $subr->max_amount);
+        $this->assertEquals(1100, $subr->amount);
+    }
 }

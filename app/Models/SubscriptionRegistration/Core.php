@@ -264,8 +264,6 @@ class Core extends Base\Core
 
         $validator->validateInput('create_subscription_registration',$subrInput);
 
-        $validator->validateFirstPaymentAmount($subrInput);
-
         if (isset($input[Entity::NOTES]) === true)
         {
             $subrInput[Entity::NOTES] =  $input[Entity::NOTES];
