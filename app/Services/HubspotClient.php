@@ -70,6 +70,15 @@ class HubspotClient
         $this->dispatchRequestJob($payloadData);
     }
 
+    public function trackConfirmEmailEvent(array $input)
+    {
+        $payloadData = $input;
+
+        $this->addCommonProperties($payloadData);
+
+        $this->dispatchRequestJob($payloadData);
+    }
+
     public function trackPreSignupEvent(array $input, Merchant\Entity $merchant)
     {
         $payloadData = $input;

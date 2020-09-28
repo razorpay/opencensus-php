@@ -89,6 +89,10 @@ class Core extends Base\Core
 
         $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_EMAIL_VERIFICATION_SUCCESS, $this->merchant, null, $customProperties);
 
+        $hubSpotProperties = [Entity::EMAIL => $user->getEmail(), Entity::VERIFICATION_TYPE => $verificationType ?? Entity::LINK];
+
+        $this->app->hubspot->trackConfirmEmailEvent($hubSpotProperties);
+
         return $user;
     }
 
