@@ -36,7 +36,7 @@ class FormSubmissionValidStatusesMap
     const POI_UNREGISTERED = [POIStatus::VERIFIED];
     const COMPANY_PAN      = [CompanyPanStatus::FAILED, CompanyPanStatus::VERIFIED, CompanyPanStatus::NOT_MATCHED];
     const POA              = [OcrVerificationStatus::VERIFIED, OcrVerificationStatus::FAILED, OcrVerificationStatus::NOT_MATCHED, OcrVerificationStatus::INCORRECT_DETAILS];
-    const GSTIN            = [GSTINVerificationStatus::FAILED, GSTINVerificationStatus::VERIFIED, GSTINVerificationStatus::NOT_MATCHED];
+    const GSTIN            = [GSTINVerificationStatus::FAILED, GSTINVerificationStatus::VERIFIED, GSTINVerificationStatus::NOT_MATCHED, GSTINVerificationStatus::INCORRECT_DETAILS];
 
     const ALLOWED_VERIFICATION_STATUS_MAP_REGISTERED = [
         Constants::POI         => self::POI_REGISTERED,

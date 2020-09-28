@@ -2268,7 +2268,7 @@ class MerchantDetailTest extends OAuthTestCase
             'business_type'                   => '1'
         ];
 
-        $this->checkCanSubmitForAutoKycVerificationStatus($input, 'submitL2FormCanSubmitFalse');
+        $this->checkCanSubmitForAutoKycVerificationStatus($input, 'testSubmit');
     }
 
     protected function createBalanceForSharedMerchant()
