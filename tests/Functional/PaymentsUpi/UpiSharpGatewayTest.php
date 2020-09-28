@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\PaymentsUpi;
 
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\PaymentsUpiTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -137,5 +138,101 @@ class UpiSharpGatewayTest extends TestCase
         $this->assertSame('nottobeupdated', $vpa2->getName());
         $this->assertSame('valid', $vpa2->getStatus());
         $this->assertSame($receivedAt, $vpa2->getReceivedAt());
+    }
+
+    public function collectPaymentMccValidation()
+    {
+        $cases = [];
+
+        $cases['6540_failed'] = [
+            '6540',
+            50000,
+            ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_MCC_BLOCKED,
+            [
+                'description'   => 'UPI Collect is not allowed for your merchant category by NPCI.' .
+                                   ' Please reach out to Razorpay support if you need any help.',
+            ],
+        ];
+
+        $cases['4812_failed'] = [
+            '4812',
+            500001,
+            ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_MCC_AMOUNT_LIMIT_REACHED,
+            [
+                'description'   => 'UPI Collect payment more than INR 5000 is not allowed on your merchant category ' .
+                                   'by NPCI. Reach out to Razorpay support if you need any help',
+            ],
+        ];
+
+        $cases['4814_failed'] = [
+            '4814',
+            500001,
+            ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_MCC_AMOUNT_LIMIT_REACHED,
+            [
+                'description'   => 'UPI Collect payment more than INR 5000 is not allowed on your merchant category ' .
+                                   'by NPCI. Reach out to Razorpay support if you need any help',
+            ],
+        ];
+
+        $cases['4814_success'] = [
+            '4814',
+            500000,
+            null,
+            [],
+        ];
+
+        return $cases;
+    }
+
+    /**
+     * @dataProvider collectPaymentMccValidation
+     */
+    public function testCollectPaymentMccValidation($mcc, $amount, $iec, $error)
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $merchant->setCategory($mcc);
+        $merchant->saveOrFail();
+
+        $input = $this->getDefaultUpiPaymentArray();
+
+        $input['amount'] = $amount;
+
+        if (is_string($iec) === true)
+        {
+            $testData = [
+                'response' => [
+                    'content' => [
+                        'error' => array_merge([
+                            'code'          => ErrorCode::BAD_REQUEST_ERROR,
+                            'description'   => 'Bad request',
+                        ], $error),
+                    ],
+                    'status_code' => 400,
+                ],
+                'exception' => [
+                    'class' => 'RZP\Exception\BadRequestException',
+                    'internal_error_code' => $iec,
+                ],
+            ];
+
+            $this->runRequestResponseFlow($testData, function () use ($input)
+            {
+                $this->doAuthPaymentViaAjaxRoute($input);
+            });
+        }
+        else
+        {
+            $response = $this->doAuthPaymentViaAjaxRoute($input);
+
+            $this->assertArraySubset([
+                'type'      => 'async',
+                'method'    => 'upi',
+            ], $response);
+        }
+
+
     }
 }

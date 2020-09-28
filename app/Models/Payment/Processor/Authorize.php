@@ -3298,6 +3298,10 @@ trait Authorize
             // Setting the upi metadata here, as it is required for settings multiple
             // payment params later
             $this->setUpiMetadataIfApplicable($payment, $input);
+
+            // For certain MCCs, NPCI Has different restriction like
+            // collect disabled, limited amount payment etc.
+            $this->validateUpiMerchantCategory($payment, $input);
         }
 
         if ($payment->isWallet() === true)
@@ -6550,6 +6554,26 @@ trait Authorize
 
         $payment->getValidator()->validateUpiVpaPsp(
             $payment->getVpa(), $disallowedPsps);
+    }
+
+    protected function validateUpiMerchantCategory(Payment\Entity $payment, $input)
+    {
+        // If merchant category is not set, we can not run any validation
+        if (empty($payment->merchant->getCategory()) === true)
+        {
+            return;
+        }
+
+        $config = new UpiMetadata\MccConfig((string) $payment->merchant->getCategory());
+
+        if ($this->isFlowIntent($input) === true)
+        {
+            $config->validateIntentPayment($payment);
+        }
+        else
+        {
+            $config->validateCollectPayment($payment);
+        }
     }
 
     protected function validateIfIntentEnabled(Payment\Entity $payment)

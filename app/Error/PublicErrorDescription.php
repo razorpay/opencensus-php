@@ -217,6 +217,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED                             = 'Your UPI application is facing issues with handling collect requests. Please try again later';
     const BAD_REQUEST_PAYMENT_UPI_APP_ONE_TIME_MANDATE_NOT_SUPPORTED            = 'Your UPI application does not support one time mandate.';
     const BAD_REQUEST_PAYMENT_UPI_FUNCTION_NOT_SUPPORTED                        = 'The requested UPI function is not supported';
+    const BAD_REQUEST_PAYMENT_UPI_COLLECT_MCC_BLOCKED                           = 'UPI Collect is not allowed for your merchant category by NPCI. Please reach out to Razorpay support if you need any help.';
+    const BAD_REQUEST_PAYMENT_UPI_COLLECT_MCC_AMOUNT_LIMIT_REACHED              = 'UPI Collect payment more than INR 5000 is not allowed on your merchant category by NPCI. Reach out to Razorpay support if you need any help';
     const BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH                             = 'Payment amount provided does not match with the amount in order';
     const BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE                 = 'Payment amount is greater than the amount due for order';
     const BAD_REQUEST_PAYMENT_UPI_MULTIPLE_ACCOUNTS_LINKED                      = 'Payment failed since account linked with multiple names';
