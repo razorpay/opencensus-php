@@ -152,28 +152,34 @@
     </tr>
     </thead>
     <tbody>
-    <tr class="large-row">
-        <td>997158</td>
-        <td>Partner Commission Charges for the period {{ $start_date }} to {{ $end_date  }}</td>
-        <td>&nbsp;</td>
-        <td><span>{{ $invoice['line_items'][0]['sub_total_spread'][0]  }}</span>&nbsp;<span>{{ $invoice['line_items'][0]['sub_total_spread'][1]  }}</span><span>.{{ $invoice['line_items'][0]['sub_total_spread'][2]  }}</span></td>
-    </tr>
-    <tr class="space-under">
-        <td colspan=2>&nbsp;</td>
-        <td>Sub Total</td>
-        <td><span>{{ $invoice['line_items'][0]['sub_total_spread'][0]  }}</span>&nbsp;<span>{{ $invoice['line_items'][0]['sub_total_spread'][1]  }}</span><span>.{{ $invoice['line_items'][0]['sub_total_spread'][2]  }}</span></td>
-    </tr>
-    @foreach($invoice['line_items'][0]['taxes'] as $tax)
-    <tr class="space-under">
-        <td colspan=2>&nbsp;</td>
-        <td>{{ $tax['name'] }}</td>
-        <td><span>{{ $tax['tax_amount_spread'][0]  }}</span>&nbsp;<span>{{ $tax['tax_amount_spread'][1]  }}</span><span>.{{ $tax['tax_amount_spread'][2]  }}</span></td>
-    </tr>
+    @foreach($invoice['line_items'] as $lineItem)
+        <tr class="large-row">
+            <td>997158</td>
+            <td>Partner Commission Charges for the period {{ $start_date }} to {{ $end_date  }}
+                @if(count($invoice['line_items']) > 1)
+                    -
+                    @if($lineItem['tax_rate'] > 0)
+                        (Taxable)
+                    @else
+                        (Non-taxable)
+                    @endif
+                @endif
+            </td>
+            <td>&nbsp;</td>
+            <td><span>{{ $lineItem['sub_total_spread'][0]  }}</span>&nbsp;<span>{{ $lineItem['sub_total_spread'][1]  }}</span><span>.{{ $lineItem['sub_total_spread'][2]  }}</span></td>
+        </tr>
+        @foreach($lineItem['taxes'] as $tax)
+            <tr class="space-under">
+                <td colspan=2>&nbsp;</td>
+                <td>{{ $tax['name'] }}</td>
+                <td><span>{{ $tax['tax_amount_spread'][0]  }}</span>&nbsp;<span>{{ $tax['tax_amount_spread'][1]  }}</span><span>.{{ $tax['tax_amount_spread'][2]  }}</span></td>
+            </tr>
+        @endforeach
     @endforeach
     <tr class="highlighted large-row">
         <td colspan=2>&nbsp;</td>
         <td>Total</td>
-        <td><span>{{ $invoice['line_items'][0]['gross_amount_spread'][0] }}</span>&nbsp;<span>{{ $invoice['line_items'][0]['gross_amount_spread'][1] }}</span><span>.{{ $invoice['line_items'][0]['gross_amount_spread'][2] }}</span></td>
+        <td><span>{{ $invoice['gross_amount_spread'][0] }}</span>&nbsp;<span>{{ $invoice['gross_amount_spread'][1] }}</span><span>.{{ $invoice['gross_amount_spread'][2] }}</span></td>
     </tr>
     </tbody>
 </table>

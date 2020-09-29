@@ -7,7 +7,7 @@ use RZP\Exception;
 
 class Validator extends Base\Validator
 {
-    const MAX_ALLOWED_LINE_ITEMS = 1;
+    const MAX_ALLOWED_LINE_ITEMS = 2;
 
     protected static $invoiceGenerateRequestRules = [
         Entity::MONTH               => 'required|integer|between:1,12',

@@ -16,6 +16,7 @@ use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Partner\Commission;
+use RZP\Models\Pricing\Calculator;
 use RZP\Models\Tax\Gst\GstTaxIdMap;
 use RZP\Jobs\CommissionInvoiceAction;
 use RZP\Jobs\CommissionInvoiceGenerate;
@@ -151,10 +152,34 @@ class Core extends Base\Core
         $merchant      = $invoice->merchant;
         $tdsPercentage = (new Commission\Core)->getTdsPercentage($merchant);
 
-        $pan   = $merchant->merchantDetail->getPromoterPan();
-        $pan   = (empty($pan) === true) ? null : $pan;
         $gstin = $merchant->merchantDetail->getGstin();
         $gstin = (empty($gstin) === true) ? null : $gstin;
+
+        $promotorPan   = $merchant->merchantDetail->getPromoterPan();
+        $companyPan    = $merchant->merchantDetail->getPan();
+
+        $pan = null;
+
+        // use pan which corresponds to the gstin else show whichever pan is available
+        if (empty($gstin) === false)
+        {
+            if (empty($promotorPan) === false and str_contains($gstin, $promotorPan) === true)
+            {
+                $pan = $promotorPan;
+            }
+            else if (empty($companyPan) === false and str_contains($gstin, $companyPan) === true)
+            {
+                $pan = $companyPan;
+            }
+        }
+        else if (empty($companyPan) === false)
+        {
+            $pan = $companyPan;
+        }
+        else if (empty($promotorPan) === false)
+        {
+            $pan = $promotorPan;
+        }
 
         $data  = [
             'merchant'                 => $invoice->merchant->toArray(),
@@ -429,14 +454,19 @@ class Core extends Base\Core
         $fromTimestamp = Carbon::createFromDate($year, $month, 1)->startOfMonth()->getTimestamp();
         $endTimestamp  = Carbon::createFromDate($year, $month, 1)->endOfMonth()->getTimestamp();
 
-        $aggregateSum = $this->repo->commission->fetchAggregateFeesAndTax($partner->getId(), $fromTimestamp, $endTimestamp);
+        $aggregateSumComponents = $this->repo->commission->fetchAggregateFeesAndTaxForInvoice($partner->getId(), $fromTimestamp, $endTimestamp);
 
-        $aggregateSum = $aggregateSum->getAttributes();
+        $totalSum = 0;
 
-        // amount contains both commission and tax
-        $amount = $aggregateSum['fee'];
+        foreach ($aggregateSumComponents as $sumComponent)
+        {
+            $aggregateSum = $sumComponent->getAttributes();
 
-        if (empty($amount) === true)
+            // aggregateSum contains both commission and tax
+            $totalSum += $aggregateSum['fee'];
+        }
+
+        if (empty($totalSum) === true)
         {
             $this->trace->info(TraceCode::COMMISSION_INVOICE_SKIPPED_AMOUNT_ZERO,
                                [
@@ -445,21 +475,48 @@ class Core extends Base\Core
             return false;
         }
 
-        $taxRate = 1800;
-        $prefix = Tax\Entity::getSign() . '_';
+        $lineItemInput = [];
 
-        $taxIds  = [$prefix . GstTaxIdMap::CGST_90000, $prefix . GstTaxIdMap::SGST_90000];
+        foreach ($aggregateSumComponents as $key => $sumComponent)
+        {
+            $aggregateSum = $sumComponent->getAttributes();
+            $amount = $aggregateSum['fee'];
 
-        $lineItemInput = [
-            [
+            if ($amount <= 0) {
+                continue;
+            }
+
+            $lineItem = [
                 LineItem\Entity::NAME          => Commission\Constants::COMMISSION,
                 LineItem\Entity::AMOUNT        => $amount,
                 LineItem\Entity::CURRENCY      => 'INR',
                 LineItem\Entity::TAX_INCLUSIVE => true,
-                LineItem\Entity::TAX_RATE      => $taxRate,
-                LineItem\Entity::TAX_IDS       => $taxIds,
-            ]
-        ];
+            ];
+
+            if ($key === 'zero_tax')
+            {
+                $lineItem[LineItem\Entity::TAX_RATE] = 0;
+                $lineItem[LineItem\Entity::TAX_IDS]  = [];
+            }
+            else
+            {
+                $taxComponents = Calculator\Base::getTaxComponents($partner);
+
+                $taxRate = 1800;
+                $prefix = Tax\Entity::getSign() . '_';
+
+                // CGST/IGST for karnataka partners and IGST for others
+                $taxIds = [$prefix . GstTaxIdMap::IGST_180000];
+                if (count($taxComponents) == 2) {
+                    $taxIds  = [$prefix . GstTaxIdMap::CGST_90000, $prefix . GstTaxIdMap::SGST_90000];
+                }
+
+                $lineItem[LineItem\Entity::TAX_RATE] = $taxRate;
+                $lineItem[LineItem\Entity::TAX_IDS]  = $taxIds;
+            }
+
+            $lineItemInput[] = $lineItem;
+        }
 
         (new LineItem\Core)->updateLineItemsAsPut($lineItemInput, $partner, $invoice);
 

@@ -81,14 +81,22 @@ class Repository extends BaseRepository
                     ->findManyOrFailPublic($ids);
     }
 
-    public function fetchAggregateFeesAndTax(string $partnerId, int $start, int $end)
+    public function fetchAggregateFeesAndTaxForInvoice(string $partnerId, int $start, int $end): array
     {
         $query = $this->newQuery()
                       ->selectRaw('SUM(' . Entity::TAX . ') AS tax, SUM(' . Entity::FEE . ') AS fee')
                       ->where(Entity::PARTNER_ID, $partnerId)
                       ->whereBetween(Entity::CREATED_AT, [$start, $end]);
 
-        return $query->first();
+        $nonZeroTaxQuery = clone $query;
+
+        $zeroTaxDetails    = $query->where(Entity::TAX, 0)->first();
+        $nonZeroTaxDetails = $nonZeroTaxQuery->where(Entity::TAX, '>', 0)->first();
+
+        return [
+            'zero_tax'    => $zeroTaxDetails,
+            'nonzero_tax' => $nonZeroTaxDetails,
+        ];
     }
 
     /**
