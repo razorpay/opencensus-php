@@ -22,6 +22,14 @@ class CounterHelper extends Base\Core
 
     const REVERSAL_OR_FAILURE = 'reversal_or_failure';
 
+    const CRITERIA = 'criteria';
+
+    const TRANSACTION_FAILURE = 'transaction_failure';
+
+    const CURRENT_TIME_FIRST_OF_MONTH = 'current_time_first_of_month';
+
+    const PAYOUT_INITIATED_FIRST_OF_MONTH = 'payout_initiated_first_of_month';
+
     /*
     This method is used to increment the counter if the balance is of type banking and the counter corresponding to that
     has not exceeded the free_payouts_count. It also decides what is going to be the
@@ -60,6 +68,17 @@ class CounterHelper extends Base\Core
         $counter->setFreePayoutsConsumed($freePayoutsConsumed + 1);
 
         $this->repo->counter->saveOrFail($counter);
+
+        $this->trace->info(
+            TraceCode::FREE_PAYOUTS_CONSUMED_INCREMENT,
+            [
+                Counter\Entity::FREE_PAYOUTS_CONSUMED               => $counter->getFreePayoutsConsumed(),
+                Counter\Entity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => $counter->getFreePayoutsConsumedLastResetAt(),
+                Counter\Entity::BALANCE_ID                          => $counter->getBalanceId(),
+                Counter\Entity::ID                                  => $counter->getId(),
+                Balance\FreePayout::FREE_PAYOUTS_COUNT              => $freePayoutsCount,
+            ]
+        );
 
         return Entity::FREE_PAYOUT;
     }
@@ -101,7 +120,19 @@ class CounterHelper extends Base\Core
         {
             $counter = $this->getCounterForBalance($balance, $payout);
 
-            $this->decreaseFreePayoutsConsumed($counter);
+            $counter = $this->decreaseFreePayoutsConsumed($counter);
+
+            $this->trace->info(
+                TraceCode::FREE_PAYOUTS_CONSUMED_DECREMENT,
+                [
+                    Counter\Entity::FREE_PAYOUTS_CONSUMED               => $counter->getFreePayoutsConsumed(),
+                    Counter\Entity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT =>
+                        $counter->getFreePayoutsConsumedLastResetAt(),
+                    Counter\Entity::BALANCE_ID                          => $counter->getBalanceId(),
+                    Counter\Entity::ID                                  => $counter->getId(),
+                    self::CRITERIA                                      => $criteria,
+                ]
+            );
         }
 
         return $shouldDecreaseFreePayoutsConsumed;
@@ -125,7 +156,19 @@ class CounterHelper extends Base\Core
 
             if ($counter !== null)
             {
-                $this->decreaseFreePayoutsConsumed($counter);
+                $counter = $this->decreaseFreePayoutsConsumed($counter);
+
+                $this->trace->info(
+                    TraceCode::FREE_PAYOUTS_CONSUMED_DECREMENT,
+                    [
+                        Counter\Entity::FREE_PAYOUTS_CONSUMED               => $counter->getFreePayoutsConsumed(),
+                        Counter\Entity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT =>
+                            $counter->getFreePayoutsConsumedLastResetAt(),
+                        Counter\Entity::BALANCE_ID                          => $counter->getBalanceId(),
+                        Counter\Entity::ID                                  => $counter->getId(),
+                        self::CRITERIA                                      => self::TRANSACTION_FAILURE,
+                    ]
+                );
             }
         }
     }
@@ -139,6 +182,17 @@ class CounterHelper extends Base\Core
         if ($this->shouldResetFreePayoutsConsumed($counter) === true)
         {
             $counter->resetFreePayoutsConsumed();
+
+            $this->trace->info(
+                TraceCode::FREE_PAYOUTS_CONSUMED_RESET,
+                [
+                    Counter\Entity::FREE_PAYOUTS_CONSUMED               => $counter->getFreePayoutsConsumed(),
+                    Counter\Entity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT =>
+                        $counter->getFreePayoutsConsumedLastResetAt(),
+                    Counter\Entity::BALANCE_ID                          => $counter->getBalanceId(),
+                    Counter\Entity::ID                                  => $counter->getId(),
+                ]
+            );
         }
 
         return $counter;
@@ -156,6 +210,17 @@ class CounterHelper extends Base\Core
         $currentTime = Carbon::now(Timezone::IST);
 
         $currentMonthTimestamp = $currentTime->firstOfMonth()->getTimestamp();
+
+        $this->trace->info(
+            TraceCode::FREE_PAYOUTS_CONSUMED_RESET_CHECK,
+            [
+                Counter\Entity::FREE_PAYOUTS_CONSUMED               => $counter->getFreePayoutsConsumed(),
+                Counter\Entity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => $freePayoutsConsumedLastResetAt,
+                Counter\Entity::BALANCE_ID                          => $counter->getBalanceId(),
+                Counter\Entity::ID                                  => $counter->getId(),
+                self::CURRENT_TIME_FIRST_OF_MONTH                   => $currentMonthTimestamp,
+            ]
+        );
 
         if ($currentMonthTimestamp !== $freePayoutsConsumedLastResetAt)
         {
@@ -273,6 +338,18 @@ class CounterHelper extends Base\Core
 
         $payoutStateChangeMonth = $payoutStateChangeDate->firstOfMonth()->getTimestamp();
 
+        $this->trace->info(
+            TraceCode::FREE_PAYOUTS_CONSUMED_RESET_CHECK,
+            [
+                Counter\Entity::FREE_PAYOUTS_CONSUMED               => $counter->getFreePayoutsConsumed(),
+                Counter\Entity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => $freePayoutsConsumedLastResetAt,
+                Counter\Entity::BALANCE_ID                          => $counter->getBalanceId(),
+                Counter\Entity::ID                                  => $counter->getId(),
+                self::CURRENT_TIME_FIRST_OF_MONTH                   => $payoutStateChangeMonth,
+                self::PAYOUT_INITIATED_FIRST_OF_MONTH               => $payoutInitiatedMonth,
+            ]
+        );
+
         if (($freePayoutsConsumedLastResetAt === $payoutInitiatedMonth) and
            ($freePayoutsConsumedLastResetAt === $payoutStateChangeMonth))
         {
@@ -284,7 +361,7 @@ class CounterHelper extends Base\Core
 
     protected function decreaseFreePayoutsConsumed(Counter\Entity $counter)
     {
-        $this->repo->counter->transaction(
+        $updatedCounter = $this->repo->counter->transaction(
             function() use ($counter)
             {
                 $counter = $this->repo->counter->lockForUpdate($counter->getId());
@@ -294,6 +371,10 @@ class CounterHelper extends Base\Core
                 $counter->setFreePayoutsConsumed($freePayoutsConsumed - 1);
 
                 $this->repo->counter->saveOrFail($counter);
+
+                return $counter;
             });
+
+        return $updatedCounter;
     }
 }

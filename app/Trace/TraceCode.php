@@ -3419,6 +3419,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_META_REFERENCE_CREATION_ERROR               = 'PAYMENT_META_REFERENCE_CREATION_ERROR';
     const PAYMENT_META_REFERENCE                              = 'PAYMENT_META_REFERENCE';
 
+    // Logs for increment, decrement, reset operations on counter entity
+    const FREE_PAYOUTS_CONSUMED_INCREMENT   = 'FREE_PAYOUTS_CONSUMED_INCREMENT';
+    const FREE_PAYOUTS_CONSUMED_DECREMENT   = 'FREE_PAYOUTS_CONSUMED_DECREMENT';
+    const FREE_PAYOUTS_CONSUMED_RESET       = 'FREE_PAYOUTS_CONSUMED_RESET';
+    const FREE_PAYOUTS_CONSUMED_RESET_CHECK = 'FREE_PAYOUTS_CONSUMED_RESET_CHECK';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
