@@ -729,4 +729,42 @@ return [
             ],
         ],
     ],
+
+    'testLimitAndEightHourRuleForBASFetch' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process/rbl',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => ['account_processed' => ['2323230041626903', '2323230041626904', '2323230041626905',
+                '2323230041626906', '2323230041626907', '2323230041626908']]
+        ]
+
+    ],
+
+    'testLimitForEightHourRuleAndAccountsThatMadePayoutsForBASFetch' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process/rbl',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => ['account_processed' => ['2323230041626903', '2323230041626904', '2323230041626905',
+                '2323230041626906', '2323230041626908', '2323230041626909']]
+        ]
+
+    ],
+
+    'testLimitForAccountsThatMadePayoutsAndOtherAccountsForBASFetch' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process/rbl',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => ['account_processed' => ['2323230041626905', '2323230041626910', '2323230041626901',
+                '2323230041626902', '2323230041626903', '2323230041626904']]
+        ]
+    ]
 ];

@@ -530,6 +530,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BALANCE_LAST_FETCHED_AT);
     }
 
+    public function getLastStatementAttemptAt()
+    {
+        return $this->getAttribute(self::LAST_STATEMENT_ATTEMPT_AT);
+    }
+  
     public function getStatusLastUpdatedAt()
     {
         $lastUpdatedAt = null;

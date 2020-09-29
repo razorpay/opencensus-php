@@ -34,7 +34,9 @@ class Core extends Base\Core
 
     const DASHBOARD_FILE_URL = '%sufh/file/%s';
 
-    const DEFAULT_BANKING_ACCOUNT_STATEMENT_RATE_LIMIT = 2;
+    const DEFAULT_BANKING_ACCOUNT_STATEMENT_RATE_LIMIT = 6;
+
+    const DEFAULT_RX_BAS_FORCED_FETCH_TIME_IN_HOURS = 8;
 
     /**
      * Temporary hack. Should not set balance at a class level.
@@ -830,7 +832,9 @@ class Core extends Base\Core
     // 0. Trace the request here.
     //
     // 1. Fetch accountNumbers to process for that channel
-    // We will fetch accountNumbers per channel ascending order by last_statement_fetch_at
+    // We will fetch accountNumbers per channel ascending order by last_statement_fetch_at and pass the details through
+    // a filter which would select primarily accounts whose statement was fetched more than certain hours ago and which
+    // made payouts.
     //
     // Create and dispatch jobs to pull data for those MIDs
     // Return accountNumbers dispatched for processing for the route response
@@ -838,26 +842,117 @@ class Core extends Base\Core
     public function dispatchAccountNumberForChannel(string $channel, array $input)
     {
         $limit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT]);
+        $forcedFetchTime = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RX_BAS_FORCED_FETCH_TIME_IN_HOURS]);
 
         if (empty($limit) === true)
         {
             $limit = self::DEFAULT_BANKING_ACCOUNT_STATEMENT_RATE_LIMIT;
         }
 
+        if (empty($forcedFetchTime) === true)
+        {
+            $forcedFetchTime = self::DEFAULT_RX_BAS_FORCED_FETCH_TIME_IN_HOURS;
+        }
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATEMENT_DISPATCH_JOB_CRON_INITIATED,
+            [
+                'channel'                               => $channel,
+                'banking_account_statement_rate_limit'  => $limit,
+                'bas_force_fetch_time_hrs'              => $forcedFetchTime,
+            ]);
+
+        $bankingAccountDetails = $this->repo->banking_account->fetchAccountNumbersByChannel($channel);
+        $accountNumbersToDispatch = [];
+        $accountsThatMadePayouts = [];
+        $otherAccounts = [];
+        $numberOfAccountsSelected = 0;
+
+        $currentTime = Carbon::now()->getTimestamp();
+
+        foreach ($bankingAccountDetails as $bankingAccountDetail)
+        {
+            $forcedFetchTimeInSeconds = $forcedFetchTime * Carbon::MINUTES_PER_HOUR * Carbon::SECONDS_PER_MINUTE;
+
+            if ($bankingAccountDetail->getLastStatementAttemptAt() <= $currentTime - $forcedFetchTimeInSeconds)
+            {
+                $accountNumbersToDispatch[$numberOfAccountsSelected] = $bankingAccountDetail->getAccountNumber();
+
+                $numberOfAccountsSelected++;
+            }
+            else
+            {
+                if (count($accountsThatMadePayouts) < $limit - $numberOfAccountsSelected)
+                {
+                    $count = $this->repo->payout->countOfPayoutsMadeForDirectAccountSinceLastStatementFetch(
+                        $bankingAccountDetail->getBalanceId(),
+                        $bankingAccountDetail->getLastStatementAttemptAt());
+
+                    if ($count > 0)
+                    {
+                        array_push($accountsThatMadePayouts, $bankingAccountDetail->getAccountNumber());
+                    }
+                    else
+                    {
+                        array_push($otherAccounts, $bankingAccountDetail->getAccountNumber());
+                    }
+                }
+            }
+
+            if ($numberOfAccountsSelected >= $limit)
+            {
+                break;
+            }
+        }
+
+        $accountNumbersToDispatchUnderForceFetchRule = $accountNumbersToDispatch;
+
+        if ($numberOfAccountsSelected < $limit)
+        {
+            foreach ($accountsThatMadePayouts as $accountThatMadePayouts)
+            {
+                $accountNumbersToDispatch[$numberOfAccountsSelected] = $accountThatMadePayouts;
+
+                $numberOfAccountsSelected++;
+
+                if ($numberOfAccountsSelected >= $limit)
+                {
+                    break;
+                }
+            }
+        }
+
+        if ($numberOfAccountsSelected < $limit)
+        {
+            foreach ($otherAccounts as $otherAccount)
+            {
+                $accountNumbersToDispatch[$numberOfAccountsSelected] = $otherAccount;
+
+                $numberOfAccountsSelected++;
+
+                if ($numberOfAccountsSelected >= $limit)
+                {
+                    break;
+                }
+            }
+        }
+
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_STATEMENT_DISPATCH_JOB_CRON,
             [
-                'channel'        => $channel,
+                'currentTime'                                       => $currentTime,
+                'channel'                                           => $channel,
+                'account_numbers_under_force_fetch_rule'            => $accountNumbersToDispatchUnderForceFetchRule,
+                'account_numbers_to_be_dispatched_if_made_payouts'  => $accountsThatMadePayouts,
+                'account_numbers_to_be_dispatched'                  => $accountNumbersToDispatch,
             ]);
 
-        $accountNumbers = $this->repo->banking_account->fetchAccountNumbersByChannel($channel, $limit)->pluck(Entity::ACCOUNT_NUMBER);
-
-        foreach ($accountNumbers as $accountNumber)
+        foreach ($accountNumbersToDispatch as $accountNumber)
         {
             $this->dispatchBankingAccountStatementJob($channel, $accountNumber);
         }
 
-        return ['account_processed' => $accountNumbers];
+        return ['account_processed' => $accountNumbersToDispatch];
     }
 
     // Adding a delay in dispatch and default is 0 min delay.

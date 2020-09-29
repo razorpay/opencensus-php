@@ -1225,4 +1225,20 @@ class Repository extends Base\Repository
                     ->limit($limit)
                     ->get();
     }
+
+    /**
+     * returns the number of payouts done by the merchant between the time of statement fetched last time and the time of this query.
+     * @param $balanceId
+     * @param $lastFetchTime
+     */
+    public function countOfPayoutsMadeForDirectAccountSinceLastStatementFetch ($balanceId, $lastFetchTime)
+    {
+        $balanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
+        $createdAtColumn = $this->dbColumn(Entity::CREATED_AT);
+
+        return $this->newQuery()
+                    ->where($balanceIdColumn, $balanceId)
+                    ->where($createdAtColumn, '>=', $lastFetchTime )
+                    ->count();
+    }
 }

@@ -3074,8 +3074,7 @@ class RblBankingAccountStatementTest extends TestCase
         $request = [
             'method'  => 'GET',
             'url'     => '/balances?type=banking',
-            'content' => [
-            ]
+            'content' => []
         ];
 
         $balanceApiResponseAfterBalanceFetchCron = $this->makeRequestAndGetContent($request);
@@ -4265,5 +4264,170 @@ class RblBankingAccountStatementTest extends TestCase
         $payout = $this->getDbLastEntity('payout');
 
         $this->assertEquals('failed', $payout['status']);
+    }
+
+    protected function createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking(string $id, string $accountNumber, string $merchantId , int $lastAttemptedAt)
+    {
+        $balance = $this->getDbEntity('balance', ['merchant_id' => $merchantId]);
+        $balanceId = $balance->getId();
+
+        $this->fixtures->edit('balance', $balanceId, [
+            'account_type' => 'direct',
+            'type'         => 'banking'
+        ]);
+
+        $this->createBankingAccount([
+            'id'                    => $id,
+            'account_number'        => $accountNumber,
+            'account_type'          => 'current',
+            'merchant_id'           => $merchantId,
+            'channel'               => 'rbl',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+            'balance_id'            => $balanceId,
+            'status'                => 'activated'
+        ]);
+
+        $this->fixtures->edit('banking_account', $id, [
+            'last_statement_attempt_at'=> $lastAttemptedAt
+        ]);
+    }
+
+    protected function createRBLBankingDirectBalance(string $merchantId , string $accountNumber)
+    {
+        $this->fixtures->create(
+            'balance',
+            [
+                'type'             => 'banking',
+                'merchant_id'      => $merchantId,
+                'balance'          => 10000000,
+                'account_type'     => 'direct',
+                'channel'          => 'rbl',
+                'account_number'   => $accountNumber
+            ]);
+    }
+
+    protected function createPayoutForBalanceTypeDirectAndBanking(string $id, string $merchantId , int $payoutTime)
+    {
+        $balance = $this->getDbEntity('balance', ['merchant_id' => $merchantId]);
+        $balanceId = $balance->getId();
+
+        $this->fixtures->edit('balance', $balanceId, [
+            'account_type' => NULL,
+            'type'         => 'primary',
+            'balance'      => 10000
+        ]);
+
+        $this->fixtures->create(
+            'payout',
+            [
+                'id'            =>      $id ,
+                'merchant_id'   =>      $merchantId,
+                'balance_id'    =>      $balanceId,
+                'amount'        =>      0,
+                'currency'      =>      'inr',
+                'fees'          =>      0,
+                'tax'           =>      0,
+                'status'        =>      'processed',
+                'type'          =>      'default',
+                'created_at'    =>      $payoutTime,
+                'updated_at'    =>      $payoutTime
+            ]);
+
+        $this->fixtures->edit('balance', $balanceId, [
+            'account_type' => 'direct',
+            'type'         => 'banking'
+        ]);
+    }
+
+    public function testLimitAndEightHourRuleForBASFetch()
+    {
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $this->fixtures->edit('banking_account','xba00000000001', ['account_number'=>'2323230041626901','last_statement_attempt_at'=> $currentTime-9]);
+
+        $this->createRBLBankingDirectBalance('10000000000011','2323230041626907');
+        $this->createRBLBankingDirectBalance('10000000000012','2323230041626908');
+        $this->createRBLBankingDirectBalance('10000000000013','2323230041626909');
+        $this->createRBLBankingDirectBalance('10000000000014','2323230041626910');
+
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000002','2323230041626902','1cXSLlUU8V9sXl',$currentTime-8);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000003','2323230041626903','100000Razorpay',$currentTime-13*60*60);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000004','2323230041626904','100AtomAccount',$currentTime-12*60*60);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000005','2323230041626905','10NodalAccount',$currentTime-11*60*60);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000006','2323230041626906','1ApiFeeAccount',$currentTime-10*60*60);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000007','2323230041626907','10000000000011',$currentTime-9*60*60);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000008','2323230041626908','10000000000012',$currentTime-8*60*60);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000009','2323230041626909','10000000000013',$currentTime-8*60*60);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000010','2323230041626910','10000000000014',$currentTime-8*60*60);
+
+        $this->createPayoutForBalanceTypeDirectAndBanking('00000000000001' , '10NodalAccount' , $currentTime-1);
+        $this->createPayoutForBalanceTypeDirectAndBanking('00000000000002' , '10000000000014' , $currentTime);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testLimitForEightHourRuleAndAccountsThatMadePayoutsForBASFetch()
+    {
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $this->fixtures->edit('banking_account','xba00000000001', ['account_number'=>'2323230041626901','last_statement_attempt_at'=> $currentTime-9]);
+
+        $this->createRBLBankingDirectBalance('10000000000011','2323230041626907');
+        $this->createRBLBankingDirectBalance('10000000000012','2323230041626908');
+        $this->createRBLBankingDirectBalance('10000000000013','2323230041626909');
+        $this->createRBLBankingDirectBalance('10000000000014','2323230041626910');
+
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000002','2323230041626902','1cXSLlUU8V9sXl',$currentTime-8);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000003','2323230041626903','100000Razorpay',$currentTime-13*60*60);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000004','2323230041626904','100AtomAccount',$currentTime-12*60*60);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000005','2323230041626905','10NodalAccount',$currentTime-8*60*60);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000006','2323230041626906','1ApiFeeAccount',$currentTime-7*60*60);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000007','2323230041626907','10000000000011',$currentTime-1*60*60);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000008','2323230041626908','10000000000012',$currentTime-3*60*60);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000009','2323230041626909','10000000000013',$currentTime-2*60*60);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000010','2323230041626910','10000000000014',$currentTime-1*60*60);
+
+        $this->createPayoutForBalanceTypeDirectAndBanking('00000000000001' , '1ApiFeeAccount' , $currentTime-1);
+        $this->createPayoutForBalanceTypeDirectAndBanking('00000000000002' , '100AtomAccount' , $currentTime-100);
+        $this->createPayoutForBalanceTypeDirectAndBanking('00000000000003' , '10000000000014' , $currentTime-10);
+        $this->createPayoutForBalanceTypeDirectAndBanking('00000000000004' , '10000000000013' , $currentTime-10);
+        $this->createPayoutForBalanceTypeDirectAndBanking('00000000000005' , '10000000000012' , $currentTime-10);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testLimitForAccountsThatMadePayoutsAndOtherAccountsForBASFetch()
+    {
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $this->fixtures->edit('banking_account','xba00000000001', ['account_number'=>'2323230041626901','last_statement_attempt_at'=> $currentTime-9]);
+
+        $this->createRBLBankingDirectBalance('10000000000011','2323230041626907');
+        $this->createRBLBankingDirectBalance('10000000000012','2323230041626908');
+        $this->createRBLBankingDirectBalance('10000000000013','2323230041626909');
+        $this->createRBLBankingDirectBalance('10000000000014','2323230041626910');
+
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000002','2323230041626902','1cXSLlUU8V9sXl',$currentTime-8);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000003','2323230041626903','100000Razorpay',$currentTime-7);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000004','2323230041626904','100AtomAccount',$currentTime-6);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000005','2323230041626905','10NodalAccount',$currentTime-5);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000006','2323230041626906','1ApiFeeAccount',$currentTime-4);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000007','2323230041626907','10000000000011',$currentTime-3);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000008','2323230041626908','10000000000012',$currentTime-2);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000009','2323230041626909','10000000000013',$currentTime-1);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000010','2323230041626910','10000000000014',$currentTime-0);
+
+        $this->createPayoutForBalanceTypeDirectAndBanking('00000000000001' , '10NodalAccount' , $currentTime-1);
+        $this->createPayoutForBalanceTypeDirectAndBanking('00000000000002' , '10000000000014' , $currentTime);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
     }
 }

@@ -83,6 +83,8 @@ class ConfigKey
     //Banking account current accounts statement fetch for merchants limit on number of merchants for which to update in one run.
     const BANKING_ACCOUNT_STATEMENT_RATE_LIMIT  = self::PREFIX . 'banking_account_statement_rate_limit';
 
+    CONST RX_BAS_FORCED_FETCH_TIME_IN_HOURS               = self::PREFIX . 'rx_bas_forced_fetch_time_in_hours';
+
     const GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING = self::PREFIX . 'gateway_balance_last_fetched_at_rate_limiting';
 
     //Banking account current accounts balance update for merchants .limit on number of merchants for which to update in one run
@@ -199,6 +201,7 @@ class ConfigKey
         self::ENABLE_PAYMENT_DOWNTIME_NETBANKING,
         self::ENABLE_PAYMENT_DOWNTIME_UPI,
         self::ENABLE_PAYMENT_DOWNTIME_WALLET,
+        self::RX_BAS_FORCED_FETCH_TIME_IN_HOURS,
         self::DELAY_RUPAY_CAPTURE,
     ];
 
