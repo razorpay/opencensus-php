@@ -250,6 +250,27 @@ app
         initializeGAPI();
       };
 
+      const pushPromMetric = ({ flow, label }) => {
+        if (!window.rzpQMetrics) return;
+
+        window.rzpQMetrics.immediate = true;
+
+        window.rzpQMetrics.push({
+          type: 'metrics',
+          properties: {
+            name: 'device.metrics',
+            labels: [
+              {
+                type: 'dashboard_' + flow,
+                source: label,
+              },
+            ],
+          },
+        });
+
+        window.rzpQMetrics.immediate = false;
+      };
+
       /**
        * Datalake event object for google oauth events
        * @type {{mode: string, service: (string), sessionId: *, version: number}}
@@ -367,6 +388,7 @@ app
           if (!isInitiatedEventFired) {
             fireDLInitiatedEvents('login.google_oauth');
             fireDLInitiatedEvents('login.login', { method: 'google_oauth' });
+            pushPromMetric({ flow: 'login', label: 'login_initiate' });
             isInitiatedEventFired = true;
           }
         }
@@ -420,8 +442,8 @@ app
             if (!isInitiatedEventFired) {
               fireDLInitiatedEvents('login.google_oauth');
               fireDLInitiatedEvents('login.login', { method: 'google_oauth' });
+              pushPromMetric({ flow: 'login', label: 'login_initiate' });
             }
-
             button.click();
             showSpinner();
           }
@@ -901,6 +923,7 @@ app
                       mid: data.current,
                     }),
                   );
+
                 hideSpinner();
                 $state.transitionTo(
                   'access.pre_signup',
@@ -985,6 +1008,8 @@ app
       }
       $scope.goToDashboard = function (data) {
         setCookie('midExists', !!data.current);
+
+        pushPromMetric({ flow: 'login', label: 'login_success' });
 
         fireDLSuccessEvents('login.login', {
           source: 'sign_in',
@@ -1553,6 +1578,8 @@ app
           if ($state.current.name === 'access.signin') {
             let utm = readUTMsCookie();
 
+            pushPromMetric({ flow: 'login', label: 'login_landed' });
+
             fireDLSuccessEvents('login.display_login', {
               source: 'sign_in',
               first_utm: utm.firstUtm,
@@ -1761,6 +1788,7 @@ app
 
       const login = function (captchaVal) {
         fireDLInitiatedEvents('login.login', { method: 'email' });
+        pushPromMetric({ flow: 'login', label: 'login_initiate' });
 
         $scope.login.data.captcha = captchaVal;
 
@@ -1791,6 +1819,7 @@ app
                   mode: $scope.eventsMode,
                 }),
               );
+              pushPromMetric({ flow: 'login', label: 'login_success_2fa' });
             }
             $scope.successFullSignin();
           } else {
@@ -1998,6 +2027,8 @@ app
           return true;
         }
 
+        pushPromMetric({ flow: 'login', label: 'login_initiate_2fa' });
+
         const data = {
           email: $scope.login.data.email,
           password: $scope.login.data.password,
@@ -2025,6 +2056,7 @@ app
                 mode: $scope.eventsMode,
               }),
             );
+            pushPromMetric({ flow: 'login', label: 'login_success_2fa' });
           } else {
             hideSpinner();
             $scope.alerts.addAlert('danger', data.errors[0]);
@@ -2052,6 +2084,8 @@ app
           data: data,
         };
 
+        pushPromMetric({ flow: 'login', label: 'login_initiate_2fa' });
+
         const request = $http(payload);
         showSpinner();
         $scope.alerts.resetAlerts();
@@ -2065,6 +2099,7 @@ app
                 mode: $scope.eventsMode,
               }),
             );
+            pushPromMetric({ flow: 'login', label: 'login_success_2fa' });
             $scope.successFullSignin();
           } else {
             window.rzpQ.push(
