@@ -17,6 +17,7 @@ use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Services\FTS\CreateAccount;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 
 /**
@@ -259,7 +260,8 @@ class Core extends Base\Core
         {
             $contactType = $fundAccount->contact->getType();
 
-            if (Contact\Type::isInInternal($contactType) === true)
+            if ((Contact\Type::isInInternal($contactType) === true) and
+                ($this->isTaxPaymentContactRequest($fundAccount->contact) === false))
             {
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_INTERNAL_FUND_ACCOUNT_UPDATE_NOT_PERMITTED,
@@ -276,6 +278,24 @@ class Core extends Base\Core
         $this->repo->saveOrFail($fundAccount);
 
         return $fundAccount;
+    }
+
+    /**
+     * This function will check that this is trying to create the TaxPayment internal contact
+     * Also checks if the request source is valid
+     *
+     * @param Entity $contact
+     * @return bool
+     */
+    protected function isTaxPaymentContactRequest(ContactEntity $contact): bool
+    {
+        if (($contact->getType() === Contact\Type::TAX_PAYMENT_INTERNAL_CONTACT) and
+            ($this->app['basicauth']->isVendorPaymentApp() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function delete(Entity $fundAccount)

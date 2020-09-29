@@ -601,6 +601,73 @@ return [
         ]
     ],
 
+    'testInternalContactUpdateFailsForProxyAuth' => [
+        'request'   => [
+            'content' => [
+                'active' => false,
+            ],
+            'url'     => '/fund_accounts/fa_100000000000fa',
+            'method'  => 'PATCH'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Updating an internal Razorpay Fund Account is not permitted',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNAL_FUND_ACCOUNT_UPDATE_NOT_PERMITTED,
+        ],
+    ],
+
+    'testInternalContactUpdateAllowedForInternalAuth' => [
+        'request'   => [
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'content' => [
+                'active' => '0',
+            ],
+            'url'     => '/fund_accounts_internal/fa_100000000000fa',
+            'method'  => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                "active" => false
+            ],
+        ]
+    ],
+
+    'testInternalContactUpdateFailsForRZPFees' => [
+        'request'   => [
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'content' => [
+                'active' => '0',
+            ],
+            'url'     => '/fund_accounts_internal/fa_100000000000fa',
+            'method'  => 'PATCH'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Updating an internal Razorpay Fund Account is not permitted',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNAL_FUND_ACCOUNT_UPDATE_NOT_PERMITTED,
+        ],
+    ],
+
     'testDeleteFundAccount' => [
         'request'  => [
             'url'    => '/fund_accounts/fa_100000000000fa',

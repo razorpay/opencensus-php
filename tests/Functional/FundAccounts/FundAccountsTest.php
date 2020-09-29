@@ -2,9 +2,11 @@
 
 namespace RZP\Tests\Functional\FundAccount;
 
+use App;
 use Queue;
 
 use RZP\Models\Feature;
+use RZP\Models\Contact\Type;
 use RZP\Services\RazorXClient;
 use RZP\Jobs\FTS\CreateAccount;
 use RZP\Tests\Functional\TestCase;
@@ -284,6 +286,54 @@ class FundAccountsTest extends TestCase
     public function testUpdateFundAccount()
     {
         $this->fixtures->create('fund_account:bank_account', ['id' => '100000000000fa']);
+
+        $this->startTest();
+    }
+
+    public function testInternalContactUpdateFailsForProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => Type::TAX_PAYMENT_INTERNAL_CONTACT]);
+
+        $this->fixtures->create('fund_account:bank_account',
+                                [
+                                    'id'          => '100000000000fa',
+                                    'source_id'   => '1000000contact',
+                                    'source_type' => 'contact'
+                                ]);
+
+        $this->startTest();
+    }
+
+    public function testInternalContactUpdateAllowedForInternalAuth()
+    {
+        $this->ba->appAuthTest(App::getFacadeRoot()['config']['applications.vendor_payments.secret']);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => Type::TAX_PAYMENT_INTERNAL_CONTACT]);
+
+        $this->fixtures->create('fund_account:bank_account',
+                                [
+                                    'id'          => '100000000000fa',
+                                    'source_id'   => '1000000contact',
+                                    'source_type' => 'contact'
+                                ]);
+
+        $this->startTest();
+    }
+
+    public function testInternalContactUpdateFailsForRZPFees()
+    {
+        $this->ba->appAuthTest(App::getFacadeRoot()['config']['applications.vendor_payments.secret']);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => Type::RZP_FEES]);
+
+        $this->fixtures->create('fund_account:bank_account',
+                                [
+                                    'id'          => '100000000000fa',
+                                    'source_id'   => '1000000contact',
+                                    'source_type' => 'contact'
+                                ]);
 
         $this->startTest();
     }

@@ -1677,6 +1677,7 @@ class Route
         'fund_account_create_internal'             => ['post',     'fund_accounts_internal',                         'FundAccountController@create'                                      ],
         'fund_account_create_public'               => ['post',     'fund_accounts/public',                           'FundAccountController@create'                                      ],
         'fund_account_update'                      => ['patch',    'fund_accounts/{id}',                             'FundAccountController@update'                                      ],
+        'fund_account_update_internal'             => ['patch',    'fund_accounts_internal/{id}',                    'FundAccountController@update'                                      ],
         'fund_account_delete'                      => ['delete',   'fund_accounts/{id}',                             'FundAccountController@delete'                                      ],
         'fund_account_bulk_create'                 => ['post',     'fund_accounts/bulk',                             'FundAccountController@createFundAccountBulk'                       ],
 
@@ -2580,6 +2581,7 @@ class Route
         'contact_get_internal',
         'contact_create_internal',
         'fund_account_create_internal',
+        'fund_account_update_internal',
         'fund_account_get_internal',
         'fund_account_list_internal',
         'payout_create_internal',
@@ -4934,6 +4936,7 @@ class Route
             'settings_fetch_internal',
             'settings_upsert_internal',
             'fund_account_create_internal',
+            'fund_account_update_internal',
             'payout_create_on_internal_contact',
             'tax_payments_enabled_merchant_settings',
             'payout_cancel_internal',
