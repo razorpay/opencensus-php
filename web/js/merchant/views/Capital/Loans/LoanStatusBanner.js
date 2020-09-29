@@ -6,6 +6,22 @@ import { APPLICATION_STATES } from './constants';
 const getStateBanner = (loanApplicationDetails, ref, changeActiveState) => {
   const activeState = loanApplicationDetails.context.activeState;
 
+  const pseudoState = loanApplicationDetails.context.pseudoState;
+
+  // pseudoState takes precedence over loan application' state
+  if (pseudoState) {
+    switch (pseudoState) {
+      case 'BANK_STATEMENT_PROCESSING_FAILED':
+        return (
+          <Banner
+            title="Sorry, Bank statement upload failed"
+            description="Please upload the bank statement using one of the other methods."
+            type="error"
+          />
+        );
+    }
+  }
+
   switch (activeState) {
     case 'CREDIT_PULL_PENDING':
       if (

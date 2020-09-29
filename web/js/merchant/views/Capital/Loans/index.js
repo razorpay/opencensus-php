@@ -18,7 +18,7 @@ import CircularProgress from 'common/new-ui/CircularProgress';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
 import ApplicationOverviewLoadingSkeleton from '../components/ApplicationOverviewLoadingSkeleton';
-import { APPLICATION_STATE_DESCRIPTIONS, CAPITAL_LINKS, HOTJAR_TRIGGERS } from './constants';
+import { CAPITAL_LINKS, HOTJAR_TRIGGERS } from './constants';
 
 export const PROS = [
   <React.Fragment>
@@ -53,9 +53,13 @@ export const PROS = [
   },
 )
 class LoanApplicationOverview extends React.Component {
-  state = {
-    applications: [],
-  };
+  constructor() {
+    super();
+    this.state = {
+      applications: [],
+    };
+    this.onLoadHandlers = [];
+  }
 
   gaEventDispatcher = (eventObject) => {
     eventObject['eventCategory'] = 'Dashboard - WCL LOS';
@@ -63,6 +67,17 @@ class LoanApplicationOverview extends React.Component {
   };
 
   componentDidMount() {
+    const searchParams = this.props.history.location.search;
+    if (searchParams) {
+      const params = new URLSearchParams(searchParams);
+      const action = params.get('action');
+      const loanId = params.get('id');
+      this.onLoadHandlers.push((activeApplication) => {
+        if (action === 'open' && activeApplication.id === loanId) {
+          this.openLoanEntity();
+        }
+      });
+    }
     this.props
       .getApplications({
         owner_type: 'MERCHANT',
@@ -78,7 +93,11 @@ class LoanApplicationOverview extends React.Component {
               application.status !== 'RZP_REJECTED' && application.status !== 'CLOSED',
           );
           if (activeApplications.length > 0 && activeApplications[0].id) {
-            this.fetchApplicationDetails(activeApplications[0].id);
+            this.fetchApplicationDetails(activeApplications[0].id).then(() => {
+              this.onLoadHandlers.forEach((callback) => {
+                callback(activeApplications[0]);
+              });
+            });
           } else {
             this.props.registerNewLoanApplication();
           }
@@ -95,7 +114,7 @@ class LoanApplicationOverview extends React.Component {
 
   fetchApplicationDetails = (id) => {
     if (id && id !== 'new') {
-      this.props.fetchLoanApplicationMeta(id);
+      return this.props.fetchLoanApplicationMeta(id);
     }
   };
 
@@ -118,8 +137,9 @@ class LoanApplicationOverview extends React.Component {
   };
 
   handleModalClose = () => {
+    const { meta } = this.props.loanApplicationDetails;
     const tobeRenderedState = this._getToBeRenderedState();
-    const activeStepLabel = APPLICATION_STATE_DESCRIPTIONS[tobeRenderedState];
+    const activeStepLabel = meta.configuration.getApplicationStateDescriptions()[tobeRenderedState];
     this.gaEventDispatcher({
       eventAction: 'Top | Save & Close',
       eventLabel: `${activeStepLabel} | ${this.getProgressPercentage()}%`,
@@ -134,7 +154,7 @@ class LoanApplicationOverview extends React.Component {
     this.gaEventDispatcher({
       eventAction: `Landing Steps | ${_cta}`,
       eventLabel: `${
-        APPLICATION_STATE_DESCRIPTIONS[currentStatus].short_description
+        meta.configuration.getApplicationStateDescriptions()[currentStatus].short_description
       } | ${_targetStepTitle} | ${this.getProgressPercentage()}% | ${
         this.state.applications.length
       }`,
@@ -157,7 +177,10 @@ class LoanApplicationOverview extends React.Component {
   getProgressPercentage = () => {
     const { meta } = this.props.loanApplicationDetails;
     if (!meta.data.application.status) return 0;
-    return getApplicationProgressPercentage(meta.data.application.status);
+    return getApplicationProgressPercentage(
+      meta.data.application.status,
+      meta.configuration.getApplicationStateGroups(),
+    );
   };
 
   render() {

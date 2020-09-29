@@ -6,13 +6,7 @@ import Amount from 'common/ui/Amount';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
 import { isPreceedingState } from '../utils';
-import {
-  APPLICATION_STATE_DESCRIPTIONS,
-  APPLICATION_STATES,
-  SIDE_NAVIGATION_STATE_GROUPS,
-  TENURE_UNIT_LABELS,
-  TOOLTIP_DESCRIPTIONS,
-} from './constants';
+import { APPLICATION_STATES, TENURE_UNIT_LABELS, TOOLTIP_DESCRIPTIONS } from './constants';
 
 @connect(
   (state) => ({
@@ -27,7 +21,8 @@ import {
 )
 class ApplicationSummary extends Component {
   _getParentStepLabel = (step) => {
-    return Object.values(SIDE_NAVIGATION_STATE_GROUPS).filter((meta) =>
+    const { meta } = this.props.loanApplicationDetails;
+    return Object.values(meta.configuration.getSideNavigationStateGroups()).filter((meta) =>
       Object.values(meta.steps)
         .reduce((acc, curr) => [...acc, ...curr], [])
         .includes(step),
@@ -46,7 +41,7 @@ class ApplicationSummary extends Component {
     this.gaEventDispatcher({
       eventAction: `Right Info | ${canModify ? 'Modify' : 'View More'}`,
       eventLabel: `${this._getParentStepLabel(activeState)}:${
-        APPLICATION_STATE_DESCRIPTIONS[activeState].short_description
+        meta.configuration.getApplicationStateDescriptions()[activeState].short_description
       }`,
     });
     this.props.changeActiveState('BUSINESS_INFO_PENDING');
@@ -264,7 +259,10 @@ class ApplicationSummary extends Component {
       <div class="summary__wrapper">
         <div class="progress-container flex">
           <CircularProgress
-            progress={getApplicationProgressPercentage(meta.data.application.status)}
+            progress={getApplicationProgressPercentage(
+              meta.data.application.status,
+              meta.configuration.getApplicationStateGroups(),
+            )}
             size={100}
             helpMsg={'completed'}
           />

@@ -4,7 +4,6 @@ import { connect } from 'react-redux';
 import Input from 'common/new-ui/Input';
 import { APPLICATION_STATES, BUSINESS_TYPES, HOTJAR_TRIGGERS } from '../constants';
 import {
-  changeActiveState,
   registerBusiness,
   saveApplicationDetails,
   saveBusinessDetails,
@@ -111,7 +110,6 @@ const OutlineLockIcon = <i class="i i-outline-lock" />;
     saveRequestedLoanAttributes,
     registerBusiness,
     saveApplicationDetails,
-    changeActiveState,
     ...NotificationsActions,
   },
 )
@@ -176,8 +174,8 @@ class BusinessInfoEntity extends Component {
     } = this.props;
 
     if (!this.canModify()) {
-      this.props.changeActiveState('PROMOTER_INFO_PENDING');
       this.props._trackNavigationActions('NEXT', 'PROMOTER_INFO_PENDING');
+      this.props.navigation.next();
       return;
     }
     const businessExists = Boolean(
@@ -276,7 +274,7 @@ class BusinessInfoEntity extends Component {
         .saveApplicationDetails(applicationPayload)
         .then((_) => {
           this.props._trackNavigationActions('NEXT', 'PROMOTER_INFO_PENDING');
-          this.props.changeActiveState('PROMOTER_INFO_PENDING');
+          this.props.navigation.next();
         })
         .catch((e) => {
           this.props.showNotification({
@@ -287,7 +285,7 @@ class BusinessInfoEntity extends Component {
     } else {
       this.props.registerBusiness(payload);
       this.props._trackNavigationActions('NEXT', 'PROMOTER_INFO_PENDING');
-      this.props.changeActiveState('PROMOTER_INFO_PENDING');
+      this.props.navigation.next();
       this.props.saveRequestedLoanAttributes(loanAttributes);
     }
   };

@@ -1,47 +1,44 @@
 import React, { Component } from 'react';
 import Note from '../../components/Note';
-import { changeActiveState } from 'merchant/reducers/capital';
 import { connect } from 'react-redux';
 import Button from 'common/new-ui/Button';
 import { isPreceedingState } from '../../utils';
 import getApplicationProgressPercentage from '../../utils/ProgressPercentageCalculator';
-import { APPLICATION_STATE_DESCRIPTIONS } from '../constants';
 
-@connect(
-  state => ({
-    currentState: state.loanApplicationDetails.meta.data.application.status,
-    activeState: state.loanApplicationDetails.context.activeState,
-    applicationId: state.loanApplicationDetails.meta.data.application.id,
-  }),
-  {
-    changeActiveState,
-  }
-)
+@connect((state) => ({
+  currentState: state.loanApplicationDetails.meta.data.application.status,
+  configuration: state.loanApplicationDetails.meta.configuration,
+  activeState: state.loanApplicationDetails.context.activeState,
+  applicationId: state.loanApplicationDetails.meta.data.application.id,
+}))
 class PendingState extends Component {
-  gaEventDispatcher = eventObject => {
+  gaEventDispatcher = (eventObject) => {
     eventObject['eventCategory'] = 'Dashboard - WCL LOS';
     window.rzpAnalytics(eventObject);
   };
 
   _trackSupportClick = () => {
-    const { activeState } = this.props;
+    const { activeState, configuration } = this.props;
 
     this.gaEventDispatcher({
       eventAction: 'Reach Support Cta Clicked',
       eventLabel: `${
-        APPLICATION_STATE_DESCRIPTIONS[activeState].short_description
-      } | ${getApplicationProgressPercentage(activeState)}%`,
+        configuration.getApplicationStateDescriptions()[activeState].short_description
+      } | ${getApplicationProgressPercentage(
+        activeState,
+        configuration.getApplicationStateGroups(),
+      )}%`,
     });
   };
 
   render() {
     const {
-      backState,
       message,
       showNavigation,
-      nextState,
       currentState,
       applicationId,
+      navigation,
+      configuration,
     } = this.props;
     return (
       <div>
@@ -52,34 +49,38 @@ class PendingState extends Component {
         />
         {showNavigation && (
           <div className="actions p-r pull-right m-r">
-            {backState && (
-              <Button.Transparent
-                onClick={() => {
-                  this.gaEventDispatcher({
-                    eventAction: 'Application | Back',
-                    eventLabel: `${
-                      APPLICATION_STATE_DESCRIPTIONS[this.props.activeState]
-                        .short_description
-                    } | ${getApplicationProgressPercentage(currentState)}%`,
-                  });
-                  this.props.changeActiveState(backState);
-                }}
-              >
-                <i className="i i-chevron-left" />
-                Back
-              </Button.Transparent>
-            )}
-            {!isPreceedingState(currentState, nextState) && (
+            <Button.Transparent
+              onClick={() => {
+                this.gaEventDispatcher({
+                  eventAction: 'Application | Back',
+                  eventLabel: `${
+                    configuration.getApplicationStateDescriptions()[this.props.activeState]
+                      .short_description
+                  } | ${getApplicationProgressPercentage(
+                    currentState,
+                    configuration.getApplicationStateGroups(),
+                  )}%`,
+                });
+                navigation.back();
+              }}
+            >
+              <i className="i i-chevron-left" />
+              Back
+            </Button.Transparent>
+            {!isPreceedingState(currentState, this.props.activeState) && (
               <Button.Primary
                 onClick={() => {
                   this.gaEventDispatcher({
                     eventAction: 'Application | Next',
                     eventLabel: `${
-                      APPLICATION_STATE_DESCRIPTIONS[this.props.activeState]
+                      configuration.getApplicationStateDescriptions()[this.props.activeState]
                         .short_description
-                    } | ${getApplicationProgressPercentage(currentState)}%`,
+                    } | ${getApplicationProgressPercentage(
+                      currentState,
+                      configuration.getApplicationStateGroups(),
+                    )}%`,
                   });
-                  this.props.changeActiveState(nextState);
+                  navigation.next();
                 }}
               >
                 Next

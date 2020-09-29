@@ -9,6 +9,9 @@ const ToggleWithDescription = ({
   style,
   name,
   disabled = false,
+  hint,
+  loading = false,
+  showRadioInput = true,
 }) => {
   return (
     <div
@@ -21,14 +24,27 @@ const ToggleWithDescription = ({
         ...style,
       }}
     >
-      <div class="flex">
-        <p class="toggle-title">{title}</p>
-        <input
-          type="radio"
-          class="radio-pointer"
-          name={name}
-          checked={selected}
-        />
+      <div class="title-content-wrapper flex">
+        <div class="toggle-title flex">
+          <p class="">{title}</p>
+          {hint && <span class="text-faded">&nbsp;{hint}</span>}
+        </div>
+        {(() => {
+          if (!showRadioInput) return null;
+
+          if (loading) {
+            return (
+              <div className="loader-ring">
+                <div />
+                <div />
+                <div />
+                <div />
+              </div>
+            );
+          } else {
+            return <input type="radio" className="radio-pointer" name={name} checked={selected} />;
+          }
+        })()}
       </div>
       <p class="toggle-description">{description}</p>
     </div>

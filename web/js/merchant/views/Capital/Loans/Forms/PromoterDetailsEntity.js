@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Input from 'common/new-ui/Input';
 import {
-  changeActiveState,
   saveApplicantDetails,
   saveApplicationDetails,
   saveBusinessDetails,
@@ -28,7 +27,6 @@ const OutlineLockIcon = <i class="i i-outline-lock" />;
     saveApplicantDetails,
     saveBusinessDetails,
     saveApplicationDetails,
-    changeActiveState,
     ...NotificationsActions,
   },
 )
@@ -321,7 +319,7 @@ class PromoterDetailsEntity extends Component {
             };
 
             applicationResponse = await this.props.saveApplicationDetails(applicationPayload);
-            this.props.changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING, { from: 'next' });
+            this.props.navigation.next({ from: 'next' });
             this.props._trackNavigationActions('NEXT', APPLICATION_STATES.CREDIT_PULL_PENDING);
           } catch (e) {
             //TODO:show appropriate errors
@@ -353,7 +351,7 @@ class PromoterDetailsEntity extends Component {
             business_id: [loanApplicationDetails.business_details.data.business.id],
             ...payload,
           });
-          this.props.changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING, { from: 'next' });
+          this.props.navigation.next({ from: 'next' });
           this.props._trackNavigationActions('NEXT', APPLICATION_STATES.CREDIT_PULL_PENDING);
         } catch (e) {
           this.props.showNotification({
@@ -368,7 +366,7 @@ class PromoterDetailsEntity extends Component {
         }
       }
     } else {
-      this.props.changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING, { from: 'next' });
+      this.props.navigation.next({ from: 'next' });
       this.props._trackNavigationActions('NEXT', APPLICATION_STATES.CREDIT_PULL_PENDING);
     }
   };
@@ -541,7 +539,7 @@ class PromoterDetailsEntity extends Component {
               >
                 T&C&nbsp;
               </a>
-              and our
+              and our&nbsp;
               <a
                 className="text-primary"
                 target="_blank"
@@ -572,7 +570,7 @@ class PromoterDetailsEntity extends Component {
             className="btn btn-link pull-right"
             onClick={() => {
               this.props._trackNavigationActions('BACK', 'BUSINESS_INFO_PENDING');
-              this.props.changeActiveState('BUSINESS_INFO_PENDING');
+              this.props.navigation.back();
             }}
           >
             <i className="i i-chevron-left" />

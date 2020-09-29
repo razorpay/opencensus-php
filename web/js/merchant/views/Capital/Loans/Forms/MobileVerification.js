@@ -3,12 +3,12 @@ import { OtpInput } from 'merchant/components/OtpInput';
 import { connect } from 'react-redux';
 import ajax from 'merchant/utils/ajax';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
-import { changeActiveState, saveD2cReportDetails, submitOtp } from 'merchant/reducers/capital';
+import { saveD2cReportDetails, submitOtp } from 'merchant/reducers/capital';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
 import { Modal, ModalMask } from 'common/new-ui/Modal';
-import { HOTJAR_TRIGGERS, APPLICATION_STATES, APPLICATION_STATE_DESCRIPTIONS } from '../constants';
+import { HOTJAR_TRIGGERS, APPLICATION_STATES } from '../constants';
 
 @connect(
   (state) => ({
@@ -18,7 +18,6 @@ import { HOTJAR_TRIGGERS, APPLICATION_STATES, APPLICATION_STATE_DESCRIPTIONS } f
   {
     submitOtp,
     saveD2cReportDetails,
-    changeActiveState,
     ...NotificationsActions,
   },
 )
@@ -41,12 +40,14 @@ class MobileVerification extends Component {
   };
 
   componentDidMount() {
+    const { configuration } = this.props.loanApplicationDetails.meta;
     this.sendReqForOtp();
     triggerHotjarRecording(HOTJAR_TRIGGERS.LOANS_CREDIT_INQUIRY);
     this.props._trackNavigationActions(
       'NEXT',
       APPLICATION_STATES.CREDIT_PULL_PENDING,
-      APPLICATION_STATE_DESCRIPTIONS[APPLICATION_STATES.CREDIT_PULL_PENDING].stages.OTP_SCREEN,
+      configuration.getApplicationStateDescriptions()[APPLICATION_STATES.CREDIT_PULL_PENDING].stages
+        .OTP_SCREEN,
     );
   }
 
@@ -112,7 +113,7 @@ class MobileVerification extends Component {
       const otpResponse = await this.props.submitOtp(payload);
       if (otpResponse && otpResponse.data) {
         this.props.saveD2cReportDetails(otpResponse);
-        this.props.changeActiveState('PREVERIFICATION_UPLOAD_PENDING');
+        this.props.navigation.next();
       } else {
         this.setState({
           hasError: true,
@@ -135,7 +136,7 @@ class MobileVerification extends Component {
         eventAction: 'Modify Phone Number',
       });
     }
-    this.props.changeActiveState('PROMOTER_INFO_PENDING');
+    this.props.navigation.back();
   };
 
   getErrorMessage = () => {

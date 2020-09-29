@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import CreditOffer from '../../components/CreditOffer';
 import {
   acceptCreditOffer,
-  changeActiveState,
   fetchCreditOffers,
   fetchLoanApplicationMeta,
   getAcceptedOffer,
@@ -22,7 +21,6 @@ import { APPLICATION_STATES, HOTJAR_TRIGGERS } from '../constants';
     acceptCreditOffer,
     fetchCreditOffers,
     getAcceptedOffer,
-    changeActiveState,
     fetchLoanApplicationMeta,
   },
 )
@@ -59,7 +57,7 @@ class CreditOfferEntity extends Component {
 
   handleBack = () => {
     this.props._trackNavigationActions('BACK', APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS);
-    this.props.changeActiveState(APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS);
+    this.props.navigation.back();
   };
 
   render() {
@@ -107,7 +105,7 @@ class CreditOfferEntity extends Component {
                     'NEXT',
                     APPLICATION_STATES.NACH_CREATION_PENDING,
                   );
-                  this.props.changeActiveState(APPLICATION_STATES.NACH_CREATION_PENDING);
+                  this.props.navigation.next();
                 }}
               >
                 Next

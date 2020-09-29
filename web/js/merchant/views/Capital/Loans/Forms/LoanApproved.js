@@ -3,7 +3,7 @@ import CreditOffer from '../../components/CreditOffer';
 import RepaymentInformation from '../../components/RepaymentInformation';
 import Button from 'common/new-ui/Button';
 import { connect } from 'react-redux';
-import { changeActiveState, fetchLoanApplicationMeta } from 'merchant/reducers/capital';
+import { fetchLoanApplicationMeta } from 'merchant/reducers/capital';
 import SettlementAccountDetails from '../../components/SettlementAccountDetails';
 import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
 import { APPLICATION_STATES, HOTJAR_TRIGGERS } from '../constants';
@@ -17,7 +17,6 @@ import { triggerHotjarRecording } from 'common/utils/hotjar';
   }),
   {
     fetchLoanApplicationMeta,
-    changeActiveState,
   },
 )
 class LoanApproved extends Component {
@@ -59,7 +58,7 @@ class LoanApproved extends Component {
           <Button.Transparent
             onClick={() => {
               this.props._trackNavigationActions('BACK', APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW);
-              this.props.changeActiveState(APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW);
+              this.props.navigation.back();
             }}
           >
             <i className="i i-chevron-left" />
@@ -73,7 +72,7 @@ class LoanApproved extends Component {
               class="no-margin"
               onClick={() => {
                 this.props._trackNavigationActions('NEXT', APPLICATION_STATES.CREDIT_DISBURSED);
-                this.props.changeActiveState(APPLICATION_STATES.CREDIT_DISBURSED);
+                this.props.navigation.next();
               }}
             >
               Next

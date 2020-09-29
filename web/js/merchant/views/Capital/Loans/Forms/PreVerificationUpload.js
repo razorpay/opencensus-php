@@ -3,18 +3,20 @@ import { connect } from 'react-redux';
 import DocumentsUpload from '../../components/DocumentsUpload';
 import { merchantFetch } from 'merchant/utils/ajax';
 import {
-  changeActiveState,
   fetchLoanApplicationMeta,
   getNetBankingLink,
+  processBankStatement,
   uploadBankStatement,
   uploadPreVerificationDocuments,
+  changePseudoState,
 } from 'merchant/reducers/capital';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import FormSectionLoadingSkeleton from '../../components/FormSectionLoadingSkeleton';
 import { APPLICATION_STATES, HOTJAR_TRIGGERS } from '../constants';
-import { isPreceedingState } from '../../utils';
+import { isPreceedingState, postToUrl } from '../../utils';
+import { withRouter } from 'react-router-dom';
 
 const createFormData = (form = {}) => {
   let formData = new FormData();
@@ -33,6 +35,7 @@ export const toBase64 = (file) =>
     reader.onerror = (error) => reject(error);
   });
 
+@withRouter
 @connect(
   (state) => ({
     user: state.session.user,
@@ -42,59 +45,173 @@ export const toBase64 = (file) =>
     uploadPreVerificationDocuments,
     uploadBankStatement,
     fetchLoanApplicationMeta,
-    changeActiveState,
+    changePseudoState,
     ...NotificationActions,
   },
 )
 class PreVerificationUpload extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      activeTabIndex: 0,
-      documents: [],
-    };
-
-    this.tabs = [
-      {
-        index: 0,
-        title: 'Address Proof',
-        value: 'address_proof',
-      },
-      {
-        index: 1,
-        title: 'Business Proof',
-        value: 'business_proof',
-      },
-      {
-        index: 2,
-        title: 'Bank Statement',
-        value: 'financial_proof',
-      },
-    ];
 
     this.uploadModesMeta = {
       native_upload: {
         title: 'Upload from this Device',
-        description: 'Drag and upload the document here',
-        disabled: false,
-      },
-      native_xml_upload: {
-        title: 'Upload from this Device',
-        description: 'Drag or upload last 6 months bank statements',
+        description: "Drag or upload last 6 month's statement till today",
         disabled: false,
       },
       perfios: {
         title: 'Use Netbanking',
-        disabled: true,
-        description: 'Currently Unservicable',
+        disabled: false,
+        hint: '(Recommended)',
+        description: 'We will be redirecting you to Netbanking',
       },
     };
+
+    this.state = {
+      activeTabIndex: 0,
+      documents: [],
+      tabs: [],
+      uploadModesMeta: this.uploadModesMeta,
+      perfiosRedirectErrorCount: 0,
+    };
   }
+
+  getBankStatementDetails = () => {
+    const { meta, document_groups } = this.props.loanApplicationDetails;
+    if (!document_groups) return;
+
+    const documentGroups = document_groups.data.document_groups;
+
+    const incomeProofDocumentGroup = documentGroups
+      .filter((docGroup) => docGroup.master_documents && docGroup.master_documents.length > 0)
+      .find((docGroup) =>
+        docGroup.master_documents.find((masterDoc) => masterDoc.type === 'bank_statement'),
+      );
+    const bankStatementMasterDoc = incomeProofDocumentGroup.master_documents.find(
+      (masterDoc) => masterDoc.type === 'bank_statement',
+    );
+    return {
+      document_group_id: incomeProofDocumentGroup.document_group.id,
+      document_master_id: bankStatementMasterDoc.id,
+      document_id: meta.data.application.documents.find(
+        (doc) => doc.document_group_id === incomeProofDocumentGroup.document_group.id,
+      ).id,
+    };
+  };
+
+  showProcessingBankStatementFeedback = () => {
+    this.setState((prevState) => ({
+      processingPerfiosBankStatement: true,
+      uploadModesMeta: {
+        ...prevState.uploadModesMeta,
+        perfios: {
+          title: 'Processing Bank Statement',
+          disabled: false,
+          description: 'Please wait till we process your bank statement',
+          loading: true,
+        },
+        native_upload: {
+          title: 'Upload from this Device',
+          description: "Drag or upload last 6 month's statement till today",
+          disabled: true,
+          showRadioInput: false,
+        },
+      },
+    }));
+  };
 
   componentDidMount() {
     this.deriveFormData();
     triggerHotjarRecording(HOTJAR_TRIGGERS.LOANS_DOCUMENT_UPLOAD);
+    const { promoter_details, meta } = this.props.loanApplicationDetails;
+    const searchParams = this.props.history.location.search;
+    if (searchParams) {
+      const {
+        document_group_id: documentGroupId,
+        document_master_id: documentMasterId,
+      } = this.getBankStatementDetails();
+      const params = new URLSearchParams(searchParams);
+      const loanId = params.get('id');
+      const applicantId = promoter_details.data.applicant.id;
+      const success = params.get('success') ? params.get('success').trim() === 'true' : false;
+
+      this.props.history.push('#');
+      if (documentGroupId && documentMasterId && loanId === meta.data.application.id) {
+        this.processBankSubmissionCallback({
+          applicantId,
+          loanId,
+          documentMasterId,
+          documentGroupId,
+          success,
+        });
+      }
+    }
   }
+
+  disablePerfios = () => {
+    this.props.changePseudoState('BANK_STATEMENT_PROCESSING_FAILED');
+    this.setState({
+      processingPerfiosBankStatement: false,
+    });
+    this.setState((prevState) => ({
+      processingPerfiosBankStatement: false,
+      uploadModesMeta: {
+        ...prevState.uploadModesMeta,
+        perfios: {
+          title: 'Use Netbanking',
+          disabled: true,
+          description: 'Previous upload failed',
+        },
+        native_upload: {
+          ...prevState.uploadModesMeta.native_upload,
+          disabled: false,
+        },
+      },
+      selectedUploadModes: {
+        ...prevState.selectedUploadModes,
+        [this.getBankStatementDetails().document_id]: 'native_upload',
+      },
+    }));
+  };
+
+  showBankStatementProcessedFeedback = () => {
+    this.setState((prevState) => ({
+      processingPerfiosBankStatement: false,
+      uploadModesMeta: this.uploadModesMeta,
+    }));
+  };
+
+  processBankSubmissionCallback = async ({
+    loanId,
+    documentGroupId,
+    documentMasterId,
+    applicantId,
+    success,
+  }) => {
+    this.handleTabChange(2);
+    try {
+      if (success) {
+        this.showProcessingBankStatementFeedback();
+        await processBankStatement({
+          entity_type: 'applicant',
+          entity_id: applicantId,
+          application_id: loanId,
+          document_group_id: documentGroupId,
+          document_master_id: documentMasterId,
+        });
+        this.showBankStatementProcessedFeedback();
+        this.props.history.push('#');
+        this.props.fetchLoanApplicationMeta(
+          this.props.loanApplicationDetails.meta.data.application.id,
+        );
+      } else {
+        this.disablePerfios();
+      }
+    } catch (e) {
+      console.error('error while processing bank statement', e);
+      this.disablePerfios();
+    }
+  };
 
   componentDidUpdate(prevProps, prevState, snapshot) {
     if (
@@ -113,7 +230,7 @@ class PreVerificationUpload extends Component {
         activeTabIndex: prevState.activeTabIndex + indexChangeBy,
       }),
       () => {
-        const tab = this.tabs.filter((tab) => tab.index === this.state.activeTabIndex);
+        const tab = this.state.tabs.filter((tab) => tab.index === this.state.activeTabIndex);
         const title = tab.length ? tab[0].title : null;
 
         this.props._trackNavigationActions(
@@ -179,6 +296,9 @@ class PreVerificationUpload extends Component {
 
     const isAadhaarDocument = documentType === 'aadhaar';
 
+    if (documentId === this.getBankStatementDetails().document_id) {
+      this.props.changePseudoState(null);
+    }
     const data = {
       file,
       display_name: file.name,
@@ -224,7 +344,7 @@ class PreVerificationUpload extends Component {
             type: 'error',
             message: 'Occurred a problem while uploading the document.',
           });
-          console.log('Error', e);
+          console.error(e);
           reject(e);
         });
     });
@@ -263,7 +383,7 @@ class PreVerificationUpload extends Component {
           type: 'error',
           message: 'Occurred a problem while uploading the document.',
         });
-        console.log('Error', e);
+        console.error(e);
         reject(e);
       });
   };
@@ -313,7 +433,7 @@ class PreVerificationUpload extends Component {
   };
 
   getEntityDocuments = (tabIndex) => {
-    switch (this.tabs.find((tab) => tab.index === tabIndex).value) {
+    switch (this.state.tabs.find((tab) => tab.index === tabIndex).value) {
       case 'address_proof':
         return this.state.documents.filter((document) => {
           if (
@@ -347,12 +467,21 @@ class PreVerificationUpload extends Component {
     }
   };
 
+  getTabs = () => {
+    const { loanApplicationDetails } = this.props;
+    if (!loanApplicationDetails.meta) return [];
+
+    return loanApplicationDetails.meta.configuration.getRequiredDocumentEntities();
+  };
+
   deriveFormData = () => {
-    if (!this.props.loanApplicationDetails.document_groups.data.document_groups) return;
+    const { loanApplicationDetails } = this.props;
+    if (!loanApplicationDetails || !loanApplicationDetails.document_groups.data.document_groups)
+      return;
 
-    if (!this.props.loanApplicationDetails.meta.data.application.documents) return;
+    if (!loanApplicationDetails.meta.data.application.documents) return;
 
-    const { document_groups } = this.props.loanApplicationDetails.document_groups.data;
+    const { document_groups } = loanApplicationDetails.document_groups.data;
 
     const applicationDocuments = this.props.loanApplicationDetails.meta.data.application.documents;
     const documents = applicationDocuments.reduce((acc, applicationDocument) => {
@@ -391,9 +520,10 @@ class PreVerificationUpload extends Component {
       selectedUploadModes: documents.reduce((acc, curr) => {
         return {
           ...acc,
-          [curr.id]: curr.documentUploadOptions.slice(-1)[0],
+          [curr.id]: curr.documentUploadOptions[0],
         };
       }, {}),
+      tabs: this.getTabs(),
     });
   };
 
@@ -416,7 +546,7 @@ class PreVerificationUpload extends Component {
         handleFileChange={this.handleFileChange}
         onRemoveFile={this.handleRemoveFile}
         canUpload={this.canUpload()}
-        uploadModesMeta={this.uploadModesMeta}
+        uploadModesMeta={this.state.uploadModesMeta}
         selectedUploadModes={this.state.selectedUploadModes}
         handleUploadModeChange={this.handleUploadModeChange}
         handleDocumentTypeChange={this.handleDocumentTypeChange}
@@ -440,75 +570,118 @@ class PreVerificationUpload extends Component {
   };
 
   handleUploadModeChange = (document, selectedMode) => {
-    this.setState(
-      (prevState) => ({
+    this.setState((prevState) => ({
+      selectedUploadModes: {
+        ...prevState.selectedUploadModes,
+        [document.id]: selectedMode,
+      },
+    }));
+  };
+
+  startPerfiosProcess = (redirectLinkPayload) => {
+    if (redirectLinkPayload.data) {
+      const {
+        data: { url, payload, signature },
+      } = redirectLinkPayload;
+      postToUrl(url, {
+        payload,
+        signature,
+      });
+    }
+  };
+
+  getPerfiosRedirectLink = () => {
+    const { user } = this.props;
+
+    const { meta, promoter_details, document_groups } = this.props.loanApplicationDetails;
+
+    const {
+      document_master_id: documentMasterId,
+      document_group_id: documentGroupId,
+    } = this.getBankStatementDetails();
+
+    const loanId = meta.data.application.id;
+    const applicantId = promoter_details.data.applicant.id;
+
+    const returnUrlParams = new URLSearchParams({
+      action: 'open',
+      id: loanId,
+      txnId: '%s',
+      success: '%s',
+    });
+
+    const returnUrl = new URL(
+      `${window.location.protocol}//${
+        window.location.host
+      }/app/capital/loans?${returnUrlParams.toString()}`,
+    );
+    return getNetBankingLink({
+      entity_id: applicantId,
+      entity_type: 'APPLICANT',
+      email: user.email,
+      return_url: returnUrl,
+      destination: 'netbankingFetch',
+      application_id: loanId,
+      document_master_id: documentMasterId,
+      document_group_id: documentGroupId,
+    })
+      .then((response) => {
+        if (response && !response.errors) {
+          this.startPerfiosProcess(response);
+        }
+      })
+      .catch((e) => {
+        this.setState(
+          (prevState) => ({
+            perfiosRedirectErrorCount: prevState.perfiosRedirectErrorCount + 1,
+          }),
+          this.handlePerfiosRedirectError,
+        );
+      });
+  };
+
+  handlePerfiosRedirectError = () => {
+    if (this.state.perfiosRedirectErrorCount >= 3) {
+      this.setState((prevState) => ({
+        uploadModesMeta: {
+          perfios: {
+            title: 'Use Netbanking',
+            disabled: true,
+            description: 'Currently Unserviceable',
+          },
+          native_upload: {
+            ...prevState.uploadModesMeta.native_upload,
+            disabled: false,
+          },
+        },
         selectedUploadModes: {
           ...prevState.selectedUploadModes,
-          [document.id]: selectedMode,
+          [this.getBankStatementDetails().document_id]: 'native_upload',
         },
-      }),
-      () => {
-        if (selectedMode === 'perfios') {
-          //TODO:show modal first for confirmation before redirection
-          //TODO:write in switch case
-          const { user } = this.props;
-
-          const { meta, promoter_details } = this.props.loanApplicationDetails;
-
-          getNetBankingLink({
-            entity_id: promoter_details.data.applicant.id,
-            entity_type: 'APPLICANT',
-            email: user.email,
-            return_url: window.location.href,
-            destination: 'netbankingFetch',
-            application_id: meta.data.application.id,
-            document_masters_id: document.master_documents[0].id,
-            document_master_id: document.master_documents[0].id,
-            document_group_id: document.document_group.id,
-          })
-            .then((response) => {
-              if (response && !response.errors) {
-                // ajax(
-                //   {
-                //     url: response.data.location,
-                //     method: 'GET',
-                //     headers: {
-                //
-                //     },
-                //   },
-                //   {},
-                //   '/merchant/api'
-                // )
-                window.document.cookie = response.data.set_cookie;
-                window.open(response.data.location, '_blank');
-              }
-            })
-            .catch((e) => {
-              //TODO: handle errors
-            });
-        }
-        //TODO:Handle external actions like redirecting to perfios
-      },
-    );
+      }));
+    }
   };
 
   render() {
-    const { activeTabIndex } = this.state;
+    const { activeTabIndex, tabs } = this.state;
+    const { navigation, loanApplicationDetails } = this.props;
 
     if (
-      this.props.loanApplicationDetails.document_groups.loading ||
-      !this.props.loanApplicationDetails.meta.data.application.documents
+      loanApplicationDetails.document_groups.loading ||
+      !loanApplicationDetails.meta.data.application.documents
     ) {
       return <FormSectionLoadingSkeleton />;
     }
 
-    const { status } = this.props.loanApplicationDetails.meta.data.application;
+    const { meta, context } = loanApplicationDetails;
+
+    const { status } = meta.data.application;
 
     return (
       <tabbed-container class="documents-upload-container">
         <span class="title">Documents Upload</span>
         <header>
-          {this.tabs.map((tab) => (
+          {tabs.map((tab) => (
             <a
               className={activeTabIndex === tab.index && 'active'}
               onClick={() => this.handleTabChange(tab.index, tab.title)}
@@ -523,7 +696,7 @@ class PreVerificationUpload extends Component {
           ))}
         </header>
         <div class="documents-upload-tabs-wrapper">
-          {this.tabs.map((tab) => (
+          {tabs.map((tab) => (
             <div
               className={`documents-upload-tab ${
                 this.state.activeTabIndex === tab.index ? 'active' : 'inactive'
@@ -532,7 +705,7 @@ class PreVerificationUpload extends Component {
               {this.getTabContent(tab.index)}
             </div>
           ))}
-          <div className="actions pull-right">
+          <div className="actions pull-right flex">
             {this.state.activeTabIndex > 0 ? (
               <Button.Transparent onClick={() => this.handleFooterActions(-1)}>
                 <i className="i i-chevron-left" />
@@ -545,14 +718,14 @@ class PreVerificationUpload extends Component {
                     'BACK',
                     APPLICATION_STATES.CREDIT_PULL_PENDING,
                   );
-                  this.props.changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING);
+                  navigation.back();
                 }}
               >
                 <i className="i i-chevron-left" />
                 Back
               </Button.Transparent>
             )}
-            {this.state.activeTabIndex < this.tabs.length - 1 && (
+            {this.state.activeTabIndex < tabs.length - 1 && (
               <AsyncBtn.Primary
                 type="submit"
                 class="m-l"
@@ -562,22 +735,43 @@ class PreVerificationUpload extends Component {
                 <i className="i i-chevron-right" />
               </AsyncBtn.Primary>
             )}
-            {this.state.activeTabIndex === this.tabs.length - 1 &&
-              !isPreceedingState(status, APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS) && (
+            {this.state.activeTabIndex === tabs.length - 1 &&
+              !isPreceedingState(status, context.activeState) && (
                 <AsyncBtn.Primary
                   type="submit"
                   class="m-l"
                   onClick={() => {
-                    this.props.changeActiveState(APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS);
                     this.props._trackNavigationActions(
                       'NEXT',
                       APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS,
                     );
+                    navigation.next();
                   }}
                 >
                   Next
                   <i className="i i-chevron-right" />
                 </AsyncBtn.Primary>
+              )}
+            {this.state.activeTabIndex === this.state.tabs.length - 1 &&
+              isPreceedingState(status, context.activeState) &&
+              Object.values(this.state.selectedUploadModes).includes('perfios') && (
+                <div class="m-l">
+                  <AsyncBtn.Primary
+                    type="submit"
+                    disabled={this.state.processingPerfiosBankStatement}
+                    class="no-margin"
+                    onClick={() => {
+                      this.props._trackNavigationActions(
+                        'NEXT',
+                        APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS,
+                      );
+                      return this.getPerfiosRedirectLink();
+                    }}
+                  >
+                    Next
+                    <i className="i i-chevron-right" />
+                  </AsyncBtn.Primary>
+                </div>
               )}
           </div>
         </div>

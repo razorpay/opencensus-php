@@ -3,7 +3,6 @@ import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { connect } from 'react-redux';
 
 import {
-  changeActiveState,
   createNach,
   fetchLoanApplicationMeta,
   getNach,
@@ -16,6 +15,7 @@ import { downloadFromUFH } from 'merchant/utils/downloadFile';
 import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
 import { APPLICATION_STATES, HOTJAR_TRIGGERS } from '../constants';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
+import { isPreceedingState } from '../../utils';
 
 const createFormData = (form = {}) => {
   let formData = new FormData();
@@ -34,7 +34,6 @@ const createFormData = (form = {}) => {
   {
     fetchLoanApplicationMeta,
     getNach,
-    changeActiveState,
     ...NotificationActions,
   },
 )
@@ -263,6 +262,7 @@ class NachEntity extends Component {
       nach_details,
       credit_offer_details,
       accepted_offer_details,
+      meta,
     } = this.props.loanApplicationDetails;
 
     if (nach_details.loading || credit_offer_details.loading || accepted_offer_details.loading)
@@ -296,7 +296,7 @@ class NachEntity extends Component {
                   'BACK',
                   APPLICATION_STATES.CREDIT_OFFER_GENERATED,
                 );
-                this.props.changeActiveState(APPLICATION_STATES.CREDIT_OFFER_GENERATED);
+                this.props.navigation.back();
               }}
             >
               <i className="i i-chevron-left" />
@@ -309,7 +309,7 @@ class NachEntity extends Component {
                   'NEXT',
                   APPLICATION_STATES.SLOT_SELECTION_PENDING,
                 );
-                this.props.changeActiveState(APPLICATION_STATES.SLOT_SELECTION_PENDING);
+                this.props.navigation.next();
               }}
             >
               Next
@@ -334,18 +334,20 @@ class NachEntity extends Component {
             </div>
           </div>
         ))}
-        <AsyncBtn.Primary
-          type="submit"
-          class="btn btn-primary pull-right"
-          onClick={this.handleNext}
-        >
-          Next
-          <i className="i i-chevron-right" />
-        </AsyncBtn.Primary>
-        <button
-          className="btn btn-link pull-right"
-          onClick={() => this.props.changeActiveState(APPLICATION_STATES.CREDIT_OFFER_GENERATED)}
-        >
+        {!isPreceedingState(
+          meta.data.application.status,
+          APPLICATION_STATES.NACH_CREATION_PENDING,
+        ) && (
+          <AsyncBtn.Primary
+            type="submit"
+            class="btn btn-primary pull-right"
+            onClick={this.handleNext}
+          >
+            Next
+            <i className="i i-chevron-right" />
+          </AsyncBtn.Primary>
+        )}
+        <button className="btn btn-link pull-right" onClick={this.props.navigation.back}>
           <i className="i i-chevron-left" />
           Back
         </button>

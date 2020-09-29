@@ -7,12 +7,30 @@ import ToggleWithDescription from '../components/ToggleWithDescription';
 import { DOCUMENT_GROUP_NAMES_MAP } from '../Loans/constants';
 
 class DocumentsUpload extends React.Component {
+  isNativeUploadAllowed = (document) => {
+    const { selectedUploadModes } = this.props;
+    return (
+      selectedUploadModes[document.id] === 'native_upload' ||
+      (selectedUploadModes[document.id] !== 'native_upload' && this.isDocumentUploaded(document))
+    );
+  };
+
+  isDocumentUploaded = (document) => {
+    return !!document.store_id;
+  };
+
+  docHasMultipleUploadOptions = (document) => {
+    const { canUpload } = this.props;
+    return (
+      document.documentUploadOptions.length > 1 && canUpload && !this.isDocumentUploaded(document)
+    );
+  };
+
   render() {
     let {
       handleFileChange,
       documents,
       onRemoveFile,
-      canUpload,
       selectedUploadModes,
       uploadModesMeta,
       handleUploadModeChange,
@@ -57,38 +75,37 @@ class DocumentsUpload extends React.Component {
                     required
                     disabled={!!document.store_id}
                     onChange={(event) => handleDocumentTypeChange(document, event.target.value)}
-                    // defaultValue={document.document_masters_id}
                     value={selectedDoc.name}
                     options={allowedDocuments}
                   />
                 )}
               </div>
               <div className="Input-content">
-                {document.documentUploadOptions.length > 1 &&
-                  canUpload &&
-                  !document.store_id && (
-                    <div class="document-upload-options-wrapper">
-                      {document.documentUploadOptions.map((uploadOption) => (
-                        <ToggleWithDescription
-                          title={uploadModesMeta[uploadOption].title}
-                          description={uploadModesMeta[uploadOption].description}
-                          selected={uploadOption === selectedUploadModes[document.id]}
-                          onClick={() => handleUploadModeChange(document, uploadOption)}
-                          disabled={uploadModesMeta[uploadOption].disabled}
-                          style={{ marginBottom: 12 }}
-                        />
-                      ))}
-                    </div>
-                  )}
-                {(selectedUploadModes[document.id] === 'native_upload' ||
-                  selectedUploadModes[document.id] === 'native_xml_upload') && (
+                {this.docHasMultipleUploadOptions(document) && (
+                  <div class="document-upload-options-wrapper">
+                    {document.documentUploadOptions.map((uploadOption) => (
+                      <ToggleWithDescription
+                        key={uploadOption}
+                        title={uploadModesMeta[uploadOption].title}
+                        description={uploadModesMeta[uploadOption].description}
+                        hint={uploadModesMeta[uploadOption].hint}
+                        selected={uploadOption === selectedUploadModes[document.id]}
+                        onClick={() => handleUploadModeChange(document, uploadOption)}
+                        disabled={uploadModesMeta[uploadOption].disabled}
+                        style={{ marginBottom: 12 }}
+                        loading={uploadModesMeta[uploadOption].loading}
+                        showRadioInput={uploadModesMeta[uploadOption].showRadioInput}
+                      />
+                    ))}
+                  </div>
+                )}
+                {this.isNativeUploadAllowed(document, selectedUploadModes) && (
                   <FileUpload
                     showCloseBtn={false}
                     showFileSize
                     name={document.id}
                     stagedFileStatus="error"
                     showAcceptInfo
-                    // maxSize={document.maxDocumentSize}
                     accept={document.acceptDocumentTypes}
                     size="large"
                     defaultValue={!!document.store_id}
@@ -99,9 +116,6 @@ class DocumentsUpload extends React.Component {
                     onCloseClick={() => onRemoveFile(document.id)}
                     dropZoneCavityClassName={document.id}
                     id={document.id}
-                    //need not to disable as we are not showing close button.
-                    // as this cannot be modified.
-                    // disabled={!canUpload}
                   />
                 )}
                 <div className="Input-desc">

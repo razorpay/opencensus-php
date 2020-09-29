@@ -1,10 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import {
-  changeActiveState,
-  fetchLoanApplicationMeta,
-  scheduleVerification,
-} from 'merchant/reducers/capital';
+import { fetchLoanApplicationMeta, scheduleVerification } from 'merchant/reducers/capital';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import ToggleWithDescription from '../../components/ToggleWithDescription';
 import Input from 'common/new-ui/Input';
@@ -24,7 +20,6 @@ import { triggerHotjarRecording } from 'common/utils/hotjar';
     fetchLoanApplicationMeta,
     scheduleVerification,
     showNotification,
-    changeActiveState,
   },
 )
 class VerificationSlotSelection extends Component {
@@ -97,7 +92,7 @@ class VerificationSlotSelection extends Component {
 
     if (!this.canModify()) {
       this.props._trackNavigationActions('NEXT', APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED);
-      this.props.changeActiveState(APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED);
+      this.props.navigation.next();
       return;
     }
 
@@ -263,7 +258,7 @@ class VerificationSlotSelection extends Component {
                   'BACK',
                   APPLICATION_STATES.NACH_CREATION_PENDING,
                 );
-                this.props.changeActiveState(APPLICATION_STATES.NACH_CREATION_PENDING);
+                this.props.navigation.back();
               }}
             >
               <i className="i i-chevron-left" />

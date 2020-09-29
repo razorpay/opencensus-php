@@ -2,16 +2,7 @@ import React, { Component } from 'react';
 import MultiLevelStepper from 'merchant/views/Capital/components/MultiLevelStepper';
 import { connect } from 'react-redux';
 import { fetchLoanApplicationMeta } from 'merchant/reducers/capital';
-import {
-  APPLICATION_STATE_DESCRIPTIONS,
-  APPLICATION_STATE_GROUPS,
-  CONSOLIDATED_STATES,
-  CONSOLIDATED_STATE_SEQUENCE,
-  ERROR_STATES,
-  PENDING_APPLICATION_STATES,
-  STATE_GROUP_COMPLETION_DESCRIPTION,
-  HOTJAR_TRIGGERS,
-} from './constants';
+import { ERROR_STATES, PENDING_APPLICATION_STATES, HOTJAR_TRIGGERS } from './constants';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 
 @connect(
@@ -48,6 +39,8 @@ class ApplicationStatusOverview extends Component {
   viewCompletedStateGroup = (parentStep, _targetStepTitle) => {
     const { meta } = this.props.loanApplicationDetails;
 
+    const APPLICATION_STATE_GROUPS = this.getUserFlowConfiguration().getApplicationStateGroups();
+
     const targetStep = APPLICATION_STATE_GROUPS[parentStep][0];
     this.props.openLoanEntity(
       meta.data.application.id,
@@ -64,6 +57,9 @@ class ApplicationStatusOverview extends Component {
   };
 
   getStepTobeShown = (classList, step) => {
+    const APPLICATION_STATE_GROUPS = this.getUserFlowConfiguration().getApplicationStateGroups();
+    const APPLICATION_STATE_DESCRIPTIONS = this.getUserFlowConfiguration().getApplicationStateDescriptions();
+
     const { meta } = this.props.loanApplicationDetails;
     const applicationStatus = meta.data.application.status;
     if (classList.includes('active')) {
@@ -79,6 +75,7 @@ class ApplicationStatusOverview extends Component {
     const { meta } = this.props.loanApplicationDetails;
     const applicationStatus = meta.data.application.status;
 
+    const APPLICATION_STATE_GROUPS = this.getUserFlowConfiguration().getApplicationStateGroups();
     const isCurrentStateGroup = APPLICATION_STATE_GROUPS[step].includes(applicationStatus);
 
     //both cannot be true
@@ -111,6 +108,8 @@ class ApplicationStatusOverview extends Component {
     if (isErrorState) {
       classList.push('error');
     }
+    const STATE_GROUP_COMPLETION_DESCRIPTION = this.getUserFlowConfiguration().getCompletedStateGroupDescriptions();
+
     const descriptiveStep = classList.includes('completed')
       ? STATE_GROUP_COMPLETION_DESCRIPTION[step]
       : this.getStepTobeShown(classList, step);
@@ -159,15 +158,19 @@ class ApplicationStatusOverview extends Component {
     );
   };
 
-  render() {
+  getUserFlowConfiguration = () => {
     const { meta } = this.props.loanApplicationDetails;
-    if (!meta.data.application) return 'Loading skeleton...';
-    //TODO:Handle meta.errors
+    return meta.configuration;
+  };
+
+  render() {
+    const configuration = this.getUserFlowConfiguration();
+    if (!configuration) return 'Loading...';
 
     return (
       <div>
-        <MultiLevelStepper loading={meta.loading}>
-          {CONSOLIDATED_STATE_SEQUENCE.map((step, index) => this.getStep(step))}
+        <MultiLevelStepper loading={this.props.loanApplicationDetails.meta.loading}>
+          {configuration.getConsolidatedStateSequence().map((step, index) => this.getStep(step))}
         </MultiLevelStepper>
       </div>
     );

@@ -1,28 +1,27 @@
 import React from 'react';
-import {
-  APPLICATION_STATE_DESCRIPTIONS,
-  CAPITAL_LINKS,
-  SIDE_NAVIGATION_STATE_GROUPS,
-} from '../Loans/constants';
+import { CAPITAL_LINKS } from '../Loans/constants';
 import Button from 'common/new-ui/Button';
 import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
 
-function HelpSection({ applicationId, currentState, activeState }) {
-  const _getParentStepLabel = step => {
-    return Object.values(SIDE_NAVIGATION_STATE_GROUPS).filter(meta =>
+function HelpSection({ applicationId, currentState, activeState, applicationConfiguration }) {
+  const _getParentStepLabel = (step) => {
+    return Object.values(applicationConfiguration.getSideNavigationStateGroups()).filter((meta) =>
       Object.values(meta.steps)
         .reduce((acc, curr) => [...acc, ...curr], [])
-        .includes(step)
+        .includes(step),
     )[0].description;
   };
 
-  const trackEvent = eventAction => {
+  const trackEvent = (eventAction) => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - WCL LOS',
       eventAction,
       eventLabel: `${_getParentStepLabel(activeState)}:${
-        APPLICATION_STATE_DESCRIPTIONS[activeState].short_description
-      } | ${getApplicationProgressPercentage(currentState)}%`,
+        applicationConfiguration.getApplicationStateDescriptions()[activeState].short_description
+      } | ${getApplicationProgressPercentage(
+        currentState,
+        applicationConfiguration.getApplicationStateGroups(),
+      )}%`,
     });
   };
 
@@ -43,9 +42,7 @@ function HelpSection({ applicationId, currentState, activeState }) {
       }, 0);
       setTimeout(() => {
         document.getElementsByName('request-description')[0].value = `${
-          applicationId === 'new'
-            ? ''
-            : `[Loan Application ID:${applicationId}]`
+          applicationId === 'new' ? '' : `[Loan Application ID:${applicationId}]`
         }I have a loan application related query`;
       }, 1000);
     }
@@ -54,11 +51,7 @@ function HelpSection({ applicationId, currentState, activeState }) {
   const instructions = [
     {
       description: 'Need Help or Have Questions!',
-      _cta: (
-        <Button.Transparent onClick={raiseTicket}>
-          Write to us!
-        </Button.Transparent>
-      ),
+      _cta: <Button.Transparent onClick={raiseTicket}>Write to us!</Button.Transparent>,
       _isExternalLink: true,
     },
     {
@@ -80,7 +73,7 @@ function HelpSection({ applicationId, currentState, activeState }) {
   ];
   return (
     <div class="help-section">
-      {instructions.map(instruction => (
+      {instructions.map((instruction) => (
         <div class="help-action-row">
           <div class="help-description-wrapper">
             {instruction.description && (
@@ -88,9 +81,7 @@ function HelpSection({ applicationId, currentState, activeState }) {
             )}
             {instruction._cta}
           </div>
-          {instruction._isExternalLink && (
-            <i className="i i-chevron-right text-primary" />
-          )}
+          {instruction._isExternalLink && <i className="i i-chevron-right text-primary" />}
         </div>
       ))}
     </div>

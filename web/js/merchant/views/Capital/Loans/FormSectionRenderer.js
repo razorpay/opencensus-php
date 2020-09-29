@@ -33,11 +33,7 @@ import VerificationSlotSelection from './Forms/VerificationSlotSelection';
 import LoanApproved from './Forms/LoanApproved';
 import FormSectionLoadingSkeleton from '../components/FormSectionLoadingSkeleton';
 import { isPreceedingState } from '../utils';
-import {
-  APPLICATION_STATE_DESCRIPTIONS,
-  APPLICATION_STATES,
-  SIDE_NAVIGATION_STATE_GROUPS,
-} from './constants';
+import { APPLICATION_STATES } from './constants';
 import DocumentCollectionInformation from './Forms/DocumentCollectionInformation';
 import DisbursalEntity from './Forms/DisbursalEntity';
 import PendingState from './Forms/PendingState';
@@ -78,21 +74,19 @@ const stateFormMap = {
   [APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING]: PreVerificationUpload,
   [APPLICATION_STATES.PREVERIFICATION_FAILED]: PreVerificationUpload,
   [APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS]: PreVerificationUpload,
-  [APPLICATION_STATES.SCORE_GENERATION_PENDING]: () => (
+  [APPLICATION_STATES.SCORE_GENERATION_PENDING]: (props) => (
     <PendingState
       message={StateMessageMap[APPLICATION_STATES.SCORE_GENERATION_PENDING]}
       showNavigation
-      backState={APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING}
-      nextState={APPLICATION_STATES.CREDIT_OFFER_GENERATED}
+      navigation={props.navigation}
     />
   ),
   [APPLICATION_STATES.CREDIT_OFFER_GENERATED]: CreditOfferEntity,
-  CONTRACT_GENERATION_PENDING: () => (
+  CONTRACT_GENERATION_PENDING: (props) => (
     <PendingState
       message={StateMessageMap['CONTRACT_GENERATION_PENDING']}
       showNavigation
-      backState={APPLICATION_STATES.CREDIT_OFFER_GENERATED}
-      nextState={APPLICATION_STATES.NACH_CREATION_PENDING}
+      navigation={props.navigation}
     />
   ),
   [APPLICATION_STATES.CONTRACT_PENDING]: ContractEntity,
@@ -100,20 +94,18 @@ const stateFormMap = {
   [APPLICATION_STATES.NACH_UPLOAD_PENDING]: NachEntity,
   [APPLICATION_STATES.SLOT_SELECTION_PENDING]: VerificationSlotSelection,
   [APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED]: DocumentCollectionInformation,
-  [APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED]: () => (
+  [APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED]: (props) => (
     <PendingState
       message={StateMessageMap[APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED]}
       showNavigation
-      backState={APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED}
-      nextState={APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW}
+      navigation={props.navigation}
     />
   ),
-  [APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW]: () => (
+  [APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW]: (props) => (
     <PendingState
       message={StateMessageMap[APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW]}
       showNavigation
-      backState={APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED}
-      nextState={APPLICATION_STATES.RZP_APPROVED}
+      navigation={props.navigation}
     />
   ),
   [APPLICATION_STATES.RZP_APPROVED]: LoanApproved,
@@ -727,12 +719,34 @@ class FormSectionRenderer extends Component {
         TobeRenderedFormComponent = stateFormMap[activeState];
         break;
     }
+
     return (
       <TobeRenderedFormComponent
         _trackNavigationActions={this._trackNavigationActions}
         _trackEvent={this.gaEventDispatcher}
+        navigation={this.getNavigationActions(activeState)}
       />
     );
+  };
+
+  getNavigationActions = (activeState) => {
+    const STATE_TRANSITIONS = this.getUserFlowConfiguration().getStateTransitions();
+    const nextState = STATE_TRANSITIONS[activeState].next;
+    const previousState = STATE_TRANSITIONS[activeState].back;
+    const { changeActiveState } = this.props;
+    return {
+      next(data = null) {
+        if (nextState) changeActiveState(nextState, data);
+      },
+      back(data = null) {
+        if (nextState) changeActiveState(previousState, data);
+      },
+    };
+  };
+
+  getUserFlowConfiguration = () => {
+    const { meta } = this.props.loanApplicationDetails;
+    return meta.configuration;
   };
 
   getToBeRenderedState = () => {
@@ -755,7 +769,8 @@ class FormSectionRenderer extends Component {
   };
 
   _getParentStepLabel = (step) => {
-    return Object.values(SIDE_NAVIGATION_STATE_GROUPS).filter((meta) =>
+    const { meta } = this.props.loanApplicationDetails;
+    return Object.values(meta.configuration.getSideNavigationStateGroups()).filter((meta) =>
       Object.values(meta.steps)
         .reduce((acc, curr) => [...acc, ...curr], [])
         .includes(step),
@@ -763,8 +778,9 @@ class FormSectionRenderer extends Component {
   };
 
   _getActiveStepLabel = () => {
+    const { meta } = this.props.loanApplicationDetails;
     const tobeRenderedState = this.getToBeRenderedState();
-    return APPLICATION_STATE_DESCRIPTIONS[tobeRenderedState];
+    return meta.configuration.getApplicationStateDescriptions()[tobeRenderedState];
   };
 
   _trackNavigationActions = (actionType, to, subpage = '') => {

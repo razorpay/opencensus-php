@@ -6,7 +6,6 @@ import RepaymentInformation from '../../components/RepaymentInformation';
 import { connect } from 'react-redux';
 import {
   acceptCreditOffer,
-  changeActiveState,
   fetchCreditOffers,
   fetchLoanApplicationMeta,
   getAcceptedOffer,
@@ -27,7 +26,6 @@ import { triggerHotjarRecording } from 'common/utils/hotjar';
     acceptCreditOffer,
     fetchCreditOffers,
     getAcceptedOffer,
-    changeActiveState,
     fetchLoanApplicationMeta,
     openModal,
     closeModal,
@@ -105,7 +103,7 @@ class DisbursalEntity extends Component {
           <Button.Transparent
             onClick={() => {
               this.props._trackNavigationActions('BACK', APPLICATION_STATES.RZP_APPROVED);
-              this.props.changeActiveState(APPLICATION_STATES.RZP_APPROVED);
+              this.props.navigation.back();
             }}
           >
             <i className="i i-chevron-left" />

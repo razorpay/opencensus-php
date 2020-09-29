@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Note from '../../components/Note';
 import {
-  changeActiveState,
   fetchLoanApplicationMeta,
   getAgreementStatus,
   getLegalAgreementUrl,
@@ -15,15 +14,14 @@ import * as NotificationActions from 'merchant_common/reducers/notifications';
 import { APPLICATION_STATES } from '../constants';
 
 @connect(
-  state => ({
+  (state) => ({
     loanApplicationDetails: state.loanApplicationDetails,
   }),
   {
     getAgreementStatus,
     fetchLoanApplicationMeta,
-    changeActiveState,
     ...NotificationActions,
-  }
+  },
 )
 class ContractEntity extends Component {
   constructor(props) {
@@ -45,14 +43,13 @@ class ContractEntity extends Component {
       //This timeout is need as leegality has to inform LOS with signed
       // agreement.
       setTimeout(() => {
-        const applicationId = this.props.loanApplicationDetails.meta.data
-          .application.id;
+        const applicationId = this.props.loanApplicationDetails.meta.data.application.id;
         this.props
           .getAgreementStatus({
             application_id: applicationId,
           })
-          .then(_ => this.props.fetchLoanApplicationMeta(applicationId))
-          .then(_ => {
+          .then((_) => this.props.fetchLoanApplicationMeta(applicationId))
+          .then((_) => {
             showNotification({
               type: 'success',
               message: 'Loan Agreement signed Successfully!',
@@ -68,7 +65,7 @@ class ContractEntity extends Component {
     if (agreement_details.data && agreement_details.data.signers) {
       return new Promise((resolve, reject) => {
         const obj = {
-          callback: response => this.callback(resolve, reject, response),
+          callback: (response) => this.callback(resolve, reject, response),
         };
         const leegality = new window.Leegality(obj);
         leegality.init();
@@ -102,16 +99,16 @@ class ContractEntity extends Component {
     return getLegalAgreementUrl({
       application_id: loanApplicationDetails.meta.data.application.id,
     })
-      .then(res => {
+      .then((res) => {
         if (res && !res.errors) {
           downloadFromUFH(res.data.ufh_ids.agreement)
-            .then(_ => {
+            .then((_) => {
               this.setState({
                 downloading: false,
                 error: null,
               });
             })
-            .catch(error => {
+            .catch((error) => {
               this.setState({
                 downloading: false,
                 error: true,
@@ -123,7 +120,7 @@ class ContractEntity extends Component {
             });
         }
       })
-      .catch(error => {
+      .catch((error) => {
         this.setState({
           downloading: false,
           error: true,
@@ -147,13 +144,8 @@ class ContractEntity extends Component {
             <div class="panel panel-default m-all">
               <div class="panel-body">
                 <strong>Signed Loan Agreement</strong>
-                <p class="text--secondary">
-                  Check the signed agreement with loan offer details.
-                </p>
-                <a
-                  class="link no-margin no-padding"
-                  onClick={this.handleDownloadAgreement}
-                >
+                <p class="text--secondary">Check the signed agreement with loan offer details.</p>
+                <a class="link no-margin no-padding" onClick={this.handleDownloadAgreement}>
                   {this.state.downloading ? (
                     'Downloading...'
                   ) : (
@@ -170,11 +162,9 @@ class ContractEntity extends Component {
                   onClick={() => {
                     this.props._trackNavigationActions(
                       'BACK',
-                      APPLICATION_STATES.CREDIT_OFFER_GENERATED
+                      APPLICATION_STATES.CREDIT_OFFER_GENERATED,
                     );
-                    this.props.changeActiveState(
-                      APPLICATION_STATES.CREDIT_OFFER_GENERATED
-                    );
+                    this.props.navigation.back();
                   }}
                 >
                   <i className="i i-chevron-left" />
@@ -185,11 +175,9 @@ class ContractEntity extends Component {
                   onClick={() => {
                     this.props._trackNavigationActions(
                       'NEXT',
-                      APPLICATION_STATES.NACH_CREATION_PENDING
+                      APPLICATION_STATES.NACH_CREATION_PENDING,
                     );
-                    this.props.changeActiveState(
-                      APPLICATION_STATES.NACH_CREATION_PENDING
-                    );
+                    this.props.navigation.next();
                   }}
                 >
                   Next
@@ -203,10 +191,9 @@ class ContractEntity extends Component {
                 applicationId={meta.data.application.id}
                 message={
                   <span>
-                    Your loan agreement has been generated with your loan offer
-                    details. The loan agreement contains the commercials around
-                    the offer and the collection process. Please sign the loan
-                    agreement by clicking the Sign agreement button.
+                    Your loan agreement has been generated with your loan offer details. The loan
+                    agreement contains the commercials around the offer and the collection process.
+                    Please sign the loan agreement by clicking the Sign agreement button.
                   </span>
                 }
               />
@@ -215,11 +202,9 @@ class ContractEntity extends Component {
                   onClick={() => {
                     this.props._trackNavigationActions(
                       'BACK',
-                      APPLICATION_STATES.CREDIT_OFFER_GENERATED
+                      APPLICATION_STATES.CREDIT_OFFER_GENERATED,
                     );
-                    this.props.changeActiveState(
-                      APPLICATION_STATES.CREDIT_OFFER_GENERATED
-                    );
+                    this.props.navigation.back();
                   }}
                 >
                   <i className="i i-chevron-left" />
@@ -241,8 +226,8 @@ class ContractEntity extends Component {
           <Note
             message={
               <span>
-                Loan Agreement is not generated yet. You will be receiving a
-                mail soon to sign the loan agreement. Please come back then.
+                Loan Agreement is not generated yet. You will be receiving a mail soon to sign the
+                loan agreement. Please come back then.
               </span>
             }
           />

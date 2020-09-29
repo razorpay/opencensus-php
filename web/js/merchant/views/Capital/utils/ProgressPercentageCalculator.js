@@ -1,30 +1,20 @@
-import {
-  APPLICATION_STATE_SEQUENCE,
-  APPLICATION_STATES,
-  ERROR_STATES,
-} from '../Loans/constants';
+import { ERROR_STATES } from '../Loans/constants';
 
-const getApplicationProgressPercentage = currentState => {
-  if (ERROR_STATES.includes(currentState)) {
-    currentState =
-      APPLICATION_STATE_SEQUENCE[
-        APPLICATION_STATE_SEQUENCE.indexOf(currentState) - 1
-      ];
-  }
-  const nonFailedStates = APPLICATION_STATE_SEQUENCE.filter(
-    state => !ERROR_STATES.includes(state)
+const getApplicationProgressPercentage = (currentState, applicationStateGroups) => {
+  const APPLICATION_STATES = Object.entries(applicationStateGroups).reduce(
+    (acc, [_, states]) => [...acc, ...states],
+    [],
   );
 
-  const numerator = nonFailedStates.indexOf(currentState);
-  const denominator = nonFailedStates.length;
-  const percentage = (numerator / (denominator - 1)) * 100;
-  return !percentage
-    ? 0
-    : percentage > 0
-    ? percentage > 100
-      ? 100
-      : Math.ceil(percentage)
-    : 0;
+  if (ERROR_STATES.includes(currentState)) {
+    currentState = APPLICATION_STATES[APPLICATION_STATES.indexOf(currentState) - 1];
+  }
+  const nonFailedStates = APPLICATION_STATES.filter((state) => !ERROR_STATES.includes(state));
+
+  const currentStateIndex = nonFailedStates.indexOf(currentState);
+  const totalStates = nonFailedStates.length;
+  const percentage = (currentStateIndex / (totalStates - 1)) * 100;
+  return !percentage ? 0 : percentage > 0 ? (percentage > 100 ? 100 : Math.ceil(percentage)) : 0;
 };
 
 export default getApplicationProgressPercentage;

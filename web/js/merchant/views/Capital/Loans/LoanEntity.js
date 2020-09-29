@@ -6,7 +6,6 @@ import ApplicationSummary from './ApplicationSummary';
 import HelpSection from '../components/HelpSection';
 import SideNavigation from './SideNavigation';
 import Button from 'common/new-ui/Button';
-import { APPLICATION_STATE_DESCRIPTIONS, SIDE_NAVIGATION_STATE_GROUPS } from './constants';
 import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
 
 @connect(
@@ -19,7 +18,9 @@ import getApplicationProgressPercentage from '../utils/ProgressPercentageCalcula
 )
 class LoanEntity extends Component {
   _getParentStepLabel = (step) => {
-    return Object.values(SIDE_NAVIGATION_STATE_GROUPS).filter((meta) =>
+    const { loanApplicationDetails } = this.props;
+    const { meta } = loanApplicationDetails;
+    return Object.values(meta.configuration.getSideNavigationStateGroups()).filter((meta) =>
       Object.values(meta.steps)
         .reduce((acc, curr) => [...acc, ...curr], [])
         .includes(step),
@@ -37,8 +38,11 @@ class LoanEntity extends Component {
       eventCategory: 'Dashboard - WCL LOS',
       eventAction: 'Application | Save&Close',
       eventLabel: `${this._getParentStepLabel(activeState)}:${
-        APPLICATION_STATE_DESCRIPTIONS[activeState].short_description
-      } | ${getApplicationProgressPercentage(meta.data.application.status)}%`,
+        meta.configuration.getApplicationStateDescriptions()[activeState].short_description
+      } | ${getApplicationProgressPercentage(
+        meta.data.application.status,
+        meta.configuration.getApplicationStateGroups(),
+      )}%`,
     });
     onClose();
   };
@@ -54,9 +58,10 @@ class LoanEntity extends Component {
       eventCategory: 'Dashboard - WCL LOS',
       eventAction: `Landing Steps | ${cta}`,
       eventLabel: `${subpage ? `${subpage} | ` : ''}${
-        APPLICATION_STATE_DESCRIPTIONS[status].short_description
+        meta.configuration.getApplicationStateDescriptions()[status].short_description
       } | ${majorStepTitle ? `${majorStepTitle} | ` : ''}${getApplicationProgressPercentage(
         meta.data.application.status,
+        meta.configuration.getApplicationStateGroups(),
       )}%`,
       ...rest,
     });
@@ -94,6 +99,7 @@ class LoanEntity extends Component {
               applicationId={meta.data.application.id}
               activeState={context.activeState}
               currentState={meta.data.application.status}
+              applicationConfiguration={meta.configuration}
             />
           </div>
         </div>

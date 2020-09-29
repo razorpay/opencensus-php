@@ -1,16 +1,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import {
-  fetchLoanApplicationMeta,
-  changeActiveState,
-} from 'merchant/reducers/capital';
+import { fetchLoanApplicationMeta } from 'merchant/reducers/capital';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
-import {
-  APPLICATION_STATES,
-  BUSINESS_TYPES,
-  VERIFICATION_TIME_SLOTS,
-} from '../constants';
+import { APPLICATION_STATES, BUSINESS_TYPES, VERIFICATION_TIME_SLOTS } from '../constants';
 import { states } from 'merchant/helpers/data';
 import { isPreceedingState } from '../../utils';
 import { AsyncBtn } from 'common/new-ui/Button';
@@ -21,41 +14,33 @@ const DOCUMENT_TYPE_LABELS = {
 };
 
 @connect(
-  state => ({
+  (state) => ({
     loanApplicationDetails: state.loanApplicationDetails,
     user: state.session.user,
   }),
   {
     fetchLoanApplicationMeta,
     showNotification,
-    changeActiveState,
-  }
+  },
 )
 class DocumentCollectionInformation extends Component {
-  getMasterDocument = masterDocId => {
+  getMasterDocument = (masterDocId) => {
     const { loanApplicationDetails } = this.props;
-    const {
-      offer_tasks: offerVerificationTasks,
-    } = loanApplicationDetails.vnv_details.data;
+    const { offer_tasks: offerVerificationTasks } = loanApplicationDetails.vnv_details.data;
     const { document_groups } = loanApplicationDetails;
-    const taskExists = offerVerificationTasks
-      .map(task => task.entity_id)
-      .includes(masterDocId);
+    const taskExists = offerVerificationTasks.map((task) => task.entity_id).includes(masterDocId);
 
     if (!taskExists) return;
 
     const masterDocuments = document_groups.data.document_groups.reduce(
-      (acc, docGroup) =>
-        docGroup.master_documents
-          ? [...acc, ...docGroup.master_documents]
-          : acc,
-      []
+      (acc, docGroup) => (docGroup.master_documents ? [...acc, ...docGroup.master_documents] : acc),
+      [],
     );
 
-    return masterDocuments.find(doc => doc.id === masterDocId);
+    return masterDocuments.find((doc) => doc.id === masterDocId);
   };
 
-  getOtherVerificationDocument = document => {
+  getOtherVerificationDocument = (document) => {
     if (!document) return null;
 
     const otherDocumentsLabels = {
@@ -71,18 +56,16 @@ class DocumentCollectionInformation extends Component {
 
     const lenderDetails = lender_details.data.lender;
     const lenderProduct = lenderDetails.products.find(
-      product => product.id === meta.data.application.product_id
+      (product) => product.id === meta.data.application.product_id,
     );
     const productVerificationRequirements =
-      lenderProduct.attributes.required_document_groups
-        .verification_requirements;
+      lenderProduct.attributes.required_document_groups.verification_requirements;
     const businessType = BUSINESS_TYPES[parseInt(user.business_type)];
     const businessSpecificRequirements = productVerificationRequirements.find(
-      requirement => requirement.deed_type === businessType
+      (requirement) => requirement.deed_type === businessType,
     );
     const requiredDocuments = {
-      personal:
-        businessSpecificRequirements.applicant_verification_requirements,
+      personal: businessSpecificRequirements.applicant_verification_requirements,
       business: businessSpecificRequirements.business_verification_requirements,
     };
 
@@ -90,7 +73,7 @@ class DocumentCollectionInformation extends Component {
       <div class="documents-wrapper flex">
         {Object.entries(requiredDocuments).map(([documentType, documents]) => (
           <div class="section">
-            {documents.map(document => (
+            {documents.map((document) => (
               <p>
                 {this.getMasterDocument(document.document_master_id)
                   ? this.getMasterDocument(document.document_master_id).name ||
@@ -111,18 +94,16 @@ class DocumentCollectionInformation extends Component {
 
     const lenderDetails = lender_details.data.lender;
     const lenderProduct = lenderDetails.products.find(
-      product => product.id === meta.data.application.product_id
+      (product) => product.id === meta.data.application.product_id,
     );
     const productVerificationRequirements =
-      lenderProduct.attributes.required_document_groups
-        .verification_requirements;
+      lenderProduct.attributes.required_document_groups.verification_requirements;
     const businessType = BUSINESS_TYPES[parseInt(user.business_type)];
     const businessSpecificRequirements = productVerificationRequirements.find(
-      requirement => requirement.deed_type === businessType
+      (requirement) => requirement.deed_type === businessType,
     );
     const requiredDocuments = {
-      personal:
-        businessSpecificRequirements.applicant_verification_requirements,
+      personal: businessSpecificRequirements.applicant_verification_requirements,
       business: businessSpecificRequirements.business_verification_requirements,
     };
 
@@ -139,18 +120,9 @@ class DocumentCollectionInformation extends Component {
   render() {
     const { loanApplicationDetails } = this.props;
 
-    const {
-      lender_details,
-      meta,
-      schedule_details,
-      vnv_details,
-    } = loanApplicationDetails;
+    const { lender_details, meta, schedule_details, vnv_details } = loanApplicationDetails;
 
-    if (
-      lender_details.loading ||
-      schedule_details.loading ||
-      vnv_details.loading
-    ) {
+    if (lender_details.loading || schedule_details.loading || vnv_details.loading) {
       return <FormLoader />;
     }
 
@@ -161,7 +133,7 @@ class DocumentCollectionInformation extends Component {
 
     const hasDocumentsCollected = !isPreceedingState(
       applicationStatus,
-      APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW
+      APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW,
     );
 
     return (
@@ -170,9 +142,7 @@ class DocumentCollectionInformation extends Component {
           <div className="panel-body no-margin full-width">
             <div class="document-types flex">
               <div className="section">
-                <strong>
-                  {hasDocumentsCollected ? 'Picked at' : 'Date & Time'}
-                </strong>
+                <strong>{hasDocumentsCollected ? 'Picked at' : 'Date & Time'}</strong>
               </div>
               <div className="section">
                 <strong>{hasDocumentsCollected ? 'From' : 'Address'}</strong>
@@ -183,16 +153,16 @@ class DocumentCollectionInformation extends Component {
                 <p>
                   {
                     VERIFICATION_TIME_SLOTS.find(
-                      slot => slot.value === scheduleDetails.slot_timing
+                      (slot) => slot.value === scheduleDetails.slot_timing,
                     ).text
                   }
                 </p>
                 <p>{moment(scheduleDetails.slot_date).format('ll')}</p>
               </div>
               <div class="section">
-                {`${slotAddress.line_1}, ${slotAddress.city}, ${
-                  states[slotAddress.state]
-                } - ${slotAddress.pin_code}`}
+                {`${slotAddress.line_1}, ${slotAddress.city}, ${states[slotAddress.state]} - ${
+                  slotAddress.pin_code
+                }`}
               </div>
             </div>
           </div>
@@ -201,9 +171,7 @@ class DocumentCollectionInformation extends Component {
         <div className="panel panel-default required-documents-info-container">
           <div className="panel-body no-margin full-width">
             <strong>
-              {hasDocumentsCollected
-                ? 'Documents Collected'
-                : 'Documents To be Ready with'}
+              {hasDocumentsCollected ? 'Documents Collected' : 'Documents To be Ready with'}
             </strong>
             {this.getDocumentTypes()}
             {this.getDocuments()}
@@ -214,13 +182,8 @@ class DocumentCollectionInformation extends Component {
           <button
             className="btn btn-link"
             onClick={() => {
-              this.props._trackNavigationActions(
-                'BACK',
-                APPLICATION_STATES.SLOT_SELECTION_PENDING
-              );
-              this.props.changeActiveState(
-                APPLICATION_STATES.SLOT_SELECTION_PENDING
-              );
+              this.props._trackNavigationActions('BACK', APPLICATION_STATES.SLOT_SELECTION_PENDING);
+              this.props.navigation.back();
             }}
           >
             <i className="i i-chevron-left" />
@@ -233,11 +196,9 @@ class DocumentCollectionInformation extends Component {
               onClick={() => {
                 this.props._trackNavigationActions(
                   'NEXT',
-                  APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW
+                  APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW,
                 );
-                this.props.changeActiveState(
-                  APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW
-                );
+                this.props.navigation.next();
               }}
             >
               Next

@@ -3,13 +3,9 @@ import { connect } from 'react-redux';
 import { Bar } from 'react-chartjs-2';
 import CreditPullScoreBreakdown from 'merchant/containers/CreditPullModal/components/CreditPullScoreBreakdown';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
-import { changeActiveState, fetchLoanApplicationMeta } from 'merchant/reducers/capital';
+import { fetchLoanApplicationMeta } from 'merchant/reducers/capital';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import {
-  APPLICATION_STATE_DESCRIPTIONS,
-  APPLICATION_STATES,
-  TOOLTIP_DESCRIPTIONS,
-} from '../constants';
+import { APPLICATION_STATES, TOOLTIP_DESCRIPTIONS } from '../constants';
 import Note from '../../components/Note';
 
 @connect(
@@ -18,7 +14,6 @@ import Note from '../../components/Note';
   }),
   {
     fetchLoanApplicationMeta,
-    changeActiveState,
   },
 )
 class CreditScoreBreakdown extends Component {
@@ -72,20 +67,22 @@ class CreditScoreBreakdown extends Component {
   componentDidMount() {
     const {
       context: { data },
+      meta,
     } = this.props.loanApplicationDetails;
 
     if (data && data.from === 'next') {
       this.props._trackNavigationActions(
         'NEXT',
         APPLICATION_STATES.CREDIT_PULL_PENDING,
-        APPLICATION_STATE_DESCRIPTIONS[APPLICATION_STATES.CREDIT_PULL_PENDING].stages.CREDIT_REPORT,
+        meta.configuration.getApplicationStateDescriptions()[APPLICATION_STATES.CREDIT_PULL_PENDING]
+          .stages.CREDIT_REPORT,
       );
     }
   }
 
   handleNext = () => {
     const { id, status } = this.props.loanApplicationDetails.meta.data.application;
-    if (status === 'CREDIT_PULL_PENDING') {
+    if (status === APPLICATION_STATES.CREDIT_PULL_PENDING) {
       return this.props.fetchLoanApplicationMeta(id);
     } else {
       //TODO:state transition
@@ -105,9 +102,11 @@ class CreditScoreBreakdown extends Component {
   };
 
   render() {
-    const { loanApplicationDetails, changeActiveState } = this.props;
+    const { loanApplicationDetails, navigation } = this.props;
     const creditScoreBreakdown = loanApplicationDetails.bureau_report_details;
     const { report, score, ntc_score } = creditScoreBreakdown.data.bureau_report;
+
+    const { configuration } = loanApplicationDetails.meta;
 
     if (!!ntc_score && !score) {
       return (
@@ -118,7 +117,7 @@ class CreditScoreBreakdown extends Component {
             extraMessage="The good news is that we will still process your application and evaluate you for loan."
           />
           <div className="credit-score-actions m-l m-r pull-right">
-            <Button.Transparent onClick={() => changeActiveState('PROMOTER_INFO_PENDING')}>
+            <Button.Transparent onClick={navigation.back}>
               <i className="i i-chevron-left" />
               Back
             </Button.Transparent>
@@ -128,10 +127,11 @@ class CreditScoreBreakdown extends Component {
                 this.props._trackNavigationActions(
                   'NEXT',
                   APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING,
-                  APPLICATION_STATE_DESCRIPTIONS[APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING]
-                    .stages.ADDRESS_PROOF,
+                  configuration.getApplicationStateDescriptions()[
+                    APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING
+                  ].stages.ADDRESS_PROOF,
                 );
-                changeActiveState(APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING);
+                navigation.next();
               }}
             >
               Next
@@ -201,7 +201,7 @@ class CreditScoreBreakdown extends Component {
           </div>
           {score > 450 && (
             <div className="credit-score-actions m-l m-r pull-right">
-              <Button.Transparent onClick={() => changeActiveState('PROMOTER_INFO_PENDING')}>
+              <Button.Transparent onClick={navigation.back}>
                 <i className="i i-chevron-left" />
                 Back
               </Button.Transparent>
@@ -211,11 +211,11 @@ class CreditScoreBreakdown extends Component {
                   this.props._trackNavigationActions(
                     'NEXT',
                     APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING,
-                    APPLICATION_STATE_DESCRIPTIONS[
+                    configuration.getApplicationStateDescriptions()[
                       APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING
                     ].stages.ADDRESS_PROOF,
                   );
-                  changeActiveState(APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING);
+                  navigation.next();
                 }}
               >
                 Next

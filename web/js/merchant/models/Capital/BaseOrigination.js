@@ -22,7 +22,7 @@ export default class BaseOriginationEntity extends GenericEntity {
   fetchSeedData() {
     return this.request(
       `${this.resourceUrlPrefix('origination', 'ApplicationAPI', 'GetSeedInfo')}`,
-      {}
+      {},
     );
   }
 
@@ -35,7 +35,7 @@ export default class BaseOriginationEntity extends GenericEntity {
       `${this.resourceUrlPrefix('origination', 'ApplicationAPI', 'GetApplication')}`,
       {
         application_id: applicationId,
-      }
+      },
     );
   }
 
@@ -45,23 +45,23 @@ export default class BaseOriginationEntity extends GenericEntity {
       `${this.resourceUrlPrefix(
         'origination',
         'ApplicationAPI',
-        applicationExists ? 'UpdateApplication' : 'CreateApplication'
+        applicationExists ? 'UpdateApplication' : 'CreateApplication',
       )}`,
-      payload
+      payload,
     );
   }
 
   fetchBusinessDetails(data) {
     return this.request(
       `${this.resourceUrlPrefix('client', 'BusinessAPI', 'GetBusinessDetails')}`,
-      data
+      data,
     );
   }
 
   getBusinessDetailsByMerchantId(data) {
     return this.request(
       `${this.resourceUrlPrefix('client', 'BusinessAPI', 'GetBusinessDetailsByReferenceID')}`,
-      data
+      data,
     );
   }
   saveBusinessDetails(payload) {
@@ -71,16 +71,16 @@ export default class BaseOriginationEntity extends GenericEntity {
       `${this.resourceUrlPrefix(
         'client',
         'BusinessAPI',
-        businessExists ? 'UpdateBusinessDetails' : 'CreateBusiness'
+        businessExists ? 'UpdateBusinessDetails' : 'CreateBusiness',
       )}`,
-      payload
+      payload,
     );
   }
 
   fetchApplicantDetails(data) {
     return this.request(
       `${this.resourceUrlPrefix('client', 'ApplicantAPI', 'GetApplicant')}`,
-      data
+      data,
     );
   }
 
@@ -90,15 +90,15 @@ export default class BaseOriginationEntity extends GenericEntity {
       `${this.resourceUrlPrefix(
         'client',
         'ApplicantAPI',
-        applicantExists ? 'UpdateApplicant' : 'CreateApplicant'
+        applicantExists ? 'UpdateApplicant' : 'CreateApplicant',
       )}`,
-      payload
+      payload,
     );
   }
 
   fetchDocumentGroups(isProprietorshipBusiness) {
     return this.request(
-      `${this.resourceUrlPrefix('admin', 'DocumentsAPI', 'GetDocumentGroups')}`
+      `${this.resourceUrlPrefix('admin', 'DocumentsAPI', 'GetDocumentGroups')}`,
     ).then((data) => {
       if (isProprietorshipBusiness) {
         data.data.document_groups.forEach((d) => {
@@ -107,7 +107,7 @@ export default class BaseOriginationEntity extends GenericEntity {
               (doc) =>
                 doc.type !== 'partnership_deed' &&
                 doc.type !== 'llp_certificate' &&
-                doc.type !== 'certificate_of_incorporation'
+                doc.type !== 'certificate_of_incorporation',
             );
           }
         });
@@ -122,14 +122,14 @@ export default class BaseOriginationEntity extends GenericEntity {
       {
         limit: 10,
         ...data,
-      }
+      },
     );
   }
 
   uploadPreVerificationDocuments(data) {
     return this.request(
       `${this.resourceUrlPrefix('origination', 'ApplicationAPI', 'UploadDocuments')}`,
-      data
+      data,
     );
   }
 
@@ -137,49 +137,49 @@ export default class BaseOriginationEntity extends GenericEntity {
     return this.request(
       `${this.resourceUrlPrefix('fds', 'FDSBankStatementAPI', 'UploadXML')}`,
       data,
-      progressTracker
+      progressTracker,
     );
   }
 
   fetchCreditOffers(data) {
     return this.request(
       `${this.resourceUrlPrefix('admin', 'CreditOfferAPI', 'GetAllOffers')}`,
-      data
+      data,
     );
   }
 
   acceptCreditOffer = (data) => {
     return this.request(
       `${this.resourceUrlPrefix('admin', 'CreditOfferAPI', 'AcceptOffer')}`,
-      data
+      data,
     );
   };
 
   getAcceptedOffer = (data) => {
     return this.request(
       `${this.resourceUrlPrefix('contracts', 'ContractsAPI', 'GetApplicationContracts')}`,
-      data
+      data,
     );
   };
 
   getAgreementStatus = (data) => {
     return this.request(
       `${this.resourceUrlPrefix('contracts', 'DocSignAPI', 'CheckAgreementStatus')}`,
-      data
+      data,
     );
   };
 
   getLegalAgreementUrl = (data) => {
     return this.request(
       `${this.resourceUrlPrefix('contracts', 'DocSignAPI', 'FetchLegalAgreement')}`,
-      data
+      data,
     );
   };
 
   getNach = (data) => {
     return this.request(
       `${this.resourceUrlPrefix('nach', 'NachAPI', 'GetNachByApplication')}`,
-      data
+      data,
     );
   };
 
@@ -189,8 +189,15 @@ export default class BaseOriginationEntity extends GenericEntity {
 
   getNetBankingLink(data) {
     return this.request(
-      `${this.resourceUrlPrefix('fds', 'FDSBankStatementAPI', 'GetNetBankingLink')}`,
-      data
+      `${this.resourceUrlPrefix('fds', 'FDSBankStatementAPI', 'GetNetBankingPayload')}`,
+      data,
+    );
+  }
+
+  processBankStatement(data) {
+    return this.request(
+      `${this.resourceUrlPrefix('fds', 'FDSBankStatementAPI', 'ProcessBankStatement')}`,
+      data,
     );
   }
 
@@ -201,7 +208,7 @@ export default class BaseOriginationEntity extends GenericEntity {
   fetchD2cReport(data) {
     return this.request(
       `${this.resourceUrlPrefix('d2c', 'D2CBureauAPI', 'GetBureauReport')}`,
-      data
+      data,
     );
   }
 
@@ -212,7 +219,7 @@ export default class BaseOriginationEntity extends GenericEntity {
   scheduleVerification = (payload) => {
     return this.request(
       `${this.resourceUrlPrefix('admin', 'OfferVerificationAPI', 'ScheduleMerchantVerification')}`,
-      payload
+      payload,
     );
   };
 
@@ -227,14 +234,14 @@ export default class BaseOriginationEntity extends GenericEntity {
   getScheduleDetails = (data) => {
     return this.request(
       `${this.resourceUrlPrefix('admin', 'OfferVerificationAPI', 'GetScheduleDetail')}`,
-      data
+      data,
     );
   };
 
   getOfferVerificationTasks = (data) => {
     return this.request(
       `${this.resourceUrlPrefix('admin', 'OfferVerificationAPI', 'GetOfferVerificationTasks')}`,
-      data
+      data,
     );
   };
 }

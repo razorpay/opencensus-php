@@ -1,5 +1,6 @@
 import LoanOrigination from 'merchant/models/Capital/LoanOrigination';
 import { merge } from 'common/utils/immutable';
+import ConfigFactory from '../../views/Capital/ConfigFactory';
 
 const FETCH_SEED_DATA = 'FETCH_SEED_DATA';
 const FETCH_PRODUCTS = 'FETCH_PRODUCTS';
@@ -75,6 +76,12 @@ export const fetchProducts = () => {
     type: FETCH_PRODUCTS,
     payload: loanApplication.fetchProducts(),
   };
+};
+
+export const processBankStatement = (data) => {
+  const loanApplication = new LoanOrigination();
+
+  return loanApplication.processBankStatement(data);
 };
 
 export const registerNewLoanApplication = () => {
@@ -269,6 +276,17 @@ export const changeActiveState = (state, data = null) => {
   };
 };
 
+export const changePseudoState = (state) => {
+  return {
+    // If we want something in the UI which doesn't represent the
+    // Application state. As overriding application state will have other
+    // implications such as state trasitions and UI labels. We wan't
+    // something which represents the UI state instead of Application State
+    type: 'CHANGE_PSEUDO_STATE',
+    state,
+  };
+};
+
 export const scheduleVerification = (data) => {
   const loanApplication = new LoanOrigination();
   return loanApplication.scheduleVerification(data);
@@ -399,6 +417,7 @@ export default function (state = initialState, action) {
               status: 'BUSINESS_INFO_PENDING',
             },
           },
+          configuration: new ConfigFactory({}).create(),
         },
       });
     case 'REGISTER_BUSINESS':
@@ -411,6 +430,7 @@ export default function (state = initialState, action) {
               status: 'PROMOTER_INFO_PENDING',
             },
           },
+          configuration: new ConfigFactory({}).create(),
         },
         business_details: {
           loading: false,
@@ -423,6 +443,7 @@ export default function (state = initialState, action) {
     case `${FETCH_LOAN_APPLICATION_META}::PENDING`:
       return merge(state, {
         meta: {
+          ...state.meta,
           loading: true,
           data: state.meta.data,
         },
@@ -431,10 +452,12 @@ export default function (state = initialState, action) {
     case `${SAVE_APPLICATION_DETAILS}::SUCCESS`:
     case `${UPLOAD_PRE_VERIFICATION_DOCUMENTS}::SUCCESS`:
     case `${FETCH_LOAN_APPLICATION_META}::SUCCESS`:
+      const configLoader = new ConfigFactory(action.payload.data.application);
       return merge(state, {
         meta: {
           loading: false,
           data: action.payload.data,
+          configuration: configLoader.create(),
         },
       });
 
@@ -442,6 +465,7 @@ export default function (state = initialState, action) {
     case `${FETCH_LOAN_APPLICATION_META}::ERROR`:
       return merge(state, {
         meta: {
+          ...state.meta,
           loading: false,
           error: action.payload.errors,
           data: state.meta.data,
@@ -675,6 +699,16 @@ export default function (state = initialState, action) {
           ...state.context,
           activeState: action.state,
           data: action.data,
+          // as we want the application state to dictate the next UI
+          pseudoState: null,
+        },
+      });
+
+    case 'CHANGE_PSEUDO_STATE':
+      return merge(state, {
+        context: {
+          ...state.context,
+          pseudoState: action.state,
         },
       });
 

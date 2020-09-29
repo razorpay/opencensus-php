@@ -1,12 +1,6 @@
 import React, { Component } from 'react';
 import MultiLevelStepper from 'merchant/views/Capital/components/MultiLevelStepper';
-import {
-  APPLICATION_STATE_DESCRIPTIONS,
-  APPLICATION_STATE_GROUPS,
-  ERROR_STATES,
-  PENDING_APPLICATION_STATES,
-  SIDE_NAVIGATION_STATE_GROUPS,
-} from './constants';
+import { ERROR_STATES, PENDING_APPLICATION_STATES } from './constants';
 import { connect } from 'react-redux';
 import { changeActiveState } from 'merchant/reducers/capital';
 import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
@@ -30,6 +24,8 @@ class SideNavigation extends Component {
   }
 
   _getParentStepLabel = (step) => {
+    const SIDE_NAVIGATION_STATE_GROUPS = this.getUserFlowConfiguration().getSideNavigationStateGroups();
+
     return Object.values(SIDE_NAVIGATION_STATE_GROUPS).filter((meta) =>
       Object.values(meta.steps)
         .reduce((acc, curr) => [...acc, ...curr], [])
@@ -40,10 +36,15 @@ class SideNavigation extends Component {
   _getProgressPercentage = () => {
     const { meta } = this.props.loanApplicationDetails;
     if (!meta.data.application.status) return 0;
-    return getApplicationProgressPercentage(meta.data.application.status);
+    return getApplicationProgressPercentage(
+      meta.data.application.status,
+      meta.configuration.getApplicationStateGroups(),
+    );
   };
 
   _trackNavigationEvent = (_to, _from) => {
+    const APPLICATION_STATE_DESCRIPTIONS = this.getUserFlowConfiguration().getApplicationStateDescriptions();
+
     const _toStepLabel = APPLICATION_STATE_DESCRIPTIONS[_to].short_description;
     const _fromStepLabel = APPLICATION_STATE_DESCRIPTIONS[_from].short_description;
     this.gaEventDispatcher({
@@ -58,6 +59,9 @@ class SideNavigation extends Component {
 
   getParentStep = (parentStep, parentStepMeta) => {
     const { meta, context } = this.props.loanApplicationDetails;
+    const userFlowConfiguration = this.getUserFlowConfiguration();
+    const APPLICATION_STATE_GROUPS = userFlowConfiguration.getApplicationStateGroups();
+    const SIDE_NAVIGATION_STATE_GROUPS = userFlowConfiguration.getSideNavigationStateGroups();
 
     const currentState = meta.data.application.status;
 
@@ -174,6 +178,8 @@ class SideNavigation extends Component {
       return classList;
     };
 
+    const APPLICATION_STATE_DESCRIPTIONS = this.getUserFlowConfiguration().getApplicationStateDescriptions();
+
     return Object.entries(parentStepMeta.steps).map(([step, steps]) => {
       const statuses = getStatus(step, steps);
 
@@ -183,6 +189,7 @@ class SideNavigation extends Component {
 
       return (
         <MultiLevelStepper.Step
+          key={step}
           status={statuses.join(' ')}
           title={APPLICATION_STATE_DESCRIPTIONS[step].short_description}
           onClick={() => this.handleNavigation(step, parentStepMeta)}
@@ -197,13 +204,20 @@ class SideNavigation extends Component {
     window.rzpAnalytics(eventObject);
   };
 
+  getUserFlowConfiguration = () => {
+    const { meta } = this.props.loanApplicationDetails;
+    return meta.configuration;
+  };
+
   render() {
+    const configuration = this.getUserFlowConfiguration();
+
     return (
       <div class="progress-overview-container">
         <MultiLevelStepper>
-          {Object.entries(SIDE_NAVIGATION_STATE_GROUPS).map(([parentStep, parentStepMeta]) =>
-            this.getParentStep(parentStep, parentStepMeta),
-          )}
+          {Object.entries(
+            configuration.getSideNavigationStateGroups(),
+          ).map(([parentStep, parentStepMeta]) => this.getParentStep(parentStep, parentStepMeta))}
         </MultiLevelStepper>
       </div>
     );
