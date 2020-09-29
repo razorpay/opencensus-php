@@ -1821,6 +1821,11 @@ app
                     $scope.alerts.addAlert('danger', value);
                   }
                 });
+                fireDLFailureEvents('login.login', {
+                  emailId: $scope.login.data.email,
+                  error: firstError,
+                  method: 'email',
+                });
               }
             } else if (typeof firstError === 'object' && !!firstError.internal_error_code) {
               $scope.handleErrorsWithInternalCode(firstError);
