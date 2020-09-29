@@ -51,7 +51,7 @@ export default class FlashCheckout extends Component {
     let shouldSync = 0;
     var data = {
       features: {
-        noflashcheckout: enableFC ? 0 : 1,
+        noflashcheckout: this.state.fcEnabled,
       },
       should_sync: shouldSync,
     };
@@ -71,7 +71,7 @@ export default class FlashCheckout extends Component {
           message: 'Your preference was saved',
         });
         this.setState({
-          fcEnabled: enableFC,
+          fcEnabled: !this.state.fcEnabled,
         });
       })
       .catch((err) => {
@@ -94,7 +94,7 @@ export default class FlashCheckout extends Component {
 
           <span class="toggler-btn">
             <SwitchField
-              defaultChecked={fcEnabled}
+              defaultChecked={!!fcEnabled}
               onChange={(isChecked, cb) => this.toggleFc(isChecked, cb)}
               type="prime"
             />
