@@ -149,9 +149,12 @@ class OrderTransferTest extends TestCase
         $this->runRequestResponseFlow($data);
     }
 
-    public function testReverseOrderTransfer()
+    public function testReverseOrderTransfer($order = null)
     {
-        $order = $this->testCreateOrderTransfers();
+        if ($order === null)
+        {
+            $order = $this->testCreateOrderTransfers();
+        }
 
         $payment = $this->capturePaymentProcessOrderTransfers($order);
 
@@ -174,6 +177,20 @@ class OrderTransferTest extends TestCase
         $payment = $this->getDbEntityById('payment', $payment['id']);
 
         $this->assertEquals(0, $payment['amount_transferred']);
+    }
+
+    public function testReverseOrderTransferWithFailedAndCapturedPayments()
+    {
+        $order = $this->testCreateOrderTransfers();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $response = $this->doAuthPayment($payment);
+
+        $this->fixtures->payment->failPayment($response['razorpay_payment_id']);
+        $this->fixtures->order->edit($order['id'], ['authorized' => 0]);
+
+        $this->testReverseOrderTransfer($order);
     }
 
     public function testWebhookOrderTransferProcessed()

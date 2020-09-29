@@ -57,16 +57,7 @@ trait Reversal
         {
             $sourceOrderId = $transfer->getSourceId();
 
-            $sourcePayment = $this->repo->payment->fetchPaymentsForOrderId($sourceOrderId);
-
-            if (count($sourcePayment) !== 1)
-            {
-                throw new Exception\LogicException(
-                    'More than 1 payment found for order!'
-                );
-            }
-
-            $sourcePayment = $sourcePayment->pop();
+            $sourcePayment = $this->repo->payment->getCapturedPaymentForOrder($sourceOrderId);
 
             $sourcePayment->decrementAmountTransferred($input[ReversalEntity::AMOUNT]);
         }
