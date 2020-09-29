@@ -455,6 +455,13 @@ class Constants
     // google imali auth split feature
     const AUTH_SPLIT                     = 'auth_split';
 
+    /**
+     * Disables card scan
+     */
+    const CHECKOUT_DISABLE_CARDSCAN          = 'checkout_disable_cardscan';
+
+
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -476,6 +483,7 @@ class Constants
         self::DCC,
         self::UPI_OTM,
         self::CHECKOUT_DISABLE_VERNACULAR,
+        self::CHECKOUT_DISABLE_CARDSCAN,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -703,6 +711,7 @@ class Constants
         self::ROUTE_CODE_SUPPORT              => true,
         self::AUTH_SPLIT                      => true,
         self::RECURRING_AUTO                  => true,
+        self::CHECKOUT_DISABLE_CARDSCAN       => true,
     ];
 
     // Entity type constants
