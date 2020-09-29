@@ -276,9 +276,9 @@ class DEventsKafkaConsumer extends Command
         $this->info('processing message from - '.
             $kafkaMessage->topic_name. ' topic with payload - '. $kafkaMessage->payload);
 
-        $appEnv = env('APP_ENV', 'production');
+        $appMode = env('APP_MODE', 'prod');
 
-        $topic = str_replace($appEnv . '-', '', $kafkaMessage->topic_name);
+        $topic = str_replace($appMode . '-', '', $kafkaMessage->topic_name);
 
         $isProcessed = $this->messageProcessor->process($topic, $payload, $this->mode);
 
