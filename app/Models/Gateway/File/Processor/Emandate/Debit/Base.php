@@ -36,7 +36,11 @@ abstract class Base extends EMandate\Base
                       ->addHours(9)
                       ->getTimestamp();
 
+        $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_INIT);
+
         $tokens = $this->repo->token->fetchPendingEMandateDebit(static::GATEWAY, $begin, $end);
+
+        $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 
         $paymentIds = $tokens->pluck('payment_id')->toArray();
 

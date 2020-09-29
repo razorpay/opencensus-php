@@ -441,12 +441,16 @@ class PaperNachCiti extends Debit\Base
                       ->addHours(9)
                       ->getTimestamp();
 
+        $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_INIT);
+
         $tokens = $this->repo->token->fetchPendingNachOrMandateDebit(
                                              [Payment\Gateway::ENACH_NPCI_NETBANKING, Payment\Gateway::NACH_CITI],
                                              $begin,
                                              $end,
                                              Payment\Gateway::ACQUIRER_CITI
                                             );
+
+        $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 
         $paymentIds = $tokens->pluck('payment_id')->toArray();
 

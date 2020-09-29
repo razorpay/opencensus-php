@@ -57,7 +57,11 @@ class PaperNachCiti extends Base
                       ->addHours(9)
                       ->getTimestamp();
 
+        $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_INIT);
+
         $tokens = $this->repo->token->fetchPendingNachRegistration(self::GATEWAY, $begin, $end);
+
+        $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 
         $paymentIds = $tokens->pluck('payment_id')->toArray();
 

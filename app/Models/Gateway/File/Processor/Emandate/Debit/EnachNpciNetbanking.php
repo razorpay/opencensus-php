@@ -198,12 +198,17 @@ class EnachNpciNetbanking extends Base
             ->addHours(6)
             ->getTimestamp();
 
+        $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_INIT);
+
         $tokens = $this->repo->token->fetchPendingEMandateDebitWithGatewayAcquirer(
                                                        static::GATEWAY,
                                                        $begin,
                                                        $end,
                                                        Payment\Gateway::ACQUIRER_YESB
                                                      );
+
+        $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
+
 
         $paymentIds = $tokens->pluck('payment_id')->toArray();
 

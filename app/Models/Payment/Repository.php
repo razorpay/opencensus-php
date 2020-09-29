@@ -150,7 +150,7 @@ class Repository extends Base\Repository
 
     public function fetchPaymentsWithStatus($from, $to, $gateway, $status)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->from(\DB::raw('`payments` FORCE INDEX (payments_authorized_at_index)'))
                     ->whereBetween(Payment\Entity::AUTHORIZED_AT, array($from, $to))
                     ->whereIn('status', $status)
@@ -735,6 +735,18 @@ class Repository extends Base\Repository
                         $merchantId, $from, $to, $count, $skip, $relations);
     }
 
+
+    /*
+     * select `payments`.*
+     * from `payments`, `transactions` USE INDEX (transactions_reconciled_at_index)
+     * where `payments`.`id` = `transactions`.`entity_id`
+     * and `gateway` = ?
+     * and `transactions`.`type` = ?
+     * and `transactions`.`reconciled_at` >= ?
+     * and `transactions`.`reconciled_at` <= ?
+     * and `status` in (?, ?, ?)
+     */
+
     public function fetchReconciledPaymentsForGateway($from, $to, $gateway, $status)
     {
         $paymentAttrs = $this->dbColumn('*');
@@ -743,18 +755,18 @@ class Repository extends Base\Repository
 
         $txnRepo = $this->repo->transaction;
 
-        $transactionPaymentId = $txnRepo->dbColumn(Transaction\Entity::ENTITY_ID);
-
         $transactionEntityType = $txnRepo->dbColumn(Transaction\Entity::TYPE);
 
         $transactionReconciledAt = $txnRepo->dbColumn(Transaction\Entity::RECONCILED_AT);
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->select($paymentAttrs)
-                    ->join($txnRepo->getTableName(), $paymentId, '=', $transactionPaymentId)
+                    ->from(\DB::raw('`payments`, `transactions` USE INDEX (transactions_reconciled_at_index)'))
+                    ->where($paymentId, '=', \DB::raw('`transactions`.`entity_id`'))
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->where($transactionEntityType, '=', 'payment')
-                    ->whereBetween($transactionReconciledAt, [$from, $to])
+                    ->where($transactionReconciledAt, '>=', $from)
+                    ->where($transactionReconciledAt, '<=', $to)
                     ->whereIn(Entity::STATUS, $status)
                     ->get();
     }

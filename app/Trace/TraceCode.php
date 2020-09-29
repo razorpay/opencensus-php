@@ -3256,6 +3256,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // DB wait timeout
     const DB_EXECUTING_WAIT_TIMEOUT                             = 'DB_EXECUTING_WAIT_TIMEOUT';
 
+    const GATEWAY_FILE_QUERY_INIT                               = 'GATEWAY_FILE_QUERY_INIT';
+    const GATEWAY_FILE_QUERY_COMPLETE                           = 'GATEWAY_FILE_QUERY_COMPLETE';
+
     // RBL VA integration
     const RBL_VA_CALLBACK                                       = 'RBL_VA_CALLBACK';
     const RBL_VA_INVALID_CALLBACK_DATA                          = 'RBL_VA_INVALID_CALLBACK_DATA';

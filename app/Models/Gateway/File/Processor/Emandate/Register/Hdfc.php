@@ -26,7 +26,11 @@ class Hdfc extends Base
         $begin = $this->gatewayFile->getBegin();
         $end   = $this->gatewayFile->getEnd();
 
+        $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_INIT);
+
         $tokens = $this->repo->token->fetchPendingEmandateRegistration(static::GATEWAY, $begin, $end);
+
+        $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 
         $paymentIds = $tokens->pluck('payment_id')->toArray();
 
