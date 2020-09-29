@@ -1201,9 +1201,18 @@ class ApiEventSubscriber extends Base\Core
             Merchant\Entity::EMAIL         => $payment->merchant->getTransactionReportEmail(),
         ];
 
+        $customerEmail = null;
+        $customerContact = null;
+
+        if ($payment->customer !== null)
+        {
+            $customerEmail = $payment->customer->getEmail();
+            $customerContact = $payment->customer->getContact();
+        }
+
         $payload['customer'] = [
-            'email' => $payment->customer->getEmail(),
-            'phone' => $payment->customer->getContact(),
+            'email' => $customerEmail,
+            'phone' => $customerContact,
         ];
 
         if ($payment->hasCard() === true)
