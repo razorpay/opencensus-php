@@ -90,7 +90,7 @@ class Validator extends Base\Validator
         'payment_link_id'               => 'sometimes|public_id|size:17',
         'token'                         => 'sometimes',
         'save'                          => 'sometimes|in:0,1',
-        'recurring'                     => 'sometimes|in:1,preferred',
+        'recurring'                     => 'sometimes|in:1,preferred,auto',
         'fee'                           => 'sometimes|filled|integer|max:50000000',
         Entity::TAX                     => 'sometimes|filled|integer|max:50000000',
         'on_hold'                       => 'sometimes_if:method,transfer|boolean',

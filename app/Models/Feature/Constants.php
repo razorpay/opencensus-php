@@ -110,6 +110,7 @@ class Constants
     const IRCTC_METHODS                   = 'irctc_methods';
     const SKIP_CVV                        = 'skip_cvv';
     const BLOCK_SETTLEMENTS               = 'block_settlements';
+    const RECURRING_AUTO                  = 'recurring_auto';
     const TEST_MODE_SETTLEMENT            = 'test_mode_settlement';
     const SKIP_INTERNATIONAL_AUTH         = 'skip_international_auth';
     const ES_AUTOMATIC_THREE_PM           = 'es_automatic_three_pm';
@@ -457,6 +458,7 @@ class Constants
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
+        self::RECURRING_AUTO,
     ];
 
     public static $debitRecurringFeatures = [
@@ -700,6 +702,7 @@ class Constants
         self::ESIGN                           => true,
         self::ROUTE_CODE_SUPPORT              => true,
         self::AUTH_SPLIT                      => true,
+        self::RECURRING_AUTO                  => true,
     ];
 
     // Entity type constants

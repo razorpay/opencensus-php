@@ -1759,7 +1759,7 @@ trait Authorize
 
         $token = $payment->getGlobalOrLocalTokenEntity();
 
-        if ($token === null)
+        if ($token === null and $this->isAutoRecurringPayment($input) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_TOKEN_ABSENT_FOR_RECURRING_PAYMENT,
@@ -1810,6 +1810,26 @@ trait Authorize
         if ($payment->isSecondRecurring() === true)
         {
             $this->verifyAggregatorIfApplicable($merchant);
+        }
+    }
+
+    protected function isAutoRecurringPayment(array $input)
+    {
+        if ((isset($input['recurring']) === true) and
+            ($input['recurring'] === Payment\RecurringType::AUTO))
+        {
+            if ($this->merchant->isFeatureEnabled(Feature\Constants::RECURRING_AUTO) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED,
+                    null,
+                    [
+                        'payment_id'    => $this->payment->getId(),
+                        'method'        => $this->payment->getMethod()
+                    ]);
+            }
+
+            return true;
         }
     }
 
@@ -1901,7 +1921,7 @@ trait Authorize
         }
     }
 
-    protected function validateRecurringForCard(Payment\Entity $payment, Token\Entity $token)
+    protected function validateRecurringForCard(Payment\Entity $payment, $token)
     {
         if ($payment->card->isRecurringSupported() === false)
         {
@@ -1909,7 +1929,10 @@ trait Authorize
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED);
         }
 
-        $this->validateTokenExpiredAt($token);
+        if (is_null($token) === false)
+        {
+            $this->validateTokenExpiredAt($token);
+        }
     }
 
     protected function validateRecurringForEmandate(
@@ -3484,6 +3507,20 @@ trait Authorize
 
             $payment->setRecurring($recurring);
         }
+        else if ($this->isAutoRecurring($input) === true)
+        {
+            if (($payment->isCard() === true) and
+                ($payment->hasCard() === true) and
+                ($payment->card->isRecurringSupported() === true))
+            {
+                $payment->setRecurring(true);
+            }
+            else
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_AUTO_RECURRING_NOT_SUPPORTED_ON_IIN);
+            }
+        }
     }
 
     protected function setRecurringType(Payment\Entity $payment, array $input)
@@ -3506,6 +3543,12 @@ trait Authorize
                 {
                     $type = Payment\RecurringType::AUTO;
                 }
+            }
+
+            if (($token === null) and
+                ($input['recurring'] === Payment\RecurringType::AUTO))
+            {
+                $type = Payment\RecurringType::AUTO;
             }
         }
 
@@ -7034,6 +7077,12 @@ trait Authorize
     {
         return ((empty($input[Payment\Entity::RECURRING]) === false) and
                 ($input[Payment\Entity::RECURRING] === 'preferred'));
+    }
+
+    protected function isAutoRecurring(array $input)
+    {
+        return ((empty($input[Payment\Entity::RECURRING]) === false) and
+                ($input[Payment\Entity::RECURRING] === 'auto'));
     }
 
     protected function validateAndSaveInputDetailsIfRequired($payment, $input, $gatewayInput, $ret)

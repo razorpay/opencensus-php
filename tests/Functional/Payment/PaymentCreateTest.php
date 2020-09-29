@@ -343,6 +343,67 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($payment['authentication_gateway'], 'google_pay');
     }
 
+    public function testCreateAutoRecurringPayment()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['recurring'] = "auto";
+
+        $this->fixtures->merchant->addFeatures(['s2s', Feature\Constants::RECURRING_AUTO]);
+
+        $response = $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'], $response['razorpay_payment_id']);
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals('sharp', $payment['gateway']);
+        $this->assertEquals(true, $payment['recurring']);
+        $this->assertEquals('auto', $payment['recurring_type']);
+    }
+
+    public function testCreateAutoRecurringPaymentBadRequest()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['recurring'] = "auto";
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($paymentArray)
+        {
+            $this->doAuthPayment($paymentArray);
+        });
+    }
+
+    public function testCreateAutoRecurringPaymentBinNotSupported()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['card']['number'] = '6074667022059103';
+
+        $this->fixtures->create('iin',
+            [
+                'iin'       => '607466',
+                'issuer'    => 'ICIC',
+                'type'      => 'debit',
+                'recurring' => 0,
+            ]);
+
+        $paymentArray['recurring'] = "auto";
+
+        $this->fixtures->merchant->addFeatures(['s2s', Feature\Constants::RECURRING_AUTO]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($paymentArray)
+        {
+            $this->doAuthPayment($paymentArray);
+        });
+    }
+
     public function testCreateCardPaymentFailedWithRestrictionUpi()
     {
         $payment = $this->getDefaultPaymentArray();

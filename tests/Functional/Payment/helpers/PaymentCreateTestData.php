@@ -469,6 +469,38 @@ return [
         ],
     ],
 
+    'testCreateAutoRecurringPaymentBadRequest' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED
+        ],
+    ],
+
+    'testCreateAutoRecurringPaymentBinNotSupported' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_AUTO_RECURRING_NOT_SUPPORTED_ON_IIN
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_AUTO_RECURRING_NOT_SUPPORTED_ON_IIN
+        ],
+    ],
+
     'testPaymentS2SJsonPrivateAuthUPIIntent' => [
         'request' => [
             'url' => '/payments/create/json',
