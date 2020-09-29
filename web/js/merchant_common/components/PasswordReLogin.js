@@ -17,7 +17,7 @@ export default class PasswordReLogin extends Component {
   service = this.props.isPartner ? 'Partner' : 'PG';
   state = {
     gResponse: null,
-    isProd: window.location.hostname === 'dashboard.razorpay.com',
+    isProd: window.location.hostname.endsWith('razorpay.com'),
   };
 
   componentDidMount() {
