@@ -347,9 +347,9 @@ class Service extends Base\Service
                          ->getInvoiceData($input)
                          ->toArray();
 
-            $data['dates']      = $this->getDateRanges($input['year'], $input['month']);
+            $data['dates']       = $this->getDateRanges($input['year'], $input['month']);
             $data['merchant_id'] = $merchantId;
-            $data['invoice_id'] = $this->getInvoiceId($input['year'], $input['month'], $merchantId);
+            $data['invoice_id']  = $this->getInvoiceId($input['year'], $input['month'], $merchantId);
 
             return [null, $data];
         }

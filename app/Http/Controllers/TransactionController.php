@@ -143,34 +143,48 @@ class TransactionController extends Controller
 
         if ($error === null && sizeOf($data) !== 0)
         {
-            $merchantId = $data['merchant_id'];
-
-            list($error, $merchant) = (new Merchant\Service)->fetchMerchantFromApi($merchantId);
-
-            if ($error !== null)
+            if (isset($data['signed_url']) === true)
             {
-              return AppResponse::validationErrorResponse($errorMsg);
+                if ($data['error'] === null)
+                {
+                    return redirect($data['signed_url']);
+                }
+                else
+                {
+                    return AppResponse::validationErrorResponse($data['error']);
+                }
             }
+            else
+            {
+                $merchantId = $data['merchant_id'];
 
-            $data['merchant'] = $merchant;
+                list($error, $merchant) = (new Merchant\Service)->fetchMerchantFromApi($merchantId);
 
-            $merchantDetails = (new MerchantDetails\Service)->fetchDetails($merchantId);
+                if ($error !== null)
+                {
+                    return AppResponse::validationErrorResponse($errorMsg);
+                }
 
-            $gst = (empty($merchantDetails['gstin']) === false) ? $merchantDetails['gstin'] :
+                $data['merchant'] = $merchant;
+
+                $merchantDetails = (new MerchantDetails\Service)->fetchDetails($merchantId);
+
+                $gst = (empty($merchantDetails['gstin']) === false) ? $merchantDetails['gstin'] :
                     ((empty($merchantDetails['p_gstin']) === false) ? $merchantDetails['p_gstin'] : '');
 
-            $data['gst'] = $gst;
-            $data['isGstApplicable'] = $isGstApplicable;
+                $data['gst'] = $gst;
+                $data['isGstApplicable'] = $isGstApplicable;
 
-            $data['merchant_details'] = $merchantDetails;
+                $data['merchant_details'] = $merchantDetails;
 
-            $state_code = $data['merchant_details']['business_registered_state'];
-            if (empty($state_code) === false)
-            {
-                $data['merchant_details']['business_registered_state'] = (new MerchantDetails\Service)->getStateFromCode($state_code);
+                $state_code = $data['merchant_details']['business_registered_state'];
+                if (empty($state_code) === false)
+                {
+                    $data['merchant_details']['business_registered_state'] = (new MerchantDetails\Service)->getStateFromCode($state_code);
+                }
+
+                return Response::view($isGstApplicable ? 'merchant.invoice.invoice' : 'merchant.invoice_old', $data);
             }
-
-            return Response::view($isGstApplicable ? 'merchant.invoice.invoice' : 'merchant.invoice_old', $data);
         }
         else
         {
