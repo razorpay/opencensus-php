@@ -205,7 +205,7 @@ trait RepositoryFetch
         return $entities;
     }
 
-    protected function getConnectionFromType(string $connection): string
+    protected function getConnectionFromType(string $connection)
     {
         switch ($connection)
         {

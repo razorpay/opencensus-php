@@ -21,6 +21,11 @@ class SalesForceService {
         $this->salesForceClient->sendEventToSalesForce($eventPayload);
     }
 
+    public function getMerchantDetailsOnOpportunity(string $merchantId, array $opportunities): array {
+        $responsePayload = $this->salesForceClient->getMerchantDetailsOnOpportunity($merchantId, $opportunities);
+        return $this->parseResponseToMerchantDetail($responsePayload);
+    }
+
     private function buildSalesforceEventPayloadForEventType(SalesForceEventRequestType $salesForceEventRequestType,
                                                              SalesForceEventRequestDTO $salesForceEventRequestDTO,
                                                              Entity $merchant) {
@@ -33,8 +38,6 @@ class SalesForceService {
                     'email'                 => $merchant->getEmail(),
                     'activated'             => (int)$merchant->isActivated(),
                     'signup_date'           => date($DATE_FORMAT, $merchant->getCreatedAt()),
-                    'business_name'         => $merchant->getMerchantDetail()->getBusinessName(),
-                    'contact_name'          => $merchant->getMerchantDetail()->getContactName(),
                     'event_submission_date' => date($DATE_FORMAT)
                 ];
                 return array_merge($eventPayload, $salesForceEventRequestDTO->getEventProperties());
@@ -42,5 +45,23 @@ class SalesForceService {
                 throw new InvalidArgumentException("Invalid Event Type");
         }
 
+    }
+
+    private function parseResponseToMerchantDetail($response): array {
+        $merchantOpportunityDetails = array();
+        if ($response['totalSize'] >= 1) {
+            foreach ($response['records'] as $record) {
+                $merchantOpportunityDetail = new SalesforceMerchantOpportunityDetail();
+                $merchantOpportunityDetail->setMerchantId($record['Account']['Merchant_ID__c']);
+                $merchantOpportunityDetail->setOpportunityName($record['Type']);
+                $merchantOpportunityDetail->setOpportunityStage($record['StageName']);
+                $merchantOpportunityDetail->setOpportunityLossReason($record['Loss_Reason__c']);
+                $merchantOpportunityDetail->setOpportunityOwnerName($record['Owner']['Name']);
+                $merchantOpportunityDetail->setOpportunityOwnerRole($record['Owner_Role__c']);
+                $merchantOpportunityDetail->setOpportunityLastModifiedTime($record['LastModifiedDate']);
+                $merchantOpportunityDetails[] = $merchantOpportunityDetail;
+            }
+        }
+        return $merchantOpportunityDetails;
     }
 }

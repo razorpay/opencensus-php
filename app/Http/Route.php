@@ -1995,9 +1995,10 @@ class Route
 
         'merchant_verify_attributes'              => ['post',    'merchant/verify/{verificationType}',                      'MerchantController@postVerifyMerchantAttributes'              ],
         'checkout_personalisation'                => ['get',     'personalisation',                                         'MerchantController@getPersonalisedMethods'                    ],
-        'update_payout_status'                    => ['patch',   'payouts/{id}/manual/status',                              'PayoutController@updatePayoutStatusManually'                          ],
-        'salesforce_event'                        => ['post',    'merchant/{mid}/salesforce_event',                         'SalesForceController@sendSalesForceEvent'],
-        'banking_account_statement_process_admin' => ['post',     'banking_account_statement/admin/process',                 'BankingAccountStatementController@fetchStatementForAccount'],
+        'update_payout_status'                    => ['patch',   'payouts/{id}/manual/status',                              'PayoutController@updatePayoutStatusManually'                  ],
+        'salesforce_event'                        => ['post',    'merchant/{mid}/salesforce_event',                         'SalesForceController@sendSalesForceEvent'                     ],
+        'salesforce_opportunity_details'          => ['get',     'merchant/{mid}/salesforce_opportunity_detail',            'SalesForceController@getMerchantDetailsOnOpportunity'         ],
+        'banking_account_statement_process_admin' => ['post',    'banking_account_statement/admin/process',                 'BankingAccountStatementController@fetchStatementForAccount'   ],
 
     ];
 
@@ -2739,6 +2740,7 @@ class Route
     public static $proxy = [
         'fetch_order_line_items',
         'salesforce_event',
+        'salesforce_opportunity_details',
         'fetch_product_status',
         'settlement_ondemand_create_dashboard',
         'settlement_ondemand_fees_dashboard',
@@ -4573,6 +4575,8 @@ class Route
         'setl_service_migration'                      => '*',
         'banking_account_statement_process_admin'     => Permission::BANKING_ACCOUNT_STATEMENT_RUN_MANUALLY,
         'tax_payments_admin_auth_api'                 => Permission::TAX_PAYMENT_ADMIN_AUTH_EXECUTE,
+        'salesforce_event'                            => '*',
+        'salesforce_opportunity_details'              => '*',
     ];
 
     public static $bankingRoutePermissions = [
@@ -4769,6 +4773,8 @@ class Route
         'tax_payments_mark_as_paid'                    => Permission::PAY_TAX_PAYMENTS,
         'tax_payments_challan_upload'                  => Permission::PAY_TAX_PAYMENTS,
         'tax_payments_edit'                            => Permission::PAY_TAX_PAYMENTS,
+        'salesforce_event'                             => '*',
+        'salesforce_opportunity_details'               => '*',
     ];
 
     public static $direct = [

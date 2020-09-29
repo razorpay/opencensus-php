@@ -65,8 +65,6 @@ class SalesForceServiceTest extends TestCase {
             'email'                         => 'aditya@example.com',
             'activated'                     => 1,
             'signup_date'                   => '2020-08-19',
-            'business_name'                 => 'NEW BIZ',
-            'contact_name'                  => 'Aditya',
             'interested_in_current_account' => 1,
             'pin_code'                      => '560079',
             'average_monthly_balance'       => '5000',
@@ -77,6 +75,100 @@ class SalesForceServiceTest extends TestCase {
         unset($actualData['event_submission_date']); //Because it changes day by day
 
         $this->assertEquals($expectedPayload, $actualData);
+    }
+
+    public function testSalesForcePayloadIsParsedAndMerchantDetailIsConstructed() {
+        //Given
+        $merchantId = 'random-merchant-id';
+        $opportunities = ['Current Account', 'Some other thing'];
+
+        $salesForceResponsePayload = [
+            "totalSize" => 2,
+            "done"      => true,
+            "records"   => [
+                [
+                    "attributes"       => [
+                        "type" => "Opportunity",
+                        "url"  => "/services/data/v48.0/sobjects/Opportunity/0066F000016wT65QAE"
+                    ],
+                    "Account"          => [
+                        "attributes"     => [
+                            "type" => "Account",
+                            "url"  => "/services/data/v48.0/sobjects/Account/0016F00002Kf9lcQAB"
+                        ],
+                        "Merchant_ID__c" => "random-merchant-id"
+                    ],
+                    "Type"             => "Current_Account",
+                    "StageName"        => "Open",
+                    "Loss_Reason__c"   => null,
+                    "LastModifiedDate" => "2020-09-18T10:16:34.000+0000",
+                    "Owner"            => [
+                        "attributes" => [
+                            "type" => "User",
+                            "url"  => "/services/data/v48.0/sobjects/User/0056F00000BhL4mQAF"
+                        ],
+                        "Name"       => "Aditya"
+                    ],
+                    "Owner_Role__c"    => "Engineering"
+                ]
+                ,
+                [
+                    "attributes"       => [
+                        "type" => "Opportunity",
+                        "url"  => "/services/data/v48.0/sobjects/Opportunity/0066F000016wT65QAE"
+                    ],
+                    "Account"          => [
+                        "attributes"     => [
+                            "type" => "Account",
+                            "url"  => "/services/data/v48.0/sobjects/Account/0016F00002Kf9lcQAB"
+                        ],
+                        "Merchant_ID__c" => "random-merchant-id"
+                    ],
+                    "Type"             => "Some other thing",
+                    "StageName"        => "Closed",
+                    "Loss_Reason__c"   => "Some random reason",
+                    "LastModifiedDate" => "2020-09-20T10:16:34.000+0000",
+                    "Owner"            => [
+                        "attributes" => [
+                            "type" => "User",
+                            "url"  => "/services/data/v48.0/sobjects/User/0056F00000BhL4mQAF"
+                        ],
+                        "Name"       => "Akshay"
+                    ],
+                    "Owner_Role__c"    => null
+                ]
+            ]];
+
+        $this->salesForceClient->expects($this->once())
+                               ->method('getMerchantDetailsOnOpportunity')
+                               ->willReturn($salesForceResponsePayload);
+
+        //When
+        $merchantDetails = $this->salesForceService->getMerchantDetailsOnOpportunity($merchantId, $opportunities);
+
+        //Then
+        $expectedMerchantDetails = [[
+                                        'merchantId'                  => 'random-merchant-id',
+                                        'opportunityName'             => 'Current_Account',
+                                        'opportunityStage'            => 'Open',
+                                        'opportunityLossReason'       => null,
+                                        'opportunityOwnerName'        => 'Aditya',
+                                        'opportunityOwnerRole'        => 'Engineering',
+                                        'opportunityLastModifiedTime' => 1600424194
+                                    ], [
+                                        'merchantId'                  => 'random-merchant-id',
+                                        'opportunityName'             => 'Some other thing',
+                                        'opportunityStage'            => 'Closed',
+                                        'opportunityLossReason'       => 'Some random reason',
+                                        'opportunityOwnerName'        => 'Akshay',
+                                        'opportunityOwnerRole'        => null,
+                                        'opportunityLastModifiedTime' => 1600596994
+                                    ]];
+
+        //Json Encode here to test serves 2 purposes
+        //1. I don't have to construct the objects to test
+        //2. It also exercises the custom serializer written for SalesforceMerchantOpportunityDetail
+        $this->assertEquals(json_encode($expectedMerchantDetails), json_encode($merchantDetails));
     }
 
 }

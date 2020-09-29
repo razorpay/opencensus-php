@@ -46,6 +46,13 @@ class SalesForceController extends Controller {
         return ApiResponse::json([], 202);
     }
 
+    public function getMerchantDetailsOnOpportunity(string $mid) {
+        $input = Request::all();
+        $opportunities = $input['opportunity'];
+        $merchantDetails = $this->salesForceService->getMerchantDetailsOnOpportunity($mid, $opportunities);
+        return ApiResponse::json($merchantDetails);
+    }
+
     public function buildSalesForceEventRequestDTO(array $input): SalesForceEventRequestDTO {
         if ((isset($input['event_type']) === true)
             && (isset($input['event_properties']) === true)) {

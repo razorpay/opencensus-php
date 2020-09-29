@@ -58,6 +58,9 @@ class SalesForceClient
     const POST                  = 'POST';
     const PUT                   = 'PUT';
     const PATCH                 = 'PATCH';
+    const GET                   = 'GET';
+
+    const DASHBOARD_UPSERT_URL  = '/services/apexrest/DashboardOpportunityUpsert';
 
     public function __construct($app)
     {
@@ -101,7 +104,7 @@ class SalesForceClient
     {
         $request = $this->getAccessTokenRequest();
 
-        $response = $this->createAndSendRequest($request);
+        $response = $this->makeRequestAndGetResponse($request);
 
         $accessToken = $this->parseAccessToken($response);
 
@@ -214,7 +217,7 @@ class SalesForceClient
             ]
         ];
 
-        $response = $this->createAndSendRequest($request);
+        $response = $this->makeRequestAndGetResponse($request);
 
         return $response;
     }
@@ -253,11 +256,43 @@ class SalesForceClient
 
     public function sendEventToSalesForce(array $eventPayload) {
         $this->dispatchRequestJob(
-            $this->generateUrlForMerchantUpsert(),
+            $this->generateUrlForOpportunityUpsert(),
             $eventPayload,
             TraceCode::SALESFORCE_EVENT_REQUEST,
             TraceCode::SALESFORCE_EVENT_RESPONSE,
             TraceCode::SALESFORCE_EVENT_ERROR);
+    }
+
+    public function getMerchantDetailsOnOpportunity(string $merchantId, array $opportunities): array {
+
+        $accessToken = $this->fetchAccessToken();
+
+        $opportunityInClause = implode("','", $opportunities);
+        $merchantDetailQuery = "select Account.Merchant_ID__c,
+                                    Opportunity.Type,
+                                    Opportunity.StageName,
+                                    Opportunity.Loss_Reason__c,    
+                                    Opportunity.LastModifiedDate,
+                                    Opportunity.Owner.name,
+                                    Opportunity.Owner_Role__c
+                                from Opportunity
+                                where Account.Merchant_ID__c = '{$merchantId}'
+                                and Opportunity.Type in ('$opportunityInClause')";
+
+        $queryURL = $this->baseUrl . '/services/data/v34.0/query?q=' . $merchantDetailQuery;
+
+        $request = [
+            'url'     => $queryURL,
+            'method'  => self::GET,
+            'content' => [],
+            'options' => ['timeout' => 120],
+            'headers' => [
+                RequestHeader::CONTENT_TYPE  => 'application/json',
+                RequestHeader::AUTHORIZATION => RequestHeader::BEARER . ' ' . $accessToken
+            ]
+        ];
+
+        return $this->makeRequestAndGetResponse($request);
     }
 
     public function updateChangeInBankingMerchantOnboardingCategory(array $merchantEntities, string $newValue)
@@ -305,6 +340,10 @@ class SalesForceClient
         return $this->baseUrl . '/services/apexrest/MerchantUpsert';
     }
 
+    protected function generateUrlForOpportunityUpsert(){
+        return $this->baseUrl . '/services/apexrest/DashboardOpportunityUpsert';
+    }
+
     protected function generateUrlForAccountFetch(string $nextUrl)
     {
         if (empty($nextUrl) === false)
@@ -348,9 +387,12 @@ class SalesForceClient
         return $url;
     }
 
-    protected function createAndSendRequest(array $request)
+    protected function makeRequestAndGetResponse(array $request)
     {
         $response = $this->sendRequest($request);
+        if ($response->status_code != 200){
+            throw new Exception\IntegrationException("Salesforce Returned non 200 Response");
+        }
 
         return json_decode($response->body, true);
     }

@@ -21,7 +21,7 @@ class SalesForceClient extends BaseSalesForceClient
         return;
     }
 
-    protected function createAndSendRequest(array $request)
+    protected function makeRequestAndGetResponse(array $request)
     {
         return;
     }
