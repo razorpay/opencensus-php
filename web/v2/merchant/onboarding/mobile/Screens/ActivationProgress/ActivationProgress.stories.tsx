@@ -3,7 +3,7 @@ import { Story, Meta } from '@storybook/react/types-6-0.d';
 import ActivationProgress from './index';
 
 export default {
-  title: 'ActivationProgress',
+  title: 'Onboarding/ActivationProgress',
   component: ActivationProgress,
 } as Meta;
 

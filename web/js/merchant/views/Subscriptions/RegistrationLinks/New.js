@@ -18,12 +18,7 @@ import { ModalAsideNav } from 'common/new-ui/Wizard';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 
 import CustomerDetailsForm from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/CustomerDetails';
-import {
-  isEmail,
-  isPhone,
-  isAmount,
-  validateBeneficiaryName,
-} from 'common/utils/validators';
+import { isEmail, isPhone, isAmount, validateBeneficiaryName } from 'common/utils/validators';
 import PaymentDetailsForm from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/PaymentDetails';
 import TokenDetailsForm from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/TokenDetails';
 import {
@@ -77,7 +72,7 @@ const CardMandatoryFields = [{ name: 'amount', validator: isAmount }];
 const UPIMandatoryFields = [
   {
     name: 'amount',
-    validator: value => {
+    validator: (value) => {
       return isAmount(value) && value <= 2000 && value >= 1;
     },
   },
@@ -87,7 +82,7 @@ let DEFAULT_MAX_AMOUNT = 99999;
 let DEFAULT_FIRST_CHARGE = 0;
 
 @withRouter
-@connect(state => ({ user: state.session.user }), {
+@connect((state) => ({ user: state.session.user }), {
   openModal,
   closeModal,
   saveInvoice,
@@ -165,9 +160,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
   }
 
   get Tabs() {
-    return getTabs(
-      this.isEmandatePayment || this.isNACHPayment || this.isUPIPayment
-    );
+    return getTabs(this.isEmandatePayment || this.isNACHPayment || this.isUPIPayment);
   }
 
   componentWillMount() {
@@ -187,14 +180,12 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     if (!event) return;
 
     this.props.tracking.trackEvent(
-      window.rzpQ
-        .chargeAtWill()
-        .interaction(`authlink.create.${event}`, options)
+      window.rzpQ.chargeAtWill().interaction(`authlink.create.${event}`, options),
     );
   };
 
   setFormFields = (key, value) => {
-    this.setState(currentState => ({
+    this.setState((currentState) => ({
       formFields: {
         ...currentState.formFields,
         [key]: value,
@@ -230,11 +221,11 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     this.trackRegistrationLinkCreation(eventName);
   };
 
-  handleDateChange = fieldName => date => {
+  handleDateChange = (fieldName) => (date) => {
     this.setFormFields(fieldName, Number(date.endOf('day').format('X')));
   };
 
-  handleNotesChange = notes => {
+  handleNotesChange = (notes) => {
     this.setFormFields('notes', notes);
   };
 
@@ -244,7 +235,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     trackClickPaymentMethod(option);
   };
 
-  changeTab = step => () => {
+  changeTab = (step) => () => {
     const currentTab = this.state.currentTab + step;
 
     const validTabs = [...this.state.validTabs];
@@ -267,26 +258,22 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     this.setState({ currentTab });
   };
 
-  handleDisableTabCondition = tabIndex => {
+  handleDisableTabCondition = (tabIndex) => {
     return tabIndex !== 0 && !this.state.validTabs[tabIndex - 1];
   };
 
   fetchDataForRegistrationLinks = () => {
-    fetchPaymentMethods().then(methods => {
+    fetchPaymentMethods().then((methods) => {
       if (methods && methods.recurring) {
         let emandateBanks = [];
 
-        const avlblMethods = Object.keys(methods.recurring).filter(
-          methodName => {
-            if (methodName === 'upi') {
-              return (
-                methods.recurring[methodName] && this.props.user.isUPICAWEnabled
-              );
-            }
-
-            return methods.recurring[methodName];
+        const avlblMethods = Object.keys(methods.recurring).filter((methodName) => {
+          if (methodName === 'upi') {
+            return methods.recurring[methodName] && this.props.user.isUPICAWEnabled;
           }
-        );
+
+          return methods.recurring[methodName];
+        });
 
         if (methods.recurring.emandate) {
           const emandates = methods.recurring.emandate || {};
@@ -328,7 +315,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     const data = { ...this.state.formFields },
       notes = data.notes.reduce(
         (otherNotes, { key, value }) => ({ ...otherNotes, [key]: value }),
-        {}
+        {},
       );
 
     const payload = {
@@ -348,9 +335,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       },
       subscription_registration: {
         method: data.mandateMethod,
-        expire_at: !Number(data.tokenHasNoExpiry)
-          ? data.mandateExpireAt
-          : undefined,
+        expire_at: !Number(data.tokenHasNoExpiry) ? data.mandateExpireAt : undefined,
         bank_account: undefined,
       },
     };
@@ -375,13 +360,11 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
         payload.subscription_registration.nach = {};
 
         if (data.formReference1) {
-          payload.subscription_registration.nach.form_reference1 =
-            data.formReference1;
+          payload.subscription_registration.nach.form_reference1 = data.formReference1;
         }
 
         if (data.formReference2) {
-          payload.subscription_registration.nach.form_reference2 =
-            data.formReference2;
+          payload.subscription_registration.nach.form_reference2 = data.formReference2;
         }
       }
 
@@ -391,7 +374,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     if (this.isEmandatePayment || this.isNACHPayment) {
       if (data.firstPaymentAmount) {
         payload.subscription_registration.first_payment_amount = rupeesToPaise(
-          data.firstPaymentAmount
+          data.firstPaymentAmount,
         );
       }
 
@@ -429,7 +412,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
 
     return this.props
       .createRegistrationLink(payload)
-      .then(response => {
+      .then((response) => {
         this.props.showNotification({
           type: 'success',
           message: 'Registration Link Successfully created',
@@ -438,7 +421,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
 
         return response;
       })
-      .then(response => {
+      .then((response) => {
         const entityId = response.id;
 
         if (this.props.onClose) {
@@ -466,7 +449,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
   isFormValid = (currentTab = this.state.currentTab) => {
     switch (currentTab) {
       case 0: {
-        return CustomerDetailsMandatoryFields.every(type => {
+        return CustomerDetailsMandatoryFields.every((type) => {
           let value = this.state.formFields[type];
 
           if (type instanceof Object) {
@@ -502,9 +485,8 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
           return isValid;
         }
 
-        isValid = mandatoryFields.every(type => {
-          let value =
-            this.state.formFields[type] && this.state.formFields[type].length;
+        isValid = mandatoryFields.every((type) => {
+          let value = this.state.formFields[type] && this.state.formFields[type].length;
 
           if (type instanceof Object) {
             value = this.state.formFields[type.name];
@@ -521,10 +503,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       case 2: {
         if (this.isUPIPayment) {
           const fields = this.state.formFields;
-          if (
-            fields.mandateMaxAmount > 2000 ||
-            fields.mandateMaxAmount < fields.amount
-          ) {
+          if (fields.mandateMaxAmount > 2000 || fields.mandateMaxAmount < fields.amount) {
             return false;
           }
         }

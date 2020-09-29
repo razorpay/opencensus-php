@@ -81,7 +81,9 @@ export default class webhookForm extends Component {
 
       this.props.initialize({
         url: webhook.url,
-        alert_email: webhook.alert_email ? webhook.alert_email : userData.merchant.transaction_report_email,
+        alert_email: webhook.alert_email
+          ? webhook.alert_email
+          : userData.merchant.transaction_report_email,
         secret_exists: webhook.secret_exists,
         eventGroup: {},
         events: {},
@@ -232,7 +234,10 @@ export default class webhookForm extends Component {
         difference = diff(newData, oldData);
       }
 
-      if (formData.alert_email && formData.alert_email === userData.merchant.transaction_report_email) {
+      if (
+        formData.alert_email &&
+        formData.alert_email === userData.merchant.transaction_report_email
+      ) {
         delete formData.alert_email;
       }
 
@@ -315,7 +320,7 @@ export default class webhookForm extends Component {
   };
 
   render() {
-    const { handleSubmit, webhookFormData, webhook , userData } = this.props;
+    const { handleSubmit, webhookFormData, webhook, userData } = this.props;
     const {
       groupedWebhooks,
       filterGroupedWebhooks,

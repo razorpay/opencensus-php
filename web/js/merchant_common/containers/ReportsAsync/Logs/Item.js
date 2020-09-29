@@ -30,33 +30,18 @@ export default class LogItem extends React.PureComponent {
     });
 
     return (
-      <div
-        class={classList(
-          'LogItem',
-          `LogItem--${actualStatus}`,
-          props.isNew && 'LogItem--new'
-        )}
-      >
+      <div class={classList('LogItem', `LogItem--${actualStatus}`, props.isNew && 'LogItem--new')}>
         <div className="LogItem__Body">
           <div>
             <strong>{config.name || '--'}</strong>
-            <ReportDuration
-              startTime={props.start_time}
-              endTime={props.end_time}
-            />
+            <ReportDuration startTime={props.start_time} endTime={props.end_time} />
           </div>
 
           <div>
-            <FileFormat
-              logTemplate={props.template_overrides}
-              configTemplate={config.template}
-            />
+            <FileFormat logTemplate={props.template_overrides} configTemplate={config.template} />
           </div>
 
-          <KindOfLog
-            scheduleId={props.schedule_id}
-            createdAt={props.created_at}
-          />
+          <KindOfLog scheduleId={props.schedule_id} createdAt={props.created_at} />
 
           <LogStatus
             actualStatus={actualStatus}
@@ -71,7 +56,7 @@ export default class LogItem extends React.PureComponent {
               'LogItem__InfoBar',
               'text-muted',
               'text-small',
-              `LogItem__InfoBar--${actualStatus}`
+              `LogItem__InfoBar--${actualStatus}`,
             )}
           >
             <i class="i i-info-outline" /> {logItemInfoMessages[actualStatus]}

@@ -154,12 +154,15 @@ export default class InstantActivationAnnouncements extends Component {
           theme = 'success';
           title = 'Settlements Enabled';
           if (surgeSeptCampaign) {
-            content =
+            content = (
               <span>
-                Your KYC verification was successful and settlements are enabled for your account, Start accepting payments by 30 Sep to unlock ₹1 lakh free credits & a special lifetime 
+                Your KYC verification was successful and settlements are enabled for your account,
+                Start accepting payments by 30 Sep to unlock ₹1 lakh free credits & a special
+                lifetime
                 <span style={{ textDecoration: 'line-through' }}>2%</span> 1.85% pricing.
                 Settlements will be processed post KYC verification &nbsp;
               </span>
+            );
           } else {
             content =
               'Your KYC verification was successful. Payments will be settled to your bank account as per settlement cycle.';

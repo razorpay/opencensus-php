@@ -11,9 +11,8 @@ import {
 const PARTNER_LOGS = 'PARTNER_LOGS';
 const MERCHANT_LOGS = 'MERCHANT_LOGS';
 
-const getPollLogActionName = entity => entity + '_POLLING';
-const getLogCreateActionName = entity =>
-  `${entity.substring(0, entity.length - 1)}_CREATE`;
+const getPollLogActionName = (entity) => entity + '_POLLING';
+const getLogCreateActionName = (entity) => `${entity.substring(0, entity.length - 1)}_CREATE`;
 
 const partnerLogFetchAction = getFetchActionName(PARTNER_LOGS);
 const merchantLogFetchAction = getFetchActionName(MERCHANT_LOGS);
@@ -24,7 +23,7 @@ const partnerReportPollLogAction = getPollLogActionName(PARTNER_LOGS);
 const merchantReportLogCreateAction = getLogCreateActionName(MERCHANT_LOGS);
 const partnerReportLogCreateAction = getLogCreateActionName(PARTNER_LOGS);
 
-const handleFetchLogsPending = state => ({
+const handleFetchLogsPending = (state) => ({
   error: null,
   pending: true,
   items: state.items,
@@ -38,11 +37,9 @@ const handleFetchLogsSuccess = (state, action) => ({
 });
 
 const appendEntityIfNotDuplicated = (state, action) =>
-  action.payload.is_already_present
-    ? { ...state }
-    : appendEntityToList(state, action);
+  action.payload.is_already_present ? { ...state } : appendEntityToList(state, action);
 
-export const fetchPartnerReportLogs = params =>
+export const fetchPartnerReportLogs = (params) =>
   fetchAll(params, new Log({ reportType: 'partner' }), PARTNER_LOGS);
 
 export const partnerLogListReducer = makeActionCollectionReducer(PARTNER_LOGS, {
@@ -52,24 +49,21 @@ export const partnerLogListReducer = makeActionCollectionReducer(PARTNER_LOGS, {
   [`${partnerReportLogCreateAction}::SUCCESS`]: appendEntityIfNotDuplicated,
 });
 
-export const fetchMerchantReportLogs = params =>
+export const fetchMerchantReportLogs = (params) =>
   fetchAll(params, new Log({ reportType: 'merchant' }), MERCHANT_LOGS);
 
-export const merchantLogListReducer = makeActionCollectionReducer(
-  MERCHANT_LOGS,
-  {
-    [`${merchantLogFetchAction}::PENDING`]: handleFetchLogsPending,
-    [`${merchantLogFetchAction}::SUCCESS`]: handleFetchLogsSuccess,
-    [`${merchantReportPollLogAction}::SUCCESS`]: updateEntityInList,
-    [`${merchantReportLogCreateAction}::SUCCESS`]: appendEntityIfNotDuplicated,
-  }
-);
+export const merchantLogListReducer = makeActionCollectionReducer(MERCHANT_LOGS, {
+  [`${merchantLogFetchAction}::PENDING`]: handleFetchLogsPending,
+  [`${merchantLogFetchAction}::SUCCESS`]: handleFetchLogsSuccess,
+  [`${merchantReportPollLogAction}::SUCCESS`]: updateEntityInList,
+  [`${merchantReportLogCreateAction}::SUCCESS`]: appendEntityIfNotDuplicated,
+});
 
-const createLog = reportType => {
+const createLog = (reportType) => {
   const actionName = `${reportType.toUpperCase()}_LOG_CREATE`;
   return (payload, accountId) => ({
     type: actionName,
-    payload: new Log({ reportType, accountId }).save(payload).then(data => ({
+    payload: new Log({ reportType, accountId }).save(payload).then((data) => ({
       ...data,
       isNew: true,
     })),
@@ -79,7 +73,7 @@ const createLog = reportType => {
 export const createPartnerReportLog = createLog('partner');
 export const createMerchantReportLog = createLog('merchant');
 
-const pollLog = reportType => {
+const pollLog = (reportType) => {
   const actionName = `${reportType.toUpperCase()}_LOGS_POLLING`;
   return (logId, accountId, onPollInitiated) => ({
     type: actionName,

@@ -37,7 +37,9 @@ export default ({
 
   if (isNACHPayment) {
     maxAmountProps.validator = maxAmountValidator(amount, MAX_TOKEN_AMOUNT_NACH);
-    maxAmountProps.description = `Max Amount for Nach (Up to ${getFormattedAmount(MAX_TOKEN_AMOUNT_NACH)})`;
+    maxAmountProps.description = `Max Amount for Nach (Up to ${getFormattedAmount(
+      MAX_TOKEN_AMOUNT_NACH,
+    )})`;
   }
 
   return (

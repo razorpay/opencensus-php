@@ -16,8 +16,6 @@ Array [
       className="Buttonweb__StyledButton-gxhxmy-0 ddCfrZ Spaceweb__Space-njatzl-0 jGLucJ Sizeweb__Size-sc-10bl685-0 bPNzzG Flexweb__Flex-ni2cjg-0 dfbkqx"
       data-testid="ds-button"
       disabled={false}
-      id={[Function]}
-      name={[Function]}
       onClick={[Function]}
       onMouseUp={[Function]}
       size="medium"
@@ -38,8 +36,6 @@ Array [
       className="Buttonweb__StyledButton-gxhxmy-0 ddCfrZ Spaceweb__Space-njatzl-0 jGLucJ Sizeweb__Size-sc-10bl685-0 bPNzzG Flexweb__Flex-ni2cjg-0 dfbkqx"
       data-testid="ds-button"
       disabled={false}
-      id={[Function]}
-      name={[Function]}
       onClick={[Function]}
       onMouseUp={[Function]}
       size="medium"

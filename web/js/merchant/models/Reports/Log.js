@@ -22,8 +22,8 @@ export default class Log extends BaseReportingEntity {
         }),
       // when sent true from validator polling will stop
       // continue polling if status is in progress
-      validator: log => !isLogInProgress(log.status),
-    getNextCallWaitime: () => {
+      validator: (log) => !isLogInProgress(log.status),
+      getNextCallWaitime: () => {
         numberOfCalls++;
 
         const nextCallWaitTime = pollIntervalMultiplier * numberOfCalls * 1000;

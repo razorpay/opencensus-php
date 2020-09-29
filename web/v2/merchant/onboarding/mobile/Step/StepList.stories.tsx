@@ -5,7 +5,7 @@ import { StepListPropsT } from './StepList';
 import { StepList } from './index';
 
 export default {
-  title: 'StepList',
+  title: 'Onboarding/StepList',
   component: StepList,
 } as Meta;
 

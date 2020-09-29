@@ -3,12 +3,14 @@ import styled from 'styled-components';
 import View from '@razorpay/blade/src/atoms/View';
 import Flex from '@razorpay/blade/src/atoms/Flex';
 import Size from '@razorpay/blade/src/atoms/Size';
+import Space from '@razorpay/blade/src/atoms/Space';
 import TabContent from './TabContent';
 
 const TabBar = styled(View)`
   overflow-x: scroll;
   box-sizing: border-box;
   box-shadow: 0px 4px 15px rgba(11, 112, 231, 0.05);
+  background-color: ${({ theme }) => theme.colors.background[200]};
 `;
 
 const TabContentContainer = styled(View)`
@@ -61,14 +63,16 @@ const Tabs = ({
   });
 
   return (
-    <div>
+    <View>
       <Flex>
         <Size height={4.5}>
           <TabBar>{tabs}</TabBar>
         </Size>
       </Flex>
-      <TabContentContainer>{tabsContent}</TabContentContainer>
-    </div>
+      <Space padding={[2]}>
+        <TabContentContainer>{tabsContent}</TabContentContainer>
+      </Space>
+    </View>
   );
 };
 

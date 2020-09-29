@@ -3,7 +3,7 @@
  */
 
 // Helper/Private Function
-const _poll = options => {
+const _poll = (options) => {
   const {
     fetchFunc,
     validator,
@@ -17,7 +17,7 @@ const _poll = options => {
   const startTime = Date.now();
 
   fetchFunc()
-    .then(resp => {
+    .then((resp) => {
       // after resolving network call, if we findout the poll
       // should be aborted, just return;
       if (shouldAbortPoll()) {
@@ -30,8 +30,7 @@ const _poll = options => {
         resolve(resp);
       } else {
         const diff = startTime - Date.now(),
-          waitTime =
-            (getNextCallWaitime ? getNextCallWaitime() : minWaitTime) - diff;
+          waitTime = (getNextCallWaitime ? getNextCallWaitime() : minWaitTime) - diff;
 
         window.setTimeout(() => {
           // after timer, if we findout the poll
@@ -43,7 +42,7 @@ const _poll = options => {
     .catch(reject);
 };
 
-const poll = options => {
+const poll = (options) => {
   /*
    * @param {Function} fetchFunc*
    * @param {Function} validator*

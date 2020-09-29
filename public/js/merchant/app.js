@@ -23,12 +23,8 @@ var app = angular
     '$stateParams',
     'user',
     'authorization',
-    function($rootScope, $state, $stateParams, user, authorization) {
-      $rootScope.$on('$stateChangeStart', function(
-        event,
-        toState,
-        toStateParams
-      ) {
+    function ($rootScope, $state, $stateParams, user, authorization) {
+      $rootScope.$on('$stateChangeStart', function (event, toState, toStateParams) {
         // track the state the user wants to go to; authorization service needs this
         $rootScope.toState = toState;
         $rootScope.toStateParams = toStateParams;
@@ -37,13 +33,13 @@ var app = angular
         if (user.isIdentityResolved()) {
           authorization.authorize();
         }
-        user.identity(true).then(function(data) {
+        user.identity(true).then(function (data) {
           if (data) {
             $rootScope.role = data.merchants[data.id].role;
           }
         });
       });
-      $rootScope.$on('$stateChangeError', function() {
+      $rootScope.$on('$stateChangeError', function () {
         $state.go('500');
       });
     },
@@ -58,7 +54,7 @@ var app = angular
     '$httpProvider',
     'isHostedInBB',
     'appHost',
-    function(
+    function (
       $stateProvider,
       $urlRouterProvider,
       $controllerProvider,
@@ -67,7 +63,7 @@ var app = angular
       $provide,
       $httpProvider,
       isHostedInBB,
-      appHost
+      appHost,
     ) {
       // lazy controller, directive and service
       app.controller = $controllerProvider.register;
@@ -79,8 +75,7 @@ var app = angular
       app.value = $provide.value;
       $urlRouterProvider.otherwise('/access/signin');
 
-      $httpProvider.defaults.headers.common['X-Requested-With'] =
-        'XMLHttpRequest';
+      $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
       if (isHostedInBB) {
         $httpProvider.defaults.headers.common['X-Origin-Product'] = appHost;
@@ -93,7 +88,7 @@ var app = angular
           resolve: {
             authorize: [
               'authorization',
-              function(authorization) {
+              function (authorization) {
                 return authorization.authorize();
               },
             ],
@@ -107,7 +102,7 @@ var app = angular
           resolve: {
             authorize: [
               'authorization',
-              function(authorization) {
+              function (authorization) {
                 return authorization.authorize();
               },
             ],
@@ -168,7 +163,7 @@ var app = angular
   .config([
     '$keepaliveProvider',
     '$idleProvider',
-    function($keepaliveProvider, $idleProvider) {
+    function ($keepaliveProvider, $idleProvider) {
       // Lock out Duration = 15 minutes
       $idleProvider.idleDuration(15 * 60);
       $idleProvider.warningDuration(15);
@@ -177,7 +172,4 @@ var app = angular
   ])
   .constant('appHost', window.RZP && window.RZP.appHost)
   .constant('appName', window.RZP && window.RZP.appName)
-  .constant(
-    'isHostedInBB',
-    window.RZP && window.RZP.appName === 'businessbanking'
-  );
+  .constant('isHostedInBB', window.RZP && window.RZP.appName === 'businessbanking');

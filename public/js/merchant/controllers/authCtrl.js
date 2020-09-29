@@ -223,7 +223,7 @@ app
       };
 
       $scope.loadCaptcha = function (loadCheckbox = false) {
-        if( !loadCheckbox && !isProd ) return; //Disable invisible captcha for staging
+        if (!loadCheckbox && !isProd) return; //Disable invisible captcha for staging
         renderRecaptchaScript(loadCheckbox);
         if (loadCheckbox) {
           let checkboxCaptchaElement = document.getElementById('checkbox-recaptcha');

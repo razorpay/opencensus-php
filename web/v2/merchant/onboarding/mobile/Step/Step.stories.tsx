@@ -5,7 +5,7 @@ import { StepPropsT } from './Step';
 import { Step } from './index';
 
 export default {
-  title: 'Step',
+  title: 'Onboarding/Step',
   component: Step,
 } as Meta;
 

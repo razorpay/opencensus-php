@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Storyshots ActivationProgress Greylisted Merchant 1`] = `
+exports[`Storyshots Onboarding/ActivationProgress Greylisted Merchant 1`] = `
 Array [
   <div>
     <div
@@ -284,8 +284,6 @@ Array [
               className="Buttonweb__StyledButton-gxhxmy-0 hZNGWL Spaceweb__Space-njatzl-0 gkgBsY Sizeweb__Size-sc-10bl685-0 cwUXCl Flexweb__Flex-ni2cjg-0 iRurrc"
               data-testid="ds-button"
               disabled={false}
-              id={[Function]}
-              name={[Function]}
               onClick={[Function]}
               onMouseUp={[Function]}
               size="small"
@@ -311,7 +309,7 @@ Array [
 ]
 `;
 
-exports[`Storyshots ActivationProgress Whitelisted Merchant 1`] = `
+exports[`Storyshots Onboarding/ActivationProgress Whitelisted Merchant 1`] = `
 Array [
   <div>
     <div
@@ -509,8 +507,6 @@ Array [
               className="Buttonweb__StyledButton-gxhxmy-0 gBCsZh Spaceweb__Space-njatzl-0 jGLucJ Sizeweb__Size-sc-10bl685-0 bPNzzG Flexweb__Flex-ni2cjg-0 hBDZyG"
               data-testid="ds-button"
               disabled={false}
-              id={[Function]}
-              name={[Function]}
               onClick={[Function]}
               onMouseUp={[Function]}
               size="medium"
@@ -551,8 +547,6 @@ Array [
                 className="Buttonweb__StyledButton-gxhxmy-0 hZNGWL Spaceweb__Space-njatzl-0 gkgBsY Sizeweb__Size-sc-10bl685-0 cwUXCl Flexweb__Flex-ni2cjg-0 iRurrc"
                 data-testid="ds-button"
                 disabled={false}
-                id={[Function]}
-                name={[Function]}
                 onClick={[Function]}
                 onMouseUp={[Function]}
                 size="small"
@@ -627,8 +621,6 @@ Array [
                 className="Buttonweb__StyledButton-gxhxmy-0 hZNGWL Spaceweb__Space-njatzl-0 gkgBsY Sizeweb__Size-sc-10bl685-0 cwUXCl Flexweb__Flex-ni2cjg-0 iRurrc"
                 data-testid="ds-button"
                 disabled={false}
-                id={[Function]}
-                name={[Function]}
                 onClick={[Function]}
                 onMouseUp={[Function]}
                 size="small"

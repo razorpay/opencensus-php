@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@commander/shield": "0.0.1109",
-    "@razorpay/blade": "https://github.com/razorpay/blade.git#d16c4a2",
+    "@razorpay/blade": "https://github.com/razorpay/blade.git#be4dd48",
     "@universe/services": "1.0.30",
     "@universe/utils": "1.0.30",
     "axios": "0.19.2",
