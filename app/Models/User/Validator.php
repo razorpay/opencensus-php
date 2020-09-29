@@ -382,6 +382,10 @@ class Validator extends Base\Validator
                     null,
                     [
                         'output_from_google'        => (array)$output,
+                        // adding little more data temporarily for deubbing
+                        'emailData'                 => $emailData,
+                        'captcha_mode_header'       => Request::header(self::CAPTCHA_MODE_HEADER),
+                        'remoteip'                  => $clientIpAddress,
                     ]
                 );
             }
