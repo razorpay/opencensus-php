@@ -8,6 +8,7 @@ use Mail;
 
 use Carbon\Carbon;
 use Monolog\Logger;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -17,7 +18,10 @@ use RZP\Models\Adjustment;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use RZP\Services\UfhService;
+use RZP\Constants\IndianStates;
+use RZP\Models\Pricing\Calculator;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Report\Types\InvoiceReport;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Report\Types\BankingInvoiceReport;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
@@ -198,7 +202,7 @@ class Core extends Base\Core
 
         $invoiceEntity = (new Repository)->findByIdAndMerchantId($data[Entity::ID], $this->merchant->getId());
 
-        $pathToTemporaryFile = (new PdfGenerator)->generate($data);
+        $pathToTemporaryFile = (new PdfGenerator)->generateBankingInvoice($data);
 
         $fileAccessUrl = $this->uploadViaUfh($pathToTemporaryFile, $invoiceEntity);
 
@@ -415,5 +419,70 @@ class Core extends Base\Core
 
             throw $e;
         }
+    }
+
+    public function getTemplateDataForPgInvoice($merchant, $month, $year): array
+    {
+        $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);
+
+        $isGstApplicable = Calculator\Base::isGstApplicable($date->getTimestamp());
+
+        $input = [
+            'month'           => $month,
+            'year'            => $year,
+            'gst_applicable'  => $isGstApplicable,
+            'merchant_id'     => $merchant->getId(),
+        ];
+
+        $data = (new InvoiceReport)->getpgInvoiceTemplateDate($input);
+
+        $data['merchant'] = $merchant;
+
+        $data['merchant_id'] = $merchant->getId();
+
+        $data['dates'] = [
+                'startDate'   => $date->format('d/m/y'),
+                'billingDate' => $date->endOfMonth()->format('d/m/y'),
+                'endDate'     => $date->endOfMonth()->format('d/m/y'),
+        ];
+
+        $data['invoice_id'] = $merchant->getId() . '/' . $date->addMonth()->format('m/y');
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $merchantDetails['isYesBankMerchant'] = $this->isYesBankMerchant($merchantDetails);
+
+        $merchantDetails['submitted'] = (int) ($merchantDetails['submitted'] ?? 0);
+
+        $merchantDetails['locked'] = (int) ($merchantDetails['locked'] ?? 0);
+
+        $merchantDetails['activated'] = (int) ($merchantDetails['activated'] ?? 0);
+
+        $merchantDetails['activation_flow'] = $merchantDetails['activation_flow'] ?? null;
+
+        $gst = (empty($merchantDetails['gstin']) === false) ? $merchantDetails['gstin'] :
+            ((empty($merchantDetails['p_gstin']) === false) ? $merchantDetails['p_gstin'] : '');
+
+        $data['gst'] = $gst;
+        $data['isGstApplicable'] = $isGstApplicable;
+
+        $data['merchant_details'] = $merchantDetails;
+
+        $state_code = $data['merchant_details']['business_registered_state'];
+        if (empty($state_code) === false)
+        {
+            $data['merchant_details']['business_registered_state'] = IndianStates::getStateNameByCode($state_code);
+        }
+
+        return $data;
+    }
+
+    public function isYesBankMerchant($merchantDetails)
+    {
+        $ifscCode = $merchantDetails['bank_branch_ifsc'];
+
+        $yesIfsc = substr( $ifscCode, 0, 4 );
+
+        return ((strcasecmp($yesIfsc, "YESB") === 0) === true) ;
     }
 }

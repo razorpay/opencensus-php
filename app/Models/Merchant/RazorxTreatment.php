@@ -176,5 +176,8 @@ final class RazorxTreatment
     // Ledger Async For payouts
     const QUEUE_PAYOUT_CREATE_REQUEST = 'queue_payout_create_request';
 
+    // experiment to ramping pg persistent invoice
+    const PG_PERSISTENT_INVOICE = 'pg_persistent_invoice';
+
     const TOKENIZE_QR_STRING_MPANS = 'tokenize_qr_string_mpans';
 }

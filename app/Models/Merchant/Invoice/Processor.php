@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Invoice;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Models\FileStore;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -153,7 +154,25 @@ class Processor extends Base\Core
                     ]);
             }
 
-            (new Core)->create($params, $this->merchant, $balance);
+           (new Core)->create($params, $this->merchant, $balance);
+        }
+
+        if($balance->isTypePrimary() === true)
+        {
+            try
+            {
+                (new PdfGenerator)->generatePgInvoice($this->merchant, $this->month, $this->year);
+            }
+            catch(\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::MERCHANT_INVOICE_PDF_CREATION_FAILED,
+                    [
+                        'merchant_id' => $this->merchant->getId(),
+                    ]);
+            }
         }
     }
 
@@ -258,6 +277,7 @@ class Processor extends Base\Core
                                          $this->beginTimestamp,
                                          $this->endTimestamp,
                                          $type);
+
         }
 
         $paymentAmounts = $this->formatFeesForInvoice($paymentFeeAmount);
@@ -504,5 +524,21 @@ class Processor extends Base\Core
                 }
             }
         }
+    }
+
+    public function getSignedUrlForPgInvoice()
+    {
+        $name = (new PdfGenerator)->getNameForMerchantPgInvoice($this->year, $this->month, $this->merchant->getId());
+
+        $file = $this->repo
+                     ->file_store
+                     ->getFileWithNameAndMerchantIdAndName($this->merchant->getId(), $name, FileStore\Type::MERCHANT_INVOICE);
+
+        if ($file === null)
+        {
+            $file = (new PdfGenerator)->generatePgInvoice($this->merchant, $this->month, $this->year);
+        }
+
+        return (new FileStore\Accessor)->getSignedUrlOfFile($file);
     }
 }

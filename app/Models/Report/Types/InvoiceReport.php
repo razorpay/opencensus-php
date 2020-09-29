@@ -7,8 +7,11 @@ use Carbon\Carbon;
 use RZP\Base\JitValidator;
 use RZP\Constants\Timezone;
 use RZP\Exception;
+use RZP\Models\FileStore\Accessor;
 use RZP\Models\Merchant\Detail;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Invoice;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Pricing\Feature;
 use RZP\Models\Pricing\Calculator;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeName;
@@ -75,9 +78,9 @@ class InvoiceReport extends BaseReport
         parent::__construct();
 
         $this->inputRules = [
-            'year'      => 'required|digits:4',
-            'month'     => 'required|digits_between:1,2',
-            'format'    => 'sometimes|string',
+            'year'        => 'required|digits:4',
+            'month'       => 'required|digits_between:1,2',
+            'format'      => 'sometimes|string',
         ];
     }
 
@@ -87,23 +90,78 @@ class InvoiceReport extends BaseReport
 
         (new JitValidator)->rules($this->inputRules)->input($input)->validate();
 
-        $this->month = $input['month'];
+        $newFlow = $this->isNewFlowEnabledForPgInvoice($this->merchant->getId());
 
-        $this->year = $input['year'];
-
-        if ((isset($input['format']) === true) and
-            ($input['format'] === 'new'))
+        if ($newFlow === true)
         {
-            $this->getInvoiceNew($input);
+            try
+            {
+                $signedUrl = (new Invoice\Processor(
+                    $this->merchant->getId(),
+                    $input['month'],
+                    $input['year']))->getSignedUrlForPgInvoice();
+
+                return [
+                    'signed_url' => $signedUrl,
+                    'error'      => null,
+                ];
+            }
+            catch(Exception\BadRequestValidationFailureException $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::MERCHANT_INVOICE_GET_REPORT_REQUEST_FAILED,
+                    [
+                        'input' => $input,
+                    ]);
+
+                return [
+                    'signed_url' => "",
+                    'error'      => $e->getMessage(),
+                ];
+            }
+        }
+        else
+        {
+            $this->month = $input['month'];
+
+            $this->year = $input['year'];
+
+            if ((isset($input['format']) === true) and
+                ($input['format'] === 'new'))
+            {
+                $this->getInvoiceNew($input);
+
+                $this->groupData();
+
+                return $this->invoiceReport;
+            }
+            else
+            {
+                return $this->getInvoiceV2($input);
+            }
+        }
+    }
+
+    public function getpgInvoiceTemplateDate($data)
+    {
+        $this->month = $data['month'];
+
+        $this->year = $data['year'];
+
+        $this->setMerchant($data['merchant_id']);
+
+        if ($data['gst_applicable'] === true )
+        {
+            $this->getInvoiceNew($data);
 
             $this->groupData();
 
             return $this->invoiceReport;
         }
-        else
-        {
-            return $this->getInvoiceV2($input);
-        }
+
+        return $this->getInvoiceV2($data);
     }
 
     protected function setInvoiceVariables()
@@ -440,5 +498,14 @@ class InvoiceReport extends BaseReport
         }
 
         return ['taxes' => $taxes, 'total_tax' => $totalTax];
+    }
+
+    public function isNewFlowEnabledForPgInvoice($merchantId)
+    {
+        $variant = $this->app->razorx->getTreatment($merchantId,
+            RazorxTreatment::PG_PERSISTENT_INVOICE,
+            $this->mode);
+
+        return (strtolower($variant) === 'on');
     }
 }

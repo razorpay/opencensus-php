@@ -3,8 +3,11 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
+use mikehaertl\wkhtmlto\Pdf;
+use PhpParser\Node\Scalar\MagicConst\Dir;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Invoice;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -295,6 +298,8 @@ class EntityReportTest extends TestCase
 
     public function testInvoiceReportForMerchantWithoutGstinWithBusinessState()
     {
+        $this->mockRazorx();
+
         $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
 
         Carbon::setTestNow($oldDateTime);
@@ -324,14 +329,26 @@ class EntityReportTest extends TestCase
 
         $invoiceEntries = $this->fetchInvoice($input);
 
-        $this->assertTestResponse($invoiceEntries);
+        $file = $this->getLastEntity('file_store', true);
+
+        $this->assertEquals('merchant_invoice', $file['type']);
+        $this->assertEquals('application/pdf', $file['mime']);
+        $this->assertEquals('merchant_pg_invoices/2019/7/10000000000000', $file['name']);
+        $this->assertEquals('invoices', $file['bucket']);
+        $this->assertEquals('10000000000000', $file['merchant_id']);
+        $this->assertEquals('s3', $file['store']);
+
+        $this->assertContains($file['location'], $invoiceEntries['signed_url']);
+        $this->assertEquals(NULL, $invoiceEntries['error']);
 
         Carbon::setTestNow();
     }
 
     public function testInvoiceReportForMerchantWithoutGstinRegisteredInKarnataka()
     {
-        $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
+        $this->mockRazorx();
+
+        $oldDateTime = Carbon::create(2019, 5, 21, 12, 23, 41, Timezone::IST);
 
         Carbon::setTestNow($oldDateTime);
 
@@ -340,7 +357,7 @@ class EntityReportTest extends TestCase
                 'type'       => Invoice\Type::CARD_LTE_2K,
                 'gstin'      => null,
                 'balance_id' => 10000000000000,
-                'month'      => 7,
+                'month'      => 5,
                 'year'       => 2019
             ]);
 
@@ -360,7 +377,86 @@ class EntityReportTest extends TestCase
 
         $invoiceEntries = $this->fetchInvoice($input);
 
-        $this->assertTestResponse($invoiceEntries);
+        $file = $this->getLastEntity('file_store', true);
+
+        $this->assertEquals('merchant_invoice', $file['type']);
+        $this->assertEquals('application/pdf', $file['mime']);
+        $this->assertEquals('merchant_pg_invoices/2019/5/10000000000000', $file['name']);
+        $this->assertEquals('invoices', $file['bucket']);
+        $this->assertEquals('10000000000000', $file['merchant_id']);
+        $this->assertEquals('s3', $file['store']);
+
+        $this->assertContains($file['location'], $invoiceEntries['signed_url']);
+        $this->assertEquals(NULL, $invoiceEntries['error']);
+    }
+
+    public function testInvoiceReportForMerchantWhenThereIsNoInvoiceGenerated()
+    {
+        $this->mockRazorx();
+
+        $oldDateTime = Carbon::create(2019, 5, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $md1 = $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id'               => '10000000000000',
+                'gstin'                     => null,
+                'business_registered_state' => 'Karnataka',
+            ]);
+
+        $input = [
+            'year'      => $oldDateTime->year,
+            'month'     => $oldDateTime->month,
+            'format'    => 'new',
+        ];
+
+        $invoiceEntries = $this->fetchInvoice($input);
+
+        $this->assertEquals(NULL, $invoiceEntries['signed_url']);
+        $this->assertEquals('Invoice not generated yet for merchant 10000000000000 for year 2019 and month 5',
+            $invoiceEntries['error']);
+    }
+
+    public function testInvoiceReportForMerchantWhenTheMerchantInvoiceOfZeroAmountIsGenerated()
+    {
+        $this->mockRazorx();
+
+        $oldDateTime = Carbon::create(2019, 5, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->fixtures->create('merchant_invoice',
+            [
+                'type'       => Invoice\Type::CARD_LTE_2K,
+                'gstin'      => null,
+                'balance_id' => 10000000000000,
+                'month'      => 5,
+                'year'       => 2019,
+                'amount'     => 0,
+                'tax'        => 0,
+            ]);
+
+        $md1 = $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id'               => '10000000000000',
+                'gstin'                     => null,
+                'business_registered_state' => 'Karnataka',
+            ]);
+
+        $input = [
+            'year'      => $oldDateTime->year,
+            'month'     => $oldDateTime->month,
+            'format'    => 'new',
+        ];
+
+        $invoiceEntries = $this->fetchInvoice($input);
+
+        $this->assertEquals(NULL, $invoiceEntries['signed_url']);
+        $this->assertEquals('Invoice not generated yet for merchant 10000000000000 for year 2019 and month 5 since the amount is zero',
+            $invoiceEntries['error']);
     }
 
     public function testPaymentReportWithoutAcquirerData()
@@ -552,5 +648,26 @@ class EntityReportTest extends TestCase
         $reports = $this->fetchReports(['type' => $entity]);
 
         assert($reports['count'] === 1);
+    }
+
+    private function mockRazorx()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'pg_persistent_invoice')
+                    {
+                        return 'on';
+                    }
+                    return 'off';
+                }));
     }
 }

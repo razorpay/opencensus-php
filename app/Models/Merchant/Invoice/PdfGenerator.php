@@ -12,6 +12,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Report\Types\BankingInvoiceReport;
 
@@ -32,9 +33,11 @@ class PdfGenerator extends Base\Core
     const GSTIN          = 'gstin';
     const BILLING_PERIOD = 'billing_period';
 
+    const MERCHANT_INVOICE_PG_PDF_PREFIX = 'merchant_pg_invoices';
+
     protected $data;
 
-    public function generate($data)
+    public function generateBankingInvoice($data)
     {
         $this->trace->info(
             TraceCode::MERCHANT_BANKING_INVOICE_PDF_CREATE_REQUEST,
@@ -42,7 +45,7 @@ class PdfGenerator extends Base\Core
                 'data' => $data,
             ]);
 
-        $merchantInvoicePdfContent = $this->getPdfContent($data);
+        $merchantInvoicePdfContent = $this->getPdfContentForBankingInvoice($data);
 
         $billingPeriodString = str_replace('-', ' ', $data[BankingInvoiceReport::BILLING_PERIOD]);
 
@@ -63,7 +66,7 @@ class PdfGenerator extends Base\Core
         return $tempFileFullPath;
     }
 
-    protected function getPdfContent($data)
+    protected function getPdfContentForBankingInvoice($data)
     {
         $html = View::make(self::TEMPLATE_FILE_NAME)
                     ->with(self::ISSUED_TO, $data[BankingInvoiceReport::ISSUED_TO])
@@ -105,5 +108,67 @@ class PdfGenerator extends Base\Core
         }
 
         return $pdfContent;
+    }
+
+    public function generatePgInvoice($merchant, $month, $year): Filestore\Entity
+    {
+        $name = $this->getNameForMerchantPgInvoice($year, $month, $merchant->getId());
+
+        $html = $this->getHtml($merchant, $month, $year);
+
+        $pdfContent = $this->getPdfContentForPgInvoice($html);
+
+        return (new FileStore\Creator())
+            ->name($name)
+            ->content($pdfContent)
+            ->extension(FileStore\Format::PDF)
+            ->mime('application/pdf')
+            ->store(FileStore\Store::S3)
+            ->merchant($merchant)
+            ->type(FileStore\Type::MERCHANT_INVOICE)
+            ->save()
+            ->getFileInstance();
+    }
+
+    protected function getHtml($merchant, $month, $year) : string
+    {
+        $data = (new Core)->getTemplateDataForPgInvoice($merchant, $month, $year) ;
+
+        $view = ($data['isGstApplicable'] === true) ?'merchant.pg_invoice.invoice' : 'merchant.pg_invoice.invoice_old';
+
+        return view($view, $data)->render();
+    }
+
+    protected function getPdfContentForPgInvoice(string $html): string
+    {
+        $options = [
+            'print-media-type',
+            'footer-font-size'  => '9',
+            'footer-center'     => 'Page [page] of [topage]',
+            'dpi'               => 290,
+            'zoom'              => 1,
+            'ignoreWarnings'    => false,
+            'encoding'          => 'UTF-8',
+            'margin-top'        => 10,
+            'margin-right'      => 0,
+            'margin-bottom'     => 0,
+            'margin-left'       => 0,
+        ];
+
+        $pdf = (new Pdf($options))->addPage($html);
+
+        $pdfContent = $pdf->toString();
+
+        if ($pdfContent === false)
+        {
+            throw new Exception\LogicException('Pdf generation failed: ' . $pdf->getError());
+        }
+
+        return $pdfContent;
+    }
+
+    public function getNameForMerchantPgInvoice($year, $month, $merchantId)
+    {
+        return self::MERCHANT_INVOICE_PG_PDF_PREFIX . '/' . $year . '/'. $month . '/' . $merchantId;
     }
 }
