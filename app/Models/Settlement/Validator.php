@@ -126,7 +126,7 @@ class Validator extends Base\Validator
         'balance_type'        => 'required|string|in:primary,commission',
         'source_type'         => 'sometimes',
         'from'                => 'sometimes|epoch',
-        'to'                  => 'sometimes|epoch|with:from',
+        'to'                  => 'required_with:from|epoch',
         'transaction_ids'     => 'sometimes|array',
         'transaction_ids.*'   => 'required|string|size:14',
         'initial_ramp'        => 'sometimes|bool',
