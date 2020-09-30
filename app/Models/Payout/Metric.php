@@ -349,7 +349,7 @@ final class Metric
             $metricDimensions);
     }
 
-    protected static function pushScheduledToBatch_submittedMetrics(Entity $payout)
+    protected static function pushScheduledToBatchSubmittedMetrics(Entity $payout)
     {
         $metricDimensions = self::getMetricDimensions($payout);
         $timeDuration     = $payout->getBatchSubmittedAt() - $payout->getScheduledAt();
@@ -360,7 +360,7 @@ final class Metric
             $metricDimensions);
     }
 
-    protected static function pushPendingToBatch_submittedMetrics(Entity $payout)
+    protected static function pushPendingToBatchSubmittedMetrics(Entity $payout)
     {
         $metricDimensions = self::getMetricDimensions($payout);
         $timeDuration     = $payout->getBatchSubmittedAt() - $payout->getPendingAt();
