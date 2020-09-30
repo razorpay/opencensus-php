@@ -84,10 +84,6 @@ class Throttler
 
         try
         {
-            $this->initRedisConnection();
-            $this->initThrottleSettings();
-            $this->blockIfApplicable();
-
             // Update: Now for private/proxy/public requests  for key and oauth based we do throttling at nginx
             // openresty layer itself and hence must not repeat here.
             // Keeping this flow in unit tests still.
@@ -101,6 +97,11 @@ class Throttler
             {
                 return;
             }
+
+            $this->initRedisConnection();
+            $this->initThrottleSettings();
+            $this->blockIfApplicable();
+
             $this->attemptThrottleIfApplicable();
         }
         catch (\Throwable $e)
