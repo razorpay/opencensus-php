@@ -19,19 +19,19 @@ export const notifyCustomer = (id, type) => {
   };
 };
 
-export const fetchRegistrationLink = id => ({
+export const fetchRegistrationLink = (id) => ({
   type: REGISTRATION_LINK_FETCH,
-  payload: merchantFetch(
-    `subscription_registration/auth_links/${id}/internal`
-  ).then(resp => resp.data),
+  payload: merchantFetch(`subscription_registration/auth_links/${id}/internal`).then(
+    (resp) => new RegistrationLink(resp.data),
+  ),
 });
 
-export const createRegistrationLink = params => ({
+export const createRegistrationLink = (params) => ({
   type: REGISTRATION_LINK_CREATE,
   payload: new RegistrationLink().save(params),
 });
 
-export const cancelRegistrationLink = params => {
+export const cancelRegistrationLink = (params) => {
   let registrationLink = new RegistrationLink(params);
 
   return {
@@ -64,11 +64,11 @@ export const authenticateNACHFile = (file, id) => {
   });
 };
 
-export const downloadSignedNACHFile = data => {
+export const downloadSignedNACHFile = (data) => {
   return merchantFetch({
     url: `token.registration/paper_mandate/uploaded_form`,
     data,
-  }).then(resp => {
+  }).then((resp) => {
     if (resp.data && resp.data.url) {
       window.location = resp.data.url;
 
@@ -87,7 +87,7 @@ let initialState = {
   error: null,
 };
 
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   switch (action.type) {
     case `${REGISTRATION_LINK_FETCH}::PENDING`:
       return set(state, 'loading', true);

@@ -16,6 +16,7 @@ export const invoiceStatusMap = {
   cancelled: 'label-danger',
   expired: 'label-danger',
   next_due: 'label-semi-muted',
+  pending: 'label-pending',
 };
 
 export const paymentPagesStatusMap = {
