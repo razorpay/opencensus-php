@@ -2,17 +2,8 @@
 
 set -euo pipefail
 
-## Enable newrelic only for prod
-if [[ "${APP_MODE}" == "prod" ]]; then
-  echo "$(date) Cast config"
-  alohomora cast --region ap-south-1 --env $APP_MODE --app dashboard "dockerconf/newrelic.ini.j2" "environment/.env.vault.j2" "environment/env.php.j2"
-  echo "$(date) Copy newrelic config"
-  cp dockerconf/newrelic.ini /etc/php7/conf.d/newrelic.ini
-else
-  # This is mostly QA
-  echo "$(date) Cast config"
-  alohomora cast --region ap-south-1 --env $APP_MODE --app dashboard "environment/.env.vault.j2" "environment/env.php.j2"
-fi
+echo "$(date) Cast config"
+alohomora cast --region ap-south-1 --env $APP_MODE --app dashboard "environment/.env.vault.j2" "environment/env.php.j2"
 
 echo "$(date) Copy dashboard vhost"
 cp dockerconf/nginx.conf /etc/nginx/conf.d/default.conf
