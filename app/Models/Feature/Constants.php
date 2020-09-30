@@ -196,6 +196,13 @@ class Constants
     const KYC_HANDLED_BY_PARTNER          = 'kyc_handled_by_partner';
 
     /**
+     * When creating submerchant in bulk, merchant name is synced with business name which is same for all submerchants
+     * of a partner. To avoid syncing business_name with merchant_name, this feature flag is used.
+     */
+    const RETAIN_SUB_MERCHANT_NAME    = 'retain_sub_merchant_name';
+
+
+    /**
      * Only partners having this feature will be able to onboard the submerchants using the account apis
      */
     const SUBMERCHANT_ONBOARDING          = 'submerchant_onboarding';
@@ -649,6 +656,7 @@ class Constants
         self::WALLET_AUTO_DEBIT               => true,
         self::EXPOSE_GATEWAY_PROVIDER         => true,
         self::KYC_HANDLED_BY_PARTNER          => true,
+        self::RETAIN_SUB_MERCHANT_NAME        => true,
         self::NO_COMM_WITH_SUBMERCHANTS       => true,
         self::SUBMERCHANT_ONBOARDING          => true,
         self::EXPOSE_FA_VALIDATION_UTR        => true,

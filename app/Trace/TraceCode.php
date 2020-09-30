@@ -2159,6 +2159,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PARTNER_BANK_ACCOUNT_MAP                              = 'PARTNER_BANK_ACCOUNT_MAP';
     const SUBMERCHANT_PLAN_DEFAULT_PLAN_NOT_EQUAL               = 'SUBMERCHANT_PLAN_DEFAULT_PLAN_NOT_EQUAL';
     const PARTNER_WEBHOOK_TRANSLATION                           = 'PARTNER_WEBHOOK_TRANSLATION';
+    const MERCHANT_NAME_RETAIN                                  = 'MERCHANT_NAME_RETAIN';
     const PARTNER_DEFAULT_PAYMENT_METHODS_TO_SUBMERCHANT        = 'PARTNER_DEFAULT_PAYMENT_METHODS_TO_SUBMERCHANT';
     const PARTNER_FETCH_SUBMERCHANTS                            = 'PARTNER_FETCH_SUBMERCHANTS';
     const PARTNER_CONFIG_CREATED                                = 'PARTNER_CONFIG_CREATED';

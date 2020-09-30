@@ -2575,6 +2575,32 @@ class Core extends Base\Core
     }
 
     /**
+     *  check if merchant name already exists and merchant is a submerchant of existing partner.
+     *  if yes, then dont copy the name from business_name instead retain the same merchant name
+     *  This is behind a feature flag to restrict across all the partners.
+     *
+     * @param Entity $merchant
+     *
+     * @return bool
+     */
+    public function shouldRetainMerchantName(Entity $merchant): bool
+    {
+        $partners = $this->fetchAffiliatedPartners($merchant->getId());
+
+        $partners = $partners->filter(function(Merchant\Entity $partner) use ($merchant) {
+
+            return ($partner->shouldRetainMerchantName() === true);
+
+        })->first();
+
+        if (empty($partners) === false and $merchant->getName() !== null)
+        {
+            return true;
+        }
+
+        return false;
+    }
+    /**
      * Update merchant data like international based on business category
      * and syncs merchant data with merchant_details website and business name
      *
@@ -2603,7 +2629,22 @@ class Core extends Base\Core
 
         if (empty($input[Detail\Entity::BUSINESS_NAME]) === false)
         {
-            $merchantInput[Entity::NAME] = $input[Detail\Entity::BUSINESS_NAME];
+            if ($this->shouldRetainMerchantName($merchant) === true)
+            {
+                $merchantInput[Entity::NAME] = $merchant->getName();
+
+                // adding this log for future debugging
+                $this->trace->info(TraceCode::MERCHANT_NAME_RETAIN,
+                                   [
+                                       'merchant_name' => $merchantInput[Entity::NAME],
+                                       'merchant_id'   => $merchant->getId(),
+                                       'business_name' => $input[Detail\Entity::BUSINESS_NAME],
+                                   ]);
+            }
+            else
+            {
+                $merchantInput[Entity::NAME] = $input[Detail\Entity::BUSINESS_NAME];
+            }
         }
         else
         {
