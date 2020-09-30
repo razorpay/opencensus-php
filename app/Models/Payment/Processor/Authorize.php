@@ -3234,7 +3234,7 @@ trait Authorize
                     $localCustomer = $this->subscription->customer;
                 }
             }
-            if($input['method'] === PaymentConstants::UPI and ($this->subscription!==null) and $this->subscription->status === PaymentConstants::CREATED)
+            if($input['method'] === PaymentConstants::UPI and ($this->subscription!==null))
             {
                 $this->createUpiMandateForSubscriptionIfApplicable($localCustomer, $input, $payment);
 
@@ -3243,6 +3243,7 @@ trait Authorize
             else
             {
                 $this->preProcessPaymentForGlobalCustomer($customer, $localCustomer, $customerApp, $payment, $input, $gatewayInput);
+
             }
         }
 
