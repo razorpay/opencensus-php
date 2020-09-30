@@ -49,7 +49,7 @@ class NachGatewayTest extends TestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'nach');
 
-        (new Terminal)->createNachTerminal();
+        $this->fixtures->create('terminal:nach');
     }
 
     public function testGatewayFileDebitBankResponsePending()

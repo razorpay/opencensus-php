@@ -385,4 +385,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo(Terminal\Entity::class);
     }
+
+    public function paperMandateUploads()
+    {
+        return $this->hasMany(PaperMandateUpload\Entity::class);
+    }
 }

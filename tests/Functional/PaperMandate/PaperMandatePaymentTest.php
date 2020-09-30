@@ -28,7 +28,7 @@ class PaperMandatePaymentTest extends TestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'nach');
 
-        (new Terminal)->createNachTerminal();
+        $this->fixtures->create('terminal:nach');
 
         $this->ba->publicAuth();
     }

@@ -261,17 +261,8 @@ class Validator extends Base\Validator
             if (($payment->isFailed() !== true) and
                 ($payment->isRecurringTypeAuto() === false))
             {
-                throw new BadRequestValidationFailureException(
-                    'payment ' . $payment->getPublicId() . ' is not failed for the given order which is of method nach, can\'t create one more'
-                );
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_NACH_FORM_STATUS_PENDING);
             }
-        }
-
-        $tokenRegistration = $this->entity->getTokenRegistration();
-
-        if ($tokenRegistration !== null)
-        {
-            $tokenRegistration->getValidator()->validatePaymentCreation();
         }
     }
 

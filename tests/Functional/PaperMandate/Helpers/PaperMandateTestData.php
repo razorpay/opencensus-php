@@ -263,7 +263,6 @@ return [
         'tertiary_account_holder' => 'THE DON',
         'signature_present_tertiary' => 'no',
         'start_date' => '07/12/2025',
-
         'form_checksum' => 'XXXXXXX',
     ],
 
@@ -386,14 +385,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'payment pay_1000000payment is not failed for the given order which is of method nach, can\'t create one more',
+                    'description' => 'A form against this order is pending action on the destination bank. A new form cannot be submitted till a status is received',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NACH_FORM_STATUS_PENDING
         ],
     ],
 

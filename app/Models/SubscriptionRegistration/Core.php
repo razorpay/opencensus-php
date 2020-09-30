@@ -683,6 +683,62 @@ class Core extends Base\Core
         $this->repo->saveOrFail($tokenRegistration);
     }
 
+    /**
+     * Processes a nach initial payment
+     *
+     * @param Order\Entity $order
+     *
+     * @return PaperMandate\Entity
+     * @throws Exception\BadRequestException
+     */
+    public function validateAndGetPaperMandateForNachOrder(Order\Entity $order): PaperMandate\Entity
+    {
+        $paperMandate = $this->getPaperMandateForOrderIfExists($order);
+
+        if ($paperMandate === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID,
+                Entity::ORDER_ID);
+        }
+
+        return $paperMandate;
+    }
+
+    public function getPaperMandateForOrderIfExists(Order\Entity $order)
+    {
+        if (($order->getMethod() !== Payment\Method::NACH) or
+            ($order->invoice === null) or
+            ($order->invoice->tokenRegistration === null))
+        {
+            return null;
+        }
+
+        $tokenRegistration = $order->invoice->tokenRegistration;
+
+        if ($tokenRegistration->paperMandate === null)
+        {
+            throw new LogicException('token registration should have paper mandate for nach method');
+        }
+
+        return $tokenRegistration->paperMandate;
+    }
+
+    public function uploadNachFormIfApplicableForPayment(array $input, Order\Entity $order)
+    {
+        $paperMandate = $this->getPaperMandateForOrderIfExists($order);
+
+        if ((empty($input[Payment\Entity::SIGNED_FORM]) === false) and
+            ($paperMandate !== null))
+        {
+            $signedForm = $input[Payment\Entity::SIGNED_FORM];
+
+            (new PaperMandate\Core)->uploadNachFormForPayment(
+                $paperMandate,
+                [PaperMandate\Entity::FORM_UPLOADED => $signedForm]);
+        }
+    }
+
     private function createPayment(Entity $tokenRegistration, Order\Entity $order)
     {
         $token = $tokenRegistration->token;

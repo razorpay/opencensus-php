@@ -42,6 +42,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Base\ConnectionType;
 use RZP\Models\Payment\Verify\Verify;
 use RZP\Models\Locale\Core as Locale;
+use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
@@ -118,6 +119,61 @@ class Service extends Base\Service
         $input['method']        = 'upi';
 
         return $this->getNewProcessor()->process($input);
+    }
+
+    /**
+     * Processes a nach initial payment
+     *
+     * @param array $input
+     *
+     * @return array|mixed
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function processNachRegister(array $input)
+    {
+        (new Validator)->validateInput(__FUNCTION__, $input);
+
+        $order = $this->repo->order->findByPublicIdAndMerchant($input[Entity::ORDER_ID], $this->merchant);
+
+        $input[Entity::METHOD] = Method::NACH;
+
+        $input[Entity::AUTH_TYPE] = AuthType::PHYSICAL;
+
+        $input[Entity::CURRENCY] = Currency\Currency::INR;
+
+        $input[Entity::AMOUNT] = 0;
+
+        $input[Entity::RECURRING] = true;
+
+        $input[Entity::NACH] = [
+            Entity::SIGNED_FORM => array_pull($input, Entity::FILE),
+        ];
+
+        $paperMandate = (new SubscriptionRegistration\Core)->validateAndGetPaperMandateForNachOrder($order);
+
+        $input[Entity::CONTACT] = $paperMandate->bankAccount->getBeneficiaryMobile();
+
+        $input[Entity::EMAIL] = $paperMandate->bankAccount->getBeneficiaryEmail();
+
+        $input[Entity::CUSTOMER_ID] = $paperMandate->customer->getPublicId();
+
+        try
+        {
+            return $this->getNewProcessor()->process($input);
+        }
+        catch (BadRequestException $ex)
+        {
+            $errorData = $ex->getData();
+
+            $errorData[Entity::METHOD]   = Method::NACH;
+
+            $errorData[Entity::ORDER_ID] = $order->getPublicId();
+
+            $ex->setData($errorData);
+
+            throw $ex;
+        }
     }
 
     public function processAndReturnFees(array & $input)

@@ -113,6 +113,8 @@ class Validator extends Base\Validator
         'recurring_token'               => 'sometimes_if:method,emandate,upi|associative_array|filled',
         'recurring_token.max_amount'    => 'sometimes_if:method,emandate,upi|filled|integer|min:500',
         'recurring_token.expire_by'     => 'sometimes_if:method,emandate,upi|filled|epoch:946684800,9223372036854775807',
+        'nach'                          => 'sometimes_if:method,nach|associative_array',
+        'nach.signed_form'              => 'sometimes_if:method,nach|file',
         'offer_id'                      => 'filled|public_id|size:20',
         'provider'                      => 'required_if:method,cardless_emi,paylater,app|string',
         'ott'                           => 'sometimes_if:method,cardless_emi,paylater|string',
@@ -307,6 +309,11 @@ class Validator extends Base\Validator
     protected static $fetchStatusCountRules = [
         'from'          => 'required|filled|epoch',
         'to'            => 'required|filled|epoch'
+    ];
+
+    protected static $processNachRegisterRules = [
+        Entity::ORDER_ID => 'required|public_id',
+        Entity::FILE     => 'required|file',
     ];
 
     protected static $fetchStatusCountValidators = [

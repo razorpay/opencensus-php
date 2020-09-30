@@ -256,6 +256,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const DCC                               = 'dcc';
 
+    const FILE        = 'file';
+    const SIGNED_FORM = 'signed_form';
+    const NACH        = 'nach';
+
     // meta field in the input
     const META                              = 'meta';
 

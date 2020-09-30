@@ -108,7 +108,7 @@ class AuthLinkTest extends TestCase
 
     public function testCreateBatchOfNachAuthLinks()
     {
-        (new Terminal)->createNachTerminal();
+        $this->fixtures->create('terminal:nach');
 
         $this->mockHyperVerge(function ()
         {

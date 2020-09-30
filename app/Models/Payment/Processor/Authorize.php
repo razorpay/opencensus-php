@@ -1601,8 +1601,7 @@ trait Authorize
             return;
         }
 
-        if (($payment->isBharatQr() === true) or
-            ($payment->isNach()))
+        if ($payment->isBharatQr() === true)
         {
             return;
         }
@@ -2131,6 +2130,26 @@ trait Authorize
                     );
                 }
             }
+        }
+
+        $tokenRegistration = $order->getTokenRegistration();
+
+        if (empty($input[Payment\Entity::NACH]) === false)
+        {
+            (new SubscriptionRegistration\Core)->uploadNachFormIfApplicableForPayment(
+                $input[Payment\Entity::NACH],
+                $order);
+
+            if (($tokenRegistration !== null) and
+                ($tokenRegistration->paperMandate !== null))
+            {
+                $tokenRegistration->paperMandate = $this->repo->reload($tokenRegistration->paperMandate);
+            }
+        }
+
+        if ($tokenRegistration !== null)
+        {
+            $tokenRegistration->getValidator()->validatePaymentCreation();
         }
     }
 

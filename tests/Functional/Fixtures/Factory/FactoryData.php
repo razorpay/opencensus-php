@@ -1186,6 +1186,12 @@ final class FactoryData
             ]
         );
 
+        $factory(\RZP\Models\PaperMandate\PaperMandateUpload\Entity::class, [
+                'id'          => $faker->uniqueid,
+                'merchant_id' => '10000000000000',
+            ]
+        );
+
         $factory(\RZP\Models\Contact\Entity::class, [
             'id'           => $faker->uniqueid,
             'active'       => true,

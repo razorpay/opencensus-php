@@ -96,6 +96,29 @@ class Core extends Base\Core
         return (new PaperMandateUpload\Core)->create($input, $paperMandate);
     }
 
+    public function uploadNachFormForPayment(Entity $paperMandate, array $input): PaperMandateUpload\Entity
+    {
+        $this->trace->info(
+            TraceCode::PAPER_MANDATE_FILE_UPLOAD_REQUEST,
+            [
+                'paper_mandate_id' => $paperMandate->getId(),
+            ]
+        );
+
+        $paperMandateUpload = (new PaperMandateUpload\Core)->createForPayment($input, $paperMandate);
+
+        $uploadedFileId = $paperMandateUpload->getEnhancedFileId();
+
+        if ($paperMandateUpload->getStatus() === PaperMandateUpload\Status::ACCEPTED)
+        {
+            $paperMandate->setUploadedFileId($uploadedFileId);
+
+            $paperMandate->saveOrFail();
+        }
+
+        return $paperMandateUpload;
+    }
+
     protected function setDefaultValuesForPaperMandate(Entity $paperMandate)
     {
         $startAtAfter = '+' . Constants::PAPER_MANDATE_START_AFTER_DAYS . ' days';

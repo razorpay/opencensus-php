@@ -3566,7 +3566,7 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createNachTerminal(array $attributes = [])
+    public function createNach(array $attributes = [])
     {
         $sharedMerchantAccount = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
 

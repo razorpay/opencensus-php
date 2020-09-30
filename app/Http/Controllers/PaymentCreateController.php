@@ -69,6 +69,31 @@ class PaymentCreateController extends Controller
     }
 
     /**
+     * Creates an S2S Nach register payment
+     */
+    public function postCreateS2SNachRegisterPayment()
+    {
+        $input = Request::all();
+
+        $traceInput = $input;
+
+        if (empty($traceInput['file']))
+        {
+            unset($traceInput['file']);
+        }
+
+        $this->logPaymentRequestEvent($traceInput);
+
+        $data = $this->service(E::PAYMENT)->processNachRegister($input);
+
+        $response = $this->processCoprotoJsonData($data);
+
+        $this->logResponseIfApplicable($response);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
      * Creates an S2S payment and return json response
      */
     public function postCreateS2SJsonPayment()

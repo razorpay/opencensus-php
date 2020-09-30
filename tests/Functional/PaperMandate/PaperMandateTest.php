@@ -24,7 +24,7 @@ class PaperMandateTest extends TestCase
 
         parent::setUp();
 
-        (new Terminal)->createNachTerminal();
+        $this->fixtures->create('terminal:nach');
 
         $this->ba->proxyAuth();
     }
@@ -54,9 +54,7 @@ class PaperMandateTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $merchant = $this->getDbEntityById('merchant', '10000000000000');
-
-        $this->mockExtractNACH($merchant);
+        $this->mockExtractNACH();
 
         $this->createOrder();
 
@@ -93,9 +91,7 @@ class PaperMandateTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $merchant = $this->getDbEntityById('merchant', '10000000000000');
-
-        $this->mockExtractNACHWithoutCustomerSignature($merchant);
+        $this->mockExtractNACHWithoutCustomerSignature();
 
         $this->createOrder();
 
@@ -112,9 +108,7 @@ class PaperMandateTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $merchant = $this->getDbEntityById('merchant', '10000000000000');
-
-        $this->mockExtractNACHWithWrongAccountNumber($merchant);
+        $this->mockExtractNACHWithWrongAccountNumber();
 
         $this->createOrder();
 
@@ -134,30 +128,28 @@ class PaperMandateTest extends TestCase
         $this->startTest();
     }
 
-    protected function mockExtractNACHWithWrongAccountNumber($merchant)
+    protected function mockExtractNACHWithWrongAccountNumber()
     {
         $this->testData['hyperVergeExtractNACHOutput']['account_number'] = '000';
 
-        $this->mockExtractNACH($merchant);
+        $this->mockExtractNACH();
     }
 
-    protected function mockExtractNACHWithoutCustomerSignature($merchant)
+    protected function mockExtractNACHWithoutCustomerSignature()
     {
         $this->testData['hyperVergeExtractNACHOutput']['signature_present_primary'] = 'no';
 
-        return $this->mockExtractNACH($merchant);
+        return $this->mockExtractNACH();
     }
 
-    protected function mockExtractNACH($merchant, $input = null)
+    protected function mockExtractNACH($input = null)
     {
-        $callable = function () use ($input, $merchant)
+        $callable = function () use ($input)
         {
             if ($input !== null)
             {
                 return $input;
             }
-
-            $this->testData['hyperVergeExtractNACHOutput']['details']['companyName']['value'] = strtoupper($merchant->getName());
 
             return $this->testData['hyperVergeExtractNACHOutput'];
         };
@@ -305,24 +297,6 @@ class PaperMandateTest extends TestCase
             );
 
         return $bankAccount;
-    }
-
-    protected function createMerchant(array $overrideWith = [])
-    {
-        $merchant = $this->fixtures
-            ->create(
-                'merchant',
-                array_merge(
-                    [
-                        'id' => '10000000000010',
-                        'name' => 'TEST',
-
-                    ],
-                    $overrideWith
-                )
-            );
-
-        return $merchant;
     }
 
     protected function createAndPutImageFileInRequest(string $callee)

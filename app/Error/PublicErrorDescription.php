@@ -1225,6 +1225,15 @@ class PublicErrorDescription
     const GATEWAY_ERROR_CRED_RESERVED_ERROR                                         = 'Download CRED app and activate your membership to unlock this payment option and avail exclusive discounts.';
     const BAD_REQUEST_DISCOUNT_GREATER_THAN_BASE_AMOUNT                             = 'Discount amount greater than base amount';
 
+    // nach signed form upload
+    const BAD_REQUEST_NACH_UNKNOWN_FILE_TYPE                                        = 'The file type of the image is not supported';
+    const BAD_REQUEST_NACH_FILE_SIZE_EXCEEDS_LIMIT                                  = 'The file size exceeds the permissible limits';
+    const BAD_REQUEST_NACH_IMAGE_NOT_CLEAR                                          = 'The uploaded image is not clear. This can either be due to poor resolution or because part of the image is cropped';
+    const BAD_REQUEST_NACH_FORM_SIGNATURE_IS_MISSING                                = 'The signature of the customer is either missing or could not be detected';
+    const BAD_REQUEST_NACH_FORM_MISMATCH                                            = 'The ID of the uploaded form does not match with that in our records';
+    const BAD_REQUEST_NACH_FORM_DATA_MISMATCH                                       = 'One or more of the fields on the NACH form do not match with that in our records';
+    const BAD_REQUEST_NACH_FORM_STATUS_PENDING                                      = 'A form against this order is pending action on the destination bank. A new form cannot be submitted till a status is received';
+
     const BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INCORRECT_BALANCE_TYPE                = 'Only Banking type balance is allowed.';
     const BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INVALID_BALANCE_ID                    = 'Invalid balance id, no db records found.';
 
