@@ -227,7 +227,7 @@ class UserController extends Controller
             $input['email'] = mb_strtolower($input['email']);
         }
 
-        $this->trace->info(TraceCode::USER_LOGIN_KEYS, array_keys($input));
+        $this->trace->info(TraceCode::USER_LOGIN_KEYS, ['captcha' => $input['captcha'] ?? null]);
 
         list($error, $data) = (new User\Service)->login($input);
 
