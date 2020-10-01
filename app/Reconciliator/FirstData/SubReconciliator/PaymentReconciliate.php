@@ -66,6 +66,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         // Convert fee into basic unit of currency (ex: paise)
         $gatewayFee = floatval($formattedAmount) * 100;
 
+        $serviceTax = $this->getGatewayServiceTax($row);
+
+        $gatewayFee += $serviceTax;
+
         return intval(number_format($gatewayFee, 2, '.', ''));
     }
 
@@ -91,7 +95,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         if ($transactionAmt > 200000)
         {
-            $gatewayFee = $this->getGatewayFee($row);
+            $formattedAmount = str_replace(',', '', $row[self::COLUMN_GATEWAY_FEE]);
+
+            // Convert fee into basic unit of currency (ex: paise)
+            $gatewayFee = floatval($formattedAmount) * 100;
+
+            $gatewayFee = intval(number_format($gatewayFee, 2, '.', ''));
 
             $serviceTax = (18 / 100) * $gatewayFee;
         }
