@@ -157,6 +157,10 @@ class Entity
     const LOW_BALANCE_CONFIG         = 'low_balance_config';
     const VIRTUAL_ACCOUNT_PRODUCTS   = 'virtual_account_products';
 
+    const WORKFLOW_CONFIG            = 'workflow_config';
+    const WORKFLOW_ENTITY_MAP        = 'workflow_entity_map';
+    const WORKFLOW_STATE_MAP         = 'workflow_state_map';
+
     //ondemand
     const SETTLEMENT_ONDEMAND_FUND_ACCOUNT  = 'settlement.ondemand_fund_account';
     const SETTLEMENT_ONDEMAND               = 'settlement.ondemand';
@@ -724,6 +728,10 @@ class Entity
         self::CONFIG                        => \RZP\Models\Payment\Config::class,
         self::PROMOTION_EVENT               => \RZP\Models\Promotion\Event::class,
         self::PAYOUT_DOWNTIMES              => \RZP\Models\PayoutDowntime::class,
+
+        self::WORKFLOW_CONFIG               => \RZP\Models\Workflow\Service\Config::class,
+        self::WORKFLOW_ENTITY_MAP           => \RZP\Models\Workflow\Service\EntityMap::class,
+        self::WORKFLOW_STATE_MAP            => \RZP\Models\Workflow\Service\StateMap::class,
 
         self::MERCHANT_DETAIL   => \RZP\Models\Merchant\Detail::class,
         self::MERCHANT_DOCUMENT => \RZP\Models\Merchant\Document::class,

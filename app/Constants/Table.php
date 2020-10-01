@@ -293,6 +293,10 @@ class Table
     //Payout downtimes table
     const PAYOUT_DOWNTIMES     = 'payout_downtimes';
 
+    const WORKFLOW_CONFIG                = 'workflow_config';
+    const WORKFLOW_ENTITY_MAP            = 'workflow_entity_map';
+    const WORKFLOW_STATE_MAP             = 'workflow_state_map';
+
     const BVS_VALIDATION = 'bvs_validation';
 
     protected static $entityToTableMap = [
