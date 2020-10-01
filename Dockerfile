@@ -21,8 +21,6 @@ RUN set -eu && \
     rm -rf /root/.composer && \
     composer clear-cache && \
     pear config-set php_ini /etc/php7/php.ini && \
-    pecl install opencensus-alpha && \
-
     mkdir -p public && echo "${GIT_COMMIT_HASH}" > public/commit.txt
 
 COPY --chown=apache:www-data . /app/
