@@ -9,7 +9,6 @@ import {
   getTicketStatus,
 } from 'merchant/reducers/profile';
 import { rupeesToPaise } from 'common/utils/rzp-utils';
-import addFunds from './model';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import AddFundsForm from 'merchant/views/Account/Balances/AddFundsForm';
 import Amount from 'common/ui/Amount';
@@ -64,7 +63,13 @@ export default class AddFundsContainer extends Component {
     this.setState({
       isSaving: true,
     });
-    return addFunds(transaction)
+    return new Promise((resolve, reject) => {
+      if (transaction.razorpay_payment_id) {
+        resolve(true);
+      } else {
+        reject('Payment failed');
+      }
+    })
       .then(_ => {
         this.setState({
           isSaving: false,
@@ -91,9 +96,12 @@ export default class AddFundsContainer extends Component {
     let amountInPaise = rupeesToPaise(fieldProps.amountInINR);
 
     try {
-      var { data: { id } } = await this.fetchOrderId({
+      var {
+        data: { id },
+      } = await this.fetchOrderId({
         amount: amountInPaise,
         currency: 'INR',
+        payment_capture: 1,
       });
     } catch (e) {
       this.setState({
@@ -118,7 +126,7 @@ export default class AddFundsContainer extends Component {
       notes: {
         dashboard: true,
       },
-      handler: function(transaction = {}) {
+      handler: function (transaction = {}) {
         this.addFunds({
           amount: amountInPaise,
           razorpay_payment_id: transaction.razorpay_payment_id,
@@ -255,12 +263,8 @@ export default class AddFundsContainer extends Component {
           <div class="bal-cont-footer">
             <p>
               Add funds to your account to process refunds/transfers when the
-              account balance goes low. Adding large funds to your account?<a
-                onClick={this.handleContactUs}
-              >
-                {' '}
-                Contact Us
-              </a>
+              account balance goes low. Adding large funds to your account?
+              <a onClick={this.handleContactUs}> Contact Us</a>
             </p>
           </div>
         </div>
@@ -292,8 +296,8 @@ export default class AddFundsContainer extends Component {
               this.props.ticket_status.data.ticket_status === 'Processing' ? (
                 <button class="btn btn-primary">Processing...</button>
               ) : this.props.ticket_status.data.ticket_status === 'Resolved' ||
-              this.props.ticket_status.data.ticket_status === 'Closed' ||
-              reserveBalance > 0 ? null : (
+                this.props.ticket_status.data.ticket_status === 'Closed' ||
+                reserveBalance > 0 ? null : (
                 <button class="btn btn-outline" onClick={this.handleActivate}>
                   Activate
                 </button>
@@ -304,12 +308,14 @@ export default class AddFundsContainer extends Component {
           <div class="bal-cont-footer">
             <p>
               Add funds to your reserved balance to increase the negative
-              balance limit(<a
+              balance limit(
+              <a
                 href="https://razorpay.com/docs/payment-gateway/balances/dashboard/"
                 target="_blank"
               >
                 Learn More
-              </a>). Withdraw reserved balance?{' '}
+              </a>
+              ). Withdraw reserved balance?{' '}
               <a onClick={this.handleContactUs}>Contact Us</a>
             </p>
           </div>
