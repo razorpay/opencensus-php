@@ -14,7 +14,7 @@ return [
             'url' => '/vendor-payments/composite-expands',
             'content' => [
                 'user_ids' => ['10000000000000'],
-                'fund_account_id' => 'fa_D6Z9Jfir2egAUT',
+                'fund_account_ids' => ['fa_D6Z9Jfir2egAUD'],
                 'contact_ids' => ['cont_Dsp92d4N1Mmm6Q'],
                 'payout_ids' => ['pout_DuuYxmO7Yegu3x'],
                 'merchant_ids' => ['10000000000000'],
@@ -36,6 +36,10 @@ return [
                 'fund_accounts' => [
                     'fa_D6Z9Jfir2egAUT' => [
                         'id'           => 'fa_D6Z9Jfir2egAUT',
+                        'account_type' => 'bank_account'
+                    ],
+                    'fa_D6Z9Jfir2egAUD' => [
+                        'id'           => 'fa_D6Z9Jfir2egAUD',
                         'account_type' => 'bank_account'
                     ]
                 ],
@@ -303,5 +307,15 @@ return [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
-    ]
+    ],
+    'testVendorPaymentBulkExecuteCallsServiceMethods' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/vendor-payments/bulk/execute',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];

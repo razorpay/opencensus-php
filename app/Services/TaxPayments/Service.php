@@ -44,7 +44,6 @@ class Service
     const ADMIN_ACTIONS             = 'AdminActions';
     const EMAIL_CRON                = 'EmailCron';
 
-
     // general constants
     const DATA                      = 'data';
     const TEMPLATE_NAME             = 'template_name';

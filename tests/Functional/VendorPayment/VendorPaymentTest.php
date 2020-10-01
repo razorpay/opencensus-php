@@ -60,6 +60,14 @@ class VendorPaymentTest extends TestCase
                 'merchant_id' => '10000000000000'
             ]);
 
+        $this->fixtures->create('fund_account:bank_account',
+                                [
+                                    'id'          => 'D6Z9Jfir2egAUD',
+                                    'source_type' => 'contact',
+                                    'source_id'   => 'Dsp92d4N1Mmm6Q',
+                                    'merchant_id' => '10000000000000'
+                                ]);
+
         $this->fixtures->create('payout', ['id' => 'DuuYxmO7Yegu3x', 'fund_account_id' => 'D6Z9Jfir2egAUT']);
 
         $this->startTest();
@@ -205,6 +213,21 @@ class VendorPaymentTest extends TestCase
         $this->startTest();
     }
 
+    public function testVendorPaymentBulkExecuteCallsServiceMethods()
+    {
+        $this->ba->proxyAuth();
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayments\Service');
+
+        $vpMock->shouldReceive('executeVendorPaymentBulk')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('executeVendorPaymentBulk');
+    }
+
     public function testGetReportingInfo()
     {
         $this->ba->proxyAuth();
@@ -219,5 +242,4 @@ class VendorPaymentTest extends TestCase
 
         $vpMock->shouldHaveReceived('getReportingInfo');
     }
-
 }

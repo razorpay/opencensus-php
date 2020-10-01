@@ -26,6 +26,7 @@ class Service
     const PUSH_PAYOUT_STATUS_UPDATE   = 'PayoutStatusChange';
     const GET_VENDOR_PAYMENT          = 'GetVendorPayment';
     const EXECUTE_VENDOR_PAYMENT      = 'ExecuteVendorPayment';
+    const EXECUTE_VENDOR_PAYMENT_BULK = 'ExecuteVendorPaymentBulk';
     const CREATE_CONTACT              = 'CreateContact';
     const UPDATE_CONTACT              = 'UpdateContactById';
     const GET_CONTACT                 = 'GetContactById';
@@ -94,7 +95,7 @@ class Service
 
         $this->expandContacts($result, $input);
 
-        $this->expandFundAccount($result, $input);
+        $this->expandFundAccounts($result, $input);
 
         $this->expandPayouts($result, $input);
 
@@ -138,26 +139,26 @@ class Service
     }
 
 
-    protected function expandFundAccount(array &$result, array $input)
+    protected function expandFundAccounts(array &$result, array $input)
     {
-        $fundAccountId = array_pull($input, 'fund_account_id', null);
+        $fundAccountIds = array_pull($input, 'fund_account_ids', null);
 
-        if ($fundAccountId === null)
+        if ($fundAccountIds === null)
         {
             return;
         }
 
-        $fundAccount = $this->repo
+        $fundAccounts = $this->repo
                             ->fund_account
-                            ->findByPublicId($fundAccountId, ['expand' => ['contact']]);
+                            ->findManyByPublicIds($fundAccountIds, ['expand' => ['contact']]);
 
-        if (empty($fundAccount) === false)
+        foreach ($fundAccounts as $fa)
         {
-            $contact = $fundAccount->contact;
+            $contact = $fa->contact;
 
             $result['contacts'][$contact->getPublicId()] = $contact->toArrayPublic();
 
-            $result['fund_accounts'][$fundAccount->getPublicId()] = $fundAccount->toArrayPublic();
+            $result['fund_accounts'][$fa->getPublicId()] = $fa->toArrayPublic();
         }
     }
 
@@ -203,6 +204,20 @@ class Service
     public function create(MerchantEntity $merchant, array $input, Entity $user = null)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CREATE_VENDOR_PAYMENT);
+
+        if ($user === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST);
+        }
+
+        $input['user_id'] = $user->getPublicId();
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function executeVendorPaymentBulk(MerchantEntity $merchant, array $input, Entity $user = null)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::EXECUTE_VENDOR_PAYMENT_BULK);
 
         if ($user === null)
         {

@@ -89,6 +89,11 @@ class VendorPaymentController extends Controller
         return $this->service->compositeExpandsHelper($this->input);
     }
 
+    public function executeVendorPaymentBulk()
+    {
+        return $this->service->executeVendorPaymentBulk($this->ba->getMerchant(), $this->input, $this->ba->getUser());
+    }
+
     public function sendUpcomingMailCron()
     {
         return $this->service->sendUpcomingMailCron();

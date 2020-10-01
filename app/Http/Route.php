@@ -1078,6 +1078,7 @@ class Route
         'payouts_scheduled_time_slots'             => ['get',      'payouts/schedule/timeslots',                     'PayoutController@getScheduleSlotsForPayouts'                       ],
 
         //Vendor Payments
+        'vendor_payment_execute_bulk'              => ['post',     'vendor-payments/bulk/execute',                   'VendorPaymentController@executeVendorPaymentBulk'                  ],
         'vendor_payment_upcoming_mail_cron'        => ['post',     'vendor-payments/sendUpcomingMailCron',           'VendorPaymentController@sendUpcomingMailCron'                      ],
         'vendor_payment_send_email_generic'        => ['post',     'vendor-payments/sendMailGeneric',                'VendorPaymentController@sendMailGeneric'                           ],
         'vendor_payment_composite_expands_helper'  => ['get',      'vendor-payments/composite-expands',              'VendorPaymentController@compositeExpandsHelper'                    ],
@@ -3066,6 +3067,7 @@ class Route
         'vendor_payment_edit',
         'vendor_payment_cancel',
         'vendor_payment_bulk_cancel',
+        'vendor_payment_execute_bulk',
         'vendor_payment_execute',
         'vendor_payment_get_ocr_data',
         'vendor_payment_mark_as_paid',
@@ -4665,6 +4667,7 @@ class Route
         'vendor_payment_get_by_id'                     => Permission::VIEW_VENDOR_PAYMENTS,
         'vendor_payment_verify_otp'                    => Permission::CREATE_VENDOR_PAYMENTS,
         'vendor_payment_execute'                       => Permission::CREATE_PAYOUT,
+        'vendor_payment_execute_bulk'                  => Permission::CREATE_PAYOUT,
         'vendor_payment_get_tds_categories'            => Permission::VIEW_VENDOR_PAYMENTS,
         'vendor_payment_summary'                       => Permission::VIEW_VENDOR_PAYMENTS,
         'vendor_payment_edit'                          => Permission::EDIT_VENDOR_PAYMENTS,
@@ -5834,6 +5837,7 @@ class Route
         'vendor_payment_list',
         'vendor_payment_get_by_id',
         'vendor_payment_verify_otp',
+        'vendor_payment_execute_bulk',
         'vendor_payment_execute',
         'vendor_payment_summary',
         'vendor_payment_get_tds_categories',
