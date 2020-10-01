@@ -1170,6 +1170,7 @@ class Repository extends Base\Repository
                     ->selectRaw('COALESCE(ROUND(SUM(' . Entity::AMOUNT . '* 1.0 / 1000000000), 2), 0)AS payout_amount_cr' . ','.
                                 'COALESCE(ROUND(SUM(' . Entity::FEES . ')/100, 2), 0)AS payout_fee_collected' . ','.
                                 'COUNT(' . Entity::AMOUNT . ') AS payout_count')
+                    ->from(\DB::raw(Table::PAYOUT.' USE INDEX (payouts_created_at_index)'))
                     ->where($payoutStatusColumn, '=', Status::PROCESSED)
                     ->where($merchantEmailColumn, 'not like', '%@razorpay.com')
                     ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
