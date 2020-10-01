@@ -804,6 +804,8 @@ class Service extends Base\Service
 
                     $data = $this->updateRXOnboardingV2Experiment($merchant, $data);
 
+                    $data = $this->updateRXCASelfServeExperiment($merchant, $data);
+
                     $data = $this->appendBankingDetails($data);
 
                     if (((bool) $merchant['activated']) === true)
@@ -1387,6 +1389,27 @@ class Service extends Base\Service
         else
         {
             $data['experiments']['rx_onboarding_v2'] = ['result' => 'off'];
+        }
+
+        return $data;
+    }
+
+    // To rollout the new onboarding CA Self Serve flow in phases only for new signups after 1st October
+    // Phase 1 - 10% of new signups on RX
+    // This function will be removed after 100% rollout
+    protected function updateRXCASelfServeExperiment(array $merchant, array $data): array
+    {
+        $merchantService = new Merchant\Service;
+        $isBankingRequest = ApiUrl::isBankingOriginRequest();
+
+        // Timestamp - "1 Oct 2020, 20:00:00 IST"
+        if ($isBankingRequest && $merchant['created_at'] > 1601562600)
+        {
+            $data['experiments']['rx_ca_self_serve_flow'] = $merchantService->getTreatment('rx_ca_self_serve_flow');
+        }
+        else
+        {
+            $data['experiments']['rx_ca_self_serve_flow'] = ['result' => 'off'];
         }
 
         return $data;
