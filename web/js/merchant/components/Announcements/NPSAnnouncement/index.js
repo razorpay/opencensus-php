@@ -1,14 +1,13 @@
 import React from 'react';
-
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
 const SURVEY_LINKS = {
-  PL: 'https://razorpay.typeform.com/to/yam7yYS4',
-  PP: 'https://razorpay.typeform.com/to/dM9zUqj8',
-  PG_1m: 'https://razorpay.typeform.com/to/ouFfP2JX',
-  PG_6m: 'https://razorpay.typeform.com/to/QITAeRbH',
-  PG_12m: 'https://razorpay.typeform.com/to/LPT6F0te',
-  other_products: 'https://razorpay.typeform.com/to/mjBs6Nqg',
+  PL: 'https://razorpay.typeform.com/to/aKBsL8rs',
+  PP: 'https://razorpay.typeform.com/to/KZNhDUjO',
+  PG_1m: 'https://razorpay.typeform.com/to/BqfE2dnH',
+  PG_6m: 'https://razorpay.typeform.com/to/dk3voHzg',
+  PG_12m: 'https://razorpay.typeform.com/to/sVHQ6NKG',
+  other_products: 'https://razorpay.typeform.com/to/On9UZEl4',
 };
 
 const getLink = (user) => {
