@@ -6633,7 +6633,9 @@ trait Authorize
         {
             $config->validateIntentPayment($payment);
         }
-        else
+        // The MCC based collect validations need to be done for collect payments only and not for BharatQR or
+        // Upi Transfer payments.
+        else if (($this->isFlowCollect($input) === true) and (isset($payment['receiver_type']) === false))
         {
             $config->validateCollectPayment($payment);
         }
