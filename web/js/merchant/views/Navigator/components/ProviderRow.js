@@ -15,17 +15,13 @@ import Select from './Select';
 import SelectConfig from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/SelectConfig';
 
 export default class ProviderRow extends React.Component {
-  state = {
-    anim_class: '',
-  };
-
   render() {
     const additional_attribute = this.props.rule.additional_attribute;
     return (
       <div
         className={`provider-expression-row ${
           this.props.readonly ? 'expression-row-readonly' : ''
-        } ${this.props.dashed ? 'dashed if-tran-exp' : ''} ${this.state.anim_class}`}
+        } ${this.props.dashed ? 'dashed if-tran-exp' : ''}`}
         onClick={(e) => {
           let parent = e.target;
           if (parent.classList[0] === 'provider-expression-row') {

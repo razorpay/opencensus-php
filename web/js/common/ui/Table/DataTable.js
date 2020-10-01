@@ -24,6 +24,7 @@ export default function DataTable(props) {
     paginate,
     title,
     limit,
+    empty_placeholder,
     progressLoader,
     customClass,
     noStripe,
@@ -32,15 +33,11 @@ export default function DataTable(props) {
     onErrorCloseClick,
   } = props;
 
-  const classes = `${noStripe ? '' : 'table-striped'} ${
-    columns ? customClass : ''
-  }`;
+  const classes = `${noStripe ? '' : 'table-striped'} ${columns ? customClass : ''}`;
 
   return (
     <div class={`data-table ${panelHeading ? 'has-panel' : ''}`}>
-      {error && (
-        <Alert type="error" message={error} onCloseClick={onErrorCloseClick} />
-      )}
+      {error && <Alert type="error" message={error} onCloseClick={onErrorCloseClick} />}
       {panelHeading && (
         <div class="list-heading">
           <span class="label--primary">{panelHeading.title}</span>
@@ -59,28 +56,22 @@ export default function DataTable(props) {
         loading={loading}
         className={classes}
       />
-      {!progressLoader &&
-        loading && (
-          <div style={{ padding: 77 }} class="text-center">
-            <Spinner />
-          </div>
-        )}
+      {!progressLoader && loading && (
+        <div style={{ padding: 77 }} class="text-center">
+          <Spinner />
+        </div>
+      )}
       {!loading &&
         !items.length &&
         (EmptyComponent ? (
           <EmptyComponent />
+        ) : empty_placeholder ? (
+          empty_placeholder
         ) : (
           <h4 class="empty-table-message">{`No ${title} Found!`}</h4>
         ))}
 
-      {paginate && (
-        <Pager
-          count={count}
-          skip={skip}
-          length={items.length}
-          onClick={paginate}
-        />
-      )}
+      {paginate && <Pager count={count} skip={skip} length={items.length} onClick={paginate} />}
     </div>
   );
 }

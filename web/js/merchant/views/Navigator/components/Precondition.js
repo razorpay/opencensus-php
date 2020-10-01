@@ -17,15 +17,43 @@ import Expression from './Expression';
 import { isExpressionValid, logical_operators } from './util';
 import { Operand } from '../models/Operand';
 import { PreconditionModel } from '../models/PreconditionModel';
+import { CSSTransition } from 'react-transition-group';
 
 export default class Precondition extends React.Component {
+  addCondition = () => {
+    let precondition = deepClone(this.props.precondition);
+    if (precondition.type == 'logical') {
+      precondition.operands.push({
+        operands: [new Operand(), new Operand()],
+        value: null,
+        type: null,
+      });
+    } else {
+      precondition = {
+        operands: [
+          precondition,
+          {
+            operands: [new Operand(), new Operand()],
+            value: null,
+            type: null,
+          },
+        ],
+        value: '&&',
+        type: 'logical',
+      };
+    }
+    this.setState({ precondition }, () => {
+      this.props.update(precondition);
+    });
+  };
+
   getExp = (expression, index = 9999) => {
     return (
       <Expression
         precondition={this.props.precondition}
         valid={isExpressionValid(expression)}
-        providers={this.props.providers}
         key={index}
+        parameters={this.props.parameters}
         readonly={this.props.readonly}
         onClose={() => {
           let precondition = { ...this.props.precondition };
@@ -63,7 +91,7 @@ export default class Precondition extends React.Component {
     return (
       <div class="precondition-div">
         <div class="row" style={{ position: 'relative' }}>
-          {this.props.readonly ? (
+          {this.props.readonly && this.props.precondition.type == 'logical' ? (
             <div className={`col-xs-${this.props.parent === 'create-rule' ? 1 : 2}`} />
           ) : null}
           <div
@@ -106,7 +134,8 @@ export default class Precondition extends React.Component {
               )}
             </div>
           ) : null}
-          {this.props.precondition.type == 'logical' ? (
+          {this.props.precondition.type == 'logical' &&
+          this.props.precondition.operands.length > 1 ? (
             !this.props.readonly ? (
               <div class="operator-btn">
                 <Select
@@ -138,42 +167,19 @@ export default class Precondition extends React.Component {
           ) : null}
         </div>
         {!this.props.readonly ? (
-          <div class="row">
-            <div className="col-xs-12">
-              <div
-                onClick={() => {
-                  let precondition = deepClone(this.props.precondition);
-                  if (precondition.type == 'logical') {
-                    precondition.operands.push({
-                      operands: [new Operand(), new Operand()],
-                      value: null,
-                      type: null,
-                    });
-                  } else {
-                    precondition = {
-                      operands: [
-                        precondition,
-                        {
-                          operands: [new Operand(), new Operand()],
-                          value: null,
-                          type: null,
-                        },
-                      ],
-                      value: '&&',
-                      type: 'logical',
-                    };
-                  }
-                  this.setState({ precondition }, () => {
-                    this.props.update(precondition);
-                  });
-                }}
-                class="add-expression"
-                style={{ color: '#2B83EA', marginTop: '18px' }}
-              >
-                <b class="pointer">Add Another Condition</b>
+          <CSSTransition in={true} exit={true} timeout={1000} classNames="slide-down">
+            <div class="row">
+              <div className="col-xs-12">
+                <div
+                  onClick={this.addCondition}
+                  class="add-expression"
+                  style={{ color: '#2B83EA', marginTop: '18px' }}
+                >
+                  <b class="pointer">Add Another Condition</b>
+                </div>
               </div>
             </div>
-          </div>
+          </CSSTransition>
         ) : null}
       </div>
     );

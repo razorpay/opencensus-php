@@ -11,6 +11,7 @@ import {
   removeMid,
   logical_operators,
   uniqueArray,
+  parameters,
 } from './util';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { deepClone } from 'common/utils/rzp-utils';
@@ -122,7 +123,7 @@ export class RulesTable extends Component {
                               parentQuerySelector={`.Modal--large`}
                             >
                               <PopoverBody>
-                                <PreconditionPopover rule={r} />
+                                <PreconditionPopover parameters={parameters} rule={r} />
                               </PopoverBody>
                             </Popover>
                           </div>

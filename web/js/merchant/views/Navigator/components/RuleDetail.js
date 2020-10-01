@@ -21,7 +21,14 @@ import { ReorderRules } from './ReorderRule';
 import { rule } from './CreateRule';
 import PropTypes from 'prop-types';
 import { titleCase, deepClone } from 'common/utils/rzp-utils';
-import { TOTAL_RULE_LIMIT, getRuleStatus, removeMid, getRuleScore, total_live_rules } from './util';
+import {
+  TOTAL_RULE_LIMIT,
+  getRuleStatus,
+  removeMid,
+  getRuleScore,
+  total_live_rules,
+  parameters,
+} from './util';
 import { deleteRule } from '../../../reducers/navigator/details';
 import { Redirect } from 'react-router-dom';
 import DeactivateRule from './DeactivateRule';
@@ -367,7 +374,11 @@ export default class RuleDetail extends Component {
                     label="Rule Condition"
                     value={() =>
                       !this.props.rule.is_default ? (
-                        <Precondition readonly={true} precondition={this.props.rule.precondition} />
+                        <Precondition
+                          parameters={parameters}
+                          readonly={true}
+                          precondition={this.props.rule.precondition}
+                        />
                       ) : (
                         <div style={{ padding: '5px' }}>
                           Apply to transaction when it doesn’t satisfy any rule
@@ -376,7 +387,7 @@ export default class RuleDetail extends Component {
                     }
                   />
                 </div>{' '}
-                <div class="list-group details-row-container precondition-form-pair">
+                <div class="list-group details-row-container precondition-form-pair provider-rules-form-pair">
                   <EntityDetailRow
                     label="Target Provider"
                     value={() => (

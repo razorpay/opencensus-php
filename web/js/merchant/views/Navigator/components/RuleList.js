@@ -4,7 +4,14 @@ import { Fragment } from 'react';
 import CreateRule, { rule } from './CreateRule';
 import { EntityTable } from 'merchant/components/EntityTable';
 import DataTable from 'common/ui/Table/DataTable';
-import { getValue, getRuleStatus, removeMid, getRuleScore, uniqueArray } from './util';
+import {
+  getValue,
+  getRuleStatus,
+  removeMid,
+  getRuleScore,
+  uniqueArray,
+  SMART_ROUTER,
+} from './util';
 import { PROVIDERS } from './ProviderRow';
 import ListFilter from 'merchant/components/ListFilter';
 import Field from 'common/new-ui/Input';
@@ -83,12 +90,17 @@ export default class RuleList extends React.Component {
                 padding: '10px 30px 15px !important',
               }}
             >
-              <div class="row" style={{ marginBottom: '10px' }}>
-                {this.props.providers.map((g, i) => (
-                  <div class="col-xs-3" key={i}>
-                    <Provider provider={g} />
-                  </div>
-                ))}
+              <div
+                class="row"
+                style={{ marginBottom: '10px', display: 'flex', overflowX: 'scroll' }}
+              >
+                {this.props.providers
+                  .filter((p) => p.id !== SMART_ROUTER)
+                  .map((g, i) => (
+                    <div style={{ width: '220px', marginRight: '8px' }} key={i}>
+                      <Provider provider={g} />
+                    </div>
+                  ))}
               </div>
             </div>
 
@@ -114,9 +126,9 @@ export default class RuleList extends React.Component {
                     <Link to={`/navigator/rules/${this.props.default_rule.id}`}>
                       <span className="rule-status-label default-rule-status-label status-label label label-info">
                         {uniqueArray(
-                          this.props.default_rule.rules.map((i) =>
-                            titleCase(i.expression.operands[0].operands[1].value),
-                          ),
+                          this.props.default_rule.rules
+                            .filter((i) => i.expression.operands[0].operands)
+                            .map((i) => titleCase(i.expression.operands[0].operands[1].value)),
                         ).join(', ')}
                       </span>
                     </Link>
@@ -160,7 +172,8 @@ export default class RuleList extends React.Component {
                           <div class="rule-list-empty-placeholder">
                             <p className="text-center no-rule">No custom rule set!</p>
                             <p className="text-center start-now">
-                              Create a new custom rule now. <a class="nav-link">Learn More</a>
+                              Create a new custom rule now.
+                              {/* <a class="nav-link">Learn More</a> */}
                             </p>
                             <div class="text-center">
                               <Link to={'/navigator/create-rule'}>

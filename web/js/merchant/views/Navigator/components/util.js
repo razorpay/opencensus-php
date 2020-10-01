@@ -105,7 +105,17 @@ export const parameters = [
   {
     name: 'Channels',
     value: '$payment.navigator_channel',
-    values: ['website', 'android', 'ios'],
+    values: [
+      {
+        value: 'website',
+      },
+      {
+        value: 'android',
+      },
+      {
+        value: 'ios',
+      },
+    ],
     operators: {
       '==': {
         multiple: false,
@@ -129,7 +139,20 @@ export const parameters = [
     value: '$payment.navigator_method',
     description: 'Card, Netbanking, UPI Intent, UPI Collect',
     id: 2,
-    values: ['card', 'netbanking', 'upi_intent', 'upi_collect'],
+    values: [
+      {
+        value: 'card',
+      },
+      {
+        value: 'netbanking',
+      },
+      {
+        value: 'upi_intent',
+      },
+      {
+        value: 'upi_collect',
+      },
+    ],
     operators: {
       '==': {
         multiple: false,
@@ -173,7 +196,20 @@ export const parameters = [
     value: '$payment.navigator_card_type',
     description: 'Debit, Credit, Prepaid, Corporate',
     id: 5,
-    values: ['debit', 'credit', 'prepaid', 'corporate'],
+    values: [
+      {
+        value: 'debit',
+      },
+      {
+        value: 'credit',
+      },
+      {
+        value: 'prepaid',
+      },
+      {
+        value: 'corporate',
+      },
+    ],
     operators: {
       '==': {
         multiple: false,
@@ -195,7 +231,38 @@ export const parameters = [
     value: '$payment.navigator_card_brand',
     description: 'American Express,Diners Club,Discover',
     id: 6,
-    values: ['AMEX', 'DICL', 'DISC', 'JCB', 'MAES', 'MC', 'RUPAY', 'UNP', 'VISA', 'BAJAJ'],
+    values: [
+      {
+        value: 'AMEX',
+      },
+      {
+        value: 'DICL',
+      },
+      {
+        value: 'DISC',
+      },
+      {
+        value: 'JCB',
+      },
+      {
+        value: 'MAES',
+      },
+      {
+        value: 'MC',
+      },
+      {
+        value: 'RUPAY',
+      },
+      {
+        value: 'UNP',
+      },
+      {
+        value: 'VISA',
+      },
+      {
+        value: 'BAJAJ',
+      },
+    ],
     operators: {
       '==': {
         multiple: false,
@@ -218,26 +285,66 @@ export const parameters = [
     description: 'SBIN,HDFC,ICIC,UTIB,KKBK',
     id: 7,
     values: [
-      'SBIN',
-      'HDFC',
-      'ICIC',
-      'UTIB',
-      'KKBK',
-      'BARB_R',
-      'BKID',
-      'CNRB',
-      'PUNB_R',
-      'UBIN',
-      'IDIB',
-      'ALLA',
-      'CBIN',
-      'IOBA',
-      'IBKL',
-      'YESB',
-      'ANDB',
-      'AIRP',
-      'FDRL',
-      'MAHB',
+      {
+        value: 'SBIN',
+      },
+      {
+        value: 'HDFC',
+      },
+      {
+        value: 'ICIC',
+      },
+      {
+        value: 'UTIB',
+      },
+      {
+        value: 'KKBK',
+      },
+      {
+        value: 'BARB_R',
+      },
+      {
+        value: 'BKID',
+      },
+      {
+        value: 'CNRB',
+      },
+      {
+        value: 'PUNB_R',
+      },
+      {
+        value: 'UBIN',
+      },
+      {
+        value: 'IDIB',
+      },
+      {
+        value: 'ALLA',
+      },
+      {
+        value: 'CBIN',
+      },
+      {
+        value: 'IOBA',
+      },
+      {
+        value: 'IBKL',
+      },
+      {
+        value: 'YESB',
+      },
+      {
+        value: 'ANDB',
+      },
+      {
+        value: 'AIRP',
+      },
+      {
+        value: 'FDRL',
+      },
+      {
+        value: 'MAHB',
+      },
     ],
     operators: {
       '==': {
@@ -261,26 +368,66 @@ export const parameters = [
     description: 'SBIN,HDFC,ICIC,UTIB',
     id: 8,
     values: [
-      'SBIN',
-      'HDFC',
-      'ICIC',
-      'UTIB',
-      'KKBK',
-      'BARB_R',
-      'BKID',
-      'CNRB',
-      'PUNB_R',
-      'UBIN',
-      'IDIB',
-      'ALLA',
-      'CBIN',
-      'IOBA',
-      'IBKL',
-      'YESB',
-      'ANDB',
-      'AIRP',
-      'FDRL',
-      'MAHB',
+      {
+        value: 'SBIN',
+      },
+      {
+        value: 'HDFC',
+      },
+      {
+        value: 'ICIC',
+      },
+      {
+        value: 'UTIB',
+      },
+      {
+        value: 'KKBK',
+      },
+      {
+        value: 'BARB_R',
+      },
+      {
+        value: 'BKID',
+      },
+      {
+        value: 'CNRB',
+      },
+      {
+        value: 'PUNB_R',
+      },
+      {
+        value: 'UBIN',
+      },
+      {
+        value: 'IDIB',
+      },
+      {
+        value: 'ALLA',
+      },
+      {
+        value: 'CBIN',
+      },
+      {
+        value: 'IOBA',
+      },
+      {
+        value: 'IBKL',
+      },
+      {
+        value: 'YESB',
+      },
+      {
+        value: 'ANDB',
+      },
+      {
+        value: 'AIRP',
+      },
+      {
+        value: 'FDRL',
+      },
+      {
+        value: 'MAHB',
+      },
     ],
     operators: {
       '==': {
@@ -303,33 +450,41 @@ export const parameters = [
     value: '$payment.navigator_amount',
     description: 'In Paise',
     id: 9,
-    values: ['card', 'netbanking', 'upi_intent', 'upi_collect'],
+    values: [
+      {
+        value: 'card',
+      },
+      {
+        value: 'netbanking',
+      },
+      {
+        value: 'upi_intent',
+      },
+      {
+        value: 'upi_collect',
+      },
+    ],
     operators: {
       '==': {
         number: true,
         type: 'input',
       },
-
       '>': {
         number: true,
         type: 'input',
       },
-
       '<': {
         number: true,
         type: 'input',
       },
-
       '>=': {
         number: true,
         type: 'input',
       },
-
       '<=': {
         number: true,
         type: 'input',
       },
-
       between: {
         number: true,
         between: true,
@@ -339,7 +494,6 @@ export const parameters = [
     type: 'numeric',
   },
 ];
-
 export const PROVIDERS = [
   { name: 'Smart Router1', id: 1, value: 'smartrouter' },
   { name: 'Razorpay', id: 2, value: 'razorpay' },
@@ -593,3 +747,5 @@ export const uniqueArray = function (arr) {
   }
   return a;
 };
+
+export const SMART_ROUTER = 'smart_router';

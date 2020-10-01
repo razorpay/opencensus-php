@@ -14,6 +14,7 @@ import { titleCase } from 'common/utils/rzp-utils';
 import Select from './Select';
 import SelectConfig from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/SelectConfig';
 import ProviderRow from './ProviderRow';
+import { CSSTransition } from 'react-transition-group';
 
 export default class ProviderRules extends React.Component {
   render() {
@@ -81,7 +82,7 @@ export default class ProviderRules extends React.Component {
                     <div className="col-xs-12">
                       {Object.keys(rules).map((pp, indexT) => {
                         return (
-                          <Fragment key={indexT}>
+                          <Fragment>
                             {rules[pp].map((rule, index) => {
                               return (
                                 <ProviderRow
@@ -119,7 +120,7 @@ export default class ProviderRules extends React.Component {
         ) : (
           Object.keys(rules).map((provider_priority, ind) => {
             return (
-              <Fragment key={ind}>
+              <Fragment>
                 <div
                   class={`panel-body ${
                     this.props.rules[Number(provider_priority) + 1] &&

@@ -14,14 +14,18 @@ import { titleCase } from 'common/utils/rzp-utils';
 import Select from './Select';
 import SelectConfig from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/SelectConfig';
 import { AmountTooltip } from 'common/ui/Amount';
-import { parameters, operators, getValue } from './util';
+import { operators, getValue } from './util';
+import { CSSTransition } from 'react-transition-group';
+
 export default class Expression extends React.Component {
-  state = {
-    anim_class: '',
+  getValue = (type, value) => {
+    let r;
+    r = this.props.parameters;
+    return r.find((p) => p.value == value) || '';
   };
 
   render() {
-    const PARAMETER = getValue('parameter', this.props.expression.operands[0].value);
+    const PARAMETER = this.getValue('parameter', this.props.expression.operands[0].value);
     const OPERATORS = operators.filter((o) => {
       let p = PARAMETER;
       if (p) {
@@ -34,9 +38,11 @@ export default class Expression extends React.Component {
     const VALUES = PARAMETER
       ? PARAMETER.values.map((p) => {
           return {
-            id: p,
-            name: p,
-            value: p,
+            id: p.value,
+            name: p.value,
+            value: p.value,
+            disabled_message: p.disabled_message,
+            disabled: p.disabled,
           };
         })
       : [];
@@ -53,9 +59,7 @@ export default class Expression extends React.Component {
     }
     return (
       <div
-        className={`expression-row ${this.props.readonly ? 'expression-row-readonly' : ''} ${
-          this.state.anim_class
-        }`}
+        className={`expression-row ${this.props.readonly ? 'expression-row-readonly' : ''}`}
         onClick={(e) => {
           e.stopPropagation();
           let parent = e.target;
@@ -84,10 +88,10 @@ export default class Expression extends React.Component {
             <div style={{ width: '24%' }} className="p0 select-parameter">
               <Select
                 placeholder="Select Parameter"
-                options={parameters}
+                options={this.props.parameters}
                 selected={this.props.expression.operands[0].value
                   .split(',')
-                  .map((v) => parameters.find((p) => p.value == v))
+                  .map((v) => this.props.parameters.find((p) => p.value == v))
                   .filter((i) => i)}
                 select={(values) => {
                   values = values.map((v) => v.value).join(',');

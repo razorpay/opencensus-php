@@ -5,6 +5,9 @@ import Input, { Description, Label } from 'common/new-ui/Input';
 import { titleCase, deepClone } from 'common/utils/rzp-utils';
 import ClickOutside from './ClickOutside';
 import Field from 'common/new-ui/Input';
+import { SMART_ROUTER } from './util';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+
 @connect((state) => {
   return state;
 })
@@ -42,34 +45,58 @@ export default class Select extends React.Component {
               <ul class="unlisted">
                 {this.props.options.map((o, index) => {
                   return (
-                    <li
-                      key={index}
-                      onClick={() => {
-                        if (!this.props.multiple) {
-                          selected = { [o.id]: o };
-                        } else {
-                          if (selected[o.id]) {
-                            delete selected[o.id];
-                          } else {
-                            selected[o.id] = o;
+                    <span>
+                      <li
+                        class={o.disabled ? 'disabled' : ''}
+                        key={index}
+                        onClick={() => {
+                          if (!o.disabled) {
+                            if (!this.props.multiple) {
+                              selected = { [o.id]: o };
+                            } else {
+                              if (selected[o.id]) {
+                                delete selected[o.id];
+                              } else {
+                                selected[o.id] = o;
+                              }
+                            }
+                            const value = Object.keys(selected).map((key) => selected[key]);
+                            this.props.select(value);
                           }
-                        }
-                        const value = Object.keys(selected).map((key) => selected[key]);
-                        this.props.select(value);
-                      }}
-                    >
-                      <div>
-                        <div className="row">
-                          <div className="col-xs-10">
-                            <b>{titleCase(o.name)}</b>
-                          </div>
-                          <div className="col-xs-2">
-                            {selected[o.id] ? <i className="i i-tick select-tick" /> : null}
+                        }}
+                      >
+                        <div>
+                          <div className="row">
+                            <div className="col-xs-10">
+                              <b class="optn-text">{titleCase(o.name)}</b>
+                              {o.id === SMART_ROUTER ? (
+                                <span className="recommended-provider">
+                                  <span className="recommended-provider-text">RECOMMENDED</span>
+                                  {!o.disabled ? (
+                                    <Popover theme="dark" align="right">
+                                      <PopoverBody>
+                                        <div>Recommended for better success rate</div>
+                                      </PopoverBody>
+                                    </Popover>
+                                  ) : null}
+                                </span>
+                              ) : null}
+                            </div>
+                            <div className="col-xs-2">
+                              {selected[o.id] ? <i className="i i-tick select-tick" /> : null}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      {o.description ? <div class="sub-p">{o.description}</div> : null}
-                    </li>
+                        {o.description ? <div class="sub-p">{o.description}</div> : null}
+                      </li>
+                      {o.disabled ? (
+                        <Popover theme="dark" align="right">
+                          <PopoverBody>
+                            <div>{o.disabled_message}</div>
+                          </PopoverBody>
+                        </Popover>
+                      ) : null}
+                    </span>
                   );
                 })}
               </ul>
