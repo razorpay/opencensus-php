@@ -23,7 +23,7 @@ export const clearLeafInstrument = () => {
   };
 };
 
-export const setIntrument = (instrument) => {
+export const setIntrument = instrument => {
   if (instrument.leafList) {
     return {
       type: SET_LEAF_INSTRUMENT,
@@ -44,7 +44,7 @@ export const fetchMerchantInstruments = () => {
   };
 };
 
-export const createMerchantInstrumentRequest = (instrument) => {
+export const createMerchantInstrumentRequest = instrument => {
   return {
     type: CREATE_INSTRUMENT_REQUEST,
     payload: merchantFetch({
@@ -55,7 +55,7 @@ export const createMerchantInstrumentRequest = (instrument) => {
   };
 };
 
-export const cancelMerchantInstrumentRequest = (id) => {
+export const cancelMerchantInstrumentRequest = id => {
   return {
     type: CANCEL_INSTRUMENT_REQUEST,
     payload: merchantFetch({
@@ -133,7 +133,8 @@ let initialState = {
       leafList: [
         {
           header: 'UPI',
-          docLink: 'https://razorpay.com/docs/payment-gateway/payment-methods/upi',
+          docLink:
+            'https://razorpay.com/docs/payment-gateway/payment-methods/upi',
           list: [
             {
               name: 'UPI',
@@ -586,7 +587,8 @@ let initialState = {
       leafList: [
         {
           header: 'EMI on Cards',
-          docLink: 'https://razorpay.com/docs/payment-gateway/payment-methods/emi/',
+          docLink:
+            'https://razorpay.com/docs/payment-gateway/payment-methods/emi/',
           list: [
             {
               name: 'Debit Cards',
@@ -610,7 +612,8 @@ let initialState = {
         },
         {
           header: 'Cardless EMI',
-          docLink: 'https://razorpay.com/docs/payment-gateway/payment-methods/emi/cardless-emi/',
+          docLink:
+            'https://razorpay.com/docs/payment-gateway/payment-methods/emi/cardless-emi/',
           list: [
             {
               name: 'ZestMoney',
@@ -655,13 +658,6 @@ let initialState = {
               icon: 'phonepe',
             },
             {
-              name: 'Phonepe Switch',
-              description: '',
-              status: 'Request',
-              slug: 'phonepeswitch',
-              icon: 'phonepe',
-            },
-            {
               name: 'Airtel Money',
               description: '',
               status: 'Request',
@@ -690,32 +686,11 @@ let initialState = {
               icon: 'jiomoney',
             },
             {
-              name: 'SBI Buddy',
-              description: '',
-              status: 'Request',
-              slug: 'sbibuddy',
-              icon: 'sbibuddy',
-            },
-            {
-              name: 'mPesa',
-              description: '',
-              status: 'Request',
-              slug: 'mpesa',
-              icon: 'mpesa',
-            },
-            {
               name: 'Ola Money',
               description: '',
               status: 'Request',
               slug: 'olamoney',
               icon: 'olamoney',
-            },
-            {
-              name: 'PayU Money',
-              description: '',
-              status: 'Request',
-              slug: 'payumoney',
-              icon: 'payumoney',
             },
             {
               name: 'Payzapp',
@@ -744,7 +719,8 @@ let initialState = {
       leafList: [
         {
           header: 'PayLater',
-          docLink: 'https://razorpay.com/docs/payment-gateway/payment-methods/pay-later/',
+          docLink:
+            'https://razorpay.com/docs/payment-gateway/payment-methods/pay-later/',
           list: [
             {
               name: 'Simpl',
@@ -773,36 +749,38 @@ let initialState = {
 function findPath(pathToFind, pg) {
   let str = 'pg';
   let root = pathToFind.shift();
-  let rootIndex = pg.findIndex((_) => _.slug === root);
+  let rootIndex = pg.findIndex(_ => _.slug === root);
 
   if (rootIndex !== -1) {
     str = str + `[${rootIndex}]`;
     if (
       pg[rootIndex].intermediateList &&
       Array.isArray(pg[rootIndex].intermediateList) &&
-      pg[rootIndex].intermediateList.some((_) => _.slug)
+      pg[rootIndex].intermediateList.some(_ => _.slug)
     ) {
       let intermediate = pathToFind.shift();
       let intermediateIndex = pg[rootIndex].intermediateList.findIndex(
-        (_) => _.slug === intermediate,
+        _ => _.slug === intermediate
       );
       str = str + `.intermediateList[${intermediateIndex}]`;
       if (pg[rootIndex].intermediateList[intermediateIndex].leafList) {
         let leafSlug = pathToFind.shift();
         let leafIndex;
-        pg[rootIndex].intermediateList[intermediateIndex].leafList.every((leaf, index) => {
-          leafIndex = leaf.list.findIndex((_) => _.slug === leafSlug);
-          if (leafIndex !== -1) {
-            str = str + `.leafList[${index}].list[${leafIndex}]`;
-            return false;
+        pg[rootIndex].intermediateList[intermediateIndex].leafList.every(
+          (leaf, index) => {
+            leafIndex = leaf.list.findIndex(_ => _.slug === leafSlug);
+            if (leafIndex !== -1) {
+              str = str + `.leafList[${index}].list[${leafIndex}]`;
+              return false;
+            }
+            return true;
           }
-          return true;
-        });
+        );
       }
     } else if (
       pg[rootIndex].intermediateList &&
       Array.isArray(pg[rootIndex].intermediateList) &&
-      !pg[rootIndex].intermediateList.some((_) => _.slug)
+      !pg[rootIndex].intermediateList.some(_ => _.slug)
     ) {
       let leafSlug = pathToFind.shift();
       for (
@@ -812,22 +790,24 @@ function findPath(pathToFind, pg) {
       ) {
         if (pg[rootIndex].intermediateList[intermediateIndex].leafList) {
           let leafIndex;
-          pg[rootIndex].intermediateList[intermediateIndex].leafList.every((leaf, index) => {
-            leafIndex = leaf.list.findIndex((_) => _.slug === leafSlug);
-            if (leafIndex !== -1) {
-              str = str + `.intermediateList[${intermediateIndex}]`;
-              str = str + `.leafList[${index}].list[${leafIndex}]`;
-              return false;
+          pg[rootIndex].intermediateList[intermediateIndex].leafList.every(
+            (leaf, index) => {
+              leafIndex = leaf.list.findIndex(_ => _.slug === leafSlug);
+              if (leafIndex !== -1) {
+                str = str + `.intermediateList[${intermediateIndex}]`;
+                str = str + `.leafList[${index}].list[${leafIndex}]`;
+                return false;
+              }
+              return true;
             }
-            return true;
-          });
+          );
         }
       }
     } else if (!pg[rootIndex].intermediateList) {
       let leafSlug = pathToFind.join('.');
       let leafIndex;
       pg[rootIndex].leafList.every((leaf, index) => {
-        leafIndex = leaf.list.findIndex((_) => _.slug === leafSlug);
+        leafIndex = leaf.list.findIndex(_ => _.slug === leafSlug);
         if (leafIndex !== -1) {
           str = str + `.leafList[${index}].list[${leafIndex}]`;
           return false;
@@ -857,17 +837,21 @@ export default function (state = initialState, action) {
       return set(state, 'loading', false);
     case `${FETCH_ALL_MERCHANT_INSTRUMENTS}::SUCCESS`:
       stateClone = cloneDeep(state);
-      action.payload.data.forEach((s) => {
+      action.payload.data.forEach(s => {
         let pathToFind = s.instrument.replace('pg.', '').split('.');
         let path = findPath(pathToFind, pg);
         if (s.comment && s.status === 'action_required') {
           let rootPath = path.split('.')[0];
-          lodashset(stateClone, `${rootPath}.actionItems["${s.instrument}"]`, s.comment);
+          lodashset(
+            stateClone,
+            `${rootPath}.actionItems["${s.instrument}"]`,
+            s.comment
+          );
         }
         lodashset(
           stateClone,
           `${path}.merchant_instrument_request_id`,
-          s.merchant_instrument_request_id,
+          s.merchant_instrument_request_id
         );
         lodashset(stateClone, `${path}.status`, s.status);
         if (s.status === 'action_required') {
@@ -883,8 +867,10 @@ export default function (state = initialState, action) {
       let pathToUpdate;
       let stateClone = cloneDeep(state);
       stateClone.leafInstrument.leafList.every((leaf, index) => {
-        updatedLeafIndex = leaf.list.findIndex((_) => {
-          return _.slug.includes(action.payload.data.instrument.split('.').pop());
+        updatedLeafIndex = leaf.list.findIndex(_ => {
+          return _.slug.includes(
+            action.payload.data.instrument.split('.').pop()
+          );
         });
         if (updatedLeafIndex !== -1) {
           pathToUpdate = `leafInstrument.leafList[${index}].list[${updatedLeafIndex}]`;
@@ -896,9 +882,13 @@ export default function (state = initialState, action) {
         lodashset(
           stateClone,
           `${pathToUpdate}.merchant_instrument_request_id`,
-          action.payload.data.merchant_instrument_request_id,
+          action.payload.data.merchant_instrument_request_id
         );
-        lodashset(stateClone, `${pathToUpdate}.status`, action.payload.data.status);
+        lodashset(
+          stateClone,
+          `${pathToUpdate}.status`,
+          action.payload.data.status
+        );
         return stateClone;
       }
       return state;
@@ -908,8 +898,10 @@ export default function (state = initialState, action) {
       let pathToCancel;
       stateClone = cloneDeep(state);
       stateClone.leafInstrument.leafList.every((leaf, index) => {
-        cancelLeafIndex = leaf.list.findIndex((_) => {
-          return _.slug.includes(action.payload.data.instrument.split('.').pop());
+        cancelLeafIndex = leaf.list.findIndex(_ => {
+          return _.slug.includes(
+            action.payload.data.instrument.split('.').pop()
+          );
         });
 
         if (cancelLeafIndex !== -1) {
@@ -919,7 +911,11 @@ export default function (state = initialState, action) {
         return true;
       });
       if (cancelLeafIndex !== -1) {
-        lodashset(stateClone, `${pathToCancel}.status`, action.payload.data.status);
+        lodashset(
+          stateClone,
+          `${pathToCancel}.status`,
+          action.payload.data.status
+        );
         return stateClone;
       }
       return state;
