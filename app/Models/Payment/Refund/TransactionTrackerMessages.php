@@ -35,7 +35,8 @@ class TransactionTrackerMessages
     const PRIMARY_REFUND_INITIATED_SLA_NOT_DONE_VOID_REFUND = 'Your Refund has been Delayed';
 
     const SECONDARY_REFUND_PROCESSED_SLA_DONE = 'The refund for your payment done on ' . self::MESSAGE_MERCHANT_NAME .
-    ' for '.self::MESSAGE_AMOUNT.' has been initiated by Razorpay.';
+    ' for '.self::MESSAGE_AMOUNT.' has been processed by Razorpay. ' .
+    'Please contact your issuing bank for further details.';
 
     const SECONDARY_REFUND_FAILED_AGED_SLA_NOT_DONE = 'The refund for the transaction of ' . self::MESSAGE_AMOUNT .
     ' has failed. Our banking partner does not support refund for this payment because it is more than 6 months old. ' .
@@ -43,7 +44,7 @@ class TransactionTrackerMessages
     ' to get it processed.';
 
     const SECONDARY_REFUND_PROCESSED_SLA_NOT_DONE = 'Your refund for ' . self::MESSAGE_AMOUNT .
-    ' has been initiated by the merchant. The amount will be deposited in your bank account by '
+    ' has been initiated by ' . self::MESSAGE_MERCHANT_NAME . '. The amount will be deposited in your bank account by '
     . self::MESSAGE_EXPECTED_DATE;
 
     const SECONDARY_REFUND_INITIATED_SLA_NOT_DONE = 'The refund for ' . self::MESSAGE_AMOUNT .

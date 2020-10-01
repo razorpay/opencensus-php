@@ -511,8 +511,9 @@ class TransactionTrackerTest extends TestCase
         $days2 = $expectedDate2->diffInDays($currentDate, false);
 
         $secondaryMessage1 = 'The refund for the transaction of ' .$refundEntity1->getFormattedAmount() .' has been initiated';
-        $secondaryMessage2 = 'Your refund for '.$refundEntity2->getFormattedAmount().' has been initiated by the merchant. '.
-            'The amount will be deposited in your bank account by ' . $expectedDate2->toFormattedDateString() ;
+        $secondaryMessage2 = 'Your refund for '.$refundEntity2->getFormattedAmount().' has been initiated by ' .
+            $refundEntity2->merchant->getBillingLabel().'. The amount will be deposited in your bank account by ' .
+            $expectedDate2->toFormattedDateString() ;
 
         $this->assertEquals($payment1SecondaryMessage, $response['payments'][0]['payment']['secondary_message']);
         $this->assertEquals($payment2SecondaryMessage, $response['payments'][1]['payment']['secondary_message']);
@@ -837,7 +838,8 @@ class TransactionTrackerTest extends TestCase
 
         $refund['secondary_message'] = 'The refund for your payment done on '.
             $refundEntity->merchant->getBillingLabel().' for '.
-            $refundEntity->getFormattedAmount().' has been initiated by Razorpay.';
+            $refundEntity->getFormattedAmount().' has been processed by Razorpay. '.
+            'Please contact your issuing bank for further details.';
 
         $refunds = [$refund];
 
@@ -889,8 +891,8 @@ class TransactionTrackerTest extends TestCase
         $refundEntity = $this->getDbEntityById('refund', $refund['id']);
 
         $refund['secondary_message'] = 'Your refund for '.
-            $refundEntity->getFormattedAmount().' has been initiated by the merchant. '.
-            'The amount will be deposited in your bank account by ' .
+            $refundEntity->getFormattedAmount().' has been initiated by ' . $refundEntity->merchant->getBillingLabel() .
+            '. The amount will be deposited in your bank account by ' .
             $expectedDate->toFormattedDateString() ;
 
         $refunds = [$refund];
@@ -940,8 +942,9 @@ class TransactionTrackerTest extends TestCase
         $refundEntity = $this->getDbEntityById('refund', $refund['id']);
 
         $refund['secondary_message'] = 'The refund for your payment done on '.
-            $refundEntity->merchant->getBillingLabel().' for '.
-            $refundEntity->getFormattedAmount().' has been initiated by Razorpay.';
+            $refundEntity->merchant->getBillingLabel() .' for '.
+            $refundEntity->getFormattedAmount().' has been processed by Razorpay. '.
+            'Please contact your issuing bank for further details.';
 
         $refunds = [$refund];
 
@@ -995,8 +998,8 @@ class TransactionTrackerTest extends TestCase
         $refundEntity = $this->getDbEntityById('refund', $refund['id']);
 
         $refund['secondary_message'] = 'Your refund for '.
-            $refundEntity->getFormattedAmount().' has been initiated by the merchant. '.
-            'The amount will be deposited in your bank account by ' . $expectedDate->toFormattedDateString() ;
+            $refundEntity->getFormattedAmount().' has been initiated by ' . $refundEntity->merchant->getBillingLabel() .
+            '. '. 'The amount will be deposited in your bank account by ' . $expectedDate->toFormattedDateString();
 
         $refunds = [$refund];
 
@@ -1066,8 +1069,8 @@ class TransactionTrackerTest extends TestCase
 
         $secondaryMessage = 'Your refund for '.
             $refundEntity->getFormattedAmount().
-            ' has been initiated by the merchant. The amount will be deposited in your bank account by '.
-            $expectedDate->toFormattedDateString();
+            ' has been initiated by ' . $refundEntity->merchant->getBillingLabel() .
+            '. The amount will be deposited in your bank account by '. $expectedDate->toFormattedDateString();
 
         $this->testData[__FUNCTION__]['request']['content']['id'] = '922114139332';
 
