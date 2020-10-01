@@ -395,6 +395,13 @@ class Service extends Base\Service
         return false;
     }
 
+    public function getAuthenticateUrl($id)
+    {
+        return [
+            'url' => $this->app['api.route']->getUrl('payment_redirect_to_authenticate_get', ['id' => $id])
+        ];
+    }
+
     public function redirectToAuthorize($id)
     {
         $traceData = ['track_id' => $id];

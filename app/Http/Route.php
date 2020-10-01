@@ -76,6 +76,7 @@ class Route
         'payment_redirect_to_authorize_get'        => ['get',      'payments/{id}/authorize',                        'PaymentCreateController@postRedirectToAuthorize'                   ],
         'payment_redirect_to_authorize_post'       => ['post',     'payments/{id}/authorize',                        'PaymentCreateController@postRedirectToAuthorize'                   ],
         'payment_redirect_to_authenticate_get'     => ['get',      'payments/{id}/authenticate',                     'PaymentCreateController@postRedirectToAuthorize'                   ],
+        'payment_get_authenticate_url'             => ['get',      'payments/{id}/authenticate/url',                 'PaymentCreateController@getAutenticateUrl'                         ],
         'payment_redirect_to_authenticate_post'    => ['post',     'payments/{id}/authenticate',                     'PaymentCreateController@postRedirectToAuthorize'                   ],
         'payment_callback_ajax_with_key_get'       => ['get',      'payments/{id}/callback/ajax/{hash}/{key}',       'PaymentCreateController@postAJAXCallback'                          ],
         'payment_callback_post'                    => ['post',     'payments/{x_entity_id}/callback/{hash}',         'PaymentCreateController@postCallback'                              ],
@@ -2659,7 +2660,8 @@ class Route
         'payment_meta_search',
         'bulk_create_fund_accounts',
         'add_ondemand_pricing_if_absent',
-        'gateway_downtimes_archive'
+        'gateway_downtimes_archive',
+        'payment_get_authenticate_url',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -5014,7 +5016,8 @@ class Route
             'payment_verify_google_pay_cards',
             'webhook_fetch',
             'webhook_fetch_multiple',
-            'payment_meta_search'
+            'payment_meta_search',
+            'payment_get_authenticate_url'
         ],
 
         'cron' => [

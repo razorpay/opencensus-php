@@ -7287,7 +7287,7 @@ trait Authorize
             // encrypt with key
             $encryptedPayload = Crypt::encrypt($payload);
 
-            $trackId = Base\UniqueIdEntity::generateUniqueId();
+            $trackId = $payment->getId();
 
             $key = Payment\Entity::getRedirectToAuthorizeTrackIdKey($trackId);
 

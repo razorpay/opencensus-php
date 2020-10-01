@@ -543,6 +543,13 @@ class PaymentCreateController extends Controller
         return $response;
     }
 
+    public function getAuthenticateUrl($id)
+    {
+      $data = $this->service(E::PAYMENT)->getAuthenticateUrl($id);
+
+      return $data;
+    }
+
     protected function returnCallbackResponse($data)
     {
         if (isset($data['type']))
