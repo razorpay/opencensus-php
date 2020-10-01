@@ -156,24 +156,6 @@ class Processor extends Base\Core
 
            (new Core)->create($params, $this->merchant, $balance);
         }
-
-        if($balance->isTypePrimary() === true)
-        {
-            try
-            {
-                (new PdfGenerator)->generatePgInvoice($this->merchant, $this->month, $this->year);
-            }
-            catch(\Throwable $e)
-            {
-                $this->trace->traceException(
-                    $e,
-                    Trace::ERROR,
-                    TraceCode::MERCHANT_INVOICE_PDF_CREATION_FAILED,
-                    [
-                        'merchant_id' => $this->merchant->getId(),
-                    ]);
-            }
-        }
     }
 
     protected function calculateFeesForPrimaryBalance(array & $details)

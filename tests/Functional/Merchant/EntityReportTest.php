@@ -298,7 +298,7 @@ class EntityReportTest extends TestCase
 
     public function testInvoiceReportForMerchantWithoutGstinWithBusinessState()
     {
-        $this->mockRazorx();
+        $this->mockRazorx('off');
 
         $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
 
@@ -329,24 +329,52 @@ class EntityReportTest extends TestCase
 
         $invoiceEntries = $this->fetchInvoice($input);
 
-        $file = $this->getLastEntity('file_store', true);
-
-        $this->assertEquals('merchant_invoice', $file['type']);
-        $this->assertEquals('application/pdf', $file['mime']);
-        $this->assertEquals('merchant_pg_invoices/2019/7/10000000000000', $file['name']);
-        $this->assertEquals('invoices', $file['bucket']);
-        $this->assertEquals('10000000000000', $file['merchant_id']);
-        $this->assertEquals('s3', $file['store']);
-
-        $this->assertContains($file['location'], $invoiceEntries['signed_url']);
-        $this->assertEquals(NULL, $invoiceEntries['error']);
+        $this->assertTestResponse($invoiceEntries);
 
         Carbon::setTestNow();
     }
 
     public function testInvoiceReportForMerchantWithoutGstinRegisteredInKarnataka()
     {
-        $this->mockRazorx();
+        $this->mockRazorx('off');
+
+        $oldDateTime = Carbon::create(2019, 5, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->fixtures->create('merchant_invoice',
+            [
+                'type'       => Invoice\Type::CARD_LTE_2K,
+                'gstin'      => null,
+                'balance_id' => 10000000000000,
+                'month'      => 5,
+                'year'       => 2019
+            ]);
+
+        $md1 = $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id'               => '10000000000000',
+                'gstin'                     => null,
+                'business_registered_state' => 'Karnataka',
+            ]);
+
+        $input = [
+            'year'      => $oldDateTime->year,
+            'month'     => $oldDateTime->month,
+            'format'    => 'new',
+        ];
+
+        $invoiceEntries = $this->fetchInvoice($input);
+
+        $this->assertTestResponse($invoiceEntries);
+
+        Carbon::setTestNow();
+    }
+
+    public function testInvoiceReportForMerchantWithoutGstinRegisteredInKarnatakaWithNewFlow()
+    {
+        $this->mockRazorx('on');
 
         $oldDateTime = Carbon::create(2019, 5, 21, 12, 23, 41, Timezone::IST);
 
@@ -388,11 +416,13 @@ class EntityReportTest extends TestCase
 
         $this->assertContains($file['location'], $invoiceEntries['signed_url']);
         $this->assertEquals(NULL, $invoiceEntries['error']);
+
+        Carbon::setTestNow();
     }
 
     public function testInvoiceReportForMerchantWhenThereIsNoInvoiceGenerated()
     {
-        $this->mockRazorx();
+        $this->mockRazorx('on');
 
         $oldDateTime = Carbon::create(2019, 5, 21, 12, 23, 41, Timezone::IST);
 
@@ -417,11 +447,13 @@ class EntityReportTest extends TestCase
         $this->assertEquals(NULL, $invoiceEntries['signed_url']);
         $this->assertEquals('Invoice not generated yet for merchant 10000000000000 for year 2019 and month 5',
             $invoiceEntries['error']);
+
+        Carbon::setTestNow();
     }
 
     public function testInvoiceReportForMerchantWhenTheMerchantInvoiceOfZeroAmountIsGenerated()
     {
-        $this->mockRazorx();
+        $this->mockRazorx('on');
 
         $oldDateTime = Carbon::create(2019, 5, 21, 12, 23, 41, Timezone::IST);
 
@@ -457,6 +489,8 @@ class EntityReportTest extends TestCase
         $this->assertEquals(NULL, $invoiceEntries['signed_url']);
         $this->assertEquals('Invoice not generated yet for merchant 10000000000000 for year 2019 and month 5 since the amount is zero',
             $invoiceEntries['error']);
+
+        Carbon::setTestNow();
     }
 
     public function testPaymentReportWithoutAcquirerData()
@@ -650,7 +684,7 @@ class EntityReportTest extends TestCase
         assert($reports['count'] === 1);
     }
 
-    private function mockRazorx()
+    private function mockRazorx($status)
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
@@ -661,12 +695,13 @@ class EntityReportTest extends TestCase
 
         $this->app->razorx->method('getTreatment')
             ->will($this->returnCallback(
-                function ($mid, $feature, $mode)
+                function ($mid, $feature, $mode) use ($status)
                 {
                     if ($feature === 'pg_persistent_invoice')
                     {
-                        return 'on';
+                        return $status;
                     }
+
                     return 'off';
                 }));
     }
