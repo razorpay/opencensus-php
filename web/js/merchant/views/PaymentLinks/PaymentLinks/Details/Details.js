@@ -108,6 +108,20 @@ export default (props) => {
           <div class="SliderPanel__Body">
             <div class="panel-body">
               <div class="list-group details-row-container">
+                {user.isPaymentLinkCreationV2Enabled && (
+                  <EntityDetailRow label="Link Type">
+                    {paymentlink.upi_link ? (
+                      <>
+                        <i class="i i-bank m-r" /> Standard Payment Link
+                      </>
+                    ) : (
+                      <>
+                        <i class="i i-upi m-r" /> UPI Payment Link
+                      </>
+                    )}
+                  </EntityDetailRow>
+                )}
+
                 <EntityDetailRow
                   label="Payment For"
                   pairClass="description"

@@ -584,6 +584,13 @@ export default class User {
     return this.getExpStatus('batch_service_refund_migration');
   }
 
+  get isPaymentLinkCreationV2Enabled() {
+    return (
+      (this.getExpStatus('payment_link__create_v2_upi') && this.isPaymentlinksV2Enabled) ||
+      (this.getExpStatus('payment_link__create_v2_upi') && this.isPaymentlinksV2CompatEnabled)
+    );
+  }
+
   get isSellerAppRole() {
     const userRole = this.userRole;
     return [rolesList.SELLERAPP, rolesList.SELLERAPP_PLUS].indexOf(userRole) > -1;

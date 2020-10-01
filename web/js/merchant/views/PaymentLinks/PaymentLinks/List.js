@@ -1,6 +1,8 @@
 import { connect } from 'react-redux';
 import { withRouter, NavLink, Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
+import { Field } from 'redux-form';
+
 import HeaderAction from 'common/ui/HeaderAction';
 import Pager from 'common/ui/Pager';
 import Alert from 'common/ui/Forms/Alert';
@@ -180,6 +182,7 @@ export default class PaymentLinksContainer extends ListContainer {
           isInttCurrenciesEnabled={user.isInttCurrenciesEnabled}
           trackSearchFilterForInternational={trackSearchFilterForInternational}
           isPaymentlinksV2Enabled={user.isPaymentlinksV2Enabled}
+          extraFields={getExtraFields(user)}
         />
 
         <Alert type={status.type} message={status.message} onCloseClick={this.onAlertCloseClick} />
@@ -226,3 +229,20 @@ const EmptyComponent = () => (
     }
   />
 );
+
+const getExtraFields = (user) => {
+  if (user.isPaymentLinkCreationV2Enabled) {
+    return (
+      <div class="form-group list-filter-item">
+        <label>Payment Link Type</label>
+        <Field name="upi_link" component="select" class="form-control input-sm">
+          <option value="">All Types</option>
+          <option value={false}>Standard Payment Link</option>
+          <option value={true}>UPI Payment Link</option>
+        </Field>
+      </div>
+    );
+  }
+
+  return;
+};

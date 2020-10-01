@@ -13,11 +13,9 @@ const PL_CANCEL = 'PL_CANCEL';
 const SMS_SEND = 'SMS_SEND';
 const EMAIL_SEND = 'EMAIL_SEND';
 
-export const fetchPLCount = data => {
+export const fetchPLCount = (data) => {
   const user = store.getState().session.user;
-  const url = user.isPaymentlinksV2Enabled
-    ? 'payment_links_count'
-    : 'invoices-count';
+  const url = user.isPaymentlinksV2Enabled ? 'payment_links_count' : 'invoices-count';
 
   const reqPayload = {
     url,
@@ -30,7 +28,7 @@ export const fetchPLCount = data => {
   return merchantFetch(reqPayload);
 };
 
-export const fetchPLRemindersList = id => {
+export const fetchPLRemindersList = (id) => {
   const user = store.getState().session.user;
   const url = user.isPaymentlinksV2Enabled
     ? `payment_links/${id}/reminders/next_run`
@@ -40,8 +38,13 @@ export const fetchPLRemindersList = id => {
     url,
   });
 };
+export const fetchPaymentLinkV2Details = (paymentLinkId) => {
+  return merchantFetch({
+    url: `payment_links/${paymentLinkId}`,
+  });
+};
 
-export const fetchPaymentLinkDetails = paymentLinkId => {
+export const fetchPaymentLinkDetails = (paymentLinkId) => {
   let payload;
   const user = store.getState().session.user;
 
@@ -50,7 +53,7 @@ export const fetchPaymentLinkDetails = paymentLinkId => {
       url: `payment_links/${paymentLinkId}`,
     };
 
-    payload = merchantFetch(reqPayload).then(resp => {
+    payload = merchantFetch(reqPayload).then((resp) => {
       if (resp.data) {
         const userId = resp.data.user_id;
 
@@ -60,14 +63,14 @@ export const fetchPaymentLinkDetails = paymentLinkId => {
 
         if (userId) {
           return fetchUserDetailsById(userId)
-            .then(userResp => {
+            .then((userResp) => {
               if (userResp.data) {
                 paymentLink.user = userResp.data;
               }
 
               return transformPLDetails_NewToOld(paymentLink);
             })
-            .catch(err => {
+            .catch((err) => {
               return transformPLDetails_NewToOld(paymentLink);
             });
         }
@@ -81,12 +84,8 @@ export const fetchPaymentLinkDetails = paymentLinkId => {
     let paymentlink = new Invoice();
 
     payload = paymentlink
-      .fetch(
-        paymentLinkId,
-        {},
-        { expand: ['payments', 'user', 'reminder_status'] }
-      )
-      .then(data => {
+      .fetch(paymentLinkId, {}, { expand: ['payments', 'user', 'reminder_status'] })
+      .then((data) => {
         if (data) {
           const userId = data.user_id;
 
@@ -96,14 +95,14 @@ export const fetchPaymentLinkDetails = paymentLinkId => {
 
           if (userId) {
             return fetchUserDetailsById(userId)
-              .then(userResp => {
+              .then((userResp) => {
                 if (userResp.data) {
                   paymentLink.user = userResp.data;
                 }
 
                 return paymentLink;
               })
-              .catch(err => {
+              .catch((err) => {
                 return paymentLink;
               });
           }
@@ -131,7 +130,7 @@ export const notifyCustomer = (paymentLink, medium) => {
       method: 'post',
     };
 
-    payload = merchantFetch(reqPayload).then(resp => {
+    payload = merchantFetch(reqPayload).then((resp) => {
       if (resp.data) {
         return transformPLDetails_NewToOld(resp.data);
       }
@@ -150,7 +149,7 @@ export const notifyCustomer = (paymentLink, medium) => {
   };
 };
 
-export const cancelPaymentLink = paymentLink => {
+export const cancelPaymentLink = (paymentLink) => {
   let payload;
   const user = store.getState().session.user;
 
@@ -160,7 +159,7 @@ export const cancelPaymentLink = paymentLink => {
       method: 'post',
     };
 
-    payload = merchantFetch(reqPayload).then(resp => {
+    payload = merchantFetch(reqPayload).then((resp) => {
       if (resp.data) {
         return transformPLDetails_NewToOld(resp.data);
       }
@@ -190,7 +189,7 @@ let initialState = {
   error: null,
 };
 
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   switch (action.type) {
     case `${PL_FETCH}::PENDING`:
       return set(state, 'loading', true);

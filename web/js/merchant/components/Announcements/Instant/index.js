@@ -28,13 +28,13 @@ export default class InstantActivationAnnouncements extends Component {
       if (user.instantActivation.isWhitelistFlow && !user.isAccepted && mode === 'live') {
         if (payments && payments.items.length === 0) {
           title = 'Accept Payments';
-            content = (
-              <span>
-                You can start using our products to accept payments right away. Meanwhile we will
-                await your KYC details to enable settlements for your account. &nbsp;
-                <Link to="/activation">Fill KYC Form</Link>
-              </span>
-            );
+          content = (
+            <span>
+              You can start using our products to accept payments right away. Meanwhile we will
+              await your KYC details to enable settlements for your account. &nbsp;
+              <Link to="/activation">Fill KYC Form</Link>
+            </span>
+          );
         } else if (payments && payments.items.length > 0) {
           title = 'Enable Settlements';
           content = (
@@ -72,9 +72,9 @@ export default class InstantActivationAnnouncements extends Component {
           title = 'Accept Payments';
           content = (
             <span>
-              Your PAN was successfully verified and you can start accepting domestic payments
-              now. Meanwhile we will await your KYC details to enable settlements for your
-              account. &nbsp;
+              Your PAN was successfully verified and you can start accepting domestic payments now.
+              Meanwhile we will await your KYC details to enable settlements for your account.
+              &nbsp;
               <Link to="/activation">Fill KYC Form</Link>
             </span>
           );

@@ -59,36 +59,22 @@ export default ({
       {label === 'Payment Link' && (
         <div class="form-group list-filter-item">
           <label>Batch Id</label>
-          <Field
-            name="batch_id"
-            component="input"
-            class="form-control input-sm"
-          />
+          <Field name="batch_id" component="input" class="form-control input-sm" />
         </div>
       )}
       <div class="form-group list-filter-item">
-        <label>
-          {isPaymentlinksV2Enabled ? 'Reference Id' : 'Receipt No.'}
-        </label>
+        <label>{isPaymentlinksV2Enabled ? 'Reference Id' : 'Receipt No.'}</label>
         <Field name="receipt" component="input" class="form-control input-sm" />
       </div>
 
       <div class="form-group list-filter-item">
         <label>Customer Contact</label>
-        <Field
-          name="customer_contact"
-          component="input"
-          class="form-control input-sm"
-        />
+        <Field name="customer_contact" component="input" class="form-control input-sm" />
       </div>
 
       <div class="form-group list-filter-item">
         <label>Customer Email</label>
-        <Field
-          name="customer_email"
-          component="input"
-          class="form-control input-sm"
-        />
+        <Field name="customer_email" component="input" class="form-control input-sm" />
       </div>
 
       <div class="form-group list-filter-item">
@@ -111,17 +97,15 @@ export default ({
       {isInttCurrenciesEnabled && (
         <div class="form-group list-filter-item">
           <label>Currency Type</label>
-          <Field
-            name="international"
-            component="select"
-            class="form-control input-sm"
-          >
+          <Field name="international" component="select" class="form-control input-sm">
             <option value="">All Currencies</option>
             <option value="0">Indian</option>
             <option value="1">International</option>
           </Field>
         </div>
       )}
+
+      {otherProps.extraFields}
     </ListFilter>
   );
 };

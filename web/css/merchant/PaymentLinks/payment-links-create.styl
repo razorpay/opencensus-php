@@ -1,0 +1,128 @@
+.Modal-mask.Modal-mask--PaymentLinks--CreateV2--LinkTypeSelection
+  background-color: rgba(0,0,0,0.8)
+  z-index: 999999 // Has to be highest
+
+  .back-btn
+    position: absolute
+    left: 20px
+    top: 16px
+    color: #fff
+    z-index: 2
+    padding: 0
+    margin: 0
+    font-weight: normal
+    height: auto
+    font-size: 16px
+
+    &:hover
+      opacity: 0.84
+
+  .Modal-container
+    overflow: hidden
+    top: 0
+    left: 0
+    right: 0
+    transform: none
+    background: transparent
+
+  .Modal-body
+    margin-top: 80px
+
+  .heading
+    color: #fff
+
+  .slide-in
+    animation: 0.35s 0.1s slide-in cubic-bezier(0.16, 1.13, 1, 1) forwards
+    transform: translateX(240px)
+    opacity: 0
+
+@keyframes slide-in
+  50%
+    opacity: 0
+
+  100%
+    transform: translateX(0)
+    opacity: 1
+
+.PaymentLinks--CreateV2--LinkTypeSelection
+  text-align: center
+
+  .heading
+    font-size: 24px
+    font-weight: bold
+
+.PaymentLinks--CreateV2 .StandAloneContainer
+  .TemplateCard-list
+    width: auto
+
+$formHeight = 568px
+
+.Modal-container--PaymentLink--CreateV2
+  width: 90%
+  max-width: 400px
+  height: $formHeight
+
+.StandAloneContainer
+  .PaymentLinks--CreateV2-wizard
+    max-height: $formHeight
+    background: white
+    position: relative
+    height: 80vh
+    max-width: 400px
+
+.PaymentLinks--CreateV2-wizard
+  .title
+    padding: 24px
+    font-weight: 600
+    font-size: 18px
+    position: absolute
+    top: 0
+    left: 0
+    background: white
+    z-index: 1
+    width: 100%
+
+  main
+    padding: 70px 24px 132px 24px
+    overflow: auto
+
+  footer
+    position: absolute
+    left: 0
+    right: 0
+    bottom: 0
+    padding: 24px
+    background: #F6F6F6
+    border-top: 1px solid #e0e0e0
+    text-align: right
+
+    .Button
+      width: 168px
+      padding: 9px 12px
+
+      &:first-child
+        margin: 0 16px 0 0
+
+      &:last-child
+        margin: 0
+
+  .Form
+    height: $formHeight;
+    overflow-y: scroll
+    .amount
+      margin-top: 0
+
+  .customer-details
+    .Input .Input-content
+      margin-right: 10px
+
+    .Input:last-child .Input-content
+        margin-right: 0
+
+  .customer-notify 
+    width: 100%
+    > .Input-content
+      display: table-row
+
+    .Input--checkbox:last-child
+      padding-left: 8px

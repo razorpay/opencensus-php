@@ -7,7 +7,7 @@ import {
 
 import SettlementDetails from 'merchant/views/Settlements/Details';
 import PaymentLinkDetails from 'merchant/views/PaymentLinks/PaymentLinks/Details';
-import PaymentLinkCreate from 'merchant/views/PaymentLinks/PaymentLinks/Create/index';
+import PaymentLinkCreate from 'merchant/views/PaymentLinks/PaymentLinks/New.js';
 import PaymentPagesWysiwyg from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg';
 import PaymentButtonCreate from 'merchant/views/PaymentButton/PaymentButton/Create';
 import SubscriptionButtonCreate from 'merchant/views/PaymentButton/SubscriptionButton/Create';

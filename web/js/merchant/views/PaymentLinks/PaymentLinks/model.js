@@ -1,19 +1,16 @@
 import { merchantFetch } from 'merchant/utils/ajax';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
-import {
-  transformCreatePLPayload_OldToNew,
-  transformPLDetails_NewToOld,
-} from './js/transformer';
+import { transformCreatePLPayload_OldToNew, transformPLDetails_NewToOld } from './js/transformer';
 import { trackFormSubmit } from './ga';
 
 import store from 'merchant/store';
 
 /*
-*
-* Specific Api Actions of Payment Links
-*
-* */
+ *
+ * Specific Api Actions of Payment Links
+ *
+ * */
 
 export function createPaymentLink(payload) {
   let reqPayload = { ...payload };
@@ -21,18 +18,14 @@ export function createPaymentLink(payload) {
 
   reqPayload.amount = Math.round(reqPayload.amount * 100);
 
-  reqPayload.expire_by &&
-    (reqPayload.expire_by = Math.floor(reqPayload.expire_by / 1000));
+  reqPayload.expire_by && (reqPayload.expire_by = Math.floor(reqPayload.expire_by / 1000));
 
   if (reqPayload.description) {
     // It is required field. Safe check.
     reqPayload.description = reqPayload.description.trim();
   }
 
-  if (
-    reqPayload.first_payment_min_amount &&
-    Number(reqPayload.first_payment_min_amount) !== 0
-  ) {
+  if (reqPayload.first_payment_min_amount && Number(reqPayload.first_payment_min_amount) !== 0) {
     reqPayload.first_payment_min_amount *= 100;
   } else {
     delete reqPayload.first_payment_min_amount;
@@ -99,7 +92,7 @@ export function createPaymentLink(payload) {
     headers: {
       'content-type': 'application/json',
     },
-  }).then(resp => {
+  }).then((resp) => {
     // Transform payload to new format as per
 
     const _resp = user.isPaymentlinksV2Enabled
@@ -115,8 +108,7 @@ export function editPaymentLink(id, payload) {
 
   delete reqPayload.currency;
 
-  reqPayload.expire_by &&
-    (reqPayload.expire_by = Math.floor(reqPayload.expire_by / 1000));
+  reqPayload.expire_by && (reqPayload.expire_by = Math.floor(reqPayload.expire_by / 1000));
 
   const user = store.getState().session.user;
 
@@ -125,9 +117,7 @@ export function editPaymentLink(id, payload) {
     reqPayload = transformCreatePLPayload_OldToNew(reqPayload);
   }
 
-  const url = user.isPaymentlinksV2Enabled
-    ? `payment_links/${id}`
-    : `invoices/${id}`;
+  const url = user.isPaymentlinksV2Enabled ? `payment_links/${id}` : `invoices/${id}`;
 
   return merchantFetch({
     url,
@@ -136,7 +126,7 @@ export function editPaymentLink(id, payload) {
     headers: {
       'content-type': 'application/json',
     },
-  }).then(resp => {
+  }).then((resp) => {
     // Transform payload to new format as per
 
     if (resp.data && user.isPaymentlinksV2Enabled) {
@@ -146,5 +136,87 @@ export function editPaymentLink(id, payload) {
     }
 
     return resp;
+  });
+}
+
+export function createPaymentLinkV2(payload) {
+  let reqPayload = { ...payload };
+
+  // Amount
+  reqPayload.amount = Math.round(reqPayload.amount * 100);
+  if (!reqPayload.currency) {
+    reqPayload.currency = 'INR';
+  }
+
+  // Payment For
+  if (reqPayload.description) {
+    reqPayload.description = reqPayload.description.trim();
+  }
+
+  // Customer details
+  const customer = {};
+  if (reqPayload.contact) {
+    customer.contact = reqPayload.contact;
+  }
+
+  delete reqPayload.contact;
+
+  if (reqPayload.email) {
+    customer.email = reqPayload.email;
+  }
+
+  delete reqPayload.email;
+
+  if (Object.keys(customer).length) {
+    reqPayload.customer = customer;
+  } else {
+    delete reqPayload.reminder_enable;
+  }
+
+  // Notify
+  const notify = {};
+  if (reqPayload.email_notify) {
+    notify.email = reqPayload.email_notify === '1';
+  }
+
+  delete reqPayload.email_notify;
+
+  if (reqPayload.sms_notify) {
+    notify.sms = reqPayload.sms_notify === '1';
+  }
+
+  delete reqPayload.sms_notify;
+
+  if (Object.keys(notify).length) {
+    reqPayload.notify = notify;
+  }
+
+  // Link Expire by
+  if (reqPayload.expire_by) {
+    reqPayload.expire_by = Math.floor(reqPayload.expire_by / 1000);
+  }
+
+  // Reminders
+  if (reqPayload.hasOwnProperty('reminder_enable')) {
+    reqPayload.reminder_enable = reqPayload.reminder_enable === '1';
+  }
+
+  // Partial Payments
+  if (reqPayload.hasOwnProperty('accept_partial')) {
+    reqPayload.accept_partial = reqPayload.accept_partial === '1';
+  }
+
+  return merchantFetch({
+    url: 'payment_links',
+    method: 'post',
+    data: reqPayload,
+    headers: {
+      'content-type': 'application/json',
+    },
+  }).then((resp) => {
+    return {
+      ...resp,
+      data: transformPLDetails_NewToOld(resp.data),
+    };
   });
 }

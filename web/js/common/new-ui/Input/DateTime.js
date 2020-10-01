@@ -45,11 +45,15 @@ export default class DateTime extends React.Component {
       isInline,
       description,
       defaultValue = moment(value),
+      disabled,
+      autoRender,
+      dateTimeInputClass,
     } = this.props;
     return (
       <React.Fragment>
         {!required && (
           <Input.Check
+            autoRender={autoRender}
             label={label}
             className={className}
             fieldLabel={checkboxFieldLabel}
@@ -73,6 +77,7 @@ export default class DateTime extends React.Component {
                 hasNoDate: e.target.checked,
               });
             }}
+            disabled={disabled}
           />
         )}
         <Input.Group
@@ -81,7 +86,9 @@ export default class DateTime extends React.Component {
             inputClass(this),
             !required && 'InputGroup--near',
             isInline ? 'InputGroup--inline' : 'Input--half_big',
+            dateTimeInputClass,
           )}
+          disabled={disabled}
         >
           <div class="Input-content" style={{ marginTop: required ? -8 : 0 }}>
             <Input.ToCalendar
