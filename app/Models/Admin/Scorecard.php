@@ -65,6 +65,8 @@ class Scorecard extends Base\Core
         {
             $to = $from + 86400*5;
 
+            $to = min($to, $end);
+
             $volume = $this->repo->payment->getPaymentVolumeBetweenTimestamp($from, $to);
 
             $monthlyAmountVol += (int) $volume['amount'];
