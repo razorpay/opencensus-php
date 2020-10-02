@@ -305,7 +305,8 @@ trait TestsBusinessBanking
                                            string $defaultBehaviour = 'off',
                                            string $payoutToAmexCards = 'on',
                                            string $payoutToPrepaidCards = 'on',
-                                           string $createPayoutWithoutTxn = 'off')
+                                           string $createPayoutWithoutTxn = 'off',
+                                           string $razorpayXAclDenyUnauthorised = 'on')
     {
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -324,7 +325,8 @@ trait TestsBusinessBanking
                     $defaultBehaviour,
                     $payoutToAmexCards,
                     $payoutToPrepaidCards,
-                    $createPayoutWithoutTxn
+                    $createPayoutWithoutTxn,
+                    $razorpayXAclDenyUnauthorised
                 )
                 {
                     if (ends_with($feature, 'mode_payout_filter'))
@@ -356,6 +358,11 @@ trait TestsBusinessBanking
                         ($createPayoutWithoutTxn === 'on'))
                     {
                         return "on";
+                    }
+
+                    if ($feature === 'razorpay_x_acl_deny_unauthorised')
+                    {
+                        return strtolower($razorpayXAclDenyUnauthorised);
                     }
 
                     return strtolower($defaultBehaviour);

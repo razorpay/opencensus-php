@@ -6681,9 +6681,13 @@ class PayoutTest extends TestCase
         $this->assertEquals($this->getDefaultFreePayoutsCount($balance), $counter->getFreePayoutsConsumed());
     }
 
-    public function testGetFreePayoutsAttributesOnProxyAuth()
+    public function testGetFreePayoutsAttributesOnProxyAuthOwnerUser()
     {
+        $this->mockRazorxTreatment();
+
         $this->ba->proxyAuth();
+
+        $this->ba->addXOriginHeader();
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -6706,7 +6710,7 @@ class PayoutTest extends TestCase
     {
         $this->ba->adminAuth();
 
-        $testData = $this->testData['testGetFreePayoutsAttributesOnProxyAuth'];
+        $testData = $this->testData['testGetFreePayoutsAttributesOnProxyAuthOwnerUser'];
 
         $balanceId = $this->bankingBalance->getId();
 
@@ -6717,6 +6721,55 @@ class PayoutTest extends TestCase
         $testData['response']['content']['free_payouts_consumed'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
 
         $testData['response']['content']['free_payouts_supported_modes'] = FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testGetFreePayoutsAttributesOnProxyAuthAdminUser()
+    {
+        $this->mockRazorxTreatment();
+
+        $adminRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'admin');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $adminRoleUser->getId());
+
+        $this->ba->addXOriginHeader();
+
+        $testData = $this->testData['testGetFreePayoutsAttributesOnProxyAuthOwnerUser'];
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $testData['request']['url'] = '/payouts/' . $balanceId . '/free_payout';
+
+        $testData['response']['content']['free_payouts_count'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
+
+        $testData['response']['content']['free_payouts_consumed'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
+
+        $testData['response']['content']['free_payouts_supported_modes'] = FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    // This test fails as the route is supported only for owner and admin roles.
+    public function testGetFreePayoutsAttributesOnProxyAuthViewOnlyUser()
+    {
+        $this->mockRazorxTreatment();
+
+        $viewOnlyRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'view_only');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $viewOnlyRoleUser->getId());
+
+        $this->ba->addXOriginHeader();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $testData['request']['url'] = '/payouts/' . $balanceId . '/free_payout';
 
         $this->testData[__FUNCTION__] = $testData;
 

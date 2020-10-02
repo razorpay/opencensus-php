@@ -7286,13 +7286,29 @@ return [
         ],
     ],
 
-    'testGetFreePayoutsAttributesOnProxyAuth' => [
+    'testGetFreePayoutsAttributesOnProxyAuthOwnerUser' => [
         'request'  => [
             'method'  => 'GET',
             'url'     => '/payouts/{balance_id}/free_payout',
         ],
         'response' => [
             'content' => [],
+        ],
+    ],
+
+    'testGetFreePayoutsAttributesOnProxyAuthViewOnlyUser' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/payouts/{balance_id}/free_payout',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Authentication failed',
+                ],
+            ],
+            'status_code' => 400,
         ],
     ],
 

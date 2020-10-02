@@ -4784,6 +4784,8 @@ class Route
         'tax_payments_edit'                            => Permission::PAY_TAX_PAYMENTS,
         'salesforce_event'                             => '*',
         'salesforce_opportunity_details'               => '*',
+
+        'get_free_payouts_attributes'                  => Permission::MERCHANT_VIEW_FREE_PAYOUTS_ATTRIBUTES,
     ];
 
     public static $direct = [

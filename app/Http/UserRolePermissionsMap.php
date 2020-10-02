@@ -106,6 +106,7 @@ class UserRolePermissionsMap
                  Permission::PAY_TAX_PAYMENTS,
                  Permission::UPDATE_TAX_PAYMENT_SETTINGS,
                  Permission::VIEW_TAX_PAYMENTS,
+                 Permission::MERCHANT_VIEW_FREE_PAYOUTS_ATTRIBUTES,
              ],
 
              BankingRole::ADMIN => [
@@ -188,6 +189,7 @@ class UserRolePermissionsMap
                  Permission::PAY_TAX_PAYMENTS,
                  Permission::UPDATE_TAX_PAYMENT_SETTINGS,
                  Permission::VIEW_TAX_PAYMENTS,
+                 Permission::MERCHANT_VIEW_FREE_PAYOUTS_ATTRIBUTES,
              ],
 
              BankingRole::FINANCE_L1 => [

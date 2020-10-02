@@ -472,6 +472,7 @@ class Name
     const PAYOUT_STATUS_UPDATE_MANUALLY       = 'payout_status_update_manually';
 
     const BANKING_ACCOUNT_STATEMENT_RUN_MANUALLY = 'banking_account_statement_run_manually';
+
     // Update Free Payout Permission
     const UPDATE_FREE_PAYOUTS_ATTRIBUTES      = 'update_free_payouts_attributes';
 
@@ -483,6 +484,9 @@ class Name
     const DEBUG_TRANSFERS_ROUTES              = 'debug_transfers_routes';
 
     const DEBUG_VIRTUAL_ACCOUNT               = 'debug_virtual_account';
+
+    // Permission for merchants to view free payouts attributes
+    const MERCHANT_VIEW_FREE_PAYOUTS_ATTRIBUTES = 'merchant_view_free_payouts_attributes';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,

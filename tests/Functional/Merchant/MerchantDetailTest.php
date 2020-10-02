@@ -1176,7 +1176,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
-        $this->ba->proxyAuth('rzp_live_'.$merchantDetail['merchant_id']);
+        $this->ba->proxyAuth('rzp_live_'.$merchantDetail['merchant_id'], $user->getId());
 
         $this->startTest();
 
