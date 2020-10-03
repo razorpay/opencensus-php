@@ -41,7 +41,7 @@ class UpiAirtelReconTest extends TestCase
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
-        $rrn = '734122607521';
+        $rrn = '22712135190';
 
         $this->makeUpiAirtelPaymentsSince($createdAt, $rrn, 1);
 
@@ -83,7 +83,7 @@ class UpiAirtelReconTest extends TestCase
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
-        $rrn = '734122607521';
+        $rrn = '22712135190';
 
         $this->makeUpiAirtelPaymentsSince($createdAt, $rrn, 1);
 
@@ -131,7 +131,7 @@ class UpiAirtelReconTest extends TestCase
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
-        $rrn = '734122607521';
+        $rrn = '22712135190';
 
         $this->makeUpiAirtelPaymentsSince($createdAt, $rrn, 1);
 
@@ -276,6 +276,10 @@ class UpiAirtelReconTest extends TestCase
         for ($i = 0; $i < $count; $i++)
         {
             $payments[] = $this->doUpiAirtelPayment();
+
+            $upiEntity = $this->getDbLastEntity('upi');
+
+            $this->fixtures->edit('upi', $upiEntity['id'], ['npci_reference_id' => $rrn, 'gateway' => 'upi_airtel']);
         }
 
         foreach ($payments as $payment)
@@ -304,6 +308,8 @@ class UpiAirtelReconTest extends TestCase
         $transaction = $this->fixtures->create('transaction', ['entity_id' => $payment->getId(), 'merchant_id' => '10000000000000']);
 
         $this->fixtures->edit('payment', $payment->getId(), ['transaction_id' => $transaction->getId()]);
+
+        $this->fixtures->create('upi', ['payment_id' => $payment->getId()]);
 
         $this->fixtures->create(
             'mozart',
