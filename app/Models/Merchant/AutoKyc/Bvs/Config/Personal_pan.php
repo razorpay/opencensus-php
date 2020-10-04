@@ -25,7 +25,7 @@ class Personal_pan extends BaseConfig
                         [
                             'var' => 'enrichments.online_provider.details.name.value'
                         ],
-                        100,
+                        81,
                     ],
                 ],
             ],
