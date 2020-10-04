@@ -4359,8 +4359,8 @@ class RblBankingAccountStatementTest extends TestCase
         $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000006','2323230041626906','1ApiFeeAccount',$currentTime-10*60*60);
         $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000007','2323230041626907','10000000000011',$currentTime-9*60*60);
         $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000008','2323230041626908','10000000000012',$currentTime-8*60*60);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000009','2323230041626909','10000000000013',$currentTime-8*60*60);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000010','2323230041626910','10000000000014',$currentTime-8*60*60);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000009','2323230041626909','10000000000013',$currentTime-7*60*60);
+        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000010','2323230041626910','10000000000014',$currentTime-7*60*60);
 
         $this->createPayoutForBalanceTypeDirectAndBanking('00000000000001' , '10NodalAccount' , $currentTime-1);
         $this->createPayoutForBalanceTypeDirectAndBanking('00000000000002' , '10000000000014' , $currentTime);
