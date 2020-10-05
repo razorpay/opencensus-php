@@ -13,7 +13,12 @@ class PartnerSubmerchantInvite extends Base
 
     protected static $sender      = Constants::PARTNER_SUBMERCHANT_INVITE;
 
-    protected static $subjectLine = "Razorpay | Congratulations, Bulk Submerchant Onboarding Complete!";
+    protected static $subjectLine = 'Status of added Merchant Accounts';
 
-    protected static $body        = 'Congratulations! Your file has been processed. We have attached the response file with this mail where you can check the status against each account.';
+    protected function addHtmlView()
+    {
+        $this->view('emails.mjml.merchant.partner.submerchant.invite', ['merchantName' => $this->merchant['name']]);
+
+        return $this;
+    }
 }

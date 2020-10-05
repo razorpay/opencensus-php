@@ -157,11 +157,12 @@ class Service extends Base\Service
      * We need the merchant param for batch. This can be removed once the code is restructured
      * in a way that batch can call just core class functions.
      *
-     * @param  array       $input
-     * @param  Entity|null $merchant
+     * @param array       $input
+     * @param Entity|null $merchant
+     *
      *
      * @return array
-     * @throws Exception\BadRequestException
+     * @throws BadRequestException
      */
     public function createSubMerchant(array $input, Entity $merchant = null): array
     {
@@ -440,7 +441,9 @@ class Service extends Base\Service
         // is sent to both partner and merchant but when partner sends the mail as a reminder to merchant for setting
         // the password, mail is only sent to merchant and not to the partner. In this case, retry is true and partner
         // does not get any mail.
-        if ($retry === false)
+        // Skip sending mail to partner from batch service.
+
+        if ($retry === false and $this->app['basicauth']->isBatchApp() === false)
         {
             $createSubMerchantPartnerMail = new CreateSubMerchantPartner($subMerchant, $aggregator);
 

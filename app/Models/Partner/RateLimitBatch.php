@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Partner;
 
+use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
@@ -44,8 +45,13 @@ class RateLimitBatch extends Base\Core
         $data = [
             'account_id'   => $output['id'] ?? null,
             'account_name' => $output['name'] ?? null,
-            'email'        => $output['email'] ?? null
+            'email'        => $output['email'] ?? null,
+            'status'       => 'success',
         ];
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_BULK_SUBMERCHANT_SUCCESS,
+                                                 $merchant, null,
+                                                 $data + ['partnerId' => $merchant->getId()]);
 
         $this->trace->info(TraceCode::SUBMERCHANT_ACCOUNT_CREATE_RESPONSE, $data);
 

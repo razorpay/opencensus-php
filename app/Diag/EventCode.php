@@ -555,6 +555,10 @@ class EventCode
         'name'  => 'merchant_onboarding.login.success'
     ];
 
+    const PARTNERSHIP_BULK_SUBMERCHANT_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'partnership_bulk.submerchant.success'
+    ];
 
     const MERCHANT_ONBOARDING_CATEGORY_UPDATE = [
         'group' => 'onboarding',
