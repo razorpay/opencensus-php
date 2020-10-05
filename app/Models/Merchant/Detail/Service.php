@@ -27,6 +27,7 @@ use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Models\Merchant\Document\FileHandler\Factory;
 use RZP\Models\Merchant\Document\Core as DocumentCore;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 
 class Service extends Base\Service
@@ -509,12 +510,17 @@ class Service extends Base\Service
      *
      * @param string $source
      *
-     * @return string
+     * @return string|null
      * @throws Exception\LogicException
      * @throws Exception\BadRequestValidationFailureException
      */
     public function getSignedUrl(string $fileStoreId, string $merchantId, string $source = null)
     {
+        if ($fileStoreId === DEConstants::DUMMY_ACTIVATION_FILE)
+        {
+            return null;
+        }
+
         $source = $source ?? Factory::getApplicableSource($merchantId, $fileStoreId);
 
         Document\Source::validateSource($source);

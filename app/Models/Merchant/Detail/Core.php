@@ -952,17 +952,6 @@ class Core extends Base\Core
             ];
         }
 
-        //
-        // Currently only for unregistered business we save documents in new table(Merchant documents) for
-        // other business type we still save document in merchant detail table and sync both tables .
-        //
-        if ($merchantDetails->isUnregisteredBusiness() === false)
-        {
-            $merchantDetails->fill($merchantDetailsParams);
-
-            $this->repo->saveOrFail($merchantDetails);
-        }
-
         (new Document\Core)->storeInMerchantDocument($merchant, $merchantDocumentParams);
     }
 
