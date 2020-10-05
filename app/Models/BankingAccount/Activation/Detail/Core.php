@@ -56,10 +56,6 @@ class Core extends Base\Core
 
         $activationDetail->edit($input);
 
-        $admin = $this->app['basicauth']->getAdmin() ?? (($this->app->bound('batchAdmin') === true)? $this->app['batchAdmin'] : null);
-
-        (new Validator())->validateUpdatePermissions($activationDetail, $admin);
-
         $this->repo->saveOrFail($activationDetail);
 
         return $activationDetail;

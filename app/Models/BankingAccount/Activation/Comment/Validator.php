@@ -28,47 +28,4 @@ class Validator extends Base\Validator
         Entity::TYPE                => 'sometimes|max:64|in:internal,external,external_resolved',
         Entity::ADDED_AT            => 'sometimes|epoch'
     ];
-
-    public static $selectivelyDisallowedFieldCreates = [
-        Entity::TYPE => 'external'
-    ];
-
-    public function validateCreatePermissions(Entity $bankingAccountComment, $admin)
-    {
-        $adminPermissions = $admin->getPermissionsList();
-
-        $dirtyUpdates = $bankingAccountComment->getDirty();
-
-        if (empty($dirtyUpdates) === false)
-        {
-            if (in_array(Permission\Name::BANKING_UPDATE_ACCOUNT, $adminPermissions) === true)
-            {
-                // this permission is okay for all updates.
-                return;
-            }
-            else
-            {
-                foreach (self::$selectivelyDisallowedFieldCreates as $field => $value)
-                {
-                    if (array_key_exists($field, $dirtyUpdates) and ($dirtyUpdates[$field] === $value))
-                    {
-                        throw new BadRequestException(
-                            ErrorCode::BAD_REQUEST_ACCESS_DENIED,
-                            null,
-                            [
-                                'admin_id'             => $admin->getPublicId(),
-                                'required_permissions' => [Permission\Name::BANKING_UPDATE_ACCOUNT],
-                                'update'               => [
-                                    'field' => $field,
-                                    'value' => $value
-                                ]
-                            ]);
-                    }
-                }
-
-            }
-        }
-
-
-    }
 }
