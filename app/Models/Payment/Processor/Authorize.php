@@ -1758,7 +1758,7 @@ trait Authorize
 
         $token = $payment->getGlobalOrLocalTokenEntity();
 
-        if ($token === null and $this->isAutoRecurringPayment($input) === false)
+        if ($token === null and $this->isAutoRecurringCardPayment($payment->getMethod(), $input) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_TOKEN_ABSENT_FOR_RECURRING_PAYMENT,
@@ -1812,8 +1812,13 @@ trait Authorize
         }
     }
 
-    protected function isAutoRecurringPayment(array $input)
+    protected function isAutoRecurringCardPayment($method, array $input)
     {
+        if ($method !== Payment\Method::CARD)
+        {
+            return false;
+        }
+
         if ((isset($input['recurring']) === true) and
             ($input['recurring'] === Payment\RecurringType::AUTO))
         {
@@ -1830,6 +1835,8 @@ trait Authorize
 
             return true;
         }
+
+        return false;
     }
 
     protected function verifyFeatureForRecurring(Merchant\Entity $merchant, Payment\Entity $payment)
