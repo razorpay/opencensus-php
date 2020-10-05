@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Customer\Token;
 
+use RZP\Constants;
 use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
@@ -168,6 +169,56 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * Below function is used to create token in payment flow where we
+     * already have a card_id
+     *
+     * @param string           $subscriptionId
+     * @param array            $input
+     * @param Merchant\Entity  $merchant
+     *
+     * @return Entity
+     */
+    public function createForSubscription($input, string $subscriptionId, Merchant\Entity $merchant)
+    {
+        $traceInput = $input;
+        unset($traceInput[Entity::AADHAAR_NUMBER]);
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_TOKEN_CREATE,
+            [
+                '$subscription_id' => $subscriptionId,
+                'input'            => $traceInput
+            ]
+        );
+
+        $token = new Token\Entity;
+
+        $card = null;
+
+        if (isset($input[Token\Entity::CARD_ID]) === true)
+        {
+            $card = $this->repo->card->findOrFailPublic($input[Token\Entity::CARD_ID]);
+        }
+
+        $token->build($input);
+
+        if ($card !== null)
+        {
+            $token->setExpiredAt($card->getExpiryTimestamp());
+
+            $token->card()->associate($card);
+        }
+
+        $token->setSubscriptionId($subscriptionId);
+
+        $token->merchant()->associate($merchant);
+
+        $this->repo->saveOrFail($token);
+
+        return $token;
+    }
+
     public function edit($token, $input)
     {
         $token->edit($input);
@@ -215,6 +266,21 @@ class Core extends Base\Core
                     $id,
                     'Token not found for id: ' . $id . ' customer id: ' . $customer->getId());
             }
+        }
+
+        return $token;
+    }
+
+    public function getByTokenIdAndSubscriptionId($id, string $subscriptionId): Entity
+    {
+        $token = $this->repo->token->getByPublicIdAndMerchant($id, $this->merchant);
+
+        if (($token->getEntityId() !== $subscriptionId) and
+            ($token->getEntityType() !== Constants\Entity::SUBSCRIPTION))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID,
+                Entity::ID);
         }
 
         return $token;

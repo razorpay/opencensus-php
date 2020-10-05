@@ -13,6 +13,7 @@ use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\UpiMandate;
+use RZP\Constants\Entity as E;
 use RZP\Models\PaymentsUpi\Vpa;
 use RZP\Models\Merchant\Account;
 
@@ -152,6 +153,8 @@ class Entity extends Base\PublicEntity
         self::CARD,
         self::VPA,
         self::CUSTOMER_ID,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
         self::TERMINAL_ID,
         self::GATEWAY_TOKEN,
         self::GATEWAY_TOKEN2,
@@ -222,6 +225,8 @@ class Entity extends Base\PublicEntity
         self::USED_COUNT                => 0,
         self::EXPIRED_AT                => null,
         self::START_TIME                => null,
+        self::ENTITY_ID                 => null,
+        self::ENTITY_TYPE               => null,
     ];
 
     protected $publicSetters = [
@@ -423,6 +428,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CUSTOMER_ID);
     }
 
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
+    }
+
+    public function getEntityType()
+    {
+        return $this->getAttribute(self::ENTITY_TYPE);
+    }
+
     public function getRecurringStatus()
     {
         return $this->getAttribute(self::RECURRING_STATUS);
@@ -529,6 +544,12 @@ class Entity extends Base\PublicEntity
     public function incrementUsedCount()
     {
         $this->increment(self::USED_COUNT);
+    }
+
+    public function setSubscriptionId(string $subscriptionId)
+    {
+        $this->attributes[self::ENTITY_ID] = $subscriptionId;
+        $this->attributes[self::ENTITY_TYPE] = E::SUBSCRIPTION;
     }
 
     protected function setUsedAtAttribute($time)

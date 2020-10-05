@@ -1363,160 +1363,6 @@ trait Authorize
                     'subscription_id'   => $payment->getSubscriptionId(),
                 ]);
         }
-
-        //
-        // Allow manual charge of older invoices, even when subscription is in terminal state
-        // TODO: Rethink, won't work for S2S payments which are always in private auth
-        //
-
-        //
-        // For subserv subscriptions, these checks validations will take place
-        // in subserv, when we make the first call to fetch and validate subscription
-        //
-        if ($this->subscription->isExternal() === true)
-        {
-            return;
-        }
-
-        //
-        // Storing subscription in a separate variable here, so as not
-        // to change signature of several legacy methods.
-        //
-        $subscription = $this->subscription;
-
-        if (($subscription->isTerminalStatus() === true) and
-            ($this->app['basicauth']->isPrivateAuth() === false))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SUBSCRIPTION_IN_TERMINAL_STATE,
-                null,
-                [
-                    'subscription_id'   => $subscription->getId(),
-                    'status'            => $subscription->getStatus()
-                ]);
-        }
-
-        if ($subscription->isCreated() === true)
-        {
-            $this->validateNewSubscription($subscription, $payment);
-        }
-        else if ($subscription->hasBeenAuthenticated() === true)
-        {
-            $this->validateAuthenticatedSubscription($subscription, $payment, $input);
-        }
-        else
-        {
-            throw new Exception\LogicException(
-                'Subscription is neither in created state nor has ever been authenticated.',
-                null,
-                [
-                    'subscription_id' => $subscription->getId(),
-                    'status' => $subscription->getStatus(),
-                    'payment_id' => $payment->getPublicId(),
-                    'method'     => $payment->getMethod(),
-                ]);
-        }
-    }
-
-    protected function validateAuthenticatedSubscription(
-        Subscription\Entity $subscription,
-        Payment\Entity $payment,
-        array $input)
-    {
-        $cardChange = $payment->isRecurringTypeCardChange();
-
-        if ($cardChange === true)
-        {
-            if ($subscription->isCardChangeStatus() === false)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_SUBSCRIPTION_CARD_CHANGE_NOT_ALLOWED,
-                    null,
-                    [
-                        'subscription_id'   => $subscription->getId(),
-                        'status'            => $subscription->getStatus(),
-                    ]);
-            }
-
-            if (($subscription->isGlobal() === true) and
-                (empty($input[Payment\Entity::APP_TOKEN]) === true))
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_APP_TOKEN_ABSENT,
-                    null,
-                    [
-                        'subscription_id'   => $subscription->getId(),
-                        'card_change'       => true,
-                    ]);
-            }
-        }
-        else
-        {
-            $subscriptionPublicTokenId = Token\Entity::getSignedId($subscription->getTokenId());
-
-            //
-            // For an authenticated subscription, if it's not a card change flow,
-            // there should be no card details in the input.
-            // Token would be there in the input for recurring charge. But, it would
-            // be the same as the token associated with the subscription.
-            //
-            if ((empty($input[Payment\Entity::CARD]) === false) or
-                ((isset($input[Payment\Entity::TOKEN]) === true) and
-                 ($subscriptionPublicTokenId !== $input[Payment\Entity::TOKEN])))
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_SUBSCRIPTION_ALREADY_AUTHENTICATED,
-                    null,
-                    [
-                        'subscription_id'       => $subscription->getId(),
-                        'card_details'          => (empty($input[Payment\Entity::CARD]) === false),
-                        'subscription_token_id' => $subscription->getTokenId(),
-                    ]);
-            }
-        }
-
-        //
-        // For an already authenticated subscription, we should always have
-        // a token present. If the token is not present, we throw an exception.
-        //
-        // This flow can reach from either public auth (card change) or
-        // privilege auth (charge/retry cron).
-        //
-        if ($subscription->hasToken() === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SUBSCRIPTION_TOKEN_NOT_ASSOCIATED,
-                null,
-                [
-                    'payment_id'            => $payment->getId(),
-                    'subscription_id'       => $subscription->getId(),
-                    'subscription_status'   => $subscription->getStatus(),
-                ]);
-        }
-
-        if ($subscription->getPaidCount() >= $subscription->getTotalCount())
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SUBSCRIPTION_TOTAL_COUNT_EXCEEDED,
-                null,
-                [
-                    'payment_id'            => $payment->getId(),
-                    'subscription_id'       => $subscription->getId(),
-                    'subscription_status'   => $subscription->getStatus(),
-                    'total_count'           => $subscription->getTotalCount(),
-                    'paid_count'            => $subscription->getPaidCount(),
-                ]);
-        }
-
-        //
-        // This would basically be the retry flow.
-        // The customer would be trying to change his card
-        // here. Hence, it would be on public auth.
-        //
-        if ($cardChange === true)
-        {
-            $this->validateSubscriptionAmount($subscription, $payment->getAmount(), $cardChange = true);
-        }
     }
 
     protected function validateNewSubscription(Subscription\Entity $subscription, Payment\Entity $payment)
@@ -3133,6 +2979,13 @@ trait Authorize
         $payment->setBaseAmount($baseAmount);
     }
 
+    protected function isAllowedWithoutCustomerForSubscription(Payment\Entity $payment)
+    {
+        return ($payment->hasSubscription() === true) and
+            (($payment->isCardRecurring() === true) or
+                ($payment->isUpiRecurring() === true));
+    }
+
     /**
      * @param Payment\Entity $payment
      * @param array          $input        Input data received from checkout/merchant.
@@ -3204,7 +3057,13 @@ trait Authorize
         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp(
                                                                 $input, $this->merchant, $followGlobal);
 
-        if ($customer === null)
+        if (($customer === null) and
+            ($payment->hasSubscription() === true) and
+            ($this->isAllowedWithoutCustomerForSubscription($payment) === true))
+        {
+            $this->preProcessPaymentForSubscriptionWithoutCustomer($payment, $input, $gatewayInput);
+        }
+        else if ($customer === null)
         {
             $this->preProcessPaymentWithoutSaving($payment, $input, $gatewayInput);
         }
@@ -3849,6 +3708,70 @@ trait Authorize
         }
     }
 
+    protected function preProcessPaymentForSubscriptionWithoutCustomer(Payment\Entity $payment,
+                                                         array & $input,
+                                                         array & $gatewayInput)
+    {
+        //
+        // if token is set, payment is either from a saved card or is second recurring
+        // else, the card needs to be saved or need to mark the payment as recurring (first recurring)
+        //
+        if (empty($input[Payment\Entity::TOKEN]) === true)
+        {
+            $token = null;
+
+            // create local saved card and link to payment
+            if (($payment->isCardRecurring() === true) and ($payment->isGooglePayCard() === false))
+            {
+                $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $payment->merchant, $input);
+
+                $savedLocalCard = $payment->card;
+
+                // save local saved card for local customer
+                $token = $this->savePaymentMethodForSubscription($payment, $savedLocalCard->getId(), $input);
+            }
+            else if ($payment->isUpiRecurring() === true)
+            {
+                $token = $this->savePaymentMethodForSubscription($payment, null, $input);
+
+                // If payment is upi recurring, we will update the mandate entity with the token id. We have already
+                // validated that for upi recurring, the order has upi mandate entity linked.
+                if ($token !== null)
+                {
+                    $upiMandate = $this->updateUpiMandateEntity($token, $payment);
+
+                    $gatewayInput['upi_mandate'] = $upiMandate->toArray();
+                }
+            }
+
+            if ($token !== null)
+            {
+                $this->payment->localToken()->associate($token);
+            }
+        }
+        else
+        {
+            $tokenId = $input[Payment\Entity::TOKEN];
+
+            $token = (new Token\Core)->getByTokenIdAndSubscriptionId($tokenId, $payment->getSubscriptionId());
+
+            if ($payment->isCardRecurring() === true)
+            {
+                $payment->localToken()->associate($token);
+
+                $gatewayInput['card'] = $this->associateAndGetCardArrayForSavedToken($token, $input);
+            }
+            else if ($payment->isUpiRecurring() === true)
+            {
+                $payment->localToken()->associate($token);
+
+                $vpa = $token->vpa;
+
+                $payment->setVpa($vpa->getAddress());
+            }
+        }
+    }
+
     protected function preProcessPaymentForGlobalCustomer(Customer\Entity $customer,
                                                           Customer\Entity $localCustomer = null,
                                                           Customer\AppToken\Entity $customerApp = null,
@@ -4316,6 +4239,101 @@ trait Authorize
                 'payment' => [
                     'id'    => $payment->getId(),
                     'local' => $token->isLocal()
+                ]
+            ],
+            'read_key'  => array('payment.id'),
+            'write_key' => 'payment.id'
+        ];
+
+        if($payment->hasCard() === true)
+        {
+            $card = $payment->card;
+
+            $meta['metadata']['payment'] += [
+                'card_iin'          => $card->getIin(),
+                'card_iin_headless' => $card->isHeadLessOtp(),
+                'card_network'      => $card->getNetwork(),
+                'card_type'         => $card->getType(),
+                'card_country'      => $card->getCountry(),
+                'international'     => $payment->isInternational()
+            ];
+        }
+
+        if ($payment->hasSubscription() === true)
+        {
+            $token->setSubscriptionId($payment->getSubscriptionId());
+
+            $token->saveOrFail();
+        }
+
+        $this->app['diag']->trackPaymentEventV2(
+            EventCode::PAYMENT_CARDSAVING_PROCESSED,
+            $payment,
+            null,
+            $meta,
+            [
+                'local' => $token->isLocal()
+            ]);
+
+        return $token;
+    }
+
+    protected function savePaymentMethodForSubscription(
+        Payment\Entity $payment, $savedCardId = null, array $input = []): Token\Entity
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_SAVE_METHOD,
+            [
+                'method'            => $payment->getMethod(),
+                'payment_id'        => $payment->getId(),
+                'merchant_id'       => $payment->merchant->getId(),
+                'card_id'           => $savedCardId,
+                'auth_type'         => $payment->getAuthType(),
+                'account_type'      => $input[Payment\Entity::BANK_ACCOUNT][Token\Entity::ACCOUNT_TYPE] ?? null,
+                'ifsc'              => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::IFSC] ?? null,
+                'max_amount'        => $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::MAX_AMOUNT] ?? null,
+                'expire_by'         => $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? null
+            ]);
+
+        $saveMethodInput = [
+            Token\Entity::METHOD => $payment->getMethod()
+        ];
+
+        if ($payment->isMethod(Method::CARD))
+        {
+            $saveMethodInput[Token\Entity::METHOD] = Payment\Method::CARD;
+
+            $saveMethodInput[Token\Entity::CARD_ID] = $savedCardId;
+        }
+        else if ($payment->isUpi() === true)
+        {
+            $saveMethodInput[Token\Entity::METHOD] = Payment\Method::UPI;
+
+            $vpa = $this->createVpaEntity($input);
+
+            $saveMethodInput[Token\Entity::VPA_ID] = $vpa[PaymentsUpi\Vpa\Entity::ID];
+
+            // These fields will be set for upi recurring payments. We dont need to have a check for recurring because
+            // we are checking if the fields exist. If not values for these in token will be null.
+            if ($this->upiMandate !== null)
+            {
+                $saveMethodInput[Token\Entity::MAX_AMOUNT] = $this->upiMandate->getMaxAmount() ?? null;
+                $saveMethodInput[Token\Entity::EXPIRED_AT] = $this->upiMandate->getEndTime() ?? null;
+                $saveMethodInput[Token\Entity::START_TIME] = $this->upiMandate->getStartTime() ?? null;
+            }
+        }
+
+        $token = (new Token\Core)->createForSubscription(
+            $saveMethodInput,
+            $payment->getSubscriptionId(),
+            $payment->merchant
+        );
+
+        $meta =  [
+            'metadata' => [
+                'payment' => [
+                    'id'    => $payment->getId(),
+                    'local' => $token->isLocal(),
                 ]
             ],
             'read_key'  => array('payment.id'),

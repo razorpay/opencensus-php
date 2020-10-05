@@ -2020,6 +2020,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             ($this->getAttribute(self::AUTH_TYPE) === AuthType::PIN));
     }
 
+    public function isCardRecurring(): bool
+    {
+        return (($this->getAttribute(self::METHOD) === Payment\Method::CARD) and
+            ($this->getAttribute(self::RECURRING) === true));
+    }
+
     public function isUpi()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::UPI);

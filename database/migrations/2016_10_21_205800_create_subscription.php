@@ -135,51 +135,6 @@ class CreateSubscription extends Migration
             $table->index(Entity::CUSTOMER_CONTACT);
             $table->index([Entity::MERCHANT_ID, Entity::CREATED_AT]);
             $table->index([Entity::STATUS, Entity::START_AT]);
-
-            $table->foreign(Entity::MERCHANT_ID)
-                  ->references(Merchant\Entity::ID)
-                  ->on(Table::MERCHANT)
-                  ->on_delete('restrict');
-
-            $table->foreign(Entity::CUSTOMER_ID)
-                  ->references(Customer\Entity::ID)
-                  ->on(Table::CUSTOMER)
-                  ->on_delete('restrict');
-
-            $table->foreign(Entity::PLAN_ID)
-                  ->references(Plan\Entity::ID)
-                  ->on(Table::PLAN)
-                  ->on_delete('restrict');
-
-            $table->foreign(Entity::TOKEN_ID)
-                  ->references(Customer\Token\Entity::ID)
-                  ->on(Table::TOKEN)
-                  ->on_delete('restrict');
-
-            $table->foreign(Entity::SCHEDULE_ID)
-                  ->references(Schedule\Entity::ID)
-                  ->on(Table::SCHEDULE)
-                  ->on_delete('restrict');
-        });
-
-        // This should be here and not in invoices table because
-        // subscription table is created after invoices.
-        Schema::table(Table::INVOICE, function($table)
-        {
-            $table->foreign(Invoice\Entity::SUBSCRIPTION_ID)
-                  ->references(Entity::ID)
-                  ->on(Table::SUBSCRIPTION)
-                  ->on_delete('restrict');
-        });
-
-        // This should be here and not in payments table because
-        // subscription table is created after payments.
-        Schema::table(Table::PAYMENT, function($table)
-        {
-            $table->foreign(Payment\Entity::SUBSCRIPTION_ID)
-                  ->references(Entity::ID)
-                  ->on(Table::SUBSCRIPTION)
-                  ->on_delete('restrict');
         });
     }
 
@@ -190,31 +145,6 @@ class CreateSubscription extends Migration
      */
     public function down()
     {
-        Schema::table(Table::SUBSCRIPTION, function($table)
-        {
-            $table->dropForeign(Table::SUBSCRIPTION . '_' . Entity::MERCHANT_ID . '_foreign');
-
-            $table->dropForeign(Table::SUBSCRIPTION . '_' . Entity::CUSTOMER_ID . '_foreign');
-
-            $table->dropForeign(Table::SUBSCRIPTION . '_' . Entity::TOKEN_ID . '_foreign');
-
-            $table->dropForeign(Table::SUBSCRIPTION . '_' . Entity::PLAN_ID . '_foreign');
-
-            $table->dropForeign(Table::SUBSCRIPTION . '_' . Entity::SCHEDULE_ID . '_foreign');
-
-        });
-
-        Schema::table(Table::PAYMENT, function($table)
-        {
-            $table->dropForeign(Table::PAYMENT . '_' . Payment\Entity::SUBSCRIPTION_ID . '_foreign');
-        });
-
-        Schema::table(Table::INVOICE, function($table)
-        {
-            $table->dropForeign(
-                Table::INVOICE . '_' . Invoice\Entity::SUBSCRIPTION_ID . '_foreign');
-        });
-
         Schema::drop(Table::SUBSCRIPTION);
     }
 }
