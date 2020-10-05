@@ -596,8 +596,10 @@ export default class User {
     return [rolesList.SELLERAPP, rolesList.SELLERAPP_PLUS].indexOf(userRole) > -1;
   }
 
+  // Tempororily disabling the calls, have plans to enable it back later
   get isSupportCallEnabled() {
-    return this.getExpStatus('support_call') && this.isActivated;
+    return false;
+    // return this.getExpStatus('support_call') && this.isActivated;
   }
 
   get isRouteCodeSupportEnabled() {
