@@ -584,6 +584,22 @@ class Validator extends Base\Validator
         $this->validateIsFundAccountPayout($payout);
     }
 
+    public function validatePostCreateProcessPayout()
+    {
+        $payout = $this->entity;
+
+        if ($payout->isStatusCreateRequestSubmitted() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_NOT_CREATE_REQUEST_SUBMITTED_STATUS,
+                null,
+                [
+                    'payout_id' => $payout->getId(),
+                    'status'    => $payout->getStatus(),
+                ]);
+        }
+    }
+
     public function validateProcessingPendingPayout()
     {
         /** @var Entity $payout */

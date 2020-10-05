@@ -41,9 +41,7 @@ class PayoutPostCreateProcess extends Job
 
         try
         {
-            $payout = $this->repoManager->payout->find($this->payoutId);
-
-            (new Payout\Core)->processPayoutPostCreate($payout, $this->queueFlag);
+            (new Payout\Core)->processPayoutPostCreate($this->payoutId, $this->queueFlag);
 
             $this->delete();
         }

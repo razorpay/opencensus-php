@@ -774,13 +774,24 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
     }
 
-    public function processPayoutPostCreate(Entity $payout, bool $queueFlag)
+    public function processPayoutPostCreate(string $payoutId, bool $queueFlag)
     {
-        $payout = $this->getProcessor('fund_account_payout')
-                        ->setMerchant($payout->merchant)
-                        ->processPayoutPostCreate($payout, $queueFlag);
+        return $this->mutex->acquireAndRelease(
+            $payoutId,
+            function() use ($payoutId, $queueFlag)
+            {
+                $payout = $this->repo->findOrFail($payoutId);
 
-        return $payout;
+                $payout->getValidator()->validatePostCreateProcessPayout();
+
+                $payout = $this->getProcessor('fund_account_payout')
+                                ->setMerchant($payout->merchant)
+                                ->processPayoutPostCreate($payout, $queueFlag);
+
+                return $payout;
+            },
+            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
     }
 
     public function processScheduledPayout(string $payoutId): Entity
