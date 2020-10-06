@@ -15,6 +15,6 @@ addParameters({
   },
 });
 
-addDecorator((StoryFn) => <Wrapper context={{}}>{<StoryFn />}</Wrapper>);
+addDecorator((StoryFn) => <Wrapper context={{ mode: 'test' }}>{<StoryFn />}</Wrapper>);
 
 //export const decorators = [addDecorator];

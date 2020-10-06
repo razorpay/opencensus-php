@@ -36,6 +36,7 @@ tmp/
 /web/node_modules
 /web/js/dump.rdb
 /web/build
+/web/.env
 
 # IDE config
 /jsconfig.json

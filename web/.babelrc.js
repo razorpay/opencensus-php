@@ -17,5 +17,6 @@ module.exports = {
         loose: true,
       },
     ],
+    ['babel-plugin-graphql-tag'],
   ],
 };

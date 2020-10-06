@@ -1,10 +1,18 @@
 import React, { ReactNode } from 'react';
 import { ThemeProvider } from 'styled-components';
 import { lightTheme as theme } from '@razorpay/blade/src/tokens/theme.web';
-import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
+import { QueryCache, ReactQueryCacheProvider } from 'react-query';
 import { AppProvider, AppContextTypes } from '../../context/App';
 import { LayerProvider } from '../Layer/LayerContext';
+import { fetchGraphQL } from '../../services/graphql/graphql-fetch';
 
+const queryCache = new QueryCache({
+  defaultConfig: {
+    queries: {
+      queryFn: fetchGraphQL,
+    },
+  },
+});
 interface Props {
   context: AppContextTypes;
   children: ReactNode;
@@ -13,11 +21,11 @@ interface Props {
 const Wrapper: React.FC<Props> = ({ context, children }) => {
   return (
     <ThemeProvider theme={theme}>
-      <AppProvider context={context}>
-        <ErrorBoundary>
+      <ReactQueryCacheProvider queryCache={queryCache}>
+        <AppProvider context={context}>
           <LayerProvider>{children}</LayerProvider>
-        </ErrorBoundary>
-      </AppProvider>
+        </AppProvider>
+      </ReactQueryCacheProvider>
     </ThemeProvider>
   );
 };

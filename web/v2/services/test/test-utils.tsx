@@ -1,16 +1,10 @@
 // test-utils.js
 import React, { ReactNode } from 'react';
 import { render } from '@testing-library/react';
-import { ThemeProvider } from 'styled-components';
-import { lightTheme as theme } from '@razorpay/blade/src/tokens/theme.web';
-import { LayerProvider } from '../../components/Layer/LayerContext';
+import Wrapper from '../../components/Bootstrap/wrapper';
 
 const AllTheProviders: React.FC<{ children: ReactNode }> = ({ children }) => {
-  return (
-    <ThemeProvider theme={theme}>
-      <LayerProvider>{children}</LayerProvider>
-    </ThemeProvider>
-  );
+  return <Wrapper context={{ mode: 'test', orgId: '123' }}>{children}</Wrapper>;
 };
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types

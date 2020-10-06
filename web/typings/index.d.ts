@@ -3,4 +3,5 @@ interface Window {
   analytics: any;
   session_id: string;
   rzpQ: any;
+  __VERSION__: string;
 }

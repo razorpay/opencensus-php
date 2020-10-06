@@ -76,6 +76,11 @@ module.exports = ({ config, project }) => {
         },
       ],
     },
+    {
+      test: /\.(graphql|gql)$/,
+      exclude: /node_modules/,
+      loader: 'graphql-tag/loader',
+    },
   );
 
   //we are using react and others mentioned below as global variables in our codebase.
