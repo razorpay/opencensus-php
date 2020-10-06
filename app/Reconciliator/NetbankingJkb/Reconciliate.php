@@ -7,23 +7,23 @@ use RZP\Reconciliator\Base;
 class Reconciliate extends Base\Reconciliate
 {
     const BANK_REFERENCE_NUMBER = 'bank_reference_number';
-    const PAYMENT_ID            = 'payment_id';
+    const MID                   = 'payee_id';
     const AMOUNT                = 'amount';
     const CURRENCY              = 'currency';
     const TIMESTAMP             = 'timestamp';
     const STATUS                = 'status';
     const REAL                  = 'real';
-    const ITC                   = 'itc';
+    const PAYMENT_ID            = 'order_id';
 
     protected $columnHeaders = [
         self::BANK_REFERENCE_NUMBER,
-        self::PAYMENT_ID,
+        self::MID,
         self::AMOUNT,
         self::CURRENCY,
         self::TIMESTAMP,
         self::STATUS,
         self::REAL,
-        self::ITC,
+        self::PAYMENT_ID,
     ];
 
     public function getColumnHeadersForType($type)

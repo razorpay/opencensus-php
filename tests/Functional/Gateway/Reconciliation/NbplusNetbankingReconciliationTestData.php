@@ -28,13 +28,13 @@ return [
     ],
     'testJkbSuccessRecon' => [
         'BID'                => '1234',
-        'PRN'                => '',
+        'PID'                => 'BANK_PID',
         'AMT'                => '500.00',
         'CRN'                => 'INR',
         'DATE'               => Carbon::today()->format("YmdHis"),
         'STATUS'             => 'S',
         'REAL'               => 'Y',
-        'ITC'                => 'RAZORPAY'
+        'PRN'                => ''
     ],
     'testIdbiSuccessRecon' => [
         'Bank'                          => 'IDBI',
