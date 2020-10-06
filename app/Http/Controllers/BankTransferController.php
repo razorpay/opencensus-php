@@ -277,6 +277,10 @@ class BankTransferController extends Controller
             {
                 $time = Carbon::createFromFormat('d-m-Y His', $data['creditDate'], Timezone::IST)->getTimestamp();
             }
+            else if (strlen($data['creditDate']) === 19)
+            {
+                $time = Carbon::createFromFormat('d-m-Y H:i:s', $data['creditDate'], Timezone::IST)->getTimestamp();
+            }
             else
             {
                 $time = Carbon::createFromFormat('d-m-Y', $data['creditDate'], Timezone::IST)->getTimestamp();
