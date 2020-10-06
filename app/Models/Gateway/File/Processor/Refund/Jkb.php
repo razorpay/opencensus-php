@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\File\Processor\Refund;
 use Carbon\Carbon;
 
 use RZP\Models\Payment;
+use RZP\Models\Terminal;
 use RZP\Constants\Entity;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
@@ -18,13 +19,13 @@ class Jkb extends Base
     use FileHandler;
 
     const BANK_REFERENCE_NUMBER = 'BID';
-    const PAYMENT_ID            = 'Payee-id';
+    const MID                   = 'Payee-id';
     const AMOUNT                = 'Transaction_Amt';
     const REFUND_AMOUNT         = 'Refund_Amt';
     const CURRENCY              = 'CRN';
     const TIMESTAMP             = 'TXN_TIME';
     const STATUS                = 'Status';
-    const ITC                   = 'ITC';
+    const PAYMENT_ID            = 'Order_id';
 
     const FILE_NAME              = 'JKBRefund_';
     const EXTENSION              = FileStore\Format::TXT;
@@ -43,13 +44,13 @@ class Jkb extends Base
 
             $formattedData[] = [
                 self::BANK_REFERENCE_NUMBER  => $row['gateway'][Netbanking::BANK_TRANSACTION_ID],
-                self::PAYMENT_ID             => $row[Entity::PAYMENT][Payment\Entity::ID],
+                self::MID                    => $row[Entity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID],
                 self::AMOUNT                 => $this->getFormattedAmount($row[Entity::PAYMENT][Payment\Entity::AMOUNT]),
                 self::REFUND_AMOUNT          => $this->getFormattedAmount($row[Entity::REFUND][Refund\Entity::AMOUNT]),
                 self::CURRENCY               => 'INR',
                 self::TIMESTAMP              => $date,
                 self::STATUS                 => 'S',
-                self::ITC                    => strtoupper($row[Entity::PAYMENT][Payment\Entity::ID])
+                self::PAYMENT_ID             => $row[Entity::PAYMENT][Payment\Entity::ID]
             ];
         }
 

@@ -14,6 +14,7 @@ use RZP\Models\Gateway\File\Status;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\GatewayFileException;
 use RZP\Exception\GatewayErrorException;
+use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Services\Beam\Constants as BeamConstants;
@@ -22,6 +23,7 @@ class Jkb extends Base
 {
     const BANK_NAME       = 'Jkb';
     const BEAM_FILE_TYPE  = 'combined';
+    const FILE_TYPE       = FileStore\Type::JKB_NETBANKING_REFUND;
 
     protected function formatDataForMail(array $data)
     {
@@ -101,6 +103,17 @@ class Jkb extends Base
         ];
     }
 
+    protected function getBucketConfig()
+    {
+        $config = $this->app['config']->get('filestore.aws');
+
+        $bucketType = Bucket::getBucketConfigName(static::FILE_TYPE, $this->env);
+
+        $bucketConfig = $config[$bucketType];
+
+        return $bucketConfig;
+    }
+
     public function sendFile($data)
     {
         try
@@ -118,10 +131,14 @@ class Jkb extends Base
 
             $fileInfo = [$refundsFile['name']];
 
+            $bucketConfig = $this->getBucketConfig();
+
             $beamData =  [
-                Service::BEAM_PUSH_FILES   => $fileInfo,
-                Service::BEAM_PUSH_JOBNAME => BeamConstants::JKB_NB_REFUND_FILE_JOB_NAME
-            ];
+                Service::BEAM_PUSH_FILES         => $fileInfo,
+                Service::BEAM_PUSH_JOBNAME       => BeamConstants::JKB_NB_REFUND_FILE_JOB_NAME,
+                Service::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
+                Service::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
+                ];
 
             $timelines = [];
 

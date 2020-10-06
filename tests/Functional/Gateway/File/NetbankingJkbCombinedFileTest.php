@@ -134,7 +134,7 @@ class NetbankingJkbCombinedFileTest extends NbPlusPaymentServiceTest
         {
             $row = str_getcsv($str[$i], '|');
             $this->assertEquals((int)number_format($row[3] * 100, 0, '', ''), $refundEntities[$i]['amount']);
-            $this->assertEquals($row[1], $refundEntities[$i]['payment_id']);
+            $this->assertEquals($row[7], $refundEntities[$i]['payment_id']);
         }
     }
 }
