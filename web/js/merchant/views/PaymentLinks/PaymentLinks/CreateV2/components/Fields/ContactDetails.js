@@ -1,4 +1,5 @@
 import Input from 'common/new-ui/Input';
+import track from '../../track';
 
 const ContactDetails = (props) => {
   return (
@@ -13,8 +14,9 @@ const ContactDetails = (props) => {
           name="email"
           placeholder="john@example.com"
           type="email"
-          addonBefore={<i class="i i-email-outline" />} // TODO: Update icon
+          addonBefore={<i class="i i-email-outline" />}
           defaultValue={props.defaultEmailAddress}
+          onBlur={track.lj.fields.email}
         />
 
         <Input
@@ -24,6 +26,7 @@ const ContactDetails = (props) => {
           placeholder="+91 9876543210"
           addonBefore={<i class="i i-phone-outline" />}
           defaultValue={props.defaultContactNumber}
+          onBlur={track.lj.fields.contact}
         />
       </div>
     </Input.Group>

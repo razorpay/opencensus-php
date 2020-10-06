@@ -4,6 +4,7 @@ import moment from 'moment';
 import { dateCalculator } from 'common/new-ui/Input/Calendar';
 import { timeCalculator } from 'common/new-ui/Input/Time';
 import { classList } from 'common/utils/rzp-utils';
+import track from '../../track';
 
 class LinkExpiry extends React.Component {
   constructor(props) {
@@ -11,7 +12,7 @@ class LinkExpiry extends React.Component {
 
     this.state = {
       value: props.defaultValue,
-      hasNoDate: !!props.defaultValue,
+      hasNoDate: !props.defaultValue,
     };
 
     this.ref = React.createRef();
@@ -71,6 +72,7 @@ class LinkExpiry extends React.Component {
             fieldLabel="Expire link after"
             class="Input--vTop"
             value={state.hasNoDate}
+            defaultValue={props.defaultValue ? '0' : '1'}
             onChange={this.handleHasNoDate}
             disabled={props.disabled}
           />
@@ -98,6 +100,7 @@ class LinkExpiry extends React.Component {
               onChange={this.onDateChange}
               addonAfter={<i class="i i-date-range" />}
               ref={this.ref}
+              onBlur={track.lj.fields.expiryDate}
             />
             {!!state.value && (
               <Input.TimePicker
@@ -107,6 +110,7 @@ class LinkExpiry extends React.Component {
                 disabled={props.disabled}
                 onChange={this.onTimeChange}
                 addonAfter={<i class="i i-time" />}
+                onBlur={track.lj.fields.expiryTime}
               />
             )}
           </div>

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
+import track from '../track';
 
 const PAYMENT_LINK_TYPES = [
   {
@@ -19,35 +20,52 @@ const PAYMENT_LINK_TYPES = [
   },
 ];
 
-export default function PaymentLinkSelector(props) {
-  const content = (
-    <div class="PaymentLinks--CreateV2--LinkTypeSelection">
-      <div class="slide-in">
-        <div class="heading">Pick a Payment Link Type</div>
-      </div>
-      <div class="TemplateCard-list">
-        {PAYMENT_LINK_TYPES.map((templateData) => (
-          <TemplateCard {...templateData} onClick={() => props.selectTemplate(templateData.key)} />
-        ))}
-      </div>
-    </div>
-  );
-
-  if (props.isModalView) {
-    return (
-      <ModalMask class="PaymentLinks--CreateV2--LinkTypeSelection" maskClosable={false}>
-        <Link class="back-btn" to="/paymentlinks/">
-          <i class="i i-chevron-left" />
-          Back to Dashboard
-        </Link>
-        <Modal class={content && 'animate-down'} showCloseBtn={false}>
-          <ModalContent>{content}</ModalContent>
-        </Modal>
-      </ModalMask>
-    );
+export default class PaymentLinkSelector extends React.PureComponent {
+  componentDidMount() {
+    track.lj.linkTypeSelection.open();
   }
 
-  return <div class="StandAloneContainer">{content}</div>;
+  handleTemplateSelection = (linkType) => () => {
+    this.props.selectTemplate(linkType);
+
+    track.lj.linkTypeSelection.select(linkType);
+  };
+
+  render() {
+    const { props } = this;
+
+    const content = (
+      <div class="PaymentLinks--CreateV2--LinkTypeSelection">
+        <div class="slide-in">
+          <div class="heading">Pick a Payment Link Type</div>
+        </div>
+        <div class="TemplateCard-list">
+          {PAYMENT_LINK_TYPES.map((templateData) => (
+            <TemplateCard
+              {...templateData}
+              onClick={this.handleTemplateSelection(templateData.key)}
+            />
+          ))}
+        </div>
+      </div>
+    );
+
+    if (props.isModalView) {
+      return (
+        <ModalMask class="PaymentLinks--CreateV2--LinkTypeSelection" maskClosable={false}>
+          <Link class="back-btn" to="/paymentlinks/">
+            <i class="i i-chevron-left" />
+            Back to Dashboard
+          </Link>
+          <Modal class={content && 'animate-down'} showCloseBtn={false}>
+            <ModalContent>{content}</ModalContent>
+          </Modal>
+        </ModalMask>
+      );
+    }
+
+    return <div class="StandAloneContainer">{content}</div>;
+  }
 }
 
 class TemplateCard extends React.PureComponent {

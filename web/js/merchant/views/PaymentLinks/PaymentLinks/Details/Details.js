@@ -114,11 +114,11 @@ export default (props) => {
                   <EntityDetailRow label="Link Type">
                     {isUPILink ? (
                       <>
-                        <i class="i i-bank m-r" /> Standard Payment Link
+                        <i class="i i-upi m-r" /> UPI Payment Link
                       </>
                     ) : (
                       <>
-                        <i class="i i-upi m-r" /> UPI Payment Link
+                        <i class="i i-bank m-r" /> Standard Payment Link
                       </>
                     )}
                   </EntityDetailRow>

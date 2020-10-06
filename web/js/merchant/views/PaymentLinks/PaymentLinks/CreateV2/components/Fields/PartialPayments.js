@@ -1,4 +1,5 @@
 import Input from 'common/new-ui/Input';
+import track from '../../track';
 
 const PartialPayments = (props) => (
   <Input.Check
@@ -8,6 +9,7 @@ const PartialPayments = (props) => (
     label="Partial Payment"
     class="Input--vTop"
     {...props}
+    onBlur={track.lj.fields.partialPayment}
   />
 );
 

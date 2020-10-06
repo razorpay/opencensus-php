@@ -194,6 +194,8 @@ export function createPaymentLinkV2(payload) {
   // Link Expire by
   if (reqPayload.expire_by) {
     reqPayload.expire_by = Math.floor(reqPayload.expire_by / 1000);
+  } else {
+    delete reqPayload.expire_by;
   }
 
   // Reminders

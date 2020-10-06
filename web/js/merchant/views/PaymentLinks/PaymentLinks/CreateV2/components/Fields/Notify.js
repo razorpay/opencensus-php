@@ -1,4 +1,5 @@
 import Input from 'common/new-ui/Input';
+import track from '../../track';
 
 export default class Notify extends React.Component {
   handleEmailNotify = (event) => {
@@ -6,6 +7,8 @@ export default class Notify extends React.Component {
     if (!isChecked) return;
 
     document.querySelector('[name=email]').focus();
+
+    track.lj.fields.notifyEmail();
   };
 
   handleSmsNotify = (event) => {
@@ -13,6 +16,8 @@ export default class Notify extends React.Component {
     if (!isChecked) return;
 
     document.querySelector('[name=contact]').focus();
+
+    track.lj.fields.notifySms();
   };
 
   render() {

@@ -1,5 +1,6 @@
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+import RTracking from 'react-tracking';
 
 import PaymentLinkTypeSelector from './components/PaymentLinkTypeSelector';
 import BaseForm from './Forms/BaseForm';
@@ -14,6 +15,8 @@ import { fetchPaymentLinkV2Details } from 'merchant/reducers/paymentlinks/detail
 import { luminateRow } from 'merchant/reducers/app';
 import { createPaymentLinkV2 } from '../model';
 import { getURLQueryParams, paiseToRupees } from 'common/utils/rzp-utils';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
+import track from './track';
 
 const PAYMENT_LINK_FORMS = {
   base: BaseForm,
@@ -35,6 +38,7 @@ const PAYMENT_LINK_FORMS = {
     fetchRemindersMerchantConfigs,
   },
 )
+@RTracking(() => window.rzpQ.component('PaymentLinkCreateV2'))
 export default class PaymentLinkCreateV2 extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -50,6 +54,8 @@ export default class PaymentLinkCreateV2 extends React.Component {
       linkType = 'base';
     }
 
+    this.isIntentDuplicate = !!searchQuery.duplicate_id;
+
     this.state = {
       isLoading: true,
       isFormLocked: false,
@@ -58,12 +64,28 @@ export default class PaymentLinkCreateV2 extends React.Component {
     };
   }
 
+  componentWillMount() {
+    track.lj.init({
+      track: this.props.tracking.trackEvent,
+      clone: this.isIntentDuplicate,
+    });
+
+    triggerHotjarRecording('payment_link_v2_creation');
+  }
+
   componentDidMount() {
     this.prepareDataForPaymentLinkCreation()
       .then((resp) => {
-        this.setState({
-          isLoading: false,
-        });
+        this.setState(
+          {
+            isLoading: false,
+          },
+          () => {
+            if (this.isIntentDuplicate && this.state.formData.notes) {
+              this.onChangeNotes(this.state.formData.notes);
+            }
+          },
+        );
       })
       .catch((err) => {
         // TODO: Handle Error case
@@ -104,7 +126,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
           expire_by = '';
         }
 
-        const defaultValueNotes = Object.keys(data.notes).map((key) => ({
+        const defaultValueNotes = Object.keys(data.notes || {}).map((key) => ({
           key,
           value: data.notes[key],
         }));
@@ -167,11 +189,14 @@ export default class PaymentLinkCreateV2 extends React.Component {
       notificationMSG += ' Sending via ' + notifyMedium.join(' and ');
     }
 
+    track.lj.form.create();
+
     return createPaymentLinkV2(reqPayload)
       .then((resp) => {
         this.props.showNotification({
           type: 'success',
           message: notificationMSG,
+          onCloseClick: track.lj.form.success,
         });
 
         this.setState({
@@ -197,6 +222,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
         this.props.showNotification({
           type: 'error',
           message: error,
+          onCloseClick: () => track.lj.form.fail({ error: error[1] }),
         });
 
         this.setState({
@@ -276,11 +302,23 @@ export default class PaymentLinkCreateV2 extends React.Component {
           message: 'Changes that you made will be discarded.',
           affirmativeLabel: 'Leave',
           abortLabel: 'Stay',
-          action: this.props.onClose,
+          action: () => {
+            this.props.onClose();
+
+            track.lj.form.cancelConfirm({
+              status: 'stay',
+            });
+          },
         })
-        .catch(() => {});
+        .catch(() => {
+          track.lj.form.cancelConfirm({
+            status: 'leave',
+          });
+        });
     } else {
       this.props.onClose();
+
+      track.lj.form.cancel();
     }
   };
 
@@ -300,6 +338,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
 
         {!showLinkTypeSelectionView && (
           <CurrentForm
+            isIntentDuplicate={this.isIntentDuplicate}
             showAnimationOnLoading={!this.isIntentDuplicate}
             isModalView={isModalView}
             formData={state.formData}

@@ -18,10 +18,10 @@ export default class FormWizard extends React.Component {
   toggleDisableState = () => {
     // if value not selected, html marks it as ':invalid' which is tehnically valid in our case. Hence, relying on is-invalid.
     const invalidFields = document.querySelectorAll(`.${CLASS_NAME} .Input.is-invalid`);
-    const disableSubmit = !!invalidFields.length;
+    const disableSubmit = invalidFields.length;
 
     if (this.state.disableSubmit !== disableSubmit) {
-      this.setState({ disableSubmit });
+      this.setState({ disableSubmit: disableSubmit });
     }
   };
 

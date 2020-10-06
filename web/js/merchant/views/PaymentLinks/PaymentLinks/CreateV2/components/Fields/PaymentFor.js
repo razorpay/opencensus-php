@@ -1,4 +1,5 @@
 import Input from 'common/new-ui/Input';
+import track from '../../track';
 
 const PaymentFor = (props) => (
   <Input
@@ -6,6 +7,7 @@ const PaymentFor = (props) => (
     label="Payment For"
     class="Input--vTop"
     placeholder="Payment description"
+    onBlur={track.lj.fields.paymentFor}
     {...props}
   />
 );

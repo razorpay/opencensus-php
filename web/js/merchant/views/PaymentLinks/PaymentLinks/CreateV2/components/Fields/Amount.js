@@ -1,4 +1,5 @@
 import Input from 'common/new-ui/Input';
+import track from '../../track';
 
 const Amount = (props) => {
   return (
@@ -15,6 +16,7 @@ const Amount = (props) => {
           defaultValue={props.defaultCurrency}
           disabled={props.disableCurrencySelect}
           parentQuerySelector=".Modal-body"
+          onChange={track.lj.fields.currency}
         />
         <Input
           autoRender
@@ -22,6 +24,11 @@ const Amount = (props) => {
           name="amount"
           placeholder="0.00"
           defaultValue={props.defaultAmount}
+          onBlur={() =>
+            track.lj.fields.amount({
+              modified: props.isIntentDuplicate,
+            })
+          }
         />
       </div>
     </Input.Group>

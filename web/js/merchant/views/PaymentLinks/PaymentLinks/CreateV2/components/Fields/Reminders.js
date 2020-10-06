@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import Input from 'common/new-ui/Input';
+import track from '../../track';
 
 const Reminders = ({ config, hasNoExpiry, ...extraProps }) => {
   const isEnabled =
@@ -31,6 +32,7 @@ const Reminders = ({ config, hasNoExpiry, ...extraProps }) => {
       label="Reminders"
       description={description}
       class="Input--vTop"
+      onBlur={track.lj.fields.reminders}
       {...extraProps}
     />
   );

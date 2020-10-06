@@ -2,7 +2,7 @@ import Amount from './Amount';
 import PaymentFor from './PaymentFor';
 import ContactDetails from './ContactDetails';
 import Notify from './Notify';
-import ReceiptNo from './ReceiptNo';
+import ReferenceId from './ReferenceId';
 import LinkExpiry from './LinkExpiry';
 import Reminders from './Reminders';
 import Notes from './Notes';
@@ -13,7 +13,7 @@ export {
   PaymentFor,
   ContactDetails,
   Notify,
-  ReceiptNo,
+  ReferenceId,
   LinkExpiry,
   Reminders,
   Notes,

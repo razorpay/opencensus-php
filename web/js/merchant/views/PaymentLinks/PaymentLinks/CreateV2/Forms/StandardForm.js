@@ -7,7 +7,7 @@ import {
   PaymentFor,
   ContactDetails,
   Notify,
-  ReceiptNo,
+  ReferenceId,
   Reminders,
   PartialPayment,
   LinkExpiry,
@@ -36,6 +36,7 @@ export default class StandardForm extends React.Component {
         disableSubmit={props.disableSubmit}
       >
         <Amount
+          isIntentDuplicate={props.isIntentDuplicate}
           disabled={props.disabled}
           defaultCurrency={formData.currency}
           defaultAmount={formData.amount}
@@ -51,7 +52,7 @@ export default class StandardForm extends React.Component {
           defaultContactValue={formData.sms_notify}
           defaultEmailValue={formData.email_notify}
         />
-        <ReceiptNo disabled={props.disabled} />
+        <ReferenceId disabled={props.disabled} />
         <LinkExpiry
           onChange={props.updateDate}
           disabled={props.disabled}

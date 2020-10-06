@@ -182,7 +182,7 @@ export default class PaymentLinksContainer extends ListContainer {
           isInttCurrenciesEnabled={user.isInttCurrenciesEnabled}
           trackSearchFilterForInternational={trackSearchFilterForInternational}
           isPaymentlinksV2Enabled={user.isPaymentlinksV2Enabled}
-          extraFields={getExtraFields(user)}
+          extraFields={getExtraFields(user, this.props.tracking)}
         />
 
         <Alert type={status.type} message={status.message} onCloseClick={this.onAlertCloseClick} />
@@ -230,15 +230,30 @@ const EmptyComponent = () => (
   />
 );
 
-const getExtraFields = (user) => {
+const getExtraFields = (user, tracking) => {
   if (user.isPaymentLinkCreationV2Enabled) {
     return (
       <div class="form-group list-filter-item">
         <label>Payment Link Type</label>
-        <Field name="upi_link" component="select" class="form-control input-sm">
+        <Field
+          name="upi_link"
+          component="select"
+          class="form-control input-sm"
+          onChange={(event) => {
+            tracking.trackEvent(
+              window.rzpQ
+                .paymentLinks()
+                .interaction(`pl.browse.link_type`, { selection: event.target.name }),
+            );
+          }}
+        >
           <option value="">All Types</option>
-          <option value="0">Standard Payment Link</option>
-          <option value="1">UPI Payment Link</option>
+          <option name="standard" value="0">
+            Standard Payment Link
+          </option>
+          <option name="upi" value="1">
+            UPI Payment Link
+          </option>
         </Field>
       </div>
     );

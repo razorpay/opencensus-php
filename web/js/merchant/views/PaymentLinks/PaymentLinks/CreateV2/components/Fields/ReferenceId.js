@@ -1,8 +1,9 @@
 import { connect } from 'react-redux';
 
 import Input from 'common/new-ui/Input';
+import track from '../../track';
 
-const ReceiptNo = (props) => (
+const ReferenceId = (props) => (
   <Input
     name="reference_id"
     placeholder="123456"
@@ -10,10 +11,11 @@ const ReceiptNo = (props) => (
     class="Input--vTop"
     required={props.required}
     disabled={props.disabled}
+    onBlur={track.lj.fields.receipt}
   />
 );
 
 const mapStateTopProps = (state) => ({
   required: state.session.user.isInvoiceReceiptMandatory,
 });
-export default connect(mapStateTopProps)(ReceiptNo);
+export default connect(mapStateTopProps)(ReferenceId);
