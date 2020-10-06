@@ -1225,6 +1225,9 @@ class Base extends BaseCore
 
     protected function checkIfPLServiceIsDown()
     {
+        // todo temp fix https://jira.corp.razorpay.com/browse/RX-3668
+        return;
+
         $mid = $this->merchant->getId();
 
         $variant = $this->app['razorx']->getTreatment($mid,
@@ -1245,6 +1248,9 @@ class Base extends BaseCore
 
     protected function checkIfMerchantOnAPI() : bool
     {
+        // todo temp fix https://jira.corp.razorpay.com/browse/RX-3668
+        return false;
+
         $mid = $this->merchant->getId();
 
         $variant = $this->app['razorx']->getTreatment($mid,

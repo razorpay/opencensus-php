@@ -21,6 +21,11 @@ use RZP\Mail\PayoutLink\CustomerOtpInternal;
 class Service extends Base\Service
 {
     use Base\Traits\ServiceHasCrudMethods;
+    const SUCCESS = 'success';
+    const FAILURE = 'failure';
+    const PAYOUT_LINK_IDS = 'payout_link_ids';
+    const MESSAGE = 'message';
+    const UPDATE_SUCCESS = 'Update Success';
 
     /**
      * @var Core
@@ -43,6 +48,9 @@ class Service extends Base\Service
 
     public function checkIfPLServiceIsDown()
     {
+        // todo temp fix https://jira.corp.razorpay.com/browse/RX-3668
+        return;
+
         $mid = $this->merchant->getId();
 
         $variant = $this->app['razorx']->getTreatment($mid,
@@ -63,6 +71,9 @@ class Service extends Base\Service
 
     public function checkIfMerchantOnAPI() : bool
     {
+        // todo temp fix https://jira.corp.razorpay.com/browse/RX-3668
+        return false;
+
         $mid = $this->merchant->getId();
 
         $variant = $this->app['razorx']->getTreatment($mid,
@@ -391,6 +402,47 @@ class Service extends Base\Service
         return $this->app['payout-links']->initiate($this->merchant, $input, $payoutLinkId);
     }
 
+    public function pullBulkPayoutStatus($payoutLinkId, array $input = [])
+    {
+        if (empty($input) === true)
+        {
+            return self::pullPayoutStatus($payoutLinkId);
+        }
+
+        $successIds = $failureIds = [];
+
+        $payoutLinkIdsString = array_pull($input, self::PAYOUT_LINK_IDS, []);
+
+        $payoutLinkIds = explode(',', $payoutLinkIdsString);
+
+        foreach ($payoutLinkIds as $id)
+        {
+            try
+            {
+                $response = self::pullPayoutStatus($id);
+
+                $message = array_pull($response, self::MESSAGE,"");
+
+                if ($message === self::UPDATE_SUCCESS)
+                {
+                    array_push($successIds, $id);
+                }
+                else
+                {
+                    array_push($failureIds, $id . ' ' . $message);
+                }
+            }
+            catch(\Exception $e)
+            {
+                array_push($failureIds, $id . ' ' . $e->getMessage());
+            }
+        }
+        return [
+            self::SUCCESS => $successIds,
+            self::FAILURE => $failureIds
+        ];
+    }
+
     public function pullPayoutStatus($payoutLinkId)
     {
         list($mode, $merchant)  = $this->getModeAndMerchant($payoutLinkId);
@@ -549,10 +601,10 @@ class Service extends Base\Service
             Merchant\RazorxTreatment::RX_IS_PAYOUT_LINK_SERVICE_DOWN,
             $this->app['rzp.mode'] ?? 'live');
 
-        if($variant == 'on')
-        {
-            return View::make('payout_link.customer_hosted_maintenance');
-        }
+//        if($variant == 'on')
+//        {
+//            return View::make('payout_link.customer_hosted_maintenance');
+//        }
 
         if($this->checkIfMerchantOnAPI() == true)
         {

@@ -157,7 +157,7 @@ class PayoutLinkController extends Controller
 
     public function pullPayoutStatus(string $payoutLinkId)
     {
-        $response =$this->service()->pullPayoutStatus($payoutLinkId);
+        $response =$this->service()->pullBulkPayoutStatus($payoutLinkId, $this->input);
 
         return ApiResponse::json($response);
     }

@@ -78,6 +78,8 @@ class PayoutLinkTest extends TestCase
     const TIMELINE              = 'timeline';
     const RESEND_NOTIFICATION   = 'resend';
 
+    const SKIP_REASON = 'Skipping this since moved to microservice';
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/PayoutLinkTestData.php';
@@ -101,6 +103,8 @@ class PayoutLinkTest extends TestCase
 
     public function testBoolCastingInPayoutLinkNotification()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $payoutLink = $this->testCreatePayoutLinkPassesWithoutOtpWhenPrivateAuth();
 
         $this->testData[__FUNCTION__]['request']['url'] = '/payout-links/' . $payoutLink['id'];
@@ -111,6 +115,8 @@ class PayoutLinkTest extends TestCase
 
     public function testWebhooksEnabled()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->proxyAuth();
 
         $this->ba->addXOriginHeader();
@@ -145,6 +151,8 @@ class PayoutLinkTest extends TestCase
 
     public function testWebhooksUpdate()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->proxyAuth();
 
         $this->ba->addXOriginHeader();
@@ -188,6 +196,8 @@ class PayoutLinkTest extends TestCase
 
     public function testWebhooksEnabledPartial()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->proxyAuth();
 
         $this->ba->addXOriginHeader();
@@ -220,6 +230,8 @@ class PayoutLinkTest extends TestCase
 
     public function testExceptionOnCreatePayoutLinkWithoutOtpOnProxyAuth()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->proxyAuth();
 
         $this->addAccountNumberParameter(__FUNCTION__);
@@ -229,6 +241,8 @@ class PayoutLinkTest extends TestCase
 
     public function testPayoutLinkFetchExpandsByUser()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->testPostRequestForCreatingPayoutLinkOnProxyAuth();
 
         $this->ba->proxyAuth();
@@ -244,6 +258,8 @@ class PayoutLinkTest extends TestCase
 
     public function testExceptionOnCreatePayoutLinkWithInvalidOtpOnProxyAuth()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->proxyAuth('rzp_test_10000000000000' ,  'MerchantUser01');
 
         $this->addAccountNumberParameter(__FUNCTION__);
@@ -253,6 +269,8 @@ class PayoutLinkTest extends TestCase
 
     public function testExceptionOnCreatePayoutLinkWithoutTokenOnProxyAuth()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->proxyAuth();
 
         $this->addAccountNumberParameter(__FUNCTION__);
@@ -262,6 +280,8 @@ class PayoutLinkTest extends TestCase
 
     public function testCreatePayoutLinkPassesWithoutOtpWhenPrivateAuth()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->privateAuth();
 
         $this->addAccountNumberParameter(__FUNCTION__);
@@ -271,6 +291,8 @@ class PayoutLinkTest extends TestCase
 
     public function testExceptionWhenSendSmsEnabledWithNoPhoneInContact()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->privateAuth();
 
         $this->addAccountNumberParameter(__FUNCTION__);
@@ -280,6 +302,8 @@ class PayoutLinkTest extends TestCase
 
     public function testSendLinkEmailQueuedWhenOnPayoutLinkCreate()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         Mail::fake();
 
         $this->ba->privateAuth();
@@ -293,6 +317,8 @@ class PayoutLinkTest extends TestCase
 
     public function testExceptionWhenSendEmailEnabledWithNoEmailInContact()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->privateAuth();
 
         $this->addAccountNumberParameter(__FUNCTION__);
@@ -305,6 +331,8 @@ class PayoutLinkTest extends TestCase
      */
     public function testPayoutLinkCreation()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $input = [
             PayoutLink::AMOUNT       => 1000,
             PayoutLink::CURRENCY     => Currency::INR,
@@ -327,6 +355,8 @@ class PayoutLinkTest extends TestCase
 
     public function testPostRequestForCreatingPayoutLink()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->privateAuth();
 
         $this->addAccountNumberParameter(__FUNCTION__);
@@ -336,6 +366,8 @@ class PayoutLinkTest extends TestCase
 
     public function testPostRequestForCreatingPayoutLinkOnProxyAuth()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->proxyAuth();
 
         $this->addAccountNumberParameter(__FUNCTION__);
@@ -345,6 +377,8 @@ class PayoutLinkTest extends TestCase
 
     public function testPostRequestForCreatingPayoutLinkWithContactId()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->privateAuth();
 
         $this->addAccountNumberParameter(__FUNCTION__);
@@ -354,6 +388,8 @@ class PayoutLinkTest extends TestCase
 
     public function testGetPayoutLinkById()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $testData = self::TEST_PAYOUT_LINK_PAYLOAD;
 
         $testData['balance_id'] = $this->bankingBalance->getId();
@@ -374,6 +410,8 @@ class PayoutLinkTest extends TestCase
 
     public function testListPayoutLink()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->privateAuth();
 
         $i = 0;
@@ -415,6 +453,8 @@ class PayoutLinkTest extends TestCase
 
     public function testListPayoutLinkWithSearchParameter()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $testPayload = self::TEST_PAYOUT_LINK_PAYLOAD;
 
         $testPayload['balance_id'] = $this->bankingBalance->getId();
@@ -439,6 +479,8 @@ class PayoutLinkTest extends TestCase
 
     public function testPayoutWithPayoutLinkRelationship()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $payout = $this->fixtures->create('payout');
 
         $payoutLink = $this->fixtures->create(self::FIXTURE_ENTITY,
@@ -459,6 +501,8 @@ class PayoutLinkTest extends TestCase
 
     public function testShortUrlGenerationSuccessful()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->privateAuth();
 
         $testHardCodedShortUrl = 'www.this_is_when_elfin_works.com';
@@ -479,6 +523,8 @@ class PayoutLinkTest extends TestCase
 
     public function testShortUrlGenerationExceptionThrown()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $urlFormat = '%s/v1/payout-links/%s/view';
 
         $this->ba->privateAuth();
@@ -508,6 +554,8 @@ class PayoutLinkTest extends TestCase
 
     public function testPayoutLinkFailedDueToContactCreationFailure()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->privateAuth();
 
         $this->addAccountNumberParameter(__FUNCTION__);
@@ -517,6 +565,8 @@ class PayoutLinkTest extends TestCase
 
     public function testContactAddFailsWhenEmailAndPhoneNumberBothMissing()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->privateAuth();
 
         $this->addAccountNumberParameter(__FUNCTION__);
@@ -526,6 +576,8 @@ class PayoutLinkTest extends TestCase
 
     public function testPayoutLinkCreationFailsWhenContactIdIsMissingBothEmailAndPhone()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $contact = $this->fixtures->create('contact',
                                            [
                                                'name'    => 'Test Contact',
@@ -548,6 +600,8 @@ class PayoutLinkTest extends TestCase
 
     public function testGenerateOtpForOnlyPhoneContact()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         Mail::fake();
 
         $contact = $this->fixtures->create('contact',
@@ -576,6 +630,8 @@ class PayoutLinkTest extends TestCase
 
     public function testGenerateOtpForOnlyEmailContact()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         Mail::fake();
 
         $contact = $this->fixtures->create('contact',
@@ -602,6 +658,8 @@ class PayoutLinkTest extends TestCase
 
     public function testVerifyOtpSuccessful()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
@@ -618,6 +676,8 @@ class PayoutLinkTest extends TestCase
 
     public function testVerifyOtpFailedByInvalidOtp()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
@@ -630,6 +690,8 @@ class PayoutLinkTest extends TestCase
 
     public function testExceptionWhenOtpGeneratedWithoutEmailAndPhoneNumber()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $contact = $this->fixtures->create('contact',
                                            [
                                                'id'      => '1000011contact',
@@ -654,6 +716,8 @@ class PayoutLinkTest extends TestCase
 
     public function testExceptionWhenOnlyPhoneIsPresentAndSmsFails()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $raven = Mockery::mock('RZP\Services\Raven');
 
         $raven->shouldReceive('sendSms')
@@ -688,6 +752,8 @@ class PayoutLinkTest extends TestCase
 
     public function testOtpGenerationWithContext()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'contact_id' => $this->contact->getId(),
@@ -701,6 +767,8 @@ class PayoutLinkTest extends TestCase
 
     public function testOtpVerificationWithContext()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'contact_id' => $this->contact->getId(),
@@ -714,6 +782,8 @@ class PayoutLinkTest extends TestCase
 
     public function testWhenRavenFailsWhileOtpGenerationExceptionIsThrown()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $raven = Mockery::mock('RZP\Services\Raven');
 
         $raven->shouldReceive('sendSms')
@@ -757,6 +827,8 @@ class PayoutLinkTest extends TestCase
 
     public function testCancellingPayoutLinkFromProcessingStatusShouldThrowException()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
@@ -775,6 +847,8 @@ class PayoutLinkTest extends TestCase
 
     public function testMerchantSettingsUpdateApiForNonPayoutModeSettings()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->proxyAuth();
 
         $slackMock = Mockery::mock();
@@ -786,6 +860,8 @@ class PayoutLinkTest extends TestCase
 
     public function testMerchantSettingsUpdateApiForIMPSDisabled()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $queueMethodOutput = [
             'Payout Mode IMPS disabled for 10000000000000 by DASHBOARD_INTERNAL',
             [],
@@ -811,6 +887,8 @@ class PayoutLinkTest extends TestCase
 
     public function testMerchantSettingsUpdateApiForUPIDisabled()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $queueMethodOutput = [
             'Payout Mode UPI disabled for 10000000000000 by DASHBOARD_INTERNAL',
             [],
@@ -836,6 +914,8 @@ class PayoutLinkTest extends TestCase
 
     public function testMerchantSettingsGetApi()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->testMerchantSettingsUpdateApiForIMPSDisabled();
 
         $this->startTest();
@@ -843,6 +923,8 @@ class PayoutLinkTest extends TestCase
 
     public function testSettingPayoutLinkToInvalidStatusShouldThrowException()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
@@ -857,6 +939,8 @@ class PayoutLinkTest extends TestCase
 
     public function testCancelIdempotencyByCallingTheCancelApiTwice()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
@@ -873,6 +957,8 @@ class PayoutLinkTest extends TestCase
 
     public function testGetFundAccountWithValidTokenReturnsFundAccountArray()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         // call fund-account, assuming OTP verification will pass as redis is mocked to return non-null value,
         // which signifies OTP is present
         $payoutLink = $this->fixtures->create('payout_link',
@@ -890,6 +976,8 @@ class PayoutLinkTest extends TestCase
 
     public function testGetFundAccountWithInvalidTokenRaisesException()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         // call fund-account, assuming OTP verification will pass as redis is mocked to return Null,
         // which means token is not found
         $payoutLink = $this->fixtures->create('payout_link',
@@ -904,6 +992,8 @@ class PayoutLinkTest extends TestCase
 
     public function testInitiateApiBankAccountRequiredWhenTypeIsBankAccount()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
@@ -918,6 +1008,8 @@ class PayoutLinkTest extends TestCase
 
     public function testInitiateApiVpaRequiredWhenTypeIsVpa()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
@@ -933,6 +1025,8 @@ class PayoutLinkTest extends TestCase
 
     public function testInitiateApiWithInvalidAccountTypeRaisesException()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
@@ -945,6 +1039,8 @@ class PayoutLinkTest extends TestCase
 
     public function testInitiateApiWhenTokenIsAbsent()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
@@ -957,6 +1053,8 @@ class PayoutLinkTest extends TestCase
 
     public function testInitiateApiWithInvalidTokenRaiseException()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
@@ -969,6 +1067,8 @@ class PayoutLinkTest extends TestCase
 
     public function testInitiateApiWithInvalidFundAccountIdThrowException()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
@@ -983,6 +1083,8 @@ class PayoutLinkTest extends TestCase
 
     public function testInitiateApiSuccessWhenValidVpaPassed($payoutLink = null, $createFa = true)
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->markTestSkipped('Only IMPS on Yesbank');
 
         if ($payoutLink === null)
@@ -1014,6 +1116,8 @@ class PayoutLinkTest extends TestCase
 
     public function testInitiateApiSuccessWhenValidBankAccountPassed()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->markTestSkipped('Only IMPS on Yesbank');
 
         $payoutLink = $this->fixtures->create('payout_link',
@@ -1053,6 +1157,8 @@ class PayoutLinkTest extends TestCase
 
     public function testInitiateApiFailsWhenFundAccountIdPassedBelongsToAnotherContact()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $contact1 = $this->contact;
 
         $contact2 = $this->fixtures->create('contact',
@@ -1123,6 +1229,8 @@ class PayoutLinkTest extends TestCase
     // until we handle dispatching of update events once the transaction is completed
     public function _testPayoutStatusReversedMakesLinkStatusAttempted()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
@@ -1165,6 +1273,8 @@ class PayoutLinkTest extends TestCase
     // todo , pl need to first handle dispatch of event after transaction completion
     public function _testPayoutStatusProcessedMakesLinkStatusProcessed()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
@@ -1203,6 +1313,8 @@ class PayoutLinkTest extends TestCase
 
     public function testPayoutLinkSettingsApiSuccess()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->adminAuth();
 
         $this->startTest();
@@ -1218,6 +1330,8 @@ class PayoutLinkTest extends TestCase
 
     public function testPayoutLinkSettingsGetApiSuccess()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $merchant = $this->contact->merchant;
 
         $settingAccessor = Settings\Accessor::for($merchant, Settings\Module::PAYOUT_LINK);
@@ -1262,6 +1376,8 @@ class PayoutLinkTest extends TestCase
 
     public function testImpsPayoutModeWhenBankFundAccountAndAmountLessThanTwoLacs()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId(),
@@ -1296,6 +1412,8 @@ class PayoutLinkTest extends TestCase
 
     public function testNeftPayoutModeWhenBankFundAccountAndAmountMoreThanTwoLacs()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->markTestSkipped('Only IMPS on Yesbank');
 
         $this->bankingBalance->balance = '300000000';
@@ -1359,6 +1477,8 @@ class PayoutLinkTest extends TestCase
 
     public function testPayoutLinkThrowsExceptionWhenInitiateCalledWithInvalidState()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
@@ -1376,6 +1496,8 @@ class PayoutLinkTest extends TestCase
 
     public function testGenerateOtpOnCancelledLinkThrowsException()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
@@ -1392,6 +1514,8 @@ class PayoutLinkTest extends TestCase
 
     public function testVerifyOtpOnCancelledLinkThrowsException()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
@@ -1408,6 +1532,8 @@ class PayoutLinkTest extends TestCase
 
     public function testInitiateApiWithInvalidFundAccountTypeThrowsException()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
@@ -1436,6 +1562,8 @@ class PayoutLinkTest extends TestCase
 
     public function testInitiateApiHasPayoutInfo()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
@@ -1450,6 +1578,8 @@ class PayoutLinkTest extends TestCase
 
     public function testPayoutLinkStatusApi()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->publicAuth();
 
         $payoutLink = $this->fixtures->create('payout_link',
@@ -1465,6 +1595,8 @@ class PayoutLinkTest extends TestCase
 
     public function testPayoutAmountAboveLimitFailsCreation()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->privateAuth();
 
         $this->addAccountNumberParameter(__FUNCTION__);
@@ -1474,6 +1606,8 @@ class PayoutLinkTest extends TestCase
 
     public function testInvalidPurposeThrowsException()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->privateAuth();
 
         $this->addAccountNumberParameter(__FUNCTION__);
@@ -1494,6 +1628,8 @@ class PayoutLinkTest extends TestCase
 
     public function testOnBoardingApiAllFalseInDefaultState()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->proxyAuth();
 
         $this->startTest();
@@ -1501,6 +1637,8 @@ class PayoutLinkTest extends TestCase
 
     public function testOnBoardingApiBrandingTrue()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->proxyAuth();
 
         $this->fixtures->edit('merchant',
@@ -1515,6 +1653,8 @@ class PayoutLinkTest extends TestCase
 
     public function testOnBoardingApiPayoutLinkCreatedTrue()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->proxyAuth();
 
         $testData = self::TEST_PAYOUT_LINK_PAYLOAD;
@@ -1528,6 +1668,8 @@ class PayoutLinkTest extends TestCase
 
     public function testOnBoardingApiPayoutLinkProcessedTrue()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->proxyAuth();
 
         $testData = self::TEST_PAYOUT_LINK_PAYLOAD;
@@ -1546,6 +1688,8 @@ class PayoutLinkTest extends TestCase
     // test that failure email is in the queue, when we call the updater with failed thingy
     public function testSuccessEmailQueuedWhenPayoutLinkGetsSuccessFromPayout()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         Mail::fake();
 
         $fa = $this->fixtures->create('fund_account:bank_account',
@@ -1585,6 +1729,8 @@ class PayoutLinkTest extends TestCase
 
     public function testFailedEmailQueuedWhenPayoutLinkGetsCancelledFromPayout()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         Mail::fake();
 
         $fa = $this->fixtures->create('fund_account:bank_account',
@@ -1624,6 +1770,8 @@ class PayoutLinkTest extends TestCase
 
     public function testResendApiQueuesEmail()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         Mail::fake();
 
         $this->ba->proxyAuth();
@@ -1647,6 +1795,8 @@ class PayoutLinkTest extends TestCase
 
     public function testResendApiThrowsErrorForSendSmsWithoutContact()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->proxyAuth();
 
         $payoutLink = $this->fixtures->create('payout_link',
@@ -1662,6 +1812,8 @@ class PayoutLinkTest extends TestCase
 
     public function testResendApiThrowsErrorForSendEmailWithoutEmail()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->proxyAuth();
 
         $payoutLink = $this->fixtures->create('payout_link',
@@ -1677,6 +1829,8 @@ class PayoutLinkTest extends TestCase
 
     public function testResendApiSendSmsWithSmsPassed()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         Mail::fake();
 
         $this->ba->proxyAuth();
@@ -1698,6 +1852,8 @@ class PayoutLinkTest extends TestCase
 
     public function testResendApiSendEmailWithEmailPassed()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         Mail::fake();
 
         $this->ba->proxyAuth();
@@ -1717,6 +1873,8 @@ class PayoutLinkTest extends TestCase
 
     public function testResendApiUpdateContactThrowExceptionWhenContactPresent()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->proxyAuth();
 
         $payoutLink = $this->fixtures->create('payout_link',
@@ -1731,6 +1889,8 @@ class PayoutLinkTest extends TestCase
 
     public function testResendApiUpdateEmailThrowExceptionWhenEmailPresent()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $this->ba->proxyAuth();
 
         $payoutLink = $this->fixtures->create('payout_link',
@@ -1777,6 +1937,8 @@ class PayoutLinkTest extends TestCase
 
     public function testGetFundAccountsOfContact()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $contact = $this->fixtures->create('contact',
             [
                 'id'      => '1000020contact',
@@ -1824,6 +1986,8 @@ class PayoutLinkTest extends TestCase
 
     public function testGetFundAccountsOfContactWithInactiveFundAccount()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $contact = $this->fixtures->create('contact',
             [
                 'id'      => '1000021contact',
@@ -1872,6 +2036,8 @@ class PayoutLinkTest extends TestCase
 
     public function testPayoutLinkPaymentMode()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $payout_mode = 'IMPS';
 
         $contact = $this->fixtures->create('contact',
@@ -1925,6 +2091,8 @@ class PayoutLinkTest extends TestCase
 
     public function testPayoutLinkGetPayoutSuccess()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $contact = $this->fixtures->create('contact',
                                            [
                                                'id'      => '1000011contact',
@@ -1945,6 +2113,8 @@ class PayoutLinkTest extends TestCase
 
     public function testPayoutLinkGetPayoutFailed()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $contact = $this->fixtures->create('contact',
                                            [
                                                'id'      => '1000011contact',
@@ -1971,6 +2141,8 @@ class PayoutLinkTest extends TestCase
 
     public function testPayoutLinkPaymentModeWithoutPayout()
     {
+        self::markTestSkipped(self::SKIP_REASON);
+
         $contact = $this->fixtures->create('contact',
                                            [
                                                'id'      => '1000011contact',

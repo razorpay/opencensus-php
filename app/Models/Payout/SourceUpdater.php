@@ -171,6 +171,9 @@ class SourceUpdater
 
     protected static function checkIfPLServiceIsDown(PayoutEntity $payout) : bool
     {
+        // todo temp fix https://jira.corp.razorpay.com/browse/RX-3668
+        return false;
+
         $app = App::getFacadeRoot();
 
         $mid = $payout->merchant->getId();
@@ -184,6 +187,9 @@ class SourceUpdater
 
     protected static function checkIfMerchantOnAPI(PayoutEntity $payout) : bool
     {
+        // todo temp fix https://jira.corp.razorpay.com/browse/RX-3668
+        return false;
+
         $app = App::getFacadeRoot();
 
         $mid = $payout->merchant->getId();
