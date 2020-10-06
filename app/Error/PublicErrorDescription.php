@@ -20,7 +20,6 @@ class PublicErrorDescription
     //        %x74 /          ; t    tab             U+0009
     //
 
-
     const GATEWAY_ERROR                                                         = 'Payment processing failed due to error at bank or wallet gateway';
     const SERVER_ERROR                                                          = 'The server encountered an error. The incident has been reported to admins.';
     const GATEWAY_ERROR_REQUEST_TIMEOUT                                         = 'The gateway request to submit payment information timed out. Please submit your details again';
@@ -1237,6 +1236,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INCORRECT_BALANCE_TYPE                = 'Only Banking type balance is allowed.';
     const BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INVALID_BALANCE_ID                    = 'Invalid balance id, no db records found.';
+    const BAD_REQUEST_VIRTUAL_ACCOUNT_RECEIVER_TYPES_NOT_ALLOWED                    = 'Third Party Validation is not supported for UPI Transfers.';
 
     const BAD_REQUEST_PAYOUT_SOURCE_ALREADY_EXISTS                                  = 'A source with same source_id and source_type already exists.';
     const BAD_REQUEST_ANOTHER_PAYOUT_SOURCE_EXISTS_WITH_SAME_PRIORITY               = 'A source with same priority already exists.';
