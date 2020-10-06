@@ -167,7 +167,12 @@ class Base extends FundAccountPayout\Base
 
         $mode = $payout->getMode();
 
-        $valid = Mode::validateChannelAndModeForPayouts($channel, $destinationType, $mode);
+        $merchantId = $payout->getMerchantId();
+
+        /** @var Payout\Validator $validator */
+        $validator = $payout->getValidator();
+
+        $valid = $validator->validateChannelAndModeForPayouts($merchantId, $channel, $destinationType, $mode);
 
         if ($valid === false)
         {

@@ -2814,6 +2814,8 @@ class PayoutTest extends TestCase
 
     public function testCreateRblPayoutToCard()
     {
+        $this->mockRazorxTreatment('payout_to_cards_via_rbl');
+
         $balanceAttributes = [
             'balance' => 10000000,
             'balanceType' => 'direct',
@@ -2828,7 +2830,7 @@ class PayoutTest extends TestCase
         );
 
         $virtualAccount = $this->fixtures->create('virtual_account');
-        $bankAccount    = $this->fixtures->create(
+        $secondBankAccount    = $this->fixtures->create(
             'bank_account',
             [
                 'type'           => 'virtual_account',
@@ -2837,7 +2839,7 @@ class PayoutTest extends TestCase
                 'ifsc_code'      => 'RAZRB000000',
             ]);
 
-        $virtualAccount->bankAccount()->associate($bankAccount);
+        $virtualAccount->bankAccount()->associate($secondBankAccount);
         $virtualAccount->balance()->associate($bankingBalance);
         $virtualAccount->save();
 
@@ -2854,6 +2856,12 @@ class PayoutTest extends TestCase
                 'account_id'   => '100000000lcard',
                 'active'       => 1,
             ]);
+
+        $this->fixtures->create('counter', [
+            'account_type'          => 'direct',
+            'balance_id'            => $bankingBalance->getId(),
+            'free_payouts_consumed' => FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL,
+        ]);
 
         $this->ba->privateAuth();
 

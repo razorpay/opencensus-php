@@ -89,6 +89,10 @@ class Mode
                     self::NEFT,
                     self::IFT,
                 ],
+                Constants\Entity::CARD          =>  [
+                    self::IMPS,
+                    self::NEFT,
+                ]
             ]
         ];
     }

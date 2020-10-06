@@ -3130,13 +3130,12 @@ return [
             'url'     => '/payouts',
             'content' => [
                 'account_number'        => '2224440041626906',
-                'amount'                => 20000000,
+                'amount'                => 2000000,
                 'currency'              => 'INR',
                 'purpose'               => 'refund',
                 'narration'             => 'Batman',
                 'mode'                  => 'IMPS',
                 'fund_account_id'       => 'fa_100000000002fa',
-                'queue_if_low_balance'  => 1,
                 'notes'                 => [
                     'abc' => 'xyz',
                 ],
@@ -3144,16 +3143,18 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'RBL does not support IMPS payouts to CARD',
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000002fa',
+                'mode'            => 'IMPS',
+                'purpose'         => 'refund',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
                 ],
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED,
         ],
     ],
 

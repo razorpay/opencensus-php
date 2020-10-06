@@ -167,6 +167,8 @@ final class RazorxTreatment
     // experiment for merchant when trim migration in progress
     const TRIM_MIGRATION_IN_PROGRESS = 'trim_migration_in_progress';
 
+    const PAYOUT_TO_CARDS_VIA_RBL = 'payout_to_cards_via_rbl';
+    
     // Timings update changes
     const ALLOWED_TRANSFER_MODES = 'allowed_transfer_modes';
 

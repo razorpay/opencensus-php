@@ -337,6 +337,10 @@ class Channel
                     Mode::NEFT,
                     Mode::IFT,
                 ],
+                Constants\Entity::CARD          =>  [
+                    Mode::IMPS,
+                    Mode::NEFT,
+                ]
             ],
             self::M2P       => [
                 Constants\Entity::CARD          =>  [

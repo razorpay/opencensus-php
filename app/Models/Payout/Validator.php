@@ -12,6 +12,7 @@ use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Settlement;
 use RZP\Models\FundAccount;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -855,5 +856,30 @@ class Validator extends Base\Validator
                 ]
             );
         }
+    }
+
+    public function validateChannelAndModeForPayouts(string $merchantId,
+                                                     string $channel = null,
+                                                     string $destinationType = null,
+                                                     string $mode = null) : bool
+    {
+        if (($channel === Settlement\Channel::RBL) and
+            ($destinationType === FundAccount\Type::CARD))
+            {
+                $app = App::getFacadeRoot();
+
+                $variant = $app->razorx->getTreatment(
+                    $merchantId,
+                    Merchant\RazorxTreatment::PAYOUT_TO_CARDS_VIA_RBL,
+                    $this->getMode()
+                );
+
+                if ($variant !== 'on')
+                {
+                    return false;
+                }
+            }
+
+        return PayoutMode::validateChannelAndModeForPayouts($channel, $destinationType, $mode);
     }
 }
