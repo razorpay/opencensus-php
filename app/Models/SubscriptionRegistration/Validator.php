@@ -99,6 +99,10 @@ class Validator extends Base\Validator
         Entity::FORM_REFERENCE2 => 'sometimes|string',
     ];
 
+    protected static $minAmountCheckRules = [
+        Entity::FIRST_PAYMENT_AMOUNT => 'required|integer|min_amount'
+    ];
+
     protected static $listTokensRules = [
         Base\Fetch::COUNT         => 'sometimes|integer|min:1|max:100',
         Base\Fetch::SKIP          => 'sometimes|integer|min:0',
@@ -237,8 +241,6 @@ class Validator extends Base\Validator
         $subscriptionRegistration->paperMandate->getValidator()->validateToAuthenticate();
     }
 
-
-
     public function validateInvoiceCreatedForTokenRegistration(Invoice\Entity $invoice)
     {
         if ($invoice->getEntityType() !== E::SUBSCRIPTION_REGISTRATION)
@@ -338,6 +340,15 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException(
                 'first payment amount cannot be greater than maximum amount'
             );
+        }
+
+        if ($firstPaymentAmount != 0)
+        {
+            $inputAmount = [
+                Entity::FIRST_PAYMENT_AMOUNT => $firstPaymentAmount,
+            ];
+
+            $this->validateInputValues('min_amount_check', $inputAmount);
         }
     }
 

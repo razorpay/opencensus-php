@@ -675,6 +675,43 @@ return [
         ],
     ],
 
+    'testMinFirstChargeAmountInAuthLinkCreate' => [
+        'request'  => [
+            'url'     => '/subscription_registration/auth_links',
+            'method'  => 'post',
+            'content' => [
+                'type'        => 'link',
+                'receipt'     => '00000000000001',
+                'amount'      => 0,
+                'customer'    => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+                'description' => 'test description',
+
+                'subscription_registration' => [
+                    'method' => 'emandate',
+                    'first_payment_amount' => 1,
+                    'max_amount' => 10000,
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'  => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The first payment amount must be atleast INR 1.00',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testFirstChargeAmountGreaterThanMaxAmount' => [
         'request'  => [
             'url'     => '/subscription_registration/auth_links',

@@ -662,6 +662,11 @@ class SubscriptionRegistrationTest extends TestCase
         $this->assertEquals(1100, $subr->amount);
     }
 
+    public function testMinFirstChargeAmountInAuthLinkCreate()
+    {
+        $this->startTest();
+    }
+
     public function testFirstChargeAmountGreaterThanMaxAmount()
     {
         $this->startTest();
