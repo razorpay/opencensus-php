@@ -671,6 +671,10 @@ export default class User {
     return this.getExpStatus('instrument_request_merchant_dashboard');
   }
 
+  isPLBatchUploadEnabled() {
+    return this.getExpStatus('enable_pl_batch_upload');
+  }
+
   // Setter Methods
   set secondFactorAuthOfCurrentMerchant(secondFactorAuth) {
     this.merchants[this.current].second_factor_auth = secondFactorAuth;

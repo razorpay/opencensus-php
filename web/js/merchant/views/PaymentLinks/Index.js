@@ -102,6 +102,7 @@ export default class PaymentLinksContainer extends React.Component {
             <ShowWhen
               additionalCondition={(user) =>
                 user.isAllowedView('payment_links_batch_uploads') &&
+                user.isPLBatchUploadEnabled &&
                 (!user.isSellerAppRole || user.isPaymentLinkBatchEnabledForSellerAppRole)
               }
             >
@@ -120,6 +121,7 @@ export default class PaymentLinksContainer extends React.Component {
                 component={BatchUploadList}
                 additionalCondition={(user) =>
                   user.isAllowedView('payment_links_batch_uploads') &&
+                  user.isPLBatchUploadEnabled &&
                   (!user.isSellerAppRole || user.isPaymentLinkBatchEnabledForSellerAppRole)
                 }
               />
