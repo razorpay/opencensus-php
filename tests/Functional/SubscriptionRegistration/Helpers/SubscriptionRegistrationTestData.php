@@ -753,5 +753,47 @@ return [
         ],
     ],
 
+    'testListTokens' => [
+        'request'  => [
+            'url'     => '/subscription_registration/tokens',
+            'method'  => 'get',
+            'content' => [
+                'skip'  => 0,
+                'count' => 25,
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testListTokensWithFilters' => [
+        'request'  => [
+            'url'     => '/subscription_registration/tokens',
+            'method'  => 'get',
+            'content' => [
+                'skip'  => 0,
+                'count' => 25,
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testListTokensWithPaymentIdFilter' => [
+        'request'  => [
+            'url'     => '/subscription_registration/tokens',
+            'method'  => 'get',
+            'content' => [
+                'skip'  => 0,
+                'count' => 25,
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     // ----------------------------------------------------------------------
 ];

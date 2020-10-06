@@ -24,12 +24,12 @@ class Fetch extends BaseFetch
         AuthType::PROXY_AUTH => [
             EsRepository::QUERY,
             EsRepository::SEARCH_HITS,
+            Entity::CONTACT,
+            Entity::EMAIL,
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::MERCHANT_ID,
-            Entity::EMAIL,
             Entity::ACTIVE,
-            Entity::CONTACT,
         ],
     ];
 

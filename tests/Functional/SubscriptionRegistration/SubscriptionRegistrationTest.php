@@ -676,4 +676,68 @@ class SubscriptionRegistrationTest extends TestCase
         $this->assertEquals(9999900, $subr->max_amount);
         $this->assertEquals(1100, $subr->amount);
     }
+
+    public function testListTokens()
+    {
+        $paymentRequest = $this->setupPaymentRequest();
+
+        $this->doAuthPayment($paymentRequest);
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->ba->proxyAuth();
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+        $this->assertEquals(1, sizeof($response['items']));
+        $this->assertEquals($token->getPublicId(), $response['items'][0]['id']);
+    }
+
+    public function testListTokensWithFilters()
+    {
+        $paymentRequest = $this->setupPaymentRequest();
+
+        $this->doAuthPayment($paymentRequest);
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->testData[__FUNCTION__]['request']['content']['customer_contact'] = $token->customer->getContact();
+
+        $this->ba->proxyAuth();
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+        $this->assertEquals(1, sizeof($response['items']));
+        $this->assertEquals($token->getPublicId(), $response['items'][0]['id']);
+
+        unset($this->testData[__FUNCTION__]['request']['content']['customer_contact']);
+
+        $this->testData[__FUNCTION__]['request']['content']['customer_email'] = $token->customer->getEmail();
+
+        $this->assertEquals(1, $response['count']);
+        $this->assertEquals(1, sizeof($response['items']));
+        $this->assertEquals($token->getPublicId(), $response['items'][0]['id']);
+    }
+
+    public function testListTokensWithPaymentIdFilter()
+    {
+        $paymentRequest = $this->setupPaymentRequest();
+
+        $this->doAuthPayment($paymentRequest);
+
+        $token = $this->getDbLastEntity('token');
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->testData[__FUNCTION__]['request']['content']['payment_id'] = $payment->getPublicId();
+
+        $this->testData[__FUNCTION__]['request']['content']['customer_contact'] = $token->customer->getContact();
+
+        $this->ba->proxyAuth();
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+        $this->assertEquals(1, sizeof($response['items']));
+        $this->assertEquals($token->getPublicId(), $response['items'][0]['id']);
+    }
 }

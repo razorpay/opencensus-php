@@ -37,18 +37,30 @@ class Service extends Base\Service
 
     public function listTokens(array $input): array
     {
+        (new Validator)->validateInput(__FUNCTION__, $input);
+
+        $customerFetchInput = [];
+
         if (empty($input[Entity::CUSTOMER_CONTACT]) === false)
         {
-            $customerContact = array_pull($input, Entity::CUSTOMER_CONTACT);
+            $customerFetchInput[CustomerEntity::CONTACT] = array_pull($input, Entity::CUSTOMER_CONTACT);
+        }
 
-            $customer = $this->repo->customer->findByContactAndMerchant($customerContact, $this->merchant);
+        if (empty($input[Entity::CUSTOMER_EMAIL]) === false)
+        {
+            $customerFetchInput[CustomerEntity::EMAIL] = array_pull($input, Entity::CUSTOMER_EMAIL);
+        }
 
-            if ($customer === null)
+        if (empty($customerFetchInput) === false)
+        {
+            $customers = $this->repo->customer->fetch($customerFetchInput, $this->merchant->getId());
+
+            if ($customers->count() === 0)
             {
                 return (new Base\PublicCollection)->toArrayPublic();
             }
 
-            $input[Token\Entity::CUSTOMER_ID] = $customer->getId();
+            $input[Token\Entity::CUSTOMER_ID] = $customers->getIds();
         }
 
         if (empty($input[Entity::PAYMENT_ID]) === false)

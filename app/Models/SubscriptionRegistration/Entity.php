@@ -72,6 +72,7 @@ class Entity extends Base\PublicEntity
 
     const PAYMENT_ID       = 'payment_id';
     const CUSTOMER_CONTACT = 'customer_contact';
+    const CUSTOMER_EMAIL   = 'customer_email';
 
     const DEFAULT_MAX_AMOUNT = 9999900;
 
