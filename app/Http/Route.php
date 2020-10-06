@@ -4588,6 +4588,7 @@ class Route
     ];
 
     public static $bankingRoutePermissions = [
+        'ufh_upload_file'                              => '*',
         'capital_cards_service'                        => '*',
         'capital_cards_admin'                          => '*',
         // common routes between banking and admin dashboard
