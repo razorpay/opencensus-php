@@ -5829,6 +5829,9 @@ ALTER TABLE merchants
 ALTER TABLE merchant_banks
     Add COLUMN apps SMALLINT UNSIGNED DEFAULT 0;
 
+Alter TABLE merchant_banks
+    ADD COLUMN upi_type TINYINT(1) NOT NULL DEFAULT 3;
+
 ALTER TABLE orders
     ADD COLUMN app_offer TINYINT(1) DEFAULT 0;
 

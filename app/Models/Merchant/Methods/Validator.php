@@ -42,6 +42,8 @@ class Validator extends Base\Validator
         Entity::CARD_SUBTYPE.'.*'  => 'sometimes|boolean',
         Entity::PREPAID_CARD       => 'sometimes|boolean',
         Entity::UPI                => 'sometimes|boolean',
+        Entity::UPI_TYPE           => 'sometimes|array',
+        Entity::UPI_TYPE.'.*'      => 'sometimes|boolean',
         Entity::AEPS               => 'sometimes|boolean',
         Entity::EMANDATE           => 'sometimes|boolean',
         Entity::NACH               => 'sometimes|boolean',
@@ -56,7 +58,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $setMethodsValidators = [
-        'methodBanks'
+        'methodBanks',
+        'methodUpi'
     ];
 
     protected static $bulkAssignMethodsRules = [
@@ -73,6 +76,16 @@ class Validator extends Base\Validator
         }
 
         $this->validateDisabledBanks($input);
+    }
+
+    protected function validateMethodUpi(array $input)
+    {
+        if (isset($input['upi']) === false || isset($input['upi_type']) === false)
+        {
+            return;
+        }
+
+        $this->validateUpi($input);
     }
 
     protected function validateMethods($attribute, $methods, $parameters)
@@ -111,6 +124,16 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Some banks are repeated',
                 'banks');
+        }
+    }
+
+    protected function validateUpi(array $input)
+    {
+        if (isset($input['upi']) === true && isset($input['upi_type']) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Upi and upi_type cannot be set at the same time',
+                'upi');
         }
     }
 }

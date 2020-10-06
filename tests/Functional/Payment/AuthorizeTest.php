@@ -696,6 +696,74 @@ class AuthorizeTest extends TestCase
         });
     }
 
+    public function testIntentPayment()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $payment = $this->getDefaultUpiIntentPaymentArray();
+
+        $this->fixtures->merchant->enableUpi('10000000000000');
+
+        $this->fixtures->merchant->disableUpiIntent('10000000000000');
+
+        unset($payment['description']);
+
+        $payment['_']['flow'] = 'intent';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPaymentViaAjaxRoute($payment);
+        });
+    }
+
+    public function testCollectPayment()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $this->fixtures->merchant->enableUpi('10000000000000');
+
+        $this->fixtures->merchant->disableUpiCollect('10000000000000');
+
+        unset($payment['description']);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPaymentViaAjaxRoute($payment);
+        });
+    }
+
+    public function testOmnichannelPayment()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->addFeatures('google_pay_omnichannel');
+
+        $payment = $this->getDefaultUpiIntentPaymentArray();
+
+        $this->fixtures->merchant->disableUpiIntent('10000000000000');
+
+        $payment['upi_provider'] = 'google_pay';
+
+        $payment['_']['flow'] = 'intent';
+
+        $this->fixtures->merchant->enableUpi('10000000000000');
+
+        $this->fixtures->merchant->disableUpiCollect('10000000000000');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPaymentViaAjaxRoute($payment);
+        });
+    }
+
     public function testContentTypeHtmlOnPaymentCreateRoute()
     {
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');

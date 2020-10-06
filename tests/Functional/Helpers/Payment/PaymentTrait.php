@@ -1632,6 +1632,15 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getDefaultUpiIntentPaymentArray()
+    {
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['method'] = 'upi';
+
+        return $payment;
+    }
+
     protected function getDefaultUpiBlockPaymentArray()
     {
         $payment = $this->getDefaultPaymentArrayNeutral();

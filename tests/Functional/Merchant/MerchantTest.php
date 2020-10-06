@@ -2619,6 +2619,62 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetCheckoutPreferencesForUpi()
+    {
+        $this->fixtures->merchant->enableUpi('10000000000000');
+
+        $response = $this->getPreferences();
+
+        $this->assertEquals($response['methods']['upi'],true);
+
+        $this->assertArrayHasKey('collect', $response['methods']['upi_type']);
+
+        $this->assertArrayHasKey('intent', $response['methods']['upi_type']);
+    }
+
+    public function testGetCheckoutPreferencesForDisabledUpi()
+    {
+        $this->fixtures->merchant->disableUpi('10000000000000');
+
+        $response = $this->getPreferences();
+
+        $this->assertEquals($response['methods']['upi'],false);
+
+        $this->assertEquals($response['methods']['upi_type']['collect'], 0);
+
+        $this->assertEquals($response['methods']['upi_type']['intent'], 0);
+    }
+
+    public function testGetCheckoutPreferencesForUpiIntent()
+    {
+        $this->fixtures->merchant->enableUpi('10000000000000');
+
+        $this->fixtures->merchant->disableUpiCollect('10000000000000');
+
+        $response = $this->getPreferences();
+
+        $this->assertEquals($response['methods']['upi'],true);
+
+        $this->assertEquals(false, $response['methods']['upi_type']['collect']);
+
+        $this->assertEquals(true, $response['methods']['upi_type']['intent']);
+    }
+
+    public function testGetCheckoutPreferencesForUpiCollect()
+    {
+        $this->fixtures->merchant->enableUpi('10000000000000');
+
+        $this->fixtures->merchant->disableUpiIntent('10000000000000');
+
+        $response = $this->getPreferences();
+
+        $this->assertEquals($response['methods']['upi'],true);
+
+        $this->assertEquals(true, $response['methods']['upi_type']['collect']);
+
+        $this->assertEquals(false, $response['methods']['upi_type']['intent']);
+    }
+
     public function testGetCheckoutPreferencesWithForcedEmiSubventionOffer()
     {
         $this->fixtures->merchant->enableEmi();

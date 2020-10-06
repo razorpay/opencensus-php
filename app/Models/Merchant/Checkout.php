@@ -84,6 +84,8 @@ class Checkout
 
         $data[Entity::METHODS] = (new Methods\Core)->getFormattedMethods($merchant);
 
+        $data[Entity::METHODS] = (new Methods\Core)->addUpiType($merchant, $data[Entity::METHODS]);
+
         $this->checkAndFillSavedTokens($input, $merchant, $data);
 
         $this->checkAndAddDetailsForOrder($input, $merchant, $data);

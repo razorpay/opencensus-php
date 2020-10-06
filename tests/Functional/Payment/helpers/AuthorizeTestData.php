@@ -1,5 +1,7 @@
 <?php
 
+use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Gateway\Hdfc;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -705,6 +707,54 @@ return [
         'exception' => [
             'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testIntentPayment' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'UPI intent transactions are not enabled for the merchant'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INTENT_NOT_ENABLED_FOR_MERCHANT
+        ],
+    ],
+
+    'testCollectPayment' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'UPI collect transactions are not enabled for the merchant'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_NOT_ENABLED_FOR_MERCHANT
+        ],
+    ],
+
+    'testOmnichannelPayment' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'UPI collect transactions are not enabled for the merchant'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_NOT_ENABLED_FOR_MERCHANT
         ],
     ],
 

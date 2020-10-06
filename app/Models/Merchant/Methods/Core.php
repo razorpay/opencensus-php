@@ -259,6 +259,21 @@ class Core extends Base\Core
         return $data;
     }
 
+    public function addUpiType(Merchant\Entity $merchant, array $data):array
+    {
+        $methods = $this->getMethods($merchant);
+
+        $data[Entity::UPI_TYPE] = $methods->getUpiTypes();
+
+        if (isset($data['intent']) && $data['upi_intent'])
+        {
+            $data['upi_intent'] = $data[Entity::UPI_TYPE][UpiType::INTENT];
+        }
+
+        return $data;
+
+    }
+
     public function addRecurringCardsToMethods(
         Merchant\Entity $merchant,
         Methods\Entity $methods,

@@ -4389,7 +4389,7 @@ trait Authorize
                 break;
 
             case Payment\Method::UPI:
-                $this->verifyUpiEnabled();
+                $this->verifyUpiEnabled($payment);
                 break;
 
             case Payment\Method::BANK_TRANSFER:
@@ -6388,7 +6388,7 @@ trait Authorize
         $this->checkAndValidateAmexIfNotEnabled($merchantMethods, $payment->card);
     }
 
-    protected function verifyUpiEnabled()
+    protected function verifyUpiEnabled(Payment\Entity $payment)
     {
         $merchantMethods = $this->methods;
 
@@ -6397,6 +6397,32 @@ trait Authorize
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_NOT_ENABLED_FOR_MERCHANT);
+        }
+
+        $this->checkAndValidateIfUpiSubTypeDisabled($merchantMethods, $payment);
+
+    }
+
+    protected function checkAndValidateIfUpiSubTypeDisabled($methods, Payment\Entity $payment)
+    {
+        $isIntentType = $payment->isFlowIntent();
+
+        $upiProvider = $payment->getMetadata(Payment\Entity::UPI_PROVIDER); // if upiProvider is set, it is omnichannel
+
+        if (($isIntentType === true) && ($methods->isUpiIntentEnabled() === false) && (in_array($upiProvider, Payment\UpiProvider::$omnichannelProviders) === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_INTENT_NOT_ENABLED_FOR_MERCHANT);
+        }
+        else if (!$isIntentType && ($methods->isUpiCollectEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_NOT_ENABLED_FOR_MERCHANT);
+        }
+        else if ((in_array($upiProvider, Payment\UpiProvider::$omnichannelProviders) === true) && ($methods->isUpiCollectEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_NOT_ENABLED_FOR_MERCHANT);
         }
     }
 

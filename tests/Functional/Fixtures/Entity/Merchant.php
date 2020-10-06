@@ -515,6 +515,34 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['upi' => false]);
     }
 
+    public function enableUpiIntent($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['upi_type' => [
+            'intent'=> true
+        ]]);
+    }
+
+    public function enableUpiCollect($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['upi_type' => [
+            'collect'=> true
+        ]]);
+    }
+
+    public function disableUpiIntent($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['upi_type' => [
+            'intent'=> false
+        ]]);
+    }
+
+    public function disableUpiCollect($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['upi_type' => [
+            'collect'=> false
+        ]]);
+    }
+
     public function enableCard($id = '10000000000000')
     {
         return $this->fixtures->edit('methods', $id, ['debit_card' => true, 'credit_card' => true]);

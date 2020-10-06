@@ -40,6 +40,7 @@ class Entity extends Base\PublicEntity
     const PREPAID_CARD      = 'prepaid_card';
     const CARD_SUBTYPE      = 'card_subtype';
     const UPI               = 'upi';
+    const UPI_TYPE          = 'upi_type';
     const BANK_TRANSFER     = 'bank_transfer';
     const AEPS              = 'aeps';
     const EMANDATE          = 'emandate';
@@ -81,6 +82,7 @@ class Entity extends Base\PublicEntity
         self::MPESA,
         self::EMI,
         self::UPI,
+        self::UPI_TYPE,
         self::AEPS,
         self::EMANDATE,
         self::NACH,
@@ -119,6 +121,7 @@ class Entity extends Base\PublicEntity
         self::MPESA,
         self::EMI,
         self::UPI,
+        self::UPI_TYPE,
         self::AEPS,
         self::EMANDATE,
         self::NACH,
@@ -156,6 +159,7 @@ class Entity extends Base\PublicEntity
         self::MPESA,
         self::EMI,
         self::UPI,
+        self::UPI_TYPE,
         self::AEPS,
         self::EMANDATE,
         self::NACH,
@@ -198,6 +202,7 @@ class Entity extends Base\PublicEntity
         self::BANKS          => '[]',
         self::EMI            => EmiType::DEFAULT_TYPES,
         self::UPI            => true,
+        self::UPI_TYPE       => 3,
         self::AEPS           => false,
         self::EMANDATE       => false,
         self::NACH           => false,
@@ -365,6 +370,27 @@ class Entity extends Base\PublicEntity
     public function isUpiEnabled()
     {
         return $this->getAttribute(self::UPI);
+    }
+
+    public function getUpiTypeFromRepo():int
+    {
+        $upi = $this->attributes[self::UPI_TYPE];
+
+        return $upi;
+    }
+
+    public function isUpiIntentEnabled():bool
+    {
+        $upiTypes = $this->getUpiTypes();
+
+        return $upiTypes[UpiType::INTENT] === 1;
+    }
+
+    public function isUpiCollectEnabled():bool
+    {
+        $upiTypes = $this->getUpiTypes();
+
+        return $upiTypes[UpiType::COLLECT] === 1;
     }
 
     public function isBankTransferEnabled()
@@ -628,6 +654,11 @@ class Entity extends Base\PublicEntity
     public function getApps(): array
     {
         return $this->getAttribute(self::APPS);
+    }
+
+    public function getUpiType():array
+    {
+        return $this->getAttribute(self::UPI_TYPE);
     }
 
     public function getEnabledBanks()
@@ -956,6 +987,11 @@ class Entity extends Base\PublicEntity
         return $this->getEnabledApps();
     }
 
+    protected function getUpiTypeAttribute()
+    {
+        return $this->getUpiTypes();
+    }
+
     protected function getEnabledApps(): array
     {
         $apps = $this->attributes[self::APPS];
@@ -968,6 +1004,15 @@ class Entity extends Base\PublicEntity
         $networks = $this->attributes[self::CARD_NETWORKS];
 
         return Network::getEnabledCardNetworks($networks);
+    }
+
+    public function getUpiTypes()
+    {
+        $upi_type = $this->getUpiTypeFromRepo();
+
+        $upi = $this->isUpiEnabled();
+
+        return UpiType::getEnabledUpiTypes($upi, $upi_type);
     }
 
     protected function getDisabledBanksAttribute()
@@ -999,6 +1044,34 @@ class Entity extends Base\PublicEntity
         {
             $this->attributes[self::CARD_NETWORKS] = $networks;
         }
+    }
+
+    protected function setUpiAttribute($upi)
+    {
+        $this->attributes[self::UPI] = $upi;
+
+        $this->attributes[self::UPI_TYPE] = UpiType::getUpiTypeFromUpi($upi);
+    }
+
+    protected function setUpiTypeAttribute($upiType)
+    {
+        if (is_array($upiType) === true) {
+
+            $upiTypeAttribute = $this->attributes[self::UPI_TYPE];
+
+            $value = UpiType::getUpdatedBinaryValue($upiTypeAttribute, $upiType);
+
+            $this->attributes[self::UPI] = ($value > 0) ? 1 : 0;
+
+            $this->attributes[self::UPI_TYPE] = $value;
+        }
+        else
+        {
+            $this->attributes[self::UPI_TYPE] = $upiType;
+
+            $this->attributes[self::UPI] = ($upiType > 0) ? 1 : 0;
+        }
+
     }
 
     protected function setAppsAttribute($apps)
