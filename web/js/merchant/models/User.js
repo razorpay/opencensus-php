@@ -656,6 +656,10 @@ export default class User {
     return this.isFeatureEnabled('generate_partner_invoice');
   }
 
+  get isPLBatchUploadEnabled() {
+    return this.getExpStatus('enable_pl_batch_upload');
+  }
+
   // No experiment of disable-edit-<moduleName> => Module is not restricted
   isViewRestrictedByRazorX(moduleName) {
     // Eg: disable-view-reports (if corresponding experiment is "on", it can't be viewed by those merchants)
@@ -669,10 +673,6 @@ export default class User {
   }
   isInstrumentRequestAllowed() {
     return this.getExpStatus('instrument_request_merchant_dashboard');
-  }
-
-  isPLBatchUploadEnabled() {
-    return this.getExpStatus('enable_pl_batch_upload');
   }
 
   // Setter Methods
