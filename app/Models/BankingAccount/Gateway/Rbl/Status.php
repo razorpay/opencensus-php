@@ -190,7 +190,12 @@ class Status
 
         try
         {
-            $allowedBankStatusList = self::$bankToInternalStatusSubStatusMap[$status][$substatus];
+            $allowedBankStatusList = [];
+
+            if (isset(self::$bankToInternalStatusSubStatusMap[$status][$substatus]) === true)
+            {
+                $allowedBankStatusList = self::$bankToInternalStatusSubStatusMap[$status][$substatus];
+            }
 
             if (isset(self::$bankToInternalStatusSubStatusMap[$status][self::ALL]) === true)
             {

@@ -316,6 +316,13 @@ class Service extends Base\Service
             $updateInput[Entity::BANK_INTERNAL_STATUS] = $gatewayProcessor->transformBankStatusFromExternalToInternal($updateInput[Entity::BANK_INTERNAL_STATUS]);
         }
 
+        // if `null` string is sent for assignee team, then change it to null value.
+        if(isset($updateInput['activation_detail'][ActivationDetail\Entity::ASSIGNEE_TEAM])
+            && ($updateInput['activation_detail'][ActivationDetail\Entity::ASSIGNEE_TEAM] === 'null'))
+        {
+            $updateInput['activation_detail'][ActivationDetail\Entity::ASSIGNEE_TEAM] = null;
+        }
+
         // Convert date strings to epoch
         $dateFields = [
             ActivationDetail\Entity::ACCOUNT_OPEN_DATE,
