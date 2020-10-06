@@ -4123,7 +4123,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $paymentMetaEntity = $this->paymentMeta;
 
-        return (($paymentMetaEntity !== null) and ($paymentMetaEntity->getGatewayAmount() !== null)) ?
+        return (($paymentMetaEntity !== null) and
+                ($paymentMetaEntity->getGatewayAmount() !== null) and
+                ($paymentMetaEntity->getGatewayAmount() !== 0)) ?
                 $paymentMetaEntity->getGatewayAmount() : $this->getAmount();
     }
 
@@ -4131,7 +4133,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $paymentMetaEntity = $this->paymentMeta;
 
-        return (($paymentMetaEntity !== null) and ($paymentMetaEntity->getGatewayCurrency() !== null)) ?
+        return (($paymentMetaEntity !== null) and
+                ($paymentMetaEntity->getGatewayCurrency() !== null) and
+                (empty($paymentMetaEntity->getGatewayCurrency()) === false)) ?
                 $paymentMetaEntity->getGatewayCurrency() : $this->getCurrency();
     }
 
