@@ -780,7 +780,7 @@ class Core extends Base\Core
             $payoutId,
             function() use ($payoutId, $queueFlag)
             {
-                $payout = $this->repo->findOrFail($payoutId);
+                $payout = $this->repo->payout->findOrFail($payoutId);
 
                 $payout->getValidator()->validatePostCreateProcessPayout();
 
