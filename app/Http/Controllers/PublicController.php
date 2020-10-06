@@ -256,7 +256,7 @@ class PublicController extends Controller
         {
             $conn = DB::connection()->{$method}();
 
-            $conn->exec('select 1');
+            $conn->query('select 1')->fetch();
 
             if ($conn)
             {
