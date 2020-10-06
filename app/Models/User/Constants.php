@@ -181,6 +181,7 @@ class Constants
         "qa+uiautomation@razorpay.com",
         "qa+rzp@razorpay.com",
         "hdbfinservices@gmail.com",
+        "ramakishore.sankranthi@hdbfs.com",
         "reshma.sultana@hdbfs.com"
     ];
 }
