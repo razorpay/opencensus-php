@@ -62,5 +62,25 @@ return [
                 'rejected_amount'   => 0
             ]
         ]
-    ]
+    ],
+
+    'testPayoutBatchFileValidation' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count' => 2,
+                'error_count'       => 0,
+                'parsed_entries'    => [
+
+                ],
+                'total_payout_amount'     => 500
+            ],
+        ]
+    ],
 ];

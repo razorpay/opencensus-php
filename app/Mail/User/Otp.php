@@ -129,6 +129,9 @@ class Otp extends Mailable
             case 'create_payout':
                 $view = 'emails.user.otp_create_payout';
                 break;
+            case 'create_payout_batch':
+                $view = 'emails.user.otp_create_payout_batch';
+                break;
 
             case 'verify_email':
                 $view = 'emails.user.otp_email_verify';

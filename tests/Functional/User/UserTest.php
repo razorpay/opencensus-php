@@ -2412,4 +2412,32 @@ class UserTest extends TestCase
         });
     }
 
+    public function testSendBulkPayoutOtpViaEMail()
+    {
+        $this->createContact();
+        $this->createFundAccount();
+
+        Mail::fake();
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $this->fundAccount->getPublicId();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+
+        Mail::assertQueued(Otp::class, function($mail) {
+            $this->assertEquals('create_payout_batch', $mail->input['action']);
+            $this->assertNotEmpty($mail->user);
+            $this->assertNotEmpty($mail->otp);
+            $this->assertEquals(10000, $mail->input['total_payout_amount']);
+            $this->assertEquals('emails.user.otp_create_payout_batch', $mail->view);
+            $this->assertTrue(($mail->otp['expires_at'] > (Carbon::now(Timezone::IST)->getTimestamp() + 19800)) === true);
+            $this->assertTrue(($mail->otp['expires_at'] < (Carbon::now(Timezone::IST)->addMinutes(45)->getTimestamp() + 19800)) === true);
+
+            return true;
+        });
+    }
+
 }

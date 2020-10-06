@@ -1277,9 +1277,19 @@ class Core extends Base\Core
         }
         else if ($action === 'create_payout_batch')
         {
-            $payload += [
-                'account_number' => mask_except_last4($input['account_number']),
-            ];
+            //HACK : TODO Remove this after migrating all to create_payout_batch with total_payout_amount
+            if (array_key_exists('total_payout_amount', $input)) {
+                $payload += [
+                    'account_number'      => mask_except_last4($input['account_number']),
+                    'total_payout_amount' => amount_format_IN($input['total_payout_amount']),
+                ];
+            } else {
+                //Setting total_payout_amount to -1 to allow for raven to use the old OTP template
+                $payload += [
+                    'account_number'      => mask_except_last4($input['account_number']),
+                    'total_payout_amount' => -1
+                ];
+            }
         }
         else if ($action === 'approve_payout')
         {

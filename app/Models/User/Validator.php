@@ -179,7 +179,8 @@ class Validator extends Base\Validator
         'approved_payout_count'  => 'required_if:action,bulk_payout_approve|integer',
         'approved_payout_amount' => 'required_if:action,bulk_payout_approve|numeric',
         'rejected_payout_count'  => 'required_if:action,bulk_payout_approve|integer',
-        'rejected_payout_amount' => 'required_if:action,bulk_payout_approve|numeric'
+        'rejected_payout_amount' => 'required_if:action,bulk_payout_approve|numeric',
+        'total_payout_amount'    => 'sometimes|integer|min:100',
     ];
 
     protected static $sendOtpWithContactRules = [
