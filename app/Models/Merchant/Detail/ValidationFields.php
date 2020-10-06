@@ -235,7 +235,7 @@ class ValidationFields
             return $allSelectiveFields[$field][0];
         }
 
-        return null;
+        return [];
     }
 
     /**
