@@ -58,7 +58,7 @@ glob(
         file.endsWith('signup.js') ||
         ext.startsWith('woff')
       ) {
-        fileParams.CacheControl = 'no-store,no-transform';
+        fileParams.CacheControl = 'no-transform';
       }
 
       var type = ContentType[ext];
