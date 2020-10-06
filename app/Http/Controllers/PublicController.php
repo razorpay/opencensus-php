@@ -53,7 +53,6 @@ class PublicController extends Controller
         $okStatusRequired = [
             'd',
             'dr',
-            'c'
         ];
 
         $status = [
@@ -255,7 +254,11 @@ class PublicController extends Controller
         $method = 'get' . ucfirst($replica) . 'Pdo';
         try
         {
-            if (DB::connection()->{$method}())
+            $conn = DB::connection()->{$method}();
+
+            $conn->exec('select 1');
+
+            if ($conn)
             {
                 return 'ok';
             }
