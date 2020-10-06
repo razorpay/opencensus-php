@@ -1736,6 +1736,7 @@ app
         grecaptcha.render('login-recaptcha', {
           sitekey: window.INVISIBLE_CAPTCHA_SITE_KEY,
           callback: onCaptchaSubmit,
+          'error-callback': onCaptchaError,
         });
         if (!$scope.login.data.email || !$scope.login.data.password) {
           document.getElementById('login-recaptcha').disabled = true;
@@ -1854,6 +1855,7 @@ app
                   emailId: $scope.login.data.email,
                   error: firstError,
                   method: 'email',
+                  captcha: $scope.login.data.captcha === 'Faked' ? 'Faked' : '',
                 });
               }
             } else if (typeof firstError === 'object' && !!firstError.internal_error_code) {
@@ -1877,6 +1879,19 @@ app
         } else if (window.location.href.includes('access/signup')) {
           signup(val);
         }
+      };
+
+      onCaptchaError = function () {
+        window.rzpQ &&
+          window.rzpQ.push(
+            window.rzpQ.now().onbr().failed('recaptcha', {
+              error: 'Could not connect to captcha.',
+              sessionId: window.session_id,
+              emailId: $scope.login.data.email,
+              mode: $scope.eventsMode,
+              version: 1,
+            }),
+          );
       };
 
       /**
