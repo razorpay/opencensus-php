@@ -237,8 +237,8 @@ const getExtraFields = (user) => {
         <label>Payment Link Type</label>
         <Field name="upi_link" component="select" class="form-control input-sm">
           <option value="">All Types</option>
-          <option value={false}>Standard Payment Link</option>
-          <option value={true}>UPI Payment Link</option>
+          <option value="0">Standard Payment Link</option>
+          <option value="1">UPI Payment Link</option>
         </Field>
       </div>
     );

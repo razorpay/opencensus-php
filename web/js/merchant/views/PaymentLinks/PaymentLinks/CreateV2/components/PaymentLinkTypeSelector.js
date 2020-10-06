@@ -7,13 +7,14 @@ const PAYMENT_LINK_TYPES = [
     key: 'standard',
     title: 'Standard Payment Link',
     description:
-      'Create a payment link with the payment modes enabled - credit card, debit card, UPI, netbanking, wallet',
+      'Create a classic payment link to collect payment from your customers in all payment methods.',
     img: '/img/payment_links/standard_link.svg',
   },
   {
     key: 'upi',
     title: 'UPI Payment Link',
-    description: 'Create a deep UPI intent link to collect UPI payments from the end consumer',
+    description:
+      'Collect UPI payments from your customers, using UPI payment links, without knowing their UPI/VPA addresses.',
     img: '/img/payment_links/upi.png',
   },
 ];
@@ -69,7 +70,7 @@ class TemplateCard extends React.PureComponent {
           <div class="TemplateCard-desc">{description}</div>
 
           <div class="link">
-            <span>Use this Payment Link</span>
+            <span>Create Now</span>
             <i class="i i-arrow-forward" />
           </div>
         </div>

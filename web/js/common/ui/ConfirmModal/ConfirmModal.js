@@ -11,7 +11,7 @@ const ConfirmModal = (props, context) => {
       width: '325px',
     }),
   };
-  let { header, message } = props.options;
+  let { header, message, className } = props.options;
 
   return (
     <div>
@@ -20,25 +20,19 @@ const ConfirmModal = (props, context) => {
         style={confirmModelStyle}
         onRequestClose={props.onAbort}
         closeTimeoutMS={300}
-        class={`Modal Modal--small Modal--confirm`}
+        class={`Modal Modal--small Modal--confirm ${className}`}
         contentLabel="ConfirmModal"
         ariaHideApp={false}
       >
         <div class="modal-header">
-          <h3 class="modal-title">
-            {typeof header === 'function' ? header() : header || 'Alert'}
-          </h3>
+          <h3 class="modal-title">{typeof header === 'function' ? header() : header || 'Alert'}</h3>
         </div>
 
         <div class="modal-body">
           {typeof message === 'function' ? message() : <p>{message}</p>}
 
           <div class="Modal__actions">
-            <button
-              type="button"
-              class="btn btn-default"
-              onClick={props.onAbort}
-            >
+            <button type="button" class="btn btn-default" onClick={props.onAbort}>
               {props.options.abortLabel}
             </button>
             <AsyncButton

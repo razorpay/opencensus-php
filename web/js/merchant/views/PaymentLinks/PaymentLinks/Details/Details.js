@@ -74,6 +74,8 @@ export default (props) => {
       paymentlink.customer_details.customer_email || paymentlink.customer_details.customer_contact
     );
 
+  const isUPILink = paymentlink.upi_link;
+
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading ? (
@@ -110,7 +112,7 @@ export default (props) => {
               <div class="list-group details-row-container">
                 {user.isPaymentLinkCreationV2Enabled && (
                   <EntityDetailRow label="Link Type">
-                    {paymentlink.upi_link ? (
+                    {isUPILink ? (
                       <>
                         <i class="i i-bank m-r" /> Standard Payment Link
                       </>
@@ -152,48 +154,52 @@ export default (props) => {
                   {do {
                     const isPartialPayment = paymentlink.partial_payment;
 
-                    <EntityDetailRow
-                      label="Partial Payment"
-                      value={() => (
-                        <div>
-                          {isPartialPayment ? 'Enabled' : 'Disabled'}
-                          {isRoleAllowedEdit && isIssued && (
-                            <AsyncBtn.Transparent
-                              onClick={() => {
-                                const toEnablePartialPayment = +!isPartialPayment;
+                    {
+                      !isUPILink && (
+                        <EntityDetailRow
+                          label="Partial Payment"
+                          value={() => (
+                            <div>
+                              {isPartialPayment ? 'Enabled' : 'Disabled'}
+                              {isRoleAllowedEdit && isIssued && (
+                                <AsyncBtn.Transparent
+                                  onClick={() => {
+                                    const toEnablePartialPayment = +!isPartialPayment;
 
-                                editPaymentLink({
-                                  partial_payment: toEnablePartialPayment,
-                                });
+                                    editPaymentLink({
+                                      partial_payment: toEnablePartialPayment,
+                                    });
 
-                                trackTogglePartialPayment(
-                                  paymentlink.id,
-                                  'Toggle Partial Payment',
-                                  toEnablePartialPayment,
-                                );
-                              }}
-                              class="Button--Link"
-                              style={{ marginLeft: 12 }}
-                              pendingState={isPartialPayment ? 'Disabling' : 'Enabling'}
-                            >
-                              {isPartialPayment ? 'Disable' : 'Enable'}
-                            </AsyncBtn.Transparent>
+                                    trackTogglePartialPayment(
+                                      paymentlink.id,
+                                      'Toggle Partial Payment',
+                                      toEnablePartialPayment,
+                                    );
+                                  }}
+                                  class="Button--Link"
+                                  style={{ marginLeft: 12 }}
+                                  pendingState={isPartialPayment ? 'Disabling' : 'Enabling'}
+                                >
+                                  {isPartialPayment ? 'Disable' : 'Enable'}
+                                </AsyncBtn.Transparent>
+                              )}
+                              {isMinimumFirstPaymentEnabled && isPartialPayment && (
+                                <EditMinimumAmount
+                                  isIssued={isIssued}
+                                  value={paymentlink.first_payment_min_amount}
+                                  maximum={paymentlink.amount}
+                                  currency={paymentlink.currency}
+                                  entityId={paymentlink.id}
+                                  editFn={editPaymentLink}
+                                  trackerFn={() => {}}
+                                  isRoleAllowedEdit={isRoleAllowedEdit}
+                                />
+                              )}
+                            </div>
                           )}
-                          {isMinimumFirstPaymentEnabled && isPartialPayment && (
-                            <EditMinimumAmount
-                              isIssued={isIssued}
-                              value={paymentlink.first_payment_min_amount}
-                              maximum={paymentlink.amount}
-                              currency={paymentlink.currency}
-                              entityId={paymentlink.id}
-                              editFn={editPaymentLink}
-                              trackerFn={() => {}}
-                              isRoleAllowedEdit={isRoleAllowedEdit}
-                            />
-                          )}
-                        </div>
-                      )}
-                    />;
+                        />
+                      );
+                    }
                   }}
                 </React.Fragment>
 

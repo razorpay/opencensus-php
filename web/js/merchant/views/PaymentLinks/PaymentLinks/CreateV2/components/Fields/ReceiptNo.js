@@ -8,7 +8,8 @@ const ReceiptNo = (props) => (
     placeholder="123456"
     label="Receipt No"
     class="Input--vTop"
-    {...props}
+    required={props.required}
+    disabled={props.disabled}
   />
 );
 

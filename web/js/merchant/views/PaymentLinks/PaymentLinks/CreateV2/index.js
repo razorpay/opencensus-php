@@ -271,6 +271,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
     if (formUnsaved) {
       this.context
         .confirm({
+          className: 'pl-creation-confirm-modal',
           header: 'Do you want to close this form?',
           message: 'Changes that you made will be discarded.',
           affirmativeLabel: 'Leave',
