@@ -95,7 +95,7 @@ class Repository extends Base\Repository
         /** @var BuilderEx $query */
         $query = $this->newQuery();
 
-        $query->with('workflow', 'workflow.steps', 'workflow.steps.role', 'workflow.steps.checkers')
+        $query->with('workflow', 'workflow.steps', 'workflow.steps.role')
               ->leftJoin(Table::WORKFLOW_PERMISSION,
                   function(JoinClause $join) use ($permissionId)
                   {
