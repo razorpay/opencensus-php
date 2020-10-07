@@ -1804,4 +1804,16 @@ class FeaturesTest extends TestCase
         $this->startTest();
     }
 
+
+    /**
+     * This function tests updating of merchant feature rx_show_payout_source.
+     */
+    public function testAddMerchantRxShowPayoutSourceFeatureAdminAuth()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
+
+
 }

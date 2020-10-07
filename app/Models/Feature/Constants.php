@@ -435,6 +435,9 @@ class Constants
     //Disable download report actions for View Only Role for RazorpayX dashboard
     const RX_BLOCK_REPORT_DOWNLOAD       = 'rx_block_report_download';
 
+    //Show payout source in payout details
+    const RX_SHOW_PAYOUT_SOURCE       = 'rx_show_payout_source';
+
     const BEPG  = 'bepg';
 
     //NPS FEATURES
@@ -720,6 +723,7 @@ class Constants
         self::AUTH_SPLIT                      => true,
         self::RECURRING_AUTO                  => true,
         self::CHECKOUT_DISABLE_CARDSCAN       => true,
+        self::RX_SHOW_PAYOUT_SOURCE           => true,
     ];
 
     // Entity type constants
@@ -989,6 +993,11 @@ class Constants
             'display_name'  => 'Optimizer',
             'documentation' => '',
         ],
+        self::RX_SHOW_PAYOUT_SOURCE => [
+            'feature'       => self::RX_SHOW_PAYOUT_SOURCE,
+            'display_name'  => 'Show payout source for RazorpayX dashboard',
+            'documentation' => '',
+        ]
     ];
 
     /**

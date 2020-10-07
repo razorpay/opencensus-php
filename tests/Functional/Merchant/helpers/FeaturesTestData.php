@@ -1297,4 +1297,25 @@ return [
         ],
         'status_code' => 200,
     ],
+
+    'testAddMerchantRxShowPayoutSourceFeatureAdminAuth' => [
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['rx_show_payout_source'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name' => 'rx_show_payout_source',
+                    'entity_id' => '10000000000000',
+                    'entity_type' => 'merchant',
+                ]
+            ]
+        ]
+    ],
 ];
