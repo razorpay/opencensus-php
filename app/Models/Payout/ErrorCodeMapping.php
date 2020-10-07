@@ -160,6 +160,7 @@ class ErrorCodeMapping
         'NPCI_TIMEOUT_FAILURE'                  => 'Timeout between NPCI and beneficiary bank. Please retry after 30 min.',
         'PBANK_VALIDATION_ERROR'                => 'Invalid Beneficiary details',
         'VERIFICATION_FAILED'                   => 'Payout failed. Contact support for help.',
+        'BBANK_GATEWAY_THROTTLED_FAILURE'       => 'Beneficiary bank is offline. Reinitiate transfer after 30 min.',
     ];
 
     public static function getErrorMessageFromBankResponseCode(Entity $payout, string $bankStatusCode = null)
