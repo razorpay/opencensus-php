@@ -533,13 +533,13 @@ app
        * util function to set cookie
        * @param name
        * @param value
-       * @param expiry - in days
+       * @param expiryDays - in days
        */
-      const setCookie = function (name, value, expiry = 10) {
+      const setCookie = function (name, value, expiryDays = 365) {
         const date = new Date();
-        date.setDate(date.getDate() + expiry);
+        date.setDate(date.getDate() + expiryDays);
         const expires = date.toUTCString();
-        const domain = isProd ? '.razorpay.com' : '.razorpay.in';
+        const domain = isProd ? 'razorpay.com' : 'razorpay.in';
         document.cookie = `${name}=${value};domain=${domain};expires=${expires};`;
       };
 
