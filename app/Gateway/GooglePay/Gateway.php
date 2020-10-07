@@ -54,6 +54,12 @@ class Gateway extends Base\Gateway
 
     public function preProcessServerCallback($data): array
     {
+        $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_REQUEST,
+            [
+                'request'     => $data,
+                'application' => 'google_pay'
+            ]);
+
         $validator = new Validator();
 
         $validator->internalInputValidation('google_pay_card_authorization', $data);
@@ -78,9 +84,11 @@ class Gateway extends Base\Gateway
                 ]);
         }
 
+        $decryptedResponseTrace = $this->getDecryptedResponseTrace($response);
+
         $this->trace->info(TraceCode::GATEWAY_DECRYPT_MOZART_RESPONSE,
             [
-                'mozart_response' => $response,
+                'mozart_response' => $decryptedResponseTrace,
             ]);
 
         if (isset($response['data']['decryptedMessage']) === false)
@@ -99,6 +107,18 @@ class Gateway extends Base\Gateway
         $data[RequestFields::TOKEN] = $response['data']['decryptedMessage'];
 
         return $data;
+    }
+
+    protected function getDecryptedResponseTrace($data)
+    {
+        $traceData = $data;
+
+        unset($traceData['data']['_raw']);
+
+        $traceData['data']['decryptedMessage']['paymentMethodDetails']['pan'] = '*redacted*';
+        $traceData['data']['decryptedMessage']['paymentMethodDetails']['3dsCryptogram'] = '*redacted*';
+
+        return $traceData;
     }
 
     protected function validateRequest($validator, $response)
