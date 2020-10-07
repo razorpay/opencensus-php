@@ -89,15 +89,17 @@
                   {{inlinePasswordError}}
                 </div>
 
+                <div
+                  id='login-recaptcha'
+                  ng-init="loadCaptcha()"
+                  data-size="invisible"
+                />
 
                 <button
-                  ng-disabled="!loginForm.$valid"
                   override-tab
                   class="full-width btn-primary"
                   type="submit"
                   ng-click="onLogin()"
-                  id='login-recaptcha'
-                  ng-init="loadCaptcha()"
                 >
                   {{lockme ? "Unlock" : "Log in"}}
                 </button>

@@ -1728,9 +1728,6 @@ app
           callback: onCaptchaSubmit,
           'error-callback': onCaptchaError,
         });
-        if (!$scope.login.data.email || !$scope.login.data.password) {
-          document.getElementById('login-recaptcha').disabled = true;
-        }
       };
 
       const renderRecaptchaScript = function (loadCheckbox) {
@@ -1762,7 +1759,7 @@ app
 
         if (!$valid) {
           $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
-          return true;
+          return false;
         }
 
         if (!$scope.emailRegex.test($scope.login.data.email)) {
@@ -1770,14 +1767,12 @@ app
           return false;
         }
 
-        if (!$scope.login.data.password && !$scope.isGoogleAuth) {
+        if (!$scope.login.data.password) {
           $scope.inlinePasswordError = 'Please enter a valid password';
           return false;
         }
 
         fireDLInitiatedEvents('login.native_auth', { emailId: $scope.login.data.email });
-        clearErrors();
-
         if (isProd && window.grecaptcha) {
           grecaptcha.execute();
         } else {
@@ -1870,11 +1865,7 @@ app
           event_name: 'recaptcha',
           event_type: 'success',
         });
-        if (window.location.href.includes('access/signin')) {
-          login(val);
-        } else if (window.location.href.includes('access/signup')) {
-          signup(val);
-        }
+        login(val);
       };
 
       onCaptchaError = function () {
