@@ -2106,6 +2106,8 @@ class UserTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'owner');
 
+        $this->mockRedisSuccess(__FUNCTION__, $user->getId());
+
         $this->startTest();
     }
 
@@ -2120,6 +2122,8 @@ class UserTest extends TestCase
         $user2 = $this->fixtures->user->createUserForMerchant($merchantIds[0],[],'manager');
 
         $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user2['id']);
+
+        $this->mockRedisSuccess(__FUNCTION__, $user2->getId());
 
         $this->startTest();
     }
@@ -2158,6 +2162,8 @@ class UserTest extends TestCase
             'rzp_test_' . $merchantIds[0],
             $user['id'],
             'owner');
+
+        $this->mockRedisSuccess(__FUNCTION__, $user->getId());
 
         $this->startTest();
     }

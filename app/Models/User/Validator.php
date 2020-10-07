@@ -127,7 +127,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editContactMobileRules = [
-        Entity::OTP_AUTH_TOKEN => 'sometimes|filled',
+        Entity::OTP_AUTH_TOKEN => 'required|filled',
         Entity::CONTACT_MOBILE => 'required|max:15|contact_syntax',
     ];
 
@@ -221,12 +221,6 @@ class Validator extends Base\Validator
     protected static $verifyUserThroughEmailRules = [
         Entity::OTP             => 'required|filled|min:4',
         Entity::TOKEN           => 'required|unsigned_id',
-    ];
-
-    protected static $editContactMobileForBankingRules = [
-        Entity::OTP_AUTH_TOKEN => 'required|filled',
-        Entity::CONTACT_MOBILE => 'required|max:15|contact_syntax',
-        Entity::OTP            => 'sometimes|filled|min:4',
     ];
 
     /**

@@ -1608,23 +1608,14 @@ return [
             'url'           => '/users/contact/update',
             'method'        => 'PATCH',
             'content'       => [
-                'contact_mobile'        => '9123456789',
+                'contact_mobile'        => '8877666666',
             ],
         ],
         'response'  => [
             'content'       => [
-                'error'         => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_USER_2FA_ALREADY_SETUP,
-                ]
+                'contact_mobile'            => '8877666666',
+                'contact_mobile_verified'   => false,
             ],
-
-            'status_code'   => 400,
-        ],
-
-        'exception' => [
-            'class'                 => RZP\Exception\BadRequestException::class,
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_USER_2FA_ALREADY_SETUP,
         ],
     ],
 
