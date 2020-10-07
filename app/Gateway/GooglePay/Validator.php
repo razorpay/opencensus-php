@@ -14,10 +14,10 @@ class Validator extends JitValidator
     ];
 
     protected static $googlePayCardAuthorizationRules = [
-        RequestFields::PAYMENT_ID                 => 'required',
+        RequestFields::PAYMENT_ID                 => 'required|filled',
         RequestFields::CARD_TYPE                  => 'required|in:DEBIT,CREDIT,UNKNOWN',
         RequestFields::CARD_NETWORK               => 'required|in:VISA,MASTERCARD',
-        RequestFields::AMOUNT                     => 'required',
+        RequestFields::AMOUNT                     => 'required|filled',
         RequestFields::TOKEN                      => 'required',
         'token.signature'                         => 'required',
         'token.signedMessage'                     => 'required',
@@ -30,17 +30,17 @@ class Validator extends JitValidator
     protected static $googlePayDecryptedMessageRules = [
         '_raw'                                                       => 'sometimes',
         'decryptedMessage'                                           => 'required',
-        'decryptedMessage.gatewayMerchantId'                         => 'required',
-        'decryptedMessage.messageExpiration'                         => 'required',
-        'decryptedMessage.messageId'                                 => 'required',
+        'decryptedMessage.gatewayMerchantId'                         => 'required|filled',
+        'decryptedMessage.messageExpiration'                         => 'required|filled',
+        'decryptedMessage.messageId'                                 => 'required|filled',
         'decryptedMessage.paymentMethod'                             => 'required',
-        'decryptedMessage.paymentMethodDetails.3dsCryptogram'        => 'required',
+        'decryptedMessage.paymentMethodDetails.3dsCryptogram'        => 'required|filled',
         'decryptedMessage.paymentMethodDetails.3dsEciIndicator'      => 'sometimes',
-        'decryptedMessage.paymentMethodDetails.authMethod'           => 'required',
-        'decryptedMessage.paymentMethodDetails.expirationMonth'      => 'required',
-        'decryptedMessage.paymentMethodDetails.expirationYear'       => 'required',
-        'decryptedMessage.paymentMethodDetails.pan'                  => 'required',
-        'decryptedMessage.signingKeyExpiration'                      => 'required',
+        'decryptedMessage.paymentMethodDetails.authMethod'           => 'required|filled',
+        'decryptedMessage.paymentMethodDetails.expirationMonth'      => 'required|filled',
+        'decryptedMessage.paymentMethodDetails.expirationYear'       => 'required|filled',
+        'decryptedMessage.paymentMethodDetails.pan'                  => 'required|numeric|luhn',
+        'decryptedMessage.signingKeyExpiration'                      => 'required|filled',
     ];
 
     public function internalInputValidation($operation, $input)

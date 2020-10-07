@@ -924,6 +924,20 @@ class Server extends Base\Mock\Server
                     'success'           => true,
                 ];
                 break;
+            Case "MEYCIQDVSnPca+hhBAtksD3mLOVrOaCr30Sd0VAFBpQdiCSboAIhAI5U+rQPCIpP7ouvEfoH15omHhN7znRHASDqV2HdOQCY==7":
+                $decryptedMessage['paymentMethodDetails']['pan'] = '123';
+                $responseBody = [
+                    'data' => [
+                        '_raw'             => '',
+                        'decryptedMessage' => $decryptedMessage,
+                    ],
+                    'error'             => [],
+                    'external_trace_id' => '',
+                    'mozart_id'         => 'blfq216r1gunssphbs01',
+                    'next'              => null,
+                    'success'           => true,
+                ];
+                break;
         }
 
         $response = \Response::make($responseBody);
