@@ -83,6 +83,9 @@ app
       $scope.eventsMode = 'live';
       $scope.showTopbar = false;
       $scope.isSignupDisplayEventFired = false;
+      // disable google oauth login for X
+      $scope.isGoogleAuth = true; // this flag changes when signup with email clicked
+      $scope.showGauthScreen = true; // this flag contains the info in the entire auth session - does not changes (will remove after experiment)
       $scope.showGAuthPopup = false;
       $scope.showCookieErrorPopup = false;
       $scope.showKnowMore = false;
@@ -110,6 +113,7 @@ app
       var email = $location.search().email;
       var role = $location.search().r;
       var referral_code = $location.search().referral_code;
+      $scope.isInvisibleCaptcha = true;
       $scope.checkboxCaptcha = 'Faked';
       try {
         email = atob(decodeURIComponent(email));
@@ -117,9 +121,8 @@ app
         email = '';
       }
 
-      var isProd = window.location.hostname.endsWith('razorpay.com');
-      var isLoginWithGoogle = false;
-      
+      var isProd = window.location.hostname.includes('razorpay.com');
+
       $scope.signup = {
         currentStep: 0, // 0, 1, 2
         currentSubStep: 0, // 0, 1, 2, 3, 4
@@ -355,9 +358,18 @@ app
         var googleAuthInstance = window.gapi.auth2.getAuthInstance();
         googleAuthInstance.signOut().then(function () {
           $scope.onLoginWithGoogle();
+          $scope.isGoogleAuth = true;
         });
 
         googleAuthInstance.disconnect();
+      };
+
+      $scope.onShowGAuth = function () {
+        fireDLInitiatedEvents('login.login_actions', { actions: 'login_options' });
+        removeRecaptchaScript();
+        $scope.alerts.resetAlerts();
+        $scope.isGoogleAuth = true;
+        $scope.showGAuthPopup = false;
       };
 
       $scope.onLoginWithGoogle = function () {
@@ -465,7 +477,6 @@ app
             request
               .success(function (data) {
                 if (data.success) {
-                  isLoginWithGoogle = true;
                   user
                     .identity(true)
                     .then(function (userDetails) {
@@ -1002,7 +1013,7 @@ app
 
         fireDLSuccessEvents('login.login', {
           source: 'sign_in',
-          method: isLoginWithGoogle ? 'google_oauth' : 'email',
+          method: $scope.isGoogleAuth ? 'google_oauth' : 'email',
           emailId: data.user.email,
           userid: data.user.id,
           mid: data.current,
@@ -1762,15 +1773,17 @@ app
         if (!$scope.emailRegex.test($scope.login.data.email)) {
           $scope.inlineError = 'Please enter a valid email id';
           return false;
-        }
+        } else if ($scope.isGoogleAuth) {
+          fireDLInitiatedEvents('login.native_auth', { emailId: $scope.login.data.email });
 
-        fireDLInitiatedEvents('login.native_auth', { emailId: $scope.login.data.email });
-        $scope.inlineError = '';
-
-        if (isProd && window.grecaptcha) {
-          grecaptcha.execute();
+          $scope.inlineError = '';
+          $scope.isGoogleAuth = false;
         } else {
-          login('Faked');
+          if ($scope.isInvisibleCaptcha && isProd && window.grecaptcha) {
+            grecaptcha.execute();
+          } else {
+            login('Faked');
+          }
         }
       };
 
@@ -1787,9 +1800,11 @@ app
           data: $scope.login.data,
         };
 
-        payload.headers = {
-          'X-RECAPTCHA-MODE': 'invisible',
-        };
+        if ($scope.isInvisibleCaptcha) {
+          payload.headers = {
+            'X-RECAPTCHA-MODE': 'invisible',
+          };
+        }
 
         var request = $http(payload);
         showSpinner();
