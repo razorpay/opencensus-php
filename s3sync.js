@@ -20,7 +20,7 @@ const s3 = new AWS.S3();
 var params = {
   Bucket: ENV.AWS_CDN_BUCKET || ENV.AWS_BUCKET || ENV.AWS_S3_BUCKET,
   ACL: 'public-read',
-  CacheControl: 'max-age=2700, must-revalidate, no-transform',
+  CacheControl: 'max-age=2700, must-revalidate',
 };
 
 // textual file types
@@ -58,7 +58,7 @@ glob(
         file.endsWith('signup.js') ||
         ext.startsWith('woff')
       ) {
-        fileParams.CacheControl = 'no-transform';
+        fileParams.CacheControl = 'no-store,must-revalidate';
       }
 
       var type = ContentType[ext];
