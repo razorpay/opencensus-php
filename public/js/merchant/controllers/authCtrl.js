@@ -119,7 +119,7 @@ app
 
       var isProd = window.location.hostname.endsWith('razorpay.com');
       var isLoginWithGoogle = false;
-      
+
       $scope.signup = {
         currentStep: 0, // 0, 1, 2
         currentSubStep: 0, // 0, 1, 2, 3, 4
@@ -241,7 +241,8 @@ app
         }
       };
 
-      $scope.inlineError = '';
+      $scope.inlineEmailError = '';
+      $scope.inlinePasswordError = '';
 
       $scope.init = function () {
         initializeGAPI();
@@ -1748,11 +1749,16 @@ app
 
       const removeRecaptchaScript = function () {
         let element = document.getElementById('recaptcha');
-        element.parentNode.removeChild(element);
+        if (element) element.parentNode.removeChild(element);
+      };
+
+      const clearErrors = function () {
+        $scope.inlineEmailError = '';
+        $scope.inlinePasswordError = '';
       };
 
       $scope.sendLoginCredentials = function ($valid) {
-        $scope.inlineError = '';
+        clearErrors();
 
         if (!$valid) {
           $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
@@ -1760,12 +1766,17 @@ app
         }
 
         if (!$scope.emailRegex.test($scope.login.data.email)) {
-          $scope.inlineError = 'Please enter a valid email id';
+          $scope.inlineEmailError = 'Please enter a valid email id';
+          return false;
+        }
+
+        if (!$scope.login.data.password && !$scope.isGoogleAuth) {
+          $scope.inlinePasswordError = 'Please enter a valid password';
           return false;
         }
 
         fireDLInitiatedEvents('login.native_auth', { emailId: $scope.login.data.email });
-        $scope.inlineError = '';
+        clearErrors();
 
         if (isProd && window.grecaptcha) {
           grecaptcha.execute();

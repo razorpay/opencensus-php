@@ -69,10 +69,10 @@
               <input ng-if="!lockme" type="email" placeholder="example@xyz.com" name="email" id="email"
                      ng-model="login.data.email" class="form-control auth-form-input" required
                      ng-focus="onLoginInputFocus('email')"
-                     ng-class="{'ds-error-input': inlineError}"
+                     ng-class="{'ds-error-input': inlineEmailError}"
               >
-              <div class="ds-error" ng-if="inlineError">
-                {{inlineError}}
+              <div class="ds-error" ng-if="inlineEmailError">
+                {{inlineEmailError}}
               </div>
 
               <div>
@@ -82,7 +82,12 @@
                   (Forgot?)
                 </span>
                 <input type="password" placeholder="Password" name="password" ng-model="login.data.password"
-                       class="form-control auth-form-input" required ng-focus="onLoginInputFocus('password')">
+                       class="form-control auth-form-input" required ng-focus="onLoginInputFocus('password')"
+                       ng-class="{'ds-error-input': inlinePasswordError}"
+                >
+                <div class="ds-error" ng-if="inlinePasswordError">
+                  {{inlinePasswordError}}
+                </div>
 
 
                 <button
