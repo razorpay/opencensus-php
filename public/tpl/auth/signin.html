@@ -42,6 +42,27 @@
               <strong ng-if="lockme">{{login.data.email}}</strong>
             </div>
 
+              <div class="g-btn-container">
+                <div class="g-image-container">
+                  <img class="g-image" src="../../img/google-icon.svg"/>
+                </div>
+                <button
+                  id="gauth"
+                  override-tab
+                  class="full-width ds-btn secondary"
+                  type="submit"
+                  ng-click="onLoginWithGoogle()"
+                  ng-init="init()"
+                >
+                  Login with Google
+                </button>
+              </div>
+
+              <div class="separator-container">
+                <div class="separator"/>
+                <span class="text">or</span>
+              </div>
+
             <form class="auth-form" name="loginForm" xng-submit="goToLoginStep(0, 1)"
                   ng-submit="sendLoginCredentials(loginForm.$valid)">
               <label ng-if="!lockme" class="form-label auth-subheading auth-subheading" for="email">Your email</label>
@@ -54,18 +75,18 @@
                 {{inlineError}}
               </div>
 
-              <div ng-if="!isGoogleAuth">
+              <div>
                 <label class="form-label auth-subheading" for="password">Password</label>
+                <span ng-if="!lockme && isOrgCheckDone" class="forgot-password-text"
+                      ng-click="goToForgotPwd()">
+                  (Forgot?)
+                </span>
                 <input type="password" placeholder="Password" name="password" ng-model="login.data.password"
                        class="form-control auth-form-input" required ng-focus="onLoginInputFocus('password')">
 
-                <div ng-if="!lockme && isOrgCheckDone" class="forgot-password-text"
-                     ng-click="goToForgotPwd()">
-                  Forgot Password?
-                </div>
 
                 <button
-                  ng-disabled="isInvisibleCaptcha ? !loginForm.$valid : !(loginForm.$valid && login.isCaptchaSuccess)"
+                  ng-disabled="!loginForm.$valid"
                   override-tab
                   class="full-width btn-primary"
                   type="submit"
@@ -75,41 +96,14 @@
                 >
                   {{lockme ? "Unlock" : "Log in"}}
                 </button>
-
-                <div class="ds-bottom-text" ng-click="onShowGAuth()" ng-if="showGauthScreen">
-                  <img src="../../img/left-arrow.svg" class="left-arrow"/>
-                  All log in options
-                </div>
               </div>
 
-              <button
-                ng-if="isGoogleAuth"
-                class="btn-primary full-width"
-              >
-                Continue
-              </button>
             </form>
 
-            <div ng-if="isGoogleAuth">
-              <div class="separator-container">
-                <div class="separator"/>
-                <span class="text"><strong>or</strong></span>
-              </div>
-
-              <div class="g-btn-container">
-                <img class="g-image" src="../../img/google-icon.svg"/>
-                <button
-                  id="gauth"
-                  override-tab
-                  class="btn-primary full-width"
-                  type="submit"
-                  ng-click="onLoginWithGoogle()"
-                  ng-init="init()"
-                >
-                  Login with Google
-                </button>
-              </div>
-
+            <div class="subtext">
+              Protected by reCAPTCHA. Google
+              <a href="https://policies.google.com/privacy" class="inline-block ds-highlight-clickable-text">Privacy Policy</a> &
+              <a href="https://policies.google.com/terms" class="inline-block ds-highlight-clickable-text">Terms of Service</a> apply.
             </div>
 
               <div class="loading-animation">
