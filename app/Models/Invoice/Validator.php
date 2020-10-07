@@ -1013,6 +1013,11 @@ class Validator extends Base\Validator
         {
             throw new BadRequestValidationFailureException("$label with id $id is past its expiry");
         }
+
+        if ($invoice->merchant->isSuspended() === true)
+        {
+            throw new BadRequestValidationFailureException("This account is suspended");
+        }
         // Expired: All views show custom torn or some kind of page and need data
     }
 

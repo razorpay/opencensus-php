@@ -594,6 +594,10 @@ class Service extends Base\Service
         if ($isInternal === true)
         {
             $response[Entity::MAX_PAYMENT_AMOUNT] =  $this->merchant->getMaxPaymentAmount();
+
+            $response['is_suspended'] =  $this->merchant->isSuspended();
+
+            $response[Entity::ORG_ID] =  $this->merchant->getOrgId();
         }
 
         return $response;
@@ -3127,7 +3131,7 @@ class Service extends Base\Service
         $supportInformation = (new PayoutLinkService())->getMerchantSupportSettings($merchant);
 
         $data[self::SUPPORT_DETAILS] = $supportInformation;
-        
+
         $data[EntityConstants::MERCHANT][EntityConstants::FEATURE] = $merchant->getEnabledFeatures();
 
         return $data;
