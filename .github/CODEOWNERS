@@ -41,7 +41,7 @@ app/Models/BankingAccount/                             @razorpay/Payouts-core
 app/Models/BankingAccountStatement/                    @razorpay/Payouts-core
 app/Models/BankTransfer/                               @razorpay/TechVirtualAccounts
 app/Models/Base/                                       prashanth.yv@razorpay.com                               vivek.kumar@razorpay.com
-app/Models/Batch/                                      malligairajan.g@razorpay.com                            pankaj.kumar@razorpay.com
+app/Models/Batch/                                      malligairajan.g@razorpay.com
 app/Models/BharatQr/                                   @razorpay/TechVirtualAccounts
 app/Models/Card/                                       sunny.aggrawal@razorpay.com                             vivek.kumar@razorpay.com
 app/Models/Card/NetworkName.php                        @razorpay/TechRulesRouting
@@ -101,7 +101,7 @@ app/Models/Upi/                                        nemo@razorpay.com        
 app/Models/User/                                       pankaj.kumar@razorpay.com
 app/Models/VirtualAccount/                             @razorpay/TechVirtualAccounts
 app/Models/Vpa/                                        prashanth.yv@razorpay.com
-app/Models/Workflow/                                   pankaj.kumar@razorpay.com
+app/Models/Workflow/                                   praveen.patlola@razorpay.com
 
 #
 # Database
