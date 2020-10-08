@@ -115,9 +115,17 @@ class SourceUpdater
 
             if($payoutLinkId !== null)
             {
+                $trace = App::getFacadeRoot()['trace'];
+
                 // check if payout link microservice feature flag enabled for this merchant
                 if(self::checkIfMerchantOnAPI($payout) == true)
                 {
+                    $trace->info(
+                        TraceCode::PAYOUT_LINKS_API_ROUTE,
+                        [
+                            'payout_link_id'   => $payoutLinkId,
+                        ]);
+
                     $payoutLink = $payout->payoutLink;
 
                     if($payoutLink !== null)
@@ -126,6 +134,11 @@ class SourceUpdater
                     }
                 }else
                 {
+                    $trace->info(
+                        TraceCode::PAYOUT_LINKS_MS_ROUTE,
+                        [
+                            'payout_link_id'   => $payoutLinkId,
+                        ]);
                     // instead of making the above call we are going to call the payoutlink service that will
                     // update the payout link status
                     $payoutLinkService = App::getFacadeRoot()['payout-links'];

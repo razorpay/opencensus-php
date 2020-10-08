@@ -578,6 +578,13 @@ class PayoutLinks
         $options = ['auth' => [self::KEY,
                                $this->secret]];
 
+        $this->trace->info(TraceCode::PAYOUT_LINKS_REQUEST,
+            [
+                'headers' => $headers,
+                'url' => $url,
+                'data' => $data,
+            ]);
+
         $response = Requests::$method(
             $url,
             $headers,
@@ -585,6 +592,11 @@ class PayoutLinks
             $options);
 
         $responseBody = json_decode($response->body, true);
+
+        $this->trace->info(TraceCode::PAYOUT_LINKS_RESPONSE,
+            [
+                'response' => $responseBody
+            ]);
 
         if ($response->status_code !== StatusCode::SUCCESS)
         {
