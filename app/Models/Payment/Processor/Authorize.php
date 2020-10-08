@@ -5542,8 +5542,14 @@ trait Authorize
 
                 $this->fillReturnDataWithInvoice($payment, $returnData);
             }
-            else if ($payment->hasOrder() === true)
+            else if (($payment->hasOrder() === true) &&
+                     ($payment->isUpiTransfer() === false))
             {
+                // adding isUpiTransfer check because icici upi transfer callback happens in direct auth
+                // this is a hack. other upi va callbacks might not need this check
+                // because they might come under isProxyOrPrivilegeAuth check
+                // but there's nothing to sign here and va doesnt care about the return response
+
                 //
                 // In case of async emandate registration payment, though
                 // payment_capture would be set in the order, we wouldn't

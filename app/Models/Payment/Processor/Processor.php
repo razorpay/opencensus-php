@@ -3244,6 +3244,11 @@ class Processor
             return false;
         }
 
+        if ($payment->isUpiTransfer() === true)
+        {
+            return false;
+        }
+
         //
         // Post payment authorization payment link's payments are actually auto captured but there is more logic in
         // the flow and in handling capture failures etc which is all done in specific method(easy to move out to a

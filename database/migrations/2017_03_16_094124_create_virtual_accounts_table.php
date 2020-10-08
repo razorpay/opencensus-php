@@ -80,6 +80,10 @@ class CreateVirtualAccountsTable extends Migration
             $table->string(VirtualAccount::BALANCE_ID, VirtualAccount::ID_LENGTH)
                   ->nullable();
 
+            $table->string(VirtualAccount::SOURCE)
+                  ->nullable()
+                  ->default(null);
+
             $table->integer(VirtualAccount::CREATED_AT);
             $table->integer(VirtualAccount::UPDATED_AT);
 

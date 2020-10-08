@@ -140,6 +140,13 @@ class PlinkController extends Controller
 
         $contentType  = $res->headers['content-type'];
 
+        if ($res->is_redirect() === true)
+        {
+           $location = $res->headers['Location'];
+
+            return \Redirect::to($location);
+        }
+
         if (str_contains($contentType, self::CONTENT_TYPE_JSON) === true)
         {
             $res = json_decode($res->body, true);
@@ -190,9 +197,22 @@ class PlinkController extends Controller
             $url .= $urlAppend .$extraParams;
         }
 
+        $followRedirects = true;
+
+        // this is a hack. for intent links on mobile, pl service sends 301 redirect and we have to handle that.
+        // hence passing follow_redirects as false for hosted page and in the response we return redirect
+        // currently only hosted page as hosted in the url
+        // we need for only get requests
+        if((strpos($path, 'hosted') !== false) and
+            ($request->method() === Request::METHOD_GET))
+        {
+            $followRedirects = false;
+        }
+        
         $options = [
-            'timeout' => $this->timeOut,
-            'auth'    => [$this->key, $this->secret],
+            'timeout'          => $this->timeOut,
+            'auth'             => [$this->key, $this->secret],
+            'follow_redirects' => $followRedirects,
         ];
 
         $this->trace->info(TraceCode::PAYMENT_LINK_SERVICE_REQUEST, ['url' => $url]);

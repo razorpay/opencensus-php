@@ -264,4 +264,9 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException($message);
         }
     }
+
+    public function validateSource($attribute, $value)
+    {
+        SourceType::checkSourceType($value);
+    }
 }

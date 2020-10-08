@@ -136,6 +136,46 @@ class Service extends Base\Service
         return $response;
     }
 
+    /*
+     * This can be considered as a generic function for all apps to call.
+     * all the validations not needed in the normal create can be added here
+     */
+    public function createForInternal(array $input)
+    {
+        if (isset($input[Entity::ORDER_ID]) === true)
+        {
+            $orderId = $input[Entity::ORDER_ID];
+
+            $order = $this->repo
+                ->order
+                ->findByPublicIdAndMerchant($orderId, $this->merchant);
+
+            if ($order === null)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DISALLOWED_FOR_ORDER);
+            }
+
+            if ($order->isPaid() === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DISALLOWED_FOR_ORDER);
+            }
+
+            $virtualAccount = $this->repo
+                ->virtual_account
+                ->findActiveVirtualAccountByOrder($order);
+
+            if ($virtualAccount !== null)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DISALLOWED_FOR_ORDER);
+            }
+        }
+
+        return $this->create($input);
+    }
+
     protected function editAmountExpectedToIncludeFees(Order\Entity $order, array & $virtualAccount)
     {
         if ($order->merchant->isFeeBearerCustomerOrDynamic() === true)
@@ -696,6 +736,10 @@ class Service extends Base\Service
         else if ($this->app['request.ctx']->getRoute() === 'virtual_account_order_create')
         {
             $properties['source'] = 'checkout';
+        }
+        else if ($this->auth->isPaymentLinkServiceApp() === true)
+        {
+            $properties['source'] = SourceType::PAYMENT_LINKS_V2;
         }
 
         $this->app['diag']->trackVirtualAccountEvent(

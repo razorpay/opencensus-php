@@ -412,6 +412,7 @@ class Route
         'qr_code_download_live'                    => ['get',      'l/qrcode/{id}',                                  'QrCodeController@fetchLiveQrCode'                                  ],
         'qr_code_download_test'                    => ['get',      't/qrcode/{id}',                                  'QrCodeController@fetchTestQrCode'                                  ],
         'virtual_account_create'                   => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
+        'virtual_account_create_for_internal'      => ['post',     'virtual_accounts/internal',                      'VirtualAccountController@createForInternal'                        ],
         'virtual_account_order_create'             => ['post',     'orders/{id}/virtual_accounts',                   'VirtualAccountController@createForOrder'                           ],
         'virtual_account_edit'                     => ['patch',    'virtual_accounts/{id}',                          'VirtualAccountController@update'                                   ],
         'virtual_account_close'                    => ['post',     'virtual_accounts/{id}/close',                    'VirtualAccountController@closeVirtualAccount'                      ],
@@ -3129,6 +3130,7 @@ class Route
         'proxy_merchant_get_support_details',
         'proxy_merchant_create_support_details',
         'proxy_merchant_edit_support_details',
+        'virtual_account_create_for_internal',
     ];
 
     //
@@ -4313,6 +4315,7 @@ class Route
         'merchant_schedule_reset'                  => Permission::SCHEDULE_ASSIGN_BULK,
         'merchant_pricing_bulk'                    => Permission::PRICING_ASSIGN_BULK,
         'virtual_account_create'                   => Permission::CREATE_VIRTUAL_ACCOUNTS,
+        'virtual_account_create_for_internal'      => Permission::CREATE_VIRTUAL_ACCOUNTS,
         'virtual_account_add_receiver'             => Permission::CREATE_VIRTUAL_ACCOUNTS,
         'virtual_account_bulk_create_for_banking'  => Permission::CREATE_BANKING_VIRTUAL_ACCOUNTS,
         'virtual_account_bulk_close_for_banking'   => Permission::CREATE_BANKING_VIRTUAL_ACCOUNTS,
@@ -5221,8 +5224,10 @@ class Route
             'payment_links_payment_by_id',
             'currency_fetch_rates_proxy',
             'order_edit',
+            'virtual_account_close',
             'batch_stats',
             'invoice_send_notification_proxy',
+            'virtual_account_create_for_internal',
         ],
 
         'kotak' => [

@@ -203,4 +203,13 @@ class VirtualAccountController extends Controller
                 'input' => $input]
         );
     }
+
+    public function createForInternal()
+    {
+        $input = Request::all();
+
+        $entity = $this->service()->createForInternal($input);
+
+        return ApiResponse::json($entity);
+    }
 }

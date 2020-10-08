@@ -5922,6 +5922,9 @@ UPDATE fund_transfer_attempts
 	updated_at=UNIX_TIMESTAMP(NOW())
 	WHERE source_id IN ('FHqJt5cGPPhAw3', 'FHqJp2X05SN3fv', 'FHqJfb28W7tj0i', 'FHqJOEPV2SbIVZ', 'FHqJAhlyR2jPZP', 'FHqJ1V3Gh5CIEs', 'FFNaQ6jXmVaVpY', 'FFNaNERoYYz5iK', 'FIJdGfgjOcDQA0', 'FHRUoxyltBxB6i');
 
+ALTER TABLE virtual_accounts
+    ADD COLUMN source VARCHAR(255) DEFAULT NULL;
+
 ALTER table banking_accounts
     ADD sub_status varchar(64);
 

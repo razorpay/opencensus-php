@@ -52,6 +52,11 @@ class Core extends Base\Core
         {
             $virtualAccount = $this->createEntityAndAssociate($merchant);
 
+            if($this->app['basicauth']->isPaymentLinkServiceApp() === true)
+            {
+                $virtualAccount->setSource(SourceType::PAYMENT_LINKS_V2);
+            }
+
             $virtualAccount = $this->mutex->acquireAndRelease(
                 self::VA_BANK_ACCOUNT_GENERATION . $virtualAccount->getId(),
                 function() use ($input, $merchant, $customer, $order, $balance, $virtualAccount)

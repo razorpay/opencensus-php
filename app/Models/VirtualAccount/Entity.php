@@ -68,6 +68,8 @@ class Entity extends Base\PublicEntity
     // Used for creating shared virtual account
     const SHARED_ID            = 'ShrdVirtualAcc';
 
+    const SOURCE               = 'source';
+
     protected $fillable = [
         self::NAME,
         self::STATUS,
@@ -78,6 +80,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_RECEIVED,
         self::AMOUNT_PAID,
         self::CLOSE_BY,
+        self::SOURCE,
     ];
 
     protected $public = [
@@ -326,6 +329,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENTITY_ID);
     }
 
+    public function getSourceType()
+    {
+        return $this->getAttribute(self::SOURCE);
+    }
+
     protected function getReceiversAttribute()
     {
         $receivers = [];
@@ -432,6 +440,11 @@ class Entity extends Base\PublicEntity
     public function setClosedAt(int $closedAt)
     {
         $this->setAttribute(self::CLOSED_AT, $closedAt);
+    }
+
+    public function setSource(string $source)
+    {
+        return $this->setAttribute(self::SOURCE, $source);
     }
 
     protected function setPublicCustomerIdAttribute(array & $array)

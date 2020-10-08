@@ -56,7 +56,11 @@ class Generator extends Base\Core
         $this->options = array_merge($this->options, $input);
     }
 
-    protected function setConfigForVpa(Terminal\Entity $terminal, $merchantPrefix = null)
+    protected function setConfigForVpa(
+        Terminal\Entity $terminal,
+        $merchantPrefix = null,
+        VirtualAccount\Entity $virtualAccount
+    )
     {
         $this->trace->info(
             TraceCode::VIRTUAL_ACCOUNT_GENERATE_VPA_TERMINAL,
@@ -65,8 +69,18 @@ class Generator extends Base\Core
             ]);
 
         $this->root                = $terminal->getVirtualUpiRoot();
-        $this->merchantIdentifier  = $merchantPrefix ?: $terminal->getVirtualUpiMerchantPrefix();
+
         $this->handle              = $terminal->getVirtualUpiHandle();
+
+        if ($virtualAccount->getSourceType() === VirtualAccount\SourceType::PAYMENT_LINKS_V2)
+        {
+            $this->merchantIdentifier = Entity::PAYMENT_LINK_VPA_PREFIX;
+        }
+        else
+        {
+            $this->merchantIdentifier  = $merchantPrefix ?: $terminal->getVirtualUpiMerchantPrefix();
+        }
+
         //Custom descriptor was allowed only to merchants who have registered for custom prefix.
         //Going forward all the merchants will be able to add custom descriptor.
         $this->isDescriptorEnabled = true;
@@ -76,7 +90,7 @@ class Generator extends Base\Core
     {
         $vpa = $this->buildVpaEntity($virtualAccount);
 
-        $this->setTerminalConfigsForVpa($vpa);
+        $this->setTerminalConfigsForVpa($vpa, $virtualAccount);
 
         $attempts = 0;
 
@@ -195,7 +209,7 @@ class Generator extends Base\Core
         return $vpa;
     }
 
-    protected function setTerminalConfigsForVpa(Entity $vpa): Terminal\Entity
+    protected function setTerminalConfigsForVpa(Entity $vpa, VirtualAccount\Entity $virtualAccount): Terminal\Entity
     {
         $isUpiIciciVpaEnabled = $this->isUpiIciciVpaEnabled();
 
@@ -209,7 +223,7 @@ class Generator extends Base\Core
                              ->terminal
                              ->getById($virtualVpaPrefix->getTerminalId());
 
-            $this->setConfigForVpa($terminal, $virtualVpaPrefix->getPrefix());
+            $this->setConfigForVpa($terminal, $virtualVpaPrefix->getPrefix(), $virtualAccount);
 
             return $terminal;
         }
@@ -230,7 +244,7 @@ class Generator extends Base\Core
                 ]);
         }
 
-        $this->setConfigForVpa($terminal);
+        $this->setConfigForVpa($terminal, null, $virtualAccount);
 
         return $terminal;
     }
@@ -323,7 +337,7 @@ class Generator extends Base\Core
     {
         $vpa = $this->buildVpaEntity($virtualAccount);
 
-        $this->setTerminalConfigsForVpa($vpa);
+        $this->setTerminalConfigsForVpa($vpa, $virtualAccount);
 
         return [
             'prefix'              => $this->root . $this->merchantIdentifier,

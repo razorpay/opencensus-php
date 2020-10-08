@@ -26,6 +26,9 @@ class Entity extends Base\PublicEntity
 
     const AROBASE = '@';
 
+    // Made it blank so that pl service can decide the entiure upi descriptor
+    const PAYMENT_LINK_VPA_PREFIX = "";
+
     protected $generateIdOnCreate = true;
 
     protected $primaryKey = self::ID;

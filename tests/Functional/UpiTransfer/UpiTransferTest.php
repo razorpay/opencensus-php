@@ -365,6 +365,105 @@ class UpiTransferTest extends TestCase
         );
     }
 
+    public function testCreateVPAForPLAppWithOrderAndPay()
+    {
+        $this->testCreateVPAForPLAppWithOrder();
+
+        $this->processUpiTransfer(__FUNCTION__, true, Gateway::UPI_ICICI);
+
+        $payment     = $this->getDbLastEntity('payment');
+
+        $order     = $this->getDbLastEntity('order');
+
+        $va = $this->getDbLastEntity('virtual_account');
+
+        $this->assertEquals('captured', $payment->getStatus());
+
+        $this->assertEquals('paid', $order->getStatus());
+
+        $this->assertEquals('paid', $va->getStatus());
+    }
+
+    public function testCreateVPAForPLAppWithOrder()
+    {
+        $this->enableRazorXTreatmentForRazorXVpaIcici();
+
+        $order = $this->fixtures->create('order', ['id' => '100000000order', 'payment_capture' => true, 'amount' => 3500]);
+
+        $this->ba->paymentLinksAuth();
+
+        $this->startTest();
+
+        $va = $this->getDbLastEntity('virtual_account');
+
+        $this->assertEquals($va->getSourceType(), 'payment_links_v2');
+    }
+
+    public function testCreateVPAForPLAppWithOrderForIncorrectDescriptor()
+    {
+        $this->enableRazorXTreatmentForRazorXVpaIcici();
+
+        $order = $this->fixtures->create('order', ['id' => '100000000order', 'payment_capture' => true, 'amount' => 3500]);
+
+        $this->ba->paymentLinksAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateVPAForPLAppWithOrderForNoDescriptor()
+    {
+        $this->enableRazorXTreatmentForRazorXVpaIcici();
+
+        $order = $this->fixtures->create('order', ['id' => '100000000order', 'payment_capture' => true, 'amount' => 3500]);
+
+        $this->ba->paymentLinksAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateVPAForPLAppWithPaidOrder()
+    {
+        $this->enableRazorXTreatmentForRazorXVpaIcici();
+
+        $order = $this->fixtures->create('order',
+            [
+            'id'                => '100000000order',
+            'payment_capture'   => true,
+            'amount'            => 3500,
+            'status'            => 'paid'
+            ]
+        );
+
+        $this->ba->paymentLinksAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateVPAForPLAppWithRandomOrder()
+    {
+        $this->enableRazorXTreatmentForRazorXVpaIcici();
+
+        $this->fixtures->create('merchant',
+            [
+                'id'                => 'randommerchant',
+            ]
+        );
+
+        $order = $this->fixtures->create('order',
+            [
+                'id'                => '100000000order',
+                'merchant_id'       => 'randommerchant',
+                'payment_capture'   => true,
+                'amount'            => 3500,
+                'status'            => 'paid'
+            ]
+        );
+
+        $this->ba->paymentLinksAuth();
+
+        $this->startTest();
+    }
+
     protected function enableRazorXTreatmentForRazorXVpaIcici()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
