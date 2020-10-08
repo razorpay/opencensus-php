@@ -691,7 +691,8 @@ class Entity extends Base\PublicEntity
         $array[self::MRN] = null;
 
         if (($this->merchant->isFeatureEnabled(Feature\Constants::EMANDATE_MRN) === true) and
-            ($this->getMethod() === Payment\Method::EMANDATE))
+            (($this->getMethod() === Payment\Method::EMANDATE) or
+                ($this->getMethod() === Payment\Method::NACH)))
         {
             $array[self::MRN] = $this->getGatewayToken();
         }

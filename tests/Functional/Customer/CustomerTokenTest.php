@@ -425,6 +425,21 @@ class CustomerTokenTest extends TestCase
         $token = $this->fixtures->create(
             'token',
             [
+                'method' => 'nach',
+                'recurring' => true,
+                'recurring_status' => 'confirmed',
+                'auth_type' => 'physical',
+                'gateway_token' => 'test',
+            ]);
+
+        $token = $this->getTokenById('token_' . $token['id']);
+
+        $this->assertNotNull($token[Token\Entity::MRN]);
+        $this->assertEquals('test', $token[Token\Entity::MRN]);
+
+        $token = $this->fixtures->create(
+            'token',
+            [
                 'method' => 'card',
                 'recurring' => true,
                 'recurring_status' => 'confirmed',
