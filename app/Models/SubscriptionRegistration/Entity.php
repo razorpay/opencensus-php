@@ -42,6 +42,7 @@ class Entity extends Base\PublicEntity
     const STATUS            = 'status';
     const ATTEMPTS          = 'attempts';
     const CURRENCY          = 'currency';
+    const FREQUENCY         = 'frequency';
 
     const FIRST_PAYMENT_AMOUNT = 'first_payment_amount';
 

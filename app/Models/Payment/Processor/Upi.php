@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use Razorpay\IFSC\BANK;
 use Razorpay\IFSC\IFSC;
 use RZP\Models\Payment;
 
@@ -315,6 +316,12 @@ class Upi
     {
         return defined(__CLASS__ . '::' . strtoupper($bank));
     }
+
+    public static $defaultInconsistentBankCodesMapping = [
+        BANK::BARB => 'BARB_R',
+        BANK::PUNB => 'PUNB_R',
+        BANK::LAVB => 'LAVB_R',
+    ];
 
     /**
      * Returns a key value map array,

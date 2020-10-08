@@ -16,6 +16,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\UpiMandate;
 use RZP\Models\BankAccount;
 use RZP\Models\PaperMandate;
 use RZP\Services\UfhService;
@@ -24,6 +25,7 @@ use RZP\Models\Customer\Token;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\Processor\Processor;
+use RZP\Models\Payment\Processor\Upi as UpiPayment;
 use \RZP\Models\UpiMandate\Frequency as UpiFrequency;
 use \RZP\Models\UpiMandate\Validator as UpiValidator;
 use RZP\Models\Customer\GatewayToken\Core as GatewayToken;
@@ -140,32 +142,51 @@ class Core extends Base\Core
         }
 
         // Set default values for frequency and max amount for upi
-        $frequency = $input['subscription_registration']['frequency'] ?? UpiFrequency::MONTHLY;
-        $maxAmount = $input['subscription_registration']['max_amount'] ?? UpiValidator::MAX_AMOUNT_LIMIT;
+        $frequency = $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::FREQUENCY] ?? UpiFrequency::MONTHLY;
+        $maxAmount = $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::MAX_AMOUNT] ?? UpiValidator::MAX_AMOUNT_LIMIT;
 
         // re arrange the input
-        $input['subscription_registration']['frequency']  = $frequency;
-        $input['subscription_registration']['max_amount'] = $maxAmount;
+        $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::FREQUENCY]  = $frequency;
+        $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::MAX_AMOUNT] = $maxAmount;
 
         $orderPayLoad =
             [
-                'amount'          => $input['amount'],
-                'currency'        => 'INR',
-                'method'          => Method::UPI,
-                'customer_id'     => $input[Entity::CUSTOMER_ID],
-                'payment_capture' => 1,
-                'token'           =>
+                Order\Entity::RECEIPT         => $input[Order\Entity::RECEIPT] ?? null,
+                Order\Entity::AMOUNT          => $input[Order\Entity::AMOUNT],
+                Order\Entity::CURRENCY        => 'INR',
+                Order\Entity::METHOD          => Method::UPI,
+                Order\Entity::CUSTOMER_ID     => $input[Entity::CUSTOMER_ID],
+                Order\Entity::PAYMENT_CAPTURE => 1,
+                Order\Entity::TOKEN           =>
                     [
-                        'max_amount'      => $maxAmount,
-                        'frequency'       => $frequency,
-                        'recurring_type'  => \RZP\Models\UpiMandate\RecurringType::BEFORE,
-                        'recurring_value' => \RZP\Models\UpiMandate\Frequency::$frequencyToRecurringValueMap[$frequency],
-                        'start_time'      => Carbon::now()->addDay(1)->getTimestamp(),
-                        'end_time'        => isset($input['subscription_registration']['end_time'])
-                                                ? $input['subscription_registration']['end_time']
-                                                : Carbon::now()->addYear(10)->getTimestamp(),
+                        UpiMandate\Entity::MAX_AMOUNT      => $maxAmount,
+                        UpiMandate\Entity::FREQUENCY       => $frequency,
+                        UpiMandate\Entity::RECURRING_TYPE  => UpiMandate\RecurringType::BEFORE,
+                        UpiMandate\Entity::RECURRING_VALUE => UpiMandate\Frequency::$frequencyToRecurringValueMap[$frequency],
+                        UpiMandate\Entity::START_TIME      => Carbon::now()->addDay(1)->getTimestamp(),
+                        UpiMandate\Entity::END_TIME        => isset($input[Constants\Entity::SUBSCRIPTION_REGISTRATION]['end_time'])
+                                                                ? $input[Constants\Entity::SUBSCRIPTION_REGISTRATION]['end_time']
+                                                                : Carbon::now()->addYear(10)->getTimestamp(),
                     ]
             ];
+
+        // Add TPV Bank Details, if present in payload
+        if (isset($input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::BANK_ACCOUNT]) === true)
+        {
+            $bankDetails = array_pull($input[Constants\Entity::SUBSCRIPTION_REGISTRATION], Entity::BANK_ACCOUNT);
+
+            $code = substr($bankDetails[BankAccount\Entity::IFSC_CODE] ?? '', 0, 4);
+
+            if (isset(UpiPayment::$defaultInconsistentBankCodesMapping[$code]) === true)
+            {
+                $code = UpiPayment::$defaultInconsistentBankCodesMapping[$code];
+            }
+
+            $orderPayLoad[Order\Entity::BANK] = $code;
+
+            $orderPayLoad[Order\Entity::ACCOUNT_NUMBER] = $bankDetails[BankAccount\Entity::ACCOUNT_NUMBER] ?? '';
+
+        }
 
         $orderService = new Order\Service();
 
