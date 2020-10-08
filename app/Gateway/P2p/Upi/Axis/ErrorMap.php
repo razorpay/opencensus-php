@@ -19,6 +19,8 @@ class ErrorMap
     const SMS_SENDING_FAILED                            = 'SMS_SENDING_FAILED';
     const SMS_VERIFICATION_EXPIRED                      = 'SMS_VERIFICATION_EXPIRED';
     const SDK_CHECKSUM_MISMATCH                         = 'SDK_CHECKSUM_MISMATCH';
+    const SDK_HASH_MISSING                              = 'SDK_HASH_MISSING';
+    const SDK_HASH_MISMATCH                             = 'SDK_HASH_MISMATCH';
 
     public static $errorMap = [
         self::NOT_AVAILABLE                             => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
@@ -32,6 +34,8 @@ class ErrorMap
         self::SMS_SENDING_FAILED                        => ErrorCode::BAD_REQUEST_SMS_FAILED,
         self::SMS_VERIFICATION_EXPIRED                  => ErrorCode::BAD_REQUEST_SMS_FAILED,
         self::SDK_CHECKSUM_MISMATCH                     => ErrorCode::GATEWAY_ERROR_CHECKSUM_MATCH_FAILED,
+        self::SDK_HASH_MISSING                          => ErrorCode::GATEWAY_ERROR_TIMED_OUT,
+        self::SDK_HASH_MISMATCH                         => ErrorCode::BAD_REQUEST_FORBIDDEN,
     ];
 
     public static $pendingErrors = [

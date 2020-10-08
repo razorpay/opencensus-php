@@ -73,7 +73,11 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
                 break;
 
             case DeviceAction::ACTIVATE_DEVICE_BINDING:
-                $this->handleActivateDeviceBinding($response);
+                $this->handleActivateDeviceBinding($response,
+                    [
+                        Fields::CUSTOMER_MOBILE_NUMBER  => $sdk->get(Fields::CUSTOMER_MOBILE_NUMBER),
+                        Fields::MERCHANT_CUSTOMER_ID    => $merchantCustomerId,
+                    ]);
 
                 break;
 
@@ -215,19 +219,54 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
 
             $request->merge($activateBindingRequest);
 
+            $hash = $this->generateHash([
+                $activateBindingRequest[Fields::CUSTOMER_MOBILE_NUMBER],
+                $activateBindingRequest[Fields::MERCHANT_CUSTOMER_ID],
+                $this->input->get(Entity::REGISTER_TOKEN)->get(Fields::TOKEN),
+                DeviceAction::ACTIVATE_DEVICE_BINDING,
+            ]);
+
+            $request->mergeUdf([
+                Fields::RSH => $hash,
+            ]);
+
             $response->setRequest($request);
         }
     }
 
     private function handleActivateDeviceBinding(
-        Response $response)
+        Response $response,
+        $activateBindingRequest)
     {
         $sdk = $this->handleInputSdk();
 
         if (($this->isDeviceActivated($sdk) === false))
         {
             // Should never come here as sdk can not be success for non activated device
-            throw $this->p2pGatewayException(ErrorMap::NOT_AVAILABLE, [Entity::SDK => $sdk]);
+            throw $this->p2pGatewayException(ErrorMap::NOT_AVAILABLE, [Entity::SDK => $sdk->toArray()]);
+        }
+
+        $udf = json_decode($sdk->get(Fields::UDF_PARAMETERS), true);
+
+        $actualHash = array_get($udf, Fields::RSH);
+
+        if (is_string($actualHash) === false)
+        {
+            // We do not want to auto initiate the verification
+            throw $this->p2pGatewayException(ErrorMap::SDK_HASH_MISSING, [Entity::SDK => $sdk->toArray()]);
+        }
+
+        $expectedHash = $this->generateHash([
+            $activateBindingRequest[Fields::CUSTOMER_MOBILE_NUMBER],
+            $activateBindingRequest[Fields::MERCHANT_CUSTOMER_ID],
+            $this->input->get(Entity::REGISTER_TOKEN)->get(Fields::TOKEN),
+            DeviceAction::ACTIVATE_DEVICE_BINDING,
+        ]);
+
+        if (hash_equals($expectedHash, $actualHash) === false)
+        {
+            // For rolling out this will make sure that customer retries
+            throw $this->p2pGatewayException(ErrorMap::SDK_HASH_MISMATCH, [Entity::SDK => $sdk->toArray()]);
         }
     }
 

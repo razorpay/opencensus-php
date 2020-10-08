@@ -373,6 +373,11 @@ class Gateway extends Upi\Gateway
         return $masked;
     }
 
+    protected function getHashOfString($str)
+    {
+        return hash_hmac('sha256', $str, config('app.key'));
+    }
+
     public function syncGatewayTransactionDataFromCps(array $attributes, array $input)
     {
         $gatewayEntity = $this->repo->findByPaymentIdAndAction($attributes[Entity::PAYMENT_ID], $input[Entity::ACTION]);

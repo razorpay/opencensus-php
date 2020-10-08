@@ -12,6 +12,7 @@ class Fields
     const CONTENT                   = 'content';
     const VALIDATE                  = 'validate';
     const RID                       = 'rid';
+    const RSH                       = 'rsh';
     const TOKEN                     = 'token';
     const UPI_REQUEST_ID            = 'upiRequestId';
     const UPI_RESPONSE_ID           = 'upiResponseId';

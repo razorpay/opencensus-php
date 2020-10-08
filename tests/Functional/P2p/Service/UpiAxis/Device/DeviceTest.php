@@ -166,6 +166,18 @@ class DeviceTest extends TestCase
                 Fields::STATUS                    => 'SUCCESS',
                 Fields::IS_DEVICE_BOUND           => 'false',
                 Fields::IS_DEVICE_ACTIVATED       => 'false',
+                Fields::VPA_ACCOUNTS              => [],
+                Fields::UDF_PARAMETERS            => [],
+            ]
+        ]);
+
+        $this->assertSame('BIND_DEVICE', $request['request']['action']);
+
+        $request = $helper->verification($request['callback'], [
+            Fields::SDK => [
+                Fields::STATUS                    => 'SUCCESS',
+                Fields::IS_DEVICE_BOUND           => 'true',
+                Fields::IS_DEVICE_ACTIVATED       => 'false',
                 Fields::DEVICE_FINGERPRINT        => '61F275C82A0AECC4788FA',
                 Fields::CUSTOMER_MOBILE_NUMBER    => '919742417121',
                 Fields::VPA_ACCOUNTS              => [],
@@ -173,7 +185,23 @@ class DeviceTest extends TestCase
             ]
         ]);
 
-         $helper->verification($request['callback'], [
+        $this->assertSame('ACTIVATE_DEVICE_BINDING', $request['request']['action']);
+        $udfString = $request['request']['content']['udfParameters'];
+        $this->assertArrayHasKey('rsh', json_decode($udfString, true));
+
+        $helper->withSchemaValidated(false);
+
+        $this->withFailureResponse($helper,
+            function($error)
+            {
+                $this->assertArraySubset([
+                    'code'          => 'GATEWAY_ERROR',
+                    'description'   => 'Action could not be completed at bank',
+                ], $error);
+            },
+            502);
+
+        $helper->verification($request['callback'], [
             Fields::SDK => [
                 Fields::STATUS                    => 'SUCCESS',
                 Fields::IS_DEVICE_BOUND           => 'true',
@@ -181,9 +209,53 @@ class DeviceTest extends TestCase
                 Fields::DEVICE_FINGERPRINT        => '61F275C82A0AECC4788FA',
                 Fields::CUSTOMER_MOBILE_NUMBER    => '919742417121',
                 Fields::VPA_ACCOUNTS              => [],
-                Fields::UDF_PARAMETERS            => [],
+                Fields::UDF_PARAMETERS            => '[]',
             ]
         ]);
+
+        $helper = $this->getDeviceHelper();
+
+        $this->withFailureResponse($helper,
+            function($error)
+            {
+                $this->assertArraySubset([
+                    'code'          => 'BAD_REQUEST_ERROR',
+                    'description'   => 'Access forbidden for requested resource',
+                ], $error);
+            },
+            403);
+
+        $helper->verification($request['callback'], [
+            Fields::SDK => [
+                Fields::STATUS                    => 'SUCCESS',
+                Fields::IS_DEVICE_BOUND           => 'true',
+                Fields::IS_DEVICE_ACTIVATED       => 'true',
+                Fields::DEVICE_FINGERPRINT        => '61F275C82A0AECC4788FA',
+                Fields::CUSTOMER_MOBILE_NUMBER    => '919742417122',
+                Fields::VPA_ACCOUNTS              => [],
+                Fields::UDF_PARAMETERS            => $udfString,
+            ]
+        ]);
+
+        $helper = $this->getDeviceHelper();
+
+        $helper->withSchemaValidated();
+
+        $response = $helper->verification($request['callback'], [
+            Fields::SDK => [
+                Fields::STATUS                    => 'SUCCESS',
+                Fields::IS_DEVICE_BOUND           => 'true',
+                Fields::IS_DEVICE_ACTIVATED       => 'true',
+                Fields::DEVICE_FINGERPRINT        => '61F275C82A0AECC4788FA',
+                Fields::CUSTOMER_MOBILE_NUMBER    => '919742417121',
+                Fields::VPA_ACCOUNTS              => [],
+                Fields::UDF_PARAMETERS            => $udfString,
+            ]
+        ]);
+
+        $this->assertArraySubset([
+            Device\DeviceToken\Entity::STATUS => 'verified',
+        ], $response);
     }
 
     public function testDeregister()
