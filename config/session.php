@@ -40,9 +40,12 @@ return array(
     |
     | Here you may specify the number of minutes that you wish the session
     | to be allowed to remain idle before it asks user to login again.
+    | For epos mobile app, we are putting a session time put of 12 hours
     |
     */
-    'inactivity_time' => 20,
+    'inactivity_time'           => 20,
+
+    'mobileapp_inactivity_time' => 720,
 
     'expire_on_close' => false,
 

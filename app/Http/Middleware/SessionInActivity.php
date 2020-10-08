@@ -57,11 +57,16 @@ class SessionInActivity
 
         $mobileApp = $request->header('X-Razorpay-App');
 
+        if (empty($mobileApp) === false)
+        {
+            $inActivityTime = $sessionConfig['mobileapp_inactivity_time'] * 60;
+        }
+
         $currentTime = time();
 
         $routeName = $request->route()->getName();
 
-        if ((empty($mobileApp) === true) and (empty($user->user()) === false) and (empty($lastUsed) === false) and
+        if ((empty($user->user()) === false) and (empty($lastUsed) === false) and
             (($currentTime - $lastUsed) > $inActivityTime))
         {
             $userEmail = $user->user()->email ?? '';
