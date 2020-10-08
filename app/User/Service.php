@@ -421,7 +421,7 @@ class Service extends Base\Service
                 return [['The email or password combination you entered doesn\'t exist'], null];
             }
 
-            return [['Incorrect email or password. To reset your password click on "Forgot Password" link.'], null];
+            return [['Incorrect email or password. To reset, click on "Forgot?" link.'], null];
         }
 
         Auth::login($genericUser, false);
