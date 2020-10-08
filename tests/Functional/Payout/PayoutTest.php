@@ -28,6 +28,7 @@ use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Jobs\PayoutSourceUpdaterJob;
+use RZP\Jobs\PayoutPostCreateProcess;
 use RZP\Models\Base\PublicCollection;
 use RZP\Mail\Banking\LowBalanceAlert;
 use RZP\Models\Payout\WorkflowFeature;
@@ -7013,6 +7014,82 @@ class PayoutTest extends TestCase
         // Verify transaction entity
         $txn = $this->getLastEntity('transaction', true);
         $this->assertNull($txn);
+    }
+
+    /**
+     * In this test, we shall process a create_request_submitted payout
+     * ( create_request_submitted -> created )
+     */
+    public function testProcessingOfCreateRequestSubmittedPayout()
+    {
+        $this->testCreatePayoutForRequestSubmitted();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // Manually pushing into the queue because this is the only way to do this.
+        // Keeping the queueFlag as false for this test.
+        // Payout should get processed since merchant has enough balance
+        PayoutPostCreateProcess::dispatch('test', $payout->getId(), 'false');
+
+        $payout->reload();
+
+        $publicResponse = $payout->toArrayPublic();
+
+        $this->assertEquals('created', $payout['internal_status']);
+        $this->assertEquals('processing', $publicResponse['status']);
+        $this->assertNotNull($payout['initiated_at']);
+    }
+
+    /**
+     * In this test, we shall fail a create_request_submitted payout
+     * ( create_request_submitted -> failed )
+     */
+    public function testProcessingOfCreateRequestSubmittedPayoutInsufficientBalance()
+    {
+        $this->testCreatePayoutForRequestSubmitted();
+
+        $this->fixtures->edit('balance', $this->bankingBalance['id'], ['balance' => 0]);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // Manually pushing into the queue because this is the only way to do this.
+        // Keeping the queueFlag as false for this test.
+        // Payout should fail since merchant does not have enough balance
+        PayoutPostCreateProcess::dispatch('test', $payout->getId(), false);
+
+        $payout->reload();
+
+        $publicResponse = $payout->toArrayPublic();
+
+        $this->assertEquals('failed', $payout['internal_status']);
+        $this->assertEquals('failed', $publicResponse['status']);
+        $this->assertNotNull($payout['failed_at']);
+    }
+
+    /**
+     * In this test, we shall queue a create_request_submitted payout
+     * ( create_request_submitted -> queued )
+     */
+    public function testProcessingOfCreateRequestSubmittedPayoutInsufficientBalanceQueueFlagTrue()
+    {
+        $this->testCreatePayoutForRequestSubmitted();
+
+        $this->fixtures->edit('balance', $this->bankingBalance['id'], ['balance' => 0]);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // Manually pushing into the queue because this is the only way to do this.
+        // Keeping the queueFlag as true for this test.
+        // Payout should get queued since merchant does not have enough balance
+        PayoutPostCreateProcess::dispatch('test', $payout->getId(), true);
+
+        $payout->reload();
+
+        $publicResponse = $payout->toArrayPublic();
+
+        $this->assertEquals('queued', $payout['internal_status']);
+        $this->assertEquals('queued', $publicResponse['status']);
+        $this->assertNotNull($payout['queued_at']);
     }
 
     public function testCreatePayoutLinkPayoutWithoutSourceDetails()

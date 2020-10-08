@@ -16,9 +16,11 @@ class PayoutPostCreateProcess extends Job
     protected $queueFlag;
 
     protected $mode;
+
     /**
      * @param string $mode
      * @param string $payoutId
+     * @param bool $queueFlag
      */
     public function __construct(string $mode, string $payoutId, bool $queueFlag)
     {
