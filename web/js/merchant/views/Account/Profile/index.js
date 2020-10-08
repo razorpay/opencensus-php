@@ -4,15 +4,11 @@ import RTracking from 'react-tracking';
 
 import Alert from 'common/ui/Forms/Alert';
 import Spinner from 'common/ui/Spinner';
-import UpdateContactMobile from 'common/ui/UpdateContactMobile';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { updateContactMobile, updateUser } from 'merchant_common/reducers/user';
-import { verifyTwoFactorOtp } from 'merchant_common/reducers/twoFactor';
 import * as ProfileActions from 'merchant/reducers/profile';
 import ShowWhen from 'merchant/components/ShowWhen';
 
-import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import User from 'merchant/models/User';
 import MerchantDetails from 'merchant/views/Account/Profile/components/MerchantDetails';
 import GST from 'merchant/views/Account/Profile/components/GST';
@@ -28,8 +24,8 @@ import SettlementDetails from 'merchant/views/Account/Profile/components/Settlem
 import { updateDisplayName } from 'merchant/reducers/profile';
 import { updateSession } from 'merchant/reducers/session';
 import rolesList from 'merchant/helpers/permissions/roles-list';
-import UpdateSelfContactMobile from 'merchant/views/Account/Profile/components/UpdateSelfContactMobile';
 import SupportDetails from 'merchant/views/Account/Profile/components/SupportDetails';
+
 import User2FASettings from './components/User2FASettings';
 
 @connect(
@@ -47,9 +43,6 @@ import User2FASettings from './components/User2FASettings';
     fetchUser,
     updateDisplayName,
     updateSession,
-    updateContactMobile,
-    verifyTwoFactorOtp,
-    updateUser,
   },
 )
 @RTracking(() => window.rzpQ.component('Profile'))
@@ -130,19 +123,6 @@ export default class Profile extends Component {
       hasMerchant,
     });
   }
-
-  onUpdateContactMobileSubmit = (data) => {
-    return this.props.updateContactMobile(data, merchantFetch);
-  };
-
-  onContactMobileOtpConfirm = (data) => {
-    return this.props.verifyTwoFactorOtp(data, ajax);
-  };
-
-  onUpdateContactMobileComplete = (userData) => {
-    this.props.updateUser(userData);
-    this.props.closeModal();
-  };
 
   acceptInvitation = (invite) => {
     let message = 'You have accepted the invite.';
@@ -240,19 +220,6 @@ export default class Profile extends Component {
     });
   };
 
-  openChangeContactMobile = () => {
-    this.props.openModal({
-      size: 'small',
-      component: (
-        <UpdateContactMobile
-          onSubmit={this.onUpdateContactMobileSubmit}
-          onComplete={this.onUpdateContactMobileComplete}
-          onOtpConfirm={this.onContactMobileOtpConfirm}
-        />
-      ),
-    });
-  };
-
   openChangeBankDetailsModal = () => {
     const { bankAccount } = this.props.profile;
 
@@ -343,7 +310,6 @@ export default class Profile extends Component {
               <MerchantDetails
                 user={user}
                 changeDisplayName={!!this.isAdminOrOwner() && this.openChangeDisplayName}
-                changeContactMobile={this.openChangeContactMobile}
                 isWebsiteInWorkflow={this.state.isWebsiteInWorkflow}
                 onWebsiteAdd={this.onWebsiteAdd}
               />

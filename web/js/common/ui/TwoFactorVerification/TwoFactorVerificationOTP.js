@@ -40,27 +40,21 @@ export default class TwoFactorVerificationOTP extends React.Component {
   };
 
   render() {
-    const { contactMobile } = this.props;
     return (
       <div>
         <ModalHeader
-          title="2 Step Verification"
+          title={this.props.title}
           onCloseClick={this.onCloseClick}
         />
         <div class="modal-body">
-          <p class="m-b">
-            The action you are trying to perform needs 2-step verification. An
-            SMS with 6-digit OTP has been sent to {contactMobile}{' '}
-          </p>
-
-          <p class="m-t m-b">OTP will expire in 5 mins.</p>
+          {this.props.renderMessage()}
           <OtpInput
             onComplete={this.updateOtpValue}
             onChange={this.updateOtpValue}
             wrong={this.state.wrongOtp}
           />
           <p class="m-t m-b">
-            Didn’t receive an SMS?{' '}
+            Didn’t receive an OTP?{' '}
             <AsyncBtn.Transparent
               pendingState="Sending OTP..."
               onClick={this.props.onResend}

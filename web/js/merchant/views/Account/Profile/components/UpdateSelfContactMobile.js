@@ -12,7 +12,6 @@ import Form from 'common/new-ui/Form';
 import { AsyncBtn } from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
 
-import ajax from 'merchant/utils/ajax';
 import { isPhone } from 'common/utils/validators';
 
 @connect(
@@ -134,7 +133,6 @@ class VerifyOtp extends Component {
         {
           otp: this.otpValue,
         },
-        ajax
       )
       .then(response => {
         if (response.success) {

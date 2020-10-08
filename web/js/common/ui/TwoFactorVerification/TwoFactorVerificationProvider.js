@@ -6,12 +6,10 @@ import {
   triggerTwoFactorVerificationOtp,
   verifyTwoFactorOtp,
 } from 'merchant_common/reducers/twoFactor';
-import { updateContactMobile, updateUser } from 'merchant_common/reducers/user';
-
-import UpdateContactMobile from 'common/ui/UpdateContactMobile';
 
 import TwoFactorVerificationOTP from './TwoFactorVerificationOTP';
 import TwoFaVerificationContext from './TwoFactorVerificationContext';
+import TwoFactorVerificationSetup from './TwoFactorVerificationSetup';
 
 @connect(
   (state) => ({
@@ -23,28 +21,19 @@ import TwoFaVerificationContext from './TwoFactorVerificationContext';
     openModal,
     closeModal,
     verifyTwoFactorOtp,
-    updateContactMobile,
-    updateUser,
-  },
+  }
 )
 @RTracking(() => window.rzpQ.component('TwoFaVerificationContextProvider'))
 export default class TwoFaVerificationContextProvider extends React.Component {
   onOtpConfirm = (data) => {
-    return this.props.verifyTwoFactorOtp(
-      {
+    return this.props.verifyTwoFactorOtp({
         otp: data.otp,
       },
-      this.props.ajax,
     );
   };
 
-  onContactMobileSubmit = (data) => {
-    return this.props.updateContactMobile(data, this.props.merchantFetch);
-  };
-
-  onContactMobileUpdated = ({ onUserTwoFaVerified }) => (userData) => {
+  onContactMobileUpdated = ({ onUserTwoFaVerified }) => () => {
     this.emitTwoFactorSetupSuccessEvent();
-    this.props.updateUser(userData);
     // After contact mobile is updated
     // user is marked as two_fa_verified implicitly
     return onUserTwoFaVerified();
@@ -60,16 +49,8 @@ export default class TwoFaVerificationContextProvider extends React.Component {
     return onUserTwoFaVerified();
   };
 
-  onWrongOtp = () => {
-    this.props.tracking.trackEvent(
-      window.rzpQ.merchantActions().failed('critical_actions.2fa_verification_wrong_otp', {
-        action: this.props.action,
-      }),
-    );
-  };
-
   onOtpResend = () => {
-    return triggerTwoFactorVerificationOtp(this.props.merchantFetch);
+    return triggerTwoFactorVerificationOtp();
   };
 
   onClose = () => {
@@ -94,7 +75,7 @@ export default class TwoFaVerificationContextProvider extends React.Component {
 
     if (user.isCriticalRouteExperimentEnabled && modes.includes(modeOfApp)) {
       if (!user.isTwoFactorSetupDone) {
-        return this.updateAndVerifiyContactMobile({
+        return this.completeTwoFactorVerificationSetup({
           onContactMobileUpdated: this.onContactMobileUpdated({
             onUserTwoFaVerified,
           }),
@@ -110,16 +91,12 @@ export default class TwoFaVerificationContextProvider extends React.Component {
     }
   };
 
-  updateAndVerifiyContactMobile = ({ onContactMobileUpdated }) => {
-    const { user } = this.props;
+  completeTwoFactorVerificationSetup = ({ onContactMobileUpdated }) => {
     this.props.openModal({
-      size: 'small',
+      size: 'medium',
       component: (
-        <UpdateContactMobile
-          contactMobile={user.user.contact_mobile}
+        <TwoFactorVerificationSetup
           onComplete={onContactMobileUpdated}
-          onSubmit={this.onContactMobileSubmit}
-          onOtpConfirm={this.onOtpConfirm}
           onClose={this.onClose}
         />
       ),
@@ -127,18 +104,27 @@ export default class TwoFaVerificationContextProvider extends React.Component {
   };
 
   verifyUserViaTwoFactorOtp = ({ onUserTwoFaVerified }) => {
-    const { merchantFetch, user } = this.props;
-    triggerTwoFactorVerificationOtp(merchantFetch).then(() => {
+    const { user } = this.props;
+    triggerTwoFactorVerificationOtp().then(() => {
       this.props.openModal({
         size: 'small',
         component: (
           <TwoFactorVerificationOTP
-            contactMobile={user.user.contact_mobile}
             onConfirm={this.onOtpConfirm}
             onResend={this.onOtpResend}
             onClose={this.onClose}
             onSuccess={this.onUserTwoFaVerified({ onUserTwoFaVerified })}
-            onWrongOtp={this.onWrongOtp}
+            onWrongOtp={this.emitWrongOtpEvent}
+            title="2-Step Verification"
+            renderMessage={() => (
+              <>
+                <p class="m-b">
+                  The action you are trying to perform needs 2-step verification. An
+                  SMS with 6-digit OTP has been sent to {user.user.contact_mobile}{' '}
+                </p>
+                <p class="m-t m-b" >OTP will expire in 5 mins</p>
+              </>
+            )}
           />
         ),
       });
@@ -172,6 +158,14 @@ export default class TwoFaVerificationContextProvider extends React.Component {
       window.rzpQ.merchantActions().success('critical_actions.2fa_setup_success', {
         action: this.props.action,
       }),
+    );
+  };
+
+  emitWrongOtpEvent = () => {
+    this.props.tracking.trackEvent(
+      window.rzpQ.merchantActions().failed('critical_actions.2fa_verification_wrong_otp', {
+        action: this.props.action,
+      })
     );
   };
 }

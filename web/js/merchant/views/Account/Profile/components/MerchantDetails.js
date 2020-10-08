@@ -1,15 +1,21 @@
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
+
 import Time from 'common/ui/Time';
 import ProgressBar from 'common/ui/ProgressBar';
-import { titleCase, isPresent } from 'common/utils/rzp-utils';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+
+import { titleCase, isPresent } from 'common/utils/rzp-utils';
+
 import DetailRow from 'merchant/components/DetailRow';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
-import EditWebsiteDetailsModal from './EditWebsiteDetailsModal';
 import ShowWhen from 'merchant/components/ShowWhen';
+
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+
+import EditWebsiteDetailsModal from './EditWebsiteDetailsModal';
+import UserContactMobile from './UserContactMobile';
 
 const businessTypeMap = {
   1: 'Proprietorship',
@@ -68,7 +74,6 @@ function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
 const MerchantDetails = ({
   user,
   changeDisplayName,
-  changeContactMobile,
   openModal,
   closeModal,
   tracking,
@@ -156,36 +161,7 @@ const MerchantDetails = ({
         value={() => <a href={`mailto:${user.email}`}>{user.email}</a>}
       />
 
-      <DetailRow
-        label="Contact Number"
-        value={() => (
-          <span>
-            {user.user.contact_mobile || null}
-            <ShowWhen
-              additionalCondition={user =>
-                user.isContactMobileChangeAllowed && !user.isTwoFactorSetupDone
-              }
-            >
-              <a
-                class="p-l"
-                onClick={changeContactMobile}
-                title="Edit contact mobile"
-              >
-                {user.user.contact_mobile ? (
-                  <i class="i i-edit" />
-                ) : (
-                  'Set Contact Number'
-                )}
-              </a>
-            </ShowWhen>
-            <ShowWhen additionalCondition={user => user.isTwoFactorSetupDone}>
-              <span class="text-success p-l">
-                <i class="i i-done-all" />
-              </span>
-            </ShowWhen>
-          </span>
-        )}
-      />
+      <UserContactMobile/>
 
       <DetailRow label="Business Name" value={titleCase(user.business_name)} />
 

@@ -142,13 +142,7 @@ class Toggle2FA extends Component {
     return new Promise((resolve) => {
       this.actionCompleted = resolve;
       if (flag) {
-        const {
-          user: { second_factor_auth_setup },
-        } = this.props.user;
-
-        const action =
-          //Check if user has mobile number verified for setup to continue, if yes skip mobile number verification & move to password verification
-          second_factor_auth_setup ? this.verifyPassword : this.verifyMobile;
+        const action = this.verifyPassword;
         this.confirmEnable({ action, flag });
       } else {
         this.confirmDisable({ action: this.verifyPassword, flag });

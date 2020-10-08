@@ -532,7 +532,7 @@ export default class App extends Component {
           this.renderFPView
         ) : (
           <React.Fragment>
-            <TwoFactorVerificationProvider merchantFetch={merchantFetch} ajax={ajax}>
+            <TwoFactorVerificationProvider>
               <HeaderNav
                 user={user}
                 mode={mode}

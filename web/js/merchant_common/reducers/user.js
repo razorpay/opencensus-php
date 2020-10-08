@@ -1,9 +1,11 @@
+import { merchantFetch } from 'merchant/utils/ajax';
+
 const UPDATE_USER = 'UPDATE_USER';
 const UPDATE_USER_ASYNC = 'UPDATE_USER_ASYNC';
 
-export const updateContactMobile = (data, asyncCall) => ({
+export const updateContactMobile = (data) => ({
   type: UPDATE_USER_ASYNC,
-  payload: asyncCall({
+  payload: merchantFetch({
     url: `users/contact/update`,
     method: 'patch',
     data,
@@ -11,7 +13,7 @@ export const updateContactMobile = (data, asyncCall) => ({
   }),
 });
 
-export const updateUser = data => ({
+export const updateUser = (data) => ({
   type: UPDATE_USER,
   data,
 });
