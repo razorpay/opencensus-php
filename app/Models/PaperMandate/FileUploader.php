@@ -6,6 +6,7 @@ use Config;
 use Storage;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Services\UfhService;
 use Illuminate\Http\UploadedFile;
 use RZP\Models\Base\UniqueIdEntity;
 
@@ -100,14 +101,18 @@ class FileUploader extends Base\Core
 
         $uploadFilename = 'paper-mandate/' . $folder . '/' . $filenameWithoutExt . '_' . UniqueIdEntity::generateUniqueId();
 
-        $file = $this->app['ufh.service']->uploadFileAndGetUrl(
+        $ufhResponse = $this->app['ufh.service']->uploadFileAndGetUrl(
             $file,
             $uploadFilename,
             self::PAPER_MANDATE,
             $this->merchant
         );
 
-        $fileId = $file[self::FILE_ID];
+        $localMovedFile = $ufhResponse[UfhService::LOCAL_FILE];
+
+        $this->deleteFile($localMovedFile->getRealPath());
+
+        $fileId = $ufhResponse[UfhService::FILE_ID];
 
         $fileId = Base\PublicEntity::stripDefaultSign($fileId);
 
@@ -154,6 +159,19 @@ class FileUploader extends Base\Core
         Storage::put($output_file, base64_decode($base64String));
 
         return $this->getStorageDir() . $output_file;
+    }
+
+    protected function deleteFile($filePath)
+    {
+        if (($filePath !== null) and (file_exists($filePath) === true))
+        {
+            $success = unlink($filePath);
+
+            if ($success === false)
+            {
+                $this->trace->critical(TraceCode::NACH_FILE_DELETE_ERROR, ['file_path' => $filePath]);
+            }
+        }
     }
 
     protected function getStorageDir()

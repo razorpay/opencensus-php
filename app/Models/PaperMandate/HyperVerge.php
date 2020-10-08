@@ -4,12 +4,8 @@ namespace RZP\Models\PaperMandate;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
-use RZP\Models\Customer;
-use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
-use RZP\Exception\BadRequestValidationFailureException;
 
 class HyperVerge extends Base\Core
 {

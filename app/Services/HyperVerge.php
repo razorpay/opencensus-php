@@ -8,6 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\PaperMandate;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\PaperMandate\PaperMandateUpload;
@@ -26,6 +27,10 @@ class HyperVerge
 
     protected $client;
 
+    /**
+     * Trace instance used for tracing
+     * @var Trace
+     */
     protected $trace;
 
     const REQUEST_TIMEOUT = 10;
@@ -143,8 +148,8 @@ class HyperVerge
                 Requests::POST,
                 self::URLS[self::GENERATE_NACH],
                 [
-                    'body' => json_encode($input, JSON_UNESCAPED_SLASHES),
-                    'headers'   => $headers,
+                    'body'    => json_encode($input, JSON_UNESCAPED_SLASHES),
+                    'headers' => $headers,
                 ]
             );
         }
@@ -153,7 +158,10 @@ class HyperVerge
             throw new ServerErrorException(
                 'HyperVerge error',
                 ErrorCode::SERVER_ERROR_UNABLE_TO_CREATE_NACH_FORM,
-                [$input, $paperMandate->toArrayPublic()],
+                [
+                    'input'            => $input,
+                    'paper_mandate_id' => $paperMandate->getId(),
+                ],
                 $e
             );
         }
@@ -216,10 +224,15 @@ class HyperVerge
 
             if ($this->is4xxException($e, $errorMessage) === true)
             {
+                $this->trace->traceException($e);
+
                 throw (new BadRequestException(
                     ErrorCode::BAD_REQUEST_UNABLE_TO_READ_NACH_FORM,
                     null,
-                    [$input, $paperMandate->toArrayPublic(), $e],
+                    [
+                        'input'            => $input,
+                        'paper_mandate_id' => $paperMandate->getId()
+                    ],
                     $errorMessage
                 ));
             }
@@ -228,7 +241,10 @@ class HyperVerge
                 throw new ServerErrorException(
                     'HyperVerge error',
                     ErrorCode::SERVER_ERROR_NACH_EXTRACTION_FAILED,
-                    [$input, $paperMandate->toArrayPublic(), $errorMessage],
+                    [
+                        'input'            => $input,
+                        'paper_mandate_id' => $paperMandate->getId(),
+                    ],
                     $e
                 );
             }

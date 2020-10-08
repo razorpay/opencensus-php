@@ -23,7 +23,7 @@ class UfhService extends BaseUfhClient
     {
         $ext = $file->getClientOriginalExtension();
 
-        $pathName = $file->getPathname();
+        $movedFile = $file;
 
         // this mock service is being used in test cases . We should not change the file location of input file
         // But in some test cases we are doing that
@@ -31,9 +31,9 @@ class UfhService extends BaseUfhClient
         if ($ext !== 'png')
         {
             $movedFile = $file->move(storage_path('files/filestore'), $storageFileName . '.' . $ext);
-            $pathName  = $movedFile->getPathname();
         }
 
+        $pathName = $movedFile->getPathname();
 
         $requestData = [
             'file'          => fopen($pathName, 'r'),
@@ -61,6 +61,7 @@ class UfhService extends BaseUfhClient
         return [
             self::FILE_ID           => self::MOCK_FILE_ID,
             self::RELATIVE_LOCATION => $storageFileName,
+            self::LOCAL_FILE        => $movedFile,
         ];
     }
 

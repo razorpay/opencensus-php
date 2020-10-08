@@ -19,6 +19,8 @@ class UfhService
 
     const FILE_ID           = 'file_id';
 
+    const LOCAL_FILE        = 'local_file';
+
     const RELATIVE_LOCATION = 'relative_location';
 
     const LOCATION          = 'location';
@@ -166,6 +168,7 @@ class UfhService
         return [
             self::FILE_ID           => $response[self::ID],
             self::RELATIVE_LOCATION => $response[self::LOCATION],
+            self::LOCAL_FILE        => $movedFile,
         ];
     }
 

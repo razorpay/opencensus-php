@@ -714,6 +714,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NACH_REGISTER_REQUEST_ROW                             = 'NACH_REGISTER_REQUEST_ROW';
     const NACH_REGISTER_ROW_FAILED                              = 'NACH_REGISTER_ROW_FAILED';
     const NACH_RECON_ROW_FAILED                                 = 'NACH_RECON_ROW_FAILED';
+    const NACH_FILE_DELETE_ERROR                                = 'NACH_FILE_DELETE_ERROR';
 
     const RX_LOW_BALANCE_EMAIL_ALERT_FAILED                     = 'RX_LOW_BALANCE_EMAIL_ALERT_FAILED';
     const RX_LOW_BALANCE_EMAIL_ALERT_DATA                       = 'RX_LOW_BALANCE_EMAIL_ALERT_DATA';

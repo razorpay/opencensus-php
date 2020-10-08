@@ -53,7 +53,7 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::PAPER_MANDATE_CREATED,
             [
-                'paper_mandate' => $paperMandate->toArrayPublic(),
+                'paper_mandate_id' => $paperMandate->getId(),
             ]);
 
         $this->trace->count(Metric::AUTH_LINK_PAPER_NACH_CREATED, ['mode' => $this->mode]);
@@ -66,7 +66,7 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::PAPER_MANDATE_AUTHENTICATE_REQUEST,
             [
-                'paper_mandate' => $paperMandate->toArrayPublic(),
+                'paper_mandate_id' => $paperMandate->getId(),
             ]
         );
 
@@ -89,7 +89,7 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::PAPER_MANDATE_VALIDATE_REQUEST,
             [
-                'paper_mandate' => $paperMandate->toArrayPublic(),
+                'paper_mandate_id' => $paperMandate->getId(),
             ]
         );
 
