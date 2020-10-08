@@ -181,6 +181,9 @@ class MailTags
     const DISPUTE_ACCEPTED_ADMIN           = 'dispute_accepted_admin';
     const DISPUTE_SUBMITTED_ADMIN          = 'files_submitted_admin';
 
+    // Fraud Notification tags
+    const FRAUD_NOTIFICATION_DOMAIN_MISMATCH = 'fraud_notification_domain_mismatch';
+
     // Daily Recon summary tags
     const DAILY_RECON_SUMMARY              = 'daily_recon_summary';
 

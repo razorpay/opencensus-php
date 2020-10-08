@@ -3409,6 +3409,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PATCH_MERCHANT_INSTRUMENT_REQUEST     =   'PATCH_MERCHANT_INSTRUMENT_REQUEST';
     const GET_MERCHANT_INSTRUMENT_REQUEST_BY_ID =   'GET_MERCHANT_INSTRUMENT_REQUEST_BY_ID';
 
+    // Merchant fraud notification traces
+    const FRAUD_NOTIFICATION_EMAIL_SENDING = 'FRAUD_NOTIFICATION_EMAIL_SENDING';
+    const FRAUD_NOTIFICATION_SMS_SENDING   = 'FRAUD_NOTIFICATION_SMS_SENDING';
+    const FRAUD_NOTIFICATION_FAILED        = 'FRAUD_NOTIFICATION_FAILED';
+
     //                                ==========
 
     // Update free_payouts_count attribute logs

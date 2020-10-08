@@ -67,4 +67,14 @@ trait EventsTrait
 
         $inputHandler($this->mockedRavenRequest[2]);
     }
+
+    protected function resetRavenMock()
+    {
+        $this->mockedRavenRequest = [];
+    }
+
+    protected function assertNoRavenRequest()
+    {
+        $this->assertEmpty($this->mockedRavenRequest);
+    }
 }

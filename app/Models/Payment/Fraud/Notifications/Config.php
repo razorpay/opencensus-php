@@ -1,0 +1,142 @@
+<?php
+
+namespace RZP\Models\Payment\Fraud\Notifications;
+
+use RZP\Models\Payment\Fraud\Constants\Notification as Constants;
+
+class Config
+{
+    protected $fraudType = '';
+
+    protected $smsEnabled = false;
+
+    protected $emailEnabled = false;
+
+    protected $smsTemplate = '';
+
+    protected $emailHandler = '';
+
+    protected $notifyEmailInterval = Constants::INSTANT_NOTIFY;
+
+    protected $notifySmsInterval = Constants::INSTANT_NOTIFY;
+
+    public function __construct(string $fraudType, array $settings)
+    {
+        $this->fraudType = $fraudType;
+
+        $this->processSettings($settings);
+    }
+
+    private function processSettings($settings)
+    {
+        $this->processEmailSettings($settings);
+
+        $this->processSmsSettings($settings);
+    }
+
+    private function processEmailSettings($settings)
+    {
+        if (isset($settings[Constants::EMAIL]) === false)
+        {
+            return;
+        }
+
+        if (empty($settings[Constants::EMAIL][Constants::HANDLER]) === true)
+        {
+            return;
+        }
+
+        $this->emailEnabled = true;
+
+        $this->emailHandler = $settings[Constants::EMAIL][Constants::HANDLER];
+
+        if (empty($settings[Constants::EMAIL][Constants::NOTIFY_INTERVAL]) === true)
+        {
+            return;
+        }
+
+        $notifyInterval = $settings[Constants::EMAIL][Constants::NOTIFY_INTERVAL];
+
+        if ($notifyInterval <= Constants::NOTIFY_INTERVAL)
+        {
+            $this->notifyEmailInterval = Constants::NOTIFY_INTERVAL;
+        }
+        else
+        {
+            $this->notifyEmailInterval = $notifyInterval;
+        }
+    }
+
+    private function processSmsSettings($settings)
+    {
+        if (isset($settings[Constants::SMS]) === false)
+        {
+            return;
+        }
+
+        if (empty($settings[Constants::SMS][Constants::TEMPLATE]) === true)
+        {
+            return;
+        }
+
+        $this->smsEnabled = true;
+
+        $this->smsTemplate = $settings[Constants::SMS][Constants::TEMPLATE];
+
+        $notifyInterval = $settings[Constants::SMS][Constants::NOTIFY_INTERVAL];
+
+        if ($notifyInterval <= Constants::NOTIFY_INTERVAL)
+        {
+            $this->notifySmsInterval = Constants::NOTIFY_INTERVAL;
+        }
+        else
+        {
+            $this->notifySmsInterval = $notifyInterval;
+        }
+    }
+
+    public function isSmsEnabled(): bool
+    {
+        return $this->smsEnabled;
+    }
+
+    public function isEmailEnabled(): bool
+    {
+        return $this->emailEnabled;
+    }
+
+    public function getSmsTemplate(): string
+    {
+        return $this->smsTemplate;
+    }
+
+    public function getEmailHandler(): string
+    {
+        return $this->emailHandler;
+    }
+
+    public function emailInstantly(): bool
+    {
+        return $this->notifyEmailInterval === Constants::INSTANT_NOTIFY;
+    }
+
+    public function smsInstantly(): bool
+    {
+        return $this->notifySmsInterval === Constants::INSTANT_NOTIFY;
+    }
+
+    public function getEmailInterval(): int
+    {
+        return $this->notifyEmailInterval;
+    }
+
+    public function getSmsInterval(): int
+    {
+        return $this->notifySmsInterval;
+    }
+
+    public function getFraudType(): string
+    {
+        return $this->fraudType;
+    }
+}

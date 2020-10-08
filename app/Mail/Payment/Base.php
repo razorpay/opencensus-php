@@ -45,11 +45,15 @@ class Base extends Mailable
 
     protected function addRecipients()
     {
-        $email = $this->data['customer']['email'];
+        $email = "";
 
         if ($this->isMerchantEmail === true)
         {
             $email = $this->data['merchant']['email'];
+        }
+        else
+        {
+            $email = $this->data['customer']['email'];
         }
 
         $this->to($email);

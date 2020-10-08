@@ -183,6 +183,7 @@ trait FraudDetector
                 ];
 
                 $errorCode = $this->getErrorCodeFromTriggeredRules($triggeredRules);
+                (new Payment\Fraud\Notify())->notifyMerchantIfNeeded($merchant, $payment, $errorCode);
 
                 $e = new Exception\BadRequestException($errorCode, null, $data);
 

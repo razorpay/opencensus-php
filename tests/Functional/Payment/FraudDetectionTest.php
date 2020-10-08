@@ -1,6 +1,7 @@
 <?php
 
 namespace RZP\Tests\Functional\Payment;
+use Mail;
 use Mockery;
 
 use RZP\Error\ErrorCode;
@@ -12,10 +13,13 @@ use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Mail\Payment\Fraud\DomainMismatch as DomainMismatchMail;
+use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
 
 class FraudDetectionTest extends TestCase
 {
     use PaymentTrait;
+    use EventsTrait;
 
     public function setUp()
     {
@@ -220,9 +224,18 @@ class FraudDetectionTest extends TestCase
 
     public function testFraudDetectedByShieldWebsiteMismatch()
     {
+        Mail::fake();
+
+        $this->mockRaven();
+
         $this->mockRazorx();
 
-        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+        $merchant_phone = '9999999999';
+        $merchant_id = '10000000000000';
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'    => $merchant_id,
+            'contact_mobile' => $merchant_phone
+        ]);
 
         $shieldClient = Mockery::mock('RZP\Services\Mock\ShieldClient')->makePartial();
 
@@ -246,16 +259,18 @@ class FraudDetectionTest extends TestCase
 
         $this->app->instance('shield', $shieldClient);
 
-        $payment = $this->getDefaultPaymentArray();
+        $testPayment = $this->getDefaultPaymentArray();
 
-        $payment['card']['number'] = '4012010000000007';
+        $testDomain = 'anotherurl.com';
+        $testPayment['referer'] = $testDomain . '/dummy/path';
+        $testPayment['card']['number'] = '4012010000000007';
 
         $data = $this->testData[__FUNCTION__];
 
 
-        $response = $this->runRequestResponseFlow($data, function() use ($payment)
+        $response = $this->runRequestResponseFlow($data, function() use ($testPayment)
         {
-            $this->doAuthPayment($payment);
+            $this->doAuthPayment($testPayment);
         });
 
         $this->assertEquals("Payment blocked as website does not match registered website(s)", $response['error']['description']);
@@ -270,6 +285,50 @@ class FraudDetectionTest extends TestCase
             Risk\RiskCode::PAYMENT_CONFIRMED_FRAUD_BY_SHIELD,
             $riskEntity['reason']
         );
+
+        Mail::assertQueued(DomainMismatchMail::class, function ($mail)
+        {
+            $this->assertEquals($mail->view, 'emails.payment.fraud.domain_mismatch');
+            return true;
+        });
+
+        $this->assertRavenRequest(function($input) use ($merchant_id, $merchant_phone, $testDomain)
+        {
+            $this->assertArraySubset([
+                'receiver'  => $merchant_phone,
+                'source'    => 'api.test.payment',
+                'template'  => 'sms.payment.fraud.domain_mismatch',
+                'params'    => [
+                    'merchant_id'     => $merchant_id,
+                    'referer_domain' => $testDomain
+                ],
+            ], $input);
+        });
+
+        // Second round of payment, this time mail / sms should not be sent.
+        $this->resetRavenMock();
+
+        $response = $this->runRequestResponseFlow($data, function() use ($testPayment)
+        {
+            $this->doAuthPayment($testPayment);
+        });
+
+        $this->assertEquals("Payment blocked as website does not match registered website(s)", $response['error']['description']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $riskEntity = $this->getLastEntity('risk', true);
+
+        $this->assertEquals($payment['id'], $riskEntity['payment_id']);
+
+        $this->assertEquals(
+            Risk\RiskCode::PAYMENT_CONFIRMED_FRAUD_BY_SHIELD,
+            $riskEntity['reason']
+        );
+
+        Mail::assertNothingSent();
+
+        $this->assertNoRavenRequest();
     }
 
     public function testFraudNotDetectedByShield()
