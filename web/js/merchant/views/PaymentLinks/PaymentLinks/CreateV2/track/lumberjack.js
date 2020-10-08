@@ -1,12 +1,16 @@
+import uuid from 'uuid';
+
 function _track() {
   let track = function () {};
   const defaultOptions = {};
+  let local_order_id;
 
   function send(event, options) {
     track(
       window.rzpQ.paymentLinks().interaction(`pl.create.${event}`, {
         ...defaultOptions,
         ...options,
+        local_order_id,
       }),
     );
   }
@@ -54,6 +58,7 @@ function _track() {
 
     init({ track: _track }) {
       track = _track;
+      local_order_id = uuid();
     },
   };
 }
