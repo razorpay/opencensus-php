@@ -7182,6 +7182,7 @@ trait Authorize
         }
 
         if (($payment->isMethodCardOrEmi() === true) and
+            ($payment->hasCard() === true) and
             (empty($input[Payment\Entity::TOKEN]) === true))
         {
             /*
@@ -7270,6 +7271,7 @@ trait Authorize
          * 5. auth type is OTP or preferred auth contains OTP
          * 6. BharathQR payment
          * 7. Payment receiver is VPA
+         * 8. Payment is of Google pay cards
          */
         if (($this->isJsonRoute === false) or
             ($payment->isRecurringTypeAuto() === true) or
@@ -7278,7 +7280,8 @@ trait Authorize
             ($payment->isBharatQr() === true) or
             ($payment->isUpiTransfer() === true) or
             ($payment->isAppCred() === true) or
-            ($payment->isNach() === true))
+            ($payment->isNach() === true) or
+            ($payment->isGooglePayCard() === true))
         {
             return false;
         }

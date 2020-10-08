@@ -70,7 +70,8 @@ trait HeadlessOtp
 
         if (($payment->isMethodCardOrEmi() === true) and
             ($this->isAuthTypeOtp($payment) === true) and
-            ($this->merchant->isHeadlessEnabled() === true))
+            ($this->merchant->isHeadlessEnabled() === true) and
+            (is_null($payment->card) === false))
         {
             $iin = $payment->card->iinRelation;
 

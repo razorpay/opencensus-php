@@ -268,6 +268,36 @@ class PaymentCreateTest extends TestCase
         $this->checkPaymentStatus($payment['id'], 'created');
     }
 
+    public function testCreateGooglePayCardPaymentJsonRoute()
+    {
+        $this->enableCpsConfig();
+
+        $payment = $this->testData['googlePayPaymentCreateRequestData'];
+        $payment['amount'] = 100;
+
+        $this->fixtures->create(
+            'terminal',
+            [
+                'merchant_id' => '10000000000000',
+                'gateway'     => 'cybersource',
+            ]
+        );
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', Feature\Constants::GOOGLE_PAY_CARDS]);
+
+        $response = $this->doS2SPrivateAuthJsonPayment($payment);
+
+        $this->assertEquals($response['type'], 'application');
+        $this->assertEquals($response['application_name'], 'google_pay');
+        $this->assertEquals($response['request']['method'], 'sdk');
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['authentication_gateway'], 'google_pay');
+        $this->assertEquals($payment['cps_route'], 0);
+        $this->checkPaymentStatus($payment['id'], 'created');
+    }
+
     protected function checkPaymentStatus($id, $expectedStatus)
     {
         $response = $this->getPaymentStatus($id);
