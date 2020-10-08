@@ -74,6 +74,7 @@ app/Models/Merchant/Preferences.php                    @razorpay/TechRulesRoutin
 app/Models/Order/                                      sunny.aggrawal@razorpay.com
 app/Models/P2p/                                        nemo@razorpay.com
 app/Models/Payment/                                    vivek.kumar@razorpay.com
+app/Models/Payment/Refund/                             @razorpay/scrooge
 app/Models/Payment/Gateway.php                         @razorpay/TechRulesRouting
 app/Models/Payment/Processor/Netbanking.php            @razorpay/TechRulesRouting
 app/Models/Payout/                                     @razorpay/Payouts-core
@@ -136,7 +137,7 @@ tests/Functional/Order/                                sunny.aggrawal@razorpay.c
 tests/Functional/Payment/                              vivek.kumar@razorpay.com
 tests/Functional/Payout/                               @razorpay/Payouts-core
 tests/Functional/Pricing/                              sunny.aggrawal@razorpay.com
-tests/Functional/Refund/                               vivek.kumar@razorpay.com
+tests/Functional/Refund/                               vivek.kumar@razorpay.com                                @razorpay/scrooge
 tests/Functional/Schedule/                             @razorpay/TechSubscriptions                             @razorpay/TechSettlements
 tests/Functional/Settlement/                           @razorpay/TechSettlements
 tests/Functional/Setting/                              malligairajan.g@razorpay.com
