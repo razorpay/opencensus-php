@@ -73,9 +73,10 @@ class MigrateSource implements Source
     }
 
     /** {@inheritDoc} */
-    public function find(Record $targetRecord): Record
+    public function find(Record $targetRecord): ?Record
     {
         // Not needed to implement.
         return null;
     }
 }
+

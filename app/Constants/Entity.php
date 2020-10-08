@@ -135,6 +135,7 @@ class Entity
     const TERMINAL_ANALYTICS         = 'terminal_analytics';
     const SETTLEMENT_TRANSFER        = 'settlement_transfer';
     const MERCHANT_ACCESS_MAP        = 'merchant_access_map';
+    const MERCHANT_APPLICATION      = 'merchant_application';
     const BATCH_FUND_TRANSFER        = 'batch_fund_transfer';
     const VIRTUAL_ACCOUNT_TPV        = 'virtual_account_tpv';
     const PAPER_MANDATE_UPLOAD       = 'paper_mandate_upload';
@@ -548,6 +549,7 @@ class Entity
         self::SETTLEMENT_TRANSFER       => \RZP\Models\Settlement\Transfer::class,
         self::TERMINAL_ANALYTICS        => \RZP\Models\Payment\TerminalAnalytics::class,
         self::MERCHANT_ACCESS_MAP       => \RZP\Models\Merchant\AccessMap::class,
+        self::MERCHANT_APPLICATION      => \RZP\Models\Merchant\MerchantApplications::class,
         self::MERCHANT_INHERITANCE_MAP  => \RZP\Models\Merchant\InheritanceMap::class,
         self::BATCH_FUND_TRANSFER       => \RZP\Models\FundTransfer\Batch::class,
         self::CUSTOMER_TRANSACTION      => \RZP\Models\Customer\Transaction::class,

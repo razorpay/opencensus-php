@@ -124,6 +124,7 @@ class Table
     const VIRTUAL_ACCOUNT_TPV        = 'virtual_account_tpv';
     const NODAL_BENEFICIARY          = 'nodal_beneficiaries';
     const MERCHANT_ACCESS_MAP        = 'merchant_access_map';
+    const MERCHANT_APPLICATION       = 'merchant_applications';
     const PAPER_MANDATE_UPLOAD       = 'paper_mandate_uploads';
     const CUSTOMER_TRANSACTION       = 'customer_transactions';
     const FUND_TRANSFER_ATTEMPT      = 'fund_transfer_attempts';

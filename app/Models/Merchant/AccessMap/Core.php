@@ -43,7 +43,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Here we add the mapping between merchant and application  We
+     * Here we add the mapping between merchant and application. We
      * maintain this mapping so that we can run flows like webhook calls based
      * on this relation. This can be otherwise fetched from auth-service but
      * since it is read-heavy, we maintain it in the access_map table too.
