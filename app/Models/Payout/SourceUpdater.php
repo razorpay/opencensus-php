@@ -5,7 +5,6 @@ namespace RZP\Models\Payout;
 use App;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
-use RZP\Models\Feature\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\PayoutSourceUpdaterJob;
 use RZP\Models\Settlement\SlackNotification;
@@ -54,9 +53,9 @@ class SourceUpdater
         }
         catch (\Exception $e)
         {
-            $this->trace->traceException(
+            $trace->traceException(
                 $e,
-                Logger::ERROR,
+                Trace::ERROR,
                 TraceCode::FAILED_TO_PUSH_PAYOUT_SOURCE_UPDATER_QUEUE
             );
 

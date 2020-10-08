@@ -30,6 +30,8 @@ class CounterHelper extends Base\Core
 
     const PAYOUT_INITIATED_FIRST_OF_MONTH = 'payout_initiated_first_of_month';
 
+    const COUNTER = 'counter';
+
     /*
     This method is used to increment the counter if the balance is of type banking and the counter corresponding to that
     has not exceeded the free_payouts_count. It also decides what is going to be the
@@ -75,8 +77,9 @@ class CounterHelper extends Base\Core
                 Counter\Entity::FREE_PAYOUTS_CONSUMED               => $counter->getFreePayoutsConsumed(),
                 Counter\Entity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => $counter->getFreePayoutsConsumedLastResetAt(),
                 Counter\Entity::BALANCE_ID                          => $counter->getBalanceId(),
-                Counter\Entity::ID                                  => $counter->getId(),
+                self::COUNTER . '_' . Counter\Entity::ID            => $counter->getId(),
                 Balance\FreePayout::FREE_PAYOUTS_COUNT              => $freePayoutsCount,
+                self::COUNTER . '_' . Counter\Entity::UPDATED_AT    => $counter->getUpdatedAt(),
             ]
         );
 
@@ -129,7 +132,8 @@ class CounterHelper extends Base\Core
                     Counter\Entity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT =>
                         $counter->getFreePayoutsConsumedLastResetAt(),
                     Counter\Entity::BALANCE_ID                          => $counter->getBalanceId(),
-                    Counter\Entity::ID                                  => $counter->getId(),
+                    self::COUNTER . '_' . Counter\Entity::ID            => $counter->getId(),
+                    self::COUNTER . '_' . Counter\Entity::UPDATED_AT    => $counter->getUpdatedAt(),
                     self::CRITERIA                                      => $criteria,
                 ]
             );
@@ -165,7 +169,8 @@ class CounterHelper extends Base\Core
                         Counter\Entity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT =>
                             $counter->getFreePayoutsConsumedLastResetAt(),
                         Counter\Entity::BALANCE_ID                          => $counter->getBalanceId(),
-                        Counter\Entity::ID                                  => $counter->getId(),
+                        self::COUNTER . '_' . Counter\Entity::ID            => $counter->getId(),
+                        self::COUNTER . '_' . Counter\Entity::UPDATED_AT    => $counter->getUpdatedAt(),
                         self::CRITERIA                                      => self::TRANSACTION_FAILURE,
                     ]
                 );
@@ -190,7 +195,8 @@ class CounterHelper extends Base\Core
                     Counter\Entity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT =>
                         $counter->getFreePayoutsConsumedLastResetAt(),
                     Counter\Entity::BALANCE_ID                          => $counter->getBalanceId(),
-                    Counter\Entity::ID                                  => $counter->getId(),
+                    self::COUNTER . '_' . Counter\Entity::ID            => $counter->getId(),
+                    self::COUNTER . '_' . Counter\Entity::UPDATED_AT    => $counter->getUpdatedAt(),
                 ]
             );
         }
@@ -217,7 +223,8 @@ class CounterHelper extends Base\Core
                 Counter\Entity::FREE_PAYOUTS_CONSUMED               => $counter->getFreePayoutsConsumed(),
                 Counter\Entity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => $freePayoutsConsumedLastResetAt,
                 Counter\Entity::BALANCE_ID                          => $counter->getBalanceId(),
-                Counter\Entity::ID                                  => $counter->getId(),
+                self::COUNTER . '_' . Counter\Entity::ID            => $counter->getId(),
+                self::COUNTER . '_' . Counter\Entity::UPDATED_AT    => $counter->getUpdatedAt(),
                 self::CURRENT_TIME_FIRST_OF_MONTH                   => $currentMonthTimestamp,
             ]
         );
@@ -344,7 +351,8 @@ class CounterHelper extends Base\Core
                 Counter\Entity::FREE_PAYOUTS_CONSUMED               => $counter->getFreePayoutsConsumed(),
                 Counter\Entity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => $freePayoutsConsumedLastResetAt,
                 Counter\Entity::BALANCE_ID                          => $counter->getBalanceId(),
-                Counter\Entity::ID                                  => $counter->getId(),
+                self::COUNTER . '_' . Counter\Entity::ID            => $counter->getId(),
+                self::COUNTER . '_' . Counter\Entity::UPDATED_AT    => $counter->getUpdatedAt(),
                 self::CURRENT_TIME_FIRST_OF_MONTH                   => $payoutStateChangeMonth,
                 self::PAYOUT_INITIATED_FIRST_OF_MONTH               => $payoutInitiatedMonth,
             ]
