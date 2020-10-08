@@ -815,7 +815,9 @@ class Entity extends Base\PublicEntity
 
             $markUpPercent = $paymentMeta->getDccMarkUpPercent();
 
-            $gatewayAmount = (new Currency\DCC\Service)->getConvertedAmount($this->getAmount(), $forexRate, $markUpPercent);
+            $convertedAmount = $this->getAmount() * $forexRate;
+
+            $gatewayAmount = (int) floor($convertedAmount + (($markUpPercent * $convertedAmount) / 100));
         }
 
         $this->setAttribute(self::GATEWAY_AMOUNT, $gatewayAmount);
