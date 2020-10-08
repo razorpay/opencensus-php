@@ -46,7 +46,7 @@ const PaymentMethod = ({
         &nbsp;
         <span class="toggler-btn">
           <a
-            href="https://razorpay.com/docs/payment-gateway/payment-methods/"
+            href="https://razorpay.com/docs/payment-gateway/dashboard-guide/settings/payment-methods/"
             target="_blank"
             rel="noreferrer"
           >
