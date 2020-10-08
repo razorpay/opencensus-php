@@ -14,20 +14,18 @@ export const triggerTwoFactorVerificationOtp = () =>
     method: 'POST',
   });
 
-export const triggerOtpOnEmail = () => (
+export const triggerOtpOnEmail = () =>
   triggerOtpForVerification({
     action: 'user_auth',
     medium: 'email',
-  })
-);
+  });
 
-export const verifyOtpOnEmail = (data) => (
+export const verifyOtpOnEmail = (data) =>
   merchantFetch({
     url: 'users/verify/mode/email',
     method: 'POST',
     data,
-  })
-);
+  });
 
 export const verifyContactMobile = (data) => ({
   type: MARK_TWO_FACTOR_VERIFIED,
@@ -56,17 +54,16 @@ export const updateTwoFactorVerified = ({ twoFactorVerified }) => ({
   twoFactorVerified,
 });
 
-export const triggerOtpOnMobileForVerification = () => (
+export const triggerOtpOnMobileForVerification = () =>
   triggerOtpForVerification({
-    action: "verify_contact",
-    medium: "sms"
-  })
-);
+    action: 'verify_contact',
+    medium: 'sms',
+  });
 
 /****/
 
 /* Action Handlers */
-const markUserTwoFactorVerified = state =>
+const markUserTwoFactorVerified = (state) =>
   merge(state, {
     data: {
       twoFactorVerified: true,
@@ -100,6 +97,10 @@ function triggerOtpForVerification(data) {
     url: 'users/otp/send',
     method: 'POST',
     data,
+    // Can't help it
+    // This API works properly only in live mode
+    // If you think it's test mode is fixed, you can remove the below line :P
+    mode: 'live',
   });
 }
 /****/
