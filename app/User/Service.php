@@ -1361,6 +1361,7 @@ class Service extends Base\Service
             'rx_accounting_payouts_active',
             'rx_accounting_payouts_ask_clientID',
             'rx_ca_self_serve_flow',
+            'rx_vendor_payments_reporting'
             'enable_pl_batch_upload',
             'skip_workflow_payout_specific_feature',
         ];
