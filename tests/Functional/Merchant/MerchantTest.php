@@ -7948,6 +7948,30 @@ class MerchantTest extends TestCase
         $this->assertSame(true, $response['features']['upi_otm']);
     }
 
+    public function testCreatedMerchantHasPlServiceFeatureFlag()
+    {
+        $content = $this->createMerchant();
+
+        $merchantId = $content['id'];
+
+        $testFeaturesArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => $merchantId,
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
+
+        $liveFeaturesArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => $merchantId,
+                'entity_type' => 'merchant'
+            ],
+            'live')->pluck('name')->toArray();
+
+        $this->assertContains('paymentlinks_v2', $testFeaturesArray);
+        $this->assertContains('paymentlinks_v2', $liveFeaturesArray);
+
+    }
+
     public function testGetCheckoutPreferencesForInvoiceWithOffer()
     {
         $this->ba->publicAuth();

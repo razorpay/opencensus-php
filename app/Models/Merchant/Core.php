@@ -369,6 +369,8 @@ class Core extends Base\Core
         (new ScheduleTask\Core)->createDefaultSettlementSchedule($merchant);
 
         $this->setDefaultFeatureForMerchant($merchant);
+
+        $this->setPaymentLinkServiceDefaultForMerchant($merchant);
     }
 
     protected function setDefaultFeatureForMerchant(Entity $merchant)
@@ -379,6 +381,17 @@ class Core extends Base\Core
             Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
             Feature\Entity::ENTITY_ID       => $merchant->getId(),
             Feature\Entity::NAME            => Feature\Constants::OTP_AUTH_DEFAULT,
+        ], $shouldSync = true);
+    }
+
+    protected function setPaymentLinkServiceDefaultForMerchant(Entity $merchant)
+    {
+        // adding this feature for all merchants registering.
+        // by default they should get payment link service feature
+        (new Feature\Core)->create([
+            Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
+            Feature\Entity::ENTITY_ID       => $merchant->getId(),
+            Feature\Entity::NAME            => Feature\Constants::PAYMENTLINKS_V2,
         ], $shouldSync = true);
     }
 
