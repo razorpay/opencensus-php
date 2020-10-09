@@ -4364,7 +4364,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->createPayoutForBalanceTypeDirectAndBanking('00000000000001' , '10NodalAccount' , $currentTime-1);
         $this->createPayoutForBalanceTypeDirectAndBanking('00000000000002' , '10000000000014' , $currentTime);
-        $this->createPayoutForBalanceTypeDirectAndBanking('00000000000003' , '10000000000012' , $currentTime-1);
 
         $this->ba->appAuth();
 

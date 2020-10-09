@@ -836,8 +836,6 @@ class Core extends Base\Core
     // a filter which would select primarily accounts whose statement was fetched more than certain hours ago and which
     // made payouts.
     //
-    // Balance Ids are captured alongside account numbers for the purpose of logs.
-    //
     // Create and dispatch jobs to pull data for those MIDs
     // Return accountNumbers dispatched for processing for the route response
     //
@@ -865,14 +863,10 @@ class Core extends Base\Core
             ]);
 
         $bankingAccountDetails = $this->repo->banking_account->fetchAccountNumbersByChannel($channel);
-
         $accountNumbersToDispatch = [];
         $accountsThatMadePayouts = [];
         $otherAccounts = [];
         $numberOfAccountsSelected = 0;
-        $balanceIdsToDispatch = [];
-        $otherAccountsBalanceIds = [];
-        $balanceIdsThatMadePayoutsRule = [];
 
         $currentTime = Carbon::now()->getTimestamp();
 
@@ -882,9 +876,7 @@ class Core extends Base\Core
 
             if ($bankingAccountDetail->getLastStatementAttemptAt() <= $currentTime - $forcedFetchTimeInSeconds)
             {
-                $accountNumbersToDispatch[$numberOfAccountsSelected] = [$bankingAccountDetail->getAccountNumber() => 'force_fetch_rule'];
-
-                $balanceIdsToDispatch[$numberOfAccountsSelected] = $bankingAccountDetail->getBalanceId();
+                $accountNumbersToDispatch[$numberOfAccountsSelected] = $bankingAccountDetail->getAccountNumber();
 
                 $numberOfAccountsSelected++;
             }
@@ -899,14 +891,10 @@ class Core extends Base\Core
                     if ($count > 0)
                     {
                         array_push($accountsThatMadePayouts, $bankingAccountDetail->getAccountNumber());
-
-                        array_push($balanceIdsThatMadePayoutsRule, $bankingAccountDetail->getBalanceId());
                     }
                     else
                     {
                         array_push($otherAccounts, $bankingAccountDetail->getAccountNumber());
-
-                        array_push($otherAccountsBalanceIds, $bankingAccountDetail->getBalanceId());
                     }
                 }
             }
@@ -917,13 +905,13 @@ class Core extends Base\Core
             }
         }
 
+        $accountNumbersToDispatchUnderForceFetchRule = $accountNumbersToDispatch;
+
         if ($numberOfAccountsSelected < $limit)
         {
-            foreach ($accountsThatMadePayouts as $index => $accountThatMadePayouts)
+            foreach ($accountsThatMadePayouts as $accountThatMadePayouts)
             {
-                $accountNumbersToDispatch[$numberOfAccountsSelected] = [$accountThatMadePayouts => 'made_payouts_rule'];
-
-                $balanceIdsToDispatch[$numberOfAccountsSelected] = $balanceIdsThatMadePayoutsRule[$index];
+                $accountNumbersToDispatch[$numberOfAccountsSelected] = $accountThatMadePayouts;
 
                 $numberOfAccountsSelected++;
 
@@ -936,11 +924,9 @@ class Core extends Base\Core
 
         if ($numberOfAccountsSelected < $limit)
         {
-            foreach ($otherAccounts as $index => $otherAccount)
+            foreach ($otherAccounts as $otherAccount)
             {
-                $accountNumbersToDispatch[$numberOfAccountsSelected] = [$otherAccount => 'others'];
-
-                $balanceIdsToDispatch[$numberOfAccountsSelected] = $otherAccountsBalanceIds[$index];
+                $accountNumbersToDispatch[$numberOfAccountsSelected] = $otherAccount;
 
                 $numberOfAccountsSelected++;
 
@@ -951,22 +937,19 @@ class Core extends Base\Core
             }
         }
 
-        $index = 0; // To maintain index in foreach loop and log data from $bankingIdsToDispatch corresponding to the account number to dispatch.
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATEMENT_DISPATCH_JOB_CRON,
+            [
+                'currentTime'                                       => $currentTime,
+                'channel'                                           => $channel,
+                'account_numbers_under_force_fetch_rule'            => $accountNumbersToDispatchUnderForceFetchRule,
+                'account_numbers_to_be_dispatched_if_made_payouts'  => $accountsThatMadePayouts,
+                'account_numbers_to_be_dispatched'                  => $accountNumbersToDispatch,
+            ]);
 
-        foreach ($accountNumbersToDispatch as $accountNumber => $rule)
+        foreach ($accountNumbersToDispatch as $accountNumber)
         {
-            $this->trace->info(
-                TraceCode::BANKING_ACCOUNT_STATEMENT_DISPATCH_JOB_CRON,
-                [
-                    'currentTime'       => $currentTime,
-                    'channel'           => $channel,
-                    'balance_id'        => $balanceIdsToDispatch[$index],
-                    'rule'              => $rule,
-                ]);
-
             $this->dispatchBankingAccountStatementJob($channel, $accountNumber);
-
-            $index++;
         }
 
         return ['account_processed' => $accountNumbersToDispatch];
