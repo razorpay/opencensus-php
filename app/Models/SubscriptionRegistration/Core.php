@@ -175,17 +175,20 @@ class Core extends Base\Core
         {
             $bankDetails = array_pull($input[Constants\Entity::SUBSCRIPTION_REGISTRATION], Entity::BANK_ACCOUNT);
 
-            $code = substr($bankDetails[BankAccount\Entity::IFSC_CODE] ?? '', 0, 4);
-
-            if (isset(UpiPayment::$defaultInconsistentBankCodesMapping[$code]) === true)
+            if (empty($bankDetails[BankAccount\Entity::IFSC_CODE]) === false and
+                empty($bankDetails[BankAccount\Entity::ACCOUNT_NUMBER]) === false)
             {
-                $code = UpiPayment::$defaultInconsistentBankCodesMapping[$code];
+                $code = substr($bankDetails[BankAccount\Entity::IFSC_CODE], 0, 4);
+
+                if (isset(UpiPayment::$defaultInconsistentBankCodesMapping[$code]) === true)
+                {
+                    $code = UpiPayment::$defaultInconsistentBankCodesMapping[$code];
+                }
+
+                $orderPayLoad[Order\Entity::BANK] = $code;
+
+                $orderPayLoad[Order\Entity::ACCOUNT_NUMBER] = $bankDetails[BankAccount\Entity::ACCOUNT_NUMBER];
             }
-
-            $orderPayLoad[Order\Entity::BANK] = $code;
-
-            $orderPayLoad[Order\Entity::ACCOUNT_NUMBER] = $bankDetails[BankAccount\Entity::ACCOUNT_NUMBER] ?? '';
-
         }
 
         $orderService = new Order\Service();
