@@ -52,7 +52,7 @@ class FailedInternal extends Mailable
 
     protected function addReplyTo()
     {
-        $this->replyTo(Constants::MAIL_ADDRESSES[Constants::X_SUPPORT]);
+        $this->replyTo(Constants::MAIL_ADDRESSES[Constants::NOREPLY]);
 
         return $this;
     }
