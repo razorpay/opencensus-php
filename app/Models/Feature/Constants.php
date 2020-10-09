@@ -470,7 +470,7 @@ class Constants
      */
     const CHECKOUT_DISABLE_CARDSCAN          = 'checkout_disable_cardscan';
 
-
+    const PAYOUT_CREDITS_NEW_FLOW = 'payout_credits_new_flow';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -724,6 +724,7 @@ class Constants
         self::RECURRING_AUTO                  => true,
         self::CHECKOUT_DISABLE_CARDSCAN       => true,
         self::RX_SHOW_PAYOUT_SOURCE           => true,
+        self::PAYOUT_CREDITS_NEW_FLOW         => true,
     ];
 
     // Entity type constants

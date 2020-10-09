@@ -1815,5 +1815,17 @@ class FeaturesTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddCreditsNewFlowFeature()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 
+        $this->startTest();
+    }
+
+    public function testRemoveCreditsNewFlowFeature()
+    {
+        $this->testAddCreditsNewFlowFeature();
+
+        $this->startTest();
+    }
 }
