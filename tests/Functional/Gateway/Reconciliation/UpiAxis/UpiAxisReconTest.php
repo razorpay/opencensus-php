@@ -223,6 +223,12 @@ class UpiAxisReconTest extends TestCase
 
         $updatedPayment = $this->getDbEntityById('payment', $upiEntity['payment_id']);
 
+        $this->assertNotNull($updatedPayment['reference16']);
+
+        $this->assertEquals($entries[0]['VPA'], $upiEntity['vpa']);
+
+        $this->assertEquals($entries[0]['VPA'], $updatedPayment['vpa']);
+
         $this->assertEquals('authorized', $updatedPayment['status']);
     }
 

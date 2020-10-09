@@ -421,6 +421,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return [
             Fields::RRN   => $this->getReferenceNumber($row),
             Entity::VPA   => $this->getReconVpa($row),
+            'acquirer' => [
+                Payment\Entity::VPA         => $this->getReconVpa($row),
+                Payment\Entity::REFERENCE16 => $this->payment->getReference16()
+            ]
         ];
     }
 }
