@@ -70,7 +70,7 @@ class Otp extends Mailable
     protected function addSubject()
     {
         // Generic fall back subject.
-        $subject = "RazorpayX | OTP to {$this->getFormattedAction()}";
+        $subject = "Razorpay | OTP to {$this->getFormattedAction()}";
 
         switch ($this->input['action'])
         {
