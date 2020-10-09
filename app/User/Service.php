@@ -1364,6 +1364,7 @@ class Service extends Base\Service
             'rx_vendor_payments_reporting',
             'enable_pl_batch_upload',
             'skip_workflow_payout_specific_feature',
+            'low_balance_alert_frequency_30M',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
