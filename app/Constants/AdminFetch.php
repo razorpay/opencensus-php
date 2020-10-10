@@ -342,6 +342,22 @@ class AdminFetch
                 ],
             ],
 
+            Entity::PAYMENTS_CARDS_CAPTURE  => [
+                'payment_id'   => Fetch::FIELD_PAYMENT_ID,
+                'merchant_id'  => Fetch::FIELD_MERCHANT_ID,
+                'gateway'      => Fetch::FIELD_GATEWAY,
+                'status'       => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'created',
+                        'failed',
+                        'authorized',
+                        'captured',
+                    ],
+                ],
+            ],
+
             Entity::SUBSCRIPTIONS_SUBSCRIPTION => [
                 'auth_attempts' => [
                     Fetch::LABEL  => 'Auth Attempts',
