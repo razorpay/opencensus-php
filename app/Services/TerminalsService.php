@@ -477,11 +477,18 @@ class TerminalsService
                     self::STATUS_CODE => $response->status_code,
                 ];
 
-                if (array_key_exists($errorDescription, self::TERMINALS_API_ERROR_CODE_MAPPING) === true)
+                if ((is_array($errorDescription) === false) and
+                    (array_key_exists($errorDescription, self::TERMINALS_API_ERROR_CODE_MAPPING) === true))
                 {
                     throw new Exception\BadRequestException(
                         self::TERMINALS_API_ERROR_CODE_MAPPING[$errorDescription], null, $data, $errorDescription);
                 }
+
+                if (is_array($errorDescription) === true)
+                {
+                    $errorDescription = implode_assoc_array($errorDescription);
+                }
+
 
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TERMINALS_SERVICE_ERROR, null, $data, $errorDescription);
             }

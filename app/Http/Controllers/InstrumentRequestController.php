@@ -15,6 +15,9 @@ class InstrumentRequestController extends BaseController
     const X_DASHBOARD_ADMIN_EMAIL   = 'X-Dashboard-Admin-Email';
     const X_DASHBOARD_MERCHANT_ID   = "X-Dashboard-Merchant-Id";
 
+    // razorx flags
+    const RAZORX_FLAG_SWITCH_BULK_PATCH_ROUTE = 'terminals_service_bulk_patch_instrument_request';
+
     protected $app;
 
     /**
@@ -89,16 +92,34 @@ class InstrumentRequestController extends BaseController
     {
         $input = Request::all();
 
-        $body = $input['body'];
+        $treatment = $this->app['razorx']->getTreatment(
+            $this->app['request']->getTaskId(),
+            self::RAZORX_FLAG_SWITCH_BULK_PATCH_ROUTE,
+            $this->app['rzp.mode']
+        );
 
-        $query = $input['query'];
+        if ($treatment === 'on')
+        {
+            $response = $this->app['terminals_service']->proxyTerminalService(
+                $input,
+                \Requests::PATCH,
+                'v2/internal_instrument_request_v2',
+                ['timeout' => 300],
+                $this->getAdminHeadersForInstrumentRequest());
+        }
+        else
+        {
+            $body = $input['body'];
 
-        $response = $this->app['terminals_service']->proxyTerminalService(
-            $body,
-            \Requests::PATCH,
-            'v2/internal_instrument_request?' . $query,
-            [],
-            $this->getAdminHeadersForInstrumentRequest());
+            $query = $input['query'];
+
+            $response = $this->app['terminals_service']->proxyTerminalService(
+                $body,
+                \Requests::PATCH,
+                'v2/internal_instrument_request?' . $query,
+                [],
+                $this->getAdminHeadersForInstrumentRequest());
+        }
 
         return ApiResponse::json($response);
     }
