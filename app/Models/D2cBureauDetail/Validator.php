@@ -16,7 +16,7 @@ class Validator extends Base\Validator
         Entity::ADDRESS             => 'sometimes|nullable|string|max:255',
         Entity::CITY                => 'sometimes|nullable|string|max:255',
         Entity::STATE               => 'sometimes|nullable|string|size:2',
-        Entity::PINCODE             => 'sometimes|max:15',
+        Entity::PINCODE             => 'sometimes|min:6|max:15',
         Entity::PAN                 => 'required|pan',
         Entity::STATUS              => 'required',
     ];
