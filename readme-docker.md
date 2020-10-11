@@ -22,12 +22,15 @@ First install Brew on your MAC
      - Unlink any old versions of php using `brew unlink php@<old_version_here>`
      - Link the path to 7.2 `brew link php@7.2`
 - Run `php -info | grep -i GMP` to check if `php-gmp` extension is installed. Installing php using the above command gets gmp installed with it. If not, run `$ brew install gmp` and re-run php info command.
+- Run `php -info | grep -i rdkafka` to check if extension of kafka is installed. If not, run `brew install librdkafka` and then `sudo pecl install rdkafka`.
 
 ###### Debug installation quirks
     1. To debug any issue with any package, you can run `brew info php@<version>`.
     2. If you are getting seemingly unrelated errors, make sure to update bash/zsh: `brew upgrade bash` and `brew upgrade zsh`.
     3. If `brew install php@7.2` fails due to any permission issues, run
         `sudo chown -R $(whoami) <parent dir of problematic directory>` and retry installation.
+    4. If you are getting error `PHP Startup: Unable to load dynamic library 'rdkafka.so'` then first get the location of `rdkafka.so` file by running command
+        `find / -name "rdkafka.so" -print -quit 2>/dev/null`, then move this file to dir that is set as `ext_dir` which you can get by running `pecl config-show | grep 'ext_dir'`.
 
 Note: We will use the phpunit that comes along with composer. We do not explicitly need phpunit to be installed for the docker setup.
 
