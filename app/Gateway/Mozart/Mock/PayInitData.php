@@ -315,6 +315,10 @@ class PayInitData extends Base\Mock\Server
     {
         if ($entities['upi']['flow'] === 'intent')
         {
+            $remark = str_replace(" ", "", $entities['upi']['remark']);
+
+            $intentUrl = sprintf("upi://pay?am=100.00&cu=INR&mc=5411&pa=some@sbi&pn=merchantname&tn=%s&tr=pay_someid", $remark);
+
             $response = [
                 'data' => [],
                 'error' => null,
@@ -324,7 +328,7 @@ class PayInitData extends Base\Mock\Server
                 'next' => [
                     'redirect' => [
                         'method' => 'post',
-                        "url" => "upi://pay?am=100.00&cu=INR&mc=5411&pa=some@abfspay&pn=merchantname&tn=PayviaRazorpay&tr=pay_someid"
+                        "url" => $intentUrl
                     ],
                 ],
             ];

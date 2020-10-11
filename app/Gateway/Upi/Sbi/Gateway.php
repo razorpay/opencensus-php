@@ -69,6 +69,13 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        // Adding remarks for intent and collect request, so the dependency is on
+        // payment description
+        if (isset($input['upi']) === true)
+        {
+            $input['upi']['remark'] = $this->getPaymentRemark($input);
+        }
+
         if ((isset($input['upi']['flow']) === true) and
             ($input['upi']['flow'] === 'intent'))
         {

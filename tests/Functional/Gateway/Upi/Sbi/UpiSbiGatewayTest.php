@@ -124,6 +124,8 @@ class UpiSbiGatewayTest extends TestCase
 
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
 
+        $this->assertSame("upi://pay?am=100.00&cu=INR&mc=5411&pa=some@sbi&pn=merchantname&tn=TestMerchantintentPayment&tr=pay_someid", $response['data']['intent_url']);
+
         $paymentId = $response['payment_id'];
 
         $payment = $this->getDbLastPayment();
