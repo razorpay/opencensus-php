@@ -26,11 +26,12 @@ const gaEvents = setGaTrack('Dashboard - Subscriptions - BU');
 export default class CreateHostedMandateBatch extends Component {
   renderRecurringChargeModal = () => (
     <BatchUpload
+      acceptFileInfo={['csv']}
       createBatch={this.props.createRecurringChargeBatch}
       validateBatch={this.props.validateRecurringChargeBatch}
       gaEvents={gaEvents}
       maxRows="5,00,000"
-      maxFileSize={57671680}
+      maxFileSize={57671680} // 55 MB
       batchType="recurring_charge"
       docUrl="https://razorpay.com/docs/recurring-payments/"
       sampleUrl="https://cdn.razorpay.com/dashboard/sample_recurring_payments.csv"
@@ -40,10 +41,12 @@ export default class CreateHostedMandateBatch extends Component {
 
   renderRegistrationLinksModal = () => (
     <BatchUpload
+      acceptFileInfo={['csv']}
       createBatch={this.props.createRegistrationLinkBatch}
       validateBatch={this.props.validateRegistrationLinkBatch}
       gaEvents={gaEvents}
-      maxRows="10,000"
+      maxRows="5,00,000"
+      maxFileSize={57671680} // 55 MB
       batchType="auth_link"
       batchTypeText="Registration Link"
       renderBatchCreationForm={RegistrationLinksBatchForm}

@@ -66,6 +66,7 @@ export default class BatchUpload extends Component {
                   validateBatch={this.props.validateBatch}
                   maxRows={this.props.maxRows}
                   maxFileSize={this.props.maxFileSize}
+                  acceptFileInfo={this.props.acceptFileInfo}
                 />
               );
             case 'create':

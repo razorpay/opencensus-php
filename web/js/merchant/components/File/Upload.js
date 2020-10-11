@@ -147,7 +147,7 @@ export default class FileUpload extends React.Component {
   };
 
   getAcceptedFileTypesInfo = () => {
-    let { accept } = this.props;
+    let accept = this.props.acceptFileInfo || this.props.accept;
 
     if (!accept) {
       return '';

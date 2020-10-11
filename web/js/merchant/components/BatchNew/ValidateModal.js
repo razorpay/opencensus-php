@@ -30,17 +30,20 @@ export default class BatchValidateModal extends Component {
       onSampleFileDownload = () => {},
       onErrorReportDownload = () => {},
       user,
+      acceptFileInfo,
     } = this.props;
 
     if (batchType === 'payment_link_v2') {
       batchTypeText = 'Payment Link'; // We don't want to unnececssarily expose that merchant is using V2
     }
+
     return (
       <div class="modal-body">
         <h4 class="modal-heading">UPLOAD FILE</h4>
         <div class="modal-file">
           <FileUpload
             accept={['csv', 'xlsx']}
+            acceptFileInfo={acceptFileInfo}
             size="large"
             uploadedFileName="Upload File here"
             maxSize={maxFileSize}
