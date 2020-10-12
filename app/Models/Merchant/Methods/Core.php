@@ -43,15 +43,22 @@ class Core extends Base\Core
                 'current_methods' => $methods->toArrayAdmin(),
             ]);
 
-        // Setup workflow
-        $workflow = $this->app['workflow']->setOriginal(clone $methods);
-
         if (isset($input['custom_text']) === true)
         {
             $this->setMerchantCustomTextForMethods($merchant->getMethods(), $input);
 
             unset($input['custom_text']);
         }
+
+        // To avoid workflow creation.If the input is null, it means we are just updating the custom_text.
+        // So no update in methods entity.
+        if (empty($input) === true)
+        {
+            return $methods->toArray();
+        }
+
+        // Setup workflow
+        $workflow = $this->app['workflow']->setOriginal(clone $methods);
 
         $methods->setMethods($input);
 

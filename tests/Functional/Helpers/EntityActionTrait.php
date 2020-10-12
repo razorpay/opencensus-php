@@ -241,7 +241,7 @@ trait EntityActionTrait
         $request = [
             'url' => '/merchants/'.$merchantId.'/methods',
             'method' => 'put',
-            'methods' => json_encode($methods)
+            'content' => $methods
         ];
 
         return $this->makeRequestAndGetContent($request);
