@@ -68,6 +68,7 @@ class Event
     const TRANSACTION_UPDATED               = 'transaction.updated';
     const REFUND_CREATED                    = 'refund.created';
     const TRANSFER_PROCESSED                = 'transfer.processed';
+    const TRANSFER_PROCESSED_SETTLED        = 'transfer.processed.settled';
     const TERMINAL_CREATED                  = 'terminal.created';
     const TERMINAL_ACTIVATED                = 'terminal.activated';
     const TERMINAL_FAILED                   = 'terminal.failed'; // Terminal Creation failed on gateway
@@ -148,6 +149,7 @@ class Event
         self::TRANSACTION_UPDATED,
         self::REFUND_CREATED,
         self::TRANSFER_PROCESSED,
+        self::TRANSFER_PROCESSED_SETTLED,
         self::TERMINAL_CREATED,
         self::TERMINAL_ACTIVATED,
         self::TERMINAL_FAILED,
@@ -234,6 +236,7 @@ class Event
         self::TRANSACTION_UPDATED,
         self::REFUND_CREATED,
         self::TRANSFER_PROCESSED,
+        self::TRANSFER_PROCESSED_SETTLED,
         self::TERMINAL_CREATED,
         self::TERMINAL_ACTIVATED,
         self::TERMINAL_FAILED,
@@ -347,6 +350,7 @@ class Event
         self::SUBSCRIPTION_PAUSED               => 14,
         self::SUBSCRIPTION_RESUMED              => 15,
         self::FUND_ACCOUNT_VALIDATION_FAILED    => 16,
+        self::TRANSFER_PROCESSED_SETTLED        => 17,
     ];
 
     /**
@@ -402,6 +406,7 @@ class Event
         self::TRANSACTION_UPDATED               => [Product::BANKING],
         self::REFUND_CREATED                    => [Product::PRIMARY],
         self::TRANSFER_PROCESSED                => [Product::PRIMARY],
+        self::TRANSFER_PROCESSED_SETTLED        => [Product::PRIMARY],
         self::TERMINAL_CREATED                  => [Product::PRIMARY],
         self::TERMINAL_ACTIVATED                => [Product::PRIMARY],
         self::TERMINAL_FAILED                   => [Product::PRIMARY],
@@ -485,6 +490,7 @@ class Event
         self::TRANSACTION_UPDATED               => Entity::TRANSACTION,
         self::REFUND_CREATED                    => Entity::REFUND,
         self::TRANSFER_PROCESSED                => Entity::TRANSFER,
+        self::TRANSFER_PROCESSED_SETTLED        => Entity::SETTLEMENT,
         self::TERMINAL_CREATED                  => Entity::TERMINAL,
         self::TERMINAL_ACTIVATED                => Entity::TERMINAL,
         self::TERMINAL_FAILED                   => Entity::TERMINAL,
@@ -541,6 +547,7 @@ class Event
         self::PAYMENT_DOWNTIME_STARTED          => Feature\Constants::EXPOSE_DOWNTIMES,
         self::PAYMENT_DOWNTIME_RESOLVED         => Feature\Constants::EXPOSE_DOWNTIMES,
         self::TRANSFER_PROCESSED                => Feature\Constants::MARKETPLACE,
+        self::TRANSFER_PROCESSED_SETTLED        => Feature\Constants::MARKETPLACE,
         self::TERMINAL_CREATED                  => Feature\Constants::TERMINAL_ONBOARDING,
         self::TERMINAL_ACTIVATED                => Feature\Constants::TERMINAL_ONBOARDING,
         self::TERMINAL_FAILED                   => Feature\Constants::TERMINAL_ONBOARDING,

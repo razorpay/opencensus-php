@@ -138,6 +138,7 @@ class Preferences
     const MID_RBL_BANK_2            = 'FG3uzKzif6law5';
     const MID_STASHFIN              = 'Ao42qLIgNsuREt';
     const MID_VOCATIONAL_EDU        = 'F5NF8QNN7XAJ2w';
+    const MID_BSE                   = 'FlaHVYQCGKbK2t';
 
     const MID_CLIX_CAPITAL            = 'AxEq4Z2U8Gd8vH';
     const MID_CLIX_CAPITAL_SERVICES   = 'Bkeuzp5jlMNhzD';
@@ -338,6 +339,10 @@ class Preferences
         self::MID_MSRIT_EXAM_FEES_VFH,
         self::MID_INST_ENG_AND_TECH_LKO,
         self::MID_VOCATIONAL_EDU,
+    ];
+
+    const TRANSFER_PROCESSED_SETTLED_WEBHOOK_MIDS = [
+        self::MID_BSE,
     ];
 
     const NO_MERCHANT_INVOICE_PARENT_MIDS =  [

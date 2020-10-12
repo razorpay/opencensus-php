@@ -368,6 +368,13 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onTransferProcessedSettled($transfer)
+    {
+        $payload = $this->getTransferPayloadWithSettlement($transfer);
+
+        $this->dispatchEventToStork($payload);
+    }
+
     protected function onVirtualAccountCredited(Payment\Entity $payment)
     {
         $payload = $this->getVirtualAccountPaymentPayload($payment);
@@ -960,6 +967,30 @@ class ApiEventSubscriber extends Base\Core
         $payload = [
             Constants\Entity::SETTLEMENT => [
                 'entity' => $settlement->toArrayPublic(),
+            ],
+        ];
+
+        return $payload;
+    }
+
+    protected function getTransferPayloadWithSettlement(Transfer\Entity $transfer)
+    {
+        $notes = $transfer->getNotes();
+
+        $data = [
+            Transfer\Entity::NOTES                  => ($notes !== null) ? $notes->toArray() : [],
+            Transfer\Entity::LINKED_ACCOUNT_NOTES   => $transfer->getLinkedAccountNotes(),
+        ];
+
+        $payload = [
+            Constants\Entity::SETTLEMENT => [
+                'entity' => $this->withPayload->toArrayPublic(),
+            ],
+            Constants\Entity::TRANSFER => [
+                'entity' => [
+                    Transfer\Entity::ID                     => $transfer->getPublicId(),
+                    Transfer\Entity::LINKED_ACCOUNT_NOTES   => (new Transfer\Core())->getLinkedAccountNotes($data),
+                ],
             ],
         ];
 

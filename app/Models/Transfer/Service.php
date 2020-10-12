@@ -12,7 +12,9 @@ use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Constants\Entity as EntityConstant;
+use RZP\Models\Settlement\Entity as Settlement;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Service extends Base\Service
@@ -50,6 +52,8 @@ class Service extends Base\Service
 
         foreach ($settlementIds as $settlementId)
         {
+            $transferIds = [];
+
             try
             {
                 $startTime = microtime(true);
@@ -62,7 +66,7 @@ class Service extends Base\Service
 
                 if ($merchant->isLinkedAccount() === true)
                 {
-                    $this->repo->transaction(function () use($settlementId)
+                    $transferIds = $this->repo->transaction(function () use($settlementId, $transferIds)
                     {
                         $transactions = $this->repo->transaction->fetchTransactionsForSettlementIdCount($settlementId);
 
@@ -72,11 +76,15 @@ class Service extends Base\Service
                         {
                             $transactions = $this->repo->transaction->fetchTransactionsForSettlementId($settlementId, $chunk);
 
-                            $this->updateSettlementIdInTransfer($transactions, $settlementId);
+                            $transferIdsChunk = $this->updateSettlementIdInTransfer($transactions, $settlementId);
 
+                            $transferIds = array_merge($transferIds, $transferIdsChunk);
                         }
+
+                        return $transferIds;
                     });
 
+                    $this->fireTransferProcessedSettledWebhookIfApplicable($transferIds, $setl);
                 }
                 $timeTaken = microtime(true) - $startTime;
 
@@ -102,18 +110,22 @@ class Service extends Base\Service
 
     protected function updateSettlementIdInTransfer(\Illuminate\Support\Collection $transactions, $settlementId)
     {
+        $transferIds = [];
+
         try
         {
-                foreach ($transactions as $txn)
-                {
-                    $settlementId = $txn->getSettlementId();
+            foreach ($transactions as $txn)
+            {
+                $settlementId = $txn->getSettlementId();
 
-                    $transfer = $txn->source->transfer;
+                $transfer = $txn->source->transfer;
 
-                    $transfer->setRecipientSettlementId($settlementId);
+                $transfer->setRecipientSettlementId($settlementId);
 
-                    $this->repo->saveOrFail($transfer);
-                }
+                $this->repo->saveOrFail($transfer);
+
+                $transferIds[] = $transfer->getPublicId();
+            }
         }
         catch (\Throwable $ex)
         {
@@ -126,6 +138,8 @@ class Service extends Base\Service
                     'settlementId' => $settlementId,
                 ]);
         }
+
+        return $transferIds;
     }
 
     public function fetchMultiple(array $input)
@@ -598,5 +612,61 @@ class Service extends Base\Service
         );
 
         return $transferOrderIds;
+    }
+
+    /**
+     * Requirement was to fire a webhook to the parent merchant when transfer
+     * settlements to the linked account: FlaHVYQCGKbK2t are processed. This
+     * solution is applicable only when the linked account settlements happen
+     * via the new settlements service, in which case this flow is triggered
+     * after settlements are processed.
+     *
+     * @param array $transferIds
+     * @param Settlement $settlement
+     */
+    protected function fireTransferProcessedSettledWebhookIfApplicable(array $transferIds, Settlement $settlement)
+    {
+        if ($settlement->isStatusProcessed() === false)
+        {
+            return;
+        }
+
+        $linkedAccountId = $settlement->getMerchantId();
+
+        if (in_array($linkedAccountId, Merchant\Preferences::TRANSFER_PROCESSED_SETTLED_WEBHOOK_MIDS) === false)
+        {
+            return;
+        }
+
+        foreach ($transferIds as $transferId)
+        {
+            $transfer = $this->repo->transfer->findByPublicId($transferId);
+
+            if ($transfer->getToType() === ToType::CUSTOMER)
+            {
+                continue;
+            }
+
+            $this->trace->info(
+                TraceCode::FIRING_TRANSFER_PROCESSED_SETTLED_WEBHOOK,
+                [
+                    'linked_account_id' => $linkedAccountId,
+                    'settlement_id'     => $settlement->getPublicId(),
+                    'transfer_id'       => $transferId,
+                ]
+            );
+
+            $this->fireTransferProcessedSettledWebhook($transfer, $settlement);
+        }
+    }
+
+    protected function fireTransferProcessedSettledWebhook(Entity $transfer, Settlement $settlement)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $transfer,
+            ApiEventSubscriber::WITH => $settlement,
+        ];
+
+        $this->app['events']->fire('api.transfer.processed.settled', $eventPayload);
     }
 }
