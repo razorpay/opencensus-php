@@ -557,6 +557,7 @@ class CardPaymentService
 
         $responseBody = $this->jsonToArray($response->body);
         $responseBody['success'] = false;
+        $responseBody['status_code'] = $code;
 
         if ($this->isSuccessResponse($code, $responseBody))
         {
