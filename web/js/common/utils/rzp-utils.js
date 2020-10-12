@@ -26,7 +26,7 @@ export function isDefined(value) {
 export function titleCase(sentence) {
   return (sentence || '')
     .split(/\s+|_/)
-    .map(word => word.charAt(0).toUpperCase() + word.substr(1).toLowerCase())
+    .map((word) => word.charAt(0).toUpperCase() + word.substr(1).toLowerCase())
     .join(' ');
 }
 
@@ -71,24 +71,24 @@ export function isPresent(obj) {
   return !isBlank(obj);
 }
 
-export const isNone = value => {
+export const isNone = (value) => {
   return value === null || value === undefined;
 };
 
 export const findBy = (array, prop, value) => {
-  return array.find(item => {
+  return array.find((item) => {
     return item[prop] === value;
   });
 };
 
 export const filterBy = (array, prop, value) => {
-  return array.filter(item => {
+  return array.filter((item) => {
     return item[prop] === value;
   });
 };
 
 export const mapBy = (array, prop) => {
-  return array.map(item => {
+  return array.map((item) => {
     return item[prop];
   });
 };
@@ -134,17 +134,17 @@ export const pipe = (...funcs) => {
   };
 };
 
-export const normalizeDate = date => moment(date).format('D/M/Y');
-export const formatFromNow = unixSeconds => moment(unixSeconds * 1e3).fromNow();
+export const normalizeDate = (date) => moment(date).format('D/M/Y');
+export const formatFromNow = (unixSeconds) => moment(unixSeconds * 1e3).fromNow();
 
 /*
   calculates no of days from today for a given date
   negative if date given date (in seconds) was of past
  */
-export const daysFromToday = date =>
+export const daysFromToday = (date) =>
   Math.ceil((Number(date) - new Date().getTime() / 1000) / 86400);
 
-export const normalizeBoolean = bool => {
+export const normalizeBoolean = (bool) => {
   if (bool === undefined) {
     return bool;
   }
@@ -154,9 +154,9 @@ export const normalizeBoolean = bool => {
 
 const numberFormatRegex = /(.{1,2})(?=.(..)+(\...)$)/g;
 
-export const getFixedINRAmount = amount => (Number(amount) / 100).toFixed(2);
+export const getFixedINRAmount = (amount) => (Number(amount) / 100).toFixed(2);
 
-export const getFixedNumber = value => {
+export const getFixedNumber = (value) => {
   if (typeof value === 'number') {
     value = value.toFixed(2);
   }
@@ -170,7 +170,7 @@ export const getFixedNumber = value => {
   return value;
 };
 
-export const getFormattedNumber = value => {
+export const getFormattedNumber = (value) => {
   if (typeof value === 'number') {
     value = value.toFixed(2);
   }
@@ -185,18 +185,14 @@ export const currencySymbols = {
   USD: 'US$',
 };
 
-export const getFormattedAmountNew = (
-  amount,
-  showCurrency,
-  currency = 'INR'
-) => {
+export const getFormattedAmountNew = (amount, showCurrency, currency = 'INR') => {
   const formattedAmount = getFormattedNumber((amount / 100).toFixed(2));
 
   return (showCurrency ? currencySymbols[currency] : '') + formattedAmount;
 };
 
 // following regex formats in indian comma separated, i.e. 2,01,20,45,222.66
-export const getFormattedAmount = amount => {
+export const getFormattedAmount = (amount) => {
   return (amount / 100).toFixed(2).replace(numberFormatRegex, '$1,');
 };
 
@@ -217,16 +213,16 @@ export const pickProps = (source, keys) => {
       ...collector,
       ...(keys.indexOf(key) > -1 && { [key]: source[key] }),
     }),
-    {}
+    {},
   );
 };
 
-export const rupeesToPaise = amount => {
+export const rupeesToPaise = (amount) => {
   amount = (Number(amount) * 100).toFixed(0);
   return Number(amount);
 };
 
-export const paiseToRupees = amount => {
+export const paiseToRupees = (amount) => {
   amount = (Number(amount) / 100).toFixed(2);
 
   return Number(amount);
@@ -249,16 +245,12 @@ export const objectDiff = (oldObj = {}, newObj = {}) => {
  * Don't allow undefined, null and empty string as values
  * Note: It doesn't handle nested object
  */
-export const stringifyQueryParams = params => {
+export const stringifyQueryParams = (params) => {
   let queryString;
   let queryElements = [];
 
   for (let key in params) {
-    if (
-      params.hasOwnProperty(key) &&
-      params[key] != null &&
-      params[key] !== ''
-    ) {
+    if (params.hasOwnProperty(key) && params[key] != null && params[key] !== '') {
       queryElements.push(key + '=' + params[key]);
     }
   }
@@ -333,11 +325,9 @@ export const getIntervalCycle = (interval, period) => {
 };
 
 export const getCustomerDisplayName = ({ name, contact, email }) => {
-  let displayParts = [name, contact, email].filter(item => !isBlank(item));
+  let displayParts = [name, contact, email].filter((item) => !isBlank(item));
 
-  return `${displayParts.join(' / ').replace('/ ', '(')}${
-    displayParts.length > 1 ? ')' : ''
-  }`;
+  return `${displayParts.join(' / ').replace('/ ', '(')}${displayParts.length > 1 ? ')' : ''}`;
 };
 
 /**
@@ -371,7 +361,7 @@ export const flattenObject = (object, delimeter = '.') => {
  * @param {Object} params
  * @return {String}
  */
-export const stringifyQueryParamsWithPipe = params => {
+export const stringifyQueryParamsWithPipe = (params) => {
   if (!params) return '';
 
   params = flattenObject(params, '_');
@@ -389,7 +379,7 @@ export const stringifyQueryParamsWithPipe = params => {
  * @param {String} pathname
  * @return {String}
  */
-export const getEventCategoryFromPath = pathname => {
+export const getEventCategoryFromPath = (pathname) => {
   // Remove slashes from path. Eg: /plans/ => plan
   pathname = pathname && pathname.split('/').join('');
   switch (pathname) {
@@ -420,7 +410,7 @@ export const getPercentage = (divident, divisor) => {
   let value = 0;
 
   if (divident) {
-    value = getFixedNumber(divisor / divident * 100);
+    value = getFixedNumber((divisor / divident) * 100);
   }
 
   return Number(value);
@@ -465,10 +455,10 @@ export const getEMI = (principle, length, rate) => {
 
   var multiplier = Math.pow(1 + rate, length);
 
-  return parseInt(principle * rate * multiplier / (multiplier - 1), 10);
+  return parseInt((principle * rate * multiplier) / (multiplier - 1), 10);
 };
 
-export const arrayToCsv = array => {
+export const arrayToCsv = (array) => {
   /*
    * Converts array of arrays to csv
    */
@@ -480,7 +470,7 @@ export const arrayToCsv = array => {
     .join('\n');
 };
 
-export const arrayToCsvDataUrl = array => {
+export const arrayToCsvDataUrl = (array) => {
   /*
    * converts array of arrays to csv data url
    */
@@ -492,7 +482,7 @@ export const arrayToCsvDataUrl = array => {
  * @param {*} url
  * Check if valid secure production URL (i.e, HTTPS)
  */
-export const checkIfHTTPS = url => {
+export const checkIfHTTPS = (url) => {
   const regex = /^https:\/\//i;
 
   return regex.test(url);
@@ -503,7 +493,7 @@ export const checkIfHTTPS = url => {
  * @param {*} url
  * Add 'http' to the URL if http/https not there
  */
-export const autoPrefixUrls = url => {
+export const autoPrefixUrls = (url) => {
   const regex = /^https?:\/\//i;
   let tempUrl;
   if (!url || url.length === 0) {
@@ -521,9 +511,7 @@ export const autoPrefixUrls = url => {
 // Check if webkit browsers
 export const isWebkit =
   typeof window !== 'undefined' &&
-  typeof window.getComputedStyle(document.documentElement)[
-    '-webkit-text-security'
-  ] === 'string'
+  typeof window.getComputedStyle(document.documentElement)['-webkit-text-security'] === 'string'
     ? true
     : false;
 
@@ -541,13 +529,7 @@ export { acronyms, shortenText };
  *  @prop {Object} mapping Mapping that was passed, but only the ones applicable
  *  @prop {Integer} perGroup % rate per group
  */
-export const getApplicableGSTForSlab = (
-  slab,
-  serviceStateCode,
-  supplyStateCode,
-  mapping,
-  isUT
-) => {
+export const getApplicableGSTForSlab = (slab, serviceStateCode, supplyStateCode, mapping, isUT) => {
   let mapKeys = Object.keys(mapping);
 
   /**
@@ -591,21 +573,15 @@ export const getApplicableGSTForSlab = (
  *    @prop {Object} mapping Mapping that was passed, but only the ones applicable
  *    @prop {Integer} perGroup % rate per group
  */
-export const getGSTSlabs = (
-  slabs,
-  serviceStateCode,
-  supplyStateCode,
-  mapping,
-  isUT
-) => {
+export const getGSTSlabs = (slabs, serviceStateCode, supplyStateCode, mapping, isUT) => {
   let toReturn = {};
-  slabs.forEach(slab => {
+  slabs.forEach((slab) => {
     toReturn[slab] = getApplicableGSTForSlab(
       slab,
       serviceStateCode,
       supplyStateCode,
       mapping,
-      isUT
+      isUT,
     );
   });
   return toReturn;
@@ -616,7 +592,7 @@ export const getGSTSlabs = (
  * @param {Object} addr
  * @return {String}
  */
-export const stringifyAddress = addr => {
+export const stringifyAddress = (addr) => {
   let str = '';
 
   // Add Line 1 and Line 2
@@ -658,7 +634,7 @@ export const stringifyAddress = addr => {
  * Get human readable file size
  * @param {*} fileSize in bytes in Binary prefixes
  */
-export const readableFileSize = bytes => {
+export const readableFileSize = (bytes) => {
   const sizes = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
 
   if (!bytes) return `0 bytes`;
@@ -671,7 +647,7 @@ export const readableFileSize = bytes => {
  * @param {Object} params
  * @return {String}
  */
-export const getKeysSeparatedByPipe = params => {
+export const getKeysSeparatedByPipe = (params) => {
   if (!params) return '';
 
   params = flattenObject(params, '_');
@@ -694,7 +670,7 @@ export const getKeysSeparatedByPipe = params => {
 /**
  * Remove all white spaces from a given string
  **/
-export const trim = str => {
+export const trim = (str) => {
   return str.replace(/\s+/g, '');
 };
 
@@ -719,7 +695,7 @@ export const pluralize = (str, length) => {
  * @param {String} input
  * @return {String}
  */
-export const capitalize = input =>
+export const capitalize = (input) =>
   input ? input.charAt(0).toUpperCase() + input.substr(1).toLowerCase() : '';
 
 const countries = {
@@ -746,14 +722,9 @@ export const getCountryPINcodeType = (country = '') => {
  * @param {Object} address
  * @return {Bool}
  */
-export const isAddressValid = address => {
+export const isAddressValid = (address) => {
   const allKeys = Boolean(
-    address &&
-      address.line1 &&
-      address.city &&
-      address.state &&
-      address.country &&
-      address.zipcode
+    address && address.line1 && address.city && address.state && address.country && address.zipcode,
   );
 
   if (!allKeys) {
@@ -770,7 +741,7 @@ export const isAddressValid = address => {
       state.length >= 2 &&
       state.length <= 32 &&
       country.length >= 2 &&
-      country.length <= 64
+      country.length <= 64,
   );
 
   let optionalFieldsLengthCheck = true;
@@ -792,7 +763,7 @@ export const isAddressValid = address => {
  * @param {String} gstin
  * @return {Boolean}
  */
-export const isValidGSTIN = gstin => {
+export const isValidGSTIN = (gstin) => {
   // If GSTIN is not provided or it isn't 15-char long, it is invalid.
   if (!gstin || gstin.length !== 15) {
     return false;
@@ -829,12 +800,9 @@ export const subString = (str, length) => {
  * @param {Tax} tax
  * @return {Boolean}
  */
-export const isTaxOfTypeCess = tax =>
+export const isTaxOfTypeCess = (tax) =>
   Boolean(
-    tax &&
-      tax.name &&
-      tax.name.toLowerCase().startsWith('cess') &&
-      tax.rate_type === 'percentage'
+    tax && tax.name && tax.name.toLowerCase().startsWith('cess') && tax.rate_type === 'percentage',
   );
 
 /**
@@ -857,10 +825,7 @@ export const calculateTax = (base, rate, inclusive = false) => {
 };
 
 // efficient sorting of any collection based on order
-export const getArraySorterFromArray = (
-  order = [],
-  getValue = item => item
-) => {
+export const getArraySorterFromArray = (order = [], getValue = (item) => item) => {
   const orderMap = order.reduce((map, item, index) => {
     map[item] = index;
 
@@ -899,10 +864,7 @@ export const loadImage = (src, onLoad, onError) => {
 export function setNativeValue(element, value) {
   const valueSetter = Object.getOwnPropertyDescriptor(element, 'value').set;
   const prototype = Object.getPrototypeOf(element);
-  const prototypeValueSetter = Object.getOwnPropertyDescriptor(
-    prototype,
-    'value'
-  ).set;
+  const prototypeValueSetter = Object.getOwnPropertyDescriptor(prototype, 'value').set;
 
   if (valueSetter && valueSetter !== prototypeValueSetter) {
     prototypeValueSetter.call(element, value);
@@ -911,14 +873,14 @@ export function setNativeValue(element, value) {
   }
 }
 
-export const sanitizeHTML = str => {
+export const sanitizeHTML = (str) => {
   const temp = document.createElement('div');
   temp.textContent = str;
 
   return temp.innerHTML;
 };
 
-export const deepClone = o => {
+export const deepClone = (o) => {
   try {
     return JSON.parse(JSON.stringify(o));
   } catch (err) {
@@ -934,7 +896,7 @@ export function getDetailsForIFSC(ifscCode) {
     return null;
   }
 
-  return axios('https://ifsc.razorpay.com/' + ifscCode).then(info => {
+  return axios('https://ifsc.razorpay.com/' + ifscCode).then((info) => {
     info = info.data;
 
     if (info) {
@@ -960,19 +922,19 @@ export function uniqueArray(arr) {
 
   const map = {};
 
-  return arr.filter(item => !map[item] && (map[item] = true));
+  return arr.filter((item) => !map[item] && (map[item] = true));
 }
 
 export function isMobileAndTablet() {
   let check = false;
 
-  (function(a) {
+  (function (a) {
     if (
       /(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino|android|ipad|playbook|silk/i.test(
-        a
+        a,
       ) ||
       /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(
-        a.substr(0, 4)
+        a.substr(0, 4),
       )
     )
       check = true;
@@ -992,7 +954,7 @@ export function stringToObj(path, value, srcObj) {
   // for supporting sample[0][sampleKey]
   const squareBracketPattern = /\[|\]/;
   if (squareBracketPattern.test(path)) {
-    parts = path.split(squareBracketPattern).filter(pathEl => !!pathEl); //splitting with regex gives empty strings
+    parts = path.split(squareBracketPattern).filter((pathEl) => !!pathEl); //splitting with regex gives empty strings
   } else {
     parts = path.split('.');
   }
@@ -1067,7 +1029,7 @@ export function keysToSentence(keys) {
 
   let joiner;
 
-  keys = Object.keys(keys).map(key => {
+  keys = Object.keys(keys).map((key) => {
     if (key[key.length - 1] === 's') {
       // plural term
       joiner = 'are';
@@ -1091,13 +1053,13 @@ export function keysToSentence(keys) {
   return sentence + ' ' + joiner;
 }
 
-export const prevent = e => {
+export const prevent = (e) => {
   e.preventDefault();
   e.stopPropagation();
 };
 
 export function handleNegativeBalanceLimit(balanceConfig, balance) {
-  if (balance >= 0) return false;
+  if (balance >= 0 || balance === undefined) return false;
 
   if (
     balanceConfig.loading === true ||
