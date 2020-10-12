@@ -2,9 +2,7 @@ import RTracking from 'react-tracking';
 
 import Button from 'common/new-ui/Button';
 
-@RTracking(props =>
-  window.rzpQ.component(`${props.feature}_onboarding_feature_page`)
-)
+@RTracking((props) => window.rzpQ.component(`${props.feature}_onboarding_feature_page`))
 export default class OnBoardingFeatures extends React.PureComponent {
   handleBackButton = () => {
     this.props.prev(() => {
@@ -14,9 +12,7 @@ export default class OnBoardingFeatures extends React.PureComponent {
       });
 
       this.props.tracking.trackEvent(
-        window.rzpQ
-          .productOnboarding()
-          .success(`${this.props.feature}.onboarding.features_back`)
+        window.rzpQ.productOnboarding().success(`${this.props.feature}.onboarding.features_back`),
       );
     });
   };
@@ -42,38 +38,25 @@ export default class OnBoardingFeatures extends React.PureComponent {
               if (featureLinks.length - 1 !== idx) {
                 return (
                   <React.Fragment>
-                    <FeatureLink
-                      key={idx}
-                      {...data}
-                      page={active}
-                      feature={feature}
-                    />
+                    <FeatureLink key={idx} {...data} page={active} feature={feature} />
                     &bull;{' '}
                   </React.Fragment>
                 );
               }
 
-              return (
-                <FeatureLink
-                  key={idx}
-                  {...data}
-                  page={active}
-                  feature={feature}
-                />
-              );
+              return <FeatureLink key={idx} {...data} page={active} feature={feature} />;
             })}
           </div>
         </div>
 
         <div class="Features">
-          {features.map((data, idx) => <FeatureCard {...data} key={idx} />)}
+          {features.map((data, idx) => (
+            <FeatureCard {...data} key={idx} />
+          ))}
         </div>
 
         <div class="Button-Container">
-          <Button.Transparent
-            iconBefore="arrow-back"
-            onClick={this.handleBackButton}
-          >
+          <Button.Transparent iconBefore="arrow-back" onClick={this.handleBackButton}>
             Back
           </Button.Transparent>
 
@@ -94,9 +77,7 @@ const FeatureCard = ({ icon, title, desc }) => (
   </div>
 );
 
-@RTracking(props =>
-  window.rzpQ.component(`${props.feature}_onboarding_feature_page`)
-)
+@RTracking((props) => window.rzpQ.component(`${props.feature}_onboarding_feature_page`))
 class FeatureLink extends React.PureComponent {
   handleFeatureLink = () => {
     const { ga, url, page, label, feature } = this.props;
@@ -107,10 +88,10 @@ class FeatureLink extends React.PureComponent {
     });
 
     this.props.tracking.trackEvent(
-      window.rzpQ
-        .productOnboarding()
-        .success(`${feature}.onboarding.features_hyperlink`)
+      window.rzpQ.productOnboarding().success(`${feature}.onboarding.features_hyperlink`),
     );
+
+    this.props.onClick && this.props.onClick();
 
     window.open(url);
   };

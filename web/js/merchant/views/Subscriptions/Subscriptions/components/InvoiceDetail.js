@@ -1,3 +1,4 @@
+import RTracking from 'react-tracking';
 import { Component } from 'react';
 import { NavLink } from 'react-router-dom';
 import Amount from 'common/ui/Amount';
@@ -17,7 +18,14 @@ const notificationClassMap = {
 };
 
 // Note: class is needed for "ref" to work in parent component
+@RTracking(() => window.rzpQ.component('InvoiceDetail'))
 export default class InvoiceDetail extends Component {
+  componentDidMount() {
+    this.props.tracking.trackEvent(
+      window.rzpQ.subscription().interaction('subscription.invoice.details'),
+    );
+  }
+
   getAddOnList() {
     const isUPIPaymentMethod = this.props.subscription.payment_method === 'upi';
 
@@ -30,10 +38,7 @@ export default class InvoiceDetail extends Component {
 
     addonsList = addons.map((addon, key) => {
       return (
-        <div
-          class={`m-b ${invoiceStatus === 'next_due' && 'addons'}`}
-          key={`addon-${key}`}
-        >
+        <div class={`m-b ${invoiceStatus === 'next_due' && 'addons'}`} key={`addon-${key}`}>
           {invoiceStatus === 'next_due' && (
             <div class="edit-layer">
               <span
@@ -54,10 +59,7 @@ export default class InvoiceDetail extends Component {
             </div>
             <small class="label--secondary">
               {addon.quantity} x{'  '}
-              <Amount
-                currency={addon.item.currency}
-                value={addon.item.unit_amount}
-              />
+              <Amount currency={addon.item.currency} value={addon.item.unit_amount} />
               {'  '}
               per unit
             </small>
@@ -68,13 +70,9 @@ export default class InvoiceDetail extends Component {
 
     if (invoiceStatus === 'next_due') {
       addonsList.push(
-        <button
-          class="btn-link no-padding"
-          key="include-more"
-          onClick={this.props.showAddOnModal}
-        >
+        <button class="btn-link no-padding" key="include-more" onClick={this.props.showAddOnModal}>
           + Include {addonsList.length > 0 ? 'another' : ''} Add-on
-        </button>
+        </button>,
       );
     }
 
@@ -109,20 +107,14 @@ export default class InvoiceDetail extends Component {
         <div class="panel panel-default SliderPanel">
           <div>
             {this.props.onClose && (
-              <button
-                type="button"
-                class="close close-secondary"
-                onClick={this.props.onClose}
-              >
+              <button type="button" class="close close-secondary" onClick={this.props.onClose}>
                 <i class="i i-arrow-back" />
                 <i class="i i-close" />
               </button>
             )}
           </div>
 
-          <div class="no-data-message">
-            There is no upcoming invoice for this subscription.
-          </div>
+          <div class="no-data-message">There is no upcoming invoice for this subscription.</div>
         </div>
       );
     } else if (Object.keys(invoice).length) {
@@ -130,11 +122,7 @@ export default class InvoiceDetail extends Component {
         <div class="panel panel-default SliderPanel">
           <div class="panel-heading">
             {this.props.onClose && (
-              <button
-                type="button"
-                class="close close-secondary"
-                onClick={this.props.onClose}
-              >
+              <button type="button" class="close close-secondary" onClick={this.props.onClose}>
                 <i class="i i-arrow-back" />
                 <i class="i i-close" />
               </button>
@@ -145,9 +133,7 @@ export default class InvoiceDetail extends Component {
                 <Time value={invoice.billing_start} format="MMM DD, YYYY" />
               </div>
               {curInvoiceIndex && (
-                <div class="txn-details-title--secondary">
-                  Recurring Payment #{curInvoiceIndex}
-                </div>
+                <div class="txn-details-title--secondary">Recurring Payment #{curInvoiceIndex}</div>
               )}
             </span>
           </div>
@@ -164,6 +150,11 @@ export default class InvoiceDetail extends Component {
                           <NavLink
                             to={`/invoices/${invoice.id}`}
                             target="_blank"
+                            onClick={() => {
+                              this.props.tracking.trackEvent(
+                                window.rzpQ.subscription().interaction('subscription.invoice.id'),
+                              );
+                            }}
                           >
                             {invoice.id}
                             <i class="i i-external-link" />
@@ -179,18 +170,12 @@ export default class InvoiceDetail extends Component {
                 <EntityDetailRow
                   label={`${mode === 'test' ? 'Bill Date' : 'Created at'}`}
                   value={() => (
-                    <Time
-                      value={invoice.billing_start}
-                      format="DD MMM YYYY, hh:mm:ss a"
-                    />
+                    <Time value={invoice.billing_start} format="DD MMM YYYY, hh:mm:ss a" />
                   )}
                 />
 
                 {do {
-                  if (
-                    invoice.status === 'next_due' &&
-                    subscription.status !== 'pending'
-                  ) {
+                  if (invoice.status === 'next_due' && subscription.status !== 'pending') {
                     <EntityDetailRow
                       label="Charge at"
                       value={() => (
@@ -211,39 +196,28 @@ export default class InvoiceDetail extends Component {
                   } else if (invoice.status === 'issued') {
                     <EntityDetailRow
                       label={`${
-                        subscription.status === 'pending'
-                          ? 'Next Charge at'
-                          : 'Charge at'
+                        subscription.status === 'pending' ? 'Next Charge at' : 'Charge at'
                       }`}
                       value={() => (
                         <div>
                           <div>
-                            <Time
-                              value={nextChargeAt}
-                              format="DD MMM YYYY, hh:mm:ss a"
-                            />
+                            <Time value={nextChargeAt} format="DD MMM YYYY, hh:mm:ss a" />
                           </div>
 
                           {do {
                             if (
-                              [
-                                'active',
-                                'pending',
-                                'halted',
-                                'completed',
-                              ].indexOf(subscription.status) > -1 ||
+                              ['active', 'pending', 'halted', 'completed'].indexOf(
+                                subscription.status,
+                              ) > -1 ||
                               (subscription.status === 'cancelled' &&
                                 (curInvoiceIndex > 1 ||
-                                  (subscription.type !== 3 &&
-                                    subscription.type !== 1)))
+                                  (subscription.type !== 3 && subscription.type !== 1)))
                             ) {
                               <AsyncButton
                                 class="btn btn-default m-t"
                                 text=" Attempt Charge"
                                 pendingText="Attempting..."
-                                onClick={() =>
-                                  onManualAttempt(invoice.id, subscription.id)
-                                }
+                                onClick={() => onManualAttempt(invoice.id, subscription.id)}
                               />;
                             }
                           }}
@@ -266,11 +240,8 @@ export default class InvoiceDetail extends Component {
                       {subscription.quantity && (
                         <small class="label--secondary">
                           {subscription.quantity} x{' '}
-                          <Amount
-                            currency={invoice.currency}
-                            value={plan.item.unit_amount}
-                          />{' '}
-                          per unit
+                          <Amount currency={invoice.currency} value={plan.item.unit_amount} /> per
+                          unit
                         </small>
                       )}
                     </div>
@@ -281,12 +252,7 @@ export default class InvoiceDetail extends Component {
 
                 <EntityDetailRow
                   label="Total Amount"
-                  value={() => (
-                    <Amount
-                      currency={invoice.currency}
-                      value={invoice.amount}
-                    />
-                  )}
+                  value={() => <Amount currency={invoice.currency} value={invoice.amount} />}
                 />
 
                 {invoice.payments && (

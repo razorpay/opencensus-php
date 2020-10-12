@@ -50,6 +50,9 @@
       },
       smartCollect: function() {
         return window.rzpQ;
+      },
+      subscription: function() {
+        return window.rzpQ;
       }
     };
 
@@ -183,6 +186,16 @@
             {
               propertyName: 'event_group',
               value: 'smartcollect-dashboard'
+            }
+          ],
+          subscription: [
+            {
+              propertyName: 'event_type',
+              value: 'subscription'
+            },
+            {
+              propertyName: 'event_group',
+              value: 'subscription-dashboard'
             }
           ]
         });

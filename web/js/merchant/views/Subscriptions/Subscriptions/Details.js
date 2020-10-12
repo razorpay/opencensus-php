@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import { findDOMNode } from 'react-dom';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+import RTracking from 'react-tracking';
 
 import AddOnsModal from 'merchant/views/Subscriptions/Subscriptions/components/AddOnsModal';
 import SubscriptionDetails from 'merchant/views/Subscriptions/Subscriptions/components/Details';
@@ -71,6 +72,7 @@ const scheduledChangesInitValue = {
     pauseAndResumeSubscription,
   },
 )
+@RTracking(() => window.rzpQ.component('SubscriptionDetailsContainer'))
 export default class SubscriptionDetailsContainer extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -99,6 +101,10 @@ export default class SubscriptionDetailsContainer extends React.Component {
         eventAction: 'Open Details - Subscriptions',
         eventLabel: `subscription_id=${id}`,
       });
+
+    this.props.tracking.trackEvent(
+      window.rzpQ.subscription().interaction('subscription.click.subscription_id'),
+    );
   }
 
   componentWillUnmount() {
