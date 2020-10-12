@@ -61,9 +61,9 @@ class PreVerificationUpload extends Component {
       },
       perfios: {
         title: 'Use Netbanking',
-        disabled: false,
-        hint: '(Recommended)',
-        description: 'We will be redirecting you to Netbanking',
+        disabled: true,
+        hint: '',
+        description: 'Currently Unserviceable',
       },
     };
 
@@ -520,7 +520,10 @@ class PreVerificationUpload extends Component {
       selectedUploadModes: documents.reduce((acc, curr) => {
         return {
           ...acc,
-          [curr.id]: curr.documentUploadOptions[0],
+          [curr.id]:
+            this.getBankStatementDetails().document_id === curr.id
+              ? curr.documentUploadOptions[1]
+              : curr.documentUploadOptions[0],
         };
       }, {}),
       tabs: this.getTabs(),
