@@ -111,6 +111,7 @@ class Terminal extends Base
         $this->createSharedNetbankingKvbTpvTerminal();
         $this->createSharedNetbankingSvcTerminal();
         $this->createSharedNetbankingJsbTerminal();
+        $this->createSharedNetbankingIobTerminal();
         $this->createSharedNetbankingFsbTerminal();
     }
 
@@ -3779,6 +3780,26 @@ class Terminal extends Base
         ];
 
         $attributes = array_merge($defaultValues,$attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createSharedNetbankingIobTerminal(array $attributes = [])
+    {
+
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id' => '1ShrdNBIOBATml',
+            'merchant_id' => $merchantId,
+            'gateway' => Gateway::NETBANKING_IOB,
+            'gateway_merchant_id' => 'netbanking_iob_merchant_id',
+            'gateway_merchant_id2' => 'netbanking_iob_merchant_id2',
+            'netbanking' => 1,
+            'shared' => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
 
         return $this->create($attributes);
     }

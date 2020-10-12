@@ -91,6 +91,7 @@ class Base extends Core
     const NETBANKING_KVB         = 'NetbankingKvb';
     const NETBANKING_JSB         = 'NetbankingJsb';
     const NETBANKING_FSB         = 'NetbankingFsb';
+    const NETBANKING_IOB         = 'NetbankingIob';
     const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
     const VIRTUAL_ACC_YESBANK    = 'VirtualAccYesBank';
     const VIRTUAL_ACC_RBL        = 'VirtualAccRbl';
@@ -175,6 +176,7 @@ class Base extends Core
         self::NETBANKING_SVC         => ['netbanking@svcbank.com', 'kavishwarrk@svcbank.com', 'nirmalvb@svcbank.com'],
         self::NETBANKING_JSB         => ['channel_payments@janabank.com'],
         self::NETBANKING_FSB         => ['prabhu.veluswamy@fincarebank.com','lijo.k@fincarebank.com','jayaprashanth.vk@fincarebank.com','febin.anto@fincarebank.com','ce035@fincarebank.com','joseph.arun@fincarebank.com'],
+        self::NETBANKING_IOB         => ['54667@iobnet.co.in', '63015@iobnet.co.in', 'pg@iobnet.co.in', 'eseeadmin@iobnet.co.in'],
         self::JIOMONEY               => [],
         self::EBS                    => [],
         self::FIRST_DATA             => ['customer.care@icici.mailserv.in'],
@@ -266,6 +268,7 @@ class Base extends Core
         Gateway::NETBANKING_SVC         => self::NETBANKING_SVC,
         Gateway::NETBANKING_JSB         => self::NETBANKING_JSB,
         Gateway::NETBANKING_FSB         => self::NETBANKING_FSB,
+        Gateway::NETBANKING_IOB         => self::NETBANKING_IOB,
         Gateway::PAYTM                  => self::PAYTM,
         Gateway::UPI_MINDGATE           => self::UPI_HDFC,
         Gateway::UPI_SBI                => self::UPI_SBI,

@@ -337,6 +337,7 @@ class Gateway
         self::UPI_AIRTEL,
         self::NETBANKING_KVB,
         self::NETBANKING_YESB,
+        self::NETBANKING_IOB,
     ];
 
     /**

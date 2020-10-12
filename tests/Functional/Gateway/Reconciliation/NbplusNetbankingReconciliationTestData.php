@@ -43,5 +43,13 @@ return [
         'TransactionAmount'             => '500.00',
         'PaymentGatewayReferenceNumber' => '',
         'BankTransactionReferenceNo'    => '1234'
-        ]
+        ],
+    'testIobSuccessRecon' => [
+        'Bank Code'                             => 'IOB',
+        'payment reference number'              => '',
+        'Transaction Amount'                    => '500.00',
+        'date and time DD/MM/YYYY HH24:mm:ss'   => Carbon::today()->format("d/m/Y H:i:s"),
+        'Status of transaction'                 => 'Y',
+        'bank ref no.'                          => '123456'
+        ],
     ];

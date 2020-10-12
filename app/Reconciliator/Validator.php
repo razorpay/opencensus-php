@@ -31,6 +31,7 @@ class Validator extends Base\Core
         'rpt'  => ['text/plain'],
         'dat'  => ['text/plain'],
         '7z'   => ['application/x-7z-compressed'],
+        'iob'  => ['text/plain'],
     ];
 
     const GATEWAY_SUBJECT_REGEX = [
@@ -100,7 +101,8 @@ class Validator extends Base\Core
         RequestProcessor\Base::UPI_JUSPAY         => ["/BAJAJ TXN DETAILS/"],
         RequestProcessor\Base::NETBANKING_SVC     => ['/Recon file for the date [0-9]{2}.[0-9]{2}.20[0-9]{2} to [0-9]{2}.[0-9]{2}.20[0-9]{2}/'],
         RequestProcessor\Base::NETBANKING_JSB     => ["/Payment Gateway Reconcilation File from JFS/"],
-        RequestProcessor\Base::NETBANKING_FSB     => ["/Recon file for transaction dated [0-9]{2}-(January|February|March|April|May|June|July|August|September|October|November|December)-20[0-9]{2}/"]
+        RequestProcessor\Base::NETBANKING_FSB     => ["/Recon file for transaction dated [0-9]{2}-(January|February|March|April|May|June|July|August|September|October|November|December)-20[0-9]{2}/"],
+        RequestProcessor\Base::NETBANKING_IOB     => ["/RazorPay_[0-9]{2}.[0-9]{2}.20[0-9]{2}IOB/"],
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -175,6 +177,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_SVC           => 2,
         RequestProcessor\Base::NETBANKING_JSB           => 1,
         RequestProcessor\Base::NETBANKING_FSB           => 1,
+        RequestProcessor\Base::NETBANKING_IOB           => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -698,6 +701,18 @@ class Validator extends Base\Core
         return ($validSubject and $validBody);
     }
 
+    public function validateNetbankingIobEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::NETBANKING_IOB);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+            RequestProcessor\Base::NETBANKING_IOB);
+
+        return ($validSubject and $validAttachmentCount);
+    }
     /**
      * For emails without attachments, but links, we allow
      * zero attachments during the initial validation.
