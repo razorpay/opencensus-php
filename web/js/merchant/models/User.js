@@ -585,7 +585,7 @@ export default class User {
   }
 
   get isPaymentLinkCreationV2Enabled() {
-    return this.getExpStatus('payment_link__create_v2_upi') && this.isPaymentlinksV2Enabled;
+    return this.isPaymentlinksV2Enabled;
   }
 
   get isSellerAppRole() {
