@@ -1935,8 +1935,12 @@ class Route
         'offline_qr_poll_test_order_status'       => ['get',       't/offlines/devices/{did}/virtual_accounts/{id}/order/status',  'OfflineController@fetchVaOrderStatusTest'                  ],
         'offline_qr_poll_live_order_status'       => ['get',       'l/offlines/devices/{did}/virtual_accounts/{id}/order/status',  'OfflineController@fetchVaOrderStatusLive'                  ],
 
-        'fd_reserve_balance_ticket'                 => ['post',      'fd/reserve_balance/tickets',                                    'FreshdeskTicketController@postReserveBalanceTicketDetails'   ],
-        'fd_reserve_balance_ticket_status'          => ['get',       'fd/reserve_balance/tickets/status',                            'FreshdeskTicketController@getReserveBalanceTicketStatus'      ],
+        'fd_reserve_balance_ticket'               => ['post',      'fd/reserve_balance/tickets',                                 'FreshdeskTicketController@postReserveBalanceTicketDetails'   ],
+        'fd_reserve_balance_ticket_status'        => ['get',       'fd/reserve_balance/tickets/status',                          'FreshdeskTicketController@getReserveBalanceTicketStatus'     ],
+        'fd_fetch_tickets'                        => ['get',       'fd/tickets',                                                 'FreshdeskTicketController@getTickets'                        ],
+        'fd_fetch_converations'                   => ['get',       'fd/conversations',                                           'FreshdeskTicketController@getConversations'                  ],
+        'fd_fetch_ticket'                         => ['get',       'fd/tickets/{ticket_id}',                                     'FreshdeskTicketController@getTicketWithStats'                ],
+        'fd_post_ticket_reply'                    => ['post',      'fd/tickets/{ticket_id}/reply',                               'FreshdeskTicketController@postTicketReply'                   ],
 
         'entity_bulk_update'                      => ['post',      'entities/bulk-update',                                         'MerchantController@merchantsBulkUpdate'                    ],
         'fetch_batch_actions'                     => ['get',       'batch_actions',                                          'MerchantController@getBatchActions'                        ],
@@ -3034,6 +3038,11 @@ class Route
 
         'fd_reserve_balance_ticket',
         'fd_reserve_balance_ticket_status',
+
+        'fd_fetch_tickets',
+        'fd_fetch_converations',
+        'fd_fetch_ticket',
+        'fd_post_ticket_reply',
 
         'entity_bulk_update',
         'user_resend_verification_otp',

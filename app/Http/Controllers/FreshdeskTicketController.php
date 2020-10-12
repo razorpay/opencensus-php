@@ -38,4 +38,60 @@ class FreshdeskTicketController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    /**
+     * Get Freshdesk Tickets for the given merchant
+     *
+     * @return mixed
+     */
+    public function getTickets()
+    {
+        $input = Request::all();
+
+        $response = (new FreshdeskTicketService)->getTickets($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Get Freshdesk Ticket conversations for the given ticket id
+     *
+     * @return mixed
+     */
+    public function getConversations()
+    {
+        $input = Request::all();
+
+        $response = (new FreshdeskTicketService)->getConversations($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Get Freshdesk Ticket with stats for the given ticket id
+     *
+     * @return mixed
+     */
+    public function getTicketWithStats($ticketId)
+    {
+        $input = Request::all();
+
+        $response = (new FreshdeskTicketService)->getTicketWithStats($ticketId, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Post Freshdesk Ticket conversation reply
+     *
+     * @return mixed
+     */
+    public function postTicketReply($ticketId)
+    {
+        $input = Request::all();
+
+        $response = (new FreshdeskTicketService)->postTicketReply($ticketId, $input);
+
+        return ApiResponse::json($response);
+    }
 }

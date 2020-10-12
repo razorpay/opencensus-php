@@ -11,6 +11,11 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Service extends Base\Service
 {
+    const FRESKDESK_INSTANCES = [
+        Constants::RZP    => Constants::URL,
+        Constants::RZPSOL => Constants::URL2
+    ];
+
     public function getTicketStatus(array $response)
     {
         return TicketStatus::$ticketStatusMapping[$response['status']];
@@ -60,5 +65,105 @@ class Service extends Base\Service
             'No Reserve Balance ticket exists for merchant.',
             ['merchant_id' => $merchantId]
         );
+    }
+
+    public function getTickets(array $input): array
+    {
+        $page = $input[Constants::PAGE] ?? 1;
+
+        $merchantId = $this->auth->getMerchantId();
+
+        $allTickets = [];
+
+        foreach (self::FRESKDESK_INSTANCES as $key => $url)
+        {
+            $queryParams = [
+                Constants::QUERY => '"custom_string:'.$merchantId.'"',
+                Constants::PAGE  => $page
+            ];
+
+            $response = $this->app[Constants::FRESHDESK_CLIENT]->getTickets($queryParams, $url);
+
+            $results = $response[Constants::RESULTS] ?? [];
+
+            $allTickets = array_merge($allTickets, $results);
+        }
+
+        usort($allTickets, function($a, $b){
+            if ((empty($a[Constants::CREATED_AT]) === false) and
+                (empty($b[Constants::CREATED_AT]) === false))
+            {
+                return strtotime($b[Constants::CREATED_AT]) - strtotime($a[Constants::CREATED_AT]);
+            }
+
+            // Default behaviour - in place
+            return 0;
+        });
+
+        $ticketsResponse = [
+            Constants::RESULTS => $allTickets,
+            Constants::TOTAL   => count($allTickets)
+        ];
+
+        return $ticketsResponse;
+    }
+
+    public function getConversations(array $input): array
+    {
+        $page = $input[Constants::PAGE] ?? 1;
+
+        $perPage = $input[Constants::PER_PAGE] ?? 10;
+
+        $ticketId = $input[Constants::TICKET_ID];
+
+        $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
+
+        $url = self::FRESKDESK_INSTANCES[$fdInstance];
+
+        $queryParams = [
+            Constants::PAGE     => $page,
+            Constants::PER_PAGE => $perPage
+        ];
+
+        $response = $this->app[Constants::FRESHDESK_CLIENT]->getTicketConversations($ticketId, $queryParams, $url);
+
+        return $response;
+    }
+
+    public function getTicketWithStats($ticketId, array $input): array
+    {
+        $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
+
+        $url = self::FRESKDESK_INSTANCES[$fdInstance];
+
+        $ticketWithStats = $this->app[Constants::FRESHDESK_CLIENT]->getTicketWithStats($ticketId, $url);
+
+        if (empty($ticketWithStats) === false)
+        {
+            $ticketWithStats[Constants::FD_INSTANCE] = $fdInstance;
+        }
+
+        return $ticketWithStats ?? [];
+    }
+
+    public function postTicketReply($ticketId, array $input): array
+    {
+        $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
+
+        $url = self::FRESKDESK_INSTANCES[$fdInstance];
+
+        unset($input[Constants::FD_INSTANCE]);
+
+        // Converting user id to int - it comes as a string from FE sometimes
+        if (isset($input[Constants::USER_ID]) === true)
+        {
+            $input[Constants::USER_ID] += 0;
+        }
+
+        $ticketReplyResponse = $this->app[Constants::FRESHDESK_CLIENT]->postTicketReply($ticketId, $input, $url);
+
+        $ticketReplyResponse[Constants::FD_INSTANCE] = $fdInstance;
+
+        return $ticketReplyResponse;
     }
 }
