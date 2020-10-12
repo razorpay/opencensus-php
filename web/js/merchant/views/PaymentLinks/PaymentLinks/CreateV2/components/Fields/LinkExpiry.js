@@ -12,7 +12,7 @@ class LinkExpiry extends React.Component {
 
     this.state = {
       value: props.defaultValue,
-      hasNoDate: !props.defaultValue,
+      hasNoDate: null,
     };
 
     this.ref = React.createRef();
@@ -20,10 +20,6 @@ class LinkExpiry extends React.Component {
 
   onDateChange = (date) => {
     const curSelectedDateTime = this.state.value;
-
-    this.setState({
-      value: date,
-    });
 
     dateCalculator(date, curSelectedDateTime, this.updateDate);
   };
@@ -37,17 +33,23 @@ class LinkExpiry extends React.Component {
   updateDate = (ts) => {
     const value = moment(ts);
 
+    this.setState({
+      value,
+    });
+
     this.props.onChange(value);
   };
 
   handleHasNoDate = (e) => {
-    if (!e.target.checked && !this.state.value) {
+    if (!e.target.checked) {
       setTimeout(() => {
         this.ref.current.focus();
         this.ref.current.click();
       }, 10);
 
-      this.props.onChange(this.state.value);
+      if (this.state.value) {
+        this.props.onChange(this.state.value);
+      }
     } else {
       this.props.onChange(null);
     }
@@ -61,7 +63,12 @@ class LinkExpiry extends React.Component {
     const { props, state } = this;
     const isRequired = props.required;
 
-    const disabled = props.disabled || state.hasNoDate;
+    const disabled = props.disabled || state.hasNoDate === true;
+
+    const noExpiryProps = {};
+    if (props.defaultValue) {
+      noExpiryProps.defaultValue = '1';
+    }
 
     return (
       <React.Fragment>
@@ -69,12 +76,11 @@ class LinkExpiry extends React.Component {
           <Input.Check
             autoRender
             label="Link Expiry"
-            fieldLabel="Expire link after"
+            fieldLabel="No Expiry"
             class="Input--vTop"
-            value={state.hasNoDate}
-            defaultValue={props.defaultValue ? '0' : '1'}
             onChange={this.handleHasNoDate}
             disabled={props.disabled}
+            {...noExpiryProps}
           />
         )}
 
@@ -82,7 +88,7 @@ class LinkExpiry extends React.Component {
           required={isRequired}
           label={isRequired && 'Link Expiry'}
           class={classList(
-            'InputGroup--near',
+            !isRequired && 'InputGroup--near',
             'InputGroup--inline',
             isRequired && 'InputGroup--vTop',
           )}
@@ -107,7 +113,6 @@ class LinkExpiry extends React.Component {
                 readOnly
                 placeholder="11:59PM"
                 defaultValue={props.defaultValue}
-                disabled={props.disabled}
                 onChange={this.onTimeChange}
                 addonAfter={<i class="i i-time" />}
                 onBlur={track.lj.fields.expiryTime}
