@@ -384,6 +384,7 @@ class CardVault
             [
                 'response'  => $responseBody,
                 'namespace' => $this->namespace,
+                'status_code' => $response->status_code,
             ]);
 
         if ($response->status_code >= 500)
