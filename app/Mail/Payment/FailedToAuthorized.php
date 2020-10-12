@@ -15,7 +15,7 @@ class FailedToAuthorized extends Base
         }
         else
         {
-            $this->view('emails.payment.customer');
+            $this->view('emails.mjml.customer.payment');
         }
 
         return $this;
@@ -64,5 +64,25 @@ class FailedToAuthorized extends Base
         }
 
         return true;
+    }
+
+    protected function getCustomCustomerReplyToEmail(): string
+    {
+        $merchantId = $this->data['merchant']['id'];
+
+        $email = Constants::MAIL_ADDRESSES[Constants::NOREPLY];
+
+        // Zebpay
+        if ($merchantId === '8iMbVsEnv1HCo0')
+        {
+            $email = 'support@zebpay.com';
+        }
+        // Koinex
+        else if ($merchantId === '8Gx5vN29m83OUY')
+        {
+            $email = 'team@koinex.in';
+        }
+
+        return $email;
     }
 }
