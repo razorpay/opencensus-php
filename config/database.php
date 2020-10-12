@@ -175,6 +175,9 @@ return array(
             'strict'                    => true,
             'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
             'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
+            'options' => [
+                PDO::ATTR_TIMEOUT => 2,
+            ],
         ],
 
         'data-warehouse-test' => [
@@ -194,12 +197,15 @@ return array(
                 'password' => env('DB_TEST_PASSWORD'),
                 'database' => env('DB_TEST_DATABASE'),
             ],
-            'charset'   => 'utf8',
-            'collation' => 'utf8_bin',
-            'prefix'    => '',
-            'strict'    => true,
+            'charset'                   => 'utf8',
+            'collation'                 => 'utf8_bin',
+            'prefix'                    => '',
+            'strict'                    => true,
             'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
             'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
+            'options' => [
+                PDO::ATTR_TIMEOUT => 2,
+            ],
         ],
 
         'master-replica-live' => [
