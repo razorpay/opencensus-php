@@ -195,7 +195,7 @@ trait RepositoryFetch
         $endTimeMs = round(microtime(true) * 1000);
 
         $this->trace->info(TraceCode::DATA_WAREHOUSE_RESPONSE_DURATION, [
-            'data_warehouse' => ($connection === Connection::DATA_WAREHOUSE),
+            'data_warehouse' => ($connectionType === ConnectionType::DATA_WAREHOUSE),
             'connection'     => $connection,
             'query_ctx'      => is_null($merchantId) ? 'admin' : 'merchant',
             'duration_ms'    => $endTimeMs - $startTimeMs,
@@ -927,7 +927,7 @@ trait RepositoryFetch
 
     protected function addQueryOrder($query)
     {
-        if ($query->getConnection()->getName() !== Connection::DATA_WAREHOUSE)
+        if (($query->getConnection()->getName() !== Connection::DATA_WAREHOUSE_LIVE) or ($query->getConnection()->getName() !== Connection::DATA_WAREHOUSE_TEST))
         {
             $query->orderBy($this->dbColumn(Common::CREATED_AT), 'desc');
         }

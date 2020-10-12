@@ -998,7 +998,11 @@ class Repository extends \Razorpay\Spine\Repository
             return Config::get('database.default');
         }
 
-        return Connection::DATA_WAREHOUSE;
+        $mode = $mode ?? $this->app['rzp.mode'];
+
+        $connection = ($mode === Mode::TEST) ? Connection::DATA_WAREHOUSE_TEST : Connection::DATA_WAREHOUSE_LIVE;
+
+        return $connection;
     }
 
     protected function getDataWarehouseConnectionWithRazorX()
@@ -1009,7 +1013,7 @@ class Repository extends \Razorpay\Spine\Repository
         }
         else
         {
-            return $this->getSlaveConnection();
+            return Config::get('database.default');
         }
     }
 
