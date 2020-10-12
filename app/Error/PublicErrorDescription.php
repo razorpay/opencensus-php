@@ -702,7 +702,7 @@ class PublicErrorDescription
     const BAD_REQUEST_AUTHENTICATION_FAILED                                     = 'Authentication failed';
 
     const BAD_REQUEST_PAYMENT_TRANSFER_AMOUNT_GREATER_THAN_CAPTURED             = 'The sum of amount requested for transfer is greater than the captured amount';
-    const BAD_REQUEST_PAYMENT_TRANSFER_AMOUNT_GREATER_THAN_UNTRANSFERRED        = 'The total transfer amount provided is greater than the amount not transferred';
+    const BAD_REQUEST_PAYMENT_TRANSFER_AMOUNT_GREATER_THAN_UNTRANSFERRED        = 'Transfer amount exceeds amount available for transfer.';
     const BAD_REQUEST_PAYMENT_TRANSFER_ENTITIES_NOT_SET                         = 'Payment transfer entities provided are invalid or not set';
     const BAD_REQUEST_PAYMENT_TRANSFER_MORE_THAN_ONE_CUSTOMER                   = 'Payment cannot be transferred to more than one customer';
     const BAD_REQUEST_PAYMENT_TRANSFER_MULTIPLE_ENTITY_TYPES_GIVEN              = 'Payment cannot be transferred to multiple types of entities';
