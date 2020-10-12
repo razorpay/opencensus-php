@@ -38,6 +38,8 @@ class LOSController extends Controller
     const GET_DOCUMENT_GROUPS                         = 'GET_DOCUMENT_GROUPS';
     const GET_ALL_OFFERS                              = 'GET_ALL_OFFERS';
     const ACCEPT_OFFER_REGEX                          = 'ACCEPT_OFFER_REGEX';
+    const GET_ALL_LOC_OFFERS                          = 'GET_ALL_LOC_OFFERS';
+    const ACCEPT_LOC_OFFER_REGEX                      = 'ACCEPT_LOC_OFFER_REGEX';
     const GET_APPLICATION_CONTRACTS_REGEX             = 'GET_APPLICATION_CONTRACTS_REGEX';
     const CHECK_AGREEMENT_STATUS                      = 'CHECK_AGREEMENT_STATUS';
     const CREATE_NACH_REGEX                           = 'CREATE_NACH_REGEX';
@@ -80,6 +82,8 @@ class LOSController extends Controller
         self::GET_DOCUMENT_GROUPS                         => '/rzp\.capital\.los\.admin\.v1\.DocumentsAPI\/GetDocumentGroups/',
         self::GET_ALL_OFFERS                              => '/rzp\.capital\.los\.admin\.v1\.CreditOfferAPI\/GetAllOffers/',
         self::ACCEPT_OFFER_REGEX                          => '/rzp\.capital\.los\.admin\.v1\.CreditOfferAPI\/AcceptOffer/',
+        self::GET_ALL_LOC_OFFERS                          => '/rzp\.capital\.los\.admin\.v1\.LocCreditOfferAPI\/GetAllLocOffers/',
+        self::ACCEPT_LOC_OFFER_REGEX                      => '/rzp\.capital\.los\.admin\.v1\.LocCreditOfferAPI\/AcceptLocOffer/',
         self::GET_APPLICATION_CONTRACTS_REGEX             => '/rzp\.capital\.los\.contracts\.v1\.ContractsAPI\/GetApplicationContracts/',
         self::CHECK_AGREEMENT_STATUS                      => '/rzp\.capital\.los\.contracts\.v1\.DocSignAPI\/CheckAgreementStatus/',
         self::CREATE_NACH_REGEX                           => '/rzp\.capital\.los\.nach\.v1\.NachAPI\/CreateNach/',
