@@ -619,6 +619,155 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals('reward_fee', $response['fee_type']);
     }
 
+    /**
+     * Asserting that credit balance remains unchanged. The payout tax is set to 0,
+     * Credits used column is updated, equal to payout fees. Its fee type is reward_fee
+     * The Transaction amount is equal to payout amount(which does not have fee). Its
+     * fee is equal to payout fee and tax is 0
+     */
+    public function testRblAccountStatementTxnMappingForRewardPayoutWithNewCreditsFlow()
+    {
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
+
+        $channel = Channel::RBL;
+
+        $this->fixtures->edit('card', '100000000lcard', ['last4' => '1112']);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 500 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 500 ]);
+
+        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
+
+        $creditBalanceBefore = $creditBalanceEntity['balance'];
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->setupForRblPayout($channel);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(500, $payout['fees']);
+        $this->assertEquals(0, $payout['tax']);
+        $this->assertEquals('reward_fee', $payout['fee_type']);
+
+        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
+        $this->assertEquals($creditBalanceBefore, $creditBalanceEntity['balance']);
+
+        $creditEntity = $this->getLastEntity('credits', true);
+        $this->assertEquals(500, $creditEntity['used']);
+
+        $creditTxnEntity = $this->getLastEntity('credit_transaction', true);
+        $this->assertEquals('payout', $creditTxnEntity['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntity['entity_id']);
+        $this->assertEquals(500, $creditTxnEntity['credits_used']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456']);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::PROCESSED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Payout\Status::PROCESSED, $payout['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $payout['mode']);
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $attempt['mode']);
+
+        $mockedResponse = $this->getRblDataResponse();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $balance = $this->getLastEntity('balance', true);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+        $external = $this->getDbLastEntity('external');
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+        $transactions = $this->getDbEntities('transaction');
+
+        $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
+        $this->assertEquals($external['id'], $basEntries[0]['entity_id']);
+        $this->assertEquals($external['transaction_id'], $basEntries[0]['transaction_id']);
+        $this->assertEquals($external['banking_account_statement_id'], $basEntries[0]['id']);
+
+        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[1]['entity_type']);
+        $this->assertEquals($payout['id'], $basEntries[1]['entity_id']);
+        $this->assertEquals($payout['transaction_id'], $basEntries[1]['transaction_id']);
+        $this->assertEquals('reward_fee', $transactions[1]['credit_type']);
+        $this->assertEquals(500, $transactions[1]['fee_credits']);
+        $this->assertEquals(10095, $transactions[1]['amount']);
+        $this->assertEquals(0, $transactions[1]['tax']);
+        $this->assertEquals(500, $transactions[1]['fee']);
+
+        $this->assertEquals($external['balance_id'], $payout['balance_id']);
+
+        $feeBreakup1 = $this->getDbEntities('fee_breakup', ['transaction_id' => $basEntries[0]['transaction_id']]);
+        $feeBreakup2 = $this->getDbEntities('fee_breakup', ['transaction_id' => $basEntries[1]['transaction_id']]);
+
+        $this->assertEquals(0, $feeBreakup1->count());
+        $this->assertEquals(1, $feeBreakup2->count());
+
+        $this->assertEquals('Bbg7cl6t6I3XA6', $feeBreakup2[0]['pricing_rule_id']);
+        $this->assertEquals(EntityConstants::PAYOUT, $feeBreakup2[0]['name']);
+        $this->assertEquals(500, $feeBreakup2[0]['amount']);
+        $txn = $this->getDbEntity('transaction', ['entity_id' => $payout['id']])->toArray();
+        $this->assertEquals($txn['fee'], $payout['fees']);
+        $this->assertEquals($txn['tax'], $payout['tax']);
+
+        // check transaction fetch route for dashboard
+        $request = [
+            'url' => '/transactions/txn_' . $transactions[1]['id'],
+            'method' => 'get',
+            'content' => []
+
+        ];
+
+        $this->ba->privateAuth();
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals(10095, $response['debit']);
+        $this->assertEquals('reward_fee', $response['source']['fee_type']);
+
+        // check payout fetch route for dashboard
+        $request = [
+            'url' => '/payouts/pout_' . $payout['id'],
+            'method' => 'get',
+            'content' => []
+
+        ];
+
+        $this->ba->privateAuth();
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals(500, $response['fees']);
+        $this->assertEquals(0, $response['tax']);
+        $this->assertEquals('reward_fee', $response['fee_type']);
+    }
+
     /** Case where payout fees is consumed using multiple reward fee credits */
     public function testRblAccountStatementTxnMappingForMultipleRewardsPayout()
     {
@@ -652,6 +801,136 @@ class RblBankingAccountStatementTest extends TestCase
 
         $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
         $this->assertEquals(200, $creditBalanceEntity['balance']);
+
+        $creditEntities = $this->getDbEntities('credits');
+        $this->assertEquals(100, $creditEntities[0]['used']);
+        $this->assertEquals(400, $creditEntities[1]['used']);
+
+        $creditTxnEntities = $this->getDbEntities('credit_transaction');
+        $this->assertEquals('payout', $creditTxnEntities[0]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[0]['entity_id']);
+        $this->assertEquals(100, $creditTxnEntities[0]['credits_used']);
+
+        $this->assertEquals('payout', $creditTxnEntities[1]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[1]['entity_id']);
+        $this->assertEquals(400, $creditTxnEntities[1]['credits_used']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456']);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::PROCESSED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Payout\Status::PROCESSED, $payout['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $payout['mode']);
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $attempt['mode']);
+
+        $mockedResponse = $this->getRblDataResponse();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+        $external = $this->getDbLastEntity('external');
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+        $transactions = $this->getDbEntities('transaction');
+
+        $this->assertEquals('reward_fee', $transactions[1]['credit_type']);
+        $this->assertEquals(500, $transactions[1]['fee_credits']);
+
+        $this->assertEquals('reward_fee', $transactions[1]['credit_type']);
+        $this->assertEquals(500, $transactions[1]['fee_credits']);
+        $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
+        $this->assertEquals($external['id'], $basEntries[0]['entity_id']);
+        $this->assertEquals($external['transaction_id'], $basEntries[0]['transaction_id']);
+        $this->assertEquals($external['banking_account_statement_id'], $basEntries[0]['id']);
+
+        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[1]['entity_type']);
+        $this->assertEquals($payout['id'], $basEntries[1]['entity_id']);
+        $this->assertEquals($payout['transaction_id'], $basEntries[1]['transaction_id']);
+        $this->assertEquals($payout['transaction_id'], $basEntries[1]['transaction_id']);
+
+        $this->assertEquals($external['balance_id'], $payout['balance_id']);
+
+        $feeBreakup1 = $this->getDbEntities('fee_breakup', ['transaction_id' => $basEntries[0]['transaction_id']]);
+        $feeBreakup2 = $this->getDbEntities('fee_breakup', ['transaction_id' => $basEntries[1]['transaction_id']]);
+
+        $this->assertEquals(0, $feeBreakup1->count());
+        $this->assertEquals(1, $feeBreakup2->count());
+
+        $this->assertEquals(EntityConstants::PAYOUT, $feeBreakup2[0]['name']);
+        $this->assertEquals(500, $feeBreakup2[0]['amount']);
+        $txn = $this->getDbEntity('transaction', ['entity_id' => $payout['id']])->toArray();
+        $this->assertEquals($txn['fee'], $payout['fees']);
+        $this->assertEquals($txn['tax'], $payout['tax']);
+    }
+
+    /**
+     * Checking that credit_balance is not updated, credits and credit txns are created (used is
+     * updated ). This checks if multiple credits are present then they are consumed in
+     * order of their expiry
+     */
+    public function testRblAccountStatementTxnMappingForMultipleRewardsPayoutWithNewCreditsFlow()
+    {
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700 ]);
+
+        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
+
+        $creditBalanceBefore = $creditBalanceEntity['balance'];
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $channel = Channel::RBL;
+
+        $this->fixtures->edit('card', '100000000lcard', ['last4' => '1112']);
+
+        $this->setupForRblPayout($channel);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(500, $payout['fees']);
+        $this->assertEquals(0, $payout['tax']);
+        $this->assertEquals('reward_fee', $payout['fee_type']);
+
+        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
+        $this->assertEquals($creditBalanceBefore, $creditBalanceEntity['balance']);
 
         $creditEntities = $this->getDbEntities('credits');
         $this->assertEquals(100, $creditEntities[0]['used']);
@@ -845,6 +1124,117 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(-400, $creditTxnEntities[3]['credits_used']);
     }
 
+    /**
+     * checked credit balance is not updated. The credits are consumed in order of expiry
+     * Credit txns are created and then when payout failed, credits used is set to 0 and credit
+     * txns with -ve value of credits used is created
+     */
+    public function testRblAccountStatementTxnMappingForMultipleRewardsPayoutFailedWithNewCreditsFlow()
+    {
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700 ]);
+
+        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
+
+        $creditBalanceBefore = $creditBalanceEntity['balance'];
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $channel = Channel::RBL;
+
+        $this->setupForRblPayout($channel);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(500, $payout['fees']);
+        $this->assertEquals(0, $payout['tax']);
+
+        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
+        $this->assertEquals($creditBalanceBefore, $creditBalanceEntity['balance']);
+
+        $creditEntities = $this->getDbEntities('credits');
+        $this->assertEquals(100, $creditEntities[0]['used']);
+        $this->assertEquals(400, $creditEntities[1]['used']);
+
+        $creditTxnEntities = $this->getDbEntities('credit_transaction');
+        $this->assertEquals('payout', $creditTxnEntities[0]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[0]['entity_id']);
+        $this->assertEquals(100, $creditTxnEntities[0]['credits_used']);
+
+        $this->assertEquals('payout', $creditTxnEntities[1]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[1]['entity_id']);
+        $this->assertEquals(400, $creditTxnEntities[1]['credits_used']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated', 'amount' => '104']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['cms_ref_no' => 'S55959']);
+
+        $this->fixtures->edit('balance', $payout['balance_id'], ['balance' => 30019995]);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::FAILED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Payout\Status::FAILED, $payout['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $payout['mode']);
+        $this->assertEquals(Attempt\Status::FAILED, $attempt['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $attempt['mode']);
+
+        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
+        $this->assertEquals($creditBalanceBefore, $creditBalanceEntity['balance']);
+
+        $creditEntities = $this->getDbEntities('credits');
+        $this->assertEquals(0, $creditEntities[0]['used']);
+        $this->assertEquals(0, $creditEntities[1]['used']);
+
+        $creditTxnEntities = $this->getDbEntities('credit_transaction');
+        $this->assertEquals('payout', $creditTxnEntities[0]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[0]['entity_id']);
+        $this->assertEquals(100, $creditTxnEntities[0]['credits_used']);
+
+        $this->assertEquals('payout', $creditTxnEntities[1]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[1]['entity_id']);
+        $this->assertEquals(400, $creditTxnEntities[1]['credits_used']);
+
+        $this->assertEquals('payout', $creditTxnEntities[2]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[2]['entity_id']);
+        $this->assertEquals(-100, $creditTxnEntities[2]['credits_used']);
+
+        $this->assertEquals('payout', $creditTxnEntities[3]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[3]['entity_id']);
+        $this->assertEquals(-400, $creditTxnEntities[3]['credits_used']);
+    }
+
     /** Case where payout fees is consumed using multiple reward fee credits
      *  And then payout gets failed. So the expectation is credits also get
      *  reversed.
@@ -928,6 +1318,119 @@ class RblBankingAccountStatementTest extends TestCase
 
         $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
         $this->assertEquals(700, $creditBalanceEntity['balance']);
+
+        $creditEntities = $this->getDbEntities('credits');
+        $this->assertEquals(0, $creditEntities[0]['used']);
+        $this->assertEquals(0, $creditEntities[1]['used']);
+
+        $creditTxnEntities = $this->getDbEntities('credit_transaction');
+        $this->assertEquals('payout', $creditTxnEntities[0]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[0]['entity_id']);
+        $this->assertEquals(100, $creditTxnEntities[0]['credits_used']);
+
+        $this->assertEquals('payout', $creditTxnEntities[1]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[1]['entity_id']);
+        $this->assertEquals(400, $creditTxnEntities[1]['credits_used']);
+
+        $this->assertEquals('reversal', $creditTxnEntities[2]['entity_type']);
+        $this->assertEquals($reversal['id'],  $creditTxnEntities[2]['entity_id']);
+        $this->assertEquals(-100, $creditTxnEntities[2]['credits_used']);
+
+        $this->assertEquals('reversal', $creditTxnEntities[3]['entity_type']);
+        $this->assertEquals($reversal['id'],  $creditTxnEntities[3]['entity_id']);
+        $this->assertEquals(-400, $creditTxnEntities[3]['credits_used']);
+    }
+
+    /** Case where payout fees is consumed using multiple reward fee credits
+     *  And then payout gets reversed. So the expectation is credits also get
+     *  reversed. The credit balance is not updated. The credits are consumed in order of expiry
+     *  Credit txns are created and then when payout failed, credits used is set to 0 and credit
+     *  txns with -ve value of credits used is created
+     */
+    public function testRblAccountStatementTxnMappingForMultipleRewardsPayoutReversalsWithNewCreditsFlow()
+    {
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700 ]);
+
+        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
+
+        $creditBalanceBefore = $creditBalanceEntity['balance'];
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $channel = Channel::RBL;
+
+        $this->setupForRblPayout($channel);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(500, $payout['fees']);
+        $this->assertEquals(0, $payout['tax']);
+
+        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
+        $this->assertEquals($creditBalanceBefore, $creditBalanceEntity['balance']);
+
+        $creditEntities = $this->getDbEntities('credits');
+        $this->assertEquals(100, $creditEntities[0]['used']);
+        $this->assertEquals(400, $creditEntities[1]['used']);
+
+        $creditTxnEntities = $this->getDbEntities('credit_transaction');
+        $this->assertEquals('payout', $creditTxnEntities[0]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[0]['entity_id']);
+        $this->assertEquals(100, $creditTxnEntities[0]['credits_used']);
+
+        $this->assertEquals('payout', $creditTxnEntities[1]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[1]['entity_id']);
+        $this->assertEquals(400, $creditTxnEntities[1]['credits_used']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated', 'amount' => '104']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['cms_ref_no' => 'S55959']);
+
+        $this->fixtures->edit('balance', $payout['balance_id'], ['balance' => 30019995]);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::REVERSED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $reversal = $this->getDbLastEntity('reversal');
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Payout\Status::REVERSED, $payout['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $payout['mode']);
+        $this->assertEquals(Attempt\Status::REVERSED, $attempt['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $attempt['mode']);
+
+        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
+        $this->assertEquals($creditBalanceBefore, $creditBalanceEntity['balance']);
 
         $creditEntities = $this->getDbEntities('credits');
         $this->assertEquals(0, $creditEntities[0]['used']);
@@ -1055,6 +1558,116 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($txn['tax'], $payout['tax']);
     }
 
+    /** Case where payout fees is consumed using banking balance as rewards are less
+     *  Checking  here that credits will not be used and payouts fees and tax will be non 0
+     */
+
+    public function testRblAccountStatementTxnMappingForLessRewardsAndBankingBalancePayoutWithNewCreditsFlow()
+    {
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
+
+        $channel = Channel::RBL;
+
+        $this->fixtures->edit('card', '100000000lcard', ['last4' => '1112']);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 100 ]);
+
+        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->setupForRblPayout($channel);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+        $this->assertNull( $payout['fee_type']);
+
+        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
+        $this->assertEquals(100, $creditBalanceEntity['balance']);
+
+        $creditEntity = $this->getLastEntity('credits', true);
+        $this->assertEquals(0, $creditEntity['used']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456']);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::PROCESSED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Payout\Status::PROCESSED, $payout['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $payout['mode']);
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $attempt['mode']);
+
+        $mockedResponse = $this->getRblDataResponse();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+        $external = $this->getDbLastEntity('external');
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+        $transactions = $this->getDbEntities('transaction');
+
+        $this->assertEquals('default', $transactions[1]['credit_type']);
+        $this->assertEquals(0, $transactions[1]['fee_credits']);
+        $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
+        $this->assertEquals($external['id'], $basEntries[0]['entity_id']);
+        $this->assertEquals($external['transaction_id'], $basEntries[0]['transaction_id']);
+        $this->assertEquals($external['banking_account_statement_id'], $basEntries[0]['id']);
+
+        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[1]['entity_type']);
+        $this->assertEquals($payout['id'], $basEntries[1]['entity_id']);
+        $this->assertEquals($payout['transaction_id'], $basEntries[1]['transaction_id']);
+        $this->assertEquals($payout['amount'], $transactions[1]['amount']);
+
+        $this->assertEquals($external['balance_id'], $payout['balance_id']);
+
+        $feeBreakup1 = $this->getDbEntities('fee_breakup', ['transaction_id' => $basEntries[0]['transaction_id']]);
+        $feeBreakup2 = $this->getDbEntities('fee_breakup', ['transaction_id' => $basEntries[1]['transaction_id']]);
+
+        $this->assertEquals(0, $feeBreakup1->count());
+        $this->assertEquals(2, $feeBreakup2->count());
+
+        $this->assertEquals('Bbg7cl6t6I3XA6', $feeBreakup2[0]['pricing_rule_id']);
+        $this->assertEquals(EntityConstants::PAYOUT, $feeBreakup2[0]['name']);
+        $this->assertEquals(500, $feeBreakup2[0]['amount']);
+        $this->assertEquals(90, $feeBreakup2[1]['amount']);
+        $txn = $this->getDbEntity('transaction', ['entity_id' => $payout['id']])->toArray();
+        $this->assertEquals($txn['fee'], $payout['fees']);
+        $this->assertEquals($txn['tax'], $payout['tax']);
+    }
 
     /**
      * Case where account statement is fetched first, status check is performed later
@@ -1811,6 +2424,169 @@ class RblBankingAccountStatementTest extends TestCase
 
         $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
         $this->assertEquals(700, $creditBalanceEntity['balance']);
+
+        $creditTxnEntities = $this->getDbEntities('credit_transaction');
+        $this->assertEquals(4, $creditTxnEntities->count());
+
+    }
+
+    /*
+     * Since this is the new credits flow, we are checking that balance is not updated
+     * and remaining assertions are to check payout fees if fees - tax, tax is 0
+     * banking balance is debited with just payout amount.
+     */
+    public function testRblReversalFailureMappingForRewardsWithNewCreditsFlow()
+    {
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700 ]);
+
+        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
+
+        $creditBalanceBefore = $creditBalanceEntity['balance'];
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $channel = Channel::RBL;
+
+        $this->setupForRblPayout($channel);
+
+        $payout = $this->getDbLastEntity('payout');
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->assertEquals(10095, $payout['amount']);
+        $this->assertEquals(500, $payout['fees']);
+        $this->assertEquals(0, $payout['tax']);
+
+        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
+        $this->assertEquals($creditBalanceBefore, $creditBalanceEntity['balance']);
+
+        $creditEntities = $this->getDbEntities('credits');
+        $this->assertEquals(100, $creditEntities[0]['used']);
+        $this->assertEquals(400, $creditEntities[1]['used']);
+
+        $creditTxnEntities = $this->getDbEntities('credit_transaction');
+        $this->assertEquals('payout', $creditTxnEntities[0]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[0]['entity_id']);
+        $this->assertEquals(100, $creditTxnEntities[0]['credits_used']);
+
+        $this->assertEquals('payout', $creditTxnEntities[1]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[1]['entity_id']);
+        $this->assertEquals(400, $creditTxnEntities[1]['credits_used']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456']);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::FAILED);
+
+        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
+        $this->assertEquals($creditBalanceBefore, $creditBalanceEntity['balance']);
+
+        $creditEntities = $this->getDbEntities('credits');
+        $this->assertEquals(0, $creditEntities[0]['used']);
+        $this->assertEquals(0, $creditEntities[1]['used']);
+
+        $creditTxnEntities = $this->getDbEntities('credit_transaction');
+        $this->assertEquals('payout', $creditTxnEntities[0]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[0]['entity_id']);
+        $this->assertEquals(100, $creditTxnEntities[0]['credits_used']);
+
+        $this->assertEquals('payout', $creditTxnEntities[1]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[1]['entity_id']);
+        $this->assertEquals(400, $creditTxnEntities[1]['credits_used']);
+
+        $this->assertEquals('payout', $creditTxnEntities[2]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[2]['entity_id']);
+        $this->assertEquals(-100, $creditTxnEntities[2]['credits_used']);
+
+        $this->assertEquals('payout', $creditTxnEntities[3]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[3]['entity_id']);
+        $this->assertEquals(-400, $creditTxnEntities[3]['credits_used']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Payout\Status::FAILED, $payout['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $payout['mode']);
+        $this->assertEquals(Attempt\Status::FAILED, $attempt['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $attempt['mode']);
+
+        $mockedResponse = $this->getRblDataResponseForFailureMapping();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->ba->cronAuth();
+
+        $testData = $this->testData['testRblAccountStatementTxnMappingCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $reversal = $this->getDbLastEntity('reversal');
+
+        $external = $this->getDbLastEntity('external');
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $balance = $this->getDbLastEntity('balance');
+
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+
+        $transactionEntries = $this->getDbEntities('transaction');
+
+        $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
+        $this->assertEquals($external['id'], $basEntries[0]['entity_id']);
+        $this->assertEquals($external['transaction_id'], $basEntries[0]['transaction_id']);
+        $this->assertEquals($external['banking_account_statement_id'], $basEntries[0]['id']);
+        $this->assertEquals($external['transaction_id'], $transactionEntries[0]['id']);
+
+        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[1]['entity_type']);
+        $this->assertEquals($payout['id'], $basEntries[1]['entity_id']);
+        $this->assertEquals($payout['transaction_id'], $basEntries[1]['transaction_id']);
+        $this->assertEquals($payout['transaction_id'], $transactionEntries[1]['id']);
+
+        $this->assertEquals(EntityConstants::REVERSAL, $basEntries[2]['entity_type']);
+        $this->assertEquals($reversal['id'], $basEntries[2]['entity_id']);
+        $this->assertEquals($reversal['transaction_id'], $basEntries[2]['transaction_id']);
+        $this->assertEquals($reversal['transaction_id'], $transactionEntries[2]['id']);
+        $this->assertEquals('reversed', $payout['status']);
+        $this->assertNotNull($payout['processed_at']);
+
+        // asserting the balance of merchant is credited back
+        $this->assertEquals(21450, $balance['balance']);
+
+        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
+        $this->assertEquals($creditBalanceBefore, $creditBalanceEntity['balance']);
 
         $creditTxnEntities = $this->getDbEntities('credit_transaction');
         $this->assertEquals(4, $creditTxnEntities->count());

@@ -8,6 +8,7 @@ use App;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\Credits;
@@ -33,6 +34,13 @@ class Core extends Base\Core
 
     public function createTransactionForSource(Credits\Entity $credit, Base\PublicEntity $source, string $creditsUsed)
     {
+        $this->trace->info(TraceCode::CREDITS_TRANSACTION_CREATE_REQUEST,
+            [
+                'credit_id'     => $credit->getId(),
+                'source_id'     => $source->getId(),
+                'credits_used'  => $creditsUsed,
+            ]);
+
         $creditTxn = new Entity;
 
         $creditTxn->entity()->associate($source);
@@ -46,6 +54,14 @@ class Core extends Base\Core
         $this->repo->saveOrFail($credit);
 
         $this->repo->saveOrFail($creditTxn);
+
+        $this->trace->info(TraceCode::CREDITS_TRANSACTION_CREATED,
+            [
+                'credit_id'         => $credit->getId(),
+                'source_id'         => $source->getId(),
+                'credits_used'      => $creditsUsed,
+                'credits_txn_id'    => $creditTxn->getId(),
+            ]);
     }
 
     /***
@@ -199,6 +215,15 @@ class Core extends Base\Core
         return $creditsUsed;
     }
 
+    protected function getCreditsUsed(Credits\Entity $credit, int $amountToConsume): int
+    {
+        $availableCredits = $credit->getUnusedCredits();
+
+        $creditsUsed = ($availableCredits < $amountToConsume) ? $availableCredits : $amountToConsume;
+
+        return $creditsUsed;
+    }
+
     /**
      * @param Merchant\Entity $merchant
      * @param string $creditType
@@ -335,10 +360,192 @@ class Core extends Base\Core
         }
     }
 
+    public function reverseCreditsForSource(
+        string $sourceId,
+        string $sourceType,
+        Base\PublicEntity $forwardSource)
+    {
+        $this->trace->info(TraceCode::CREDITS_REVERSE_REQUEST,
+            [
+                'source_id'         => $sourceId,
+                'source_type'       => $sourceType,
+                'forward_source_id' => $forwardSource->getId(),
+            ]);
+
+        $creditTransactions = $this->repo->credit_transaction->getCreditTransactionsForSource($sourceId, $sourceType);
+
+        $creditIds = $creditTransactions->pluck(Entity::CREDITS_ID)
+            ->toArray();
+
+        $creditsUsed = $creditTransactions->pluck(Entity::CREDITS_USED)
+            ->toArray();
+
+        $creditsToReverse = [];
+
+        // The below loop will create credit Id and amount array
+        // This will be used to bulk fetch credits and then later
+        // get amount to be reversed for each credit
+        foreach ($creditIds as $key => $creditId)
+        {
+            $creditAmountToReverse = $creditsUsed[$key];
+
+            $creditsToReverse[$creditId] = -1 * $creditAmountToReverse;
+        }
+
+        // There is an outer db transaction which ensures that credits
+        // and credits transactions are created in sync with payouts
+        // The order of locking is  - lock on credits and then lock
+        // on merchant banking balance
+        $credits = $this->repo->credits->getCreditEntitiesLockForUpdate(array_keys($creditsToReverse));
+
+        foreach ($credits as $credit)
+        {
+            $currentTimestamp = Carbon::now()->getTimestamp();
+
+            // Logic to handle reversals needs to be carefully
+            // thought in case of credits having expiry
+            if (($credit->getExpiredAt() !== null) and
+                ($credit->getExpiredAt() <= $currentTimestamp))
+            {
+                throw new Exception\LogicException(
+                    'Expired Credit cannot be reversed',
+                    null,
+                    [
+                        'credit_id' => $credit->getId(),
+                    ]);
+            }
+
+            $creditsToBeReversed = $creditsToReverse[$credit->getId()];
+
+            $this->trace->info(TraceCode::CREDITS_TO_BE_REVERSED,
+                [
+                    'credit_to_be_reversed' => $creditsToBeReversed,
+                    'source_id'             => $sourceId,
+                    'source_type'           => $sourceType,
+                ]);
+
+            $this->createTransactionForSource($credit, $forwardSource, $creditsToBeReversed);
+        }
+    }
+
     public function getCreditsForSource(Base\PublicEntity $source)
     {
         $creditsUsed = $this->repo->credit_transaction->getSumOfCreditTransactionsForSource($source->getId());
 
         return $creditsUsed;
+    }
+
+    /**
+     * @param Merchant\Entity $merchant
+     * @param string $creditType
+     * @param string $product
+     * @param $amount
+     * @param Base\PublicEntity $source
+     * We will check if the merchant has credits available, if not we will
+     * return from there. If yes, we will lock all the credits and reload
+     * the credits after locking.
+     */
+    public function subtractAndGetMerchantCreditsConsumed(
+        Merchant\Entity $merchant,
+        string $creditType,
+        string $product,
+        $amount,
+        Base\PublicEntity $source)
+    {
+        $creditsConsumed = 0;
+
+        if ($amount === 0)
+        {
+            $this->trace->info(TraceCode::CREDITS_AMOUNT_TO_BE_CONSUMED_IS_ZERO,
+                [
+                    'credit_type' => $creditType,
+                    'product'     => $product,
+                    'amount'      => $amount,
+                    'source_id'   => $source->getId(),
+                ]);
+
+            return $creditsConsumed;
+        }
+
+        $this->trace->info(TraceCode::CREDITS_CONSUMPTION_REQUEST,
+            [
+                'credit_type' => $creditType,
+                'product'     => $product,
+                'amount'      => $amount,
+                'source_id'   => $source->getId(),
+            ]);
+
+        // There is an outer db transaction which ensures that credits
+        // and credits transactions are created in sync with payouts
+        // The order of locking is  - lock on credits and then lock
+        // on merchant banking balance
+        $credits = $this->repo->credits->setMerchantCreditsLockForUpdate($merchant->getId(), $product, $creditType);
+
+        if ($credits === null)
+        {
+            $this->trace->info(TraceCode::NO_CREDITS_AVAILABLE_WITH_MERCHANT,
+                [
+                    'credit_type' => $creditType,
+                    'product'     => $product,
+                    'amount'      => $amount,
+                    'source_id'   => $source->getId(),
+                ]);
+
+            return $creditsConsumed;
+        }
+
+        $creditsAvailable = 0;
+
+        foreach ($credits as $credit)
+        {
+            $creditsAvailable += $credit->getValue() - $credit->getUsed();
+        }
+
+        $this->trace->info(TraceCode::CREDITS_AVAILABLE,
+            [
+                'credits_available' => $creditsAvailable,
+                'product'           => $product,
+                'amount'            => $amount,
+                'source_id'         => $source->getId(),
+            ]);
+
+        if ($amount > $creditsAvailable)
+        {
+            $this->trace->info(TraceCode::CREDITS_TO_BE_CONSUMED_MORE_THAN_MERCHANT_CREDITS,
+                [
+                    'credit_type' => $creditType,
+                    'product'     => $product,
+                    'amount'      => $amount,
+                    'source_id'   => $source->getId(),
+                ]);
+
+            return $creditsConsumed;
+        }
+
+        foreach ($credits as $credit)
+        {
+            if ($amount === 0)
+            {
+                break;
+            }
+
+            $creditsUsed = $this->getCreditsUsed($credit, $amount);
+
+            $creditsConsumed += $creditsUsed;
+
+            $amount -= $creditsUsed;
+
+            $this->createTransactionForSource($credit, $source, $creditsUsed);
+        }
+
+        $this->trace->info(TraceCode::CREDITS_CONSUMED,
+            [
+                'product'           => $product,
+                'amount'            => $amount,
+                'source_id'         => $source->getId(),
+                'credits_consumed'  => $creditsConsumed,
+            ]);
+
+        return $creditsConsumed;
     }
 }

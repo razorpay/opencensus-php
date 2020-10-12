@@ -180,6 +180,20 @@ return [
         ]
     ],
 
+    'testRblAccountStatementTxnMappingForRewardPayoutWithNewCreditsFlow' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'channel'         => 'rbl',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
     'testRblAccountStatementTxnMappingForMultipleRewardsPayout' => [
         'request'  => [
             'method'  => 'POST',
@@ -194,7 +208,35 @@ return [
         ]
     ],
 
+    'testRblAccountStatementTxnMappingForMultipleRewardsPayoutWithNewCreditsFlow' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'channel'         => 'rbl',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
     'testRblAccountStatementTxnMappingForLessRewardsAndBankingBalancePayout' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'channel'         => 'rbl',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testRblAccountStatementTxnMappingForLessRewardsAndBankingBalancePayoutWithNewCreditsFlow'  => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/banking_account_statement/process',

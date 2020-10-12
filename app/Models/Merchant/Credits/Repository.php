@@ -141,6 +141,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getCreditEntitiesLockForUpdate(array $creditIds)
+    {
+        return Entity::lockForUpdate()->newQuery()
+                               ->whereIn(Entity::ID, $creditIds)
+                               ->get();
+    }
+
     public function findCreditsToExpire(string $merchantId, string $promotionId, int $timestamp)
     {
         return $this->newQuery()
@@ -310,6 +317,24 @@ class Repository extends Base\Repository
         return Entity::lockForUpdate()->newQuery()
                                       ->where(Entity::ID, $credit->getId())
                                       ->firstOrFail();
+    }
+
+    public function setMerchantCreditsLockForUpdate(string $merchantId, string $product = null, string $type = null)
+    {
+        assertTrue ($this->isTransactionActive());
+
+        return Entity::lockForUpdate()->newQuery()
+                                    ->where(Entity::MERCHANT_ID, $merchantId)
+                                    ->where(Entity::PRODUCT, $product)
+                                    ->where(Entity::TYPE, $type)
+                                    ->whereRaw(Entity::VALUE. '-' . Entity::USED . '> 0')
+                                    ->where(function ($query)
+                                    {
+                                        $query->where(Entity::EXPIRED_AT, '>', time())
+                                            ->orWhereNull(Entity::EXPIRED_AT);
+                                    })
+                                    ->orderBy(\DB::raw('-`expired_at`'), 'desc')
+                                    ->get();
     }
 
     protected function addQueryParamFetchExpired($query, $params)

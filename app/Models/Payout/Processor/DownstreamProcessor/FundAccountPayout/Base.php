@@ -2,9 +2,13 @@
 
 namespace RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 
+use RZP\Trace\TraceCode;
+use RZP\Constants\Product;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Purpose;
+use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\Balance\Type;
+use RZP\Models\Transaction\CreditType;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Models\Payout\Processor\DownstreamProcessor\Base as DSBase;
 
@@ -47,6 +51,51 @@ class Base extends DSBase
             $expectedFeeType = $payout->getExpectedFeeType();
 
             $payout->setFeeType($expectedFeeType);
+        }
+    }
+
+    // consuming reward fee credits here directly. Ideally there will be many
+    // credits like amount, fee etc and there will also be a order here
+    // to consume those rewards.
+
+    protected function adjustMerchantFeesThroughRewardFeeCreditsForPayout(Entity $payout, & $fees, & $tax)
+    {
+        if ($payout->getFeeType() !== null)
+        {
+            return;
+        }
+
+        $creditsToBeConsumed = $fees - $tax;
+
+        $this->trace->info(TraceCode::PAYOUT_REWARD_FEE_CREDITS_USED_REQUEST,
+            [
+                'payout_id'                 => $payout->getId(),
+                'credits_to_be_consumed'    => $creditsToBeConsumed,
+            ]);
+
+        $creditsConsumed = (new Credits\Transaction\Core)->subtractAndGetMerchantCreditsConsumed(
+                                                            $payout->merchant,
+                                                            CreditType::REWARD_FEE,
+                                                            Product::BANKING,
+                                                            $creditsToBeConsumed,
+                                                            $payout);
+
+        if (($creditsConsumed != 0) and
+            ($creditsConsumed === $creditsToBeConsumed))
+        {
+            $fees = $fees - $tax;
+
+            $tax = 0;
+
+            $this->trace->info(TraceCode::PAYOUT_REWARD_FEE_CREDITS_USED,
+                [
+                    'payout_id'         => $payout->getId(),
+                    'fees'              => $fees,
+                    'tax'               => $tax,
+                    'credits_consumed'  => $creditsConsumed,
+                ]);
+
+            $payout->setFeeType(CreditType::REWARD_FEE);
         }
     }
 }

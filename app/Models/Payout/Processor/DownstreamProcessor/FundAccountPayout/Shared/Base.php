@@ -5,17 +5,23 @@ namespace RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout\Shar
 use Mail;
 
 use Carbon\Carbon;
+use RZP\Constants;
 use RZP\Mail\Banking;
 use RZP\Models\Admin;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Pricing;
+use RZP\Constants\Product;
 use RZP\Models\Payout\Mode;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
+use RZP\Models\Merchant\Credits;
+use RZP\Exception\LogicException;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Payout\CounterHelper;
+use RZP\Models\Transaction\CreditType;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 
@@ -39,6 +45,15 @@ class Base extends FundAccountPayout\Base
             $this->checkAllowModeOnIcici($payout, $ftaAccount);
 
             $this->assignFreePayoutIfApplicable($payout);
+
+            // The below code calculates payouts fees and tax and uses
+            // reward_fee credits if available. The fees and tax of
+            // transaction are updated accordingly. We
+
+            if ($payout->merchant->isFeatureEnabled(Entity::PAYOUT_CREDITS_NEW_FLOW) === true)
+            {
+                $this->setFeeAndTaxForPayout($payout);
+            }
 
             $this->createTransaction($payout);
 
@@ -75,6 +90,34 @@ class Base extends FundAccountPayout\Base
                     $payout->setFeeType(null);
 
                     $payout->setExpectedFeeType(null);
+                }
+
+                // since the banking balance of merchant was not sufficient, the payout went to queued state
+                // we don't want to have a payout in the system which is in queued state and has fees and tax
+                // set, so rolling back the changes.
+                if ($payout->merchant->isFeatureEnabled(Entity::PAYOUT_CREDITS_NEW_FLOW) === true)
+                {
+                    $payout->setFees(0);
+
+                    $payout->setTax(0);
+
+                    unset($payout[Entity::PRICING_RULE_ID]);
+
+                    // we need to reverse the credits consumed by the payouts
+                    if ($payout->getFeeType() === CreditType::REWARD_FEE)
+                    {
+                        $this->trace->info(TraceCode::CREDITS_REVERSE_FOR_QUEUED_PAYOUT,
+                            [
+                                'payout_id' => $payout->getId()
+                            ]);
+
+                        (new Credits\Transaction\Core)->reverseCreditsForSource(
+                            $payout->getId(),
+                            Constants\Entity::PAYOUT,
+                            $payout);
+
+                        unset($payout[Entity::FEE_TYPE]);
+                    }
                 }
 
                 if ($payout->toBeQueued() === false)
@@ -187,5 +230,41 @@ class Base extends FundAccountPayout\Base
                 $mode . ' is not supported'
             );
         }
+    }
+
+    protected function setFeeAndTaxForPayout($payout)
+    {
+        list($fees, $tax, $pricingRuleId) = $this->calculateFeesAndTaxForPayouts($payout);
+
+        if (empty($pricingRuleId) === true)
+        {
+            throw new LogicException('No Pricing Rule ID set for payout: ' . $payout->getId());
+        }
+
+        $this->adjustMerchantFeesThroughRewardFeeCreditsForPayout($payout, $fees, $tax);
+
+        $payout->setFees($fees);
+
+        $payout->setTax($tax);
+
+        $payout->setPricingRuleId($pricingRuleId);
+    }
+
+    protected function calculateFeesAndTaxForPayouts(Entity $payout)
+    {
+        list($fees, $tax, $feesSplit) = (new Pricing\PayoutFee)->calculateMerchantFees($payout);
+
+        $feesSplitData = $feesSplit->toArray();
+
+        foreach ($feesSplitData as $feesSplit)
+        {
+            // Set pricingRuleId from the feesSplit (there are two entries and at least one has pricingRuleId)
+            if (empty($feesSplit[Entity::PRICING_RULE_ID]) === false)
+            {
+                $pricingRuleId = $feesSplit[Entity::PRICING_RULE_ID];
+            }
+        }
+
+        return [$fees, $tax, $pricingRuleId];
     }
 }

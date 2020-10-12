@@ -82,8 +82,12 @@ class IciciPayoutTest extends TestCase
         $payout = $this->getLastEntity('payout', true);
         $this->assertEquals($payout['channel'], 'icici');
         $this->assertNull($payout['user_id']);
+        $this->assertEquals(1062, $payout['fees']);
+        $this->assertEquals(162, $payout['tax']);
 
         $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals(1062, $txn['fee']);
+        $this->assertEquals(162, $txn['tax']);
         $txnId = str_after($txn['id'], 'txn_');
         $this->assertEquals($payout['transaction_id'], $txn['id']);
         $this->assertNotNull($txn['balance_id']);

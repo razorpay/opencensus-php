@@ -472,10 +472,20 @@ class Core extends Base\Core
 
         if ($this->shouldHandleRewardForReversalsForSource($reversal) === true)
         {
-            (new Credits\Transaction\Core)->reverseCreditTransactionsForSource(
-                                                        $reversal->getEntityId(),
-                                                        $reversal->getEntityType(),
-                                                        $reversal);
+            if ($payout->merchant->isFeatureEnabled(Payout\Entity::PAYOUT_CREDITS_NEW_FLOW) === true)
+            {
+                (new Credits\Transaction\Core)->reverseCreditsForSource(
+                    $reversal->getEntityId(),
+                    $reversal->getEntityType(),
+                    $reversal);
+            }
+            else
+            {
+                (new Credits\Transaction\Core)->reverseCreditTransactionsForSource(
+                    $reversal->getEntityId(),
+                    $reversal->getEntityType(),
+                    $reversal);
+            }
         }
 
         $this->repo->saveOrFail($reversal);

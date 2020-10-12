@@ -1622,7 +1622,7 @@ class Core extends Base\Core
 
                 $pricingRuleId = $clonedPayout->getPricingRuleId();
 
-                $dummyFeesBreakup = (new Transaction\Processor\Payout($clonedPayout))->getFeeSplitForDirectPayouts(
+                $dummyFeesBreakup = (new Transaction\Processor\Payout($clonedPayout))->getFeeSplitForPayouts(
                                                                                             $fees,
                                                                                             $tax,
                                                                                             $pricingRuleId);
@@ -1786,10 +1786,20 @@ class Core extends Base\Core
 
                         if ($this->shouldHandleRewardForFailedPayout($payout) === true)
                         {
-                            (new Credits\Transaction\Core)->reverseCreditTransactionsForSource(
-                                $payout->getId(),
-                                Constants\Entity::PAYOUT,
-                                $payout);
+                            if ($payout->merchant->isFeatureEnabled(Entity::PAYOUT_CREDITS_NEW_FLOW) === true)
+                            {
+                                (new Credits\Transaction\Core)->reverseCreditsForSource(
+                                    $payout->getId(),
+                                    Constants\Entity::PAYOUT,
+                                    $payout);
+                            }
+                            else
+                            {
+                                (new Credits\Transaction\Core)->reverseCreditTransactionsForSource(
+                                    $payout->getId(),
+                                    Constants\Entity::PAYOUT,
+                                    $payout);
+                            }
                         }
 
                         $balance = $payout->balance;

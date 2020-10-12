@@ -140,6 +140,68 @@ class PayoutTest extends TestCase
         return $payout;
     }
 
+    /**
+     *  The below test cases just checks that if the merchant has no credits
+     *  then also if we enable this credits_new_flow feature on the merchant,
+     *  the fees and tax will be calculated as expected, this is to just check
+     *  that fees and tax logic works in normal scenario so later on we can
+     *  just remove the flag and calculate fees and tax of payouts before
+     *  itself
+     */
+    public function testCreatePayoutWithNewCreditsFlow()
+    {
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
+
+        $bankingBalance = $this->getDbLastEntity('balance');
+
+        $balance = $bankingBalance['balance'];
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals('Batman', $payoutAttempt['narration']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals($payout['channel'], 'yesbank');
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+        $txnId = str_after($txn['id'], 'txn_');
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertNotNull($txn['balance_id']);
+        $this->assertNotNull($txn['posted_at']);
+        $this->assertEquals(1062, $txn['fee']);
+        $this->assertEquals(162, $txn['tax']);
+
+        $bankingBalance = $this->getDbLastEntity('balance');
+
+        $this->assertEquals($balance - 2001062, $bankingBalance['balance']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $txnId,
+            'pricing_rule_id' => "Bbg7dTcURsOr77",
+            'percentage'      => null,
+            'amount'          => 900,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+    }
+
     public function testCreatePayoutWithIKeyHeader($ikeyValue = 'check', $amount = null)
     {
         $headers = [
@@ -871,6 +933,146 @@ class PayoutTest extends TestCase
         $this->assertEquals(30000003, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
 
         $dispatchResponse = $this->dispatchQueuedPayouts();
+        $this->assertEquals($dispatchResponse['balance_id_list'][0], $currentBalance['id']);
+
+        $summary2 = $this->makePayoutSummaryRequest();
+
+        // Assert that there are still 2 payouts in queued state since there wasn't enough balance to process them
+        $this->assertEquals(3, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(30000003, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+
+        // Add enough balance to process only one queued payout
+        $this->fixtures->balance->edit($newBalance['id'], ['balance' => 11000000]);
+
+        $dispatchResponse = $this->dispatchQueuedPayouts();
+        $this->assertEquals($dispatchResponse['balance_id_list'][0], $currentBalance['id']);
+
+        $updatedSummary = $this->makePayoutSummaryRequest();
+
+        // Assert that there is only one payout in queued state. The other one got processed.
+        $this->assertEquals(2, $updatedSummary[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(20000002, $updatedSummary[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+
+        // Add enough balance to process only all queued payouts
+        $this->fixtures->balance->edit($newBalance['id'], ['balance' => 99000000]);
+
+        // Set offset = 1 for this balance ID
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_QUEUED_PAYOUTS_PAGINATION => [
+            $newBalance['id'] => 1
+        ]]);
+
+        $dispatchResponse = $this->dispatchQueuedPayouts();
+        $this->assertEquals($dispatchResponse['balance_id_list'][0], $currentBalance['id']);
+
+        $summary2 = $this->makePayoutSummaryRequest();
+
+        // Assert that only one payout got processed even though there was enough balance to process both.
+        // This is because offset was set to 1.
+        $this->assertEquals(1, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(10000001, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+
+        $offsetData = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::RX_QUEUED_PAYOUTS_PAGINATION]);
+
+        // Assert that offset has been set back to 0
+        $this->assertEmpty($offsetData);
+    }
+
+    /**
+     *  The below test cases just checks that if the merchant has no credits
+     *  then also if we enable this credits_new_flow feature on the merchant,
+     *  the fees and tax will be calculated as expected, this is to just check
+     *  that fees and tax logic works in normal scenario so later on we can
+     *  just remove the flag and calculate fees and tax of payouts before
+     *  itself
+     */
+    public function testCreateAndProcessQueuedPayoutWithNewCreditsFlow()
+    {
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 2000 ]);
+
+        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
+
+        $creditBalanceBefore = $creditBalanceEntity['balance'];
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 1900 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        // Setting the redis config as empty initially
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_QUEUED_PAYOUTS_PAGINATION => []]);
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->createBankingAccount(['balance_id' => $balanceId]);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $currentBalance = $this->getDbLastEntity('balance');
+
+        $response = $this->startTest();
+        $payout = $this->getDbLastEntity('payout');
+        $this->assertEquals(0, $payout['fees']);
+        $this->assertEquals(0, $payout['tax']);
+        $this->assertNull($payout['pricing_rule_id']);
+
+        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
+        $this->assertEquals($creditBalanceBefore, $creditBalanceEntity['balance']);
+
+        $creditEntities = $this->getDbEntities('credits');
+        $this->assertEquals(0, $creditEntities[0]['used']);
+        $this->assertEquals(0, $creditEntities[1]['used']);
+
+        $creditTxnEntities = $this->getDbEntities('credit_transaction');
+        $this->assertEquals(100, $creditTxnEntities[0]['credits_used']);
+        $this->assertEquals(1400, $creditTxnEntities[1]['credits_used']);
+        $this->assertEquals(-100, $creditTxnEntities[2]['credits_used']);
+        $this->assertEquals(-1400, $creditTxnEntities[3]['credits_used']);
+        $this->assertEquals(4, count($creditTxnEntities));
+
+        $newBalance = $this->getDbLastEntity('balance');
+
+        // Since we created queued payouts, hence balance shouldn't change
+        $this->assertEquals($currentBalance->getBalance(), $newBalance->getBalance());
+
+        $txn = $this->getDbEntity('transaction', ['entity_id' => substr($response['id'], 5)]);
+
+        $this->assertNull($txn);
+
+        $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => substr($response['id'], 5)]);
+
+        $this->assertNull($fta);
+
+        $this->ba->privateAuth();
+
+        // Create 2 more queued payouts
+        $this->startTest();
+        $payout = $this->getDbLastEntity('payout');
+        $this->assertEquals(0, $payout['fees']);
+        $this->assertEquals(0, $payout['tax']);
+
+        $this->startTest();
+        $payout = $this->getDbLastEntity('payout');
+        $this->assertEquals(0, $payout['fees']);
+        $this->assertEquals(0, $payout['tax']);
+
+        $summary1 = $this->makePayoutSummaryRequest();
+
+        // Assert that there are 2 payouts in queued state.
+        $this->assertEquals(3, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(30000003, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+
+        $dispatchResponse = $this->dispatchQueuedPayouts();
+
         $this->assertEquals($dispatchResponse['balance_id_list'][0], $currentBalance['id']);
 
         $summary2 = $this->makePayoutSummaryRequest();
@@ -5169,6 +5371,67 @@ class PayoutTest extends TestCase
         $this->assertEquals(0, $batchProcessingPayouts->count());
     }
 
+    /** This test asserts that credits are used in batch_submitted payouts
+     *  Fees and tax are handled correctly and credit balacne is not changed
+     */
+    public function testProcessBulkPayoutDelayedInitiationWithNewCreditsFlow()
+    {
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
+
+        $this->testBulkPayoutWithThrottling();
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700 ]);
+
+        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
+
+        $creditBalanceBefore = $creditBalanceEntity['balance'];
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $payouts = $this->getDbEntities('payout');
+
+        // Assertions for first payout (NEFT)
+        $this->assertEquals(Payout\Mode::NEFT, $payouts[0]['mode']);
+        $this->assertEquals(Payout\Status::CREATED, $payouts[0]['status']);
+        $this->assertEquals(500, $payouts[0]['fees']);
+        $this->assertEquals(0, $payouts[0]['tax']);
+
+        // Assertion for second payout (RTGS)
+        // Payout got failed since there wasn't sufficient balance to process it.
+        $this->assertEquals(Payout\Mode::RTGS, $payouts[1]['mode']);
+        $this->assertEquals(Payout\Status::FAILED, $payouts[1]['status']);
+
+        $batchProcessingPayouts = $this->getDbEntities('payout', ['status' => Payout\Status::BATCH_SUBMITTED]);
+
+        // Assert that no payouts remain in batch_processing state
+        $this->assertEquals(0, $batchProcessingPayouts->count());
+
+        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
+        $this->assertEquals($creditBalanceBefore, $creditBalanceEntity['balance']);
+
+        $creditEntities = $this->getDbEntities('credits');
+        $this->assertEquals(100, $creditEntities[0]['used']);
+        $this->assertEquals(400, $creditEntities[1]['used']);
+
+        $creditTxnEntities = $this->getDbEntities('credit_transaction');
+        $this->assertEquals(2, count($creditTxnEntities));
+    }
+
     public function testUpdatePayoutStatusToProcessedManually()
     {
         $this->testCreatePayout();
@@ -5544,6 +5807,175 @@ class PayoutTest extends TestCase
         $pricingRule = $this->getDbEntityById('pricing', $expectedBreakup['pricing_rule_id']);
 
         $this->assertEquals(BasicAuth\Type::PRIVATE_AUTH, $pricingRule->getAuthType());
+    }
+
+    /** The test case checks that if the merchant has free payout and credits and the
+     * merchant is on new credits flow then free payout is used and not credits
+     */
+    public function testCreateFreePayoutForNEFTModeSharedAccountPrivateAuthWithNewCreditsFlow()
+    {
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700 ]);
+
+        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
+
+        $creditBalanceBefore = $creditBalanceEntity['balance'];
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(null, $payout->getUserId());
+
+        // Assert 0 fee and tax in payout
+        $this->assertEquals(0, $payout->getFees());
+        $this->assertEquals(0, $payout->getTax());
+
+        // Assert that free_payout is assigned as fee_type for such payouts.
+        $this->assertEquals(Payout\Entity::FREE_PAYOUT, $payout->getFeeType());
+
+        $counter = $this->getDbEntities('counter',
+            [
+                'account_type' => 'shared',
+                'balance_id'   => $balanceId,
+            ])->first();
+
+        // Assert that one free payout has been consumed
+        $this->assertEquals(1, $counter->getFreePayoutsConsumed());
+
+        $transactionId = $payout->transaction->getId();
+
+        $transaction = $this->getDbEntityById('transaction', $transactionId)->toArray();
+
+        // Assert 0 fee and tax in payout
+        $this->assertEquals(0, $transaction['fee']);
+        $this->assertEquals(0, $transaction['tax']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $transactionId], true);
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $transactionId,
+            'pricing_rule_id' => "Bbg7cl6t6I3XA9",
+            'percentage'      => null,
+            'amount'          => 0,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+
+        $pricingRule = $this->getDbEntityById('pricing', $expectedBreakup['pricing_rule_id']);
+
+        $this->assertEquals(BasicAuth\Type::PRIVATE_AUTH, $pricingRule->getAuthType());
+
+        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
+        $this->assertEquals($creditBalanceBefore, $creditBalanceEntity['balance']);
+
+        $creditEntities = $this->getDbEntities('credits');
+        $this->assertEquals(0, $creditEntities[0]['used']);
+        $this->assertEquals(0, $creditEntities[1]['used']);
+    }
+
+
+    /** The test case checks that if the merchant has free payout and credits and the
+     * merchant is on old credits flow then free payout is used and not credits
+     */
+    public function testCreateFreePayoutForNEFTModeSharedAccountPrivateAuthWithOldCreditsFlow()
+    {
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700 ]);
+
+        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
+
+        $creditBalanceBefore = $creditBalanceEntity['balance'];
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $this->ba->privateAuth();
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(null, $payout->getUserId());
+
+        // Assert 0 fee and tax in payout
+        $this->assertEquals(0, $payout->getFees());
+        $this->assertEquals(0, $payout->getTax());
+
+        // Assert that free_payout is assigned as fee_type for such payouts.
+        $this->assertEquals(Payout\Entity::FREE_PAYOUT, $payout->getFeeType());
+
+        $counter = $this->getDbEntities('counter',
+            [
+                'account_type' => 'shared',
+                'balance_id'   => $balanceId,
+            ])->first();
+
+        // Assert that one free payout has been consumed
+        $this->assertEquals(1, $counter->getFreePayoutsConsumed());
+
+        $transactionId = $payout->transaction->getId();
+
+        $transaction = $this->getDbEntityById('transaction', $transactionId)->toArray();
+
+        // Assert 0 fee and tax in payout
+        $this->assertEquals(0, $transaction['fee']);
+        $this->assertEquals(0, $transaction['tax']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $transactionId], true);
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $transactionId,
+            'pricing_rule_id' => "Bbg7cl6t6I3XA9",
+            'percentage'      => null,
+            'amount'          => 0,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+
+        $pricingRule = $this->getDbEntityById('pricing', $expectedBreakup['pricing_rule_id']);
+
+        $this->assertEquals(BasicAuth\Type::PRIVATE_AUTH, $pricingRule->getAuthType());
+
+        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
+        $this->assertEquals($creditBalanceBefore, $creditBalanceEntity['balance']);
+
+        $creditEntities = $this->getDbEntities('credits');
+        $this->assertEquals(0, $creditEntities[0]['used']);
+        $this->assertEquals(0, $creditEntities[1]['used']);
     }
 
     public function testCreateFreePayoutForUPIModeSharedAccountPrivateAuth()
@@ -6162,6 +6594,24 @@ class PayoutTest extends TestCase
 
         // Assert that zero free payout has been consumed
         $this->assertEquals(0, $counter->getFreePayoutsConsumed());
+    }
+
+    public function testSharedAccountPayoutCreationFailedDueToInsufficientBalance()
+    {
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->fixtures->edit(
+            'balance',
+            $balanceId,
+            [
+                'balance' => 2000,
+            ]);
+
+        $this->ba->privateAuth();
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+        $this->assertNull($payout);
     }
 
     public function testQueuedSharedAccountPayoutCreationAndCheckCounterAttributes()
@@ -7032,6 +7482,191 @@ class PayoutTest extends TestCase
         PayoutPostCreateProcess::dispatch('test', $payout->getId(), 'false');
 
         $payout->reload();
+
+        $publicResponse = $payout->toArrayPublic();
+
+        $this->assertEquals('created', $payout['internal_status']);
+        $this->assertEquals('processing', $publicResponse['status']);
+        $this->assertNotNull($payout['initiated_at']);
+    }
+
+    /**
+     *  We are asserting that payout fees and tax will remain as it is if the credits are not
+     *  sufficient, for a merchant on new credits flow
+     */
+    public function testProcessingOfCreateRequestSubmittedPayoutWithNewCreditsFlowButNotEqualToFees()
+    {
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700 ]);
+
+        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
+
+        $creditBalanceBefore = $creditBalanceEntity['balance'];
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->testCreatePayoutForRequestSubmitted();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // Manually pushing into the queue because this is the only way to do this.
+        // Keeping the queueFlag as false for this test.
+        // Payout should get processed since merchant has enough balance
+        PayoutPostCreateProcess::dispatch('test', $payout->getId(), 'false');
+
+        $payout->reload();
+
+        $this->assertEquals(1062, $payout['fees']);
+        $this->assertEquals(162, $payout['tax']);
+
+        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
+        $this->assertEquals($creditBalanceBefore, $creditBalanceEntity['balance']);
+
+        $creditEntities = $this->getDbEntities('credits');
+        $this->assertEquals(0, $creditEntities[0]['used']);
+        $this->assertEquals(0, $creditEntities[1]['used']);
+
+        $creditTxnEntities = $this->getDbEntities('credit_transaction');
+        $this->assertEquals(0, count($creditTxnEntities));
+
+        $publicResponse = $payout->toArrayPublic();
+
+        $this->assertEquals('created', $payout['internal_status']);
+        $this->assertEquals('processing', $publicResponse['status']);
+        $this->assertNotNull($payout['initiated_at']);
+    }
+
+    /**
+     *  We are asserting that payout fees and tax will be adjusted by the
+     *  reward_fee credits for create_request_submitted payout in the
+     *  credits flow
+     */
+    public function testProcessingOfCreateRequestSubmittedPayoutWithNewCreditsFlow()
+    {
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 300 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 900 ]);
+
+        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
+
+        $creditBalanceBefore = $creditBalanceEntity['balance'];
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->testCreatePayoutForRequestSubmitted();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // Manually pushing into the queue because this is the only way to do this.
+        // Keeping the queueFlag as false for this test.
+        // Payout should get processed since merchant has enough balance
+        PayoutPostCreateProcess::dispatch('test', $payout->getId(), 'false');
+
+        $payout->reload();
+
+        $this->assertEquals(900, $payout['fees']);
+        $this->assertEquals(0, $payout['tax']);
+
+        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
+        $this->assertEquals($creditBalanceBefore, $creditBalanceEntity['balance']);
+
+        $creditEntities = $this->getDbEntities('credits');
+        $this->assertEquals(300, $creditEntities[0]['used']);
+        $this->assertEquals(600, $creditEntities[1]['used']);
+
+        $creditTxnEntities = $this->getDbEntities('credit_transaction');
+        $this->assertEquals('payout', $creditTxnEntities[0]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[0]['entity_id']);
+        $this->assertEquals(300, $creditTxnEntities[0]['credits_used']);
+
+        $this->assertEquals('payout', $creditTxnEntities[1]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[1]['entity_id']);
+        $this->assertEquals(600, $creditTxnEntities[1]['credits_used']);
+
+        $publicResponse = $payout->toArrayPublic();
+
+        $this->assertEquals('created', $payout['internal_status']);
+        $this->assertEquals('processing', $publicResponse['status']);
+        $this->assertNotNull($payout['initiated_at']);
+    }
+
+    /**
+     *  We are asserting that payout fees and tax will be adjusted by the
+     *  reward_fee credits for create_request_submitted payout in the old
+     *  credits flow
+     */
+    public function testProcessingOfCreateRequestSubmittedPayoutWithOldCreditsFlow()
+    {
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 300 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 900 ]);
+
+        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
+
+        $creditBalanceBefore = $creditBalanceEntity['balance'];
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->testCreatePayoutForRequestSubmitted();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // Manually pushing into the queue because this is the only way to do this.
+        // Keeping the queueFlag as false for this test.
+        // Payout should get processed since merchant has enough balance
+        PayoutPostCreateProcess::dispatch('test', $payout->getId(), 'false');
+
+        $payout->reload();
+
+        $this->assertEquals(900, $payout['fees']);
+        $this->assertEquals(0, $payout['tax']);
+
+        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
+        $this->assertEquals(0, $creditBalanceEntity['balance']);
+
+        $creditEntities = $this->getDbEntities('credits');
+        $this->assertEquals(300, $creditEntities[0]['used']);
+        $this->assertEquals(600, $creditEntities[1]['used']);
+
+        $creditTxnEntities = $this->getDbEntities('credit_transaction');
+        $this->assertEquals('payout', $creditTxnEntities[0]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[0]['entity_id']);
+        $this->assertEquals(300, $creditTxnEntities[0]['credits_used']);
+
+        $this->assertEquals('payout', $creditTxnEntities[1]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[1]['entity_id']);
+        $this->assertEquals(600, $creditTxnEntities[1]['credits_used']);
 
         $publicResponse = $payout->toArrayPublic();
 

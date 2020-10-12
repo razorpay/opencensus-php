@@ -656,6 +656,77 @@ class ScheduledPayoutTest extends TestCase
         $this->assertEquals(Status::PROCESSING, $updatedScheduledPayout['status']);
     }
 
+
+    public function testScheduledPayoutProcessingWithNewCreditsFlow()
+    {
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 2000 ]);
+
+        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
+
+        $creditBalanceBefore = $creditBalanceEntity['balance'];
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 1900 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        // Timestamp of 9 AM, 2 months from current time
+        $scheduledAtTime = Carbon::now(Timezone::IST)->hour(9)->addMonths(2)->getTimestamp();
+        $scheduledAtStartOfHour = Carbon::createFromTimestamp($scheduledAtTime, Timezone::IST)->startOfHour()->getTimestamp();
+
+        $this->createPayoutWithOtpWithWorkflow(
+            [
+                'scheduled_at' => $scheduledAtTime
+            ],
+            'rzp_test_10000000000000');
+
+        $scheduledPayout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(Status::SCHEDULED, $scheduledPayout['status']);
+
+        $this->fixtures->edit('balance', $this->bankingBalance['id'], ['balance' => 100000000]);
+
+        // Setting this to 1 second after the start of the time slot
+        Carbon::setTestNow(Carbon::createFromTimestamp($scheduledAtStartOfHour+1, Timezone::IST));
+
+        $this->setUpCounterToNotAffectPayoutFeesAndTaxInManualTimeChangeTests($this->bankingBalance);
+
+        $this->ba->cronAuth();
+
+        $result = $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(500, $payout['fees']);
+        $this->assertEquals(0, $payout['tax']);
+        $this->assertEquals('reward_fee', $payout['fee_type']);
+
+        $expectedResponse = [
+            $this->bankingBalance['id'] => [
+                'total_payout_count'        => 1,
+                'dispatched_payout_count'   => 1,
+                'dispatched_payout_amount'  => 10000
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $result);
+
+        $updatedScheduledPayout = $this->getDbEntityById('payout', $scheduledPayout['id'])->toArrayPublic();
+
+        // Assert that the scheduled payout has now gone to the processing state
+        $this->assertEquals(Status::PROCESSING, $updatedScheduledPayout['status']);
+    }
+
     public function testScheduledPayoutProcessingLowBalance()
     {
         Mail::fake();

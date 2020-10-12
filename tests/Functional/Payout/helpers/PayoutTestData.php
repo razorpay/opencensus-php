@@ -45,6 +45,42 @@ return [
         ],
     ],
 
+    'testCreatePayoutWithNewCreditsFlow' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
     'testPayoutReversalWithRewards' => [
         'request'  => [
             'method'  => 'POST',
@@ -674,6 +710,37 @@ return [
         ],
     ],
 
+    'testCreateQueuedPayoutWithNewCreditsFlow' => [
+        'request' => [
+            'method'    => 'POST',
+            'url'       => '/payouts',
+            'content'   => [
+                'account_number'        => '2224440041626905',
+                'amount'                => 10000001,
+                'currency'              => 'INR',
+                'mode'                  => 'IMPS',
+                'purpose'               => 'refund',
+                'fund_account_id'       => 'fa_100000000000fa',
+                'queue_if_low_balance'  => true,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 10000001,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
+                'status'          => 'queued',
+                'utr'             => null,
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [],
+            ],
+        ],
+    ],
+
     'testCreateAndProcessQueuedPayout' => [
         'request' => [
             'method'    => 'POST',
@@ -701,6 +768,27 @@ return [
                 'tax'             => 0,
                 'fees'            => 0,
                 'notes'           => [],
+            ],
+        ],
+    ],
+
+    'testCreateAndProcessQueuedPayoutWithNewCreditsFlow' => [
+        'request' => [
+            'method'    => 'POST',
+            'url'       => '/payouts',
+            'content'   => [
+                'account_number'        => '2224440041626905',
+                'amount'                => 10000001,
+                'currency'              => 'INR',
+                'mode'                  => 'IMPS',
+                'purpose'               => 'refund',
+                'fund_account_id'       => 'fa_100000000000fa',
+                'queue_if_low_balance'  => true,
+            ]
+        ],
+        'response' => [
+            'content' => [
+
             ],
         ],
     ],
@@ -2883,6 +2971,27 @@ return [
         ],
     ],
 
+    'testCreateQueuedPayoutWithModeSetWithCreditsWithNewCreditsFlow'  => [
+        'request' => [
+            'method'    => 'POST',
+            'url'       => '/payouts',
+            'content'   => [
+                'account_number'        => '2224440041626905',
+                'amount'                => 10000001,
+                'currency'              => 'INR',
+                'purpose'               => 'refund',
+                'fund_account_id'       => 'fa_100000000000fa',
+                'mode'                  => 'IMPS',
+                'queue_if_low_balance'  => true,
+            ]
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
     'testCreatePayoutForCitiToCardViaNEFTWithMultipleCredits' => [
         'request' => [
             'method'    => 'POST',
@@ -2913,7 +3022,65 @@ return [
         ],
     ],
 
+    'testCreatePayoutForCitiToCardViaNEFTWithMultipleCreditsWithNewCreditsFlow'  => [
+        'request' => [
+            'method'    => 'POST',
+            'url'       => '/payouts',
+            'content'   => [
+                'account_number'        => '2224440041626905',
+                'amount'                => 1000,
+                'currency'              => 'INR',
+                'purpose'               => 'refund',
+                'fund_account_id'       => 'fa_100000000002fa',
+                'mode'                  => 'NEFT'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 1000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000002fa',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'utr'             => null,
+                'mode'            => 'NEFT',
+                'tax'             => 0,
+                'fees'            => 500,
+                'notes'           => [],
+            ],
+        ],
+    ],
+
     'testCreatePayoutForCitiToCardViaNEFTRewardFeeCredits' => [
+        'request' => [
+            'method'    => 'POST',
+            'url'       => '/payouts',
+            'content'   => [
+                'account_number'        => '2224440041626905',
+                'amount'                => 1000,
+                'currency'              => 'INR',
+                'purpose'               => 'refund',
+                'fund_account_id'       => 'fa_100000000002fa',
+                'mode'                  => 'NEFT'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 1000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000002fa',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'utr'             => null,
+                'mode'            => 'NEFT',
+                'notes'           => [],
+            ],
+        ],
+    ],
+
+    'testCreatePayoutForCitiToCardViaNEFTRewardFeeCreditsWithNewCreditsFlow'  => [
         'request' => [
             'method'    => 'POST',
             'url'       => '/payouts',
@@ -5976,7 +6143,30 @@ return [
         ],
     ],
 
+    'testProcessBulkPayoutDelayedInitiationWithNewCreditsFlow'  => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/batch/process',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testScheduledPayoutProcessing' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/scheduled/process'
+        ],
+        'response'  => [
+            'content' => [
+            ],
+        ],
+    ],
+
+
+    'testScheduledPayoutProcessingWithNewCreditsFlow' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/scheduled/process'
@@ -6874,6 +7064,72 @@ return [
         ],
     ],
 
+    'testCreateFreePayoutForNEFTModeSharedAccountPrivateAuthWithNewCreditsFlow' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'mode'            => 'NEFT',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
+                'mode'            => 'NEFT',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateFreePayoutForNEFTModeSharedAccountPrivateAuthWithOldCreditsFlow' =>  [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'mode'            => 'NEFT',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
+                'mode'            => 'NEFT',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
     'testCreateFreePayoutForUPIModeSharedAccountPrivateAuth' => [
         'request'  => [
             'method'  => 'POST',
@@ -7191,6 +7447,38 @@ return [
     ],
 
     'testSharedAccountPayoutCreationFailedDueToInsufficientBalanceAndCheckCounterAttributes' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 2000000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'mode'                 => 'NEFT',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+                'queue_if_low_balance' => 0,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Your account does not have enough balance to carry out the payout operation.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
+        ],
+    ],
+
+    'testSharedAccountPayoutCreationFailedDueToInsufficientBalance' => [
         'request'   => [
             'method'  => 'POST',
             'url'     => '/payouts',

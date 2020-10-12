@@ -62,13 +62,34 @@ class Payout extends Base
 
             $pricingRuleId = $this->source->getPricingRuleId();
 
-            $this->feesSplit = $this->getFeeSplitForDirectPayouts($this->fees, $this->tax, $pricingRuleId);
+            $this->feesSplit = $this->getFeeSplitForPayouts($this->fees, $this->tax, $pricingRuleId);
         }
         else
         {
-            $this->setMerchantCredits();
+            // If merchant is already migrated to new credits flow, the payout fees and tax
+            // would have been already calculated by now, so we will be doing something
+            // exactly same as what we do in CA payouts. We will be copying fees and tax
+            // of payout to transaction.
+            $merchant = $this->source->merchant;
 
-            $this->setMerchantFeeDefaults();
+            if ($merchant->isFeatureEnabled(PayoutModel\Entity::PAYOUT_CREDITS_NEW_FLOW) === true)
+            {
+                $this->fees = $this->source->getFees();
+
+                $this->tax = $this->source->getTax();
+
+                $pricingRuleId = $this->source->getPricingRuleId();
+
+                $this->feesSplit = $this->getFeeSplitForPayouts($this->fees, $this->tax, $pricingRuleId);
+            }
+            else
+            {
+                // TODO add a check here to not apply credits when free payouts been used here
+                // ref - https://razorpay.slack.com/archives/CR3K6S6C8/p1601896647221300
+                $this->setMerchantCredits();
+
+                $this->setMerchantFeeDefaults();
+            }
         }
     }
 
@@ -136,6 +157,7 @@ class Payout extends Base
 
             $this->debit = $amount;
         }
+        // The below block handles cases for fund account payout
         else
         {
             if ($this->source->balance->isAccountTypeDirect() === true)
@@ -155,16 +177,43 @@ class Payout extends Base
             }
             else
             {
-                switch (true)
-                {
-                    case (($this->rewardFeeCredits >= $this->fees - $this->tax) and ($this->fees > 0)):
-                        $this->calculateFeeForRewardFeeCredit();
-                        $payoutAmount = $amount;
-                        break;
+                $merchant = $this->source->merchant;
 
-                    default:
-                        $this->calculateFeeDefault();
-                        $payoutAmount = $amount + $this->fees;
+                // if the merchant has new credit flow feature enabled, in that case
+                // merchant can have either credits applied or free payouts or neither
+                // of them, in that case we will set the credit type of txn as default
+                if ($merchant->isFeatureEnabled(PayoutModel\Entity::PAYOUT_CREDITS_NEW_FLOW) === true)
+                {
+                    switch (true)
+                    {
+                        case $this->source->getFeeType() === CreditType::REWARD_FEE:
+                            $this->updateTransactionWithRewardFeeCreditsDetails();
+                            $payoutAmount = $amount;
+                            break;
+
+                        default:
+                           $this->calculateFeeDefault();
+                           $payoutAmount = $amount + $this->fees;
+                    }
+                }
+                else
+                {
+                    $rewardFeeCredits = $this->rewardFeeCredits;
+                    $feesWithoutTax = $this->fees - $this->tax;
+                    switch (true)
+                    {
+                        // we are checking if the reward fee credits are more than fees - tax
+                        // In that case rewards can be used to compensate for the fees.
+                        // We will not do this, if the fees will be 0
+                        case (($this->fees > 0) and ($rewardFeeCredits >= $feesWithoutTax )):
+                            $this->calculateFeeForRewardFeeCredit();
+                            $payoutAmount = $amount;
+                            break;
+
+                        default:
+                            $this->calculateFeeDefault();
+                            $payoutAmount = $amount + $this->fees;
+                    }
                 }
             }
 
@@ -271,7 +320,7 @@ class Payout extends Base
         }
     }
 
-    public function getFeeSplitForDirectPayouts($fees, $tax, $pricingRuleId)
+    public function getFeeSplitForPayouts($fees, $tax, $pricingRuleId)
     {
         $this->fees = $fees;
 
@@ -288,6 +337,12 @@ class Payout extends Base
 
     public function updateCredits(int $negativeLimit = 0)
     {
+        $merchant = $this->source->merchant;
+
+        if ($merchant->isFeatureEnabled(PayoutModel\Entity::PAYOUT_CREDITS_NEW_FLOW) === true)
+        {
+            return;
+        }
         // If the balance is not sufficient we will not use
         // credits since the payout will fail. We don't
         // want a state where we debit the credits but not
@@ -381,6 +436,24 @@ class Payout extends Base
                 {
                     $this->feesSplit->forget($key);
                 }
+        }
+    }
+
+    protected function updateTransactionWithRewardFeeCreditsDetails()
+    {
+        $this->txn->setCreditType(CreditType::REWARD_FEE);
+
+        $this->txn->setCredits($this->fees);
+
+        // since tax is 0 for reward_fee payouts, we are
+        // just ensuring no row gets created for tax in
+        // feesplit for transaction of this payout
+        foreach ($this->feesSplit as $key => $feeSplit)
+        {
+            if ($feeSplit->getName() === Constants\Entity::TAX)
+            {
+                $this->feesSplit->forget($key);
+            }
         }
     }
 
