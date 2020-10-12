@@ -634,6 +634,8 @@ class ScheduledPayoutTest extends TestCase
         // Setting this to 1 second after the start of the time slot
         Carbon::setTestNow(Carbon::createFromTimestamp($scheduledAtStartOfHour+1, Timezone::IST));
 
+        $this->setUpCounterToNotAffectPayoutFeesAndTaxInManualTimeChangeTests($this->bankingBalance);
+
         $this->ba->cronAuth();
 
         $result = $this->startTest();
@@ -1033,7 +1035,45 @@ class ScheduledPayoutTest extends TestCase
 
         $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
 
-        $this->testScheduledPayoutProcessing();
+        // Timestamp of 9 AM, 2 months from current time
+        $scheduledAtTime = Carbon::now(Timezone::IST)->hour(9)->addMonths(2)->getTimestamp();
+        $scheduledAtStartOfHour = Carbon::createFromTimestamp($scheduledAtTime, Timezone::IST)->startOfHour()->getTimestamp();
+
+        $this->createPayoutWithOtpWithWorkflow(
+            [
+                'scheduled_at' => $scheduledAtTime
+            ],
+            'rzp_test_10000000000000');
+
+        $scheduledPayout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(Status::SCHEDULED, $scheduledPayout['status']);
+
+        $this->fixtures->edit('balance', $this->bankingBalance['id'], ['balance' => 100000000]);
+
+        // Setting this to 1 second after the start of the time slot
+        Carbon::setTestNow(Carbon::createFromTimestamp($scheduledAtStartOfHour+1, Timezone::IST));
+
+        $this->ba->cronAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testScheduledPayoutProcessing'];
+
+        $result = $this->startTest();
+
+        $expectedResponse = [
+            $this->bankingBalance['id'] => [
+                'total_payout_count'        => 1,
+                'dispatched_payout_count'   => 1,
+                'dispatched_payout_amount'  => 10000
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $result);
+
+        $updatedScheduledPayout = $this->getDbEntityById('payout', $scheduledPayout['id'])->toArrayPublic();
+
+        // Assert that the scheduled payout has now gone to the processing state
+        $this->assertEquals(Status::PROCESSING, $updatedScheduledPayout['status']);
 
         $counter = $this->getDbEntities('counter',
                                         [
