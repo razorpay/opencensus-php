@@ -12,6 +12,7 @@ class Entity extends PublicEntity
     const OWNER_TYPE        = 'owner_type';
     const OWNER_ID          = 'owner_id';
     const VALIDATION_STATUS = 'validation_status';
+    const VALIDATION_UNIT   = 'validation_unit';
     const ERROR_CODE        = 'error_code';
     const ERROR_DESCRIPTION = 'error_description';
 
@@ -26,6 +27,7 @@ class Entity extends PublicEntity
         self::OWNER_TYPE,
         self::OWNER_ID,
         self::VALIDATION_STATUS,
+        self::VALIDATION_UNIT,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
     ];

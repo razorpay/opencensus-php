@@ -6006,3 +6006,10 @@ ALTER TABLE `vpas`
 
 ALTER TABLE `qr_code`
     ADD COLUMN `mpans_tokenized` TINYINT(1) DEFAULT NULL;
+
+ALTER TABLE merchant_details
+    ADD COLUMN `personal_pan_doc_verification_status` varchar(30) DEFAULT NULL,
+    ADD COLUMN `company_pan_doc_verification_status` varchar(30) DEFAULT NULL;
+
+ALTER TABLE bvs_validation
+    ADD COLUMN `validation_unit` enum('identifier','proof') DEFAULT NULL;

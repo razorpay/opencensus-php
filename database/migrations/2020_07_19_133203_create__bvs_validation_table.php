@@ -27,6 +27,8 @@ class CreateBvsValidationTable extends Migration
 
             $table->enum(Entity::VALIDATION_STATUS, Constants::VALIDATION_STATUS);
 
+            $table->enum(Entity::VALIDATION_UNIT, Constants::VALIDATION_UNIT);
+
             $table->char(Entity::OWNER_ID, Entity::ID_LENGTH);
 
             $table->char(Entity::OWNER_TYPE, 255);

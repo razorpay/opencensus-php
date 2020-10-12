@@ -121,6 +121,9 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const FUND_ACCOUNT_VALIDATION_ID         = 'fund_account_validation_id';
     const GSTIN_VERIFICATION_STATUS          = 'gstin_verification_status';
 
+    const PERSONAL_PAN_DOC_VERIFICATION_STATUS = 'personal_pan_doc_verification_status';
+    const COMPANY_PAN_DOC_VERIFICATION_STATUS  = 'company_pan_doc_verification_status';
+
     const SUBMIT                                   = 'submit';
     const ARCHIVE                                  = 'archive';
     const ARCHIVED                                 = 'archived';
@@ -368,6 +371,8 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::DATE_OF_ESTABLISHMENT,
         self::COMPANY_PAN_VERIFICATION_STATUS,
         self::CIN_VERIFICATION_STATUS,
+        self::COMPANY_PAN_DOC_VERIFICATION_STATUS,
+        self::PERSONAL_PAN_DOC_VERIFICATION_STATUS,
     ];
 
     protected $defaults = [

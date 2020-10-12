@@ -11,6 +11,10 @@ class Constants
     const FAILED   = 'failed';
     const CAPTURED = 'captured';
 
+    // validation units
+    const IDENTIFIER = 'identifier';
+    const PROOF      = 'proof';
+
     //
     // message keys Kafka consumer
     //
@@ -34,6 +38,11 @@ class Constants
         self::SUCCESS,
         self::FAILED,
         self::CAPTURED,
+    ];
+
+    const VALIDATION_UNIT = [
+        self::IDENTIFIER,
+        self::PROOF,
     ];
 
 
