@@ -190,6 +190,69 @@ return [
         ],
     ],
 
+    'testUploadValidatePaperMandate' => [
+        'request' => [
+            'content' => [
+                'auth_link_id' => 'inv_1000000invoice',
+            ],
+            'method'    => 'POST',
+            'url'       => '/token.registration/paper_mandate/validate/proxy',
+        ],
+        'response' => [
+            'content' => [
+                'status'  => 'accepted',
+                'status_reason' => null,
+                'email_id' => "gaurav.kumar12@example.com",
+                'amount_in_words' => "TEN",
+                'utility_code' => "NACH00000000013149",
+                'reference_1' => "121211212112121121",
+                'bank_name' => "HDFC BANK",
+                'debit_type' => "maximum_amount",
+                'micr' => "",
+                'frequency' => "as_and_when_presented",
+                'signature_present_tertiary' => "no",
+                'until_cancelled' => "true",
+                'signature_present_secondary' => "no",
+                'nach_type' => "create",
+                'account_number' => "1111111111111",
+                'nach_date' => "19/08/2019",
+                'phone_number' => "9123456780",
+                'tertiary_account_holder' => "THE DON",
+                'umrn' => "",
+                'company_name' => "TEST",
+                'ifsc_code' => "HDFC0000123",
+                'reference_2' => "121211212112121121",
+                'account_type' => "savings",
+                'amount_in_number' => "1000",
+                'end_date' => "",
+                'sponsor_code' => "RATN0TREASU",
+                'signature_present_primary' => "yes",
+                'secondary_account_holder' => "",
+                'start_date' => "07/12/2025",
+                'primary_account_holder' => "TEST",
+                'form_checksum' => "XXXXXXX",
+                'not_matching' => [],
+                'success' => true,
+            ],
+        ],
+    ],
+
+    'testReuseUploadValidateInSubmitPaperMandate' => [
+        'request' => [
+            'content' => [
+                'auth_link_id' => 'inv_1000000invoice',
+                'paper_mandate_upload_id' => 'pmu_100000000000000',
+            ],
+            'method'    => 'POST',
+            'url'       => '/token.registration/paper_mandate/authenticate/proxy',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+        ],
+    ],
+
     'testAuthenticatePaperMandateWithoutCustomerSign' => [
         'request' => [
             'content' => [
@@ -249,7 +312,7 @@ return [
         'phone_number' => '9123456780',
         'umrn' => '',
         'company_name' => 'TEST',
-        'ifsc_code' => 'RZPB0000000',
+        'ifsc_code' => 'HDFC0000123',
         'reference_2' => '121211212112121121',
         'account_type' => 'savings',
         'amount_in_number' => '1000',

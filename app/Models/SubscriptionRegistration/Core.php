@@ -3,10 +3,9 @@
 namespace RZP\Models\SubscriptionRegistration;
 
 use Carbon\Carbon;
+
 use RZP\Exception;
 use RZP\Constants;
-use RZP\Gateway\Base\Terminal;
-use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Order;
@@ -19,12 +18,12 @@ use RZP\Error\ErrorCode;
 use RZP\Models\UpiMandate;
 use RZP\Models\BankAccount;
 use RZP\Models\PaperMandate;
-use RZP\Services\UfhService;
 use RZP\Constants\Entity as E;
 use RZP\Models\Customer\Token;
 use RZP\Exception\LogicException;
-use RZP\Models\Base\UniqueIdEntity;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Payment\Processor\Processor;
+use RZP\Models\PaperMandate\PaperMandateUpload;
 use RZP\Models\Payment\Processor\Upi as UpiPayment;
 use \RZP\Models\UpiMandate\Frequency as UpiFrequency;
 use \RZP\Models\UpiMandate\Validator as UpiValidator;
@@ -901,13 +900,13 @@ class Core extends Base\Core
         return $paperMandateUpload->toArrayPublic();
     }
 
-    public function paperMandateValidate(Entity $subscriptionRegistration, array $input): array
+    public function paperMandateValidate(Entity $subscriptionRegistration, array $input): PaperMandateUpload\Entity
     {
         $paperMandate = $subscriptionRegistration->paperMandate;
 
         $paperMandateUpload = (new PaperMandate\Core)->validate($paperMandate, $input);
 
-        return $paperMandateUpload->toArrayPublic();
+        return $paperMandateUpload;
     }
 
     public function nachRegisterTestPaymentAuthorizeOrFail(Entity $subscriptionRegistration, array $input)

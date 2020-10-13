@@ -11,8 +11,10 @@ use RZP\Constants\Mode;
 use RZP\Models\Terminal;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
 use RZP\Exception\LogicException;
+use RZP\Exception\BadRequestException;
 use RZP\Models\SubscriptionRegistration\Metric;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
@@ -70,7 +72,21 @@ class Core extends Base\Core
             ]
         );
 
-        $paperMandateUpload = (new PaperMandateUpload\Core)->create($input, $paperMandate);
+        if (empty($input[Entity::PAPER_MANDATE_UPLOAD_ID]) === false)
+        {
+            $paperMandateUpload = $this->repo->paper_mandate_upload->findByPublicIdAndMerchant(
+                $input[Entity::PAPER_MANDATE_UPLOAD_ID],
+                $this->merchant);
+
+            if ($paperMandateUpload->paperMandate->getId() !== $paperMandate->getId())
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+            }
+        }
+        else
+        {
+            $paperMandateUpload = (new PaperMandateUpload\Core)->create($input, $paperMandate);
+        }
 
         $uploadedFileId = $paperMandateUpload->getEnhancedFileId();
 

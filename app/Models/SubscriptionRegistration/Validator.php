@@ -59,11 +59,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $paperMandateAuthenticateRules = [
-        Entity::ORDER_ID                   => 'required_without:auth_link_id|public_id',
-        Entity::AUTH_LINK_ID               => 'required_without:order_id|public_id',
-        PaperMandate\Entity::FORM_UPLOADED => 'required|image|max:5120',
-        'key_id'                           => 'sometimes|string',
-        'x_entity_id'                      => 'sometimes|string',
+        Entity::ORDER_ID                             => 'required_without:auth_link_id|public_id',
+        Entity::AUTH_LINK_ID                         => 'required_without:order_id|public_id',
+        PaperMandate\Entity::FORM_UPLOADED           => 'required_without:paper_mandate_upload_id|image|max:5120',
+        PaperMandate\Entity::PAPER_MANDATE_UPLOAD_ID => 'sometimes|public_id',
+        'key_id'                                     => 'sometimes|string',
+        'x_entity_id'                                => 'sometimes|string',
     ];
 
     protected static $getUploadedPaperMandateFormRules = [

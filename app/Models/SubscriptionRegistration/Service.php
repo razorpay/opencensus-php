@@ -724,7 +724,7 @@ class Service extends Base\Service
 
         $validator->validateSubscriptionRegistrationForAuthentication($subscriptionRegistration);
 
-        return $this->core->paperMandateValidate($subscriptionRegistration, $input);
+        return $this->core->paperMandateValidate($subscriptionRegistration, $input)->toArrayPublic();
     }
 
     public function getUploadedPaperMandateForm(array $input)

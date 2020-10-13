@@ -24,6 +24,10 @@ class PaperMandateTest extends TestCase
 
         parent::setUp();
 
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'nach');
+
         $this->fixtures->create('terminal:nach');
 
         $this->ba->proxyAuth();
@@ -65,6 +69,43 @@ class PaperMandateTest extends TestCase
         $paperMandate = $this->getDbLastEntity(Entity::PAPER_MANDATE);
 
         $this->assertEquals('1cXSLlUU8V9sXl', $paperMandate->getUploadedFileID());
+    }
+
+    public function testUploadValidatePaperMandate()
+    {
+        $this->mockExtractNACH();
+
+        $this->createOrder();
+
+        $this->createAndPutImageFileInRequest(__FUNCTION__);
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['id']);
+
+        $this->assertEmpty($response['not_matching']);
+
+        $paperMandate = $this->getDbLastEntity(Entity::PAPER_MANDATE);
+
+        $this->assertNull($paperMandate->uploaded_file_id);
+
+        return $response;
+    }
+
+    public function testReuseUploadValidateInSubmitPaperMandate()
+    {
+        $validateResponse = $this->testUploadValidatePaperMandate();
+
+        $this->testData[__FUNCTION__]['request']['content']['paper_mandate_upload_id'] = $validateResponse['id'];
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $paperMandate = $this->getDbLastEntity(Entity::PAPER_MANDATE);
+        $paperMandateUpload = $this->getDbLastEntity(Entity::PAPER_MANDATE_UPLOAD);
+
+        $this->assertEquals($paperMandateUpload->getEnhancedFileId(), $paperMandate->getUploadedFileID());
     }
 
     public function testShortUrlGenerationForGeneratedImageUrl()
@@ -192,8 +233,9 @@ class PaperMandateTest extends TestCase
                 'order',
                 array_merge(
                     [
-                        'id'              => '100000000order',
-                        'amount'          => 1000,
+                        'id'     => '100000000order',
+                        'amount' => 0,
+                        'method' => 'nach',
                     ],
                     $overrideWith
                 )
@@ -240,6 +282,7 @@ class PaperMandateTest extends TestCase
                                  'notes'           => [],
                                  'entity_type'     => 'paper_mandate',
                                  'entity_id'       => $paperMandateId,
+                                 'auth_type'       => 'physical',
                              ],
                              $overrideWith
                         )
@@ -288,9 +331,10 @@ class PaperMandateTest extends TestCase
                 'bank_account',
                 array_merge(
                     [
-                        'account_number' => '1111111111111',
-                        'account_type'   => 'savings',
-
+                        'ifsc_code'        => 'HDFC0000123',
+                        'account_number'   => '1111111111111',
+                        'account_type'     => 'savings',
+                        'beneficiary_name' => 'TEST',
                     ],
                     $overrideWith
                 )

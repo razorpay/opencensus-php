@@ -64,6 +64,8 @@ class Entity extends Base\PublicEntity
 
     protected $entity                 = 'paper_mandate_upload';
 
+    protected static $sign            = 'pmu';
+
     protected $fillable = [
         self::UPLOADED_FILE_ID,
         self::EMAIL_ID,
@@ -138,6 +140,8 @@ class Entity extends Base\PublicEntity
         self::FORM_CHECKSUM,
         self::NOT_MATCHING,
         self::EXTRACTED_RAW_DATA,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $public = [
@@ -174,6 +178,8 @@ class Entity extends Base\PublicEntity
         self::PRIMARY_ACCOUNT_HOLDER,
         self::FORM_CHECKSUM,
         self::NOT_MATCHING,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $defaults = [

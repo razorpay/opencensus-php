@@ -52,6 +52,8 @@ class Entity extends Base\PublicEntity
 
     const MERCHANT                    = 'merchant';
 
+    const PAPER_MANDATE_UPLOAD_ID     = 'paper_mandate_upload_id';
+
     const SIGNATURE_PRESENT           = 'signature_present';
     const SECONDARY_SIGNATURE_PRESENT = 'secondary_signature_present';
     const TERTIARY_SIGNATURE_PRESENT  = 'tertiary_signature_present';
@@ -62,7 +64,6 @@ class Entity extends Base\PublicEntity
     const VALIDATION_RESULT           = 'validation_result';
     const EXTRACTED_DATA              = 'extracted_data';
 
-    const GENERATE_FORM               = 'generate_form';
     const GENERATED_IMAGE             = 'generated_image';
 
     const DEFAULT_AMOUNT              = 10000000;
