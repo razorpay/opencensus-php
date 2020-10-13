@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator\UpiSbi\SubReconciliator;
 
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Upi\Sbi\Action;
@@ -18,6 +19,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const TRANSACTION_STATUS    = 'transaction_status';
     const TRANSACTION_AMOUNT    = 'transaction_amount';
     const PAYER_VIRTUAL_ACCOUNT = 'payer_virtual_account';
+    const PAYER_VIRTUAL_ADDRESS = 'payer_virtual_address';
     const PAYEE_VIRTUAL_ACCOUNT = 'payee_virtual_account';
     const PAYER_ACCOUNT_NAME    = 'payer_ac_name';
 
@@ -59,6 +61,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         return $paymentId;
+    }
+
+    private function getReconVpa($row)
+    {
+        return $row[self::PAYER_VIRTUAL_ADDRESS] ?? null;
     }
 
     protected function getReferenceNumber($row)
@@ -125,7 +132,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     protected function getInputForForceAuthorize($row)
     {
         return [
-           Base\Reconciliate::REFERENCE_NUMBER => $this->getReferenceNumber($row),
+            Base\Reconciliate::REFERENCE_NUMBER => $this->getReferenceNumber($row),
+            'acquirer' => [
+                Payment\Entity::VPA         => $this->getReconVpa($row),
+                Payment\Entity::REFERENCE16 => $this->payment->getReference16()
+            ]
         ];
     }
 }

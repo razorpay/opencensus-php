@@ -105,6 +105,15 @@ class UpiSbiGatewayReconTest extends TestCase
 
         $this->assertEquals('failed', $payment['status']);
 
+        $this->mockReconContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'sbi_recon')
+                {
+                    $content[0]['Payer Virtual Address'] = 'vishnu@icici';
+                }
+            });
+
         $fileContents = $this->generateReconFile();
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
@@ -114,6 +123,14 @@ class UpiSbiGatewayReconTest extends TestCase
         $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
 
         $this->assertEquals('authorized', $updatedPayment['status']);
+
+        $this->assertNotNull($updatedPayment['reference16']);
+
+        $this->assertEquals('vishnu@icici', $updatedPayment['vpa']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
     }
 
     public function testFailedUpiSbiReconciliation()
