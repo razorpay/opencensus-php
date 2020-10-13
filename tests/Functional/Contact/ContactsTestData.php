@@ -1802,4 +1802,22 @@ return [
             ],
         ],
     ],
+
+    'testUpdateContactCheckType' => [
+        'request'  => [
+            'content' => [
+                'reference_id' => '213',
+            ],
+            'url'     => '/contacts/cont_1000000contact',
+            'method'  => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'id'           => 'cont_1000000contact',
+                'entity'       => 'contact',
+                'type'         => 'employee',
+                'reference_id' => '213',
+            ]
+        ]
+    ],
 ];

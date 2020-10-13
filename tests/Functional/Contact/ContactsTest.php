@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Contacts;
 
+use RZP\Models\Contact\Entity;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -793,5 +794,21 @@ class ContactsTest extends TestCase
         $type = trim($customType);
 
         $this->startTest();
+    }
+
+    public function testUpdateContactCheckType()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'employee', 'reference_id' => null]);
+
+        $contact = $this->getDbLastEntity('contact');
+
+        $this->assertNull($contact->getReferenceId());
+
+        $this->startTest();
+
+        $contact->reload();
+
+        $this->assertNotNull($contact->getReferenceId());
+        $this->assertNotNull($contact->getType());
     }
 }

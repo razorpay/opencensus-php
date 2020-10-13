@@ -155,16 +155,16 @@ class Core extends Base\Core
 
         (new Validator)->validateInput('edit', $input);
 
-        $this->setTypeIfApplicable($contact, $input);
-
         $input = $this->trimSpacesIfMerchantEnabled($input, $this->merchant->getId());
+
+        $this->setTypeIfApplicable($contact, $input);
 
         // Edit has been shifted below setTypeIfApplicable to handle the case where a merchant tries to update
         // a rzp_fees contact's type to some other type.
         $contact->edit($input);
 
-        // Because edit has been shifted below setTypeIfApplicable(), below condition cannot be written inside it
-        if (empty($input[Entity::TYPE]) === true)
+        // to fix "" empty string in contact type
+        if (empty($contact->getType()) === true)
         {
             $contact->setType(null);
         }
@@ -199,14 +199,14 @@ class Core extends Base\Core
 
         $type = $input[Entity::TYPE] ?? null;
 
-        if (empty($input[Entity::TYPE]) === true)
+        // to fix "" empty string in contact type
+        if (empty($contact->getType()) === true)
         {
             $contact->setType(null);
-
-            return;
         }
 
-        if ($type === null)
+        if (($type === null) or
+            (empty($type) === true))
         {
             return;
         }
