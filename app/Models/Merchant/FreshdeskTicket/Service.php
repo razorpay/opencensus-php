@@ -71,20 +71,39 @@ class Service extends Base\Service
     {
         $page = $input[Constants::PAGE] ?? 1;
 
+        $status = $input[Constants::STATUS] ?? null;
+
         $merchantId = $this->auth->getMerchantId();
+
+        $queryString = '"custom_string:' . $merchantId . '"';
+
+        // Adding status filter if necessary
+        if (empty($status) === false)
+        {
+            $queryString .= ' AND status:' . $status;
+        }
+
+        $queryParams = [
+            Constants::QUERY => $queryString,
+            Constants::PAGE  => $page
+        ];
 
         $allTickets = [];
 
-        foreach (self::FRESKDESK_INSTANCES as $key => $url)
+        foreach (self::FRESKDESK_INSTANCES as $fdInstance => $url)
         {
-            $queryParams = [
-                Constants::QUERY => '"custom_string:'.$merchantId.'"',
-                Constants::PAGE  => $page
-            ];
-
             $response = $this->app[Constants::FRESHDESK_CLIENT]->getTickets($queryParams, $url);
 
             $results = $response[Constants::RESULTS] ?? [];
+
+            // Adding FD instance in each ticket
+            array_walk(
+                $results,
+                function(&$value, $key, $fdInstanceKey) {
+                    $value[Constants::FD_INSTANCE] = $fdInstanceKey;
+                },
+                $fdInstance
+            );
 
             $allTickets = array_merge($allTickets, $results);
         }

@@ -7,6 +7,7 @@ class Constants
     // Query params
     const PAGE     = 'page';
     const QUERY    = 'query';
+    const STATUS   = 'status';
     const PER_PAGE = 'per_page';
 
     // Results
