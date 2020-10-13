@@ -75,13 +75,15 @@ class Service extends Base\Service
 
         $merchantId = $this->auth->getMerchantId();
 
-        $queryString = '"custom_string:' . $merchantId . '"';
+        $queryString = '"custom_string:' . $merchantId;
 
         // Adding status filter if necessary
         if (empty($status) === false)
         {
             $queryString .= ' AND status:' . $status;
         }
+
+        $queryString .= '"';
 
         $queryParams = [
             Constants::QUERY => $queryString,
