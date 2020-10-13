@@ -165,7 +165,7 @@ class Constants
     /**
      * Disables vernacular in checkout
      */
-    const CHECKOUT_DISABLE_VERNACULAR     = 'checkout_disable_vernacular';
+    const CHECKOUT_DISABLE_I18N     = 'checkout_disable_i18n';
 
     /**
      * If applied on partner merchant then all sub merchant settlement will be settled to partner
@@ -492,7 +492,7 @@ class Constants
         self::SAVE_VPA,
         self::DCC,
         self::UPI_OTM,
-        self::CHECKOUT_DISABLE_VERNACULAR,
+        self::CHECKOUT_DISABLE_I18N,
         self::CHECKOUT_DISABLE_CARDSCAN,
     ];
 
@@ -686,7 +686,7 @@ class Constants
         self::PAYMENT_CONFIG_ENABLED          => false,
         self::CYBERSOURCE_VAS                 => true,
         self::CHECKOUT_DISABLE_RETRY          => true,
-        self::CHECKOUT_DISABLE_VERNACULAR     => true,
+        self::CHECKOUT_DISABLE_I18N           => true,
         self::COVID                           => true,
         self::SR_SENSITIVE                    => true,
         self::RAAS                            => true,
