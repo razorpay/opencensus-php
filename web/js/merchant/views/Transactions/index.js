@@ -84,7 +84,6 @@ export default class TransactionsContainer extends Component {
               </NavLink>
             </ShowWhen>
             <ShowWhen
-              featureEnabled="Batchrefunds"
               additionalCondition={(user) => user.isAllowedView('refunds_batch_uploads')}
             >
               <NavLink
