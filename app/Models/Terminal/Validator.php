@@ -1164,6 +1164,7 @@ class Validator extends Base\Validator
         Entity::CATEGORY                    => 'sometimes|string|numeric|digits:4',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
         Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
+        Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
     ];
 
     protected static $upiHulkEditTerminalRules = [

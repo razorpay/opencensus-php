@@ -895,6 +895,31 @@ class TerminalTest extends TestCase
 
     }
 
+    public function testEditCardFssTerminalSecret()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id'                   => 'AqdfGh5460opVt',
+                'merchant_id'          => '10000000000000',
+                'gateway'              => 'card_fss',
+                'gateway_acquirer'     => 'dummy',
+                'procurer'             => 'razorpay'
+            ]);
+
+
+        $tid = $terminal['id'];
+
+        $data = ['gateway_merchant_id' => '123', 'gateway_secure_secret' => 'random1', 'gateway_terminal_password' => 'random2'];
+
+        $this->editTerminal($tid, $data);
+
+        $terminalArray = $terminal->reload()->toArrayWithPassword();
+
+        $this->assertEquals('random1', $terminalArray['gateway_secure_secret'] );
+        $this->assertEquals('random2', $terminalArray['gateway_terminal_password'] );
+    }
+
     public function testEditCybersourceTerminal()
     {
         $terminal = $this->fixtures->create(
