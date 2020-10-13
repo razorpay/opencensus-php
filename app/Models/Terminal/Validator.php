@@ -423,6 +423,14 @@ class Validator extends Base\Validator
         Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
     ];
 
+    protected static $bajajfinservEditTerminalRules = [
+        Entity::GATEWAY                    => 'sometimes|in:bajajfinserv',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET2     => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
+    ];
+
     protected static $amexEditTerminalRules = [
         Entity::GATEWAY                     => 'sometimes|in:' . Gateway::AMEX,
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes|alpha_num|min:8',
