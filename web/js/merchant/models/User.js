@@ -434,6 +434,10 @@ export default class User {
     return this.isFeatureEnabled('use_settlement_ondemand');
   }
 
+  get isFdTicketsEnabled() {
+    return this.isFeatureEnabled('view_fd_tickets');
+  }
+
   get isAutomaticSettlementEnabled() {
     return this.isFeatureEnabled('ES_AUTOMATIC');
   }

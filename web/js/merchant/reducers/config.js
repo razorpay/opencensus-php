@@ -1,5 +1,8 @@
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import { set, merge } from 'common/utils/immutable';
+import { deepClone } from 'common/utils/rzp-utils';
+import { param_to_qs } from 'merchant/views/TicketSupport/components/data';
+import { ACTIVE_TICKETS } from '../views/TicketSupport/components/data';
 
 const CONFIG_FETCH = 'CONFIG_FETCH';
 const FEATURES_FETCH = 'FEATURES_FETCH';
@@ -12,13 +15,43 @@ const GET_ONBOARDING_STATUS = 'GET_ONBOARDING_STATUS';
 const FETCH_REFUND_PRICING = 'FETCH_REFUND_PRICING';
 const UPDATE_BRAND_COLOR_CONTRAST = 'UPDATE_BRAND_COLOR_CONTRAST';
 const FETCH_INTERNATIONAL_PRODUCTS_STATUS = 'FETCH_INTERNATIONAL_PRODUCTS_STATUS';
+const REPLY_TO_CONVERSATION = 'REPLY_TO_CONVERSATION';
+const FETCH_SUPPORT_TICKETS = 'FETCH_SUPPORT_TICKETS';
+const FETCH_ACTIVE_TICKETS = 'FETCH_ACTIVE_TICKETS';
 
 export const fetchConfigAjax = () => {
   return merchantFetch('account/config');
 };
 
+export const FetchSupportTickets = (params) => {
+  let query;
+  if (params) {
+    query = param_to_qs(params);
+  }
+  return merchantFetch(query ? `fd/tickets?${query}` : 'fd/tickets').then((res) => {
+    return {
+      data: res.data.results,
+      query: params,
+    };
+  });
+};
+
 export const FetchRefundPricing = () => {
   return merchantFetch('instant_refunds/pricing');
+};
+
+export const ReplyToConversation = (ticket_id, body) => {
+  let params = {
+    url: `fd/tickets/${ticket_id}/reply`,
+    method: 'post',
+    data: body,
+  };
+
+  return merchantFetch(params);
+};
+
+export const FetchActiveTickets = () => {
+  return merchantFetch(`fd/tickets?status=2`).then((res) => res.data.results);
 };
 
 export const fetchFeaturesAjax = (currentUserId, mode) => {
@@ -58,6 +91,20 @@ export const fetchRefundPricing = () => {
   };
 };
 
+export const fetchActiveTickets = () => {
+  return {
+    type: FETCH_ACTIVE_TICKETS,
+    payload: FetchActiveTickets(),
+  };
+};
+
+export const replyToConversation = (ticket, body) => {
+  return {
+    type: REPLY_TO_CONVERSATION,
+    payload: ReplyToConversation(ticket, body),
+  };
+};
+
 export const fetchOnboardingStatus = (gateway) => {
   let params = {
     url: `proxy/merchant/terminals?gateway=${gateway}`,
@@ -74,6 +121,13 @@ export const fetchFeatures = (currentUserId) => {
   return {
     type: FEATURES_FETCH,
     payload: fetchFeaturesAjax(currentUserId),
+  };
+};
+
+export const fetchSupportTickets = (params) => {
+  return {
+    type: FETCH_SUPPORT_TICKETS,
+    payload: FetchSupportTickets(params),
   };
 };
 
@@ -202,6 +256,11 @@ let initialState = {
     error: null,
   },
   paypal_terminals: [],
+  support_tickets: {
+    loading: false,
+    data: {},
+    active: [],
+  },
   internationalProductsStatus: {
     loading: false,
     data: {},
@@ -274,6 +333,41 @@ export default function (state = initialState, action) {
 
     case 'UPDATE_BRAND_COLOR_CONTRAST':
       return set(state, 'isBrandColorDark', !!action.payload);
+
+    case `${FETCH_SUPPORT_TICKETS}::PENDING`:
+      let support_tickets = deepClone(state.support_tickets);
+      support_tickets.loading = true;
+      return merge(state, {
+        support_tickets: support_tickets,
+      });
+
+    case `${FETCH_SUPPORT_TICKETS}::SUCCESS`:
+      let st = deepClone(state.support_tickets);
+      st.data[action.payload.query.page] = action.payload.data;
+      st.loading = false;
+      return merge(state, {
+        support_tickets: st,
+      });
+
+    case `${FETCH_SUPPORT_TICKETS}::ERROR`:
+      let S = deepClone(state.support_tickets);
+      S.loading = false;
+      return merge(state, {
+        support_tickets: S,
+      });
+
+    case `${FETCH_ACTIVE_TICKETS}::SUCCESS`:
+      let ST = deepClone(state.support_tickets);
+      ST.active = action.payload;
+      ST.active = ST.active.map((t) => {
+        t.created_at = moment(t.created_at).fromNow();
+        t.subject = t.subject.replace('[Merchant]', '');
+        return t;
+      });
+      window.rzpActiveTickets = ST.active;
+      return merge(state, {
+        support_tickets: ST,
+      });
 
     case `${FETCH_INTERNATIONAL_PRODUCTS_STATUS}::PENDING`:
       return merge(state, {

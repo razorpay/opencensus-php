@@ -66,6 +66,7 @@ const SmartCollect = lazy(() =>
 const Navigator = lazy(() =>
   import(/* webpackChunkName: "Navigator" */ 'merchant/views/Navigator/Index'),
 );
+
 const Offers = lazy(() => import(/* webpackChunkName: "Offers" */ 'merchant/views/Offers'));
 const PaypalOnboardRedirect = lazy(() =>
   import(
@@ -399,6 +400,11 @@ export default class Content extends Component {
               path="/credits"
               component={MyAccount}
               additionalCondition={(user) => user.isAllowedView('credits')}
+            />
+            <ShowWhenRoute path="/ticket-support/tickets" component={MyAccount} />
+            <ShowWhenRoute
+              path="/ticket-support/:instance/:id/conversation"
+              component={MyAccount}
             />
             <ShowWhenRoute
               path="/referrals"

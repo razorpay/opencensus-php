@@ -37,6 +37,8 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
 import initChat from 'merchant/components/Support/chat';
 import RTracking from 'react-tracking';
 import qs from 'query-string';
+import { fetchActiveTickets } from 'merchant/reducers/config.js';
+import { FetchActiveTickets } from '../reducers/config';
 
 @withRouter
 @connect(
@@ -53,6 +55,7 @@ import qs from 'query-string';
     ...NotificationActions,
     updateTwoFactorVerified,
     fetchGST,
+    fetchActiveTickets: fetchActiveTickets,
     resizeWindow,
   },
 )
@@ -175,8 +178,16 @@ export default class App extends Component {
     });
 
     let currentMode = LocalStorageService.getItem(this.modeToken);
-
     this.props.fetchGST();
+    if (this.props.user.isFdTicketsEnabled) {
+      this.props.fetchActiveTickets().then(() => {
+        window.rzpAnalytics({
+          eventCategory: 'Ticket Dashboard',
+          eventAction: 'support form tickets fetched',
+          eventLabel: `Tickets | Status: Success`,
+        });
+      });
+    }
     this.props.fetchConfig();
     this.props.fetchRefundPricing();
 

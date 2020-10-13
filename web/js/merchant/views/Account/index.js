@@ -1,27 +1,27 @@
-import { Route, NavLink } from 'react-router-dom';
+import { Route, NavLink, Link } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 import Profile from 'merchant/views/Account/Profile';
 import Balances from 'merchant/views/Account/Balances';
 import Credits from 'merchant/views/Account/Credits/List';
 import ManageTeam from 'merchant/views/Account/ManageTeam';
 import Referrals from 'merchant/views/Account/Referrals/List';
+import Tickets from 'merchant/views/TicketSupport/components/Tickets';
+import Conversations from 'merchant/views/TicketSupport/components/Conversations';
 
 export default function MyAccount() {
   return (
     <React.Fragment>
       <tabbed-container>
         <header id="myaccount-header">
-          <ShowWhen additionalCondition={user => user.isAllowedView('profile')}>
+          <ShowWhen additionalCondition={(user) => user.isAllowedView('profile')}>
             <NavLink to="/profile">Profile</NavLink>
           </ShowWhen>
 
-          <ShowWhen additionalCondition={user => user.isAllowedView('credits')}>
+          <ShowWhen additionalCondition={(user) => user.isAllowedView('credits')}>
             <NavLink to="/credits">Credits</NavLink>
           </ShowWhen>
 
-          <ShowWhen
-            additionalCondition={user => user.isAllowedView('add_funds')}
-          >
+          <ShowWhen additionalCondition={(user) => user.isAllowedView('add_funds')}>
             <NavLink to="/addfunds">Balances</NavLink>
           </ShowWhen>
 
@@ -29,8 +29,23 @@ export default function MyAccount() {
             <NavLink to="/referrals">Referrals</NavLink>
           </ShowWhen>
 
-          <ShowWhen additionalCondition={user => user.isAllowedTeamManagement}>
+          <ShowWhen additionalCondition={(user) => user.isAllowedTeamManagement}>
             <NavLink to="/team">Manage Team</NavLink>
+          </ShowWhen>
+
+          <ShowWhen myRole="owner admin" additionalCondition={(user) => user.isFdTicketsEnabled}>
+            <NavLink
+              onCLick={() => {
+                window.rzpAnalytics({
+                  eventCategory: 'Ticket Dashboard',
+                  eventAction: 'Support tickets tab clicked',
+                  eventLabel: `Tickets`,
+                });
+              }}
+              to="/ticket-support/tickets"
+            >
+              Support Tickets
+            </NavLink>
           </ShowWhen>
         </header>
         <content>
@@ -39,6 +54,8 @@ export default function MyAccount() {
           <Route path="/addfunds" component={Balances} />
           <Route path="/referrals" component={Referrals} />
           <Route path="/team" component={ManageTeam} />
+          <Route path="/ticket-support/tickets" component={Tickets} />
+          <Route path="/ticket-support/:instance/:id/conversation" component={Conversations} />
         </content>
       </tabbed-container>
     </React.Fragment>

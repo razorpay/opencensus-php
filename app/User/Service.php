@@ -1338,6 +1338,7 @@ class Service extends Base\Service
             'ir_pricing_v2_rollout_2',
             'ir_pricing_v2_rollout_3',
             'ir_pricing_v2_rollout_4',
+            'view_fd_tickets',
             'rx_scheduled_payouts_rollout',
             'validate_user_2fa_status',
             'enable_payment_buttons',

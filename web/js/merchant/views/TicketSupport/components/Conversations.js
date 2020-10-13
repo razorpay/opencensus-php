@@ -1,0 +1,222 @@
+import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
+import { Fragment } from 'react';
+import { param_to_qs } from './data.js';
+import Ticket from './Ticket';
+import * as axios from 'axios';
+import { withRouter } from 'react-router-dom';
+import Message from './Message.js';
+import { merchantFetch } from 'merchant/utils/ajax.js';
+import Spinner from 'common/ui/Spinner';
+import { fetchSupportTickets, replyToConversation } from 'merchant/reducers/config.js';
+import Reply from './Reply.js';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+@withRouter
+@connect(
+  (state) => {
+    return {
+      ...state.session,
+      ...state.config.config,
+      user: state.session.user,
+    };
+  },
+  {
+    fetchSupportTickets: fetchSupportTickets,
+    showNotification: showNotification,
+    replyToConversation: replyToConversation,
+  },
+)
+export default class Conversations extends React.Component {
+  state = {
+    ticket: {
+      cc_emails: [],
+      fwd_emails: [],
+      reply_cc_emails: [],
+      ticket_cc_emails: [],
+      fr_escalated: false,
+      spam: false,
+      email_config_id: 11000002563,
+      group_id: 11000003820,
+      priority: 3,
+      requester_id: 11014824425,
+      responder_id: null,
+      source: 1,
+      company_id: null,
+      status: 2,
+      subject: '',
+      association_type: null,
+      to_emails: [],
+      product_id: null,
+      id: 3475092,
+      type: null,
+      due_by: '2020-07-07T21:18:52Z',
+      fr_due_by: '2020-07-07T13:18:52Z',
+      is_escalated: false,
+      custom_fields: {},
+      stats: {
+        agent_responded_at: null,
+        requester_responded_at: null,
+        first_responded_at: null,
+        status_updated_at: '2020-07-07T09:18:52Z',
+        reopened_at: null,
+        resolved_at: null,
+        closed_at: null,
+        pending_since: null,
+      },
+      nr_due_by: null,
+      nr_escalated: false,
+    },
+    conversations: {
+      data: { 1: [] },
+      loading: false,
+    },
+    size: 5,
+    current_page: 1,
+  };
+
+  goNext = (page) => {
+    if (!(this.state.conversations.data[page] && this.state.conversations.data[page].length)) {
+      const c = this.state.conversations;
+      c.loading = true;
+      this.setState({ conversations: c });
+      const params = {
+        page: page,
+        per_page: this.state.size,
+        ticket_id: this.props.match.params.id,
+        fd_instance: this.props.match.params.instance,
+      };
+      const query = param_to_qs(params);
+      merchantFetch(`fd/conversations?${query}`)
+        .then((e) => {
+          const conversations = this.state.conversations;
+          conversations.loading = false;
+          conversations.data[page] = e.data;
+          this.setState({ conversations: conversations });
+        })
+        .catch(() => {
+          const c = this.state.conversations;
+          c.loading = false;
+          this.setState({ conversations: c });
+        });
+    }
+  };
+
+  componentDidMount() {
+    this.goNext(1);
+    merchantFetch(
+      `fd/tickets/${this.props.match.params.id}?fd_instance=${this.props.match.params.instance}`,
+    ).then((e) => {
+      this.setState({ ticket: e.data });
+    });
+  }
+
+  render() {
+    let conversations = [];
+    let total_conversations = [];
+    Object.keys(this.state.conversations.data).forEach((k) => {
+      total_conversations.push(...this.state.conversations.data[k]);
+    });
+    total_conversations = total_conversations.filter((m) => !m.private);
+    conversations = this.state.conversations.data[this.state.current_page] || [];
+    const last_page =
+      conversations.length < this.state.size ? null : !this.state.conversations.loading;
+    return (
+      <Fragment>
+        <div class="content-wrapper content-sm ticket-support">
+          <div className="panel">
+            <div className="panel-body" style={{ padding: 0 }}>
+              <h3>
+                {' '}
+                <div className="row" style={{ marginBottom: '20px' }}>
+                  <div className="col-xs-12">
+                    <span
+                      onClick={() => {
+                        this.props.fetchSupportTickets({ page: 1 });
+                      }}
+                    >
+                      <Link
+                        to={`/ticket-support/tickets`}
+                        onClick={() => {
+                          window.rzpAnalytics({
+                            eventCategory: 'Ticket Dashboard',
+                            eventAction: 'view all tickets clicked',
+                            eventLabel: `Tickets`,
+                          });
+                        }}
+                      >
+                        <i className="i i-arrow-back" />{' '}
+                        <span style={{ fontSize: '16px' }}>View All Tickets</span>
+                      </Link>
+                    </span>
+                  </div>
+                </div>
+              </h3>
+              <Ticket logo_url={this.props.user.logo_url} ticket={this.state.ticket} />
+              <div className="panel">
+                <div className="panel-body message-panel-body" style={{ padding: 0 }}>
+                  <Reply
+                    email={this.props.user.contact_email}
+                    last={total_conversations.length === 0}
+                    logo_url={this.props.user.logo_url}
+                    replyToConversation={this.props.replyToConversation}
+                    ticket={this.state.ticket}
+                    onSuccess={(reply) => {
+                      const data = { ...this.state.conversations.data };
+                      let k = Object.keys(this.state.conversations.data);
+                      const last = k[k.length - 1];
+                      if (data[last].length < this.state.size) {
+                        data[last].push(reply);
+                      }
+                      this.setState({ data });
+                      this.props.showNotification({
+                        type: 'success',
+                        message: 'Reply has been sent',
+                        closeTimeout: 5000,
+                      });
+                    }}
+                  />
+                  <div>
+                    {total_conversations
+                      // .filter(m => !m.private)
+                      .map((conversation, i) => {
+                        return (
+                          <Message
+                            last={i == total_conversations.length - 1}
+                            ticket={this.state.ticket}
+                            key={i}
+                            message={conversation}
+                          />
+                        );
+                      })}
+                    {this.state.conversations.loading ? (
+                      <div className="ticket-cont-spinner">
+                        <Spinner />
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+              {/* ) : null} */}
+              {last_page && (
+                <div className="panel">
+                  <div className="panel-body message-panel-body text-center">
+                    <button
+                      onClick={() => {
+                        const current_page = this.state.current_page + 1;
+                        this.setState({ current_page }, () => this.goNext(current_page));
+                      }}
+                      className="btn btn-link"
+                    >
+                      View More
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </Fragment>
+    );
+  }
+}

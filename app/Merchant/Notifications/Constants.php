@@ -170,6 +170,23 @@ class Constants
             ]
         ],
         [
+            'title'       => 'Support Tickets',
+            'description' => 'Keep track of all your support tickets.',
+            'start_ts'    => 1602564179,
+            'end_ts'      => 1607167901,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/early-settlement.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Go To Support Tickets',
+                    'url'   => '/ticket-support/tickets',
+                ],
+            ],
+            'filters'     => [
+                'experiments'  => ['view_fd_tickets'],
+            ]
+        ],
+        [
             'title'       => 'Instant Refund!',
             'description' => 'Do not make your customers wait for 5-7 days for a refund. Retain customers and improve trust by issuing refunds instantly.',
             'start_ts'    => 1584356700,

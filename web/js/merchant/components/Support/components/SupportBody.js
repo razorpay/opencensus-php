@@ -3,17 +3,15 @@ import Banner from 'common/ui/Banner';
 
 import { classList } from 'common/utils/rzp-utils';
 import { trackSupportOptions } from 'merchant/components/Support/ga';
+import { Link } from 'react-router-dom';
 
 export default class SupportBody extends Component {
-  openDashboardGuide = _ => {
+  openDashboardGuide = (_) => {
     trackSupportOptions('dashboard_guide');
-    window.open(
-      'https://razorpay.com/docs/payment-gateway/dashboard-guide/',
-      '_blank'
-    );
+    window.open('https://razorpay.com/docs/payment-gateway/dashboard-guide/', '_blank');
   };
 
-  handleClick = id => {
+  handleClick = (id) => {
     const { onToggle, onChat, notifyCount } = this.props;
     const rzpTicketSystem = window.rzpTicketSystem;
 
@@ -65,12 +63,7 @@ export default class SupportBody extends Component {
   };
 
   render() {
-    const {
-      notifyCount,
-      isOpened,
-      onToggle,
-      isSupportCallEnabled,
-    } = this.props;
+    const { notifyCount, isOpened, onToggle, isSupportCallEnabled } = this.props;
     const { handleClick, openDashboardGuide } = this;
     let shouldDisable = !isWorkingDay();
 
@@ -82,33 +75,37 @@ export default class SupportBody extends Component {
           <i class="i i-close pull-right mob-close" onClick={onToggle} />
         </header>
         <ul class="support-list">
-          <li
-            class="support-item p-all ticket"
-            onClick={() => handleClick('ticket')}
-          >
+          <li class="support-item p-all ticket" onClick={() => handleClick('ticket')}>
             Write to us
-            <small class="help-block">
-              For integration, account and payment issues
-            </small>
+            <small class="help-block">For integration, account and payment issues</small>
+          </li>
+          <li class="support-item p-all history">
+            <Link
+              to={`/ticket-support/tickets`}
+              onClick={() => {
+                window.rzpAnalytics({
+                  eventCategory: 'Ticket Dashboard',
+                  eventAction: 'write to us clicked',
+                  eventLabel: `Tickets`,
+                });
+              }}
+            >
+              Past Tickets
+              <small class="help-block">View all tickets raised by you</small>
+            </Link>
           </li>
           {window.rzp_user ? (
-            [
-              'activated',
-              'under_review',
-              'instantly_activated',
-              'needs_clarification',
-            ].indexOf(window.rzp_user.activation_status) > -1 ? (
+            ['activated', 'under_review', 'instantly_activated', 'needs_clarification'].indexOf(
+              window.rzp_user.activation_status,
+            ) > -1 ? (
               <li
                 class={`support-item p-all chat ${
                   shouldDisable && notifyCount < 1 ? 'disabled' : ''
                 }`}
                 onClick={() => handleClick('chat')}
               >
-                Chat with us{' '}
-                <small class="help-content">(9am-6pm, working days)</small>
-                {notifyCount > 0 && (
-                  <span class="notify-icon m-l">{notifyCount}</span>
-                )}
+                Chat with us <small class="help-content">(9am-6pm, working days)</small>
+                {notifyCount > 0 && <span class="notify-icon m-l">{notifyCount}</span>}
                 <small class="help-block">
                   {shouldDisable && notifyCount < 1
                     ? 'Currently unavailable'
@@ -119,36 +116,23 @@ export default class SupportBody extends Component {
           ) : null}
           {isSupportCallEnabled ? (
             <li
-              class={`support-item p-all call ${
-                shouldDisable ? 'disabled' : ''
-              }`}
+              class={`support-item p-all call ${shouldDisable ? 'disabled' : ''}`}
               onClick={() => handleClick('call')}
             >
-              Call Support{' '}
-              <small class="help-content">(9am-6pm, working days)</small>
+              Call Support <small class="help-content">(9am-6pm, working days)</small>
               <small class="help-block">
-                {shouldDisable
-                  ? 'Currently unavailable'
-                  : 'For queries and help on the dashboard'}
+                {shouldDisable ? 'Currently unavailable' : 'For queries and help on the dashboard'}
               </small>
             </li>
           ) : null}
-          <li
-            className="support-item p-all dashboard_guide"
-            onClick={openDashboardGuide}
-          >
+          <li className="support-item p-all dashboard_guide" onClick={openDashboardGuide}>
             Dashboard Guide{' '}
-            <small className="help-block">
-              Read more about how to use the dashboard
-            </small>
+            <small className="help-block">Read more about how to use the dashboard</small>
           </li>
         </ul>
 
         <div class="support-feedback">
-          <button
-            class="btn btn-default pull-left"
-            onClick={this.handleFeedback}
-          >
+          <button class="btn btn-default pull-left" onClick={this.handleFeedback}>
             <i class="i i-voice-record m-r" />
             Share Feedback
           </button>
