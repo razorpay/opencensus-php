@@ -48,6 +48,9 @@ class CardPaymentService
     // admin path
     const ADMIN_PATH = 'admin/entities/';
 
+    // entity path
+    const ENTITY_PATH = 'entity/';
+
     // entities path
     const ENTITIES_PATH = 'entities/';
     const ENTITIES_PATH_V2 = '/v1/entitiesV2/';
@@ -294,6 +297,13 @@ class CardPaymentService
         $path = self::ADMIN_PATH . $entityName . '/' . $id;
 
         return $this->sendRequest('GET', $path, $input);
+    }
+
+    public function fetchEntity(string $entityName, $id)
+    {
+        $path = self::ENTITY_PATH . $entityName . '/' . $id;
+
+        return $this->sendRequest('GET', $path, []);
     }
 
     public function create(string $entityName, $input)

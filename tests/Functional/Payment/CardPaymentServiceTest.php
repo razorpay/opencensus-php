@@ -39,6 +39,8 @@ class CardPaymentServiceTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__ . '/helpers/CardPaymentServiceTestData.php';
+
         parent::setUp();
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -723,6 +725,136 @@ class CardPaymentServiceTest extends TestCase
         $this->disbaleCpsConfig();
     }
 
+    public function testFetchAuthenticationEntity()
+    {
+        $this->mockCps(null, 'entity_fetch');
+
+        $this->ba->expressAuth();
+
+        $request = array(
+            'url'     => '/payments/authentication/pay_Flj85rfBFlPfVu',
+            'method'  => 'get',
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('Flj85rfBFlPfVu', $response['payment_id']);
+        $this->assertEquals('CCOhinUeUsT8HN', $response['merchant_id']);
+        $this->assertEquals('05', $response['eci']);
+    }
+
+    public function testFetchAuthorizationEntity()
+    {
+        $this->mockCps(null, 'entity_fetch');
+
+        $this->ba->expressAuth();
+
+        $request = array(
+            'url'     => '/payments/authorization/pay_Flj85rfBFlPfVu',
+            'method'  => 'get',
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('Flj85rfBFlPfVu', $response['payment_id']);
+        $this->assertEquals('CCOhinUeUsT8HN', $response['merchant_id']);
+        $this->assertEquals('052128', $response['auth_code']);
+    }
+
+    public function testFetchAuthenticationEntityFailure()
+    {
+        $this->mockCps(null, 'entity_fetch');
+
+        $this->ba->expressAuth();
+
+        $request = array(
+            'url'     => '/payments/authentication/pay_Flj85rfBFlPfV2',
+            'method'  => 'get',
+        );
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($request)
+            {
+                $this->makeRequestAndGetContent($request);
+            }
+        );
+    }
+
+    protected function mockCpsEntityFetch($url)
+    {
+        switch ($url)
+        {
+            case 'entity/authentication/Flj85rfBFlPfVu':
+                return [
+                    'id' => 'Flj87LBAuB6JcE',
+                    'created_at' => 1602011616,
+                    'payment_id' => 'Flj85rfBFlPfVu',
+                    'merchant_id' => 'CCOhinUeUsT8HN',
+                    'attempt_id' => 'Flj87KPgVIXUjX',
+                    'status' => 'skip',
+                    'gateway' => 'visasafeclick',
+                    'terminal_id' => 'DfqXJH6OO9NEU5',
+                    'gateway_merchant_id' => 'escowrazcybs',
+                    'enrollment_status' => 'Y',
+                    'pares_status' => 'Y',
+                    'acs_url' => '',
+                    'eci' => '05',
+                    'commerce_indicator' => '',
+                    'xid' => 'ODUzNTYzOTcwODU5NzY3Qw==',
+                    'cavv' => '3q2+78r+ur7erb7vyv66vv\\/\\/8=',
+                    'cavv_algorithm' => '1',
+                    'notes' => '',
+                    'error_code' => '',
+                    'gateway_error_code' => '',
+                    'gateway_error_description' => '',
+                    'gateway_transaction_id1' => '',
+                    'gateway_reference_id1' => '',
+                    'success' => true
+                ];
+            case 'entity/authorization/Flj85rfBFlPfVu':
+                return [
+                    'id' => 'Flj87MbKrlsztd',
+                    'created_at' => 1602011616,
+                    'merchant_id' => 'CCOhinUeUsT8HN',
+                    'payment_id' => 'Flj85rfBFlPfVu',
+                    'verify_id' => 'Flj85rfBFlPfVu',
+                    'recon_id' => '',
+                    'acquirer' => 'hdfc',
+                    'gateway' => 'cybersource',
+                    'gateway_merchant_id' => 'escowrazcybs',
+                    'action' => 'authorize',
+                    'amount' => 100,
+                    'currency' => 'INR',
+                    'gateway_transaction_id' => 'Flj87MVvqSonRp',
+                    'gateway_reference_id1' => '6020116178806361104007',
+                    'cavv_algorithm' => '',
+                    'status' => 'failed',
+                    'notes' => '',
+                    'auth_code' => '052128',
+                    'rrn' => '',
+                    'arn' => '',
+                    'avs_response_code' => '',
+                    'cvc_response_code' => '',
+                    'risk_result' => '',
+                    'switch_response_code' => '',
+                    'error_code' => 'SERVER_ERROR_INVALID_ARGUMENT',
+                    'gateway_error_code' => '102',
+                    'gateway_error_description' => 'One or more fields in the request contains invalid data',
+                    'acs_transaction_id' => '',
+                    'gateway_payment_id' => '',
+                    'success' => true
+                ];
+            default:
+                return [
+                    'error' => 'CORE_FAILED_TO_FIND_MODEL',
+                    'success' => false,
+                ];
+        }
+    }
+
     protected function mockCpsHeadlessAuthError(string $method, string $url, array $input)
     {
         switch($url)
@@ -1065,6 +1197,17 @@ class CardPaymentServiceTest extends TestCase
                         return $this->mockCpsIvrFallback($method, $url, $input);
                     case 'callback_split':
                         return $this->mockCpsCallbackSplit($method, $url, $input, $terminal);
+                }
+            });
+
+        $cardService->shouldReceive('sendRequest')
+            ->with('GET', Mockery::type('string'), Mockery::type('array'))
+            ->andReturnUsing(function (string $method, string $url, array $input) use ($terminal, $responder)
+            {
+                switch ($responder)
+                {
+                    case 'entity_fetch':
+                        return $this->mockCpsEntityFetch($url);
                 }
             });
     }

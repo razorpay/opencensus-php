@@ -67,6 +67,20 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getPaymentAuthenticationEntity($id)
+    {
+        $data = $this->service()->getAuthenticationEntity($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getPaymentAuthorizationEntity($id)
+    {
+        $data = $this->service()->getAuthorizationEntity($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function getVerify($id)
     {
         $data = $this->service()->verify($id);

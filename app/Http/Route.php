@@ -78,6 +78,8 @@ class Route
         'payment_redirect_to_authenticate_get'     => ['get',      'payments/{id}/authenticate',                     'PaymentCreateController@postRedirectToAuthorize'                   ],
         'payment_get_authenticate_url'             => ['get',      'payments/{id}/authenticate/url',                 'PaymentCreateController@getAutenticateUrl'                         ],
         'payment_redirect_to_authenticate_post'    => ['post',     'payments/{id}/authenticate',                     'PaymentCreateController@postRedirectToAuthorize'                   ],
+        'payment_get_authentication_entity'        => ['get',      'payments/authentication/{id}',                   'PaymentController@getPaymentAuthenticationEntity'                  ],
+        'payment_get_authorization_entity'         => ['get',      'payments/authorization/{id}',                    'PaymentController@getPaymentAuthorizationEntity'                   ],
         'payment_callback_ajax_with_key_get'       => ['get',      'payments/{id}/callback/ajax/{hash}/{key}',       'PaymentCreateController@postAJAXCallback'                          ],
         'payment_callback_post'                    => ['post',     'payments/{x_entity_id}/callback/{hash}',         'PaymentCreateController@postCallback'                              ],
         'payment_callback_get'                     => ['get',      'payments/{x_entity_id}/callback/{hash}',         'PaymentCreateController@postCallback'                              ],
@@ -2668,6 +2670,8 @@ class Route
         'add_ondemand_pricing_if_absent',
         'gateway_downtimes_archive',
         'payment_get_authenticate_url',
+        'payment_get_authentication_entity',
+        'payment_get_authorization_entity',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -5035,7 +5039,9 @@ class Route
             'webhook_fetch',
             'webhook_fetch_multiple',
             'payment_meta_search',
-            'payment_get_authenticate_url'
+            'payment_get_authenticate_url',
+            'payment_get_authentication_entity',
+            'payment_get_authorization_entity',
         ],
 
         'cron' => [

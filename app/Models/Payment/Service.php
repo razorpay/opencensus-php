@@ -2923,4 +2923,34 @@ class Service extends Base\Service
         return $this->repo->payment_meta->findByActionAndReferenceID($input[PaymentMeta\Entity::ACTION],
                                                                      $input[PaymentMeta\Entity::REFERENCE_ID]);
     }
+
+    public function getAuthenticationEntity($id)
+    {
+        $paymentId = Payment\Entity::verifyIdAndStripSign($id);
+
+        $response = $this->app['card.payments']->fetchEntity('authentication', $paymentId);
+
+        if ((isset($response['success']) === true) and ($response['success'] === false))
+        {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND);
+        }
+
+        return $response;
+    }
+
+    public function getAuthorizationEntity($id)
+    {
+        $paymentId = Payment\Entity::verifyIdAndStripSign($id);
+
+        $response = $this->app['card.payments']->fetchEntity('authorization', $paymentId);
+
+        if ((isset($response['success']) === true) and ($response['success'] === false))
+        {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND);
+        }
+
+        return $response;
+    }
 }
