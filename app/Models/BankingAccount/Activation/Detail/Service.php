@@ -3,26 +3,30 @@
 
 namespace RZP\Models\BankingAccount\Activation\Detail;
 
-use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
-use RZP\Models\Admin\Admin;
-use RZP\Trace\TraceCode;
 use RZP\Models\BankingAccount;
-use RZP\Models\BankingAccount\Activation\Comment;
 use RZP\Models\BankingAccount\State;
-use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
+use RZP\Models\BankingAccount\Activation\Comment;
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\BankingAccount\Activation\Notification\Event;
+use RZP\Models\BankingAccount\Activation\Notification\Notifier;
+
 
 class Service extends Base\Service
 {
     /* @var Core $core */
     protected $core;
 
-    public function __construct()
+    /** @var $notifier Notifier */
+    protected $notifier;
+
+    public function __construct(Notifier $notifier)
     {
         parent::__construct();
 
         $this->core = new Core;
+
+        $this->notifier = $notifier;
     }
 
     public function createForBankingAccount(string $bankingAccountId, array $input)
@@ -115,6 +119,8 @@ class Service extends Base\Service
                 $entity = $entity ?? $admin;
 
                 (new State\Core())->captureNewBankingAccountState($activationDetail->bankingAccount, $entity);
+
+                $this->notifier->notify($activationDetail->bankingAccount, Event::ASSIGNEE_CHANGE, Event::ALERT);
             }
 
             if (empty($commentInput) === false)

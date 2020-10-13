@@ -264,7 +264,20 @@ class Status
         self::MERCHANT_CANCELLED   => self::CANCELLED,
         self::TEMP_UNSERVICEABLE   => self::UNSERVICEABLE,
         self::BANK_REJECTED        => self::REJECTED,
-        self::ARCHIVED_EXTERNAL    => self::ARCHIVED
+        self::ARCHIVED_EXTERNAL    => self::ARCHIVED,
+        self::CA_ACTIVATED         => self::ACTIVATED
+    ];
+
+    public static $allowedExternalStatuses = [
+        self::APPLICATION_RECEIVED,
+        self::RAZORPAY_PROCESSING,
+        self::SENT_TO_BANK,
+        self::BANK_PROCESSING,
+        self::CA_OPENED,
+        self::MERCHANT_CANCELLED,
+        self::TEMP_UNSERVICEABLE,
+        self::BANK_REJECTED,
+        self::ARCHIVED_EXTERNAL
     ];
 
     public static $externalToInternalSubStatusMap = [
@@ -294,7 +307,7 @@ class Status
 
     public static function isValidExternalStatus(string $status)
     {
-        return in_array($status, array_keys(self::$externalToInternalStatusMap));
+        return in_array($status, self::$allowedExternalStatuses);
     }
 
     public static function isValidExternalSubStatus(string $status)
@@ -392,6 +405,13 @@ class Status
         self::validateExternalStatus($status);
 
         return self::$externalToInternalStatusMap[$status];
+    }
+
+    public static function transformFromInternalToExternal(string $status)
+    {
+        self::validate($status);
+
+        return array_flip(self::$externalToInternalStatusMap)[$status];
     }
 
     public static function transformSubStatusFromExternalToInternal(string $subStatus)

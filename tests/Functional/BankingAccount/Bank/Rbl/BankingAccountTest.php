@@ -20,6 +20,7 @@ use RZP\Mail\BankingAccount\StatusNotifications\Rejected;
 use RZP\Mail\BankingAccount\StatusNotifications\Processed;
 use RZP\Mail\BankingAccount\StatusNotifications\Cancelled;
 use RZP\Mail\BankingAccount\StatusNotifications\Activated;
+use RZP\Mail\BankingAccount\Activation as ActivationMails;
 use RZP\Mail\BankingAccount\StatusNotifications\Processing;
 use RZP\Mail\BankingAccount\StatusNotifications\Unserviceable;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
@@ -114,6 +115,13 @@ class BankingAccountTest extends TestCase
         $this->startTest();
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $merchantId = $bankingAccount->merchant->getId();
+
+        $this->createMerchantDetail([
+            'merchant_id' => $merchantId,
+            'business_name' => 'CA Business']
+        );
 
         $this->assertEquals(AccountType::CURRENT, $bankingAccount->getAccountType());
 
@@ -295,6 +303,11 @@ class BankingAccountTest extends TestCase
         $this->assertNotEquals($bankingAccount['account_number'], 31900299180853);
     }
 
+    protected function createMerchantDetail(array $attrs = ['activation_status' => 'activated'])
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attrs);
+    }
+
     public function testActivate()
     {
         Mail::fake();
@@ -425,6 +438,13 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($counter['account_type'], $balance['account_type']);
 
         Mail::assertQueued(Activated::class);
+
+        Mail::assertQueued(ActivationMails\StatusChange::class, function ($mail) use($bankingAccount)
+        {
+            $mail->build();
+
+            return $mail->hasTo($bankingAccount->spocs()->first()['email']);
+        });
     }
 
     public function testActivateFailedDueToMozartGatewayException()
@@ -914,6 +934,8 @@ class BankingAccountTest extends TestCase
 
         $bankingAccount = $this->createBankingAccount();
 
+        $this->prepareActivationDetail();
+
         $dataToReplace = [
             'request'  => [
                 'url'     => '/banking_accounts/' . $bankingAccount['id'],
@@ -937,6 +959,15 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
 
         Mail::assertQueued(Processed::class);
+
+        $bankingAccountEntity = $this->getDbLastEntity('banking_account');
+
+        Mail::assertQueued(ActivationMails\StatusChange::class, function ($mail) use($bankingAccountEntity)
+        {
+            $mail->build();
+
+            return $mail->hasTo($bankingAccountEntity->spocs()->first()['email']);
+        });
     }
 
     public function testUpdateBankingAccountStatusAsProcessedFailed()
@@ -2276,6 +2307,8 @@ class BankingAccountTest extends TestCase
 
     public function testUpdateBankingAccountAssignee(array $content = null)
     {
+//        $this->createMerchantDetail();
+
         $bankingAccount = $this->testCreateBankingAccountWithActivationDetail();
 
         if ($content === null)

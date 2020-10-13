@@ -5,13 +5,23 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 
-use RZP\Models\BankingAccount\Service;
 use RZP\Constants\Entity as E;
-use RZP\Models\BankingAccount;
+use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 
 
 class BankingAccountController extends Controller
 {
+    /** @var ActivationDetail\Service $activationDetailService  */
+    protected $activationDetailService;
+
+    public function __construct()
+    {
+        $this->activationDetailService = resolve(ActivationDetail\Service::class);
+
+        parent::__construct();
+    }
+
+
     use Traits\HasCrudMethods;
 
     public function activate(string $id)
@@ -74,7 +84,7 @@ class BankingAccountController extends Controller
 
     public function postCreateActivationDetail(string $bankingAccountId)
     {
-        $response = $this->service(E::BANKING_ACCOUNT_ACTIVATION_DETAIL)->createForBankingAccount($bankingAccountId, $this->input);
+        $response = $this->activationDetailService->createForBankingAccount($bankingAccountId, $this->input);
 
         return ApiResponse::json($response);
     }
@@ -108,7 +118,7 @@ class BankingAccountController extends Controller
 
     public function patchActivationDetail(string $bankingAccountId)
     {
-        $response = $this->service(E::BANKING_ACCOUNT_ACTIVATION_DETAIL)->updateForBankingAccount($bankingAccountId, $this->input);
+        $response = $this->activationDetailService->updateForBankingAccount($bankingAccountId, $this->input);
 
         return ApiResponse::json($response);
     }

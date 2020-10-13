@@ -5,6 +5,7 @@ namespace RZP\Models\BankingAccount\Activation\Detail;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\BankingAccount\Activation\Notification\Notifier;
 
 class Core extends Base\Core
 {

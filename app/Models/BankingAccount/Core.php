@@ -5,10 +5,6 @@ namespace RZP\Models\BankingAccount;
 use Mail;
 use Carbon\Carbon;
 
-use RZP\Base\Common;
-use RZP\Constants\Timezone;
-use Razorpay\Trace\Logger as Trace;
-
 use RZP\Models\Base;
 use RZP\Models\Contact;
 use RZP\Models\Counter;
@@ -19,6 +15,7 @@ use RZP\Constants\Product;
 use RZP\Models\Admin\Admin;
 use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
+use RZP\Constants\Timezone;
 use RZP\Models\Schedule\Type;
 use RZP\Models\Schedule\Task;
 use RZP\Models\VirtualAccount;
@@ -28,18 +25,20 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Balance;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\BankingAccount\State;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Gateway;
-use RZP\Models\BankingAccount\State;
 use RZP\Mail\BankingAccount\XProActivation;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Jobs\BankingAccountGatewayBalanceUpdate;
 use RZP\Models\BankingAccount\Channel as BAChannel;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\BankingAccount\Activation\Notification\Event;
 use RZP\Models\BankingAccount\Detail as BankingAccountDetail;
+use RZP\Models\BankingAccount\Activation\Notification\Notifier;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
-use RZP\Models\BankingAccount\Activation\Comment as BAComment;
 use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFactory;
 
 class Core extends Base\Core
@@ -53,8 +52,14 @@ class Core extends Base\Core
     const DEFAULT_SCHEDULE_PERIOD   = Period::DAILY;
     const DEFAULT_SCHEDULE_INTERVAL = 7;
 
+
     /** @var ActivationDetail\Service $activationDetailService */
     protected $activationDetailService;
+
+    /**
+     * @var Notifier
+     */
+    protected $notifier;
 
     public function __construct()
     {
@@ -62,7 +67,9 @@ class Core extends Base\Core
 
         $this->config = $this->app['config']->get('banking_account');
 
-        $this->activationDetailService = new Activation\Detail\Service;
+        $this->activationDetailService =  resolve(Activation\Detail\Service::class);
+
+        $this->notifier = new Notifier;
     }
 
     public function createOrFetchSharedBankingAccountFromVA(VirtualAccount\Entity $virtualAccount): Entity
@@ -337,9 +344,7 @@ class Core extends Base\Core
 
             if ($activationDetailInput !== null)
             {
-                $activationDetailService = new Activation\Detail\Service;
-
-                $activationDetailService->createForBankingAccount($bankingAccount->getPublicId(), $activationDetailInput);
+                $this->activationDetailService->createForBankingAccount($bankingAccount->getPublicId(), $activationDetailInput);
             }
 
             $stateCore = new State\Core;
@@ -551,6 +556,11 @@ class Core extends Base\Core
                 $stateCore->captureNewBankingAccountState($bankingAccount, $entity);
             }
 
+            if ($bankingAccountStatusChanged === true)
+            {
+                $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE);
+            }
+
             // Updating BankingAccountActivation Details
             if (empty($activationDetailInput) === false)
             {
@@ -659,6 +669,8 @@ class Core extends Base\Core
         });
 
         $this->sendBankingCaActivationSmsIfApplicable($bankingAccount);
+
+        $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE);
 
         return $bankingAccount;
     }

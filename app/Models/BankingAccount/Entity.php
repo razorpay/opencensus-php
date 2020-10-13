@@ -534,7 +534,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::LAST_STATEMENT_ATTEMPT_AT);
     }
-  
+
     public function getStatusLastUpdatedAt()
     {
         $lastUpdatedAt = null;
@@ -761,5 +761,16 @@ class Entity extends Base\PublicEntity
                              $unrecoveredAmountForReversals->getAttribute(Payout\Entity::FEES);
 
         return $outstandingAmount;
+    }
+
+    public function getDashboardEntityLink()
+    {
+        $publicId = $this->getPublicId();
+
+        // It's always needed for live mode. Not taking care of test for now.
+        // TODO: make this environment aware.
+        $url = "https://dashboard.razorpay.com/admin#/app/banking-accounts/$publicId";
+
+        return $url;
     }
 }
