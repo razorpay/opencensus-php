@@ -197,7 +197,7 @@ return array(
         'rx_rbl_recon_alerts'    => 'C019AKLLQAH',
 
         //payout alerts
-        'xp_payouts_alert'       => 'C01AA7PCR6J',
+        'x-payouts-core-alerts'  => 'C01B8T2HUM7',
     ],
 
     'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true,

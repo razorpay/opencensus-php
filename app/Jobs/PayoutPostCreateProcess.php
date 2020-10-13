@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
+use RZP\Models\Settlement\SlackNotification;
 
 class PayoutPostCreateProcess extends Job
 {
@@ -79,7 +80,7 @@ class PayoutPostCreateProcess extends Job
 
             $operation = 'Post payout create process fetch job failed';
 
-            (new SlackNotification)->send($operation, $data, null, 1, 'xp_payouts_alert');
+            (new SlackNotification)->send($operation, $data, null, 1, 'x-payouts-core-alerts');
         }
     }
 }

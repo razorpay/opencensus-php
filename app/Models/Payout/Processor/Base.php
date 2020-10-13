@@ -458,8 +458,9 @@ class Base extends BaseCore
                 (new SlackNotification)->send(
                     'Payout with intermediate state failed due to some other error than balance failure',
                             $alertData,
-                            null,
-                            'xp_payouts_alert');
+                            $ex,
+                            1,
+                            'x-payouts-core-alerts');
 
                 $payout->setFailureReason('Payout failed. Contact support for help');
             }
@@ -1324,7 +1325,8 @@ class Base extends BaseCore
                     'Failed to enqueue payout create request',
                     $alertData,
                     $e,
-                    'xp_payouts_alert');
+                    1,
+                    'x-payouts-core-alerts');
 
             throw $e;
         }

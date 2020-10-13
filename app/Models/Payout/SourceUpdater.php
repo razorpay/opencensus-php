@@ -69,7 +69,8 @@ class SourceUpdater
                     'Failed to enqueue payout status update for app',
                     $alertData,
                     $e,
-                    'xp_payouts_alert');
+                    1,
+                    'x-payouts-core-alerts');
         }
     }
 
