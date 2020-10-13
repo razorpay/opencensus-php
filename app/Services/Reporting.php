@@ -68,6 +68,7 @@ class Reporting implements ExternalService
     const ADMIN_TOKEN_HEADER    = 'X-Admin-Token';
     const LINKED_ACCOUNT_HEADER = 'X-Linked-Account-Parent';
     const USER_ID_HEADER        = 'X-Dashboard-User-Id';
+    const ORG_ID_HEADER         = 'X-Org-Id';
     const GENERATED_BY_HEADER   = 'X-Generated-By';
     const BATCH_ID              = 'X-Batch-Id';
 
@@ -146,6 +147,10 @@ class Reporting implements ExternalService
         {
             // This is to be used for merchant reports only
 
+            // Add OrgId header of merchant for org level configs
+            $orgId = $this->ba->getOrgId();
+            $headers[self::ORG_ID_HEADER] = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
             if ($merchantId === Account::SHARED_ACCOUNT)
             {
                 // If SHARED_ACCOUNT, use headers sent
@@ -177,6 +182,10 @@ class Reporting implements ExternalService
         else if (empty($adminToken) === false)
         {
             // This is to be used for non merchant reports only
+
+            // Added OrgId header of admin, needed for log creation not being used further
+            $orgId = $this->ba->getAdmin()->getOrgId();
+            $headers[self::ORG_ID_HEADER] = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
             // Entity view in dashboard
             $headers[self::ADMIN_TOKEN_HEADER] = $adminToken;
