@@ -133,6 +133,8 @@ class CreateBankingAccountTable extends Migration
             $table->index(Entity::BANK_REFERENCE_NUMBER);
 
             $table->index(Entity::ACCOUNT_NUMBER);
+
+            $table->unique([Entity::ACCOUNT_NUMBER, Entity::CHANNEL]);
         });
     }
 

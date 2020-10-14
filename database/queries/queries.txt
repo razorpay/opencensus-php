@@ -6007,6 +6007,9 @@ ALTER TABLE `vpas`
 ALTER TABLE `qr_code`
     ADD COLUMN `mpans_tokenized` TINYINT(1) DEFAULT NULL;
 
+ALTER TABLE banking_accounts
+    ADD UNIQUE KEY channel_account_number (account_number, channel);
+
 ALTER TABLE merchant_details
     ADD COLUMN `personal_pan_doc_verification_status` varchar(30) DEFAULT NULL,
     ADD COLUMN `company_pan_doc_verification_status` varchar(30) DEFAULT NULL;

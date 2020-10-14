@@ -90,18 +90,6 @@ class RblPayoutTest extends TestCase
 
         $this->setUpMerchantForBusinessBankingLive(true, 10000000, 'direct', 'rbl');
 
-        $bankingAccountParams = [
-            'id' => 'xba00000000000',
-            'merchant_id' => '10000000000000',
-            'account_ifsc' => 'RATN0000088',
-            'account_number' => '2224440041626905',
-            'status' => 'active',
-            'channel' => 'rbl',
-            'balance_id' => $this->bankingBalance->getId(),
-        ];
-
-        $this->createBankingAccount($bankingAccountParams, 'live');
-
         $this->fixtures->on('live')->merchant->edit('10000000000000', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
 
         // Merchant needs to be activated to make live requests
