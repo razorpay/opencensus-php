@@ -164,6 +164,8 @@ final class RazorxTreatment
 
     const PUBLIC_KEY_SIGNATURE_GENERATION = 'public_key_signature_generation';
 
+    const PG_ROUTER_ORDER_SHOULD_DISPATCH_TO_QUEUE = 'pg_router_order_should_dispatch_to_queue';
+
     // experiment for merchant when trim migration in progress
     const TRIM_MIGRATION_IN_PROGRESS = 'trim_migration_in_progress';
 

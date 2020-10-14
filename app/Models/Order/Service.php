@@ -367,4 +367,9 @@ class Service extends Base\Service
 
         return $order;
     }
+
+    public function bulkSyncOrderToPgRouter(array $input)
+    {
+        return (new Core)->fetchOrdersAndSync($input);
+    }
 }

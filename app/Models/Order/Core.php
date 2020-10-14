@@ -2,16 +2,21 @@
 
 namespace RZP\Models\Order;
 
+use App;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Offer;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Services\PGRouter;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Payment\Config;
+use RZP\Jobs\SyncOrderPgRouter;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
+use RZP\Jobs\UpdateSyncedOrderPgRouter;
 use RZP\Models\Feature\Constants as FeatureConstants;
 
 class Core extends Base\Core
@@ -396,5 +401,66 @@ class Core extends Base\Core
     private function validateCheckoutConfigId($configId)
     {
         $this->repo->config->findByPublicIdAndMerchant($configId, $this->merchant);
+    }
+
+    public function dispatchOrderToPGRouter($data)
+    {
+        $traceData = $data;
+
+        unset($traceData['account_number'], $traceData['payer_name']);
+
+
+        if ((isset($data['notes']) === false) or
+            (count($data['notes']) === 0))
+        {
+            $data['notes'] = null;
+        }
+
+        $this->trace->info(
+            TraceCode::ORDER_QUEUE_PG_ROUTER_DISPATCH,
+            $traceData
+        );
+
+        SyncOrderPgRouter::dispatch($data);
+    }
+
+    public function dispatchUpdatedOrderToPGRouter($data)
+    {
+        $this->trace->info(
+            TraceCode::ORDER_QUEUE_PG_ROUTER_DISPATCH,
+            $data
+        );
+
+        UpdateSyncedOrderPgRouter::dispatch($data);
+    }
+
+    public function fetchOrdersAndSync(array $input)
+    {
+        $orders =  $this->repo->order->fetchMultipleOrdersBasedOnIds($input['order_ids']);
+
+        $orderArray = $orders->toArray();
+
+        if ((isset($orderArray) === true) and
+            (count($orderArray) > 0))
+        {
+            foreach ($orderArray as &$key)
+            {
+                if ((isset($key['notes']) === false) or
+                    (count($key['notes']) === 0))
+                {
+                    $key['notes'] = null;
+                }
+
+                unset($key['merchant'], $key['bank_account']);
+
+                $key['id'] =  Entity::verifyIdAndSilentlyStripSign($key['id']);
+            }
+        }
+
+        $data = ['orderBulkRequest' => $orderArray];
+
+        $response = App::getFacadeRoot()['pg_router']->syncBulkOrderToPgRouter($data, true);
+
+        return $response['body'];
     }
 }

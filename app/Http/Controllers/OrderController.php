@@ -51,4 +51,13 @@ class OrderController extends Controller
 
         return ApiResponse::json($lineItems);
     }
+
+    public function bulkSyncOrderToPgRouter()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->bulkSyncOrderToPgRouter($input);
+
+        return ApiResponse::json($data);
+    }
 }

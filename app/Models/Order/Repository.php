@@ -2,9 +2,11 @@
 
 namespace RZP\Models\Order;
 
+use App;
 use RZP\Models\Base;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\Offer\EntityOffer;
 
 class Repository extends Base\Repository
@@ -58,5 +60,85 @@ class Repository extends Base\Repository
                        ->get();
 
         return $orders;
+    }
+
+    public function fetchMultipleOrdersBasedOnIds($orderIds)
+    {
+        return $this->newQuery()
+            ->whereIn('id', $orderIds)
+            ->get();
+    }
+
+    public function saveOrFail($entity, array $options = [])
+    {
+        $currentOrder = $this->newQuery()->where('id', '=', $entity->getId())->get();
+
+        parent::saveOrFail($entity, $options);
+
+        try
+        {
+            $mode = App::getFacadeRoot()['rzp.mode'];
+
+            if ((isset($mode) === true) and
+                ($mode === 'live'))
+            {
+                $variant = App::getFacadeRoot()->razorx->getTreatment(
+                    $entity->getId(),
+                    Merchant\RazorxTreatment::PG_ROUTER_ORDER_SHOULD_DISPATCH_TO_QUEUE,
+                    $mode
+                );
+
+                if ($variant === 'on')
+                {
+                    $core = new Core();
+
+                    if (count($currentOrder->toArray()) > 0)
+                    {
+                        $currentOrder = $currentOrder->toArray()[0];
+
+                        if ($currentOrder[Entity::PG_ROUTER_SYNCED] === 1)
+                        {
+                            $updatedOrder = $entity->toArray();
+
+                            unset($updatedOrder['merchant'], $updatedOrder['bank_account']);
+
+                            $data = array_map('unserialize', array_diff_assoc(array_map('serialize', $updatedOrder),
+                                array_map('serialize', $currentOrder)));
+
+                            $data['id'] = $entity->getId();
+
+                            $data['mode'] = $mode;
+
+                            $data['updated_at'] = $entity->getUpdatedAt();
+
+                            $core->dispatchUpdatedOrderToPGRouter($data);
+                        }
+                    }
+                    else
+                    {
+                        $data = $entity->toArray();
+
+                        $data['mode'] = $mode;
+
+                        unset($data['merchant'], $data['bank_account']);
+
+                        $core->dispatchOrderToPGRouter($data);
+
+                        $entity->setAttribute(Entity::PG_ROUTER_SYNCED, true);
+
+                        parent::saveOrFail($entity, $options);
+                    }
+                }
+            }
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                null,
+                ['order_id' => $entity->getId()]
+            );
+        }
     }
 }

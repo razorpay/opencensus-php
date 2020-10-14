@@ -157,6 +157,8 @@ class Entity extends Base\PublicEntity
 
     const PRODUCTS = 'products';
 
+    const PG_ROUTER_SYNCED = 'pg_router_synced';
+
     protected $fillable = [
         self::DISCOUNT,
         self::AMOUNT,
@@ -175,6 +177,7 @@ class Entity extends Base\PublicEntity
         self::PRODUCT_ID,
         self::PRODUCT_TYPE,
         self::APP_OFFER,
+        self::PG_ROUTER_SYNCED,
     ];
 
     protected $generateIdOnCreate = true;
@@ -197,6 +200,7 @@ class Entity extends Base\PublicEntity
         self::CHECKOUT_CONFIG_ID    => null,
         self::PROVIDER_CONTEXT      => null,
         self::APP_OFFER             => false,
+        self::PG_ROUTER_SYNCED      => false,
     ];
 
     protected $public = [

@@ -144,6 +144,9 @@ class CreateOrders extends Migration
             $table->tinyInteger(Order::APP_OFFER)
                   ->default(false);
 
+            $table->tinyInteger(Order::PG_ROUTER_SYNCED)
+                ->default(false);
+
             // $table->integer(Order::VALIDITY)
             //       ->default(0);
 

@@ -410,6 +410,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerHttpClients();
 
+        $this->registerPGRouter();
+
         $this->registerBvsHttpClients();
     }
 
@@ -465,6 +467,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'terminals_service',
             'paymentlinkservice',
             'credcase_http_client',
+            'pg_router',
             'bvs_http_client',
         ];
     }
@@ -1104,6 +1107,17 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
+    protected function registerPGRouter()
+    {
+        $this->app->bind('pg_router', function ($app)
+        {
+            $mock = $app['config']->get('applications.pg_router.mock');
+
+            $implementation = $mock ? Mock\PGRouter::class : PGRouter::class;
+
+            return new $implementation($app);
+        });
+    }
     /**
      * register bvs http client
      *

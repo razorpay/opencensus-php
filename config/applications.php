@@ -670,10 +670,9 @@ return [
     'rzp_sftp' => [
         'rzp_sftp_secret_key'       => env('RZP_SFTP_PASSWORD'),
         'rzp_sftp_sftp_username'    => env('RZP_SETTLEMENT_SFTP_USERNAME'),
-        'rzp_sftp_file_path'        => env('RZP_SETTLEMENT_SFTP_FILE_PATH')
-
+        'rzp_sftp_file_path'        => env('RZP_SETTLEMENT_SFTP_FILE_PATH'),
     ],
-    
+
     'jaeger' => [
         'enabled'               => env('DISTRIBUTED_TRACING_ENABLED', false),
         // as Jaeger agent will be deployed as daemonset on every node
@@ -682,5 +681,12 @@ return [
         'app_mode'              => env('INSTANCE_TYPE', ''),
         'tag_service_version'   => env('GIT_COMMIT_HASH', ''),
         'tag_app_env'           => env('APP_ENV', '')
-    ]
+    ],
+
+    'pg_router' => [
+        'mock'                => env('PG_ROUTER_MOCK', false),
+        'url'                 => env('PG_ROUTER_URL'),
+        'pg_router_key'       => env('PG_ROUTER_KEY'),
+        'pg_router_secret'    => env('PG_ROUTER_SECRET'),
+    ],
 ];

@@ -38,6 +38,7 @@ class Route
         'get_irctc_settlement_file_admin'          => ['get',      'admin/irctc/settlement/{date}',                   'SettlementController@getIrctcSettlementFile'                              ],
         'delete_payment_config'                    => ['delete',   'payment/config',                                 'ConfigController@deletePaymentConfig'                              ],
         'update_late_auth_config_admin_bulk'       => ['patch',    'admin/lateauth/config/bulk',                     'ConfigController@updateLateAuthConfigBulk'                         ],
+        'sync_pg_router_order_bulk'                => ['post',     'bulk/sync/orders',                               'OrderController@bulkSyncOrderToPgRouter'                          ],
         // callback_url case handler for automatic checkout
         'checkout_onyx'                            => ['post',     'checkout/onyx',                                  'PublicController@postCallbackUrlWithParams'                        ],
 
@@ -3810,6 +3811,7 @@ class Route
         'fix_merchant_data_cron',
         'update_late_auth_config_admin_bulk',
         'create_payment_config_bulk',
+        'sync_pg_router_order_bulk',
 
         'fund_account_validate_bulk_patch_status',
 
@@ -4547,6 +4549,7 @@ class Route
         'update_payment_config_admin'               => Permission::UPDATE_PAYMENT_CONFIG,
         'update_late_auth_config_admin_bulk'        => '*',
         'create_payment_config_bulk'                => '*',
+        'sync_pg_router_order_bulk'                 => '*',
         'admin_fetch_fund_account_validate'         => '*',
         'create_promotions_events'                  => Permission::CREATE_PROMOTION_EVENT,
         'fee_recovery_payout_admin'                 => Permission::PROCESS_FEE_RECOVERY,

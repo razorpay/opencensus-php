@@ -6007,6 +6007,9 @@ ALTER TABLE `vpas`
 ALTER TABLE `qr_code`
     ADD COLUMN `mpans_tokenized` TINYINT(1) DEFAULT NULL;
 
+Alter TABLE `orders`
+    ADD COLUMN `pg_router_synced` TINYINT(4);
+
 ALTER TABLE banking_accounts
     ADD UNIQUE KEY channel_account_number (account_number, channel);
 
