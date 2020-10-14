@@ -866,6 +866,7 @@ class Notifier extends Base\Core
 
             case Preferences::MID_RBL_BANK_2:
                 $template = 'sms.custom_invoice.rbl_bank_2';
+                $sender   = 'RBLBNK';
                 $params = [
                     'receipt'       	      => $receipt,
                     'invoice_link'            => $invoiceLink,
