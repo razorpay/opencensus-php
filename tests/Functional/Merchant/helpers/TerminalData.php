@@ -1330,6 +1330,7 @@ return [
                 'gateway'                   => 'isg',
                 'gateway_merchant_id'       => 'some_random_val',
                 'gateway_access_code'       => 'oxymoron',
+                'mode'                      => Terminal\Mode::PURCHASE,
                 'card'                      => 1,
                 'gateway_secure_secret'     => 'hogwards',
                 'gateway_terminal_id'       => 'CG000001',

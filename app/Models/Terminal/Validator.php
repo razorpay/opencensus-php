@@ -272,6 +272,7 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'required|array',
         Entity::TYPE . '.bharat_qr'        => 'sometimes|in:1',
         Entity::TYPE . '.non_recurring'    => 'required|in:1',
+        Entity::MODE                       => 'sometimes|integer|in:2,3',
         Entity::MC_MPAN                    => 'sometimes_if:type.bharat_qr,1|string',
         Entity::VISA_MPAN                  => 'sometimes_if:type.bharat_qr,1|string',
         Entity::RUPAY_MPAN                 => 'sometimes_if:type.bharat_qr,1|string',
@@ -401,6 +402,7 @@ class Validator extends Base\Validator
         Entity::TYPE . '.bharat_qr'        => 'sometimes|in:1',
         Entity::TYPE . '.non_recurring'    => 'sometimes|in:1',
         Entity::MC_MPAN                    => 'sometimes|string',
+        Entity::MODE                       => 'sometimes|integer|in:2,3',
         Entity::VISA_MPAN                  => 'sometimes|string',
         Entity::RUPAY_MPAN                 => 'sometimes|string',
         Entity::EXPECTED                   => 'sometimes|boolean',
@@ -1651,7 +1653,8 @@ class Validator extends Base\Validator
         //Migs now supports purchase mode as well
         $cardGatewaysWithPurchaseSupport = [
             Gateway::MPGS,
-            Gateway::AXIS_MIGS
+            Gateway::AXIS_MIGS,
+            Gateway::ISG,
         ];
 
         $isPurchaseSupportedCardGateway = ((Gateway::isMethodSupported(Payment\Method::CARD, $gateway)) and
