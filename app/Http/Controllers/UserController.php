@@ -348,4 +348,11 @@ class UserController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function optInForWhatsapp()
+    {
+        $input = Request::all();
+
+        return $this->service()->optInForWhatsapp($input);
+    }
 }

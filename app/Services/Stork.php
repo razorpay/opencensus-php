@@ -197,6 +197,30 @@ class Stork
     }
 
     /**
+     * Identifies that the number has given consent
+     * to Razorpay for communication via WhatsApp.
+     *
+     * @param string $mode
+     * @param string $number
+     * @param string $source source is the identifier which is making the
+     *                       opt in request. For eg api.merchant.onboarding
+     * @return array
+     * @throws ServerErrorException
+     * @throws TwirpException
+     */
+    public function optInForWhatsapp(string $mode, string $number, string $source)
+    {
+        $this->init($mode);
+
+        $storkInput = [
+            'phone_number' => $number,
+            'source'       => $source,
+        ];
+
+        return $this->requestAndGetParsedBody('/twirp/rzp.stork.whatsapp.v1.WhatsappAPI/OptInUser', $storkInput);
+    }
+
+    /**
      * @param  string $path
      * @param  array  $payload
      * @return Requests_Response

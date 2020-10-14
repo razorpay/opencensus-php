@@ -1218,6 +1218,7 @@ class Route
         'user_verify_second_factor_auth'           => ['post',     'users/2fa/verify',                               'UserController@verifyUserSecondFactorAuth'                         ],
         'user_resend_otp_2fa'                      => ['post',     'users/2fa/otp_resend',                           'UserController@resendOtp'                                          ],
         'user_trigger_2fa_otp'                     => ['post',     'users/2fa',                                      'UserController@send2faOtp'                                         ],
+        'user_opt_in_whatsapp'                     => ['post',     'users/whatsapp/opt_in',                          'UserController@optInForWhatsapp'                                   ],
 
         // mobile setup for 2fa
         'user_login_2fa_setup_mobile'              => ['patch',    'users/2fa_setup/contact_mobile',                 'UserController@setup2faContactMobile'                              ],
@@ -3015,6 +3016,7 @@ class Route
         'workflow_payout_amount_rules',
         'merchant_2fa_change_setting',
         'user_2fa_change_setting',
+        'user_opt_in_whatsapp',
         'user_update_contact',
         'user_verify_through_email',
         'user_update_contact_merchant',
@@ -4742,6 +4744,7 @@ class Route
         'merchant_2fa_change_setting'                  => Permission::UPDATE_MERCHANT_2FA_SETTING,
         'user_account_unlock'                          => Permission::UPDATE_MERCHANT_2FA_SETTING,
         'user_2fa_change_setting'                      => '*',
+        'user_opt_in_whatsapp'                         => '*',
         'banking_account_create'                       => '*',
         'merchant_activation_upload_file'              => '*',
         'user_verify_contact'                          => '*',

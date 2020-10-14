@@ -1114,4 +1114,26 @@ class Service extends Base\Service
 
         return $user->toArrayPublic();
     }
+
+    /**
+     * Marks that user has given consent to Razorpay to send WhatsApp messages
+     * @param  array $input
+     * @return mixed
+     * @throws Exception\LogicException
+     */
+    public function optInForWhatsapp(array $input)
+    {
+        $this->trace->info(TraceCode::MERCHANT_WHATSAPP_OPT_IN, ['input' => $input]);
+
+        (new Validator)->validateInput('opt_in_whatsapp', $input);
+
+        $contact = $this->user->getContactMobile();
+
+        if (empty($contact) === true)
+        {
+            throw new Exception\LogicException('User does not have a mobile number associated with the account');
+        }
+
+        return app('stork_service')->optInForWhatsapp($this->mode, $contact, $input['source']);
+    }
 }
