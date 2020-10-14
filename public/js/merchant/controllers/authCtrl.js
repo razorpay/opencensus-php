@@ -1773,10 +1773,26 @@ app
         }
 
         fireDLInitiatedEvents('login.native_auth', { emailId: $scope.login.data.email });
-        if (isProd && window.grecaptcha) {
-          grecaptcha.execute();
-        } else {
+
+        /**
+         * Condition to disable captcha on staging & during running automated test suites on production
+         * isTestEnv will be passed from test suites run for production
+         * window.parent = X (opening PG in iframe)
+         */
+        if (window.parent.isTestEnv || window.isTestEnv || !isProd) {
           login('Faked');
+        } else if (isProd && window.grecaptcha.execute) {
+          showSpinner();
+          grecaptcha.execute();
+
+          /**
+           * To hide the spinner if user clicks outside the captcha challenge box
+           * There is no captcha close callback to handle this
+           * So this is a work around :)
+           */
+          setTimeout(function () {
+            hideSpinner();
+          }, 5000);
         }
       };
 
