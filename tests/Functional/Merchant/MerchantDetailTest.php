@@ -835,60 +835,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->startTest();
 
-        $bankAccount = DB::table('bank_accounts')
-                         ->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
-                         ->where('type', '=', 'virtual_account')
-                         ->get();
-
-        $this->assertNotNull($bankAccount);
-
-        $this->assertTrue(count($bankAccount) === 1);
-
-        $entityId = $bankAccount[0]->entity_id;
-
-        $bankAccountId = $bankAccount[0]->id;
-
-        $this->assertEquals(trim($merchant->name), $bankAccount[0]->beneficiary_name);
-
-        $virtualAccount = DB::table('virtual_accounts')
-                            ->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
-                            ->where('id', '=', $entityId)
-                            ->where('bank_account_id', '=', $bankAccountId)
-                            ->get();
-
-        $this->assertNotNull($virtualAccount);
-
-        $this->assertTrue(count($virtualAccount) === 1);
-
-        $this->assertEquals(trim($merchant->name), $virtualAccount[0]->name);
-
-        $balanceId = $virtualAccount[0]->balance_id;
-
-        $balance = DB::table('balance')
-                     ->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
-                     ->where('type', '=', 'banking')
-                     ->where('account_type', '=', 'shared')
-                     ->where('id', '=', $balanceId)
-                     ->get();
-
-        $this->assertNotNull($balance);
-
-        $this->assertTrue(count($balance) === 1);
-
-        $accountNumber = $balance[0]->account_number;
-
-        $bankingAccount = DB::table('banking_accounts')
-                            ->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
-                            ->where('account_type', '=', 'nodal')
-                            ->where('account_number', '=', $accountNumber)
-                            ->where('balance_id', '=', $balanceId)
-                            ->get();
-
-        $this->assertNotNull($bankingAccount);
-
-        $this->assertTrue(count($bankingAccount) === 1);
-
-        $this->assertEquals(trim($merchant->name), $bankingAccount[0]->beneficiary_name);
+        $this->assertEntitiesBankingNotNull($merchantDetail, $merchant->name);
 
         $bankAccountLiveMode = $this->getDbEntity('bank_account',
                                                   [
@@ -970,60 +917,62 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->startTest();
 
-        $bankAccount = DB::table('bank_accounts')
-                         ->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
-                         ->where('type', '=', 'virtual_account')
-                         ->get();
+        $this->assertEntitiesBankingNotNull($merchantDetail, $merchant->billing_label);
+    }
+
+    public function assertEntitiesBankingNotNull($merchantDetail, $labelOrName)
+    {
+        $bankAccount = $this->getDbEntity('bank_account',
+                                          [
+                                              'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                                              'type'        => 'virtual_account'
+                                          ], 'test');
+
 
         $this->assertNotNull($bankAccount);
 
-        $this->assertTrue(count($bankAccount) === 1);
+        $entityId = $bankAccount['entity_id'];
 
-        $entityId = $bankAccount[0]->entity_id;
+        $bankAccountId = $bankAccount['id'];
 
-        $bankAccountId = $bankAccount[0]->id;
+        $this->assertEquals(trim($labelOrName), $bankAccount['beneficiary_name']);
 
-        $this->assertEquals(trim($merchant->billing_label), $bankAccount[0]->beneficiary_name);
-
-        $virtualAccount = DB::table('virtual_accounts')
-                            ->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
-                            ->where('id', '=', $entityId)
-                            ->where('bank_account_id', '=', $bankAccountId)
-                            ->get();
+        $virtualAccount = $this->getDbEntity('virtual_account',
+                                             [
+                                                 'merchant_id'     => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                                                 'id'              => $entityId,
+                                                 'bank_account_id' => $bankAccountId
+                                             ], 'test');
 
         $this->assertNotNull($virtualAccount);
 
-        $this->assertTrue(count($virtualAccount) === 1);
+        $this->assertEquals(trim($labelOrName), $virtualAccount['name']);
 
-        $this->assertEquals(trim($merchant->billing_label), $virtualAccount[0]->name);
+        $balanceId = $virtualAccount['balance_id'];
 
-        $balanceId = $virtualAccount[0]->balance_id;
-
-        $balance = DB::table('balance')
-                     ->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
-                     ->where('type', '=', 'banking')
-                     ->where('account_type', '=', 'shared')
-                     ->where('id', '=', $balanceId)
-                     ->get();
+        $balance = $this->getDbEntity('balance',
+                                      [
+                                          'merchant_id'  => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                                          'type'         => 'banking',
+                                          'account_type' => 'shared',
+                                          'id'           => $balanceId
+                                      ], 'test');
 
         $this->assertNotNull($balance);
 
-        $this->assertTrue(count($balance) === 1);
+        $accountNumber = $balance['account_number'];
 
-        $accountNumber = $balance[0]->account_number;
-
-        $bankingAccount = DB::table('banking_accounts')
-                            ->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
-                            ->where('account_type', '=', 'nodal')
-                            ->where('account_number', '=', $accountNumber)
-                            ->where('balance_id', '=', $balanceId)
-                            ->get();
+        $bankingAccount = $this->getDbEntity('banking_account',
+                                             [
+                                                 'merchant_id'    => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                                                 'account_type'   => 'nodal',
+                                                 'account_number' => $accountNumber,
+                                                 'balance_id'     => $balanceId
+                                             ], 'test');
 
         $this->assertNotNull($bankingAccount);
 
-        $this->assertTrue(count($bankingAccount) === 1);
-
-        $this->assertEquals(trim($merchant->billing_label), $bankingAccount[0]->beneficiary_name);
+        $this->assertEquals(trim($labelOrName), $bankingAccount['beneficiary_name']);
     }
 
     public function testVaNotCreatedForBusinessBankingDisabledInTestModePreSignup()

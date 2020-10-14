@@ -854,60 +854,57 @@ class Service extends Base\Service
 
         $merchant = $this->app['basicauth']->getMerchant();
 
-        $this->applyCoupon($input);
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input)
+        {
+            $this->applyCoupon($input);
 
-        $originProduct = $this->auth->getRequestOriginProduct();
+            $originProduct = $this->auth->getRequestOriginProduct();
 
-        $promotion = (new Promotion\Core)->applyPromotion(
+            (new Promotion\Core)->applyPromotion(
                                                 $merchant,
                                                 $originProduct,
                                                 Event\Constants::SIGN_UP);
 
-        $this->handlePreSignUpOptionalFields( $input);
+            $this->handlePreSignUpOptionalFields( $input);
 
-        $this->applyReferralPartner($input);
+            $this->applyReferralPartner($input);
 
-        $this->saveMerchantDetailForPreSignUp($input);
+            $this->saveMerchantDetailForPreSignUp($input);
 
-        if (empty($input[Entity::BUSINESS_NAME]) === false)
-        {
-            (new Merchant\Core)->editPreSignupFields($this->merchant, $input);
-
-            // Save User Information of contact name nad contact Email.
-
-            $originProduct = $this->auth->getRequestOriginProduct();
-
-            $user = $this->merchant->primaryOwner($originProduct);
-
-            $userEditData['contact_mobile'] = $input['contact_mobile'] ?? null;
-            $userEditData['name']           = $input['contact_name'] ?? null;
-
-            $userEditData = array_filter($userEditData);
-
-            (new User\Validator)->validateInput('pre_signup', $userEditData);
-
-            (new User\Service)->edit($user->id, $userEditData);
-
-            // Dump data to zapier.
-
-            $zapierData = $this->getZapierData($this->merchant, $input);
-
-            (new Core)->postFormSubmissionToZapier($zapierData, 'signups', $this->merchant);
-
-            //Creating virtual account for a merchant in test mode.
-            //Handling within try catch to avoid any breaking of pre sign up flow.
-            try
+            if (empty($input[Entity::BUSINESS_NAME]) === false)
             {
-                (new Merchant\Activate)->activateBusinessBankingIfApplicable($this->merchant);
+                (new Merchant\Core)->editPreSignupFields($this->merchant, $input);
+
+                // Save User Information of contact name nad contact Email.
+
+                $originProduct = $this->auth->getRequestOriginProduct();
+
+                $user = $this->merchant->primaryOwner($originProduct);
+
+                $userEditData['contact_mobile'] = $input['contact_mobile'] ?? null;
+                $userEditData['name']           = $input['contact_name'] ?? null;
+
+                $userEditData = array_filter($userEditData);
+
+                (new User\Validator)->validateInput('pre_signup', $userEditData);
+
+                (new User\Service)->edit($user->id, $userEditData);
+
+                //Creating virtual account for a merchant in test mode.
+                //Handling within try catch to avoid any breaking of pre sign up flow.
+                try
+                {
+                    (new Merchant\Activate)->activateBusinessBankingIfApplicable($this->merchant);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::BANKING_ACCOUNT_CREATION_TEST_MODE_FAILED);
+                }
             }
-            catch (\Throwable $e)
-            {
-                $this->trace->traceException(
-                    $e,
-                    Trace::ERROR,
-                    TraceCode::BANKING_ACCOUNT_CREATION_TEST_MODE_FAILED);
-            }
-        }
+        });
 
         $preSignupDetails = $this->getPreSignupDetails();
 
@@ -995,47 +992,6 @@ class Service extends Base\Service
         }
 
         unset($input[Entity::REFERRAL_CODE]);
-    }
-
-    private function getZapierData($merchant, $input)
-    {
-        $this->merchant->reload();
-
-        // This is the same format we'll set in the google spreadsheet
-        $timestamp = Carbon::createFromTimeStamp(time(), Timezone::IST)->format('Y-m-d\TH:i:s+05:30');
-
-        $userName = $input['contact_name'] ?? '';
-
-        $phoneNumber = $input['contact_mobile'] ?? '';
-
-        $businessType = isset($input['business_type']) ? BusinessType::getType($input['business_type']) : '';
-
-        $transactionVolume = isset($input['transaction_volume']) ?
-            TransactionVolume::getVolume($input['transaction_volume']) : '';
-
-        $role = isset($input['role']) ? Role::getType($input['role']) : '';
-
-        $department = isset($input['department']) ? Department::getType($input['department']) : '';
-
-        $referrer = $merchant->referrer ?? '';
-
-        $data = [
-            Entity::ID                 => $merchant->id,
-            Merchant\Entity::EMAIL     => $merchant->email,
-            Constants::INDIVIDUAL      => $userName,
-            Merchant\Entity::NAME      => $merchant->name,
-            Constants::REF             => $referrer,
-            Constants::SIGNUP_DATE     => $timestamp,
-            Constants::CONTACT         => $phoneNumber,
-            Entity::BUSINESS_TYPE      => $businessType,
-            Entity::TRANSACTION_VOLUME => $transactionVolume,
-            Entity::ROLE               => $role,
-            Entity::DEPARTMENT         => $department,
-        ];
-
-        (new User\Service)->addUtmParameters($data);
-
-        return $data;
     }
 
     /**
