@@ -739,6 +739,16 @@ return [
                         'display_name' => 'Loan'
                     ],
                     [
+                        'feature'      => 'loc',
+                        'value'        => false,
+                        'display_name' => 'Loc'
+                    ],
+                    [
+                        'feature'      => 'los',
+                        'value'        => false,
+                        'display_name' => 'Los'
+                    ],
+                    [
                         'feature'      => 'withdraw_loc',
                         'value'        => false,
                         'display_name' => 'Withdraw Loc'

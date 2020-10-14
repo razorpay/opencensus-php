@@ -325,9 +325,19 @@ class Constants
     const AGGREGATOR_OAUTH_CLIENT       = 'aggregator_oauth_client';
 
     /**
-     * Gives access to los service
+     * Gives access to apply for loan
      */
     const LOAN = 'loan';
+
+    /**
+     * Gives access to apply for cash advance
+     */
+    const LOC = 'loc';
+
+    /**
+     * Gives access to los service
+     */
+    const LOS = 'los';
 
     /**
      * Gives access to loc service
@@ -703,6 +713,8 @@ class Constants
         self::TRANSACTION_ON_HOLD             => true,
         self::BEPG                            => true,
         self::LOAN                            => true,
+        self::LOC                             => true,
+        self::LOS                             => true,
         self::USE_SETTLEMENT_ONDEMAND         => true,
         self::IVR_DISABLE                     => true,
         self::WITHDRAW_LOC                    => true,
@@ -812,6 +824,16 @@ class Constants
         self::LOAN                      => [
             'feature'       => self::LOAN,
             'display_name'  => 'Loan',
+            'documentation' => '',
+        ],
+        self::LOC                      => [
+            'feature'       => self::LOC,
+            'display_name'  => 'Loc',
+            'documentation' => '',
+        ],
+        self::LOS                      => [
+            'feature'       => self::LOS,
+            'display_name'  => 'Los',
             'documentation' => '',
         ],
         self::WITHDRAW_LOC              => [
