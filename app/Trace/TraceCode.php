@@ -2182,6 +2182,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PARTNER_CONFIG_CREATED                                = 'PARTNER_CONFIG_CREATED';
     const PARTNER_CONFIG_EDITED                                 = 'PARTNER_CONFIG_EDITED';
     const SUBMERCHANT_PROMOTIONAL_PRICING_PLAN                  = 'SUBMERCHANT_PROMOTIONAL_PRICING_PLAN';
+    const MERCHANT_APPLICATIONS_DELETE                          = 'MERCHANT_APPLICATIONS_DELETE';
 
     const SUBMERCHANT_ACCOUNT_CREATE_RESPONSE                   = 'SUBMERCHANT_ACCOUNT_CREATE_RESPONSE';
 

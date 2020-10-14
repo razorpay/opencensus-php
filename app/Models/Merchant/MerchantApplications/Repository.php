@@ -37,13 +37,26 @@ class Repository extends Base\Repository
      * @param string $merchantId
      * @param string $type
      *
-     * @return mixed
+     * @return Base\PublicCollection
      */
-    public function fetchMerchantApplicationsByType(string $merchantId, string $type) : Base\PublicCollection
+    public function fetchMerchantApplicationsByApplicationType(string $merchantId, string $type) : Base\PublicCollection
     {
         return $this->newQuery()
                     ->merchantId($merchantId)
                     ->where(Entity::TYPE, $type)
+                    ->get();
+    }
+
+    /**
+     * @param string $entityType
+     * @param string $entityId
+     *
+     * @return mixed
+     */
+    public function fetchMerchantApplication(string $entityId, string $entityType) : Base\PublicCollection
+    {
+        return $this->newQuery()
+                    ->where($entityType, $entityId)
                     ->get();
     }
 }

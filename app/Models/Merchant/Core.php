@@ -10,6 +10,7 @@ use Monolog\Logger;
 use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Exception;
+use RZP\Foundation\Application;
 use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\User;
@@ -1487,7 +1488,14 @@ class Core extends Base\Core
 
             $this->setDefaultFeatureForPartner($merchant);
 
-            $this->createPartnerApp($merchant);
+            $app = $this->createPartnerApp($merchant);
+
+            if ($merchant->isPurePlatformPartner() === false)
+            {
+                $applicationType = ($partnerType === Constants::RESELLER) ? MerchantApplications\Entity::REFERRED : MerchantApplications\Entity::MANAGED;
+
+                $this->createMerchantApplication($merchant, $app[OAuthApp\Entity::ID], $applicationType);
+            }
         });
 
         $dimensions = [Entity::PARTNER_TYPE => $merchant->getPartnerType()];
@@ -1495,6 +1503,16 @@ class Core extends Base\Core
         $this->trace->count(Metric::PARTNER_MARKED_TOTAL, $dimensions);
 
         return $merchant;
+    }
+
+    public function createMerchantApplication(Entity $merchant, string $applicationId, string $applicationType)
+    {
+        $appConfig = [
+            MerchantApplications\Entity::TYPE => $applicationType,
+            MerchantApplications\Entity::APPLICATION_ID => $applicationId,
+        ];
+
+        (new MerchantApplications\Core)->create($merchant, $appConfig);
     }
 
     protected function setDefaultFeatureForPartner(Entity $partner)
@@ -1549,7 +1567,13 @@ class Core extends Base\Core
             $this->repo->saveOrFail($merchant);
         });
 
+
         return $merchant;
+    }
+
+    public function deleteMerchantApplication(string $entityId, string $entityType)
+    {
+        (new MerchantApplications\Core)->deleteMerchantApplication($entityId, $entityType);
     }
 
     /**
@@ -2291,6 +2315,9 @@ class Core extends Base\Core
         $submerchants   = $this->repo->merchant->findMany($submerchantIds);
 
         $this->deleteAllSubmerchantRefTags($submerchants, $partner);
+
+        // delete entries from merchant applications table for given merchant id
+        $this->deleteMerchantApplication($partner->getId(), Constants::MERCHANT_ID);
 
         $this->deletePartnerDashboardAccessOnSubmerchants($partner, $submerchants);
     }

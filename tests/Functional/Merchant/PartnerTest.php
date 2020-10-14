@@ -15,6 +15,8 @@ use Razorpay\OAuth\Application;
 use RZP\Models\Merchant\Request;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Merchant\AccessMap;
+use RZP\Models\Merchant\MerchantApplications;
+use RZP\Models\Merchant\MerchantApplications\Entity;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
@@ -156,7 +158,9 @@ class PartnerTest extends OAuthTestCase
 
         $merchant = $merchantRequest->merchant;
 
-        $this->mockAuthServiceCreateApplication($merchant);
+        $app = ['id'=>'FoFp09FkqO5tqc'];
+
+        $this->mockAuthServiceCreateApplication($merchant, $app);
 
         // Set the admin auth
         $liveMode = $this->app['basicauth']->getLiveConnection();
@@ -172,6 +176,14 @@ class PartnerTest extends OAuthTestCase
         $this->startTest($testData);
 
         $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, $liveMode);
+
+        $merchantApplications = (new MerchantApplications\Repository())->fetchMerchantApplication(self::DEFAULT_MERCHANT_ID, Merchant\Constants::MERCHANT_ID);
+
+        $applicationTypes = $merchantApplications->pluck(Entity::TYPE)->toArray();
+
+        $applicationType = $applicationTypes[0];
+
+        $this->assertEquals($applicationType, MerchantApplications\Entity::REFERRED);
 
         $this->assertTrue($merchant->isPartner());
 
@@ -191,7 +203,9 @@ class PartnerTest extends OAuthTestCase
 
         $merchant->reload();
 
-        $this->mockAuthServiceCreateApplication($merchant);
+        $app = ['id'=>'FoFp09FkqO5tqc'];
+
+        $this->mockAuthServiceCreateApplication($merchant, $app);
 
         // Set the admin auth
         $liveMode = $this->app['basicauth']->getLiveConnection();
@@ -207,6 +221,14 @@ class PartnerTest extends OAuthTestCase
         $this->startTest($testData);
 
         $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, $liveMode);
+
+        $merchantApplications = (new MerchantApplications\Repository())->fetchMerchantApplication(self::DEFAULT_MERCHANT_ID, Merchant\Constants::MERCHANT_ID);
+
+        $applicationTypes = $merchantApplications->pluck(Entity::TYPE)->toArray();
+
+        $applicationType = $applicationTypes[0];
+
+        $this->assertEquals($applicationType, MerchantApplications\Entity::REFERRED);
 
         $this->assertTrue($merchant->isPartner());
 
@@ -336,6 +358,10 @@ class PartnerTest extends OAuthTestCase
         $accessMapEntity->setConnection('live')
                         ->withTrashed()
                         ->findOrFail($accessMap->getId());
+
+        $merchantApplications = (new MerchantApplications\Repository())->fetchMerchantApplication(self::DEFAULT_MERCHANT_ID, Merchant\Constants::MERCHANT_ID);
+
+        $this->assertEquals(0, count($merchantApplications));
     }
 
     public function testApprovingPurePlatformActivationRequest()
@@ -360,6 +386,10 @@ class PartnerTest extends OAuthTestCase
         $this->startTest($testData);
 
         $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, $liveMode);
+
+        $merchantApplications = (new MerchantApplications\Repository())->fetchMerchantApplication(self::DEFAULT_MERCHANT_ID, Merchant\Constants::MERCHANT_ID);
+
+        $this->assertEquals(0, count($merchantApplications));
 
         $this->assertTrue($merchant->isPartner());
     }
@@ -801,7 +831,9 @@ class PartnerTest extends OAuthTestCase
     {
         $merchant = $this->getDbEntityById('merchant', '10000000000000');
 
-        $this->mockAuthServiceCreateApplication($merchant);
+        $app = ['id'=>'FoFp09FkqO5tqc'];
+
+        $this->mockAuthServiceCreateApplication($merchant, $app);
 
         $rows = $this->testData[__FUNCTION__ . 'FileRows'];
 
@@ -1532,7 +1564,9 @@ class PartnerTest extends OAuthTestCase
 
         $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
 
-        $this->mockAuthServiceCreateApplication($merchant);
+        $app = ['id'=>'FoFp09FkqO5tqc'];
+
+        $this->mockAuthServiceCreateApplication($merchant, $app);
 
         $this->fixtures->merchant->createDummyPartnerApp();
 
@@ -1541,6 +1575,14 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
 
         $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+
+        $merchantApplications = (new MerchantApplications\Repository())->fetchMerchantApplication(self::DEFAULT_MERCHANT_ID, Merchant\Constants::MERCHANT_ID);
+
+        $applicationTypes = $merchantApplications->pluck(Entity::TYPE)->toArray();
+
+        $applicationType = $applicationTypes[0];
+
+        $this->assertEquals($applicationType, MerchantApplications\Entity::REFERRED);
 
         $this->assertTrue($expectedPartner->isResellerPartner());
 
@@ -1553,7 +1595,9 @@ class PartnerTest extends OAuthTestCase
 
         $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
 
-        $this->mockAuthServiceCreateApplication($merchant);
+        $app = ['id'=>'FoFp09FkqO5tqc'];
+
+        $this->mockAuthServiceCreateApplication($merchant, $app);
 
         $this->fixtures->merchant->createDummyPartnerApp();
 
@@ -1562,6 +1606,14 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
 
         $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+
+        $merchantApplications = (new MerchantApplications\Repository())->fetchMerchantApplication(self::DEFAULT_MERCHANT_ID, Merchant\Constants::MERCHANT_ID);
+
+        $applicationTypes = $merchantApplications->pluck(Entity::TYPE)->toArray();
+
+        $applicationType = $applicationTypes[0];
+
+        $this->assertEquals($applicationType, MerchantApplications\Entity::MANAGED);
 
         $this->assertTrue($expectedPartner->isAggregatorPartner());
 
@@ -1631,7 +1683,7 @@ class PartnerTest extends OAuthTestCase
         $this->fixtures->merchant->edit($merchantId, ['partner_type' => $partnerType]);
     }
 
-    protected function mockAuthServiceCreateApplication(Merchant\Entity $merchant)
+    protected function mockAuthServiceCreateApplication(Merchant\Entity $merchant, array $response = [])
     {
         // Mock create application call to auth service
         $requestParams = $this->getDefaultParamsForAuthServiceRequest();
@@ -1644,7 +1696,7 @@ class PartnerTest extends OAuthTestCase
 
         $requestParams = array_merge($requestParams, $createParams);
 
-        $this->setAuthServiceMockDetail('applications', 'POST', $requestParams);
+        $this->setAuthServiceMockDetail('applications', 'POST', $requestParams, 1, $response);
     }
 
     protected function createMerchantUser($merchantId)

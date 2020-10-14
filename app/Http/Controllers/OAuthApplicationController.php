@@ -11,7 +11,10 @@ use Razorpay\OAuth\Client\Environment as ClientEnv;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Base\JitValidator;
+use RZP\Models\Merchant\Constants;
+use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Merchant\Validator as MerchantValidator;
+use RZP\Models\Merchant\Core as MerchantCore;
 
 class OAuthApplicationController extends Controller
 {
@@ -54,6 +57,11 @@ class OAuthApplicationController extends Controller
 
         $data = $this->authservice->createApplication($input, $merchant->getId());
 
+        if (array_key_exists(App::ID, $data) === true)
+        {
+            (new MerchantCore)->createMerchantApplication($merchant, $data[App::ID], MerchantApplications\Entity::OAUTH);
+        }
+
         return ApiResponse::json($data);
     }
 
@@ -66,6 +74,15 @@ class OAuthApplicationController extends Controller
         $this->merchantValidator->validateIsNonPurePlatformPartner($merchant);
 
         $data = $this->authservice->createApplication($input, $merchant->getId(), Application\Type::PARTNER);
+
+        if (array_key_exists(App::ID, $data) === true)
+        {
+            $partnerType = $merchant->getPartnerType();
+
+            $applicationType = ($partnerType === Constants::RESELLER) ? MerchantApplications\Entity::REFERRED : MerchantApplications\Entity::MANAGED;
+
+            (new MerchantCore)->createMerchantApplication($merchant, $data[App::ID], $applicationType);
+        }
 
         return ApiResponse::json($data);
     }
@@ -124,6 +141,8 @@ class OAuthApplicationController extends Controller
         //$this->merchantValidator->validateIsPartner($merchant);
 
         $data = $this->authservice->deleteApplication($id, $merchant->getId());
+
+        (new MerchantCore)->deleteMerchantApplication($id, Merchant\Constants::APPLICATION_ID);
 
         return ApiResponse::json($data);
     }

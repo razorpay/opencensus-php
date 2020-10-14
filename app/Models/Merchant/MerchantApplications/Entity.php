@@ -20,6 +20,8 @@ class Entity extends Base\PublicEntity
 
     const MANAGED = 'managed';
 
+    const OAUTH = 'oauth';
+
     protected $entity = Constants\Entity::MERCHANT_APPLICATION;
 
     protected $generateIdOnCreate = true;
