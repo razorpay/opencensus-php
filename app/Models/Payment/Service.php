@@ -599,11 +599,29 @@ class Service extends Base\Service
     //
     protected function setRequiredDetailsGetMerchantAndPaymentId($id)
     {
+        $mode = $this->repo->determineLiveOrTestModeForEntity($id, 'payment');
+
+        if ($mode === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+            );
+        }
+
+        $this->app['basicauth']->setModeAndDbConnection($mode);
+
+        $payment = $this->core->retrievePaymentById($id);
+
+        $merchant = $payment->merchant;
+
+        $this->app['basicauth']->setMerchant($merchant);
+
         $key = Payment\Entity::getRedirectToAuthorizeTrackIdKey($id);
 
         $encryptedText = $this->app['cache']->get($key);
 
-        if ($encryptedText === null)
+        if (($encryptedText === null) and
+            ($payment->isCreated() == true))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED
@@ -612,37 +630,33 @@ class Service extends Base\Service
 
         $payload = Crypt::decrypt($encryptedText);
 
-        if (empty($payload) === true)
+        if ((empty($payload) === true) and
+            ($payment->isCreated() == true))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED
             );
         }
 
-        $this->app['basicauth']->setModeAndDbConnection($payload['mode']);
-
-        $merchant = $this->repo->merchant->findOrFail($payload['merchant_id']);
-
-        $this->trace->info(
-            TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST_PAYLOAD,
-            $payload
-        );
-
-        $this->app['basicauth']->setMerchant($merchant);
-
-        $this->app['basicauth']->setAuthDetailsUsingPublicKey($payload['public_key']);
-
-        if (empty($payload['account_id']) === false)
+        if (empty($payload) === false)
         {
-            $this->app['basicauth']->authCreds->creds['account_id'] = $payload['account_id'];
-        }
+            $this->trace->info(
+                TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST_PAYLOAD,
+                $payload
+            );
 
-        if (empty($payload['oauth_client_id']) === false)
-        {
-            $this->app['basicauth']->setOAuthClientId($payload['oauth_client_id']);
-        }
+            $this->app['basicauth']->setAuthDetailsUsingPublicKey($payload['public_key']);
 
-        $payment = $this->core->retrieveById($payload['payment_id']);
+            if (empty($payload['account_id']) === false)
+            {
+                $this->app['basicauth']->authCreds->creds['account_id'] = $payload['account_id'];
+            }
+
+            if (empty($payload['oauth_client_id']) === false)
+            {
+                $this->app['basicauth']->setOAuthClientId($payload['oauth_client_id']);
+            }
+        }
 
         return [$merchant, $payment];
     }
