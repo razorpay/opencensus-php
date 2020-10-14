@@ -174,7 +174,7 @@ class Constants
             'description' => 'Keep track of all your support tickets.',
             'start_ts'    => 1602564179,
             'end_ts'      => 1607167901,
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/early-settlement.svg',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/ticket-system/ticket-support-announcement.svg',
             'buttons'     => [
                 [
                     'type'  => 'button',

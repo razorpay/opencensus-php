@@ -20,9 +20,13 @@ export default class Message extends React.Component {
   render() {
     let from_razorpay = this.props.message.user_id !== this.props.ticket.requester_id;
 
-    let img = RZP_IMG;
+    let img = <img class="img-round user-image" src={RZP_IMG} />;
     if (!from_razorpay) {
-      img = this.props.user.logo_url || USER_IMG;
+      img = this.props.user.logo_url ? (
+        <img class="img-round user-image" src={this.props.user.logo_url} />
+      ) : (
+        <i className="i i-user-circle message-user-circle" />
+      );
     }
     let name = !from_razorpay ? this.props.user.name : 'Razorpay Support';
     let body;
@@ -41,9 +45,7 @@ export default class Message extends React.Component {
             >
               <div className="panel-body" style={{ paddingLeft: 0 }}>
                 <div className="row">
-                  <div className="col-xs-2">
-                    <img class="img-round user-image" src={img} />
-                  </div>
+                  <div className="col-xs-2">{img}</div>
                   <div className="col-xs-10">
                     <h5 style={{ marginBottom: 0, marginTop: 0 }}>
                       <div className="row">

@@ -55,7 +55,7 @@ export default class TicketBrief extends React.Component {
                       <Link to={`/ticket-support/${ticket.fd_instance}/${ticket.id}/conversation`}>
                         <p class="message-subject">
                           {subject}
-                          {status !== 'closed' ? <TicketStatus ticket={ticket} /> : null}
+                          {status === 'open' ? <TicketStatus ticket={ticket} /> : null}
                         </p>
                       </Link>
 

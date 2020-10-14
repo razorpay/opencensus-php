@@ -20,6 +20,11 @@ export default class Reply extends React.Component {
   };
 
   render() {
+    let img = this.props.logo_url ? (
+      <img class="img-round user-image" src={this.props.logo_url} />
+    ) : (
+      <i className="i i-user-circle reply-user-circle" />
+    );
     return (
       <Fragment>
         <div className="message" style={{ marginBottom: 0 }}>
@@ -29,9 +34,7 @@ export default class Reply extends React.Component {
           >
             <div className="panel-body" style={{ paddingLeft: 0 }}>
               <div className="row">
-                <div className="col-xs-2">
-                  <img class="img-round user-image" src={this.props.logo_url || USER_IMG} />
-                </div>
+                <div className="col-xs-2">{img}</div>
                 <div className="col-xs-10">
                   <h5 style={{ marginBottom: 0 }}>
                     <div className="row">

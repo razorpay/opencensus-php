@@ -93,11 +93,7 @@ export default class Conversations extends React.Component {
                 {' '}
                 <div className="row" style={{ marginBottom: '20px' }}>
                   <div className="col-xs-12">
-                    <span
-                      onClick={() => {
-                        this.props.fetchSupportTickets({ page: 1 });
-                      }}
-                    >
+                    <span>
                       <Link
                         to={`/ticket-support/tickets`}
                         onClick={() => {

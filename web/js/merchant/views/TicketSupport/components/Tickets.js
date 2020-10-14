@@ -90,7 +90,7 @@ export default class Tickets extends React.Component {
                   </div>
                 ) : null}
                 {no_tickets ? (
-                  <h2>No Tickets Found</h2>
+                  <h2 class="no-tickets-f">No Tickets Found</h2>
                 ) : (
                   <div>
                     {tickets.map((ticket, index) => {
@@ -112,7 +112,7 @@ export default class Tickets extends React.Component {
                       <b>Page {this.state.current_page}</b>
                     ) : null}
                   </p>
-                  {total_tickets.length ? (
+                  {total_tickets.length >= 30 ? (
                     <button
                       disabled={tickets.length < this.state.size}
                       className="btn btn-outline pull-right"

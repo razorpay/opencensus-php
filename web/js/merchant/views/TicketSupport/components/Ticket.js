@@ -22,27 +22,27 @@ export default class Ticket extends React.Component {
 
   render() {
     const status = statuses[this.props.ticket.status];
+    let img = this.props.logo_url ? (
+      <img style={{ marginLeft: '2px' }} class="img-round user-image" src={this.props.logo_url} />
+    ) : (
+      <i style={{ left: '5px' }} className="i i-user-circle reply-user-circle" />
+    );
     return (
       <Fragment>
         <div>
           <div className="row message" style={{ padding: '0 18px' }}>
             <div className="col-xs-12 ticket-conv-body">
               <div className="row m-body-stroke">
-                <div className="col-xs-2">
-                  <img
-                    class="img-round user-image ticket-img-round"
-                    src={this.props.logo_url || USER_IMG}
-                  />
-                </div>
+                <div className="col-xs-2">{img}</div>
                 <div className="col-xs-10" style={{ paddingLeft: 0 }}>
                   <h5 style={{ marginBottom: 0 }}>
                     <div className="row" style={{ paddingRight: '10px' }}>
                       <div className="col-xs-9 message-owner">
                         <b>
                           TICKET ID #{this.props.ticket.id}
-                          {this.props.ticket.custom_fields.cf_category
+                          {/* {this.props.ticket.custom_fields.cf_category
                             ? ` | Category: ${this.props.ticket.custom_fields.cf_category}`
-                            : null}
+                            : null} */}
                         </b>
                       </div>
                       <div className="col-xs-3 text-right" style={{ height: '20px' }}>
@@ -51,7 +51,7 @@ export default class Ticket extends React.Component {
                     </div>
                   </h5>
                   <p class="message-to">
-                    Created {moment(this.props.ticket.created_at).fromNow()}(
+                    Created {moment(this.props.ticket.created_at).fromNow()} (
                     {moment(this.props.ticket.created_at).format('LLL')} )
                   </p>
                   {this.props.ticket.cc_emails.length ? (
