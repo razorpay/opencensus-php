@@ -30,6 +30,7 @@ export default class BatchValidateModal extends Component {
       onSampleFileDownload = () => {},
       onErrorReportDownload = () => {},
       user,
+      batchClass,
       acceptFileInfo,
     } = this.props;
 
@@ -38,8 +39,8 @@ export default class BatchValidateModal extends Component {
     }
 
     return (
-      <div class="modal-body">
-        <h4 class="modal-heading">UPLOAD FILE</h4>
+      <div class={batchClass ? batchClass : 'modal-body'}>
+        {!batchClass ? <h4 class="modal-heading">UPLOAD FILE</h4> : null}
         <div class="modal-file">
           <FileUpload
             accept={['csv', 'xlsx']}
@@ -69,6 +70,28 @@ export default class BatchValidateModal extends Component {
         {/* Show batch upload modal info when no file uploaded */}
         {!status || status === 'exceed' ? (
           <React.Fragment>
+            {batchType === 'partner_submerchant_invite' ? (
+              <div class="top-download-link">
+                <a class="btn-link" href={sampleUrl} onClick={onSampleFileDownload}>
+                  <strong>Download sample file</strong>
+                </a>
+              </div>
+            ) : null}
+            <div class="modal-info partner-submerchant">
+              <h5 style={{ fontSize: '16px' }}>Keep in mind</h5>
+              <ol class="validate-modal-ul">
+                <li>
+                  File should follow the template format. Download&nbsp;
+                  <a class="btn-link" href={sampleUrl} onClick={onSampleFileDownload}>
+                    <strong>sample file</strong>
+                  </a>
+                  &nbsp;for the template.
+                </li>
+                <li>The number of accounts in the file should not exceed 5000.</li>
+                <li>Once the file is processed email invite will be sent to all accounts.</li>
+                <li>These accounts will be listed under affiliate accounts on your dashboard.</li>
+              </ol>
+            </div>
             <div class="modal-info">
               <h5 style={{ fontSize: '16px' }}>
                 Getting Started with Batch Uploads?{' '}

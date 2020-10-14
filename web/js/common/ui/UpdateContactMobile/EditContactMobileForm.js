@@ -1,4 +1,4 @@
-import { connect  } from 'react-redux';
+import { connect } from 'react-redux';
 
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
@@ -11,15 +11,14 @@ import { isPhone } from 'common/utils/validators';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { updateContactMobile } from 'merchant_common/reducers/user';
 
-
 @connect(
   (state) => ({
-    ...pickProps(state.session.user.user, [ 'contact_mobile', 'email' ]),
+    ...pickProps(state.session.user.user, ['contact_mobile', 'email']),
   }),
   {
     closeModal,
     updateContactMobile,
-  }
+  },
 )
 export default class EditContactMobileForm extends React.Component {
   state = {
@@ -29,14 +28,14 @@ export default class EditContactMobileForm extends React.Component {
   onCloseClick = () => {
     this.props.onClose && this.props.onClose();
     this.props.closeModal();
-  }
+  };
 
   onContactMobileChange = ({ target }) => {
     const { value } = target;
     this.setState({
       contactMobile: value,
     });
-  }
+  };
 
   onContactUpdateSubmit = () => {
     const { contactMobile } = this.state;
@@ -47,19 +46,18 @@ export default class EditContactMobileForm extends React.Component {
       otp_auth_token: otpAuthToken,
     };
 
-    return this
-            .props
-            .updateContactMobile(data)
-              .then(() => {
-                this.props.onContactMobileUpdate(this.state.contactMobile);
-              })
-              .catch(({ errors }) => {
-                this.props.showNotification({
-                  type: 'error',
-                  message: errors[0],
-                });
-              });
-  }
+    return this.props
+      .updateContactMobile(data)
+      .then(() => {
+        this.props.onContactMobileUpdate(this.state.contactMobile);
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors[0],
+        });
+      });
+  };
 
   isFormValid = () => {
     const { contactMobile } = this.state;
@@ -67,22 +65,15 @@ export default class EditContactMobileForm extends React.Component {
       return true;
     }
     return false;
-  }
+  };
 
   render() {
     return (
       <div class="2fa-modal">
-        <ModalHeader
-          title="Change Mobile Number"
-          onCloseClick={this.onCloseClick}
-        />
+        <ModalHeader title="Change Mobile Number" onCloseClick={this.onCloseClick} />
         <div class="modal-body">
-          <p>
-          Enter your new mobile number here.
-          </p>
-          <p class="m-t">
-            You will have to verify this number with an OTP.
-          </p>
+          <p>Enter your new mobile number here.</p>
+          <p class="m-t">You will have to verify this number with an OTP.</p>
           <Form>
             <Input
               name="contact_mobile"

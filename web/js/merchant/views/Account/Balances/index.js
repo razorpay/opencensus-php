@@ -15,7 +15,7 @@ import Amount from 'common/ui/Amount';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { loadCheckout } from 'merchant/utils/fetchKeysAndCheckout';
 @connect(
-  state => ({
+  (state) => ({
     ...state.session,
     account_balance: state.home.current_balance,
     reserve_balance: state.profile.reserve_balance,
@@ -28,7 +28,7 @@ import { loadCheckout } from 'merchant/utils/fetchKeysAndCheckout';
     fetchReserveBalance,
     storeTicketDetails,
     getTicketStatus,
-  }
+  },
 )
 export default class AddFundsContainer extends Component {
   constructor() {
@@ -51,7 +51,7 @@ export default class AddFundsContainer extends Component {
     loadCheckout(window.api_host);
   }
 
-  fetchOrderId = data => {
+  fetchOrderId = (data) => {
     return merchantFetch({
       url: `orders`,
       method: 'post',
@@ -70,7 +70,7 @@ export default class AddFundsContainer extends Component {
         reject('Payment failed');
       }
     })
-      .then(_ => {
+      .then((_) => {
         this.setState({
           isSaving: false,
         });
@@ -80,7 +80,7 @@ export default class AddFundsContainer extends Component {
           message: 'Funds added successfully',
         });
       })
-      .catch(error => {
+      .catch((error) => {
         this.setState({
           isSaving: false,
           status: {
@@ -91,7 +91,7 @@ export default class AddFundsContainer extends Component {
       });
   }
 
-  openCheckout = async fieldProps => {
+  openCheckout = async (fieldProps) => {
     let user = this.props.user;
     let amountInPaise = rupeesToPaise(fieldProps.amountInINR);
 
@@ -142,7 +142,7 @@ export default class AddFundsContainer extends Component {
       } catch (e) {
         reject(`An error occured - ${e.message}`);
       }
-    }).catch(error => {
+    }).catch((error) => {
       this.setState({
         status: {
           type: 'error',
@@ -159,7 +159,7 @@ export default class AddFundsContainer extends Component {
     });
   };
 
-  getReserveBalanceAmount = items => {
+  getReserveBalanceAmount = (items) => {
     if (!items) return 0;
 
     if (items.length === 0 || this.props.reserve_balance.error === true) {
@@ -172,14 +172,8 @@ export default class AddFundsContainer extends Component {
   handleActivate = () => {
     if (window.rzpTicketSystem) {
       const rzpTicketSystem = window.rzpTicketSystem;
-      window.rzpTicketSystem.addEventListener(
-        'ticket-created',
-        this.handleTicketCreation
-      );
-      rzpTicketSystem.setPrefill('#request', [
-        'merchant',
-        'account-configuration-changes',
-      ]);
+      window.rzpTicketSystem.addEventListener('ticket-created', this.handleTicketCreation);
+      rzpTicketSystem.setPrefill('#request', ['merchant', 'account-configuration-changes']);
       rzpTicketSystem.openModal('#ticket');
       setTimeout(() => {
         rzpTicketSystem.modal.next();
@@ -205,14 +199,8 @@ export default class AddFundsContainer extends Component {
   handleContactUs = () => {
     if (window.rzpTicketSystem) {
       const rzpTicketSystem = window.rzpTicketSystem;
-      window.rzpTicketSystem.addEventListener(
-        'ticket-created',
-        this.handleTicketCreation
-      );
-      rzpTicketSystem.setPrefill('#request', [
-        'merchant',
-        'account-configuration-changes',
-      ]);
+      window.rzpTicketSystem.addEventListener('ticket-created', this.handleTicketCreation);
+      rzpTicketSystem.setPrefill('#request', ['merchant', 'account-configuration-changes']);
       rzpTicketSystem.openModal('#ticket');
       setTimeout(() => {
         rzpTicketSystem.modal.next();
@@ -226,15 +214,9 @@ export default class AddFundsContainer extends Component {
     const reserveBalance = this.getReserveBalanceAmount(items);
 
     return (
-      <div
-        class="content-wrapper content-sm"
-        style={{ backgroundColor: '#f9fafb' }}
-      >
+      <div class="content-wrapper content-sm" style={{ backgroundColor: '#f9fafb' }}>
         {Object.keys(this.state.status).length > 0 && (
-          <Alert
-            type={this.state.status.type}
-            message={this.state.status.message}
-          />
+          <Alert type={this.state.status.type} message={this.state.status.message} />
         )}
         <div class="balances-container">
           <div class="bal-cont-header">
@@ -243,9 +225,7 @@ export default class AddFundsContainer extends Component {
                 <p>Current Balance</p>
               </div>
               <div class="balance-amount-container">
-                {current_balance < 0 && (
-                  <p style={{ paddingRight: '5px', color: '#C42A2A' }}>-</p>
-                )}
+                {current_balance < 0 && <p style={{ paddingRight: '5px', color: '#C42A2A' }}>-</p>}
                 <Amount
                   value={Math.abs(current_balance)}
                   currency={'INR'}
@@ -262,8 +242,8 @@ export default class AddFundsContainer extends Component {
 
           <div class="bal-cont-footer">
             <p>
-              Add funds to your account to process refunds/transfers when the
-              account balance goes low. Adding large funds to your account?
+              Add funds to your account to process refunds/transfers when the account balance goes
+              low. Adding large funds to your account?
               <a onClick={this.handleContactUs}> Contact Us</a>
             </p>
           </div>
@@ -285,10 +265,7 @@ export default class AddFundsContainer extends Component {
                 <p>Reserve Balance</p>
               </div>
               <div class="balance-amount-container">
-                <Amount
-                  value={Math.abs(this.getReserveBalanceAmount(items))}
-                  currency={'INR'}
-                />
+                <Amount value={Math.abs(this.getReserveBalanceAmount(items))} currency={'INR'} />
               </div>
             </div>
             <div class="balances-add-funds">
@@ -307,16 +284,14 @@ export default class AddFundsContainer extends Component {
 
           <div class="bal-cont-footer">
             <p>
-              Add funds to your reserved balance to increase the negative
-              balance limit(
+              Add funds to your reserved balance to increase the negative balance limit(
               <a
                 href="https://razorpay.com/docs/payment-gateway/balances/dashboard/"
                 target="_blank"
               >
                 Learn More
               </a>
-              ). Withdraw reserved balance?{' '}
-              <a onClick={this.handleContactUs}>Contact Us</a>
+              ). Withdraw reserved balance? <a onClick={this.handleContactUs}>Contact Us</a>
             </p>
           </div>
         </div>
@@ -325,8 +300,7 @@ export default class AddFundsContainer extends Component {
         this.props.ticket_status.data.ticket_status === 'Processing' ? (
           <div class="processing-note">
             <p>
-              Your request is being processed. Please check your registered
-              email for an update.
+              Your request is being processed. Please check your registered email for an update.
             </p>
           </div>
         ) : null}

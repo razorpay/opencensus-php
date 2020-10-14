@@ -21,6 +21,91 @@ $stats-border = #eaeff0;
         margin-left: -15px
         width: 350px
 
+.partner-submerchant-modal
+  .add-single-block
+    margin-top: 32px
+  .batch-upload-modal
+    background: inherit;
+    margin-top: 32px
+    ol
+      font-size: 12px;
+      line-height: 18px
+    .notification
+      margin: 15px 0
+      font-size: 12px;
+      line-height: 18px
+      &.success
+        display: none
+    .modal-file
+      width: 100%
+    .modal-info
+      display: none
+    .modal-info.partner-submerchant
+      display: block
+      h5
+        text-transform: uppercase
+    .top-download-link
+      margin-top: 8px;
+      text-align: right
+    .validate-modal-ul
+      padding-left: 14px;
+  ul.tab-headers
+    list-style-type: none
+    padding: 0
+    border-bottom: 1px solid rgba(22, 47, 86, 0.1)
+    padding-bottom: 8px
+    li
+      display: inline
+      color: rgba(22, 47, 86, 0.54)
+      font-weight: bold
+      margin-right: 24px
+      font-size: 14px
+      line-height: 20px
+      position: relative
+      cursor: pointer
+      padding-bottom: 8px
+      &.active
+        color: rgba(11, 112, 231, 0.87)
+        &:after
+          width: 100%
+          height: 2px
+          background: rgba(11, 112, 231, 0.74)
+          bottom: -3px
+          border-radius: 1px
+          content: ''
+          left: 0
+          position: absolute
+
+  .modal-body
+    .success-message
+      p
+        margin: 16px 0 6px 0
+        font-size: 14px
+        line-height: 17px
+        color: #2D2D2D
+        display: flex
+        align-items: center
+      span
+        display: block
+        margin-bottom: 6px
+        font-size: 12px
+        line-height: 14px
+        color: rgba(22, 47, 86, 0.54)
+      img
+        max-width: 16px
+
+    .Dropzone-cavity
+      .Dropzone-content-desc--primary
+        font-size: 14px;
+        line-height: 20px
+      .Dropzone-content-desc--secondary
+        font-size: 12px;
+        line-height: 18px
+      &.Dropzone-cavity--success
+        background: #FAFFFC;
+        border-color: rgba(0, 195, 79, 0.5);
+      
+
 .batch-upload-modal
   background: #fff
 
@@ -75,6 +160,9 @@ $stats-border = #eaeff0;
     border: 1px solid #DBDBDB
     margin: 30px 0 0
     padding: 0 15px
+
+    &.partner-submerchant
+      display: none
 
     .doc-url
       vertical-align: unset

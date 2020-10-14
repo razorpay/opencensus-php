@@ -15,7 +15,7 @@ export default class TwoFactorVerificationOTP extends React.Component {
 
   state = {};
 
-  updateOtpValue = otp => {
+  updateOtpValue = (otp) => {
     this.otpValue = otp;
   };
 
@@ -42,10 +42,7 @@ export default class TwoFactorVerificationOTP extends React.Component {
   render() {
     return (
       <div>
-        <ModalHeader
-          title={this.props.title}
-          onCloseClick={this.onCloseClick}
-        />
+        <ModalHeader title={this.props.title} onCloseClick={this.onCloseClick} />
         <div class="modal-body">
           {this.props.renderMessage()}
           <OtpInput

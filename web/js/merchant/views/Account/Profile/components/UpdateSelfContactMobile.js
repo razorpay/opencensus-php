@@ -15,7 +15,7 @@ import Input from 'common/new-ui/Input';
 import { isPhone } from 'common/utils/validators';
 
 @connect(
-  state => ({
+  (state) => ({
     contact_mobile: (state.session.user.user || {}).contact_mobile,
   }),
   {
@@ -23,7 +23,7 @@ import { isPhone } from 'common/utils/validators';
     openModal,
     updateSelfContact,
     showNotification,
-  }
+  },
 )
 export default class UpdateSelfContactMobile extends Component {
   state = {
@@ -58,7 +58,7 @@ export default class UpdateSelfContactMobile extends Component {
   };
 
   onChange = ({ target }) => {
-    this.setState(currentState => ({
+    this.setState((currentState) => ({
       values: {
         ...currentState.values,
         [target.name]: target.value,
@@ -82,14 +82,10 @@ export default class UpdateSelfContactMobile extends Component {
   render() {
     return (
       <div class="2fa-modal">
-        <ModalHeader
-          title="Setting up 2-step verification"
-          onCloseClick={this.onCloseClick}
-        />
+        <ModalHeader title="Setting up 2-step verification" onCloseClick={this.onCloseClick} />
         <div class="modal-body">
           <p>
-            Let's setup a mobile number where you will receive an SMS with OTP
-            everytime you log in.
+            Let's setup a mobile number where you will receive an SMS with OTP everytime you log in.
           </p>
           <Form onChange={this.onChange}>
             <Input
@@ -129,12 +125,10 @@ class VerifyOtp extends Component {
 
   onConfirm = () => {
     return this.props
-      .verifyTwoFactorOtp(
-        {
-          otp: this.otpValue,
-        },
-      )
-      .then(response => {
+      .verifyTwoFactorOtp({
+        otp: this.otpValue,
+      })
+      .then((response) => {
         if (response.success) {
           this.props.onSuccess && this.props.onSuccess();
         }
@@ -160,7 +154,7 @@ class VerifyOtp extends Component {
     });
   };
 
-  updateOtpValue = otp => {
+  updateOtpValue = (otp) => {
     this.otpValue = otp;
   };
 
@@ -180,10 +174,7 @@ class VerifyOtp extends Component {
     const { contactMobile } = this.props;
     return (
       <div>
-        <ModalHeader
-          title="Verify Mobile Number"
-          onCloseClick={this.onCloseClick}
-        />
+        <ModalHeader title="Verify Mobile Number" onCloseClick={this.onCloseClick} />
         <div class="modal-body">
           <p class="m-b">
             An SMS with 6-digit OTP has been sent to {contactMobile}{' '}

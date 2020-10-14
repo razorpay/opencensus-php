@@ -10,32 +10,31 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { updateContactMobile, updateUser } from 'merchant_common/reducers/user';
 import { verifyTwoFactorOtp } from 'merchant_common/reducers/twoFactor';
 
-@connect(state => ({
-  user: state.session.user.user
-}), {
-  openModal,
-  closeModal,
+@connect(
+  (state) => ({
+    user: state.session.user.user,
+  }),
+  {
+    openModal,
+    closeModal,
 
-  updateContactMobile,
-  updateUser,
-  verifyTwoFactorOtp,
-})
+    updateContactMobile,
+    updateUser,
+    verifyTwoFactorOtp,
+  },
+)
 export default class UserContactMobile extends React.Component {
   onUpdateContactMobileComplete = (userData) => {
     this.props.updateUser(userData);
     this.props.closeModal();
-  }
+  };
 
   onChangeContactMobile = () => {
     this.props.openModal({
       size: 'small',
-      component: (
-        <UpdateContactMobile
-          onComplete={this.onUpdateContactMobileComplete}
-        />
-      ),
+      component: <UpdateContactMobile onComplete={this.onUpdateContactMobileComplete} />,
     });
-  }
+  };
 
   render() {
     const contactMobile = this.props.user.contact_mobile;
@@ -49,32 +48,24 @@ export default class UserContactMobile extends React.Component {
           />
         )}
       />
-    )
+    );
   }
 }
 
 function ContactMobileValue({ contactMobile, onChangeContactMobile }) {
   return (
     <span>
-      <ShowWhen
-        additionalCondition={user => user.isTwoFactorSetupDone}
-      >
+      <ShowWhen additionalCondition={(user) => user.isTwoFactorSetupDone}>
         <span className="text-success m-r">
-          <i class="i i-done-all"/>
+          <i class="i i-done-all" />
         </span>
       </ShowWhen>
       {contactMobile || null}
-      <ShowWhen
-        additionalCondition={user => user.isContactMobileChangeAllowed}
-      >
-        <Button.Transparent
-          onClick={onChangeContactMobile}
-        >
-          {contactMobile ? (
-            <i class="i i-edit p-l"/>
-          ) : 'Set Contact Number'}
+      <ShowWhen additionalCondition={(user) => user.isContactMobileChangeAllowed}>
+        <Button.Transparent onClick={onChangeContactMobile}>
+          {contactMobile ? <i class="i i-edit p-l" /> : 'Set Contact Number'}
         </Button.Transparent>
       </ShowWhen>
     </span>
-  )
+  );
 }

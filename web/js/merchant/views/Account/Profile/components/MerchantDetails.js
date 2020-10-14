@@ -50,9 +50,7 @@ function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
         </span>
       );
     } else {
-      businessWebsite = (
-        <span class="status-label label label-info">Under Review</span>
-      );
+      businessWebsite = <span class="status-label label label-info">Under Review</span>;
     }
   }
 
@@ -60,7 +58,7 @@ function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
     <div>
       {businessWebsite}
       {isPresent(user.additional_websites) &&
-        user.additional_websites.map(website => (
+        user.additional_websites.map((website) => (
           <div>
             <a href={website} target="_blank" rel="noopener">
               {website}
@@ -91,21 +89,16 @@ const MerchantDetails = ({
     tracking.trackEvent(
       window.rzpQ.onbr().initiated('dash.my_account_actions', {
         action: 'Add_Website_Initiated',
-      })
+      }),
     );
     tracking.trackEvent(
       window.rzpQ.onbr().initiated('dash.add_website', {
         clickSource: 'My_Account',
-      })
+      }),
     );
     openModal({
       size: 'small',
-      component: (
-        <EditWebsiteDetailsModal
-          onWebsiteAdd={onWebsiteAdd}
-          onClose={closeModal}
-        />
-      ),
+      component: <EditWebsiteDetailsModal onWebsiteAdd={onWebsiteAdd} onClose={closeModal} />,
     });
   };
 
@@ -123,8 +116,8 @@ const MerchantDetails = ({
                 <Popover align="top" theme="dark">
                   <PopoverBody>
                     <div>
-                      This is the display name that you and your team will see
-                      on the Razorpay dashboard.
+                      This is the display name that you and your team will see on the Razorpay
+                      dashboard.
                     </div>
                   </PopoverBody>
                 </Popover>
@@ -135,20 +128,12 @@ const MerchantDetails = ({
             user.display_name ? (
               <span>
                 {user.display_name}
-                <a
-                  class="p-l"
-                  onClick={changeDisplayName}
-                  title="Edit Display Name"
-                >
+                <a class="p-l" onClick={changeDisplayName} title="Edit Display Name">
                   <i class="i i-edit" />
                 </a>
               </span>
             ) : (
-              <a
-                class="p-l"
-                onClick={changeDisplayName}
-                title="Set Display Name"
-              >
+              <a class="p-l" onClick={changeDisplayName} title="Set Display Name">
                 Set Display Name
               </a>
             )
@@ -161,25 +146,20 @@ const MerchantDetails = ({
         value={() => <a href={`mailto:${user.email}`}>{user.email}</a>}
       />
 
-      <UserContactMobile/>
+      <UserContactMobile />
 
       <DetailRow label="Business Name" value={titleCase(user.business_name)} />
 
-      <DetailRow
-        label="Business Type"
-        value={titleCase(businessTypeMap[user.business_type])}
-      />
+      <DetailRow label="Business Type" value={titleCase(businessTypeMap[user.business_type])} />
 
       <DetailRow
         label="Registration Date"
-        value={() => (
-          <Time value={user.created_at} format="MMM DD YYYY, hh:mm:ss a" />
-        )}
+        value={() => <Time value={user.created_at} format="MMM DD YYYY, hh:mm:ss a" />}
       />
 
       <DetailRow label="Registered By" value={user.marketplace_merchant_name} />
 
-      <ShowWhen additionalCondition={user => user.isAllowedEdit('activation')}>
+      <ShowWhen additionalCondition={(user) => user.isAllowedEdit('activation')}>
         <DetailRow
           label={() => <b>Account Activation</b>}
           value={() => (
@@ -190,17 +170,14 @@ const MerchantDetails = ({
                   tracking.trackEvent(
                     window.rzpQ.onbr().initiated(trackerName, {
                       clickSource: 'My_Account',
-                    })
+                    }),
                   );
                 }}
               >
                 {do {
                   if (user.activated || user.locked || user.submitted) {
                     ('View');
-                  } else if (
-                    user.activation_progress == 100 &&
-                    !user.submitted
-                  ) {
+                  } else if (user.activation_progress == 100 && !user.submitted) {
                     ('Submit');
                   } else {
                     ('Fill');
@@ -216,9 +193,7 @@ const MerchantDetails = ({
       {!!user.activated && (
         <DetailRow
           label="Account Activated On"
-          value={() => (
-            <Time value={user.activated_at} format="MMM DD YYYY, hh:mm a" />
-          )}
+          value={() => <Time value={user.activated_at} format="MMM DD YYYY, hh:mm a" />}
         />
       )}
 
@@ -231,15 +206,9 @@ const MerchantDetails = ({
                 <ActivationStatusLabel status={user.activation_status} />
               ) : (
                 <div class="activation-bar-content activation-status-secondary">
-                  <div class="activation-bar-text">
-                    {user.activation_progress}% Completed
-                  </div>
+                  <div class="activation-bar-text">{user.activation_progress}% Completed</div>
                   <div class="activation-bar">
-                    <ProgressBar
-                      type="success"
-                      max={100}
-                      value={user.activation_progress}
-                    />
+                    <ProgressBar type="success" max={100} value={user.activation_progress} />
                   </div>
                 </div>
               )
@@ -278,17 +247,14 @@ const MerchantDetails = ({
                   <Popover align="top" theme="dark">
                     <PopoverBody>
                       <div>
-                        These are the verified websites on which payments can be
-                        integrated.
+                        These are the verified websites on which payments can be integrated.
                       </div>
                     </PopoverBody>
                   </Popover>
                 </small>
               </div>
             )}
-            value={() =>
-              renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow)
-            }
+            value={() => renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow)}
           />
         </React.Fragment>
       )}
@@ -296,6 +262,4 @@ const MerchantDetails = ({
   );
 };
 
-export default connect(null, { openModal, closeModal })(
-  RTracking()(MerchantDetails)
-);
+export default connect(null, { openModal, closeModal })(RTracking()(MerchantDetails));

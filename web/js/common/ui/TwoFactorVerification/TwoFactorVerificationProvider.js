@@ -21,15 +21,14 @@ import TwoFactorVerificationSetup from './TwoFactorVerificationSetup';
     openModal,
     closeModal,
     verifyTwoFactorOtp,
-  }
+  },
 )
 @RTracking(() => window.rzpQ.component('TwoFaVerificationContextProvider'))
 export default class TwoFaVerificationContextProvider extends React.Component {
   onOtpConfirm = (data) => {
     return this.props.verifyTwoFactorOtp({
-        otp: data.otp,
-      },
-    );
+      otp: data.otp,
+    });
   };
 
   onContactMobileUpdated = ({ onUserTwoFaVerified }) => () => {
@@ -95,10 +94,7 @@ export default class TwoFaVerificationContextProvider extends React.Component {
     this.props.openModal({
       size: 'medium',
       component: (
-        <TwoFactorVerificationSetup
-          onComplete={onContactMobileUpdated}
-          onClose={this.onClose}
-        />
+        <TwoFactorVerificationSetup onComplete={onContactMobileUpdated} onClose={this.onClose} />
       ),
     });
   };
@@ -119,10 +115,10 @@ export default class TwoFaVerificationContextProvider extends React.Component {
             renderMessage={() => (
               <>
                 <p class="m-b">
-                  The action you are trying to perform needs 2-step verification. An
-                  SMS with 6-digit OTP has been sent to {user.user.contact_mobile}{' '}
+                  The action you are trying to perform needs 2-step verification. An SMS with
+                  6-digit OTP has been sent to {user.user.contact_mobile}{' '}
                 </p>
-                <p class="m-t m-b" >OTP will expire in 5 mins</p>
+                <p class="m-t m-b">OTP will expire in 5 mins</p>
               </>
             )}
           />
@@ -165,7 +161,7 @@ export default class TwoFaVerificationContextProvider extends React.Component {
     this.props.tracking.trackEvent(
       window.rzpQ.merchantActions().failed('critical_actions.2fa_verification_wrong_otp', {
         action: this.props.action,
-      })
+      }),
     );
   };
 }

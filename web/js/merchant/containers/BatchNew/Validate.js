@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import BatchValidateModal from 'merchant/components/BatchNew/ValidateModal';
 
-@connect(state => state.session)
+@connect((state) => state.session)
 export default class BatchValidate extends Component {
   state = {
     status: null,
@@ -20,10 +20,7 @@ export default class BatchValidate extends Component {
       ? (errorMsg ? `${errorMsg}. ` : '') + notificationMsgs[status]
       : null;
     // handle server error 500 message
-    if (
-      newState.notifyMsg &&
-      newState.notifyMsg.indexOf('Server error response') > -1
-    ) {
+    if (newState.notifyMsg && newState.notifyMsg.indexOf('Server error response') > -1) {
       newState.notifyMsg =
         'There was an error while processing the file. Please try again after some time.';
     }
@@ -41,41 +38,31 @@ export default class BatchValidate extends Component {
 
     return this.props
       .validateBatch(file, progressTracker)
-      .then(response => {
+      .then((response) => {
         clearInterval(t);
         if (response.data.error_count) {
           this.changeBatchState(
             'error',
             'Some fields have invalid entries',
-            response.data.signed_url
+            response.data.signed_url,
           );
           this.props.gaEvents.trackUploadBatchFile(
             'error',
             'Some fields have invalid entries',
-            secondsSinceStart
+            secondsSinceStart,
           );
         } else {
           this.changeBatchState('success');
-          this.props.gaEvents.trackUploadBatchFile(
-            'success',
-            undefined,
-            secondsSinceStart
-          );
-          this.props.onValidation(
-            response.data,
-            file.name.replace(/\.[^/.]+$/, '')
-          );
+          this.props.gaEvents.trackUploadBatchFile('success', undefined, secondsSinceStart);
+          this.props.onValidation(response.data, file.name.replace(/\.[^/.]+$/, ''));
         }
         return response;
       })
-      .catch(error => {
+      .catch((error) => {
         this.changeBatchState('error', error.errors[0]);
+        this.props.onValidationFail && this.props.onValidationFail(error.errors[0]);
         clearInterval(t);
-        this.props.gaEvents.trackUploadBatchFile(
-          'error',
-          error.errors[0],
-          secondsSinceStart
-        );
+        this.props.gaEvents.trackUploadBatchFile('error', error.errors[0], secondsSinceStart);
         return error;
       });
   };
@@ -88,16 +75,19 @@ export default class BatchValidate extends Component {
     this.props.gaEvents.trackDownloadErrorReport();
   };
 
+  handleCloseClick = () => {
+    this.props.onFileRemove && this.props.onFileRemove();
+    this.changeBatchState();
+  };
+
   render() {
     return (
       <BatchValidateModal
         onLoadMore={this.handleLoadMore}
         onFileChange={this.handleBatchValidation}
         onBiggerFileSize={this.handleBiggerFileSize}
-        onCloseClick={this.changeBatchState}
-        onSampleFileDownload={this.props.gaEvents.trackSampleFileDownload(
-          'From New Modal'
-        )}
+        onCloseClick={this.handleCloseClick}
+        onSampleFileDownload={this.props.gaEvents.trackSampleFileDownload('From New Modal')}
         onErrorReportDownload={this.handleErrorReportDownload}
         {...this.state}
         {...this.props}
@@ -110,10 +100,8 @@ export default class BatchValidate extends Component {
  * Notification Map: change nofitication msg based on current validation state.
  */
 const notificationMsgs = {
-  process:
-    'The batch file is being processed. Please wait as this may take some time.',
+  process: 'The batch file is being processed. Please wait as this may take some time.',
   success: 'The batch file has been processed successfully.',
   error: 'Please correct them and upload the file again',
-  exceed:
-    'The file size exceeds the maximum size limit. Please upload a smaller file.',
+  exceed: 'The file size exceeds the maximum size limit. Please upload a smaller file.',
 };

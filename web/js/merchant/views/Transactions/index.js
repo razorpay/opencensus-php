@@ -83,9 +83,7 @@ export default class TransactionsContainer extends Component {
                 Refunds
               </NavLink>
             </ShowWhen>
-            <ShowWhen
-              additionalCondition={(user) => user.isAllowedView('refunds_batch_uploads')}
-            >
+            <ShowWhen additionalCondition={(user) => user.isAllowedView('refunds_batch_uploads')}>
               <NavLink
                 to="/refunds/batchuploads"
                 isActive={(match, { pathname }) =>

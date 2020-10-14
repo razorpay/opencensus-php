@@ -3,7 +3,11 @@ import RTracking from 'react-tracking';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { triggerOtpOnEmail, verifyOtpOnEmail, verifyTwoFactorOtp } from 'merchant_common/reducers/twoFactor';
+import {
+  triggerOtpOnEmail,
+  verifyOtpOnEmail,
+  verifyTwoFactorOtp,
+} from 'merchant_common/reducers/twoFactor';
 import { updateContactMobile } from 'merchant_common/reducers/user';
 
 import TwoFactorVerificationOTP from 'common/ui/TwoFactorVerification/TwoFactorVerificationOTP';
@@ -21,14 +25,14 @@ import EditContactMobileForm from './EditContactMobileForm';
     showNotification,
     verifyTwoFactorOtp,
     updateContactMobile,
-  }
+  },
 )
 @RTracking(() => window.rzpQ.component('UpdateContactMobile'))
 export default class UpdateContactMobile extends React.Component {
   state = {};
 
   constructor(props) {
-    super()
+    super();
     this.contactMobile = props.contactMobile;
   }
 
@@ -38,7 +42,7 @@ export default class UpdateContactMobile extends React.Component {
 
   @RTracking((props) => {
     return props.tracking.trackEvent(
-      window.rzpQ.merchantActions().success('change_contact_mobile')
+      window.rzpQ.merchantActions().success('change_contact_mobile'),
     );
   })
   onContactMobileUpdateComplete = () => {
@@ -50,14 +54,14 @@ export default class UpdateContactMobile extends React.Component {
 
   onContactMobileVerificationOtpConfirm = (data) => {
     return this.props.verifyTwoFactorOtp(data);
-  }
+  };
 
   onMobileVerificationOtpResend = () => {
     return this.props.updateContactMobile({
       contact_mobile: this.contactMobile,
       otp_auth_token: this.state.otpAuthToken,
     });
-  }
+  };
 
   getContactMobileTwoFactorVerificationUI = () => (
     <TwoFactorVerificationOTP
@@ -69,14 +73,12 @@ export default class UpdateContactMobile extends React.Component {
       title="Verify your mobile number"
       renderMessage={() => (
         <>
-          <p class="m-b" >
-            An SMS with 6-digit OTP has been sent to {this.state.contactMobile}
-          </p>
-          <p class="m-t m-b" >OTP will expire in 5 mins.</p>
+          <p class="m-b">An SMS with 6-digit OTP has been sent to {this.state.contactMobile}</p>
+          <p class="m-t m-b">OTP will expire in 5 mins.</p>
         </>
       )}
     />
-  )
+  );
 
   onContactMobileUpdate = (newContactMobile) => {
     this.contactMobile = newContactMobile;
@@ -84,8 +86,7 @@ export default class UpdateContactMobile extends React.Component {
       size: 'small',
       component: this.getContactMobileTwoFactorVerificationUI(),
     });
-  }
-
+  };
 
   onEmailOtpVerificationComplete = () => {
     this.props.closeModal();
@@ -99,23 +100,23 @@ export default class UpdateContactMobile extends React.Component {
           onClose={this.onCloseClick}
         />
       ),
-    })
-  }
+    });
+  };
 
   triggerEmailVerificationOtp = () => {
     return triggerOtpOnEmail()
       .then(({ data }) => {
         this.setState({
           token: data.token,
-        })
+        });
       })
       .catch(({ errors }) => {
         this.props.showNotification({
           type: 'error',
           message: errors,
-        })
+        });
       });
-  }
+  };
 
   onEmailOtpConfirm = (data) => {
     return verifyOtpOnEmail({
@@ -126,7 +127,7 @@ export default class UpdateContactMobile extends React.Component {
         otpAuthToken: data.otp_auth_token,
       });
     });
-  }
+  };
 
   render() {
     return (
@@ -154,7 +155,7 @@ export default class UpdateContactMobile extends React.Component {
 
   onWrongOtp = () => {
     this.props.tracking.trackEvent(
-      window.rzpQ.merchantActions().failed('changed_contact_mobile.wrong_otp')
+      window.rzpQ.merchantActions().failed('changed_contact_mobile.wrong_otp'),
     );
   };
 }

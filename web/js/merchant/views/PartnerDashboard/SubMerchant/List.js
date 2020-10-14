@@ -10,6 +10,7 @@ import { fetchSubmerchants as fetchAll } from 'merchant/reducers/collection';
 import { switchMerchant } from 'merchant/reducers/session';
 import { downloadSubmerchants } from 'merchant/reducers/submerchant';
 import { merchantFetch } from 'merchant/utils/ajax';
+import RTracking from 'react-tracking';
 
 import DataTable from 'common/ui/Table/DataTable';
 import HeaderAction from 'common/ui/HeaderAction';
@@ -152,12 +153,19 @@ const appId = {
     showNotification,
   },
 )
+@RTracking(() => window.rzpQ.component('SubMerchantsList'))
 export default class SubMerchantsList extends ListContainer {
   state = {};
 
   handleAddMerchant = () => {
+    const { user } = this.props;
+    this.props.tracking.trackEvent(
+      window.rzpQ.partnership().interaction('partnerships.add', {
+        partnerID: user.id,
+      }),
+    );
     this.props.openModal({
-      size: 'small',
+      size: 'med-large',
       component: <AddMerchant closeModal={this.props.closeModal} />,
     });
   };
@@ -307,7 +315,7 @@ export default class SubMerchantsList extends ListContainer {
                         onClick={this.handleAddMerchant}
                       >
                         <i class="i i-plus" />
-                        Add New Account
+                        Add New Accounts
                       </button>
                     </ShowWhen>
                   </>
