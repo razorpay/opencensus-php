@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Fragment } from 'react';
-import { param_to_qs } from './data.js';
+import { param_to_qs, SAMPLE_TICKET } from './data.js';
 import Ticket from './Ticket';
 import * as axios from 'axios';
 import { withRouter } from 'react-router-dom';
@@ -29,44 +29,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 )
 export default class Conversations extends React.Component {
   state = {
-    ticket: {
-      cc_emails: [],
-      fwd_emails: [],
-      reply_cc_emails: [],
-      ticket_cc_emails: [],
-      fr_escalated: false,
-      spam: false,
-      email_config_id: 11000002563,
-      group_id: 11000003820,
-      priority: 3,
-      requester_id: 11014824425,
-      responder_id: null,
-      source: 1,
-      company_id: null,
-      status: 2,
-      subject: '',
-      association_type: null,
-      to_emails: [],
-      product_id: null,
-      id: 3475092,
-      type: null,
-      due_by: '2020-07-07T21:18:52Z',
-      fr_due_by: '2020-07-07T13:18:52Z',
-      is_escalated: false,
-      custom_fields: {},
-      stats: {
-        agent_responded_at: null,
-        requester_responded_at: null,
-        first_responded_at: null,
-        status_updated_at: '2020-07-07T09:18:52Z',
-        reopened_at: null,
-        resolved_at: null,
-        closed_at: null,
-        pending_since: null,
-      },
-      nr_due_by: null,
-      nr_escalated: false,
-    },
+    ticket: SAMPLE_TICKET,
     conversations: {
       data: { 1: [] },
       loading: false,

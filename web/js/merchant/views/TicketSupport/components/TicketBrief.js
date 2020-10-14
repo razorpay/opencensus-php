@@ -3,6 +3,7 @@ import { Route, Switch, NavLink, Link, Redirect } from 'react-router-dom';
 
 import { statuses, getActiveTicket } from './data.js';
 import { titleCase } from 'common/utils/rzp-utils.js';
+import TicketStatus from './TicketStatus.js';
 
 export default class TicketBrief extends React.Component {
   componentDidMount() {
@@ -54,35 +55,7 @@ export default class TicketBrief extends React.Component {
                       <Link to={`/ticket-support/${ticket.fd_instance}/${ticket.id}/conversation`}>
                         <p class="message-subject">
                           {subject}
-                          {status !== 'closed' ? (
-                            <span
-                              style={{ marginLeft: '10px' }}
-                              className={`label ${(() => {
-                                var label = 'label-warning';
-                                if (status == 'closed') {
-                                  label = 'label-danger';
-                                }
-                                if (status == 'resolved') {
-                                  label = 'label-success';
-                                }
-                                if (status == 'resolved') {
-                                  label = 'label-success';
-                                }
-                                if (status == 'open') {
-                                  label = 'label-active';
-                                }
-                                return label;
-                              })()}`}
-                            >
-                              {(() => {
-                                let S = status;
-                                if (status === 'open') {
-                                  S = 'active';
-                                }
-                                return titleCase(S);
-                              })()}
-                            </span>
-                          ) : null}
+                          {status !== 'closed' ? <TicketStatus ticket={ticket} /> : null}
                         </p>
                       </Link>
 

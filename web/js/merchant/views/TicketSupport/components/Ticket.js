@@ -3,6 +3,7 @@ import { Route, Switch, NavLink, Link, Redirect } from 'react-router-dom';
 import { Fragment } from 'react';
 import { tickets, statuses, conversations } from './data.js';
 import { titleCase } from 'common/utils/rzp-utils.js';
+import TicketStatus from './TicketStatus.js';
 @connect((state) => {
   return {
     ...state.session,
@@ -38,28 +39,14 @@ export default class Ticket extends React.Component {
                     <div className="row" style={{ paddingRight: '10px' }}>
                       <div className="col-xs-9 message-owner">
                         <b>
-                          TICKET ID #{this.props.ticket.id} | Category:{' '}
-                          {this.props.ticket.custom_fields.cf_category}
+                          TICKET ID #{this.props.ticket.id}
+                          {this.props.ticket.custom_fields.cf_category
+                            ? ` | Category: ${this.props.ticket.custom_fields.cf_category}`
+                            : null}
                         </b>
                       </div>
-                      <div className="col-xs-3 text-right">
-                        <span
-                          className={`label ${(() => {
-                            var label = 'label-warning';
-                            if (status == 'closed') {
-                              label = 'label-danger';
-                            }
-                            if (status == 'resolved') {
-                              label = 'label-success';
-                            }
-                            if (status == 'resolved') {
-                              label = 'label-success';
-                            }
-                            return label;
-                          })()}`}
-                        >
-                          {titleCase(status)}
-                        </span>{' '}
+                      <div className="col-xs-3 text-right" style={{ height: '20px' }}>
+                        <TicketStatus ticket={this.props.ticket} />
                       </div>
                     </div>
                   </h5>
