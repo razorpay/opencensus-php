@@ -230,11 +230,14 @@ class Repository extends Base\Repository
         int $limit = 500,
         string $type = Type::LINK): Base\PublicCollection
     {
-        return $this->newQuery()
+
+        $pastTimeMinus14days = Carbon::createFromTimestamp($pastTime, Timezone::IST)->addDays(-14)->getTimestamp();
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->where(Entity::TYPE, '=' ,$type)
                     ->whereIn(Entity::MERCHANT_ID, $merchantIds)
                     ->whereIn(Entity::STATUS, $statuses)
-                    ->where(Entity::UPDATED_AT, '<=', $pastTime)
+                    ->whereBetween(Entity::UPDATED_AT, array($pastTimeMinus14days, $pastTime))
                     ->limit($limit)
                     ->get();
     }
