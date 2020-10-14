@@ -100,6 +100,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       currentTab: 0,
       avlblMethods: [],
       emandateBanks: [],
+      isTPVEnabled: false,
       formFields: {
         hasNoExpiry: true,
         tokenHasNoExpiry: '1',
@@ -205,6 +206,12 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     }
 
     this.setFormFields(target.name, value);
+  };
+
+  handleTPV = () => {
+    this.setState({
+      isTPVEnabled: !this.state.isTPVEnabled,
+    });
   };
 
   onBlurElement = (event, dataName) => {
@@ -398,6 +405,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       }
 
       payload.subscription_registration.max_amount = max_amount;
+      payload.subscription_registration.bank_account = bankAccountDetails;
     }
 
     return payload;
@@ -562,6 +570,8 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
             formReference2={formFields.formReference2}
             onBlurElement={this.onBlurElement}
             handlePaymentMethod={this.handlePaymentMethod}
+            isTPVEnabled={this.state.isTPVEnabled}
+            handleTPV={this.handleTPV}
           />
         );
       }

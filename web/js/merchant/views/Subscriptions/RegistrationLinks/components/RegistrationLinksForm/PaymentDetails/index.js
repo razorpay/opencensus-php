@@ -5,9 +5,10 @@ import Input from 'common/new-ui/Input';
 import AmountScreen from './Amount';
 import NACH from './NACH';
 import Emandate from './Emandate';
+import UPI from './UPI';
 import { checkIfAmount } from './utils';
 
-export default props => {
+export default (props) => {
   const {
     showAmountField,
     amount,
@@ -59,19 +60,20 @@ export default props => {
       )}
 
       {isCardPayment && (
-        <AmountScreen
-          amount={amount}
-          onBlurElement={onBlurElement}
-          placeholder="0.00"
-        />
+        <AmountScreen amount={amount} onBlurElement={onBlurElement} placeholder="0.00" />
       )}
 
       {isUPIPayment && (
-        <AmountScreen
+        <UPI
+          isTPVEnabled={props.isTPVEnabled}
           amount={amount}
           onBlurElement={onBlurElement}
           placeholder="Max 2000"
-          validator={amountValidator}
+          amountValidator={amountValidator}
+          handleTPV={props.handleTPV}
+          bankAccountNumber={props.bankAccountNumber}
+          bankAccountIFSC={props.bankAccountIFSC}
+          handleTPV={props.handleTPV}
         />
       )}
 
@@ -105,12 +107,7 @@ export default props => {
   );
 };
 
-function PaymentMethod({
-  avlblMethods,
-  mandateMethod,
-  handlePaymentMethod,
-  onBlurElement,
-}) {
+function PaymentMethod({ avlblMethods, mandateMethod, handlePaymentMethod, onBlurElement }) {
   if (avlblMethods.length) {
     return (
       <div class="Input">
