@@ -481,6 +481,64 @@ class Core extends Base\Core
         return $methods;
     }
 
+    public function resetDefaultMethodsBasedOnMerchantCategories(Merchant\Entity $merchant)
+    {
+        $category  = $merchant->getCategory();
+        $category2 = $merchant->getCategory2();
+
+        $this->trace->info(
+            TraceCode::MERCHANT_METHODS_RESET_BASED_ON_CATEGORY_REQUEST,
+            [
+                'merchant_id' => $merchant->getId(),
+                'category'    => $category,
+                'category2'   => $category2
+            ]
+        );
+
+        $methods = $merchant->methods;
+
+        $defaultMethods = DefaultMethodsForCategory::getDefaultMethodsFromMerchantCategories($category, $category2);
+
+        if ((is_null($methods) === true) or (is_null($defaultMethods) === true))
+        {
+            $this->trace->info(
+                TraceCode::MERCHANT_METHODS_RESET_BASED_ON_CATEGORY_NOT_APPLICABLE,
+                [
+                    'merchant_id' => $merchant->getId(),
+                    'category'    => $category,
+                    'category2'   => $category2
+                ]
+            );
+
+            return;
+        }
+        
+        foreach ($defaultMethods as $key => $value)
+        {
+            if ($key === Entity::EMI)
+            {
+                if ($value === false)
+                {
+                    $value = [
+                        EmiType::CREDIT => '0',
+                        EmiType::DEBIT  => '0',
+                    ];
+                }
+                else
+                {
+                    $value = [
+                        EmiType::CREDIT => '1',
+                        EmiType::DEBIT  => '1',
+                    ];
+                }
+            }
+
+            $methods->setAttribute($key, $value);
+        }
+
+        $this->repo->saveOrFail($methods);
+    }
+
     /**
      * Check if partner have Default Payment methods set for submerchant.
      * If it exists then override payment methods over default.

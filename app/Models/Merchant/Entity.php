@@ -38,6 +38,7 @@ use RZP\Models\Terminal;
 use RZP\Models\User;
 use RZP\Models\Workflow\Action;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Methods\Core as MethodCore;
 
 /**
  * @property Org\Entity         $org
@@ -1973,6 +1974,11 @@ class Entity extends Base\PublicEntity
         {
             $array[self::LOGO_URL] = $this->getFullLogoUrlWithSize(self::ORIGINAL_SIZE);
         }
+    }
+
+    public function setDefaultMethodsBasedOnCategory()
+    {
+        (new MethodCore())->resetDefaultMethodsBasedOnMerchantCategories($this);
     }
 
     /**

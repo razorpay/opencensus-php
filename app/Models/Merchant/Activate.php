@@ -87,6 +87,9 @@ class Activate extends Base\Core
 
         $merchant->enableReceiptEmails();
 
+        // set methods before activating
+        $merchant->setDefaultMethodsBasedOnCategory();
+
         $merchant->activate();
 
         $merchant->releaseFunds();
@@ -163,6 +166,9 @@ class Activate extends Base\Core
         $this->validateMethodsAndPricing($merchant);
 
         $merchant->enableReceiptEmails();
+
+        // set methods before activating
+        $merchant->setDefaultMethodsBasedOnCategory();
 
         $merchant->activate();
 
@@ -347,6 +353,9 @@ class Activate extends Base\Core
     public function autoActivate(Entity $merchant)
     {
         $merchant->getValidator()->validateBeforeActivate($merchant);
+
+        // set methods before activating
+        $merchant->setDefaultMethodsBasedOnCategory();
 
         $merchant->activate();
 

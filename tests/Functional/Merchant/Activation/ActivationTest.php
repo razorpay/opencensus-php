@@ -11,6 +11,7 @@ use Mockery;
 
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Models\Card\Network;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
 use RZP\Models\Currency\Currency;
@@ -30,6 +31,7 @@ use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
+use RZP\Models\Merchant\Methods\Repository as MethodRepo;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\FundAccount\Validation\Entity as ValidationEntity;
 use RZP\Models\Merchant\Detail\Constants as MerchantDetailsConstant;
@@ -144,6 +146,316 @@ class ActivationTest extends OAuthTestCase
 
         $terminal = $this->getEntityById('terminal', $terminalId);
         $this->assertFalse($terminal['enabled']);
+    }
+
+    // Whitelist Activation flow
+    public function testPostInstantActivationDefaultMethodsBasedOnCategory8931Others()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testPostInstantActivationDefaultMethodsBasedOnCategory'];
+
+        // by setting below business details, merchant category will be updated to 8931, others (See autoUpdateMerchantCategoryDetailsIfApplicable and BusinessSubCategoryMetaData.php)
+        $this->testData[__FUNCTION__]['request']['content']['business_category'] = 'financial_services';
+        $this->testData[__FUNCTION__]['request']['content']['business_subcategory'] = 'accounting';
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+            'poi_verification_status' => 'verified',
+            ]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', ['merchant_id' => '1cXSLlUU8V9sXl']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $methodsArray =  ((new MethodRepo)->find($merchantId))->toArray();
+
+        $expectedMethods = [
+            'credit_card'   => true,
+            'debit_card'    => true,
+            'amex'          => false,
+            'netbanking'    => true,
+            'upi'           => true,
+            'emi'           => [], // emi disabled
+            'prepaid_card'  => true,
+            'paylater'      => true,
+            'airtelmoney'   => true,
+            'freecharge'    => true,
+            'jiomoney'      => true,
+            'mobikwik'      => true,
+            'mpesa'         => true,
+            'olamoney'      => true,
+            'payumoney'     => true,
+            'payzapp'       => true,
+            'sbibuddy'      => true,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
+
+        $cardNetworks = $methodsArray['card_networks'];
+
+        $expectedCardNetworks =  [
+            Network::AMEX   =>  0,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedCardNetworks, $cardNetworks);
+    }
+
+    // Whitelist Activation flow, all methods enabled
+    public function testActivationDefaultMethodsBasedOnCategor8220College()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testPostInstantActivationDefaultMethodsBasedOnCategory'];
+
+        // by setting below business details, merchant category will be updated to 8200, college (See autoUpdateMerchantCategoryDetailsIfApplicable and BusinessSubCategoryMetaData.php)
+        $this->testData[__FUNCTION__]['request']['content']['business_category'] = 'education';
+        $this->testData[__FUNCTION__]['request']['content']['business_subcategory'] = 'college';
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+            'poi_verification_status' => 'verified',
+            ]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', ['merchant_id' => '1cXSLlUU8V9sXl']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $methodsArray = ((new MethodRepo)->find($merchantId))->toArray();
+
+        $expectedMethods = [
+            'credit_card'   => true,
+            'debit_card'    => true,
+            'amex'          => true,
+            'netbanking'    => true,
+            'upi'           => true,
+            'emi'           => ['credit', 'debit'],
+            'prepaid_card'  => true,
+            'paylater'      => true,
+            'airtelmoney'   => true,
+            'freecharge'    => true,
+            'jiomoney'      => true,
+            'mobikwik'      => true,
+            'mpesa'         => true,
+            'olamoney'      => true,
+            'payumoney'     => true,
+            'payzapp'       => true,
+            'sbibuddy'      => true,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
+
+        $cardNetworks = $methodsArray['card_networks'];
+
+        $expectedCardNetworks =  [
+            Network::AMEX   =>  1,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedCardNetworks, $cardNetworks);
+    }    
+
+    // GreyList Activation flow
+    public function testActivationDefaultMethodsBasedOnCategory6211MutualFunds()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $data = $this->getKycSubmittedMerchantDetailData($merchantId);
+        $this->mockRaven();
+
+        $this->fixtures->create('merchant_detail', $data);
+
+        $this->fixtures->on('live')->create('methods:default_methods', ['merchant_id' => '1cXSLlUU8V9sXl']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $data = $this->getKycSubmittedMerchantData();
+        $data['category'] = '6211';
+        $data['category2'] = 'mutual_funds';
+        $data['activated'] = 0;
+
+        $this->fixtures->on('test')->edit('merchant', $merchantId, $data);
+        $this->fixtures->on('live')->edit('merchant', $merchantId, $data);
+
+        $testData = $this->testData['changeActivationStatus'];
+        $this->changeActivationStatus(
+            $testData['request']['content'],
+            $testData['response']['content'],
+            'activated');
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        $this->startTest($testData);
+
+        $methodsArray =  ((new MethodRepo)->find($merchantId))->toArray();
+
+        $expectedMethods = [
+            'credit_card'   => false,
+            'debit_card'    => true,
+            'amex'          => false,
+            'netbanking'    => true,
+            'upi'           => true,
+            'emi'           => [], // emi disabled
+            'prepaid_card'  => false,
+            'paylater'      => false,
+            'airtelmoney'   => true,
+            'freecharge'    => true,
+            'jiomoney'      => true,
+            'mobikwik'      => true,
+            'mpesa'         => true,
+            'olamoney'      => true,
+            'payumoney'     => true,
+            'payzapp'       => true,
+            'sbibuddy'      => true,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
+
+        $cardNetworks = $methodsArray['card_networks'];
+
+        $expectedCardNetworks =  [
+            Network::AMEX   =>  0,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedCardNetworks, $cardNetworks);
+    }
+
+    // Greylisted flow
+    public function testActivationDefaultMethodsBasedOnCategory6300Insurance()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $data = $this->getKycSubmittedMerchantDetailData($merchantId);
+        $this->mockRaven();
+
+        $this->fixtures->create('merchant_detail', $data);
+
+        $this->fixtures->on('live')->create('methods:default_methods', ['merchant_id' => '1cXSLlUU8V9sXl']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $data = $this->getKycSubmittedMerchantData();
+        $data['category'] = '6300';
+        $data['category2'] = 'insurance';
+        $data['activated'] = 0;
+
+        $this->fixtures->on('test')->edit('merchant', $merchantId, $data);
+        $this->fixtures->on('live')->edit('merchant', $merchantId, $data);
+
+        $testData = $this->testData['changeActivationStatus'];
+        $this->changeActivationStatus(
+            $testData['request']['content'],
+            $testData['response']['content'],
+            'activated');
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        $this->startTest($testData);
+
+        $methodsArray =  ((new MethodRepo)->find($merchantId))->toArray();
+
+        $expectedMethods = [
+            'credit_card'   => true,
+            'debit_card'    => true,
+            'amex'          => true,
+            'netbanking'    => true,
+            'upi'           => true,
+            'emi'           => ['credit', 'debit'],
+            'prepaid_card'  => true,
+            'paylater'      => true,
+            'airtelmoney'   => true,
+            'freecharge'    => true,
+            'jiomoney'      => true,
+            'mobikwik'      => true,
+            'mpesa'         => true,
+            'olamoney'      => true,
+            'payumoney'     => true,
+            'payzapp'       => true,
+            'sbibuddy'      => true,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
+
+        $cardNetworks = $methodsArray['card_networks'];
+
+        $expectedCardNetworks =  [
+            Network::AMEX   =>  1,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedCardNetworks, $cardNetworks);
+    }    
+
+    public function testActivationDefaultMethodsBasedOnCategoryBlacklisted()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $data = $this->getKycSubmittedMerchantDetailData($merchantId);
+        $this->mockRaven();
+
+        $this->fixtures->create('merchant_detail', $data);
+
+        $this->fixtures->on('live')->create('methods:default_methods', ['merchant_id' => '1cXSLlUU8V9sXl']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $data = $this->getKycSubmittedMerchantData();
+        $data['category'] = '6051';
+        $data['category2'] = 'cryptocurrency';
+        $data['activated'] = 0;
+
+        $this->fixtures->on('test')->edit('merchant', $merchantId, $data);
+        $this->fixtures->on('live')->edit('merchant', $merchantId, $data);
+
+        $testData = $this->testData['changeActivationStatus'];
+        $this->changeActivationStatus(
+            $testData['request']['content'],
+            $testData['response']['content'],
+            'activated');
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        $this->startTest($testData);
+
+        $methodsArray =  ((new MethodRepo)->find($merchantId))->toArray();
+
+        $expectedMethods = [
+            'credit_card'   => false,
+            'debit_card'    => false,
+            'amex'          => false,
+            'netbanking'    => false,
+            'upi'           => false,
+            'emi'           => [], // emi disabled
+            'prepaid_card'  => false,
+            'paylater'      => false,
+            'airtelmoney'   => false,
+            'freecharge'    => false,
+            'jiomoney'      => false,
+            'mobikwik'      => false,
+            'mpesa'         => false,
+            'olamoney'      => false,
+            'payumoney'     => false,
+            'payzapp'       => false,
+            'sbibuddy'      => false,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
+
+        $cardNetworks = $methodsArray['card_networks'];
+
+        $expectedCardNetworks =  [
+            Network::AMEX   =>  0,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedCardNetworks, $cardNetworks);
     }
 
     public function testPostInstantActivationBlockedOrg()
