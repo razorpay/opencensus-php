@@ -37,11 +37,6 @@ class Mailable extends BaseMailable
 
     protected $mid;
 
-    protected $emailDriverName;
-
-    const SES_EMAIL_DRIVER     = 'ses';
-    const DEFAULT_EMAIL_DRIVER = 'default';
-
     public function __construct()
     {
         $app = App::getFacadeRoot();
@@ -51,7 +46,6 @@ class Mailable extends BaseMailable
         $this->originProduct    = $app['basicauth']->getProduct();
         $this->queue            = $this->getQueueName();
         $this->mid              = $app['basicauth']->getMerchantId();
-        $this->emailDriverName  = self::DEFAULT_EMAIL_DRIVER;
     }
 
     public function build()
@@ -67,55 +61,6 @@ class Mailable extends BaseMailable
                     ->addMailData()
                     ->addAttachments()
                     ->addHeaders();
-    }
-
-    /**
-     * Email driver is a transport layer wrapped inside Swift_Mailer.
-     * MailerContract contains this Swift_Mailer object. This method sets
-     * a swift mailer with ses driver on the passed MailerContract
-     *
-     * @param MailerContract &$mailerContract reference to the mailerContract object on which
-     *                       ses driver needs to be set.
-     *
-     * @throws \InvalidArgumentException if the driver is invalid (thrown by Illuminate\Support\Manager)
-     */
-    private function setSesDriver(MailerContract &$mailerContract)
-    {
-        $app = App::getFacadeRoot();
-        $mailer = $app['swift.ses_mailer'] ?? new Swift_Mailer($app['swift.transport']->driver(self::SES_EMAIL_DRIVER));
-        $mailerContract->setSwiftMailer($mailer);
-    }
-
-    private function setDefaultDriver(MailerContract &$mailerContract)
-    {
-        $app = App::getFacadeRoot();
-        $mailer = $app['swift.mailer'] ?? new Swift_Mailer($app['swift.transport']->driver());
-        $mailerContract->setSwiftMailer($mailer);
-    }
-
-    protected function evaluateAndSetMailDriver(MailerContract &$mailer)
-    {
-        $app = App::getFacadeRoot();
-        $trace = $app['trace'];
-
-        if ($this->shouldRouteEmailViaSes() === true)
-        {
-            $this->emailDriverName = self::SES_EMAIL_DRIVER;
-
-            try
-            {
-                $this->setSesDriver($mailer);
-                $this->replaceMailgunHeadersWithSesHeaders();
-                return;
-            }
-            catch(\InvalidArgumentException $e)
-            {
-                $trace->traceException($e, Trace::ERROR, TraceCode::MAILER_INVALID_DRIVER, ['driver' => self::SES_EMAIL_DRIVER]);
-            }
-        }
-
-        $this->emailDriverName = self::DEFAULT_EMAIL_DRIVER;
-        $this->setDefaultDriver($mailer);
     }
 
     public function send(MailerContract $mailer)
@@ -136,15 +81,11 @@ class Mailable extends BaseMailable
         {
             Container::getInstance()->call([$this, 'build']);
 
-            $this->evaluateAndSetMailDriver($mailer);
-            $trace->info(TraceCode::MAILER_SET_DRIVER, ['driver_name' => $this->emailDriverName]);
-
             if ($this->isValidRecipient() === true)
             {
                 // same html template can have different texts. Hence sending both in data lake.
                 $eventProperties['text_template'] = $this->textView ?? '';
                 $eventProperties['html_template'] = $this->view ?? '';
-                $eventProperties['email_driver'] = $this->emailDriverName;
 
                 if ((isset($this->to[0])) and
                     (isset($this->to[0]['address'])) and
@@ -394,25 +335,6 @@ class Mailable extends BaseMailable
         $default = config('queue.mail.default');
 
         return config("queue.mail.{$key}", $default);
-    }
-
-    /**
-     * some emails are to be sent via ses. Following makes a
-     * call to razorX to decide if email is to be sent via ses.
-     */
-    protected function shouldRouteEmailViaSes(): bool
-    {
-        $app = App::getFacadeRoot();
-
-        if ($app->environment(Environment::PRODUCTION) === false)
-        {
-            return false;
-        }
-
-        $variant  =  app('razorx')->getTreatment($app['request']->getTaskId(),
-                            Merchant\RazorxTreatment::API_ALL_EMAILS_SES_DRIVER, $this->mode);
-
-        return strtolower($variant) === 'on';
     }
 
     protected function getView($newView, $oldView)
