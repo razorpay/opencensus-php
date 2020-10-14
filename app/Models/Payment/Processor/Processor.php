@@ -2033,7 +2033,8 @@ class Processor
 
         $this->segment->trackPayment($payment, $traceCode, $segmentCustomProperties);
 
-        if ($status !== Status::CREATED)
+        if (($status !== Status::CREATED) and
+            ($status !== Status::AUTHENTICATED))
         {
             throw new Exception\LogicException(
                 'Payment not in the appropriate status to be marked as failed.',
@@ -3288,6 +3289,11 @@ class Processor
         // capture this late auth payment since order is fullfilled by some other payment made for this order.
         if (($payment->isDirectSettlement() === true) and
             ($payment->hasOrder() === false))
+        {
+            return true;
+        }
+
+        if ($payment->merchant->isFeatureEnabled(Feature::AUTH_SPLIT) === true)
         {
             return true;
         }

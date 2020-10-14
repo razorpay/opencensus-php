@@ -133,6 +133,31 @@ class Payment extends Base
         return $payment;
     }
 
+    public function createCardAuthenticated(array $attributes = array())
+    {
+        $time = Carbon::now()->getTimestamp();
+
+        $createdAt = $time - 10;
+        $updatedAt = $time + 10;
+        $authenticatedAt = $time + 10;
+
+        $defaultValues = [
+            'created_at'       => $createdAt,
+            'updated_at'       => $updatedAt,
+            'authenticated_at' => $authenticatedAt,
+            'authorized_at'    => null
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $payment = $this->createCardAuthorized($attributes);
+
+        $payment['status'] = 'authenticated';
+        $payment['cps_route'] = 2;
+
+        $payment->saveOrFail();
+    }
+
     public function createNetbankingCaptured(array $attributes = array())
     {
         $payment = $this->createNetbankingAuthorized($attributes);

@@ -543,6 +543,16 @@ class PaymentCreateController extends Controller
         return $response;
     }
 
+
+    public function postAuthorize($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::PAYMENT)->authorizePayment($input, $id);
+
+        return ApiResponse::json($data);
+    }
+
     public function getAuthenticateUrl($id)
     {
       $data = $this->service(E::PAYMENT)->getAuthenticateUrl($id);

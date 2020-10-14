@@ -665,6 +665,160 @@ class CardPaymentServiceTest extends TestCase
         $this->razorxValue = "on";
     }
 
+    public function testPaymentAuthorized()
+    {
+        $this->razorxValue = "cardps";
+
+        $this->enableCpsConfig();
+
+        $this->mockCps(null, 'auth_across_terminal_mock');
+
+        $this->fixtures->create('payment:card_authenticated');
+
+        $this->fixtures->merchant->addFeatures(['auth_split']);
+
+        $this->mockCardVault();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->ba->expressAuth();
+
+        $request = [
+            "url" => "/payments/" . $payment['id'] . "/authorize",
+            "method" => "post",
+            "content" => [
+                "meta" => [
+                    "action_type"  => "capture",
+                    "reference_id" => $payment['id']
+                ],
+            ],
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $this->assertNotNull($payment['authorized_at']);
+
+        $this->assertNotNull($payment['captured_at']);
+
+        $this->ba->expressAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/meta/reference',
+            'content' => [
+                 'action_type'       => 'capture',
+                 'reference_id' => $payment['id'],
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($payment['id'], 'pay_' . $response['payment_id']);
+
+        $this->mockCps(null, 'pay_error');
+
+        $this->fixtures->create('payment:card_authenticated');
+
+        $this->mockCardVault();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->ba->expressAuth();
+
+        $request = [
+            "url" => "/payments/" . $payment['id'] . "/authorize",
+            "method" => "post",
+            "content" => [
+                "meta" => [
+                    "action_type"  => "capture",
+                    "reference_id" => $payment['id']
+                ],
+            ],
+        ];
+
+        $this->makeRequestAndCatchException(
+        function() use ($request)
+        {
+            $this->makeRequestAndGetContent($request);
+        },
+        GatewayErrorException::class);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/meta/reference',
+            'content' => [
+                 'action_type'       => 'capture',
+                 'reference_id' => $payment['id'],
+            ]
+        ];
+
+        $this->ba->expressAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($payment['id'], 'pay_' . $response['payment_id']);
+
+
+        $this->mockCps(null, 'capture_error');
+
+        $this->fixtures->create('payment:card_authenticated');
+
+        $this->mockCardVault();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->ba->expressAuth();
+
+        $request = [
+            "url" => "/payments/" . $payment['id'] . "/authorize",
+            "method" => "post",
+            "content" => [
+                "meta" => [
+                    "action_type"  => "capture",
+                    "reference_id" => $payment['id']
+                ],
+            ],
+        ];
+
+        $this->makeRequestAndCatchException(
+        function() use ($request)
+        {
+            $this->makeRequestAndGetContent($request);
+        },
+        BadRequestException::class);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertNull($payment['captured_at']);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/meta/reference',
+            'content' => [
+                 'action_type'       => 'capture',
+                 'reference_id' => $payment['id'],
+            ]
+        ];
+
+        $this->ba->expressAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($payment['id'], 'pay_' . $response['payment_id']);
+    }
+
     public function testAuthorizeWithCallbackSplit()
     {
         $this->razorxValue = 'cardps';
@@ -1057,6 +1211,121 @@ class CardPaymentServiceTest extends TestCase
                         'status' => 'captured',
                     ],
                 ];
+
+            case 'action/pay':
+                 return [
+                    'data' => [
+                        'acquirer' => [
+                            'reference2' => 'test'
+                        ],
+                        'two_factor_auth' => 'Y'
+                    ],
+                    'payment' => [
+                        'auth_type' => "3ds",
+                    ],
+                ];
+
+            default:
+                return null;
+        }
+    }
+
+    protected function mockCpsCaptureGatewayError(string $method, string $url, array $input, $terminal)
+    {
+        $input = $input['input'];
+        switch ($url)
+        {
+            case 'authorize':
+                $payment = $input['payment'];
+
+                $content = [
+                    'Message' => [
+                        'PAReq' => [
+                            'Merchant' => [
+                                'acqBIN' => '11111111111',
+                                'merID'  => '12AB,cd/34-EF  -g,5/H-67'
+                            ],
+                            'CH' => [
+                                'acctID' => 'NTU2NzYzMDAwMDAwMjAwNA==',
+                            ],
+                            'Purchase' => [
+                                'xid'    => base64_encode(str_pad($payment['id'], 20, '0', STR_PAD_LEFT)),
+                                'date'    => \Carbon\Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata')->format('Ymd H:m:s'),
+                                'amount' => '500.00',
+                                'purchAmount' => '50000',
+                                'currency' => '356',
+                                'exponent' => 2,
+                            ]
+                        ]
+                    ],
+                ];
+
+                $content['Message']['@attributes']['id'] = $payment['id'];
+
+                $xml = \Lib\Formatters\Xml::create('ThreeDSecure', $content);
+
+                $xml = zlib_encode($xml, 15);
+                $xml = base64_encode($xml);
+
+                return [
+                    'data' => [
+                        'content' => [
+                            'TermUrl' => $input['callbackUrl'],
+                            'PaReq' => $xml,
+                            'MD' => $payment['id'],
+                        ],
+                        'method' => 'post',
+                        'url' =>  'https://api.razorpay.com/v1/gateway/acs/mpi_blade',
+                    ],
+                    'payment' => [
+                        'terminal_id' => $terminal->getId(),
+                        'auth_type' => null,
+                        'authentication_gateway' => 'mpi_blade'
+                    ],
+                ];
+
+            case 'action/callback':
+                return [
+                    'data' => [
+                        'acquirer' => [
+                            'reference2' => 'test'
+                        ],
+                        'two_factor_auth' => 'Y'
+                    ],
+                    'payment' => [
+                        'auth_type' => "3ds",
+                    ],
+                ];
+
+            case 'action/capture':
+                return [
+                    'data' => null,
+                    'payment' => [
+                    ],
+                    'error' => [
+                        'internal_error_code'       =>"GATEWAY_ERROR_UNKNOWN_ERROR",
+                        'gateway_error_code'        =>"GATEWAY_ERROR_UNKNOWN_ERROR",
+                        'gateway_error_description' =>"GATEWAY_ERROR_UNKNOWN_ERROR",
+                        'description'               =>"GATEWAY_ERROR_UNKNOW_ERROR",
+                    ],
+                    'headless' => [
+                        'disable_iin'   => true,
+                    ]
+                ];
+
+            case 'action/pay':
+                 return [
+                    'data' => [
+                        'acquirer' => [
+                            'reference2' => 'test'
+                        ],
+                        'two_factor_auth' => 'Y'
+                    ],
+                    'payment' => [
+                        'auth_type' => "3ds",
+                    ],
+                ];
+
             default:
                 return null;
         }
@@ -1108,6 +1377,33 @@ class CardPaymentServiceTest extends TestCase
                     ],
                 ];
 
+            default :
+                return null;
+        }
+    }
+
+    protected function mockCpsPayGatewayError(string $method, string $url, array $input)
+    {
+        switch ($url) {
+
+            case 'action/pay':
+
+                $payment = $this->getDbLastPayment();
+
+               return [
+                    'data' => null,
+                    'payment' => [
+                    ],
+                    'error' => [
+                        'internal_error_code'       =>"GATEWAY_ERROR_UNKNOWN_ERROR",
+                        'gateway_error_code'        =>"GATEWAY_ERROR_UNKNOWN_ERROR",
+                        'gateway_error_description' =>"GATEWAY_ERROR_UNKNOWN_ERROR",
+                        'description'               =>"GATEWAY_ERROR_UNKNOW_ERROR",
+                    ],
+                    'headless' => [
+                        'disable_iin'   => true,
+                    ]
+                ];
             default :
                 return null;
         }
@@ -1173,6 +1469,7 @@ class CardPaymentServiceTest extends TestCase
         }
     }
 
+
     protected function mockCps($terminal, $responder)
     {
         $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
@@ -1195,6 +1492,10 @@ class CardPaymentServiceTest extends TestCase
                         return $this->mockCpsHeadlessIncorrectOtp($method, $url, $input);
                     case 'ivr_fallback_mock':
                         return $this->mockCpsIvrFallback($method, $url, $input);
+                    case 'pay_error':
+                        return $this->mockCpsPayGatewayError($method, $url, $input);
+                    case 'capture_error':
+                        return $this->mockCpsCaptureGatewayError($method, $url, $input, $terminal);
                     case 'callback_split':
                         return $this->mockCpsCallbackSplit($method, $url, $input, $terminal);
                 }

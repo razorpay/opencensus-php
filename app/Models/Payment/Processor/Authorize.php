@@ -7614,6 +7614,94 @@ trait Authorize
         return $response;
     }
 
+    public function processPaymentAuthorize($payment, $input)
+    {
+       $this->setPayment($payment);
+
+       if (($this->merchant->isFeatureEnabled(Feature\Constants::AUTH_SPLIT) === false) or
+           ($payment->hasBeenAuthenticated() === false) or
+           ($payment->isMethodCardOrEmi() === false))
+       {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PAYMENT_TO_AUTHORIZE);
+       }
+
+        // if payment is already processed and failed we will throw an error
+       if ($payment->isFailed() === true)
+       {
+            return $this->rethrowFailedPaymentErrorException($payment);
+       }
+
+       $resource = $this->getAuthorizeMutexResource($payment);
+
+       $response = $this->mutex->acquireAndRelease(
+            $resource,
+            function() use ($payment, $input)
+            {
+                $this->repo->reload($payment);
+
+                if ($payment->hasBeenAuthorized() === true)
+                {
+                    return $this->postPaymentAuthorizeProcessing($payment);
+                }
+
+                $this->preProcessPaymentMeta($input, $payment);
+
+                $input['payment'] = $payment->toArrayGateway();
+                $input['gateway'] = [];
+
+                $token = $this->repo->token->getGlobalOrLocalTokenEntityOfPayment($payment);
+
+                if ($token !== null)
+                {
+                    $input['token'] = $token;
+                }
+
+                if ($payment->hasCard())
+                {
+                    $card = $this->repo->card->fetchForPayment($payment);
+
+                    $input['card'] = $card->toArray();
+                }
+
+                try
+                {
+                    $data = $this->callGatewayPay($input);
+
+                    if (isset($data[Payment\Entity::TWO_FACTOR_AUTH]) === true)
+                    {
+                        $twoFactorAuth = $data[Payment\Entity::TWO_FACTOR_AUTH];
+
+                        $payment->setTwoFactorAuth($twoFactorAuth);
+
+                        $this->repo->saveOrFail($payment);
+                    }
+
+                    $this->updateAndNotifyPaymentAuthorized($data);
+                }
+                catch (Exception\BaseException $e)
+                {
+                    $this->processPaymentCallbackException($e);
+                }
+
+                return $this->postPaymentAuthorizeProcessing($payment);
+            },
+            120,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+            20,
+            1000,
+            2000);
+
+        return $response;
+    }
+
+
+
+    protected function getAuthorizeMutexResource(Payment\Entity $payment): string
+    {
+        return 'authorize_' . $payment->getId();
+    }
+
     protected function getInputDetails($payment, $key = null)
     {
         if ($key === null)

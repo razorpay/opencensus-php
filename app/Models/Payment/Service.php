@@ -460,6 +460,35 @@ class Service extends Base\Service
         }
     }
 
+    public function authorizePayment($input, $id)
+    {
+       $this->trace->info(TraceCode::PAYMENT_AUTHORIZATION_REQUEST,
+        [
+            'payment_id' => $id
+        ]);
+
+       Payment\Entity::verifyIdAndSilentlyStripSign($id);
+
+       try
+       {
+            $payment = $this->repo->payment->findOrFail($id);
+
+            $response = $this->getNewProcessor($payment->merchant)->processPaymentAuthorize($payment, $input);
+
+            return $response;
+       }
+       catch (\Throwable $e)
+       {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::PAYMENT_AUTHORIZATION_REQUEST_FAILURE
+            );
+
+            throw $e;
+       }
+    }
+
     protected function checkMultipleRedirectionAndReturnResponse(string $trackId)
     {
         $trackIdKey = Payment\Entity::getTrackIdRequestKey($trackId);

@@ -665,6 +665,7 @@ trait Callback
 
         // In case of corporate payments, process this.
         if (($status !== Status::CREATED) and
+            ($status !== Status::AUTHENTICATED) and
             ($isCorporatePayment === false))
         {
             throw new Exception\BadRequestException(
