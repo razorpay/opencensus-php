@@ -179,4 +179,7 @@ final class RazorxTreatment
     const PG_PERSISTENT_INVOICE = 'pg_persistent_invoice';
 
     const TOKENIZE_QR_STRING_MPANS = 'tokenize_qr_string_mpans';
+
+    // experiment to enable webhooks on route gateway_payment_static_s2scallback_post/gateway_payment_static_s2scallback_get
+    const ENABLE_WEBHOOKS = 'enable_webhooks';
 }

@@ -241,6 +241,12 @@ trait Callback
                 }
         }
 
+        // This is to accept webhooks for gateways even if the payment is marked as failed.
+        if ((Gateway::isWebhookEnabledGateway($payment->getGateway())) and ($payment->hasBeenAuthorized() === false))
+        {
+            $result = true;
+        }
+
         return $result;
     }
 
@@ -419,6 +425,11 @@ trait Callback
         // case we need to mark the payment as late authorized.
         if ((isset($input['upi_mandate']) === true) and
             ($input['upi_mandate']['late_confirmed']) === true)
+        {
+            $shouldLateAuthorize = true;
+        }
+
+        if ((Gateway::isWebhookEnabledGateway($payment->getGateway())) and ($payment->getStatus() === Payment\Status::FAILED) and ($s2sCallback === true))
         {
             $shouldLateAuthorize = true;
         }

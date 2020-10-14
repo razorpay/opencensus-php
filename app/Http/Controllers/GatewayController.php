@@ -27,6 +27,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Upi\Base as BaseUpi;
 use Illuminate\Http\RedirectResponse;
 use RZP\Gateway\Upi\Base\ProviderCode;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Jobs\DynamicNetBankingUrlUpdater;
 use RZP\Gateway\Netbanking\Base\Repository;
 use RZP\Gateway\Enach\Npci\Netbanking as EnachNb;
@@ -445,7 +446,42 @@ class GatewayController extends Controller
     {
         $input = Request::all();
 
-        return $this->preProcessStaticCallback($method, $gateway, $input, $mode);
+        $paymentId = $this->preProcessStaticCallback($method, $gateway, $input, $mode);
+
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        $mode = $this->app['rzp.mode'];
+
+        $publicKey = $this->getMerchantKeyForPayment($payment, $mode);
+
+        $publicPaymentId = $payment->getPublicId();
+
+        $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
+
+        $url = $url . '?' . http_build_query($input);
+
+        return Redirect::to($url);
+    }
+
+    /**
+     * This is a new route created to implement static S2S callbacks
+     * This route returns a json response and takes method and mode as input as this is required to redirect the request to CPS
+     * Internally this route executes the same s2sCallback() from the route - gateway_payment_static_callback_post/gateway_payment_static_callback_get
+     */
+    public function staticS2SCallbackGatewayWithModeAndMethod($method, $gateway, $mode)
+    {
+        $input = Request::all();
+
+        $paymentId = $this->preProcessStaticCallback($method, $gateway, $input, $mode);
+
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        $publicPaymentId = $payment->getPublicId();
+
+        $data = (new Payment\Service)->s2sCallback($publicPaymentId, $input);
+
+        return ApiResponse::json($data);
+
     }
 
     public function callbackKotakCancel()
@@ -787,6 +823,15 @@ class GatewayController extends Controller
 
     protected function preProcessStaticCallback($method, $gateway, $input, $mode)
     {
+        $this->app['trace']->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'gateway'          => $gateway,
+                'callback_data'    => $input,
+                'mode'             => $mode,
+            ]
+        );
+
         $currentRoute = $this->route->getCurrentRouteName();
 
         Payment\Method::validateMethod($method);
@@ -816,7 +861,9 @@ class GatewayController extends Controller
         }
 
         if ((($currentRoute === 'gateway_payment_static_callback_get') or
-            ($currentRoute === 'gateway_payment_static_callback_post')) and
+            ($currentRoute === 'gateway_payment_static_callback_post') or
+            ($currentRoute === 'gateway_payment_static_s2scallback_get') or
+            ($currentRoute === 'gateway_payment_static_s2scallback_post')) and
             (isset($mode) === false) or
             (Mode::exists($mode)) === false)
         {
@@ -825,14 +872,19 @@ class GatewayController extends Controller
             );
         }
 
-        $this->app['trace']->info(
-            TraceCode::GATEWAY_PAYMENT_CALLBACK,
-            [
-                'gateway'          => $gateway,
-                'callback_data'    => $input,
-                'mode'             => $mode,
-            ]
-        );
+        // We call razorx to check if webhooks is enabled for gateway. This is done temporarily.
+        //Todo: Remove this code after making sure everything is working fine in production
+        if ($gateway === Gateway::ATOM)
+        {
+            $featureFlag = $method . '_' . RazorxTreatment::ENABLE_WEBHOOKS . '_' . $gateway;
+
+            $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $featureFlag, $mode);
+
+            if ($variant != 'enablewebhooks')
+            {
+                return ['status' => 'WEBHOOKS_DISABLED_FOR_GATEWAY'];
+            }
+        }
 
         $paymentId = $this->callGatewayPreprocessCallback($method, $gateway, $input, $mode);
 
@@ -853,17 +905,7 @@ class GatewayController extends Controller
 
         $this->config->set('database.default', $paymentMode);
 
-        $payment = $this->repo->payment->findOrFail($paymentId);
-
-        $publicKey = $this->getMerchantKeyForPayment($payment, $paymentMode);
-
-        $publicPaymentId = $payment->getPublicId();
-
-        $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
-
-        $url = $url . '?' . http_build_query($input);
-
-        return Redirect::to($url);
+        return $paymentId;
     }
 
     public function callbackAmazonpay($responseFormat = 'html')

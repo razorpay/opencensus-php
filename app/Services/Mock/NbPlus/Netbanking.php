@@ -63,7 +63,7 @@ class Netbanking extends NetbankingBase
     {
         $gateway = $this->gateway;
 
-        if (Payment\Gateway::isStaticCallbackGateway($gateway) === true)
+        if ((Payment\Gateway::isStaticCallbackGateway($gateway) === true) and (Payment\Gateway::isWebhookEnabledGateway($gateway) === false))
         {
             return $this->staticGatewayAuthorize($input, $gateway);
         }

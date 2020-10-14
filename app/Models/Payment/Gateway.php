@@ -1714,6 +1714,7 @@ class Gateway
         // that went through tokenization gateways.
         Gateway::CYBERSOURCE,
         Gateway::CRED,
+        Gateway::ATOM,
     ];
 
     /**
@@ -1727,6 +1728,11 @@ class Gateway
     public static $staticCallbackGateways = [
         Gateway::NETBANKING_KVB,
         Gateway::ESIGNER_LEGALDESK,
+        Gateway::ATOM,
+    ];
+
+    public static $webhooksEnabledGateways = [
+        Gateway::ATOM,
     ];
 
     /**
@@ -2155,6 +2161,11 @@ class Gateway
     public static function isStaticCallbackGateway($gateway)
     {
         return in_array($gateway, self::$staticCallbackGateways, true);
+    }
+
+    public static function isWebhookEnabledGateway($gateway)
+    {
+        return in_array($gateway, self::$webhooksEnabledGateways, true);
     }
 
     /**

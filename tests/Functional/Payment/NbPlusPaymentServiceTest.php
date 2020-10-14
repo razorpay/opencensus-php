@@ -74,6 +74,10 @@ class NbPlusPaymentServiceTest extends TestCase
                   ->will($this->returnCallback(
                       function ($mid, $feature, $mode)
                       {
+                          if ($feature == 'netbanking_enable_webhooks_atom')
+                          {
+                              return 'enablewebhooks';
+                          }
                             return 'nbplusps';
                       })
                   );
@@ -190,6 +194,67 @@ class NbPlusPaymentServiceTest extends TestCase
         $this->assertEquals(Payment\Entity::NB_PLUS_SERVICE, $payment[Payment\Entity::CPS_ROUTE]);
 
         $this->assertEquals(0, $payment[Payment\Entity::VERIFIED]);
+    }
+
+    public function testPaymentFailedWebhookSuccess()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === NbPlusPaymentService\Action::AUTHORIZE)
+            {
+                $content = [
+                    NbPlusPaymentService\Response::RESPONSE  => null,
+                    NbPlusPaymentService\Response::ERROR     => [
+                        NbPlusPaymentService\Error::CODE  => 'GATEWAY',
+                        NbPlusPaymentService\Error::CAUSE => [
+                            NbPlusPaymentService\Error::MOZART_ERROR_CODE   =>  'BAD_REQUEST_PAYMENT_FAILED'
+                        ]
+                    ],
+                ];
+            }
+        });
+
+        $paymentArray = $this->getDefaultNetbankingPaymentArray();
+
+        $this->makeRequestAndCatchException(
+            function() use ($paymentArray)
+            {
+                $this->doAuthPayment($paymentArray);
+            },
+            GatewayErrorException::class);
+
+        $payment = $this->getLastPayment(true);
+
+        $response = $this->mockWebhookFromBank();
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals(Payment\Status::AUTHORIZED, $payment[Payment\Entity::STATUS]);
+
+        $this->assertEquals(true, $payment[Payment\Entity::LATE_AUTHORIZED]);
+
+        $this->assertEquals(Payment\Entity::NB_PLUS_SERVICE, $payment[Payment\Entity::CPS_ROUTE]);
+
+        $this->assertEquals(0, $payment[Payment\Entity::VERIFIED]);
+    }
+
+    protected function mockWebhookFromBank()
+    {
+        $gatewayPayment = $this->getLastEntity('payment', true);
+
+        $content = [
+            'paymentId' => substr($gatewayPayment['id'], 4),
+            'VERIFIED' => 'SUCCESS',
+        ];
+
+        $request = [
+            'content' => $content,
+            'url' => '/gateway/netbanking/atom/s2scallback/test',
+            'method' => 'post'
+        ];
+
+        // Fire s2s webhook
+        return $this->makeRequestAndGetContent($request);
     }
 
     public function testAuthorizeFailedPayment()
