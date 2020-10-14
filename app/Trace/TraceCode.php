@@ -3016,6 +3016,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SMART_ROUTING_AUTHN_RESPONSE                          = 'SMART_ROUTING_AUTHN_RESPONSE';
 
     // Doppler service
+    const DOPPLER_SERVICE_SNS_PUBLISH_CANCEL                    = 'DOPPLER_SERVICE_SNS_PUBLISH_CANCEL';
     const DOPPLER_SERVICE_SNS_PUBLISH_FAILED                    = 'DOPPLER_SERVICE_SNS_PUBLISH_FAILED';
 
     /*

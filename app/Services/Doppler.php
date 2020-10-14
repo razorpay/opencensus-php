@@ -65,6 +65,8 @@ class Doppler
 
     protected $sns_topic;
 
+    protected $sendDopplerFeedback = true;
+
     public function __construct($app, $dopplerTopic)
     {
         $this->app = $app;
@@ -117,7 +119,18 @@ class Doppler
 
             $eventData = $this->prepareEventForDoppler($payment, $authorizeStatus, $errorCode, $internalErrorCode, $paymentRetryAttempt);
 
-            $this->sendDopplerEventRequest($eventData);
+            if ($this->sendDopplerFeedback === true)
+            {
+                $this->sendDopplerEventRequest($eventData);
+            }
+            else
+            {
+                $this->trace->info(TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_CANCEL, [
+                    'payment_id' => $payment->getId(),
+                    'payment_method' => $payment->getMethod(),
+                ]);
+            }
+
         }
     }
 
@@ -196,7 +209,16 @@ class Doppler
         if($payment->isUPI() === true)
         {
             $upiEntity = $this->repo->upi_metadata->fetchByPaymentId($payment->getId());
-            $type = $upiEntity->getFlow();
+            if (isset($upiEntity) === true)
+            {
+                $type = $upiEntity->getFlow();
+            }
+            else
+            {
+                $this->sendDopplerFeedback = false;
+                $type = null;
+            }
+
 
             $vpaHandle = $payment->getVpaHandleFromVpa();
             if (strlen($vpaHandle) == 0)
