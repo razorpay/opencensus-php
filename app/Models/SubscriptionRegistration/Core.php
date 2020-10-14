@@ -246,6 +246,8 @@ class Core extends Base\Core
         (new Validator)->validateMethodWithOrder($input, $order);
 
         $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::METHOD] = $order->getMethod();
+
+        $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::CURRENCY] = $order->getCurrency();
     }
 
     private function populateInvoiceParamsFromOrderAndCustomer(array & $input, Order\Entity $order, Customer\Entity $customer)
@@ -282,6 +284,12 @@ class Core extends Base\Core
     public function createSubscriptionRegistration(array & $input, Merchant\Entity $merchant, Customer\Entity $customer)
     {
         $subrInput = array_pull($input, Constants\Entity::SUBSCRIPTION_REGISTRATION);
+
+        if (isset($input[Order\Entity::CURRENCY]) === true and
+            isset($subrInput[Entity::CURRENCY]) === false)
+        {
+            $subrInput[Entity::CURRENCY] = $input[Order\Entity::CURRENCY];
+        }
 
         $validator = new Validator;
 

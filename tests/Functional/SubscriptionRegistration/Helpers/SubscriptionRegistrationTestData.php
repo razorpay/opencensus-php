@@ -84,6 +84,44 @@ return [
         ],
     ],
 
+    'testCreateAuthLinkInternationalCard' => [
+        'request'  => [
+            'url'     => '/subscription_registration/auth_links',
+            'method'  => 'post',
+            'content' => [
+                'type'        => 'link',
+                'amount'      => '100',
+                'currency'    => 'USD',
+                'customer'    => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+                'description' => 'International description',
+
+                'subscription_registration' => [
+                    'method' => 'card',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_details' => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+
+                'status'       => 'issued',
+                'sms_status'   => 'sent',
+                'email_status' => 'sent',
+                'amount'       => 100,
+                'currency'     => 'USD',
+                'type'         => 'link',
+            ],
+        ],
+    ],
+
     'testCreateAuthLinkWithBankMandate' => [
         'request'  => [
             'url'     => '/subscription_registration/auth_links',

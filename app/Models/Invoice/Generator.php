@@ -501,6 +501,9 @@ class Generator extends Base\Core
             if (($this->externalEntity !== null) and
                 ($this->invoice->isTypeOfSubscriptionRegistration() === true))
             {
+                $orderInput[Order\Entity::PRODUCT_ID] = $this->invoice->getId();
+                $orderInput[Order\Entity::PRODUCT_TYPE] = Order\ProductType::AUTH_LINK;
+
                 if (($this->externalEntity->getMethod() === SubscriptionRegistration\Method::EMANDATE) or
                     ($this->externalEntity->getMethod() === SubscriptionRegistration\Method::NACH))
                 {

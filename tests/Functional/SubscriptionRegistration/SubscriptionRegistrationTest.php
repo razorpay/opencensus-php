@@ -53,6 +53,19 @@ class SubscriptionRegistrationTest extends TestCase
         $this->assertStatusesWithLastEntity(['sms_status' => 'sent', 'email_status' => 'sent']);
     }
 
+    public function testCreateAuthLinkInternationalCard()
+    {
+        $this->fixtures->merchant->enableInternational();
+
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => true]);
+
+        $this->startTest();
+
+        $subr = $this->getDbLastEntity('subscription_registration');
+
+        $this->assertEquals('USD', $subr['currency']);
+    }
+
     public function testCreateAuthLinkWithBankMandate()
     {
         $this->startTest();

@@ -23,6 +23,7 @@ class Validator extends Base\Validator
 
     protected static $createRules = [
         Entity::EXPIRE_AT                       => 'sometimes|epoch',
+        Entity::CURRENCY                        => 'sometimes|string|size:3',
         Entity::MAX_AMOUNT                      => 'sometimes|integer|nullable',
         Entity::FIRST_PAYMENT_AMOUNT            => 'sometimes|integer|nullable',
         Entity::AUTH_TYPE                       => 'sometimes|string|nullable|in:netbanking,aadhaar,debitcard,physical,migrated',
@@ -76,6 +77,7 @@ class Validator extends Base\Validator
 
     protected static $createSubscriptionRegistrationRules = [
         Entity::EXPIRE_AT                       => 'sometimes|epoch',
+        Entity::CURRENCY                        => 'sometimes|string|size:3',
         Entity::MAX_AMOUNT                      => 'sometimes|integer|nullable',
         Entity::FIRST_PAYMENT_AMOUNT            => 'sometimes|integer|nullable',
         Entity::AUTH_TYPE                       => 'sometimes|string|nullable|in:netbanking,aadhaar,debitcard,physical,migrated',
