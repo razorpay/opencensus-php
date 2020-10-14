@@ -435,7 +435,7 @@ export default class User {
   }
 
   get isFdTicketsEnabled() {
-    return this.isFeatureEnabled('view_fd_tickets');
+    return this.getExpStatus('view_fd_tickets');
   }
 
   get isAutomaticSettlementEnabled() {

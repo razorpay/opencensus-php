@@ -181,7 +181,7 @@ export const SAMPLE_TICKET = {
   responder_id: null,
   source: 1,
   company_id: null,
-  status: 2,
+  status: 10,
   subject: '',
   association_type: null,
   to_emails: [],

@@ -4,6 +4,7 @@ import Banner from 'common/ui/Banner';
 import { classList } from 'common/utils/rzp-utils';
 import { trackSupportOptions } from 'merchant/components/Support/ga';
 import { Link } from 'react-router-dom';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 export default class SupportBody extends Component {
   openDashboardGuide = (_) => {
@@ -79,21 +80,23 @@ export default class SupportBody extends Component {
             Write to us
             <small class="help-block">For integration, account and payment issues</small>
           </li>
-          <li class="support-item p-all history">
-            <Link
-              to={`/ticket-support/tickets`}
-              onClick={() => {
-                window.rzpAnalytics({
-                  eventCategory: 'Ticket Dashboard',
-                  eventAction: 'write to us clicked',
-                  eventLabel: `Tickets`,
-                });
-              }}
-            >
-              Past Tickets
-              <small class="help-block">View all tickets raised by you</small>
-            </Link>
-          </li>
+          <ShowWhen myRole="owner admin" additionalCondition={(user) => user.isFdTicketsEnabled}>
+            <li class="support-item p-all history">
+              <Link
+                to={`/ticket-support/tickets`}
+                onClick={() => {
+                  window.rzpAnalytics({
+                    eventCategory: 'Ticket Dashboard',
+                    eventAction: 'write to us clicked',
+                    eventLabel: `Tickets`,
+                  });
+                }}
+              >
+                Past Tickets
+                <small class="help-block">View all tickets raised by you</small>
+              </Link>
+            </li>
+          </ShowWhen>
           {window.rzp_user ? (
             ['activated', 'under_review', 'instantly_activated', 'needs_clarification'].indexOf(
               window.rzp_user.activation_status,
