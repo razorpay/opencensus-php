@@ -62,20 +62,6 @@ class CapitalCardsController extends Controller
         self::GENERATE_OTP,
     ];
 
-    const ROUTE_PERMISSION_MAP = [
-        self::PROGRAM_ENRICH                         => Name::CAPITAL_CARDS,
-        self::GET_PROGRAM_BY_ID                      => Name::CAPITAL_CARDS,
-        self::GET_PROGRAMS                           => Name::CAPITAL_CARDS,
-        self::GET_CARDS                              => Name::CAPITAL_CARDS,
-        self::UPDATE_CARD_PREFERENCES                => Name::CAPITAL_CARDS,
-        self::UPDATE_CARD                            => Name::CAPITAL_CARDS,
-        self::SET_CARD_PIN                           => Name::CAPITAL_CARDS,
-        self::GET_STATEMENT                          => Name::CAPITAL_CARDS,
-        self::GET_TRANSACTION                        => Name::CAPITAL_CARDS,
-        self::RAISE_DISPUTE                          => Name::CAPITAL_CARDS,
-        self::GENERATE_OTP                           => Name::CAPITAL_CARDS,
-    ];
-
     protected function handleProxyRequests($path = null)
     {
         $request = Request::instance();
@@ -144,11 +130,6 @@ class CapitalCardsController extends Controller
          if ($isValidRoute === false)
          {
              throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
-         }
-         else if ((isset(self::ROUTE_PERMISSION_MAP[$route]) === false) or
-                  ($this->ba->getAdmin()->hasPermission(self::ROUTE_PERMISSION_MAP[$route]) === false))
-         {
-             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
          }
 
         $headers = [
