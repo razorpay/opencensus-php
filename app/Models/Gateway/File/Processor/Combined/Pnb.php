@@ -2,23 +2,24 @@
 
 namespace RZP\Models\Gateway\File\Processor\Combined;
 
-use Carbon\Carbon;
 use RZP\Error\ErrorCode;
-use RZP\Models\Base\PublicCollection;
-use RZP\Models\Gateway\File\Type;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Services\Beam\Service;
+use RZP\Models\Gateway\File\Type;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Gateway\File\Status;
+use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
+use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Constants as BeamConstants;
 
 class Pnb extends Base
 {
-    const BANK_NAME = 'Pnb';
+    const BANK_NAME       = 'Pnb';
     const BEAM_FILE_TYPE  = 'combined';
+    const FILE_TYPE       = FileStore\Type::PNB_NETBANKING_CLAIMS;
 
     public function sendFile($data)
     {
@@ -40,9 +41,13 @@ class Pnb extends Base
 
             $fileInfo = [$claimsFile , $refundsFile];
 
+            $bucketConfig = $this->getBucketConfig();
+
             $beamData =  [
-                Service::BEAM_PUSH_FILES   => $fileInfo,
-                Service::BEAM_PUSH_JOBNAME => BeamConstants::PNB_NB_COMBINED_FILE_JOB_NAME
+                Service::BEAM_PUSH_FILES         => $fileInfo,
+                Service::BEAM_PUSH_JOBNAME       => BeamConstants::PNB_NB_COMBINED_FILE_JOB_NAME,
+                Service::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
+                Service::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
             ];
 
             // In seconds
@@ -81,6 +86,17 @@ class Pnb extends Base
                 ],
                 $e);
         }
+    }
+
+    protected function getBucketConfig()
+    {
+        $config = $this->app['config']->get('filestore.aws');
+
+        $bucketType = Bucket::getBucketConfigName(static::FILE_TYPE, $this->env);
+
+        $bucketConfig = $config[$bucketType];
+
+        return $bucketConfig;
     }
 
     protected function getFileData(string $type)
