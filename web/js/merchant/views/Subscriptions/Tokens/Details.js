@@ -20,12 +20,7 @@ import MandatePaymentMethod from 'merchant/views/Subscriptions/components/Mandat
 import MandateCustomerDetails from 'merchant/views/Subscriptions/components/MandateCustomerDetails';
 import MandateBankAccountDetails from 'merchant/views/Subscriptions/components/MandateBankAccountDetails';
 
-import {
-  fetchToken,
-  deleteToken,
-  resubmitNACHFile,
-  cancelToken,
-} from 'merchant/reducers/token';
+import { fetchToken, deleteToken, resubmitNACHFile, cancelToken } from 'merchant/reducers/token';
 import { downloadSignedNACHFile } from 'merchant/reducers/registration_link';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
@@ -40,7 +35,7 @@ import {
 } from './ga';
 
 @withRouter
-@connect(state => ({ ...state.token, user: state.session.user }), {
+@connect((state) => ({ ...state.token, user: state.session.user }), {
   fetchToken,
   openModal,
   closeModal,
@@ -63,9 +58,7 @@ export default class TokenDetailsContainer extends Component {
   }
 
   get isUPIMethod() {
-    return (
-      this.props.entity.method === 'upi' && this.props.user.isUPICAWEnabled
-    );
+    return this.props.entity.method === 'upi' && this.props.user.isUPICAWEnabled;
   }
 
   componentWillMount() {
@@ -82,7 +75,7 @@ export default class TokenDetailsContainer extends Component {
     if (!event) return;
 
     this.props.tracking.trackEvent(
-      window.rzpQ.chargeAtWill().interaction(`token.${event}`, options)
+      window.rzpQ.chargeAtWill().interaction(`token.${event}`, options),
     );
   };
 
@@ -91,12 +84,7 @@ export default class TokenDetailsContainer extends Component {
 
     this.props.openModal({
       size: 'medium',
-      component: (
-        <ChargeToken
-          closeModal={this.props.closeModal}
-          token={this.props.entity}
-        />
-      ),
+      component: <ChargeToken closeModal={this.props.closeModal} token={this.props.entity} />,
     });
   };
 
@@ -105,15 +93,14 @@ export default class TokenDetailsContainer extends Component {
 
     this.context.confirm({
       header: 'Delete Token?',
-      message:
-        'Once the token is deleted you will not be able to charge this token',
+      message: 'Once the token is deleted you will not be able to charge this token',
       affirmativeLabel: 'Yes, delete',
       abortLabel: "No, don't",
       affirmativePendingLabel: 'Deleting...',
       action: () => {
         return this.props
           .deleteToken(this.props.id)
-          .then(resp => {
+          .then((resp) => {
             if (resp) {
               this.props.showNotification({
                 type: 'success',
@@ -123,8 +110,7 @@ export default class TokenDetailsContainer extends Component {
             } else {
               this.props.showNotification({
                 type: 'error',
-                message:
-                  'An error occurred while deleting token. Kindly try again',
+                message: 'An error occurred while deleting token. Kindly try again',
               });
             }
 
@@ -150,15 +136,14 @@ export default class TokenDetailsContainer extends Component {
 
     this.context.confirm({
       header: 'Cancel Token?',
-      message:
-        'Once the token is cancel you will not be able to charge this token',
+      message: 'Once the token is cancel you will not be able to charge this token',
       affirmativeLabel: 'Yes, Cancel',
       abortLabel: "No, don't",
       affirmativePendingLabel: 'Cancelling...',
       action: () => {
         return this.props
           .cancelToken(this.props.entity.customer.id, this.props.id)
-          .then(resp => {
+          .then((resp) => {
             if (resp) {
               this.props.showNotification({
                 type: 'success',
@@ -192,7 +177,7 @@ export default class TokenDetailsContainer extends Component {
       .then(() => {
         this.trackTokenDetailsView('nach.download_signed_nach.success');
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -207,9 +192,7 @@ export default class TokenDetailsContainer extends Component {
   trackClickDownloadNACHForm = () => {
     const { failure_reason } = this.props.entity.recurring_details;
 
-    trackClickDownloadNACHForm(
-      failure_reason.includes('nach') ? 'Rejected' : 'Approved'
-    );
+    trackClickDownloadNACHForm(failure_reason.includes('nach') ? 'Rejected' : 'Approved');
 
     this.trackTokenDetailsView('nach.download.error', { response: err.errors });
   };
@@ -221,9 +204,7 @@ export default class TokenDetailsContainer extends Component {
 
     const showChangeBtn =
       !isCancelled &&
-      ['rejected', 'initiated'].indexOf(
-        (entity.recurring_details || {}).status
-      ) === -1;
+      ['rejected', 'initiated'].indexOf((entity.recurring_details || {}).status) === -1;
 
     return (
       <div class="content-wrapper content-sm txn-details Token--Details">
@@ -243,18 +224,13 @@ export default class TokenDetailsContainer extends Component {
                       <MandateCustomerDetails customer={entity.customer} />
 
                       {showChangeBtn && (
-                        <Button.Primary onClick={this.handleChargeNow}>
-                          ₹ Charge Now
-                        </Button.Primary>
+                        <Button.Primary onClick={this.handleChargeNow}>₹ Charge Now</Button.Primary>
                       )}
                     </div>
 
                     {/* status of token */}
                     <EntityDetailRow label="Status">
-                      <TokenStatusLabel
-                        class="m-r"
-                        status={getTokenStatus(entity)}
-                      />
+                      <TokenStatusLabel class="m-r" status={getTokenStatus(entity)} />
                     </EntityDetailRow>
 
                     <EntityDetailRow label="Failure Reason">
@@ -285,9 +261,7 @@ export default class TokenDetailsContainer extends Component {
                       <EntityDetailRow label="NACH Form">
                         <NACHDetails
                           downloadSignedNACHFile={this.downloadSignedNACHFile}
-                          trackClickDownloadNACHForm={
-                            this.trackClickDownloadNACHForm
-                          }
+                          trackClickDownloadNACHForm={this.trackClickDownloadNACHForm}
                           trackClickViewNACHForm={trackClickViewNACHForm}
                         />
                       </EntityDetailRow>
@@ -297,12 +271,13 @@ export default class TokenDetailsContainer extends Component {
                       <TimeStamps token={entity} />
                     </EntityDetailRow>
 
+                    <EntityDetailRow label="Expires By">
+                      {entity.expire_at ? <Time value={entity.expire_at} /> : 'Until Cancelled'}
+                    </EntityDetailRow>
+
                     <NestedEntityDetailRow label="Notes" value={entity.notes} />
 
-                    <EntityDetailRow
-                      label="Actions"
-                      class="pair-group-item actions"
-                    >
+                    <EntityDetailRow label="Actions" class="pair-group-item actions">
                       {this.isUPIMethod && !isCancelled && (
                         <button
                           class="btn btn-default"
