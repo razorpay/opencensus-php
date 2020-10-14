@@ -29,7 +29,7 @@ export default class ChargeToken extends Component {
         description: this.state.description,
         id: token.id,
       })
-      .then(response => {
+      .then((response) => {
         if (response) {
           this.props.showNotification({
             type: 'success',
@@ -38,8 +38,7 @@ export default class ChargeToken extends Component {
         } else {
           this.props.showNotification({
             type: 'error',
-            message:
-              'There was an error while charging token, Please try again later',
+            message: 'There was an error while charging token, Please try again later',
           });
         }
         this.props.closeModal();
@@ -63,10 +62,7 @@ export default class ChargeToken extends Component {
     const token = this.props.token;
     return (
       <div>
-        <ModalHeader
-          title={'Charge ' + token.id}
-          onCloseClick={this.props.closeModal}
-        />
+        <ModalHeader title={'Charge ' + token.id} onCloseClick={this.props.closeModal} />
         <div class="modal-body">
           <Form onSubmit={this.chargeToken} onChange={this.handleChange}>
             <main class="form-container">
@@ -75,7 +71,7 @@ export default class ChargeToken extends Component {
                 label="Amount"
                 addonBefore={
                   <AmountTooltip
-                    currency={'INR'}
+                    currency={token.subscription_registration.currency}
                     parentQuerySelector=".Modal"
                   />
                 }
@@ -85,11 +81,7 @@ export default class ChargeToken extends Component {
 
               <Input name="receipt" label="Receipt No." class="Input--vTop" />
 
-              <Input.Textarea
-                name="description"
-                label="Description"
-                class="Input--vTop"
-              />
+              <Input.Textarea name="description" label="Description" class="Input--vTop" />
             </main>
             <footer class="m-t">
               <AsyncBtn.Primary

@@ -7,7 +7,7 @@ export default ({ amount, onBlurElement, placeholder, ...props }) => (
   <React.Fragment>
     <Input.Group class="InputGroup--inline" label="Amount">
       <div class="Input-content">
-        <Input
+        <Input.CurrencyInput
           required
           name="amount"
           type="number"
@@ -19,9 +19,7 @@ export default ({ amount, onBlurElement, placeholder, ...props }) => (
           class="Input--Amount"
           onBlur={onBlurElement}
           data-name="amount"
-          addonBefore={
-            <AmountTooltip currency={'INR'} parentQuerySelector=".Modal" />
-          }
+          addonBefore={<AmountTooltip currency={'INR'} parentQuerySelector=".Modal" />}
           {...props}
         />
       </div>
