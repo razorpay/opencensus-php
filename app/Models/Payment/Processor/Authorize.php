@@ -7648,7 +7648,6 @@ trait Authorize
                 $this->preProcessPaymentMeta($input, $payment);
 
                 $input['payment'] = $payment->toArrayGateway();
-                $input['gateway'] = [];
 
                 $token = $this->repo->token->getGlobalOrLocalTokenEntityOfPayment($payment);
 
