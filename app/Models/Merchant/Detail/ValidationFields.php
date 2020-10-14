@@ -162,7 +162,7 @@ class ValidationFields
         BusinessCategory::EDUCATION          => self::EDUCATION_OPTIONAL_FIELDS,
         BusinessCategory::TOURS_AND_TRAVEL   => self::TOURS_AND_TRAVEL_OPTIONAL_FIELDS,
         self::DEFAULT                        => [
-            self::REQUIRED_FIELDS           => [RequiredFields::REGISTERED_BUSINESS_FIELDS],
+            self::REQUIRED_FIELDS           => [RequiredFields::REGISTERED_BUSINESS_FIELDS, RequiredFields::BUSINESS_PAN_FIELDS],
             self::SELECTIVE_REQUIRED_FIELDS => [SelectiveRequiredFields::REGISTERED_POA_FIELDS]
         ],
     ];
@@ -172,8 +172,18 @@ class ValidationFields
         BusinessCategory::EDUCATION          => self::EDUCATION_OPTIONAL_FIELDS,
         BusinessCategory::TOURS_AND_TRAVEL   => self::TOURS_AND_TRAVEL_OPTIONAL_FIELDS,
         self::DEFAULT                        => [
-            self::REQUIRED_FIELDS           => [RequiredFields::REGISTERED_BUSINESS_FIELDS, RequiredFields::NGO_MERCHANT_FIELDS],
+            self::REQUIRED_FIELDS           => [RequiredFields::REGISTERED_BUSINESS_FIELDS, RequiredFields::NGO_MERCHANT_FIELDS, RequiredFields::BUSINESS_PAN_FIELDS],
             self::SELECTIVE_REQUIRED_FIELDS => [SelectiveRequiredFields::REGISTERED_POA_FIELDS]
+        ],
+    ];
+
+    const PROPRIETORSHIP_FIELD_GROUP = [
+        BusinessCategory::FINANCIAL_SERVICES => self::FINANCIAL_SERVICE_FIELDS,
+        BusinessCategory::EDUCATION          => self::EDUCATION_OPTIONAL_FIELDS,
+        BusinessCategory::TOURS_AND_TRAVEL   => self::TOURS_AND_TRAVEL_OPTIONAL_FIELDS,
+        self::DEFAULT                        => [
+            self::REQUIRED_FIELDS           => [RequiredFields::REGISTERED_BUSINESS_FIELDS],
+            self::SELECTIVE_REQUIRED_FIELDS => [SelectiveRequiredFields::REGISTERED_POA_FIELDS, SelectiveRequiredFields::PROPRIETORSHIP_PERSONAL_PAN_DOCUMENTS]
         ],
     ];
 
@@ -188,7 +198,7 @@ class ValidationFields
         BusinessType::LLP                    => self::DEFAULT_REGISTERED_GROUP,
         BusinessType::OTHER                  => self::DEFAULT_REGISTERED_GROUP,
         BusinessType::PARTNERSHIP            => self::DEFAULT_REGISTERED_GROUP,
-        BusinessType::PROPRIETORSHIP         => self::DEFAULT_REGISTERED_GROUP,
+        BusinessType::PROPRIETORSHIP         => self::PROPRIETORSHIP_FIELD_GROUP,
         BusinessType::PUBLIC_LIMITED         => self::DEFAULT_REGISTERED_GROUP,
         BusinessType::PRIVATE_LIMITED        => self::DEFAULT_REGISTERED_GROUP,
         BusinessType::TRUST                  => self::DEFAULT_REGISTERED_GROUP,

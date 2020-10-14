@@ -1889,6 +1889,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->startTest();
     }
+
     public function testGetMerchantDetailsRegisteredBusinessWithOptionalFields()
     {
         $merchant = $this->fixtures->create('merchant');

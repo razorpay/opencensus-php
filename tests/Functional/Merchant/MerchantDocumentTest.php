@@ -27,9 +27,11 @@ class MerchantDocumentTest Extends TestCase
 
     public function testDeleteDocument()
     {
-        $merchantDocument = $this->fixtures->create('merchant_document');
+        $merchantDocument = $this->fixtures->create('merchant_document', [
+            'document_type' => 'business_proof_url',
+        ]);
 
-        $this->fixtures->create('merchant_detail',['merchant_id' => '10000000000000','address_proof_url' => 'abcdefgh12345']);
+        $this->fixtures->create('merchant_detail',['merchant_id' => '10000000000000']);
 
         //request edited
         $request = $this->testData[__FUNCTION__]['request'];
@@ -42,7 +44,7 @@ class MerchantDocumentTest Extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertContains('business_pan_url',$response['verification']['required_fields']);
+        $this->assertContains('business_proof_url', $response['verification']['required_fields']);
     }
 
     public function testDeleteDocumentIdNotValid()

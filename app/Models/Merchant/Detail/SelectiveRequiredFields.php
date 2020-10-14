@@ -7,6 +7,7 @@ use RZP\Models\Merchant\Document\Type;
 class SelectiveRequiredFields
 {
     const POA_DOCUMENTS                         = 'poa_documents';
+    const PERSONAL_PAN_DOCUMENTS                = 'personal_pan_documents';
     const SEBI_REGISTRATION_CERTIFICATE_OR_SLA  = 'sebi_registration_certificate_or_sla';
     const IRDAI_REGISTRATION_CERTIFICATE_OR_SLA = 'irdai_registration_certificate_or_sla';
     const FFMC_LICENSE_OR_SLA                   = 'ffmc_license_or_sla';
@@ -32,6 +33,13 @@ class SelectiveRequiredFields
             [Type::PASSPORT_FRONT, Type::PASSPORT_BACK],
             [Type::VOTER_ID_FRONT, Type::VOTER_ID_BACK],
             [Type::DRIVER_LICENSE_FRONT, Type::DRIVER_LICENSE_BACK],
+        ]
+    ];
+
+    const PROPRIETORSHIP_PERSONAL_PAN_DOCUMENTS = [
+        self::PERSONAL_PAN_DOCUMENTS => [
+            [Type::BUSINESS_PAN_URL],
+            [Type::PERSONAL_PAN]
         ]
     ];
 

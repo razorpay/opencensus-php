@@ -20,13 +20,17 @@ class RequiredFields
         Entity::PROMOTER_PAN_NAME,
     ];
 
+    const BUSINESS_PAN_FIELDS = [
+        Entity::BUSINESS_PAN_URL,
+    ];
+
+
     //registered business default doc
     const REGISTERED_BUSINESS_FIELDS = [
         Entity::BUSINESS_DBA,
         Entity::BUSINESS_INTERNATIONAL,
         Entity::BUSINESS_NAME,
 
-        Entity::BUSINESS_PAN_URL,
         Entity::BUSINESS_PROOF_URL,
 
         //operational address related fields

@@ -93,6 +93,7 @@ class Type
         self::MEMORANDUM_OF_ASSOCIATION,
         self::ARTICLE_OF_ASSOCIATION,
         self::BOARD_RESOLUTION,
+        self::PERSONAL_PAN
     ];
 
     /**

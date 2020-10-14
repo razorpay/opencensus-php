@@ -1105,10 +1105,10 @@ return [
                             'fields'    => [],
                             'documents' => [
                                 [
-                                    'type' => 'business_pan_url',
+                                    'type' => 'business_proof_url',
                                 ],
                                 [
-                                    'type' => 'business_proof_url',
+                                    'type' => 'business_pan_url',
                                 ],
                                 [
                                     'type' => 'promoter_address_url',
@@ -1473,10 +1473,6 @@ return [
                             ],
                             'documents' => [
                                 [
-                                    'type' => 'business_pan_url',
-                                    'reason'     => Constants::REQUIRED_DOCUMENT_MISSING,
-                                ],
-                                [
                                     'type' => 'business_proof_url',
                                 ],
                                 [
@@ -1484,6 +1480,10 @@ return [
                                 ],
                                 [
                                     'type' => 'form_80g_url',
+                                ],
+                                [
+                                    'type' => 'business_pan_url',
+                                    'reason'     => Constants::REQUIRED_DOCUMENT_MISSING,
                                 ],
                                 [
                                     'type' => 'promoter_address_url',

@@ -6,6 +6,7 @@ use RZP\Jobs\Batch as BatchJob;
 use RZP\Models\Merchant\Entity;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Queue;
+use RZP\Models\Merchant\Document\Source;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 
 class InstantActivationTest extends TestCase
@@ -41,30 +42,22 @@ class InstantActivationTest extends TestCase
     /**
      * verifies data Migration through batch
      */
-    //public function testVerifyBatchDataMigration()
-    //{
-    //    $merchantId = $this->createMerchantDetailFixture();
-    //
-    //    $input = [
-    //        [
-    //            DetailEntity::MERCHANT_ID => $merchantId,
-    //        ]
-    //    ];
-    //
-    //    $this->createAndPutExcelFileInRequest($input, __FUNCTION__);
-    //
-    //    $this->startTest();
-    //
-    //    $merchant = $this->getDbEntity('merchant', ['id' => $merchantId], 'live');
-    //
-    //    $whitelistedDomain = $merchant[Entity::WHITELISTED_DOMAINS] ?? [];
-    //
-    //    $this->assertEquals(['example.com','abc.com','webhook.com'], $whitelistedDomain);
-    //}
-
     public function testVerifyBatchDataMigration()
     {
         $merchantId = $this->createMerchantDetailFixture();
+
+        $businessPanUrlInput = [
+            'merchant_id'   => $merchantId,
+            'document_type' => 'business_pan_url',
+            'file_store_id' => 'DA6dXJfU4WzeAF',
+            'entity_type'   => 'merchant',
+            'source'        => Source::UFH,
+        ];
+
+        $businessPanDocument = $this->fixtures->on('live')->create(
+            'merchant_document',
+            $businessPanUrlInput
+        );
 
         $input = [
             [
@@ -76,11 +69,24 @@ class InstantActivationTest extends TestCase
 
         $this->startTest();
 
-        $merchant = $this->getDbEntity('merchant', ['id' => $merchantId], 'live');
+        $merchantDocument = $this->getLastEntity('merchant_document', 'live');
 
-        $prodInt = $merchant[Entity::PRODUCT_INTERNATIONAL];
+        $expectedFileAttributes = [
+            'document_type' => 'personal_pan',
+            'merchant_id'   => $merchantId,
+            'file_store_id' => 'DA6dXJfU4WzeAF',
+            'entity_type'   => 'merchant',
+            'source'        => Source::UFH,
+        ];
 
-        $this->assertEquals( '1111000000', $prodInt);
+        foreach ($expectedFileAttributes as $attributeName => $attributeValue)
+        {
+            $this->assertEquals($attributeValue, $merchantDocument[$attributeName]);
+        }
+
+        $oldDocument = $this->getDbEntity('merchant_document', ['id' => $businessPanDocument->getId()], 'live');
+
+        $this->assertNotNull($oldDocument);
     }
 
     /**
@@ -115,12 +121,11 @@ class InstantActivationTest extends TestCase
         $mid = '10000000000000';
 
         // merchant detail internally creates merchant entity
-        $this->fixtures->edit('merchant',$mid,[Entity::WEBSITE => 'example.com']);
+        $this->fixtures->edit('merchant', $mid, [Entity::WEBSITE => 'example.com']);
 
         $this->fixtures->create('merchant_detail', [
-            DetailEntity::MERCHANT_ID => $mid,
-            DetailEntity::BUSINESS_WEBSITE => 'http://example.com',
-            DetailEntity::ADDITIONAL_WEBSITES  => ['http://abc.com','http://webhook.com'],
+            DetailEntity::MERCHANT_ID   => $mid,
+            DetailEntity::BUSINESS_TYPE => '1',
         ]);
 
         return $mid;
