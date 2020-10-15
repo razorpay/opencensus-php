@@ -81,6 +81,8 @@ class Mailable extends BaseMailable
         {
             Container::getInstance()->call([$this, 'build']);
 
+            $this->replaceMailgunHeadersWithSesHeaders();
+
             if ($this->isValidRecipient() === true)
             {
                 // same html template can have different texts. Hence sending both in data lake.
