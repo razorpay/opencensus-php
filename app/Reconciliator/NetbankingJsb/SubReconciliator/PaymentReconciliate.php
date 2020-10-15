@@ -85,4 +85,18 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         return (strtolower($row[ReconFields::STATUS]) === 'success') ? Status::AUTHORIZED : Status::FAILED;
     }
+
+    protected function getArn($row)
+    {
+        return $this->getReferenceNumber($row);
+    }
+
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            'acquirer'  =>  [
+                'reference1' => $this->getReferenceNumber($row),
+            ]
+        ];
+    }
 }

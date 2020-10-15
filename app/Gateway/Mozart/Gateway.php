@@ -2925,6 +2925,7 @@ class Gateway extends Base\Gateway
     {
         $forceAuthMozartGateways = [
             Payment\Gateway::NETBANKING_YESB,
+            Payment\Gateway::NETBANKING_JSB,
         ];
 
         return in_array($input['payment'][Payment\Entity::GATEWAY], $forceAuthMozartGateways, true);
