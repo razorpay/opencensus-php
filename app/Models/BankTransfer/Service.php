@@ -99,7 +99,7 @@ class Service extends Base\Service
             $this->provider = $provider;
         }
 
-        $this->validateProvider();
+        $this->validateProvider($input[Entity::REQ_UTR]);
 
         $this->checkBlocks($input);
 
@@ -335,7 +335,7 @@ class Service extends Base\Service
      *
      * @throws Exception\BadRequestException
      */
-    protected function validateProvider()
+    protected function validateProvider(string $utr = null)
     {
         if ((Provider::validateIp($this->provider, $this->ip) === false) or
             (Provider::validateMode($this->provider, $this->mode) === false))
@@ -343,9 +343,10 @@ class Service extends Base\Service
             $this->trace->error(
                 TraceCode::BANK_TRANSFER_PROVIDER_VALIDATION_FAILED,
                 [
-                    'provider' => $this->provider,
-                    'ip'       => $this->ip,
-                    'mode'     => $this->mode,
+                    'provider'          => $this->provider,
+                    'ip'                => $this->ip,
+                    'mode'              => $this->mode,
+                    Entity::UTR         => $utr
                 ]
             );
 

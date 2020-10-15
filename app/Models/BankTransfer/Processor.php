@@ -231,6 +231,7 @@ class Processor extends VirtualAccount\Processor
             [
                 'bank_transfer_id'   => $bankTransfer->getId(),
                 'virtual_account_id' => $this->virtualAccount->getId(),
+                Entity::UTR          => $bankTransfer->getUtr(),
             ]);
 
         // Creates a transaction with bank transfer entity as source, merchant's banking balance gets credited.
@@ -254,6 +255,7 @@ class Processor extends VirtualAccount\Processor
                     Entity::AMOUNT       => $bankTransfer->getAmount(),
                     Entity::MERCHANT_ID  => $bankTransfer->getMerchantId(),
                     Entity::TIME         => $time,
+                    Entity::UTR          => $bankTransfer->getUtr(),
                 ]);
 
             $message = "Merchant load greater than " . self::AMOUNT_THRESHOLD_FOR_BANKING . " for banking product";
