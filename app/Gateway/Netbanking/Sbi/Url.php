@@ -5,7 +5,7 @@ namespace RZP\Gateway\Netbanking\Sbi;
 class Url
 {
     const TEST_DOMAIN = 'https://uatmerchant.onlinesbi.com';
-    const LIVE_DOMAIN = 'https://merchant.onlinesbi.com';
+    const LIVE_DOMAIN = 'https://merchant.onlinesbi.sbi';
 
     const AUTHORIZE_TEST           = '/merchantntrp/merchantprelogin.htm';
     const VERIFY_TEST              = '/thirdparties/doubleverification.htm';
