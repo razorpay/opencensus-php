@@ -1396,17 +1396,10 @@ class Gateway extends Base\Gateway
      */
     protected function isOnlineRefund(array $refund)
     {
-        /*
-         * Temporarily pushing all refunds in offline mode
-         * since online refunds were disabled from gateway side
-         * https://razorpay.slack.com/archives/CA66F3ACS/p1585032221066100?thread_ts=1585030653.063800&cid=CA66F3ACS
-
         if ($refund['attempts'] < 3)
         {
             return 'Y';
         }
-
-        */
 
         return 'N';
     }
