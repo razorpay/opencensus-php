@@ -16,6 +16,7 @@ class Constants
     const REFUND_REFERENCE1                    = 'refund_reference1';
     const INSTANT_REFUND_SUPPORT               = 'instant_refund_support';
     const GATEWAY_REFUND_SUPPORT               = 'gateway_refund_support';
+    const DIRECT_SETTLEMENT_REFUND             = 'direct_settlement_refund';
     const MAX_REFUND_RETRY_ATTEMPTS            = 3;
     const MAX_REFUND_VERIFY_REQUESTS           = 100;
     const SCROOGE_TAGGING_LIVE_TIMESTAMP       = 1552646209;

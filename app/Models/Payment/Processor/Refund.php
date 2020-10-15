@@ -154,6 +154,8 @@ trait Refund
         {
             $dashboardEntity[RefundConstants::INSTANT_REFUND_SUPPORT] = false;
         }
+
+        $dashboardEntity[RefundConstants::DIRECT_SETTLEMENT_REFUND] = $payment->isDirectSettlementRefund();
     }
 
     public function isCapturedPaymentAndFeatureEnabled(Payment\Entity $payment)

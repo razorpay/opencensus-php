@@ -4022,6 +4022,17 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return false;
     }
 
+    public function isDirectSettlementRefund(): bool
+    {
+        if (($this->hasTerminal() === true) and
+            ($this->terminal->isDirectSettlementWithRefund() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function isReconciled()
     {
         if (($this->hasTransaction() === true) and

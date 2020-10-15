@@ -17,6 +17,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Payment\Refund\Constants;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Mail\Payment\Refunded as RefundedMail;
@@ -1620,6 +1621,36 @@ class RefundTest extends TestCase
 
         $this->assertEquals($payment['amount_refunded'], 1000000);
         $this->assertEquals($payment['amount'], $refund['amount']);
+    }
+
+    public function testPaymentRefundCreateDataProxyAuth()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'operations');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $payment->getPublicId();
+
+        $response = $this->makeRequestAndGetContent($this->testData[__FUNCTION__]['request']);
+
+        $this->assertEquals(true, $response[Constants::INSTANT_REFUND_SUPPORT]);
+        $this->assertEquals(true, $response[Constants::GATEWAY_REFUND_SUPPORT]);
+        $this->assertEquals(false, $response[Constants::DIRECT_SETTLEMENT_REFUND]);
+
+        $this->fixtures->terminal->edit($payment['terminal_id'], [
+            'type' => [
+                'direct_settlement_with_refund' => '1',
+                'recurring_3ds' => '1'
+            ],
+        ]);
+
+        $response = $this->makeRequestAndGetContent($this->testData[__FUNCTION__]['request']);
+
+        $this->assertEquals(true, $response[Constants::INSTANT_REFUND_SUPPORT]);
+        $this->assertEquals(true, $response[Constants::GATEWAY_REFUND_SUPPORT]);
+        $this->assertEquals(true, $response[Constants::DIRECT_SETTLEMENT_REFUND]);
     }
 
     public function testCreateRefundProxyAuthInvalidRole()
