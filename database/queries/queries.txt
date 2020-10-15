@@ -6019,3 +6019,6 @@ ALTER TABLE merchant_details
 
 ALTER TABLE bvs_validation
     ADD COLUMN `validation_unit` enum('identifier','proof') DEFAULT NULL;
+
+ALTER TABLE merchant_details
+    ADD COLUMN bank_details_doc_verification_status varchar(30) DEFAULT NULL;
