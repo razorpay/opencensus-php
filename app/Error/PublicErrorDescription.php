@@ -499,6 +499,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_EMANDATE_AMOUNT_LIMIT_EXCEEDED                            = 'Amount exceeds E-mandate limit';
     const BAD_REQUEST_EMANDATE_REGISTRATION_FAILED                              = 'E-mandate registration failed';
+    const BAD_REQUEST_NACH_REGISTRATION_FAILED                                  = 'Nach registration failed';
     const BAD_REQUEST_EMANDATE_INVALID_AADHAAR_BANK_ACCOUNT_MAPPING             = 'EMandate registration failed because of invalid aadhaar bank account mapping';
     const BAD_REQUEST_EMANDATE_AADHAAR_NOT_MAPPED                               = 'EMandate aadhaar not mapped';
     const BAD_REQUEST_EMANDATE_CANCELLED_INACTIVE                               = 'Payment failed because emandate is cancelled or inactive';

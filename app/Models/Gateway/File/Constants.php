@@ -55,9 +55,12 @@ class Constants
     const FSB              = 'fsb';
 
     const ENACH_NPCI_NETBANKING = 'enach_npci_netbanking';
-    const ENACH_NB_ICICI        = 'enach_nb_icici';
+    const ENACH_NB_ICICI        = 'enach_nb_icici';  // deprecated
 
     const PAPER_NACH_CITI       = 'paper_nach_citi';
+    const PAPER_NACH_ICICI      = 'paper_nach_icici';
+
+    const COMBINED_NACH_ICICI   = 'combined_nach_icici';
 
     /**
      * Scrooge file based refunds related constants
@@ -133,13 +136,15 @@ class Constants
             self::ENACH_RBL,
             self::SBI,
             self::ENACH_NPCI_NETBANKING,
-            self::ENACH_NB_ICICI,
+            //self::ENACH_NB_ICICI,  deprecated
         ],
         Type::NACH_DEBIT => [
             self::PAPER_NACH_CITI,
+            self::COMBINED_NACH_ICICI,
         ],
         Type::NACH_REGISTER => [
             self::PAPER_NACH_CITI,
+            self::PAPER_NACH_ICICI,
         ],
 
         Type::REFUND_FAILED => [
@@ -225,7 +230,6 @@ class Constants
             self::HDFC                  => ['hdfc.emandate@razorpay.com', 'amit.salvi@hdfcbank.com'],
             self::AXIS                  => ['axis.emandate@razorpay.com'],
             self::ENACH_RBL             => ['rbl.emandate@razorpay.com'],
-            //TODO
             self::ENACH_NPCI_NETBANKING => [''],
             self::ENACH_NB_ICICI        => [''],
             self::SBI                   => [''],
@@ -233,10 +237,12 @@ class Constants
 
         Type::NACH_DEBIT => [
             self::PAPER_NACH_CITI                  => [''],
+            self::COMBINED_NACH_ICICI              => [''],
         ],
 
         Type::NACH_REGISTER => [
             self::PAPER_NACH_CITI                  => [''],
+            self::PAPER_NACH_ICICI                 => [''],
         ],
 
             Type::EMI => [

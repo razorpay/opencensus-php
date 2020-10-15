@@ -2,12 +2,17 @@
 
 namespace RZP\Models\Batch\Processor\Nach\Register;
 
+use ZipArchive;
+use Storage;
+
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Batch;
+use DirectoryIterator;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\FileStore;
 use RZP\Models\Customer\Token;
 use RZP\Gateway\Enach\Citi\Status;
 use Razorpay\Trace\Logger as Trace;
@@ -78,11 +83,7 @@ abstract class Base extends BaseProcessor
             $this->trace->traceException(
                 $ex,
                 Trace::ERROR,
-                TraceCode::NACH_REGISTER_RESPONSE_ERROR,
-                [
-                    'payment_id' => $entry[Batch\Header::CITI_NACH_REGISTER_MERCHANT_UNIQUE_REFERENCE_NO],
-                    'mode'       => $this->mode,
-                ]
+                TraceCode::NACH_REGISTER_RESPONSE_ERROR
             );
 
             throw $ex;
@@ -270,5 +271,89 @@ abstract class Base extends BaseProcessor
     protected function fetchPaymentEntity($data): Payment\Entity
     {
         return $this->repo->payment->findOrFailPublic($data[self::PAYMENT_ID]);
+    }
+
+    protected function parseFile(string $filePath): array
+    {
+        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+
+        switch ($ext)
+        {
+            case FileStore\Format::XLSX:
+            case FileStore\Format::XLS:
+                return $this->parseExcelSheets($filePath);
+
+            case FileStore\Format::TXT:
+            case FileStore\Format::DAT:
+                //
+                // We use standard separator | for txt, if needs this
+                // can be made configurable. But for now it's ok.
+                //
+                return $this->parseTextFile($filePath, '|');
+
+            case FileStore\Format::CSV:
+                return $this->parseTextFile($filePath, ',');
+
+            case FileStore\Format::ZIP:
+                return $this->parseZipFile($filePath);
+
+            default:
+                throw new Exception\LogicException("Extension not handled: {$ext}");
+        }
+    }
+
+    protected function parseZipFile($filePath)
+    {
+        $files = [];
+
+        $extractToPath = pathinfo(realpath($filePath), PATHINFO_DIRNAME) . DIRECTORY_SEPARATOR . pathinfo(realpath($filePath), PATHINFO_FILENAME);
+
+        $zip = new ZipArchive;
+
+        $zipped = $zip->open($filePath);
+
+        // Checking if it is actually a zipped file.
+        if ($zipped === false)
+        {
+            throw new Exception\LogicException('Attempt to unzip a non-zip file:' .  $filePath);
+        }
+
+        $extracted = $zip->extractTo($extractToPath);
+
+        // Checking if it has been successfully extracted
+        if ($extracted === true)
+        {
+            $zip->close();
+        }
+        else
+        {
+            $this->deleteDirectoryLocally($extractToPath);
+
+            throw new Exception\LogicException('Failed to unzip file: ' .  $filePath);
+        }
+
+        $unzippedFiles = new DirectoryIterator($extractToPath);
+
+        foreach ($unzippedFiles as $unzippedFile)
+        {
+            if (($unzippedFile->isDir() === true) and ($unzippedFile->isDot() === false))
+            {
+                $responseXmls = new DirectoryIterator($unzippedFile->getPathname());
+
+                foreach ($responseXmls as $responseXml)
+                {
+                    if (($responseXml->isFile() === true) and ($responseXml->getExtension() === FileStore\Format::XML))
+                    {
+                        $files[] = ['xml' => $responseXml->getRealPath()];
+                    }
+                }
+            }
+            elseif (($unzippedFile->isFile() === true) and ($unzippedFile->getExtension() === FileStore\Format::XML))
+            {
+                $files[] = ['xml' => $unzippedFile->getRealPath()];
+            }
+        }
+
+        return $files;
     }
 }

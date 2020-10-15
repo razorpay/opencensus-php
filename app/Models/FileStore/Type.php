@@ -23,9 +23,12 @@ class Type
     const RBL_ENACH_REGISTER                = 'rbl_enach_register';
 
     const ENACH_NPCI_NB_DEBIT               = 'enach_npci_nb_debit';
-    const ENACH_NPCI_NB_DEBIT_ICICI         = 'enach_npci_nb_debit_icici';
+    const ENACH_NPCI_NB_DEBIT_ICICI         = 'enach_npci_nb_debit_icici';  // deprecated
 
     const CORPORATION_NETBANKING_REFUND     = 'corporation_netbanking_refund';
+
+    const ICICI_NACH_REGISTER               = 'icici_nach_register';
+    const ICICI_NACH_COMBINED_DEBIT         = 'icici_nach_combined_debit';
 
     const CITI_NACH_REGISTER                = 'citi_nach_register';
     const CITI_NACH_DEBIT                   = 'citi_nach_debit';
@@ -224,6 +227,8 @@ class Type
             self::RBL_ENACH_REGISTER,
             self::ENACH_NPCI_NB_DEBIT,
             self::ENACH_NPCI_NB_DEBIT_ICICI,
+            self::ICICI_NACH_COMBINED_DEBIT,
+            self::ICICI_NACH_REGISTER,
             self::CITI_NACH_REGISTER,
             self::CITI_NACH_DEBIT,
             self::CITI_NACH_DEBIT_SUMMARY,
@@ -377,6 +382,7 @@ class Type
         self::HDFC_EMANDATE_REFUND,
         self::HDFC_EMANDATE_REGISTER,
         self::HDFC_EMANDATE_DEBIT,
+        self::ICICI_NACH_REGISTER,
         self::CITI_NACH_DEBIT_SUMMARY,
         self::CITI_NACH_DEBIT,
         self::CITI_NACH_REGISTER,
@@ -384,6 +390,7 @@ class Type
         self::RBL_ENACH_REGISTER,
         self::ENACH_NPCI_NB_DEBIT,
         self::ENACH_NPCI_NB_DEBIT_ICICI,
+        self::ICICI_NACH_COMBINED_DEBIT,
         self::SBI_EMANDATE_DEBIT,
         self::BOB_NETBANKING_REFUND,
         self::BOB_NETBANKING_CLAIMS,
@@ -525,9 +532,11 @@ class Type
             self::RBL_ENACH_REGISTER,
             self::ENACH_NPCI_NB_DEBIT,
             self::ENACH_NPCI_NB_DEBIT_ICICI,
+            self::ICICI_NACH_COMBINED_DEBIT,
             self::CITI_NACH_REGISTER,
             self::CITI_NACH_DEBIT,
             self::CITI_NACH_DEBIT_SUMMARY,
+            self::ICICI_NACH_REGISTER,
             self::FIRST_DATA_PARES_FILE,
             self::SBI_UPI_REFUND,
         ],

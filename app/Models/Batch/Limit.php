@@ -52,6 +52,7 @@ class Limit
         Type::PAYMENT_LINK_V2                       => 500100,
         Type::ECOLLECT_ICICI                        => 100000,
         'nach_debit_nach_citi'                      => 100000,
+        'nach_debit_nach_icici'                     => 100000,
         Type::ECOLLECT_RBL                          => 100000,
         Type::BANK_TRANSFER_EDIT                    => 10000,
         Type::MERCHANT_STATUS_ACTION                => 50000,

@@ -10,7 +10,7 @@ use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Constants\Timezone;
-use RZP\Mail\Gateway\EMandate\Base as EmandateMail;
+use RZP\Mail\Gateway\Nach\Base as NachMail;
 use Illuminate\Http\Testing\File as TestingFile;
 
 class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
@@ -59,7 +59,7 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
         $debit = $files['items'][0];
 
         $expectedFileContentDebit = [
-            'type'        => 'enach_npci_nb_debit_icici',
+            'type'        => 'icici_nach_combined_debit',
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'txt',
@@ -123,7 +123,7 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
         $this->assertArraySelectiveEquals($expectedDebitRow1, $debit1);
         $this->assertArraySelectiveEquals($expectedDebitRow2, $debit2);
 
-        Mail::assertQueued(EmandateMail::class, function ($mail)
+        Mail::assertQueued(NachMail::class, function ($mail)
         {
             $fileName = 'ACH-DR-ICIC-ICIC401790-{$date}-RZ0001-INP.txt';
 
@@ -177,7 +177,7 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
         $debit = $files['items'][0];
 
         $expectedFileContentDebit = [
-            'type'        => 'enach_npci_nb_debit_icici',
+            'type'        => 'icici_nach_combined_debit',
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'txt',
@@ -241,7 +241,7 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
 
         $this->assertTrue($fileNamesSequential);
 
-        Mail::assertQueued(EmandateMail::class, function ($mail)
+        Mail::assertQueued(NachMail::class, function ($mail)
         {
             $this->assertEquals(2, count($mail->viewData['mailData']));
 
@@ -275,9 +275,9 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
             'url'     => $url,
             'method'  => 'POST',
             'content' => [
-                'type'     => 'emandate',
+                'type'     => 'nach',
                 'sub_type' => 'debit',
-                'gateway'  => 'enach_nb_icici',
+                'gateway'  => 'nach_icici',
             ],
             'files'   => [
                 'file' => $file,
