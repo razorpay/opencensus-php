@@ -4,6 +4,7 @@ namespace RZP\Services\NbPlus;
 
 use App;
 use RZP\Exception;
+use Illuminate\Support\Arr;
 
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -72,6 +73,8 @@ class Netbanking extends Service
 
         $input = $this->addTransactionType($input);
 
+        $input = $this->convertEmptyArrayToNull($input);
+
         $content = [
             Request::ACTION  => $action,
             Request::GATEWAY => $gateway,
@@ -81,6 +84,27 @@ class Netbanking extends Service
         $response = $this->sendRequest('POST', 'action/' . $action . '/' . $method, $content);
 
         return $this->processResponse($response);
+    }
+
+    protected function convertEmptyArrayToNull($input)
+    {
+        // Empty arrays which are actually key-value pairs fail during json decoding on NBPlus so we set these specific keys to null if they are []
+
+        $keyArray = [
+            'gateway',
+        ];
+
+        foreach ($keyArray as $srcPath)
+        {
+            $value = Arr::get($input, $srcPath);
+
+            if ((is_array($value) === true) and (empty($value)))
+            {
+                Arr::set($input, $srcPath, null);
+            }
+        }
+
+        return $input;
     }
 
     protected function processResponse($response)
