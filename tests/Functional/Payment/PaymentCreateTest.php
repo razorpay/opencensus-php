@@ -4044,7 +4044,38 @@ class PaymentCreateTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-
         $this->assertEquals($paymentMeta['id'], $response['id']);
+     }
+
+    public function testCreateVisaSafeClickCardS2SPaymentMerchantFeature()
+    {
+        $this->ba->privateAuth();
+
+        $order = $this->fixtures->create('order');
+
+        $visaSafeClickPaymentCreateRequestData = $this->testData['visaSafeClickPaymentCreateRequestData'];
+
+        $checkoutId = UniqueIdEntity::generateUniqueIdWithCheckDigit();
+
+        $visaSafeClickPaymentCreateRequestData['order_id'] = $order->getPublicId();
+
+        $visaSafeClickPaymentCreateRequestData['amount']   = $order['amount'];
+
+        $visaSafeClickPaymentCreateRequestData['_']['checkout_id'] = $checkoutId;
+
+        $this->fixtures->create(
+            'terminal',
+            [
+                'merchant_id' => '10000000000000',
+                'gateway'     => 'cybersource',
+            ]
+        );
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function () use ($visaSafeClickPaymentCreateRequestData)
+        {
+            $this->doS2SPrivateAuthPayment($visaSafeClickPaymentCreateRequestData);
+        });
     }
 }

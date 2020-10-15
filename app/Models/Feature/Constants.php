@@ -156,6 +156,8 @@ class Constants
     const RAAS                            = 'raas';
 
     const PAYMENT_STATUS_AGGREGATE        = 'payment_status_aggregate';
+    const VISA_SAFE_CLICK                 = 'vsc_authorization';
+
 
     /**
      * Disables retry option in checkout
@@ -733,6 +735,7 @@ class Constants
         self::ESIGN                           => true,
         self::ROUTE_CODE_SUPPORT              => true,
         self::AUTH_SPLIT                      => true,
+        self::VISA_SAFE_CLICK                 => true,
         self::RECURRING_AUTO                  => true,
         self::CHECKOUT_DISABLE_CARDSCAN       => true,
         self::RX_SHOW_PAYOUT_SOURCE           => true,

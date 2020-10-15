@@ -1512,5 +1512,99 @@ class CardPaymentServiceTest extends TestCase
                 }
             });
     }
+
+    public function testAuthorizeViaCpsVisaSafeClickPayment()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->merchant->addFeatures(['vsc_authorization']);
+        $terminal = $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $authentication = array(
+            'cavv'                  => '3q2+78r+ur7erb7vyv66vv\/\/8=',
+            'cavv_algorithm'        => '1',
+            'eci'                   => '05',
+            'xid'                   => 'ODUzNTYzOTcwODU5NzY3Qw==',
+            'enrolled_status'       => 'Y',
+            'authentication_status' => 'Y',
+            'provider_data'         => [
+                'product_transaction_id'        => '1_156049293_714_62_l73q001m_CHECK211_156049293_714_62_l73q00',
+                'product_merchant_reference_id' => '4aa1c9ffd4fc7ded80f73f1d98b35e8e24085404b6e01401',
+                'product_type'                  => 'VCIND',
+                'auth_type'                     => '3ds'
+            ]
+        );
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        $paymentArray['application'] = 'visasafeclick';
+        $paymentArray['authentication'] = $authentication;
+
+        $this->enableCpsConfig();
+
+        $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
+
+        $this->app->instance('card.payments', $cardService);
+
+        $this->assertSatisfied = false;
+
+        $cardService->shouldReceive('sendRequest')
+            ->with('POST', Mockery::type('string'), Mockery::type('array'))
+            ->andReturnUsing(function (string $method, string $url, array $input) use ($terminal, $authentication)
+            {
+                $this->assertEquals('authorize', $url);
+                $this->assertEquals('POST', $method);
+                $input = $input['input'];
+                $this->assertArrayHasKey('terminals', $input);
+
+                $inputTerminal = $input['terminals'][0];
+                $this->assertEquals($inputTerminal['id'], $terminal->getId());
+                $this->assertEquals($inputTerminal['auth']['authentication_gateway'], 'visasafeclick');
+
+                $authenticate = $input['authenticate'];
+                $this->assertEquals($authentication['cavv'], $authenticate['cavv']);
+                $this->assertEquals($authentication['cavv_algorithm'], $authenticate['cavv_algorithm']);
+                $this->assertEquals($authentication['eci'], $authenticate['eci']);
+                $this->assertEquals($authentication['xid'], $authenticate['xid']);
+                $this->assertEquals($authentication['enrolled_status'], $authenticate['enrolled_status']);
+                $this->assertEquals($authentication['authentication_status'], $authenticate['authentication_status']);
+                $this->assertEquals($authentication['provider_data']['product_transaction_id'], $authenticate['product_transaction_id']);
+                $this->assertEquals($authentication['provider_data']['product_merchant_reference_id'], $authenticate['product_merchant_reference_id']);
+                $this->assertEquals($authentication['provider_data']['product_type'], $authenticate['product_type']);
+                $this->assertEquals($authentication['provider_data']['auth_type'], $authenticate['auth_type']);
+
+                $this->assertSatisfied = true;
+
+                return [
+                    'data' => [
+                        'acquirer' => [
+                            'reference2' => 'test'
+                        ],
+                    ],
+                    'payment' => [
+                        'two_factor_auth' => 'Y',
+                        'reference2' => 'test',
+                        'terminal_id' => $terminal->getId(),
+                        'auth_type' => null,
+                        'authentication_gateway' => 'visasafeclick',
+                        'reference17' => '{"product_enrollment_id": "831eyJlbmMiOiJBMjU2R0NNIiwiYWxnIjoiUlNBLU9BRVAifQ.WwA2xBjK-sqL-hHIeCZ1nLRghkr-tOTVxWToFU5rH3aWlAnxsoVmvaBfBpYRPYsDBGDuAU0aQiXuJkB2ClECD07BrEcJ2eJ4hpsrYT2uF3ac_MTlLWvx8tz978DTvYPnD70-hoAVMPr6aDVLnz68-0fdx1oY0Iqum1W9Mwvr_dg8wvd_0oPpy_stPpclLCgwVTdcotcnyOfUxiiOF9CpQEoTkPzENh7QyBbNhLGri_HhUryPJN1FFFtdbCxq-NSRgKOQq__kXxv6RiY8RCKEop0a6iy7LkK6mynvf63kK1000"}',
+                    ],
+                ];
+            });
+
+        $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+        $this->assertNotNull($payment['acquirer_data']['product_enrollment_id']);
+        $this->assertEquals('visasafeclick', $payment['authentication_gateway']);
+        $this->assertEquals(2, $payment['cps_route']);
+        $this->assertEquals("test", $payment['reference2']);
+        $this->assertEquals('authorized', $payment['status']);
+        $this->disbaleCpsConfig();
+    }
 }
 

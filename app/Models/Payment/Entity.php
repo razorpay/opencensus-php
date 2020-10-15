@@ -294,6 +294,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::REFERENCE1,
         self::REFERENCE2,
         self::REFERENCE16,
+        self::REFERENCE17,
         self::CPS_ROUTE,
         self::DISPUTED,
         self::AUTH_TYPE,
@@ -353,6 +354,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::REFERENCE1,
         self::REFERENCE2,
         self::REFERENCE16,
+        self::REFERENCE17,
         self::CPS_ROUTE,
         self::ACQUIRER_DATA,
         self::TRANSFER_ID,
@@ -1413,6 +1415,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::REFERENCE16, $reference16);
     }
 
+    public function setReference17(string $reference17)
+    {
+        $this->setAttribute(self::REFERENCE17, $reference17);
+    }
+
     public function enableCpsRoute()
     {
         $this->setAttribute(self::CPS_ROUTE, 1);
@@ -1573,6 +1580,24 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->attributes[self::REFERENCE16] =  $trimmedReference16;
     }
 
+    protected function setReference17Attribute($reference17)
+    {
+        if ($reference17 !== null)
+        {
+            if ($this->isMethodCardOrEmi() === true)
+            {
+                $reference17Json = json_decode($reference17, true);
+
+                if (array_key_exists('product_enrollment_id', $reference17Json) === true)
+                {
+                    $reference17 = $reference17Json['product_enrollment_id'];
+                }
+            }
+        }
+
+        $this->attributes[self::REFERENCE17] =  $reference17;
+    }
+
     protected function setFeeBearerAttribute($feeBearer)
     {
         $this->attributes[self::FEE_BEARER] = Merchant\FeeBearer::getValueForBearerString($feeBearer);
@@ -1625,6 +1650,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 $acquirerData = [
                     'auth_code' => $this->getAttribute(self::REFERENCE2),
                 ];
+
+                $productEnrollmentId = $this->getReference17();
+
+                if (isset($productEnrollmentId) === true)
+                {
+                    $acquirerData['product_enrollment_id'] = $productEnrollmentId;
+                }
+
                 break;
 
             case Method::NETBANKING:
@@ -2119,6 +2152,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::VPA));
     }
 
+    public function isVisaSafeClickPayment()
+    {
+        return (($this->isCard()) and
+            ($this->application === 'visasafeclick'));
+    }
+
     public function isGateway($gateway)
     {
         return ($this->getAttribute(self::GATEWAY) === $gateway);
@@ -2598,6 +2637,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getReference16()
     {
         return $this->getAttribute(self::REFERENCE16);
+    }
+
+    public function getReference17()
+    {
+        return $this->getAttribute(self::REFERENCE17);
     }
 
     public function isSecondRecurring()

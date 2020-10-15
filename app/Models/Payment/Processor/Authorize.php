@@ -1279,6 +1279,13 @@ trait Authorize
                         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
                     }
                     break;
+
+                case 'visasafeclick':
+                    if ($payment->merchant->isFeatureEnabled(Feature\Constants::VISA_SAFE_CLICK) === false)
+                    {
+                        throw new Exception\BadRequestValidationFailureException(
+                            'VisaSafeClick not enabled for merchant.');
+                    }
             }
         }
     }
@@ -3226,6 +3233,12 @@ trait Authorize
         if ($payment->isMethodCardOrEmi() === true)
         {
             $gatewayInput['iin'] = $this->getIinDetails($payment);
+
+            if ($payment->isVisaSafeClickPayment() === true)
+            {
+                $gatewayInput['application'] = $input['application'];
+                $gatewayInput['authentication'] = $input['authentication'];
+            }
         }
 
         $this->validateRecurringAndPreferredRecurring($payment, $input);
@@ -7260,6 +7273,11 @@ trait Authorize
             return false;
         }
 
+        if ($payment->isVisaSafeClickPayment() === true)
+        {
+            return false;
+        }
+
         return true;
     }
 
@@ -7286,6 +7304,7 @@ trait Authorize
             ($payment->isBharatQr() === true) or
             ($payment->isUpiTransfer() === true) or
             ($payment->isAppCred() === true) or
+            ($payment->isVisaSafeClickPayment() === true) or
             ($payment->isNach() === true) or
             ($payment->isGooglePayCard() === true))
         {

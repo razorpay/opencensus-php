@@ -10,6 +10,7 @@ class TransactionFilter extends Terminal\Filter
         'gateway',
         'capability',
         'google_pay',
+        'visa_safe_click',
     ];
 
     public function gatewayFilter($terminal)
@@ -48,6 +49,23 @@ class TransactionFilter extends Terminal\Filter
         if ($payment->isGooglePayCard() === true)
         {
             if ($terminal['authentication_gateway'] === 'google_pay')
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    public function visaSafeClickFilter($terminal)
+    {
+        $payment = $this->input['payment'];
+
+        if ($payment->isVisaSafeClickPayment() === true)
+        {
+            if ($terminal['authentication_gateway'] === 'visasafeclick')
             {
                 return true;
             }

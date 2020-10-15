@@ -119,14 +119,26 @@ class Validator extends Base\Validator
         'provider'                      => 'required_if:method,cardless_emi,paylater,app|string',
         'ott'                           => 'sometimes_if:method,cardless_emi,paylater|string',
         'payment_id'                    => 'sometimes_if:method,cardless_emi',
-        'application'                   => 'sometimes|filled|string|in:google_pay',
+        'application'                   => 'sometimes|filled|string|in:google_pay,visasafeclick',
         'device'                        => 'sometimes',
         'currency_request_id'           => 'required_with:dcc_currency|string',
         'dcc_currency'                  => 'required_with:currency_request_id|string|max:3|custom',
         'charge_account'                => 'sometimes|string',
         'app_present'                   => 'sometimes_if:method,app|boolean',
         'language_code'                 => 'sometimes|string',
-        'meta'                          => 'sometimes|array'
+        'meta'                          => 'sometimes|array',
+        'authentication'                => 'required_if:application,visasafeclick|array',
+        'authentication.cavv'                                        => 'required_if:application,visasafeclick|size:28|string',
+        'authentication.cavv_algorithm'                              => 'required_if:application,visasafeclick|size:1|string',
+        'authentication.eci'                                         => 'required_if:application,visasafeclick|size:2|string',
+        'authentication.xid'                                         => 'required_if:application,visasafeclick|max:28|string',
+        'authentication.enrolled_status'                             => 'sometimes_if:application,visasafeclick|size:1|string',
+        'authentication.authentication_status'                       => 'sometimes_if:application,visasafeclick|size:1|string',
+        'authentication.provider_data'                               => 'required_if:application,visasafeclick|array',
+        'authentication.provider_data.product_type'                  => 'sometimes_if:application,visasafeclick|max:10|string',
+        'authentication.provider_data.auth_type'                     => 'required_if:application,visasafeclick|string|max:10',
+        'authentication.provider_data.product_transaction_id'        => 'required_if:application,visasafeclick|size:60|string',
+        'authentication.provider_data.product_merchant_reference_id' => 'required_if:application,visasafeclick|size:48|string',
     ];
 
     protected static $editAcquirerRules = [
@@ -141,6 +153,7 @@ class Validator extends Base\Validator
         Entity::AUTHENTICATION_GATEWAY  => 'sometimes|nullable|string',
         Entity::REFERENCE2              => 'sometimes|nullable|string',
         Entity::TWO_FACTOR_AUTH         => 'sometimes|nullable|string',
+        Entity::REFERENCE17             => 'sometimes|nullable|string',
     ];
 
     protected static $editRules = [
@@ -299,7 +312,7 @@ class Validator extends Base\Validator
         'preferred_auth',
         'payment_provider',
         'upi_block',
-        'charge_account'
+        'charge_account',
     ];
 
     protected static $minAmountCheckRules = [
@@ -933,6 +946,12 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED);
+        }
+
+        //cvv is not mandatory for Visa Safe Click payments
+        if ((isset($input['application']) === true) and ($input['application'] === 'visasafeclick'))
+        {
+            return;
         }
 
         if (isset($input['card']['cvv']) === false)

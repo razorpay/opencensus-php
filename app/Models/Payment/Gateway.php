@@ -151,6 +151,7 @@ class Gateway
     const EMI_SBI            = 'emi_sbi';
     const BAJAJFINSERV       = 'bajajfinserv';
     const GOOGLE_PAY         = 'google_pay';
+    const VISA_SAFE_CLICK    = 'visasafeclick';
 
     // Debit emi gateways
     const HDFC_DEBIT_EMI     = 'hdfc_debit_emi';

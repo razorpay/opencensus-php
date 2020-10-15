@@ -238,6 +238,8 @@ class CardPaymentService
 
         $this->addCardIin($content);
 
+        $this->addAuthenticationDataIfApplicable($content);
+
         $response = $this->sendRequest('POST', 'action/' . $action, $content);
 
         return $response;
@@ -279,6 +281,8 @@ class CardPaymentService
         $this->addMerchantFeatures($content);
 
         $this->addCardIin($content);
+
+        $this->addAuthenticationDataIfApplicable($content);
 
         $response = $this->sendRequest('POST', self::AUTHORIZE , $content);
 
@@ -424,6 +428,31 @@ class CardPaymentService
             {
                 $data[self::INPUT][Entity::IIN] = $card->iinRelation->toArrayPublic();
             }
+        }
+    }
+
+    protected function addAuthenticationDataIfApplicable(array & $data)
+    {
+        if ((isset($data[self::INPUT]) === true) and (isset($data[self::INPUT]['authentication']) === true))
+        {
+            $authentication = $data[self::INPUT]['authentication'];
+
+            $providerData = $authentication['provider_data'];
+
+            unset($authentication['provider_data']);
+
+            $authentication = array_merge($authentication, $providerData);
+
+            if (isset($data[self::INPUT]['authenticate']) === true)
+            {
+                $data[self::INPUT]['authenticate'] = array_merge($data[self::INPUT]['authenticate'], $authentication);
+            }
+            else
+            {
+                $data[self::INPUT]['authenticate'] = $authentication;
+            }
+
+            unset($data[self::INPUT]['authentication']);
         }
     }
 
