@@ -643,7 +643,6 @@ class Selector extends Base\Core
                 'mode'                      => $this->mode,
                 'failed_terminals'          => array_values($failedTerminalIds),
                 'gateway_tokens'            => $this->input['gateway_tokens'],
-                'gateway_config'            => $this->getGatewayConfig(),
                 'chance'                    => $this->options->getChance(),
                 'charge_account_merchant'   => $chargeAccountMerchantData,
             ];
