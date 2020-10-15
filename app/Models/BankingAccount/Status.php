@@ -428,7 +428,9 @@ class Status
         if (in_array($currentStatus, $nextStatusList, true) === false)
         {
             throw new BadRequestValidationFailureException(
-                'Status change not permitted',
+                sprintf('Status change from %s to %s not permitted',
+                    self::transformFromInternalToExternal($previousStatus),
+                    self::transformFromInternalToExternal($currentStatus)),
                 Entity::STATUS,
                 [
                     'current_status'  => $currentStatus,

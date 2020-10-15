@@ -855,7 +855,9 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Status change not permitted',
+                    'description' => sprintf('Status change from %s to %s not permitted',
+                        BankingAccount\Status::transformFromInternalToExternal(BankingAccount\Status::CREATED),
+                        BankingAccount\Status::transformFromInternalToExternal(BankingAccount\Status::PROCESSING)),
                 ],
             ],
             'status_code' => 400,
