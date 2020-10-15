@@ -81,8 +81,8 @@ class RefundFile extends Base\RefundFile
             $data[] = [
                 self::PG_MERCHANT_ID  => $row[self::GATEWAY][Upi\Entity::GATEWAY_MERCHANT_ID],
                 self::REFUND_REQ_NO   => $row[Constants\Entity::REFUND][Refund\Entity::ID],
-                self::TRANS_REF_NO    => $row[self::GATEWAY][Upi\Entity::NPCI_REFERENCE_ID],
-                self::CUSTOMER_REF_NO => $row[self::GATEWAY][Upi\Entity::GATEWAY_PAYMENT_ID],
+                self::TRANS_REF_NO    => $row[self::GATEWAY][Upi\Entity::GATEWAY_PAYMENT_ID],
+                self::CUSTOMER_REF_NO => $row[self::GATEWAY][Upi\Entity::NPCI_REFERENCE_ID],
                 self::ORDER_NO        => $row[Constants\Entity::PAYMENT][Payment\Entity::ID],
                 self::REFUND_REQ_AMT  => $row[Constants\Entity::REFUND][Payment\Entity::AMOUNT] / 100,
                 self::REFUND_REMARK   => 'Refund from ' . Gateway::DEFAULT_PAYEE_VPA,

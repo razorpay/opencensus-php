@@ -96,12 +96,12 @@ class UpiSbiGatewayTest extends TestCase
 
         $content = ($this->getDecryptedContent($content[ResponseFields::MESSAGE]))[ResponseFields::API_RESPONSE];
 
-        $this->assertEquals($content[ResponseFields::UPI_TRANS_REFERENCE_NO], $upiEntity[Upi::NPCI_REFERENCE_ID]);
+        $this->assertEquals($content[ResponseFields::CUSTOMER_REFERENCE_NO], $upiEntity[Upi::NPCI_REFERENCE_ID]);
 
         $this->assertNotNull($payment[Payment\Entity::REFERENCE16]);
-        $this->assertEquals($content[ResponseFields::UPI_TRANS_REFERENCE_NO], $payment[Payment\Entity::REFERENCE16]);
+        $this->assertEquals($content[ResponseFields::CUSTOMER_REFERENCE_NO], $payment[Payment\Entity::REFERENCE16]);
 
-        $this->assertEquals($content[ResponseFields::CUSTOMER_REFERENCE_NO], $upiEntity[Upi::GATEWAY_PAYMENT_ID]);
+        $this->assertEquals($content[ResponseFields::UPI_TRANS_REFERENCE_NO], $upiEntity[Upi::GATEWAY_PAYMENT_ID]);
         $this->assertEquals($content[ResponseFields::STATUS], $upiEntity[Upi::STATUS_CODE]);
         $this->assertEquals(Type::COLLECT, $upiEntity[Upi::TYPE]);
         $this->assertEquals($payment[Payment\Entity::VPA], $upiEntity[Upi::VPA]);
@@ -109,7 +109,7 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertNotNull($payment[Payment\Entity::ACQUIRER_DATA]);
 
         $this->assertNotNull($upiEntity[Upi::GATEWAY_DATA]);
-        $this->assertEquals('99999999999',$upiEntity[Upi::NPCI_TXN_ID]);
+        $this->assertEquals('123456789012',$upiEntity[Upi::NPCI_REFERENCE_ID]);
         $this->assertEquals('7971807546', $upiEntity[Upi::GATEWAY_DATA]['addInfo2']);
     }
 
@@ -156,18 +156,18 @@ class UpiSbiGatewayTest extends TestCase
 
         $content = ($this->getDecryptedContent($content[ResponseFields::MESSAGE]))[ResponseFields::API_RESPONSE];
 
-        $this->assertEquals($content[ResponseFields::UPI_TRANS_REFERENCE_NO], $upiEntity[Upi::NPCI_REFERENCE_ID]);
+        $this->assertEquals($content[ResponseFields::CUSTOMER_REFERENCE_NO], $upiEntity[Upi::NPCI_REFERENCE_ID]);
 
         $this->assertNotNull($payment[Payment\Entity::REFERENCE16]);
-        $this->assertEquals($content[ResponseFields::UPI_TRANS_REFERENCE_NO], $payment[Payment\Entity::REFERENCE16]);
+        $this->assertEquals($content[ResponseFields::CUSTOMER_REFERENCE_NO], $payment[Payment\Entity::REFERENCE16]);
 
-        $this->assertEquals($content[ResponseFields::CUSTOMER_REFERENCE_NO], $upiEntity[Upi::GATEWAY_PAYMENT_ID]);
+        $this->assertEquals($content[ResponseFields::UPI_TRANS_REFERENCE_NO], $upiEntity[Upi::GATEWAY_PAYMENT_ID]);
         $this->assertEquals($content[ResponseFields::STATUS], $upiEntity[Upi::STATUS_CODE]);
         $this->assertEquals(Type::PAY, $upiEntity[Upi::TYPE]);
         $this->assertEquals($payment[Payment\Entity::VPA], $upiEntity[Upi::VPA]);
 
         $this->assertNotNull($upiEntity[Upi::GATEWAY_DATA]);
-        $this->assertEquals('99999999999',$upiEntity[Upi::NPCI_TXN_ID]);
+        $this->assertEquals('99999999',$upiEntity[Upi::NPCI_TXN_ID]);
         $this->assertEquals('7971807546', $upiEntity[Upi::GATEWAY_DATA]['addInfo2']);
     }
 
@@ -180,7 +180,7 @@ class UpiSbiGatewayTest extends TestCase
         $upi = $this->getDbLastEntity('upi');
 
         $this->assertArraySubset([
-            'npci_txn_id'   => '99999999999',
+            'npci_txn_id'   => '99999999',
             'gateway_data'  => [],
         ], $upi->toArray());
 
@@ -808,7 +808,7 @@ class UpiSbiGatewayTest extends TestCase
 
         $this->assertNotNull($authorizeUpiEntity['merchant_reference']);
 
-        $this->assertSame('99999', $paymentEntity['reference16']);
+        $this->assertSame('123456789012', $paymentEntity['reference16']);
 
         $paymentTransactionEntity = $this->getLastEntity('transaction', true);
 
@@ -941,7 +941,7 @@ class UpiSbiGatewayTest extends TestCase
 
         $decryptedResp = $this->getDecryptedContent($content[ResponseFields::MESSAGE]);
 
-        $decryptedResp[ResponseFields::API_RESPONSE][ResponseFields::UPI_TRANS_REFERENCE_NO] = 'Random';
+        $decryptedResp[ResponseFields::API_RESPONSE][ResponseFields::CUSTOMER_REFERENCE_NO] = 'Random';
 
         $encryptedResp = [
             ResponseFields::RESPONSE       => $mockServer->encrypt($decryptedResp),
@@ -959,7 +959,8 @@ class UpiSbiGatewayTest extends TestCase
             //hence wont be able to decrypt the response sent from here.
             'payment_id' => $upiEntity[\RZP\Gateway\Upi\Base\Entity::PAYMENT_ID],
             'vpa' => $upiEntity['vpa'],
-            'upiTransRefNo' => 'Random'
+            'upiTransRefNo' => 'Random',
+            'custRefNo'     => 'Random'
         ];
     }
 

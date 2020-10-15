@@ -343,7 +343,6 @@ class PayInitData extends Base\Mock\Server
                 [
                     'gateway_response'=>
                         [
-                            'upiTransRefNo' => '99999',
                             'status' => 'S',
                             'pspRefNo' => $entities['payment']['id'],
                             'txnAuthDate' => Carbon::now(Timezone::IST)->toDateTimeString(),
@@ -351,8 +350,9 @@ class PayInitData extends Base\Mock\Server
                             'amount' => $entities['payment']['amount'],
                             'payeeVPA' => 'razorpay@sbi',
                             'statusDesc' => 'Transaction Pending waiting for response',
-                            'npciTransId' => '99999999999',
-                            'custRefNo' => '99999999999',
+                            'upiTransRefNo' => '12345678901',
+                            'npciTransId'   => '99999999',
+                            'custRefNo'     => "123456789012",
                         ],
                 ],
             'error'             => null,

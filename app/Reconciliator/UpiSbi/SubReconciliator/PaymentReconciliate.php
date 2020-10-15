@@ -22,6 +22,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const PAYER_VIRTUAL_ADDRESS = 'payer_virtual_address';
     const PAYEE_VIRTUAL_ACCOUNT = 'payee_virtual_account';
     const PAYER_ACCOUNT_NAME    = 'payer_ac_name';
+    const CUSTOMER_REF_NO       = 'customer_ref_no';
 
     const BLACKLISTED_COLUMNS = [
         self::PAYER_VIRTUAL_ACCOUNT,
@@ -70,7 +71,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getReferenceNumber($row)
     {
-        return $row[self::TRANS_REF_NUMBER] ?? null;
+        return $row[self::CUSTOMER_REF_NO] ?? null;
     }
 
     protected function getReconPaymentStatus(array $row)

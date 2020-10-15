@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Upi\Base;
 
 use RZP\Gateway\Base;
+use RZP\Models\Payment\Gateway;
 
 class Entity extends Base\Entity
 {
@@ -259,5 +260,44 @@ class Entity extends Base\Entity
     public function getGatewayData()
     {
         return $this->getAttribute(self::GATEWAY_DATA);
+    }
+
+    public function getNpciReferenceIdAttribute()
+    {
+        if ($this->gateway === Gateway::UPI_SBI)
+        {
+            return $this->parseDataForSbi()[0] ?? null;
+        }
+
+        return $this->attributes[self::NPCI_REFERENCE_ID] ?? null;
+    }
+
+    public function getGatewayPaymentIdAttribute()
+    {
+        if ($this->gateway === Gateway::UPI_SBI)
+        {
+            return $this->parseDataForSbi()[1] ?? null;
+        }
+
+        return $this->attributes[self::GATEWAY_PAYMENT_ID] ?? null;
+    }
+
+    /**
+     * Parses the attributes, returns [NPCI_REFERENCE_ID, GATEWAY_PAYMENT_ID]
+     * @return array
+     */
+    public function parseDataForSbi()
+    {
+        $param1 = $this->attributes[self::NPCI_REFERENCE_ID];
+        $param2 = $this->attributes[self::GATEWAY_PAYMENT_ID];
+
+        if (strlen($param1) === 12)
+        {
+            return [$param1, $param2];
+        }
+        else
+        {
+            return [$param2, $param1];
+        }
     }
 }

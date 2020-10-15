@@ -52,8 +52,6 @@ class UpiSbiGatewayReconTest extends TestCase
 
         $this->makeUpiSbiPaymentsSince(3, $createdAt);
 
-        $payments = $this->getEntities('payment', [], true);
-
         $fileContents = $this->generateReconFile();
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
@@ -203,7 +201,7 @@ class UpiSbiGatewayReconTest extends TestCase
     {
         $upiEntity = $this->getLastEntity('upi', true);
 
-        $this->assertEquals('99999', $upiEntity['npci_reference_id']);
+        $this->assertEquals('123456789012', $upiEntity['npci_reference_id']);
     }
 
     private function createUploadedFile($file)

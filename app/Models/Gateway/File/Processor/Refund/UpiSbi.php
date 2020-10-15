@@ -94,7 +94,7 @@ class UpiSbi extends Base
                 $pgMerchantId  => trim($row['gateway']['gateway_merchant_id'], '"'),
                 $refReqNo      => trim($row['refund']['id'], '"'),
                 $txnRefNo      => trim($referenceNo, '"'),
-                $custRefNo     => trim($row['gateway']['gateway_payment_id'], '"'),
+                $custRefNo     => trim($row['gateway']['npci_reference_id'], '"'),
                 $orderNo       => trim($row['payment']['id'], '"'),
                 $refAmt        => trim($row['refund']['amount'] / 100, '"'),
                 $refRemark     => trim('Refund for ' . $row['payment']['id'], '"'),

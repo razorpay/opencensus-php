@@ -50,8 +50,9 @@ class Gateway extends Base\Gateway
         Base\Entity::EXPIRY_TIME               => Base\Entity::EXPIRY_TIME,
 
         // Mapping response fields to entity variables
-        ResponseFields::CUSTOMER_REFERENCE_NO  => Base\Entity::GATEWAY_PAYMENT_ID,
-        ResponseFields::UPI_TRANS_REFERENCE_NO => Base\Entity::NPCI_REFERENCE_ID,
+        ResponseFields::PAYER_VPA              => Base\Entity::VPA,
+        ResponseFields::CUSTOMER_REFERENCE_NO  => Base\Entity::NPCI_REFERENCE_ID,
+        ResponseFields::UPI_TRANS_REFERENCE_NO => Base\Entity::GATEWAY_PAYMENT_ID,
         ResponseFields::STATUS                 => Base\Entity::STATUS_CODE,
         Base\Entity::TYPE                      => Base\Entity::TYPE,
         ResponseFields::NPCI_TRANSACTION_ID    => Base\Entity::NPCI_TXN_ID,
@@ -457,7 +458,7 @@ class Gateway extends Base\Gateway
 
     private function assertUpiTransactionId(Base\Entity $upiEntity, array $content): bool
     {
-        $upiTransactionRefNo = (string) $content[ResponseFields::UPI_TRANS_REFERENCE_NO];
+        $upiTransactionRefNo = (string) $content[ResponseFields::CUSTOMER_REFERENCE_NO];
 
         $npciReferenceId = (string) $upiEntity->getNpciReferenceId();
 

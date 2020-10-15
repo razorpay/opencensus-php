@@ -340,9 +340,9 @@ class PayVerifyData extends Base\Mock\Server
                 '_raw'            => 'dummy_raw_value',
                 'gateway_response'=> [
                     'pspRefNo'      => $entities['gateway']['redirect']['payment_id'],
-                    'upiTransRefNo' => '99999',
-                    'npciTransId'   => '99999999999',
-                    'custRefNo'     => "99999999999",
+                    'upiTransRefNo' => '12345678901',
+                    'npciTransId'   => '99999999',
+                    'custRefNo'     => "123456789012",
                     'amount'        => 500,
                     'txnAuthDate'       => "2020-06-01 19:23:51",
                     'responseCode'      => "00",
@@ -390,6 +390,12 @@ class PayVerifyData extends Base\Mock\Server
         {
             $response['data']['gateway_response']['upiTransRefNo'] = $entities['gateway']['redirect']['upiTransRefNo'];
         }
+
+        if(isset($entities['gateway']['redirect']['custRefNo']))
+        {
+            $response['data']['gateway_response']['custRefNo'] = $entities['gateway']['redirect']['custRefNo'];
+        }
+
 
         return $response;
     }

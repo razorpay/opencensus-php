@@ -64,7 +64,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
                 'MCC'                   => '9399',
                 'Order No'              => $row['payment']['id'],
                 'Trans Ref No.'         => 99999,
-                'Customer Ref No.'      => 99999999998,
+                'Customer Ref No.'      => '123456789012',
                 'NPCI Response Code'    => 'U69',
                 'Trans Type'            => 'COLLECT',
                 'DR/CR'                 => 'Credit',
