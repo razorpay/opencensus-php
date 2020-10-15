@@ -4948,6 +4948,22 @@ trait Authorize
         }
     }
 
+    protected function updateAndNotifyPaymentAuthenticated(array $data = [])
+    {
+        // Marking payments as authenticated for payments whose callback is split into authentication
+        // and authorization leg.
+        $updated = $this->updatePaymentAuthenticated($data);
+
+        $this->migrateCardDataIfApplicable($this->payment);
+
+        if ($updated === false)
+        {
+            return;
+        }
+
+        (new Payment\Metric)->pushAuthenticationMetrics($this->payment);
+    }
+
     protected function updateAndNotifyPaymentAuthorized(array $data = [], bool $wasFailed = false)
     {
         // For UPI Initial Recurring payment, we will get two callbacks
@@ -5034,6 +5050,33 @@ trait Authorize
         $this->postPaymentAuthorizeSubscriptionRegistrationProcessing($payment);
 
         return $this->processAuthorizeResponse($payment);
+    }
+
+    protected function postPaymentAuthenticateProcessing(Payment\Entity $payment): array
+    {
+        return $this->processAuthenticateResponse($payment);
+    }
+
+    protected function processAuthenticateResponse(Payment\Entity $payment): array
+    {
+        $returnData = [
+            'razorpay_payment_id' => $payment->getPublicId(),
+        ];
+
+        if ($payment->hasOrder() === true)
+        {
+            $this->fillReturnDataWithOrder($payment, $returnData);
+        }
+
+        if (($this->app['basicauth']->isPrivateAuth() === false) and
+            ($payment->getCallbackUrl()))
+        {
+            $this->fillReturnRequestDataForMerchant($payment, $returnData);
+        }
+
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_RESPONSE_SENT, $payment);
+
+        return $returnData;
     }
 
     protected function postPaymentAuthorizeOfferProcessing(Payment\Entity $payment)
@@ -6789,6 +6832,71 @@ trait Authorize
         }
     }
 
+    protected function updatePaymentAuthenticated($data = [])
+    {
+        $payment = $this->payment;
+
+        $updated = $this->repo->transaction(function() use ($payment, $data)
+        {
+            $this->lockForUpdateAndReload($payment);
+
+            $status = $this->payment->getStatus();
+
+            // We do not want the payments which failed captured
+            // and got marked as failed to be authorized again.
+            if ($payment->hasBeenAuthorized() === true)
+            {
+                return false;
+            }
+
+            $payment->setErrorNull();
+
+            $payment->setNonVerifiable();
+
+            $payment->setStatus(Payment\Status::AUTHENTICATED);
+
+            $payment->setAuthenticatedTimestamp();
+
+            $this->trace->info(
+                TraceCode::PAYMENT_STATUS_AUTHENTICATED,
+                [
+                    'payment_id'        => $payment->getId(),
+                    'old_status'        => $status,
+                    'method'            => $payment->getMethod(),
+                    'gateway'           => $payment->getGateway(),
+                ]);
+
+            $this->repo->saveOrFail($payment);
+
+            if ($payment->terminal !== null)
+            {
+                if ($payment->terminal->isUsed() === false)
+                {
+                    $payment->terminal->setUsed();
+
+                    $this->repo->saveOrFail($payment->terminal, ['shouldSync'=> false]);
+                }
+            }
+
+            $customProperties = $payment->toArrayTraceRelevant();
+
+            $this->segment->trackPayment($payment, TraceCode::PAYMENT_AUTHENTICATION_SUCCESS, $customProperties);
+
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_PROCESSED, $payment);
+
+            return true;
+        });
+
+        if ($updated === true)
+        {
+            $this->tracePaymentInfo(TraceCode::PAYMENT_AUTHENTICATION_SUCCESS);
+
+            $this->sendFeedbackPaymentAuthenticatedToDoppler($payment);
+        }
+
+        return $updated;
+    }
+
     protected function updatePaymentAuthorized($data = [], bool $wasFailed = false)
     {
         $payment = $this->payment;
@@ -6892,6 +7000,24 @@ trait Authorize
         }
 
         return $updated;
+    }
+
+    protected function sendFeedbackPaymentAuthenticatedToDoppler($payment)
+    {
+        try
+        {
+            $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_SUCCESS_EVENT);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(
+                TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+                [
+                    'payment'             => $payment->toArray(),
+                    'error'               => $e->getMessage()
+                ]
+            );
+        }
     }
 
     protected function sendFeedbackPaymentAuthorizedToDoppler($payment)

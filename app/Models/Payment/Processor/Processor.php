@@ -3245,7 +3245,15 @@ class Processor
             return false;
         }
 
+
+        // We can't capture payments that are in authenticated state.
+        if ($payment->getStatus() === Payment\Status::AUTHENTICATED)
+        {
+            return false;
+        }
+
         if ($payment->isUpiTransfer() === true)
+
         {
             return false;
         }

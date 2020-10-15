@@ -417,6 +417,12 @@ trait Callback
                 $this->processPaymentPayException($e);
             }
         }
+        else if ($this->isAuthSplitPayment($input, $data) === true)
+        {
+            $this->updateAndNotifyPaymentAuthenticated($data);
+
+            return;
+        }
 
         $shouldLateAuthorize = false;
 
@@ -443,7 +449,29 @@ trait Callback
             (isset($data['status']) === true) and
             ($data['status'] === Payment\Status::AUTHENTICATED))
         {
+            if ($this->merchant->isFeatureEnabled(Feature\Constants::AUTH_SPLIT) === true)
+            {
+                return false;
+            }
+
             return true;
+        }
+
+        return false;
+    }
+
+    protected function isAuthSplitPayment($input, $data)
+    {
+        if ($this->isRoutedThroughCardPayments(Payment\Action::PAY, $input) and
+            (isset($data['status']) === true) and
+            ($data['status'] === Payment\Status::AUTHENTICATED))
+        {
+            if ($this->merchant->isFeatureEnabled(Feature\Constants::AUTH_SPLIT) === true)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         return false;
@@ -488,6 +516,11 @@ trait Callback
                 }
 
                 $this->processPaymentCallback($payment, $gatewayInput);
+
+                if ($payment->getStatus() === Payment\Status::AUTHENTICATED)
+                {
+                    return $this->postPaymentAuthenticateProcessing($payment);
+                }
 
                 return $this->postPaymentAuthorizeProcessing($payment);
             },

@@ -2422,7 +2422,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->getAttribute(self::CAPTURED_AT);
     }
 
-    protected function getAuthenticatedTimestamp()
+    public function getAuthenticatedTimestamp()
     {
         return $this->getAttribute(self::AUTHENTICATED_AT);
     }

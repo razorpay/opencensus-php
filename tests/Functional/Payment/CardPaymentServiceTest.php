@@ -613,6 +613,33 @@ class CardPaymentServiceTest extends TestCase
         $this->razorxValue = "on";
     }
 
+    public function testCallbackSplitAuthenticatePayment()
+    {
+        $this->razorxValue = 'cardps';
+        $this->enableCpsConfig();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+        $this->fixtures->merchant->addFeatures(['auth_split']);
+        $this->mockCps($terminal, 'callback_split');
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+        $this->assertEquals('mpi_blade', $payment['authentication_gateway']);
+        $this->assertEquals('authenticated', $payment['status']);
+        $this->assertEquals(2, $payment['cps_route']);
+        $this->assertEquals('3ds', $payment['auth_type']);
+
+        $this->disbaleCpsConfig();
+    }
 
     public function testIvr3dsFallback()
     {

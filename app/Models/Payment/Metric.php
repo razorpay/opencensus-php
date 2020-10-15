@@ -35,6 +35,7 @@ class Metric extends Base\Core
 
     // Metric Names
     const PAYMENT_CREATED                       = 'payment_created';
+    const PAYMENT_AUTHENTICATED                 = 'payment_authenticated';
     const PAYMENT_AUTHORIZED                    = 'payment_authorized_v1';
     const PAYMENT_CAPTURED                      = 'payment_captured_v1';
     const PAYMENT_CREATE_REQUEST_TIME           = 'payment_create_request_time';
@@ -79,6 +80,15 @@ class Metric extends Base\Core
         $dimensions = array_merge($dimensions, $extraDimensions);
 
         $this->trace->count($metricName, $dimensions);
+    }
+
+    public function pushAuthenticationMetrics(Entity $payment)
+    {
+        $dimensions = $this->getDefaultDimentions($payment);
+
+        $authenticationTime = ($payment->getAuthenticatedTimestamp() - $payment->getCreatedAt());
+
+        $this->trace->histogram(self::PAYMENT_AUTHENTICATED, $authenticationTime, $dimensions);
     }
 
     public function pushAuthMetrics(Entity $payment)
