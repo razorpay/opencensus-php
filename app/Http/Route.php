@@ -5511,7 +5511,7 @@ class Route
     public static $routeNameToFeaturesMap = [
         'capital_cards_service'                => [Feature::CAPITAL_CARDS],
         'loc_service'                          => [Feature::WITHDRAW_LOC],
-        'los_service'                          => [Feature::LOAN],
+        'los_service'                          => [Feature::LOS],
         'feature_dummy'                        => [Feature::DUMMY],
         'customer_delete'                      => [Feature::TOKENS, Feature::CHARGE_AT_WILL],
         'customer_delete_token'                => [Feature::TOKENS, Feature::CHARGE_AT_WILL],
