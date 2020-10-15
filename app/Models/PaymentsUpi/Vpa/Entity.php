@@ -15,8 +15,8 @@ class Entity extends Base\Entity
     const VPA           = 'vpa';
     const AROBASE       = '@';
 
-    // Starting with 7 days
-    const VPA_EXPIRY    = 604800;
+    // Starting with 30 days
+    const VPA_EXPIRY    = 2592000;
 
     protected $entity = 'payments_upi_vpa';
 
