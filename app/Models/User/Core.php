@@ -1221,6 +1221,16 @@ class Core extends Base\Core
                 'source',
                 'expires_at');
         }
+        else if ($input[Entity::ACTION] === 'user_auth')
+        {
+            $receiver = $user->getEmail();
+
+            $response = compact(
+                'token',
+                'receiver',
+                'context',
+                'source');
+        }
         else
         {
             $receiver = $input[Entity::CONTACT_MOBILE] ?? $user->getContactMobile();
