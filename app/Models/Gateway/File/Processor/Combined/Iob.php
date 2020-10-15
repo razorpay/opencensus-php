@@ -60,14 +60,36 @@ class Iob extends Base
 
         $date = Carbon::yesterday(Timezone::IST)->format('d.m.Y');
 
+        $fromDate = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)->format('d.m.Y');
+        $toDate = Carbon::createFromTimestamp($this->gatewayFile->getEnd(), Timezone::IST)->format('d.m.Y');
+
+        $config = $this->app['config']->get('nodal.axis');
+
+        $account = [
+            'accountNumber' => $config['account_number'],
+            'accountName'   => 'Razorpay Software Private Limited',
+            'ifsc'          => $config['ifsc_code'],
+            'bankName'      => 'Axis Bank Ltd',
+        ];
+
+        $emailIds = [
+            'recon'         => 'finances.recon@razorpay.com, amit.mohanty@razorpay.com',
+            'l1'            => 'settlements@razorpay.com',
+            'l2'            => 'chandrababu.g@razorpay.com',
+            'transaction'   => 'support@razorpay.com'
+        ];
+
         return [
-            'bankName'    => 'Iob',
-            'amount'      => $amount,
-            'count'       => $count,
-            'claimsFile'  => $claimsFile,
-            'refundsFile' => $refundsFile,
-            'date'        => $date,
-            'emails'      => $this->gatewayFile->getRecipients(),
+            'bankName'      => self::BANK_NAME,
+            'amount'        => $amount,
+            'count'         => $count,
+            'refundsFile'   => $refundsFile,
+            'date'          => $date,
+            'from'          => $fromDate,
+            'to'            => $toDate,
+            'account'       => $account,
+            'rzpEmailId'    => $emailIds,
+            'emails'        => $this->gatewayFile->getRecipients(),
         ];
     }
 }

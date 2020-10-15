@@ -17,7 +17,7 @@
                 <table style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; width: 100%; margin: 0; padding: 0;"><tr style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; margin: 0; padding: 0;">
                         <td style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; margin: 0; padding: 0;">
                             <p>“Dear Team,</p>
-                            <p>Please credit to us as per below details and find the attached Sale & Refund reference file.</p>
+                            <p>Request you to transfer fund to our Nodal account for transaction dated {{{$from}}} to {{{$to}}} .</p>
                             <table style="border: 1px solid grey;">
                                 <thead>
                                 <tr style="border: 1px solid grey">
@@ -47,7 +47,23 @@
                                 </tbody>
                             </table>
                             <p>
+                                <b>Please find below our nodal bank details:-</b><br>
+                                <b>Account Number - </b>{{{$account['accountNumber']}}}<br>
+                                <b>Bank Name - </b> {{{$account['bankName']}}}<br>
+                                <b>Beneficiary Name - </b>{{{$account['accountName']}}}<br>
+                                <b>IFSC Code - </b>{{{$account['ifsc']}}}<br>
+                            </p>
+                            <p>
                                 Note: - As per RBI norm, All refund has been processed within TAT<br>
+                            </p>
+                            <p>
+                                For any transaction related issue, please write to {{{$rzpEmailId['transaction']}}}<br>
+                                For any escalation, please write to <br>
+                                1st Level:- {{{$rzpEmailId['l1']}}}<br>
+                                2nd Level:- {{{$rzpEmailId['l2']}}}<br>
+                            </p>
+                            <p>
+                                In case of any Reconciliation file & fund related issue, please write to – {{{$rzpEmailId['recon']}}}”
                             </p>
                         </td>
                     </tr></table>
