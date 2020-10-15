@@ -1734,6 +1734,7 @@ class Gateway
 
     public static $webhooksEnabledGateways = [
         Gateway::ATOM,
+        Gateway::WALLET_PHONEPE,
     ];
 
     /**
