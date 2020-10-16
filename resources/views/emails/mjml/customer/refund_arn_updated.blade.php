@@ -133,7 +133,7 @@
                                 <div class="title-content"
                                      style="text-align: center; width: fit-content; margin: 0 auto;">
                                   <div class="amount header" style="box-sizing: border-box; display: inline-block; max-width: 100%;">
-                                    <span class="symbol" style="font-size: 24px; line-height: 1.5; color: #0D2366;">{{ $refund['arn'] }}</span>
+                                    <span class="symbol" style="font-size: 24px; line-height: 1.5; color: #0D2366;">{{ $refund['rrn'] }}</span>
                                   </div>
                                 </div>
                               </div>
@@ -177,14 +177,16 @@
                                 <div class="para para-banner para-light"
                                      style="margin: 0; font-size: 16px; line-height: 1.5; color: #7B8199;">
                                   <div class="inline-block" style="display: inline-block;">
-                                    ARN for refund ID: {{$refund['public_id']}}
+                                    RRN for refund ID: {{$refund['public_id']}}
                                   </div>
                                 </div>
                                 <div class="divider" style="padding: 12px 0;">
                                   <div class="divider-line" style="height: 1px; background: #EBEDF2;"></div>
                                 </div>
                                 <p class="para font-size-medium font-color-secondary" style="font-size: 14px; line-height: 1.5; color: #515978; margin: 0;">
-                                  Acquirer reference numbers (ARN) can be shared with the bank for refund tracking.
+                                  Refund reference number (RRN) can be shared with the bank for refund tracking.
+                                  Please reach out to your bank in case you don't receive the credit in the
+                                  next 5-7 working days.
                                 </p>
                               </div>
                             </div>

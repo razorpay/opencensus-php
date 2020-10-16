@@ -303,10 +303,11 @@
                                   </div>
                                   <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 9.3%; margin-bottom: 20px;">
                                     <div class="label" style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
-                                      ARN
+                                      RRN
                                     </div>
                                     <div class="value" style="color: #515978; display: inline-block;">
-                                      Awaited from the bank
+                                      <div>Refund reference number is</div>
+                                      <div>awaited from the bank</div>
                                     </div>
                                   </div>
                                 </div>
