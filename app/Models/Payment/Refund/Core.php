@@ -84,6 +84,17 @@ class Core extends Base\Core
                     $refund->setGatewayRefunded(true);
                     $this->repo->saveOrFail($refund);
                 }
+
+                $processor = $this->getNewProcessor($refund->merchant);
+
+                //
+                // Refund FTA is successful and ARN has been updated sending arn updated notification(s)
+                //
+                if ($processor->isValidArn($refund->getReference1()) === true)
+                {
+                    $processor->eventRefundArnUpdated($refund);
+                }
+
                 break;
 
             case Attempt\Status::FAILED:
@@ -383,5 +394,10 @@ class Core extends Base\Core
         {
             $batchService->stopBatchProcess($batch);
         }
+    }
+
+    public function getNewProcessor($merchant)
+    {
+        return new Payment\Processor\Processor($merchant);
     }
 }

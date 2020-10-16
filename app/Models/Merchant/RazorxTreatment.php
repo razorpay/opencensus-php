@@ -187,4 +187,7 @@ final class RazorxTreatment
 
     // experiment to enable webhooks on route gateway_payment_static_s2scallback_post/gateway_payment_static_s2scallback_get
     const ENABLE_WEBHOOKS = 'enable_webhooks';
+
+    // experiment to enable refund arn updated emails to customer / merchant
+    const REFUND_ARN_EMAILS = 'refund_arn_emails';
 }

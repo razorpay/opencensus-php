@@ -16,6 +16,7 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
+use RZP\Mail\Payment\RefundArnUpdated;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Refund\Constants;
 use RZP\Models\Payment\Entity as Payment;
@@ -3466,6 +3467,27 @@ class RefundTest extends TestCase
 
     public function testInstantRefundsOnUpiSuccessful()
     {
+        Mail::fake();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function ($mid, $feature, $mode)
+                              {
+                                  if ($feature === 'refund_arn_emails')
+                                  {
+                                      return 'on';
+                                  }
+
+                                  return 'off';
+                              }));
+
         $upiPayment = $this->createUpiPayment();
 
         $paymentEntity = $this->getDbLastEntity('payment');
@@ -3529,6 +3551,9 @@ class RefundTest extends TestCase
         $this->assertEquals('instant', $refund['speed_processed']);
         $this->assertEquals(118, $refund['fee']);
         $this->assertEquals(18, $refund['tax']);
+
+        // Asserting refund arn update event mail notification
+        Mail::assertQueued(RefundArnUpdated::class);
     }
 
     public function testOptimumRefundFeeReversalOnUpi()

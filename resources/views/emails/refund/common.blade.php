@@ -259,24 +259,6 @@
                                     </div>
                                   </div>
                                   <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 9.3%; margin-bottom: 20px;">
-                                    <div class="label" style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
-                                      Refund Amount
-                                    </div>
-                                    <div class="value" style="color: #515978; display: inline-block;">
-                                      <div class="amount value"style="font-size: 14px; line-height: 1.5; color: #515978; display: inline-block;">
-                                        <span class="symbol"style="font-size: 14px; line-height: 1.5; color: inherit;">
-                                          {{$refund['amount_components'][0]}}
-                                        </span>
-                                        <span class="rupees" style="font-size: 14px; line-height: 1.5; color: inherit;">
-                                          {{$refund['amount_components'][1]}}
-                                        </span>
-                                        <span class="paise" style="font-size: 12px; line-height: 1.5; color: inherit;">.
-                                          {{$refund['amount_components'][2]}}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 9.3%; margin-bottom: 20px;">
                                     <div class="label"
                                       style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
                                       Initiated On</div>

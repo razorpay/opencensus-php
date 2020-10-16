@@ -460,6 +460,7 @@ class Notify
                 'timestamp'            => $this->refund->getCreatedAt(),
                 'payment_id'           => $this->refund->payment->getId(),
                 'public_id'            => $this->refund->getPublicId(),
+                'arn'                  => $this->refund->getReference1(),
                 'created_at_formatted' => Utility::getTimestampFormatted($this->refund->getCreatedAt(), 'jS M, Y'),
             ];
         }

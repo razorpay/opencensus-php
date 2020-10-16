@@ -14,6 +14,7 @@ class Event
     const FAILED_TO_AUTHORIZED       = 'failed_to_authorized';
     const INVOICE_PAYMENT_AUTHORIZED = 'invoice_payment_authorized';
     const INVOICE_PAYMENT_CAPTURED   = 'invoice_payment_captured';
+    const REFUND_ARN_UPDATED         = 'refund_arn_updated';
 
     const CUSTOMER_EVENTS = [
         self::AUTHORIZED,
@@ -22,6 +23,7 @@ class Event
         self::FAILED_TO_AUTHORIZED,
         self::CARD_SAVED,
         self::INVOICE_PAYMENT_AUTHORIZED,
+        self::REFUND_ARN_UPDATED,
     ];
 
     protected static $customerEventBitPosition = [
@@ -30,7 +32,8 @@ class Event
         self::REFUNDED                   => 3,
         self::FAILED_TO_AUTHORIZED       => 4,
         self::CARD_SAVED                 => 5,
-        self::INVOICE_PAYMENT_AUTHORIZED => 6
+        self::INVOICE_PAYMENT_AUTHORIZED => 6,
+        self::REFUND_ARN_UPDATED         => 7,
     ];
 
     const MERCHANT_EVENTS = [
@@ -39,6 +42,7 @@ class Event
         self::FAILED,
         self::FAILED_TO_AUTHORIZED,
         self::INVOICE_PAYMENT_CAPTURED,
+        self::REFUND_ARN_UPDATED,
     ];
 
     const INVOICE_EVENTS = [
@@ -54,6 +58,7 @@ class Event
         self::INVOICE_PAYMENT_CAPTURED   => MailTags::INVOICE,
         self::FAILED_TO_AUTHORIZED       => MailTags::FAILED_TO_AUTHORIZED,
         self::CARD_SAVED                 => MailTags::CARD_SAVING,
+        self::REFUND_ARN_UPDATED         => MailTags::REFUND_ARN_UPDATE,
     ];
 
     const RECEIPT_EMAIL_EVENTS = [
@@ -101,6 +106,7 @@ class Event
         switch ($event)
         {
             case self::REFUNDED:
+            case self::REFUND_ARN_UPDATED:
                 $action = 'Refund';
                 break;
             case self::INVOICE_PAYMENT_AUTHORIZED:
