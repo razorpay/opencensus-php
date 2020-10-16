@@ -6607,4 +6607,80 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testEditMerchantCategoryShouldResetMethods' => [
+        'request' => [
+            'raw' => json_encode([
+                'category'      => '6211',
+                'category2'     => 'mutual_funds',
+                'reset_methods' => true,
+            ]),
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+            'server' => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'CONTENT_TYPE'  => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
+],
+        'response' => [
+            'content' => [
+                'id' => '1X4hRFHFx4UiXt',
+                'entity' => 'merchant',
+                'category'      => '6211',
+                'category2'     => 'mutual_funds',
+            ]
+        ]
+    ],
+
+    'testEditMerchantCategoryShouldNotResetMethodsIfResetMethodsInInputIsFalse' => [
+        'request' => [
+            'raw' => json_encode([
+                'category'      => '6211',
+                'category2'     => 'mutual_funds',
+                'reset_methods' => false,
+            ]),
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+            'server' => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'CONTENT_TYPE'  => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
+],
+        'response' => [
+            'content' => [
+                'id' => '1X4hRFHFx4UiXt',
+                'entity' => 'merchant',
+                'category'      => '6211',
+                'category2'     => 'mutual_funds',
+            ]
+        ]
+    ],
+
+    'testEditMerchantCategoryShouldResetMethodsValidationFailure2' => [
+        'request' => [
+            'raw' => json_encode([
+                'category'      => '6211',
+                'category2'     => 'mutual_funds',
+                'reset_methods' => 'yes'
+            ]),
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+            'server' => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'CONTENT_TYPE'  => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
+],
+        'response' => [
+            'content' => [
+                
+            ]
+        ],
+    ],
+
 ];

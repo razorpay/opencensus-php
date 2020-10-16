@@ -552,6 +552,17 @@ class Core extends Base\Core
                 (new Terminal\Core)->processMerchantMccUpdate($merchant, $input);
             }
 
+            if (isset($input['reset_methods']) === true)
+            {
+                // reset merchant methods if category or category2 is being updated
+                if (($input['reset_methods'] === true) and ((isset($input[Entity::CATEGORY]) === true) or (isset($input[Entity::CATEGORY2]) === true)))
+                {
+                    $merchant->setDefaultMethodsBasedOnCategory();
+                }
+                unset($input['reset_methods']);
+            }
+
+
             $merchantDetailCore = new Detail\Core;
             // This is used to sync fields transaction_report_email and website in merchant and merchantDetail
             $merchantDetailCore->syncToMerchantDetailFields($merchant, $input);

@@ -100,6 +100,7 @@ class Validator extends Base\Validator
                                                          Entity::DASHBOARD_WHITELISTED_IPS_TEST . '|ipv4',
         Entity::FEE_CREDITS_THRESHOLD                 => 'sometimes|integer|nullable',
         Entity::PARTNERSHIP_URL                       => 'sometimes|max:2000',
+        'reset_methods'                               => 'sometimes|boolean',
     ];
 
     protected static $uniqueEmailRules = [

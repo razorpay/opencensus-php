@@ -30,6 +30,7 @@ use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Models\Card\Network;
 use RZP\Models\BankingAccount;
 use RZP\Services\DiagClient;
 use RZP\Services\HubspotClient;
@@ -58,10 +59,12 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Mail\User\PasswordReset as PasswordResetMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
 use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
+use RZP\Models\Merchant\Methods\Repository as MethodRepo;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 use function Clue\StreamFilter\fun;
@@ -8294,6 +8297,104 @@ class MerchantTest extends TestCase
             BadRequestException::class,
             'code is not allowed for this merchant.'
         );
+    }
+
+    public function testEditMerchantCategoryShouldResetMethods()
+    {
+        $this->createMerchant();
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
+        $this->startTest();
+
+        $methodsArray =  ((new MethodRepo)->find('1X4hRFHFx4UiXt'))->toArray();
+
+        $expectedMethods = [
+            'credit_card'   => false,
+            'debit_card'    => true,
+            'amex'          => false,
+            'netbanking'    => true,
+            'upi'           => true,
+            'emi'           => [], // emi disabled
+            'prepaid_card'  => false,
+            'paylater'      => false,
+            'airtelmoney'   => true,
+            'freecharge'    => true,
+            'jiomoney'      => true,
+            'mobikwik'      => true,
+            'mpesa'         => true,
+            'olamoney'      => true,
+            'payumoney'     => true,
+            'payzapp'       => true,
+            'sbibuddy'      => true,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
+
+        $cardNetworks = $methodsArray['card_networks'];
+
+        $expectedCardNetworks =  [
+            Network::AMEX   =>  0,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedCardNetworks, $cardNetworks);
+    }
+
+    public function testEditMerchantCategoryShouldNotResetMethodsIfResetMethodsInInputIsFalse()
+    {
+        $this->createMerchant();
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
+        $this->startTest();
+
+        $methodsArray =  ((new MethodRepo)->find('1X4hRFHFx4UiXt'))->toArray();
+
+        $expectedMethods = [
+            'credit_card'   => true,
+            'debit_card'    => true,
+            'amex'          => false,
+            'netbanking'    => true,
+            'upi'           => true,
+            'emi'           => [], // emi disabled
+            'prepaid_card'  => true,
+            'paylater'      => true,
+            'airtelmoney'   => true,
+            'freecharge'    => true,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
+
+        $cardNetworks = $methodsArray['card_networks'];
+
+        $expectedCardNetworks =  [
+            Network::AMEX   =>  0,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedCardNetworks, $cardNetworks);
+    }
+
+    public function testEditMerchantCategoryShouldResetMethodsValidationFailure2()
+    {
+        $this->createMerchant();
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionCode(
+            ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+
+        $this->expectExceptionMessage(
+            'The reset methods field must be true or false.');
+
+        $this->startTest();
     }
 
     public function testCreateSubmerchantWithCodeAlreadyInUse()
