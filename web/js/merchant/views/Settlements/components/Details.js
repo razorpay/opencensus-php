@@ -56,15 +56,17 @@ export default (props) => {
                 value={() => <Amount value={settlement.tax} currency={'INR'} />}
               />
 
-              <ListGroupToggler
+              <EntityDetailRow
                 label="Breakup"
-                onToggleClick={() => props.onToggleBreakupDetails(settlement)}
-              >
-                <SettlementBreakupTable
-                  items={breakupDetails.items}
-                  loading={breakupDetails.loading}
-                />
-              </ListGroupToggler>
+                value={() => (
+                  <button
+                    class="btn btn-xs btn-default"
+                    onClick={() => props.onToggleBreakupDetails(settlement)}
+                  >
+                    Show
+                  </button>
+                )}
+              />
               <ShowWhen additionalCondition={(user) => user.isProjectNitroEnabled}>
                 <AnnouncementBar
                   fromWhere="settlements"

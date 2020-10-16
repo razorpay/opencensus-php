@@ -2,9 +2,11 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import SettlementDetails from 'merchant/views/Settlements/components/Details';
 import * as SettlementActions from 'merchant/reducers/settlements/details';
+import * as ModalActions from 'merchant_common/reducers/modals';
 import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
+import SettlementBreakupModal from 'merchant/views/Settlements/components/Modals/BreakupModal';
 
-@connect(state => state.settlement, SettlementActions)
+@connect((state) => state.settlement, { ...SettlementActions, ...ModalActions })
 export default class SettlementDetailsContainer extends Component {
   componentWillMount() {
     this.props.fetchItem(this.props.id);
@@ -16,8 +18,16 @@ export default class SettlementDetailsContainer extends Component {
     }
   }
 
-  fetchBreakupDetails = settlement => {
-    return this.props.fetchBreakupDetails(settlement);
+  fetchBreakupDetails = (settlement) => {
+    this.props.openModal({
+      component: (
+        <SettlementBreakupModal
+          settlementId={settlement.id}
+          onMount={() => {}}
+          onUnmount={() => {}}
+        />
+      ),
+    });
   };
 
   componentDidMount() {
