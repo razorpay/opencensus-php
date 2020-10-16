@@ -135,13 +135,6 @@ class Service extends Base\Service
 
     public function processAccountInfoWebhook(string $channel, array $input)
     {
-        $this->trace->info(
-            TraceCode::BANKING_ACCOUNT_INFO_WEBHOOK_REQUEST,
-            [
-                'input'   => $input,
-                'gateway' => $channel,
-            ]);
-
         $response = $this->core->processAccountInfoWebhook($channel, $input);
 
         return $response;

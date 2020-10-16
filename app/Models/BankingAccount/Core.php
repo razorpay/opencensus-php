@@ -360,6 +360,34 @@ class Core extends Base\Core
         return $bankingAccount;
     }
 
+    protected function isAccountInfoWebhookAlreadyProcessed(Entity $bankingAccount)
+    {
+        return $bankingAccount->isAccountActivationDateFilled();
+    }
+
+    protected function handleDuplicateWebhook($input, $channel, Entity $bankingAccount)
+    {
+        $this->trace->info(
+            TraceCode::DUPLICATE_ACCOUNT_INFO_WEBHOOK,
+            [
+                'input'     => $input,
+                'channel'   => $channel,
+                'rzp_ref_no'=> $bankingAccount->getBankReferenceNumber()
+            ]);
+
+        // If we receive duplicate webhook, we want to throw an error, and
+        // subsequently return `Failure` in the response.
+        throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_WEBHOOK_ALREADY_PROCESSED,
+            null,
+            [
+                'rzp_ref_no' => $bankingAccount->getBankReferenceNumber(),
+                'channel'    => $channel,
+            ],
+            'Webhook already processed for RZP Ref No: '. $bankingAccount->getBankReferenceNumber()
+        );
+    }
+
     public function processAccountInfoWebhook(string $channel, array $input)
     {
         $this->trace->info(
@@ -384,15 +412,12 @@ class Core extends Base\Core
                                    ->findByBankReferenceAndChannel($channel,
                                                                    $attributes[Entity::BANK_REFERENCE_NUMBER]);
 
-            if ($bankingAccount->isAlreadyActivated() === false)
+            if ($this->isAccountInfoWebhookAlreadyProcessed($bankingAccount) === true)
             {
-                $this->trace->info(
-                    TraceCode::DUPLICATE_ACCOUNT_INFO_WEBHOOK,
-                    [
-                        'input'     => $input,
-                        'channel'   => $channel,
-                    ]);
-
+                $this->handleDuplicateWebhook($input, $channel, $bankingAccount);
+            }
+            else
+            {
                 $this->updateBankingAccount($bankingAccount, $attributes, $bankingAccount->merchant, true);
             }
 
@@ -401,6 +426,12 @@ class Core extends Base\Core
         catch (\Throwable $e)
         {
             $this->trace->traceException($e);
+
+            $this->trace->error(TraceCode::BANKING_ACCOUNT_ACCOUNT_INFO_WEBHOOK_FAILURE,
+                [
+                    'input'          => $input,
+                    'failure_reason' => $e->getMessage()
+                ]);
 
             $response = $processor->postProcessAccountInfoNotificationResponse($input, Status::CANCELLED);
         }

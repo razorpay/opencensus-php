@@ -494,7 +494,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PASSWORD);
     }
 
-    public function isAlreadyActivated()
+    public function isAccountActivationDateFilled()
     {
         return ($this->isAttributeNotNull(self::ACCOUNT_ACTIVATION_DATE));
     }
