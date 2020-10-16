@@ -34,4 +34,9 @@ class SalesForceClient extends BaseSalesForceClient
     public function sendEventToSalesForce(array $payload) {
         return;
     }
+
+    public function sendPreSignupDetails(array $input, Merchant\Entity $merchant)
+    {
+        return;
+    }
 }

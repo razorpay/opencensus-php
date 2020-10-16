@@ -79,33 +79,15 @@ class Service extends Base\Service
 
         $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_FINISH_SIGNUP_SUCCESS, $this->merchant, null, $input);
 
-        $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
-                                                    Merchant\RazorxTreatment::PRE_SIGNUP_DETAILS_TO_SALESFORCE,
-                                                    $this->mode);
-
-        $isBankingProduct = $this->auth->isProductBanking();
-
-        // If product is banking, then all signups are to be sent to Salesforce
-        // in real-time.
-        // If product is primary, the razorx treatment determines whether or not
-        // to send the events to Salesforce.
-        if (($isBankingProduct === true) or
-            (($isBankingProduct === false) and
-             ($variant === 'on')))
+        // Putting in a try catch block so that any error here does not disrupt
+        // the main signup flow. This will be removed once X flow simplifies the payload for salesforce
+        try
         {
-            // Putting in a try catch block so that any error here does not disrupt
-            // the main signup flow.
-            try
-            {
-                $this->app->salesforce->sendPreSignupDetails($input, $this->merchant);
-            }
-            catch(\Throwable $e)
-            {
-                $this->trace->traceException(
-                    $e,
-                    Trace::ERROR,
-                    TraceCode::SALESFORCE_FAILED_TO_DISPATCH_JOB);
-            }
+            $this->app->salesforce->sendPreSignupDetails($input, $this->merchant);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SALESFORCE_FAILED_TO_DISPATCH_JOB);
         }
 
         return $response;
