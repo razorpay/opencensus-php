@@ -222,6 +222,8 @@ class Entity extends Base\PublicEntity
 
     const RAZORX_RETRY_COUNT = 2;
 
+    const QUEUE_PAYOUT_CREATE_REQUEST = 'queue_payout_create_request';
+
     protected $queueFlag = false;
 
     protected $composite = false;
@@ -252,6 +254,19 @@ class Entity extends Base\PublicEntity
     ];
      */
     protected $inputSourceDetails = null;
+
+    /*
+    This variable is defined to store the output of razorx request to know if payout should be created in
+    create_request_submitted state. This is done as we need to remove counter calls for free payouts for these merchants
+    during payout create and thus, if we are anyways calling razorx once outside payout create db txn, we don't want to
+    again call razorx inside. This will help in 2 ways -
+    1. We will reduce one razorx call inside db txn for payout create.
+    2. There won't be any discrepancy as in the case where the 1st call was successful and resulted in output as 'on'
+    and during the second call, razorx went down or something and even after retries, we got the result as 'control', so
+    in this case there is a possibility that a non free payout will be initiated even when free payouts are remaining
+    for the merchant.
+     */
+    protected $queuePayoutCreateRequest = false;
 
     /**
      * In case of direct banking, we get the transactions directly from the bank. We don't create transactions
@@ -1044,6 +1059,12 @@ class Entity extends Base\PublicEntity
         return $this->inputSourceDetails;
     }
 
+    public function getQueuePayoutCreateRequest()
+    {
+        return $this->queuePayoutCreateRequest;
+    }
+
+
     // ============================= END GETTERS =============================
 
     // ============================= SETTERS =============================
@@ -1317,6 +1338,13 @@ class Entity extends Base\PublicEntity
     public function setOrigin($origin)
     {
         $this->setAttribute(self::ORIGIN, $origin);
+    }
+
+    public function setQueuePayoutCreateRequest($queuePayoutCreateRequest)
+    {
+        $this->queuePayoutCreateRequest = $queuePayoutCreateRequest;
+
+        return $this;
     }
 
     // ============================= END SETTERS =============================

@@ -158,7 +158,7 @@ class Base extends BaseCore
                 return $payout;
             }
 
-            if ($this->shouldDelayTransactionCreationForPayout() === true)
+            if ($payout->getQueuePayoutCreateRequest() === true)
             {
                     $this->dispatchForPreCreatedPayouts($payout);
 
@@ -975,17 +975,9 @@ class Base extends BaseCore
     {
         $payout = (new Payout\Entity);
 
-        $feeType = null;
+        $queuePayoutCreateRequest = array_pull($input, Payout\Entity::QUEUE_PAYOUT_CREATE_REQUEST, false);
 
-        if (isset($input[Payout\Entity::FEE_TYPE]) === true)
-        {
-            $feeType = $input[Payout\Entity::FEE_TYPE];
-        }
-
-        if (array_key_exists(Payout\Entity::FEE_TYPE, $input) === true)
-        {
-            unset($input[Payout\Entity::FEE_TYPE]);
-        }
+        $feeType = array_pull($input, Payout\Entity::FEE_TYPE, null);
 
         $sourceDetails = $this->pullSourceDetails($input);
 
@@ -1026,6 +1018,8 @@ class Base extends BaseCore
         $this->batchId ? ($payout->setBatchId($this->batchId)) : ($payout->batch()->associate($this->batch));
 
         $this->runEntityValidations($payout, $input);
+
+        $payout->setQueuePayoutCreateRequest($queuePayoutCreateRequest);
 
         $payout->setExpectedFeeType($feeType);
 
@@ -1278,21 +1272,6 @@ class Base extends BaseCore
         }
 
         return $payout;
-    }
-
-    protected function shouldDelayTransactionCreationForPayout()
-    {
-        $variant = $this->app['razorx']->getTreatment(
-                                  $this->merchant->getId(),
-                                  Merchant\RazorxTreatment::QUEUE_PAYOUT_CREATE_REQUEST,
-                                  $this->app['rzp.mode'] ?? 'live');
-
-        if ($variant === 'on')
-        {
-            return true;
-        }
-
-        return false;
     }
 
     protected function dispatchForPreCreatedPayouts(Entity $payout)

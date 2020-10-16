@@ -7974,4 +7974,48 @@ class PayoutTest extends TestCase
         $this->assertFalse(array_key_exists(Payout\Entity::ORIGIN, $response['items'][0]));
         $this->assertFalse(array_key_exists(Payout\Entity::ORIGIN, $response['items'][0]));
     }
+
+    public function testProcessingOfCreateRequestSubmittedPayoutIfFreePayoutsAreAvailable()
+    {
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $this->testProcessingOfCreateRequestSubmittedPayout();
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // Assert that one free payout has been consumed
+        $this->assertEquals(1, $counter->getFreePayoutsConsumed());
+
+        $transactionId = $payout->transaction->getId();
+
+        $transaction = $this->getDbEntityById('transaction', $transactionId)->toArray();
+
+        // Assert 0 fee and tax in payout
+        $this->assertEquals(0, $transaction['fee']);
+        $this->assertEquals(0, $transaction['tax']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $transactionId], true);
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $transactionId,
+            'pricing_rule_id' => "Bbg7cl6t6I3XA9",
+            'percentage'      => null,
+            'amount'          => 0,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+
+        $pricingRule = $this->getDbEntityById('pricing', $expectedBreakup['pricing_rule_id']);
+
+        $this->assertEquals(BasicAuth\Type::PRIVATE_AUTH, $pricingRule->getAuthType());
+    }
 }

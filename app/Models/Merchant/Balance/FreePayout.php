@@ -84,19 +84,25 @@ class FreePayout
     */
     public function getFreePayoutsCount(Balance\Entity $balance) : int
     {
+        // This is the entry from the settings table.
         $freePayoutsCount = $this->getSettingsAccessor($balance)->get(self::FREE_PAYOUTS_COUNT);
 
         if (($freePayoutsCount instanceof Dictionary) and
             (empty($freePayoutsCount->key()) === true))
         {
+            // Here we fetch the config key for the balance type to fetch from redis as well as the default fallback
+            // count from the code.
             list ($configKey, $defaultCount) = $this->getFreePayoutsKeyAndDefaultCount($balance);
 
+            // This is the redis key value.
             $globalCount = (int) (new AdminService)->getConfigKey(
                 [
                     'key' => $configKey
                 ]
             );
 
+            // If redis key gave empty result, i.e., the key is unset there or call failed, we return the fallback
+            // value, else we return the redis value.
             if (empty($globalCount) === true)
             {
                 return $defaultCount;
@@ -132,14 +138,18 @@ class FreePayout
     */
     public function getFreePayoutsSupportedModes(Balance\Entity $balance)
     {
+        // This is the entry from the settings table.
         $freePayoutsSupportedModes = $this->getSettingsAccessor($balance)->get(self::FREE_PAYOUTS_SUPPORTED_MODES);
 
         if (($freePayoutsSupportedModes instanceof Dictionary) and
             (empty($freePayoutsSupportedModes->key()) === true))
         {
+            // This is the redis key value.
             $freePayoutsSupportedModes = (new AdminService)->getConfigKey(
                 ['key' => ConfigKey::FREE_PAYOUTS_SUPPORTED_MODES]);
 
+            // If redis key gave empty result, i.e., the key is unset there or call failed, we return the fallback
+            // value, else we return the redis value.
             if (empty($freePayoutsSupportedModes) === true)
             {
                 return self::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;

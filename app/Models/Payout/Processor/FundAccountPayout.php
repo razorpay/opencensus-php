@@ -257,9 +257,18 @@ class FundAccountPayout extends Base
 
     protected function createBankingPayout(array $input, Balance\Entity $balance)
     {
-        $feeType = (new Payout\Core)->updateFreePayoutsConsumedAndGetFeeType($balance);
+        $queuePayoutCreateRequest = $this->shouldDelayTransactionCreationForPayout();
 
-        $input = array_merge($input, [Payout\Entity::FEE_TYPE => $feeType]);
+        $input = array_merge($input, [Payout\Entity::QUEUE_PAYOUT_CREATE_REQUEST => $queuePayoutCreateRequest]);
+
+        $feeType = null;
+
+        if ($queuePayoutCreateRequest === false)
+        {
+            $feeType = (new Payout\Core)->updateFreePayoutsConsumedAndGetFeeType($balance);
+
+            $input = array_merge($input, [Payout\Entity::FEE_TYPE => $feeType]);
+        }
 
         try
         {
@@ -276,5 +285,20 @@ class FundAccountPayout extends Base
 
             throw $throwable;
         }
+    }
+
+    protected function shouldDelayTransactionCreationForPayout()
+    {
+        $variant = $this->app['razorx']->getTreatment(
+            $this->merchant->getId(),
+            Merchant\RazorxTreatment::QUEUE_PAYOUT_CREATE_REQUEST,
+            $this->app['rzp.mode'] ?? 'live');
+
+        if ($variant === 'on')
+        {
+            return true;
+        }
+
+        return false;
     }
 }
