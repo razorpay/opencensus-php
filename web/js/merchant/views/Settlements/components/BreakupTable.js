@@ -1,26 +1,8 @@
 import React from 'react';
 import Amount from 'common/ui/Amount';
 import TableBody from 'common/ui/TableBody';
-import Spinner from 'common/ui/Spinner';
 
-import { useCallback } from 'react';
 import { titleCase } from 'common/utils/rzp-utils';
-
-const isResponseNew = (obj) => {
-  delete obj.amountInINR;
-  delete obj.resourceUrl;
-  delete obj.resourceIdField;
-
-  let newResponse = false;
-
-  if ('tax' in obj && 'fee' in obj) newResponse = true;
-  else newResponse = false;
-
-  return {
-    columnNames: Object.keys(obj),
-    newResponse,
-  };
-};
 
 const Breakup = ({ breakup, newResponse }) => {
   return (
@@ -41,22 +23,16 @@ const Breakup = ({ breakup, newResponse }) => {
           <Amount value={breakup.tax} currency="INR" />
         </td>
       )}
+      {newResponse && (
+        <td>
+          <Amount value={breakup.settled_amount} currency="INR" />
+        </td>
+      )}
     </tr>
   );
 };
 
-const BreakupTable = ({ items, loading }) => {
-  // Table columns will be dynamic now, so adding check on items
-  if (items.length === 0) {
-    return (
-      <div class="page-spinner-container">
-        <Spinner />
-      </div>
-    );
-  }
-
-  const { newResponse, columnNames } = useCallback(isResponseNew(items[0]), [items]);
-
+const BreakupTable = ({ items, loading, newResponse, columnNames }) => {
   return (
     <div class="table-reponsive">
       <table class="table table-hover">
