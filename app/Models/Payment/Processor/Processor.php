@@ -4086,7 +4086,7 @@ class Processor
     {
         $refund->setStatus(Payment\Refund\Status::CREATED);
 
-        $refund->setReference1();
+        $this->updateReference1AndTriggerEventArnUpdated($refund, null, false);
 
         $refund->setProcessedAt(null);
 

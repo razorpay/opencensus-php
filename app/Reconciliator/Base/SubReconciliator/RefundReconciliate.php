@@ -800,10 +800,10 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
         $refundAcquirerData = $refund->getAcquirerData();
 
+        $currentArn = $refundAcquirerData[Refund\Entity::ARN] ?? "";
+
         if (empty($refundAcquirerData[Refund\Entity::ARN]) === false)
         {
-            $currentArn = $refundAcquirerData[Refund\Entity::ARN];
-
             //
             // If the ARN in DB matches the
             // ARN from row, simply return
@@ -861,7 +861,13 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         }
         else
         {
-            $refund->setReference1($reconArn);
+            $processor = $this->getNewProcessor($refund->merchant);
+
+            if ($processor->isValidArn($reconArn) === true)
+            {
+                $processor->updateReference1AndTriggerEventArnUpdated($refund, $reconArn);
+            }
+
             $refund->setStatusProcessed();
 
             // This needs to be present here and not in the calling function,
@@ -870,6 +876,11 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
             $this->core->pushRefundProcessedMetric($refund, $this->source);
         }
+    }
+
+    public function getNewProcessor($merchant)
+    {
+        return new Payment\Processor\Processor($merchant);
     }
 
     protected function persistGatewayData(array $rowDetails)

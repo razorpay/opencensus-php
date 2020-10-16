@@ -1784,7 +1784,10 @@ trait Refund
 
         $this->refund->incrementAttempts();
 
-        $this->setRefundReference1($refunded);
+        if ($refund->isProcessed() === true)
+        {
+            $this->setRefundReference1($refunded);
+        }
 
         $this->setRefundReference3IfApplicable($payment);
 
@@ -1995,7 +1998,10 @@ trait Refund
                     //
                     $refundResponse = $this->callRefundFunction($refund, $payment, $data, true);
 
-                    $this->setRefundReference1($refundResponse);
+                    if ($this->refund->isProcessed() === true)
+                    {
+                        $this->setRefundReference1($refundResponse);
+                    }
 
                     $refund->incrementAttempts();
 
@@ -2570,6 +2576,11 @@ trait Refund
         ];
 
         $this->app['events']->fire('api.refund.speed_changed', $eventPayload);
+    }
+
+    public function eventRefundArnUpdated(RefundEntity $refund)
+    {
+      // Can add mails/webhooks here which are supposed to be trigger when arn gets updated
     }
 
     protected function refundViaFundTransfer(RefundEntity $refund, Payment\Entity $payment, $data = []): array
@@ -3397,11 +3408,13 @@ trait Refund
      */
     protected function setRefundReference1(array $response)
     {
+        $reference1 = $response[Payment\Gateway::GATEWAY_KEYS][RefundEntity::RRN] ?? null;
+
         if ((in_array($this->refund->payment->getMethod(), $this->getMethodsToSetRefundReference1(), true)) and
-            (isset($response[Payment\Gateway::GATEWAY_KEYS][RefundEntity::RRN]) === true) and
+            ($this->isValidArn($reference1) === true) and
             (empty($this->refund->getReference1()) === true))
         {
-            $this->refund->setReference1($response[Payment\Gateway::GATEWAY_KEYS][RefundEntity::RRN]);
+            $this->updateReference1AndTriggerEventArnUpdated($this->refund, $reference1);
         }
     }
 
@@ -3547,5 +3560,25 @@ trait Refund
         }
 
         return;
+    }
+
+    public function isValidArn($arn)
+    {
+        if ((empty($arn) === false) and (is_string($arn) === true) and (strlen($arn) > 2))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function updateReference1AndTriggerEventArnUpdated(RefundEntity & $refund, $reference1, $triggerEvent = true)
+    {
+        $refund->setReference1($reference1);
+
+        if ($triggerEvent === true)
+        {
+            $this->eventRefundArnUpdated($refund);
+        }
     }
 }

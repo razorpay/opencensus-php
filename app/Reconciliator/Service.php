@@ -675,6 +675,10 @@ class Service extends Base\Service
     {
         $this->core->persistReconciledAtAfterScroogeRecon($refund, $refundData, $source);
 
+        $processor = $this->getNewProcessor($refund->merchant);
+
+        $arn = $refundData[ScroogeReconciliate::ARN] ?? null;
+
         if ($refundData[Refund\Entity::STATUS] === Refund\Status::PROCESSED)
         {
             $refund->setStatusProcessed();
@@ -682,10 +686,10 @@ class Service extends Base\Service
             $this->core->pushRefundProcessedMetric($refund, $source);
         }
 
-        if ((empty($refundData[ScroogeReconciliate::ARN]) === false) and
+        if (($processor->isValidArn($arn) === true) and
             ((empty($refund->getReference1()) === true) or ($forceUpdateArn === true)))
         {
-            $refund->setReference1($refundData[ScroogeReconciliate::ARN]);
+            $processor->updateReference1AndTriggerEventArnUpdated($refund, $arn);
         }
 
         if ((empty($refundData[Transaction\Entity::GATEWAY_SETTLED_AT]) === false) and
@@ -696,6 +700,11 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($refund);
         $this->repo->saveOrFail($refund->transaction);
+    }
+
+    public function getNewProcessor($merchant)
+    {
+        return new Payment\Processor\Processor($merchant);
     }
 
     public function updateScroogeBatchSummary(string $batchId, array $data)

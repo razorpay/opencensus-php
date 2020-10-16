@@ -1607,8 +1607,6 @@ class Service extends Base\Service
                         {
                             case Refund\ScroogeEvents::PROCESSED_EVENT:
 
-                                $this->updateRefund($refund, $input);
-
                                 $refund->setStatusProcessed();
 
                                 if ((isset($input[RefundEntity::SPEED_PROCESSED]) === true) and
@@ -1623,6 +1621,8 @@ class Service extends Base\Service
                                 {
                                     $processor->eventRefundProcessed($refund);
                                 }
+
+                                $this->updateRefund($refund, $input);
 
                                 break;
 
@@ -2264,11 +2264,14 @@ class Service extends Base\Service
 
     protected function updateRefund($refund, $input)
     {
-        if ((empty($input[RefundEntity::BANK_REFERENCE_NO]) === false) and
-            ($input[RefundEntity::BANK_REFERENCE_NO] !== 'NA') and
-            (empty($refund->getReference1()) === true))
+        $referenceNo = $input[RefundEntity::BANK_REFERENCE_NO] ?? "";
+
+        $processor = $this->getNewProcessor($refund->merchant);
+
+        if ((empty($refund->getReference1()) === true) and
+            ($processor->isValidArn($referenceNo) === true))
         {
-            $refund->setReference1($input[RefundEntity::BANK_REFERENCE_NO]);
+            $processor->updateReference1AndTriggerEventArnUpdated($refund, $referenceNo);
         }
     }
 
