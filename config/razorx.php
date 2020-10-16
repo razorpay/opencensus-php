@@ -1,0 +1,27 @@
+<?php
+
+
+use App\User\Constants;
+
+return [
+    'new_signup_experiments_config' => [
+        'rx_onboarding_v2' => [
+            Constants::REQUEST_ORIGIN        => 'banking',
+            Constants::TIMESTAMP_THRESHOLD   => 1594625400, // "13 Jul 2020, 01:00:00 PM".
+            Constants::DEFAULT_RESULT        => ['result' => 'off']
+        ],
+        // new onboarding CA Self Serve flow
+        'rx_ca_self_serve_flow' => [
+            Constants::REQUEST_ORIGIN        => 'banking',
+            Constants::TIMESTAMP_THRESHOLD   => 1601562600, // "1 Oct 2020, 20:00:00 IST"
+            Constants::DEFAULT_RESULT        => ['result' => 'off']
+        ],
+        // Experiment 1 - which cross-sells CAs on PG sign up  and KYC
+        'rx_ca_experiment_1' => [
+            Constants::REQUEST_ORIGIN        => 'primary',
+            Constants::TIMESTAMP_THRESHOLD   => 1602527400, // October 13, 2020 0:00:00 IST
+            Constants::DEFAULT_RESULT        => ['result' => 'off']
+        ]
+    ]
+];
+

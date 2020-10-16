@@ -93,4 +93,15 @@ class ApiUrl
 
         return ($originHost === $bankingHost);
     }
+
+    public static function isPrimaryOriginRequest()
+    {
+        $originDomain = self::getRequestOriginUrl();
+
+        $originHost = parse_url($originDomain, PHP_URL_HOST);
+
+        $primaryHost = parse_url(config('app.url'), PHP_URL_HOST);
+
+        return ($originHost === $primaryHost);
+    }
 }

@@ -802,9 +802,7 @@ class Service extends Base\Service
 
                     $data = $this->updateInstantActivationExperiment($data);
 
-                    $data = $this->updateRXOnboardingV2Experiment($merchant, $data);
-
-                    $data = $this->updateRXCASelfServeExperiment($merchant, $data);
+                    $data = $this->updateNewUsersOnlyTypeExperiments($merchant, $data);
 
                     $data = $this->appendBankingDetails($data);
 
@@ -1378,45 +1376,37 @@ class Service extends Base\Service
         return $data;
     }
 
-    // To rollout the new RX onboarding flow in phases only for new signups after 1st July 2020
-    // Phase 1 - 10% of new signups on RX
-    // This function will be removed after 100% rollout
-    protected function updateRXOnboardingV2Experiment(array $merchant, array $data): array
+    protected function isRequestOriginSatisfied(array $experimentConfig)
     {
-        $merchantService = new Merchant\Service;
-        $isBankingRequest = ApiUrl::isBankingOriginRequest();
-
-        // Timestamp - "13 Jul 2020, 01:00:00 PM"
-        if ($isBankingRequest && $merchant['created_at'] > 1594625400)
+        if (isset($experimentConfig[Constants::REQUEST_ORIGIN]) === true)
         {
-            $data['experiments']['rx_onboarding_v2'] = $merchantService->getTreatment('rx_onboarding_v2');
+            switch ($experimentConfig[Constants::REQUEST_ORIGIN])
+            {
+                case 'banking':
+                    return ApiUrl::isBankingOriginRequest();
+                case 'primary':
+                    return ApiUrl::isPrimaryOriginRequest();
+            }
         }
-        else
-        {
-            $data['experiments']['rx_onboarding_v2'] = ['result' => 'off'];
-        }
-
-        return $data;
+        return true;
     }
 
-    // To rollout the new onboarding CA Self Serve flow in phases only for new signups after 1st October
-    // Phase 1 - 10% of new signups on RX
-    // This function will be removed after 100% rollout
-    protected function updateRXCASelfServeExperiment(array $merchant, array $data): array
+    protected function updateNewUsersOnlyTypeExperiments(array $merchant, array $data): array
     {
         $merchantService = new Merchant\Service;
-        $isBankingRequest = ApiUrl::isBankingOriginRequest();
 
-        // Timestamp - "1 Oct 2020, 20:00:00 IST"
-        if ($isBankingRequest && $merchant['created_at'] > 1601562600)
+        foreach (config('razorx.new_signup_experiments_config') as $experimentFeatureFlag => $experimentConfig)
         {
-            $data['experiments']['rx_ca_self_serve_flow'] = $merchantService->getTreatment('rx_ca_self_serve_flow');
+            if (($this->isRequestOriginSatisfied($experimentConfig) === true)
+                and ($merchant['created_at'] > $experimentConfig[Constants::TIMESTAMP_THRESHOLD]))
+            {
+                $data['experiments'][$experimentFeatureFlag] = $merchantService->getTreatment($experimentFeatureFlag);
+            }
+            else
+            {
+                $data['experiments'][$experimentFeatureFlag] = $experimentConfig[Constants::DEFAULT_RESULT];
+            }
         }
-        else
-        {
-            $data['experiments']['rx_ca_self_serve_flow'] = ['result' => 'off'];
-        }
-
         return $data;
     }
 

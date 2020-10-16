@@ -44,7 +44,7 @@ class Constants
     const EMAIL_VERIFIED = 'email_verified';
 
     const OAUTH_LOGIN = 'oauth_login';
-    
+
     const OAUTH_MERCHANT_OAUTH_CLIENT_ID = 'oauth.merchant_oauth_client_id';
 
     /**
@@ -94,4 +94,17 @@ class Constants
     const NETWORK_ISSUE_RELOAD_PAGE = 'Network issue, please reload the page.';
 
     const USER_ID_DEBUG_ACTIVATION_ISSUE = 'DqVrGiqepp5gxF';
+
+    // RazorX Experiments and config keys
+    // Experiments
+
+
+    const REQUEST_ORIGIN = 'request_origin';
+    // if a merchant signs up after configured `timestamp_threshold`,
+    // the merchant is considered a new user. The timestamp
+    // is usally around after when the code is deployed.
+    const TIMESTAMP_THRESHOLD = 'timestamp_threshold';
+    const DEFAULT_RESULT = 'default_result';
+
+
 }
