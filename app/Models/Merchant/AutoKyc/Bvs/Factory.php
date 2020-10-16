@@ -9,22 +9,22 @@ use RZP\Models\Merchant\AutoKyc\Processor;
 class Factory
 {
     /**
-     * @param string $artefactType
-     *
-     * @param array  $input
+     * @param array $input
      *
      * @return Processor
      * @throws \RZP\Exception\LogicException
      */
-    public function getProcessor(string $artefactType, array $input): Processor
+    public function getProcessor(array $input): Processor
     {
         $app = $app = App::getFacadeRoot();
 
         $mock = $app['config']['services.bvs.mock'];
 
+        $configName = $input[Constant::CONFIG_NAME];
+
         if ($mock === true)
         {
-            $processorMock = new DefaultProcessorMock($input, $artefactType);
+            $processorMock = new DefaultProcessorMock($input, $configName);
 
             //
             // This config is not defined in application config , this is used in test case only
@@ -36,6 +36,6 @@ class Factory
             return $processorMock;
         }
 
-        return new DefaultProcessor($input, $artefactType);
+        return new DefaultProcessor($input, $configName);
     }
 }

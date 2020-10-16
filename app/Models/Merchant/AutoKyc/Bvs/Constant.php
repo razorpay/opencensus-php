@@ -9,6 +9,7 @@ class Constant
     //
     // Request fields
     //
+    const CONFIG_NAME       = 'config_name';
     const TYPE              = 'type';
     const DETAILS           = 'details';
     const IDENTIFIER        = 'identifier';
@@ -35,8 +36,9 @@ class Constant
     //
     // Response fields
     //
-    const VALIDATION_ID = 'validation_id';
-    const STATUS        = 'status';
+    const VALIDATION_ID   = 'validation_id';
+    const VALIDATION_UNIT = 'validation_unit';
+    const STATUS          = 'status';
 
     //
     // Artefact types in BVS

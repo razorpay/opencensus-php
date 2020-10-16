@@ -51,6 +51,7 @@ use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
+use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Models\Merchant\Detail\BusinessDetailSearch\InMemoryBusinessSearch;
 
 class Core extends Base\Core
@@ -2474,8 +2475,10 @@ class Core extends Base\Core
     protected function verifyGstinFromBvs(Entity $merchantDetails)
     {
         $payload = [
-            Constant::ARTEFACT_TYPE => Constant::GSTIN,
-            Constant::DETAILS       => [
+            Constant::ARTEFACT_TYPE   => Constant::GSTIN,
+            Constant::CONFIG_NAME     => Constant::GSTIN,
+            Constant::VALIDATION_UNIT => BvsValidationConstants::IDENTIFIER,
+            Constant::DETAILS         => [
                 Constant::GSTIN      => $merchantDetails->getGstin(),
                 Constant::LEGAL_NAME => $merchantDetails->getPromoterPanName() ?? '',
                 Constant::TRADE_NAME => $merchantDetails->getBusinessName() ?? ''
@@ -2625,9 +2628,11 @@ class Core extends Base\Core
     protected function getPayloadForCIN(Entity $merchantDetails): array
     {
         $payload = [
-            Constant::ARTEFACT_TYPE => Constant::CIN,
-            Constant::IDENTIFIER    => $merchantDetails->getCompanyCin(),
-            Constant::DETAILS       => [
+            Constant::ARTEFACT_TYPE   => Constant::CIN,
+            Constant::CONFIG_NAME     => Constant::CIN,
+            Constant::VALIDATION_UNIT => BvsValidationConstants::IDENTIFIER,
+            Constant::IDENTIFIER      => $merchantDetails->getCompanyCin(),
+            Constant::DETAILS         => [
                 Constant::SIGNATORY_DETAILS =>
                     [[
                          Constant::FULL_NAME => $merchantDetails->getPromoterPanName() ?? '',
@@ -2650,9 +2655,11 @@ class Core extends Base\Core
     protected function getPayloadForLLPIN(Entity $merchantDetails): array
     {
         $payload = [
-            Constant::ARTEFACT_TYPE => Constant::LLP_DEED,
-            Constant::IDENTIFIER    => $merchantDetails->getCompanyCin(),
-            Constant::DETAILS       => [
+            Constant::ARTEFACT_TYPE   => Constant::LLP_DEED,
+            Constant::CONFIG_NAME     => Constant::LLP_DEED,
+            Constant::VALIDATION_UNIT => BvsValidationConstants::IDENTIFIER,
+            Constant::IDENTIFIER      => $merchantDetails->getCompanyCin(),
+            Constant::DETAILS         => [
                 Constant::SIGNATORY_DETAILS =>
                     [[
                          Constant::FULL_NAME => $merchantDetails->getPromoterPanName() ?? '',

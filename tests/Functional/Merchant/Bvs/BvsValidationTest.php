@@ -42,6 +42,7 @@ class BvsValidationTest extends TestCase
 
         $expectedValues = [
             'artefact_type'     => 'personal_pan',
+            'validation_unit'   => 'identifier',
             'owner_id'          => '10000000000000',
             'owner_type'        => 'merchant',
             'platform'          => 'pg',
@@ -164,6 +165,7 @@ class BvsValidationTest extends TestCase
             'owner_type'        => 'merchant',
             'platform'          => 'pg',
             'validation_status' => 'captured',
+            'validation_unit'   => 'identifier',
         ];
 
         $this->validateSuccessBvsValidation($bvsValidation, $expectedValues);
@@ -436,6 +438,7 @@ class BvsValidationTest extends TestCase
             'owner_type'        => 'merchant',
             'platform'          => 'pg',
             'validation_status' => 'captured',
+            'validation_unit'   => 'identifier',
         ];
 
         $this->validateSuccessBvsValidation($bvsValidation, $expectedValidationValues);
@@ -462,6 +465,7 @@ class BvsValidationTest extends TestCase
             'owner_type'        => 'merchant',
             'platform'          => 'pg',
             'validation_status' => 'captured',
+            'validation_unit'   => 'identifier',
         ];
 
         $this->validateSuccessBvsValidation($bvsValidation, $expectedValidationValues);

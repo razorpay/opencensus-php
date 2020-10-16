@@ -24,15 +24,13 @@ class Core extends Base\Core
 
         $input[Constant::OWNER_ID] = $merchantId;
 
-        $artefactType = $input[Constant::ARTEFACT_TYPE];
-
         try
         {
-            $processor = (new Factory())->getProcessor($artefactType, $input);
+            $processor = (new Factory())->getProcessor($input);
 
             $response = $processor->Process();
 
-            $validationObject = $this->getValidationObject($merchantId, $artefactType, $response);
+            $validationObject = $this->getValidationObject($input, $response);
 
             return (new BvsValidation\Core())->create($validationObject);
         }
@@ -47,19 +45,19 @@ class Core extends Base\Core
     /**
      * This function return payload for creation of Bvs_Validation entity
      *
-     * @param string   $merchantID
-     * @param string   $artefactType
+     * @param array    $input
      * @param Response $response
      *
      * @return array
      */
-    private function getValidationObject(string $merchantID, string $artefactType, Response $response): array
+    private function getValidationObject(array $input, Response $response): array
     {
         $validationObject = [
-            BvsValidation\Entity::OWNER_ID      => $merchantID,
-            BvsValidation\Entity::OWNER_TYPE    => Constant::MERCHANT,
-            BvsValidation\Entity::PLATFORM      => Constant::PG,
-            BvsValidation\Entity::ARTEFACT_TYPE => $artefactType,
+            BvsValidation\Entity::OWNER_ID        => $input[Constant::OWNER_ID],
+            BvsValidation\Entity::ARTEFACT_TYPE   => $input[Constant::ARTEFACT_TYPE],
+            BvsValidation\Entity::VALIDATION_UNIT => $input[Constant::VALIDATION_UNIT],
+            BvsValidation\Entity::OWNER_TYPE      => Constant::MERCHANT,
+            BvsValidation\Entity::PLATFORM        => Constant::PG,
         ];
 
         $validationObject = array_merge($validationObject, $response->getResponseData());

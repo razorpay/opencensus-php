@@ -27,11 +27,11 @@ class DefaultProcessor implements Processor
 
     /**
      * @param array  $input
-     * @param string $artefactType
+     * @param string $configName
      *
      * @throws LogicException
      */
-    public function __construct(array $input, string $artefactType)
+    public function __construct(array $input, string $configName)
     {
         $app = App::getFacadeRoot();
 
@@ -39,7 +39,7 @@ class DefaultProcessor implements Processor
 
         $this->input = $input;
 
-        $configClass = $this->getConfigClass($artefactType);
+        $configClass = $this->getConfigClass($configName);
 
         $this->bvsRuleConfig = new $configClass();
 
@@ -118,16 +118,16 @@ class DefaultProcessor implements Processor
     }
 
     /**
-     * The config class name would be lowercase(artefactType)
+     * The config class name should be passed in input payload
      *
-     * @param string $artefactType
+     * @param string $configName
      *
      * @return string
      * @throws LogicException
      */
-    private function getConfigClass(string $artefactType)
+    private function getConfigClass(string $configName)
     {
-        $configClass = self::BVS_CONFIG_NAME_SPACE . '\\' . ucfirst(strtolower($artefactType));
+        $configClass = self::BVS_CONFIG_NAME_SPACE . '\\' . ucfirst(strtolower($configName));
 
         if (class_exists($configClass) === true)
         {
@@ -138,7 +138,7 @@ class DefaultProcessor implements Processor
             ErrorCode::SERVER_ERROR_BVS_CONFIG_FILE_MISSING_FOR_ARTEFACT_TYPE,
             null,
             [
-                Constant::ARTEFACT_TYPE => $artefactType,
+                Constant::CONFIG_NAME => $configName,
             ]);
     }
 }

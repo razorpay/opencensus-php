@@ -13,6 +13,7 @@ class Validator extends Base\Validator
         Entity::OWNER_TYPE        => 'required|string|in:merchant',
         Entity::PLATFORM          => 'required|string|in:pg,capital',
         Entity::VALIDATION_STATUS => 'required|string|in:success,failed,captured',
+        Entity::VALIDATION_UNIT   => 'required|string|in:identifier,proof',
         Entity::ERROR_DESCRIPTION => 'sometimes|string|max:255',
         Entity::ERROR_CODE        => 'sometimes|string|max:255',
     ];

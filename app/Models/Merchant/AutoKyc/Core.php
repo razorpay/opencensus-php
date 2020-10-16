@@ -15,6 +15,7 @@ use RZP\Models\Merchant\AutoKyc\Verifiers\POIVerifier;
 use RZP\Models\Merchant\AutoKyc\Verifiers\GSTINVerifier;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\AutoKyc\Verifiers\CompanyPanVerifier;
+use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Models\Merchant\AutoKyc\KycService\ProcessorFactoryImpl as KycProcessorFactory;
 
 class Core extends Base\Core
@@ -73,9 +74,11 @@ class Core extends Base\Core
         if ($isPoiBvsRazorxExperimentEnable === true)
         {
             $payload = [
-                Constant::ARTEFACT_TYPE => Constant::PERSONAL_PAN,
-                Constant::IDENTIFIER    => $input[DEConstants::PAN_NUMBER],
-                Constant::DETAILS       => [
+                Constant::ARTEFACT_TYPE   => Constant::PERSONAL_PAN,
+                Constant::CONFIG_NAME     => Constant::PERSONAL_PAN,
+                Constant::VALIDATION_UNIT => BvsValidationConstants::IDENTIFIER,
+                Constant::IDENTIFIER      => $input[DEConstants::PAN_NUMBER],
+                Constant::DETAILS         => [
                     Constant::PAN_NUMBER => $input[DEConstants::PAN_NUMBER],
                     Constant::NAME       => $input[DEConstants::PROMOTER_PAN_NAME],
                 ],
