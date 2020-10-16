@@ -30,12 +30,13 @@ export default class BreakdownModal extends Component {
   calculateSettledAmountPerComponent = (items) => {
     return items.reduce((acc, item) => {
       const component = { ...item };
+      let amount = component.amount;
 
       if (component.type === 'debit') {
-        component.amount = -1 * component.amount;
+        amount = -1 * amount;
       }
 
-      let { amount, tax, fee } = component;
+      let { tax, fee } = component;
       component.settled_amount = amount - tax - fee;
 
       acc.push(component);
