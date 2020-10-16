@@ -98,28 +98,19 @@
 
     </div>
 
-    <div class="max-width-override"
-      style="background: {{ $merchant['brand_color'] }}; background-color: {{ $merchant['brand_color'] }}; Margin: 0px auto; max-width: unset;">
-
-      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation"
-        style="background:{{ $merchant['brand_color'] }};background-color:{{ $merchant['brand_color'] }};width:100%;">
+    <div class="max-width-override" style="background: {{ $merchant['brand_color'] }}; background-color: {{ $merchant['brand_color'] }}; Margin: 0px auto; max-width: unset;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:{{ $merchant['brand_color'] }};background-color:{{ $merchant['brand_color'] }};width:100%;">
         <tbody>
           <tr>
             <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
-
-              <div class="mj-column-per-100 outlook-group-fix"
-                style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-
+              <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
                 <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
                   <tbody>
                     <tr>
                       <td style="vertical-align:top;padding:0px;">
-
                         <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
-
                           <tr>
                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
-
                               <div
                                 style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
                                 <div class="header" style="box-sizing: border-box; max-width: 100%;">
@@ -170,7 +161,6 @@
           </tr>
         </tbody>
       </table>
-
     </div>
 
     <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
@@ -229,14 +219,11 @@
                     </tr>
                   </tbody>
                 </table>
-
               </div>
-
             </td>
           </tr>
         </tbody>
       </table>
-
     </div>
 
     <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
@@ -244,34 +231,25 @@
         <tbody>
           <tr>
             <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
-
-              <div class="mj-column-per-100 outlook-group-fix"
-                style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-
+              <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
                 <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
                   <tbody>
                     <tr>
                       <td style="vertical-align:top;padding:0px;">
-
-                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
-
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
                           <tr>
                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
-
-                              <div
-                                style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                <div class="card merchant-highlight informative"
-                                  style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top-width: 0; border-top-style: solid; padding-top: 20px; padding-bottom: 20px; border-top-color: {{ $merchant['brand_color'] }}; margin-top: 8px;">
-                                  <div class="information-row"
-                                    style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 9.3%; margin-bottom: 20px;">
-                                    <div class="label"
-                                      style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
-                                      Refund Id</div>
+                              <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
+                                <div class="card merchant-highlight informative" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top-width: 0; border-top-style: solid; padding-top: 20px; padding-bottom: 20px; border-top-color: {{ $merchant['brand_color'] }}; margin-top: 8px;">
+                                  <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 9.3%; margin-bottom: 20px;">
+                                    <div class="label" style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
+                                      Refund Id
+                                    </div>
                                     <div class="value" style="color: #515978; display: inline-block;">
-                                      {{ $refund['public_id'] }}</div>
+                                      {{ $refund['public_id'] }}
+                                    </div>
                                   </div>
-                                  <div class="information-row"
-                                    style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 9.3%; margin-bottom: 20px;">
+                                  <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 9.3%; margin-bottom: 20px;">
                                     <div class="label"
                                       style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
                                       Initiated On</div>
@@ -280,30 +258,46 @@
                                   </div>
                                   <div class="information-row"
                                     style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 9.3%; margin-bottom: 20px;">
-                                    <div class="label"
-                                      style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
-                                      Total Paid</div>
+                                    <div class="label" style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
+                                      Payment Amount
+                                    </div>
                                     <div class="value" style="color: #515978; display: inline-block;">
-                                      <div class="amount value"
-                                        style="font-size: 14px; line-height: 1.5; color: #515978; display: inline-block;">
-                                        <span class="symbol"
-                                          style="font-size: 14px; line-height: 1.5; color: inherit;">{{$payment['amount_spread'][0]}}</span><span
-                                          class="rupees"
-                                          style="font-size: 14px; line-height: 1.5; color: inherit;">{{$payment['amount_spread'][1]}}</span><span
-                                          class="paise"
-                                          style="font-size: 12px; line-height: 1.5; color: inherit;">.{{$payment['amount_spread'][2]}}</span>
+                                      <div class="amount value"style="font-size: 14px; line-height: 1.5; color: #515978; display: inline-block;">
+                                        <span class="symbol"style="font-size: 14px; line-height: 1.5; color: inherit;">
+                                          {{$payment['amount_spread'][0]}}
+                                        </span>
+                                        <span class="rupees" style="font-size: 14px; line-height: 1.5; color: inherit;">
+                                          {{$payment['amount_spread'][1]}}
+                                        </span>
+                                        <span class="paise" style="font-size: 12px; line-height: 1.5; color: inherit;">.
+                                          {{$payment['amount_spread'][2]}}
+                                        </span>
                                       </div>
                                     </div>
                                   </div>
-                                  <div class="information-row"
-                                    style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 9.3%; margin-bottom: 20px;">
-                                    <div class="label"
-                                      style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
+                                  <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 9.3%; margin-bottom: 20px;">
+                                    <div class="label" style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
+                                      Payment Id
+                                    </div>
+                                    <div class="value" style="color: #515978; display: inline-block;">
+                                      {{ $payment['public_id'] }}
+                                    </div>
+                                  </div>
+                                  <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 9.3%; margin-bottom: 20px;">
+                                    <div class="label" style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
                                       Payment Via</div>
                                     <div class="value" style="color: #515978; display: inline-block;">
                                       <div>{{ $payment['method'][1] }}</div>
                                       <div class="font-color-tertiary" style="color: #7B8199;">
                                         {{ $payment['method'][0] }}</div>
+                                    </div>
+                                  </div>
+                                  <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 9.3%; margin-bottom: 20px;">
+                                    <div class="label" style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
+                                      ARN
+                                    </div>
+                                    <div class="value" style="color: #515978; display: inline-block;">
+                                      Awaited from bank
                                     </div>
                                   </div>
                                 </div>
