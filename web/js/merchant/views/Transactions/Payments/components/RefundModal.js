@@ -397,9 +397,12 @@ export default class RefundModal extends Component {
     const { payment, payable_amount, user } = this.props;
     const { data } = this.props.current_balance;
 
+    // if this flag is true and they opt for normal refund, we skip balance check validations
+    if (payment.direct_settlement_refund && this.state.instantChecked === false) return false;
+
     let merchant = user.merchants[user.current] || {};
     let isBalanceSource = merchant.refund_source === 'balance';
-    // let amount = payment.amount;
+
     let amount = rupeesToPaise(payable_amount);
     let balance = isBalanceSource ? data.balance : data.refund_credits;
 
