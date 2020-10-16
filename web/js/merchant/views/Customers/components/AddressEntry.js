@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 
 import { PowerSelect } from 'react-power-select';
+import QuickAdd from 'common/ui/Select/QuickAdd';
 
 import State from 'merchant/models/State';
 
@@ -10,7 +11,7 @@ import State from 'merchant/models/State';
  * @param {String} name
  * @return {Object}
  */
-const findStateByName = (states, name) => states.find(s => s.name === name);
+const findStateByName = (states, name) => states.find((s) => s.name === name);
 
 export default class AddressEntry extends React.Component {
   static propTypes = {
@@ -61,6 +62,8 @@ export default class AddressEntry extends React.Component {
       ...AddressEntry.defaultProps.address,
       ...props.address,
     };
+
+    this.stateInputRef = React.createRef();
   }
 
   /**
@@ -90,7 +93,7 @@ export default class AddressEntry extends React.Component {
       },
       () => {
         this.onChange();
-      }
+      },
     );
   };
 
@@ -105,7 +108,7 @@ export default class AddressEntry extends React.Component {
       },
       () => {
         this.onChange();
-      }
+      },
     );
   };
 
@@ -130,7 +133,7 @@ export default class AddressEntry extends React.Component {
    * @param {String} fieldName Key of the field in this.state
    * @return {Function}
    */
-  onFieldChangeClosure = fieldName => event => {
+  onFieldChangeClosure = (fieldName) => (event) => {
     // Create update object.
     let s = {};
     s[fieldName] = event.target.value;
@@ -141,17 +144,23 @@ export default class AddressEntry extends React.Component {
     });
   };
 
-  render() {
-    const { line1, line2, zipcode, city, state, country } = this.state;
+  quickCreateState = () => {
+    this.setState(
+      {
+        showStateInput: !this.state.showStateInput,
+      },
+      () => {
+        if (this.state.showStateInput) {
+          this.stateInputRef.current.focus();
+        }
+      },
+    );
+  };
 
-    let {
-      onBlur,
-      states,
-      countries,
-      hideLine2,
-      hideCountry,
-      showDisabledCountry,
-    } = this.props;
+  render() {
+    const { line1, line2, zipcode, city, state, country, showStateInput } = this.state;
+
+    let { onBlur, states, countries, hideLine2, hideCountry, showDisabledCountry } = this.props;
 
     // Get the State.
     let selectedState = null;
@@ -218,23 +227,35 @@ export default class AddressEntry extends React.Component {
             />
           </div>
         </div>
-        <div
-          class={`${!hideCountry || showDisabledCountry ? 'double-field' : ''}`}
-        >
-          <div
-            class={`col col-md-${
-              !hideCountry || showDisabledCountry ? '6' : '12'
-            }`}
-          >
-            <PowerSelect
-              placeholder="State"
-              class="address-entry-PS ps-in-modal"
-              selected={selectedState}
-              optionLabelPath="name"
-              options={states}
-              onChange={this.updateState}
-              autoComplete="address-level1"
-            />
+        <div class={`${!hideCountry || showDisabledCountry ? 'double-field' : ''}`}>
+          <div class={`col col-md-${!hideCountry || showDisabledCountry ? '6' : '12'}`}>
+            {showStateInput ? (
+              <div class="state-input">
+                <input
+                  placeholder="State"
+                  name="state"
+                  defaultValue={selectedState && selectedState.name}
+                  class="form-control"
+                  ref={this.stateInputRef}
+                  onChange={(event) => this.updateState({ option: { name: event.target.value } })}
+                />
+                <i class="i i-close" onClick={this.quickCreateState} />
+              </div>
+            ) : (
+              <PowerSelect
+                placeholder="State"
+                class="address-entry-PS ps-in-modal"
+                selected={selectedState}
+                optionLabelPath="name"
+                options={states}
+                onChange={this.updateState}
+                autoComplete="address-level1"
+                labelWhenSearchTermBlank="Create new Customer"
+                afterOptionsComponent={(props) => (
+                  <QuickAdd {...props} onClick={this.quickCreateState} />
+                )}
+              />
+            )}
           </div>
           {!hideCountry && (
             <div class="col col-md-6">
@@ -248,18 +269,17 @@ export default class AddressEntry extends React.Component {
               />
             </div>
           )}
-          {hideCountry &&
-            showDisabledCountry && (
-              <div class="col col-md-6">
-                <input
-                  value="India"
-                  placeholder="Country"
-                  class="form-control"
-                  type="text"
-                  disabled
-                />
-              </div>
-            )}
+          {hideCountry && showDisabledCountry && (
+            <div class="col col-md-6">
+              <input
+                value="India"
+                placeholder="Country"
+                class="form-control"
+                type="text"
+                disabled
+              />
+            </div>
+          )}
         </div>
       </div>
     );
