@@ -24,9 +24,19 @@ class Indusind extends Base
 
             $emiPercent = $emiPlan['rate'] / 100;
 
+            try
+            {
+                $cardNumber = $this->getCardNumber($emiPayment->card);
+            }
+            catch (\Exception $e)
+            {
+                // Ignore those payments for which card numbers are lost
+                continue;
+            }
+
             $formattedData[] = [
                 'EMI ID'                       => $emiPayment->getId(),
-                'Card Pan'                     => $this->getCardNumber($emiPayment->card),
+                'Card Pan'                     => $cardNumber,
                 'Issuer'                       => 'INDUSIND',
                 'RRN'                          => '',
                 'Auth Code'                    => $this->getAuthCode($emiPayment),

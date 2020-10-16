@@ -25,7 +25,15 @@ class Citi extends Base
 
             $rate = number_format($rate, 2, '.', '');
 
-            $cardNumber = $this->getCardNumber($emiPayment->card);
+            try
+            {
+                $cardNumber = $this->getCardNumber($emiPayment->card);
+            }
+            catch (\Exception $e)
+            {
+                // Ignore those payments for which card numbers are lost
+                continue;
+            }
 
             $date = date(self::DATE_FORMAT);
 
