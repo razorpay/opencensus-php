@@ -178,8 +178,8 @@ export default class PaymentButtonDetails extends React.Component {
       size: 'medium',
       component: (
         <ActivateAgain
-          title="Activate Payment Button?"
-          description="Once you activate the payment button, you will be able to accept payments."
+          title="Activate Subscription Button?"
+          description="Once you activate the subscription button, you will be able to accept payments."
           reactivationTimeGap={reactivationTimeGap}
           expireBy={
             isExpired || hasExpiredInCompletedState

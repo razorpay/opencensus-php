@@ -24,11 +24,21 @@ export default class InputDropdown extends React.Component {
     }
   }
 
+  componentDidMount() {
+    if (this.props.autoFocus) {
+      setTimeout(this.openDropdown, 100);
+    }
+  }
+
+  openDropdown = () => {
+    this.dropdown.select &&
+      this.dropdown.select.setState({
+        isOpen: true,
+      });
+  };
+
   checkIfControlledComponent() {
-    if (
-      this.props.hasOwnProperty('defaultValue') &&
-      this.props.hasOwnProperty('value')
-    ) {
+    if (this.props.hasOwnProperty('defaultValue') && this.props.hasOwnProperty('value')) {
       throw 'Both props defaultValue or value are not allowed to InputDropdown';
     }
 
@@ -49,7 +59,7 @@ export default class InputDropdown extends React.Component {
       currentValue = this.props.defaultValue;
     }
 
-    return options.find(option => {
+    return options.find((option) => {
       if (option.hasOwnProperty(optionValuePath)) {
         return option[optionValuePath] === currentValue;
       }
@@ -69,6 +79,8 @@ export default class InputDropdown extends React.Component {
     this.props.onChange && this.props.onChange(option);
   };
 
+  ref = (e) => (this.dropdown = e);
+
   render() {
     const {
       label,
@@ -84,6 +96,7 @@ export default class InputDropdown extends React.Component {
       selectedOptionComponent,
       searchEnabled = false,
       disabled,
+      afterOptionsComponent
     } = this.props;
 
     const { selectedOption } = this.state;
@@ -96,14 +109,10 @@ export default class InputDropdown extends React.Component {
           <div class="Input-elWrapper">
             <div class="Input-el">
               {name && (
-                <input
-                  name={name}
-                  value={selectedOption[optionValuePath]}
-                  hidden
-                  readOnly
-                />
+                <input name={name} value={selectedOption[optionValuePath]} hidden readOnly />
               )}
               <PowerSelect
+                ref={this.ref}
                 class={dropdownElementClass}
                 placeholder={placeholder}
                 options={options}
@@ -115,6 +124,7 @@ export default class InputDropdown extends React.Component {
                 showClear={false}
                 searchEnabled={searchEnabled}
                 disabled={disabled}
+                afterOptionsComponent={afterOptionsComponent}
               />
             </div>
           </div>

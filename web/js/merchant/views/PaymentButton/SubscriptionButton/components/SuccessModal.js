@@ -38,7 +38,7 @@ export default class SuccessModal extends React.Component {
         How to use this code?{' '}
         <a
           target="_blank"
-          href="https://razorpay.com/docs/payment-button/"
+          href="https://betasite.razorpay.com/docs/creating-subscription-buttons/payment-button/subscription-buttons"
           onClick={this.props.onClickSeeDocumentation}
         >
           See our documentation <i class="i i-external-link" />
@@ -61,7 +61,7 @@ export default class SuccessModal extends React.Component {
           </div>
           <div class="description-list">
             <li> Show a custom message.</li>
-            <li> Send automated payment receipts.</li>
+            {/*<li> Send automated payment receipts.</li>*/}
             <div>
               Configure these options in
               <button class="btn-link" onClick={this.onClickButtonSettings}>

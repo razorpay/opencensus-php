@@ -89,7 +89,7 @@ export default class GetCodeModal extends React.Component {
           How to use this code?{' '}
           <a
             target="_black"
-            href="https://razorpay.com/docs/payment-button/"
+            href="https://betasite.razorpay.com/docs/creating-subscription-buttons/payment-button/subscription-buttons"
             onClick={this.props.onClickSeeDocumentation}
           >
             See documentation <i class="i i-external-link" />
@@ -103,7 +103,7 @@ export default class GetCodeModal extends React.Component {
         <ModalHeader title={title} onCloseClick={closeModal} />
 
         <div class="modal-body">
-          <div>Your payment button is ready to go!</div>
+          <div>Your subscription button is ready to go!</div>
 
           <div class="embed-button-form">
             <Input.Textarea

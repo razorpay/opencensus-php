@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import { titleCase } from 'common/utils/rzp-utils';
+
 
 /*
   Definition: Simple tabbed container.
@@ -54,7 +56,7 @@ export default class TabsContainer extends Component {
 
   render() {
     let {
-      className = 'some-class',
+      className = '',
       tabNames,
       children,
       iconClass,
@@ -81,7 +83,7 @@ export default class TabsContainer extends Component {
                 onClick={() => this.goTo(index)}
               >
                 {icon}
-                {tab.toUpperCase()}
+                {tab}
               </li>
             );
           })}

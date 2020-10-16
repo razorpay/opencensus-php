@@ -15,26 +15,26 @@ import { FIXED_FIELDS } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/F
 import { buttonThemes } from 'merchant/views/PaymentButton/PaymentButton/Create/constants/buttonThemes';
 import { templateTypes } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Templates/meta';
 
-const FETCH_PAYMENT_BUTTON_ENTITY = 'FETCH_PAYMENT_BUTTON_ENTITY';
-const RESET_PAYMENT_BUTTON_DATA = 'RESET_PAYMENT_BUTTON_DATA';
+const FETCH_SUBSCRIPTION_BUTTON_ENTITY = 'FETCH_SUBSCRIPTION_BUTTON_ENTITY';
+const RESET_SUBSCRIPTION_BUTTON_DATA = 'RESET_SUBSCRIPTION_BUTTON_DATA';
 
-const UPDATE_PLAN_FIELD = 'UPDATE_PLAN_FIELD';
-const DELETE_PLAN_FIELD = 'DELETE_PLAN_FIELD';
+const UPDATE_PAYMENT_FIELD_SUBSCRIPTION = 'UPDATE_PAYMENT_FIELD_SUBSCRIPTION';
+const DELETE_PAYMENT_FIELD_SUBSCRIPTION = 'DELETE_PAYMENT_FIELD_SUBSCRIPTION';
+const DELETE_ALL_ONE_TIME_PAYMENTS_FIELD_SUBSCRIPTION = 'DELETE_ALL_ONE_TIME_PAYMENTS_FIELD_SUBSCRIPTION';
 
-const UPDATE_UDF_FIELD = 'UPDATE_UDF_FIELD';
-const DELETE_UDF_FIELD = 'DELETE_UDF_FIELD';
+const UPDATE_UDF_FIELD_SUBSCRIPTION = 'UPDATE_UDF_FIELD_SUBSCRIPTION';
+const DELETE_UDF_FIELD_SUBSCRIPTION = 'DELETE_UDF_FIELD_SUBSCRIPTION';
 
-const UPDATE_PAYMENT_BUTTON_DATA = 'UPDATE_PAYMENT_BUTTON_DATA';
-const UPDATE_PAYMENT_BUTTON_RECEIPT_DETAILS =
-  'UPDATE_PAYMENT_BUTTON_RECEIPT_DETAILS';
+const UPDATE_SUBSCRIPTION_BUTTON_DATA = 'UPDATE_SUBSCRIPTION_BUTTON_DATA';
+const UPDATE_SUBSCRIPTION_BUTTON_RECEIPT_DETAILS = 'UPDATE_SUBSCRIPTION_BUTTON_RECEIPT_DETAILS';
 
-const UPDATE_STEP_REVIEW_PROGRESS = 'UPDATE_STEP_REVIEW_PROGRESS';
+const UPDATE_STEP_REVIEW_PROGRESS_SUBSCRIPTION = 'UPDATE_STEP_REVIEW_PROGRESS_SUBSCRIPTION';
 
-const UPDATE_BUTTON_SETTINGS_HIGHLIGHTER = 'UPDATE_BUTTON_SETTINGS_HIGHLIGHTER';
+const UPDATE_BUTTON_SETTINGS_HIGHLIGHTER_SUBSCRIPTION = 'UPDATE_BUTTON_SETTINGS_HIGHLIGHTER_SUBSCRIPTION';
 
 export const fetchSubscriptionButtonDetails = (id, isIntentDuplicate) => {
   return {
-    type: FETCH_PAYMENT_BUTTON_ENTITY,
+    type: FETCH_SUBSCRIPTION_BUTTON_ENTITY,
     payload: getSubscriptionButtonDetails(id),
     isIntentDuplicate: isIntentDuplicate, // This indicates whether the payment items needs to clear off the ids in the fetched entity
     id,
@@ -42,65 +42,85 @@ export const fetchSubscriptionButtonDetails = (id, isIntentDuplicate) => {
 };
 
 export const resetPageData = () => ({
-  type: RESET_PAYMENT_BUTTON_DATA,
+  type: RESET_SUBSCRIPTION_BUTTON_DATA,
 });
 
-export const updateStepReviewProgress = data => {
+export const updateStepReviewProgress = (data) => {
   return {
-    type: UPDATE_STEP_REVIEW_PROGRESS,
+    type: UPDATE_STEP_REVIEW_PROGRESS_SUBSCRIPTION,
     payload: data,
   };
 };
 
-export const updatePlanField = (planField, index) => ({
-  type: UPDATE_PLAN_FIELD,
+export const updatePaymentField = (paymentField, index) => ({
+  type: UPDATE_PAYMENT_FIELD_SUBSCRIPTION,
   payload: {
-    field: planField,
+    field: paymentField,
     index,
   },
 });
 
-export const deletePlanField = index => ({
-  type: DELETE_PLAN_FIELD,
+export const deletePaymentField = (index) => ({
+  type: DELETE_PAYMENT_FIELD_SUBSCRIPTION,
   index,
 });
 
+export const removeAllOneTimePaymentFields = (index) => ({
+  type: DELETE_ALL_ONE_TIME_PAYMENTS_FIELD_SUBSCRIPTION,
+});
+
 export const updateUDFField = (field, index) => ({
-  type: UPDATE_UDF_FIELD,
+  type: UPDATE_UDF_FIELD_SUBSCRIPTION,
   payload: {
     field,
     index,
   },
 });
 
-export const deleteUDFField = index => ({
-  type: DELETE_UDF_FIELD,
+export const deleteUDFField = (index) => ({
+  type: DELETE_UDF_FIELD_SUBSCRIPTION,
   index,
 });
 
-export const updatePaymentButtonData = data => ({
-  type: UPDATE_PAYMENT_BUTTON_DATA,
+export const updatePaymentButtonData = (data) => ({
+  type: UPDATE_SUBSCRIPTION_BUTTON_DATA,
   payload: data,
 });
 
-export const updateReceiptDetails = data => ({
-  type: UPDATE_PAYMENT_BUTTON_RECEIPT_DETAILS,
+export const updateReceiptDetails = (data) => ({
+  type: UPDATE_SUBSCRIPTION_BUTTON_RECEIPT_DETAILS,
   payload: data,
 });
 
-export const updateHighlightButtonSettings = id => {
+export const updateHighlightButtonSettings = (id) => {
   return {
-    type: UPDATE_BUTTON_SETTINGS_HIGHLIGHTER,
+    type: UPDATE_BUTTON_SETTINGS_HIGHLIGHTER_SUBSCRIPTION,
     payload: {
       id,
     },
   };
 };
 
+export function filterSubscriptionPaymentItems(paymentFields, isOneTimePayments) {
+  let items = [];
+
+  paymentFields.forEach((field, index) => {
+    const isItemAllowed = isOneTimePayments ? !field.plan_id : !!field.plan_id;
+
+    if (isItemAllowed) {
+      items[index] = field; // This is amazing javascript hack. Maintaining 2 different arrays in frontend would lead to issues in indexes a lot. One bug in handling index would ruin all the items, so this is the safest approach.
+
+      // NOTE: Only catch is that items.length won't give right value, so have to find accordingly
+    }
+  });
+
+  return items;
+}
+
 let initialState = {
   subscriptionButtonId: null,
   subscriptionButtonEntity: {
-    currency: 'INR', // Initialising with INR currency
+    currency: '', // Initialising with INR currency. TODO: Not initialising right now, would do only when there is dropdown to select currency
     settings: {
       payment_button_label: null, // Not used for Payment Button product
       checkout_options: {
@@ -117,19 +137,20 @@ let initialState = {
       enable_80g_details: '0',
     },
   },
-  planFields: [],
+  paymentFields: [], // This has both one time payment items and plan fields. Can't maintain separate arrays bcoz they're saved in common array in backend and they've common index value for sort.
   udfFields: [FIXED_FIELDS.email, FIXED_FIELDS.phone], // Email and Phone are added by default to display in UI and will NOW be sent in
   current_highlighted_button_settings: null,
   stepsProgress: {
     isButtonDetailsReviewed: false,
     isPlansDetailsReviewed: false,
+    isOneTimePaymentsDetailsReviewed: false,
     isCustomerDetailsReviewed: false,
   },
 };
 
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   switch (action.type) {
-    case `${FETCH_PAYMENT_BUTTON_ENTITY}::PENDING`: {
+    case `${FETCH_SUBSCRIPTION_BUTTON_ENTITY}::PENDING`: {
       return {
         ...initialState,
         subscriptionButtonId: action.id,
@@ -137,7 +158,7 @@ export default function(state = initialState, action) {
       };
     }
 
-    case `${FETCH_PAYMENT_BUTTON_ENTITY}::SUCCESS`: {
+    case `${FETCH_SUBSCRIPTION_BUTTON_ENTITY}::SUCCESS`: {
       const entityData = { ...action.payload.data };
 
       // 1. Normalize expire_by for FE consumption
@@ -146,13 +167,23 @@ export default function(state = initialState, action) {
       }
 
       // 2.
-      entityData.settings.allow_social_share =
-        entityData.settings.allow_social_share === '1';
+      entityData.settings.allow_social_share = entityData.settings.allow_social_share === '1';
 
-      // 3. If intention while fetching is to duplicate, then delete existing entity specific data
+      // 3.
+      entityData.payment_page_items.forEach((pi, index) => {
+        // While creation/editing, all amounts are converted to Paisa (or smaller unit)
+
+        // Convert only for one-time payment items. It's bcoz while creation, plans are fetched in common reducer, hence they cannot be converted to rupees,
+        // and since their amount is used just for the purpose of display and not manipulation, so for plans, paiseToRupees is done only for display purpose.
+        if(!pi.plan_id) {
+          pi.item.amount = paiseToRupees(pi.item.amount); // Convert in Rupees (or bigger unit)
+        }
+      });
+
+      // 4. If intention while fetching is to duplicate, then delete existing entity specific data
       if (action.isIntentDuplicate) {
-        // 3-1. Remove id for each of payment page item
-        entityData.payment_page_items.forEach(fi => {
+        // 4-1. Remove id for each of payment page item
+        entityData.payment_page_items.forEach((fi) => {
           // Removing payment_page_id is enough since removing/adding id for items is handled in handleSavePublish. However, this is just for sanity.
 
           delete fi.id;
@@ -160,37 +191,36 @@ export default function(state = initialState, action) {
           delete fi.item.id;
         });
 
-        // 3-2.
+        // 4-2.
         delete entityData.id;
       }
 
-      // 4. No concept of slug for Payment Button product
+      // 5. No concept of slug for Payment Button product
       delete entityData.slug;
 
-      // 5.
-      const udfSchema = JSON.parse(entityData.settings.udf_schema);
-      const udfFields = udfSchema.sort(function(a, b) {
-        const positionA = a.settings.position;
-        const positionB = b.settings.position;
-
-        return Number(positionA) - Number(positionB);
-      });
-
       // 6.
-      const planItems = entityData.payment_page_items;
-      const planFields = planItems.sort(function(a, b) {
+      const udfSchema = JSON.parse(entityData.settings.udf_schema);
+      const udfFields = udfSchema.sort(function (a, b) {
         const positionA = a.settings.position;
         const positionB = b.settings.position;
 
         return Number(positionA) - Number(positionB);
       });
 
-      // 7. Currently, receipt settings are mixed with settings, and in scattered form, hence consolidating
+      // 7.
+      const paymentItems = entityData.payment_page_items;
+      const paymentFields = paymentItems.sort(function (a, b) {
+        const positionA = a.settings.position;
+        const positionB = b.settings.position;
+
+        return Number(positionA) - Number(positionB);
+      });
+
+      // 8. Currently, receipt settings are mixed with settings, and in scattered form, hence consolidating
       const receiptSettings = {
         enable_receipt: entityData.settings.enable_receipt || '1',
         selected_udf_field: entityData.settings.selected_udf_field || '',
-        enable_custom_serial_number:
-          entityData.settings.enable_custom_serial_number || '0',
+        enable_custom_serial_number: entityData.settings.enable_custom_serial_number || '0',
         enable_80g_details: entityData.settings.enable_80g_details || '0',
       };
 
@@ -199,16 +229,17 @@ export default function(state = initialState, action) {
       const storeState = {
         subscriptionButtonEntity: entityData,
         udfFields: udfFields, // Sorted fields udf schema
-        planFields: planFields, // Sorted fields from plan items
+        paymentFields: paymentFields, // Sorted fields from payment items
 
         stepsProgress: {
           isButtonDetailsReviewed: true,
           isPlansDetailsReviewed: true,
+          isOneTimePaymentsDetailsReviewed: true,
           isCustomerDetailsReviewed: true,
         },
       };
 
-      // 8. If intention while fetching is not to duplicate, then only add subscriptionButtonId
+      // 9. If intention while fetching is not to duplicate, then only add subscriptionButtonId
       if (!action.isIntentDuplicate) {
         storeState.subscriptionButtonId = entityData.id;
       }
@@ -216,73 +247,71 @@ export default function(state = initialState, action) {
       return storeState;
     }
 
-    case `${FETCH_PAYMENT_BUTTON_ENTITY}::ERROR`: {
+    case `${FETCH_SUBSCRIPTION_BUTTON_ENTITY}::ERROR`: {
       return set(state, 'subscriptionButtonEntity', null);
     }
 
-    case UPDATE_PAYMENT_BUTTON_DATA: {
+    case UPDATE_SUBSCRIPTION_BUTTON_DATA: {
       return {
         ...state,
         subscriptionButtonEntity: deepMerge(
           // Needed for settings, currency, page receipts
           state.subscriptionButtonEntity,
-          action.payload
+          action.payload,
         ),
       };
     }
 
-    case DELETE_PLAN_FIELD: {
+    case DELETE_PAYMENT_FIELD_SUBSCRIPTION: {
       return {
         ...state,
-        planFields: removeItem(state.planFields, action.index), // Position of items is not updated until page is created(/saved)
+        paymentFields: removeItem(state.paymentFields, action.index), // Position of items is not updated until page is created(/saved)
       };
     }
 
-    case DELETE_UDF_FIELD: {
+    case DELETE_ALL_ONE_TIME_PAYMENTS_FIELD_SUBSCRIPTION: {
+      const newFields = filterSubscriptionPaymentItems(state.paymentFields);
+
+      return {
+        ...state,
+        paymentFields: newFields, // Position of items is not updated until page is created(/saved)
+      };
+    }
+
+    case DELETE_UDF_FIELD_SUBSCRIPTION: {
       return {
         ...state,
         udfFields: removeItem(state.udfFields, action.index), // Position of items is not updated until page is created(/saved)
       };
     }
 
-    case UPDATE_PLAN_FIELD: {
+    case UPDATE_PAYMENT_FIELD_SUBSCRIPTION: {
       // Insert in starting of the form items
-      let planFields;
+      let paymentFields;
 
-      if (
-        action.payload.hasOwnProperty('index') &&
-        typeof action.payload.index !== 'undefined'
-      ) {
-        // Modifying existing plan field
-        planFields = updateItem(
-          state.planFields,
-          action.payload.index,
-          action.payload.field
-        );
+      if (action.payload.hasOwnProperty('index') && typeof action.payload.index !== 'undefined') {
+        // Modifying existing payment field
+        paymentFields = updateItem(state.paymentFields, action.payload.index, action.payload.field);
       } else {
-        // Adding new plan field
-        planFields = push(state.planFields, action.payload.field); // Position of items is updated before creating(/saving) the page, otherwise deleting a form item will creating inconsistency
+        // Adding new payment field
+        paymentFields = push(state.paymentFields, action.payload.field); // Position of items is updated before creating(/saving) the page, otherwise deleting a form item will creating inconsistency
       }
 
       return {
         ...state,
-        planFields,
+        paymentFields,
       };
     }
 
-    case UPDATE_UDF_FIELD: {
+    case UPDATE_UDF_FIELD_SUBSCRIPTION: {
       // Insert in starting of the form items
       let udfFields;
 
       if (typeof action.payload.index !== 'undefined') {
-        // Modifying existing plan field
-        udfFields = updateItem(
-          state.udfFields,
-          action.payload.index,
-          action.payload.field
-        );
+        // Modifying existing payment field
+        udfFields = updateItem(state.udfFields, action.payload.index, action.payload.field);
       } else {
-        // Adding new plan field
+        // Adding new udf field
         udfFields = push(state.udfFields, action.payload.field); // Position of items is updated before creating(/saving) the page, otherwise deleting a form item will creating inconsistency
       }
 
@@ -292,7 +321,7 @@ export default function(state = initialState, action) {
       };
     }
 
-    case UPDATE_PAYMENT_BUTTON_RECEIPT_DETAILS:
+    case UPDATE_SUBSCRIPTION_BUTTON_RECEIPT_DETAILS:
       return {
         ...state,
         subscriptionButtonEntity: merge(state.subscriptionButtonEntity, {
@@ -300,19 +329,19 @@ export default function(state = initialState, action) {
         }),
       };
 
-    case UPDATE_STEP_REVIEW_PROGRESS: {
+    case UPDATE_STEP_REVIEW_PROGRESS_SUBSCRIPTION: {
       return set(state, 'stepsProgress', {
         ...state.stepsProgress,
         ...action.payload,
       });
     }
 
-    case RESET_PAYMENT_BUTTON_DATA:
+    case RESET_SUBSCRIPTION_BUTTON_DATA:
       return {
         ...initialState,
       };
 
-    case UPDATE_BUTTON_SETTINGS_HIGHLIGHTER: {
+    case UPDATE_BUTTON_SETTINGS_HIGHLIGHTER_SUBSCRIPTION: {
       return {
         ...state,
         current_highlighted_button_settings: action.payload.id,

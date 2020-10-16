@@ -9,16 +9,17 @@ import InputDropdown from 'merchant/views/PaymentButton/PaymentButton/Create/com
 import { buttonThemesList } from 'merchant/views/PaymentButton/PaymentButton/Create/constants/buttonThemes';
 import {
   updatePaymentButtonData,
-  updatePlanField,
+  updatePaymentField,
   updateStepReviewProgress,
 } from 'merchant/reducers/subscriptionButtons/create';
+import track from '../../../../PaymentButton/Create/track';
 // import track from '../../track';
 
 export const maxLengthForButtonLabel = 20;
 
 @connect(null, {
   updatePaymentButtonData,
-  updatePlanField,
+  updatePaymentField,
   updateStepReviewProgress,
 })
 export default class ButtonDetails extends React.Component {
@@ -38,14 +39,14 @@ export default class ButtonDetails extends React.Component {
     this.toggleDisableSubmit();
   }
 
-  handleSubmit = formData => {
+  handleSubmit = (formData) => {
     const { title, button_text, button_theme, currency, amount } = formData;
 
     const data = {
       title,
       settings: {
         payment_button_theme: button_theme,
-        // payment_button_text: button_text,
+        payment_button_text: button_text,
       },
     };
 
@@ -58,7 +59,18 @@ export default class ButtonDetails extends React.Component {
     // track.lj.trackButtonScreenNextSuccess();
   };
 
-  handleChangeButtonTheme = option => {
+  handleChangeButtonLabel = (e) => {
+    const data = {
+      settings: {
+        payment_button_text: e.target.value,
+      },
+    };
+
+    // NOTE: This action fn. does deep merge. So, the new data won't replace the existing data in store
+    this.props.updatePaymentButtonData(data);
+  };
+
+  handleChangeButtonTheme = (option) => {
     const data = {
       settings: {
         payment_button_theme: option.value,
@@ -73,7 +85,7 @@ export default class ButtonDetails extends React.Component {
     // track.lj.trackButtonTheme(option);
   };
 
-  toggleDisableSubmit = e => {
+  toggleDisableSubmit = (e) => {
     const isFormChanged = e && e.hasOwnProperty('type');
     // Not required in first time bcoz it's already marked as per in store. Otherwise, behavior would be unexpexted in Edit Mode
     if (isFormChanged) {
@@ -90,20 +102,16 @@ export default class ButtonDetails extends React.Component {
     });
   };
 
-  markReviewDone = isDone => {
+  markReviewDone = (isDone) => {
     this.props.updateStepReviewProgress({
       isButtonDetailsReviewed: isDone,
     });
   };
 
-  setRefFormEl = el => (this.formEl = el);
+  setRefFormEl = (el) => (this.formEl = el);
 
   render() {
-    const {
-      subscriptionButtonId,
-      subscriptionButtonEntity,
-      isEditExistingId,
-    } = this.props;
+    const { subscriptionButtonId, subscriptionButtonEntity, isEditExistingId } = this.props;
 
     const currency = subscriptionButtonEntity.currency;
 
@@ -121,7 +129,7 @@ export default class ButtonDetails extends React.Component {
             class="Input--vTop"
             defaultValue={subscriptionButtonEntity.title}
             description="For dashboard use, not visible to customers"
-            validator={val => {
+            validator={(val) => {
               if (!val) {
                 return 'Please fill out this field';
               }
@@ -136,6 +144,27 @@ export default class ButtonDetails extends React.Component {
             required
           />
 
+          <Input
+            label="Button Label"
+            name="button_text"
+            class="Input--vTop"
+            placeholder="Subscribe"
+            description="This label is shown to your customers"
+            defaultValue={subscriptionButtonEntity.settings.payment_button_text}
+            required
+            onChange={this.handleChangeButtonLabel}
+            validator={(val) => {
+              if (!val) {
+                return 'Please fill out this field';
+              }
+
+              if (val.length > maxLengthForButtonLabel) {
+                return `Maximum ${maxLengthForButtonLabel} characters are allowed`;
+              }
+            }}
+            // onBlur={track.lj.trackButtonLabel}
+          />
+
           <InputDropdown
             label="Button Theme"
             name="button_theme"
@@ -145,9 +174,7 @@ export default class ButtonDetails extends React.Component {
             options={buttonThemesList}
             optionLabelPath="label"
             optionValuePath="value"
-            defaultValue={
-              subscriptionButtonEntity.settings.payment_button_theme
-            }
+            defaultValue={subscriptionButtonEntity.settings.payment_button_theme}
             onChange={this.handleChangeButtonTheme}
           />
         </div>

@@ -59,7 +59,7 @@ export default class ButtonDetailsPreview extends React.Component {
   }
 
   render() {
-    const { subscriptionButtonEntity } = this.props;
+    const { subscriptionButtonEntity, showOneTimePayments } = this.props;
     const buttonText = subscriptionButtonEntity.settings.payment_button_text,
       buttonTheme = subscriptionButtonEntity.settings.payment_button_theme;
 
@@ -71,6 +71,21 @@ export default class ButtonDetailsPreview extends React.Component {
     } else if (buttonThemes.BRAND_COLOR.value === buttonTheme) {
       isLightTheme = !this.props.config.isBrandColorDark;
     }
+
+    let displayButtonText = '';
+
+    if (buttonText) {
+      if (showOneTimePayments) {
+        const regEx = new RegExp('subscribe', "ig");
+
+        displayButtonText = buttonText.replace(regEx, 'Pay');
+      } else {
+        displayButtonText = buttonText;
+      }
+
+      displayButtonText = displayButtonText.substring(0, maxLengthForButtonLabel);
+    }
+
 
     return (
       <div class="ButtonDetailsPreview ButtonDetailsPreview--subscriptionButton">
@@ -89,9 +104,7 @@ export default class ButtonDetailsPreview extends React.Component {
 
           <div class="PaymentButton-Button-contents">
             <span class="PaymentButton-Button-text">
-              {buttonText
-                ? buttonText.substring(0, maxLengthForButtonLabel)
-                : ''}
+              {displayButtonText}
             </span>
           </div>
         </div>

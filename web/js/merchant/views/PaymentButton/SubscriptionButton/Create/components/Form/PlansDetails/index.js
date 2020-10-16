@@ -3,25 +3,44 @@ import { connect } from 'react-redux';
 import Button from 'common/new-ui/Button';
 import EditableDisplayField from './EditableDisplayField';
 
-import { updateStepReviewProgress } from 'merchant/reducers/subscriptionButtons/create';
+import {
+  updateStepReviewProgress,
+  filterSubscriptionPaymentItems,
+} from 'merchant/reducers/subscriptionButtons/create';
 import { fetchPlans } from 'merchant/reducers/plans';
 
 // import track from '../../../track';
 
 @connect(
-  state => ({
-    plans: state.plans,
+  (state) => ({
+    plans: state.plans
   }),
   {
     updateStepReviewProgress,
     fetchPlans,
-  }
+  },
 )
 export default class PlansDetails extends React.Component {
   maxFieldsLimit = 5;
 
   componentDidMount() {
     this.props.fetchPlans({ count: 100 }); // TODO: Api support max 100. If some merchant has plans >100, we should implement auto complete
+  }
+
+  get plans() {
+    const {subscriptionButtonEntity, plans} = this.props;
+
+    return plans.items.filter(plan => (!subscriptionButtonEntity.currency || plan.item.currency === subscriptionButtonEntity.currency));
+  }
+
+  get planFields() {
+    const { paymentFields } = this.props;
+
+    const items = filterSubscriptionPaymentItems(paymentFields);
+
+    const cleanItems = items.filter(function () { return true });
+
+    return { items, length: cleanItems.length };
   }
 
   goNext = () => {
@@ -38,31 +57,34 @@ export default class PlansDetails extends React.Component {
     });
   };
 
-  setRefFormContainer = el => (this.formContainerEl = el);
+  setRefFormContainer = (el) => (this.formContainerEl = el);
 
   render() {
     // TODO: Filter plan as per the currency of 1st plan selected
-    const { planFields, subscriptionButtonEntity, plans } = this.props;
+    const { subscriptionButtonEntity } = this.props;
     const currency = subscriptionButtonEntity.currency;
+
+    const fields = this.planFields,
+      items = [];
+
+    fields.items.forEach((field, index) => {
+      items.push(
+        <EditableDisplayField
+          key={index}
+          indexInOrder={index}
+          field={field}
+          plansOptions={this.plans}
+          currency={currency}
+        />,
+      );
+    });
 
     return (
       <div class="Form" style={{ display: this.props.isHidden ? 'none' : '' }}>
         <div class="PaymentButtonForm-AmountDetails Form-content">
-          {planFields.map((field, index) => (
-            <EditableDisplayField
-              key={index}
-              indexInOrder={index}
-              field={field}
-              plansOptions={plans.items}
-              currency={currency}
-            />
-          ))}
-          {this.maxFieldsLimit !== planFields.length && (
-            <EditableDisplayField
-              field={null}
-              plansOptions={plans.items}
-              currency={currency}
-            >
+          {items}
+          {this.maxFieldsLimit > fields.length && (
+            <EditableDisplayField field={null} plansOptions={this.plans} currency={currency}>
               <Button
                 class="Button--primary--invert addFieldBtn"
                 // onClick={track.lj.trackCustomerScreenInputField}
@@ -85,11 +107,7 @@ export default class PlansDetails extends React.Component {
             Back
           </Button.Transparent>
 
-          <Button.Primary
-            type="button"
-            disabled={!planFields.length}
-            onClick={this.goNext}
-          >
+          <Button.Primary type="button" disabled={!fields.length} onClick={this.goNext}>
             Next <i className="i i-chevron-right" />
           </Button.Primary>
         </div>

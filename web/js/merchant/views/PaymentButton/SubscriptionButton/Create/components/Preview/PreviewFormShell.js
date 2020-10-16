@@ -43,7 +43,6 @@ export default class PreviewFormShell extends React.Component {
       children,
       buttonTitle,
       shellTitle,
-      activeDotIndex,
       totalDots,
       config,
       user,
@@ -72,7 +71,7 @@ export default class PreviewFormShell extends React.Component {
                     style={{
                       borderColor: this.textColor,
                       backgroundColor:
-                        index <= activeDotIndex ? this.textColor : null,
+                        index <= this.activeDotIndex ? this.textColor : null,
                     }}
                   />
                 ))}

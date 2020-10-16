@@ -71,7 +71,7 @@ export default class Preview extends React.Component {
       }
     }
 
-    // If content not defined here => Full screen preview is shown via ReviewAndCreate component
+    // If content not defined here => Full screen preview is shown, like in ReviewAndCreate component
 
     return (
       <div
@@ -90,11 +90,11 @@ export default class Preview extends React.Component {
             Need help
           </div>
 
-          {/* 
+          {/*
             <div class="see-video-btn">
               TODO: For i-play compress the svg file
               See video guide for button <i class="i i-play" />
-            </div> 
+            </div>
           */}
 
           <a

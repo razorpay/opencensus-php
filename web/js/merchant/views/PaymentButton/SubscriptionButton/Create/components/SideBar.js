@@ -1,8 +1,11 @@
 import { classList } from 'common/utils/rzp-utils';
+import { filterSubscriptionPaymentItems } from 'merchant/reducers/subscriptionButtons/create';
 import track from '../track';
 
+import { totalTabs } from './Form';
+
 export default class SideBar extends React.Component {
-  totalTabs = 4;
+  totalTabs = totalTabs;
 
   get isButtonDetailsDone() {
     const { subscriptionButtonEntity, stepsProgress } = this.props;
@@ -16,19 +19,24 @@ export default class SideBar extends React.Component {
   }
 
   get isPlansDetailsDone() {
-    const { planFields, stepsProgress } = this.props;
+    const { paymentFields, stepsProgress } = this.props;
 
-    return (
-      planFields && !!planFields.length && stepsProgress.isPlansDetailsReviewed
-    );
+    const fields = filterSubscriptionPaymentItems(paymentFields, false);
+
+    return fields && !!fields.length && stepsProgress.isPlansDetailsReviewed;
+  }
+
+  get isOneTimePaymentsDetailsDone() {
+    const { stepsProgress } = this.props;
+
+    // Only review is enough bcoz the fields are optional
+    return stepsProgress.isOneTimePaymentsDetailsReviewed;
   }
 
   get isCustomerDetailsDone() {
     const { udfFields, stepsProgress } = this.props;
 
-    return (
-      udfFields && !!udfFields.length && stepsProgress.isCustomerDetailsReviewed
-    );
+    return udfFields && !!udfFields.length && stepsProgress.isCustomerDetailsReviewed;
   }
 
   get totalTabsDone() {
@@ -38,6 +46,9 @@ export default class SideBar extends React.Component {
       totalStepsDone++;
     }
     if (this.isPlansDetailsDone) {
+      totalStepsDone++;
+    }
+    if (this.isOneTimePaymentsDetailsDone) {
       totalStepsDone++;
     }
     if (this.isCustomerDetailsDone) {
@@ -60,9 +71,7 @@ export default class SideBar extends React.Component {
         {subscriptionButtonEntity && (
           <React.Fragment>
             <div class="SideBar-title">
-              {this.props.subscriptionButtonId
-                ? 'Edit Progress'
-                : 'Creation Progress'}
+              {this.props.subscriptionButtonId ? 'Edit Progress' : 'Creation Progress'}
             </div>
 
             <ProgressBar
@@ -79,8 +88,14 @@ export default class SideBar extends React.Component {
               />
 
               <Step
-                title="Plans Details"
+                title="Add Recurring Plans"
                 isDone={this.isPlansDetailsDone}
+                // onClick={() => track.lj.trackOnClickProgressStep('plans_details')}
+              />
+
+              <Step
+                title="Add One-Time Payments"
+                isDone={this.isOneTimePaymentsDetailsDone}
                 // onClick={() => track.lj.trackOnClickProgressStep('plans_details')}
               />
 
@@ -98,6 +113,7 @@ export default class SideBar extends React.Component {
                 isDisabled={
                   !this.isButtonDetailsDone ||
                   !this.isPlansDetailsDone ||
+                  !this.isOneTimePaymentsDetailsDone ||
                   !this.isCustomerDetailsDone
                 }
               />
@@ -111,11 +127,7 @@ export default class SideBar extends React.Component {
 
 const Step = ({ title, description, isDone, isDisabled, onClick }) => (
   <li
-    class={classList(
-      'step',
-      isDone && 'step--done',
-      isDisabled && 'step--disabled'
-    )}
+    class={classList('step', isDone && 'step--done', isDisabled && 'step--disabled')}
     onClick={onClick}
   >
     <span class="step-dot">

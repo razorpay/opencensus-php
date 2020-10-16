@@ -36,7 +36,7 @@ import track from './track';
 
 @withRouter
 @connect(
-  state => ({
+  (state) => ({
     user: state.session.user,
     mode: state.session.mode,
     subscription_button: state.subscription_button_create,
@@ -49,7 +49,7 @@ import track from './track';
     openModal,
     showNotification,
     updateHighlightButtonSettings,
-  }
+  },
 )
 // @RTracking(() => window.rzpQ.component('SubscriptionButtonCreate'))
 export default class SubscriptionButtonCreate extends React.Component {
@@ -150,11 +150,8 @@ export default class SubscriptionButtonCreate extends React.Component {
    *
    * */
 
-  fetchDetails = id => {
-    const promise = this.props.fetchSubscriptionButtonDetails(
-      id,
-      this.isIntentDuplicate
-    ); // Auto reinitialise store if id doesn't exist.
+  fetchDetails = (id) => {
+    const promise = this.props.fetchSubscriptionButtonDetails(id, this.isIntentDuplicate); // Auto reinitialise store if id doesn't exist.
 
     if (promise instanceof Promise) {
       promise
@@ -184,14 +181,14 @@ export default class SubscriptionButtonCreate extends React.Component {
     const requestAPIPromiseForReceipt = setReceiptDetails(entityId, receipt);
 
     return requestAPIPromiseForReceipt
-      .then(res => {
+      .then((res) => {
         if (!res || !res.success) {
           throw new Error(resp.errors);
         }
 
         return res;
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: 'Receipt settings could not be saved. Please try again.',
@@ -229,7 +226,7 @@ export default class SubscriptionButtonCreate extends React.Component {
     });
   };
 
-  handleSavePaymentReceipt = data => {
+  handleSavePaymentReceipt = (data) => {
     const { subscription_button } = this.props;
     const isEditExistingId = !!this.subscriptionButtonId;
 
@@ -238,8 +235,8 @@ export default class SubscriptionButtonCreate extends React.Component {
     if (isEditExistingId) {
       return this.saveReceiptSettings(
         this.subscriptionButtonId,
-        subscription_button.subscriptionButtonEntity.receipt
-      ).then(resp => {
+        subscription_button.subscriptionButtonEntity.receipt,
+      ).then((resp) => {
         this.props.showNotification({
           type: 'success',
           message: 'Receipt settings are updated.',
@@ -250,11 +247,7 @@ export default class SubscriptionButtonCreate extends React.Component {
 
   handleSavePaymentButton = () => {
     const isEditExistingId = !!this.subscriptionButtonId;
-    const {
-      subscriptionButtonEntity,
-      planFields,
-      udfFields,
-    } = this.props.subscription_button;
+    const { subscriptionButtonEntity, paymentFields, udfFields } = this.props.subscription_button;
     const currency = subscriptionButtonEntity.currency;
 
     let udfSchema = [],
@@ -276,7 +269,7 @@ export default class SubscriptionButtonCreate extends React.Component {
 
     // 2. Check if atleast 1 amount item is present
 
-    if (!planFields.length) {
+    if (!paymentFields.length) {
       this.props.showNotification({
         type: 'error',
         message: 'Add at least 1 Amount field',
@@ -294,22 +287,55 @@ export default class SubscriptionButtonCreate extends React.Component {
     });
 
     // 4. Prune amount fields
-    planFields.forEach((field, index) => {
+    paymentFields.forEach((field, index) => {
       field.settings = field.settings || {};
       field.settings.position = index; // Updating the position of each item (both udf and amount fields)
 
       // Prepare payload for amount field (as extra unnecessary fields which api sends aren't required to be sent back)
-      const { plan_id, settings, product_config } = field;
+      const { id, plan_id, settings } = field;
 
-      const prunedField = {
-        plan_id,
-        product_config: {
-          subscription_details: {
-            total_count: product_config.subscription_details.total_count,
-          },
-        },
+      const commonKeysInField = {
+        mandatory: false,
         settings, // Contains position
+        image_url: null,
       };
+
+      let specificKeysInField;
+
+      if (plan_id) {
+        const { product_config } = field;
+
+        specificKeysInField = {
+          plan_id,
+          product_config: {
+            subscription_details: {
+              total_count: product_config.subscription_details.total_count,
+            },
+          },
+        };
+      } else {
+        const { item } = field;
+
+        specificKeysInField = {
+          item: {
+            name: item.name,
+            description: item.description,
+            amount: item.amount ? rupeesToPaise(item.amount) : null, // Convert in paisa (smaller unit)
+          },
+        };
+
+        if (isEditExistingId) {
+          if (id) {
+            specificKeysInField.id = id; // IMPORTANT NOTE: Existing item must keep its id bcoz payments against items are stored against id.
+          } else {
+            specificKeysInField.item.currency = currency; // currency to be added only for newly added amount items (in existing subscription button)
+          }
+        } else {
+          specificKeysInField.item.currency = currency; // Currency cannot be edited from UI once Payment page is created
+        }
+      }
+
+      const prunedField = { ...commonKeysInField, ...specificKeysInField };
 
       paymentPageItems.push(prunedField);
     });
@@ -327,17 +353,14 @@ export default class SubscriptionButtonCreate extends React.Component {
         payment_button_label: '', // Used only in hosted page
         theme: 'light', // Should be empty, but api not supporting
         allow_social_share: '0',
-        payment_success_message:
-          subscriptionButtonEntity.settings.payment_success_message,
+        payment_success_message: subscriptionButtonEntity.settings.payment_success_message,
         payment_success_redirect_url: '', // settings.payment_success_redirect_url,
         udf_schema: JSON.stringify(udfSchema),
         checkout_options: {
           ...subscriptionButtonEntity.settings.checkout_options,
         },
-        payment_button_text:
-          subscriptionButtonEntity.settings.payment_button_text,
-        payment_button_theme:
-          subscriptionButtonEntity.settings.payment_button_theme,
+        payment_button_text: subscriptionButtonEntity.settings.payment_button_text,
+        payment_button_theme: subscriptionButtonEntity.settings.payment_button_theme,
         payment_button_template_type: '',
       },
       payment_page_items: paymentPageItems,
@@ -351,7 +374,7 @@ export default class SubscriptionButtonCreate extends React.Component {
     // Note: Receipt call is made after main api call, bcoz they modify same entity in DB table which gets locked, so parallel calls might fail.
 
     return requestAPIPromise
-      .then(resp => {
+      .then((resp) => {
         if (resp.data) {
           const entityId = resp.data.id;
 
@@ -363,7 +386,7 @@ export default class SubscriptionButtonCreate extends React.Component {
               .then(() => {
                 this.onSaveSuccessActions(resp, isEditExistingId);
               })
-              .catch(err => {
+              .catch((err) => {
                 this.onSaveSuccessActions(resp, isEditExistingId);
               });
           } else {
@@ -382,7 +405,7 @@ export default class SubscriptionButtonCreate extends React.Component {
           err = [];
 
           errors.length &&
-            errors.forEach(e => {
+            errors.forEach((e) => {
               if (e && e.toLowerCase().indexOf('status code') === -1) {
                 err.push(e);
               }
@@ -453,7 +476,7 @@ export default class SubscriptionButtonCreate extends React.Component {
     });
   };
 
-  onChangeActiveTabIndex = newIndex => {
+  onChangeActiveTabIndex = (newIndex) => {
     this.setState({ activeTabIndex: newIndex });
   };
 
@@ -497,6 +520,7 @@ export default class SubscriptionButtonCreate extends React.Component {
 
     const actionButtons = (
       <React.Fragment>
+      {/*
         {user.isPaymentPageReceiptsEnabled && (
           <Button.Transparent
             type="button"
@@ -509,6 +533,7 @@ export default class SubscriptionButtonCreate extends React.Component {
             </span>
           </Button.Transparent>
         )}
+      */}
       </React.Fragment>
     );
 
@@ -532,9 +557,9 @@ export default class SubscriptionButtonCreate extends React.Component {
   get ErrorView() {
     return (
       <div class="page-center">
-        Payment Button with id <b>{this.subscriptionButtonId}</b> doesn't exist.
+        Subscription Button with id <b>{this.subscriptionButtonId}</b> doesn't exist.
         <br />
-        Go to <Link to="/subscription_buttons/">Payment Buttons list</Link>{' '}
+        Go to <Link to="/subscription_buttons/">Subscription Buttons list</Link>{' '}
       </div>
     );
   }
@@ -544,22 +569,18 @@ export default class SubscriptionButtonCreate extends React.Component {
     const { activeTabIndex } = this.state;
 
     const isPageLoading =
-      this.subscriptionButtonId &&
-      !subscription_button.subscriptionButtonEntity.title;
+      this.subscriptionButtonId && !subscription_button.subscriptionButtonEntity.title;
 
     return (
       <div class="PaymentButton-Create-Content">
-        <div class="PaymentButton-Create-Content-container">
+        <div class="PaymentButton-Create-Content-container SubscriptionButton-Create-Content-container">
           {isPageLoading ? (
             <div class="page-center">
               <Spinner />
             </div>
           ) : (
             <React.Fragment key={this.subscriptionButtonId || 'new'}>
-              <SideBar
-                {...subscription_button}
-                activeTabIndex={activeTabIndex}
-              />
+              <SideBar {...subscription_button} activeTabIndex={activeTabIndex} />
               <Form
                 {...subscription_button}
                 activeTabIndex={activeTabIndex}
@@ -567,10 +588,7 @@ export default class SubscriptionButtonCreate extends React.Component {
                 submitPaymentButtonForm={this.handleSavePaymentButton}
                 isEditExistingId={!!this.subscriptionButtonId}
               />
-              <Preview
-                {...subscription_button}
-                activeTabIndex={activeTabIndex}
-              />
+              <Preview {...subscription_button} activeTabIndex={activeTabIndex} />
             </React.Fragment>
           )}
         </div>
@@ -601,9 +619,7 @@ export default class SubscriptionButtonCreate extends React.Component {
 
         {this.TopBar}
 
-        <ErrorBoundary key={this.subscriptionButtonId || 'new'}>
-          {this.PageContent}
-        </ErrorBoundary>
+        <ErrorBoundary key={this.subscriptionButtonId || 'new'}>{this.PageContent}</ErrorBoundary>
       </div>
     );
   }
@@ -611,8 +627,8 @@ export default class SubscriptionButtonCreate extends React.Component {
 
 const docTitles = {
   DEFAULT: 'Razorpay Dashboard',
-  CREATE: 'Create New Payment Button',
-  EDIT: 'Edit Payment Button',
+  CREATE: 'Create New Subscription Button',
+  EDIT: 'Edit Subscription Button',
 };
 
 function setWindowTitle(title) {

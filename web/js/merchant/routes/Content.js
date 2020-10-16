@@ -50,7 +50,7 @@ const PaymentButtonsDetails = lazy(() =>
 );
 const SubscriptionButtonDetails = lazy(() =>
   import(
-    /* webpackChunkName: "PaymentButton" */ 'merchant/views/PaymentButton/SubscriptionButton/Details'
+    /* webpackChunkName: "SubscriptionButton" */ 'merchant/views/PaymentButton/SubscriptionButton/Details'
   ),
 );
 
@@ -88,6 +88,7 @@ import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import qs from 'query-string';
 import Spinner from 'common/ui/Spinner';
 
+import { classList } from 'common/utils/rzp-utils';
 import { setBaseLocation, setActiveEntity, setSecActiveEntity } from 'merchant/reducers/app';
 import { openSlider } from 'merchant_common/reducers/slider';
 import Support from 'merchant/components/Support';
@@ -161,6 +162,7 @@ export default class Content extends Component {
       }
 
       let query = qs.parse(location.search);
+
       if (query.basePath) {
         let _location = {
           ...location,
@@ -175,6 +177,7 @@ export default class Content extends Component {
       this.detailProps = null;
       setActiveEntity(null);
       setSecActiveEntity(null);
+
 
       this.baseLocation = location;
       setBaseLocation(location);
@@ -207,7 +210,11 @@ export default class Content extends Component {
   };
 
   getBaseView = () => {
-    const { user } = this.props;
+    const { user, fullPageView } = this.props;
+
+    if (fullPageView) {
+      return fullPageView;
+    }
 
     return (
       <ErrorBoundary resetOnProps location={this.baseLocation}>
@@ -302,6 +309,7 @@ export default class Content extends Component {
             <ShowWhenRoute
               path="/subscription_buttons"
               component={PaymentButton}
+              exact
               additionalCondition={(user) =>
                 user.isAllowedView('subscription_buttons') &&
                 user.isSubscriptionButtonEnabledByRazorX
@@ -310,6 +318,7 @@ export default class Content extends Component {
 
             <ShowWhenRoute
               path="/subscription_buttons/:id(pl_.+)/:entity_name(payments)"
+              exact
               component={SubscriptionButtonDetails}
               additionalCondition={(user) =>
                 user.isAllowedView('payment_buttons') && user.isSubscriptionButtonEnabledByRazorX
@@ -491,7 +500,7 @@ export default class Content extends Component {
   };
 
   render() {
-    const { user } = this.props;
+    const { user, fullPageView } = this.props;
 
     var DetailView = this.detailView;
     var BaseView = this.baseLocation ? this.getBaseView() : null;
@@ -531,7 +540,7 @@ export default class Content extends Component {
       );
     }
     return (
-      <main class="main-content">
+      <main class={classList(!fullPageView && 'main-content')}>
         {BaseView}
         {DetailView}
         {ModalFormView}

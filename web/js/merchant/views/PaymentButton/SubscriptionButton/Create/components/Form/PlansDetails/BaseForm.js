@@ -1,7 +1,8 @@
+import { withRouter } from 'react-router-dom';
+
 import Alert from 'common/new-ui/Alert';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
-import Button from 'common/new-ui/Button';
 import EditorModal from '../components/EditorModal';
 import InputDropdown from 'merchant/views/PaymentButton/PaymentButton/Create/components/Form/components/InputDropdown';
 
@@ -10,6 +11,7 @@ import { classList, paiseToRupees } from 'common/utils/rzp-utils';
 import { getPeriodLabel } from '../../../constants/billingCycle';
 // import track from '../../../track';
 
+@withRouter
 export default class BaseForm extends React.Component {
   constructor(props) {
     super(props);
@@ -27,9 +29,7 @@ export default class BaseForm extends React.Component {
       return null;
     }
 
-    const selectedOption = this.props.plansOptions.find(
-      plan => plan.id === field.id
-    );
+    const selectedOption = this.props.plansOptions.find((plan) => plan.id === field.id);
 
     return selectedOption;
   }
@@ -40,7 +40,7 @@ export default class BaseForm extends React.Component {
     this.setState({ disableSubmit });
   };
 
-  handleSubmit = formData => {
+  handleSubmit = (formData) => {
     const { billing_cycles_total_count } = formData;
     const { selectedPlanOption } = this.state;
 
@@ -67,7 +67,7 @@ export default class BaseForm extends React.Component {
     setTimeout(this.toggleSubmitBtn); // Validate form for input errors via class change in DOM, hence delayed.
   };
 
-  onChangePlan = option => {
+  onChangePlan = (option) => {
     this.setState({
       selectedPlanOption: option,
     });
@@ -75,8 +75,8 @@ export default class BaseForm extends React.Component {
     // track.lj.trackCustomerScreenFieldType(option);
   };
 
-  get currencySymbol() {
-    const currency = this.props.currency;
+  getCurrencySymbol(plan) {
+    const currency = plan.item.currency;
     const _currencySymbol = getCurrency(currency).symbol;
 
     return _currencySymbol;
@@ -87,8 +87,7 @@ export default class BaseForm extends React.Component {
       <div class="option-title">{option.item.name}</div>
       <div class="option-description">
         <span>
-          {this.currencySymbol}{' '}
-          {paiseToRupees(Number(option.item.amount)).toFixed(2)}
+          {this.getCurrencySymbol(option)} {paiseToRupees(Number(option.item.amount)).toFixed(2)}
         </span>
         <span class="big-dot-separator" />
         <span>Charged {getPeriodLabel(option.period, option.interval)}</span>
@@ -117,11 +116,7 @@ export default class BaseForm extends React.Component {
           Cancel
         </button>
 
-        <button
-          type="submit"
-          class="save-btn Button--transparent Button"
-          disabled={disableSubmit}
-        >
+        <button type="submit" class="save-btn Button--transparent Button" disabled={disableSubmit}>
           <span class="icon i-check" />
           Save
         </button>
@@ -129,7 +124,12 @@ export default class BaseForm extends React.Component {
     );
   }
 
-  setRefForm = el => (this.formEl = el);
+  handleAddNewPlan = (closeFn) => {
+    closeFn();
+    this.props.history.push('/plans/new');
+  };
+
+  setRefForm = (el) => (this.formEl = el);
 
   render() {
     const { field, plansOptions } = this.props;
@@ -138,28 +138,23 @@ export default class BaseForm extends React.Component {
     let descriptionOfSelectedPlanFrequency;
 
     if (selectedPlanOption) {
+      const currencySymbol = this.getCurrencySymbol(selectedPlanOption);
+      const periodLabel = getPeriodLabel(selectedPlanOption.period, selectedPlanOption.interval);
+      const displayAmount = paiseToRupees(Number(selectedPlanOption.item.amount)).toFixed(2);
+
       descriptionOfSelectedPlanFrequency = (
         <span>
           <b>
-            {this.currencySymbol}{' '}
-            {paiseToRupees(Number(selectedPlanOption.item.amount)).toFixed(2)}
+            {currencySymbol} {displayAmount}
           </b>{' '}
-          to be charged{' '}
-          {getPeriodLabel(
-            selectedPlanOption.period,
-            selectedPlanOption.interval
-          )}
+          to be charged {periodLabel}
         </span>
       );
     }
 
     return (
       <EditorModal class="CreatorModal-BaseForm" overElement allowScroll>
-        <Form
-          onSubmit={this.handleSubmit}
-          onChange={this.handleChange}
-          setRef={this.setRefForm}
-        >
+        <Form onSubmit={this.handleSubmit} onChange={this.handleChange} setRef={this.setRefForm}>
           <InputDropdown
             label="Plan"
             class="Input--vTop"
@@ -175,6 +170,10 @@ export default class BaseForm extends React.Component {
             // searchEnabled
             // searchIndices={['id', 'item.name']}
             onChange={this.onChangePlan}
+            autoFocus={!field}
+            afterOptionsComponent={({ select }) => {
+              return <div class="create-plan-btn Button Button--transparent" onClick={() => this.handleAddNewPlan(select.actions.close)}><b>Add New Plan</b></div>
+            }}
           />
 
           <Input
@@ -182,13 +181,11 @@ export default class BaseForm extends React.Component {
             label="No. of Billing Cycles"
             class="Input--vTop"
             placeholder="Enter count"
-            defaultValue={
-              field ? field.product_config.subscription_details.total_count : ''
-            }
-            autoFocus
+            defaultValue={field ? field.product_config.subscription_details.total_count : ''}
             description="No. of times customers will be charged."
             required
-            validator={val => {
+            pattern="^[0-9]+?$"
+            validator={(val) => {
               if (!val) {
                 return 'Billing cycle is required';
               }

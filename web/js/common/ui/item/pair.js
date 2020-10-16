@@ -190,6 +190,16 @@ export const buttonTitle = {
     <NavLink to={`/paymentbuttons/${item.id}/payments#paymentbuttons`}>{item.title}</NavLink>
   ),
 };
+
+export const subscriptionButtonTitle = {
+  title: 'Title',
+  value: (item) => (
+    <NavLink to={`/subscription_buttons/${item.id}/payments#subscription_buttons`}>
+      {item.title}
+    </NavLink>
+  ),
+};
+
 export const itemName = {
   title: 'Item Name',
   value: (item) =>

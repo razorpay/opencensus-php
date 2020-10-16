@@ -41,19 +41,13 @@ export default class EditableDisplayField extends React.Component {
   };
 
   onSubmitBaseForm = (fieldData) => {
-    const newPlanField = fieldData;
+    const newOneTimePaymentField = fieldData;
 
-    // Update currency so it could be used everywhere, in preview, in descriptions, for filtering plans as per currency etc.
-    const currency = newPlanField.item.currency;
-    this.props.updatePaymentButtonData({
-      currency,
-    });
-
-    if (!newPlanField) {
+    if (!newOneTimePaymentField) {
       throw 'Invalid field data';
     }
 
-    this.props.updatePaymentField(newPlanField, this.props.indexInOrder); // If index is undefined, it'll be added as new field
+    this.props.updatePaymentField(newOneTimePaymentField, this.props.indexInOrder); // If index is undefined, it'll be added as new field
 
     this.markReviewUnDone();
 
@@ -68,35 +62,15 @@ export default class EditableDisplayField extends React.Component {
     // track.lj.trackCustomerScreenDeleteField();
   };
 
-  findSelectedOptionInPlanOptions() {
-    const { field } = this.props;
-
-    return null;
-  }
-
   markReviewUnDone = () => {
     this.props.updateStepReviewProgress({
-      isPlansDetailsReviewed: false,
+      isOneTimePaymentsDetailsReviewed: false,
     });
   };
 
   render() {
-    const { field, children, plansOptions, currency, indexInOrder } = this.props;
+    const { field, children, currency, indexInOrder, validateSameTitleExists } = this.props;
     const { isEditModeOpened } = this.state;
-
-    let descriptionOfPlanFrequency;
-
-    if (!children) {
-      const planDetails = field.product_config.plan_details;
-      descriptionOfPlanFrequency = (
-        <span>
-          <b>
-            {this.currencySymbol} {paiseToRupees(Number(field.item.amount)).toFixed(2)}
-          </b>{' '}
-          to be charged {getPeriodLabel(planDetails.period, planDetails.interval)}
-        </span>
-      );
-    }
 
     return (
       <div
@@ -115,31 +89,31 @@ export default class EditableDisplayField extends React.Component {
             </span>
 
             <Input
-              label="Plan"
+              label="Label"
               class="Input--vTop Input--dummy"
               value={field.item.name}
-              description={descriptionOfPlanFrequency}
               readOnly
             />
 
             <Input
-              label="No. of Billing Cycles"
+              label="Value"
               class="Input--vTop Input--dummy"
-              value={field.product_config.subscription_details.total_count}
+              value={field.item.amount}
+              description={field.item.description}
               readOnly
             />
           </React.Fragment>
         )}
 
-        {isEditModeOpened && plansOptions && (
+        {isEditModeOpened && (
           <BaseForm
             indexInOrder={indexInOrder} // Index in the ordered schema. If not defined, tells that it's a new field
             field={field}
             currency={currency}
-            plansOptions={plansOptions}
             handleDeleteField={this.handleDeleteField}
             handleClose={this.handleToggleEditMode}
             onSubmit={this.onSubmitBaseForm}
+            validateSameTitleExists={validateSameTitleExists}
           />
         )}
       </div>

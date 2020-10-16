@@ -44,6 +44,7 @@ import { FetchActiveTickets } from '../reducers/config';
 @connect(
   (state) => ({
     ...state.session,
+    baseLocation: state.app.baseLocation,
     config: state.config,
     windowWidth: state.app.windowWidth,
     merchant_gst: state.profile.merchant_gst,
@@ -244,7 +245,7 @@ export default class App extends Component {
             user.features = setFeatures(data.success ? data.data.features : []);
 
             this.props.updateSession({ user, mode: currentMode });
-            this.renderFPView = this.getFPView(this.props.location);
+            this.renderFullPageView = this.getFPView(this.props.location);
 
             removeSplashLoader();
             this.setState({ isLoading: false });
@@ -260,12 +261,12 @@ export default class App extends Component {
     window.addEventListener('resize', this.handleResize);
   }
 
-  componentWillReceiveProps({ user, history, location }) {
+  componentWillReceiveProps({ user, history, location, baseLocation }) {
     if (user.isAuthenticated) {
       const role = user.userRole;
       this.redirectToRoute(role);
 
-      this.renderFPView = this.getFPView(location);
+      this.renderFullPageView = this.getFPView(baseLocation || location);
     }
   }
 
@@ -537,12 +538,12 @@ export default class App extends Component {
     }
 
     return (
-      <div className={classList('layout', this.orgCode, this.renderFPView && 'layout--fp')}>
-        {this.renderFPView ? (
-          this.renderFPView
-        ) : (
-          <React.Fragment>
-            <TwoFactorVerificationProvider>
+      <div className={classList('layout', this.orgCode, this.renderFullPageView && 'layout--fp')}>
+       <TwoFactorVerificationProvider merchantFetch={merchantFetch} ajax={ajax}>
+
+         {
+           !this.renderFullPageView && (
+             <React.Fragment>
               <HeaderNav
                 user={user}
                 mode={mode}
@@ -558,15 +559,22 @@ export default class App extends Component {
                 config={config.config}
                 org_custom_code={org.custom_code}
               />
-              <Content user={user} modeFormatted={modeFormatted} />
-              <Footer showMobileNav={this.props.windowWidth < 950} user={user} />
-            </TwoFactorVerificationProvider>
-          </React.Fragment>
-        )}
+             </React.Fragment>
+           )
+         }
 
-        {/* Creates Portal for the comp */}
-        <ModalDialog />
-        <Notifications />
+        <Content user={user} modeFormatted={modeFormatted} fullPageView={this.renderFullPageView}/>
+
+         {
+           !this.renderFullPageView && (
+             <Footer showMobileNav={this.props.windowWidth < 950} user={user} />
+           )
+         }
+
+          {/* Creates Portal for the comp */}
+          <ModalDialog />
+          <Notifications />
+        </TwoFactorVerificationProvider>
 
         {this.state.isDashboardLocked && (
           <PasswordReLogin

@@ -2,6 +2,7 @@ import { connect } from 'react-redux';
 
 import CustomerDetailsPreview from './Types/CustomerDetailsPreview';
 import WidgetPreview from './Types/WidgetPreview';
+import { totalTabs } from '../Form';
 
 import { loadColorJs } from 'common/utils/color';
 import { classList } from 'common/utils/rzp-utils';
@@ -9,42 +10,67 @@ import { classList } from 'common/utils/rzp-utils';
 import { updateBrandColorContrast } from 'merchant/reducers/config';
 
 @connect(
-  state => ({
+  (state) => ({
     config: state.config,
   }),
   {
     updateBrandColorContrast,
-  }
+  },
 )
 export default class Preview extends React.Component {
-  totalTabs = 4;
+  totalTabs = totalTabs;
 
   componentDidMount() {
     loadColorJs(
       () => this.updateBrandColorContrast(),
-      () => this.updateBrandColorContrast()
+      () => this.updateBrandColorContrast(),
     );
   }
 
   updateBrandColorContrast() {
-    const isBrandColorDark = window.colorLib
-      ? window.colorLib.isDark(this.brandColor)
-      : false;
+    const isBrandColorDark = window.colorLib ? window.colorLib.isDark(this.brandColor) : false;
+
+    this.initTheme(this.brandColor, isBrandColorDark);
 
     this.props.updateBrandColorContrast(isBrandColorDark);
   }
+
+  initTheme(themeClr, isBrandColorDark) {
+    const textClr = isBrandColorDark ? '#fff' : 'rgba(0, 0, 0, 0.85)';
+
+    const styles = `
+		:root {
+			--theme-color: ${themeClr};
+			--theme-contrast-color: ${textClr};
+		}
+	`;
+
+    this.appendStyles(styles);
+  }
+
+  appendStyles(css) {
+    const head = document.head || document.getElementsByTagName('head')[0];
+
+    let style = document.getElementById('preset_style');
+
+    if (!style) {
+      style = document.createElement('style');
+      style.setAttribute('id', 'preset_style');
+      style.type = 'text/css';
+    }
+
+    style.appendChild(document.createTextNode(css));
+
+    head.appendChild(style);
+  }
+
 
   get brandColor() {
     return this.props.config.config.brand_color;
   }
 
   render() {
-    const {
-      activeTabIndex,
-      subscriptionButtonEntity,
-      udfFields,
-      planFields,
-    } = this.props;
+    const { activeTabIndex, subscriptionButtonEntity, udfFields, paymentFields } = this.props;
     let content;
 
     if (!subscriptionButtonEntity) {
@@ -54,16 +80,18 @@ export default class Preview extends React.Component {
     if (activeTabIndex === 0 || activeTabIndex === 1) {
       content = <WidgetPreview {...this.props} />;
     } else if (activeTabIndex === 2) {
+      content = <WidgetPreview {...this.props} showOneTimePayments />;
+    } else if (activeTabIndex === 3) {
       content = <CustomerDetailsPreview {...this.props} />;
     }
 
-    // If content not defined here => Full screen preview is shown via ReviewAndCreate component
+    // If content not defined here => Full screen preview is shown, like in ReviewAndCreate component
 
     return (
       <div
         class={classList(
           'PaymentButton-Create-Preview',
-          !content && 'PaymentButton-Create-Preview--hide'
+          !content && 'PaymentButton-Create-Preview--hide',
         )}
       >
         <div class="Preview-title">Preview</div>
@@ -83,11 +111,7 @@ export default class Preview extends React.Component {
             </div>
           */}
 
-          <a
-            class="doc-link"
-            target="_blank"
-            href="https://razorpay.com/docs/payment-button/"
-          >
+          <a class="doc-link" target="_blank" href="https://betasite.razorpay.com/docs/creating-subscription-buttons/payment-button/subscription-buttons">
             Visit our Documentation <i class="i i-external-link" />
           </a>
         </div>

@@ -42,6 +42,7 @@ let Label = ({ text, htmlFor, required }) => {
     const { currency } = selector(state, 'item') || {};
     return {
       currency,
+      baseLocation: state.app.baseLocation,
     };
   },
   {
@@ -306,7 +307,13 @@ export default class AddPlan extends Component {
                         message: 'Changes that you made may not be saved',
                         affirmativeLabel: 'Leave',
                         abortLabel: 'Stay',
-                        action: () => this.props.history.push(`/plans`),
+                        action: () => {
+                          if(this.props.baseLocation) {
+                            this.props.history.goBack()
+                          } else {
+                            this.props.history.push(`/plans`)
+                          }
+                        },
                       })
                       .catch(() => {});
                   }}

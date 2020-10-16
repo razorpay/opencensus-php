@@ -45,7 +45,7 @@ export default class PaymentSplitInItems extends React.Component {
 
     if (hash) {
       hash = hash.substring(1);
-      const allowedModules = ['paymentpages', 'paymentbuttons'];
+      const allowedModules = ['paymentpages', 'paymentbuttons', 'subscription_buttons'];
 
       return allowedModules.indexOf(hash) > -1;
     }

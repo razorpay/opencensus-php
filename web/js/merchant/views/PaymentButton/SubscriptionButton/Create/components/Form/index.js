@@ -1,5 +1,6 @@
 import ButtonDetails from './ButtonDetails';
 import PlansDetails from './PlansDetails';
+import OneTimePaymentsDetails from './OneTimePaymentsDetails';
 import CustomerDetails from './CustomerDetails';
 import ReviewAndCreate from './ReviewAndCreate';
 
@@ -13,8 +14,14 @@ const buttonDetailsTab = {
 
 const plansDetailsTab = {
   component: PlansDetails,
-  title: 'Plans Details',
-  description: 'Customers can select one of the plans from the list',
+  title: 'Recurring Plans',
+  description: 'Customers can select one of the plans from the list to subscribe',
+};
+
+const oneTimePaymentsDetailsTab = {
+  component: OneTimePaymentsDetails,
+  title: 'One-Time Payments',
+  description: 'Customers will select one of the items from the list for making one-time payment',
 };
 
 const customerDetailsTab = {
@@ -29,16 +36,19 @@ const reviewAndCreateTab = {
   description: 'Customers will see the button and forms as shown below',
 };
 
+const tabContents = [
+  buttonDetailsTab,
+  plansDetailsTab,
+  oneTimePaymentsDetailsTab,
+  customerDetailsTab,
+  reviewAndCreateTab,
+];
+
+export const totalTabs = tabContents.length;
+
 export default class Form extends React.Component {
   constructor(props) {
     super(props);
-
-    let tabContents = [
-      buttonDetailsTab,
-      plansDetailsTab,
-      customerDetailsTab,
-      reviewAndCreateTab,
-    ];
 
     this.tabContents = tabContents;
   }
@@ -59,7 +69,7 @@ export default class Form extends React.Component {
     }
   };
 
-  verifyNewTabIndex = newIndex => {
+  verifyNewTabIndex = (newIndex) => {
     if (0 <= newIndex && newIndex < this.tabContents.length) {
       return true;
     }

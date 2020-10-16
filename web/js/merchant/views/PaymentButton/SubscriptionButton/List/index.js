@@ -3,7 +3,7 @@ import { withRouter } from 'react-router-dom';
 // import RTracking from 'react-tracking';
 
 import { RZPFeatures } from 'merchant/helpers/data';
-import { buttonTitle, itemName, unitsSold, createdAt } from 'common/ui/item/pair';
+import { subscriptionButtonTitle, createdAt } from 'common/ui/item/pair';
 
 import Amount from 'common/ui/Amount';
 import DataTable from 'common/ui/Table/DataTable';
@@ -12,10 +12,12 @@ import DocsLink from 'merchant/components/DocsLink';
 import ListContainer from 'merchant/containers/ListContainer';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import ListFilter from './ListFilter';
 import GetCodeModal from '../components/GetCodeModal'; // SuccessModal
 
+import { classList } from 'common/utils/rzp-utils';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { handleProductQuickGuide } from 'merchant/reducers/onboarding';
 import { fetchSubscriptionButtonsList as fetchAll } from 'merchant/reducers/subscriptionButtons/list';
@@ -32,9 +34,104 @@ const getActions = (openGetCodeModal) => ({
   ),
 });
 
-const totalSales = {
-  title: 'Total Sales',
-  value: (item) => <Amount value={item.total_amount_paid} currency={item.currency} />,
+const itemNames = {
+  title: 'Items',
+  value: (item) => {
+    const recurringItems = [],
+      oneTimeItems = [];
+
+    item.payment_page_items.forEach((payment_page_item) => {
+      if (payment_page_item.plan_id) {
+        recurringItems.push(payment_page_item);
+      } else {
+        oneTimeItems.push(payment_page_item);
+      }
+    });
+
+    return (
+      <React.Fragment>
+        <div>
+          <span class={classList(recurringItems.length && 'Button--transparent Button')}>
+            Recurring Plans ({recurringItems.length})
+            {!!recurringItems.length && (
+              <Popover align="right">
+                <PopoverBody>
+                  <table width="100%">
+                    <thead>
+                      <tr>
+                        <th>Plan Name</th>
+                        <th class="text-right">Subscriptions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {recurringItems.map((item, index) => (
+                        <tr key={index}>
+                          <td>{item.item.name}</td>
+                          <td class="text-right">{item.quantity_sold}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </PopoverBody>
+              </Popover>
+            )}
+          </span>
+        </div>
+
+        <div>
+          <span class={classList(oneTimeItems.length && 'Button--transparent Button ')}>
+            One-Time Items ({oneTimeItems.length})
+            {!!oneTimeItems.length && (
+              <Popover align="right">
+                <PopoverBody>
+                  <table width="100%">
+                    <thead>
+                      <tr>
+                        <th>Item Name</th>
+                        <th class="text-right">Units Sold</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {oneTimeItems.map((item, index) => (
+                        <tr key={index}>
+                          <td>{item.item.name}</td>
+                          <td class="text-right">{item.quantity_sold}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </PopoverBody>
+              </Popover>
+            )}
+          </span>
+        </div>
+      </React.Fragment>
+    );
+  },
+};
+
+const totalTransactions = {
+  title: 'Transactions',
+  value: (item) => {
+    const recurringItems = [],
+      oneTimeItems = [];
+
+    item.payment_page_items.forEach((payment_page_item) => {
+      if (payment_page_item.plan_id) {
+        recurringItems.push(payment_page_item);
+      } else {
+        oneTimeItems.push(payment_page_item);
+      }
+    });
+
+    return (
+      <React.Fragment>
+        <div>{recurringItems.reduce((total, item) => total + Number(item.quantity_sold), 0)}</div>
+        <div>{oneTimeItems.reduce((total, item) => total + Number(item.quantity_sold), 0)}</div>
+      </React.Fragment>
+    );
+  },
 };
 
 export const status = {
@@ -51,8 +148,8 @@ export const status = {
   }),
   { fetchAll, openModal, closeModal, handleProductQuickGuide },
 )
-// @RTracking(() => window.rzpQ.component('PaymentButtonsList'))
-export default class PaymentButtonsList extends ListContainer {
+// @RTracking(() => window.rzpQ.component('SubscriptionButtonsList'))
+export default class SubscriptionButtonsList extends ListContainer {
   state = {
     isSubscriptionButtonOpen: false,
   };
@@ -130,7 +227,7 @@ export default class PaymentButtonsList extends ListContainer {
           <div class="btn-toolbar pull-right">
             <TakeATourButton feature={RZPFeatures.PB} onSuccess={this.resetCopyPasteCodeStatus} />
 
-            <DocsLink url="https://razorpay.com/docs/subscription-button/" />
+            <DocsLink url="https://betasite.razorpay.com/docs/creating-subscription-buttons/payment-button/subscription-buttons" />
 
             {isRoleAllowedEdit && user.isSubscriptionButtonEnabledByRazorX && (
               <span class="btn btn-primary" onClick={this.openSubscriptionButtonsNewPage}>
@@ -149,12 +246,11 @@ export default class PaymentButtonsList extends ListContainer {
         />
 
         <DataTable
-          title="Payment Buttons"
+          title="Subscription Buttons"
           columns={[
-            buttonTitle,
-            totalSales,
-            itemName,
-            unitsSold,
+            subscriptionButtonTitle,
+            itemNames,
+            totalTransactions,
             createdAt,
             status,
             getActions(this.openGetCodeModal),
@@ -181,10 +277,10 @@ const EmptyComponent = () => (
 
     <div class="description">
       <h4>It’s Lonely Here!</h4>
-      <div>Create a Payment Button to get Started</div>
+      <div>Create a Subscription Button to get Started</div>
       <br />
       Not sure where to start? See our getting{' '}
-      <a target="_blank" href="https://razorpay.com/docs/payment-button/">
+      <a target="_blank" href="https://betasite.razorpay.com/docs/creating-subscription-buttons/payment-button/subscription-buttons">
         started guide <i class="i i-external-link" />
       </a>
     </div>
