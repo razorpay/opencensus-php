@@ -416,6 +416,45 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals('authorized', $updatedPayment['status']);
     }
 
+    public function testFirstDataForceAuthorizeFailedCpsPayment()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
+
+        $payment = $this->getNewPaymentEntity(true,true);
+
+        $this->fixtures->payment->edit($payment['id'],
+            [
+                'status'                => 'failed',
+                'cps_route'             => 2,
+                'error_code'            => 'BAD_REQUEST_ERROR',
+                'internal_error_code'   => 'BAD_REQUEST_PAYMENT_TIMED_OUT',
+                'error_description'     => 'Payment was not completed on time.',
+            ]);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $entries[] = $this->overrideFirstDataPayment($payment);
+
+        $file = $this->writeToExcelFile($entries, 'first_data');
+        $this->runForFiles([$file], 'FirstData', [], ['pay_'. $payment['id']]);
+
+        $updatedPayment2 = $this->getEntityById('payment', $payment['id'], true);
+
+        $this->assertEquals('authorized', $updatedPayment2['status']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     /**
      * A failed payment should be force authorised only if
      * payment amount and currency match.

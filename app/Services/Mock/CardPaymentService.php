@@ -48,7 +48,7 @@ class CardPaymentService extends BaseCardPaymentService
 
         $dummyData = [
             Constants::RRN                       => '123412341234',
-            Constants::STATUS                    => 'success',
+            Constants::STATUS                    => 'failed',
             Constants::AUTH_CODE                 => '',
             Constants::GATEWAY_TRANSACTION_ID    => '1234456789',
         ];

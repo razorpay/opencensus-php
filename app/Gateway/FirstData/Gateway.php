@@ -2,8 +2,13 @@
 
 namespace RZP\Gateway\FirstData;
 
+use App;
+use Queue;
+
 use Carbon\Carbon;
 use Requests_Hooks;
+use RZP\Constants\Entity as E;
+use RZP\Reconciliator\Base\InfoCode;
 use SimpleXMLElement;
 use RZP\Constants\Timezone;
 
@@ -49,6 +54,8 @@ class Gateway extends Base\Gateway
     const SALE_TRANSACTION_TYPE      = 'SALE';
 
     const PARES_DATA_CACHE_KEY       = self::CACHE_PREFIX . 'pares_';
+
+    const STATUS                     = 'status';
 
     protected $gateway = Constants\Entity::FIRST_DATA;
 
@@ -2646,6 +2653,11 @@ class Gateway extends Base\Gateway
      */
     public function forceAuthorizeFailed($input)
     {
+        if ($this->isRoutedThroughCardPayments($input))
+        {
+            return $this->forceAuthorizeFailedViaCps($input);
+        }
+
         $requiredAction = Action::AUTHORIZE;
 
         if ($this->isSecondRecurringPayment($input) === true)
@@ -2674,5 +2686,96 @@ class Gateway extends Base\Gateway
 
         return true;
 
+    }
+
+    /*
+     * For CPS payments, we dont have entry in Hitachi table.
+     * so push the relevant param in the CPS queue to that
+     * CPS service can mark the payment as authorized.
+     */
+    protected function forceAuthorizeFailedViaCps(array $input)
+    {
+        // Fetch auth response and check authorize status
+        // in CPS gateway entity
+        $paymentId = $input['payment']['id'];
+
+        $request = [
+            'fields'        => [self::STATUS],
+            'payment_ids'   => [$paymentId],
+        ];
+
+        $this->trace->info(
+            TraceCode::PAYMENT_RECON_QUEUE_CPS_REQUEST,
+            $request
+        );
+
+        $response = App::getFacadeRoot()['card.payments']->fetchAuthorizationData($request);
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'info_code'     => InfoCode::CPS_RESPONSE_AUTHORIZATION_DATA,
+                'response'      => $response,
+            ]);
+
+        if (empty($response[$paymentId]) === false)
+        {
+            if ($response[$paymentId][self::STATUS] === "failed")
+            {
+                // Push to queue in order to update/force auth
+                // Note : This push part we can do in async way and
+                // just return true here, as there is no failure case ahead.
+
+                $attr = [
+                    self::PAYMENT_ID          =>  $paymentId,
+                    self::AUTH_CODE           =>  $input['gateway'][Entity::AUTH_CODE],
+                ];
+
+                $queueName = $this->app['config']->get('queue.payment_card_api_reconciliation.' . $this->mode);
+
+                Queue::pushRaw(json_encode($attr), $queueName);
+
+                $this->trace->info(
+                    TraceCode::RECON_INFO,
+                    [
+                        'info_code' => InfoCode::RECON_CPS_QUEUE_DISPATCH,
+                        'message'   => 'Update gateway data in order to Force Authorize payment',
+                        'payment_id'=> $paymentId,
+                        'queue'     => $queueName,
+                        'payload'   => json_encode($attr),
+                    ]
+                );
+            }
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'     => InfoCode::CPS_PAYMENT_AUTH_DATA_ABSENT,
+                    'payment_id'    => $paymentId,
+                    'gateway'       => \RZP\Reconciliator\RequestProcessor\Base::FIRST_DATA,
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    public function isRoutedThroughCardPayments($input): bool
+    {
+        /**
+         * This checks if the current request has to be routed to
+         * card payment service or not.
+         */
+        if ((is_array($input) === true) and
+            (isset($input[E::PAYMENT]) === true) and
+            ($input[E::PAYMENT][Payment\Entity::CPS_ROUTE] === Payment\Entity::CARD_PAYMENT_SERVICE))
+        {
+            return true;
+        }
+
+        return false;
     }
 }
