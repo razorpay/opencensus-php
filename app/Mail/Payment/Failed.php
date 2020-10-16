@@ -8,8 +8,13 @@ class Failed extends Base
     {
         $label = $this->data['merchant']['billing_label'] ?? $this->data['payment']['amount'];
 
-        $subject = "Razorpay | Payment failed for $label";
+        $subject = "Payment failed for $label";
 
+        if ($this->isMerchantEmail === true)
+        {
+            $subject = "Razorpay | $subject";
+        }
+        
         $this->subject($subject);
 
         return $this;
@@ -17,8 +22,14 @@ class Failed extends Base
 
     protected function addHtmlView()
     {
-        $this->view('emails.payment.merchant_failure');
-
+        if ($this->isMerchantEmail === true)
+        {
+            $this->view('emails.payment.merchant_failure');
+        }
+        else
+        {
+            $this->view('emails.mjml.customer.failure');
+        }
         return $this;
     }
 
