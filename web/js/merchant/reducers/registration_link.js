@@ -52,10 +52,10 @@ export const validateNachFile = (file, id) => {
   });
 };
 
-export const authenticateNACHFile = (file, id) => {
+export const authenticateNACHFile = (paper_mandate_upload_id, auth_link_id) => {
   let formData = new FormData();
-  formData.append('form_uploaded', file);
-  formData.append('auth_link_id', id);
+  formData.append('paper_mandate_upload_id', paper_mandate_upload_id);
+  formData.append('auth_link_id', auth_link_id);
 
   return merchantFetch({
     url: 'token.registration/paper_mandate/authenticate/proxy',

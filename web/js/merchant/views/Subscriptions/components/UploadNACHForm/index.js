@@ -46,6 +46,7 @@ const BankAccountFields = [
 const initState = {
   uploading: false,
   extractedData: {
+    id: null,
     errors: {
       not_matching: [],
     },
@@ -202,7 +203,7 @@ export default class UploadNACHForm extends React.Component {
   handleSubmit = () => {
     this.trackNACHUpload('file.submit.initiate');
 
-    return authenticateNACHFile(this.state.file, this.props.id)
+    return authenticateNACHFile(this.state.extractedData.id, this.props.id)
       .then(resp => {
         this.setState({
           extractedData: resp.data,
