@@ -6,6 +6,8 @@ const DigitField = ({ pos, digit, currentIndex, setCurPos, handleInput }) => {
   return (
     <input
       name=""
+      type="number"
+      pattern="[0-9]*"
       class="form-control input-sm"
       value={digit[pos]}
       key={pos}
