@@ -1581,7 +1581,7 @@ class Route
         'update_partner_type'                      => ['patch',    'merchant/partner_type',                          'MerchantController@updatePartnerType'                              ],
         'partner_referral_fetch'                   => ['get',      'merchant/referral',                              'MerchantController@fetchReferral'                                  ],
         'partner_referral_create'                  => ['post',     'merchant/referral',                              'MerchantController@createReferral'                                 ],
-
+        'backfill_merchant_applications'           => ['post',     'merchant/backfill_merchant_apps',                'MerchantController@backFillMerchantApplications'                   ],
 
 
         'partner_config_create'                    => ['post',     'partner_configs',                                'PartnerConfigController@create'                                    ],
@@ -2051,6 +2051,7 @@ class Route
         'payment_page_view_get',
         'merchant_public_get_banks',
         'merchant_methods',
+        'backfill_merchant_applications',
         'merchant_checkout_preferences',
         'mock_acs',
         'mock_atom_payment',

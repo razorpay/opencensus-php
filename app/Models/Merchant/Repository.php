@@ -1100,4 +1100,29 @@ class Repository extends Base\Repository
 
         return $query->pop();
     }
+
+    public function fetchPartnerIdsInBatches($merchantIds = null, $limit = null, $afterId = null)
+    {
+        $query = $this->newQuery()
+                      ->select(Entity::ID)
+                      ->whereNotNull(Entity::PARTNER_TYPE)
+                      ->orderBy(Entity::ID);;
+
+        if (empty($limit) === false)
+        {
+            $query->take($limit);
+        }
+
+        if (empty($afterId) === false)
+        {
+            $query->where(Entity::ID, '>', $afterId);
+        }
+
+        if (empty($merchantIds) === false)
+        {
+            $query->whereIn(Entity::ID, $merchantIds);
+        }
+
+        return $query->get();
+    }
 }

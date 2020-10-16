@@ -11,7 +11,6 @@ use Razorpay\OAuth\Client\Environment as ClientEnv;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Base\JitValidator;
-use RZP\Models\Merchant\Constants;
 use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Merchant\Validator as MerchantValidator;
 use RZP\Models\Merchant\Core as MerchantCore;
@@ -77,9 +76,7 @@ class OAuthApplicationController extends Controller
 
         if (array_key_exists(App::ID, $data) === true)
         {
-            $partnerType = $merchant->getPartnerType();
-
-            $applicationType = ($partnerType === Constants::RESELLER) ? MerchantApplications\Entity::REFERRED : MerchantApplications\Entity::MANAGED;
+            $applicationType = (new MerchantApplications\Core())->getDefaultAppTypeForPartner($merchant);
 
             (new MerchantCore)->createMerchantApplication($merchant, $data[App::ID], $applicationType);
         }

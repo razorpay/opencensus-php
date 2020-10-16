@@ -45,4 +45,36 @@ class Core extends Base\Core
             $this->repo->deleteOrFail($merchantApplication);
         }
     }
+
+    public function getDefaultAppTypeForPartner(Merchant\Entity $merchant): string
+    {
+        if ($merchant->isPurePlatformPartner() === true)
+        {
+            return Entity::OAUTH;
+        }
+        else if ($merchant->isResellerPartner() === true)
+        {
+            return Entity::REFERRED;
+        }
+        else
+        {
+            return Entity::MANAGED;
+        }
+    }
+
+    public function isMerchantAppPresent(string $appId): bool
+    {
+        $response = $this->repo
+                         ->merchant_application
+                         ->fetchMerchantApplication($appId, Entity::APPLICATION_ID);
+
+        if ($response->isEmpty() === true)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
 }

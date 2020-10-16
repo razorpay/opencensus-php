@@ -10,7 +10,6 @@ use Monolog\Logger;
 use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Exception;
-use RZP\Foundation\Application;
 use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\User;
@@ -50,6 +49,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Mail\Merchant\PartnerOnBoarded;
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Mail\Payout\Payout as PayoutMail;
+use RZP\Jobs\BackFillMerchantApplications;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use Razorpay\OAuth\Exception\DBQueryException;
@@ -1492,7 +1492,7 @@ class Core extends Base\Core
 
             if ($merchant->isPurePlatformPartner() === false)
             {
-                $applicationType = ($partnerType === Constants::RESELLER) ? MerchantApplications\Entity::REFERRED : MerchantApplications\Entity::MANAGED;
+                $applicationType = (new MerchantApplications\Core())->getDefaultAppTypeForPartner($merchant);
 
                 $this->createMerchantApplication($merchant, $app[OAuthApp\Entity::ID], $applicationType);
             }
@@ -1612,6 +1612,33 @@ class Core extends Base\Core
             'partner_type'              => $partnerType,
             'has_commission_configs'    => true,
         ];
+    }
+
+    public function backFillMerchantApplications(array $merchantIds = null, $limit = null, $afterId = null)
+    {
+
+        while (true)
+        {
+            $partnerMerchants = $this->repo->merchant->fetchPartnerIdsInBatches($merchantIds, $limit, $afterId);
+
+            if ($partnerMerchants->isEmpty() === true)
+            {
+                break;
+            }
+
+            $afterId = $partnerMerchants->last()->getId();
+
+            $partnerMerchants = $partnerMerchants->toArray();
+
+            $merchantIdsChunks = array_chunk($partnerMerchants, 500);
+
+            foreach ($merchantIdsChunks as $merchantBatch)
+            {
+                BackFillMerchantApplications::dispatch($this->mode, $merchantBatch);
+            }
+        }
+
+        return [];
     }
 
     protected function sendPartnerOnBoardedEmail(Entity $partner)

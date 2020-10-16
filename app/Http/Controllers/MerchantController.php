@@ -1368,6 +1368,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function backFillMerchantApplications()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->backFillMerchantApplications($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postMerchantBeneficiaryThroughApi($channel)
     {
         $input = Request::all();

@@ -31,7 +31,6 @@ use RZP\Models\Merchant;
 use RZP\Models\Schedule;
 use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
-use RZP\Services\HubspotClient;
 use RZP\Trace\TraceCode;
 use RZP\Models\Promotion;
 use RZP\Models\Admin\Org;
@@ -46,10 +45,13 @@ use RZP\Services\DiagClient;
 use RZP\Base\RuntimeManager;
 use RZP\Base\JitValidator;
 use RZP\Models\Pricing\Plan;
+
 use RZP\Models\Payment\Refund;
+use RZP\Services\HubspotClient;
 use RZP\Models\Workflow\Action;
 use RZP\Modules\Migrate\Migrate;
 use RZP\Exception\BaseException;
+
 
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Admin as MainAdmin;
@@ -59,6 +61,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Partner\RateLimitBatch;
+use RZP\Jobs\CallBackFillMerchantApps;
 use RZP\Models\Settlement\SettlementTrait;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Mail\Base\Constants as MailConstants;
@@ -3795,6 +3798,17 @@ class Service extends Base\Service
         $partnerType = $input[Entity::PARTNER_TYPE];
 
         return $this->core()->updatePartnerType($this->merchant, $partnerType);
+    }
+
+    public function backFillMerchantApplications(array $input)
+    {
+        $limit = $input['limit'];
+
+        $merchantIds = $input['merchant_ids'];
+
+        $afterId = $input['afterId'];
+
+        return CallBackFillMerchantApps::dispatch($this->mode, $merchantIds, $limit, $afterId);
     }
 
     public function getSubmerchant(string $submerchantId, array $input): array
