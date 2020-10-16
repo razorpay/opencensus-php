@@ -140,9 +140,6 @@ class Status
         ],
         self::PROCESSED => [
             self::ACTIVATED,
-            // temporarily allowing for
-            // https://razorpay.slack.com/archives/CMCL85DGE/p1601305737107900?thread_ts=1600687887.045200&cid=CMCL85DGE
-            self::CANCELLED
         ],
         self::UNSERVICEABLE => [
             self::PICKED,
