@@ -64,7 +64,7 @@ class CustomerOtpInternal extends Mailable
 
     protected function addSender()
     {
-        return $this->from(Constants::MAIL_ADDRESSES[Constants::X_SUPPORT],
+        return $this->from(Constants::MAIL_ADDRESSES[Constants::NOREPLY],
                            Constants::HEADERS[Constants::NOREPLY]);
     }
 
