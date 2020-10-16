@@ -133,10 +133,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $settlementStatusUpdateRules = [
-        'id'      => 'required|string|size:14',
-        'utr'     => 'sometimes|string',
-        'status'  => 'required|string|in:processed',
-        'remarks' => 'sometimes|string',
+        'id'            => 'required|string|size:14',
+        'utr'           => 'sometimes|string',
+        'status'        => 'required|string|in:processed',
+        'remarks'       => 'sometimes|string',
+        'redacted_ba'   => 'required|string'
     ];
 
     protected static $settlementTransactionsVerifyRules = [

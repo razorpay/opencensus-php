@@ -1186,7 +1186,7 @@ class Processor extends Base\Core
                 30,
                 ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_SETTLEMENT_UPDATE_IN_PROGRESS);
 
-            (new Core)->triggerSettlementWebhook($setl);
+            (new Core)->triggerSettlementWebhook($setl, $input['redacted_ba']);
 
             TransferRecon::dispatch([$setl->getId()], $this->mode);
         }

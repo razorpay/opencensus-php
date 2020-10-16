@@ -6,9 +6,11 @@ use RZP\Exception;
 
 class Component
 {
-    const REFUND                  = 'refund';
+    const REFUND_DOMESTIC         = 'refund_domestic';
+    const REFUND_INTERNATIONAL    = 'refund_international';
     const PAYOUT                  = 'payout';
-    const PAYMENT                 = 'payment';
+    const PAYMENT_DOMESTIC        = 'payment_domestic';
+    const PAYMENT_INTERNATIONAL   = 'payment_international';
     const ADJUSTMENT              = 'adjustment';
     const FEE                     = 'fee';
     const TAX                     = 'tax';
@@ -34,12 +36,12 @@ class Component
     public static function getAllComponents()
     {
         return [
-            self::PAYMENT,
-            self::REFUND,
+            self::PAYMENT_DOMESTIC,
+            self::PAYMENT_INTERNATIONAL,
+            self::REFUND_DOMESTIC,
+            self::REFUND_INTERNATIONAL,
             self::ADJUSTMENT,
             self::PAYOUT,
-            self::TAX,
-            self::FEE,
             self::FEE_CREDITS,
             self::REFUND_CREDITS,
             self::TRANSFER,

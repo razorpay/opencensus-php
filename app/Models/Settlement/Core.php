@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Settlement;
 
+use Mail;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
@@ -26,9 +27,13 @@ use RZP\Models\Settlement\Bucket\Preference;
 use RZP\Models\Schedule\Task as scheduleTask;
 use RZP\Jobs\Settlement\TransactionMigration;
 use RZP\Models\Settlement\Bucket as BucketModel;
+use RZP\Models\Settlement\Details as SetlDetails;
+use RZP\Mail\Merchant\SettlementsProcessedNotification;
 
 class Core extends Base\Core
 {
+    const SETTLEMENT_DASHBOARD_URL = 'https://dashboard.razorpay.com/app/settlements/%s';
+
     public function retrieveById($id)
     {
         Entity::verifyIdAndStripSign($id);
@@ -290,8 +295,13 @@ class Core extends Base\Core
      *
      * @param Entity $settlement
      */
-    public function triggerSettlementWebhook(Entity $settlement)
+    public function triggerSettlementWebhook(Entity $settlement, $redactedBaNumber = null)
     {
+        if ($settlement->isStatusProcessed() === true)
+        {
+            $this->triggerSettlementsMail($settlement, $redactedBaNumber);
+        }
+
         if ($this->shouldSendWebhook($settlement) === false)
         {
             return;
@@ -303,6 +313,69 @@ class Core extends Base\Core
 
         $this->app['events']->fire('api.settlement.processed', $eventPayload);
 
+    }
+
+    /**
+     * Sends an email to the merchant for processed settlement
+     *
+     * @param Entity $settlement
+     */
+    public function triggerSettlementsMail(Entity $settlement, $redactedBaNumber = null)
+    {
+        $merchant = $settlement->merchant;
+
+        // Get razorx treatment
+        $variant = $this->app->razorx->getTreatment(
+            $merchant->getId(),
+            MerchantModel\RazorxTreatment::SETTLEMENT_MAIL_RAMP,
+            $this->mode
+        );
+
+        if (strtolower($variant) !== 'on')
+        {
+            return;
+        }
+
+        $bankAccountNumber = ($settlement->bankAccount !== null) ?
+            $settlement->bankAccount->getRedactedAccountNumber() : 'XXXX-XXXX-XXXX';
+
+        if ($redactedBaNumber !== null)
+        {
+            $bankAccountNumber = $redactedBaNumber;
+        }
+
+        $setlDetails  = (new SetlDetails\Core)->getSettlementDetails($settlement->getId(), $merchant);
+        $settlementTime = Carbon::createFromTimestamp($settlement->getUpdatedAt(), Timezone::IST)
+            ->format('m-d-y h:m:s');
+
+        $data = [
+                'merchant' => [
+                    MerchantModel\Entity::EMAIL      => $merchant->getEmail(),
+                    MerchantModel\Entity::LOGO_URL   => $merchant->getLogoUrl(),
+                ],
+                'settlement' => [
+                    'id'                      => $settlement->getPublicId(),
+                    'amount'                  => $settlement->getAmount(),
+                    'utr'                     => $settlement->getUtr(),
+                    'breakup'                 => $setlDetails['setl_details'],
+                    'has_aggregated_fee_tax'  => $setlDetails['has_aggregated_fee_tax'],
+                    'ba_number'               => $bankAccountNumber,
+                    'time'                    => $settlementTime,
+                    'url'                     => sprintf(self::SETTLEMENT_DASHBOARD_URL, $settlement->getPublicId()),
+                ],
+            ];
+
+        $settlementProcessedMail = new SettlementsProcessedNotification($data);
+
+        Mail::queue($settlementProcessedMail);
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_PROCESSED_MAIL_NOTIFICATION_ENQUEUED,
+            [
+                'merchant_id'   => $merchant->getId(),
+                'settlement_id' => $settlement->getId(),
+                'status'        => $settlement->getStatus(),
+            ]);
     }
 
     /**

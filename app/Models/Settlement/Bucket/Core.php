@@ -322,10 +322,13 @@ class Core extends Base\Core
 
         $txnSource = $txn->source;
 
+        $international = false;
+
         switch ($type)
         {
             case Transaction\Type::REFUND:
-                $metaSource = $txnSource->payment;
+                $metaSource     = $txnSource->payment;
+                $international  = $metaSource->isInternational();
                 break;
 
             default:
@@ -333,8 +336,9 @@ class Core extends Base\Core
         }
 
         return [
-            'source_type' => $metaSource->getEntity(),
-            'source_id'   => $metaSource->getId()
+            'source_type'   => $metaSource->getEntity(),
+            'source_id'     => $metaSource->getId(),
+            'international' => $international
         ];
     }
 

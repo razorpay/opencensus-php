@@ -49,4 +49,85 @@ class Core extends Base\Core
 
         return $data;
     }
+
+    public function getSettlementDetails($id, $merchant)
+    {
+        $setlDetails = $this->repo->settlement_details
+            ->getSettlementDetails($id, $merchant)
+            ->toArrayPublic();
+
+        $hasAggregatedFeeAndTax = false;
+
+        $componentFeeAndTax = $this->handleComponentFeeAndTax($setlDetails, $hasAggregatedFeeAndTax);
+
+        foreach ($setlDetails['items'] as &$details)
+        {
+            $componentKey = $details[Entity::COMPONENT];
+
+            if($componentKey === Component::FEE || $componentKey === Component::TAX)
+            {
+                continue;
+            }
+
+            if(array_key_exists($componentKey, $componentFeeAndTax) === true)
+            {
+                $details[Component::FEE] =
+                    (array_key_exists(Component::FEE, $componentFeeAndTax[$componentKey]) === true) ?
+                        $componentFeeAndTax[$componentKey][Component::FEE] : 0;
+
+                $details[Component::TAX] =
+                    (array_key_exists(Component::TAX, $componentFeeAndTax[$componentKey]) === true) ?
+                        $componentFeeAndTax[$componentKey][Component::TAX] : 0;
+            }
+            else if($hasAggregatedFeeAndTax == false)
+            {
+                $details[Component::FEE] = 0;
+                $details[Component::TAX] = 0;
+            }
+        }
+
+        return [
+            'setl_details'            => $setlDetails,
+            'has_aggregated_fee_tax'  => $hasAggregatedFeeAndTax
+        ];
+    }
+
+    protected function handleComponentFeeAndTax(array &$setlDetails, bool &$hasAggregatedFeeAndTax) : array
+    {
+        $componentFeeAndTax = [];
+
+        $components = &$setlDetails['items'];
+
+        foreach ($components as $index => $component)
+        {
+            $componentKey = $component[Entity::COMPONENT];
+
+            if($componentKey === Component::FEE || $componentKey === Component::TAX)
+            {
+                $hasAggregatedFeeAndTax = true;
+
+                continue;
+            }
+
+            $keys = explode("_", $componentKey);
+
+            $lastKey = array_pop($keys);
+
+            if($lastKey === Component::FEE || $lastKey === Component::TAX)
+            {
+                $key = implode("_", $keys);
+
+                $componentFeeAndTax[$key][$lastKey] =
+                    ($component[Entity::TYPE] ===  'credit') ? -1 * $component[Entity::AMOUNT] : $component[Entity::AMOUNT];
+
+                unset($components[$index]);
+            }
+        }
+
+        $components = array_values($components);
+
+        $setlDetails['count'] = count($components);
+
+        return $componentFeeAndTax;
+    }
 }

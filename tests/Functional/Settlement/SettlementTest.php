@@ -281,7 +281,7 @@ class SettlementTest extends TestCase
 
         $this->assertArrayHasKey('entity', $content);
         $this->assertSame('collection', $content['entity']);
-        $this->assertSame($content['count'], 5);
+        $this->assertSame($content['count'], 7);
 
         $totalAmount = 0;
         $totalFeeCredits = 0;
@@ -323,6 +323,7 @@ class SettlementTest extends TestCase
             'month' => $dt->month,
             'day'   => $dt->day
         ];
+
 
         $settlementReport = $this->fetchReport('settlement', $input);
         assert(count($settlementReport) === 1);
@@ -1951,7 +1952,7 @@ class SettlementTest extends TestCase
 
         $this->assertArrayHasKey('entity', $content);
         $this->assertSame('collection', $content['entity']);
-        $this->assertSame($content['count'], 4);
+        $this->assertSame($content['count'], 6);
 
         $totalAmount = 0;
 

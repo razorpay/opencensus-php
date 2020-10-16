@@ -13,9 +13,9 @@ class Service extends Base\Service
 
         $merchant = $this->merchant;
 
-        $setlDetails = $this->repo->settlement_details->getSettlementDetails($id, $merchant);
+        $setlDetails = (new Core)->getSettlementDetails($id, $merchant);
 
-        return $setlDetails->toArrayPublic();
+        return $setlDetails['setl_details'];
     }
 
     public function postSettlementDetailsForOldTxns($input)

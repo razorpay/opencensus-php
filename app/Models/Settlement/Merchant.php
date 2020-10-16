@@ -245,23 +245,51 @@ class Merchant
             $details[$componentType]['amount'] = 0;
 
             $details[$componentType]['count'] = 0;
+
+            $details[$componentType][SetlComponent::TAX] = 0;
+            $details[$componentType][SetlComponent::FEE] = 0;
         }
 
         foreach ($txns as $txn)
         {
             $componentType = $txn->getType();
 
-            $details[$componentType]['count'] += 1;
+            if($componentType !== Transaction\Type::PAYMENT and $componentType !== Transaction\Type::REFUND)
+            {
+                $details[$componentType]['count'] += 1;
+            }
 
             switch ($componentType)
             {
                 case Transaction\Type::PAYMENT:
+                    $payment = $txn->source;
+                    $paymentType = $payment->isInternational() === true ?
+                        Details\Component::PAYMENT_INTERNATIONAL : Details\Component::PAYMENT_DOMESTIC;
+
+                    $details[$paymentType]['count'] += 1;
+                    $details[$paymentType]['amount'] += $txn->getAmount();
+
+                    $componentType = $paymentType;
+
+                    break;
+
                 case Transaction\Type::REVERSAL:
                 case Transaction\Type::SETTLEMENT_TRANSFER:
                     $details[$componentType]['amount'] += $txn->getAmount();
                     break;
 
                 case Transaction\Type::REFUND:
+                    $payment = $txn->source->payment;
+                    $refundType = $payment->isInternational() === true ?
+                        Details\Component::REFUND_INTERNATIONAL : Details\Component::REFUND_DOMESTIC;
+
+                    $details[$refundType]['count'] += 1;
+                    $details[$refundType]['amount'] -= $txn->getAmount();
+
+                    $componentType = $refundType;
+
+                    break;
+
                 case Transaction\Type::PAYOUT:
                 case Transaction\Type::TRANSFER:
                 case Transaction\Type::DISPUTE:
@@ -280,9 +308,19 @@ class Merchant
                     throw new Exception\LogicException('Invalid Settlement-component-type:' . $componentType);
             }
 
-            $details[SetlComponent::TAX]['amount'] += $txn->getTax();
+            if(isset($details[$componentType][SetlComponent::FEE]) == false)
+            {
+                $details[$componentType][SetlComponent::FEE] = 0;
+            }
 
-            $details[SetlComponent::FEE]['amount'] += ($txn->getFee() - $txn->getTax());
+            if(isset($details[$componentType][SetlComponent::TAX]) == false)
+            {
+                $details[$componentType][SetlComponent::TAX] = 0;
+            }
+
+            $details[$componentType][SetlComponent::TAX] += $txn->getTax();
+
+            $details[$componentType][SetlComponent::FEE] += ($txn->getFee() - $txn->getTax());
 
             // Add credits if txn is of type fee credits.
             $details[SetlComponent::FEE_CREDITS]['amount'] += ($txn->isFeeCredits() ? $txn->getCredits() : 0);
@@ -333,6 +371,8 @@ class Merchant
 
                     if ($detail['count'] !== 0)
                     {
+                        $this->storeComponentFeeAndTax($componentType, $detail);
+
                         $this->createSetlDetailsEntity(
                             $componentType,
                             $txnType,
@@ -342,6 +382,31 @@ class Merchant
 
                     break;
             }
+        }
+    }
+
+    protected function storeComponentFeeAndTax($componentType, array $details)
+    {
+        if (array_key_exists(SetlDetails\Component::FEE, $details) === true)
+        {
+            $txnType = $details[SetlDetails\Component::FEE] < 0 ? 'credit' : 'debit';
+
+            $this->createSetlDetailsEntity(
+                $componentType  . '_' . SetlDetails\Component::FEE,
+                $txnType,
+                null,
+                abs($details[SetlDetails\Component::FEE]));
+        }
+
+        if (array_key_exists(SetlDetails\Component::TAX, $details) === true)
+        {
+            $txnType = $details[SetlDetails\Component::TAX] < 0 ? 'credit' : 'debit';
+
+            $this->createSetlDetailsEntity(
+                $componentType  . '_' . SetlDetails\Component::TAX,
+                $txnType,
+                null,
+                abs($details[SetlDetails\Component::TAX]));
         }
     }
 
@@ -743,7 +808,7 @@ class Merchant
 
         $merchantSettleToPartner = $this->merchantSettleToPartner;
 
-        $this->setlDetailAmounts = $params['details'];
+        $this->setlDetailAmounts = $this->createSettlementDetailsFromNewService($params['details']);
 
         $this->setlDetails = new Base\Collection;
 
@@ -767,5 +832,22 @@ class Merchant
         });
 
         return $this->setl;
+    }
+
+    protected function createSettlementDetailsFromNewService(array &$details)
+    {
+        foreach ($details as $componentType => &$detail)
+        {
+            $fee = (array_key_exists(SetlDetails\Component::FEE, $detail) === true) ? $detail[SetlDetails\Component::FEE] : 0;
+            $tax = (array_key_exists(SetlDetails\Component::TAX, $detail) === true) ? $detail[SetlDetails\Component::TAX] : 0;
+
+            if(array_key_exists(SetlDetails\Entity::AMOUNT, $detail) === true)
+            {
+                $detail[SetlDetails\Entity::AMOUNT] += $fee + $tax;
+            }
+
+        }
+
+        return $details;
     }
 }
