@@ -37,7 +37,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $settlementOndemandInputRules = [
-        Entity::AMOUNT              => 'required_without:max_balance|integer|custom',
+        Entity::AMOUNT              => 'required_without:settle_full_balance|integer|custom',
         'settle_full_balance'       => 'required_without:amount|boolean',
         Entity::CURRENCY            => 'sometimes|in:INR',
         'description'               => 'sometimes|nullable|string',

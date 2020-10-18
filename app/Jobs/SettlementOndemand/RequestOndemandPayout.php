@@ -18,7 +18,7 @@ use RZP\Models\Settlement\OndemandFundAccount;
 
 class RequestOndemandPayout extends Job
 {
-    const MAX_ALLOWED_ATTEMPTS = 10;
+    const MAX_ALLOWED_ATTEMPTS = 100;
 
     const DEFAULT_FAILURE_REASON = 'RequestOndemandPayout job failure';
 
@@ -84,7 +84,7 @@ class RequestOndemandPayout extends Job
 
             if ($this->attempts() <= self::MAX_ALLOWED_ATTEMPTS)
             {
-                $this->release(10);
+                $this->release(10 * $this->attempts() + random_int(0, 10));
             }
             else
             {

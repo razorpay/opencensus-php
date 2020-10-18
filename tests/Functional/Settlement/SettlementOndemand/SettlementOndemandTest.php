@@ -13,6 +13,7 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Jobs\SettlementOndemand\RequestOndemandPayout;
 
 class SettlementOndemandTest extends TestCase
 {
@@ -153,8 +154,6 @@ class SettlementOndemandTest extends TestCase
     //Test OndemandCreation on banking hours with no mock webhook
     public function testBankingHourOndemandCreation()
     {
-        $this->markTestSkipped();
-
         $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
 
         $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_fund_account');
@@ -205,7 +204,6 @@ class SettlementOndemandTest extends TestCase
             'total_tax'             => 72108,
             'total_amount_reversed' => 0,
             'total_amount_pending'  => 19557292,
-            'max_balance'           => 0,
             'currency'              => 'INR',
             'status'                => 'initiated',
             'narration'             => 'Demo Narration - optional',
@@ -226,15 +224,15 @@ class SettlementOndemandTest extends TestCase
             'user_id'        =>'20000000000000',
 //          'ondemand_id'    => 'F0qiDHrgiKpZJi',
 //          'payout_id'      => 'pout_F0qiDcJxmKpuOJ',
-            'mode'           => 'NEFT',
+            'mode'           => 'IMPS',
 //          'initiated_at'   => 1582000200,
             'processed_at'   => NULL,
             'reversed_at'    => NULL,
-            'fees'           => 472708,
-            'tax'            => 72108,
+            'fees'           => 708,
+            'tax'            => 108,
             'utr'            => NULL,
             'status'         => 'initiated',
-            'amount'         => 20030000,
+            'amount'         => 30000,
             'failure_reason' => NULL,
 //          'created_at'     => 1582000200,
                     ], $settlementOndemandPayout);
@@ -273,9 +271,6 @@ class SettlementOndemandTest extends TestCase
     //Test OndemandCreation on banking hours with mock webhook update status
     public function testBankingHourOndemandCreationWithMockWebhook()
     {
-
-        $this->markTestSkipped();
-
         $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
 
         $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_fund_account');
@@ -326,7 +321,6 @@ class SettlementOndemandTest extends TestCase
             'total_tax'             => 72108,
             'total_amount_reversed' => 0,
             'total_amount_pending'  => 0,
-            'max_balance'           => 0,
             'currency'              => 'INR',
             'status'                => 'processed',
             'narration'             => 'Demo Narration - optional',
@@ -347,15 +341,15 @@ class SettlementOndemandTest extends TestCase
             'user_id'        =>'20000000000000',
 //          'ondemand_id'    => 'F0qiDHrgiKpZJi',
 //          'payout_id'      => 'pout_F0qiDcJxmKpuOJ',
-            'mode'           => 'NEFT',
+            'mode'           => 'IMPS',
 //          'initiated_at'   => 1582000200,
 //           'processed_at'   => 1582000200,
             'reversed_at'    => NULL,
-            'fees'           => 472708,
-            'tax'            => 72108,
+            'fees'           => 708,
+            'tax'            => 108,
             // 'utr'            => 'qwer12uijaaasssd',
             'status'         => 'processed',
-            'amount'         => 20030000,
+            'amount'         => 30000,
             'failure_reason' => NULL,
 //          'created_at'     => 1582000200,
                     ], $settlementOndemandPayout);
@@ -364,8 +358,6 @@ class SettlementOndemandTest extends TestCase
     //Test OndemandCreation on banking hours with mock webhook update status
     public function testBankingHourOndemandCreationWithReversal()
     {
-        $this->markTestSkipped();
-
         $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
 
         $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_fund_account');
@@ -406,10 +398,10 @@ class SettlementOndemandTest extends TestCase
         //             'entity_id'             => 'sod_F1aL3U2O8oHd5e',
                         'type'                  => 'reversal',
                         'merchant_id'           => '10000000000000',
-                        'amount'                => 110000,
+                        'amount'                => 220000,
                         'fee'                   => 0,
                         'tax'                   => 0,
-                        'credit'                 => 110000,
+                        'credit'                 => 220000,
                         'currency'              => 'INR',
         //             'settled_at'            => '1582000200',
         //             'created_at'          => 1582000200,
@@ -420,10 +412,10 @@ class SettlementOndemandTest extends TestCase
         //             'entity_id'             => 'sod_F1aL3U2O8oHd5e',
                         'type'                  => 'settlement.ondemand',
                         'merchant_id'           => '10000000000000',
-                        'amount'                => 107404,
-                        'fee'                   => 2596,
-                        'tax'                   => 396,
-                        'debit'                 => 110000,
+                        'amount'                => 214808,
+                        'fee'                   => 5192,
+                        'tax'                   => 792,
+                        'debit'                 => 220000,
                         'currency'              => 'INR',
         //             'settled_at'            => '1582000200',
         //             'created_at'          => 1582000200,
@@ -434,7 +426,7 @@ class SettlementOndemandTest extends TestCase
         $this->assertArraySelectiveEquals([
             //      'id'                    => 'rvrsl_F2enlXFQyGJqje',
                     'merchant_id'           => '10000000000000',
-                    'amount'                => 110000,
+                    'amount'                => 220000,
                     'entity_type'           => 'settlement.ondemand',
                     'fee'                   => 0,
                     'tax'                   => 0,
@@ -448,13 +440,13 @@ class SettlementOndemandTest extends TestCase
     //           'id'                    => 'sod_F0qG7YFH2KMpzY',
             'merchant_id'           => '10000000000000',
             'user_id'               => '20000000000000',
-            'amount'                => 110000,
+            'amount'                => 220000,
             'total_amount_settled'  => 0,
             'total_fees'            => 0,
             'total_tax'             => 0,
-            'total_amount_reversed' => 110000,
+            'total_amount_reversed' => 220000,
             'total_amount_pending'  => 0,
-            'max_balance'           => 0,
+            'max_balance'           => false,
             'currency'              => 'INR',
             'status'                => 'reversed',
             'narration'             => 'Demo Narration - optional',
@@ -471,18 +463,82 @@ class SettlementOndemandTest extends TestCase
             'user_id'        =>'20000000000000',
 //          'ondemand_id'    => 'F0qiDHrgiKpZJi',
 //          'payout_id'      => 'pout_F0qiDcJxmKpuOJ',
-            'mode'           => 'NEFT',
+            'mode'           => 'IMPS',
 //          'initiated_at'   => 1582000200,
 //          'processed_at'   => 1582000200,
 //          'reversed_at'    => 1582000200,
-            'fees'           => 2596,
-            'tax'            => 396,
+            'fees'           => 5192,
+            'tax'            => 792,
             'utr'            => NULL,
             'status'         => 'reversed',
-            'amount'         => 110000,
+            'amount'         => 220000,
             'failure_reason' => 'dummy_reason',
 //          'created_at'     => 1582000200,
                     ], $settlementOndemandPayout);
+    }
+
+    public function testBankingHourOndemandCreationWithProcessedPayout()
+    {
+        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_fund_account');
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 10000000000]);
+
+        $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
+
+        $this->app['config']->set('applications.razorpayx_client.test.mock_webhook', true);
+
+        $this->app['config']->set('applications.razorpayx_client.live.mock_webhook', true);
+
+        //set time as banking hour for testing
+        $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($bankingHour);
+
+        $this->startTest();
+
+        $ondemandpayout = $this->getLastEntity('settlement.ondemand_payout',true);
+
+        dispatch_now(new RequestOndemandPayout(Mode::TEST, substr($ondemandpayout['id'], -14, 14),
+            $this->merchantDetail['merchant_id'], 'inr'));
+
+        $reversal = $this->getDbEntity('reversal');
+
+        $this->assertNull($reversal);
+    }
+
+    public function testBankingHourOndemandCreationWithReversedPayoutResponse()
+    {
+        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_fund_account');
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 10000000000]);
+
+        $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
+
+        //set time as banking hour for testing
+        $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($bankingHour);
+
+        $this->startTest();
+
+        $ondemandpayout = $this->getLastEntity('settlement.ondemand_payout',true);
+
+        dispatch_now(new RequestOndemandPayout(Mode::TEST, substr($ondemandpayout['id'], -14, 14),
+            $this->merchantDetail['merchant_id'], 'inr'));
+
+        $reversals = $this->getDbEntities('reversal');
+
+        $this->assertEquals(1, $reversals->count());
     }
 
     public function testOndemandCreationBankingHour()
@@ -710,10 +766,10 @@ class SettlementOndemandTest extends TestCase
             //             'entity_id'             => 'sod_F1aL3U2O8oHd5e',
                             'type'                  => 'reversal',
                             'merchant_id'           => '10000000000000',
-                            'amount'                => 110000,
+                            'amount'                => 220000,
                             'fee'                   => 0,
                             'tax'                   => 0,
-                            'credit'                 => 110000,
+                            'credit'                 => 220000,
                             'currency'              => 'INR',
             //             'settled_at'            => '1582000200',
             //             'created_at'          => 1582000200,
@@ -724,10 +780,10 @@ class SettlementOndemandTest extends TestCase
         //             'entity_id'             => 'sod_F1aL3U2O8oHd5e',
                         'type'                  => 'settlement.ondemand',
                         'merchant_id'           => '10000000000000',
-                        'amount'                => 19635404,
-                        'fee'                   => 474596,
-                        'tax'                   => 72396,
-                        'debit'                 => 20110000,
+                        'amount'                => 19742808,
+                        'fee'                   => 477192,
+                        'tax'                   => 72792,
+                        'debit'                 => 20220000,
                         'currency'              => 'INR',
         //             'settled_at'            => '1582000200',
         //             'created_at'          => 1582000200,
@@ -736,7 +792,7 @@ class SettlementOndemandTest extends TestCase
         $this->assertArraySelectiveEquals([
             //      'id'                    => 'rvrsl_F2enlXFQyGJqje',
                     'merchant_id'           => '10000000000000',
-                    'amount'                => 110000,
+                    'amount'                => 220000,
                     'entity_type'           => 'settlement.ondemand',
                     'fee'                  => 0,
                     'tax'                   => 0,
@@ -750,11 +806,11 @@ class SettlementOndemandTest extends TestCase
  //           'id'                    => 'sod_F0qG7YFH2KMpzY',
             'merchant_id'           => '10000000000000',
             'user_id'               => '20000000000000',
-            'amount'                => 20110000,
+            'amount'                => 20220000,
             'total_amount_settled'  => 19528000,
             'total_fees'            => 472000,
             'total_tax'             => 72000,
-            'total_amount_reversed' => 110000,
+            'total_amount_reversed' => 220000,
             'total_amount_pending'  => 0,
             'max_balance'           => false,
             'currency'              => 'INR',
@@ -777,11 +833,11 @@ class SettlementOndemandTest extends TestCase
             //          'initiated_at'   => 1582000200,
             //          'processed_at'   => 1582036200,
             //          'reversed_at'    => 1582036200,
-                        'fees'           => 2596,
-                        'tax'            => 396,
+                        'fees'           => 5192,
+                        'tax'            => 792,
                         'utr'            => null,
                         'status'         => 'reversed',
-                        'amount'         => 110000,
+                        'amount'         => 220000,
                         'failure_reason' => 'dummy_reason',
             //          'created_at'     => 1582000200,
                                 ], $settlementOndemandPayouts['items'][0]);
@@ -811,8 +867,6 @@ class SettlementOndemandTest extends TestCase
     //merchant request with max_balance as 1
     public function testCreateOndemandForMaxBalance()
     {
-        $this->markTestSkipped();
-
         $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
 
         $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_fund_account');
@@ -834,71 +888,11 @@ class SettlementOndemandTest extends TestCase
         Carbon::setTestNow($bankingHour);
 
         $this->startTest();
-
-        $txn = $this->getLastEntity('transaction',true);
-
-        $this->assertArraySelectiveEquals([
-        //             'id'                    => 'txn_F1aL3bkJd2t5fK',
-        //             'entity_id'             => 'sod_F1aL3U2O8oHd5e',
-                        'type'                  => 'settlement.ondemand',
-                        'merchant_id'           => '10000000000000',
-                        'amount'                => 19557292,
-                        'fee'                   => 472708,
-                        'tax'                   => 72108,
-                        'debit'                 => 20030000,
-                        'currency'              => 'INR',
-        //             'settled_at'            => '1582000200',
-        //             'created_at'          => 1582000200,
-                                ], $txn);
-
-        $settlementOndemand = $this->getLastEntity('settlement.ondemand',true);
-
-        $this->assertArraySelectiveEquals([
-    //           'id'                    => 'sod_F0qG7YFH2KMpzY',
-            'merchant_id'           => '10000000000000',
-            'user_id'               => '20000000000000',
-            'amount'                => 20030000,
-            'total_amount_settled'  => 0,
-            'total_fees'            => 472708,
-            'total_tax'             => 72108,
-            'total_amount_reversed' => 0,
-            'total_amount_pending'  => 19557292,
-            'max_balance'           => true,
-            'currency'              => 'INR',
-            'status'                => 'initiated',
-            'narration'             => 'Demo Narration - optional',
-//            'transaction_id'        => 'F0qG7d1MGiNbmc',
-            'transaction_type'      => 'transaction',
-//            'created_at'            => 1582000200,
-                    ], $settlementOndemand);
-
-        $settlementOndemandPayout = $this->getLastEntity('settlement.ondemand_payout',true);
-
-        $this->assertArraySelectiveEquals([
-//          'id'             => 'sodp_F0qiDKkbH2QRRR',
-            'merchant_id'    => '10000000000000',
-            'user_id'        =>'20000000000000',
-//          'ondemand_id'    => 'F0qiDHrgiKpZJi',
-//          'payout_id'      => 'pout_F0qiDcJxmKpuOJ',
-            'mode'           => 'NEFT',
-//          'initiated_at'   => 1582000200,
-            'processed_at'   => NULL,
-            'reversed_at'    => NULL,
-            'fees'           => 472708,
-            'tax'            => 72108,
-            'utr'            => NULL,
-            'status'         => 'initiated',
-            'amount'         => 20030000,
-            'failure_reason' => NULL,
-//          'created_at'     => 1582000200,
-                    ], $settlementOndemandPayout);
     }
 
     //merchant request amount > balance
     public function testCreateOndemandOnLowBalance()
     {
-        $this->markTestSkipped();
-
         $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
 
         $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_fund_account');
@@ -1175,7 +1169,7 @@ class SettlementOndemandTest extends TestCase
 
         $this->assertNotEmpty($newSettlementOndemandPricingRule);
 
-        $this->assertNotEmpty($newOndemandPayoutPricingRule);    
+        $this->assertNotEmpty($newOndemandPayoutPricingRule);
     }
 
     public function testNoMinLimitFornEsAutomaticMerchants()

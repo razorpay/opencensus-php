@@ -105,7 +105,8 @@ class MockPayoutOndemandWebhook extends Job
 
         /* Using amount 110000 for testing reversal event if the amount is 1100
         then reversal webhook event is sent */
-        if ($settlementOndemandPayout->getAmount() === 110000)
+        if (($settlementOndemandPayout->getAmount() === 220000) or
+            ($settlementOndemandPayout->getAmount() === 880000))
         {
             $input['event'] = 'payout.reversed';
 

@@ -125,7 +125,7 @@ class Service extends Base\Service
     public function createPartialReversal($settlementOndemandPayoutId, $merchantId, $reversalReason)
     {
         $settlementOndemandPayout = (new OndemandPayout\Repository)->findByIdAndMerchantIdWithLock
-                                                ($settlementOndemandPayoutId , $merchantId);
+                                                ($settlementOndemandPayoutId, $merchantId);
 
         $this->core()->createPartialReversal($settlementOndemandPayout, $reversalReason);
     }

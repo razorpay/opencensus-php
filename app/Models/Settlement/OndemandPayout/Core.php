@@ -28,9 +28,10 @@ class Core extends Base\Core
 {
     const MODE_BUFFER_TIME = 1800;
 
-    const PAYOUT_PROCESSING_OR_PROCESSED_STATUS = [
+    const PAYOUT_VALID_STATUS_LIST = [
         'processing',
         'processed',
+        'reversed',
     ];
 
     const MAX_IMPS_AMOUNT = FundTransfer\Base\Initiator\NodalAccount::MAX_IMPS_AMOUNT * 100;
@@ -162,7 +163,7 @@ class Core extends Base\Core
                                                    $response)
     {
         if ((empty($payoutId) === true) or
-            (in_array($payoutStatus, self::PAYOUT_PROCESSING_OR_PROCESSED_STATUS, true) === false))
+            (in_array($payoutStatus, self::PAYOUT_VALID_STATUS_LIST, true) === false))
         {
             throw new BadRequestException(ErrorCode::SERVER_ERROR_RAZORPAYX_PAYOUT_CREATION_FAILURE,
                 null,
@@ -172,18 +173,23 @@ class Core extends Base\Core
         }
         else
         {
+            $settlementOndemandPayout->setInitiatedAt(Carbon::now(Timezone::IST)->getTimestamp());
+
+            if ($payoutStatus === Status::PROCESSED)
+            {
+                return $this->handlePayoutProcessedEvent($settlementOndemandPayout, $response['utr']);
+            }
+
+            if ($payoutStatus === Status::REVERSED)
+            {
+                return (new Ondemand\Core)->createPartialReversal($settlementOndemandPayout, $response['failure_reason'] ?: 'failed');
+            }
+
             $settlementOndemandPayout->setStatus(Status::INITIATED);
 
             $settlementOndemandPayout->setPayoutId($payoutId);
 
-            $settlementOndemandPayout->setInitiatedAt(Carbon::now(Timezone::IST)->getTimestamp());
-
             $this->repo->saveOrFail($settlementOndemandPayout);
-
-            if ($payoutStatus === Status::PROCESSED)
-            {
-                $this->handlePayoutProcessedEvent($settlementOndemandPayout, $response['utr']);
-            }
         }
     }
 
@@ -240,6 +246,11 @@ class Core extends Base\Core
 
     public function handlePayoutProcessedEvent($settlementOndemandPayout, $utr)
     {
+        if ($settlementOndemandPayout->getStatus() === Status::PROCESSED)
+        {
+            return;
+        }
+
         $this->repo->transaction(
             function() use ($settlementOndemandPayout, $utr)
             {
@@ -337,7 +348,7 @@ class Core extends Base\Core
 
     public function addOndemandPayoutFees($settlementOndemandPayout)
     {
-        list($fees, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($settlementOndemandPayout);
+        [$fees, $tax, $feesSplit] = (new Pricing\Fee)->calculateMerchantFees($settlementOndemandPayout);
 
         $settlementOndemandPayout->setFees($fees);
 

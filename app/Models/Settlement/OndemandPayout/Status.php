@@ -30,14 +30,15 @@ class Status
         ],
         self::CREATED => [
             self::INITIATED,
+            self::PROCESSED,
             self::REVERSED,
         ],
         self::INITIATED => [
+            self::INITIATED,
             self::PROCESSED,
             self::REVERSED,
         ],
         self::REVERSED => [
-            // this is empty because it's the final status
         ],
         self::PROCESSED => [
             self::REVERSED,

@@ -128,13 +128,7 @@ class Core extends Base\Core
     {
         if ($settlementOndemandPayout->getStatus() === OndemandPayout\Status::REVERSED)
         {
-            throw new Exception\LogicException(
-                'This payout is already reversed',
-                ErrorCode::BAD_REQUEST_ONDEMAND_PAYOUT_REVERSAL_FAILURE,
-                [
-                    'settlement_ondemand_id'          => $settlementOndemandPayout->getOndemandId(),
-                    'settlement_ondemand_payout_id'   => $settlementOndemandPayout->getId(),
-                ]);
+            return;
         }
 
         $this->repo->transaction(

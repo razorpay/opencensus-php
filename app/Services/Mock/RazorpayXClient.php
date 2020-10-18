@@ -43,7 +43,7 @@ class RazorpayXClient extends BaseRazorpayXClient
 
     public function createFundAccount($contactId, $data)
     {
-        if (empty($data['name']) === true || 
+        if (empty($data['name']) === true ||
             empty($data['ifsc']) === true ||
             empty($data['account_number']) === true)
         {
@@ -52,7 +52,7 @@ class RazorpayXClient extends BaseRazorpayXClient
         }
 
         $uniqueId = UniqueIdEntity::generateUniqueId();
-    
+
         $response = [
             'id'           => 'fa_' . $uniqueId,
             'entity'       => 'fund_account',
@@ -75,17 +75,17 @@ class RazorpayXClient extends BaseRazorpayXClient
 
     public function makePayoutRequest($data, $idempotencyKey)
     {
-        if (empty($data['fund_account_id']) === true || 
+        if (empty($data['fund_account_id']) === true ||
             empty($data['amount']) === true ||
             empty($data['currency']) === true ||
-            empty($data['mode']) === true ) 
+            empty($data['mode']) === true )
         {
             throw new Exception\InvalidArgumentException(
                 'fund_account_id, amount, currency, mode and reference_id are mandatory');
         }
 
         $uniqueId = UniqueIdEntity::generateUniqueId();
-    
+
         $response = [
             'id'             => 'pout_' . $uniqueId,
             'entity'         => 'payout',
@@ -105,6 +105,19 @@ class RazorpayXClient extends BaseRazorpayXClient
             'failure_reason' => NULL,
             'created_at'     => Carbon::now()->getTimestamp(),
         ];
+
+        // for settlement.ondemand of 440000, special case of payout status as processed instead of processing
+        if ($data['amount'] === 429616)
+        {
+            $response['status'] = 'processed';
+        }
+
+        // for settlement.ondemand of 880000, special case of payout status as reversed instead of processing
+        if ($data['amount'] === 859232)
+        {
+            $response['status'] = 'reversed';
+        }
+
 
         return $response;
     }
