@@ -30,6 +30,12 @@ class Service extends Base\Service
         Batch\Constants::ENACH_NB_ICICI
     ];
 
+    // skips extracting the zip file before creating the batch
+    // the extraction is handled as part of batch processing
+    const SKIP_INPUT_EXTRACT = [
+        Batch\Type::NACH
+    ];
+
     public function __construct()
     {
         parent::__construct();
@@ -117,7 +123,8 @@ class Service extends Base\Service
 
         $files = [];
 
-        if ($this->fileProcessor->isZipFile($file, $locationType) === true)
+        if (($this->fileProcessor->isZipFile($file, $locationType) === true) and
+            (in_array($input['type'], self::SKIP_INPUT_EXTRACT, true) === false))
         {
             // Gets the actual zip file's details first.
             $zipFileDetails = $this->fileProcessor->getFileDetails($file, $locationType);
