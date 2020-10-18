@@ -99,7 +99,7 @@ class Core extends Base\Core
         return $paymentLink;
     }
 
-    public function createSubscription(string $id, array $input, Merchant\Entity $merchant)
+    public function createSubscription(Entity $paymentLink, array $input, Merchant\Entity $merchant)
     {
         $ppItemId = $input[Entity::PAYMENT_PAGE_ITEM_ID];
 
@@ -120,7 +120,21 @@ class Core extends Base\Core
 
         $subscriptionInput = $this->buildInputForSubscription($planId, $subscriptionDetails, $input);
 
-        $responseJson = $this->app['module']->subscription->createSubscription($subscriptionInput, $merchant);
+        $headers['X-Razorpay-Source'] = 'subscription_button';
+
+        $headers['X-Razorpay-SourceId'] = $paymentLink->getId();
+
+        $responseJson = $this->app['module']->subscription->createSubscription($subscriptionInput, $merchant, $headers);
+
+        $this->repo->transaction(function() use ($ppItem)
+        {
+            $this->repo->payment_page_item->lockForUpdateAndReload($ppItem);
+
+            $ppItem->incrementQuantitySold(1);
+
+            $this->repo->payment_page_item->saveOrFail($ppItem);
+
+        });
 
         return ['subscription_id' => $responseJson['id']];
     }

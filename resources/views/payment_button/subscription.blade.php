@@ -41,6 +41,8 @@
 
     <script>
         function loadRazorpayPaymentForm() {
+            data.form_source = 'subscription_button';
+
             window.RZP.loadRazorpayPaymentForm(data);
         }
 

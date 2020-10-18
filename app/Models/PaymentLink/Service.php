@@ -114,7 +114,9 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('createSubscription', $input);
 
-        return $this->core->createSubscription($id, $input, $this->merchant);
+        $paymentLink = $this->repo->payment_link->findActiveByPublicId($id);
+
+        return $this->core->createSubscription($paymentLink, $input, $this->merchant);
     }
 
     public function getButtonViewNameAndPayload(string $id, array $input, CurrentRequest $request, $viewType = null)
