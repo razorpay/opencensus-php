@@ -322,35 +322,61 @@ class Core extends Base\Core
      */
     public function triggerSettlementsMail(Entity $settlement, $redactedBaNumber = null)
     {
-        $merchant = $settlement->merchant;
-
-        // Get razorx treatment
-        $variant = $this->app->razorx->getTreatment(
-            $merchant->getId(),
-            MerchantModel\RazorxTreatment::SETTLEMENT_MAIL_RAMP,
-            $this->mode
-        );
-
-        if (strtolower($variant) !== 'on')
+        try
         {
-            return;
-        }
+            $merchant = $settlement->merchant;
 
-        $bankAccountNumber = ($settlement->bankAccount !== null) ?
-            $settlement->bankAccount->getRedactedAccountNumber() : 'XXXX-XXXX-XXXX';
+            // Get razorx treatment
+            $variant = $this->app->razorx->getTreatment(
+                $merchant->getId(),
+                MerchantModel\RazorxTreatment::SETTLEMENT_MAIL_RAMP,
+                $this->mode
+            );
 
-        if ($redactedBaNumber !== null)
-        {
-            $bankAccountNumber = $redactedBaNumber;
-        }
+            if (strtolower($variant) !== 'on')
+            {
+                return;
+            }
 
-        $setlDetails  = (new SetlDetails\Core)->getSettlementDetails($settlement->getId(), $merchant);
-        $settlementTime = Carbon::createFromTimestamp($settlement->getUpdatedAt(), Timezone::IST)
-            ->format('m-d-y h:m:s');
+            $bankAccountNumber = ($settlement->bankAccount !== null) ?
+                $settlement->bankAccount->getRedactedAccountNumber() : 'XXXX-XXXX-XXXX';
 
-        $data = [
+            if ($redactedBaNumber !== null)
+            {
+                $bankAccountNumber = $redactedBaNumber;
+            }
+
+            $setlDetails  = (new SetlDetails\Core)->getSettlementDetails($settlement->getId(), $merchant);
+            $settlementTime = Carbon::createFromTimestamp(Carbon::now(Timezone::IST)->getTimestamp(), Timezone::IST)
+                ->format('d/m/Y h:i A');
+
+            $email = null;
+
+            if ($merchant->isLinkedAccount() === true)
+            {
+                $email = $merchant->parent->getEmail();
+            }
+            else
+            {
+                $email = $merchant->getEmail();
+            }
+
+            if(empty($email) === true or $email === "")
+            {
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_PROCESSED_MAIL_NOTIFICATION_ENQUEUE_SKIPPED,
+                    [
+                        'merchant_id'   => $merchant->getId(),
+                        'settlement_id' => $settlement->getId(),
+                        'status'        => $settlement->getStatus(),
+                    ]);
+
+                return;
+            }
+
+            $data = [
                 'merchant' => [
-                    MerchantModel\Entity::EMAIL      => $merchant->getEmail(),
+                    MerchantModel\Entity::EMAIL      => $email,
                     MerchantModel\Entity::LOGO_URL   => $merchant->getLogoUrl(),
                 ],
                 'settlement' => [
@@ -365,17 +391,28 @@ class Core extends Base\Core
                 ],
             ];
 
-        $settlementProcessedMail = new SettlementsProcessedNotification($data);
+            $settlementProcessedMail = new SettlementsProcessedNotification($data);
 
-        Mail::queue($settlementProcessedMail);
+            Mail::queue($settlementProcessedMail);
 
-        $this->trace->info(
-            TraceCode::SETTLEMENT_PROCESSED_MAIL_NOTIFICATION_ENQUEUED,
-            [
-                'merchant_id'   => $merchant->getId(),
-                'settlement_id' => $settlement->getId(),
-                'status'        => $settlement->getStatus(),
-            ]);
+            $this->trace->info(
+                TraceCode::SETTLEMENT_PROCESSED_MAIL_NOTIFICATION_ENQUEUED,
+                [
+                    'merchant_id'   => $merchant->getId(),
+                    'settlement_id' => $settlement->getId(),
+                    'status'        => $settlement->getStatus(),
+                ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SETTLEMENT_PROCESSED_MAIL_NOTIFICATION_ENQUEUE_FAILED,
+                [
+                    'settlement_id' => $settlement->getId()
+                ]);
+        }
     }
 
     /**

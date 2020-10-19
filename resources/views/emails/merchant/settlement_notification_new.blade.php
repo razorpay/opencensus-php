@@ -69,28 +69,48 @@
               border-top-color: #0eb550;
             "
           >
-            <img style="height: 60px" src={{$merchant['logo_url']}} />
-            <p
-              style="
-                font-family: Trebuchet MS;
-                font-style: normal;
-                font-size: 18px;
-                line-height: 25px;
-                text-align: center;
-                color: #515978;
-                padding-top: 20px;
-                border-top-style: solid;
-                border-top-color: #ebedf2;
-                border-top-width: 2px;
-              "
-            >
-              <strong
-                >&#x20B9; {{number_format(floatval($settlement['amount']/100),
-                2, '.', '')}}</strong
+          @if($merchant['logo_url']) 
+              <img style="height: 60px;" src={{$merchant['logo_url']}} /> 
+              <p
+                style="
+                  font-family: Trebuchet MS;
+                  font-style: normal;
+                  font-size: 18px;
+                  line-height: 25px;
+                  text-align: center;
+                  color: #515978;
+                  padding-top: 20px;
+                  border-top-style: solid;
+                  border-top-color: #ebedf2;
+                  border-top-width: 2px;
+                "
               >
-              amount has been successfully settled to your bank account on
-              {{$settlement['time']}}
-            </p>
+                <strong
+                  >&#x20B9; {{number_format(floatval($settlement['amount']/100),
+                  2, '.', '')}}</strong
+                >
+                amount has been successfully settled to your bank account on
+                {{$settlement['time']}}
+              </p>
+            @else
+              <p
+                style="
+                  font-family: Trebuchet MS;
+                  font-style: normal;
+                  font-size: 18px;
+                  line-height: 25px;
+                  text-align: center;
+                  color: #515978;
+                "
+              >
+                <strong
+                  >&#x20B9; {{number_format(floatval($settlement['amount']/100),
+                  2, '.', '')}}</strong
+                >
+                amount has been successfully settled to your bank account on
+                {{$settlement['time']}}
+              </p>
+            @endif
           </div>
         </div>
         ​
@@ -128,7 +148,7 @@
               </div>
               <div style="width: 50%; text-align: end; padding-right: 10px">
                 <a
-                  href="https://razorpay.com/docs/payment-gateway/dashboard-guide/settlements/"
+                  href="https://razorpay.com/settlement/"
                   style="color: #528ff0; text-decoration: none"
                   target="_blank"
                   >View settlement guide
