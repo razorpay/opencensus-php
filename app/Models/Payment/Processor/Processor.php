@@ -54,6 +54,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Locale\Core as LocaleCore;
+use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Transfer\Core as TransferCore;
@@ -632,7 +633,7 @@ class Processor
         $this->verifyCardlessEmiEnabled();
 
         if ((empty($input['ott']) === false) and
-            (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider) === false))
+            (in_array($input['provider'], Payment\Gateway::$redirectFlowProvider) === false))
         {
             return;
         }
@@ -685,7 +686,7 @@ class Processor
         $input['payment_id'] = $payment->getPublicId();
 
         if ((empty($input['emi_duration']) === false) and
-            (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true))
+            (in_array($input['provider'], Payment\Gateway::$redirectFlowProvider) === true))
         {
             return;
         }
@@ -752,7 +753,7 @@ class Processor
             'payment_create_url' => $this->route->getUrlWithPublicAuth('payment_create'),
         ];
 
-        if (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true)
+        if (in_array($input['provider'], Payment\Gateway::$redirectFlowProvider) === true)
         {
             $coproto['emi_plans'] = [
                 $input['provider'] => $checkAccountData['emi_plans']
@@ -851,7 +852,7 @@ class Processor
 
         unset ($input['merchant_id']);
 
-        $coproto  = $this->preProcesspaylaterResponseHandler($response, $payment, $input, $merchant);
+        $coproto  = $this->preProcesspaylaterResponseHandler($response, $payment, $input, $merchant, $terminals[0]);
 
         return $coproto;
     }
@@ -4195,9 +4196,9 @@ class Processor
         return false;
     }
 
-    protected function preProcesspaylaterResponseHandler($response, $payment, $input, $merchant)
+    protected function preProcesspaylaterResponseHandler($response, $payment, $input, $merchant, $terminal)
     {
-        switch ($input['provider'])
+        switch ($terminal['gateway_acquirer'])
         {
             case Payment\Gateway::GETSIMPL:
                 //
@@ -4208,6 +4209,11 @@ class Processor
 
             case PayLater::ICICI:
                 return;
+                break;
+
+            case PayLater::FLEXMONEY:
+                return;
+                break;
 
             default:
                 (new Customer\Raven)->sendOtp($input, $merchant);

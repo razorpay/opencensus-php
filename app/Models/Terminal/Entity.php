@@ -17,6 +17,7 @@ use RZP\Models\Terminal\TpvType;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal\BankingType;
 use RZP\Models\Base\QueryCache\Cacheable;
+use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Netbanking;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Emi\Subvention as EmiSubvention;
@@ -1188,24 +1189,36 @@ class Entity extends Base\PublicEntity
     protected function generateEnabledBanks(array $input)
     {
         $netbanking = intval($input[self::NETBANKING] ?? 0);
+        $paylater   = intval($input[self::PAYLATER] ?? 0);
+
+        $gatewayAquirer = $input[self::GATEWAY_ACQUIRER] ?? '';
+
         $gateway = $input[self::GATEWAY];
 
-        if (($netbanking !== 1) or (in_array($gateway, Gateway::$methodMap[Method::NETBANKING], true) === false))
+        if ((($netbanking !== 1) and ($paylater !== 1)) or ((in_array($gateway, Gateway::$methodMap[Method::NETBANKING], true) === false) and
+                (PayLater::isMultilenderProvider($gatewayAquirer) === false)))
         {
             return;
         }
 
-        $corporate = $input[self::CORPORATE] ?? BankingType::RETAIL_ONLY;
+        if ($netbanking === 1)
+        {
+            $corporate = $input[self::CORPORATE] ?? BankingType::RETAIL_ONLY;
 
-        $tpv = $input[self::TPV] ?? TpvType::NON_TPV_ONLY;
+            $tpv = $input[self::TPV] ?? TpvType::NON_TPV_ONLY;
 
-        $supportedBanks = Netbanking::getSupportedBanksForGateway($gateway, $corporate, $tpv);
+            $supportedBanks = Netbanking::getSupportedBanksForGateway($gateway, $corporate, $tpv);
 
-        $disabledBanks = Netbanking::getDefaultDisabledBanksForGateway($gateway, $corporate, $tpv);
+            $disabledBanks = Netbanking::getDefaultDisabledBanksForGateway($gateway, $corporate, $tpv);
 
-        $enabledBanks = array_diff($supportedBanks, $disabledBanks);
+            $enabledBanks = array_diff($supportedBanks, $disabledBanks);
 
-        $enabledBanks = array_values($enabledBanks);
+            $enabledBanks = array_values($enabledBanks);
+        }
+        elseif ($paylater === 1)
+        {
+            $enabledBanks = Paylater::getSupportedBanksForMultilenderProvider($gatewayAquirer);
+        }
 
         $this->setAttribute(self::ENABLED_BANKS, $enabledBanks);
     }

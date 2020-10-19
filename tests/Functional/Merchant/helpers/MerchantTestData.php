@@ -2172,6 +2172,49 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesAfterFilterForMinimumAmount' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+                'amount'   => '20000'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'mode'  => 'test',
+                'methods' =>[
+                    'paylater' => [
+                        'icic' => true,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithAmountGreater' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+                'amount'   => '200001'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'mode'  => 'test',
+                'methods' =>[
+                    'paylater' => [
+                        'icic' => true,
+                        'hdfc' => true,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithNonOrderRelatedOffer' => [
         'request' => [
             'url'    => '/preferences',

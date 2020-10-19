@@ -740,14 +740,31 @@ class Core extends Base\Core
     {
         $provider = [];
 
-        $providers = $this->app['repo']->terminal->findByMerchantIdAndMethod($merchant['id'], $method);
+        $terminals = $this->app['repo']->terminal->findByMerchantIdAndMethod($merchant['id'], $method);
 
-        $providers = $providers->toArray();
+        $terminals = $terminals->toArray();
 
-        $providers = (array_unique(array_column($providers, 'gateway_acquirer')));
+        $providers    = (array_unique(array_column($terminals, 'gateway_acquirer')));
+
+        if ($method === Payment\Method::PAYLATER)
+        {
+            $enabledBanks = (array_column($terminals, 'enabled_banks'));
+            $enabledBanks = array_unique(array_flatten($enabledBanks));
+            $enabledBanks = array_filter($enabledBanks);
+
+            $enabledProviders = array_map('strtolower', $enabledBanks);
+
+            $providers = array_merge($providers, $enabledProviders);
+        }
 
         foreach ($providers as $providerName)
         {
+            //for skipping providers that support other banks for paylater
+            if (($method === Payment\Method::PAYLATER) and (Payment\Processor\PayLater::isMultilenderProvider($providerName)))
+            {
+                continue;
+            }
+
             $provider[$providerName] = true;
         }
 

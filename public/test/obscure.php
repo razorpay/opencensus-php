@@ -242,6 +242,7 @@ function disableEmptyInputs(form) {
                 <option value="epaylater">EPayLater</option>
                 <option value="getsimpl">Simpl</option>
                 <option value="icic">Icici Paylater</option>
+                <option value="hdfc">HDFC Bank Paylater</option>
                 <option value="bajajfinserv">Bajaj Finserv</option>
             </select>
         </td>

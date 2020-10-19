@@ -277,6 +277,19 @@ class MockGatewayController extends Controller
         return $data;
     }
 
+    public function postPaylaterPayment()
+    {
+        $input = Request::all();
+
+        $driver = 'paylater';
+
+        $server = $this->gateway->server($driver);
+
+        $data = $server->authorize($input);
+
+        return $data;
+    }
+
     public function postMobikwikPayment()
     {
         $input = Request::all();

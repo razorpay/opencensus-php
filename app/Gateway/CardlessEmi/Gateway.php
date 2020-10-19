@@ -75,7 +75,7 @@ class Gateway extends Base\Gateway
     {
         $this->action($input, Action::CHECK_ACCOUNT);
 
-        $this->provider = strtoupper($input['provider']);
+        $this->provider = strtoupper($this->terminal['gateway_acquirer']);
 
         $checkAccountContent = $this->getCheckAccountRequestContent($input);
 
@@ -114,6 +114,13 @@ class Gateway extends Base\Gateway
         // in case of method: paylater, there are no emi plans.
         if ($this->gateway === Payment\Gateway::PAYLATER)
         {
+            $gatewayAcquirer = $this->provider;
+
+            if (in_array(strtolower($gatewayAcquirer), Payment\Gateway::$redirectFlowProvider) === true)
+            {
+                $this->addCacheData($input, $responseArray);
+            }
+
             return;
         }
 
@@ -129,7 +136,7 @@ class Gateway extends Base\Gateway
 
         }
 
-        if (in_array(strtolower($this->provider), Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true)
+        if (in_array(strtolower($this->provider), Payment\Gateway::$redirectFlowProvider) === true)
         {
             return [
                 'emi_plans'             => $responseArray[ResponseFields::EMI_PLANS],
@@ -143,7 +150,7 @@ class Gateway extends Base\Gateway
 
     protected function addCacheData($input, $responseArray)
     {
-        $emiPlans = $responseArray[ResponseFields::EMI_PLANS];
+        $emiPlans = $responseArray[ResponseFields::EMI_PLANS] ?? null;
 
         $input = Customer\Validator::validateAndParseContactInInput($input);
 
@@ -162,7 +169,7 @@ class Gateway extends Base\Gateway
 
         $emiPlanKey = sprintf(self::EMI_PLAN_CACHE_KEY, $cacheKey);
 
-        if (in_array(strtolower($this->provider), Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true)
+        if (in_array(strtolower($this->provider), Payment\Gateway::$redirectFlowProvider) === true)
         {
             $url = $responseArray[ResponseFields::REDIRECT_URL];
 
@@ -181,7 +188,11 @@ class Gateway extends Base\Gateway
             $key = sprintf(self::LOAN_URL_CACHE_KEY, $cacheKey);
         }
 
-        $this->createCacheData($emiPlanKey, $emiPlans);
+        // EMI plans will not be there for paylater gateways
+        if ($emiPlans != null)
+        {
+            $this->createCacheData($emiPlanKey, $emiPlans);
+        }
 
         $this->createCacheData($key, $url);
     }
@@ -220,7 +231,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        if ((in_array(strtolower($this->provider), Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true))
+        if ((in_array(strtolower($this->provider), Payment\Gateway::$redirectFlowProvider) === true))
         {
             return $this->getRedirectRequestData($input, $request);
         }
@@ -445,12 +456,24 @@ class Gateway extends Base\Gateway
                 break;
             case CardlessEmi::FLEXMONEY:
                 $content[RequestFields::CONTACT] = $input['contact'];
+                $content = $this->addBankCodeAndTransactionType($content, $input['provider']);
                 break;
             case PayLater::EPAYLATER:
                 $content[RequestFields::AMOUNT] = (string) ($input['amount']);
                 $content[RequestFields::CONTACT] = substr($input['contact'], -10, 10);
             default:
                 break;
+        }
+
+        return $content;
+    }
+
+    protected function addBankCodeAndTransactionType($content, $provider)
+    {
+        if (($this->gateway === Payment\Gateway::PAYLATER))
+        {
+            $content[RequestFields::TRANSACTION_TYPE] = 'PAY_LATER';
+            $content[RequestFields::BANK_CODE]        = BankCodes::getBankCode($provider);
         }
 
         return $content;
@@ -624,6 +647,8 @@ class Gateway extends Base\Gateway
 
                 $content[RequestFields::CHECKSUM] = $checksum;
 
+                $content = $this->addBankCodeAndTransactionType($content, $input['payment']['wallet']);
+
                 break;
             default:
                 $content[RequestFields::MERCHANT] = [
@@ -791,8 +816,8 @@ class Gateway extends Base\Gateway
     protected function shouldJsonEncode($content)
     {
         if (($this->isGetByIdRequest() === false) and
-            (((in_array(strtolower($this->provider), Payment\Gateway::$cardlessEmiRedirectFlowProvider) === false) or
-            ((in_array(strtolower($this->provider), Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true) and
+            (((in_array(strtolower($this->provider), Payment\Gateway::$redirectFlowProvider) === false) or
+            ((in_array(strtolower($this->provider), Payment\Gateway::$redirectFlowProvider) === true) and
                 ($this->action !== Action::AUTHORIZE)))))
         {
             return true;

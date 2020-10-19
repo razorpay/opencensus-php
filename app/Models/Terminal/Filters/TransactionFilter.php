@@ -51,6 +51,7 @@ class TransactionFilter extends Terminal\Filter
         'shared_terminal',
         'mcc',
         'application',
+        'provider'
     ];
 
     public function methodFilter($terminal)
@@ -95,8 +96,7 @@ class TransactionFilter extends Terminal\Filter
                         ($this->input['payment']->getWallet() === $terminal->getGatewayAcquirer()));
 
             case Method::PAYLATER:
-                return (($terminal->isPayLaterEnabled() === true) and
-                        ($this->input['payment']->getWallet() === $terminal->getGatewayAcquirer()));
+                return ($terminal->isPayLaterEnabled() === true);
 
             case Method::NACH:
                 return $terminal->isNachEnabled();
@@ -1072,5 +1072,28 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return true;
+    }
+
+    public function providerFilter(Terminal\Entity $terminal)
+    {
+        $payment = $this->input['payment'];
+
+        if ($payment->isPayLater() === false)
+        {
+            return true;
+        }
+
+        $wallet = $this->input['payment']->getWallet();
+
+        if (in_array($wallet, Payment\Processor\PayLater::getPaylaterDirectAquirers()) === true)
+        {
+            return ($wallet === $terminal->getGatewayAcquirer());
+        }
+        else
+        {
+            $enabledBanks = (array) $terminal->getEnabledBanks();
+
+            return (in_array(strtoupper($wallet), $enabledBanks, true));
+        }
     }
 }

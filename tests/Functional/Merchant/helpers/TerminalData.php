@@ -1238,6 +1238,32 @@ return [
         ]
     ],
 
+    'testCreateFlexmoneyTerminalWithEnabledBanks'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'paylater',
+                'gateway_acquirer'          => 'flexmoney',
+                'category'                  => 1234,
+                'gateway_merchant_id'       => 'abcd',
+                'gateway_merchant_id2'      => 'test merchant',
+                'mode'                      => 1,
+                'paylater'                  => 1,
+                'gateway_terminal_password' => '64517b42-7b8d-4137-924a-4b6a065e7e4d'
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'abcd',
+                'gateway_merchant_id2' => 'test merchant',
+                'enabled'              => true,
+                'enabled_banks'        => [
+                    "HDFC"
+                ]
+            ]
+        ]
+    ],
+
     'testCreateUpiAirtelTerminal'  => [
         'request' => [
             'content' => [
@@ -2054,7 +2080,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Banks available only for netbanking gateways',
+                    'description' => 'Banks available only for netbanking gateways and some paylater providers',
                 ]
             ],
             'status_code'   => 400,
@@ -2148,7 +2174,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Banks available only for netbanking gateways',
+                    'description' => 'Banks available only for netbanking gateways and some paylater providers',
                 ]
             ],
             'status_code'   => 400,
@@ -2196,7 +2222,40 @@ return [
         ],
     ],
 
+    'testGetTerminalBanksForPaylater' => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => [
+                    'HDFC' => 'HDFC Bank',
+                ],
+                'disabled' => [
+                ],
+            ],
+        ],
+    ],
+
     'testSetBanksForDirectNetbankingTerminal' => [
+        'request' => [
+            'method' => 'PATCH',
+            'content' => [
+                'enabled_banks' => ['HDFC'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => [
+                    'HDFC'   => 'HDFC Bank',
+                ],
+                'disabled' => [
+                ],
+            ],
+        ],
+    ],
+
+    'testSetBanksForPaylaterTerminal' => [
         'request' => [
             'method' => 'PATCH',
             'content' => [

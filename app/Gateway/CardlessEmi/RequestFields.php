@@ -21,4 +21,6 @@ class RequestFields
     const CALLBACK_URL           = 'callback_url';
     const CONTACT                = 'contact';
     const CHECKSUM               = 'checksum';
+    const TRANSACTION_TYPE       = 'txn_type';
+    const BANK_CODE              = 'bank_code';
 }

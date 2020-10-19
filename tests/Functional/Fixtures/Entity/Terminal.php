@@ -16,6 +16,7 @@ use RZP\Tests\TestDummy\Factory;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Terminal\BankingType;
 use RZP\Models\Payment\Processor\Upi;
+use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -42,24 +43,36 @@ class Terminal extends Base
     protected function addEnabledBanksIfApplicable(array & $attributes)
     {
         $netbanking = intval($attributes['netbanking'] ?? 0);
+        $paylater   = intval($attributes['paylater'] ?? 0);
+
+        $gatewayAquirer = $attributes['gateway_acquirer'] ?? '';
+
         $gateway = $attributes['gateway'] ?? null;
 
-        if (($netbanking !== 1) or
-            (in_array($gateway, Gateway::$methodMap[Method::NETBANKING], true) === false) or
+        if ((($netbanking !== 1) and ($paylater !== 1)) or
+            ((in_array($gateway, Gateway::$methodMap[Method::NETBANKING], true) === false) and
+             (PayLater::isMultilenderProvider($gatewayAquirer) === false)) or
             (isset($attributes['enabled_banks']) === true))
         {
             return;
         }
 
-        $corporate = $attributes['corporate'] ?? BankingType::RETAIL_ONLY;
+        if ($netbanking === 1)
+        {
+            $corporate = $attributes['corporate'] ?? BankingType::RETAIL_ONLY;
 
-        $tpv = $attributes['tpv'] ?? TpvType::NON_TPV_ONLY;
+            $tpv = $attributes['tpv'] ?? TpvType::NON_TPV_ONLY;
 
-        $supportedBanks = Netbanking::getSupportedBanksForGateway($gateway, $corporate, $tpv);
+            $supportedBanks = Netbanking::getSupportedBanksForGateway($gateway, $corporate, $tpv);
 
-        $disabledBanks = Netbanking::getDefaultDisabledBanksForGateway($gateway, $corporate, $tpv);
+            $disabledBanks = Netbanking::getDefaultDisabledBanksForGateway($gateway, $corporate, $tpv);
 
-        $enabledBanks = array_diff($supportedBanks, $disabledBanks);
+            $enabledBanks = array_diff($supportedBanks, $disabledBanks);
+        }
+        elseif ($paylater === 1)
+        {
+            $enabledBanks = Paylater::getSupportedBanksForMultilenderProvider($gatewayAquirer);
+        }
 
         $attributes['enabled_banks'] = $enabledBanks;
     }
@@ -923,6 +936,28 @@ class Terminal extends Base
             'gateway_merchant_id'       =>  'DUMMY_MERCHANT_ID',
             'gateway_terminal_password' =>  'terminal_password',
             'mode'                      =>  '2',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createPaylaterFlexmoneyTerminal(array $attributes = [])
+    {
+        $sharedMerchantAccount = Account::TEST_ACCOUNT;
+        $termId                = Shared::PAYLATER_FLEXMONEY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        =>  $termId,
+            'merchant_id'               =>  $sharedMerchantAccount,
+            'gateway'                   =>  'paylater',
+            'gateway_acquirer'          =>  'flexmoney',
+            'shared'                    =>  0,
+            'paylater'                  =>  1,
+            'gateway_merchant_id'       =>  'DUMMY_MERCHANT_ID',
+            'gateway_terminal_password' =>  'terminal_password',
+            'mode'                      =>  '1',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

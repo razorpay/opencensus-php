@@ -38,7 +38,7 @@ trait PaymentCardlessEmiTrait
             ];
 
             if (in_array($responseInput['request']['content']['provider'],
-                    Gateway::$cardlessEmiRedirectFlowProvider) === true)
+                    Gateway::$redirectFlowProvider) === true)
             {
                 $newRequest = $this->getFormRequestFromResponse($this->makeRequestParent($request)->getContent(), $url);
 

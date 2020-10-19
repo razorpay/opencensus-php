@@ -116,6 +116,8 @@ class Checkout
             $this->fillPreferredMethods($merchant, $input, $data);
         }
 
+        $this->filterMethodsBasedOnAmount($data, $input);
+
         return $data;
     }
 
@@ -144,6 +146,26 @@ class Checkout
         (new Config\Core())->getFormattedConfigForCheckout($configId, $merchant->getId(), $data);
 
         $this->resetMethodsIfValidBanksPresent($data, $order, $merchant);
+    }
+
+    protected function filterMethodsBasedOnAmount(array & $data, $input)
+    {
+        if (isset($input['amount']) === false)
+        {
+            return;
+        }
+
+        foreach (Payment\Gateway::$minAmountForMethodAndGateway as $method => $gatewaysWithMinimumAmount)
+        {
+            foreach ($gatewaysWithMinimumAmount as $gatewayKey => $minAmount)
+            {
+
+                if (in_array($gatewayKey, $data[Entity::METHODS][$method]) and ($input['amount'] <= $minAmount))
+                {
+                    unset($data[Entity::METHODS][$method][$gatewayKey]);
+                }
+            }
+        }
     }
 
     protected function setOrGetOrder(string $orderId, Merchant\Entity $merchant)

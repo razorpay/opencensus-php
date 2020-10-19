@@ -2806,6 +2806,49 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('epaylater', $response['methods']['paylater']);
     }
 
+    public function testGetCheckoutPreferencesForPayLaterEnabledBanks()
+    {
+        $this->fixtures->merchant->enablePayLater();
+
+        $this->fixtures->create('terminal:paylater_icici_terminal');
+        $this->fixtures->create('terminal:paylater_flexmoney_terminal');
+
+        $response = $this->getPreferences();
+
+        $this->assertEquals(2, count($response['methods']['paylater']));
+
+        $this->assertArrayHasKey('icic', $response['methods']['paylater']);
+        $this->assertArrayHasKey('hdfc', $response['methods']['paylater']);
+    }
+
+    public function testGetCheckoutPreferencesAfterFilterForMinimumAmount()
+    {
+        $this->fixtures->merchant->enablePayLater();
+
+        $this->fixtures->create('terminal:paylater_icici_terminal');
+        $this->fixtures->create('terminal:paylater_flexmoney_terminal');
+
+        $this->ba->publicAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('hdfc', $response['methods']['paylater']);
+    }
+
+    public function testGetCheckoutPreferencesWithAmountGreater()
+    {
+        $this->fixtures->merchant->enablePayLater();
+
+        $this->fixtures->create('terminal:paylater_icici_terminal');
+        $this->fixtures->create('terminal:paylater_flexmoney_terminal');
+
+        $this->ba->publicAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('hdfc', $response['methods']['paylater']);
+    }
+
     public function testGetCheckoutPreferencesForPaypalCurrency()
     {
         $this->fixtures->merchant->enablePaypal();

@@ -560,6 +560,15 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateFlexmoneyTerminalWithEnabledBanks()
+    {
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testCreateUpiAirtelTerminal()
     {
         $url = '/merchants/10000000000000/terminals';
@@ -1292,6 +1301,19 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetTerminalBanksForPaylater()
+    {
+        $terminal = $this->fixtures->create('terminal:paylater_flexmoney_terminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testGetTpvTerminalBanks()
     {
         $terminal = $this->fixtures->create('terminal:shared_atom_tpv_terminal');
@@ -1347,6 +1369,19 @@ class TerminalTest extends TestCase
     public function testSetBanksForDirectNetbankingTerminal()
     {
         $terminal = $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testSetBanksForPaylaterTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:paylater_flexmoney_terminal');
 
         $url = '/terminals/' . $terminal['id'] . '/banks';
 

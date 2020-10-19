@@ -68,6 +68,7 @@ use RZP\Models\Customer\GatewayToken;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Models\Locale\Core as LocaleCore;
+use RZP\Models\Payment\Processor\PayLater;
 use RZP\Gateway\Mozart\GetSimpl\Constants;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -1234,7 +1235,7 @@ trait Authorize
             return;
         }
 
-        if (in_array($input[Payment\Entity::PROVIDER], Payment\Gateway::$cardlessEmiRedirectFlowProvider, true) === true)
+        if (in_array($input[Payment\Entity::PROVIDER], Payment\Gateway::$redirectFlowProvider, true) === true)
         {
             return;
         }
@@ -1245,6 +1246,11 @@ trait Authorize
     protected function validatePayLaterIfApplicable(Payment\Entity $payment, $input)
     {
         if ($payment->isPayLater() === false)
+        {
+            return;
+        }
+
+        if ((in_array(PayLater::getProviderForBank($input['provider']), Gateway::$redirectFlowProvider) === true))
         {
             return;
         }

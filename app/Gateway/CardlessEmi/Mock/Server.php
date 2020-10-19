@@ -5,12 +5,15 @@ namespace RZP\Gateway\CardlessEmi\Mock;
 use RZP\Gateway\Base;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\CardlessEmi\Action;
+use RZP\Gateway\CardlessEmi\RequestFields;
 use RZP\Gateway\CardlessEmi\ResponseFields;
 
 class Server extends Base\Mock\Server
 {
-    public function checkAccount()
+    public function checkAccount($input)
     {
+        $jsonRequest = json_decode($input, true);
+
         $content = [
             'account_exists'  => true,
             'emi_plans'       => [
@@ -33,6 +36,15 @@ class Server extends Base\Mock\Server
             'redirection_url'  => 'dummy_redirect_url',
             'extra'            => 'lender_brand',
         ];
+
+        if (isset($jsonRequest[RequestFields::TRANSACTION_TYPE]) and $jsonRequest[RequestFields::TRANSACTION_TYPE] === 'PAY_LATER')
+        {
+            $content = [
+                'account_exists'   => true,
+                'redirection_url'  => 'dummy_redirect_url',
+                'extra'            => 'lender_brand',
+            ];
+        }
 
         $this->content($content, 'check_account');
 

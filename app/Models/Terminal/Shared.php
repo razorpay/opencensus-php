@@ -125,6 +125,7 @@ class Shared
     const CARDLESS_EMI_ZESTMONEY_TERMINAL    = '30CrdlesEmiTml';
     const PAYLATER_EPAYLATER_TERMINAL        = '10PayLaterTrml';
     const PAYLATER_ICICI_TERMINAL            = '10PLaterIciTml';
+    const PAYLATER_FLEXMONEY_TERMINAL        = '10PLaterFlxTml';
     const ALLA_TPV_TERMINAL                  = '1000alltpvTrml';
     const IDFB_TPV_TERMINAL                  = '100idfctpvTrml';
     const UPI_MINDGATE_INTENT_TPV_TERMINAL   = 'UPIMGTEIntTpvl';

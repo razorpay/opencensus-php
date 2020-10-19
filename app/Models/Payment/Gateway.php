@@ -195,7 +195,7 @@ class Gateway
         self::ENACH_RBL    => [self::ACQUIRER_RATN],
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
         self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY],
-        self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL, PayLater::ICICI],
+        self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL, PayLater::ICICI, PayLater::FLEXMONEY],
         self::WORLDLINE    => [self::ACQUIRER_AXIS],
         self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX, self::ACQUIRER_ICIC],
         self::UPI_JUSPAY   => [self::ACQUIRER_AXIS],
@@ -2016,6 +2016,17 @@ class Gateway
         ],
     ];
 
+    /**
+     * gateway will not be returned from preferences if the payment amount is less than the amount in this array
+     *
+     * @var array
+     */
+    public static $minAmountForMethodAndGateway = [
+        Payment\Method::PAYLATER => [
+            PayLater::HDFC => '200000'
+        ]
+    ];
+
     // in case of any changes in gateway config, please contact smart routing team
     // changes done here won't be reflected in routing
     public static $onlyAuthorizationGateway = [
@@ -2071,7 +2082,7 @@ class Gateway
         ],
     ];
 
-    public static $cardlessEmiRedirectFlowProvider = [
+    public static $redirectFlowProvider = [
         CardlessEmi::FLEXMONEY,
     ];
 
