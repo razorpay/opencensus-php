@@ -103,8 +103,7 @@ class MockPayoutOndemandWebhook extends Job
             'created_at' => Carbon::now(Timezone::IST)->getTimestamp()
         ];
 
-        /* Using amount 110000 for testing reversal event if the amount is 1100
-        then reversal webhook event is sent */
+        // Using amount 220000 & 880000 for testing reversal event
         if (($settlementOndemandPayout->getAmount() === 220000) or
             ($settlementOndemandPayout->getAmount() === 880000))
         {

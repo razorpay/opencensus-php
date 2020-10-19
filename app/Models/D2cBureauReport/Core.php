@@ -144,8 +144,7 @@ class Core extends Base\Core
         switch ($provider)
         {
             case Provider::EXPERIAN:
-
-                $bureauDetailArray[D2cBureauDetail\Entity::ADDRESS] = preg_replace('/[^a-zA-Z0-9 ]+/', '', $bureauDetailArray[D2cBureauDetail\Entity::ADDRESS]);
+                $bureauDetailArray[D2cBureauDetail\Entity::ADDRESS] = preg_replace('!\s+!', ' ', preg_replace('/[^a-zA-Z0-9 ]+/', '', $bureauDetailArray[D2cBureauDetail\Entity::ADDRESS]));
 
                 $bureauDetailArray['buildingName'] = substr($bureauDetailArray[D2cBureauDetail\Entity::ADDRESS], 40, 40) ?: '';
 
