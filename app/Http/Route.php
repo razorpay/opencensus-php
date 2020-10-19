@@ -2381,7 +2381,6 @@ class Route
         // Offline QR
         'link_offline_device',
         'fetch_offline_device_multiple',
-
         // merchant_instrument_requests
         'merchant_instrument_request_create',
         'merchant_instrument_request_get_by_id',

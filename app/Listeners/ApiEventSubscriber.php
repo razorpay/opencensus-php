@@ -297,7 +297,7 @@ class ApiEventSubscriber extends Base\Core
     {
         if ($payment->hasPaymentLink() === true)
         {
-            (new PaymentLink\Core)->postPaymentCaptureAttemptProcessing($payment);
+            (new PaymentLink\Core)->postPaymentCaptureUpdatePaymentPage($payment);
         }
 
         $payload = $this->getPaymentPayload($payment);

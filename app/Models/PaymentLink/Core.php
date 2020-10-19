@@ -23,6 +23,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Invoice\Entity as IE;
 use RZP\Exception\BaseException;
 use RZP\Models\Currency\Currency;
+use RZP\Jobs\PaymentPageProcessor;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PaymentLink\Template\UdfSchema;
@@ -44,6 +45,8 @@ class Core extends Base\Core
     protected $plHostedBaseUrl;
 
     const PAYMENT_PAGE_ITEM_LAST_SYNC_TIMESTAMP = 'PAYMENT_PAGE_ITEM_LAST_SYNC_TIMESTAMP';
+
+    const RAZORX_ASYNC_UPDATE_EXPERIMENT = 'pp_async_update_experiment';
 
     public function __construct()
     {
@@ -383,13 +386,32 @@ class Core extends Base\Core
         }
     }
 
+    public function postPaymentCaptureUpdatePaymentPage(Payment\Entity $payment)
+    {
+        $merchant = $payment->merchant;
+
+        $variant = $this->app->razorx->getTreatment(
+            $merchant->getId(),
+            self::RAZORX_ASYNC_UPDATE_EXPERIMENT,
+            $this->mode
+        );
+
+        if ($variant === 'on')
+        {
+            PaymentPageProcessor::dispatch($this->mode, $payment);
+
+            return;
+        }
+
+        $this->postPaymentCaptureAttemptProcessing($payment);
+    }
     /**
      * This method is called post a payment capture is attempted (failed or success) in Processor/Authorize. Refer below
-     * cases on what this method handles.
+     * cases on what this method handdles.
      *
      * @param Payment\Entity $payment
      */
-    public function postPaymentCaptureAttemptProcessing(Payment\Entity $payment)
+    public function postPaymentCaptureAttemptProcessing(Payment\Entity $payment, $async = false)
     {
         assertTrue($payment->hasPaymentLink());
 
@@ -401,6 +423,7 @@ class Core extends Base\Core
                 'payment_id'     => $payment->getId(),
                 'payment_status' => $payment->getStatus(),
                 'payment_link'   => $paymentLink->toArrayPublic(),
+                'async'          => $async,
             ]);
 
         //
@@ -452,7 +475,16 @@ class Core extends Base\Core
         // Follow up to Case 3 (Refer above ^ comment)
         if ($shouldRefundPayment === true)
         {
-            $this->refundPayment($paymentLink, $payment);
+            return $this->refundPayment($paymentLink, $payment);
+        }
+
+        try
+        {
+            $this->createInvoiceIfEnabled($paymentLink, $payment);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
         }
     }
 
@@ -813,6 +845,7 @@ class Core extends Base\Core
             $paymentPageItem = $lineItem->ref;
 
             $paymentPageItem->incrementQuantitySold($lineItem->getQuantity());
+
             $paymentPageItem->incrementTotalAmountPaidBy($lineItem->getQuantity() * $lineItem->getAmount());
 
             $paymentPageItem->saveOrFail();
@@ -824,15 +857,6 @@ class Core extends Base\Core
         }
 
         $this->repo->saveOrFail($paymentLink);
-
-        try
-        {
-            $this->createInvoiceIfEnabled($paymentLink, $payment);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException($e);
-        }
 
         $this->trace->info(
             TraceCode::PAYMENT_LINK_UPDATED_POST_PAYMENT_CAPTURE,

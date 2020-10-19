@@ -297,6 +297,10 @@ return [
         'test'       => env('AWS_DOWNTIME_COMMUNICATION_QUEUE'),
         'live'       => env('AWS_DOWNTIME_COMMUNICATION_QUEUE'),
     ],
+    'payment_page_generic' => [
+        'test'       => env('AWS_PAYMENT_PAGE_GENERIC_QUEUE_TEST'),
+        'live'       => env('AWS_PAYMENT_PAGE_GENERIC_QUEUE_LIVE'),
+    ],
 
     /*
      | Lists various queues to be used per mailable
