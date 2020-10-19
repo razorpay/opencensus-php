@@ -98,6 +98,8 @@ class Processor extends VirtualAccount\Processor
     {
         $this->checkIfAccountIsBlocked($bankTransfer);
 
+        $deadlockRetryAttempts = 2;
+
         $this->repo->transaction(function() use ($bankTransfer)
         {
             // Bank transfer's relation association
@@ -127,7 +129,7 @@ class Processor extends VirtualAccount\Processor
                         null,
                         compact('balanceType'));
             }
-        });
+        }, $deadlockRetryAttempts);
 
 
         // Currently dispatches transaction.created only for bank transfer on banking balance.
