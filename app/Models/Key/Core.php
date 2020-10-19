@@ -129,7 +129,10 @@ class Core extends Base\Core
 
         $secret = Crypt::decrypt($key->getSecret());
 
-        return ['secret' => $secret];
+        return [
+            'secret'      => $secret,
+            'merchant_id' => $key->getMerchantId(),
+        ];
     }
 
     /**

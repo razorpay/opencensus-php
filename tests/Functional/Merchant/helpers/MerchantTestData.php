@@ -3792,7 +3792,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'secret' => 'TheKeySecretForTests'
+                'secret'      => 'TheKeySecretForTests',
+                'merchant_id' => '10000000000000',
             ]
         ]
     ],
@@ -6678,7 +6679,7 @@ return [
 ],
         'response' => [
             'content' => [
-                
+
             ]
         ],
     ],
