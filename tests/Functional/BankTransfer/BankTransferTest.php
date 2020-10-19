@@ -1962,11 +1962,11 @@ class BankTransferTest extends TestCase
             'awesome_utr'
         );
 
-        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true, 'live');
         $this->assertEquals(5000000, $bankTransfer['amount']);
         $this->assertEquals("ICIC0000104", $bankTransfer['payer_ifsc']);
 
-        $payment =  $this->getLastEntity('payment', true);
+        $payment =  $this->getLastEntity('payment', true, 'live');
         $this->assertEquals(5000000, $payment['amount']);
         $this->assertEquals('bt_icici', $payment['gateway']);
     }
@@ -1979,13 +1979,13 @@ class BankTransferTest extends TestCase
             'awesome_utr'
         );
 
-        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true, 'live');
         $this->assertEquals(5000000, $bankTransfer['amount']);
 
         $this->assertEquals("SBIN0010411", $bankTransfer['payer_ifsc']);
 
 
-        $payment =  $this->getLastEntity('payment', true);
+        $payment =  $this->getLastEntity('payment', true, 'live');
         $this->assertEquals(5000000, $payment['amount']);
         $this->assertEquals('bt_icici', $payment['gateway']);
     }
@@ -1998,7 +1998,7 @@ class BankTransferTest extends TestCase
             'awesome_utr'
         );
 
-        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true, 'live');
         $this->assertEquals(null, $bankTransfer);
     }
 

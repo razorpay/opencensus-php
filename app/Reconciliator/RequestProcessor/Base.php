@@ -127,6 +127,8 @@ class Base extends Core
     const CRED                   = 'Cred';
 
     const BT_RBL                 = 'BtRbl';
+    const BT_ICICI               = 'BtIcici';
+
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'

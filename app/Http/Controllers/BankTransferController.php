@@ -47,6 +47,8 @@ class BankTransferController extends Controller
 
     public function processIciciBankTransfer()
     {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+        
         $input = Request::all();
 
         $response = $this->service()->saveRequestAndProcess($input, Provider::ICICI, true, $input);

@@ -5375,6 +5375,7 @@ class Route
             'reconciliate',
             'setl_notify_h2h',
             'bank_transfer_process_file_rbl',
+            'bank_transfer_process_file',
         ],
 
         'auth_service' => [
