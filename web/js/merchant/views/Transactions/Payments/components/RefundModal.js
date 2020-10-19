@@ -398,7 +398,7 @@ export default class RefundModal extends Component {
     const { data } = this.props.current_balance;
 
     // if this flag is true and they opt for normal refund, we skip balance check validations
-    if (payment.direct_settlement_refund && this.state.instantChecked === false) return false;
+    if (payment.direct_settlement_refund && this.state.instantChecked === false) return true;
 
     let merchant = user.merchants[user.current] || {};
     let isBalanceSource = merchant.refund_source === 'balance';
