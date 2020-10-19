@@ -9,7 +9,7 @@ import {
 } from 'merchant/reducers/onboarding';
 import { fetchItems } from 'merchant/reducers/items';
 
-import PaymentButtonLaunchBanner from 'merchant/components/Announcements/PaymentButtonLaunch';
+import PayPalForInvoice from 'merchant/components/Announcements/PayPalForInvoice';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import Invoices from 'merchant/views/Invoices/Invoices/List';
 import Items from 'merchant/views/Invoices/Items/List';
@@ -92,7 +92,7 @@ export default class InvoicesContainer extends Component {
 
     return (
       <React.Fragment>
-        <PaymentButtonLaunchBanner productName="Invoices" />
+        <PayPalForInvoice />
 
         <tabbed-container>
           {isQuickGuideOpen && <QuickGuide />}
