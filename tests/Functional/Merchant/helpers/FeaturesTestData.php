@@ -833,6 +833,28 @@ return [
         ]
     ],
 
+    'testAddMerchantLocFeatureAdminAuth' => [
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['loc'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000',
+                'should_sync' => true
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name' => 'loc',
+                    'entity_id' => '10000000000000',
+                    'entity_type' => 'merchant',
+                ]
+            ]
+        ]
+    ],
+
     'verifyProductOnboardingSubmissionStatus' => [
         'request'  => [
             'content' => [

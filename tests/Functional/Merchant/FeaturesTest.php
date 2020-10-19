@@ -750,6 +750,17 @@ class FeaturesTest extends TestCase
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 
         $this->startTest();
+    }
+
+    /**
+     * This function tests updating of merchant feature loc_stage_1.
+     */
+    public function testAddMerchantLocFeatureAdminAuth()
+    {
+        Mail::fake();
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
         Mail::assertQueued(CashAdvanceEligible::class);
     }
 

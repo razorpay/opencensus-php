@@ -223,7 +223,7 @@ class Core extends Base\Core
                     Merchant\Entity::EMAIL    => $merchantEmail
                 ]);
         }
-        else if (($feature->getName() === Constants::LOC_STAGE_1) and
+        else if (($feature->getName() === Constants::LOC) and
                  ($isLiveMode === true))
         {
             $merchantEmail = $merchant->getEmail();
