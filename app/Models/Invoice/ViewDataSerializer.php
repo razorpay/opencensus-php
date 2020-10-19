@@ -582,6 +582,12 @@ class ViewDataSerializer extends Base\Core
 
             $serialized[Entity::ENTITY_TYPE] = E::SUBSCRIPTION_REGISTRATION;
 
+            $expireAt = $serialized[E::SUBSCRIPTION_REGISTRATION][SubscriptionRegistration\Entity::EXPIRE_AT] ?? null;
+
+            $formattedExpireAt = ($expireAt === null ? null :
+                Carbon::createFromTimestamp($expireAt, Timezone::IST)->format('j M Y'));
+            $serialized[E::SUBSCRIPTION_REGISTRATION]['expire_at_formatted'] = $formattedExpireAt;
+
             $serialized
             [E::SUBSCRIPTION_REGISTRATION]
             [E::PAYMENT] = $this->getNonFailurePaymentsForOrder($order);
