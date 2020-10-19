@@ -400,6 +400,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerStorkService();
 
+        $this->registerWorkflowsService();
+
         $this->registerRazorpayXClient();
 
         $this->registerSettlementsDashboard();
@@ -1059,6 +1061,21 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('token_service', function($app)
         {
             return new TokenService($app);
+        });
+    }
+
+    protected function registerWorkflowsService()
+    {
+        $this->app->singleton('workflow_service', function($app)
+        {
+            $useMock = $app['config']->get('applications.workflows.mock');
+
+            if ($useMock === true)
+            {
+                return new Mock\WorkflowService($app);
+            }
+
+            return new WorkflowService($app);
         });
     }
 

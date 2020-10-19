@@ -346,6 +346,10 @@ class Name
     const LOC_WITHDRAWAL_EDIT                 = 'loc_withdrawal_edit';
     const LOC_WITHDRAWAL_VIEW                 = 'loc_withdrawal_view';
 
+    // Workflow Service
+    const WFS_CONFIG_CREATE                   = 'wfs_config_create';
+    const WFS_CONFIG_UPDATE                   = 'wfs_config_update';
+
     const CREATE_PAYOUT_BULK                  = 'create_payout_bulk';
     const APPROVE_PAYOUT_BULK                 = 'approve_payout_bulk';
     const REJECT_PAYOUT_BULK                  = 'reject_payout_bulk';

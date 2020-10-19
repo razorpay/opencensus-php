@@ -147,6 +147,8 @@ final class RazorxTreatment
     // the new default pricing applied
     const INSTANT_REFUNDS_DEFAULT_PRICING_V1 = 'instant_refunds_default_pricing_v1';
 
+    const FORWARD_TO_NEW_WORKFLOWS_SERVICE = 'forward_to_new_workflows_service';
+
     // Check whether Payout Link Service is up or not.
     // If the feature is mapped to a merchant, the Service is down for that merchant
     const RX_IS_PAYOUT_LINK_SERVICE_DOWN = 'rx_payout_links_inactive';

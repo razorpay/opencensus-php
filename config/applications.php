@@ -663,6 +663,14 @@ return [
         'typeform_webhook_secret'  => env('TYPEFORM_WEBHOOK_SECRET'),
     ],
 
+    'workflows' => [
+        'mock'              => env('WORKFLOWS_MOCK', false),
+        'url'               => env('WORKFLOWS_URL'),
+        'username'          => env('WORKFLOWS_USERNAME'),
+        'password'          => env('WORKFLOWS_PASSWORD'),
+        'secret'            => env('WORKFLOWS_INTERNAL_APP_SECRET'),
+    ],
+
     'worker' => [
         'is_worker_pod'  => env('IS_WORKER_POD', false),
     ],

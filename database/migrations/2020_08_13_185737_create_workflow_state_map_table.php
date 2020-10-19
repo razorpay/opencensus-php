@@ -1,12 +1,11 @@
 <?php
 
-use RZP\Constants\Table;
-use RZP\Models\Merchant;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
-use RZP\Models\Workflow\Service\StateMap\Entity as WorkflowStateMap;
 
+use RZP\Constants\Table;
+use RZP\Models\Workflow\Service\StateMap\Entity as WorkflowStateMap;
 
 class CreateWorkflowStateMapTable extends Migration
 {

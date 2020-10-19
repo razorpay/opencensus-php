@@ -3,10 +3,9 @@
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
-use RZP\Constants\Table;
-use RZP\Models\Merchant;
-use RZP\Models\Workflow\Service\Config\Entity as WorkflowConfig;
 
+use RZP\Constants\Table;
+use RZP\Models\Workflow\Service\Config\Entity as WorkflowConfig;
 
 class CreateWorkflowConfigTable extends Migration
 {

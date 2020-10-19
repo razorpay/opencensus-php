@@ -427,6 +427,18 @@ class ErrorCode
     const BAD_REQUEST_PAYOUT_INVALID_STATE                                          = 'BAD_REQUEST_PAYOUT_INVALID_STATE';
     const BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED                                 = 'BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED';
     const BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE                                       = 'BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE';
+    const BAD_REQUEST_WORKFLOW_CONFIG_ID_INVALID                                    = 'BAD_REQUEST_WORKFLOW_CONFIG_ID_INVALID';
+    const BAD_REQUEST_WORKFLOW_MERCHANT_WITH_PENDING_PAYOUTS                        = 'BAD_REQUEST_WORKFLOW_MERCHANT_WITH_PENDING_PAYOUTS';
+    const SERVER_ERROR_WORKFLOW_CONFIG_UPDATE_FAILED                                = 'SERVER_ERROR_WORKFLOW_CONFIG_UPDATE_FAILED';
+    const SERVER_ERROR_WORKFLOW_CONFIG_CREATE_FAILED                                = 'SERVER_ERROR_WORKFLOW_CONFIG_CREATE_FAILED';
+    const SERVER_ERROR_WORKFLOW_CONFIG_GET_FAILED                                   = 'SERVER_ERROR_WORKFLOW_CONFIG_GET_FAILED';
+    const SERVER_ERROR_WORKFLOW_CREATE_FAILED                                       = 'SERVER_ERROR_WORKFLOW_CREATE_FAILED';
+    const SERVER_ERROR_WORKFLOW_LIST_BY_IDS_FAILED                                  = 'SERVER_ERROR_WORKFLOW_LIST_BY_IDS_FAILED';
+    const SERVER_ERROR_WORKFLOW_GET_FAILED                                          = 'SERVER_ERROR_WORKFLOW_GET_FAILED';
+    const SERVER_ERROR_WORKFLOW_ACTION_CREATE_FAILED                                = 'SERVER_ERROR_WORKFLOW_ACTION_CREATE_FAILED';
+    const SERVER_ERROR_WORKFLOW_STATE_ID_INVALID                                    = 'SERVER_ERROR_WORKFLOW_STATE_ID_INVALID';
+    const BAD_REQUEST_WORKFLOW_STATE_CALLBACK                                       = 'BAD_REQUEST_WORKFLOW_STATE_CALLBACK';
+    const BAD_REQUEST_WORKFLOW_STATE_CALLBACK_DUPLICATE                             = 'BAD_REQUEST_WORKFLOW_STATE_CALLBACK_DUPLICATE';
     const BAD_REQUEST_PAYOUT_MODE_REQUIRED                                          = 'BAD_REQUEST_PAYOUT_MODE_REQUIRED';
     const BAD_REQUEST_PAYOUT_INVALID_MODE                                           = 'BAD_REQUEST_PAYOUT_INVALID_MODE';
     const BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED                                     = 'BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED';
@@ -1894,6 +1906,7 @@ class ErrorCode
     const BAD_REQUEST_MISSING_HEADERS                                               = 'BAD_REQUEST_MISSING_HEADERS';
     const BAD_REQUEST_INVALID_TRACKING_ID                                           = 'BAD_REQUEST_INVALID_TRACKING_ID';
 
+    const SERVER_ERROR_WORKFLOW_SERVICE_ERROR                                       = 'SERVER_ERROR_WORKFLOW_SERVICE_ERROR';
     const SERVER_ERROR_CREDCASE_REQUEST_FAILED                                      = 'SERVER_ERROR_CREDCASE_REQUEST_FAILED';
     const BAD_REQUEST_CRED_USER_NOT_REGISTERED                                      = 'BAD_REQUEST_CRED_USER_NOT_REGISTERED';
     const BAD_REQUEST_CRED_PENDING_USER                                             = 'BAD_REQUEST_CRED_PENDING_USER';

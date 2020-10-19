@@ -1,0 +1,179 @@
+<?php
+
+namespace RZP\Services;
+
+use Throwable;
+use Requests_Session;
+use Requests_Response;
+use Razorpay\Trace\Logger as Trace;
+
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Exception\ServerErrorException;
+
+class WorkflowService
+{
+    // Request timeout in milliseconds for all HTTP requests to workflow service
+    const REQUEST_TIMEOUT = 350;
+    // Request connect timeout in milliseconds for all HTTP requests to workflow service
+    // Request timeout parameter applies after connection is established.
+    const REQUEST_CONNECT_TIMEOUT = 350;
+
+    const EMAIL_HEADER          = 'X-User-Email';
+    const CONTENT_TYPE_HEADER   = 'Content-Type';
+
+    const WORKFLOW_SERVICE_REQUEST_MILLISECONDS = "WORKFLOW_SERVICE_REQUEST_MILLISECONDS";
+
+    // Metrics
+    const WORKFLOW_SERVICE_REQUEST_FAILURE      = "WORKFLOW_SERVICE_REQUEST_FAILURE";
+    const WORKFLOW_SERVICE_REQUEST_SUCCESS      = "WORKFLOW_SERVICE_REQUEST_SUCCESS";
+    const WORKFLOW_SERVICE_REQUEST_RETRY        = "WORKFLOW_SERVICE_REQUEST_RETRY";
+
+    /** @var $request Requests_Session */
+    public $request;
+
+    /** @var Trace */
+    protected $trace;
+
+    protected $app;
+
+    /** @var $ba BasicAuth */
+    protected $ba;
+
+    protected $config;
+
+    public function __construct($app)
+    {
+        $this->app          = $app;
+        $this->ba           = $app['basicauth'];
+        $this->trace        = $app['trace'];
+        $this->config       = $app['config'];
+    }
+
+    protected function init()
+    {
+        $auth = [
+            $this->config->get('applications.workflows.username'),
+            $this->config->get('applications.workflows.password')
+        ];
+
+        // Options and authentication for requests.
+        $options = [
+            'auth'  => $auth,
+        ];
+
+        $this->request = new Requests_Session(
+            $this->config->get('applications.workflows.url'),
+            // Common headers for requests.
+            [
+                self::CONTENT_TYPE_HEADER           => 'application/json',
+                self::EMAIL_HEADER                  => $this->getUserEmailIfAvailable(),
+                'timeout'                           => self::REQUEST_TIMEOUT,
+                'connect_timeout'                   => self::REQUEST_CONNECT_TIMEOUT,
+            ],
+            [],
+            $options
+        );
+    }
+
+    /**
+     * @param string $path
+     * @param array $payload
+     * @return Requests_Response|null
+     * @throws ServerErrorException
+     */
+    public function request(string $path, array $payload): Requests_Response
+    {
+        $this->init();
+        $res = null;
+        $exception = null;
+        $maxAttempts = 2;
+
+        while ($maxAttempts--)
+        {
+            try
+            {
+                $startAt = millitime();
+
+                $res = $this->request->post($path, [], empty($payload) ? '{}' : json_encode($payload));
+
+                $this->trace->histogram(
+                    self::WORKFLOW_SERVICE_REQUEST_MILLISECONDS,
+                    millitime() - $startAt,
+                    $this->ba->getRequestMetricDimensions());
+            }
+            catch (Throwable $e)
+            {
+                $this->trace->traceException($e,
+                    Trace::CRITICAL,
+                    TraceCode::SERVER_ERROR_WORKFLOW_SERVICE_ERROR,
+                    ['payload' => $payload]);
+
+                if ($maxAttempts > 0)
+                {
+                    $this->trace->count(self::WORKFLOW_SERVICE_REQUEST_RETRY, $this->ba->getRequestMetricDimensions());
+                }
+
+                $exception = $e;
+                continue;
+            }
+
+            // In case it succeeds in another attempt.
+            $exception = null;
+            break;
+        }
+
+        if (($exception !== null) or
+            ($res->success !== true))
+        {
+            $responseBodyInfo = empty($res) === false
+                ? ['resp_status_code' => $res->status_code, 'resp_body' => $res->body]
+                : [];
+
+            $exceptionInfo = empty($exception) === false
+                ? $exception->getMessage()
+                : "";
+
+            $responseInfo = ['req_path' => $path, 'message' => $exceptionInfo] + $responseBodyInfo;
+
+            $this->trace->error(
+                TraceCode::SERVER_ERROR_WORKFLOW_SERVICE_ERROR,
+                $responseInfo);
+
+            $this->trace->count(self::WORKFLOW_SERVICE_REQUEST_FAILURE, $this->ba->getRequestMetricDimensions());
+
+            throw new ServerErrorException(
+                "Failed to complete request",
+                ErrorCode::SERVER_ERROR_WORKFLOW_SERVICE_ERROR,
+                $responseInfo,
+                $exception);
+        }
+
+        $this->trace->count(self::WORKFLOW_SERVICE_REQUEST_SUCCESS, $this->ba->getRequestMetricDimensions());
+
+        $this->trace->info(TraceCode::WORKFLOW_SERVICE_TRACE_INFO, [
+            'status'    => $res->status_code,
+            'content'   => $res->body
+        ]);
+
+        return $res;
+    }
+
+    private function getUserEmailIfAvailable()
+    {
+        $user = $this->ba->getUser();
+
+        if (empty($user) === true)
+        {
+            if ($this->ba->isAdminAuth() and empty($this->ba->getAdmin()) === false)
+            {
+                return $this->ba->getAdmin()->getEmail();
+            }
+
+            return "internalsystem@razorpay.com";
+        }
+
+        return $user->getEmail();
+    }
+}

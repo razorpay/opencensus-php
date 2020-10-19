@@ -1367,6 +1367,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_FORCE_CLOSE_REQUEST                            = 'PAYOUT_FORCE_CLOSE_REQUEST';
     const PAYOUT_BULK_REJECT_REQUEST                            = 'PAYOUT_BULK_REJECT_REQUEST';
     const PAYOUT_APPROVE_REJECT_EXCEPTION                       = 'PAYOUT_APPROVE_REJECT_EXCEPTION';
+    const SERVER_ERROR_WORKFLOW_SERVICE_ERROR                   = 'SERVER_ERROR_WORKFLOW_SERVICE_ERROR';
+    const SERVER_ERROR_WORKFLOW_SERVICE_RESPONSE_MALFORMED      = 'SERVER_ERROR_WORKFLOW_SERVICE_RESPONSE_MALFORMED';
+    const SERVER_ERROR_WORKFLOW_GET_FAILED                      = 'SERVER_ERROR_WORKFLOW_GET_FAILED';
+    const SERVER_ERROR_WORKFLOW_CREATE_FAILED                   = 'SERVER_ERROR_WORKFLOW_CREATE_FAILED';
+    const WORKFLOW_SERVICE_TRACE_INFO                           = 'WORKFLOW_SERVICE_TRACE_INFO';
+    const STATE_MAP_CREATE_VIA_WORKFLOW_SERVICE_FAILED          = 'STATE_MAP_CREATE_VIA_WORKFLOW_SERVICE_FAILED';
+    const STATE_MAP_UPDATE_VIA_WORKFLOW_SERVICE_FAILED          = 'STATE_MAP_UPDATE_VIA_WORKFLOW_SERVICE_FAILED';
     const PAYOUT_WORKFLOW_ACTION_INFO                           = 'PAYOUT_WORKFLOW_ACTION_INFO';
     const PAYOUT_WORKFLOW_TRIGGERED                             = 'PAYOUT_WORKFLOW_TRIGGERED';
     const PAYOUT_WORKFLOW_ACTION_EXCEPTION                      = 'PAYOUT_WORKFLOW_ACTION_EXCEPTION';
@@ -3652,6 +3659,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::NO_MERCHANT_CONTEXT_MAIL                              => 'The mail flow does not have merchant in auth context',
         self::FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR    => 'Fund Account Validation Failed due to critical reasons. We should retry.',
         self::FUND_ACCOUNT_VALIDATION_FTA_CREATION_FAILED           => 'Failed to create Fund Transfer Attempt for Fund Account Validation. We should retry.',
+        self::SERVER_ERROR_WORKFLOW_SERVICE_ERROR                   => 'Workflow service failure',
         self::FUND_ACCOUNT_EXIST_WITH_SAME_IDEMPOTENCY_KEY          => 'Fund account already exist with same idempotency key',
         self::PAYOUT_EXIST_WITH_SAME_IDEMPOTENCY_KEY                => 'Payout already exist with same idempotency key',
         self::MERCHANT_MTU_UPDATE_SUCCESS                           => 'Updating live by transaction is successful for merchant ',

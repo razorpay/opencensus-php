@@ -96,6 +96,9 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\PaperMandate\Repository                      $paper_mandate
  * @property Models\VirtualAccountTpv\Repository                 $virtual_account_tpv
  * @property Models\Counter\Repository                           $counter
+ * @property Models\Workflow\Service\Config\Repository           $workflow_config
+ * @property Models\Workflow\Service\EntityMap\Repository        $workflow_entity_map
+ * @property Models\Workflow\Service\StateMap\Repository         $workflow_state_map
  * @property Models\Merchant\BvsValidation\Repository            $bvs_validation
  * @property Models\UpiTransfer\Repository                       $upi_transfer
  * @property Models\UpiTransferRequest\Repository                $upi_transfer_request

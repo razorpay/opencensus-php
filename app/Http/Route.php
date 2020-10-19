@@ -2003,6 +2003,14 @@ class Route
         'fetch_payout_downtimes'                  => ['get',       'payouts/downtimes',                                       'PayoutDowntimeController@fetchPayoutDowntimes'              ],
 
 
+        //Routes related to workflows microservice
+        'wfs_config_create'                       => ['post',    'wf-service/configs',                                     'WorkflowConfigServiceController@createConfig'                  ],
+        'wfs_config_update'                       => ['patch',   'wf-service/configs',                                     'WorkflowConfigServiceController@updateConfig'                  ],
+        'wfs_config_get'                          => ['get',     'wf-service/configs/{id}',                                'WorkflowConfigServiceController@getConfig'                     ],
+        'workflow_state_callback'                 => ['post',    'wf-service/state/callback',                              'WorkflowConfigServiceController@createWorkflowStateMap'        ],
+        'workflow_state_callback_update'          => ['patch',   'wf-service/state/{id}/callback',                         'WorkflowConfigServiceController@updateWorkflowStateMap'        ],
+
+
         // Routes related to payments rearch for fetching/writing data
         'api_entity_fetch'                        => ['get',     'entities/{entity}/{id}',                                 'CardPSController@FetchEntity'                                  ],
         'cps_backfill_entities'                   => ['get',     'cardps/backfill/{entity}/{column}',                      'CardPSController@BackfillRouteProxy'                           ],
@@ -2655,6 +2663,8 @@ class Route
         'tax_payments_mail_cron',
         'tax_payments_enabled_merchant_settings',
         'tax_payments_send_email',
+        'workflow_state_callback',
+        'workflow_state_callback_update',
         'vendor_payment_ocr_accuracy_cron',
         'banking_accounts_list_internal',
         'mpans_tokenize_existing',
@@ -3143,6 +3153,8 @@ class Route
 
         'currency_fetch_rates_proxy',
         'invoice_send_notification_proxy',
+
+        'wfs_config_get',
 
         // Get free_payout attributes for balance
         'get_free_payouts_attributes',
@@ -3777,6 +3789,9 @@ class Route
         'patch_internal_instrument_requests',
         'instrument_request_razorx_admin',
         'fetch_merchant_instrument_requests',
+
+        'wfs_config_create',
+        'wfs_config_update',
 
         // gateway credentials
         'terminals_proxy_create_gateway_credential',
@@ -4566,6 +4581,10 @@ class Route
         'fetch_payout_downtime_by_id'              => Permission::VIEW_PAYOUT_DOWNTIME,
         'fetch_payout_downtimes'                   => Permission::VIEW_PAYOUT_DOWNTIME,
 
+        // Workflow Service requests
+        'wfs_config_create'                        => Permission::WFS_CONFIG_CREATE,
+        'wfs_config_update'                        => Permission::WFS_CONFIG_UPDATE,
+        'wfs_config_get'                           => '*',
 
         // Merchant Attribute
         'merchants_update_onboarding_category_to_normal_cron'     => '*',
@@ -5473,6 +5492,13 @@ class Route
 
         'card_payment_service' => [
             'api_entity_fetch'
+        ],
+
+        'workflows' => [
+            'payout_approve_internal',
+            'payout_reject_internal',
+            'workflow_state_callback',
+            'workflow_state_callback_update',
         ],
 
         'pg_router' => [

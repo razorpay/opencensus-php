@@ -1,0 +1,231 @@
+<?php
+
+namespace RZP\Models\Workflow\Service;
+
+use Razorpay\Trace\Logger as Trace;
+
+use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use RZP\Services\WorkflowService;
+use RZP\Models\Workflow\Service\Adapter;
+
+class Client
+{
+    const WFS_CONFIG_CREATE_ROUTE               = "twirp/rzp.workflows.config.v1.ConfigAPI/Create";
+    const WFS_CONFIG_UPDATE_ROUTE               = "twirp/rzp.workflows.config.v1.ConfigAPI/Update";
+    const WFS_CONFIG_GET_ROUTE                  = "twirp/rzp.workflows.config.v1.ConfigAPI/Get";
+    const WFS_WORKFLOW_GET_ROUTE                = "twirp/rzp.workflows.workflow.v1.WorkflowAPI/Get";
+    const WFS_WORKFLOW_LIST_BY_IDS_ROUTE        = "twirp/rzp.workflows.workflow.v1.WorkflowAPI/ListByIds";
+    const WFS_ACTION_CREATE_ON_ENTITY_ROUTE     = "twirp/rzp.workflows.action.v1.ActionAPI/CreateWithEntityId";
+    const WFS_WORKFLOW_CREATE_ROUTE             = "twirp/rzp.workflows.workflow.v1.WorkflowAPI/Create";
+
+    /** @var $workflowServiceClient WorkflowService */
+    protected $workflowServiceClient;
+
+    /** @var Trace */
+    protected $trace;
+
+    public function __construct()
+    {
+        $this->workflowServiceClient = app('workflow_service');
+
+        $this->trace = app('trace');
+    }
+
+    /**
+     * @param array $input
+     * @return mixed
+     * @throws Exception\ServerErrorException
+     */
+    public function createConfig(array $input)
+    {
+        $this->trace->info(TraceCode::WORKFLOW_SERVICE_TRACE_INFO, $input);
+
+        $res = $this->workflowServiceClient->request(self::WFS_CONFIG_CREATE_ROUTE, $input);
+
+        if ($res->status_code !== 200)
+        {
+            throw new Exception\ServerErrorException(
+                null,
+                ErrorCode::SERVER_ERROR_WORKFLOW_CONFIG_CREATE_FAILED,
+                $input);
+        }
+
+        // todo: save the config mapping in db
+
+        return json_decode($res->body, true);
+    }
+
+    /**
+     * @param array $input
+     * @return mixed
+     * @throws Exception\ServerErrorException
+     */
+    public function updateConfig(array $input)
+    {
+        $this->trace->info(TraceCode::WORKFLOW_SERVICE_TRACE_INFO, $input);
+
+        $res = $this->workflowServiceClient->request(self::WFS_CONFIG_UPDATE_ROUTE, $input);
+
+        if ($res->status_code !== 200)
+        {
+            throw new Exception\ServerErrorException(
+                null,
+                ErrorCode::SERVER_ERROR_WORKFLOW_CONFIG_UPDATE_FAILED,
+                $input);
+        }
+
+        return json_decode($res->body, true);
+    }
+
+    /**
+     * @param string $id
+     * @return mixed
+     * @throws Exception\ServerErrorException
+     */
+    public function getConfigById(string $id)
+    {
+        $res = $this->workflowServiceClient->request(self::WFS_CONFIG_GET_ROUTE, ["id" => $id]);
+
+        if ($res->status_code !== 200)
+        {
+            throw new Exception\ServerErrorException(
+                null,
+                ErrorCode::SERVER_ERROR_WORKFLOW_CONFIG_GET_FAILED,
+                ['id' => $id]);
+        }
+
+        return json_decode($res->body, true);
+    }
+
+    /**
+     * @param Base\PublicEntity $entity
+     * @param array $input
+     * @return array
+     */
+    public function createWorkflow(Base\PublicEntity $entity, array $input = [])
+    {
+        $entityAdapter = $this->getEntityAdapter($entity);
+
+        $payload = $entityAdapter->getWorkflowCreatePayload($entity, $input);
+
+        $this->trace->info(TraceCode::WORKFLOW_SERVICE_TRACE_INFO, $payload);
+
+        $res = $this->workflowServiceClient->request(self::WFS_WORKFLOW_CREATE_ROUTE, $payload);
+
+        if ($res->status_code != 200)
+        {
+            throw new Exception\ServerErrorException(
+                null,
+                ErrorCode::SERVER_ERROR_WORKFLOW_CREATE_FAILED,
+                ['input' => $input]);
+        }
+
+        $content = json_decode($res->body, true);
+
+        return $entityAdapter->transformWorkflowResponse($content);
+    }
+
+    /**
+     * @param string $id
+     * @return array|mixed
+     */
+    public function getWorkflowById(string $id)
+    {
+        $payload['id'] = $id;
+
+        $this->enrichWithActorFields($payload);
+
+        $res = $this->workflowServiceClient->request(self::WFS_WORKFLOW_GET_ROUTE, $payload);
+
+        if ($res->status_code != 200)
+        {
+            $this->trace->error(TraceCode::SERVER_ERROR_WORKFLOW_GET_FAILED, $payload);
+
+            return [];
+        }
+
+        return json_decode($res->body, true);
+    }
+
+    /**
+     * @param array $input
+     * @return mixed
+     * @throws Exception\ServerErrorException
+     */
+    public function listWorkflowsByIds(array $input)
+    {
+        // todo: handle this properly later
+        $payload = [];
+
+        $this->enrichWithActorFields($payload);
+
+        $res = $this->workflowServiceClient->request(self::WFS_WORKFLOW_LIST_BY_IDS_ROUTE, $input);
+
+        if ($res->status_code !== 200)
+        {
+            throw new Exception\ServerErrorException(
+                null,
+                ErrorCode::SERVER_ERROR_WORKFLOW_LIST_BY_IDS_FAILED,
+                ['input' => $input]);
+        }
+
+        return json_decode($res->body, true);
+    }
+
+    /**
+     * @param Base\PublicEntity $entity
+     * @param array $input
+     * @return array
+     */
+    public function createActionOnEntity(Base\PublicEntity $entity, array $input)
+    {
+        $entityAdapter = $this->getEntityAdapter($entity);
+
+        $actionPayload = $entityAdapter->getActionCreateOnEntityPayload($entity, $input);
+
+        $this->trace->info(TraceCode::WORKFLOW_SERVICE_TRACE_INFO, $actionPayload);
+
+        $res = $this->workflowServiceClient->request(self::WFS_ACTION_CREATE_ON_ENTITY_ROUTE, $actionPayload);
+
+        $content = json_decode($res->body, true);
+
+        if ($res->status_code !== 200)
+        {
+            throw new Exception\ServerErrorException(
+                null,
+                ErrorCode::SERVER_ERROR_WORKFLOW_ACTION_CREATE_FAILED,
+                ['input' => $input]);
+        }
+
+        return $entityAdapter->transformActionResponse($content);
+    }
+
+    protected function getEntityAdapter(Base\PublicEntity $entity): Adapter\Base
+    {
+        $type = $entity->getEntityName();
+
+        $processor = 'RZP\Models\Workflow\Service\Adapter' . '\\' . studly_case($type);
+
+        if (class_exists($processor) === false)
+        {
+            throw new Exception\RuntimeException('No adapter found for this entity', [
+                'entity_name'                 => $type,
+            ]);
+        }
+
+        return new $processor();
+    }
+
+    protected function enrichWithActorFields(array &$input)
+    {
+        $actorInfo = Adapter\Base::getActorInfo();
+
+        $input['actor_id']              = $actorInfo['actor_id'];
+        $input['actor_type']            = $actorInfo['actor_type'];
+        $input['actor_property_key']    = $actorInfo['actor_property_key'];
+        $input['actor_property_value']  = $actorInfo['actor_property_value'];
+    }
+}
