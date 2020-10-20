@@ -430,10 +430,6 @@ export default class User {
     return this.isFeatureEnabled('ES_ON_DEMAND');
   }
 
-  get isSettlementOndemandRouteEnabled() {
-    return this.isFeatureEnabled('use_settlement_ondemand');
-  }
-
   get isFdTicketsEnabled() {
     return this.getExpStatus('view_fd_tickets');
   }

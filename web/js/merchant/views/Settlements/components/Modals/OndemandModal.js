@@ -25,16 +25,6 @@ export default class OndemandModal extends Component {
   constructor(props) {
     super(props);
 
-    this.getFeesUrl = () =>
-      this.props.user.isSettlementOndemandRouteEnabled
-        ? 'settlement/ondemand/fees/dashboard'
-        : '/merchant/payout/demand/fees';
-
-    this.getUrl = () =>
-      this.props.user.isSettlementOndemandRouteEnabled
-        ? '/settlement/ondemand/dashboard'
-        : '/merchant/payout/demand';
-
     this.state = {
       isSaving: false,
       isSaved: false,
@@ -227,7 +217,7 @@ export default class OndemandModal extends Component {
     if (this.state.validAmount) {
       return ajax(
         {
-          url: this.getFeesUrl(),
+          url: '/settlement/ondemand/fees/dashboard',
           method: 'GET',
           data: payload,
         },
@@ -307,7 +297,7 @@ export default class OndemandModal extends Component {
       if (this.state.validAmount) {
         return ajax(
           {
-            url: this.getFeesUrl(),
+            url: '/settlement/ondemand/fees/dashboard',
             method: 'GET',
             data: payload,
           },
@@ -352,7 +342,7 @@ export default class OndemandModal extends Component {
     });
     return ajax(
       {
-        url: this.getUrl(),
+        url: '/settlement/ondemand/dashboard',
         method: 'POST',
         data: payload,
       },
