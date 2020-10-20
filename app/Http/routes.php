@@ -86,6 +86,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/details', 'UserController@getUserDetailsV2');
 
         Route::post('/coupons/validate', 'MerchantController@validateCoupon');
+        Route::post('/whatsapp/opt_in', 'MerchantController@whatsappOptIn');
     });
 
     Route::group(['middleware'  =>  ['auth:user', 'verified']], function()
