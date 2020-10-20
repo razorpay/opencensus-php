@@ -14,6 +14,7 @@ class InstrumentRequestController extends BaseController
 {
     const X_DASHBOARD_ADMIN_EMAIL   = 'X-Dashboard-Admin-Email';
     const X_DASHBOARD_MERCHANT_ID   = "X-Dashboard-Merchant-Id";
+    const X_DASHBOARD_MERCHANT_ORG_ID   = "X-Dashboard-Merchant-OrgId";
 
     // razorx flags
     const RAZORX_FLAG_SWITCH_BULK_PATCH_ROUTE = 'terminals_service_bulk_patch_instrument_request';
@@ -303,6 +304,7 @@ class InstrumentRequestController extends BaseController
 
         return [
             self::X_DASHBOARD_MERCHANT_ID => $merchant->getId(),
+            self::X_DASHBOARD_MERCHANT_ORG_ID=>$merchant->getOrgId(),
             self::X_DASHBOARD_ADMIN_EMAIL => $this->getAdminEmail(), // will be empty if not kam
         ];
 

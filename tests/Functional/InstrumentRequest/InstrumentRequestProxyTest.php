@@ -356,8 +356,11 @@ class InstrumentRequestProxyTest extends TestCase
 
                 $this->assertArrayHasKey('X-Dashboard-Merchant-Id', $additionalHeaders);
 
+                $this->assertArrayHasKey('X-Dashboard-Merchant-OrgId', $additionalHeaders);
+
                 $this->assertEquals('10000000000000', $additionalHeaders['X-Dashboard-Merchant-Id']);
 
+                $this->assertEquals('100000razorpay', $additionalHeaders['X-Dashboard-Merchant-OrgId']);
 
                 $response = new \Requests_Response;
 
