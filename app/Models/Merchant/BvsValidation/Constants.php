@@ -47,9 +47,11 @@ class Constants
 
 
     // Validation status
-    const VERIFIED = 'verified';
+    const VERIFIED          = 'verified';
     const INCORRECT_DETAILS = 'incorrect_details';
-    const NOT_MATCHED = 'not_matched';
+    const NOT_MATCHED       = 'not_matched';
+    const PENDING           = 'pending';
+    const INITIATED         = 'initiated';
 
     const ERROR_MAPPING = [
         self::FAILED            => [

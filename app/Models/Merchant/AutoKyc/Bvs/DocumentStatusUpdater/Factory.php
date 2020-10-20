@@ -6,6 +6,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\BvsValidation\Constants;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\BvsValidation\Entity as ValidationEntity;
 
@@ -14,16 +15,16 @@ class Factory
     /**
      * Returns StatusUpdater instance for artefact
      *
-     * @param MerchantEntity $merchant
-     * @param string $artefactType
-     *
-     * @param string|null $validationId
+     * @param MerchantEntity   $merchant
+     * @param ValidationEntity $validation
      *
      * @return StatusUpdater
      * @throws LogicException
      */
-    public function getInstance(MerchantEntity $merchant, string $artefactType, ?string $validationId): StatusUpdater
+    public function getInstance(MerchantEntity $merchant, ValidationEntity $validation): StatusUpdater
     {
+        $artefactType = $validation->getArtefactType();
+
         switch ($artefactType)
         {
             case Constant::CIN:
@@ -41,9 +42,13 @@ class Factory
                     Entity::GSTIN_VERIFICATION_STATUS,
                     $artefactType);
 
+            case Constant::BUSINESS_PAN :
+
+                return $this->getStatusUpdaterForCompanyPan($merchant, $validation);
+
             case Constant::PERSONAL_PAN :
 
-                return new POI($merchant, $artefactType, $validationId);
+                return $this->getStatusUpdaterForPersonalPan($merchant, $validation);
 
             case Constant::AADHAAR :
             case Constant::VOTERS_ID:
@@ -59,5 +64,58 @@ class Factory
                     [ValidationEntity::ARTEFACT_TYPE => $artefactType]);
 
         }
+    }
+
+    /**
+     * @param MerchantEntity   $merchant
+     * @param ValidationEntity $validation
+     *
+     * @return StatusUpdater
+     */
+    public function getStatusUpdaterForPersonalPan(MerchantEntity $merchant, ValidationEntity $validation): StatusUpdater
+    {
+        $artefactType = $validation->getArtefactType();
+
+        if ($validation->getValidationUnit() === Constants::PROOF)
+        {
+            return new DefaultStatusUpdater(
+                $merchant,
+                Entity::PERSONAL_PAN_DOC_VERIFICATION_STATUS,
+                $artefactType);
+        }
+
+        $validationId = $validation->getValidationId();
+
+        return new POI($merchant, $artefactType, $validationId);
+    }
+
+    /**
+     * @param MerchantEntity   $merchant
+     * @param ValidationEntity $validation
+     *
+     * @return StatusUpdater
+     * @throws LogicException
+     */
+    public function getStatusUpdaterForCompanyPan(MerchantEntity $merchant, ValidationEntity $validation): StatusUpdater
+    {
+        $artefactType   = $validation->getArtefactType();
+        $validationUnit = $validation->getValidationUnit();
+
+        if ($validationUnit === Constants::PROOF)
+        {
+
+            return new DefaultStatusUpdater(
+                $merchant,
+                Entity::COMPANY_PAN_DOC_VERIFICATION_STATUS,
+                $artefactType);
+        }
+
+        throw new LogicException(
+            ErrorCode::SERVER_ERROR_UNHANDLED_ARTEFACT_TYPE,
+            null,
+            [
+                ValidationEntity::ARTEFACT_TYPE   => $artefactType,
+                ValidationEntity::VALIDATION_UNIT => $validationUnit
+            ]);
     }
 }

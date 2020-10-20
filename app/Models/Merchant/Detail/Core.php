@@ -44,6 +44,7 @@ use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
 use RZP\Mail\Merchant\Rejection as RejectionEmail;
 use RZP\Mail\Merchant\RazorpayX\L2SubmissionGreylist;
+use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 use RZP\Mail\Merchant\RazorpayX\L2SubmissionWhitelist;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
@@ -146,6 +147,8 @@ class Core extends Base\Core
         $this->autoUpdateMerchantActivationFlows($merchant, null, [Detail\Constants::INTERNATIONAL_ACTIVATION]);
 
         $this->updatePoaVerificationStatusIfApplicable($merchantDetails, $merchant);
+
+        $this->triggerValidationRequests($merchant, $merchantDetails);
 
         // If a merchant does not have website or app, we would need to activate them
         // only with PLs, Invoices and should not get API keys in live mode. Merchant's has_key_access
@@ -2631,7 +2634,6 @@ class Core extends Base\Core
             Constant::ARTEFACT_TYPE   => Constant::CIN,
             Constant::CONFIG_NAME     => Constant::CIN,
             Constant::VALIDATION_UNIT => BvsValidationConstants::IDENTIFIER,
-            Constant::IDENTIFIER      => $merchantDetails->getCompanyCin(),
             Constant::DETAILS         => [
                 Constant::SIGNATORY_DETAILS =>
                     [[
@@ -2658,7 +2660,6 @@ class Core extends Base\Core
             Constant::ARTEFACT_TYPE   => Constant::LLP_DEED,
             Constant::CONFIG_NAME     => Constant::LLP_DEED,
             Constant::VALIDATION_UNIT => BvsValidationConstants::IDENTIFIER,
-            Constant::IDENTIFIER      => $merchantDetails->getCompanyCin(),
             Constant::DETAILS         => [
                 Constant::SIGNATORY_DETAILS =>
                     [[
@@ -3154,5 +3155,26 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    /**
+     * Triggers validation requests
+     *
+     * @param Merchant\Entity $merchant
+     * @param Entity          $merchantDetails
+     */
+    protected function triggerValidationRequests(Merchant\Entity $merchant, Entity $merchantDetails): void
+    {
+        $factory = new requestDispatcher\Factory();
+
+        $requestCreators = $factory->getBvsRequestDispatchers($merchant, $merchantDetails);
+
+        foreach ($requestCreators as $requestCreator)
+        {
+            if ($requestCreator instanceof requestDispatcher\RequestDispatcher)
+            {
+                $requestCreator->triggerBVSRequest();
+            }
+        }
     }
 }

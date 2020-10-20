@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs\Config;
 
-class Business_pan_ocr
+class Business_pan_ocr extends BaseConfig
 {
     protected $enrichment = [
         'ocr' => [

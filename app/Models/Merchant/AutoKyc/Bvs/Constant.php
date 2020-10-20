@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\AutoKyc\Bvs;
 
 use RZP\Models\Merchant\Document\Type;
+use RZP\Models\Merchant\RazorxTreatment;
 
 class Constant
 {
@@ -12,7 +13,6 @@ class Constant
     const CONFIG_NAME       = 'config_name';
     const TYPE              = 'type';
     const DETAILS           = 'details';
-    const IDENTIFIER        = 'identifier';
     const PAN_NUMBER        = 'pan_number';
     const NAME              = 'name';
     const ARTEFACT          = 'artefact';
@@ -32,6 +32,8 @@ class Constant
     const FULL_NAME         = 'full_name';
     const PROOF_INDEX       = 'proof_index';
     const LLPIN             = 'llpin';
+    const PERSONAL_PAN_OCR  = 'personal_pan_ocr';
+    const BUSINESS_PAN_OCR  = 'business_pan_ocr';
 
     //
     // Response fields
@@ -50,6 +52,7 @@ class Constant
     const VOTERS_ID    = 'voters_id';
     const PASSPORT     = 'passport';
     const LLP_DEED     = 'llp_deed';
+    const BUSINESS_PAN = 'business_pan';
 
     const PG       = 'pg';
     const MERCHANT = 'merchant';
@@ -59,18 +62,37 @@ class Constant
     const SUCCESS = 'success';
     const FAILURE = 'failure';
 
+    const RAZORX_EXPERIMENT = 'razorx_experiment';
+
     const DOCUMENT_TYPE_ARTEFACT_DETAILS_MAP = [
-        Type::AADHAR_FRONT => [
-            self::ARTEFACT_TYPE => self::AADHAAR,
-            self::PROOF_INDEX   => '3',
+        Type::AADHAR_FRONT     => [
+            self::ARTEFACT_TYPE   => self::AADHAAR,
+            self::PROOF_INDEX     => '3',
         ],
-        Type::VOTER_ID_FRONT => [
-            self::ARTEFACT_TYPE => self::VOTERS_ID,
-            self::PROOF_INDEX   => '1',
+        Type::VOTER_ID_FRONT   => [
+            self::ARTEFACT_TYPE   => self::VOTERS_ID,
+            self::PROOF_INDEX     => '1',
         ],
-        Type::PASSPORT_FRONT => [
-            self::ARTEFACT_TYPE => self::PASSPORT,
-            self::PROOF_INDEX   => '1',
+        Type::PASSPORT_FRONT   => [
+            self::ARTEFACT_TYPE   => self::PASSPORT,
+            self::PROOF_INDEX     => '1',
+        ],
+        Type::PERSONAL_PAN     => [
+            self::ARTEFACT_TYPE   => self::PERSONAL_PAN,
+            self::PROOF_INDEX     => '1',
+        ],
+        Type::BUSINESS_PAN_URL => [
+            self::ARTEFACT_TYPE   => self::BUSINESS_PAN,
+            self::PROOF_INDEX     => '1',
+        ]
+    ];
+
+    const ENABLE_VERIFICATION_AFTER_FORM_SUBMISSION = [
+        Type::BUSINESS_PAN_URL => [
+            self::RAZORX_EXPERIMENT => RazorxTreatment::BVS_BUSINESS_PAN_OCR,
+        ],
+        Type::PERSONAL_PAN     => [
+            self::RAZORX_EXPERIMENT => RazorxTreatment::BVS_PERSONAL_PAN_OCR,
         ],
     ];
 }

@@ -77,7 +77,6 @@ class Core extends Base\Core
                 Constant::ARTEFACT_TYPE   => Constant::PERSONAL_PAN,
                 Constant::CONFIG_NAME     => Constant::PERSONAL_PAN,
                 Constant::VALIDATION_UNIT => BvsValidationConstants::IDENTIFIER,
-                Constant::IDENTIFIER      => $input[DEConstants::PAN_NUMBER],
                 Constant::DETAILS         => [
                     Constant::PAN_NUMBER => $input[DEConstants::PAN_NUMBER],
                     Constant::NAME       => $input[DEConstants::PROMOTER_PAN_NAME],

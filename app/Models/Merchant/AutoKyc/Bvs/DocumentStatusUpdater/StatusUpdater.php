@@ -9,4 +9,6 @@ interface StatusUpdater
     public function updateMerchantContext() : void ;
 
     public function getUpdatedActivationStatus() : string ;
+
+    public function updateStatusToPending() : void ;
 }

@@ -3,6 +3,8 @@
 namespace RZP\Models\Merchant\BvsValidation;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
@@ -112,18 +114,17 @@ class Core extends Base\Core
      * artefact can be aadhaar, passport, voterId)
      *
      * @param string $merchantId
-     * @param string $artefactType
-     * @param string $validationId
+     * @param Entity $validation
      *
      * @throws \RZP\Exception\LogicException
      */
-    protected function updateValidationStatusForMerchant(string $merchantId, string $artefactType, string $validationId): void
+    protected function updateValidationStatusForMerchant(string $merchantId, Entity $validation): void
     {
         [$merchant, $merchantDetails] = (New Detail\Core())->getMerchantAndSetBasicAuth($merchantId);
 
         $statusUpdateFactory = new DocumentStatusUpdater\Factory();
 
-        $statusUpdater = $statusUpdateFactory->getInstance($merchant, $artefactType, $validationId);
+        $statusUpdater = $statusUpdateFactory->getInstance($merchant, $validation);
 
         $statusUpdater->updateValidationStatus();
 
@@ -158,10 +159,12 @@ class Core extends Base\Core
 
                         $this->updateValidationStatusForMerchant(
                             $merchantId,
-                            $validation->getArtefactType(),
-                            $validation->getValidationId());
+                            $validation);
                     });
-            });
+            },
+            Merchant\Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
+            Merchant\Constants::MERCHANT_MUTEX_RETRY_COUNT);
     }
 
     /**

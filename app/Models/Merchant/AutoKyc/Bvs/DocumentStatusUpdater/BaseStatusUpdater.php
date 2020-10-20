@@ -176,4 +176,13 @@ abstract class BaseStatusUpdater implements StatusUpdater
     {
         return $this->merchantDetails->getActivationStatus();
     }
+
+    public function updateStatusToPending(): void
+    {
+        throw new LogicException(
+            ErrorCode::SERVER_ERROR_UNHANDLED_ARTEFACT_TYPE,
+            null
+        );
+
+    }
 }

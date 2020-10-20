@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\BvsValidation\Constants;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -39,6 +40,12 @@ class POI extends BaseStatusUpdater
             Detail\Constants::POI_STATUS                => $this->merchantDetails->getPoiVerificationStatus(),
             Constants::BVS_DOCUMENT_VERIFICATION_STATUS => $validation->getValidationStatus()
         ];
+
+        $this->trace->info(TraceCode::ONBOARDING_BVS_VERIFICATION_STATUS, [
+            'merchant_id'                  => $this->merchantDetails->getId(),
+            'artefact_type'                => $this->artefactType,
+            'document_verification_status' => $documentValidationStatus
+        ]);
 
         $this->trace->count(Detail\Metric::BVS_VALIDATION_STATUS_TOTAL, $bvsPoiVerificationMetrics);
     }

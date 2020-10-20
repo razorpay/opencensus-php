@@ -16,21 +16,22 @@ use Illuminate\Http\UploadedFile;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Document\Source;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Helpers\RazorxTrait;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Models\Merchant\Detail\ActivationFlow;
-use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
-use RZP\Models\Merchant\Detail\GSTINVerificationStatus;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Tests\Functional\Merchant\Bvs\BvsValidationTest;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\Merchant\Document\Entity as MerchantDocuments;
 
 class MerchantDetailTest extends OAuthTestCase
 {
+    use RazorxTrait;
     use PaymentTrait;
     use HeimdallTrait;
     use DbEntityFetchTrait;
@@ -1863,15 +1864,6 @@ class MerchantDetailTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function mockRazorX(string $functionName, string $featureName, string $variant, $merchantId = '1cXSLlUU8V9sXl')
-    {
-        $testData = &$this->testData[$functionName];
-
-        $uniqueLocalId = RazorXClient::getLocalUniqueId($merchantId, $featureName, Mode::TEST);
-
-        $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => '{"' . $uniqueLocalId . '":"' . $variant . '"}'];
-    }
-
     public function testGetMerchantDetailsRegisteredBusinessWithSelectiveRequiredFields()
     {
         $merchant = $this->fixtures->create('merchant');
@@ -2114,6 +2106,61 @@ class MerchantDetailTest extends OAuthTestCase
         $this->checkCanSubmitForAutoKycVerificationStatus($input, 'testSubmit');
     }
 
+    public function testVerifyBvsTriggerPostFormSubmissionForPersonalPanOcr()
+    {
+        $mid = '1cXSLlUU8V9sXl';
+
+        $input = [
+            'personal_pan_doc_verification_status' => 'pending',
+            'business_type'                        => '1',
+            'merchant_id'                          => $mid,
+        ];
+
+        $this->mockRazorX('testSubmit', 'bvs_personal_pan_ocr', 'on');
+
+        $this->submitL2FormAndVerifyBvsValidation($input, $mid, 'personal_pan');
+    }
+
+    public function testVerifyBvsTriggerPostFormSubmissionForBusinessPanOcr()
+    {
+        $mid = '1cXSLlUU8V9sXl';
+
+        $input = [
+            'company_pan_doc_verification_status' => 'pending',
+            'business_type'                       => '4',
+            'merchant_id'                         => $mid,
+        ];
+
+        $this->mockRazorX('testSubmit', 'bvs_business_pan_ocr', 'on');
+
+        $this->submitL2FormAndVerifyBvsValidation($input, $mid, 'business_pan');
+    }
+
+    /**
+     * @param array  $input
+     * @param string $mid
+     * @param string $artefctType
+     */
+    protected function submitL2FormAndVerifyBvsValidation(array $input, string $mid, string $artefctType)
+    {
+        Config::set('services.bvs.mock', true);
+
+        $this->checkCanSubmitForAutoKycVerificationStatus($input, 'testSubmit');
+
+        $bvsValidation = $this->getDbEntity('bvs_validation', ['owner_id' => $mid, 'owner_type' => 'merchant']);
+
+        $expectedValidationValues = [
+            'artefact_type'     => $artefctType,
+            'owner_id'          => $mid,
+            'owner_type'        => 'merchant',
+            'platform'          => 'pg',
+            'validation_status' => 'captured',
+            'validation_unit'   => 'proof',
+        ];
+
+        (new BvsValidationTest())->validateSuccessBvsValidation($bvsValidation, $expectedValidationValues);
+    }
+
     protected function checkCanSubmitForAutoKycVerificationStatus(array $input, string $test)
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
@@ -2123,7 +2170,8 @@ class MerchantDetailTest extends OAuthTestCase
                                           'address_proof_url',
                                           'business_pan_url',
                                           'business_proof_url',
-                                          'promoter_address_url'
+                                          'promoter_address_url',
+                                          'personal_pan',
                                       ]);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
@@ -2376,5 +2424,5 @@ class MerchantDetailTest extends OAuthTestCase
         $this->assertEquals($status, $merchantDetail->getPoaVerificationStatus());
 
         return $testData;
-}
+    }
 }

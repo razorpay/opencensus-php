@@ -27,6 +27,15 @@ class BvsValidationTest extends TestCase
         parent::setUp();
     }
 
+    public function validateSuccessBvsValidation(Entity $bvsValidation,
+                                                 array $expectedValues = [])
+    {
+        $this->assertNotNull($bvsValidation->getValidationId());
+        $this->assertNull($bvsValidation->getErrorCode());
+        $this->assertNull($bvsValidation->getErrorDescription());
+        $this->bvsValidation($bvsValidation, $expectedValues);
+    }
+
     public function testCreateBvsValidationPoi()
     {
         $mid = '10000000000000';
@@ -587,15 +596,5 @@ class BvsValidationTest extends TestCase
         {
             $this->assertEquals($value, $bvsValidation->getAttribute($key));
         }
-    }
-
-
-    private function validateSuccessBvsValidation(Entity $bvsValidation,
-                                                  array $expectedValues = [])
-    {
-        $this->assertNotNull($bvsValidation->getValidationId());
-        $this->assertNull($bvsValidation->getErrorCode());
-        $this->assertNull($bvsValidation->getErrorDescription());
-        $this->bvsValidation($bvsValidation, $expectedValues);
     }
 }

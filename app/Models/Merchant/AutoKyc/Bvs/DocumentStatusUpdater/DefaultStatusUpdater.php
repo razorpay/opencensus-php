@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 
 use App;
 
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\BvsValidation\Constants;
@@ -60,6 +61,17 @@ class DefaultStatusUpdater extends BaseStatusUpdater
 
                 $this->trace->count(Detail\Metric::VALIDATION_STATUS_BY_ARTEFACT_TOTAL, $verificationMetrics);
             }
+
+            $this->trace->info(TraceCode::ONBOARDING_BVS_VERIFICATION_STATUS, [
+                'merchant_id'                  => $this->merchantDetails->getId(),
+                'artefact_type'                => $this->artefactType,
+                'document_verification_status' => $documentValidationStatus
+            ]);
         }
+    }
+
+    public function updateStatusToPending(): void
+    {
+        $this->merchantDetails->setAttribute($this->documentTypeStatusKey, Constants::PENDING);
     }
 }

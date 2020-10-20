@@ -50,6 +50,21 @@ class Entity extends PublicEntity
         return $this->getAttribute(self::VALIDATION_ID);
     }
 
+    public function getValidationUnit(): ?string
+    {
+        return $this->getAttribute(self::VALIDATION_UNIT);
+    }
+
+    public function setValidationUnit(string $validationUnit)
+    {
+        $this->setAttribute(self::VALIDATION_UNIT, $validationUnit);
+    }
+
+    public function setArtefactType(string $artefactType)
+    {
+        $this->setAttribute(self::ARTEFACT_TYPE, $artefactType);
+    }
+
     public function getArtefactType(): string
     {
         return $this->getAttribute(self::ARTEFACT_TYPE);

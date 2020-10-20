@@ -12,6 +12,7 @@ use RZP\Models\Merchant\AutoKyc;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 use RZP\Models\Merchant\Detail\Constants as DetailConstant;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 
@@ -132,12 +133,53 @@ class Core extends Base\Core
                 $document,
                 $merchant);
 
+            $this->updateDocumentVerificationStatus($merchant, $document);
+
+            $this->repo->saveOrFail($merchantDetails);
+
             $this->repo->saveOrFail($document);
         });
 
         $this->pushEventsAndMetrics($merchant, $input);
 
         return $merchantDetailCore->createResponse($merchantDetails);
+    }
+
+    /**
+     * @param Merchant\Entity $merchant
+     * @param Entity          $document
+     *
+     * @throws \RZP\Exception\LogicException
+     */
+    public function updateDocumentVerificationStatus(Merchant\Entity $merchant, Entity $document)
+    {
+        $documentType = $document->getDocumentType();
+
+        if ((in_array($documentType, array_keys(Constant::ENABLE_VERIFICATION_AFTER_FORM_SUBMISSION), true) === true))
+        {
+            $razorxExperiment = Constant::ENABLE_VERIFICATION_AFTER_FORM_SUBMISSION[$documentType][Constant::RAZORX_EXPERIMENT] ?? '';
+
+            if ((empty($razorxExperiment) === false) and
+                (new Merchant\Core())->isRazorxExperimentEnable($merchant, $razorxExperiment) === false)
+            {
+                return;
+
+            }
+
+            $artefactDetails = Constant::DOCUMENT_TYPE_ARTEFACT_DETAILS_MAP[$documentType];
+
+            $validation = new Merchant\BvsValidation\Entity();
+
+            $validation->setValidationUnit(BvsValidationConstants::PROOF);
+
+            $validation->setArtefactType($artefactDetails[Constant::ARTEFACT_TYPE]);
+
+            $statusUpdateFactory = new DocumentStatusUpdater\Factory();
+
+            $statusUpdater = $statusUpdateFactory->getInstance($merchant, $validation);
+
+            $statusUpdater->updateStatusToPending();
+        }
     }
 
     /**
@@ -223,6 +265,28 @@ class Core extends Base\Core
         }
 
         return $documentsResponse;
+    }
+
+    /** Returns FileStoreId for given document type
+     *
+     * @param Merchant\Entity $merchant
+     * @param string          $documentType
+     *
+     * @return null|string
+     */
+    public function getPublicFileStoreIdForDocumentType(Merchant\Entity $merchant, string $documentType): ?string
+    {
+        $documents = $merchant->merchantDocuments;
+
+        foreach ($documents as $document)
+        {
+            if ($document->getDocumentType() === $documentType)
+            {
+                return $document->getPublicFileStoreId();
+            }
+        }
+
+        return null;
     }
 
     protected function PerformOcrIfApplicable(

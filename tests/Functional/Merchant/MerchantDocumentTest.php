@@ -3,20 +3,20 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Config;
-use RZP\Constants\Mode;
-use RZP\Services\RazorXClient;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\Document\Source;
 use RZP\Models\Merchant\Detail\Constants;
+use RZP\Tests\Functional\Helpers\RazorxTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class MerchantDocumentTest Extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use RazorxTrait;
     use DbEntityFetchTrait;
+    use RequestResponseFlowTrait;
 
     public function setUp()
     {
@@ -86,7 +86,6 @@ class MerchantDocumentTest Extends TestCase
         $content = $this->getJsonContentFromResponse($response);
 
         $this->assertArrayNotHasKey('promoter_address_url',$content['verification']['required_fields']);
-
     }
 
     public function testDocumentUploadToUFH()
@@ -318,6 +317,45 @@ class MerchantDocumentTest Extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateDocumentVerifyPendingVerificationStatusForPersonalPan()
+    {
+        $this->mockRazorX('testDocumentUpload', 'bvs_personal_pan_ocr', 'on');
+
+        $this->uploadDocument('personal_pan', 'personal_pan_doc_verification_status');
+    }
+
+    public function testUpdateDocumentVerifyPendingVerificationStatusForBusinessPan()
+    {
+        $this->mockRazorX('testDocumentUpload', 'bvs_business_pan_ocr', 'on');
+
+        $this->uploadDocument('business_pan_url', 'company_pan_doc_verification_status');
+    }
+
+    protected function uploadDocument(string $documentKey, string $documentVerificationKey, $mid = '1cXSLlUU8V9sXl')
+    {
+        $this->ba->proxyAuth('rzp_test_' . $mid);
+
+        //Merchant detail entity for default test merchant
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id'       => $mid,
+                'promoter_pan_name' => 'XYZ',
+            ]);
+
+        $this->updateUploadDocumentData('testDocumentUpload');
+
+        $request = $this->testData['testDocumentUpload']['request'];
+
+        $request['content']['document_type'] = $documentKey;
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertEquals('pending', $content[$documentVerificationKey]);
+    }
+
     protected function createMerchantDocumentAndFileStoreEntity(string $mode = 'live'): array
     {
         $document = $this->fixtures->on('live')->create(
@@ -350,29 +388,5 @@ class MerchantDocumentTest Extends TestCase
         ]);
 
         return [$document, $fileStore];
-    }
-
-    public function mockRazorX(string $functionName, string $featureName, string $variant, $merchantId = '1cXSLlUU8V9sXl')
-    {
-        $testData = &$this->testData[$functionName];
-
-        $uniqueLocalId = RazorXClient::getLocalUniqueId($merchantId, $featureName, Mode::TEST);
-
-        $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => '{"' . $uniqueLocalId . '":"' . $variant . '"}'];
-    }
-
-    public function mockRazorXMultiFeature(string $functionName, array $featureVariantMap, $merchantId = '1cXSLlUU8V9sXl')
-    {
-        $testData = &$this->testData[$functionName];
-
-        $localIdVariantMap = [];
-
-        foreach ($featureVariantMap as $featureName => $variant)
-        {
-            $uniqueLocalId                     = RazorXClient::getLocalUniqueId($merchantId, $featureName, Mode::TEST);
-            $localIdVariantMap[$uniqueLocalId] = $variant;
-        }
-
-        $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => json_encode($localIdVariantMap)];
     }
 }

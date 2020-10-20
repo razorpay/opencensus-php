@@ -8,7 +8,6 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 use RZP\Exception\IntegrationException;
 use RZP\Models\Merchant\AutoKyc\Response;
-use RZP\Models\Merchant\Detail\Constants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Config\BvsConfig;
 
 class DefaultProcessor implements Processor
@@ -91,8 +90,6 @@ class DefaultProcessor implements Processor
         $artefact[Constant::NOTES] = $this->input[Constant::NOTES] ?? [];
 
         $artefact[Constant::PROOFS] = $this->input[Constant::PROOFS] ?? [];
-
-        $artefact[Constant::IDENTIFIER] = $this->input[Constant::IDENTIFIER] ?? '';
 
         $artefact[Constant::DETAILS] = $this->input[Constant::DETAILS] ?? [];
 
