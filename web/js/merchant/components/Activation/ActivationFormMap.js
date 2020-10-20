@@ -92,12 +92,6 @@ const CIN_BusinessTypes = [PRIVATE, PUBLIC];
 export const LLPIN_BusinessTypes = [LLP];
 const ORG_BusinessTypes = [NGO, TRUST, SOCIETY];
 
-const DOC_UPLOAD_LABELS = {
-  [PROPRIETORSHIP]: {
-    business_pan_url: "Proprietorship's PAN",
-  },
-};
-
 const contactFields = [
   {
     label: 'Contact Name',
@@ -361,8 +355,8 @@ const businessDetails = [
       info: getBusinessNameInfo,
       placeholder: 'Registered name',
       validator: function (value) {
-        let contactName = this.state.dirty['contact_name'] || this.props.data['contact_name'],
-          showCompanyName = this.props.user.isCompanyNameHiddenRazorX;
+        const contactName = this.state.dirty.contact_name || this.props.data.contact_name;
+        const showCompanyName = this.props.user.isCompanyNameHiddenRazorX;
         if (!isValidName(value)) {
           return 'Business Name should not have any numbers or special characters.';
         }
@@ -712,20 +706,24 @@ const uploadFields = [
   {
     name: 'business_pan_url',
     label: 'Company PAN',
-    getLabel: (activation) => {
-      const currentBusinessType =
-        Number(activation.state.dirty.business_type) || Number(activation.props.data.business_type);
-      if (
-        DOC_UPLOAD_LABELS[currentBusinessType] &&
-        DOC_UPLOAD_LABELS[currentBusinessType]['business_pan_url']
-      ) {
-        return DOC_UPLOAD_LABELS[currentBusinessType]['business_pan_url'];
-      }
-      return 'Company PAN';
-    },
     _cmp: Input.File,
     description: 'PAN details should be of the mentioned business only.',
-    _when: excludeFor_Indiv,
+    _when: (activation) => {
+      const currentBusinessType =
+        activation.state.dirty.business_type || activation.props.data.business_type;
+      return !isUnregisteredBusiness(activation) && Number(currentBusinessType) !== PROPRIETORSHIP;
+    },
+  },
+  {
+    name: 'personal_pan',
+    label: 'Personal PAN',
+    _cmp: Input.File,
+    description: 'Upload scanned copy of personal PAN Card',
+    _when: (activation) => {
+      const currentBusinessType =
+        activation.state.dirty.business_type || activation.props.data.business_type;
+      return !isUnregisteredBusiness(activation) && Number(currentBusinessType) === PROPRIETORSHIP;
+    },
   },
   {
     name: 'form_12a_url',
