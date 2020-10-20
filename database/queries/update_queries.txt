@@ -3755,3 +3755,11 @@ where payments.id in
 ) and payments.status = 'failed' and payments.internal_error_code = 'BAD_REQUEST_PAYMENT_TIMED_OUT';
 
 ALTER TABLE merchant_banks MODIFY COLUMN card_networks smallint(5) unsigned NOT NULL DEFAULT '92';
+
+// For Source_id(FeU0MYgas7Rc5D) marking fta as initiated since finops unable to do "update from source" dashboard action
+// For Source_id(Ff8ivanGHJ5Jk5) required to be in reversed, updating to initiated, then dashboard action will be used.
+UPDATE fund_transfer_attempts
+    SET status = "initiated",
+    remarks = "manual db update for data-correction",
+    updated_at = UNIX_TIMESTAMP(NOW())
+    WHERE source_id IN ("FeU0MYgas7Rc5D", "Ff8ivanGHJ5Jk5");
