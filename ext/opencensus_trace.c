@@ -28,6 +28,8 @@
  */
 static void (*opencensus_original_zend_execute_ex) (zend_execute_data *execute_data);
 static void (*opencensus_original_zend_execute_internal) (zend_execute_data *execute_data, zval *return_value);
+// global value for max number of spans in any trace
+static int SPAN_LIMIT = 100;
 
 void opencensus_trace_ginit()
 {
@@ -128,7 +130,13 @@ static opencensus_trace_span_t *span_from_options(zval *options)
     return span;
 }
 
-// RZP
+/**
+ *   Find number of spans in current trace
+ *
+ *   Adapted from implementation of `opencensus_trace_list` function,
+ *   which returns all the spans in current trace
+*/
+
 int num_spans_in_trace(){
     opencensus_trace_span_t *trace_span;
 
@@ -567,7 +575,7 @@ PHP_FUNCTION(opencensus_trace_context)
  * opencensus_original_zend_execute_ex
  */
 void opencensus_trace_execute_ex (zend_execute_data *execute_data TSRMLS_DC) {
-    int SPAN_LIMIT = 100;
+
     zend_string *function_name = opencensus_trace_add_scope_name(
         EG(current_execute_data)->func->common.function_name,
         EG(current_execute_data)->func->common.scope
@@ -582,9 +590,16 @@ void opencensus_trace_execute_ex (zend_execute_data *execute_data TSRMLS_DC) {
         return;
     }
 
-    // RZP - add span limit here
+    /*
+     *   Add span limit
+     *
+     *   if the number of spans have reached the limit,
+     *   execute the original function and return, without calling the
+     *   trace handler.
+    */
     int num_spans = num_spans_in_trace();
-    if (num_spans_in_trace() >= SPAN_LIMIT){
+
+    if (num_spans >= SPAN_LIMIT){
         opencensus_original_zend_execute_ex(execute_data TSRMLS_CC);
         return;
     }
