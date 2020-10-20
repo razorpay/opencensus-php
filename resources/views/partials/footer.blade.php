@@ -51,9 +51,6 @@
       smartCollect: function() {
         return window.rzpQ;
       },
-      partnership: function() {
-        return window.rzpQ;
-      },
       subscription: function() {
         return window.rzpQ;
       }
@@ -189,16 +186,6 @@
             {
               propertyName: 'event_group',
               value: 'smartcollect-dashboard'
-            }
-          ],
-          partnership: [
-            {
-              propertyName: 'event_type',
-              value: 'partnership'
-            },
-            {
-              propertyName: 'event_group',
-              value: 'partnership-dashboard'
             }
           ],
           subscription: [

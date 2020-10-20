@@ -58,7 +58,7 @@ export default class AddMerchant extends Component {
         });
         this.props.closeModal();
         this.props.tracking.trackEvent(
-          window.rzpQ.partnership().interaction('partnerships.add.submerchant', {
+          window.rzpQ.onbr().interaction('partnerships.add.submerchant', {
             partnerID: user.id,
             mid: id,
           }),
@@ -67,7 +67,7 @@ export default class AddMerchant extends Component {
       })
       .catch(({ errors }) => {
         this.props.tracking.trackEvent(
-          window.rzpQ.partnership().interaction('partnerships.add.error', {
+          window.rzpQ.onbr().interaction('partnerships.add.error', {
             partnerID: user.id,
             error: errors && errors[0],
           }),
@@ -83,7 +83,7 @@ export default class AddMerchant extends Component {
     const { user } = this.props;
     gaEvents.trackUploadBatch('Partner submerchant');
     this.props.tracking.trackEvent(
-      window.rzpQ.partnership().interaction('partnerships.add.multiple.upload.invite', {
+      window.rzpQ.onbr().interaction('partnerships.add.multiple.upload.invite', {
         partnerID: user.id,
         contactsCount: this.state.bulkContactsCount,
       }),
@@ -116,7 +116,7 @@ export default class AddMerchant extends Component {
         bulkContactsCount: response.processable_count || 0,
       });
       this.props.tracking.trackEvent(
-        window.rzpQ.partnership().interaction('partnerships.add.multiple.upload.success', {
+        window.rzpQ.onbr().interaction('partnerships.add.multiple.upload.success', {
           partnerID: user.id,
           contactsCount: response.processable_count || 0,
         }),
@@ -129,7 +129,7 @@ export default class AddMerchant extends Component {
   onValidationFail = (error) => {
     const { user } = this.props;
     this.props.tracking.trackEvent(
-      window.rzpQ.partnership().interaction('partnerships.add.multiple.upload.error', {
+      window.rzpQ.onbr().interaction('partnerships.add.multiple.upload.error', {
         partnerID: user.id,
         error,
       }),
@@ -140,7 +140,7 @@ export default class AddMerchant extends Component {
     const { user } = this.props;
     if (mode === 'bulk') {
       this.props.tracking.trackEvent(
-        window.rzpQ.partnership().interaction('partnerships.add.multiple', {
+        window.rzpQ.onbr().interaction('partnerships.add.multiple', {
           partnerID: user.id,
         }),
       );

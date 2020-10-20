@@ -160,7 +160,7 @@ export default class SubMerchantsList extends ListContainer {
   handleAddMerchant = () => {
     const { user } = this.props;
     this.props.tracking.trackEvent(
-      window.rzpQ.partnership().interaction('partnerships.add', {
+      window.rzpQ.onbr().interaction('partnerships.add', {
         partnerID: user.id,
       }),
     );
