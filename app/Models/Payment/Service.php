@@ -1883,6 +1883,11 @@ class Service extends Base\Service
 
         $allMethods = Payment\Method::getAllPaymentMethods();
 
+        if (isset($input['methods']) === true)
+        {
+            $allMethods = $input['methods'] ;
+        }
+
         foreach ($allMethods as $method)
         {
             $count = $count + $this->timeoutOldPaymentsForMethod($limit, $method);
