@@ -1853,11 +1853,7 @@ app
                 $scope.email_not_verified = true;
                 $scope.login.currentStep = 2;
               } else {
-                angular.forEach(data.errors, function (value) {
-                  if (typeof value === 'string') {
-                    $scope.alerts.addAlert('danger', value);
-                  }
-                });
+                $scope.alerts.addAlert('danger', firstError);
                 fireDLFailureEvents('login.login', {
                   emailId: $scope.login.data.email,
                   error: firstError,

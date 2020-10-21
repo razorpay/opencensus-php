@@ -46,6 +46,11 @@ class Service extends Base\Service
     const MERCHANT_ACTIVATED  = 'merchant_activated';
 
     const CAPTCHA_MODE_HEADER = 'X-RECAPTCHA-MODE';
+    
+    const LOGIN_UNAUTHENTICATED = 'LOGIN_UNAUTHENTICATED';
+    
+    const LOGIN_UNREGISTERED = 'LOGIN_UNREGISTERED';
+    
 
     // Users who signed up before this date
     // are not exposed to the pre signup flow
@@ -398,7 +403,7 @@ class Service extends Base\Service
                 }
                 else
                 {
-                    return [['User Login Failed, Please check your login credentials.'], null];
+                    return [['User Login Failed, Please check your login credentials.', self::LOGIN_UNAUTHENTICATED], null];
                 }
 
                 // very very nasty dirty hack to not to write lot of code.
@@ -407,21 +412,21 @@ class Service extends Base\Service
                     $error = $error['description'];
                 }
 
-                return [[$error], null];
+                return [[$error, self::LOGIN_UNAUTHENTICATED], null];
             }
 
             if (in_array('Captcha Failed', $error) === true)
             {
-                return [['Captcha validation Failed, Please refresh page and try again.'], null];
+                return [['Captcha validation Failed, Please refresh page and try again.', self::LOGIN_UNAUTHENTICATED], null];
             }
 
             //temporarily added and will be removed after the root cause is fixed.
             if (in_array('No db records found.', $error) === true)
             {
-                return [['The email or password combination you entered doesn\'t exist'], null];
+                return [['The email or password combination you entered doesn\'t exist', self::LOGIN_UNREGISTERED], null];
             }
 
-            return [['Incorrect email or password. To reset, click on "Forgot?" link.'], null];
+            return [['Incorrect email or password. To reset, click on "Forgot?" link.', self::LOGIN_UNAUTHENTICATED], null];
         }
 
         Auth::login($genericUser, false);
@@ -467,7 +472,7 @@ class Service extends Base\Service
                 }
                 else
                 {
-                    return [[Constants::LOGIN_FAILED_CHECK_CREDENTIALS], null];
+                    return [[Constants::LOGIN_FAILED_CHECK_CREDENTIALS, self::LOGIN_UNAUTHENTICATED], null];
                 }
 
                 // very very nasty dirty hack to not to write lot of code. check handleLoginResponse function
@@ -476,16 +481,16 @@ class Service extends Base\Service
                     $error = $error[Constants::DESCRIPTION];
                 }
 
-                return [[$error], null];
+                return [[$error, self::LOGIN_UNAUTHENTICATED], null];
             }
 
             //temporarily added and will be removed after the root cause is fixed.
             if (in_array(Constants::NO_DB_RECORDS_FOUND, $error) === true)
             {
-                return [[Constants::ACCOUNT_DOES_NOT_EXIST], null];
+                return [[Constants::ACCOUNT_DOES_NOT_EXIST, self::LOGIN_UNREGISTERED], null];
             }
 
-            return [[Constants::GOOGLE_SIGN_IN_ERROR], null];
+            return [[Constants::GOOGLE_SIGN_IN_ERROR, self::LOGIN_UNAUTHENTICATED], null];
         }
 
         Auth::login($genericUser, false);
