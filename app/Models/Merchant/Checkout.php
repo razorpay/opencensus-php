@@ -116,7 +116,7 @@ class Checkout
             $this->fillPreferredMethods($merchant, $input, $data);
         }
 
-        $this->filterMethodsBasedOnAmount($data, $input);
+        //$this->filterMethodsBasedOnAmount($data, $input);
 
         return $data;
     }
