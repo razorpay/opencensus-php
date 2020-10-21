@@ -41,7 +41,7 @@ class PublicErrorDescription
     const GATEWAY_ERROR_AUTHENTICATION_STATUS_FAILED                            = '3D Secure authentication failed';
     const BAD_REQUEST_SAME_IDEM_KEY_DIFFERENT_REQUEST                           = 'Different request body sent for the same Idempotency Header';
     const BAD_REQUEST_PAYMENT_CARD_NOT_LINKED_WITH_MOBILE                       = 'Card is not linked with mobile number';
-    const BAD_REQUEST_ERROR                                                     = 'Bad request';
+    const BAD_REQUEST_ERROR                                                     = 'Something went wrong, please try again after sometime.';
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                              = 'The reset link has expired or invalid';
     const BAD_REQUEST_PAYOUTS_NOT_ALLOWED_CURRENTLY                             = 'Payouts are temporarily blocked. Please contact support.';
     const BAD_REQUEST_BLOCKING_RX_ACTIVATIONS                                   = 'RazorpayX activations are currently blocked';
@@ -485,8 +485,8 @@ class PublicErrorDescription
     const BAD_REQUEST_EMANDATE_TOKEN_PASSED_IN_FIRST_RECURRING                  = 'Token should not be passed in first E-mandate recurring payment';
     const BAD_REQUEST_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING              = 'Token is not confirmed for recurring payments';
     const BAD_REQUEST_TOKEN_STATUS_ALREADY_PAID                                 = 'Payment has already been done for this token';
-    const BAD_REQUEST_VALIDATION_FAILURE                                        = 'Validation Failure';
-    const BAD_REQUEST_INPUT_VALIDATION_FAILURE                                  = 'Validation Failure';
+    const BAD_REQUEST_VALIDATION_FAILURE                                        = 'Something went wrong, please try again after sometime.';
+    const BAD_REQUEST_INPUT_VALIDATION_FAILURE                                  = 'Something went wrong, please try again after sometime.';
     const BAD_REQUEST_SIGNATURE_ERROR                                           = 'There is something wrong with the signatures in the request';
     const BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN                         = 'Payment failed because account withdrawal are frozen';
     const BAD_REQUEST_PAYMENT_INVALID_ACCOUNT                                   = 'Payment failed because of invalid account';
@@ -1230,6 +1230,8 @@ class PublicErrorDescription
     const BAD_REQUEST_CRED_BLOCKED_USER                                             = 'You CRED account is blocked. Please reach out to support@cred.club to unblock your account and enable this payment method';
     const GATEWAY_ERROR_CRED_RESERVED_ERROR                                         = 'Download CRED app and activate your membership to unlock this payment option and avail exclusive discounts.';
     const BAD_REQUEST_DISCOUNT_GREATER_THAN_BASE_AMOUNT                             = 'Discount amount greater than base amount';
+    const BAD_REQUEST_PAYMENT_CRED_NOT_ENABLED_FOR_MERCHANT                         = 'CRED payment method is not enabled. Please complete your payment via other payment mode.';
+    const BAD_REQUEST_PAYMENT_APP_NOT_ENABLED_FOR_MERCHANT                          = 'Payment method is not enabled. Please complete your payment via other payment mode.';
 
     // nach signed form upload
     const BAD_REQUEST_NACH_UNKNOWN_FILE_TYPE                                        = 'The file type of the image is not supported';

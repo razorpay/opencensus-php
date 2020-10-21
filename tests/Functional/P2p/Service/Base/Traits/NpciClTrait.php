@@ -138,7 +138,7 @@ trait NpciClTrait
             ],
             Scenario::CL302 => [
                 '000' => ['BAD_REQUEST_ERROR', 'Payment processing cancelled'],
-                '001' => ['BAD_REQUEST_ERROR', 'Validation Failure'],
+                '001' => ['BAD_REQUEST_ERROR', 'Something went wrong, please try again after sometime.'],
             ],
             Scenario::CL303 => [
                 '000' => ['BAD_REQUEST_ERROR', 'The payment request has invalid device'],

@@ -207,7 +207,7 @@ class UpiSharpGatewayTest extends TestCase
                     'content' => [
                         'error' => array_merge([
                             'code'          => ErrorCode::BAD_REQUEST_ERROR,
-                            'description'   => 'Bad request',
+                            'description'   => 'Something went wrong, please try again after sometime.',
                         ], $error),
                     ],
                     'status_code' => 400,

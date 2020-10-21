@@ -23,7 +23,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Bad request',
+                    'description' => 'Something went wrong, please try again after sometime.',
                 ],
             ],
             'status_code' => 400,
