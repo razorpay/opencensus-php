@@ -48,7 +48,7 @@ class BankTransferController extends Controller
     public function processIciciBankTransfer()
     {
         $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
-        
+
         $input = Request::all();
 
         $response = $this->service()->saveRequestAndProcess($input, Provider::ICICI, true, $input);
@@ -99,10 +99,14 @@ class BankTransferController extends Controller
 
             $response = $this->service()->saveRequestAndProcess($input, Provider::RBL, false, Request::all());
 
-            if (boolval($response['valid']) === false)
-            {
-                return ApiResponse::json([], 500);
-            }
+            /*
+             * Commenting this as RBL doesn't have check on their end to restrict retry count.
+             * In case the response is not 200, the retry is infinite.
+             */
+            //if (boolval($response['valid']) === false)
+            //{
+            //    return ApiResponse::json([], 500);
+            //}
         }
         catch (BadRequestValidationFailureException $e)
         {
