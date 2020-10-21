@@ -652,7 +652,7 @@ class Route
         'gateway_first_data_pares_store'           => ['post',     'gateway/first_data/store_pares',                 'GatewayController@storeFirstDataPares'                             ],
         'geoip_update'                             => ['post',     'geoip/update',                                   'AdminController@updateGeoIps'                                      ],
         'gateway_payment_callback_upi_airtel'      => ['post',     'gateway/upi_airtel/callback',                    'GatewayController@callbackUpiAirtel'                               ],
-
+        'gateway_payment_upi_data_cron'            => ['post',     'gateway/upi/cron/{action}',                      'GatewayController@upiDataCorrection'                               ],
         // Temporary route for upi recurring callbacks from icici.
         'gateway_payment_callback_recurring'       => ['post',     'callback/recurring/{gateway}',                   'GatewayController@callbackGateway'                                 ],
 
@@ -2693,6 +2693,7 @@ class Route
         'payment_get_authenticate_url',
         'payment_get_authentication_entity',
         'payment_get_authorization_entity',
+        'gateway_payment_upi_data_cron',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -5221,6 +5222,7 @@ class Route
             'bulk_create_fund_accounts',
             'add_ondemand_pricing_if_absent',
             'gateway_downtimes_archive',
+            'gateway_payment_upi_data_cron',
         ],
 
         'subscriptions' => [

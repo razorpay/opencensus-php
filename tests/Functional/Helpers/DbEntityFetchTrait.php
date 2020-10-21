@@ -15,7 +15,8 @@ trait DbEntityFetchTrait
      * Hence, we keep a list of entities here to check this manually.
      */
     protected $verificationSkipEntities = [
-        'netbanking'
+        'netbanking',
+        'upi',
     ];
 
     protected function getDbEntities(string $entity, array $input = array(), $mode = 'test')

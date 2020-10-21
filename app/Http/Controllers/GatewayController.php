@@ -1379,6 +1379,11 @@ class GatewayController extends Controller
         }
     }
 
+    public function upiDataCorrection(BaseUpi\Service $service, string $action)
+    {
+        return $service->dataCorrection($action, Request::all());
+    }
+
     protected function getMerchantKeyForPayment(Payment\Entity $payment, string $mode)
     {
         $key = $this->repo->key->getFirstActiveKeyForMerchant($payment->getMerchantId());

@@ -843,6 +843,118 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertNull($paymentEntity);
     }
 
+    public function testDataCorrectionForUpiEntity()
+    {
+        $max    = 50;
+        $count  = 10;
+        $upis = [];
+        $gpid = function($id)
+        {
+            return '111' . str_pad($id, 8, '0', STR_PAD_LEFT);
+        };
+        $nrid = function($id)
+        {
+            return '2222' . str_pad($id, 8, '0', STR_PAD_LEFT);
+        };
+
+        for ($i = 1 ; $i <= $max; $i++)
+        {
+            $upi = new Upi();
+            $upi->forceFill([
+                'action'                => 'authorize',
+                'amount'                => 100,
+                'acquirer'              => 'SBIN',
+                'gateway'               => 'upi_sbi',
+                'payment_id'            => 'Pa' . $nrid($i),               // 14 Chars
+                'npci_reference_id'     => $gpid($i),                      // 11 Chars
+                'gateway_payment_id'    => $nrid($i),                      // 12 Chars
+            ]);
+
+            $upi->saveOrFail();
+
+            $upis[$i] = $upi->getId();
+        }
+
+        $this->makeDataCorrectionRequest($count);
+
+        // Last of first batch is corrected
+        $i = ($max - $count + 1);
+        $entityA = $this->getDbEntityById('upi', $upis[$i]);
+        $this->assertSame($gpid($i), $entityA->getOriginal('gateway_payment_id'));
+        $this->assertSame($nrid($i), $entityA->getOriginal('npci_reference_id'));
+
+        // before last of first batch is not corrected
+        $i = ($max - $count);
+        $entityB = $this->getDbEntityById('upi', $upis[$i]);
+        $this->assertSame($nrid($i), $entityB->getOriginal('gateway_payment_id'));
+        $this->assertSame($gpid($i), $entityB->getOriginal('npci_reference_id'));
+
+        $this->makeDataCorrectionRequest($count + 5);
+
+        // before last of first batch is now corrected
+        $i = ($max - $count);
+        $entityB = $this->getDbEntityById('upi', $upis[$i]);
+        $this->assertSame($gpid($i), $entityB->getOriginal('gateway_payment_id'));
+        $this->assertSame($nrid($i), $entityB->getOriginal('npci_reference_id'));
+
+        // Last of second batch is corrected
+        $i = ($max - ($count * 2) - 4);
+        $entityC = $this->getDbEntityById('upi', $upis[$i]);
+        $this->assertSame($gpid($i), $entityC->getOriginal('gateway_payment_id'));
+        $this->assertSame($nrid($i), $entityC->getOriginal('npci_reference_id'));
+
+        // before last of second batch is not corrected
+        $i = ($max - ($count * 2) - 5);
+        $entityD = $this->getDbEntityById('upi', $upis[$i]);
+        $this->assertSame($nrid($i), $entityD->getOriginal('gateway_payment_id'));
+        $this->assertSame($gpid($i), $entityD->getOriginal('npci_reference_id'));
+
+        $entityD->setGatewayPaymentId('Not12Chars');
+        $entityD->saveOrFail();
+
+        $this->makeRequestAndCatchException(
+            function() use ($count)
+            {
+                $this->makeDataCorrectionRequest($count);
+            },
+            Exception\LogicException::class,
+            'Gateway Payment Id is not RRN');
+
+        $this->makeDataCorrectionRequest($count, [
+            ['npci_reference_id', '<', $gpid($i)],
+        ]);
+
+        // before last of second batch still not fixed
+        $entityD = $this->getDbEntityById('upi', $upis[$i]);
+        $this->assertSame('Not12Chars', $entityD->getOriginal('gateway_payment_id'));
+        $this->assertSame($gpid($i), $entityD->getOriginal('npci_reference_id'));
+
+        // First in third batch is fixed
+        $i = $i - 1;
+        $entityE = $this->getDbEntityById('upi', $upis[$i]);
+        $this->assertSame($gpid($i), $entityE->getOriginal('gateway_payment_id'));
+        $this->assertSame($nrid($i), $entityE->getOriginal('npci_reference_id'));
+    }
+
+    protected function makeDataCorrectionRequest($count, $filter = [])
+    {
+        $request = [
+            'url'       => '/gateway/upi/cron/sbi_rrn_correction',
+            'method'    => 'POST',
+            'content'   => [
+                'count'     => $count,
+                'match'     => '11%',
+                'filter'    => $filter,
+            ],
+        ];
+
+        $this->ba->cronAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertCount($count, $response['ids']);
+    }
+
     protected function createCapturedWithVpaPayment(string $vpa)
     {
         $this->payment[Payment\Entity::VPA] = $vpa;

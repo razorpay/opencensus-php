@@ -118,4 +118,15 @@ class Repository extends Base\Repository
                     ->where(Entity::NPCI_TXN_ID, '=', $npciTxnId)
                     ->get();
     }
+
+    public function findByMatchingNpciReferenceId(string $match, array $select, int $count, array $filter)
+    {
+        return $this->newQuery()
+                    ->select($select)
+                    ->where($filter)
+                    ->where(Entity::NPCI_REFERENCE_ID, 'like', $match)
+                    ->orderBy(Entity::NPCI_REFERENCE_ID, 'desc')
+                    ->limit($count)
+                    ->get();
+    }
 }
