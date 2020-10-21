@@ -73,18 +73,8 @@ class Service extends Base\Service
 
         $status = $input[Constants::STATUS] ?? null;
 
-        $merchantId = $this->auth->getMerchantId();
-
-        //
-        // We are now querying the new ticket field `cf_merchant_id_dashboard`
-        // which is going to be filled with the prefix `merchant_dashboard`.
-        // Example :
-        // if MID : DdTVH1TtVoVyLO
-        // then cf_merchant_id_dashboard : merchant_dashboard_DdTVH1TtVoVyLO
-        //
-        $midWithPrefix = Constants::MERCHANT_DASHBOARD . '_' . $merchantId;
-
-        $queryString = '"custom_string:' . $midWithPrefix;
+        // Adding Merchant ID in query with required prefix
+        $queryString = '"custom_string:' . $this->getQueryParamMerchantIdForSearchAPI();
 
         // Adding status filter if necessary
         if (empty($status) === false)
@@ -119,20 +109,20 @@ class Service extends Base\Service
             $allTickets = array_merge($allTickets, $results);
         }
 
-        usort($allTickets, function($a, $b){
-            if ((empty($a[Constants::CREATED_AT]) === false) and
-                (empty($b[Constants::CREATED_AT]) === false))
-            {
-                return strtotime($b[Constants::CREATED_AT]) - strtotime($a[Constants::CREATED_AT]);
-            }
+        // Sorting the tickets in descending order of created_at
+        $this->sortTicketsInDescendingOrderOfCreatedAt($allTickets);
 
-            // Default behaviour - in place
-            return 0;
-        });
+        //
+        // Order tickets by the following buckets
+        // 1. Awaiting your response - MERCHANT_ACTION_STATUSES
+        // 2. Active & Work in Progress - ACTIVE_STATUSES
+        // 3. All other tickets
+        //
+        $statusGroupedAndOrderedTickets = $this->groupTicketsInBucketsAndOrderFinalList($allTickets);
 
         $ticketsResponse = [
-            Constants::RESULTS => $allTickets,
-            Constants::TOTAL   => count($allTickets)
+            Constants::RESULTS => $statusGroupedAndOrderedTickets,
+            Constants::TOTAL   => count($statusGroupedAndOrderedTickets)
         ];
 
         return $ticketsResponse;
@@ -195,5 +185,79 @@ class Service extends Base\Service
         $ticketReplyResponse[Constants::FD_INSTANCE] = $fdInstance;
 
         return $ticketReplyResponse;
+    }
+
+    protected function getQueryParamMerchantIdForSearchAPI(): string
+    {
+        $merchantId = $this->auth->getMerchantId();
+
+        //
+        // We are now querying the new ticket field `cf_merchant_id_dashboard`
+        // which is going to be filled with the prefix `merchant_dashboard`.
+        // Example :
+        // if MID : DdTVH1TtVoVyLO
+        // then cf_merchant_id_dashboard : merchant_dashboard_DdTVH1TtVoVyLO
+        //
+
+        $midWithPrefix = Constants::MERCHANT_DASHBOARD . '_' . $merchantId;
+
+        return $midWithPrefix;
+    }
+
+    protected function sortTicketsInDescendingOrderOfCreatedAt(array &$allTickets)
+    {
+        // Sorting the tickets in descending order of created_at
+        usort($allTickets, function($a, $b){
+            if ((empty($a[Constants::CREATED_AT]) === false) and
+                (empty($b[Constants::CREATED_AT]) === false))
+            {
+                return strtotime($b[Constants::CREATED_AT]) - strtotime($a[Constants::CREATED_AT]);
+            }
+
+            // Default behaviour - in place
+            return 0;
+        });
+    }
+
+    protected function groupTicketsInBucketsAndOrderFinalList(array $allTickets): array
+    {
+        //
+        // Order tickets by the following buckets
+        // 1. Awaiting your response - MERCHANT_ACTION_STATUSES
+        // 2. Active & Work in Progress - ACTIVE_STATUSES
+        // 3. All other tickets
+        //
+        $merchantActionTickets = [];
+
+        $activeTickets = [];
+
+        $otherTickets = [];
+
+        $statusGroupedAndOrderedTickets = [];
+
+        array_map(function($ticket) use (&$merchantActionTickets, &$activeTickets, &$otherTickets) {
+            $status = $ticket['status'] ?? null;
+
+            if (in_array($status, Constants::ACTIVE_STATUSES, true) === true)
+            {
+                $activeTickets[] = $ticket;
+            }
+            else if (in_array($status, Constants::MERCHANT_ACTION_STATUSES, true) === true)
+            {
+                $merchantActionTickets[] = $ticket;
+            }
+            else
+            {
+                $otherTickets[] = $ticket;
+            }
+        }, $allTickets);
+
+        $statusGroupedAndOrderedTickets = array_merge($statusGroupedAndOrderedTickets, $merchantActionTickets);
+
+        $statusGroupedAndOrderedTickets = array_merge($statusGroupedAndOrderedTickets, $activeTickets);
+
+        $statusGroupedAndOrderedTickets = array_merge($statusGroupedAndOrderedTickets, $otherTickets);
+
+        return $statusGroupedAndOrderedTickets;
     }
 }
