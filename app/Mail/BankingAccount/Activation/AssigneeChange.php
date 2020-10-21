@@ -34,7 +34,7 @@ class AssigneeChange extends Base
     protected function addMailData()
     {
         $data = [
-            'body' => 'This is to notify that %s and team %s is the new assignee for Current Account for Merchant ' . $this->merchantBusinessName
+            'body' => 'This is to notify that ' . $this->newAssigneeName . ' and team '. $this->newAssigneeTeam .' is the new assignee for Current Account for Merchant ' . $this->merchantBusinessName . '.'
         ];
 
         $this->with($data);

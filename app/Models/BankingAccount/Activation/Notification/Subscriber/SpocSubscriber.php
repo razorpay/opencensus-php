@@ -29,6 +29,7 @@ class SpocSubscriber extends Base
                         BankingAccount\Status::PROCESSED,
                         BankingAccount\Status::ACTIVATED,
                         BankingAccount\Status::REJECTED,
+                        BankingAccount\Status::ARCHIVED,
                     ]);
             case Event::ASSIGNEE_CHANGE:
                 return ($bankingAccount->bankingAccountActivationDetails->getAssigneeTeam() ===  'sales');

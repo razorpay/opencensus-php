@@ -2358,6 +2358,13 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals($finalState->getAssigneeTeam(), $content['activation_detail']['assignee_team']);
 
+        Mail::assertQueued(ActivationMails\AssigneeChange::class, function ($mail) use($bankingAccount)
+        {
+            $mail->build();
+
+            return ($mail->viewData['body']  === 'This is to notify that test admin and team sales is the new assignee for Current Account for Merchant CA Business.');
+        });
+
         return $bankingAccount;
     }
 
