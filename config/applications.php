@@ -441,6 +441,14 @@ return [
         'request_timeout' => env('RAZORX_REQUEST_TIMEOUT', 0.1),
     ],
 
+    'splitz' => [
+        'mock'            => env('SPLITZ_MOCK', false),
+        'url'             => env('SPLITZ_URL'),
+        'username'        => 'api',
+        'secret'          => env('SPLITZ_SECRET'),
+        'request_timeout' => env('SPLITZ_REQUEST_TIMEOUT', 0.1),
+    ],
+
     'user_2fa' => [
         'max_incorrect_tries' => env('USER_2FA_MAX_INCORRECT_TRIES', 9),
     ],

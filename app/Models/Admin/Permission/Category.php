@@ -29,6 +29,7 @@ class Category
     const MERCHANT_DETAIL   			= 'merchant_detail';
     const MERCHANT_REQUEST  			= 'merchant_request';
     const RAZORX            			= 'razorx';
+    const SPLITZ                        = 'splitz';
     const GATEWAY           			= 'gateway';
     const SUBSCRIPTIONS     			= 'subscriptions';
     const RAZORPAYX_BANKING 			= 'razorpayx_banking';

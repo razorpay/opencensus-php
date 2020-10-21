@@ -1529,6 +1529,9 @@ class Route
         // batch service
         'batch_service_route'                      => ['any',      'service/batch/{path?}',                          'BatchController@sendRequest'                                       ],
 
+        //splitz service
+        'splitz_route'                             => ['any',      'service/splitz',                                 'SplitzController@sendRequest'                                      ],
+
         // Account API routes
         'beta_account_create'                      => ['post',     'beta/accounts',                                  'AccountController@createLinkedAccount'                             ],
         'beta_account_fetch'                       => ['get',      'beta/accounts/{id}',                             'AccountController@get'                                             ],
@@ -3510,6 +3513,7 @@ class Route
         'shield_settings_ui',
 
         'razorx_route',
+        'splitz_route',
         'user_fetch_admin',
         'merchant_requests_list',
         'merchant_requests_update',
@@ -4325,6 +4329,7 @@ class Route
         'oauth_sync_merchant_map'                  => Permission::OAUTH_SYNC_MERCHANT_MAP,
         'nodal_beneficiary_update'                 => Permission::SETTLEMENT_BULK_UPDATE,
         'razorx_route'                             => Permission::MANAGE_RAZORX_OPERATIONS,
+        'splitz_route'                             => Permission::MANAGE_SPLITZ_OPERATIONS,
         'invoice_issue_by_batch'                   => '*',
         'invoice_notify_by_batch'                  => '*',
         'invoice_cancel_by_batch_admin'            => Permission::CANCEL_BATCH,

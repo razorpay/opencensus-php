@@ -2084,6 +2084,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RAZORX_REQUEST                                        = 'RAZORX_REQUEST';
     const RAZORX_REQUEST_FAILED                                 = 'RAZORX_REQUEST_FAILED';
 
+    const SPLITZ_REQUEST                                        = 'SPLITZ_REQUEST';
+
     const SERVER_ERROR_MISSING_HANDLER                          = 'SERVER_ERROR_MISSING_HANDLER';
     const GATEWAY_FILE_CREATE_REQUEST                           = 'GATEWAY_FILE_CREATE_REQUEST';
     const GATEWAY_FILES_CREATED                                 = 'GATEWAY_FILES_CREATED';
