@@ -4331,7 +4331,9 @@ class Service extends Base\Service
         //2. Send this Event to Hubspot
         /** @var HubspotClient $hubspotClient */
         $hubspotClient = $this->app->hubspot;
-        $hubspotClient->trackProductSwitchEvent($merchant);
+        $hubspotClient->trackHubspotEvent($merchant->getEmail(), [
+            'product_switch' => true
+        ]);
     }
 
     public function migrationBankingVAs(array $input)

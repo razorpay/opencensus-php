@@ -21,6 +21,7 @@ use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Mail\User as UserMail;
 use RZP\Services\TokenService;
+use RZP\Services\HubspotClient;
 use RZP\Jobs\MailChimpSubscribe;
 use RZP\Mail\User\Otp as OtpMail;
 use RZP\Models\Admin\Admin\Token;
@@ -405,7 +406,15 @@ class Core extends Base\Core
 
         $this->checkUserAccountNotLockedOrThrowException($user);
 
-        return $this->verifyOtpForSecondFactorAuthOnLogin($user, $input);
+        $response =  $this->verifyOtpForSecondFactorAuthOnLogin($user, $input);
+
+        /** @var HubspotClient $hubspotClient */
+        $hubspotClient = $this->app->hubspot;
+        $hubspotClient->trackHubspotEvent($user->getEmail(), [
+            'contact_verified' => true
+        ]);
+
+        return $response;
     }
 
     // User 2fa is enabled and 2fa is setup. If the request has the otp, it will check

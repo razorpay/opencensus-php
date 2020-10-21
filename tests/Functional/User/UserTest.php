@@ -1772,6 +1772,8 @@ class UserTest extends TestCase
 
         $this->ba->proxyAuth();
 
+        $this->mockHubSpotClient('trackHubspotEvent');
+
         $this->startTest();
 
         $user = $this->getDbEntityById('user', UserFixture::MERCHANT_USER_ID);

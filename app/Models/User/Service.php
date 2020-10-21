@@ -20,6 +20,7 @@ use RZP\Models\Invitation;
 use RZP\Models\Admin\Admin;
 use RZP\Http\RequestHeader;
 use RZP\Mail\User as UserMail;
+use RZP\Services\HubspotClient;
 use RZP\Models\Admin\AdminLead;
 use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Account;
@@ -962,6 +963,12 @@ class Service extends Base\Service
         $this->user->getValidator()->validateVerifyContactWithOtpOperation($input);
 
         $this->core()->verifyContactWithOtp($input, $this->merchant, $this->user);
+
+        /** @var HubspotClient $hubspotClient */
+        $hubspotClient = $this->app->hubspot;
+        $hubspotClient->trackHubspotEvent($this->merchant->getEmail(), [
+            'contact_verified' => true
+        ]);
 
         return $this->user->toArrayPublic();
     }

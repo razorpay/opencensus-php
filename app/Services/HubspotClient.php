@@ -175,12 +175,11 @@ class HubspotClient
 
         $this->dispatchRequestJob($payloadData);
     }
-
-    public function trackProductSwitchEvent(Merchant\Entity  $merchant){
-        $payload = [
-            'product_switch' => true
-        ];
-        $this->addMerchantContext($payload, $merchant);
+    
+    public function trackHubspotEvent(string $merchantEmail,
+                                      array $payload)
+    {
+        $payload['email'] = $merchantEmail;
         $this->dispatchRequestJob($payload);
     }
 

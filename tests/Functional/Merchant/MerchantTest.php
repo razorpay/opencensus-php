@@ -6467,9 +6467,10 @@ class MerchantTest extends TestCase
         $hubspotCalled = false;
 
         $hubspotClient->expects($this->any())
-                      ->method('trackProductSwitchEvent')
+                      ->method('trackHubspotEvent')
                       ->will($this->returnCallback(
-                          function (Merchant\Entity $merchant)
+                          function (string $merchantEmail,
+                                    array $payload)
                           use (&$hubspotCalled) {
                               $hubspotCalled = true;
                               return;
