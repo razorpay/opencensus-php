@@ -32,8 +32,17 @@ class Constant
     const FULL_NAME         = 'full_name';
     const PROOF_INDEX       = 'proof_index';
     const LLPIN             = 'llpin';
-    const PERSONAL_PAN_OCR  = 'personal_pan_ocr';
-    const BUSINESS_PAN_OCR  = 'business_pan_ocr';
+
+    const BANK_ACCOUNT         = 'bank_account';
+    const ACCOUNT_NUMBER       = 'account_number';
+    const IFSC                 = 'ifsc';
+    const ACCOUNT_HOLDER_NAMES = 'account_holder_names';
+
+    // Config names
+    const PERSONAL_PAN_OCR           = 'personal_pan_ocr';
+    const BUSINESS_PAN_OCR           = 'business_pan_ocr';
+    const CANCELLED_CHEQUE_OCR_REG   = 'cancelled_cheque_ocr_reg';
+    const CANCELLED_CHEQUE_OCR_UNREG = 'cancelled_cheque_ocr_unreg';
 
     //
     // Response fields
@@ -84,7 +93,11 @@ class Constant
         Type::BUSINESS_PAN_URL => [
             self::ARTEFACT_TYPE   => self::BUSINESS_PAN,
             self::PROOF_INDEX     => '1',
-        ]
+        ],
+        Type::CANCELLED_CHEQUE => [
+            self::ARTEFACT_TYPE   => self::BANK_ACCOUNT,
+            self::PROOF_INDEX     => '1',
+        ],
     ];
 
     const ENABLE_VERIFICATION_AFTER_FORM_SUBMISSION = [
@@ -93,6 +106,9 @@ class Constant
         ],
         Type::PERSONAL_PAN     => [
             self::RAZORX_EXPERIMENT => RazorxTreatment::BVS_PERSONAL_PAN_OCR,
+        ],
+        Type::CANCELLED_CHEQUE => [
+            self::RAZORX_EXPERIMENT => RazorxTreatment::BVS_CANCELLED_CHEQUE_OCR,
         ],
     ];
 }

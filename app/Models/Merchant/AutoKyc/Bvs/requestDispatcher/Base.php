@@ -60,7 +60,6 @@ abstract class Base implements RequestDispatcher
 
             if ($bvsValidation != null)
             {
-
                 $this->performPostProcessOperation();
             }
         }

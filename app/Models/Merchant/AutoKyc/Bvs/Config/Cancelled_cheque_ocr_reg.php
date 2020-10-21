@@ -1,0 +1,91 @@
+<?php
+
+namespace RZP\Models\Merchant\AutoKyc\Bvs\Config;
+
+class Cancelled_cheque_ocr_reg extends BaseConfig
+{
+    protected $enrichment = [
+        'ocr' => [
+            'required_fields' => [
+                'account_number',
+                'ifsc',
+                'account_holder_names',
+            ],
+        ],
+    ];
+
+    protected $rule = [
+        'version'    => 'v1',
+        'rules_list' => [
+            '0' => [
+                'rule_type' => 'string_comparison_rule',
+                'rule_def'  => [
+                    'equals' => [
+                        [
+                            'var' => 'artefact.details.account_number.value',
+                        ],
+                        [
+                            'var' => 'enrichments.ocr.details.1.account_number.value',
+                        ],
+                    ],
+                ],
+            ],
+            '1' => [
+                'rule_type' => 'string_comparison_rule',
+                'rule_def'  => [
+                    'equals' => [
+                        [
+                            'var' => 'artefact.details.ifsc.value',
+                        ],
+                        [
+                            'var' => 'enrichments.ocr.details.1.ifsc.value',
+                        ],
+                    ],
+                ],
+            ],
+            '2' => [
+                'rule_type' => 'array_comparison_rule',
+                'rule_def'  => [
+                    "or" => [
+                        [
+                            "some" => [
+                                [
+                                    'var' => 'enrichments.ocr.details.1.account_holder_names',
+                                ],
+                                [
+                                    'fuzzy_wuzzy' => [
+                                        [
+                                            'var' => "each_array_element.value",
+                                        ],
+                                        [
+                                            'var' => 'artefact.details.account_holder_names.0.value'
+                                        ],
+                                        51,
+                                    ],
+                                ]
+                            ]
+                        ],
+                        [
+                            "some" => [
+                                [
+                                    'var' => 'enrichments.ocr.details.1.account_holder_names',
+                                ],
+                                [
+                                    'fuzzy_wuzzy' => [
+                                        [
+                                            'var' => "each_array_element.value",
+                                        ],
+                                        [
+                                            'var' => 'artefact.details.account_holder_names.1.value'
+                                        ],
+                                        51,
+                                    ],
+                                ]
+                            ]
+                        ]
+                    ],
+                ],
+            ]
+        ],
+    ];
+}

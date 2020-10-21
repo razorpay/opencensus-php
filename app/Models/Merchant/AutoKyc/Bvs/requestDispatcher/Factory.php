@@ -12,6 +12,7 @@ class Factory
         return [
             new CompanyPanOcr($merchant, $merchantDetails),
             new PersonalPanOcr($merchant, $merchantDetails),
+            new CancelledChequeOcr($merchant, $merchantDetails),
         ];
     }
 }

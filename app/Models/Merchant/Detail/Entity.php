@@ -812,6 +812,16 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         return $this->setAttribute(self::COMPANY_PAN_DOC_VERIFICATION_STATUS, $status);
     }
 
+    public function setBankDetailsDocVerificationStatus(?string $status = null)
+    {
+        return $this->setAttribute(self::BANK_DETAILS_DOC_VERIFICATION_STATUS, $status);
+    }
+
+    public function getBankDetailsDocVerificationStatus()
+    {
+        return $this->getAttribute(self::BANK_DETAILS_DOC_VERIFICATION_STATUS);
+    }
+
     public function setPoiVerificationStatus(string $status = null)
     {
         return $this->setAttribute(self::POI_VERIFICATION_STATUS, $status);

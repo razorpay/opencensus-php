@@ -331,6 +331,13 @@ class MerchantDocumentTest Extends TestCase
         $this->uploadDocument('business_pan_url', 'company_pan_doc_verification_status');
     }
 
+    public function testUpdateDocumentVerifyPendingVerificationStatusForCancelledCheque()
+    {
+        $this->mockRazorX('testDocumentUpload', 'bvs_cancelled_cheque_ocr', 'on');
+
+        $this->uploadDocument('cancelled_cheque', 'bank_details_doc_verification_status');
+    }
+
     protected function uploadDocument(string $documentKey, string $documentVerificationKey, $mid = '1cXSLlUU8V9sXl')
     {
         $this->ba->proxyAuth('rzp_test_' . $mid);

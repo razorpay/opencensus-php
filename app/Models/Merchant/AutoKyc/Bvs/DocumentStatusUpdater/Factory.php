@@ -44,11 +44,19 @@ class Factory
 
             case Constant::BUSINESS_PAN :
 
-                return $this->getStatusUpdaterForCompanyPan($merchant, $validation);
+                return $this->getStatusUpdater($merchant,
+                                               $validation,
+                                               Entity::COMPANY_PAN_DOC_VERIFICATION_STATUS);
 
             case Constant::PERSONAL_PAN :
 
                 return $this->getStatusUpdaterForPersonalPan($merchant, $validation);
+
+            case Constant::BANK_ACCOUNT :
+
+                return $this->getStatusUpdater($merchant,
+                                               $validation,
+                                               Entity::BANK_DETAILS_DOC_VERIFICATION_STATUS);
 
             case Constant::AADHAAR :
             case Constant::VOTERS_ID:
@@ -93,10 +101,12 @@ class Factory
      * @param MerchantEntity   $merchant
      * @param ValidationEntity $validation
      *
+     * @param string           $documentTypeStatusKey
+     *
      * @return StatusUpdater
      * @throws LogicException
      */
-    public function getStatusUpdaterForCompanyPan(MerchantEntity $merchant, ValidationEntity $validation): StatusUpdater
+    public function getStatusUpdater(MerchantEntity $merchant, ValidationEntity $validation, string $documentTypeStatusKey): StatusUpdater
     {
         $artefactType   = $validation->getArtefactType();
         $validationUnit = $validation->getValidationUnit();
@@ -106,7 +116,7 @@ class Factory
 
             return new DefaultStatusUpdater(
                 $merchant,
-                Entity::COMPANY_PAN_DOC_VERIFICATION_STATUS,
+                $documentTypeStatusKey,
                 $artefactType);
         }
 

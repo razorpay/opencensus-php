@@ -2136,6 +2136,20 @@ class MerchantDetailTest extends OAuthTestCase
         $this->submitL2FormAndVerifyBvsValidation($input, $mid, 'business_pan');
     }
 
+    public function testVerifyBvsTriggerPostFormSubmissionForCancelledChequeOcr()
+    {
+        $mid = '1cXSLlUU8V9sXl';
+
+        $input = [
+            'bank_details_doc_verification_status' => 'pending',
+            'merchant_id'                          => $mid,
+        ];
+
+        $this->mockRazorX('testSubmit', 'bvs_cancelled_cheque_ocr', 'on');
+
+        $this->submitL2FormAndVerifyBvsValidation($input, $mid, 'bank_account');
+    }
+
     /**
      * @param array  $input
      * @param string $mid
@@ -2172,6 +2186,7 @@ class MerchantDetailTest extends OAuthTestCase
                                           'business_proof_url',
                                           'promoter_address_url',
                                           'personal_pan',
+                                          'cancelled_cheque',
                                       ]);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);

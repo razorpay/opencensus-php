@@ -146,6 +146,9 @@ class Core extends Base\Core
     }
 
     /**
+     * This function is to update Document verification status as pending
+     * so that verification can be triggered at Form Submission for all such document types.
+     *
      * @param Merchant\Entity $merchant
      * @param Entity          $document
      *
@@ -155,15 +158,18 @@ class Core extends Base\Core
     {
         $documentType = $document->getDocumentType();
 
-        if ((in_array($documentType, array_keys(Constant::ENABLE_VERIFICATION_AFTER_FORM_SUBMISSION), true) === true))
+        $enabledVerificationDocumentTypes = array_keys(Constant::ENABLE_VERIFICATION_AFTER_FORM_SUBMISSION);
+
+        if ((in_array($documentType, $enabledVerificationDocumentTypes, true) === true))
         {
-            $razorxExperiment = Constant::ENABLE_VERIFICATION_AFTER_FORM_SUBMISSION[$documentType][Constant::RAZORX_EXPERIMENT] ?? '';
+            $documentTypeRazorxMap = Constant::ENABLE_VERIFICATION_AFTER_FORM_SUBMISSION[$documentType];
+
+            $razorxExperiment = $documentTypeRazorxMap[Constant::RAZORX_EXPERIMENT] ?? '';
 
             if ((empty($razorxExperiment) === false) and
                 (new Merchant\Core())->isRazorxExperimentEnable($merchant, $razorxExperiment) === false)
             {
                 return;
-
             }
 
             $artefactDetails = Constant::DOCUMENT_TYPE_ARTEFACT_DETAILS_MAP[$documentType];

@@ -565,7 +565,7 @@ class PennyTesting extends Base\Core
      *
      * @return array
      */
-    protected function getAllowedMerchantAttributesDetails(Entity $merchantDetails): array
+    public function getAllowedMerchantAttributesDetails(Entity $merchantDetails): array
     {
         switch ($merchantDetails->getBusinessType())
         {
@@ -579,8 +579,8 @@ class PennyTesting extends Base\Core
             default :
 
                 return [
-                    Constants::COMPANY_PAN_NAME  => $merchantDetails->getBusinessName(),
-                    Constants::PROMOTER_PAN_NAME => $merchantDetails->getPromoterPanName()
+                    Constants::PROMOTER_PAN_NAME => $merchantDetails->getPromoterPanName(),
+                    Constants::COMPANY_PAN_NAME  => $merchantDetails->getBusinessName()
                 ];
         }
     }
