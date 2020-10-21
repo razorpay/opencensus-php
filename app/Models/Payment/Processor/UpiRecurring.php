@@ -617,7 +617,16 @@ trait UpiRecurring
         {
             $this->updateAutoRecurringEntitiesForUpi($payment, $data);
 
-            return ['razorpay_payment_id' => $payment->getPublicId()];
+            $data = ['razorpay_payment_id' => $payment->getPublicId()];
+
+            if (($payment->hasOrder() === true) and
+                ($this->app['basicauth']->isProxyOrPrivilegeAuth() === false) and
+                ($this->app->runningInQueue() === false))
+            {
+                $this->fillReturnDataWithOrder($payment, $data);
+            }
+
+            return $data;
         }
 
         throw new Exception\LogicException('Should not be called for any payment other than Upi Auto Recurring');

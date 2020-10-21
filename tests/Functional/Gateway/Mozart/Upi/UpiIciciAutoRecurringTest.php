@@ -59,11 +59,18 @@ class UpiIciciAutoRecurringTest extends TestCase
         // The request which we have sent to create the reminder
         $this->assertReminderRequest('createReminder', $createReminder, $pending);
 
-        $this->doS2SRecurringPayment($input);
+        $response = $this->doS2SRecurringPayment($input);
 
         $payment = $this->assertUpiDbLastEntity('payment', [
             'gateway' => 'upi_icici',
         ]);
+
+        $this->assertArraySubset([
+            'razorpay_payment_id'   => $payment->getPublicId(),
+            'razorpay_order_id'     => $this->order->getPublicId(),
+        ], $response);
+
+        $this->assertArrayHasKey('razorpay_signature', $response);
 
         // The first reminder call will trigger an update reminder
         $this->assertReminderRequest('updateReminder', $updateReminder, $pending);
@@ -173,6 +180,26 @@ class UpiIciciAutoRecurringTest extends TestCase
             'status_code'           => '0',
             'npci_txn_id'           => 'HDFC00001124',
         ]);
+    }
+
+    public function testAutoRecurringPaymentOnCancelledToken()
+    {
+        $this->createDbUpiMandate();
+
+        $this->createDbUpiToken();
+
+        $this->token->setRecurringStatus(Token\RecurringStatus::CANCELLED);
+        $this->token->saveOrFail();
+
+        $input = $this->getDbUpiAutoRecurringPayment();
+
+        $this->makeRequestAndCatchException(
+            function() use ($input)
+            {
+                $this->doS2SRecurringPayment($input);
+            },
+            Exception\BadRequestException::class,
+            'Token is not confirmed for recurring payments');
     }
 
     public function testAutoRecurringPaymentNotifyRetry()

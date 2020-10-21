@@ -176,13 +176,20 @@ class Gateway extends Base\Gateway
     {
         // This is a hack which force callback when current request is processed
         // Better way would have been adding a middleware and maintaining a stack
+
+        // Once this even is fired, we need to ignore all the queries post that
+        $eventFired = false;
+
         \Event::listen('Illuminate\Database\Events\QueryExecuted',
-            function ($query) use ($input, $case)
+            function ($query) use ($input, $case, & $eventFired)
             {
                 // Now this code will be called when the UPI Metadata will be successfully marked
                 // This will not get called if we throw exception from authorize function
-                if (array_get($query->bindings, 0) === 'authenticate_initiated')
+                if ((in_array('authenticate_initiated', $query->bindings, true) === true) and
+                    ($eventFired === false))
                 {
+                    $eventFired = true;
+
                     $payment = $input['payment'];
 
                     try

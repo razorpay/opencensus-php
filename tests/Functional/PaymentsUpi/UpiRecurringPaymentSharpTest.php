@@ -11,6 +11,7 @@ use RZP\Models\UpiMandate\Status;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Customer\Token\RecurringStatus;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\PaymentsUpiRecurringTrait;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
@@ -698,6 +699,8 @@ class UpiRecurringPaymentSharpTest extends TestCase
         $mandate->reload();
 
         $this->assertEquals(Status::REVOKED, $mandate['status']);
+
+        $this->assertSame(RecurringStatus::CANCELLED, $mandate->token->getRecurringStatus());
     }
 
     public function testRevokeCreatedMandate()
