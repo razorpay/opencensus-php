@@ -611,6 +611,11 @@ export default class User {
     return this.getExpStatus('upi_caw');
   }
 
+  get isWebhooksStatsEnabled() {
+    // currently this experiment is not added in User/Service.php
+    return this.getExpStatus('webhook_stats');
+  }
+
   // TODO: Remove from razorX bcoz it's rolled out 100%
   get isPaymentPageReceiptsEnabled() {
     return true;

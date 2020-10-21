@@ -3,32 +3,38 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import moment from 'moment';
+
 import Spinner from 'common/ui/Spinner';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import DocsLink from 'merchant/components/DocsLink';
-import * as WebhookActions from 'merchant/reducers/webhooks';
-import AddEditWebhook from 'merchant/views/Settings/Webhooks/AddEditWebhook';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import SwitchField from 'common/ui/Forms/SwitchField';
 import Definition from 'common/ui/Definition';
 import Button from 'common/new-ui/Button';
 import Alert from 'common/new-ui/Alert';
-import Collapsible from 'merchant/components/Collapsible';
+
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
+
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import DocsLink from 'merchant/components/DocsLink';
+import * as WebhookActions from 'merchant/reducers/webhooks';
+import Collapsible from 'merchant/components/Collapsible';
+import ShowWhen from 'merchant/components/ShowWhen';
+
+import AddEditWebhook from './AddEditWebhook';
+import WebhookStats from './components/WebhookStats';
 
 @withRouter
 @connect(
-  state => {
+  (state) => {
     return {
       userData: state.session.user,
       webhooks: state.webhooks,
       modeFormatted: state.session.modeFormatted,
     };
   },
-  { ...WebhookActions, ...ModalActions, ...NotificationsActions }
+  { ...WebhookActions, ...ModalActions, ...NotificationsActions },
 )
 @RTracking(() => window.rzpQ.component('WebhooksContainer'))
-export default class WebhookDetails extends Component {
+export default class WebhookEntity extends Component {
   state = {};
 
   static contextTypes = {
@@ -41,7 +47,7 @@ export default class WebhookDetails extends Component {
     tracking.trackEvent(
       window.rzpQ.merchantActions().initiated('Webhook.editIntiated', {
         webhook_id: webhook.id,
-      })
+      }),
     );
     this.props.openModal({
       component: <AddEditWebhook webhook={webhook} />,
@@ -56,7 +62,7 @@ export default class WebhookDetails extends Component {
 
   toggleActive = (isChecked, cb) => {
     const { webhooks } = this.props.webhooks;
-    const webhook = webhooks.find(webhook => webhook.id === this.props.id);
+    const webhook = webhooks.find((webhook) => webhook.id === this.props.id);
     const newWebhookData = {
       ...webhook,
       active: isChecked,
@@ -64,19 +70,19 @@ export default class WebhookDetails extends Component {
 
     return this.props
       .saveWebhook(newWebhookData)
-      .then(webhook => {
+      .then((webhook) => {
         cb(true);
         this.props.onSave(webhook);
       })
-      .catch(err => {
+      .catch((err) => {
         this.setState({
           errors: err.errors,
         });
       });
   };
 
-  handleDelete = webhooks => {
-    const webhook = webhooks.find(webhook => webhook.id === this.props.id);
+  handleDelete = (webhooks) => {
+    const webhook = webhooks.find((webhook) => webhook.id === this.props.id);
     this.context
       .confirm({
         header: 'Are you sure?',
@@ -112,10 +118,10 @@ export default class WebhookDetails extends Component {
                 window.rzpQ.merchantActions().success('Webhook.delete', {
                   webhook_id: webhook.id,
                   webhook_count: webhooks.length,
-                })
+                }),
               );
             })
-            .catch(err => {
+            .catch((err) => {
               this.setState({
                 errors: err.errors,
               });
@@ -129,7 +135,7 @@ export default class WebhookDetails extends Component {
     const webhooksState = this.props.webhooks;
     const { loadingWebhook, webhooks, error } = webhooksState;
     const { userData } = this.props;
-    const webhook = webhooks.find(webhook => webhook.id === this.props.id);
+    const webhook = webhooks.find((webhook) => webhook.id === this.props.id);
 
     if (loadingWebhook || !webhook) {
       return (
@@ -143,7 +149,7 @@ export default class WebhookDetails extends Component {
 
     let activeEvents = [];
 
-    Object.keys(webhook.events).forEach(function(key) {
+    Object.keys(webhook.events).forEach(function (key) {
       if (webhook.events[key] === true) {
         activeEvents.push(key);
       }
@@ -168,10 +174,7 @@ export default class WebhookDetails extends Component {
               >
                 Delete
               </button>
-              <Button.Primary
-                onClick={() => this.showWebhookModal(webhook)}
-                type="button"
-              >
+              <Button.Primary onClick={() => this.showWebhookModal(webhook)} type="button">
                 Edit
               </Button.Primary>
             </div>
@@ -184,9 +187,7 @@ export default class WebhookDetails extends Component {
                   <span className="toggler-btn">
                     <SwitchField
                       defaultChecked={webhook.active}
-                      onChange={(isChecked, cb) =>
-                        this.toggleActive(isChecked, cb)
-                      }
+                      onChange={(isChecked, cb) => this.toggleActive(isChecked, cb)}
                       type="prime"
                     />
                     {webhook.active ? (
@@ -200,6 +201,11 @@ export default class WebhookDetails extends Component {
                     )}
                   </span>
                 </EntityDetailRow>
+                <ShowWhen additionalCondition={(user) => user.isWebhooksStatsEnabled}>
+                  <div className="Webhook__StatsContainer">
+                    <WebhookStats id={this.props.id} />
+                  </div>
+                </ShowWhen>
                 <EntityDetailRow label="Secret">
                   {webhook.secret_exists ? (
                     <p>Secret was provided during webhook setup</p>
@@ -215,22 +221,23 @@ export default class WebhookDetails extends Component {
                 <EntityDetailRow label="Active Events">
                   <Definition>
                     <p>{activeEvents.length} Active Events</p>
-                    {activeEvents
-                      .slice(0, 7)
-                      .map(event => <p key={event}>{event}</p>)}
+                    {activeEvents.slice(0, 7).map((event) => (
+                      <p key={event}>{event}</p>
+                    ))}
                     {activeEvents.length > 7 ? (
                       <div className="webhooks-collapsible-container">
                         <Collapsible
-                          title={collapsibleOpen => (
+                          title={(collapsibleOpen) => (
                             <span className="text-primary">
-                              {collapsibleOpen ? 'Hide some' : 'Show all'}{' '}
-                              active events
+                              {collapsibleOpen ? 'Hide some' : 'Show all'} active events
                             </span>
                           )}
                           childrenPosition="top"
                           class="CollapsibleFields"
                         >
-                          {activeEvents.slice(7).map(event => <p>{event}</p>)}
+                          {activeEvents.slice(7).map((event) => (
+                            <p>{event}</p>
+                          ))}
                         </Collapsible>
                       </div>
                     ) : null}
@@ -238,19 +245,13 @@ export default class WebhookDetails extends Component {
                 </EntityDetailRow>
                 <EntityDetailRow
                   label="Alert Email"
-                  value={
-                    webhook.alert_email ? webhook.alert_email : userData.email
-                  }
+                  value={webhook.alert_email ? webhook.alert_email : userData.email}
                 />
                 {webhook.updated_at && webhook.updated_by_email ? (
                   <EntityDetailRow label="Last Updated By">
                     <Definition>
                       <p>{webhook.updated_by_email}</p>
-                      <p>
-                        {moment(webhook.updated_at, 'X').format(
-                          'DD MMM YYYY, hh:mm A'
-                        )}
-                      </p>
+                      <p>{moment(webhook.updated_at, 'X').format('DD MMM YYYY, hh:mm A')}</p>
                     </Definition>
                   </EntityDetailRow>
                 ) : null}
@@ -259,11 +260,7 @@ export default class WebhookDetails extends Component {
                   <EntityDetailRow label="Created By">
                     <Definition>
                       <p>{webhook.created_by_email}</p>
-                      <p>
-                        {moment(webhook.created_at, 'X').format(
-                          'DD MMM YYYY, hh:mm A'
-                        )}
-                      </p>
+                      <p>{moment(webhook.created_at, 'X').format('DD MMM YYYY, hh:mm A')}</p>
                     </Definition>
                   </EntityDetailRow>
                 ) : null}

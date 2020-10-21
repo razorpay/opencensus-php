@@ -46,7 +46,7 @@ import NewRegistrationLink from 'merchant/views/Subscriptions/RegistrationLinks/
 import NewSubscriptionLink from 'merchant/views/Subscriptions/SubscriptionLinks/New';
 import UpdateSubscriptionLink from 'merchant/views/Subscriptions/SubscriptionLinks/Update';
 import CreditSubDetails from 'merchant/views/Account/Credits/components/CreditSubDetails';
-import WebhookDetails from 'merchant/views/Settings/Webhooks/components/WebhookDetails';
+import WebhookEntity from 'merchant/views/Settings/Webhooks/Entity';
 import WithdrawalDetails from '../views/Capital/CashAdvance/WithdrawalDetails';
 import RuleDetail from 'merchant/views/Navigator/components/RuleDetail';
 
@@ -168,7 +168,7 @@ const entityDetailsMap = {
     additionalCondition: (user) => user.isAllowedView('payments'),
   },
   '/credits/:id(credits_.+)': { component: CreditSubDetails },
-  '/webhooks/:id': { component: WebhookDetails },
+  '/webhooks/:id': { component: WebhookEntity },
 };
 
 /*

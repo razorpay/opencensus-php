@@ -13,6 +13,13 @@ export default class Webhook extends GenericEntity {
     return this.isNew ? 'post' : 'put';
   }
 
+  getAnalytics(params) {
+    return this.makeGenericAjaxCall({
+      url: `${this.resourceUrl}/${this.id}/analytics`,
+      data: params,
+    });
+  }
+
   serializeProperty(prop) {
     if (prop === 'events') {
       let events = this[prop] || {};

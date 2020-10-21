@@ -6,8 +6,9 @@ const WEBHOOK_FETCH = 'WEBHOOK_FETCH';
 const WEBHOOK_CREATE = 'WEBHOOK_CREATE';
 const WEBHOOK_EDIT = 'WEBHOOK_EDIT';
 const WEBHOOK_DELETE = 'WEBHOOK_DELETE';
+const WEBHOOK_STATS_FETCH = 'WEBHOOK_STATS_FETCH';
 
-export const fetchWebhooks = params => {
+export const fetchWebhooks = (params) => {
   let webhook = new Webhook(params);
 
   return {
@@ -16,7 +17,7 @@ export const fetchWebhooks = params => {
   };
 };
 
-export const fetchWebhook = params => {
+export const fetchWebhook = (params) => {
   const nextParams = {
     webhook_id: params.id,
   };
@@ -28,7 +29,7 @@ export const fetchWebhook = params => {
   };
 };
 
-export const saveWebhook = params => {
+export const saveWebhook = (params) => {
   let webhook = new Webhook(params);
 
   return {
@@ -37,11 +38,18 @@ export const saveWebhook = params => {
   };
 };
 
-export const deleteWebhook = params => {
+export const deleteWebhook = (params) => {
   let webhook = new Webhook(params);
   return {
     type: WEBHOOK_DELETE,
     payload: webhook.delete(),
+  };
+};
+
+export const fetchStats = (webhookId, params) => {
+  return {
+    type: WEBHOOK_STATS_FETCH,
+    payload: new Webhook({ id: webhookId }).getAnalytics(params),
   };
 };
 
@@ -50,10 +58,15 @@ let initialState = {
   loadingWebhook: false,
   webhooks: [],
   count: 0,
+  stats: {
+    loading: true,
+    data: {},
+    error: false,
+  },
   error: null,
 };
 
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   switch (action.type) {
     case `${WEBHOOKS_FETCH_ALL}::PENDING`:
       return set(state, 'loadingAllWebhooks', true);
@@ -66,7 +79,7 @@ export default function(state = initialState, action) {
       let webhookUpdated = false;
       let newWebhooksState = [];
       if (state.webhooks.length) {
-        newWebhooksState = state.webhooks.map(webhook => {
+        newWebhooksState = state.webhooks.map((webhook) => {
           if (webhook.id === webhookPayload.id) {
             webhookUpdated = true;
             return {
@@ -88,7 +101,6 @@ export default function(state = initialState, action) {
         count: newWebhooksState.length,
         error: null,
       });
-      break;
 
     case `${WEBHOOKS_FETCH_ALL}::SUCCESS`:
       return merge(state, {
@@ -108,10 +120,25 @@ export default function(state = initialState, action) {
       return set(state, 'webhooks', unshift(state.webhooks, action.payload));
 
     case `${WEBHOOK_EDIT}::SUCCESS`:
-      let webhookIndex = state.webhooks.findIndex(
-        webhook => webhook.id === action.payload.id
-      );
+      let webhookIndex = state.webhooks.findIndex((webhook) => webhook.id === action.payload.id);
       return set(state, `webhooks.${webhookIndex}`, action.payload);
+
+    case `${WEBHOOK_STATS_FETCH}::PENDING`:
+      return set(state, 'stats', { ...state.stats, loading: true });
+
+    case `${WEBHOOK_STATS_FETCH}::SUCCESS`:
+      return set(state, 'stats', {
+        ...state.stats,
+        loading: false,
+        data: action.payload.data,
+      });
+
+    case `${WEBHOOK_STATS_FETCH}::ERROR`:
+      return set(state, 'stats', {
+        ...state.stats,
+        loading: false,
+        error: true,
+      });
 
     default:
       return state;
