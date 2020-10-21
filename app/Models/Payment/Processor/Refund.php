@@ -2580,21 +2580,15 @@ trait Refund
 
     public function eventRefundArnUpdated(RefundEntity $refund)
     {
-        // Can add webhooks here which are supposed to be triggered when arn / rrn (customer facing) gets updated
+        // Can add merchant webhooks/customer notifications here
+        // which are supposed to be triggered when refund ARN gets updated
 
         // Triggering email notifications on refund arn update
-        $variant = $this->app->razorx->getTreatment(
-            $refund->getMerchantId(),
-            Merchant\RazorxTreatment::REFUND_ARN_EMAILS,
-            $this->mode
-        );
+        $notifier = new Notify($refund->payment);
 
-        if (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON)
-        {
-            $notifier = new Notify($refund->payment);
-            $notifier->addRefund($refund);
-            $notifier->trigger(Payment\Event::REFUND_RRN_UPDATED);
-        }
+        $notifier->addRefund($refund);
+
+        $notifier->trigger(Payment\Event::REFUND_RRN_UPDATED);
     }
 
     protected function refundViaFundTransfer(RefundEntity $refund, Payment\Entity $payment, $data = []): array

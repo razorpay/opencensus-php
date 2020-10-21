@@ -3469,25 +3469,6 @@ class RefundTest extends TestCase
     {
         Mail::fake();
 
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                              function ($mid, $feature, $mode)
-                              {
-                                  if ($feature === 'refund_arn_emails')
-                                  {
-                                      return 'on';
-                                  }
-
-                                  return 'off';
-                              }));
-
         $upiPayment = $this->createUpiPayment();
 
         $paymentEntity = $this->getDbLastEntity('payment');
