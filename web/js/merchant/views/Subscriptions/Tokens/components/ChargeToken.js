@@ -60,6 +60,9 @@ export default class ChargeToken extends Component {
 
   render() {
     const token = this.props.token;
+    const currency = token.subscription_registration
+      ? token.subscription_registration.currency
+      : 'INR';
     return (
       <div>
         <ModalHeader title={'Charge ' + token.id} onCloseClick={this.props.closeModal} />
@@ -69,12 +72,7 @@ export default class ChargeToken extends Component {
               <Input
                 name="amount"
                 label="Amount"
-                addonBefore={
-                  <AmountTooltip
-                    currency={token.subscription_registration.currency}
-                    parentQuerySelector=".Modal"
-                  />
-                }
+                addonBefore={<AmountTooltip currency={currency} parentQuerySelector=".Modal" />}
                 required
                 class="Input--Amount Input--vTop"
               />
