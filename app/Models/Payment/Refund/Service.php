@@ -31,6 +31,8 @@ use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Models\Payment\Refund\Core as RefundCore;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
+use RZP\Models\Merchant\Email\Type as MerchantEmailType;
+use RZP\Models\Merchant\Email\Core as MerchantEmailCore;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
@@ -1897,6 +1899,8 @@ class Service extends Base\Service
                 $this->fetchRefundDetailsForCustomerFromId($input, $return);
         }
 
+        $this->populateMerchantSupportDetails($return);
+
         $this->trace->info(
             TraceCode::CUSTOMER_TRACK_REFUND_STATUS_V2_SERVED,
             [
@@ -2888,5 +2892,31 @@ class Service extends Base\Service
         }
 
         return $batch;
+    }
+
+    private function populateMerchantSupportDetails(array &$return)
+    {
+        if (empty($return[RefundConstants::PAYMENTS]) === true)
+        {
+            return;
+        }
+
+        $merchantId = $return[RefundConstants::PAYMENTS][0][RefundConstants::PAYMENT][RefundConstants::MERCHANT_ID];
+
+        try
+        {
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+            $merchantSupportDetails = (new MerchantEmailCore)->fetchEmailsByType($merchant, MerchantEmailType::SUPPORT);
+
+            $return[RefundConstants::BUSINESS_SUPPORT_DETAILS] = $merchantSupportDetails->toArrayPublicCustomer();
+        }
+        catch (\Throwable $e)
+        {
+            if ($e->getCode() !== ErrorCode::BAD_REQUEST_MERCHANT_EMAIL_DOES_NOT_EXIST)
+            {
+                $this->trace->traceException($e);
+            }
+        }
     }
 }

@@ -36,6 +36,12 @@ class Entity extends Base\PublicEntity
         self::URL,
     ];
 
+    protected $publicCustomer = [
+        self::EMAIL,
+        self::PHONE,
+        self::URL,
+    ];
+
     protected $dates = [
         self::CREATED_AT,
         self::UPDATED_AT,
