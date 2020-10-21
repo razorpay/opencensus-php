@@ -21,6 +21,9 @@ class Constants
     const FD_INSTANCE      = 'fd_instance';
     const FRESHDESK_CLIENT = 'freshdesk_client';
 
+    // Custom field prefix
+    const MERCHANT_DASHBOARD = 'merchant_dashboard';
+
     // Instances & urls
     const URL    = 'url';
     const RZP    = 'rzp';

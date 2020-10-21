@@ -75,7 +75,16 @@ class Service extends Base\Service
 
         $merchantId = $this->auth->getMerchantId();
 
-        $queryString = '"custom_string:' . $merchantId;
+        //
+        // We are now querying the new ticket field `cf_merchant_id_dashboard`
+        // which is going to be filled with the prefix `merchant_dashboard`.
+        // Example :
+        // if MID : DdTVH1TtVoVyLO
+        // then cf_merchant_id_dashboard : merchant_dashboard_DdTVH1TtVoVyLO
+        //
+        $midWithPrefix = Constants::MERCHANT_DASHBOARD . '_' . $merchantId;
+
+        $queryString = '"custom_string:' . $midWithPrefix;
 
         // Adding status filter if necessary
         if (empty($status) === false)
