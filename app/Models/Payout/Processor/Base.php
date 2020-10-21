@@ -137,8 +137,15 @@ class Base extends BaseCore
                 return $this->createPayoutEntity($input);
             }, $skipWorkflow);
 
+            $sourceDetails = $payout->getInputSourceDetails();
+
             if ($this->workflowActivated === true)
             {
+                if (empty($sourceDetails) === false)
+                {
+                    $this->processSourceDetails($sourceDetails, $payout);
+                }
+                
                 return $payout;
             }
 
@@ -184,8 +191,6 @@ class Base extends BaseCore
             }
 
             $this->repo->saveOrFail($payout);
-
-            $sourceDetails = $payout->getInputSourceDetails();
 
             if (empty($sourceDetails) === false)
             {

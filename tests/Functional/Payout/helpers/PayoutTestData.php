@@ -8524,4 +8524,137 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testSourceCreationInCaseOfPendingPayoutCreatedByVendorPayments' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'url'     => '/payouts_internal',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'payout_link',
+                        'priority'    => 1,
+                    ],
+                    [
+                        'source_id'   => '100000000001sa',
+                        'source_type' => 'vendor_payment',
+                        'priority'    => 2,
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'pending',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'payout_link',
+                        'priority'    => 1,
+                    ],
+                    [
+                        'source_id'   => '100000000001sa',
+                        'source_type' => 'vendor_payment',
+                        'priority'    => 2,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testSourceCreationInCaseOfQueuedPayoutCreatedByVendorPayments' => [
+        'request' => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'url'     => '/payouts_internal',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 2000000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+                'queue_if_low_balance' => 1,
+                'origin'               => 'dashboard',
+                'source_details'       => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'payout_link',
+                        'priority'    => 1,
+                    ],
+                    [
+                        'source_id'   => '100000000001sa',
+                        'source_type' => 'vendor_payment',
+                        'priority'    => 2,
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'queued',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'payout_link',
+                        'priority'    => 1,
+                    ],
+                    [
+                        'source_id'   => '100000000001sa',
+                        'source_type' => 'vendor_payment',
+                        'priority'    => 2,
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

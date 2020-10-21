@@ -8094,4 +8094,39 @@ class PayoutTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testSourceCreationInCaseOfPendingPayoutCreatedByVendorPayments()
+    {
+        $this->liveSetUp();
+
+        $this->setupWorkflowForLiveMode();
+        $this->disableWorkflowMocks();
+
+        $this->ba->appAuthLive($this->config['applications.vendor_payments.secret']);
+
+        $response = $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $sourceDetails = [Payout\Entity::SOURCE_DETAILS => $payout->getSourceDetails()];
+
+        $this->assertArraySelectiveEquals($sourceDetails, $response);
+    }
+
+    public function testSourceCreationInCaseOfQueuedPayoutCreatedByVendorPayments()
+    {
+        $balance = $this->bankingBalance;
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '20000']);
+
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $response = $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $sourceDetails = [Payout\Entity::SOURCE_DETAILS => $payout->getSourceDetails()];
+
+        $this->assertArraySelectiveEquals($sourceDetails, $response);
+    }
 }
