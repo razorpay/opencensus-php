@@ -140,9 +140,9 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
             // Increment the failure count for the summary.
             $this->setSummaryCount(self::FAILURES_SUMMARY, $refundId);
 
-            $this->messenger->raiseReconAlert(
+            $this->trace->info(
+                TraceCode::RECON_FAILURE,
                 [
-                    'trace_code'    => TraceCode::RECON_FAILURE,
                     'message'       => 'Unable to perform one of the reconciliation actions -> ' . $ex->getMessage(),
                     'refund_id'     => $refundId,
                     'extra_details' => $this->extraDetails,
@@ -281,9 +281,9 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
         if ($refundAmountColumn === null)
         {
-            $this->messenger->raiseReconAlert(
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
                 [
-                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
                     'info_code'         => Base\InfoCode::AMOUNT_ABSENT,
                     'refund_id'         => $this->refund->getId(),
                     'expected_column'   => $amountColumn,
@@ -365,9 +365,9 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
         if ($paymentStatus === Payment\Status::FAILED)
         {
-            $this->messenger->raiseReconAlert(
+            $this->trace->info(
+                TraceCode::RECON_MISMATCH,
                 [
-                    'trace_code' => TraceCode::RECON_MISMATCH,
                     'info_code'  => Base\InfoCode::REFUND_PAYMENT_FAILED,
                     'payment_id' => $this->payment->getId(),
                     'amount'     => $this->payment->getAmount(),
@@ -434,9 +434,9 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
             if ($createTransactionSuccess === false)
             {
-                $this->messenger->raiseReconAlert(
+                $this->trace->info(
+                    TraceCode::RECON_MISMATCH,
                     [
-                        'trace_code'    => TraceCode::RECON_MISMATCH,
                         'info_code'     => Base\InfoCode::REFUND_TRANSACTION_ABSENT,
                         'refund_id'     => $this->refund->getId(),
                         'payment_id'    => $this->refund->payment->getId(),
@@ -517,9 +517,9 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         // If payment is not present, return. There's something wrong with this transaction.
         if (empty($this->payment) === true)
         {
-            $this->messenger->raiseReconAlert(
+            $this->trace->info(
+                TraceCode::RECON_MISMATCH,
                 [
-                    'trace_code' => TraceCode::RECON_MISMATCH,
                     'info_code'  => Base\InfoCode::REFUND_PAYMENT_ABSENT,
                     'refund_id'  => $refundId,
                     'amount'     => $refund->getAmount(),
@@ -602,9 +602,9 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         }
         catch (\Exception $ex)
         {
-            $this->messenger->raiseReconAlert(
+            $this->trace->info(
+                TraceCode::RECON_MISMATCH,
                 [
-                    'trace_code'    => TraceCode::RECON_MISMATCH,
                     'info_code'     => Base\InfoCode::REFUND_ABSENT,
                     'refund_id'     => $refundId,
                     'gateway'       => $this->gateway,
@@ -681,9 +681,9 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
         if ($refundEntityAmount !== $reconRefundAmount)
         {
-            $this->messenger->raiseReconAlert(
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
                 [
-                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
                     'info_code'         => Base\InfoCode::AMOUNT_MISMATCH,
                     'refund_id'         => $this->refund->getId(),
                     'expected_amount'   => $refundEntityAmount,
@@ -836,9 +836,9 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                 //
                 if ($this->shouldForceUpdate(RequestProcessor\Base::REFUND_ARN) === false)
                 {
-                    $this->messenger->raiseReconAlert(
+                    $this->trace->info(
+                        TraceCode::RECON_MISMATCH,
                         [
-                            'trace_code'    => TraceCode::RECON_MISMATCH,
                             'info_code'     => Base\InfoCode::DUPLICATE_ROW,
                             'message'       => 'Arn number for the refund entity does not match',
                             'refund_id'     => $refund->getId(),
@@ -1014,9 +1014,9 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         {
             $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
 
-            $this->messenger->raiseReconAlert(
+            $this->trace->info(
+                TraceCode::RECON_MISMATCH,
                 [
-                    'trace_code'                => TraceCode::RECON_MISMATCH,
                     'info_code'                 => $infoCode,
                     'message'                   => 'Reference number in db is not same as in recon',
                     'refund_id'                 => $this->refund->getId(),
@@ -1054,9 +1054,9 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         {
             $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
 
-            $this->messenger->raiseReconAlert(
+            $this->trace->info(
+                TraceCode::RECON_MISMATCH,
                 [
-                    'trace_code'                => TraceCode::RECON_MISMATCH,
                     'info_code'                 => $infoCode,
                     'message'                   => 'Reference number in db is not same as in recon',
                     'refund_id'                 => $this->refund->getId(),
