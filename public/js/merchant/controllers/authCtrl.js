@@ -200,8 +200,9 @@ app
 
         // disable signup/login submission before captcha only in prod
         submissionDisabled: isProd,
+        isWhatsAppOptIn: false
       };
-
+      
       // login state container
       $scope.login = {
         data: {
@@ -219,6 +220,21 @@ app
         },
       };
 
+      $scope.handleWhatsAppOpIn = function(){
+        $scope.signup.isWhatsAppOptIn = !$scope.signup.isWhatsAppOptIn;
+      };
+      
+      const whatsAppOptIn = function(){
+          var payload = {
+            method: 'post',
+            url: '/user/whatsapp/opt_in',
+            data: {
+              source: 'pg.onboarding.presignup',
+            },
+          };
+          $http(payload);
+      };
+      
       $scope.loadCaptcha = function (loadCheckbox = false) {
         if (!loadCheckbox && !isProd) return; //Disable invisible captcha for staging
         renderRecaptchaScript(loadCheckbox);
@@ -1115,6 +1131,10 @@ app
         request.success(function (data) {
           hideSpinner();
           if (data.success) {
+            if($scope.signup.isWhatsAppOptIn){
+              whatsAppOptIn();
+            }
+            
             trackDrip('signup_flow_completed');
             pushToDrip();
             sendSignUpCompleteEvents();
@@ -2673,6 +2693,7 @@ app
               mid: $scope.signup.mid,
               userid: $scope.signup.userid,
               version: 1,
+              isWhatsAppOptIn: $scope.signup.isWhatsAppOptIn
             }),
           );
 

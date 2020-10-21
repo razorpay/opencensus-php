@@ -626,6 +626,32 @@
     margin-top: 20px;
 }
 
+.whatsapp-opt-in{
+    display: flex;
+    align-items: center;
+    margin-top: 9px;
+}
+
+.whatsapp-opt-in input{
+    height: 12px;
+    width: 12px;
+}
+
+.whatsapp-opt-in label{
+    font-size: 12px;
+    line-height: 18px;
+    color: rgba(22, 47, 86, 0.87);
+    margin-left: 8px;
+    margin-bottom: 0;
+}
+.whatsapp-opt-in img{
+    display: inline-block;
+    height: 15px;
+    width: 15px;
+    vertical-align: middle;
+    margin-left: 4px;
+}
+
 @media (max-width: 767px) {
     .overlay-container{
         text-align: center;

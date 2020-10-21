@@ -101,6 +101,12 @@
               class="form-control auth-form-input" placeholder="10 digit mobile number" required ng-minlength="10" ng-maxlength="13" >
           </div>
 
+          <div class="whatsapp-opt-in">
+            <input type="checkbox" id="whatsapp-opt-in" value="Get account updates on" ng-checked="signup.isWhatsAppOptIn" ng-click="handleWhatsAppOpIn()"/>
+            <label for="whatsapp-opt-in">Get account updates on WhatsApp</label>
+            <img class="whatsapp-logo" src="../../img/whatsapp.svg"/>
+          </div>
+
           <div class="coupon" ng-if="coupon.shouldRender">
             <span class="btn btn-link coupon-btn" ng-click="onGotCouponCodeClick()" ng-show="!allowInput">Got a coupon code ?</span>
             <label for="coupon-input" class="form-label details-label coupon-label" ng-show="allowInput">Coupon Code:</label>
