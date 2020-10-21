@@ -104,7 +104,7 @@ class Mode
                 self::NEFT
             ],
             Attempt\Constants::DEFAULT_NETWORK => [
-                self::NEFT
+                self::NEFT,
             ]
         ],
         Issuer::CITI => [

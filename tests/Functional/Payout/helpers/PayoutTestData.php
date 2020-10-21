@@ -8465,4 +8465,63 @@ return [
             'content' => [],
         ],
     ],
+
+    'testPayoutToSCBLCardWithNetworkOtherThanAmex' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                "account_type" => "card",
+                "contact_id"   => "cont_1000001contact",
+                "card"         => [
+                    "name"         => "Prashanth YV",
+                    "number"       => "4028740000502006",
+                    "cvv"          => "212",
+                    "expiry_month" => 10,
+                    "expiry_year"  => 21,
+                ]
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Visa cards are not supported for issuer SCBL',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
+        ],
+    ],
+
+    'testPayoutToSCBLCardWithNetworkOtherThanAmexIfFundAccountAlreadyCreated' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'amount'          => 100,
+                'mode'            => 'IMPS',
+                'currency'        => 'INR',
+                'account_number'  => '2224440041626905',
+                'purpose'         => 'refund'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Visa cards are not supported for issuer SCBL',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

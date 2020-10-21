@@ -14,6 +14,8 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
 use RZP\Models\FundAccount;
+use RZP\Models\Card\Issuer;
+use RZP\Models\Card\Network;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\ExtraFieldsException;
@@ -365,6 +367,21 @@ class Validator extends Base\Validator
             }
 
             $networkCode = $fundAccount->account->getNetworkCode();
+
+            if (($cardIssuer === Issuer::SCBL) and
+                ($fundAccount->account->isAmex() === false))
+            {
+                throw new BadRequestValidationFailureException(
+                    Network::getFullName($networkCode) . " cards are not supported for issuer " . Issuer::SCBL,
+                    null,
+                    [
+                        Card\Entity::TYPE       => $fundAccount->account->getType(),
+                        Card\Entity::ISSUER     => $cardIssuer,
+                        Card\Entity::NETWORK    => Network::getFullName($networkCode),
+                        Entity::FUND_ACCOUNT_ID => $fundAccount->getId(),
+
+                    ]);
+            }
 
             Mode::validateModeOfIssuer($mode, $cardIssuer, $networkCode);
         }

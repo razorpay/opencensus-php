@@ -8018,4 +8018,80 @@ class PayoutTest extends TestCase
 
         $this->assertEquals(BasicAuth\Type::PRIVATE_AUTH, $pricingRule->getAuthType());
     }
+
+    /*
+     * From now on, we are not going to allow fund account creation for scbl cards having network other than amex.
+     */
+    public function testPayoutToSCBLCardWithNetworkOtherThanAmex()
+    {
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    /*
+     * This test checks for the case if fund accounts for scbl cards with network other than amex are already created
+     * before this code went live, the payout creation should fail for those fund accounts.
+     */
+    public function testPayoutToSCBLCardWithNetworkOtherThanAmexIfFundAccountAlreadyCreated()
+    {
+        $card = $this->fixtures->create(
+            'card',
+            [
+                'merchant_id'        => '10000000000000',
+                'name'               => 'Prashanth YV',
+                'expiry_month'       => 10,
+                'expiry_year'        => 2030,
+                'iin'                => 402874,
+                'last4'              => '2006',
+                'network'            => 'Visa',
+                'type'               => 'credit',
+                'issuer'             => 'SCBL',
+                'emi'                => 1,
+                'vault'              => 'rzpvault',
+                'vault_token'        => 'MjAzMDQwMDAwMDEyMTIxMg==',
+                'global_fingerprint' => '==gMxITMyEDMwADMwQDMzAjM'
+            ]);
+
+        $this->fixtures->create('fund_account', [
+            'id'           => '100000000001fa',
+            'source_id'    => '1000001contact',
+            'source_type'  => 'contact',
+            'account_type' => 'card',
+            'account_id'   => $card->getId(),
+            'merchant_id'  => 10000000000000,
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id']  = 'fa_100000000001fa';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
 }

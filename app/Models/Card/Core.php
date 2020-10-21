@@ -54,6 +54,7 @@ class Core extends Base\Core
                 $cardType = $card->getType();
                 $cardIssuer = $card->getIssuer();
                 $cardVaultToken = $card->getCardVaultToken();
+                $cardNetwork = $card->getNetwork();
 
                 //experiment for fund account of prepaid card type creation
                 $prepaidCardVariant = $this->app->razorx->getTreatment(
@@ -62,6 +63,22 @@ class Core extends Base\Core
                     $this->mode,
                     FundAccount\Entity::FUND_ACCOUNT_RX_RETRY_COUNT
                 );
+
+                if (($cardIssuer === Issuer::SCBL) and
+                    ($card->isAmex() === false))
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
+                        null,
+                        [
+                            'type'              => $cardType,
+                            'issuer'            => $cardIssuer,
+                            'network'           => $cardNetwork,
+                            'card_vault_token'  => $cardVaultToken,
+                        ],
+                        $cardNetwork . " cards are not supported for issuer " . Issuer::SCBL
+                    );
+                }
 
                 if (($card->getCardVaultToken() === null) or
                     (Type::isValidFundAccountCardType($cardType, $prepaidCardVariant) === false) or
