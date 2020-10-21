@@ -88,7 +88,7 @@ class MailTags
     const PAYMENT_FAILED                   = 'payment_failed';
     const FAILED_TO_AUTHORIZED             = 'failed_to_authorized';
     const CARD_SAVING                      = 'card_saving';
-    const REFUND_ARN_UPDATE                = 'refund_arn_update';
+    const REFUND_RRN_UPDATE                = 'refund_rrn_update';
 
     const PAYOUT_SUCCESSFUL                = 'payout_successful';
 

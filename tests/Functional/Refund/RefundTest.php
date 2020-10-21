@@ -16,7 +16,7 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
-use RZP\Mail\Payment\RefundArnUpdated;
+use RZP\Mail\Payment\RefundRrnUpdated;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Refund\Constants;
 use RZP\Models\Payment\Entity as Payment;
@@ -3553,7 +3553,7 @@ class RefundTest extends TestCase
         $this->assertEquals(18, $refund['tax']);
 
         // Asserting refund arn update event mail notification
-        Mail::assertQueued(RefundArnUpdated::class);
+        Mail::assertQueued(RefundRrnUpdated::class);
     }
 
     public function testOptimumRefundFeeReversalOnUpi()

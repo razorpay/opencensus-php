@@ -5,20 +5,21 @@ namespace RZP\Mail\Payment;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
 
-class RefundArnUpdated extends Base
+class RefundRrnUpdated extends Base
 {
     protected function addHtmlView()
     {
         if($this->isCustomerReceiptEmail() === true)
         {
-            $emailView = 'emails.mjml.customer.refund_arn_updated';
+            $emailView = 'emails.mjml.customer.refund_rrn_updated';
         }
         else
         {
-            $emailView = 'emails.refund.arn_updated';
+            $emailView = 'emails.refund.rrn_updated';
         }
 
         $this->view($emailView);
+
         return $this;
     }
 
@@ -29,7 +30,7 @@ class RefundArnUpdated extends Base
 
     protected function getMailTag()
     {
-        return MailTags::REFUND_ARN_UPDATE;
+        return MailTags::REFUND_RRN_UPDATE;
     }
 
     public function isCustomerReceiptEmail()
@@ -58,7 +59,7 @@ class RefundArnUpdated extends Base
 
     protected function addSubject()
     {
-        $subject = 'ARN update for refund tracking';
+        $subject = 'RRN update for refund tracking';
 
         $this->subject($subject);
 
