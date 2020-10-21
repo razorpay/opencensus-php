@@ -199,7 +199,7 @@ class Repository extends Base\Repository
 
         $paymentStatus = $this->dbColumn(Entity::STATUS);
 
-        return $this->newQueryWithConnection($this->getDataWarehouseConnectionWithRazorX())
+        return $this->newQuery()
                     ->join($tTableName, $paymentTerminalId, '=', $terminalId)
                     ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
                     ->where($paymentStatus, '=', Status::CAPTURED)
