@@ -17,6 +17,9 @@ class Validator extends Base\Validator
         Entity::VPA         => 'sometimes|string',
         Entity::EXPIRY_TIME => 'sometimes|integer|between:5,5760|filled',
         Entity::PROVIDER    => 'sometimes|string',
+        Entity::APP         => 'sometimes|string',
+        Entity::ORIGIN      => 'sometimes|string',
+        Entity::FLAG        => 'sometimes|string',
     ];
 
     protected static $editRules = [
@@ -26,5 +29,6 @@ class Validator extends Base\Validator
         Entity::RRN         => 'sometimes|string',
         Entity::UMN         => 'sometimes|string',
         Entity::REMIND_AT   => 'sometimes|nullable|epoch',
+        Entity::ORIGIN      => 'sometimes|string',
     ];
 }

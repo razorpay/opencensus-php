@@ -68,6 +68,15 @@ class CreateUpiMetadataTable extends Migration
             // Timestamps
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
+
+            $table->string(Entity::APP, 255)
+                  ->nullable();
+
+            $table->string(Entity::ORIGIN, 100)
+                  ->nullable();
+
+            $table->string(Entity::FLAG, 255)
+                  ->nullable();
         });
     }
 

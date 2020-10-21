@@ -23,6 +23,9 @@ class Entity extends Base\PublicEntity
     const INTERNAL_STATUS           = 'internal_status';
     const REMINDER_ID               = 'reminder_id';
     const REMIND_AT                 = 'remind_at';
+    const APP                       = 'app';
+    const ORIGIN                    = 'origin';
+    const FLAG                      = 'flag';
 
     // Constants
     const UPI_METADATA              = 'upi_metadata';
@@ -53,6 +56,9 @@ class Entity extends Base\PublicEntity
         self::UMN,
         self::RRN,
         self::REMIND_AT,
+        self::APP,
+        self::ORIGIN,
+        self::FLAG,
     ];
 
     protected $visible = [
@@ -72,6 +78,9 @@ class Entity extends Base\PublicEntity
         self::INTERNAL_STATUS,
         self::REMINDER_ID,
         self::REMIND_AT,
+        self::APP,
+        self::ORIGIN,
+        self::FLAG,
     ];
 
     protected $public = [

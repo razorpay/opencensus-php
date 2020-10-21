@@ -31,7 +31,10 @@ class UpiMetadataUnitTest extends TestCase
             Entity::FLOW        => 'collect',
             Entity::START_TIME  => Carbon::now()->getTimestamp(),
             Entity::END_TIME    => Carbon::now()->addDays(2)->getTimestamp(),
-            Entity::EXPIRY_TIME => 5
+            Entity::EXPIRY_TIME => 5,
+            Entity::APP         => 'some.test.app',
+            Entity::ORIGIN      => 'callback',
+            Entity::FLAG        => '123',
         ]);
 
         $upiMetadata->forceFill([
@@ -44,6 +47,9 @@ class UpiMetadataUnitTest extends TestCase
         $this->assertSame($this->demoPaymentId, $lastUpiMetadata[Entity::PAYMENT_ID]);
         $this->assertSame('otm', $lastUpiMetadata[Entity::TYPE]);
         $this->assertSame('collect', $lastUpiMetadata[Entity::FLOW]);
+        $this->assertSame('some.test.app', $lastUpiMetadata[Entity::APP]);
+        $this->assertSame('callback', $lastUpiMetadata[Entity::ORIGIN]);
+        $this->assertSame('123', $lastUpiMetadata[Entity::FLAG]);
     }
 
     public function testCreateForBaseProperties()

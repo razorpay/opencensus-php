@@ -6022,3 +6022,8 @@ ALTER TABLE bvs_validation
 
 ALTER TABLE merchant_details
     ADD COLUMN bank_details_doc_verification_status varchar(30) DEFAULT NULL;
+
+ALTER TABLE
+    `upi_metadata_new` ADD `app` VARCHAR(255) NULL DEFAULT NULL,
+    ADD `origin` VARCHAR(100) NULL DEFAULT NULL,
+    ADD `flag` VARCHAR(100) NULL DEFAULT NULL;
