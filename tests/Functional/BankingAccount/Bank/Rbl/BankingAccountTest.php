@@ -884,6 +884,13 @@ class BankingAccountTest extends TestCase
             \RZP\Models\BankingAccount\Status::PICKED);
     }
 
+    public function testUpdateBankingAccountStatusArchivedToProcessed()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            \RZP\Models\BankingAccount\Status::ARCHIVED,
+            \RZP\Models\BankingAccount\Status::PROCESSED);
+    }
+
     public function testUpdateBankingAccountSubStatus()
     {
         $this->assertUpdateBankingAccountStatusFromTo(

@@ -155,7 +155,10 @@ class Status
         self::REJECTED  => [
         ],
         self::ARCHIVED  => [
-            self::PICKED
+            self::PICKED,
+            self::INITIATED,
+            self::PROCESSING,
+            self::PROCESSED,
         ]
     ];
 
@@ -211,6 +214,7 @@ class Status
             self::API_ONBOARDING_IN_PROGRESS,
             // Sometimes API onboarding related docs are
             // processed by Bank after opening account.
+            self::MERCHANT_NOT_AVAILABLE,
             self::MERCHANT_PREPARING_DOCS,
             self::DISCREPANCY_IN_DOCS
         ],
@@ -288,7 +292,8 @@ class Status
         self::API_ONBOARDING_PENDING_EXTERNAL => self::API_ONBOARDING_PENDING,
         self::API_ONBOARDING_INITIATED_EXTERNAL => self::API_ONBOARDING_INITIATED,
         self::API_ONBOARDING_IN_PROGRESS_EXTERNAL => self::API_ONBOARDING_IN_PROGRESS,
-        self::NONE_EXTERNAL => self::NONE
+        self::NONE_EXTERNAL => self::NONE,
+        'null' => null
     ];
 
 

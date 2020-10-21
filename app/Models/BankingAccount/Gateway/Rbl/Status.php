@@ -24,6 +24,7 @@ class Status
     const YET_TO_PICKUP_DOCS = 'yet_to_pickup_docs';
     const PICKED_UP_DOCS = 'picked_up_docs';
     const DISCREPANCY_IN_DOCS = 'discrepancy_in_docs';
+    const PROCESSING = 'processing';
     const ACCOUNT_OPENED = 'account_opened';
     const MERCHANT_PREPARING_API_DOCS = 'merchant_preparing_api_docs';
     const DISCREPANCY_IN_API_DOCS = 'discrepancy_in_api_docs';
@@ -37,6 +38,7 @@ class Status
     const YET_TO_PICKUP_DOCS_EXTERNAL = 'Bank yet to pick up docs';
     const PICKED_UP_DOCS_EXTERNAL = 'Bank has picked up docs';
     const DISCREPANCY_IN_DOCS_EXTERNAL = 'Discrepancy in docs';
+    const PROCESSING_EXTERNAL = 'CA in Progress';
     const ACCOUNT_OPENED_EXTERNAL = 'Bank has opened CA';
     const MERCHANT_PREPARING_API_DOCS_EXTERNAL = 'Merchant is preparing API docs';
     const DISCREPANCY_IN_API_DOCS_EXTERNAL = 'Discrepancy in API docs';
@@ -73,6 +75,9 @@ class Status
             ]
         ],
         BankingAccount\Status::PROCESSING     => [
+            null => [
+                self::PROCESSING
+            ],
             BankingAccount\Status::DISCREPANCY_IN_DOCS => [
                 self::DISCREPANCY_IN_DOCS
             ],
@@ -95,6 +100,9 @@ class Status
             ],
             BankingAccount\Status::MERCHANT_PREPARING_DOCS => [
                 self::MERCHANT_PREPARING_API_DOCS
+            ],
+            BankingAccount\Status::MERCHANT_NOT_AVAILABLE => [
+                self::MERCHANT_NOT_AVAILABLE
             ],
             BankingAccount\Status::DISCREPANCY_IN_DOCS => [
                 self::DISCREPANCY_IN_API_DOCS
@@ -139,6 +147,7 @@ class Status
         self::YET_TO_PICKUP_DOCS,
         self::PICKED_UP_DOCS,
         self::DISCREPANCY_IN_DOCS,
+        self::PROCESSING,
         self::ACCOUNT_OPENED,
         self::MERCHANT_PREPARING_API_DOCS,
         self::DISCREPANCY_IN_API_DOCS,
@@ -154,6 +163,7 @@ class Status
         self::YET_TO_PICKUP_DOCS_EXTERNAL => self::YET_TO_PICKUP_DOCS,
         self::PICKED_UP_DOCS_EXTERNAL => self::PICKED_UP_DOCS,
         self::DISCREPANCY_IN_DOCS_EXTERNAL => self::DISCREPANCY_IN_DOCS,
+        self::PROCESSING_EXTERNAL => self::PROCESSING,
         self::ACCOUNT_OPENED_EXTERNAL => self::ACCOUNT_OPENED,
         self::MERCHANT_PREPARING_API_DOCS_EXTERNAL => self::MERCHANT_PREPARING_API_DOCS,
         self::DISCREPANCY_IN_API_DOCS_EXTERNAL => self::DISCREPANCY_IN_API_DOCS,
