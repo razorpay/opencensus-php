@@ -19,7 +19,7 @@ function SettlementAccountDetails({
     });
   };
   return (
-    <div className={`loan-offer-details-wrapper`}>
+    <div className="loan-offer-details-wrapper">
       <div className="section loan-offer-summary-section">
         <div className="loan-offer-summary-wrapper">
           <p className="loan-offer-summary-title">Account Number</p>
@@ -33,9 +33,7 @@ function SettlementAccountDetails({
               <i className="i i-info-outline" onMouseOver={trackMouseOver} />
               <Popover align="top" theme="dark">
                 <PopoverBody>
-                  <div style={{ textAlign: 'left' }}>
-                    {TOOLTIP_DESCRIPTIONS['ifsc_code']}
-                  </div>
+                  <div class="text-left">{TOOLTIP_DESCRIPTIONS['ifsc_code']}</div>
                 </PopoverBody>
               </Popover>
             </small>
@@ -45,19 +43,15 @@ function SettlementAccountDetails({
       </div>
       {showFinancerDetails ? (
         <div className="financer-details">
-          <div className="details-wrapper">
-            <p className="title">Financed By</p>
-            <p className="description">{financer}</p>
-          </div>
-          <small>
-            ○ The bank account details where the money will be settled to
-          </small>
+          {/*<div className="details-wrapper">*/}
+          {/*  <p className="title">Financed By</p>*/}
+          {/*  <p className="description">{financer}</p>*/}
+          {/*</div>*/}
+          <small>○ The bank account details where the money will be settled to</small>
         </div>
       ) : (
         <div class="m-l m-b">
-          <small>
-            ○ The bank account details where the money will be settled to
-          </small>
+          <small>○ The bank account details where the money will be settled to</small>
         </div>
       )}
     </div>

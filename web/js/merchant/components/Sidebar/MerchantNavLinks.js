@@ -103,7 +103,7 @@ export default function MerchantNavLinks(props) {
       <MainNavLink
         label="Loans"
         icon="i fa fa-inr text-warm"
-        to="/capital/loans"
+        to="/capital/loans/apply"
         isNew={true}
         additionalCondition={(user) => user.isAllowedView('loans') && user.isLoansEnabled}
       />
@@ -111,12 +111,11 @@ export default function MerchantNavLinks(props) {
       <MainNavLink
         label="Cash Advance"
         icon="i fa fa-star text-warning"
-        to="/capital/cash-advance"
+        to="/capital/cash-advance/"
         isNew={true}
         additionalCondition={(user) =>
           user.isAllowedView('cash_advance') &&
-          user.isWithdrawEnabled &&
-          user.isFlashCreditStage1Enabled
+          (user.isLOCEnabled || user.isCashAdvanceStage2Enabled || user.isWithdrawFeatureEnabled)
         }
       />
 

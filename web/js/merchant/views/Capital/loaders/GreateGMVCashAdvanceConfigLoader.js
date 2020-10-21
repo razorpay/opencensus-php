@@ -1,5 +1,6 @@
 import { APPLICATION_STATES, CONSOLIDATED_STATES } from '../Loans/constants';
 import LowerGMVCashAdvanceConfigLoader from './LowerGMVCashAdvanceConfigLoader';
+import { isPreceedingState } from '../utils';
 
 export default class GreaterGMVCashAdvanceConfigLoader extends LowerGMVCashAdvanceConfigLoader {
   constructor(loanApplication) {
@@ -14,9 +15,22 @@ export default class GreaterGMVCashAdvanceConfigLoader extends LowerGMVCashAdvan
       CHECK_LOAN_ELIGIBILITY: [
         ...baseApplicationStateGroups.CHECK_LOAN_ELIGIBILITY,
         APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING,
-        APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS,
         APPLICATION_STATES.PREVERIFICATION_FAILED,
-        APPLICATION_STATES.CREDIT_OFFER_PENDING,
+      ],
+      LOAN_APPLICATION: [
+        ...baseApplicationStateGroups.LOAN_APPLICATION,
+        ...(isPreceedingState(
+          this.applicationStatus,
+          APPLICATION_STATES.CREDIT_OFFER_GENERATED,
+          true,
+        )
+          ? [
+              APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS,
+              APPLICATION_STATES.SCORE_GENERATION_PENDING,
+              APPLICATION_STATES.CREDIT_OFFER_PENDING,
+            ]
+          : []),
+        APPLICATION_STATES.CREDIT_OFFER_GENERATED,
       ],
     };
   }
@@ -33,10 +47,17 @@ export default class GreaterGMVCashAdvanceConfigLoader extends LowerGMVCashAdvan
             APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING,
             APPLICATION_STATES.PREVERIFICATION_FAILED,
           ],
-          [APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS]: [
+        },
+      },
+      [CONSOLIDATED_STATES.LOAN_APPLICATION]: {
+        ...baseSideNavigationStateGroups[CONSOLIDATED_STATES.LOAN_APPLICATION],
+        steps: {
+          ...baseSideNavigationStateGroups[CONSOLIDATED_STATES.LOAN_APPLICATION].steps,
+          [APPLICATION_STATES.CREDIT_OFFER_GENERATED]: [
             APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS,
             APPLICATION_STATES.SCORE_GENERATION_PENDING,
             APPLICATION_STATES.CREDIT_OFFER_PENDING,
+            APPLICATION_STATES.CREDIT_OFFER_GENERATED,
           ],
         },
       },

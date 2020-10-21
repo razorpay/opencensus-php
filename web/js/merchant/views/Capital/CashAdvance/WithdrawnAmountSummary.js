@@ -53,7 +53,7 @@ function WithdrawnAmountSummary({ principle, interest, repaymentDate, roi, diffD
           </div>
         </div>
       </div>
-      <div className="block-note text-small m-t">
+      <div className="block-note text-small m-t right-border">
         The repayable amount will be collected in equal instalments for the next{' '}
         <strong>{diffDays}</strong> days
       </div>

@@ -17,7 +17,7 @@ import WithdrawalsRoot from './index';
 import { Redirect } from 'react-router-dom';
 
 @connect(
-  state => ({
+  (state) => ({
     user: state.session.user,
     withdrawalConfigurationDetails: state.withdrawals.withdrawalConfiguration,
     list: state.withdrawals.list,
@@ -30,19 +30,19 @@ import { Redirect } from 'react-router-dom';
     openModal,
     closeModal,
     showNotification,
-  }
+  },
 )
 class Withdrawals extends Component {
   state = {
     isDrawerOpen: false,
   };
 
-  gaEventDispatcher = eventObject => {
+  gaEventDispatcher = (eventObject) => {
     eventObject['eventCategory'] = 'Dashboard CA - Withdraw';
     window.rzpAnalytics(eventObject);
   };
 
-  search = filters => {
+  search = (filters) => {
     const payload = {
       skip: 0,
       count: filters.count ? parseInt(filters.count) : 20,
@@ -105,18 +105,15 @@ class Withdrawals extends Component {
       });
     }
   }
-  setActiveWithdrawal = withdrawal => {
+  setActiveWithdrawal = (withdrawal) => {
     this.setState({
       isDrawerOpen: true,
       activeWithdrawalId: withdrawal.id,
     });
   };
 
-  getRepaidAmount = withdrawalDetails => {
-    if (
-      !withdrawalDetails.repayments ||
-      withdrawalDetails.repayments.length === 0
-    ) {
+  getRepaidAmount = (withdrawalDetails) => {
+    if (!withdrawalDetails.repayments || withdrawalDetails.repayments.length === 0) {
       return {
         total: 0,
         principal: 0,
@@ -126,17 +123,17 @@ class Withdrawals extends Component {
 
     const totalAmount = withdrawalDetails.repayments.reduce(
       (acc, curr) => acc + parseInt(curr.amount),
-      0
+      0,
     );
 
     const totalPrincipal = withdrawalDetails.repayments
       .reduce((acc, curr) => [...acc, ...curr.repayment_breakdowns], [])
-      .filter(repayment => repayment.category === 'PRINCIPAL')
+      .filter((repayment) => repayment.category === 'PRINCIPAL')
       .reduce((acc, curr) => acc + parseInt(curr.amount), 0);
 
     const totalInterest = withdrawalDetails.repayments
       .reduce((acc, curr) => [...acc, ...curr.repayment_breakdowns], [])
-      .filter(repayment => repayment.category === 'INTEREST')
+      .filter((repayment) => repayment.category === 'INTEREST')
       .reduce((acc, curr) => acc + parseInt(curr.amount), 0);
 
     return {
@@ -153,11 +150,7 @@ class Withdrawals extends Component {
 
     const lastRepaid =
       withdrawalDetails.repayments && withdrawalDetails.repayments.length > 0
-        ? moment(
-            withdrawalDetails.repayments[
-              withdrawalDetails.repayments.length - 1
-            ].created_at
-          )
+        ? moment(withdrawalDetails.repayments[withdrawalDetails.repayments.length - 1].created_at)
         : withdrawalDetails.drawn_at;
 
     const diffDays =
@@ -165,8 +158,7 @@ class Withdrawals extends Component {
         ? moment(withdrawalDetails.due_date).diff(lastRepaid, 'days')
         : 0;
 
-    const interest =
-      (((diffDays * parseInt(configuration.interest)) / 100) * principal) / 100;
+    const interest = (((diffDays * parseInt(configuration.interest)) / 100) * principal) / 100;
 
     return {
       principal: principal - repaidSoFar,
@@ -188,7 +180,7 @@ class Withdrawals extends Component {
     });
   };
 
-  createRepayTicket = id => {
+  createRepayTicket = (id) => {
     let content;
     if (!!id) {
       content = `I am requesting here to repay my due amounts against this withdrawal[${id}]`;
@@ -198,15 +190,14 @@ class Withdrawals extends Component {
     return WithdrawalsRoot.createCapitalFDTicket(content, this.props.user);
   };
 
-  repay = withdrawal => {
+  repay = (withdrawal) => {
     this.gaEventDispatcher({
       eventAction: isRepaymentForWithdrawal
         ? 'List View | Repay Specific'
         : 'List View | Repay Dues',
     });
 
-    const withdrawalConfigurationDetails = this.props
-      .withdrawalConfigurationDetails.data;
+    const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
 
     const isRepaymentForWithdrawal = withdrawal && withdrawal.id;
 
@@ -215,23 +206,19 @@ class Withdrawals extends Component {
         this.getDueAmount(withdrawal, withdrawalConfigurationDetails).principal
       : withdrawalConfigurationDetails.principal_outstanding_balance;
 
-    return this.createRepayTicket(withdrawal ? withdrawal.id : null).then(
-      res => {
-        this.showRepayTicketCreated(res.data.ticketNo, amount);
-        this.gaEventDispatcher({
-          eventAction: 'Repayment Request | Done',
-        });
-      }
-    );
+    return this.createRepayTicket(withdrawal ? withdrawal.id : null).then((res) => {
+      this.showRepayTicketCreated(res.data.ticketNo, amount);
+      this.gaEventDispatcher({
+        eventAction: 'Repayment Request | Done',
+      });
+    });
   };
 
   render() {
-    const withdrawalConfigurationDetails = this.props
-      .withdrawalConfigurationDetails.data;
+    const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
 
-    const withdrawConfigLoading = this.props.withdrawalConfigurationDetails
-      .loading;
-    if (!this.props.user.isFlashCreditStage2Enabled) return <Redirect to="/" />;
+    const withdrawConfigLoading = this.props.withdrawalConfigurationDetails.loading;
+    if (!this.props.user.isWithdrawFeatureEnabled) return <Redirect to="/" />;
 
     return (
       <div class="FlashWithdrawals--Container">
@@ -255,10 +242,8 @@ class Withdrawals extends Component {
                 ) : (
                   <div
                     className={`flex repay-cta-container right-border warning thick ${
-                      parseInt(
-                        withdrawalConfigurationDetails.principal_outstanding_balance ||
-                          0
-                      ) > 0
+                      parseInt(withdrawalConfigurationDetails.principal_outstanding_balance || 0) >
+                      0
                         ? 'block-note'
                         : 'm-r'
                     }`}
@@ -268,19 +253,11 @@ class Withdrawals extends Component {
                       &nbsp;
                     </strong>
                     <Amount
-                      value={
-                        withdrawalConfigurationDetails.principal_outstanding_balance ||
-                        0
-                      }
+                      value={withdrawalConfigurationDetails.principal_outstanding_balance || 0}
                     />
-                    {parseInt(
-                      withdrawalConfigurationDetails.principal_outstanding_balance ||
-                        0
-                    ) > 0 && (
-                      <AsyncBtn.Primary
-                        class="m-l"
-                        onClick={() => this.repay(null)}
-                      >
+                    {parseInt(withdrawalConfigurationDetails.principal_outstanding_balance || 0) >
+                      0 && (
+                      <AsyncBtn.Primary class="m-l" onClick={() => this.repay(null)}>
                         Repay Dues
                       </AsyncBtn.Primary>
                     )}

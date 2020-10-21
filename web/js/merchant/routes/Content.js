@@ -461,7 +461,8 @@ export default class Content extends Component {
             />
             <ShowWhenRoute path="/navigator" component={Navigator} />
             <ShowWhenRoute path="/paypal_onboard_redirect" component={PaypalOnboardRedirect} />
-            <ShowWhenRoute path="/capital/loans" component={LoanDetails} />
+            <ShowWhenRoute strict path="/capital/:product/apply" component={LoanDetails} />
+            <Redirect from="/capital/loans" to="/capital/loans/apply" />
             <ShowWhenRoute
               path="/capital/cash-advance/withdrawals"
               component={FlashCreditWithdrawals}

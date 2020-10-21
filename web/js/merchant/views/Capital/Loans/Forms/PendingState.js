@@ -10,6 +10,7 @@ import getApplicationProgressPercentage from '../../utils/ProgressPercentageCalc
   configuration: state.loanApplicationDetails.meta.configuration,
   activeState: state.loanApplicationDetails.context.activeState,
   applicationId: state.loanApplicationDetails.meta.data.application.id,
+  product: state.loanApplicationDetails.meta.product,
 }))
 class PendingState extends Component {
   gaEventDispatcher = (eventObject) => {
@@ -41,14 +42,15 @@ class PendingState extends Component {
       configuration,
     } = this.props;
     return (
-      <div>
+      <div class="pending-note-wrapper">
         <Note
           message={message}
           applicationId={applicationId}
+          product={this.props.product}
           _trackSupportClick={this._trackSupportClick}
         />
         {showNavigation && (
-          <div className="actions p-r pull-right m-r">
+          <div className="actions pull-right">
             <Button.Transparent
               onClick={() => {
                 this.gaEventDispatcher({

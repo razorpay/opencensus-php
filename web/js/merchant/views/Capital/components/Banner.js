@@ -1,5 +1,6 @@
 import React from 'react';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+import SuccessTickIcon from './SuccessTickIcon';
 
 const Banner = React.forwardRef(
   (
@@ -23,8 +24,12 @@ const Banner = React.forwardRef(
     >
       <div className={`banner-message-wrapper ${type && `${type} border-left`}`}>
         <div className="banner-status-title-wrapper">
-          {type && (type === 'success' || type === 'conditional_success') && (
-            <i className={`i i-check-circle ${type} status-icon`} />
+          {type && (type === 'success' || type === 'conditional_success' || type === 'approval') && (
+            <div class="status-icon">
+              <SuccessTickIcon
+                fill={['success', 'approval'].includes(type) ? '#24A832' : '#E79315'}
+              />
+            </div>
           )}
           {type && type === 'pending' && (
             <div class="status-icon icon-pending">
@@ -40,6 +45,9 @@ const Banner = React.forwardRef(
           <p className={`banner-status-description ${lockedNote ? 'locked-note-description' : ''}`}>
             {description}
           </p>
+        )}
+        {type === 'approval' && (
+          <img src="/dist/css/assets/capital/green_patch.svg" className="green_patch" />
         )}
       </div>
       {cta}

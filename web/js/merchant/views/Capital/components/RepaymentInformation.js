@@ -3,8 +3,9 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import Amount from 'common/ui/Amount';
 import { HOTJAR_TRIGGERS, TOOLTIP_DESCRIPTIONS } from '../Loans/constants';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
+import { isLoanProduct } from '../utils';
 
-function RepaymentInformation({ amount, trackGAEvents = true, _fromWhere }) {
+function RepaymentInformation({ creditOffer, trackGAEvents = true, _fromWhere, product }) {
   useEffect(() => {
     triggerHotjarRecording(HOTJAR_TRIGGERS.LOAN_REPAYMENT_PAGE);
   }, []);
@@ -24,24 +25,32 @@ function RepaymentInformation({ amount, trackGAEvents = true, _fromWhere }) {
       <div className="loan-repayment-details">
         <div className="section loan-amount-details-wrapper">
           <p className="loan-offer-detail-title">
-            Daily Repayment Amount
-            <small className="help-content" style={{ paddingLeft: '4px' }}>
+            {isLoanProduct(product) ? 'Daily Repayment Amount' : 'Maximum Withdrawable limit'}
+            <small className="help-content">
+              &nbsp;
               <i className="i i-info-outline" onMouseOver={trackMouseOver} />
               <Popover align="top" theme="dark">
                 <PopoverBody>
-                  <div style={{ textAlign: 'left' }}>
-                    {TOOLTIP_DESCRIPTIONS['daily_repayable_amount']}
-                  </div>
+                  <div class="text-left">{TOOLTIP_DESCRIPTIONS['daily_repayable_amount']}</div>
                 </PopoverBody>
               </Popover>
             </small>
           </p>
           <p className="loan-offer-value">
-            <Amount value={amount} />
+            <Amount
+              value={
+                isLoanProduct(product)
+                  ? creditOffer.installment.amount
+                  : creditOffer.withdrawal_limit_per_request
+              }
+            />
           </p>
         </div>
         <p className="loan-repayment-detail-info">
-          Will be collected from your transaction once the loan is disbursed
+          {isLoanProduct(product)
+            ? 'Will be collected from your transaction once the loan is disbursed'
+            : 'This is the limit for a single withdrawal.' +
+              ' This will increase upon timely repayments'}
         </p>
       </div>
     </div>
