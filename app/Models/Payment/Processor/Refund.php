@@ -2847,8 +2847,7 @@ trait Refund
     protected function isInstantRefundsSupportedRefund(Payment\Entity $payment, RefundEntity $refund, bool $lateAuthVoidRefundInstantSpeed): bool
     {
         return (($refund->isRefundRequestedSpeedInstant() === true) and
-                (($payment->hasBeenCaptured() === true) or
-                    ($lateAuthVoidRefundInstantSpeed === true)) and
+                ($payment->hasBeenCaptured() === true) and
                 ($payment->isDCC() === false) and
                 (in_array($payment->getGateway(), Payment\Gateway::$scroogeGateways, true) === true) and
                 ((in_array($payment->getMethod(), [
