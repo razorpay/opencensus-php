@@ -3871,7 +3871,7 @@ class Route
         'pincode_get'                              => '*',
         'cities_get'                               => '*',
         'loc_service_admin'                        => Permission::LOC,
-        'capital_cards_admin'                      => Permission::CAPITAL_DEVELOPER,
+        'capital_cards_admin'                      => Permission::CAPITAL_CARDS,
         'ufh_admin_upload_file'                    => '*',
         'los_service_admin'                        => Permission::LOANS_EDIT,
         'offline_verification_service_get'         => Permission::OFFLINE_VERIFICATION_SERVICE_VIEW,
