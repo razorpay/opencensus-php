@@ -334,6 +334,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SOURCE);
     }
 
+    public function getCustomerId()
+    {
+        return $this->getAttribute(self::CUSTOMER_ID);
+    }
+
     protected function getReceiversAttribute()
     {
         $receivers = [];

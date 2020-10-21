@@ -19,6 +19,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\BankTransfer;
 use RZP\Base\ConnectionType;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Feature\Constants;
 use RZP\Models\VirtualAccountProducts;
 use RZP\Models\Offline\Device as OfflineDevice;
 
@@ -791,7 +792,7 @@ class Service extends Base\Service
         $this->app['basicauth']->setModeAndDbConnection($this->mode);
     }
 
-    protected function getVirtualAccountForCustomer(array $input, Order\Entity $order)
+    protected function getVirtualAccountForCustomer(array & $input, Order\Entity $order)
     {
         $customer = $this->getCustomerIfGiven($input);
 
@@ -800,6 +801,21 @@ class Service extends Base\Service
             return null;
         }
 
+        if (empty($input[Entity::CUSTOMER]) === false)
+        {
+            if ($this->merchant->isFeatureEnabled(Constants::CHECKOUT_VA_WITH_CUSTOMER) === true)
+            {
+                $input[Entity::CUSTOMER_ID] = $customer->getPublicId();
+            }
+
+            return null;
+        }
+        /*
+         * Below flow is for single VA on checkout where for a customer,
+         * single VA is to be created/updated w.r.t multiple orders
+         *
+         * In order to enable single VA on checkout, customer_id needs to be passed in the request
+         */
         $virtualAccount = $this->repo
                                 ->virtual_account
                                 ->findActiveVirtualAccountForOrderByCustomer($customer);

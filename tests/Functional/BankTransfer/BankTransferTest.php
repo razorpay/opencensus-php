@@ -3405,4 +3405,29 @@ class BankTransferTest extends TestCase
         $this->assertEquals('bank_account', $payment['receiver_type']);
         $this->assertEquals('captured', $payment['status']);
     }
+
+    public function testBankTransferForVaOnCheckoutWithCustomerDetails()
+    {
+        $this->fixtures->merchant->addFeatures(['checkout_va_with_customer']);
+
+        $order = $this->fixtures->create('order');
+
+        $response = $this->createVirtualAccountForOrder($order, ['customer' => ['contact' => '1234567890', 'email' => 'test@test.com']]);
+
+        $accountNumber = $response['receivers'][0]['account_number'];
+        $ifsc          = $response['receivers'][0]['ifsc'];
+
+        $response = $this->processBankTransfer($accountNumber, $ifsc, null, 10000);
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        $bankTransfer = $this->getDbLastEntity('bank_transfer');
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals($payment['email'], 'test@test.com');
+        $this->assertEquals('captured', $payment['status']);
+    }
 }

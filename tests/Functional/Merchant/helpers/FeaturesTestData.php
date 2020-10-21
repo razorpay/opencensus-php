@@ -943,6 +943,7 @@ return [
                     'virtual_accounts',
                     'virtual_accounts_banking',
                     'bank_transfer_on_checkout',
+                    'checkout_va_with_customer',
                     'invoice_partial_payments',
                     'hide_downtimes',
                     'old_credits_flow',

@@ -42,6 +42,7 @@ class Constants
     const VIRTUAL_ACCOUNTS                = 'virtual_accounts';
     const VIRTUAL_ACCOUNTS_BANKING        = 'virtual_accounts_banking';
     const BANK_TRANSFER_ON_CHECKOUT       = 'bank_transfer_on_checkout';
+    const CHECKOUT_VA_WITH_CUSTOMER       = 'checkout_va_with_customer';
     const FUND_ACCOUNT_VALIDATIONS        = 'fund_account_validations';
     const INVOICE_PARTIAL_PAYMENTS        = 'invoice_partial_payments';
     const HIDE_DOWNTIMES                  = 'hide_downtimes';
@@ -551,6 +552,7 @@ class Constants
         self::VIRTUAL_ACCOUNTS                => true,
         self::VIRTUAL_ACCOUNTS_BANKING        => true,
         self::BANK_TRANSFER_ON_CHECKOUT       => true,
+        self::CHECKOUT_VA_WITH_CUSTOMER       => true,
         self::INVOICE_PARTIAL_PAYMENTS        => true,
         self::HIDE_DOWNTIMES                  => true,
         self::OLD_CREDITS_FLOW                => true,

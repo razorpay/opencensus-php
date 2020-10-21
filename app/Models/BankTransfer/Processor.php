@@ -22,6 +22,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\LogicException;
+use RZP\Models\Feature\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Payment\Processor\TerminalProcessor;
@@ -403,6 +404,12 @@ class Processor extends VirtualAccount\Processor
         if ($merchant->isFeeBearerCustomerOrDynamic() === true)
         {
             $paymentArray[Payment\Entity::FEE] = (new Core)->getFeesForBankTransfer($bankTransfer, $merchant);
+        }
+
+        if (($this->virtualAccount->hasCustomer() === true) and
+            ($merchant->isFeatureEnabled(Constants::CHECKOUT_VA_WITH_CUSTOMER) === true))
+        {
+            $paymentArray[Payment\Entity::CUSTOMER_ID] = $this->virtualAccount->customer->getPublicId();
         }
 
         return $paymentArray;
