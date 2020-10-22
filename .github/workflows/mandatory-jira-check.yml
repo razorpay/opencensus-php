@@ -1,6 +1,7 @@
 on:
-  pull_request:
-    types: [ opened, reopened, edited, synchronize]
+  push:
+    branches-ignore:
+      - '**'
 name: Mandatory-Jira-Check
 jobs:
 
