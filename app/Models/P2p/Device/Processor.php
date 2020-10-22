@@ -203,6 +203,19 @@ class Processor extends Base\Processor
         return $this->callGateway();
     }
 
+    public function deviceCooldownCompleted(array $input)
+    {
+        $this->initialize(Action::DEVICE_COOLDOWN_COMPLETED, $input);
+
+        $this->app['events']->fire(
+            new P2p\DeviceCooldownCompleted($this->context(), $this->context()->getDevice())
+        );
+
+        return [
+            Entity::SUCCESS => true,
+        ];
+    }
+
     protected function deregisterSuccess(array $input): array
     {
         $this->initialize(Action::DEREGISTER_SUCCESS, $input, true);

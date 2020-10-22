@@ -41,8 +41,6 @@ class UpiController extends Controller
            'input' => $input
         ]);
 
-        return [
-            'success' => true,
-        ];
+        return $this->service->reminderCallback($input);
     }
 }

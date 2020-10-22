@@ -69,6 +69,31 @@ class Service extends Base\Service
                                           $callback[Device\Entity::REGISTER_TOKEN]);
 
                 break;
+
+            case Device\Entity::DEVICE:
+
+                $processor = new Device\Processor();
+
+                $this->processor->resolveContextFromDevice($context[Base\Entity::ACTION], $context);
+
+                $processor->processAction($context[Base\Entity::ACTION], $context);
+
+                break;
         }
+    }
+
+    public function reminderCallback($input)
+    {
+        $data = [
+            Base\Entity::CONTEXT => $input
+        ];
+
+        $callback = $this->processor->initiateReminderCallback($data);
+
+        $response = $this->processor->reminderCallback($data);
+
+        $this->processCallback($callback);
+
+        return $response;
     }
 }

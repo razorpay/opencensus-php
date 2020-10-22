@@ -48,6 +48,29 @@ class Processor extends Base\Processor
         return $this->input->toArray();
     }
 
+    public function initiateReminderCallback(array $input): array
+    {
+        return $this->initiateReminderCallbackSuccess($input);
+    }
+
+    public function initiateReminderCallbackSuccess(array $input): array
+    {
+        $this->initializeApplicationTrait(Action::INITIATE_REMINDER_CALLBACK_SUCCESS, $input);
+
+        $this->resolveContext();
+
+        return $this->input->toArray();
+    }
+
+    public function reminderCallback(array $input): array
+    {
+        $this->initializeApplicationTrait(Action::REMINDER_CALLBACK, $input);
+
+        return [
+            Base\Entity::SUCCESS => true,
+        ];
+    }
+
     protected function resolveContext()
     {
         $context =$this->input->get(Base\Entity::CONTEXT);
@@ -66,6 +89,9 @@ class Processor extends Base\Processor
                 $this->resolveContextFromRegisterToken($context[Base\Entity::ACTION]);
                 break;
 
+            case Device\Entity::DEVICE:
+                $this->resolveContextFromDevice($context[Base\Entity::ACTION]);
+                break;
             default:
                 throw $this->logicException(ErrorCode::GATEWAY_ERROR_CALLBACK_EMPTY_INPUT);
         }
@@ -142,6 +168,26 @@ class Processor extends Base\Processor
 
                 $this->context()->setMerchant($registerToken->merchant);
                 $this->context()->setHandleAndMode($registerToken->handle);
+        }
+    }
+
+    public function resolveContextFromDevice(string $action)
+    {
+        $context = $this->input->get(Base\Entity::CONTEXT);
+
+        switch ($context[Base\Entity::ACTION])
+        {
+            case Device\Action::DEVICE_COOLDOWN_COMPLETED:
+
+                $device = (new Device\Core())->find($context[Device\Entity::ID], false);
+
+                $this->context()->setHandleAndMode($context[Device\Entity::HANDLE]);
+
+                $this->context()->setMerchant($device->merchant);
+
+                $this->context()->setDevice($device);
+
+                break;
         }
     }
 

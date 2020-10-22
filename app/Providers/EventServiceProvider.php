@@ -88,7 +88,9 @@ class EventServiceProvider extends ServiceProvider
         P2p\VpaCreated::class        => [
             Listeners\P2pWebhookListener::class,
         ],
-
+        P2p\DeviceCooldownCompleted::class => [
+            Listeners\P2pNotificationListener::class,
+        ],
         AccessMap\EventSaved::class => [
             Listeners\AccessMapListener::class . '@onSaved',
         ],

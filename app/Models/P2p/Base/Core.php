@@ -52,8 +52,13 @@ class Core
         return $entity;
     }
 
-    public function find(string $id): Entity
+    public function find(string $id, bool $signed = true): Entity
     {
+        if($signed === false)
+        {
+            return $this->repo->find($id);
+        }
+
         return $this->repo->findByPublicId($id);
     }
 

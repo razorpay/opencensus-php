@@ -28,7 +28,7 @@ class Entity extends Base\Entity
 
     const REGISTER_TOKEN    = 'register_token';
     const DEVICE_TOKEN      = 'device_token';
-
+    const DEVICE            = 'device';
     /************** Entity Properties ************/
 
     protected $entity             = 'p2p_device';

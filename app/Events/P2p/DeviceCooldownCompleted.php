@@ -1,0 +1,53 @@
+<?php
+
+namespace RZP\Events\P2p;
+
+use RZP\Models\P2p\Client\Config;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Contracts\Queue\ShouldQueue;
+
+class DeviceCooldownCompleted extends Event implements ShouldQueue
+{
+    use SerializesModels;
+
+    public function getName()
+    {
+        return 'device.cooldown.completed';
+    }
+
+    public function getWebhookPaylaod()
+    {
+        return;
+    }
+
+    public function getNotificationPayload()
+    {
+        $entity = $this->getEntity();
+
+        $handle = $this->context->getHandle();
+
+        /**
+         * @var $client Client\Entity
+         */
+        $client =  $entity->client($handle);
+
+        $appName = $client->getConfigValue(Config::APP_FULL_NAME);
+
+        $sender  = $client->getConfigValue(Config::SMS_SENDER);
+
+        return [
+            'receiver' => $entity->getFormattedContact(),
+            'source'   => "api.{$this->context->getMode()}.p2p",
+            'template' => 'sms.p2p.cooldown_completed',
+            'sender' => $sender,
+            'params' => [
+                'app_name' => $appName,
+            ],
+        ];
+    }
+
+    public function getReminderPayload()
+    {
+        return;
+    }
+}

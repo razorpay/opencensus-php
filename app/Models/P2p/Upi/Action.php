@@ -11,4 +11,9 @@ class Action extends Base\Action
 
     const GATEWAY_CALLBACK                  = 'gatewayCallback';
     const GATEWAY_CALLBACK_SUCCESS          = 'gatewayCallbackSuccess';
+
+    const INITIATE_REMINDER_CALLBACK         = 'initiateReminderCallback';
+    const INITIATE_REMINDER_CALLBACK_SUCCESS = 'initiateReminderCallbackSuccess';
+
+    const REMINDER_CALLBACK                  = 'reminderCallback';
 }
