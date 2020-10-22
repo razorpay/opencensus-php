@@ -2037,7 +2037,9 @@ trait Refund
 
         $gateway = $payment->getGateway();
 
-        return Payment\Gateway::supportsReverse($gateway);
+        $gatewayAcquirer = (is_null($payment->terminal) === false) ? $payment->terminal->getGatewayAcquirer() : null;
+
+        return Payment\Gateway::supportsReverse($gateway, $gatewayAcquirer);
     }
 
     protected function updatePaymentRefunded()

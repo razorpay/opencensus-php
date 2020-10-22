@@ -1106,13 +1106,22 @@ class Gateway
      *
      * @var array
      */
-    public static $reverse = [
+    public static $reverseSupportedGateways = [
         self::CYBERSOURCE,
         self::AXIS_MIGS,
         self::AMEX,
         self::WALLET_OPENWALLET,
         self::HITACHI,
         self::CARDLESS_EMI,
+    ];
+
+    /**
+     * Gateway Acquirers which support auth reversal
+     *
+     * @var array
+     */
+    public static $reverseSupportedGatewayAcquirers = [
+        PayLater::FLEXMONEY,
     ];
 
     /**
@@ -2433,9 +2442,17 @@ class Gateway
         return true;
     }
 
-    public static function supportsReverse($gateway)
+    /**
+     * supportsReverse checks if gateway or the acquirer supports auth payments reversals
+     *
+     * @param $gateway
+     * @param $gatewayAcquirer
+     * @return bool
+     */
+    public static function supportsReverse($gateway, $gatewayAcquirer)
     {
-        return in_array($gateway, self::$reverse, true);
+        return ((in_array($gateway, self::$reverseSupportedGateways, true) === true) ||
+                (in_array($gatewayAcquirer, self::$reverseSupportedGatewayAcquirers, true) === true));
     }
 
     /**

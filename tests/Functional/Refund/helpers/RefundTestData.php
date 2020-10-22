@@ -1078,4 +1078,52 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED
         ]
     ],
+
+    'testFailVoidRefundOnReverseUnsupportedAcquirer' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_REVERSAL_NOT_SUPPORTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_REVERSAL_NOT_SUPPORTED,
+        ],
+    ],
+
+    'testSuccessVoidRefundOnReverseSupportedAcquirer' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 50000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
+
+    'testFailVoidRefundOnNullAcquirer' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_REVERSAL_NOT_SUPPORTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_REVERSAL_NOT_SUPPORTED,
+        ],
+    ],
 ];

@@ -5746,4 +5746,71 @@ class RefundTest extends TestCase
 
         $this->assertTrue($failed);
     }
+
+    public function testFailVoidRefundOnReverseUnsupportedAcquirer()
+    {
+        $this->gateway = 'paylater';
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:paylater_epaylater_terminal');
+
+        $this->fixtures->merchant->enablePayLater('10000000000000');
+
+        $this->fixtures->merchant->addFeatures('void_refunds');
+
+        $payment = $this->getDefaultPayLaterPaymentArray('epaylater');
+
+        $this->setOtp('123456');
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->startTest($payment['id'], $payment['amount']);
+    }
+
+    public function testSuccessVoidRefundOnReverseSupportedAcquirer()
+    {
+        $this->gateway = 'paylater';
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:paylater_flexmoney_terminal');
+
+        $this->fixtures->merchant->enablePayLater('10000000000000');
+
+        $this->fixtures->merchant->addFeatures('void_refunds');
+
+        $payment = $this->getDefaultPayLaterPaymentArray('hdfc');
+
+        $this->setOtp('123456');
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->startTest($payment['id'], $payment['amount']);
+    }
+
+    public function testFailVoidRefundOnNullAcquirer()
+    {
+        $this->gateway = 'paylater';
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:paylater_flexmoney_terminal');
+
+        $this->fixtures->merchant->enablePayLater('10000000000000');
+
+        $this->fixtures->merchant->addFeatures('void_refunds');
+
+        $payment = $this->getDefaultPayLaterPaymentArray('hdfc');
+
+        $this->setOtp('123456');
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->fixtures->terminal->edit($this->sharedTerminal->getId(), [
+            'gateway_acquirer' => null
+        ]);
+
+        $this->startTest($payment['id'], $payment['amount']);
+    }
 }

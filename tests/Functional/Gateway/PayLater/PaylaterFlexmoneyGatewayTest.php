@@ -101,6 +101,45 @@ class PaylaterFlexmoneyGatewayTest extends TestCase
         $this->assertEquals('1234567', $refund['acquirer_data']['arn']);
     }
 
+    public function testPaymentVoidRefund()
+    {
+        $this->fixtures->merchant->addFeatures('void_refunds');
+
+        $payment = $this->getDefaultPayLaterPaymentArray($this->provider);
+
+        // authorize
+        $response = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        //refund
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'refund')
+            {
+                $content['status']       = 'Success';
+            }
+
+            return $content;
+        });
+
+        $this->refundPayment($response['razorpay_payment_id'], $payment['amount']);
+
+        // assertions after payment status - refunded
+
+        $cardlessEmiEntity = $this->getLastEntity('cardless_emi', true);
+
+        $this->assertNotNull($cardlessEmiEntity['gateway_reference_id']);
+
+        $this->assertNotNull($cardlessEmiEntity['refund_id']);
+
+        $this->assertTestResponse($cardlessEmiEntity, 'testPaymentRefundEntity');
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('1234567', $refund['acquirer_data']['arn']);
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->getDefaultPayLaterPaymentArray($this->provider);
