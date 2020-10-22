@@ -329,18 +329,6 @@ class Core extends Base\Core
     {
         try
         {
-            // Get razorx treatment
-            $variant = $this->app->razorx->getTreatment(
-                $merchant->getId(),
-                MerchantModel\RazorxTreatment::SETTLEMENT_MAIL_RAMP,
-                $this->mode
-            );
-
-            if (strtolower($variant) !== 'on')
-            {
-                return;
-            }
-
             $setlDetails  = (new SetlDetails\Core)->getSettlementDetails($settlement->getId(), $merchant);
             $settlementTime = Carbon::createFromTimestamp(Carbon::now(Timezone::IST)->getTimestamp(), Timezone::IST)
                 ->format('d/m/Y h:i A');
@@ -426,18 +414,6 @@ class Core extends Base\Core
     {
         try
         {
-            // Get razorx treatment
-            $variant = $this->app->razorx->getTreatment(
-                $merchant->getId(),
-                MerchantModel\RazorxTreatment::SETTLEMENT_SMS_RAMP,
-                $this->mode
-            );
-
-            if (strtolower($variant) !== 'on')
-            {
-                return;
-            }
-
             if ($merchant->isLinkedAccount() === true)
             {
                 $contactNo = $merchant->parent->merchantDetail->getContactMobile();
@@ -526,6 +502,18 @@ class Core extends Base\Core
         try
         {
             $merchant = $settlement->merchant;
+
+            // Get razorx treatment
+            $variant = $this->app->razorx->getTreatment(
+                $merchant->getId(),
+                MerchantModel\RazorxTreatment::SETTLEMENT_MAIL_RAMP,
+                $this->mode
+            );
+
+            if (strtolower($variant) !== 'on')
+            {
+                return;
+            }
 
             $bankAccountNumber = ($settlement->bankAccount !== null) ?
                 $settlement->bankAccount->getRedactedAccountNumber() : 'XXXX-XXXX-XXXX';
