@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 import { fetchLoanApplicationMeta } from 'merchant/reducers/capital';
 import SettlementAccountDetails from '../../components/SettlementAccountDetails';
 import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
-import { APPLICATION_STATES, CAPITAL_PRODUCT_CODES, HOTJAR_TRIGGERS } from '../constants';
+import { APPLICATION_STATES, HOTJAR_TRIGGERS } from '../constants';
 import { isPreceedingState } from '../../utils';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 
@@ -41,13 +41,7 @@ class LoanApproved extends Component {
     return (
       <div class={'credit-offer-container'}>
         <div className="loan-offer-wrapper">
-          <CreditOffer
-            offerDetails={creditOffer}
-            approved={true}
-            _fromWhere="Loan Approved"
-            product={meta.product}
-            highlightCreditAmount={false}
-          />
+          <CreditOffer offerDetails={creditOffer} approved={true} _fromWhere="Loan Approved" />
           <div class="m-b">
             <SettlementAccountDetails
               user={this.props.user}
@@ -56,37 +50,35 @@ class LoanApproved extends Component {
             />
           </div>
           <RepaymentInformation
-            creditOffer={creditOffer}
+            amount={creditOffer.installment.amount}
             _fromWhere="Loan Approved"
-            product={CAPITAL_PRODUCT_CODES.LOAN}
           />
         </div>
-        <div class="loan-offer-wrapper">
-          <div className="loan-offer-action pull-right">
-            <Button.Transparent
+        <div className="loan-offer-action pull-right">
+          <Button.Transparent
+            onClick={() => {
+              this.props._trackNavigationActions('BACK', APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW);
+              this.props.navigation.back();
+            }}
+          >
+            <i className="i i-chevron-left" />
+            Back
+          </Button.Transparent>
+          {!isPreceedingState(
+            meta.data.application.status,
+            APPLICATION_STATES.CREDIT_DISBURSED,
+          ) && (
+            <Button.Primary
+              class="no-margin"
               onClick={() => {
-                this.props._trackNavigationActions(
-                  'BACK',
-                  APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW,
-                );
-                this.props.navigation.back();
+                this.props._trackNavigationActions('NEXT', APPLICATION_STATES.CREDIT_DISBURSED);
+                this.props.navigation.next();
               }}
             >
-              <i className="i i-chevron-left" />
-              Back
-            </Button.Transparent>
-            {!isPreceedingState(meta.data.application.status, APPLICATION_STATES.RZP_APPROVED) && (
-              <Button.Primary
-                onClick={() => {
-                  this.props._trackNavigationActions('NEXT', this.props.nextState);
-                  this.props.navigation.next();
-                }}
-              >
-                Next
-                <i className="i i-chevron-right" />
-              </Button.Primary>
-            )}
-          </div>
+              Next
+              <i className="i i-chevron-right" />
+            </Button.Primary>
+          )}
         </div>
       </div>
     );

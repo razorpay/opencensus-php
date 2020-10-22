@@ -267,11 +267,12 @@
       .withdrawals__credit-meta
         border-left: none;
         border-right :2px solid rgba(11,112,247,0.078);
-        //.block-note
-        //  text-align: right;
-        //  padding-left: 0;
-        //  padding-right: 10px;
-        //  border-left: none;
+        .block-note
+          text-align: right;
+          padding-left: 0;
+          padding-right: 10px;
+          border-left: none;
+          border-right: 2px solid #0b70e7;
 
     .credit_details_wrapper
       transition: all 200ms ease-in-out;
@@ -294,39 +295,24 @@
 
 .block-note
   padding-left: 10px;
-  position: relative;
-  &::before, &::after
-    position: absolute;
-    top: 0;
-    height: 100%;
-    width: 3px;
-    border-radius: 20px;
-    background: #0b70e7;
-  &::before
-    content: " ";
-    left: 0;
-  &:after
-    right: 0;
+  border-width: 0;
+  border-left-width: 3px;
+  border-style: solid;
+  border-color: #0B70E7;
   &.thick
-    &::before
-      width: 4px;
-      left: -2px;
+    border-left-width: 4px;
+    margin-left: -2px;
   &.warning
-    &::before, &::after
-      background: #E79315;
+    border-color: #E79315;
   &.purple
-    &::before, &::after
-      background: #8684E3;
+    border-color: #8684E3;
   &.success
-    &::before, &::after
-      background: #24A832;
+    border-color: #24A832;
   &.right-border
     padding-left: 0;
     padding-right: 10px;
-    &::before
-      content: none;
-    &::after
-      content: " ";
+    border-width: 0;
+    border-right-width: 3px;
 
 
 .withdrawals-tc-modal

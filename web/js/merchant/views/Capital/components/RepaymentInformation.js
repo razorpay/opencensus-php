@@ -3,9 +3,8 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import Amount from 'common/ui/Amount';
 import { HOTJAR_TRIGGERS, TOOLTIP_DESCRIPTIONS } from '../Loans/constants';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
-import { isLoanProduct } from '../utils';
 
-function RepaymentInformation({ creditOffer, trackGAEvents = true, _fromWhere, product }) {
+function RepaymentInformation({ amount, trackGAEvents = true, _fromWhere }) {
   useEffect(() => {
     triggerHotjarRecording(HOTJAR_TRIGGERS.LOAN_REPAYMENT_PAGE);
   }, []);
@@ -25,32 +24,24 @@ function RepaymentInformation({ creditOffer, trackGAEvents = true, _fromWhere, p
       <div className="loan-repayment-details">
         <div className="section loan-amount-details-wrapper">
           <p className="loan-offer-detail-title">
-            {isLoanProduct(product) ? 'Daily Repayment Amount' : 'Maximum Withdrawable limit'}
-            <small className="help-content">
-              &nbsp;
+            Daily Repayment Amount
+            <small className="help-content" style={{ paddingLeft: '4px' }}>
               <i className="i i-info-outline" onMouseOver={trackMouseOver} />
               <Popover align="top" theme="dark">
                 <PopoverBody>
-                  <div class="text-left">{TOOLTIP_DESCRIPTIONS['daily_repayable_amount']}</div>
+                  <div style={{ textAlign: 'left' }}>
+                    {TOOLTIP_DESCRIPTIONS['daily_repayable_amount']}
+                  </div>
                 </PopoverBody>
               </Popover>
             </small>
           </p>
           <p className="loan-offer-value">
-            <Amount
-              value={
-                isLoanProduct(product)
-                  ? creditOffer.installment.amount
-                  : creditOffer.withdrawal_limit_per_request
-              }
-            />
+            <Amount value={amount} />
           </p>
         </div>
         <p className="loan-repayment-detail-info">
-          {isLoanProduct(product)
-            ? 'Will be collected from your transaction once the loan is disbursed'
-            : 'This is the limit for a single withdrawal.' +
-              ' This will increase upon timely repayments'}
+          Will be collected from your transaction once the loan is disbursed
         </p>
       </div>
     </div>

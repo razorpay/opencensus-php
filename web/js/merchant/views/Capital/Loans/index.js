@@ -8,9 +8,6 @@ import {
   getApplications,
   getLenderDetails,
   registerNewLoanApplication,
-  fetchProducts,
-  registerProduct,
-  resetCapitalLendingData,
 } from 'merchant/reducers/capital';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
@@ -21,10 +18,7 @@ import CircularProgress from 'common/new-ui/CircularProgress';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
 import ApplicationOverviewLoadingSkeleton from '../components/ApplicationOverviewLoadingSkeleton';
-import { CAPITAL_LINKS, CAPITAL_PRODUCT_NAME_CODE_MAP, HOTJAR_TRIGGERS } from './constants';
-import ApplicationOnboardingForm from './Forms/ApplicationOnboardingForm';
-import { isCashAdvanceProduct, isLoanProduct } from '../utils';
-import Spinner from '../components/Spinner';
+import { CAPITAL_LINKS, HOTJAR_TRIGGERS } from './constants';
 
 export const PROS = [
   <React.Fragment>
@@ -56,9 +50,6 @@ export const PROS = [
     changeActiveState,
     getApplications,
     getLenderDetails,
-    fetchProducts,
-    registerProduct,
-    resetCapitalLendingData,
   },
 )
 class LoanApplicationOverview extends React.Component {
@@ -76,94 +67,21 @@ class LoanApplicationOverview extends React.Component {
   };
 
   componentDidMount() {
-    this.props.closeModal();
-    this.initApplication(this.getProductCode());
-    triggerHotjarRecording(HOTJAR_TRIGGERS.LOAN_APPLICATION_PAGE_OPEN);
-  }
-
-  initApplication = (product) => {
     const searchParams = this.props.history.location.search;
-
-    this.validateProduct();
-    this.validateFeatureAccess();
-    this.fetchSeedData();
-    this.props.resetCapitalLendingData();
-    this.props.registerProduct(product);
-    this.props.fetchProducts().then(this.fetchApplications);
-
     if (searchParams) {
       const params = new URLSearchParams(searchParams);
       const action = params.get('action');
       const loanId = params.get('id');
       this.onLoadHandlers.push((activeApplication) => {
-        if (action === 'open') {
+        if (action === 'open' && activeApplication.id === loanId) {
           this.openLoanEntity();
         }
       });
     }
-  };
-
-  getProduct = () => {
-    return this.props.match.params.product;
-  };
-
-  getProductCode = () => {
-    return CAPITAL_PRODUCT_NAME_CODE_MAP[this.getProduct()];
-  };
-
-  redirectToHome = () => {
-    this.props.history.push('/');
-  };
-
-  validateProduct = () => {
-    const allowedProducts = ['LOAN', 'LOC'];
-    const productCode = this.getProductCode();
-    if (!productCode || !allowedProducts.includes(productCode)) this.redirectToHome();
-  };
-
-  validateFeatureAccess = () => {
-    const { history, user } = this.props;
-
-    const params = new URLSearchParams(history.location.search);
-    const action = params.get('action');
-
-    // When cash-advance is clicked in the left nav, we take the user to
-    // for cash-advance application page. But if the user's application
-    // process is already completed user will land on cash-advance/withdrawals
-    // page.
-    // But even after loan application completion, in some cases user might want
-    // to see the application details for some reason. Ideally we must show the
-    // application instead of redirecting user to cash-advance because the
-    // application process is completed. Hence check url params to validate
-    // before redirection.
-    if (isCashAdvanceProduct(this.getProductCode()) && user.isWithdrawFeatureEnabled && !action) {
-      this.redirectToCashAdvanceHome();
-    }
-    if (isCashAdvanceProduct(this.getProductCode()) && user.isCashAdvanceStage2Enabled && !action) {
-      this.redirectToCashAdvanceHome();
-    }
-    if (isCashAdvanceProduct(this.getProductCode()) && !(user.isLOCEnabled && user.isLOSEnabled)) {
-      return this.redirectToHome();
-    }
-    if (isLoanProduct(this.getProductCode()) && !user.isLoansEnabled) {
-      return this.redirectToHome();
-    }
-  };
-
-  redirectToCashAdvanceHome() {
-    this.props.history.push('/capital/cash-advance/');
-  }
-
-  fetchApplications = () => {
-    const productDetails = this.getProductDetails();
-
-    if (!productDetails) this.redirectToHome();
-
     this.props
       .getApplications({
         owner_type: 'MERCHANT',
         owner_id: this.props.user.current,
-        product_id: productDetails.id,
       })
       .then((res) => {
         if (res && !res.errors && res.data.applications) {
@@ -190,7 +108,9 @@ class LoanApplicationOverview extends React.Component {
       .catch((_) => {
         this.props.registerNewLoanApplication();
       });
-  };
+    this.fetchSeedData();
+    triggerHotjarRecording(HOTJAR_TRIGGERS.LOAN_APPLICATION_PAGE_OPEN);
+  }
 
   fetchApplicationDetails = (id) => {
     if (id && id !== 'new') {
@@ -200,12 +120,6 @@ class LoanApplicationOverview extends React.Component {
 
   fetchSeedData = () => {
     this.props.fetchSeedData();
-  };
-
-  getProductDetails = () => {
-    return this.props.loanApplicationDetails.products.data.find(
-      (p) => p.name === this.getProductCode(),
-    );
   };
 
   _getToBeRenderedState = () => {
@@ -269,129 +183,86 @@ class LoanApplicationOverview extends React.Component {
     );
   };
 
-  getApplicationOverview = () => {
-    const { loanApplicationDetails } = this.props;
-    const { contact_email, promoter_pan } = this.props.user;
-
-    const productDetails = this.getProductDetails();
-
-    if (!productDetails) console.error('No Corresponding Product found');
-
-    if (!loanApplicationDetails.meta.data.application) {
-      return (
-        <div className="status-overview">
-          <div className="loan-application-overview-header onboarding-header flex">
-            <div className="loan-meta-wrapper">
-              <h4>
-                <strong>Check Eligibility</strong>
-              </h4>
-              <span class="text-strong text-faded">{contact_email}</span>
-            </div>
-            <div className="personal-pan-summary flex">
-              <div className="left-section">
-                <p className="text-strong text-faded">PAN Number</p>
-                <span className="text-strong">{promoter_pan}</span>
-              </div>
-              <div>
-                <span>
-                  We verify the details with your central PAN database, So please ensure to enter
-                  the correct details.
-                </span>
-              </div>
-            </div>
-          </div>
-          <div class="loan-onboarding-content-body">
-            <ApplicationOnboardingForm productId={productDetails.id} />
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="status-overview">
-        {loanApplicationDetails.meta.data.application.owner_id && (
-          <div className="loan-application-overview-header flex">
-            <div className="loan-meta-wrapper">
-              <h4>
-                <strong>Your Loan Application</strong>
-              </h4>
-              <p className="text--secondary">
-                Application ID: {loanApplicationDetails.meta.data.application.id}
-              </p>
-            </div>
-            <div className="loan-application-progress-wrapper flex">
-              <CircularProgress
-                progress={this.getProgressPercentage()}
-                size={22}
-                showPercentage={false}
-              />
-              <div className="m-l">
-                <h4 className="no-margin">
-                  <strong>{this.getProgressPercentage()}%</strong>
-                  &nbsp;
-                  <span className="text-small">Completed</span>
-                </h4>
-              </div>
-            </div>
-          </div>
-        )}
-        <div class="loan-onboarding-content-body">
-          <ApplicationStatusOverview openLoanEntity={this.openLoanEntity} />
-        </div>
-      </div>
-    );
-  };
-
-  getUIConfig = () => {
-    const { loanApplicationDetails } = this.props;
-
-    return loanApplicationDetails.meta.configuration.ui;
-  };
-
-  componentWillReceiveProps(nextProps) {
-    const nextProduct = CAPITAL_PRODUCT_NAME_CODE_MAP[nextProps.match.params.product];
-    if (this.getProductCode() !== nextProduct) {
-      this.initApplication(nextProduct);
-    }
-  }
-
   render() {
     const { loanApplicationDetails, user } = this.props;
 
-    if (loanApplicationDetails.products.loading || loanApplicationDetails.meta.loading)
-      return (
-        <div class="capital-landing-spinner-container">
-          <Spinner />
-        </div>
-      );
+    if (!user.isLoansEnabled) return <Redirect to="/" />;
 
-    const UIConfig = this.getUIConfig();
     return (
       <OnBoardingWrapper class="Loans">
         <div className="Landing--Image">
           <div class="image-wrapper">
-            <img src={UIConfig.product.heroImageSource} alt="landing-image" />
+            <img src={'/dist/css/assets/capital/los_onboarding_hero.svg'} alt="landing-image" />
           </div>
         </div>
 
         <div className="Product--Details">
           <div className="Details-title">
-            {UIConfig.product.title}
+            Business Loans for you
             <div className="divider" />
           </div>
 
-          {UIConfig.product.summary}
-          <hr />
+          <div className="Details-desc">
+            Achieve your goals by financing your business needs effectively. Get a collateral-free
+            Working Capital Loan in as fast as two days.
+          </div>
 
-          <DataList>{UIConfig.product.pros}</DataList>
+          <div className="Details-desc privileges">
+            As a privileged member of Razorpay, you get the following benefits:
+          </div>
+
+          <DataList>{PROS}</DataList>
         </div>
 
         <div className="loan-application-home">
-          {loanApplicationDetails.meta.loading || loanApplicationDetails.products.loading ? (
+          {!loanApplicationDetails.meta.data.application ? (
             <ApplicationOverviewLoadingSkeleton />
           ) : (
-            this.getApplicationOverview()
+            <div className="status-overview">
+              {loanApplicationDetails.meta.data.application.owner_id && (
+                <div className="loan-application-overview-header flex">
+                  <div class="loan-meta-wrapper">
+                    <h4>
+                      <strong>Your Loan Application</strong>
+                    </h4>
+                    <p className="text--secondary">
+                      Application ID: {loanApplicationDetails.meta.data.application.id}
+                    </p>
+                  </div>
+                  <div className="loan-application-progress-wrapper flex">
+                    <CircularProgress
+                      progress={this.getProgressPercentage()}
+                      size={22}
+                      showPercentage={false}
+                    />
+                    <div className="m-l">
+                      <h4 className="no-margin">
+                        <strong>{this.getProgressPercentage()}%</strong>
+                        &nbsp;
+                        <span class="text-small">Completed</span>
+                      </h4>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div>
+                <ApplicationStatusOverview openLoanEntity={this.openLoanEntity} />
+              </div>
+            </div>
           )}
+          <div className="footer">
+            <div className="btn-toolbar">
+              <a className="link m-r m-l" href={CAPITAL_LINKS['check_credit_score']}>
+                <i className="i i-lightbulb" />
+                <strong>Check free Credit Report</strong>
+              </a>
+              <a className="m-l link" href={CAPITAL_LINKS['faqs']} target="_blank">
+                <strong>Show FAQ's</strong>
+                <i className="i i-question-circle-o m-l" />
+              </a>
+            </div>
+            <img src="/dist/css/assets/capital/capital_logo.svg" alt="Loading icon" />
+          </div>
         </div>
       </OnBoardingWrapper>
     );

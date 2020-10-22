@@ -83,11 +83,9 @@ class CreditScoreBreakdown extends Component {
   handleNext = () => {
     const { id, status } = this.props.loanApplicationDetails.meta.data.application;
     if (status === APPLICATION_STATES.CREDIT_PULL_PENDING) {
-      return this.props.fetchLoanApplicationMeta(id).then(() => {
-        this.props.navigation.next();
-      });
+      return this.props.fetchLoanApplicationMeta(id);
     } else {
-      this.props.navigation.next();
+      //TODO:state transition
     }
   };
 
@@ -108,18 +106,17 @@ class CreditScoreBreakdown extends Component {
     const creditScoreBreakdown = loanApplicationDetails.bureau_report_details;
     const { report, score, ntc_score } = creditScoreBreakdown.data.bureau_report;
 
-    const { configuration, product } = loanApplicationDetails.meta;
+    const { configuration } = loanApplicationDetails.meta;
 
     if (!!ntc_score && !score) {
       return (
-        <div class="pending-note-wrapper">
+        <div>
           <Note
-            product={product}
             showRazorpaySupportInstruction={false}
             message="You either don't have a bureau presence or your bureau records are not recent enough to evaluate a score."
             extraMessage="The good news is that we will still process your application and evaluate you for loan."
           />
-          <div className="actions m-l m-r pull-right">
+          <div className="credit-score-actions m-l m-r pull-right">
             <Button.Transparent onClick={navigation.back}>
               <i className="i i-chevron-left" />
               Back
@@ -129,7 +126,7 @@ class CreditScoreBreakdown extends Component {
               onClick={() => {
                 this.props._trackNavigationActions(
                   'NEXT',
-                  this.props.nextState,
+                  APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING,
                   configuration.getApplicationStateDescriptions()[
                     APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING
                   ].stages.ADDRESS_PROOF,
@@ -213,14 +210,12 @@ class CreditScoreBreakdown extends Component {
                 onClick={() => {
                   this.props._trackNavigationActions(
                     'NEXT',
-                    this.props.nextState,
-                    this.props.nextState === APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING
-                      ? configuration.getApplicationStateDescriptions()[
-                          APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING
-                        ].stages.BANK_STATEMENT
-                      : '',
+                    APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING,
+                    configuration.getApplicationStateDescriptions()[
+                      APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING
+                    ].stages.ADDRESS_PROOF,
                   );
-                  this.handleNext();
+                  navigation.next();
                 }}
               >
                 Next

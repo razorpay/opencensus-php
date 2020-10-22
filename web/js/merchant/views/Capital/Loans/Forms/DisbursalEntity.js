@@ -11,7 +11,7 @@ import {
   getAcceptedOffer,
 } from 'merchant/reducers/capital';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import { APPLICATION_STATES, CAPITAL_PRODUCT_CODES, HOTJAR_TRIGGERS } from '../constants';
+import { APPLICATION_STATES, HOTJAR_TRIGGERS } from '../constants';
 import Button from 'common/new-ui/Button';
 import RepaymentModal from '../../components/RepaymentModal';
 import Modal from 'react-modal';
@@ -81,9 +81,7 @@ class DisbursalEntity extends Component {
           <CreditOffer
             offerDetails={creditOffer}
             approved={true}
-            product={CAPITAL_PRODUCT_CODES.LOAN}
             isDisbursal={true}
-            highlightCreditAmount={false}
             disbursedAmount={disbursal_details.data.disbursal.disbursed_amount}
             showInstallmentDetails={false}
             _fromWhere="Disbursal Details"
@@ -97,9 +95,8 @@ class DisbursalEntity extends Component {
             />
           </div>
           <RepaymentInformation
-            creditOffer={creditOffer}
+            amount={creditOffer.installment.amount}
             _fromWhere="Disbursal Details"
-            product={CAPITAL_PRODUCT_CODES.LOAN}
           />
         </div>
         <div className="loan-offer-action pull-right">

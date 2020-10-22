@@ -1,16 +1,12 @@
 .loan-offer-wrapper {
-  margin: 24px auto;
-  width: 400px;
-  color: rgba(22,47,86,0.87);
+  margin: auto;
+  max-width: 400px;
 
   .loan-offer-details-wrapper {
     margin-bottom: 16px;
     border: 1px solid rgba(11, 112, 231, 0.1);
     border-radius: 2px;
 
-    &.no-border{
-      border: none;
-    }
     .financer-details{
       background: rgba(22, 47, 86, 0.02);
       padding: 8px 16px;
@@ -38,50 +34,25 @@
       border-left: 3px solid #528FF0;
       padding: 0 !important;
       margin: 8px 0 8px -2px;
-      color: rgba(22, 47, 86, 0.87);
-      &.no-highlight{
+      &.approved{
         border-left: none;
-      }
-      hr {
-        margin: 0;
       }
     }
 
     .loan-offer-details {
       background: rgba(11, 112, 231, 0.02);
-      padding: 4px 0;
-
-      .section{
-        padding: 4px 0;
-      }
     }
 
     .section {
       display: flex;
-      padding: 8px 16px;
+      padding: 8px 0;
       align-items: center;
-
-      &.disbursal-details{
-        font-weight: 700;
-        font-size: 13px;
-        padding: 8px 16px 4px;
-        ~ .section{
-          padding-top: 0px !important;
-        }
-      }
 
       .loan-offer-detail-title {
         flex: 1;
         padding-left: 16px;
         font-size: 13px;
-        color: rgba(22, 47, 86, 0.87);
-      }
-
-      .wc-amount .help-content--currency{
-        font-size: 16px;
-        .rzp-amount  .rzp-currency, .rzp-whole, rzp-paise{
-          font-weight: 600;
-        }
+        color: rgba(22, 47, 86, 0.74);
       }
 
       .loan-offer-amount {
@@ -104,9 +75,6 @@
           border-right: 1px solid rgba(22, 47, 86, 0.1);
           margin-right: 8px;
         }
-        &.no-border{
-          border: none;
-        }
         &:first-child{
           text-align: left;
         }
@@ -117,10 +85,6 @@
         .loan-offer-summary-title {
           color: rgba(22, 47, 86, 0.54);
           font-size: 12px;
-
-          .help-content{
-            padding-left: 4px;
-          }
         }
       }
     }
@@ -173,12 +137,6 @@
     .back-btn{
       margin-right: 10px;
     }
-    .Button{
-      height: 36px;
-    }
-    .Button--primary, .btn-outline {
-      margin: 0 0 0 12px;
-    }
     .help-text {
       color: rgba(22, 47, 86, 0.54);
       margin-right: 16px;
@@ -194,7 +152,7 @@
 }
 
 .credit-offer-container{
-  padding: 24px 0;
+  padding: 20px;
   width: 400px;
   margin: auto;
 }

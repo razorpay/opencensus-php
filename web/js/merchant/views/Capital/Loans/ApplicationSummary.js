@@ -5,13 +5,8 @@ import { getAcceptedOffer, fetchCreditOffers, changeActiveState } from 'merchant
 import Amount from 'common/ui/Amount';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
-import { isLoanProduct, isPreceedingState } from '../utils';
-import {
-  APPLICATION_STATES,
-  CAPITAL_PRODUCT_NAME_CODE_MAP,
-  TENURE_UNIT_LABELS,
-  TOOLTIP_DESCRIPTIONS,
-} from './constants';
+import { isPreceedingState } from '../utils';
+import { APPLICATION_STATES, TENURE_UNIT_LABELS, TOOLTIP_DESCRIPTIONS } from './constants';
 
 @connect(
   (state) => ({
@@ -137,6 +132,7 @@ class ApplicationSummary extends Component {
   };
 
   gaEventDispatcher = (eventObject) => {
+    //TODO:remove this
     eventObject['eventCategory'] = 'Dashboard - WCL LOS';
     window.rzpAnalytics(eventObject);
   };
@@ -145,10 +141,7 @@ class ApplicationSummary extends Component {
     const { meta } = this.props.loanApplicationDetails;
     this.gaEventDispatcher({
       eventAction: `TOOLTIP | ${type.toUpperCase()}`,
-      eventLabel: `Right Info | ${getApplicationProgressPercentage(
-        meta.data.application.status,
-        meta.configuration.getApplicationStateGroups(),
-      )}`,
+      eventLabel: `Right Info | ${getApplicationProgressPercentage(meta.data.application.status)}`,
     });
   };
 
@@ -166,12 +159,9 @@ class ApplicationSummary extends Component {
     }
 
     if (accepted_offer_details.data && !accepted_offer_details.data.credit_offer_id) {
-      this.props.fetchCreditOffers(
-        {
-          application_id: meta.data.application.id,
-        },
-        meta.product,
-      );
+      this.props.fetchCreditOffers({
+        application_id: meta.data.application.id,
+      });
     }
 
     if (
@@ -213,7 +203,7 @@ class ApplicationSummary extends Component {
         <p className="sub-title">Tenure</p>
       </div>,
       <div className="section">
-        <p className="title">{creditOffer.loan_attributes.interest_rate / 100}%</p>
+        <p className="title">{creditOffer.loan_attributes.interest_rate}%</p>
         <p className="sub-title">Interest Rate</p>
       </div>,
       <div class="section-group">
@@ -262,101 +252,6 @@ class ApplicationSummary extends Component {
     );
   };
 
-  getAcceptedCashAdvanceOfferDetails = () => {
-    const {
-      accepted_offer_details,
-      credit_offer_details,
-      meta,
-    } = this.props.loanApplicationDetails;
-
-    if (credit_offer_details.data && !credit_offer_details.data.credit_offers) {
-      this.props.getAcceptedOffer({
-        application_id: meta.data.application.id,
-      });
-    }
-
-    if (accepted_offer_details.data && !accepted_offer_details.data.credit_offer_id) {
-      this.props.fetchCreditOffers(
-        {
-          application_id: meta.data.application.id,
-        },
-        meta.product,
-      );
-    }
-
-    if (
-      !accepted_offer_details.data ||
-      !accepted_offer_details.data.credit_offer_id ||
-      !credit_offer_details.data ||
-      !credit_offer_details.data.credit_offers
-    ) {
-      return [
-        <hr />,
-        ...[1, 2, 3].map((_) => (
-          <div className="section">
-            <p className="title PlaceholderLoader" />
-            <p className="sub-title PlaceholderLoader" />
-          </div>
-        )),
-      ];
-    }
-
-    const creditOffer = credit_offer_details.data.credit_offers.find(
-      (offer) => offer.id === accepted_offer_details.data.credit_offer_id,
-    );
-
-    if (!creditOffer) return null;
-
-    return [
-      <hr />,
-      <div className="section">
-        <p className="title">
-          <Amount value={creditOffer.max_credit_offered} />
-        </p>
-        <p className="sub-title">Credit Limit</p>
-      </div>,
-      <div className="section">
-        <p className="title">
-          {creditOffer.tenure} &nbsp;
-          {creditOffer.tenure === 1
-            ? TENURE_UNIT_LABELS[creditOffer.tenure_type][0]
-            : TENURE_UNIT_LABELS[creditOffer.tenure_type][1]}
-        </p>
-        <p className="sub-title">Tenure</p>
-      </div>,
-      <div className="section">
-        <p className="title">{creditOffer.interest_rate_daily / 100}% per day</p>
-        <p className="sub-title">Rate of Interest</p>
-      </div>,
-      <div className="section">
-        <Amount value={creditOffer.withdrawal_limit_per_request} />
-        <p className="sub-title">
-          Total Withdrawable Balance&nbsp;
-          <small className="help-content">
-            <i
-              className="i i-info-outline"
-              onMouseOver={() => this.trackMouseOver('withdrawal limit')}
-            />
-            <Popover align="top" theme="dark">
-              <PopoverBody>
-                <div class="text-left">{TOOLTIP_DESCRIPTIONS.ca_internal_credit_limit}</div>
-              </PopoverBody>
-            </Popover>
-          </small>
-        </p>
-      </div>,
-    ];
-  };
-
-  getCreditOfferDetails = () => {
-    const { meta } = this.props.loanApplicationDetails;
-    if (isLoanProduct(meta.product)) {
-      return this.getAcceptedOfferDetails();
-    } else {
-      return this.getAcceptedCashAdvanceOfferDetails();
-    }
-  };
-
   render() {
     const { meta } = this.props.loanApplicationDetails;
 
@@ -372,7 +267,14 @@ class ApplicationSummary extends Component {
             helpMsg={'completed'}
           />
         </div>
-        {this.isOfferAccepted() ? this.getCreditOfferDetails() : this.getBusinessSection()}
+        {this.isOfferAccepted() ? (
+          this.getAcceptedOfferDetails()
+        ) : (
+          <React.Fragment>
+            {this.getLoanDetails()}
+            {this.getBusinessSection()}
+          </React.Fragment>
+        )}
       </div>
     );
   }

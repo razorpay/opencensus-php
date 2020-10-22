@@ -1,41 +1,22 @@
 import LowerGMVCashAdvanceConfigLoader from './loaders/LowerGMVCashAdvanceConfigLoader';
 import GreaterGMVCashAdvanceConfigLoader from './loaders/GreateGMVCashAdvanceConfigLoader';
 import LoansConfigLoader from './loaders/LoanConifgLoader';
-import { CAPITAL_PRODUCT_CODES } from './Loans/constants';
 
 export default class ConfigFactory {
-  constructor(application, productName) {
+  constructor(application) {
     this.loanApplication = application;
-    this.productName = productName;
     this.create = this.create.bind(this);
   }
 
-  getLOCConfigLoader() {
-    const { application_state_flow } = this.loanApplication;
-    switch (application_state_flow) {
-      case 'SKIP_UNDERWRITING':
+  create() {
+    const { flow } = this.loanApplication;
+    switch (flow) {
+      case 'cash_advance_gmv_less_than_600K':
         return new LowerGMVCashAdvanceConfigLoader(this.loanApplication);
-      default:
+      case 'cash_advance_gmv_greater_than_600K':
         return new GreaterGMVCashAdvanceConfigLoader(this.loanApplication);
-    }
-  }
-
-  getLoansConfigLoader() {
-    const { application_state_flow } = this.loanApplication;
-    switch (application_state_flow) {
       default:
         return new LoansConfigLoader(this.loanApplication);
-    }
-  }
-
-  create() {
-    switch (this.productName) {
-      case CAPITAL_PRODUCT_CODES.CASH_ADVANCE:
-        return this.getLOCConfigLoader();
-      case CAPITAL_PRODUCT_CODES.LOAN:
-        return this.getLoansConfigLoader();
-      default:
-        return null;
     }
   }
 }

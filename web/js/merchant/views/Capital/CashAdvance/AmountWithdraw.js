@@ -24,9 +24,7 @@ import TCModal from './TCModal';
 import WorkingHoursPrompt from './WorkingHoursPrompt';
 import { isApolloFinvestServiceable } from '../utils/ApolloFinvestValidations';
 import CancelWithdrawalReasons from './CancelWithdrawalReasons';
-import { withRouter } from 'react-router-dom';
 
-@withRouter
 @connect(
   (state) => ({
     user: state.session.user,
@@ -258,6 +256,8 @@ export default class AmountWithdraw extends React.Component {
         withdrawal_config_id: withdrawalConfigurationDetails.id,
         owner_id: withdrawalConfigurationDetails.owner_id,
         owner_type: withdrawalConfigurationDetails.owner_type,
+        //TODO: BE will remove this validation, then remove hardcoding from
+        // FE as well
         application_id: withdrawalConfigurationDetails.application_id,
         application_number: withdrawalConfigurationDetails.application_number,
         amount: withdrawalAmount * 100,
@@ -805,7 +805,7 @@ export default class AmountWithdraw extends React.Component {
     const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
     const withdrawConfigLoading = this.props.withdrawalConfigurationDetails.loading;
 
-    const { seedData, user, history } = this.props;
+    const { seedData } = this.props;
 
     switch (currentView) {
       case VIEWS.WITHDRAW:
@@ -820,8 +820,6 @@ export default class AmountWithdraw extends React.Component {
               minWithdrawableAmount={this.getMinWithdrawableAmount()}
               maxWithdrawableAmount={this.getMaxWithdrawableAmount()}
               withdrawalConfiguration={withdrawalConfigurationDetails}
-              user={user}
-              history={history}
             />
           );
         }

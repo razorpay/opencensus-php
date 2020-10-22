@@ -2,12 +2,7 @@ import React, { Component } from 'react';
 import MultiLevelStepper from 'merchant/views/Capital/components/MultiLevelStepper';
 import { connect } from 'react-redux';
 import { fetchLoanApplicationMeta } from 'merchant/reducers/capital';
-import {
-  ERROR_STATES,
-  PENDING_APPLICATION_STATES,
-  HOTJAR_TRIGGERS,
-  CAPITAL_PRODUCT_NAME_CODE_MAP,
-} from './constants';
+import { ERROR_STATES, PENDING_APPLICATION_STATES, HOTJAR_TRIGGERS } from './constants';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 
 @connect(
@@ -66,7 +61,7 @@ class ApplicationStatusOverview extends Component {
     const APPLICATION_STATE_DESCRIPTIONS = this.getUserFlowConfiguration().getApplicationStateDescriptions();
 
     const { meta } = this.props.loanApplicationDetails;
-    const applicationStatus = meta.loading ? 'PROMOTER_INFO_PENDING' : meta.data.application.status;
+    const applicationStatus = meta.data.application.status;
     if (classList.includes('active')) {
       return APPLICATION_STATE_DESCRIPTIONS[applicationStatus];
     } else if (classList.includes('completed')) {
@@ -76,18 +71,9 @@ class ApplicationStatusOverview extends Component {
     }
   };
 
-  componentWillReceiveProps(nextProps) {
-    if (
-      this.props.loanApplicationDetails.meta.product !==
-      nextProps.loanApplicationDetails.meta.product
-    ) {
-      this.stepFound = false;
-    }
-  }
-
   getStep = (step) => {
     const { meta } = this.props.loanApplicationDetails;
-    const applicationStatus = meta.loading ? 'PROMOTER_INFO_PENDING' : meta.data.application.status;
+    const applicationStatus = meta.data.application.status;
 
     const APPLICATION_STATE_GROUPS = this.getUserFlowConfiguration().getApplicationStateGroups();
     const isCurrentStateGroup = APPLICATION_STATE_GROUPS[step].includes(applicationStatus);
@@ -97,17 +83,14 @@ class ApplicationStatusOverview extends Component {
       isCurrentStateGroup && PENDING_APPLICATION_STATES.includes(applicationStatus);
     const isErrorState = isCurrentStateGroup && ERROR_STATES.includes(applicationStatus);
 
-    const isFinalParentState =
+    const isFinalState =
       Object.keys(APPLICATION_STATE_GROUPS).indexOf(step) ===
       Object.keys(APPLICATION_STATE_GROUPS).length - 1;
 
-    const isFinalState =
-      APPLICATION_STATE_GROUPS[step].indexOf(applicationStatus) ===
-      APPLICATION_STATE_GROUPS[step].length - 1;
-
     const classList = [];
     if (isCurrentStateGroup) {
-      if (isFinalParentState && isFinalState) {
+      this.stepFound = true;
+      if (isFinalState) {
         classList.push('completed');
       } else {
         classList.push('active');
@@ -125,10 +108,6 @@ class ApplicationStatusOverview extends Component {
     if (isErrorState) {
       classList.push('error');
     }
-
-    if (isCurrentStateGroup) {
-      this.stepFound = true;
-    }
     const STATE_GROUP_COMPLETION_DESCRIPTION = this.getUserFlowConfiguration().getCompletedStateGroupDescriptions();
 
     const descriptiveStep = classList.includes('completed')
@@ -139,7 +118,6 @@ class ApplicationStatusOverview extends Component {
       <MultiLevelStepper.ParentStep
         status={classList.join(' ')}
         title={descriptiveStep.title}
-        key={step}
         description={descriptiveStep.description}
         action={
           <div>

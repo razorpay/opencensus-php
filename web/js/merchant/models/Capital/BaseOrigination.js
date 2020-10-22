@@ -1,6 +1,5 @@
 import GenericEntity from '../GenericEntity';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { isCashAdvanceProduct, isLoanProduct } from '../../views/Capital/utils';
 
 export default class BaseOriginationEntity extends GenericEntity {
   request = (url, data, progressTracker) => {
@@ -142,24 +141,16 @@ export default class BaseOriginationEntity extends GenericEntity {
     );
   }
 
-  fetchCreditOffers(data, product) {
+  fetchCreditOffers(data) {
     return this.request(
-      `${this.resourceUrlPrefix(
-        'admin',
-        isLoanProduct(product) ? 'CreditOfferAPI' : 'LocCreditOfferAPI',
-        isLoanProduct(product) ? 'GetAllOffers' : 'GetAllLocOffers',
-      )}`,
+      `${this.resourceUrlPrefix('admin', 'CreditOfferAPI', 'GetAllOffers')}`,
       data,
     );
   }
 
-  acceptCreditOffer = (data, product) => {
+  acceptCreditOffer = (data) => {
     return this.request(
-      `${this.resourceUrlPrefix(
-        'admin',
-        isLoanProduct(product) ? 'CreditOfferAPI' : 'LocCreditOfferAPI',
-        isLoanProduct(product) ? 'AcceptOffer' : 'AcceptLocOffer',
-      )}`,
+      `${this.resourceUrlPrefix('admin', 'CreditOfferAPI', 'AcceptOffer')}`,
       data,
     );
   };

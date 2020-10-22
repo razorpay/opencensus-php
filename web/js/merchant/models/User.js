@@ -636,24 +636,16 @@ export default class User {
     return this.isFeatureEnabled('loan');
   }
 
-  get isLOSEnabled() {
-    return this.isFeatureEnabled('los');
+  get isWithdrawEnabled() {
+    return this.isFeatureEnabled('withdraw_loc');
   }
 
-  get isLOCEnabled() {
-    return this.isFeatureEnabled('loc');
-  }
-
-  get isCashAdvanceStage1Enabled() {
+  get isFlashCreditStage1Enabled() {
     return this.isFeatureEnabled('loc_stage_1');
   }
 
-  get isCashAdvanceStage2Enabled() {
+  get isFlashCreditStage2Enabled() {
     return this.isFeatureEnabled('loc_stage_2');
-  }
-
-  get isWithdrawFeatureEnabled() {
-    return this.isFeatureEnabled('withdraw_loc');
   }
 
   get isUnregisteredBusiness() {

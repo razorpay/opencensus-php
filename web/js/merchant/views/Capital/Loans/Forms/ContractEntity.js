@@ -11,7 +11,7 @@ import '../Leegaliity';
 import { downloadFromUFH } from 'merchant/utils/downloadFile';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
-import { APPLICATION_STATES, CAPITAL_PRODUCT_CODES } from '../constants';
+import { APPLICATION_STATES } from '../constants';
 
 @connect(
   (state) => ({
@@ -188,7 +188,6 @@ class ContractEntity extends Component {
           ) : (
             <div>
               <Note
-                product={CAPITAL_PRODUCT_CODES.LOAN}
                 applicationId={meta.data.application.id}
                 message={
                   <span>
@@ -225,7 +224,6 @@ class ContractEntity extends Component {
           )
         ) : (
           <Note
-            product={CAPITAL_PRODUCT_CODES.LOAN}
             message={
               <span>
                 Loan Agreement is not generated yet. You will be receiving a mail soon to sign the

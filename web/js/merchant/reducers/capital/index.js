@@ -30,14 +30,11 @@ const GET_APPLICATIONS = 'GET_APPLICATIONS';
 const GET_LENDER_DETAILS = 'GET_LENDER_DETAILS';
 const GET_DISBURSAL_DETAILS = 'GET_DISBURSAL_DETAILS';
 const GET_SCHEDULED_VERIFICATION_DETAILS = 'GET_SCHEDULED_VERIFICATION_DETAILS';
-const REGISTER_PRODUCT = 'REGISTER_PRODUCT';
-const RESET_CAPITAL_LENDING_DATA = 'RESET_CAPITAL_LENDING_DATA';
 
 const entities = [
   'meta',
   'promoter_details',
   'business_details',
-  'products',
   'credit_offer_details',
   'nach_details',
   'document_details',
@@ -45,7 +42,6 @@ const entities = [
   'agreement_details',
   'accepted_offer_details',
   'vnv_details',
-  'seed_data',
   'lender_details',
   'disbursal_details',
   'schedule_details',
@@ -62,12 +58,6 @@ const getInitialState = () => {
     }),
     {},
   );
-};
-
-export const resetCapitalLendingData = () => {
-  return {
-    type: RESET_CAPITAL_LENDING_DATA,
-  };
 };
 
 export const fetchSeedData = () => {
@@ -223,19 +213,19 @@ export const getNetBankingLink = (data) => {
   return loanApplication.getNetBankingLink(data);
 };
 
-export const fetchCreditOffers = (data, product) => {
+export const fetchCreditOffers = (data) => {
   const loanApplication = new LoanOrigination();
   return {
     type: FETCH_CREDIT_OFFERS,
-    payload: loanApplication.fetchCreditOffers(data, product),
+    payload: loanApplication.fetchCreditOffers(data),
   };
 };
 
-export const acceptCreditOffer = (data, product) => {
+export const acceptCreditOffer = (data) => {
   const loanApplication = new LoanOrigination();
   return {
     type: ACCEPT_CREDIT_OFFER,
-    payload: loanApplication.acceptCreditOffer(data, product),
+    payload: loanApplication.acceptCreditOffer(data),
   };
 };
 
@@ -342,19 +332,10 @@ export const getOfferVerificationTasks = (data) => {
   };
 };
 
-export const registerProduct = (product) => {
-  return {
-    type: REGISTER_PRODUCT,
-    product,
-  };
-};
-
 const initialState = getInitialState();
 
 export default function (state = initialState, action) {
   switch (action.type) {
-    case RESET_CAPITAL_LENDING_DATA:
-      return initialState;
     case `${FETCH_SEED_DATA}::PENDING`:
       return merge(state, {
         seed_data: {
@@ -425,28 +406,23 @@ export default function (state = initialState, action) {
           error: action.payload.errors,
         },
       });
-    case REGISTER_PRODUCT:
-      return merge(state, {
-        meta: {
-          ...state.meta,
-          configuration: new ConfigFactory({}, action.product).create(),
-          product: action.product,
-        },
-      });
+
     case 'REGISTER_NEW_APPLICATION':
       return merge(state, {
         meta: {
           loading: false,
           data: {
-            application: null,
+            application: {
+              id: 'new',
+              status: 'BUSINESS_INFO_PENDING',
+            },
           },
-          configuration: new ConfigFactory({}, state.meta.product).create(),
+          configuration: new ConfigFactory({}).create(),
         },
       });
     case 'REGISTER_BUSINESS':
       return merge(state, {
         meta: {
-          ...state.meta,
           loading: false,
           data: {
             application: {
@@ -476,16 +452,12 @@ export default function (state = initialState, action) {
     case `${SAVE_APPLICATION_DETAILS}::SUCCESS`:
     case `${UPLOAD_PRE_VERIFICATION_DOCUMENTS}::SUCCESS`:
     case `${FETCH_LOAN_APPLICATION_META}::SUCCESS`:
-      const { application } = action.payload.data;
-      const product = state.products.data.find((p) => p.id === application.product_id).name;
-
-      const configLoader = new ConfigFactory(application, product);
+      const configLoader = new ConfigFactory(action.payload.data.application);
       return merge(state, {
         meta: {
           loading: false,
           data: action.payload.data,
           configuration: configLoader.create(),
-          product,
         },
       });
 

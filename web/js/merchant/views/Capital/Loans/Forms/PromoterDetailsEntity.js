@@ -98,7 +98,7 @@ class PromoterDetailsEntity extends Component {
     }));
   };
 
-  isValidDate = (current) => {
+  isValidDate = function (current) {
     const age = moment().diff(current, 'years');
     return age < 100 && age > 18;
   };
@@ -566,6 +566,16 @@ class PromoterDetailsEntity extends Component {
             {canModify ? 'Save & Next' : 'Next'}
             <i className="i i-chevron-right" />
           </AsyncBtn.Primary>
+          <button
+            className="btn btn-link pull-right"
+            onClick={() => {
+              this.props._trackNavigationActions('BACK', 'BUSINESS_INFO_PENDING');
+              this.props.navigation.back();
+            }}
+          >
+            <i className="i i-chevron-left" />
+            Back
+          </button>
         </div>
       </Form>
     );

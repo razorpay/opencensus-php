@@ -15,8 +15,8 @@ import { triggerHotjarRecording } from 'common/utils/hotjar';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import FormSectionLoadingSkeleton from '../../components/FormSectionLoadingSkeleton';
 import { APPLICATION_STATES, HOTJAR_TRIGGERS } from '../constants';
-import { withRouter } from 'react-router-dom';
 import { isPreceedingState, postToUrl } from '../../utils';
+import { withRouter } from 'react-router-dom';
 
 const createFormData = (form = {}) => {
   let formData = new FormData();
@@ -591,9 +591,9 @@ class PreVerificationUpload extends Component {
   };
 
   getPerfiosRedirectLink = () => {
-    const { user, match } = this.props;
+    const { user } = this.props;
 
-    const { meta, promoter_details } = this.props.loanApplicationDetails;
+    const { meta, promoter_details, document_groups } = this.props.loanApplicationDetails;
 
     const {
       document_master_id: documentMasterId,
@@ -611,9 +611,9 @@ class PreVerificationUpload extends Component {
     });
 
     const returnUrl = new URL(
-      `${window.location.protocol}//${window.location.host}/app/capital/${
-        match.params.product
-      }/apply?${returnUrlParams.toString()}`,
+      `${window.location.protocol}//${
+        window.location.host
+      }/app/capital/loans?${returnUrlParams.toString()}`,
     );
     return getNetBankingLink({
       entity_id: applicantId,
@@ -683,7 +683,6 @@ class PreVerificationUpload extends Component {
         <header>
           {tabs.map((tab) => (
             <a
-              key={tab.index}
               className={activeTabIndex === tab.index && 'active'}
               onClick={() => this.handleTabChange(tab.index, tab.title)}
             >
@@ -699,7 +698,6 @@ class PreVerificationUpload extends Component {
         <div class="documents-upload-tabs-wrapper">
           {tabs.map((tab) => (
             <div
-              key={tab.index}
               className={`documents-upload-tab ${
                 this.state.activeTabIndex === tab.index ? 'active' : 'inactive'
               }`}

@@ -101,16 +101,11 @@
       .hero-image-wrapper{
         position: absolute;
         bottom: 0;
-        left: -10px;
+        left: 0;
         width: 700px;
         transform: translate(-40%, 0);
         height: 180px;
         overflow: hidden;
-        &.cash-advance-hero{
-          img{
-            width: 340px;
-          }
-        }
         img{
           width: 500px;
         }
@@ -142,13 +137,6 @@
               box-shadow: none;
               margin: 0;
               .banner-message-wrapper {
-                position: relative;
-                .green_patch{
-                  position: absolute;
-                  right: -3px;
-                  bottom: -3px;
-                  height: 86px;
-                }
                 .banner-status-title-wrapper{
                   .banner-status-title {
                     font-size: 18px;
@@ -406,9 +394,6 @@
   .banner-message-wrapper.success.border-left {
     border-left: 3px solid #24A831;
   }
-  .banner-message-wrapper.approval.border-left {
-    border-left: none;
-  }
   .banner-message-wrapper.pending.border-left, .banner-message-wrapper.conditional_success.border-left {
     border-left: 3px solid #F08A0A;
   }
@@ -422,9 +407,6 @@
     padding: 16px 20px;
     .actions{
       margin: 24px 0;
-      .Button--primary{
-        margin: 0 0 0 12px;
-      }
     }
     .title{
       font-weight: bold;
@@ -512,14 +494,6 @@
 }
 
 .loan-application-form-section{
-  .pending-note-wrapper{
-    .actions{
-      padding: 0 20px;
-      .Button--primary{
-        margin: 0 0 0 12px;
-      }
-    }
-  }
   .process-note{
     margin: 20px;
     background: rgba(22, 47, 86, 0.02);
@@ -625,13 +599,6 @@
   }
 }
 
-.loan-application-form-section .verification-schedule-details .actions {
-  margin: 0 20px;
-  .Button--primary{
-    margin: 0 0 0 12px;
-  }
-}
-
 .Modal-container--credit-pull-otp-error
   max-width: 328px;
   .modal-title
@@ -639,9 +606,3 @@
     img
       margin-top: -2px;
       margin-right: 8px;
-
-.capital-landing-spinner-container
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%)

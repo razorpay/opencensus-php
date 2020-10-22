@@ -9,9 +9,10 @@ import {
   fetchWithdrawals,
   fetchWithdrawalConfigurationByMerchantID,
 } from 'merchant/reducers/capital/withdrawals';
+import Spinner from 'common/ui/Spinner';
 
 @connect(
-  (state) => ({
+  state => ({
     user: state.session.user,
     withdrawalConfigurationDetails: state.withdrawals.withdrawalConfiguration,
     list: state.withdrawals.list,
@@ -21,14 +22,14 @@ import {
     fetchWithdrawals,
     fetchWithdrawalConfiguration,
     fetchWithdrawalConfigurationByMerchantID,
-  },
+  }
 )
 class WithdrawalsRoot extends Component {
   state = {
     leadGenerated: false,
   };
 
-  gaEventDispatcher = (eventObject) => {
+  gaEventDispatcher = eventObject => {
     eventObject['eventCategory'] = 'Dashboard CA - Apply';
     window.rzpAnalytics(eventObject);
   };
@@ -37,9 +38,8 @@ class WithdrawalsRoot extends Component {
     const { fetchSeedData, user } = this.props;
 
     // fetchSeedData();
-    const hasWithdrawFeature = user.isWithdrawFeatureEnabled;
-
-    if (hasWithdrawFeature) {
+    const hasLOCStage2Feature = user.isFlashCreditStage2Enabled;
+    if (hasLOCStage2Feature) {
       this.fetchWithdrawalConfiguration();
       this.props.fetchWithdrawals({
         order_by: 'CREATED_AT',
@@ -56,7 +56,9 @@ class WithdrawalsRoot extends Component {
 
     this.gaEventDispatcher({
       eventAction: 'Flash Credit Tab',
-      eventLabel: `${this.props.user.current} | loc_stage_1`,
+      eventLabel: `${this.props.user.current} | ${
+        hasLOCStage2Feature ? 'loc_stage_2' : 'loc_stage_1'
+      }`,
     });
   }
 
@@ -95,7 +97,7 @@ class WithdrawalsRoot extends Component {
           cf_merchant_id: user.current,
         },
       },
-    }).then((res) => {
+    }).then(res => {
       return res;
     });
   };
@@ -114,15 +116,11 @@ class WithdrawalsRoot extends Component {
     } = this.props;
     const { leadGenerated } = this.state;
 
-    const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
+    const withdrawalConfigurationDetails = this.props
+      .withdrawalConfigurationDetails.data;
 
-    const hasLOCStage1Feature = user.isCashAdvanceStage1Enabled;
-    const hasLOCStage2Feature = user.isCashAdvanceStage2Enabled;
-    const hasWithdrawFeature = user.isWithdrawFeatureEnabled;
-    const isLOSEnabled = user.isLOSEnabled;
-    const isLOCEnabled = user.isLOCEnabled;
-
-    const hasWC = !!withdrawalConfigurationDetails;
+    const hasLOCStage1Feature = user.isFlashCreditStage1Enabled;
+    const hasLOCStage2Feature = user.isFlashCreditStage2Enabled;
 
     if (list.loading || configLoading)
       return (
@@ -132,11 +130,11 @@ class WithdrawalsRoot extends Component {
         </div>
       );
 
-    const OnboardingSection = (
+    const OnboardingDetails = (
       <Onboarding
-        leadGenerated={true}
-        hasLOCStage2Feature={true}
-        hasWithdrawalConfiguration={hasWC}
+        leadGenerated={leadGenerated || hasLOCStage2Feature}
+        hasLOCStage2Feature={hasLOCStage2Feature}
+        hasWithdrawalConfiguration={!!withdrawalConfigurationDetails}
         createFDTicket={WithdrawalsRoot.createCapitalFDTicket}
         onRaiseRequest={this.onRaiseRequest}
         withdrawalConfiguration={withdrawalConfigurationDetails}
@@ -144,18 +142,17 @@ class WithdrawalsRoot extends Component {
       />
     );
 
-    if (hasWithdrawFeature) {
-      if (!hasWC) {
-        return OnboardingSection;
-      }
-      return <Redirect to="/capital/cash-advance/withdrawals" />;
-    } else if (hasLOCStage2Feature) {
-      return OnboardingSection;
-    } else if (isLOSEnabled && isLOCEnabled) {
-      return <Redirect to="/capital/cash-advance/apply" />;
-    } else {
-      return <Redirect to="/" />;
-    }
+    return hasLOCStage2Feature ? (
+      list.data && list.data.length > 0 ? (
+        <Redirect to="/capital/cash-advance/withdrawals" />
+      ) : (
+        OnboardingDetails
+      )
+    ) : hasLOCStage1Feature ? (
+      OnboardingDetails
+    ) : (
+      <Redirect to="/" />
+    );
   }
 }
 

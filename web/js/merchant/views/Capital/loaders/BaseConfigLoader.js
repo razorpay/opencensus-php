@@ -3,10 +3,6 @@ export default class BaseConfigLoader {
     this.loanApplication = loanApplication;
   }
 
-  get applicationStatus() {
-    return this.loanApplication.status;
-  }
-
   getStateTransitions() {
     const sideNavigationStateGroups = this.getSideNavigationStateGroups();
 

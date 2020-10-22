@@ -1,5 +1,3 @@
-import React from 'react';
-
 export const BUSINESS_TYPES = {
   1: 'PROPRIETORSHIP',
   2: 'INDIVIDUAL',
@@ -11,16 +9,6 @@ export const BUSINESS_TYPES = {
   9: 'TRUST',
   10: 'SOCIETY',
   11: 'NOT_REGISTERED',
-};
-
-export const CAPITAL_LINKS = {
-  faqs: 'https://razorpay.com/capital/working-capital-loans/#faqs',
-  ca_faqs: 'https://razorpay.com/capital/cash-advance/#faqs',
-  terms_and_conditions: 'https://razorpay.com/terms/',
-  privacy_policy: 'https://razorpay.com/privacy/',
-  capital_know_more: 'https://razorpay.com/capital/',
-  check_credit_score: '/app/dashboard#creditscore',
-  support_email: 'capital.support@razorpay.com',
 };
 
 export const APPLICATION_STATES = {
@@ -76,6 +64,41 @@ export const CONSOLIDATED_STATES = {
   FUND_DISBURSED: 'FUND_DISBURSED',
 };
 
+export const CONSOLIDATED_STATE_SEQUENCE = [
+  'CHECK_LOAN_ELIGIBILITY',
+  'LOAN_APPLICATION',
+  'DOCUMENT_COLLECTION',
+  'FINAL_REVIEW',
+  'FUND_DISBURSED',
+];
+
+export const APPLICATION_STATE_GROUPS = {
+  CHECK_LOAN_ELIGIBILITY: [
+    'BUSINESS_INFO_PENDING',
+    'PROMOTER_INFO_PENDING',
+    APPLICATION_STATES.CREDIT_PULL_PENDING,
+    APPLICATION_STATES.CREDIT_PULL_FAILED,
+    APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING,
+    APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS,
+    APPLICATION_STATES.PREVERIFICATION_FAILED,
+    APPLICATION_STATES.SCORE_GENERATION_PENDING,
+    APPLICATION_STATES.CREDIT_OFFER_PENDING,
+  ],
+  LOAN_APPLICATION: [
+    APPLICATION_STATES.CREDIT_OFFER_GENERATED,
+    APPLICATION_STATES.CONTRACT_PENDING,
+    APPLICATION_STATES.NACH_CREATION_PENDING,
+    APPLICATION_STATES.NACH_UPLOAD_PENDING,
+  ],
+  DOCUMENT_COLLECTION: [
+    APPLICATION_STATES.SLOT_SELECTION_PENDING,
+    APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED,
+    APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED,
+  ],
+  FINAL_REVIEW: [APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW, APPLICATION_STATES.RZP_APPROVED],
+  FUND_DISBURSED: [APPLICATION_STATES.CREDIT_DISBURSED],
+};
+
 export const PENDING_APPLICATION_STATES = [
   APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS,
   APPLICATION_STATES.SCORE_GENERATION_PENDING,
@@ -96,19 +119,19 @@ export const ERROR_STATES = [
 export const APPLICATION_STATE_DESCRIPTIONS = {
   BUSINESS_INFO_PENDING: {
     title: 'Check your loan eligibility',
-    description: 'Complete your loan within a few minutes to check the loan offer',
+    description: 'Complete your loan within a few minutes to check the loan' + ' offer',
     short_description: 'Business Info',
     ctaText: 'Start your application',
   },
   PROMOTER_INFO_PENDING: {
     title: 'Continue with your loan application...',
-    description: 'Fill your details to check the loan eligibility and the loan offer',
+    description: 'Fill your details to check the loan eligibility and the' + ' loan offer',
     ctaText: 'Continue with your loan application',
     short_description: 'Promoter Info',
   },
   [APPLICATION_STATES.CREDIT_PULL_PENDING]: {
     title: 'Credit Report pending...',
-    description: 'Fill your details to check the loan eligibility and the loan offer',
+    description: 'Fill your details to check the loan eligibility and the' + ' loan offer',
     ctaText: 'Check credit score',
     short_description: 'Credit Report',
     stages: {
@@ -118,13 +141,13 @@ export const APPLICATION_STATE_DESCRIPTIONS = {
   },
   [APPLICATION_STATES.CREDIT_PULL_FAILED]: {
     title: 'Credit Report failed',
-    description: 'Fill your details to check the loan eligibility and the loan offer',
+    description: 'Fill your details to check the loan eligibility and the' + ' loan offer',
     ctaText: 'view application',
     short_description: 'Credit Report',
   },
   [APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING]: {
     title: 'Upload your documents',
-    description: 'Upload your documents for us to begin evaluation of your loan offer',
+    description: 'Upload your documents for us to begin evaluation of your' + ' loan offer',
     ctaText: 'Upload documents',
     short_description: 'Documents Upload',
     stages: {
@@ -135,25 +158,25 @@ export const APPLICATION_STATE_DESCRIPTIONS = {
   },
   [APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS]: {
     title: 'Evaluating loan offer...',
-    description: 'We are evaluating your loan eligibility to calculate the loan offer',
+    description: 'We are evaluating your loan eligibility to calculate the' + ' loan offer',
     ctaText: 'view application',
     short_description: 'Evaluating Loan Offer',
   },
   [APPLICATION_STATES.PREVERIFICATION_FAILED]: {
     title: 'Document verification failed',
-    description: `Reach out to ${CAPITAL_LINKS.support_email} for assistance`,
+    description: 'Reach out to capital.support@razorpay for assistance',
     ctaText: 'Upload Documents',
     short_description: 'Evaluating Loan Offer',
   },
   [APPLICATION_STATES.SCORE_GENERATION_PENDING]: {
     title: 'Evaluating loan offer...',
-    description: 'We are evaluating your loan eligibility to calculate the loan offer',
+    description: 'We are evaluating your loan eligibility to calculate the' + ' loan offer',
     ctaText: 'view application',
     short_description: 'Evaluating Loan Offer',
   },
   [APPLICATION_STATES.CREDIT_OFFER_PENDING]: {
     title: 'Evaluating loan offer...',
-    description: 'We are evaluating your loan eligibility to calculate the loan offer',
+    description: 'We are evaluating your loan eligibility to calculate the' + ' loan offer',
     ctaText: 'view application',
     short_description: 'Loan Offer',
   },
@@ -171,13 +194,13 @@ export const APPLICATION_STATE_DESCRIPTIONS = {
   },
   [APPLICATION_STATES.NACH_CREATION_PENDING]: {
     title: 'Upload your NACH',
-    description: 'Please sign the NACH to move forward with the loan disbursal process',
+    description: 'Please sign the NACH to move forward with the loan' + ' disbursal process',
     ctaText: 'Upload Nach Form',
     short_description: 'Submit Nach Form',
   },
   [APPLICATION_STATES.NACH_UPLOAD_PENDING]: {
     title: 'Upload your NACH',
-    description: 'Please sign the NACH to move forward with the loan disbursal process',
+    description: 'Please sign the NACH to move forward with the loan' + ' disbursal process',
     ctaText: 'Upload Nach Form',
     short_description: 'Submit Nach Form',
   },
@@ -189,31 +212,31 @@ export const APPLICATION_STATE_DESCRIPTIONS = {
   },
   [APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED]: {
     title: 'Document collection pending',
-    description: 'Our representative will reach out to you for the document collection',
+    description: 'Our representative will reach out to you for the document' + ' collection',
     ctaText: 'view application',
     short_description: 'Document Collection',
   },
   [APPLICATION_STATES.OFFLINE_DOCUMENT_COLLECTION_PENDING]: {
     title: 'Document collection pending',
-    description: 'Our representative will reach out to you for the document collection',
+    description: 'Our representative will reach out to you for the document' + ' collection',
     ctaText: 'view application',
     short_description: 'Document Collection',
   },
   [APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED]: {
     title: 'Documents collection failed',
-    description: `Reach out to ${CAPITAL_LINKS.support_email} for assistance`,
+    description: 'Reach out to capital.support@razorpay for assitance',
     ctaText: 'view application',
     short_description: 'Documents Review',
   },
   [APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW]: {
     title: 'Documents review',
-    description: 'Your documents will be shared with the lender for the final approval',
+    description: 'Your documents will be shared with the lender for the' + ' final approval',
     ctaText: 'view',
     short_description: 'Documents Review',
   },
   [APPLICATION_STATES.RZP_APPROVED]: {
     title: 'Loan offer approved',
-    description: 'Your documents have been shared with the lender for the final approval',
+    description: 'Your documents have been shared with the lender for the' + ' final approval',
     ctaText: 'View Loan offer',
     short_description: 'Loan approval',
   },
@@ -225,25 +248,101 @@ export const APPLICATION_STATE_DESCRIPTIONS = {
   },
 };
 
+export const STATE_GROUP_COMPLETION_DESCRIPTION = {
+  [CONSOLIDATED_STATES.CHECK_LOAN_ELIGIBILITY]: {
+    title: 'Check loan eligibility',
+    description: 'Loan eligibility check is' + ' successful and loan offer has been calculated',
+  },
+  [CONSOLIDATED_STATES.LOAN_APPLICATION]: {
+    title: 'Complete loan application',
+    description: 'You have successfully completed the Loan application form',
+  },
+  [CONSOLIDATED_STATES.DOCUMENT_COLLECTION]: {
+    title: 'Document collection is done',
+    description: 'Our executive has successfully picked up your Documents and proofs',
+  },
+  [CONSOLIDATED_STATES.FINAL_REVIEW]: {
+    title: 'Loan offer is Approved!',
+    description: 'We’ve successfully reviewed documents and approved your loan offer',
+  },
+  [CONSOLIDATED_STATES.FUND_DISBURSED]: {
+    title: 'Fund Disbursed!',
+    description: 'The loan amount has been successfully disbursed to your bank account.',
+  },
+};
+
+export const SIDE_NAVIGATION_STATE_GROUPS = {
+  [CONSOLIDATED_STATES.CHECK_LOAN_ELIGIBILITY]: {
+    steps: {
+      BUSINESS_INFO_PENDING: ['BUSINESS_INFO_PENDING'],
+      PROMOTER_INFO_PENDING: ['CREATED', 'PROMOTER_INFO_PENDING'],
+      [APPLICATION_STATES.CREDIT_PULL_PENDING]: [
+        APPLICATION_STATES.CREDIT_PULL_PENDING,
+        APPLICATION_STATES.CREDIT_PULL_FAILED,
+      ],
+      [APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING]: [
+        APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING,
+        APPLICATION_STATES.PREVERIFICATION_FAILED,
+      ],
+      [APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS]: [
+        APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS,
+        APPLICATION_STATES.SCORE_GENERATION_PENDING,
+        APPLICATION_STATES.CREDIT_OFFER_PENDING,
+      ],
+    },
+    description: 'Check loan eligibility',
+    index: 0,
+  },
+  [CONSOLIDATED_STATES.LOAN_APPLICATION]: {
+    steps: {
+      [APPLICATION_STATES.CREDIT_OFFER_GENERATED]: [APPLICATION_STATES.CREDIT_OFFER_GENERATED],
+      // [APPLICATION_STATES.CONTRACT_PENDING]: [
+      //   APPLICATION_STATES.CONTRACT_PENDING,
+      // ],
+      [APPLICATION_STATES.NACH_UPLOAD_PENDING]: [
+        APPLICATION_STATES.NACH_CREATION_PENDING,
+        APPLICATION_STATES.NACH_UPLOAD_PENDING,
+      ],
+    },
+    description: 'Complete application',
+    index: 1,
+  },
+  [CONSOLIDATED_STATES.DOCUMENT_COLLECTION]: {
+    steps: {
+      [APPLICATION_STATES.SLOT_SELECTION_PENDING]: [APPLICATION_STATES.SLOT_SELECTION_PENDING],
+      [APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED]: [
+        APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED,
+        APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED,
+      ],
+    },
+    description: 'Document Collection',
+    index: 2,
+  },
+  [CONSOLIDATED_STATES.FINAL_REVIEW]: {
+    steps: {
+      [APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW]: [APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW],
+      [APPLICATION_STATES.RZP_APPROVED]: [APPLICATION_STATES.RZP_APPROVED],
+    },
+    description: 'Final Review',
+    index: 3,
+  },
+  [CONSOLIDATED_STATES.FUND_DISBURSED]: {
+    steps: {
+      [APPLICATION_STATES.CREDIT_DISBURSED]: [APPLICATION_STATES.CREDIT_DISBURSED],
+    },
+    description: 'Fund Disbursement',
+    index: 4,
+  },
+};
+
 export const TENURE_UNIT_LABELS = {
   daily: ['day', 'days'],
   weekly: ['Week', 'Weeks'],
   fortnightly: ['Fortnight', 'Fortnights'],
   monthly: ['month', 'months'],
-  months: ['month', 'months'],
   quarterly: ['Quarter', 'Quarters'],
   halfyearly: ['Halfyear', 'Halfyears'],
   yearly: ['Year', 'Years'],
-};
-
-export const CAPITAL_PRODUCT_CODES = {
-  LOAN: 'LOAN',
-  CASH_ADVANCE: 'LOC',
-};
-
-export const CAPITAL_PRODUCT_NAME_CODE_MAP = {
-  loans: CAPITAL_PRODUCT_CODES.LOAN,
-  'cash-advance': CAPITAL_PRODUCT_CODES.CASH_ADVANCE,
 };
 
 export const TOOLTIP_DESCRIPTIONS = {
@@ -257,28 +356,17 @@ export const TOOLTIP_DESCRIPTIONS = {
   nach_sign_faq:
     'The loan agreement contains the commercials around the offer and the collection process',
   credit_score:
-    "Indicative score representating an individual's ability to pay back the borrowed amount",
+    "Indicative score representating an individual's ability to" + ' pay back the borrowed amount',
   ifsc_code: '11-digit code identifying your bank branch',
-  disbursing_account: 'The future withdrawals will be disbursed to this bank account.',
-  ca_tenure:
-    'The period from the date of Cash advance approval to the date of closure of Cash Advance application.',
-  ca_internal_credit_limit: 'The total amount that can be withdrawn at present.',
 };
 
-export const GENDER_OPTIONS = [
-  {
-    name: 'GENDER_TYPE_MALE',
-    label: 'Male',
-  },
-  {
-    name: 'GENDER_TYPE_FEMALE',
-    label: 'Female',
-  },
-  {
-    name: 'GENDER_TYPE_OTHER',
-    label: 'Others',
-  },
-];
+export const CAPITAL_LINKS = {
+  faqs: 'https://razorpay.com/capital/working-capital-loans/#faqs',
+  terms_and_conditions: 'https://razorpay.com/terms/',
+  privacy_policy: 'https://razorpay.com/privacy/',
+  capital_know_more: 'https://razorpay.com/capital/',
+  check_credit_score: '/app/dashboard#creditscore',
+};
 
 export const GENDER_MAP = {
   GENDER_TYPE_MALE: 0,
@@ -322,214 +410,4 @@ export const HOTJAR_TRIGGERS = {
   LOANS_FINAL_APPROVAL: 'Loans_Final_Approval',
   LOAN_FUND_DISBURSED: 'Loan_Fund_Disbursed',
   LOAN_REPAYMENT_PAGE: 'Loan_Repayment_Page',
-};
-
-export const APPLICATION_STATE_MESSAGE_MAP = {
-  [APPLICATION_STATES.SCORE_GENERATION_PENDING]: (
-    <span>
-      The process takes around 24 hours. We will update you once all the parameters are verified and
-      revert with the offer status.
-    </span>
-  ),
-  CONTRACT_GENERATION_PENDING: (
-    <span>
-      The loan agreement will contain the commercials around the offer and the collection process.
-      The process takes around 10-15 mins. Razorpay will update you once the agreement is ready to
-      be signed through the mail.
-    </span>
-  ),
-  [APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED]: (
-    <span>
-      Your loan application has been rejected due to the repeated failure of the document
-      collection.
-    </span>
-  ),
-  [APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW]: (
-    <span>
-      We usually confirm the document review within 1-2 working days. We’ll let you know once the
-      Review is completed.
-    </span>
-  ),
-};
-
-export const APPLICATION_STATE_TITLE_MAP = {
-  BUSINESS_INFO_PENDING: {
-    title: 'Confirm your Business Details & Needs',
-    description: 'Please enter your business details here',
-  },
-  BUSINESS_INFO_PENDING_LOCKED: {
-    title: 'Confirm your Business Details & Needs',
-    description: 'Sorry, Loan details cannot be modified after the loan' + ' offer is accepted',
-    lockedNote: true,
-  },
-  PROMOTER_INFO_PENDING: {
-    title: 'Confirm your Individual info',
-    description:
-      'We verify the details with the central PAN database. Please ensure to enter the correct Authorised Signatory’s details',
-  },
-  PROMOTER_INFO_PENDING_LOCKED: {
-    title: 'Confirm your Individual info',
-    description: 'Sorry, You cannot edit the below information after Credit Enquiry is done',
-    lockedNote: true,
-  },
-  MOBILE_VERIFICATION_PENDING: {
-    title: 'OTP Verification for Credit Inquiry',
-    description:
-      'We will do a credit bureau pull based on your phone number and PAN to evaluate your credit score',
-  },
-  CREDIT_PULL_COMPLETED_WITH_NTC: {
-    title: 'Credit Inquiry Report',
-    type: 'conditional_success',
-    description:
-      "We couldn't find any credit records on your name. You may" +
-      ' be still eligible for a loan.',
-    rightComponent: (
-      <div className="right-component">
-        <span className="exp-logo-text">Powered by</span>
-        <img className="exp-logo" src="https://cdn.razorpay.com/static/assets/experian_logo.png" />
-      </div>
-    ),
-  },
-  CREDIT_PULL_COMPLETED: {
-    title: 'Credit Inquiry Report',
-    description: 'This credit inquiry will not impact your credit score',
-    rightComponent: (
-      <div className="right-component">
-        <span className="exp-logo-text">Powered by</span>
-        <img className="exp-logo" src="https://cdn.razorpay.com/static/assets/experian_logo.png" />
-      </div>
-    ),
-  },
-  [APPLICATION_STATES.SCORE_GENERATION_PENDING]: {
-    title: 'Evaluating Loan Offer',
-    description: 'We will now review your documents and calculate the loan offer.',
-    type: 'pending',
-  },
-  [APPLICATION_STATES.CREDIT_OFFER_PENDING]: {
-    title: 'Evaluating Loan Offer',
-    description: 'We will now review your documents and calculate the loan offer.',
-    type: 'pending',
-  },
-  [APPLICATION_STATES.CREDIT_OFFER_GENERATED]: {
-    title: 'Loan Offer',
-    description: 'Accept the following loan offer to get the loan amount disbursed to your account',
-  },
-  CREDIT_OFFER_ACCEPTED: {
-    title: 'Accepted Loan offer',
-    description: 'Check the accepted loan offer details with repayment details here.',
-    type: 'success',
-  },
-  CONTRACT_GENERATION_PENDING: {
-    title: 'Loan Agreement is getting generated...',
-    description:
-      'We are generating the loan agreement with your loan offer details. Please wait for some moment.',
-    type: 'pending',
-  },
-  [APPLICATION_STATES.CONTRACT_PENDING]: {
-    title: 'E-Sign Loan Agreement',
-    description: 'Please E-Sign the loan agreement by going to the leegality page.',
-  },
-  CONTRACT_SIGNED: {
-    title: 'Loan Agreement',
-    description:
-      'Your loan agreement has been signed successfully. Check the loan agreement details below.',
-    type: 'success',
-  },
-  [APPLICATION_STATES.NACH_UPLOAD_PENDING]: {
-    title: 'Download & Submit a NACH form',
-    description:
-      "Why NACH? In case, there is a deficit in the collections flow, Razorpay holds the right to trigger the NACH to auto-debit the pending amount from the merchant's bank account.",
-  },
-  [APPLICATION_STATES.SLOT_SELECTION_PENDING]: {
-    title: 'Schedule an appointment for document collection',
-    description:
-      'Why? This is mandatory as the physical documents will be verified by the lender for processing the application and approving the final disbursal.',
-  },
-  [APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED]: {
-    title: 'Document Collection',
-    description:
-      'Please be ready with the original documents along with a xerox copies. Our executive will be verifying the xerox copies with the original documents.',
-  },
-  [APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED]: {
-    title: 'Document Collection Failed',
-    description: 'Oops! It seems like we have not been able to collect your documents.',
-    type: 'error',
-  },
-  [APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW]: {
-    title: 'Documents Under Review',
-    description: 'We’re reviewing your documents internally and with our vendor.',
-    type: 'pending',
-  },
-  [`LOAN_${APPLICATION_STATES.RZP_APPROVED}`]: {
-    title: 'Congratulations, Your loan has been approved!',
-    description:
-      'On a successful authorization, you will receive the' +
-      ' following loan amount in your bank account',
-    type: 'approval',
-  },
-  [`LOC_${APPLICATION_STATES.RZP_APPROVED}`]: {
-    title: 'Congratulations, Cash Advance offer has been approved!',
-    description: (
-      <span>
-        Check your approved line of credit offer details here. Any queries?{' '}
-        <a href={`mailto:${CAPITAL_LINKS.support_email}`}>Write to us</a>
-      </span>
-    ),
-    type: 'approval',
-  },
-  [APPLICATION_STATES.CREDIT_DISBURSED]: {
-    title: 'Hurray! Disbursed Successfully',
-    description: 'The following loan amount has been successfully disbursed to your bank account.',
-    type: 'success',
-  },
-  [APPLICATION_STATES.OFFLINE_DOCUMENT_COLLECTION_PENDING]: {
-    title: 'Document Collection',
-    description: (
-      <span>
-        Please <strong>Sign & Stamp</strong> the following documents and{' '}
-        <strong>Send the copies</strong> to{' '}
-        <a href={`mailto:${CAPITAL_LINKS.support_email}`}>{CAPITAL_LINKS.support_email}</a>
-      </span>
-    ),
-  },
-};
-
-export const OFFLINE_COLLECTION_DOCUMENTS = {
-  business: [
-    {
-      type: 'Applicant Selfie',
-    },
-    {
-      type: 'Personal Proof Of Address',
-      allowedDocuments: ['Aadhar', 'Passport', 'Driving License', 'Voter Card'],
-    },
-    {
-      type: 'Personal Proof Of Identification',
-      allowedDocuments: ['Owner PAN'],
-    },
-  ],
-  personal: [
-    {
-      type: 'Certificate of Incorporation',
-    },
-    {
-      type: 'List of Director',
-    },
-    {
-      type: 'Board Resolution',
-    },
-    {
-      type: 'Business PAN',
-    },
-    {
-      type: 'Company Address Proof',
-      allowedDocuments: ['GST Certificate', 'ITR', 'Utility Bills'],
-    },
-    {
-      type: 'GST Certificate',
-    },
-    {
-      type: 'Memorandum of Association',
-    },
-  ],
 };
