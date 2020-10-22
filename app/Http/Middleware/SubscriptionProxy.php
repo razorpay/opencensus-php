@@ -138,10 +138,21 @@ class SubscriptionProxy
         // send appId in case request is via partner auth
         $headers['X-Razorpay-ApplicationId'] = $this->ba->getOAuthApplicationId();
 
-        // If passport exists in request(from edge) header then forward the same
-        // to subscriptions service. And razorx is used to control ramp.
+        //
+        // If passport exists in request header, from edge, then forward the
+        // same to subscriptions service for all but hosted pages. And razorx
+        // is used to control ramp.
+        //
+        // Subscription receives both current headers and passport. Subscription
+        // has only one middleware which runs for all routes access, and passport
+        // is given priority if it exists. Eventually, subscription will always
+        // receive passport and should decide what to do with unidentified requests,
+        // maybe including basis route kind.
+        //
         $jwt = $request->headers->get(Passport::PASSPORT_JWT_V1);
-        if ((empty($jwt) === false) and ($this->reqCtx->passportAttrsMismatch === false))
+        if (($this->isHostedPageUrl() === false) and
+            (empty($jwt) === false) and
+            ($this->reqCtx->passportAttrsMismatch === false))
         {
             $treatment = $this->razorx->getTreatment(
                 $this->ba->getMerchantId() ?? 'unknown',
