@@ -342,3 +342,7 @@ See [CONTRIBUTING](../CONTRIBUTING.md) for more information on how to get starte
 ## License
 
 Apache 2.0 - See [LICENSE](LICENSE) for more information.
+
+## Limiting spans in traces
+SPAN_LIMIT variable in `opencensus_trace.c` defines max number of spans in any trace. This is to
+contain memory bloat that's caused by holiding the spans till the request-response cycle is finished.

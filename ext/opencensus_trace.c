@@ -21,12 +21,15 @@
 #include "standard/php_math.h"
 #include "standard/php_rand.h"
 
+
 /**
  * True globals for storing the original zend_execute_ex and
  * zend_execute_internal function pointers
  */
 static void (*opencensus_original_zend_execute_ex) (zend_execute_data *execute_data);
 static void (*opencensus_original_zend_execute_internal) (zend_execute_data *execute_data, zval *return_value);
+// global value for max number of spans in any trace
+static int SPAN_LIMIT = 100;
 
 void opencensus_trace_ginit()
 {
@@ -125,6 +128,25 @@ static opencensus_trace_span_t *span_from_options(zval *options)
     }
 
     return span;
+}
+
+/**
+ *   Find number of spans in current trace
+ *
+ *   Adapted from implementation of `opencensus_trace_list` function,
+ *   which returns all the spans in current trace
+*/
+
+int num_spans_in_trace(){
+    opencensus_trace_span_t *trace_span;
+
+    int num_spans = 0;
+
+    ZEND_HASH_FOREACH_PTR(OPENCENSUS_G(spans), trace_span) {
+        num_spans++;
+    } ZEND_HASH_FOREACH_END();
+
+    return num_spans;
 }
 
 /**
@@ -553,6 +575,7 @@ PHP_FUNCTION(opencensus_trace_context)
  * opencensus_original_zend_execute_ex
  */
 void opencensus_trace_execute_ex (zend_execute_data *execute_data TSRMLS_DC) {
+
     zend_string *function_name = opencensus_trace_add_scope_name(
         EG(current_execute_data)->func->common.function_name,
         EG(current_execute_data)->func->common.scope
@@ -563,6 +586,20 @@ void opencensus_trace_execute_ex (zend_execute_data *execute_data TSRMLS_DC) {
 
     /* Some functions have no names - just execute them */
     if (function_name == NULL) {
+        opencensus_original_zend_execute_ex(execute_data TSRMLS_CC);
+        return;
+    }
+
+    /*
+     *   Add span limit
+     *
+     *   if the number of spans have reached the limit,
+     *   execute the original function and return, without calling the
+     *   trace handler.
+    */
+    int num_spans = num_spans_in_trace();
+
+    if (num_spans >= SPAN_LIMIT){
         opencensus_original_zend_execute_ex(execute_data TSRMLS_CC);
         return;
     }
@@ -746,4 +783,3 @@ PHP_FUNCTION(opencensus_trace_list)
         add_next_index_zval(return_value, &span TSRMLS_CC);
     } ZEND_HASH_FOREACH_END();
 }
-
