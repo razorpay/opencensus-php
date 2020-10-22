@@ -585,12 +585,15 @@ app
             email,
             id_token: $scope.idToken,
             oauth_provider: 'google',
-            partner_intent: $scope.signup.settings.partner_intent,
           },
           headers: {
             'Content-Type': 'application/json',
           },
         };
+        
+        if($scope.signup.settings.partner_intent){
+          payload.data.partner_intent = $scope.signup.settings.partner_intent;
+        }
 
         let request = $http(payload);
         request.success(function (data) {
