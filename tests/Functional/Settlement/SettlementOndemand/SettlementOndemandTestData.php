@@ -238,7 +238,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Minimum settlement amount should Rs 2000. To remove the cap, please enable daily settlements',
+                    'description' => 'Minimum amount that can be settled is ₹ 2000.',
                 ],
             ],
             'status_code' => 400,
