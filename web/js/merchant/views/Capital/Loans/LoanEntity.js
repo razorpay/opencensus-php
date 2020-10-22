@@ -7,6 +7,7 @@ import HelpSection from '../components/HelpSection';
 import SideNavigation from './SideNavigation';
 import Button from 'common/new-ui/Button';
 import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
+import { isCashAdvanceProduct } from '../utils';
 
 @connect(
   (state) => ({
@@ -77,7 +78,11 @@ class LoanEntity extends Component {
             <div className="logo">
               <img src="/dist/css/assets/capital/capital_logo.svg" alt="Loading icon" />
             </div>
-            <div className="title">Business Loan Application</div>
+            <div className="title">
+              {isCashAdvanceProduct(meta.product)
+                ? 'Cash Advance Application'
+                : 'Business Loan Application'}
+            </div>
             <Button.Transparent onClick={this.handleClose}>
               Close
               <i className="i i-close" />
@@ -100,6 +105,7 @@ class LoanEntity extends Component {
               activeState={context.activeState}
               currentState={meta.data.application.status}
               applicationConfiguration={meta.configuration}
+              product={meta.product}
             />
           </div>
         </div>

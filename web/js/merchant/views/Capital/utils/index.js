@@ -1,4 +1,4 @@
-import { APPLICATION_STATE_SEQUENCE } from '../Loans/constants';
+import { APPLICATION_STATE_SEQUENCE, CAPITAL_PRODUCT_CODES } from '../Loans/constants';
 
 export const getDisbursalAmount = (creditOffered, processingFeePercentage, taxPercentage) => {
   const processingFee = calculatePercentageAmount(processingFeePercentage, creditOffered);
@@ -6,14 +6,14 @@ export const getDisbursalAmount = (creditOffered, processingFeePercentage, taxPe
   return creditOffered - processingFee - taxAmount;
 };
 
-export const isPreceedingState = (currentState, activeState) => {
+export const isPreceedingState = (currentState, activeState, strict = false) => {
   const currentStateIndex = APPLICATION_STATE_SEQUENCE.indexOf(currentState);
   const activeStateIndex = APPLICATION_STATE_SEQUENCE.indexOf(activeState);
-  return currentStateIndex <= activeStateIndex;
+  return strict ? currentStateIndex < activeStateIndex : currentStateIndex <= activeStateIndex;
 };
 
-export const calculatePercentageAmount = (rate, credit_amount) => {
-  return (rate * credit_amount) / 100;
+export const calculatePercentageAmount = (rateInBPS, credit_amount) => {
+  return ((parseInt(rateInBPS) / 100) * parseInt(credit_amount)) / 100;
 };
 
 export function postToUrl(path, params, method = 'post') {
@@ -35,3 +35,8 @@ export function postToUrl(path, params, method = 'post') {
   document.body.appendChild(form);
   form.submit();
 }
+
+export const isLoanProduct = (productName) => productName === CAPITAL_PRODUCT_CODES.LOAN;
+
+export const isCashAdvanceProduct = (productName) =>
+  productName === CAPITAL_PRODUCT_CODES.CASH_ADVANCE;

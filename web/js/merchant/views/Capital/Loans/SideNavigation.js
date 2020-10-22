@@ -71,28 +71,42 @@ class SideNavigation extends Component {
 
     const isActiveStateGroup = APPLICATION_STATE_GROUPS[parentStep].includes(activeState);
 
-    const isFinalState =
+    const isFinalParentState =
       Object.keys(APPLICATION_STATE_GROUPS).indexOf(parentStep) ===
       Object.keys(APPLICATION_STATE_GROUPS).length - 1;
+
+    const isFinalState =
+      APPLICATION_STATE_GROUPS[parentStep].indexOf(activeState) ===
+      APPLICATION_STATE_GROUPS[parentStep].length - 1;
 
     //both cannot be true
     const isPendingState = isCurrentStateGroup && PENDING_APPLICATION_STATES.includes(currentState);
     const isErrorState = isCurrentStateGroup && ERROR_STATES.includes(currentState);
 
-    const classList = [
-      // ...(isCurrentStateGroup ? [''] : []),
-      ...(isActiveStateGroup || isCurrentStateGroup ? ['expanded'] : []),
-      ...(this.stepFound
-        ? ['not_started']
-        : isCurrentStateGroup && !isFinalState
-        ? ['partial-complete', 'active']
-        : ['completed']),
-      ...(isPendingState ? ['pending'] : []),
-      ...(isErrorState ? ['error'] : []),
-    ];
-
+    const classList = [];
     if (isCurrentStateGroup) {
       this.stepFound = true;
+      classList.push('active');
+      if (isFinalParentState && isFinalState) {
+        classList.push('completed');
+      } else {
+        classList.push('partial-complete');
+      }
+    } else if (this.stepFound) {
+      classList.push('not_started');
+    } else {
+      classList.push('completed');
+    }
+
+    if (isPendingState) {
+      classList.push('pending');
+    }
+    if (isErrorState) {
+      classList.push('error');
+    }
+
+    if (isActiveStateGroup || isCurrentStateGroup) {
+      classList.push('expanded');
     }
 
     return (

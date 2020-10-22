@@ -1,8 +1,68 @@
 import React from 'react';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import Amount from 'common/ui/Amount';
-import { calculatePercentageAmount, getDisbursalAmount } from '../utils';
-import { TENURE_UNIT_LABELS, TOOLTIP_DESCRIPTIONS } from '../Loans/constants';
+import {
+  calculatePercentageAmount,
+  getDisbursalAmount,
+  isCashAdvanceProduct,
+  isLoanProduct,
+} from '../utils';
+import {
+  CAPITAL_PRODUCT_CODES,
+  TENURE_UNIT_LABELS,
+  TOOLTIP_DESCRIPTIONS,
+} from '../Loans/constants';
+
+const getOfferData = (offerDetails, product) => {
+  switch (product) {
+    case CAPITAL_PRODUCT_CODES.LOAN: {
+      const offer = {
+        ...offerDetails.loan_attributes,
+        ...offerDetails.installment,
+        ...offerDetails.charges,
+      };
+      const {
+        credit_offered,
+        processing_fee_percentage,
+        tax_percentage,
+        tenure,
+        tenure_unit,
+        interest_rate,
+        amount: installment_amount,
+      } = offer;
+
+      return {
+        credit_offered,
+        processing_fee_percentage,
+        tax_percentage,
+        installment_tenure: tenure,
+        installment_tenure_unit: tenure_unit,
+        interest_rate,
+        installment_amount,
+      };
+    }
+
+    case CAPITAL_PRODUCT_CODES.CASH_ADVANCE: {
+      const {
+        max_credit_offered,
+        processing_fee_percentage,
+        tax_percentage,
+        interest_rate_daily: interest_rate,
+        tenure,
+        tenure_type,
+      } = offerDetails;
+
+      return {
+        credit_offered: max_credit_offered,
+        processing_fee_percentage,
+        tax_percentage,
+        installment_tenure: tenure,
+        installment_tenure_unit: tenure_type,
+        interest_rate,
+      };
+    }
+  }
+};
 
 const CreditOffer = ({
   offerDetails,
@@ -12,16 +72,10 @@ const CreditOffer = ({
   disbursedAmount,
   trackGAEvents = true,
   _fromWhere,
+  product,
+  highlightCreditAmount = true,
 }) => {
-  const { loan_attributes, installment, charges } = offerDetails;
-
-  const offer = {
-    ...loan_attributes,
-    ...installment,
-    ...charges,
-  };
-
-  const trackMouseOver = type => {
+  const trackMouseOver = (type) => {
     if (!trackGAEvents) return;
 
     window.rzpAnalytics({
@@ -33,18 +87,19 @@ const CreditOffer = ({
 
   const {
     credit_offered,
-    processing_fee_percentage,
-    tax_percentage,
-    tenure: installment_tenure,
-    tenure_unit: installment_tenure_unit,
+    processing_fee_percentage = 0,
+    tax_percentage = 0,
+    installment_tenure,
+    installment_tenure_unit,
     interest_rate,
-    amount: installment_amount,
-  } = offer;
+    installment_amount,
+  } = getOfferData(offerDetails, product);
+
   return (
     <div className={`loan-offer-details-wrapper ${approved ? 'approved' : ''}`}>
       <div
         className={`section loan-amount-details-wrapper ${
-          approved ? 'approved' : ''
+          highlightCreditAmount ? 'highlight' : 'no-highlight'
         }`}
       >
         {isDisbursal ? (
@@ -56,7 +111,9 @@ const CreditOffer = ({
           </React.Fragment>
         ) : (
           <React.Fragment>
-            <p className="loan-offer-detail-title">Total Loan Amount</p>
+            <p className="loan-offer-detail-title">
+              {isLoanProduct(product) ? 'Total Loan Amount' : 'Credit Limit'}
+            </p>
             <p className="loan-offer-amount">
               <Amount value={credit_offered} />
             </p>
@@ -68,12 +125,7 @@ const CreditOffer = ({
         <div className="section">
           <p className="loan-offer-detail-title">Processing Fee</p>
           <p className="loan-offer-value">
-            <Amount
-              value={calculatePercentageAmount(
-                processing_fee_percentage,
-                credit_offered
-              )}
-            />
+            <Amount value={calculatePercentageAmount(processing_fee_percentage, credit_offered)} />
           </p>
         </div>
         <div className="section">
@@ -82,59 +134,57 @@ const CreditOffer = ({
             <Amount
               value={calculatePercentageAmount(
                 tax_percentage,
-                calculatePercentageAmount(
-                  processing_fee_percentage,
-                  credit_offered
-                )
+                calculatePercentageAmount(processing_fee_percentage, credit_offered),
               )}
             />
           </p>
         </div>
-        <div className="section">
-          {isDisbursal ? (
-            <React.Fragment>
-              <p className="loan-offer-detail-title">Total Loan Amount</p>
-              <p className="loan-offer-value">
-                <Amount value={credit_offered} />
-              </p>
-            </React.Fragment>
-          ) : (
-            <React.Fragment>
-              <p className="loan-offer-detail-title">Net Disbursal Amount</p>
-              <p className="loan-offer-value">
-                <Amount
-                  value={getDisbursalAmount(
-                    credit_offered,
-                    processing_fee_percentage,
-                    tax_percentage
-                  )}
-                />
-              </p>
-            </React.Fragment>
-          )}
-        </div>
+        {isLoanProduct(product) && (
+          <div className="section">
+            {isDisbursal ? (
+              <React.Fragment>
+                <p className="loan-offer-detail-title">Total Loan Amount</p>
+                <p className="loan-offer-value">
+                  <Amount value={credit_offered} />
+                </p>
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                <p className="loan-offer-detail-title">Net Disbursal Amount</p>
+                <p className="loan-offer-value">
+                  <Amount
+                    value={getDisbursalAmount(
+                      credit_offered,
+                      processing_fee_percentage,
+                      tax_percentage,
+                    )}
+                  />
+                </p>
+              </React.Fragment>
+            )}
+          </div>
+        )}
       </div>
-      {showInstallmentDetails && (
+      {showInstallmentDetails && isLoanProduct(product) && (
         <React.Fragment>
           <hr />
           <div className="section loan-offer-summary-section">
             <div className="loan-offer-summary-wrapper">
               <p className="loan-offer-summary-title">Rate of Interest</p>
-              <p className="loan-offer-value">{interest_rate}%</p>
+              <p className="loan-offer-value">{interest_rate / 100}%</p>
             </div>
             <vr />
             <div className="loan-offer-summary-wrapper">
               <p className="loan-offer-summary-title">
-                Tenure
-                <small className="help-content" style={{ paddingLeft: '4px' }}>
-                  <i
-                    className="i i-info-outline"
-                    onMouseOver={() => trackMouseOver('tenure')}
-                  />
+                Tenure&nbsp;
+                <small className="help-content">
+                  <i className="i i-info-outline" onMouseOver={() => trackMouseOver('tenure')} />
                   <Popover align="top" theme="dark">
                     <PopoverBody>
-                      <div style={{ textAlign: 'left' }}>
-                        {TOOLTIP_DESCRIPTIONS['tenure']}
+                      <div class="text-left">
+                        {isCashAdvanceProduct(product)
+                          ? TOOLTIP_DESCRIPTIONS.ca_tenure
+                          : TOOLTIP_DESCRIPTIONS.tenure}
                       </div>
                     </PopoverBody>
                   </Popover>
@@ -151,23 +201,50 @@ const CreditOffer = ({
             <vr />
             <div className="loan-offer-summary-wrapper">
               <p className="loan-offer-summary-title">
-                EWI
-                <small className="help-content" style={{ paddingLeft: '4px' }}>
-                  <i
-                    className="i i-info-outline"
-                    onMouseOver={() => trackMouseOver('ewi')}
-                  />
+                EWI&nbsp;
+                <small className="help-content">
+                  <i className="i i-info-outline" onMouseOver={() => trackMouseOver('ewi')} />
                   <Popover align="top" theme="dark">
                     <PopoverBody>
-                      <div style={{ textAlign: 'left' }}>
-                        {TOOLTIP_DESCRIPTIONS['ewi']}
-                      </div>
+                      <div class="text-left">{TOOLTIP_DESCRIPTIONS['ewi']}</div>
                     </PopoverBody>
                   </Popover>
                 </small>
               </p>
               <p className="loan-offer-value no-padding">
                 <Amount value={installment_amount * 7} />
+              </p>
+            </div>
+          </div>
+        </React.Fragment>
+      )}
+
+      {showInstallmentDetails && isCashAdvanceProduct(product) && (
+        <React.Fragment>
+          <hr />
+          <div className="section loan-offer-summary-section">
+            <div className="loan-offer-summary-wrapper no-border">
+              <p className="loan-offer-summary-title">Rate of Interest</p>
+              <p className="loan-offer-value">{interest_rate / 100}% per day</p>
+            </div>
+            <div className="loan-offer-summary-wrapper">
+              <p className="loan-offer-summary-title">
+                Tenure
+                <small className="help-content">
+                  <i className="i i-info-outline" onMouseOver={() => trackMouseOver('tenure')} />
+                  <Popover align="top" theme="dark">
+                    <PopoverBody>
+                      <div style={{ textAlign: 'left' }}>{TOOLTIP_DESCRIPTIONS['tenure']}</div>
+                    </PopoverBody>
+                  </Popover>
+                </small>
+              </p>
+              {/*TODO:put this in constants*/}
+              <p className="loan-offer-value no-padding">
+                {installment_tenure} &nbsp;
+                {installment_tenure === 1
+                  ? TENURE_UNIT_LABELS[installment_tenure_unit][0]
+                  : TENURE_UNIT_LABELS[installment_tenure_unit][1]}
               </p>
             </div>
           </div>

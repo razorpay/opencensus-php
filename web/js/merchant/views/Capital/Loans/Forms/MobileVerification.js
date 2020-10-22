@@ -214,12 +214,7 @@ class MobileVerification extends Component {
                 <p className="otp-helper-text">
                   ◦ OTP is sent to{' '}
                   {loanApplicationDetails.promoter_details.data.applicant.phones[0].phone_number}
-                  <a
-                    className="text-primary m-l"
-                    target="_blank"
-                    //TODO: implement this
-                    onClick={() => this.goBack(true)}
-                  >
+                  <a className="text-primary m-l" target="_blank" onClick={() => this.goBack(true)}>
                     Change Number
                   </a>
                 </p>

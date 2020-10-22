@@ -5,7 +5,7 @@
   right: 52px
   background: #fff
   z-index: 3
-  padding: 28px 20px 20px;
+  padding: 28px 0px 20px;
   width: 540px
   margin-left: auto
   display: flex
@@ -21,6 +21,34 @@
       padding: 0 20px 12px;
       justify-content: space-between;
 
+      &.onboarding-header{
+        display: inherit;
+        padding: 0;
+        .loan-meta-wrapper {
+          padding-bottom: 16px;
+          margin: 0 20px;
+          border-bottom: 1px solid rgba(22,47,86,0.1);
+          .text-strong{
+            font-weight: 600;
+          }
+        }
+        .personal-pan-summary{
+          background: rgba(22, 47, 86, 0.02);
+          padding: 12px 20px 18px;
+          font-size: 13px;
+          .left-section{
+            padding-right: 20px;
+            border-right: 1px solid rgba(22, 47, 86, 0.1)
+            margin-right: 18px;
+          }
+          .text-secondary{
+            color: rgba(22, 47, 86, 0.76);
+          }
+          .text-strong{
+            font-weight: 600;
+          }
+        }
+      }
       .loan-meta-wrapper{
         h4{
           margin: 0 0 4px;

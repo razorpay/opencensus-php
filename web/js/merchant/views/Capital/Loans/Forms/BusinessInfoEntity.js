@@ -193,7 +193,6 @@ class BusinessInfoEntity extends Component {
         reference_id: businessExists ? businessDetails.id : user.current,
         reference_type: 'MID',
         legal_name,
-        // TODO: get from hardcoded mapping
         deed_type: BUSINESS_TYPES[parseInt(user.business_type)],
         business_pan,
         addresses: [

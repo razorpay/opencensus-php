@@ -11,7 +11,12 @@ import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import RepaymentInformation from '../../components/RepaymentInformation';
 import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
-import { APPLICATION_STATES, HOTJAR_TRIGGERS } from '../constants';
+import {
+  APPLICATION_STATES,
+  CAPITAL_PRODUCT_CODES,
+  CAPITAL_PRODUCT_NAME_CODE_MAP,
+  HOTJAR_TRIGGERS,
+} from '../constants';
 
 @connect(
   (state) => ({
@@ -30,15 +35,17 @@ class CreditOfferEntity extends Component {
   }
 
   handleAcceptance = (creditOfferId) => {
+    const { meta } = this.props.loanApplicationDetails;
+
     const data = {
       id: creditOfferId,
-      application_id: this.props.loanApplicationDetails.meta.data.application.id,
+      application_id: meta.data.application.id,
     };
-    return this.props.acceptCreditOffer(data).then((response) => {
+    return this.props.acceptCreditOffer(data, meta.product).then((response) => {
       if (response && !response.errors) {
         this.props._trackEvent({
           eventAction: 'Application | Accept Offer',
-          eventLabel: 'Complete Application | Loan Offer',
+          eventLabel: `Complete Application | ${meta.product} Offer`,
         });
         return Promise.all([
           this.props.fetchLoanApplicationMeta(
@@ -56,26 +63,37 @@ class CreditOfferEntity extends Component {
   };
 
   handleBack = () => {
-    this.props._trackNavigationActions('BACK', APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS);
+    this.props._trackNavigationActions('BACK', this.props.previousState);
     this.props.navigation.back();
   };
 
   render() {
-    const { credit_offer_details, accepted_offer_details } = this.props.loanApplicationDetails;
+    const {
+      credit_offer_details,
+      accepted_offer_details,
+      meta,
+    } = this.props.loanApplicationDetails;
 
     if (credit_offer_details.loading || !credit_offer_details.data) return <FormLoader />;
 
-    if (!credit_offer_details.data.credit_offers) return 'No Credit offers' + ' found';
+    if (!credit_offer_details.data.credit_offers) return 'No Credit offers found';
 
-    //TODO:take the latest offer
     const creditOffer =
       credit_offer_details.data.credit_offers[credit_offer_details.data.credit_offers.length - 1];
 
     return (
       <div class={'credit-offer-container'}>
         <div className="loan-offer-wrapper">
-          <CreditOffer offerDetails={creditOffer} _fromWhere="Loan Offer" />
-          <RepaymentInformation amount={creditOffer.installment.amount} _fromWhere="Loan Offer" />
+          <CreditOffer
+            offerDetails={creditOffer}
+            _fromWhere={`${meta.product} Offer`}
+            product={meta.product}
+          />
+          <RepaymentInformation
+            product={meta.product}
+            creditOffer={creditOffer}
+            _fromWhere={`${meta.product} Offer`}
+          />
           {!(accepted_offer_details.data && accepted_offer_details.data.credit_offer_id) ? (
             <div className="loan-offer-action">
               <Button.Transparent onClick={this.handleBack}>
@@ -84,7 +102,7 @@ class CreditOfferEntity extends Component {
               </Button.Transparent>
               <AsyncBtn.Primary
                 type="submit"
-                class="btn btn-primary pull-right no-margin"
+                class="btn btn-primary pull-right"
                 onClick={() => this.handleAcceptance(creditOffer.id)}
               >
                 Accept Offer
@@ -99,12 +117,8 @@ class CreditOfferEntity extends Component {
               </Button.Transparent>
               <AsyncBtn.Primary
                 type="submit"
-                class="no-margin"
                 onClick={() => {
-                  this.props._trackNavigationActions(
-                    'NEXT',
-                    APPLICATION_STATES.NACH_CREATION_PENDING,
-                  );
+                  this.props._trackNavigationActions('NEXT', this.props.nextState);
                   this.props.navigation.next();
                 }}
               >

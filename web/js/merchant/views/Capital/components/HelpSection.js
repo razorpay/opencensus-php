@@ -2,8 +2,15 @@ import React from 'react';
 import { CAPITAL_LINKS } from '../Loans/constants';
 import Button from 'common/new-ui/Button';
 import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
+import { isCashAdvanceProduct } from '../utils';
 
-function HelpSection({ applicationId, currentState, activeState, applicationConfiguration }) {
+function HelpSection({
+  applicationId,
+  currentState,
+  activeState,
+  applicationConfiguration,
+  product,
+}) {
   const _getParentStepLabel = (step) => {
     return Object.values(applicationConfiguration.getSideNavigationStateGroups()).filter((meta) =>
       Object.values(meta.steps)
@@ -29,20 +36,20 @@ function HelpSection({ applicationId, currentState, activeState, applicationConf
     trackEvent('Right Info | Write to us CTA');
     if (window.rzpTicketSystem) {
       const rzpTicketSystem = window.rzpTicketSystem;
+      if (
+        rzpTicketSystem.setEnvironment &&
+        rzpTicketSystem.setEnvironment.constructor === Function
+      ) {
+        rzpTicketSystem.setEnvironment('capital');
+      }
       rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
       rzpTicketSystem.openModal('#ticket');
       setTimeout(() => {
         rzpTicketSystem.modal.next();
-        if (
-          rzpTicketSystem.setEnvironment &&
-          rzpTicketSystem.setEnvironment.constructor === Function
-        ) {
-          rzpTicketSystem.setEnvironment('capital');
-        }
       }, 0);
       setTimeout(() => {
         document.getElementsByName('request-description')[0].value = `${
-          applicationId === 'new' ? '' : `[Loan Application ID:${applicationId}]`
+          applicationId === 'new' ? '' : `[${product} Application ID:${applicationId}]`
         }I have a loan application related query`;
       }, 1000);
     }
@@ -58,7 +65,7 @@ function HelpSection({ applicationId, currentState, activeState, applicationConf
       _cta: (
         <a
           className="btn-link"
-          href={CAPITAL_LINKS['faqs']}
+          href={isCashAdvanceProduct(product) ? CAPITAL_LINKS.ca_faqs : CAPITAL_LINKS.faqs}
           target="_blank"
           onClick={() => {
             trackEvent("Right Info | View FAQ's");

@@ -5,11 +5,62 @@ import {
   CONSOLIDATED_STATES,
 } from '../Loans/constants';
 import BaseConfigLoader from './BaseConfigLoader';
+import React from 'react';
+import { isPreceedingState } from '../utils';
 
 export default class LowerGMVCashAdvanceConfigLoader extends BaseConfigLoader {
   constructor(loanApplication) {
     super(loanApplication);
     this.loanApplication = loanApplication;
+
+    this.ui = {
+      product: {
+        title: 'Cash Advance',
+        heroImageSource: '/dist/css/assets/capital/loc_onboarding_hero.svg',
+        secondaryHeroImageSource: '/dist/css/assets/capital/loc_secondary_hero.svg',
+        pros: [
+          <div class="flex">
+            <img src={'/dist/css/assets/capital/internal_credit.svg'} alt="landing-image" />
+            <div class="p-l m-l m-t">
+              <strong>
+                <p>Withdraw Cash Instantly</p>
+              </strong>
+              <p class="privilege-description">
+                Once enabled, transfer additional money to your account under 10 seconds
+              </p>
+            </div>
+          </div>,
+          <div class="flex m-t">
+            <img src={'/dist/css/assets/capital/auto_repayment.svg'} alt="landing-image" />
+            <div className="p-l m-l m-t">
+              <strong>
+                <p>Auto-repay from settlements</p>
+              </strong>
+              <p class="privilege-description">
+                Withdraw expected customer payments now and repay from future settlements
+              </p>
+            </div>
+          </div>,
+          <div class="flex m-t">
+            <img src={'/dist/css/assets/capital/flexible_interest.svg'} alt="landing-image" />
+            <div className="p-l m-l m-t">
+              <strong>
+                <p>Pay Interest only when you withdraw</p>
+              </strong>
+              <p class="privilege-description">
+                Pay interest on the amount you actually use and for time before repayment
+              </p>
+            </div>
+          </div>,
+        ],
+        summary: (
+          <div className="Details-desc privileges">
+            Get additional money whenever required, repay and borrow again up to your limit any
+            number of times.
+          </div>
+        ),
+      },
+    };
   }
 
   getConsolidatedStateSequence() {
@@ -24,8 +75,7 @@ export default class LowerGMVCashAdvanceConfigLoader extends BaseConfigLoader {
     return {
       [CONSOLIDATED_STATES.CHECK_LOAN_ELIGIBILITY]: {
         steps: {
-          // TODO: remove business info state.
-          PROMOTER_INFO_PENDING: ['CREATED', 'BUSINESS_INFO_PENDING', 'PROMOTER_INFO_PENDING'],
+          PROMOTER_INFO_PENDING: ['PROMOTER_INFO_PENDING'],
           [APPLICATION_STATES.CREDIT_PULL_PENDING]: [
             APPLICATION_STATES.CREDIT_PULL_PENDING,
             APPLICATION_STATES.CREDIT_PULL_FAILED,
@@ -46,8 +96,11 @@ export default class LowerGMVCashAdvanceConfigLoader extends BaseConfigLoader {
       },
       [CONSOLIDATED_STATES.FINAL_REVIEW]: {
         steps: {
-          [APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW]: [APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW],
-          [APPLICATION_STATES.RZP_APPROVED]: [APPLICATION_STATES.RZP_APPROVED],
+          // [APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW]: [APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW],
+          [APPLICATION_STATES.RZP_APPROVED]: [
+            APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW,
+            APPLICATION_STATES.RZP_APPROVED,
+          ],
         },
         description: 'Cash Advance Approval',
         index: 2,
@@ -60,7 +113,6 @@ export default class LowerGMVCashAdvanceConfigLoader extends BaseConfigLoader {
       CHECK_LOAN_ELIGIBILITY: [
         // TODO: remove this and add in status as PROMOTER_INFO_PENDING in
         // registerLOCApplication
-        'BUSINESS_INFO_PENDING',
         'PROMOTER_INFO_PENDING',
         APPLICATION_STATES.CREDIT_PULL_PENDING,
         APPLICATION_STATES.CREDIT_PULL_FAILED,
@@ -71,7 +123,12 @@ export default class LowerGMVCashAdvanceConfigLoader extends BaseConfigLoader {
         //TODO: Add this in application states and state descriptions.
         APPLICATION_STATES.OFFLINE_DOCUMENT_COLLECTION_PENDING,
       ],
-      FINAL_REVIEW: [APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW, APPLICATION_STATES.RZP_APPROVED],
+      FINAL_REVIEW: [
+        ...(isPreceedingState(this.applicationStatus, APPLICATION_STATES.RZP_APPROVED, true)
+          ? [APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW]
+          : []),
+        APPLICATION_STATES.RZP_APPROVED,
+      ],
     };
   }
 
@@ -87,7 +144,7 @@ export default class LowerGMVCashAdvanceConfigLoader extends BaseConfigLoader {
       PROMOTER_INFO_PENDING: {
         title: 'Check Eligibility',
         description: 'Complete your Cash Advance eligibility within a few minutes.',
-        short_description: 'Business Info',
+        short_description: 'Promoter Info',
         ctaText: 'Start your application',
       },
       [APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING]: {
@@ -108,27 +165,33 @@ export default class LowerGMVCashAdvanceConfigLoader extends BaseConfigLoader {
         short_description: 'Cash Advance Offer',
       },
       [APPLICATION_STATES.CREDIT_OFFER_GENERATED]: {
-        title: 'Congratulations, You have an Offer!',
+        title: 'Cash Advance Offer generated',
         description: 'Accept the Cash Advance Offer and complete the loan process.',
         ctaText: 'View Cash Advance Offer',
         short_description: 'Cash Advance Offer',
       },
       [APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW]: {
-        title: 'Cash Advance Approval',
-        description: 'Get approval on the application and document to start withdrawing.',
+        title: 'Documents review',
+        description: 'We’re reviewing your documents internally and with our vendor.',
         ctaText: 'view',
         short_description: 'Documents Review',
       },
       [APPLICATION_STATES.RZP_APPROVED]: {
         title: 'Cash Advance approved',
-        description: 'Your Cash Advance Application has beem succesfully approved!',
+        description: 'Your Cash Advance Application has been successfully approved!',
         ctaText: 'View Credit offer',
-        short_description: 'Approved Credit Line',
+        short_description: 'Approval',
       },
     };
   }
 
   getCompletedStateGroupDescriptions() {
+    // [APPLICATION_STATES.CREDIT_OFFER_GENERATED]: {
+    //   title: 'Congratulations, You have an Offer!',
+    //     description: 'Accept the Cash Advance Offer and complete the loan process.',
+    //     ctaText: 'View Cash Advance Offer',
+    //     short_description: 'Cash Advance Offer',
+    // },
     return {
       [CONSOLIDATED_STATES.CHECK_LOAN_ELIGIBILITY]: {
         title: 'Check Eligibility',

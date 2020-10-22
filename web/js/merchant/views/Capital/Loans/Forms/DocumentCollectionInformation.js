@@ -2,11 +2,11 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { fetchLoanApplicationMeta } from 'merchant/reducers/capital';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
 import { APPLICATION_STATES, BUSINESS_TYPES, VERIFICATION_TIME_SLOTS } from '../constants';
 import { states } from 'merchant/helpers/data';
 import { isPreceedingState } from '../../utils';
-import { AsyncBtn } from 'common/new-ui/Button';
 
 const DOCUMENT_TYPE_LABELS = {
   business: 'Business',
@@ -178,9 +178,8 @@ class DocumentCollectionInformation extends Component {
           </div>
         </div>
 
-        <div className="actions pull-right m-r">
-          <button
-            className="btn btn-link"
+        <div className="actions pull-right">
+          <Button.Transparent
             onClick={() => {
               this.props._trackNavigationActions('BACK', APPLICATION_STATES.SLOT_SELECTION_PENDING);
               this.props.navigation.back();
@@ -188,11 +187,10 @@ class DocumentCollectionInformation extends Component {
           >
             <i className="i i-chevron-left" />
             Back
-          </button>
+          </Button.Transparent>
           {hasDocumentsCollected && (
             <AsyncBtn.Primary
               type="submit"
-              class="btn btn-primary pull-right"
               onClick={() => {
                 this.props._trackNavigationActions(
                   'NEXT',

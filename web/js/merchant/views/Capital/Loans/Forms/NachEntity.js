@@ -334,10 +334,7 @@ class NachEntity extends Component {
             </div>
           </div>
         ))}
-        {!isPreceedingState(
-          meta.data.application.status,
-          APPLICATION_STATES.NACH_CREATION_PENDING,
-        ) && (
+        {!isPreceedingState(meta.data.application.status, this.props.nextState) && (
           <AsyncBtn.Primary
             type="submit"
             class="btn btn-primary pull-right"
