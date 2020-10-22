@@ -21,7 +21,6 @@ export default class Ticket extends React.Component {
   }
 
   render() {
-    const status = statuses[this.props.ticket.status];
     let img = this.props.logo_url ? (
       <img style={{ marginLeft: '2px' }} class="img-round user-image" src={this.props.logo_url} />
     ) : (
@@ -37,7 +36,7 @@ export default class Ticket extends React.Component {
                 <div className="col-xs-10" style={{ paddingLeft: 0 }}>
                   <h5 style={{ marginBottom: 0 }}>
                     <div className="row" style={{ paddingRight: '10px' }}>
-                      <div className="col-xs-9 message-owner">
+                      <div className="col-xs-8 message-owner">
                         <b>
                           TICKET ID #{this.props.ticket.id}
                           {/* {this.props.ticket.custom_fields.cf_category
@@ -45,7 +44,7 @@ export default class Ticket extends React.Component {
                             : null} */}
                         </b>
                       </div>
-                      <div className="col-xs-3 text-right" style={{ height: '20px' }}>
+                      <div className="col-xs-4 text-right" style={{ height: '20px' }}>
                         <TicketStatus ticket={this.props.ticket} />
                       </div>
                     </div>
@@ -79,5 +78,3 @@ export default class Ticket extends React.Component {
     );
   }
 }
-
-const USER_IMG = `https://cdn.razorpay.com/static/assets/merchant-dash/user.png`;

@@ -53,10 +53,7 @@ export default class TicketBrief extends React.Component {
                   <div className="row">
                     <div className="col-xs-8">
                       <Link to={`/ticket-support/${ticket.fd_instance}/${ticket.id}/conversation`}>
-                        <p class="message-subject">
-                          {subject}
-                          {status === 'open' ? <TicketStatus ticket={ticket} /> : null}
-                        </p>
+                        <p class="message-subject">{subject}</p>
                       </Link>
 
                       <p>
@@ -64,7 +61,9 @@ export default class TicketBrief extends React.Component {
                         <span>{moment(ticket.created_at).format('LLLL')}</span>
                       </p>
                     </div>
-                    <div className="col-xs-4">{/* <p className="text-right">{message}</p> */}</div>
+                    <div className="col-xs-4">
+                      <TicketStatus ticket={ticket} />
+                    </div>
                   </div>
                 </div>
               </div>

@@ -67,6 +67,8 @@ export default class Reply extends React.Component {
                           body: this.state.body,
                           user_id: this.props.ticket.requester_id,
                           fd_instance: this.props.ticket.fd_instance,
+                          cc_emails: this.props.ticket.cc_emails,
+                          bcc_emails: this.props.ticket.bcc_emails,
                         };
                         this.setState({ loading: true });
                         this.props.replyToConversation(this.props.ticket.id, body).then((r) => {
@@ -97,5 +99,3 @@ export default class Reply extends React.Component {
     );
   }
 }
-
-const USER_IMG = `https://cdn.razorpay.com/static/assets/merchant-dash/user.png`;

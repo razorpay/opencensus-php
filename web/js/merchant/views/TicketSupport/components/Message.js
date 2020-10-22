@@ -18,7 +18,11 @@ import { withRouter } from 'react-router-dom';
 })
 export default class Message extends React.Component {
   render() {
-    let from_razorpay = this.props.message.user_id !== this.props.ticket.requester_id;
+    let from_dashboard_user = this.props.message.user_id === this.props.ticket.requester_id;
+    let from_razorpay = !from_dashboard_user;
+    if (this.props.message.incoming) {
+      from_razorpay = false;
+    }
 
     let img = <img class="img-round user-image" src={RZP_IMG} />;
     if (!from_razorpay) {
@@ -28,11 +32,14 @@ export default class Message extends React.Component {
         <i className="i i-user-circle message-user-circle" />
       );
     }
-    let name = !from_razorpay ? this.props.user.name : 'Razorpay Support';
+    let name = !from_razorpay
+      ? from_dashboard_user
+        ? this.props.user.name
+        : 'CC: ' + this.props.message.from_email
+      : 'Razorpay Support';
     let body;
     let d = document.createElement('div');
     d.innerHTML = this.props.message.body;
-    // d = d.querySelector(`[dir="ltr"]`);
     body = d.innerHTML;
     return (
       <Fragment>
@@ -79,5 +86,4 @@ export default class Message extends React.Component {
   }
 }
 
-const USER_IMG = `https://cdn.razorpay.com/static/assets/merchant-dash/user.png`;
 const RZP_IMG = `https://cdn.razorpay.com/static/assets/merchant-dash/rzp-logo.png`;

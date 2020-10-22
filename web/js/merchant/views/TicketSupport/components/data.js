@@ -1,8 +1,44 @@
 export const statuses = {
-  2: 'open',
-  3: 'pending',
-  4: 'resolved',
-  5: 'closed',
+  '2': {
+    name: 'Active',
+    class: 'active',
+  },
+  '3': {
+    name: 'Work In Progress',
+    class: 'pending',
+  },
+  '4': {
+    name: 'Resolved',
+    class: 'active',
+  },
+  '5': {
+    name: 'Closed',
+    class: 'danger',
+  },
+  '6': {
+    name: 'Awaiting your response',
+    class: 'info',
+  },
+  '8': {
+    name: 'Work In Progress',
+    class: 'pending',
+  },
+  '9': {
+    name: 'Work In Progress',
+    class: 'pending',
+  },
+  '10': {
+    name: 'Work In Progress',
+    class: 'pending',
+  },
+  '11': {
+    name: 'Work In Progress',
+    class: 'pending',
+  },
+  '100': {
+    name: 'Loading..',
+    class: 'info',
+  },
 };
 
 export const param_to_qs = (params) => {
@@ -181,7 +217,7 @@ export const SAMPLE_TICKET = {
   responder_id: null,
   source: 1,
   company_id: null,
-  status: 10,
+  status: 100,
   subject: '',
   association_type: null,
   to_emails: [],
