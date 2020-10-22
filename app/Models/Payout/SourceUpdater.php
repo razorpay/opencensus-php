@@ -4,6 +4,7 @@ namespace RZP\Models\Payout;
 
 use App;
 use RZP\Trace\TraceCode;
+use \RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\PayoutSourceUpdaterJob;
@@ -81,8 +82,9 @@ class SourceUpdater
      * Ex: calling a webhook URL based on the source
      * @param Entity $payout
      * @param string $previousPayoutStatus
+     * @param string $mode
      */
-    public static function update(Entity $payout, string $previousPayoutStatus = null)
+    public static function update(Entity $payout, string $previousPayoutStatus = null, string $mode = Mode::LIVE)
     {
         $app = App::getFacadeRoot();
 
@@ -98,7 +100,7 @@ class SourceUpdater
         {
             self::updatePayoutLink($payout);
 
-            self::updateVendorPayment($payout);
+            self::updateVendorPayment($payout, $mode);
         }
     }
 
@@ -161,13 +163,13 @@ class SourceUpdater
         }
     }
 
-    protected static function updateVendorPayment(PayoutEntity $payout)
+    protected static function updateVendorPayment(PayoutEntity $payout, string $mode)
     {
         try
         {
             $vendorPaymentService = App::getFacadeRoot()['vendor-payment'];
 
-            $vendorPaymentService->pushPayoutStatusUpdate($payout);
+            $vendorPaymentService->pushPayoutStatusUpdate($payout, $mode);
         }
         catch (\Exception $e)
         {

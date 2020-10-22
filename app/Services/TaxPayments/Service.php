@@ -4,7 +4,7 @@ namespace RZP\Services\TaxPayments;
 
 use Mail;
 use Requests;
-
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\User\Entity;
@@ -56,6 +56,9 @@ class Service
     const SETTINGS                  = 'settings';
     const BANKING_ACCOUNT           = 'banking_account';
     const MERCHANT_EMAIL            = 'merchant_email';
+    const CONTENT_TYPE              = 'Content-Type';
+    const X_TASK_ID                 = 'X-Task-ID';
+    const X_APP_MODE                = 'X-App-Mode';
 
     protected $app;
 
@@ -346,14 +349,16 @@ class Service
     {
         if ($merchant !== null)
         {
-            $data['merchant_id'] = $merchant->getId();
+            $data[self::MERCHANT_ID] = $merchant->getId();
         }
 
-        $headers['Content-Type'] = 'application/json';
+        $headers[self::CONTENT_TYPE] = 'application/json';
 
-        $headers['X-Task-ID'] = $this->app['request']->getId();
+        $headers[self::X_TASK_ID] = $this->app['request']->getId();
 
         $options = ['auth' => ['api', $this->config['secret']]];
+
+        $headers[self::X_APP_MODE] = $this->app['rzp.mode'] ? $this->app['rzp.mode'] : Mode::LIVE;
 
         $dataLogged = $data;
 

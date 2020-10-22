@@ -487,7 +487,7 @@ class Service extends Base\Service
 
         if ($payout !== null)
         {
-            SourceUpdater::update($payout);
+            SourceUpdater::update($payout, null, $mode);
 
             $response = [
                 'message'   => 'Update Success',

@@ -4,6 +4,7 @@ namespace RZP\Services\VendorPayments;
 
 use Mail;
 use Requests;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\User\Entity;
@@ -46,12 +47,15 @@ class Service
     const MARK_AS_PAID                = 'MarkAsPaid';
     const BASE_PATH                   = 'twirp/vendorpayments.Vendorpayments';
 
-    const DATA                        = 'data';
-    const TEMPLATE_NAME               = 'template_name';
-    const SUBJECT                     = 'subject';
-    const NAME                        = 'name';
-    const TO_EMAIL                    = 'to_email';
-    const GET_REPORTING_INFO          = 'GetReportingInfo';
+    const DATA               = 'data';
+    const TEMPLATE_NAME      = 'template_name';
+    const SUBJECT            = 'subject';
+    const NAME               = 'name';
+    const TO_EMAIL           = 'to_email';
+    const GET_REPORTING_INFO = 'GetReportingInfo';
+    const CONTENT_TYPE       = 'Content-Type';
+    const X_TASK_ID          = 'X-Task-ID';
+    const X_APP_MODE         = 'X-App-Mode';
 
     protected $app;
 
@@ -292,10 +296,11 @@ class Service
     /**
      * This is being called from Payout Source Updater
      * @param PayoutEntity $payout
+     * @param string $mode
      * @return mixed
      * @throws BadRequestException
      */
-    public function pushPayoutStatusUpdate(PayoutEntity $payout)
+    public function pushPayoutStatusUpdate(PayoutEntity $payout, string $mode)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::PUSH_PAYOUT_STATUS_UPDATE);
 
@@ -304,7 +309,7 @@ class Service
             'payout_id' => $payout->getPublicId(),
         ];
 
-        return $this->makeRequest($payout->merchant, $url, $input);
+        return $this->makeRequest($payout->merchant, $url, $input, [], 'POST', $mode);
     }
 
     public function getVendorPaymentById(MerchantEntity $merchant, string $vendorPaymentId)
@@ -456,16 +461,28 @@ class Service
                                    string $url = '',
                                    array $data = [],
                                    array $headers = [],
-                                   string $method = 'POST')
+                                   string $method = 'POST',
+                                   string $mode = null)
     {
         if ($merchant !== null)
         {
             $data = array_merge($data, ['merchant_id' => $merchant->getId()]);
         }
 
-        $headers['Content-Type'] = 'application/json';
+        $headers[self::CONTENT_TYPE] = 'application/json';
 
-        $headers['X-Task-ID'] = $this->app['request']->getId();
+        $headers[self::X_TASK_ID] = $this->app['request']->getId();
+
+        if ($mode == null)
+        {
+            $headers[self::X_APP_MODE] = $this->app['rzp.mode'] ? $this->app['rzp.mode'] : Mode::LIVE;
+        }
+        else
+        {
+            $headers[self::X_APP_MODE] = $mode;
+        }
+
+
 
         $options = ['auth' => ['api', $this->config['secret']]];
 

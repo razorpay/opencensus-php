@@ -74,7 +74,7 @@ class PayoutSourceUpdaterJob extends Job
                 return;
             }
 
-            SourceUpdater::update($payout, $this->previousPayoutStatus);
+            SourceUpdater::update($payout, $this->previousPayoutStatus, $this->mode);
         }
         catch (\Throwable $e)
         {
