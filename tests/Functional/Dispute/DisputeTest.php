@@ -8,14 +8,15 @@ use Illuminate\Http\UploadedFile;
 
 use RZP\Models\Dispute\Phase;
 use RZP\Models\Dispute\Entity;
+use RZP\Models\Dispute\Repository;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Dispute\EmailNotificationStatus;
 use RZP\Models\Dispute\Reason\Network;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Dispute\Entity as DisputeEntity;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Dispute\File\Core as DisputeFileCore;
-use RZP\Mail\Dispute\Creation as DisputeCreationMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Dispute\File\Service as DisputeFileService;
 use RZP\Mail\Dispute\BulkCreation as DisputeBulkCreationMail;
@@ -30,6 +31,8 @@ class DisputeTest extends TestCase
     protected $payment = null;
 
     protected $merchant = null;
+
+    protected $repo = null;
 
     public function setUp()
     {
@@ -170,46 +173,15 @@ class DisputeTest extends TestCase
         $this->assertEquals(-10000, $adjustment['amount']);
     }
 
-    public function testDisputeCreateMerchantMail()
+    public function testDisputeCreateWithSkipEmail()
     {
-        Mail::fake();
-
-        $testData = $this->updateCreateTestData();
-
-        $testData['response']['content']['payment_id'] = $this->payment->getPublicId();
-
-        $this->startTest($testData);
-
-        Mail::assertQueued(DisputeCreationMail::class, function ($mail) use ($testData)
-        {
-            $this->stringContains(
-                $testData['response']['content']['payment_id'],
-                $mail->subject
-            );
-
-            $this->stringContains(
-                $testData['response']['content']['payment_id'],
-                $mail->viewData
-            );
-
-            $this->assertArrayHasKey('dispute', $mail->viewData);
-
-            $this->assertArrayHasKey('merchant', $mail->viewData);
-
-            return ($mail->hasFrom('disputes@razorpay.com') and
-                ($mail->hasTo('test@razorpay.com')));
-        });
-    }
-
-    public function testDisputeCreateWithoutMerchantEmail()
-    {
-        Mail::fake();
-
         $testData = $this->updateCreateTestData();
 
         $this->startTest($testData);
 
-        Mail::assertNotSent(DisputeCreationMail::class);
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $this->assertEquals(EmailNotificationStatus::DISABLED, $dispute[Entity::EMAIL_NOTIFICATION_STATUS]);
     }
 
     public function testDisputeCreatedWebhook()
@@ -1006,7 +978,7 @@ class DisputeTest extends TestCase
             $fileRowByPaymentIdMap[$fileRow['payment_id']] = $fileRow;
         }
 
-        $disputes = $this->getEntities('dispute')['items'];
+        $disputes = $this->getEntities('dispute', [], true)['items'];
 
         $this->assertCount(count($fileData), $disputes);
 
@@ -1023,6 +995,15 @@ class DisputeTest extends TestCase
             $this->assertEquals($fileRow['reason_code'], $disputeEntityItem['reason_code']);
 
             $this->assertEquals($fileRow['phase'], $disputeEntityItem['phase']);
+
+            if ($fileRow['skip_email'] === 'N')
+            {
+                $this->assertEquals(EmailNotificationStatus::SCHEDULED, $disputeEntityItem[Entity::EMAIL_NOTIFICATION_STATUS]);
+            }
+            else if ($fileRow['skip_email'] === 'Y')
+            {
+                $this->assertEquals(EmailNotificationStatus::DISABLED, $disputeEntityItem[Entity::EMAIL_NOTIFICATION_STATUS]);
+            }
         }
     }
 
@@ -1030,27 +1011,65 @@ class DisputeTest extends TestCase
     {
         Mail::fake();
 
-        $fileData = $this->getBulkDisputeUploadedFileData();
+        $this->ba->cronAuth();
 
-        $uploadedFile = $this->getBulkDisputeUploadedXLSXFileFromFileData($fileData);
+        $reason = $this->fixtures->create('dispute_reason', [
+            'code'    => 'dummy_reason',
+            'network' => Network::VISA,
+        ]);
 
-        $testData['request']['files'][DisputeFileCore::FILE] = $uploadedFile;
+        $attributes1 = [
+            'payment_id'                => $this->fixtures->create('payment:captured')->getId(),
+            'gateway_dispute_id'        => 'Dispute100001',
+            'gateway_dispute_status'    => 'open',
+            'reason_id'                 => $reason['id'],
+            'phase'                     => Phase::CHARGEBACK,
+            'raised_on'                 => (strtotime('-1 month', strtotime('now'))),
+            'expires_on'                => (strtotime('+1 month', strtotime('now'))),
+            'amount'                    => 10000,
+            'email_notification_status' => EmailNotificationStatus::SCHEDULED,
+        ];
+        $dispute1 = $this->fixtures->create('dispute', $attributes1);
 
-        $testData['request']['url'] = '/disputes/bulk-create';
+        $attributes2 = [
+            'payment_id'                => $this->fixtures->create('payment:captured')->getId(),
+            'gateway_dispute_id'        => 'Dispute100001',
+            'gateway_dispute_status'    => 'open',
+            'reason_id'                 => $reason['id'],
+            'phase'                     => Phase::ARBITRATION,
+            'raised_on'                 => (strtotime('-1 month', strtotime('now'))),
+            'expires_on'                => (strtotime('+1 month', strtotime('now'))),
+            'amount'                    => 10000,
+            'email_notification_status' => EmailNotificationStatus::SCHEDULED,
+        ];
+        $dispute2 = $this->fixtures->create('dispute', $attributes2);
+
+        $attributesNotToBeEmailed = [
+            'payment_id'                => $this->fixtures->create('payment:captured')->getId(),
+            'gateway_dispute_id'        => 'Dispute100001',
+            'gateway_dispute_status'    => 'open',
+            'reason_id'                 => $reason['id'],
+            'phase'                     => Phase::CHARGEBACK,
+            'raised_on'                 => (strtotime('-1 month', strtotime('now'))),
+            'expires_on'                => (strtotime('+1 month', strtotime('now'))),
+            'amount'                    => 10000,
+            'email_notification_status' => EmailNotificationStatus::DISABLED,
+        ];
+        $this->fixtures->create('dispute', $attributesNotToBeEmailed);
+
+        $testData = &$this->testData[__FUNCTION__];
 
         $this->startTest($testData);
 
-        $fileRowByPaymentIdMap = [];
+        $disputeByPaymentIdMap = [];
 
         $totalPhasePayments = [];
 
-        foreach ($fileData as $fileRow)
+        foreach ([$dispute1, $dispute2] as $dispute)
         {
-            $fileRowByPaymentIdMap[$fileRow['payment_id']] = $fileRow;
+            $disputeByPaymentIdMap['pay_' . $dispute['payment_id']] = $dispute;
 
-            $phase = $fileRow['phase'];
-
-            $amount = $fileRow['amount'];
+            $phase = $dispute['phase'];
 
             if (isset($totalPhasePayments[$phase]) === false)
             {
@@ -1061,8 +1080,8 @@ class DisputeTest extends TestCase
         }
 
         $expectedData = [
-            'file_row_map'   => $fileRowByPaymentIdMap,
-            'total_payments' => $totalPhasePayments,
+            'dispute_payment_map' => $disputeByPaymentIdMap,
+            'total_payments'      => $totalPhasePayments,
         ];
 
         Mail::assertQueued(DisputeBulkCreationMail::class, function ($mail) use ($expectedData)
@@ -1077,31 +1096,51 @@ class DisputeTest extends TestCase
 
             $this->assertEquals($expectedData['total_payments'][$mailData['phase']], $mailData['totalPayments']);
 
-            foreach ($mailData['disputesDataTable'] as $disputeRow)
+            foreach ($mailData['disputesDataTable'] as $mailDisputeRow)
             {
-                $fileRow = $expectedData['file_row_map'][$disputeRow['payment_id']];
+                $dispute = $expectedData['dispute_payment_map'][$mailDisputeRow['payment_id']];
 
-                $this->assertEquals($fileRow['gateway_dispute_id'], $disputeRow['case_id']);
+                $this->assertEquals($dispute['gateway_dispute_id'], $mailDisputeRow['case_id']);
 
-                $this->assertEquals($fileRow['phase'], $disputeRow['phase']);
+                $this->assertEquals($dispute['phase'], $mailDisputeRow['phase']);
             }
 
             return ($mail->hasFrom('disputes@razorpay.com') and
                 ($mail->hasTo('test@razorpay.com')));
         });
+
+        $actualEmailStatus = $this->getEntityById('dispute', 'disp_' .$dispute1[Entity::ID], true)[Entity::EMAIL_NOTIFICATION_STATUS];
+        $this->assertEquals(EmailNotificationStatus::NOTIFIED, $actualEmailStatus);
+
+        $actualEmailStatus = $this->getEntityById('dispute', 'disp_' .$dispute2[Entity::ID], true)[Entity::EMAIL_NOTIFICATION_STATUS];
+        $this->assertEquals(EmailNotificationStatus::NOTIFIED, $actualEmailStatus);
     }
 
     public function testBulkDisputeCreateMailAttachment()
     {
         Mail::fake();
 
-        $fileData = $this->getBulkDisputeUploadedFileData();
+        $this->ba->cronAuth();
 
-        $uploadedFile = $this->getBulkDisputeUploadedXLSXFileFromFileData($fileData);
+        $reason = $this->fixtures->create('dispute_reason', [
+            'code'    => 'dummy_reason',
+            'network' => Network::VISA,
+        ]);
 
-        $testData['request']['files'][DisputeFileCore::FILE] = $uploadedFile;
+        $attributes = [
+            'payment_id'                => $this->fixtures->create('payment:captured')->getId(),
+            'gateway_dispute_id'        => 'Dispute100001',
+            'gateway_dispute_status'    => 'open',
+            'reason_id'                 => $reason['id'],
+            'phase'                     => Phase::CHARGEBACK,
+            'raised_on'                 => (strtotime('-1 month', strtotime('now'))),
+            'expires_on'                => (strtotime('+1 month', strtotime('now'))),
+            'amount'                    => 10000,
+            'email_notification_status' => EmailNotificationStatus::SCHEDULED,
+        ];
+        $this->fixtures->create('dispute', $attributes);
 
-        $testData['request']['url'] = '/disputes/bulk-create';
+        $testData = &$this->testData[__FUNCTION__];
 
         $this->startTest($testData);
 

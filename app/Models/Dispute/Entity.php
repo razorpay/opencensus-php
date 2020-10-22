@@ -39,6 +39,8 @@ class Entity extends Base\PublicEntity
     const RESOLVED_AT             = 'resolved_at';
     const BACKFILL                = 'backfill';
 
+    const EMAIL_NOTIFICATION_STATUS = 'email_notification_status';
+
     // For emails
     const MERCHANT_EMAILS         = 'merchant_emails';
     const SKIP_EMAIL              = 'skip_email';
@@ -67,6 +69,8 @@ class Entity extends Base\PublicEntity
 
     // For expands
     const PAYMENT                 = 'payment';
+    const REASON                  = 'reason';
+    const MERCHANT                = 'merchant';
 
     const SKIP_DEDUCTION          = 'skip_deduction';
     const CONTACT                 = 'contact';
@@ -102,6 +106,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_DEDUCTED,
         self::AMOUNT_REVERSED,
         self::COMMENTS,
+        self::EMAIL_NOTIFICATION_STATUS,
     ];
 
     protected $visible = [
@@ -131,6 +136,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::PHASE,
         self::COMMENTS,
+        self::EMAIL_NOTIFICATION_STATUS,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -192,6 +198,7 @@ class Entity extends Base\PublicEntity
         self::BASE_AMOUNT,
         self::AMOUNT,
         self::CURRENCY,
+        self::EMAIL_NOTIFICATION_STATUS,
     ];
 
     protected $amounts = [
@@ -268,6 +275,21 @@ class Entity extends Base\PublicEntity
     public function generateCurrency($input)
     {
         $this->setAttribute(self::CURRENCY, $this->payment->getCurrency());
+    }
+
+
+    protected function generateEmailNotificationStatus($input)
+    {
+        if(empty($input[Entity::SKIP_EMAIL]) === true && $input[Entity::BACKFILL] === false)
+        {
+            $emailNotificationStatus = EmailNotificationStatus::SCHEDULED;
+        }
+        else
+        {
+            $emailNotificationStatus = EmailNotificationStatus::DISABLED;
+        }
+
+        $this->setAttribute(self::EMAIL_NOTIFICATION_STATUS, $emailNotificationStatus);
     }
 
     // ----------------------- Generators Ends----------------------------------

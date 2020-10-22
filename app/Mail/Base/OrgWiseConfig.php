@@ -58,9 +58,6 @@ class OrgWiseConfig
         \RZP\Mail\Merchant\DailyReport::class                => [
             Features::PAYMENT_MAILS_DISABLED => [self::HDFC]
         ],
-        \RZP\Mail\Dispute\Creation::class                    => [
-            Features::DISPUTE_MAILS_DISABLED => [self::HDFC]
-        ],
     ];
 
     public static function getEmailEnabledForOrg(string $customCode, string $mailerClass, Merchant $merchant): bool

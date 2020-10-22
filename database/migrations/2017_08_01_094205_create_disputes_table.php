@@ -92,6 +92,9 @@ class CreateDisputesTable extends Migration
             $table->boolean(Dispute::DEDUCT_AT_ONSET)
                   ->default(1);
 
+            $table->string(Dispute::EMAIL_NOTIFICATION_STATUS, 50)
+                  ->nullable();
+
             $table->integer(Dispute::CREATED_AT);
 
             $table->integer(Dispute::UPDATED_AT);
@@ -111,6 +114,7 @@ class CreateDisputesTable extends Migration
             $table->index(Dispute::UPDATED_AT);
             $table->index(Dispute::RESOLVED_AT);
             $table->index(Dispute::AMOUNT);
+            $table->index([Dispute::EXPIRES_ON, Dispute::EMAIL_NOTIFICATION_STATUS]);
 
             $table->foreign(Dispute::MERCHANT_ID)
                   ->references(Merchant::ID)

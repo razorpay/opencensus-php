@@ -2,7 +2,9 @@
 
 namespace RZP\Models\Dispute;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Constants\Timezone;
 use RZP\Models\Payment\Entity as Payment;
 
 class Repository extends Base\Repository
@@ -33,5 +35,25 @@ class Repository extends Base\Repository
                     ->whereIn(Entity::STATUS, Status::getOpenStatuses())
                     ->where(Entity::PHASE, '!=', Phase::FRAUD)
                     ->get();
+    }
+
+    public function getOpenDisputesForNotification()
+    {
+        $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        return $this->newQuery()
+            ->where(Entity::STATUS, Status::OPEN)
+            ->where(Entity::EMAIL_NOTIFICATION_STATUS, EmailNotificationStatus::SCHEDULED)
+            ->where(Entity::EXPIRES_ON, '>', $currentTimestamp)
+            ->with([Entity::PAYMENT, Entity::REASON, Entity::MERCHANT])
+            ->get();
+    }
+
+    public function markOpenDisputesAsNotified(array $disputeIds)
+    {
+        return $this->newQuery()
+            ->whereIn(Entity::ID, $disputeIds)
+            ->where(Entity::STATUS, Status::OPEN)
+            ->update([Entity::EMAIL_NOTIFICATION_STATUS => EmailNotificationStatus::NOTIFIED]);
     }
 }

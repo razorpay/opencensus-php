@@ -1959,7 +1959,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Trace codes for dispute entity
     const DISPUTE_CREATE_REQUEST                                = 'DISPUTE_CREATE_REQUEST';
     const DISPUTE_BULK_CREATE_REQUEST                           = 'DISPUTE_BULK_CREATE_REQUEST';
-    const DISPUTE_BULK_MAIL_TRIGGER_FAILED                      = 'DISPUTE_BULK_MAIL_TRIGGER_FAILED';
     const DISPUTE_EDIT_REQUEST                                  = 'DISPUTE_EDIT_REQUEST';
     const DISPUTE_BULK_EDIT_REQUEST                             = 'DISPUTE_BULK_EDIT_REQUEST';
     const DISPUTE_EDIT_REQUEST_FOR_MERCHANT                     = 'DISPUTE_EDIT_REQUEST_FOR_MERCHANT';
@@ -1972,6 +1971,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DISPUTE_SAME_PARENT_LINKING                           = 'DISPUTE_SAME_PARENT_LINKING';
     const DISPUTE_FILE_CREATE                                   = 'DISPUTE_FILE_CREATE';
     const DISPUTE_FILES_UPLOAD                                  = 'DISPUTE_FILES_UPLOAD';
+    const DISPUTE_BULK_MAIL_CRON_START                          = 'DISPUTE_BULK_MAIL_CRON_START';
+    const DISPUTE_BULK_MAIL_CRON_END                            = 'DISPUTE_BULK_MAIL_CRON_END';
+    const DISPUTE_BULK_MAIL_QUEUED                              = 'DISPUTE_BULK_MAIL_QUEUED';
+    const DISPUTE_BULK_NOTIFICATION_STATUS_UPDATED              = 'DISPUTE_BULK_NOTIFICATION_STATUS_UPDATED';
+    const DISPUTE_BULK_MAIL_PROCESSING_ERROR                    = 'DISPUTE_BULK_MAIL_PROCESSING_ERROR';
 
     const ADMIN_FILES_UPLOAD                                    = 'ADMIN_FILES_UPLOAD';
 

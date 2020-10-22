@@ -15,7 +15,6 @@ use RZP\Models\Dispute\File;
 use RZP\Models\Dispute\Reason;
 use RZP\Models\{Base, Payment};
 use RZP\Error\PublicErrorDescription;
-use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
 class Service extends Base\Service
@@ -68,21 +67,6 @@ class Service extends Base\Service
         Entity::STATUS,
         Entity::SKIP_DEDUCTION,
         Entity::COMMENTS,
-    ];
-
-    const BULK_CREATE_DISPUTES_MAIL_DATA = [
-        Entity::ID,
-        Entity::PAYMENT_ID,
-        Entity::AMOUNT,
-        Entity::CURRENCY,
-        Entity::GATEWAY_DISPUTE_ID,
-        Entity::PHASE,
-        Entity::RESPOND_BY,
-    ];
-
-    const BULK_CREATE_DISPUTES_MAIL_REASON_DATA = [
-        Reason\Entity::GATEWAY_CODE,
-        Reason\Entity::GATEWAY_DESCRIPTION,
     ];
 
     // The 3 bulk dispute column name constants defined below BULK_CREATE_DISPUTES_COLUMNS_SILENT,
@@ -198,7 +182,7 @@ class Service extends Base\Service
 
         $orderKeys = $data[0];
 
-        $outputFileData = $merchantData = $disputeData = [];
+        $outputFileData = [];
 
         $outputKeys   = $orderKeys;
         $outputKeys[] = self::RZP_DISPUTE_ID;
@@ -218,8 +202,6 @@ class Service extends Base\Service
 
                 $payment = $this->repo->payment->findByPublicId($paymentId);
 
-                $merchant = $payment->merchant;
-
                 $disputeReason = $this->getDisputeReasonEntity(
                     $input[Reason\Entity::NETWORK],
                     $input[Reason\Entity::NETWORK_CODE],
@@ -232,26 +214,6 @@ class Service extends Base\Service
 
                 $disputeEntity = $this->create($createInput, $paymentId, $payment);
 
-                // Prepares Mail body data
-                if ($input[Entity::SKIP_EMAIL] === false && $createInput[Entity::BACKFILL] === false)
-                {
-                    $merchantData[$disputeEntity[Entity::MERCHANT_ID]][MerchantEntity::NAME]  = $merchant->getName();
-                    $merchantData[$disputeEntity[Entity::MERCHANT_ID]][MerchantEntity::EMAIL] = $merchant->getEmail();
-                    $merchantData[$disputeEntity[Entity::MERCHANT_ID]][Constants::DISPUTES][$disputeEntity[Entity::PHASE]][] = $disputeEntity[Entity::ID];
-
-                    $disputeData[$disputeEntity[Entity::ID]] = $this->getDisputeDataForMail($disputeEntity, $disputeReason);
-
-                    // add payment notes field
-                    $disputeData[$disputeEntity[Entity::ID]]['payment_notes']    = $payment->getNotes()->toArray();
-                    $disputeData[$disputeEntity[Entity::ID]]['customer_contact'] = $payment->getContact();
-                    $disputeData[$disputeEntity[Entity::ID]]['order_receipt']    = '';
-
-                    if ($payment->hasOrder() === true)
-                    {
-                        $disputeData[$disputeEntity[Entity::ID]]['order_receipt'] = $payment->order->getReceipt();
-                    }
-                }
-
                 $row[] = $disputeEntity[Entity::ID];
                 $row[] = '';
             }
@@ -263,8 +225,6 @@ class Service extends Base\Service
 
             $outputFileData[] = $row;
         }
-
-        $this->core()->sendAggregatedEmails($merchantData, $disputeData);
 
         $url = (new File\Service)->generateFile($outputFileData, self::BULK_DISPUTE_CREATE_FILE_NAME);
 
@@ -467,8 +427,6 @@ class Service extends Base\Service
      */
     public function prepareInputForCreate(string $disputeReasonId, array $input) : array
     {
-        // skipping individual dispute email for each creation
-        $input[Entity::SKIP_EMAIL] = true;
         $input[Entity::REASON_ID] = $disputeReasonId;
         $this->addBackfillIfNotPresent($input);
 
@@ -600,27 +558,6 @@ class Service extends Base\Service
         }
 
         return $input;
-    }
-
-    /**
-     * @param array $dispute
-     * @return array
-     */
-    public function getDisputeDataForMail(array $dispute, array $reason) : array
-    {
-        $disputeData = [];
-
-        foreach (self::BULK_CREATE_DISPUTES_MAIL_DATA as $key)
-        {
-            $disputeData[$key] = $dispute[$key];
-        }
-
-        foreach (self::BULK_CREATE_DISPUTES_MAIL_REASON_DATA as $key)
-        {
-            $disputeData[$key] = $reason[$key];
-        }
-
-        return $disputeData;
     }
 
     public function formatValueId($res)
@@ -840,5 +777,10 @@ class Service extends Base\Service
     public function formatValueBackfill($res)
     {
         return (new Validator)->validateCustomBoolean($res);
+    }
+
+    public function initiateMerchantEmails()
+    {
+        return $this->core()->initiateMerchantEmails();
     }
 }

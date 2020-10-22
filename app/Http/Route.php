@@ -1427,6 +1427,7 @@ class Route
         'dispute_file_delete'                      => ['delete',   'disputes/{id}/files/{fileId}',                   'DisputeController@deleteFile'                                      ],
         'dispute_files_fetch'                      => ['get',      'disputes/{id}/files',                            'DisputeController@getFiles'                                        ],
         'dispute_poc_mails'                        => ['get',      'disputes/{merchantId}/poc-emails',               'DisputeController@getDefaultCreationEmails'                        ],
+        'dispute_merchant_emails_initiate'         => ['post',     'disputes/merchant_emails/initiate',              'DisputeController@initiateMerchantEmails'                          ],
 
         // This is a different route from /payouts since we need a different auth (internal) for this
         // Hence, created two different routes - one for customer and another for merchant.
@@ -2702,6 +2703,7 @@ class Route
         'payment_get_authentication_entity',
         'payment_get_authorization_entity',
         'gateway_payment_upi_data_cron',
+        'dispute_merchant_emails_initiate',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -5234,6 +5236,7 @@ class Route
             'add_ondemand_pricing_if_absent',
             'gateway_downtimes_archive',
             'gateway_payment_upi_data_cron',
+            'dispute_merchant_emails_initiate',
         ],
 
         'subscriptions' => [

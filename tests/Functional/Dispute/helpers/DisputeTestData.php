@@ -123,31 +123,7 @@ return [
         ],
     ],
 
-    'testDisputeCreateMerchantMail' => [
-        'request' => [
-            'method'  => 'post',
-            'content' => [
-                'gateway_dispute_id'   => '4342frf34r',
-                'raised_on'            => '946684800',
-                'expires_on'           => '1912162918',
-                'amount'               => 100,
-                'deduct_at_onset'      => 0,
-                'phase'                => 'chargeback',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'amount'             => 100,
-                'amount_deducted'    => 0,
-                'currency'           => 'INR',
-                'phase'              => 'chargeback',
-                'status'             => 'open',
-                'reason_code'        => 'KFRER_R',
-            ],
-        ],
-    ],
-
-    'testDisputeCreateWithoutMerchantEmail' => [
+    'testDisputeCreateWithSkipEmail' => [
         'request' => [
             'method'  => 'post',
             'content' => [
@@ -1447,23 +1423,27 @@ return [
 
     'testPhaseBasedBulkCreateMails' => [
         'request' => [
-            'url' => '/disputes/bulk_create',
-            'method' => 'post',
-            'files' => [],
+            'url' => '/disputes/merchant_emails/initiate',
+            'method' => 'post'
         ],
         'response' => [
-            'content' => [],
+            'content' => [
+                'success'        => true,
+                'total_disputes' => 2,
+            ],
         ],
     ],
 
     'testBulkDisputeCreateMailAttachment' => [
         'request' => [
-            'url' => '/disputes/bulk_create',
-            'method' => 'post',
-            'files' => [],
+            'url' => '/disputes/merchant_emails/initiate',
+            'method' => 'post'
         ],
         'response' => [
-            'content' => [],
+            'content' => [
+                'success'        => true,
+                'total_disputes' => 1,
+            ],
         ],
     ],
 

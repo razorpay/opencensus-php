@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Services\Mutex;
 use RZP\Diag\EventCode;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Admin\Action;
@@ -30,9 +31,32 @@ class Core extends Base\Core
     const DEBIT_ADJUSTMENT_DESCRIPTION  = 'Debit disputed amount';
     const CREDIT_ADJUSTMENT_DESCRIPTION = 'Credit to reverse a previous dispute debit';
 
+    const DISPUTE_BULK_EMAIL_MUTEX     = 'DISPUTE_BULK_EMAIL_MUTEX';
+
+    // NOTE: Going forward if the no of disputes increases, instead of taking a lock for 30 mins
+    // change it so that the entire process runs async and for every merchant+phase we have an independent job.
+    const DISPUTE_BULK_EMAIL_MUTEX_TTL = 1800;
+
+    const DISPUTE_BULK_UPDATE_LIMIT = 100;
+
     // Type of emails to be fetched from merchant_emails table
     const POC_EMAIL_TYPES = [
         MerchantEmail\Type::CHARGEBACK,
+    ];
+
+    const BULK_CREATE_DISPUTES_MAIL_DATA = [
+        Entity::ID,
+        Entity::PAYMENT_ID,
+        Entity::AMOUNT,
+        Entity::CURRENCY,
+        Entity::GATEWAY_DISPUTE_ID,
+        Entity::PHASE,
+        Entity::RESPOND_BY,
+    ];
+
+    const BULK_CREATE_DISPUTES_MAIL_REASON_DATA = [
+        Reason\Entity::GATEWAY_CODE,
+        Reason\Entity::GATEWAY_DESCRIPTION,
     ];
 
     /**
@@ -77,8 +101,6 @@ class Core extends Base\Core
 
                 $dispute = new Entity;
 
-                $merchant = $payment->merchant;
-
                 $this->setRelationsAndDerivedAttributes($dispute, $parent, $payment, $reason);
 
                 $dispute->build($input);
@@ -111,8 +133,6 @@ class Core extends Base\Core
 
                     return $dispute;
                 });
-
-                $this->sendDisputeMailToMerchant($dispute, $merchant, $input);
 
                 $this->app['diag']->trackDisputeEvent(EventCode::DISPUTE_CREATED, $dispute);
 
@@ -589,42 +609,6 @@ class Core extends Base\Core
     }
 
     /**
-     * @param Entity $dispute
-     * @param MerchantEntity $merchant
-     * @param array $input
-     */
-    protected function sendDisputeMailToMerchant(
-        Entity $dispute,
-        Merchant\Entity $merchant,
-        array $input)
-    {
-        if ((empty($input[Entity::SKIP_EMAIL]) === false) or ($dispute->isBackfill() === true))
-        {
-            return;
-        }
-
-        $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
-
-        if ($currentTimestamp >= $dispute->getExpiresOn())
-        {
-            return;
-        }
-
-        $emails = $this->getEmailsForCreateNotify($merchant, $input);
-
-        $data = [
-            'merchant'      => [
-                'name'          => $merchant->getName(),
-                'email'         => $emails,
-            ],
-            'dispute'       => $dispute->toArrayPublic(),
-            'remainingDays' => $this->getRemainingDays($dispute),
-        ];
-
-        Mail::queue(new DisputeMailer\Creation($data));
-    }
-
-    /**
      * @param array $merchantData
      * @return array
      */
@@ -659,55 +643,78 @@ class Core extends Base\Core
     /**
      * @param array $merchantData
      * @param array $disputeData
-     * @throws Exception\RuntimeException
      */
     public function sendAggregatedEmails(array $merchantData, array $disputeData)
     {
-        try
+        // Update merchant data with poc emails
+        $merchantData = $this->getMerchantPocEmails($merchantData);
+
+        foreach ($merchantData as $merchantId => $data)
         {
-            // Update merchant data with poc emails
-            $merchantData = $this->getMerchantPocEmails($merchantData);
+            $bulkMailData[EntityConstants::MERCHANT][MerchantEntity::NAME]  = $data[MerchantEntity::NAME];
+            $bulkMailData[EntityConstants::MERCHANT][MerchantEntity::EMAIL] = $data[MerchantEntity::EMAIL];
 
-            foreach ($merchantData as $merchantId => $data)
+            foreach ($data[Constants::DISPUTES] as $disputePhase => $publicDisputeIds)
             {
-                $bulkMailData[EntityConstants::MERCHANT][MerchantEntity::NAME]  = $data[MerchantEntity::NAME];
-                $bulkMailData[EntityConstants::MERCHANT][MerchantEntity::EMAIL] = $data[MerchantEntity::EMAIL];
+                $bulkMailData[Entity::PHASE] = $disputePhase;
 
-                foreach ($data[Constants::DISPUTES] as $disputePhase => $disputeIds)
+                $bulkMailData[Constants::DISPUTES] = [];
+
+                $disputeIds = [];
+                foreach ($publicDisputeIds as $publicDisputeId)
                 {
-                    $bulkMailData[Entity::PHASE] = $disputePhase;
+                    $bulkMailData[Constants::DISPUTES][] = $disputeData[$publicDisputeId];
 
-                    $bulkMailData[Constants::DISPUTES] = [];
+                    $disputeIds[] = Entity::stripDefaultSign($publicDisputeId);
+                }
 
-                    $totalAmount = 0;
+                $bulkMailData['totalPayments'] = count($publicDisputeIds);
 
-                    foreach ($disputeIds as $disputeId)
-                    {
-                        $bulkMailData[Constants::DISPUTES][] = $disputeData[$disputeId];
-                    }
-
-                    $bulkMailData['totalPayments'] = count($disputeIds);
-
+                try
+                {
                     Mail::queue(new DisputeMailer\BulkCreation($bulkMailData));
+
+                    $this->trace->info(
+                        TraceCode::DISPUTE_BULK_MAIL_QUEUED,
+                        [
+                            'dispute_ids' => $disputeIds,
+                            'merchant_id' => $merchantId,
+                            'phase'       => $disputePhase,
+                        ]);
+
+                    $this->repo->transaction(function() use ($disputeIds)
+                    {
+                        $listOfDisputeIdList = array_chunk($disputeIds, self::DISPUTE_BULK_UPDATE_LIMIT);
+
+                        foreach ($listOfDisputeIdList as $disputeIdList)
+                        {
+                            $this->repo->dispute->markOpenDisputesAsNotified($disputeIdList);
+                        }
+                    });
+
+                    $this->trace->info(
+                        TraceCode::DISPUTE_BULK_NOTIFICATION_STATUS_UPDATED,
+                        [
+                            'dispute_ids' => $disputeIds,
+                            'merchant_id' => $merchantId,
+                            'phase'       => $disputePhase,
+                        ]);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::DISPUTE_BULK_MAIL_PROCESSING_ERROR,
+                        [
+                            'merchant_id' => $merchantId,
+                            'phase'       => $disputePhase,
+                            'dispute_ids' => $disputeIds,
+                        ]
+                    );
                 }
             }
         }
-        catch (\Throwable $ex)
-        {
-            $this->trace->traceException($ex, Trace::ERROR, TraceCode::DISPUTE_BULK_MAIL_TRIGGER_FAILED);
-
-            throw new Exception\RuntimeException('Error sending mails for bulk create disputes', $merchantData);
-        }
-    }
-
-    private function getRemainingDays(Entity $dispute): int
-    {
-        $endDate = Carbon::createFromTimestamp(
-            $dispute->getExpiresOn(), Timezone::IST);
-
-        $length = $endDate->diffInDays(Carbon::now(Timezone::IST));
-
-        return $length;
     }
 
     protected function generateInputForMerchantEdit(Entity $dispute, array $input): array
@@ -773,5 +780,79 @@ class Core extends Base\Core
         $eventName = 'api.' . $event;
 
         $this->app['events']->fire($eventName, $eventPayload);
+    }
+
+    public function initiateMerchantEmails()
+    {
+        return $this->mutex->acquireAndRelease(
+            self::DISPUTE_BULK_EMAIL_MUTEX,
+            function() {
+                $this->trace->info(TraceCode::DISPUTE_BULK_MAIL_CRON_START);
+
+                $startTime = microtime(true);
+
+                $result = $this->processMerchantEmails();
+
+                $result['time_taken'] = get_diff_in_millisecond($startTime);
+
+                $result['success'] = true;
+
+                $this->trace->info(TraceCode::DISPUTE_BULK_MAIL_CRON_END);
+
+                return $result;
+            },
+            self::DISPUTE_BULK_EMAIL_MUTEX_TTL,
+            ErrorCode::BAD_REQUEST_DISPUTE_BULK_EMAIL_OPERATION_IN_PROGRESS);
+    }
+
+    private function processMerchantEmails()
+    {
+        $disputes = $this->repo->dispute->getOpenDisputesForNotification();
+        $merchantData = $disputeData = [];
+
+        foreach ($disputes as $dispute)
+        {
+            $payment = $dispute->payment;
+            $merchant = $dispute->merchant;
+            $disputeEntity = $dispute->toArrayAdmin();
+            $disputeReason = $dispute->reason->toArrayAdmin();
+
+            $merchantData[$disputeEntity[Entity::MERCHANT_ID]][MerchantEntity::NAME]  = $merchant->getName();
+            $merchantData[$disputeEntity[Entity::MERCHANT_ID]][MerchantEntity::EMAIL] = $merchant->getEmail();
+            $merchantData[$disputeEntity[Entity::MERCHANT_ID]][Constants::DISPUTES][$disputeEntity[Entity::PHASE]][] = $disputeEntity[Entity::ID];
+
+            $disputeData[$disputeEntity[Entity::ID]] = $this->getDisputeDataForMail($disputeEntity, $disputeReason);
+
+            // add payment notes field
+            $disputeData[$disputeEntity[Entity::ID]]['payment_notes']    = $payment->getNotes()->toArray();
+            $disputeData[$disputeEntity[Entity::ID]]['customer_contact'] = $payment->getContact();
+            $disputeData[$disputeEntity[Entity::ID]]['order_receipt']    = '';
+
+            if ($payment->hasOrder() === true)
+            {
+                $disputeData[$disputeEntity[Entity::ID]]['order_receipt'] = $payment->order->getReceipt();
+            }
+        }
+
+        $this->sendAggregatedEmails($merchantData, $disputeData);
+
+        return ['total_disputes' => count($disputes)];
+    }
+
+    private function getDisputeDataForMail(array $dispute, array $reason) : array
+    {
+        $disputeData = [];
+
+        foreach (self::BULK_CREATE_DISPUTES_MAIL_DATA as $key)
+        {
+            $disputeData[$key] = $dispute[$key];
+        }
+
+        foreach (self::BULK_CREATE_DISPUTES_MAIL_REASON_DATA as $key)
+        {
+            $disputeData[$key] = $reason[$key];
+        }
+
+        return $disputeData;
     }
 }

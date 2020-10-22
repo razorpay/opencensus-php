@@ -92,4 +92,9 @@ class DisputeController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function initiateMerchantEmails()
+    {
+        return $this->service()->initiateMerchantEmails();
+    }
 }
