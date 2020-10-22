@@ -27,7 +27,7 @@ jobs:
       uses: actions/checkout@v2
     - name: prepare_test
       id: prepare_test
-      uses: docker://razorpay/onggi:php-7.2-apache-api
+      uses: docker://razorpay/onggi:php-7.2-api-web
       env:
         GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
       with:
@@ -39,11 +39,11 @@ jobs:
       with:
         entrypoint: /bin/sh
         args: ci-assets/validate_php_syntax.sh
-  build-app:
+  build-web:
     runs-on: [self-hosted]
     needs: [cancel]
     continue-on-error: false
-    name: Build App
+    name: Build Web
     steps:
       - name: checkout
         id: checkout
@@ -55,6 +55,25 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: razorpay/api
           tags: ${{ github.sha }}
+          dockerfile: Dockerfile.web
+          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp
+  build-worker:
+    runs-on: [ self-hosted ]
+    needs: [ cancel ]
+    continue-on-error: false
+    name: Build Worker
+    steps:
+      - name: checkout
+        id: checkout
+        uses: actions/checkout@v2
+      - name: build
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: razorpay/api
+          tags: worker-${{ github.sha }}
+          dockerfile: Dockerfile.worker
           build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp
   build-checkout:
     runs-on: [self-hosted]
@@ -105,7 +124,7 @@ jobs:
         ACTIONS_STEP_DEBUG: true
     - name: prepare_test
       id: prepare_test
-      uses: docker://razorpay/onggi:php-7.2-apache-api
+      uses: docker://razorpay/onggi:php-7.2-api-web
       env:
         GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
       with:
@@ -113,7 +132,7 @@ jobs:
         args: ci-assets/prepare_test.sh
     - name: application_test_suite
       id: application_test_suite
-      uses: docker://razorpay/onggi:php-7.2-apache-api
+      uses: docker://razorpay/onggi:php-7.2-api-web
       with:
         entrypoint: /bin/sh
         args: ci-assets/application_test_suite.sh
@@ -157,7 +176,7 @@ jobs:
       uses: actions/checkout@v2
     - name: prepare_test
       id: prepare_test
-      uses: docker://razorpay/onggi:php-7.2-apache-api
+      uses: docker://razorpay/onggi:php-7.2-api-web
       env:
         GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
       with:
@@ -165,7 +184,7 @@ jobs:
         args: ci-assets/prepare_test.sh
     - name: features_test_suite
       id: features_test_suite
-      uses: docker://razorpay/onggi:php-7.2-apache-api
+      uses: docker://razorpay/onggi:php-7.2-api-web
       with:
         entrypoint: /bin/sh
         args: ci-assets/features_test_suite.sh
@@ -209,7 +228,7 @@ jobs:
       uses: actions/checkout@v2
     - name: prepare_test
       id: prepare_test
-      uses: docker://razorpay/onggi:php-7.2-apache-api
+      uses: docker://razorpay/onggi:php-7.2-api-web
       env:
         GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
       with:
@@ -217,7 +236,7 @@ jobs:
         args: ci-assets/prepare_test.sh
     - name: features_2_test_suite
       id: features_2_test_suite
-      uses: docker://razorpay/onggi:php-7.2-apache-api
+      uses: docker://razorpay/onggi:php-7.2-api-web
       with:
         entrypoint: /bin/sh
         args: ci-assets/features_2_test_suite.sh
@@ -261,7 +280,7 @@ jobs:
       uses: actions/checkout@v2
     - name: prepare_test
       id: prepare_test
-      uses: docker://razorpay/onggi:php-7.2-apache-api
+      uses: docker://razorpay/onggi:php-7.2-api-web
       env:
         GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
       with:
@@ -269,7 +288,7 @@ jobs:
         args: ci-assets/prepare_test.sh
     - name: features_3_test_suite
       id: features_3_test_suite
-      uses: docker://razorpay/onggi:php-7.2-apache-api
+      uses: docker://razorpay/onggi:php-7.2-api-web
       with:
         entrypoint: /bin/sh
         args: ci-assets/features_3_test_suite.sh
@@ -313,7 +332,7 @@ jobs:
       uses: actions/checkout@v2
     - name: prepare_test
       id: prepare_test
-      uses: docker://razorpay/onggi:php-7.2-apache-api
+      uses: docker://razorpay/onggi:php-7.2-api-web
       env:
         GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
       with:
@@ -321,7 +340,7 @@ jobs:
         args: ci-assets/prepare_test.sh
     - name: features_4_test_suite
       id: features_4_test_suite
-      uses: docker://razorpay/onggi:php-7.2-apache-api
+      uses: docker://razorpay/onggi:php-7.2-api-web
       with:
         entrypoint: /bin/sh
         args: ci-assets/features_4_test_suite.sh
@@ -365,7 +384,7 @@ jobs:
       uses: actions/checkout@v2
     - name: prepare_test
       id: prepare_test
-      uses: docker://razorpay/onggi:php-7.2-apache-api
+      uses: docker://razorpay/onggi:php-7.2-api-web
       env:
         GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
       with:
@@ -373,7 +392,7 @@ jobs:
         args: ci-assets/prepare_test.sh
     - name: features_6_test_suite
       id: features_6_test_suite
-      uses: docker://razorpay/onggi:php-7.2-apache-api
+      uses: docker://razorpay/onggi:php-7.2-api-web
       with:
         entrypoint: /bin/sh
         args: ci-assets/features_6_test_suite.sh
@@ -422,7 +441,7 @@ jobs:
       uses: actions/checkout@v2
     - name: prepare_test
       id: prepare_test
-      uses: docker://razorpay/onggi:php-7.2-apache-api
+      uses: docker://razorpay/onggi:php-7.2-api-web
       env:
         GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
       with:
@@ -430,7 +449,7 @@ jobs:
         args: ci-assets/prepare_test.sh
     - name: gateway_1_test_suite
       id: gateway_1_test_suite
-      uses: docker://razorpay/onggi:php-7.2-apache-api
+      uses: docker://razorpay/onggi:php-7.2-api-web
       with:
         entrypoint: /bin/sh
         args: ci-assets/gateway_1_test_suite.sh
@@ -477,7 +496,7 @@ jobs:
       uses: actions/checkout@v2
     - name: prepare_test
       id: prepare_test
-      uses: docker://razorpay/onggi:php-7.2-apache-api
+      uses: docker://razorpay/onggi:php-7.2-api-web
       env:
         GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
       with:
@@ -485,7 +504,7 @@ jobs:
         args: ci-assets/prepare_test.sh
     - name: gateway_2_test_suite
       id: gateway_2_test_suite
-      uses: docker://razorpay/onggi:php-7.2-apache-api
+      uses: docker://razorpay/onggi:php-7.2-api-web
       with:
         entrypoint: /bin/sh
         args: ci-assets/gateway_2_test_suite.sh
@@ -532,7 +551,7 @@ jobs:
       uses: actions/checkout@v2
     - name: prepare_test
       id: prepare_test
-      uses: docker://razorpay/onggi:php-7.2-apache-api
+      uses: docker://razorpay/onggi:php-7.2-api-web
       env:
         GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
       with:
@@ -540,7 +559,7 @@ jobs:
         args: ci-assets/prepare_test.sh
     - name: gateway_3_test_suite
       id: gateway_3_test_suite
-      uses: docker://razorpay/onggi:php-7.2-apache-api
+      uses: docker://razorpay/onggi:php-7.2-api-web
       with:
         entrypoint: /bin/sh
         args: ci-assets/gateway_3_test_suite.sh
@@ -587,7 +606,7 @@ jobs:
       uses: actions/checkout@v2
     - name: prepare_test
       id: prepare_test
-      uses: docker://razorpay/onggi:php-7.2-apache-api
+      uses: docker://razorpay/onggi:php-7.2-api-web
       env:
         GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
       with:
@@ -595,7 +614,7 @@ jobs:
         args: ci-assets/prepare_test.sh
     - name: payment_test_suite
       id: payment_test_suite
-      uses: docker://razorpay/onggi:php-7.2-apache-api
+      uses: docker://razorpay/onggi:php-7.2-api-web
       with:
         entrypoint: /bin/sh
         args: ci-assets/payment_test_suite.sh
@@ -647,7 +666,8 @@ jobs:
       gateway_2_test_suite,
       gateway_3_test_suite,
       payment_test_suite,
-      build-app,
+      build-web,
+      build-worker,
       build-checkout,
       build-openresty
       ]

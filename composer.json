@@ -68,8 +68,7 @@
         "http-interop/http-factory-guzzle": "^1.0",
         "kriswallsmith/buzz": "^1.1",
         "google/protobuf": "^3.12",
-        "twirp/twirp": "^0.5.3",
-        "ext-rdkafka": "*"
+        "twirp/twirp": "^0.5.3"
     },
     "repositories": [
         {

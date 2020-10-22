@@ -1,6 +1,6 @@
 FROM razorpay/armory:wkhtmltopdf-v182 as wkhtmltopdf
 
-FROM razorpay/onggi:php-7.2-apache-api
+FROM razorpay/onggi:php-7.2-api-worker
 
 ARG GIT_COMMIT_HASH
 ARG GIT_TOKEN
@@ -21,14 +21,12 @@ RUN set -eu && \
     rm -rf /root/.composer && \
     composer clear-cache && \
     pear config-set php_ini /etc/php7/php.ini && \
-    mkdir -p public && echo "${GIT_COMMIT_HASH}" > public/commit.txt
+    mkdir -p public && echo "${GIT_COMMIT_HASH}" > public/commit.txt && \
+    mkdir -p storage && chmod 777 -R storage
 
-COPY --chown=apache:www-data . /app/
+COPY . /app/
 
-RUN cp dockerconf/default.conf dockerconf/mpm.conf /etc/apache2/conf.d/ && \
-    composer dump-autoload -o && \
+RUN composer dump-autoload -o && \
     php artisan optimize
 
-EXPOSE 80
-
-ENTRYPOINT [ "/usr/bin/dumb-init", "--single-child", "/app/dockerconf/entrypoint.sh"]
+ENTRYPOINT [ "/usr/bin/dumb-init", "--single-child", "/app/dockerconf/entrypoint.worker.sh"]
