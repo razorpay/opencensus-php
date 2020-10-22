@@ -68,6 +68,9 @@ final class RazorxTreatment
     // Decides if the settlement processed mail is sent to the merchant
     const SETTLEMENT_MAIL_RAMP = 'settlement_mail_ramp';
 
+    // Decides if the settlement processed/failed mail is sent to the merchant
+    const SETTLEMENT_SMS_RAMP = 'settlement_sms_ramp';
+
     // Decides payout channel based on IMPS mode
     const IMPS_MODE_PAYOUT_FILTER = 'imps_mode_payout_filter';
 

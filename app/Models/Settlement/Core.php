@@ -34,6 +34,10 @@ class Core extends Base\Core
 {
     const SETTLEMENT_DASHBOARD_URL = 'https://dashboard.razorpay.com/app/settlements/%s';
 
+    const SETTLEMENT_PROCESSED_SMS_TEMPLATE = 'sms.settlements.processed';
+
+    const SETTLEMENT_FAILED_SMS_TEMPLATE = 'sms.settlements.failed';
+
     public function retrieveById($id)
     {
         Entity::verifyIdAndStripSign($id);
@@ -294,13 +298,12 @@ class Core extends Base\Core
      * Sends a webhook to the merchant for successfully settled payments
      *
      * @param Entity $settlement
+     * @param null $redactedBaNumber
+     * @param bool $sendFailureSms
      */
-    public function triggerSettlementWebhook(Entity $settlement, $redactedBaNumber = null)
+    public function triggerSettlementWebhook(Entity $settlement, $redactedBaNumber = null, $sendFailureSms = false)
     {
-        if ($settlement->isStatusProcessed() === true)
-        {
-            $this->triggerSettlementsMail($settlement, $redactedBaNumber);
-        }
+        $this->triggerSettlementNotification($settlement, $redactedBaNumber, $sendFailureSms);
 
         if ($this->shouldSendWebhook($settlement) === false)
         {
@@ -319,13 +322,13 @@ class Core extends Base\Core
      * Sends an email to the merchant for processed settlement
      *
      * @param Entity $settlement
+     * @param null $bankAccountNumber
+     * @param null $merchant
      */
-    public function triggerSettlementsMail(Entity $settlement, $redactedBaNumber = null)
+    public function triggerSettlementsMail(Entity $settlement, $bankAccountNumber = null, $merchant = null)
     {
         try
         {
-            $merchant = $settlement->merchant;
-
             // Get razorx treatment
             $variant = $this->app->razorx->getTreatment(
                 $merchant->getId(),
@@ -336,14 +339,6 @@ class Core extends Base\Core
             if (strtolower($variant) !== 'on')
             {
                 return;
-            }
-
-            $bankAccountNumber = ($settlement->bankAccount !== null) ?
-                $settlement->bankAccount->getRedactedAccountNumber() : 'XXXX-XXXX-XXXX';
-
-            if ($redactedBaNumber !== null)
-            {
-                $bankAccountNumber = $redactedBaNumber;
             }
 
             $setlDetails  = (new SetlDetails\Core)->getSettlementDetails($settlement->getId(), $merchant);
@@ -364,11 +359,13 @@ class Core extends Base\Core
             if(empty($email) === true or $email === "")
             {
                 $this->trace->info(
-                    TraceCode::SETTLEMENT_PROCESSED_MAIL_NOTIFICATION_ENQUEUE_SKIPPED,
+                    TraceCode::SETTLEMENT_NOTIFICATION_SKIPPED,
                     [
-                        'merchant_id'   => $merchant->getId(),
-                        'settlement_id' => $settlement->getId(),
-                        'status'        => $settlement->getStatus(),
+                        'notification_mode' => 'email',
+                        'reason'            => 'no email associated with merchant',
+                        'merchant_id'       => $merchant->getId(),
+                        'settlement_id'     => $settlement->getId(),
+                        'status'            => $settlement->getStatus(),
                     ]);
 
                 return;
@@ -408,9 +405,172 @@ class Core extends Base\Core
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::SETTLEMENT_PROCESSED_MAIL_NOTIFICATION_ENQUEUE_FAILED,
+                TraceCode::SETTLEMENT_NOTIFICATION_FAILED,
                 [
-                    'settlement_id' => $settlement->getId()
+                    'notification_mode' => 'email',
+                    'settlement_id'     => $settlement->getId(),
+                    'merchant_id'       => $merchant->getId(),
+                    'settlement_status' => $settlement->getStatus(),
+                ]);
+        }
+    }
+
+    /**
+     * it is used to trigger the SMS on the status change of the settlements to failed or processed state
+     * @param Entity $settlement
+     * @param null $bankAccountNumber
+     * @param null $merchant
+     * @param bool $sendFailureSms
+     */
+    public function triggerSettlementsSms(Entity $settlement, $bankAccountNumber = null, $merchant = null, $sendFailureSms = false)
+    {
+        try
+        {
+            // Get razorx treatment
+            $variant = $this->app->razorx->getTreatment(
+                $merchant->getId(),
+                MerchantModel\RazorxTreatment::SETTLEMENT_SMS_RAMP,
+                $this->mode
+            );
+
+            if (strtolower($variant) !== 'on')
+            {
+                return;
+            }
+
+            if ($merchant->isLinkedAccount() === true)
+            {
+                $contactNo = $merchant->parent->merchantDetail->getContactMobile();
+            }
+            else
+            {
+                $contactNo = $merchant->merchantDetail->getContactMobile();
+            }
+
+            if (empty($contactNo) === true)
+            {
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_NOTIFICATION_SKIPPED,
+                    [
+                        'notification_mode'  => 'sms',
+                        'reason'             => 'no contact no associated with merchant account',
+                        'merchant_id'        => $merchant->getId(),
+                        'settlement_id'      => $settlement->getId(),
+                    ]);
+
+                return;
+            }
+
+            $request = [
+                'receiver' => $contactNo,
+                'source'   => 'api.'. $this->mode . '.settlements',
+                'params'   => [
+                    'merchant_id'     => $merchant->getId(),
+                    'bank_account_id' => $bankAccountNumber,
+                    'settlement_id'   => $settlement->getId(),
+                    'date'            => Carbon::now(timezone::IST)->format('j M Y, g A'),
+                ]
+            ];
+
+            if ($sendFailureSms === false)
+            {
+                $request['template']      = self::SETTLEMENT_PROCESSED_SMS_TEMPLATE ;
+                $request['params']['utr'] = $settlement->getUtr();
+            }
+            else if ($sendFailureSms === true)
+            {
+                $failureReason = $settlement->getRemarks();
+
+                if (empty($failureReason) === true)
+                {
+                    $this->trace->info(
+                        TraceCode::SETTLEMENT_NOTIFICATION_SKIPPED,
+                        [
+                            'notification_mode' => 'sms',
+                            'merchant_id'       => $merchant->getId(),
+                            'settlement_id'     => $settlement->getId(),
+                            'reason'            => 'no failure reason provided',
+                        ]);
+
+                    return;
+                }
+
+                $request['template']                 = self::SETTLEMENT_FAILED_SMS_TEMPLATE;
+                $request['params']['failure_reason'] = $failureReason;
+            }
+
+            $this->app['raven']->sendSms($request, true);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::SETTLEMENT_NOTIFICATION_FAILED,
+                [
+                    'merchant_id'       => $merchant->getId(),
+                    'settlement_id'     => $settlement->getId(),
+                    'notification_mode' => 'sms',
+                    'settlement_status' => $settlement->getStatus(),
+                ]);
+        }
+    }
+    /**
+     * This will be used to trigger the settlement Notification via SMS and Email
+     * @param Entity $settlement
+     * @param null $redactedBaNumber
+     * @param bool $sendFailureSms
+     */
+    public function triggerSettlementNotification(Entity $settlement, $redactedBaNumber = null, $sendFailureSms = false)
+    {
+        try
+        {
+            $merchant = $settlement->merchant;
+
+            $bankAccountNumber = ($settlement->bankAccount !== null) ?
+                $settlement->bankAccount->getRedactedAccountNumber() : 'XXXX-XXXX-XXXX';
+
+            if ($redactedBaNumber !== null)
+            {
+                $bankAccountNumber = $redactedBaNumber;
+            }
+
+            if ($settlement->isStatusProcessed() === true)
+            {
+                $this->triggerSettlementsMail($settlement, $bankAccountNumber, $merchant);
+
+                $this->triggerSettlementsSms($settlement, $bankAccountNumber, $merchant, false);
+            }
+            else if (($settlement->isStatusFailed() === true) and ($sendFailureSms === true))
+            {
+                $failureReason = $settlement->getRemarks();
+
+                if (empty($failureReason) === true)
+                {
+                    $this->trace->info(
+                        TraceCode::SETTLEMENT_NOTIFICATION_SKIPPED,
+                        [
+                            'notification_mode' => 'sms',
+                            'merchant_id'       => $merchant->getId(),
+                            'settlement_id'     => $settlement->getId(),
+                            'reason'            => 'no failure reason provided',
+                        ]);
+
+                    return;
+                }
+
+                $this->triggerSettlementsSms($settlement, $bankAccountNumber, $merchant, true);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::SETTLEMENT_NOTIFICATION_FAILED,
+                [
+                    'merchant_id'       => $merchant->getId(),
+                    'settlement_id'     => $settlement->getId(),
                 ]);
         }
     }

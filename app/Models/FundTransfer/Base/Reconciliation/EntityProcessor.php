@@ -79,8 +79,9 @@ abstract class EntityProcessor extends Base\Core
         }
 
         return [
-            'entity'        => $this->source,
-            'fire_webhook'  => $this->fireWebhook
+            'entity'            => $this->source,
+            'fire_webhook'      => $this->fireWebhook,
+            'send_fail_sms'     => $this->sendFailureEmailToMerchant,
         ];
     }
 

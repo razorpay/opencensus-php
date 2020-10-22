@@ -228,7 +228,9 @@ class Core extends Base\Core
                 continue;
             }
 
-            $settlementCore->triggerSettlementWebhook($entity);
+            $sendFailedSms = isset($reconciledRow['send_fail_sms']) === true  ? $reconciledRow['send_fail_sms'] : false;
+
+            $settlementCore->triggerSettlementWebhook($entity, null, $sendFailedSms);
         }
     }
 
