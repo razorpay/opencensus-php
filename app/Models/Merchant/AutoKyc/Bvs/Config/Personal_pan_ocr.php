@@ -13,7 +13,7 @@ class Personal_pan_ocr extends BaseConfig
         ],
     ];
 
-    protected $rule = [
+    protected $rule_v1 = [
         'version'    => 'v1',
         'rules_list' => [
             '0' => [

@@ -254,7 +254,7 @@ class Core extends Base\Core
     public function updatePoaVerificationStatusIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant) : void
     {
         $isPoaBvsRazorxExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
-            $merchant,
+            $merchant->getId(),
             RazorxTreatment::BVS_AUTO_KYC_OCR);
 
         if (((new Merchant\Core)->isAutoKycEnabled($merchantDetails, $merchant) === false) or
@@ -2457,7 +2457,7 @@ class Core extends Base\Core
         }
 
         $shouldVerifyGstinFromBVS = (new Merchant\Core)->isRazorxExperimentEnable(
-            $merchant,
+            $merchant->getId(),
             RazorxTreatment::BVS_GSTIN_VALIDATION);
 
         if ($shouldVerifyGstinFromBVS === true)
@@ -2587,7 +2587,7 @@ class Core extends Base\Core
         }
 
         $shouldVerifyFromBVS = (new Merchant\Core)->isRazorxExperimentEnable(
-            $merchant,
+            $merchant->getId(),
             RazorxTreatment::BVS_CIN_VALIDATION);
 
         ($shouldVerifyFromBVS === true) ?

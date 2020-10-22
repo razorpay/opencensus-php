@@ -102,7 +102,8 @@ class DefaultProcessor implements Processor
      */
     public function getRules(): array
     {
-        return $this->bvsRuleConfig->getRule();
+        $ownerId = $this->input[Constant::OWNER_ID] ?? '';
+        return $this->bvsRuleConfig->getRule($ownerId);
     }
 
     /**

@@ -42,6 +42,10 @@ final class RazorxTreatment
     const BVS_BUSINESS_PAN_OCR     = 'bvs_business_pan_ocr';
     const BVS_CANCELLED_CHEQUE_OCR = 'bvs_cancelled_cheque_ocr';
 
+    // this experiment is used to route merchant to BVS with new RuleDef
+
+    const BVS_RULE_NEW_VERSION = "bvs_rule_new_version";
+
     // Decides if increased cap for allowed line items in invoice to be used for merchant's invoice.
     const INV_INCREASED_LINE_ITEMS_CAP = 'inv_increased_line_items_cap';
 

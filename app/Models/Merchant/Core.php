@@ -3967,14 +3967,14 @@ class Core extends Base\Core
     /**
      * Checks if razorx experiment is enabled for the merchant
      *
-     * @param Entity $merchant
+     * @param string $merchantId
      * @param string $experimentName
      *
      * @return bool
      */
-    public function isRazorxExperimentEnable(Entity $merchant, string $experimentName): bool
+    public function isRazorxExperimentEnable(string $merchantId, string $experimentName): bool
     {
-        $variant = $this->app->razorx->getTreatment($merchant->getId(),
+        $variant = $this->app->razorx->getTreatment($merchantId,
                                                     $experimentName,
                                                     $this->mode);
 

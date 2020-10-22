@@ -23,7 +23,7 @@ class CancelledChequeOcr extends Base
         return (
             ($this->merchantDetails->getBankDetailsDocVerificationStatus() === BvsValidationConstants::PENDING) and
             ($this->documentCore->getPublicFileStoreIdForDocumentType($this->merchant, Type::CANCELLED_CHEQUE) !== null) and
-            ($this->merchantCore->isRazorxExperimentEnable($this->merchant, RazorxTreatment::BVS_CANCELLED_CHEQUE_OCR) === true));
+            ($this->merchantCore->isRazorxExperimentEnable($this->merchant->getId(), RazorxTreatment::BVS_CANCELLED_CHEQUE_OCR) === true));
     }
 
     /**

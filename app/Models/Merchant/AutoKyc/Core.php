@@ -68,7 +68,7 @@ class Core extends Base\Core
         ];
 
         $isPoiBvsRazorxExperimentEnable = (new Merchant\Core())->isRazorxExperimentEnable(
-            $this->merchant,
+            $this->merchant->getId(),
             RazorxTreatment::BVS_AUTO_KYC);
 
         if ($isPoiBvsRazorxExperimentEnable === true)

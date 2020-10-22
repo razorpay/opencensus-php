@@ -167,7 +167,7 @@ class Core extends Base\Core
             $razorxExperiment = $documentTypeRazorxMap[Constant::RAZORX_EXPERIMENT] ?? '';
 
             if ((empty($razorxExperiment) === false) and
-                (new Merchant\Core())->isRazorxExperimentEnable($merchant, $razorxExperiment) === false)
+                (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(), $razorxExperiment) === false)
             {
                 return;
             }
@@ -309,7 +309,7 @@ class Core extends Base\Core
         }
 
         $isPoaBvsRazorxExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
-            $merchant,
+            $merchant->getId(),
             RazorxTreatment::BVS_AUTO_KYC_OCR);
 
         if ($isPoaBvsRazorxExperimentEnabled === true)

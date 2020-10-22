@@ -13,7 +13,7 @@ class Llp_deed extends BaseConfig
         ],
     ];
 
-    protected $rule = [
+    protected $rule_v1 = [
         'version'    => 'v1',
         'rules_list' => [
             '0' => [
@@ -47,6 +47,55 @@ class Llp_deed extends BaseConfig
                                     'var' => 'artefact.details.signatory_details.0.full_name.value',
                                 ],
                                 70,
+                            ],
+                        ]
+                    ]
+                ],
+            ]
+        ],
+    ];
+
+    protected $rule_v2 = [
+        'version'    => 'v2',
+        'rules_list' => [
+            '0' => [
+                'rule_type' => 'string_comparison_rule',
+                'rule_def'  =>
+                    [
+                        'fuzzy_wuzzy' => [
+                            [
+                                'var' => 'artefact.details.llp_name.value',
+                            ],
+                            [
+                                'var' => 'enrichments.online_provider.details.llp_name.value',
+                            ],
+                            81,
+                            [
+                                "private limited",
+                                "limited liability partnership",
+                                "pvt",
+                                "ltd",
+                                "."
+                            ]
+                        ],
+                    ],
+            ],
+            '1' => [
+                'rule_type' => 'array_comparison_rule',
+                'rule_def'  => [
+                    "some" => [
+                        [
+                            'var' => 'enrichments.online_provider.details.signatory_details',
+                        ],
+                        [
+                            'fuzzy_suzzy' => [
+                                [
+                                    'var' => 'artefact.details.signatory_details.0.full_name.value',
+                                ],
+                                [
+                                    'var' => 'each_array_element.full_name.value',
+                                ],
+                                81,
                             ],
                         ]
                     ]
