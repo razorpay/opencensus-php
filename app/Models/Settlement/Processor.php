@@ -863,7 +863,7 @@ class Processor extends Base\Core
     protected function createSettlementForMerchant(
         MerchantModel\Entity $merchant, string $channel, string $balanceType, array $params = []): array
     {
-        RuntimeManager::setMemoryLimit('4096M');
+        RuntimeManager::setMemoryLimit('5120M');
 
         $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $balanceType);
 

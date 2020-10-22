@@ -477,6 +477,13 @@ class Repository extends Base\Repository
         if ($logging === true)
         {
             $startTime = microtime(true);
+
+            $this->trace->info(TraceCode::SETTLEMENT_TXN_UPDATE_BEGIN,
+                [
+                    'merchant_id' => $txns->first()->getMerchantId(),
+                    'txn_count'   => $txnCount,
+                ]);
+
         }
 
         foreach ($batchedIds as $batch)
@@ -488,6 +495,19 @@ class Repository extends Base\Repository
                           ->update($values);
 
             $expected = count($batch);
+
+            if ($logging === true)
+            {
+                $startTime = microtime(true);
+
+                $this->trace->info(TraceCode::SETTLEMENT_TXN_BATCH_UPDATED,
+                    [
+                        'merchant_id'       => $txns->first()->getMerchantId(),
+                        'txn_batch_count'   => $expected,
+                        'time_taken'        => microtime(true) - $startTime,
+                    ]);
+
+            }
 
             if ($count !== $expected)
             {
