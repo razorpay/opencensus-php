@@ -41,13 +41,19 @@ export default class MainNavLink extends Component {
     this.props.setActivePageName(this.props.label);
 
     const trackingRequired = ['Transactions', 'Settlements', 'Payment Pages'];
+    const tracking = this.props.tracking;
 
     if (trackingRequired.includes(this.props.label)) {
-      const tracking = this.props.tracking;
       tracking.trackEvent(
         window.rzpQ.merchantActions().initiated(`${this.props.label}.click.initiated`),
       );
     }
+    tracking.trackEvent(
+      window.rzpQ.merchantActions().clicked(`dashboard.leftnav`, {
+        menu_label: this.props.label,
+        session_id: window.session_id,
+      }),
+    );
 
     return this.props.isMobileResolution && this.props.toggleMobileMenu();
   }
