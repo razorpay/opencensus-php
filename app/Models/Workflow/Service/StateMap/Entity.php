@@ -13,8 +13,8 @@ class Entity extends Base\PublicEntity
     protected $entity = EntityConstants::WORKFLOW_STATE_MAP;
     protected $table  = Table::WORKFLOW_STATE_MAP;
 
-    const ID                     = 'id';
-    const ID_LENGTH              = 14;
+    protected $generateIdOnCreate = true;
+
     const WORKFLOW_ID            = 'workflow_id';
     const MERCHANT_ID            = 'merchant_id';
     const ORG_ID                 = 'org_id';
@@ -182,20 +182,4 @@ class Entity extends Base\PublicEntity
     }
 
     // ============================= END SETTERS =============================
-
-    /**
-     * {@inheritDoc}
-     */
-    public function toArrayPublic()
-    {
-        return parent::toArrayPublic();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function toArray()
-    {
-        return parent::toArray();
-    }
 }

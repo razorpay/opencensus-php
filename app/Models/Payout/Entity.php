@@ -32,6 +32,7 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Exception\UserWorkflowNotApplicableException;
@@ -141,6 +142,17 @@ class Entity extends Base\PublicEntity
     const PENDING_ON_ROLES = 'pending_on_roles';
     const PENDING_ON_USER  = 'pending_on_user';
 
+    // Keys for finding pending payouts from new workflow service tables,
+    // The tables for new workflow service are joined with existing payouts tables
+    // TO figure out this information.
+    //
+    // Usage: Front end sends query params as `pending_on_roles`, backend reads these fields,
+    // queries the WF tables and sends back the request.
+    // Check `getPendingPayoutsForRoles` function in Payout\Service
+    const PENDING_ON_ME_VIA_WFS    = 'pending_on_me_via_wfs';
+    const PENDING_ON_ROLES_VIA_WFS = 'pending_on_roles_via_wfs';
+    const PENDING_ON_USER_VIA_WFS  = 'pending_on_user_via_wfs';
+
     // Input keys
     const ACCOUNT_NUMBER       = 'account_number';
     const QUEUE_IF_LOW_BALANCE = 'queue_if_low_balance';
@@ -200,11 +212,11 @@ class Entity extends Base\PublicEntity
     const PAYOUT_CREDITS_NEW_FLOW = 'payout_credits_new_flow';
 
     const SCHEDULED_PAYOUTS_SUMMARY = [
-          self::TODAY,
-          self::NEXT_TWO_DAYS,
-          self::NEXT_WEEK,
-          self::NEXT_MONTH,
-          self::ALL_TIME
+        self::TODAY,
+        self::NEXT_TWO_DAYS,
+        self::NEXT_WEEK,
+        self::NEXT_MONTH,
+        self::ALL_TIME
     ];
 
     const API       = 'api';
@@ -1154,9 +1166,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
 
         // pushing a message in the queue to update the source for payout
-         $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
+        $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
 
-         SourceUpdater::dispatchToQueue($mode, $this, $currentStatus, $status);
+        SourceUpdater::dispatchToQueue($mode, $this, $currentStatus, $status);
     }
 
     public function setInitiatedAt()
@@ -1469,6 +1481,16 @@ class Entity extends Base\PublicEntity
         /** @var RepositoryManager $repo */
         $repo = app('repo');
 
+        $workflowViaWorkflowService = $repo->workflow_entity_map->isPresent(self::PAYOUT, $this->getId());
+
+        // The pending on user field is handled differently in the workflow service.
+        // We don't have the sufficient information to populate pending on user at this point.
+        // Hence, returning. The workflow history attribute will enrich this is field.
+        if ($workflowViaWorkflowService === true)
+        {
+            return;
+        }
+
         $user = $basicAuth->getUser();
 
         $userRoleId = [];
@@ -1510,7 +1532,7 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        $attributes[self::WORKFLOW_HISTORY] = $this->getWorkflowHistoryData();
+        $attributes[self::WORKFLOW_HISTORY] = $this->getWorkflowHistoryData($attributes);
     }
 
     public function setPublicBankingAccountIdAttribute(array & $attributes)
@@ -1919,12 +1941,36 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    // Workflow history helper functions
-
-    protected function getWorkflowHistoryData(): array
+    /**
+     * Retrieves the workflow history from either the workflow service or the api workflow system.
+     *
+     * If the payout is present in the entity_map table, the history is picked
+     * from the workflow service, otherwise the api workflow system.
+     *
+     * Optionally enriches the pending_on_user field
+     *
+     * @param array|null $attributes
+     * @return array
+     * @throws ServerErrorException
+     */
+    private function getWorkflowHistoryData(array &$attributes = null): array
     {
         /** @var RepositoryManager $repo */
         $repo = app('repo');
+
+        $workflowViaWorkflowService = $repo->workflow_entity_map->isPresent(self::PAYOUT, $this->getId());
+
+        if ($workflowViaWorkflowService === true)
+        {
+            $data = $this->getWorkflowDetailsFromWorkflowService();
+
+            if (empty($attributes) === false)
+            {
+                $this->enrichPendingOnUser($data, $attributes);
+            }
+
+            return $data;
+        }
 
         // TODO: Only get actions for the create_payout permission
         $workflowActions = $this->workflowActions()
@@ -1956,6 +2002,28 @@ class Entity extends Base\PublicEntity
         ];
 
         return $data;
+    }
+
+
+    /**
+     * @return array|mixed
+     * @throws ServerErrorException
+     */
+    public function getWorkflowDetailsFromWorkflowService()
+    {
+        /** @var RepositoryManager $repo */
+        $repo = app('repo');
+
+        $workflowEntityMap = $repo->workflow_entity_map->findByEntityIdAndEntityType(self::PAYOUT, $this->getId());
+
+        $workflowId = optional($workflowEntityMap)->getWorkflowId();
+
+        if (empty($workflowId) === true)
+        {
+            return [];
+        }
+
+        return (new Workflow\Service\Client)->getWorkflowById($workflowId);
     }
 
     public static function serializeWorkflowSteps(array $steps): array
@@ -2088,5 +2156,14 @@ class Entity extends Base\PublicEntity
         }
 
         return sprintf('%s %s %s, %s ', $day, $month, $year, $formattedScheduledTimeSlot);
+    }
+
+    private function enrichPendingOnUser(array $data, array &$attributes)
+    {
+        if ((empty($data) === false) and
+            (isset($data[self::PENDING_ON_USER]) === true))
+        {
+            $attributes[self::PENDING_ON_USER] = $data[self::PENDING_ON_USER];
+        }
     }
 }

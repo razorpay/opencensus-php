@@ -36,6 +36,7 @@ use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Admin\Permission;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Jobs\BatchPayoutsProcess;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
@@ -46,6 +47,7 @@ use RZP\Jobs\ScheduledPayoutsProcess;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
 use RZP\Models\Merchant\Balance\Channel;
+use RZP\Models\Workflow\Service\EntityMap;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
@@ -83,11 +85,16 @@ class Core extends Base\Core
      */
     protected $mutex;
 
+    /** @var Workflow\Service\Client  */
+    protected $workflowService;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->workflowService = new Workflow\Service\Client;
     }
 
     /**
@@ -492,7 +499,7 @@ class Core extends Base\Core
                 }
 
                 $this->repo->saveOrFail($payout);
-        });
+            });
 
         if (($initialUtr === null) and
             ($payout->getUtr() !== null))
@@ -601,107 +608,107 @@ class Core extends Base\Core
         return $this->mutex->acquireAndRelease(
             'process_queued_payouts_' . $balanceId,
             function() use ($balanceId)
-        {
-            $queuedPayoutsPaginationData = $this->getQueuedPayoutsPaginationData();
-
-            $offset = $queuedPayoutsPaginationData[$balanceId] ?? 0;
-
-            $queuedPayouts = $this->repo->payout->fetchQueuedPayoutsForBalanceId($balanceId, $offset);
-
-            $summary = [];
-
-            /** @var Merchant\Balance\Entity $balanceEntity */
-            $balanceEntity = $this->repo->balance->findOrFailById($balanceId);
-
-            // In case of current accounts(direct), balance in balance entity is stale since in our system we create
-            // transactions only when we fetch account statement from bank.So for current account we can't use balance
-            // from balance table.
-            // So before making payout we need to get balance amount in account from gateway.
-            // We check if account type is direct or not. If direct then fetch balance from gateway if balance last
-            // fetched at was a while ago(using threshold to decide that).Use this balance amount to dispatch payout.
-            // If account type shared then use balance amount from balance entity.
-
-            $balanceAmount = $balanceEntity->getBalanceWithLockedBalance();
-
-            if ($balanceEntity->isAccountTypeDirect() === true)
             {
-                /** @var BankingAccount\Entity $merchantBankingAccount */
-                $merchantBankingAccount = $balanceEntity->bankingAccount;
+                $queuedPayoutsPaginationData = $this->getQueuedPayoutsPaginationData();
 
-                $merchantBankingAccount = $this->fetchAndUpdateGatewayBalance($merchantBankingAccount);
+                $offset = $queuedPayoutsPaginationData[$balanceId] ?? 0;
 
-                if ($merchantBankingAccount->isGatewayBalanceFetchCronMoreUpdated() === true)
+                $queuedPayouts = $this->repo->payout->fetchQueuedPayoutsForBalanceId($balanceId, $offset);
+
+                $summary = [];
+
+                /** @var Merchant\Balance\Entity $balanceEntity */
+                $balanceEntity = $this->repo->balance->findOrFailById($balanceId);
+
+                // In case of current accounts(direct), balance in balance entity is stale since in our system we create
+                // transactions only when we fetch account statement from bank.So for current account we can't use balance
+                // from balance table.
+                // So before making payout we need to get balance amount in account from gateway.
+                // We check if account type is direct or not. If direct then fetch balance from gateway if balance last
+                // fetched at was a while ago(using threshold to decide that).Use this balance amount to dispatch payout.
+                // If account type shared then use balance amount from balance entity.
+
+                $balanceAmount = $balanceEntity->getBalanceWithLockedBalance();
+
+                if ($balanceEntity->isAccountTypeDirect() === true)
                 {
-                    $balanceAmount = $merchantBankingAccount->getGatewayBalance();
+                    /** @var BankingAccount\Entity $merchantBankingAccount */
+                    $merchantBankingAccount = $balanceEntity->bankingAccount;
+
+                    $merchantBankingAccount = $this->fetchAndUpdateGatewayBalance($merchantBankingAccount);
+
+                    if ($merchantBankingAccount->isGatewayBalanceFetchCronMoreUpdated() === true)
+                    {
+                        $balanceAmount = $merchantBankingAccount->getGatewayBalance();
+                    }
                 }
-            }
 
-            $totalQueuedPayouts = $this->repo->payout->fetchCountOfQueuedPayoutsForBalance($balanceId);
+                $totalQueuedPayouts = $this->repo->payout->fetchCountOfQueuedPayoutsForBalance($balanceId);
 
-            $dispatchedData = $this->dispatchApplicablePayouts($balanceAmount, $queuedPayouts);
+                $dispatchedData = $this->dispatchApplicablePayouts($balanceAmount, $queuedPayouts);
 
-            $dispatchedPayoutCount = $dispatchedData['dispatched_payout_count'];
+                $dispatchedPayoutCount = $dispatchedData['dispatched_payout_count'];
 
-            $this->updateOffsetForBalance($balanceId,
-                                          $offset,
-                                          $queuedPayoutsPaginationData,
-                                          $dispatchedPayoutCount,
-                                          $totalQueuedPayouts);
+                $this->updateOffsetForBalance($balanceId,
+                                              $offset,
+                                              $queuedPayoutsPaginationData,
+                                              $dispatchedPayoutCount,
+                                              $totalQueuedPayouts);
 
-            $summary[$balanceId] = [
-                'original_balance'         => $balanceAmount,
-                'balance_remaining'        => $dispatchedData['balance_remaining'],
-                'total_payout_count'       => count($queuedPayouts),
-                'dispatched_payout_count'  => $dispatchedPayoutCount,
-                'dispatched_payout_amount' => ($balanceAmount - $dispatchedData['balance_remaining']),
-            ];
+                $summary[$balanceId] = [
+                    'original_balance'         => $balanceAmount,
+                    'balance_remaining'        => $dispatchedData['balance_remaining'],
+                    'total_payout_count'       => count($queuedPayouts),
+                    'dispatched_payout_count'  => $dispatchedPayoutCount,
+                    'dispatched_payout_amount' => ($balanceAmount - $dispatchedData['balance_remaining']),
+                ];
 
-            $this->trace->info(
-                TraceCode::PAYOUT_DISPATCH_SUMMARY,
-                $summary
-            );
+                $this->trace->info(
+                    TraceCode::PAYOUT_DISPATCH_SUMMARY,
+                    $summary
+                );
 
-            return $summary;
-        },
-        300,
-        ErrorCode::BAD_REQUEST_QUEUED_PAYOUT_INITIATE_ANOTHER_OPERATION_IN_PROGRESS);
+                return $summary;
+            },
+            300,
+            ErrorCode::BAD_REQUEST_QUEUED_PAYOUT_INITIATE_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
     public function processQueuedPayout(string $payoutId): Entity
     {
         return $this->mutex->acquireAndRelease(
-                $payoutId,
-                function() use ($payoutId)
-                {
-                    /** @var Entity $payout */
-                    $payout = $this->repo->payout->findOrFail($payoutId);
+            $payoutId,
+            function() use ($payoutId)
+            {
+                /** @var Entity $payout */
+                $payout = $this->repo->payout->findOrFail($payoutId);
 
-                    $payout->getValidator()->validateProcessingQueuedPayout();
+                $payout->getValidator()->validateProcessingQueuedPayout();
 
-                    //
-                    // Currently, we support queued concept only for Fund Account type.
-                    // If we are supporting for others, the processor call needs to be fixed here.
-                    // Also, need to fix transaction.created event in the processor since
-                    // we do that only for fund_account and not for others.
-                    //
-                    // Apart from this, we also have to handle dispatching FTA for queued payouts.
-                    //
-                    // We also have to handle the fund transfer destination while processing the queued payout.
-                    //
-                    $payout = $this->getProcessor('fund_account_payout')
-                                   ->setMerchant($payout->merchant)
-                                   ->processQueuedPayout($payout);
+                //
+                // Currently, we support queued concept only for Fund Account type.
+                // If we are supporting for others, the processor call needs to be fixed here.
+                // Also, need to fix transaction.created event in the processor since
+                // we do that only for fund_account and not for others.
+                //
+                // Apart from this, we also have to handle dispatching FTA for queued payouts.
+                //
+                // We also have to handle the fund transfer destination while processing the queued payout.
+                //
+                $payout = $this->getProcessor('fund_account_payout')
+                               ->setMerchant($payout->merchant)
+                               ->processQueuedPayout($payout);
 
-                    //
-                    // There might be some type of payouts where we don't want to dispatch FTA.
-                    // Should handle that before adding any other type of payouts as queued.
-                    //
-                    $this->dispatchFtaInitiate($payout);
+                //
+                // There might be some type of payouts where we don't want to dispatch FTA.
+                // Should handle that before adding any other type of payouts as queued.
+                //
+                $this->dispatchFtaInitiate($payout);
 
-                    return $payout;
-                },
-                self::PAYOUT_MUTEX_LOCK_TIMEOUT,
-                ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+                return $payout;
+            },
+            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
     }
 
     public function initiateProcessingOfBatchSubmittedPayouts(string $merchantId)
@@ -906,21 +913,21 @@ class Core extends Base\Core
         }
 
         return $this->mutex->acquireAndRelease(
-                $payout->getId(),
-                function() use ($payout, $remarks)
-                {
-                    $payout->getValidator()->validateCancel();
+            $payout->getId(),
+            function() use ($payout, $remarks)
+            {
+                $payout->getValidator()->validateCancel();
 
-                    $payout->setStatus(Status::CANCELLED);
+                $payout->setStatus(Status::CANCELLED);
 
-                    $payout->setRemarks($remarks);
+                $payout->setRemarks($remarks);
 
-                    $this->repo->saveOrFail($payout);
+                $this->repo->saveOrFail($payout);
 
-                    return $payout;
-                },
-                self::PAYOUT_MUTEX_LOCK_TIMEOUT,
-                ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+                return $payout;
+            },
+            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
     }
 
     public function approvePayout(Entity $payout, array $input): Entity
@@ -930,9 +937,24 @@ class Core extends Base\Core
         return $payout;
     }
 
+    /**
+     * @param Entity $payout
+     * @return Entity
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\LogicException
+     */
     public function forceRejectPayout(Entity $payout): Entity
     {
         $payout->getValidator()->validatePayoutStatusForApproveOrReject();
+
+        // If payout workflow is on workflow service, process via workflow service
+        // else process via api workflow system
+        if ($this->shouldCallWorkflowService($payout) === true)
+        {
+            $this->rejectWorkflowViaWorkflowService($payout, []);
+
+            return $payout;
+        }
 
         /** @var Workflow\Action\Entity|null $workflowAction */
         $workflowAction = $this->getOpenWorkflowActionForPayout($payout);
@@ -969,6 +991,13 @@ class Core extends Base\Core
 
     protected function processWorkflowActionOnPayout(Entity $payout, bool $approve, array $input): Entity
     {
+        // If payout workflow is on workflow service, process via workflow service
+        // else process via api workflow system
+        if ($this->shouldCallWorkflowService($payout) === true)
+        {
+            return $this->processActionOnPayoutViaWorkflowService($payout, $approve, $input);
+        }
+
         /** @var Workflow\Action\Entity|null $workflowAction */
         $workflowAction = $this->getOpenWorkflowActionForPayout($payout);
 
@@ -1029,15 +1058,10 @@ class Core extends Base\Core
                 if (($approve === true) and
                     ($workflowAction->getApproved() === true))
                 {
-                    //setting default queue flag to be true since Queued Payouts is always enabled
-                    // alongside Payout Workflows till now
-                    $queueFlag = isset($input[Entity::QUEUE_IF_LOW_BALANCE]) ?
-                                 $input[Entity::QUEUE_IF_LOW_BALANCE] : true;
-
-                    $payout = $this->processPendingPayout($payout, $queueFlag);
+                    $payout = $this->processApprovePayout($payout, $input);
                 }
                 else if (($approve === false) and
-                        ($workflowAction->isRejected() === true))
+                         ($workflowAction->isRejected() === true))
                 {
                     $payout = $this->processRejectPayout($payout);
                 }
@@ -1048,13 +1072,78 @@ class Core extends Base\Core
         return $payout;
     }
 
+    /**
+     * @param Entity $payout
+     * @return bool
+     */
+    public function shouldCallWorkflowService(Entity $payout): bool
+    {
+        // If a workflow is present for the payout in the entity map repo
+        // If present, we should call the workflow service
+        // else process via API workflow system
+        $workflowViaWorkflowService = (new EntityMap\Repository)->isPresent(Entity::PAYOUT, $payout->getId());
+
+        return $workflowViaWorkflowService === true;
+    }
+
+    /**
+     * @param Entity $payout
+     * @param bool $approved
+     * @param array $input
+     * @return Entity
+     * @throws Exception\RuntimeException
+     * @throws Exception\ServerErrorException
+     */
+    protected function processActionOnPayoutViaWorkflowService(Entity $payout, bool $approved, array $input): Entity
+    {
+        $workflowAction = null;
+
+        if ($approved === true)
+        {
+            $this->approveWorkflowViaWorkflowService($payout, $input);
+        }
+        else
+        {
+            $this->rejectWorkflowViaWorkflowService($payout, $input);
+        }
+
+        return $payout;
+    }
+
+    /**
+     * @param Entity $payout
+     * @param array $input
+     * @return Entity
+     * @throws Exception\RuntimeException
+     * @throws Exception\ServerErrorException
+     */
+    public function retryPayoutWorkflow(Entity $payout, array $input): Entity
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_WORKFLOW_SERVICE_WORKFLOW_CREATE_RETRY,
+            [
+                'id'    => $payout->getId(),
+                'input' => $input
+            ]);
+
+        // error handling is done in the payout service layer
+        $response = $this->workflowService->createWorkflow($payout, $input);
+
+        if (empty($response) === false)
+        {
+            (new EntityMap\Core)->create($response, $payout);
+        }
+
+        return $payout;
+    }
+
     protected function getOpenWorkflowActionForPayout(Entity $payout)
     {
         $workflowActions = (new Workflow\Action\Core)->fetchOpenActionOnEntityOperation(
-                                $payout->getId(),
-                                $payout->getEntity(),
-                                Permission\Name::CREATE_PAYOUT,
-                                Org\Entity::RAZORPAY_ORG_ID);
+            $payout->getId(),
+            $payout->getEntity(),
+            Permission\Name::CREATE_PAYOUT,
+            Org\Entity::RAZORPAY_ORG_ID);
 
         //
         // There can only be 0 or 1 open workflow actions on a payout
@@ -1144,10 +1233,10 @@ class Core extends Base\Core
             $dispatchedCount += 1;
         }
 
-         return [
-             'balance_remaining'        => $totalBalance,
-             'dispatched_payout_count'  => $dispatchedCount,
-         ];
+        return [
+            'balance_remaining'        => $totalBalance,
+            'dispatched_payout_count'  => $dispatchedCount,
+        ];
     }
 
     protected function dispatchAllScheduledPayouts(Base\PublicCollection $scheduledPayouts)
@@ -1534,7 +1623,7 @@ class Core extends Base\Core
                 $this->updateBankingAccountStatementLinkedEntity($transaction->bankingAccountStatement, $payout);
             });
 
-          (new Transaction\Core)->dispatchEventForTransactionCreatedWithoutEmailOrSmsNotification($payout->transaction);
+        (new Transaction\Core)->dispatchEventForTransactionCreatedWithoutEmailOrSmsNotification($payout->transaction);
     }
 
     protected function updateTransactionAndSourceToReversal(Reversal\Entity $reversal, Transaction\Entity $transaction)
@@ -2311,11 +2400,11 @@ class Core extends Base\Core
             // So this signifies bug in logic, hence raising an alert and failing webhook
             //
             (new Settlement\SlackNotification)->send(
-            'FTS sent different channel for rbl payouts',
-            $traceInfo,
-            null,
-            1,
-            'rx_ca_rbl_alerts');
+                'FTS sent different channel for rbl payouts',
+                $traceInfo,
+                null,
+                1,
+                'rx_ca_rbl_alerts');
 
             throw new Exception\LogicException(
                 'Different channel passed by FTS for rbl payouts',
@@ -2325,8 +2414,8 @@ class Core extends Base\Core
         else
         {
             $this->trace->info(
-            TraceCode::PAYOUT_CHANNEL_CHANGED_USING_FTA_DATA,
-            $traceInfo);
+                TraceCode::PAYOUT_CHANNEL_CHANGED_USING_FTA_DATA,
+                $traceInfo);
 
             $payout->setChannel($ftsChannel);
 
@@ -2366,8 +2455,8 @@ class Core extends Base\Core
         // this check if by any flow other flow credits were reversed, then don't
         // reverse credits again
         $creditTxns = (new Credits\Transaction\Core)->getReverseCreditTransactionsForSource(
-                                                                   $payout->getId(),
-                                                                   Constants\Entity::PAYOUT);
+            $payout->getId(),
+            Constants\Entity::PAYOUT);
 
         if ($creditTxns->count() > 0)
         {
@@ -2375,6 +2464,44 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    /**
+     * @param bool $approved
+     * @param Entity $payout
+     * @param array $input
+     * @return Entity
+     */
+    public function processActionOnPayout(bool $approved, Entity $payout, array $input): Entity
+    {
+        $this->trace->info(TraceCode::PAYOUT_WORKFLOW_ACTION_INFO,
+            [
+                'payout_id' => $payout->getId(),
+                'approved'  => $approved,
+                'input'     => $input,
+            ]);
+
+        if ($approved === true)
+        {
+            return $this->processApprovePayout($payout, $input);
+        }
+
+        return $this->processRejectPayout($payout);
+    }
+
+    /**
+     * @param array $input
+     * @param Entity $payout
+     * @return Entity
+     */
+    protected function processApprovePayout(Entity $payout, array $input): Entity
+    {
+        //setting default queue flag to be true since Queued Payouts is always enabled
+        // alongside Payout Workflows till now
+        $queueFlag = isset($input[Entity::QUEUE_IF_LOW_BALANCE]) ?
+            boolval($input[Entity::QUEUE_IF_LOW_BALANCE]) : true;
+
+        return $this->processPendingPayout($payout, $queueFlag);
     }
 
     public function updateFreePayoutsConsumedAndGetFeeType(Merchant\Balance\Entity $balance)
@@ -2389,8 +2516,7 @@ class Core extends Base\Core
     public function decreaseFreePayoutsConsumedAndUnsetFeeTypeIfApplicable(Entity $payout)
     {
         $shouldUnsetFeeType =
-            (new CounterHelper)->decreaseFreePayoutsConsumedIfApplicable($payout,
-                                                                         CounterHelper::REVERSAL_OR_FAILURE);
+            (new CounterHelper)->decreaseFreePayoutsConsumedIfApplicable($payout, CounterHelper::REVERSAL_OR_FAILURE);
 
         if ($shouldUnsetFeeType === true)
         {
@@ -2429,12 +2555,12 @@ class Core extends Base\Core
         if ($balanceType !== Merchant\Balance\Type::BANKING)
         {
             throw new BadRequestException(
-            ErrorCode::BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INCORRECT_BALANCE_TYPE,
-            Merchant\Balance\Entity::BALANCE_ID,
-            [
-                Merchant\Balance\Entity::BALANCE_ID => $balanceId,
-                Merchant\Balance\Entity::TYPE       => $balanceType,
-            ]);
+                ErrorCode::BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INCORRECT_BALANCE_TYPE,
+                Merchant\Balance\Entity::BALANCE_ID,
+                [
+                    Merchant\Balance\Entity::BALANCE_ID => $balanceId,
+                    Merchant\Balance\Entity::TYPE       => $balanceType,
+                ]);
         }
 
         $freePayoutsCount = (new Merchant\Balance\FreePayout)->getFreePayoutsCount($balance);
@@ -2454,5 +2580,81 @@ class Core extends Base\Core
         ];
 
         return $response;
+    }
+
+    public function rejectWorkflowViaWorkflowService(Entity $payout, array $input)
+    {
+        /** @var $auth BasicAuth */
+        $auth = $this->app['basicauth'];
+
+        $input['action'] = Workflow\Service\Adapter\Payout::REJECTED;
+
+        $this->trace->info(TraceCode::PAYOUT_WORKFLOW_ACTION_INFO, [
+            'payout_id' => $payout->getId(),
+            'action'    => Workflow\Service\Adapter\Payout::REJECTED,
+            'input'     => $input,
+        ]);
+
+        try
+        {
+            // Admin / Cron(for scheduled payouts) actions
+            // On these auth, one can only reject a workflow
+            if (($auth->isAdminAuth() === true) ||
+                ($auth->isCron() === true))
+            {
+                return $this->workflowService->createDirectAction($payout, $input);
+            }
+
+            // Dashboard user actions
+            return $this->workflowService->createActionOnEntity($payout, $input);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->count(Metric::PAYOUT_WORKFLOW_ACTION_FAILED_TOTAL);
+
+            $this->trace->error(TraceCode::PAYOUT_WORKFLOW_SERVICE_ACTION_CREATE_FAILED, [
+                'payout_id' => $payout->getId(),
+                'action'    => Workflow\Service\Adapter\Payout::REJECTED,
+            ]);
+
+            throw $e;
+        }
+    }
+
+    public function approveWorkflowViaWorkflowService(Entity $payout, array $input)
+    {
+        /** @var $auth BasicAuth */
+        $auth = $this->app['basicauth'];
+
+        $input['action'] = Workflow\Service\Adapter\Payout::APPROVED;
+
+        $this->trace->info(TraceCode::PAYOUT_WORKFLOW_ACTION_INFO, [
+            'payout_id' => $payout->getId(),
+            'action'    => Workflow\Service\Adapter\Payout::APPROVED,
+            'input'     => $input,
+        ]);
+
+        if (($auth->isAdminAuth() === true) ||
+            ($auth->isCron() === true))
+        {
+            throw new Exception\BadRequestValidationFailureException('Auth is not proxy for payout approval');
+        }
+
+        try
+        {
+            // Dashboard user actions
+            return $this->workflowService->createActionOnEntity($payout, $input);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->count(Metric::PAYOUT_WORKFLOW_ACTION_FAILED_TOTAL);
+
+            $this->trace->error(TraceCode::PAYOUT_WORKFLOW_SERVICE_ACTION_CREATE_FAILED, [
+                'payout_id' => $payout->getId(),
+                'action'    => Workflow\Service\Adapter\Payout::APPROVED,
+            ]);
+
+            throw $e;
+        }
     }
 }

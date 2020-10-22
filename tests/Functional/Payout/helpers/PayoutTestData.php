@@ -428,6 +428,1369 @@ return [
         ],
     ],
 
+    'testApprovePayoutWithNewWorkflowService' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/{id}/approve',
+            'content' => [
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '0007',
+                'user_comment' => 'Approving',
+            ],
+        ],
+        'response' => [
+            'content' =>  [
+                "entity" => "payout",
+                "fund_account_id" => "fa_100000000000fa",
+                "amount" => 10000,
+                "currency" => "INR",
+                "transaction_id" => null,
+                "pending_on_user" => true,
+                "workflow_history" => [
+                    "config_id" => "FV0aQGxYU4kk4c",
+                    "entity_type" => "payouts",
+                    "title" => "title",
+                    "description" => "[]",
+                    "config_version" => "1",
+                    "creator_id" => "10000000000000",
+                    "creator_type" => "merchant",
+                    "diff" => [
+                        "old" => [
+                            "amount" => null,
+                            "merchant_id" => null
+                        ],
+                        "new" => [
+                            "amount" => 10000,
+                            "merchant_id" => "10000000000000"
+                        ]
+                    ],
+                    "callback_details" => [
+                        "state_callbacks" => [
+                            "created" => [
+                                "method" => "post",
+                                "payload" => [
+                                    "queue_if_low_balance" => true,
+                                    "type" => "state_callbacks_created"
+                                ],
+                                "headers" => [
+                                    "x-creator-id" => ""
+                                ],
+                                "service" => "api_live",
+                                "type" => "basic",
+                                "response_handler" => [
+                                    "type" => "success_status_codes",
+                                    "success_status_codes" => [
+                                        201,
+                                        200
+                                    ]
+                                ]
+                            ],
+                            "processed" => [
+                                "method" => "post",
+                                "payload" => [
+                                    "queue_if_low_balance" => true,
+                                    "type" => "state_callbacks_processed"
+                                ],
+                                "headers" => [
+                                    "x-creator-id" => ""
+                                ],
+                                "service" => "api_live",
+                                "type" => "basic",
+                                "response_handler" => [
+                                    "type" => "success_status_codes",
+                                    "success_status_codes" => [
+                                        201,
+                                        200
+                                    ]
+                                ]
+                            ]
+                        ],
+                        "workflow_callbacks" => [
+                            "processed" => [
+                                "domain_status" => [
+                                    "approved" => [
+                                        "method" => "post",
+                                        "payload" => [
+                                            "queue_if_low_balance" => true,
+                                            "type" => "workflow_callbacks_approved"
+                                        ],
+                                        "headers" => [
+                                            "x-creator-id" => ""
+                                        ],
+                                        "service" => "api_live",
+                                        "type" => "basic",
+                                        "response_handler" => [
+                                            "type" => "success_status_codes",
+                                            "success_status_codes" => [
+                                                201,
+                                                200
+                                            ]
+                                        ]
+                                    ],
+                                    "rejected" => [
+                                        "method" => "post",
+                                        "payload" => [
+                                            "queue_if_low_balance" => true,
+                                            "type" => "state_callbacks_rejected"
+                                        ],
+                                        "headers" => [
+                                            "x-creator-id" => ""
+                                        ],
+                                        "service" => "api_live",
+                                        "type" => "basic",
+                                        "response_handler" => [
+                                            "type" => "success_status_codes",
+                                            "success_status_codes" => [
+                                                201,
+                                                200
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ],
+                    "status" => "initiated",
+                    "domain_status" => "created",
+                    "owner_id" => "10000000000000",
+                    "owner_type" => "merchant",
+                    "org_id" => "100000razorpay",
+                    "states" => [
+                        "Owner_Approval" => [
+                            "workflow_id" => "FV58BuqLuCP4Cw",
+                            "status" => "created",
+                            "name" => "Owner_Approval",
+                            "group_name" => "ABC",
+                            "type" => "checker",
+                            "rules" => [
+                                "actor_property_key" => "role",
+                                "actor_property_value" => "owner",
+                                "count" => 1
+                            ],
+                            "pending_on_user" => true,
+                        ]
+                    ],
+                    "type" => "payout-approval",
+                    "pending_on_user" => true
+                ],
+                "notes" => [
+                    "random_key1" => "Hello",
+                    "random_key2" => "Hi"
+                ],
+                "fees" => 0,
+                "tax" => 0,
+                "status" => "pending",
+                "purpose" => "refund",
+                "utr" => null,
+                "user_id" => null,
+                "mode" => "NEFT",
+                "reference_id" => null,
+                "narration" => "Test Merchant Fund Transfer",
+                "batch_id" => null,
+                "cancelled_at" => null,
+                "queued_at" => null,
+                "banking_account_id" => "bacc_1000000lcustba",
+                "initiated_at" => null,
+                "processed_at" => null,
+                "reversed_at" => null,
+                "failed_at" => null,
+                "rejected_at" => null,
+                "failure_reason" => null,
+                "fee_type" => null,
+                "scheduled_at" => null,
+                "scheduled_on" => null
+            ]
+        ],
+    ],
+
+    'testApprovePayoutWithNWFSWithQueuingDisabled' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/{id}/approve',
+            'content' => [
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '0007',
+                'user_comment' => 'Approving',
+                'queue_if_low_balance'  => 0,
+            ],
+        ],
+        'response' => [
+            'content' =>  [
+                "entity" => "payout",
+                "fund_account_id" => "fa_100000000000fa",
+                "amount" => 10000,
+                "currency" => "INR",
+                "transaction_id" => null,
+                "pending_on_user" => true,
+                "workflow_history" => [
+                    "config_id" => "FV0aQGxYU4kk4c",
+                    "entity_type" => "payouts",
+                    "title" => "title",
+                    "description" => "[]",
+                    "config_version" => "1",
+                    "creator_id" => "10000000000000",
+                    "creator_type" => "merchant",
+                    "diff" => [
+                        "old" => [
+                            "amount" => null,
+                            "merchant_id" => null
+                        ],
+                        "new" => [
+                            "amount" => 10000,
+                            "merchant_id" => "10000000000000"
+                        ]
+                    ],
+                    "callback_details" => [
+                        "state_callbacks" => [
+                            "created" => [
+                                "method" => "post",
+                                "payload" => [
+                                    "type" => "state_callbacks_created"
+                                ],
+                                "headers" => [
+                                    "x-creator-id" => ""
+                                ],
+                                "service" => "api_live",
+                                "type" => "basic",
+                                "response_handler" => [
+                                    "type" => "success_status_codes",
+                                    "success_status_codes" => [
+                                        201,
+                                        200
+                                    ]
+                                ]
+                            ],
+                            "processed" => [
+                                "method" => "post",
+                                "payload" => [
+                                    "type" => "state_callbacks_processed"
+                                ],
+                                "headers" => [
+                                    "x-creator-id" => ""
+                                ],
+                                "service" => "api_live",
+                                "type" => "basic",
+                                "response_handler" => [
+                                    "type" => "success_status_codes",
+                                    "success_status_codes" => [
+                                        201,
+                                        200
+                                    ]
+                                ]
+                            ]
+                        ],
+                        "workflow_callbacks" => [
+                            "processed" => [
+                                "domain_status" => [
+                                    "approved" => [
+                                        "method" => "post",
+                                        "payload" => [
+                                            "type" => "workflow_callbacks_approved"
+                                        ],
+                                        "headers" => [
+                                            "x-creator-id" => ""
+                                        ],
+                                        "service" => "api_live",
+                                        "type" => "basic",
+                                        "response_handler" => [
+                                            "type" => "success_status_codes",
+                                            "success_status_codes" => [
+                                                201,
+                                                200
+                                            ]
+                                        ]
+                                    ],
+                                    "rejected" => [
+                                        "method" => "post",
+                                        "payload" => [
+                                            "type" => "state_callbacks_rejected"
+                                        ],
+                                        "headers" => [
+                                            "x-creator-id" => ""
+                                        ],
+                                        "service" => "api_live",
+                                        "type" => "basic",
+                                        "response_handler" => [
+                                            "type" => "success_status_codes",
+                                            "success_status_codes" => [
+                                                201,
+                                                200
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ],
+                    "status" => "initiated",
+                    "domain_status" => "created",
+                    "owner_id" => "10000000000000",
+                    "owner_type" => "merchant",
+                    "org_id" => "100000razorpay",
+                    "states" => [
+                        "Owner_Approval" => [
+                            "workflow_id" => "FV58BuqLuCP4Cw",
+                            "status" => "created",
+                            "name" => "Owner_Approval",
+                            "group_name" => "ABC",
+                            "type" => "checker",
+                            "rules" => [
+                                "actor_property_key" => "role",
+                                "actor_property_value" => "owner",
+                                "count" => 1
+                            ],
+                            "pending_on_user" => true,
+                        ]
+                    ],
+                    "type" => "payout-approval",
+                    "pending_on_user" => true
+                ],
+                "notes" => [
+                    "random_key1" => "Hello",
+                    "random_key2" => "Hi"
+                ],
+                "fees" => 0,
+                "tax" => 0,
+                "status" => "pending",
+                "purpose" => "refund",
+                "utr" => null,
+                "user_id" => null,
+                "mode" => "NEFT",
+                "reference_id" => null,
+                "narration" => "Test Merchant Fund Transfer",
+                "batch_id" => null,
+                "cancelled_at" => null,
+                "queued_at" => null,
+                "banking_account_id" => "bacc_1000000lcustba",
+                "initiated_at" => null,
+                "processed_at" => null,
+                "reversed_at" => null,
+                "failed_at" => null,
+                "rejected_at" => null,
+                "failure_reason" => null,
+                "fee_type" => null,
+                "scheduled_at" => null,
+                "scheduled_on" => null
+            ]
+        ],
+    ],
+
+    'testApprovePayoutWithNWFSWithQueuingEnabled' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/{id}/approve',
+            'content' => [
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '0007',
+                'user_comment' => 'Approving',
+                'queue_if_low_balance'  => 1,
+            ],
+        ],
+        'response' => [
+            'content' =>  [
+                "entity" => "payout",
+                "fund_account_id" => "fa_100000000000fa",
+                "amount" => 10000,
+                "currency" => "INR",
+                "transaction_id" => null,
+                "pending_on_user" => true,
+                "workflow_history" => [
+                    "config_id" => "FV0aQGxYU4kk4c",
+                    "entity_type" => "payouts",
+                    "title" => "title",
+                    "description" => "[]",
+                    "config_version" => "1",
+                    "creator_id" => "10000000000000",
+                    "creator_type" => "merchant",
+                    "diff" => [
+                        "old" => [
+                            "amount" => null,
+                            "merchant_id" => null
+                        ],
+                        "new" => [
+                            "amount" => 10000,
+                            "merchant_id" => "10000000000000"
+                        ]
+                    ],
+                    "callback_details" => [
+                        "state_callbacks" => [
+                            "created" => [
+                                "method" => "post",
+                                "payload" => [
+                                    "queue_if_low_balance" => true,
+                                    "type" => "state_callbacks_created"
+                                ],
+                                "headers" => [
+                                    "x-creator-id" => ""
+                                ],
+                                "service" => "api_live",
+                                "type" => "basic",
+                                "response_handler" => [
+                                    "type" => "success_status_codes",
+                                    "success_status_codes" => [
+                                        201,
+                                        200
+                                    ]
+                                ]
+                            ],
+                            "processed" => [
+                                "method" => "post",
+                                "payload" => [
+                                    "queue_if_low_balance" => true,
+                                    "type" => "state_callbacks_processed"
+                                ],
+                                "headers" => [
+                                    "x-creator-id" => ""
+                                ],
+                                "service" => "api_live",
+                                "type" => "basic",
+                                "response_handler" => [
+                                    "type" => "success_status_codes",
+                                    "success_status_codes" => [
+                                        201,
+                                        200
+                                    ]
+                                ]
+                            ]
+                        ],
+                        "workflow_callbacks" => [
+                            "processed" => [
+                                "domain_status" => [
+                                    "approved" => [
+                                        "method" => "post",
+                                        "payload" => [
+                                            "queue_if_low_balance" => true,
+                                            "type" => "workflow_callbacks_approved"
+                                        ],
+                                        "headers" => [
+                                            "x-creator-id" => ""
+                                        ],
+                                        "service" => "api_live",
+                                        "type" => "basic",
+                                        "response_handler" => [
+                                            "type" => "success_status_codes",
+                                            "success_status_codes" => [
+                                                201,
+                                                200
+                                            ]
+                                        ]
+                                    ],
+                                    "rejected" => [
+                                        "method" => "post",
+                                        "payload" => [
+                                            "queue_if_low_balance" => true,
+                                            "type" => "state_callbacks_rejected"
+                                        ],
+                                        "headers" => [
+                                            "x-creator-id" => ""
+                                        ],
+                                        "service" => "api_live",
+                                        "type" => "basic",
+                                        "response_handler" => [
+                                            "type" => "success_status_codes",
+                                            "success_status_codes" => [
+                                                201,
+                                                200
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ],
+                    "status" => "initiated",
+                    "domain_status" => "created",
+                    "owner_id" => "10000000000000",
+                    "owner_type" => "merchant",
+                    "org_id" => "100000razorpay",
+                    "states" => [
+                        "Owner_Approval" => [
+                            "workflow_id" => "FV58BuqLuCP4Cw",
+                            "status" => "created",
+                            "name" => "Owner_Approval",
+                            "group_name" => "ABC",
+                            "type" => "checker",
+                            "rules" => [
+                                "actor_property_key" => "role",
+                                "actor_property_value" => "owner",
+                                "count" => 1
+                            ],
+                            "pending_on_user" => true,
+                        ]
+                    ],
+                    "type" => "payout-approval",
+                    "pending_on_user" => true
+                ],
+                "notes" => [
+                    "random_key1" => "Hello",
+                    "random_key2" => "Hi"
+                ],
+                "fees" => 0,
+                "tax" => 0,
+                "status" => "pending",
+                "purpose" => "refund",
+                "utr" => null,
+                "user_id" => null,
+                "mode" => "NEFT",
+                "reference_id" => null,
+                "narration" => "Test Merchant Fund Transfer",
+                "batch_id" => null,
+                "cancelled_at" => null,
+                "queued_at" => null,
+                "banking_account_id" => "bacc_1000000lcustba",
+                "initiated_at" => null,
+                "processed_at" => null,
+                "reversed_at" => null,
+                "failed_at" => null,
+                "rejected_at" => null,
+                "failure_reason" => null,
+                "fee_type" => null,
+                "scheduled_at" => null,
+                "scheduled_on" => null
+            ]
+        ],
+    ],
+
+    'testRejectPayoutWithNewWorkflowService' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/{id}/reject',
+            'content' => [
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '0007',
+                'user_comment' => 'Approving',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "entity" => "payout",
+                "fund_account_id" => "fa_100000000000fa",
+                "amount" => 10000,
+                "currency" => "INR",
+                "transaction_id" => null,
+                "pending_on_user" => true,
+                "workflow_history" => [
+                    "config_id" => "FV0aQGxYU4kk4c",
+                    "entity_type" => "payouts",
+                    "title" => "title",
+                    "description" => "[]",
+                    "config_version" => "1",
+                    "creator_id" => "10000000000000",
+                    "creator_type" => "merchant",
+                    "diff" => [
+                        "old" => [
+                            "amount" => null,
+                            "merchant_id" => null
+                        ],
+                        "new" => [
+                            "amount" => 10000,
+                            "merchant_id" => "10000000000000"
+                        ]
+                    ],
+                    "callback_details" => [
+                        "state_callbacks" => [
+                            "created" => [
+                                "method" => "post",
+                                "payload" => [
+                                    "queue_if_low_balance" => true,
+                                    "type" => "state_callbacks_created"
+                                ],
+                                "headers" => [
+                                    "x-creator-id" => ""
+                                ],
+                                "service" => "api_live",
+                                "type" => "basic",
+                                "response_handler" => [
+                                    "type" => "success_status_codes",
+                                    "success_status_codes" => [
+                                        201,
+                                        200
+                                    ]
+                                ]
+                            ],
+                            "processed" => [
+                                "method" => "post",
+                                "payload" => [
+                                    "queue_if_low_balance" => true,
+                                    "type" => "state_callbacks_processed"
+                                ],
+                                "headers" => [
+                                    "x-creator-id" => ""
+                                ],
+                                "service" => "api_live",
+                                "type" => "basic",
+                                "response_handler" => [
+                                    "type" => "success_status_codes",
+                                    "success_status_codes" => [
+                                        201,
+                                        200
+                                    ]
+                                ]
+                            ]
+                        ],
+                        "workflow_callbacks" => [
+                            "processed" => [
+                                "domain_status" => [
+                                    "approved" => [
+                                        "method" => "post",
+                                        "payload" => [
+                                            "queue_if_low_balance" => true,
+                                            "type" => "workflow_callbacks_approved"
+                                        ],
+                                        "headers" => [
+                                            "x-creator-id" => ""
+                                        ],
+                                        "service" => "api_live",
+                                        "type" => "basic",
+                                        "response_handler" => [
+                                            "type" => "success_status_codes",
+                                            "success_status_codes" => [
+                                                201,
+                                                200
+                                            ]
+                                        ]
+                                    ],
+                                    "rejected" => [
+                                        "method" => "post",
+                                        "payload" => [
+                                            "queue_if_low_balance" => true,
+                                            "type" => "state_callbacks_rejected"
+                                        ],
+                                        "headers" => [
+                                            "x-creator-id" => ""
+                                        ],
+                                        "service" => "api_live",
+                                        "type" => "basic",
+                                        "response_handler" => [
+                                            "type" => "success_status_codes",
+                                            "success_status_codes" => [
+                                                201,
+                                                200
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ],
+                    "status" => "initiated",
+                    "domain_status" => "created",
+                    "owner_id" => "10000000000000",
+                    "owner_type" => "merchant",
+                    "org_id" => "100000razorpay",
+                    "states" => [
+                        "Owner_Approval" => [
+                            "status" => "created",
+                            "name" => "Owner_Approval",
+                            "group_name" => "ABC",
+                            "type" => "checker",
+                            "rules" => [
+                                "actor_property_key" => "role",
+                                "actor_property_value" => "owner",
+                                "count" => 1
+                            ],
+                            "pending_on_user" => true,
+                            "created_at" => "1598377315",
+                            "updated_at" => "1598377315"
+                        ]
+                    ],
+                    "type" => "payout-approval",
+                    "pending_on_user" => true
+                ],
+                "notes" => [
+                ],
+                "fees" => 0,
+                "tax" => 0,
+                "status" => "pending",
+                "purpose" => "refund",
+                "utr" => null,
+                "user_id" => null,
+                "mode" => "NEFT",
+                "reference_id" => null,
+                "narration" => "Test Merchant Fund Transfer",
+                "batch_id" => null,
+                "cancelled_at" => null,
+                "queued_at" => null,
+                "banking_account_id" => "bacc_1000000lcustba",
+                "initiated_at" => null,
+                "processed_at" => null,
+                "reversed_at" => null,
+                "failed_at" => null,
+                "rejected_at" => null,
+                "failure_reason" => null,
+                "fee_type" => null,
+                "scheduled_at" => null,
+                "scheduled_on" => null
+            ],
+        ],
+    ],
+
+    'testApprovePayoutCallbackFromNWFS' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'url'     => '/payouts_internal/{id}/approve',
+            'content' => [
+                'queue_if_low_balance'  => false,
+                'type' => 'workflow_callbacks_approved',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "entity" => "payout",
+                "fund_account_id" => "fa_100000000000fa",
+                "fund_account" => [
+                    "id" => "fa_100000000000fa",
+                    "entity" => "fund_account",
+                    "contact_id" => "cont_1000001contact",
+                    "account_type" => "bank_account",
+                    "bank_account" => [
+                        "ifsc" => "YESB0CMSNOC",
+                        "bank_name" => "Yes Bank",
+                        "name" => "random_name",
+                        "notes" => [
+                        ],
+                        "account_number" => "2224440041626905"
+                    ],
+                    "batch_id" => null,
+                    "active" => true,
+                ],
+                "amount" => 10000,
+                "currency" => "INR",
+                "transaction" => [
+                    "entity" => "transaction",
+                    "account_number" => "2224440041626905",
+                    "amount" => 10590,
+                    "currency" => "INR",
+                    "credit" => 0,
+                    "debit" => 10590,
+                    "balance" => 9989410,
+                ],
+                "pending_on_user" => true,
+                "workflow_history" => [
+                    "config_id" => "FV0aQGxYU4kk4c",
+                    "entity_type" => "payouts",
+                    "title" => "title",
+                    "description" => "[]",
+                    "config_version" => "1",
+                    "creator_id" => "10000000000000",
+                    "creator_type" => "merchant",
+                    "diff" => [
+                        "old" => [
+                            "amount" => null,
+                            "merchant_id" => null
+                        ],
+                        "new" => [
+                            "amount" => 10000,
+                            "merchant_id" => "10000000000000"
+                        ]
+                    ],
+                    "callback_details" => [
+                        "state_callbacks" => [
+                            "created" => [
+                                "method" => "post",
+                                "payload" => [
+                                    "queue_if_low_balance" => true,
+                                    "type" => "state_callbacks_created"
+                                ],
+                                "headers" => [
+                                    "x-creator-id" => ""
+                                ],
+                                "service" => "api_live",
+                                "type" => "basic",
+                                "response_handler" => [
+                                    "type" => "success_status_codes",
+                                    "success_status_codes" => [
+                                        201,
+                                        200
+                                    ]
+                                ]
+                            ],
+                            "processed" => [
+                                "method" => "post",
+                                "payload" => [
+                                    "queue_if_low_balance" => true,
+                                    "type" => "state_callbacks_processed"
+                                ],
+                                "headers" => [
+                                    "x-creator-id" => ""
+                                ],
+                                "service" => "api_live",
+                                "type" => "basic",
+                                "response_handler" => [
+                                    "type" => "success_status_codes",
+                                    "success_status_codes" => [
+                                        201,
+                                        200
+                                    ]
+                                ]
+                            ]
+                        ],
+                        "workflow_callbacks" => [
+                            "processed" => [
+                                "domain_status" => [
+                                    "approved" => [
+                                        "method" => "post",
+                                        "payload" => [
+                                            "queue_if_low_balance" => true,
+                                            "type" => "workflow_callbacks_approved"
+                                        ],
+                                        "headers" => [
+                                            "x-creator-id" => ""
+                                        ],
+                                        "service" => "api_live",
+                                        "type" => "basic",
+                                        "response_handler" => [
+                                            "type" => "success_status_codes",
+                                            "success_status_codes" => [
+                                                201,
+                                                200
+                                            ]
+                                        ]
+                                    ],
+                                    "rejected" => [
+                                        "method" => "post",
+                                        "payload" => [
+                                            "queue_if_low_balance" => true,
+                                            "type" => "state_callbacks_rejected"
+                                        ],
+                                        "headers" => [
+                                            "x-creator-id" => ""
+                                        ],
+                                        "service" => "api_live",
+                                        "type" => "basic",
+                                        "response_handler" => [
+                                            "type" => "success_status_codes",
+                                            "success_status_codes" => [
+                                                201,
+                                                200
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ],
+                    "status" => "initiated",
+                    "domain_status" => "created",
+                    "owner_id" => "10000000000000",
+                    "owner_type" => "merchant",
+                    "org_id" => "100000razorpay",
+                    "states" => [
+                        "Owner_Approval" => [
+                            "status" => "created",
+                            "name" => "Owner_Approval",
+                            "group_name" => "ABC",
+                            "type" => "checker",
+                            "rules" => [
+                                "actor_property_key" => "role",
+                                "actor_property_value" => "owner",
+                                "count" => 1
+                            ],
+                            "pending_on_user" => true,
+                        ]
+                    ],
+                    "type" => "payout-approval",
+                    "pending_on_user" => true
+                ],
+                "notes" => [
+                ],
+                "fees" => 590,
+                "tax" => 90,
+                "status" => "processing",
+                "purpose" => "refund",
+                "utr" => null,
+                "user_id" => null,
+                "mode" => "NEFT",
+                "reference_id" => null,
+                "narration" => "Test Merchant Fund Transfer",
+                "batch_id" => null,
+                "cancelled_at" => null,
+                "queued_at" => null,
+                "banking_account_id" => "bacc_1000000lcustba",
+                "processed_at" => null,
+                "reversed_at" => null,
+                "failed_at" => null,
+                "rejected_at" => null,
+                "failure_reason" => null,
+                "fee_type" => null,
+                "scheduled_at" => null,
+                "scheduled_on" => null
+            ],
+        ],
+    ],
+
+    'testRejectPayoutCallbackFromNWFS' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'url'     => '/payouts_internal/{id}/reject',
+            'content' => [
+                'queue_if_low_balance'  => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "entity" => "payout",
+                "fund_account_id" => "fa_100000000000fa",
+                "fund_account" => [
+                    "id" => "fa_100000000000fa",
+                    "entity" => "fund_account",
+                    "contact_id" => "cont_1000001contact",
+                    "account_type" => "bank_account",
+                    "bank_account" => [
+                        "ifsc" => "YESB0CMSNOC",
+                        "bank_name" => "Yes Bank",
+                        "name" => "random_name",
+                        "notes" => [
+                        ],
+                        "account_number" => "2224440041626905"
+                    ],
+                    "batch_id" => null,
+                    "active" => true,
+                ],
+                "amount" => 10000,
+                "currency" => "INR",
+                "transaction_id" => null,
+                "pending_on_user" => true,
+                "workflow_history" => [
+                    "config_id" => "FV0aQGxYU4kk4c",
+                    "entity_type" => "payouts",
+                    "title" => "title",
+                    "description" => "[]",
+                    "config_version" => "1",
+                    "creator_id" => "10000000000000",
+                    "creator_type" => "merchant",
+                    "diff" => [
+                        "old" => [
+                            "amount" => null,
+                            "merchant_id" => null
+                        ],
+                        "new" => [
+                            "amount" => 10000,
+                            "merchant_id" => "10000000000000"
+                        ]
+                    ],
+                    "callback_details" => [
+                        "state_callbacks" => [
+                            "created" => [
+                                "method" => "post",
+                                "payload" => [
+                                    "queue_if_low_balance" => true,
+                                    "type" => "state_callbacks_created"
+                                ],
+                                "headers" => [
+                                    "x-creator-id" => ""
+                                ],
+                                "service" => "api_live",
+                                "type" => "basic",
+                                "response_handler" => [
+                                    "type" => "success_status_codes",
+                                    "success_status_codes" => [
+                                        201,
+                                        200
+                                    ]
+                                ]
+                            ],
+                            "processed" => [
+                                "method" => "post",
+                                "payload" => [
+                                    "queue_if_low_balance" => true,
+                                    "type" => "state_callbacks_processed"
+                                ],
+                                "headers" => [
+                                    "x-creator-id" => ""
+                                ],
+                                "service" => "api_live",
+                                "type" => "basic",
+                                "response_handler" => [
+                                    "type" => "success_status_codes",
+                                    "success_status_codes" => [
+                                        201,
+                                        200
+                                    ]
+                                ]
+                            ]
+                        ],
+                        "workflow_callbacks" => [
+                            "processed" => [
+                                "domain_status" => [
+                                    "approved" => [
+                                        "method" => "post",
+                                        "payload" => [
+                                            "queue_if_low_balance" => true,
+                                            "type" => "workflow_callbacks_approved"
+                                        ],
+                                        "headers" => [
+                                            "x-creator-id" => ""
+                                        ],
+                                        "service" => "api_live",
+                                        "type" => "basic",
+                                        "response_handler" => [
+                                            "type" => "success_status_codes",
+                                            "success_status_codes" => [
+                                                201,
+                                                200
+                                            ]
+                                        ]
+                                    ],
+                                    "rejected" => [
+                                        "method" => "post",
+                                        "payload" => [
+                                            "queue_if_low_balance" => true,
+                                            "type" => "state_callbacks_rejected"
+                                        ],
+                                        "headers" => [
+                                            "x-creator-id" => ""
+                                        ],
+                                        "service" => "api_live",
+                                        "type" => "basic",
+                                        "response_handler" => [
+                                            "type" => "success_status_codes",
+                                            "success_status_codes" => [
+                                                201,
+                                                200
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ],
+                    "status" => "initiated",
+                    "domain_status" => "created",
+                    "owner_id" => "10000000000000",
+                    "owner_type" => "merchant",
+                    "org_id" => "100000razorpay",
+                    "states" => [
+                        "Owner_Approval" => [
+                            "status" => "created",
+                            "name" => "Owner_Approval",
+                            "group_name" => "ABC",
+                            "type" => "checker",
+                            "rules" => [
+                                "actor_property_key" => "role",
+                                "actor_property_value" => "owner",
+                                "count" => 1
+                            ],
+                            "pending_on_user" => true,
+                        ]
+                    ],
+                    "type" => "payout-approval",
+                    "pending_on_user" => true
+                ],
+                "notes" => [
+                ],
+                "fees" => 0,
+                "tax" => 0,
+                "status" => "rejected",
+                "purpose" => "refund",
+                "utr" => null,
+                "user_id" => null,
+                "mode" => "NEFT",
+                "reference_id" => null,
+                "narration" => "Test Merchant Fund Transfer",
+                "batch_id" => null,
+                "cancelled_at" => null,
+                "queued_at" => null,
+                "banking_account_id" => "bacc_1000000lcustba",
+                "initiated_at" => null,
+                "processed_at" => null,
+                "reversed_at" => null,
+                "failed_at" => null,
+                "failure_reason" => null,
+                "fee_type" => null,
+                "scheduled_at" => null,
+                "scheduled_on" => null
+            ],
+        ],
+    ],
+
+    'testGetWorkflowFromNWFS' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/{id}/history',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "config_id" => "FV0aQGxYU4kk4c",
+                "entity_type" => "payouts",
+                "title" => "title",
+                "description" => "[]",
+                "config_version" => "1",
+                "creator_id" => "10000000000000",
+                "creator_type" => "merchant",
+                "diff" => [
+                    "old" => [
+                        "amount" => null,
+                        "merchant_id" => null
+                    ],
+                    "new" => [
+                        "amount" => 10000,
+                        "merchant_id" => "10000000000000"
+                    ]
+                ],
+                "callback_details" => [
+                    "state_callbacks" => [
+                        "created" => [
+                            "method" => "post",
+                            "payload" => [
+                                "queue_if_low_balance" => true,
+                                "type" => "state_callbacks_created"
+                            ],
+                            "headers" => [
+                                "x-creator-id" => ""
+                            ],
+                            "service" => "api_live",
+                            "type" => "basic",
+                            "response_handler" => [
+                                "type" => "success_status_codes",
+                                "success_status_codes" => [
+                                    201,
+                                    200
+                                ]
+                            ]
+                        ],
+                        "processed" => [
+                            "method" => "post",
+                            "payload" => [
+                                "queue_if_low_balance" => true,
+                                "type" => "state_callbacks_processed"
+                            ],
+                            "headers" => [
+                                "x-creator-id" => ""
+                            ],
+                            "service" => "api_live",
+                            "type" => "basic",
+                            "response_handler" => [
+                                "type" => "success_status_codes",
+                                "success_status_codes" => [
+                                    201,
+                                    200
+                                ]
+                            ]
+                        ]
+                    ],
+                    "workflow_callbacks" => [
+                        "processed" => [
+                            "domain_status" => [
+                                "approved" => [
+                                    "method" => "post",
+                                    "payload" => [
+                                        "queue_if_low_balance" => true,
+                                        "type" => "workflow_callbacks_approved"
+                                    ],
+                                    "headers" => [
+                                        "x-creator-id" => ""
+                                    ],
+                                    "service" => "api_live",
+                                    "type" => "basic",
+                                    "response_handler" => [
+                                        "type" => "success_status_codes",
+                                        "success_status_codes" => [
+                                            201,
+                                            200
+                                        ]
+                                    ]
+                                ],
+                                "rejected" => [
+                                    "method" => "post",
+                                    "payload" => [
+                                        "queue_if_low_balance" => true,
+                                        "type" => "state_callbacks_rejected"
+                                    ],
+                                    "headers" => [
+                                        "x-creator-id" => ""
+                                    ],
+                                    "service" => "api_live",
+                                    "type" => "basic",
+                                    "response_handler" => [
+                                        "type" => "success_status_codes",
+                                        "success_status_codes" => [
+                                            201,
+                                            200
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                "status" => "initiated",
+                "domain_status" => "created",
+                "owner_id" => "10000000000000",
+                "owner_type" => "merchant",
+                "org_id" => "100000razorpay",
+                "states" => [
+                    "Owner_Approval" => [
+                        "workflow_id" => "FV58BuqLuCP4Cw",
+                        "status" => "created",
+                        "name" => "Owner_Approval",
+                        "group_name" => "ABC",
+                        "type" => "checker",
+                        "rules" => [
+                            "actor_property_key" => "role",
+                            "actor_property_value" => "owner",
+                            "count" => 1
+                        ],
+                        "pending_on_user" => true,
+                    ]
+                ],
+                "type" => "payout-approval",
+                "pending_on_user" => true
+            ],
+        ],
+    ],
+
+    'testBulkPayoutWithSameFundAccountNWFS' => [
+        'request'   => [
+            'url'     => '/payouts/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'razorpayx_account_number'  => '2224440041626905',
+                    'payout'                    => [
+                        'amount'                => '100',
+                        'currency'              => 'INR',
+                        'mode'                  => 'IMPS',
+                        'purpose'               => 'refund',
+                        'narration'             => '123',
+                        'reference_id'          => ''
+                    ],
+                    'fund'                      => [
+                        'account_type'          => 'bank_account',
+                        'account_name'          => 'Vivek Karna',
+                        'account_IFSC'          => 'HDFC0003780',
+                        'account_number'        => '50100244702362',
+                        'account_vpa'           => ''
+                    ],
+                    'contact'                   => [
+                        'type'                  => 'customer',
+                        'name'                  => 'Vivek Karna',
+                        'email'                 => 'sampleone@example.com',
+                        'mobile'                => '9988998899',
+                        'reference_id'          => ''
+                    ],
+                    'idempotency_key'           => 'batch_abc123'
+                ]
+            ]
+        ],
+        'response'                                  =>
+            [
+                'content'                               => [
+                    'entity'                            => 'collection',
+                    'count'                             => 1,
+                    'items'                             => [
+                        [
+                            'entity'                    => 'payout',
+                            'fund_account'              => [
+                                'entity'                => 'fund_account',
+                                'account_type'          => 'bank_account',
+                                'bank_account'          => [
+                                    'ifsc'              => 'HDFC0003780',
+                                    'bank_name'         => 'HDFC Bank',
+                                    'name'              => 'Vivek Karna',
+                                    'account_number'    => '50100244702362',
+                                ],
+                                'active'                => true,
+                            ],
+                            'amount'                    => 100,
+                            'currency'                  => 'INR',
+                            'status'                    => 'pending',
+                            'purpose'                   => 'refund',
+                            'utr'                       => null,
+                            'user_id'                   => null,
+                            'mode'                      => 'IMPS',
+                            'reference_id'              => null,
+                            'narration'                 => '123',
+                            'idempotency_key'           => 'batch_abc123'
+                        ]
+                    ]
+                ],
+            ],
+    ],
+
+    'testBulkPayoutApprovalNWFS' => [
+        'request' => [
+            'url' => '/payouts/bulk_approve',
+            'method' => 'POST',
+            'content' => [
+                [
+                    'payout_update_action' => 'A',
+                    'razorpayx_account_number' => '2224440041626905',
+                    'user_comment' => 'Some user comment',
+                    'payout' => [
+                        'amount' => '10000',
+                        'currency' => 'INR',
+                        'mode' => 'IMPS',
+                        'purpose' => 'refund',
+                        'narration' => '123',
+                        'status' => 'pending',
+                    ],
+                    'fund' => [
+
+                    ],
+                    'contact' => [
+                        'name' => 'Vivek Karna',
+                        'reference_id' => ''
+                    ],
+                    'idempotency_key' => 'batch_abc123'
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity' => 'payout',
+                        'amount' => 10000,
+                        'currency' => 'INR',
+                        'status'   => 'pending',
+                        'idempotency_key' => 'batch_abc123'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testBulkRejectPayoutWithAdminWithNWFS' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/admin/payouts/cancel',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total_count' => 2,
+                'failed_ids'  => [],
+            ],
+        ],
+    ],
+
+    'testBulkRetryWorkflowOnPayout' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/admin/payouts/workflow_retry',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total_count' => 2,
+                'failed_ids'  => [],
+            ],
+        ],
+    ],
+
     'testPayoutRejectWhenWorkflowEdit' => [
         'request'  => [
             'method'  => 'POST',

@@ -13,14 +13,17 @@ class Entity extends Base\PublicEntity
     protected $entity = EntityConstants::WORKFLOW_ENTITY_MAP;
     protected $table  = Table::WORKFLOW_ENTITY_MAP;
 
-    const ID                     = 'id';
-    const ID_LENGTH              = 14;
+    protected $generateIdOnCreate = true;
+
     const WORKFLOW_ID            = 'workflow_id';
     const MERCHANT_ID            = 'merchant_id';
     const ORG_ID                 = 'org_id';
     const ENTITY_ID              = 'entity_id';
     const CONFIG_ID              = 'config_id';
     const ENTITY_TYPE            = 'entity_type';
+
+    // Constants
+    const SOURCE                 = 'source';
 
     protected $fillable = [
         self::ID,
@@ -67,6 +70,11 @@ class Entity extends Base\PublicEntity
     public function org()
     {
         return $this->belongsTo(Org\Entity::class);
+    }
+
+    public function source()
+    {
+        return $this->morphTo(self::SOURCE, self::ENTITY_TYPE, self::ENTITY_ID);
     }
 
     // ============================= END RELATIONS =============================
@@ -138,20 +146,4 @@ class Entity extends Base\PublicEntity
     }
 
     // ============================= END SETTERS =============================
-
-    /**
-     * {@inheritDoc}
-     */
-    public function toArrayPublic()
-    {
-        return parent::toArrayPublic();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function toArray()
-    {
-        return parent::toArray();
-    }
 }

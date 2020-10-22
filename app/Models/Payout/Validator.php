@@ -222,6 +222,11 @@ class Validator extends Base\Validator
         Entity::PAYOUT_IDS . '.*'   => 'required|public_id|size:19',
     ];
 
+    protected static $bulkRetryWorkflowRules = [
+        Entity::PAYOUT_IDS          => 'required|array',
+        Entity::PAYOUT_IDS . '.*'   => 'required|public_id|size:19',
+    ];
+
     protected static $bulkRejectRules = [
         Entity::PAYOUT_IDS          => 'required|array',
         Entity::PAYOUT_IDS . '.*'   => 'required|public_id|size:19',

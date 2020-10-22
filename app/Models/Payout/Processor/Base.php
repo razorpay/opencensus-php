@@ -3,6 +3,7 @@
 namespace RZP\Models\Payout\Processor;
 
 use RZP\Exception;
+use Razorpay\Trace\Logger as Trace;
 
 use App;
 use RZP\Models\Vpa;
@@ -20,6 +21,7 @@ use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\PayoutSource;
 use RZP\Models\Payout\Status;
+use RZP\Models\Payout\Metric;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Balance;
@@ -28,10 +30,13 @@ use RZP\Models\Payout\CounterHelper;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Jobs\PayoutPostCreateProcess;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Workflow\Service\Adapter;
+use RZP\Models\Workflow\Service\EntityMap;
 use RZP\Models\Workflow\PayoutAmountRules;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\Workflow\Service\Client as WorkflowServiceClient;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
 /**
@@ -135,7 +140,7 @@ class Base extends BaseCore
             $payout = $this->handleWorkflowsIfApplicable(function() use ($input)
             {
                 return $this->createPayoutEntity($input);
-            }, $skipWorkflow);
+            }, $skipWorkflow, $input);
 
             $sourceDetails = $payout->getInputSourceDetails();
 
@@ -167,13 +172,13 @@ class Base extends BaseCore
 
             if ($payout->getQueuePayoutCreateRequest() === true)
             {
-                    $this->dispatchForPreCreatedPayouts($payout);
+                $this->dispatchForPreCreatedPayouts($payout);
 
-                    $payout->setStatus(Status::CREATE_REQUEST_SUBMITTED);
+                $payout->setStatus(Status::CREATE_REQUEST_SUBMITTED);
 
-                    $this->repo->saveOrFail($payout);
+                $this->repo->saveOrFail($payout);
 
-                    return $payout;
+                return $payout;
             }
 
             $payoutType = $this->getPayoutType();
@@ -409,9 +414,9 @@ class Base extends BaseCore
                     $payoutType = $this->getPayoutType();
 
                     $downstreamProcessor = new DownstreamProcessor($payoutType,
-                        $payout,
-                        $this->mode,
-                        $this->fundTransferDestination);
+                                                                   $payout,
+                                                                   $this->mode,
+                                                                   $this->fundTransferDestination);
 
                     $downstreamProcessor->process();
 
@@ -733,13 +738,14 @@ class Base extends BaseCore
 
     /**
      * @param callable $createPayoutCallback The callable is expected to create and return a payout entity.
-     *
      * @param null $skipWorkflow
-     * @return Payout\Entity|null
+     * @param array $input
+     * @return Entity
      * @throws BadRequestException
      * @throws Exception\BadRequestValidationFailureException
+     * @throws \Exception
      */
-    protected function handleWorkflowsIfApplicable(callable $createPayoutCallback, $skipWorkflow = null)
+    protected function handleWorkflowsIfApplicable(callable $createPayoutCallback, $skipWorkflow = null, array $input = [])
     {
         //
         // Skip workflow for internally created payouts
@@ -777,6 +783,32 @@ class Base extends BaseCore
         /** @var Payout\Entity $payout */
         $payout = $createPayoutCallback();
 
+        if ($this->isWorkflowServiceEnabled() === true)
+        {
+            try
+            {
+                return $this->handleWorkflowCreationWithWorkflowService($payout, $input);
+            }
+            catch (\Throwable $e)
+            {
+                // todo: remove this when the system is ramped up to 100%, or some merchant starts using complex WFs
+
+                // Until the system is fully ramped up, if there an issue connecting with workflow service
+                // proceed to use the api workflow system
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::PAYOUT_WORKFLOW_SERVICE_WORKFLOW_CREATE_FAILED,
+                    [
+                        'id'    => optional($payout)->getId(),
+                        'input' => $input,
+                    ]);
+
+                $this->trace->count(Metric::PAYOUT_WORKFLOW_CREATION_FAILED_TOTAL);
+            }
+        }
+
         $amount = $payout->getAmount();
 
         $payoutAmountRuleBeforeWorkflow = (new PayoutAmountRules\Core)->fetchPayoutAmountRuleForMerchantIfDefined($amount, $this->merchant);
@@ -794,28 +826,7 @@ class Base extends BaseCore
         }
         catch (Exception\EarlyWorkflowResponse $ex)
         {
-            $this->trace->info(TraceCode::PAYOUT_WORKFLOW_TRIGGERED, ['payout' => $payout->toArray()]);
-
-            if ($payout === null)
-            {
-                $this->trace->critical(TraceCode::PAYOUT_WORKFLOW_ACTION_EXCEPTION);
-
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE,
-                    null,
-                    ['payout_id' => $payout->getId()]);
-            }
-
-            // Set payout to pending and move on
-            $payout->setStatus(Payout\Status::PENDING);
-
-            $this->verifyPayoutAmountRuleBeforeProcessing($payout, $payoutAmountRuleBeforeWorkflow);
-
-            $this->repo->saveOrFail($payout);
-
-            $this->app->events->fire('api.payout.pending', [$payout]);
-
-            $this->workflowActivated = true;
+            $this->handleEarlyWorkflowResponse($payout, $payoutAmountRuleBeforeWorkflow);
         }
         catch (\Throwable $t)
         {
@@ -826,6 +837,45 @@ class Base extends BaseCore
                 null,
                 ['payout_id' => optional($payout)->getId()]);
         }
+
+        return $payout;
+    }
+
+    /**
+     * @return bool
+     * @throws \Exception
+     */
+    public function isWorkflowServiceEnabled(): bool
+    {
+        $variant = $this->app['razorx']->getTreatment($this->merchant->getId(),
+            Merchant\RazorxTreatment::PROCESS_VIA_WORKFLOW_SERVICE,
+            $this->mode
+        );
+
+        $this->trace->info(TraceCode::WORKFLOW_SERVICE_RAZOR_X_TREATMENT, [
+            'result'        => $variant,
+            'merchant_id'   => $this->merchant->getId(),
+        ]);
+
+        return (strtolower($variant) === 'on');
+    }
+
+    /**
+     * @param Entity $payout
+     * @param array $input
+     * @return Entity
+     */
+    protected function handleWorkflowCreationWithWorkflowService(Payout\Entity $payout, array $input = [])
+    {
+        $input += [Adapter\Constants::WORKFLOW_TYPE => Adapter\Constants::PAYOUT_APPROVAL_TYPE];
+
+        $res = (new WorkflowServiceClient)->createWorkflow($payout, $input);
+
+        // Create Workflow Entity Mapping
+        (new EntityMap\Core)->create($res, $payout);
+
+        // Mark and save payout as pending
+        $this->handleEarlyWorkflowResponse($payout);
 
         return $payout;
     }
@@ -1223,6 +1273,45 @@ class Base extends BaseCore
         $this->repo->saveOrFail($payout);
     }
 
+    /**
+     * @param Payout\Entity $payout
+     * @param PayoutAmountRules\Entity|null $payoutAmountRuleBeforeWorkflow
+     * @throws BadRequestException
+     */
+    protected function handleEarlyWorkflowResponse(
+        Payout\Entity $payout,
+        PayoutAmountRules\Entity $payoutAmountRuleBeforeWorkflow = null): void
+    {
+        if ($payout === null)
+        {
+            $this->trace->critical(TraceCode::PAYOUT_WORKFLOW_ACTION_EXCEPTION);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE,
+                null,
+                [
+                    'payout'                 => $payout,
+                    'payout_amount_rules'    => $payoutAmountRuleBeforeWorkflow,
+                ]);
+        }
+
+        // Set payout to pending and move on
+        $payout->setStatus(Payout\Status::PENDING);
+
+        if ($payoutAmountRuleBeforeWorkflow !== null)
+        {
+            $this->trace->info(TraceCode::PAYOUT_WORKFLOW_TRIGGERED, ['payout' => $payout->toArray()]);
+
+            $this->verifyPayoutAmountRuleBeforeProcessing($payout, $payoutAmountRuleBeforeWorkflow);
+        }
+
+        $this->repo->saveOrFail($payout);
+
+        $this->app->events->fire('api.payout.pending', [$payout]);
+
+        $this->workflowActivated = true;
+    }
+
     protected function checkIfPLServiceIsDown()
     {
         // todo temp fix https://jira.corp.razorpay.com/browse/RX-3668
@@ -1234,7 +1323,7 @@ class Base extends BaseCore
                                                       Merchant\RazorxTreatment::RX_IS_PAYOUT_LINK_SERVICE_DOWN,
                                                       $this->app['rzp.mode'] ?? 'live');
 
-        if($variant == 'on')
+        if ($variant == 'on')
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYOUT_LINK_SERVICE_UNDER_MAINTAINENCE,

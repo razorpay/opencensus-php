@@ -356,6 +356,7 @@ class Name
     const REJECT_PAYOUT_BULK                  = 'reject_payout_bulk';
     const APPROVE_PAYOUT                      = 'approve_payout';
     const REJECT_PAYOUT                       = 'reject_payout';
+    const RETRY_PAYOUT_WORKFLOW_BULK          = 'retry_payout_workflow_bulk';
     const VIEW_PAYOUT                         = 'view_payout';
     const CANCEL_PAYOUT                       = 'cancel_payout';
     const UPDATE_PAYOUT                       = 'update_payout';

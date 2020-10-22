@@ -10,11 +10,11 @@ class Repository extends Base\Repository
 
     public function getByConfigId($configId)
     {
-        $configIdColumn           = $this->dbColumn(Entity::CONFIG_ID);
+        $configIdColumn = $this->dbColumn(Entity::CONFIG_ID);
 
         return $this->newQuery()
-            ->where($configIdColumn, '=', $configId)
-            ->firstOrFail();
+                    ->where($configIdColumn, '=', $configId)
+                    ->first();
     }
 
     /**
@@ -28,7 +28,7 @@ class Repository extends Base\Repository
      * @param $merchantId
      * @return Entity
      */
-    public function getByConfigType($configType, $merchantId) : Entity
+    public function getByConfigTypeAndMerchantId($configType, $merchantId)
     {
         $configTypeColumn           = $this->dbColumn(Entity::CONFIG_TYPE);
         $merchantIdColumn           = $this->dbColumn(Entity::MERCHANT_ID);
@@ -36,10 +36,10 @@ class Repository extends Base\Repository
         $createdAtColumn            = $this->dbColumn(Entity::CREATED_AT);
 
         return $this->newQuery()
-            ->where($configTypeColumn, '=', $configType)
-            ->where($merchantIdColumn, '=', $merchantId)
-            ->where($enabledColumn, '=', 1)
-            ->orderBy($createdAtColumn, 'desc')
-            ->firstOrFail();
+                    ->where($configTypeColumn, '=', $configType)
+                    ->where($merchantIdColumn, '=', $merchantId)
+                    ->where($enabledColumn, '=', 1)
+                    ->orderBy($createdAtColumn, 'desc')
+                    ->firstOrFail();
     }
 }

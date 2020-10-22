@@ -19,6 +19,7 @@ class Client
     const WFS_WORKFLOW_GET_ROUTE                = "twirp/rzp.workflows.workflow.v1.WorkflowAPI/Get";
     const WFS_WORKFLOW_LIST_BY_IDS_ROUTE        = "twirp/rzp.workflows.workflow.v1.WorkflowAPI/ListByIds";
     const WFS_ACTION_CREATE_ON_ENTITY_ROUTE     = "twirp/rzp.workflows.action.v1.ActionAPI/CreateWithEntityId";
+    const WFS_DIRECT_ACTION_CREATE_ROUTE        = "twirp/rzp.workflows.action.v1.ActionAPI/CreateDirectOnWorkflow";
     const WFS_WORKFLOW_CREATE_ROUTE             = "twirp/rzp.workflows.workflow.v1.WorkflowAPI/Create";
 
     /** @var $workflowServiceClient WorkflowService */
@@ -120,7 +121,7 @@ class Client
             throw new Exception\ServerErrorException(
                 null,
                 ErrorCode::SERVER_ERROR_WORKFLOW_CREATE_FAILED,
-                ['input' => $input]);
+                ['entity_id' => $entity->getPublicId(), 'input' => $input]);
         }
 
         $content = json_decode($res->body, true);
@@ -197,10 +198,33 @@ class Client
             throw new Exception\ServerErrorException(
                 null,
                 ErrorCode::SERVER_ERROR_WORKFLOW_ACTION_CREATE_FAILED,
-                ['input' => $input]);
+                ['entity_id' => $entity->getPublicId(), 'input' => $input]);
         }
 
         return $entityAdapter->transformActionResponse($content);
+    }
+
+    public function createDirectAction(Base\PublicEntity $entity, array $input)
+    {
+        $entityAdapter = $this->getEntityAdapter($entity);
+
+        $actionPayload = $entityAdapter->getDirectActionCreatePayload($entity, $input);
+
+        $this->trace->info(TraceCode::WORKFLOW_SERVICE_TRACE_INFO, $actionPayload);
+
+        $res = $this->workflowServiceClient->request(self::WFS_DIRECT_ACTION_CREATE_ROUTE, $actionPayload);
+
+        $content = json_decode($res->body, true);
+
+        if ($res->status_code !== 200)
+        {
+            throw new Exception\ServerErrorException(
+                null,
+                ErrorCode::SERVER_ERROR_WORKFLOW_DIRECT_ACTION_CREATE_FAILED,
+                ['entity_id' => $entity->getPublicId(), 'input' => $input]);
+        }
+
+        return $entityAdapter->transformDirectActionResponse($content);
     }
 
     protected function getEntityAdapter(Base\PublicEntity $entity): Adapter\Base

@@ -4,6 +4,12 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use Razorpay\Trace\Logger as Trace;
+
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use RZP\Models\Payout\Metric;
 
 class PayoutController extends Controller
 {
@@ -46,6 +52,44 @@ class PayoutController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postApproveFundAccountPayoutInternal(string $id)
+    {
+        try
+        {
+            $response = $this->service()->processActionOnFundAccountPayoutInternal($id, true, $this->input);
+
+            return ApiResponse::json($response);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYOUT_ACTION_VIA_WORKFLOW_SERVICE_FAILED,
+                ['payout_id' => $id]);
+
+            // This happens when approve request is received twice via WFS
+            // In that scenario, the payout is no longer in pending state
+            // Therefore we return HTTP 409
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_PAYOUT_INVALID_STATE)
+            {
+                $this->trace->count(Metric::PAYOUT_WORKFLOW_ACTION_DUPLICATE_REQUEST_TOTAL);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS,
+                    null,
+                    []);
+            }
+
+            $this->trace->count(Metric::PAYOUT_WORKFLOW_ACTION_FAILED_TOTAL);
+
+            list($publicError, $httpStatusCode) =
+                ApiResponse::getErrorResponseFields(ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE);
+
+            return ApiResponse::generateResponse($publicError, $httpStatusCode);
+        }
+    }
+
     public function bulkApproveFundAccountPayouts()
     {
         $response = $this->service()->bulkApproveFundAccountPayouts($this->input);
@@ -60,9 +104,54 @@ class PayoutController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postRejectFundAccountPayoutInternal(string $id)
+    {
+        try
+        {
+            $response = $this->service()->processActionOnFundAccountPayoutInternal($id, false, $this->input);
+
+            return ApiResponse::json($response);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYOUT_ACTION_VIA_WORKFLOW_SERVICE_FAILED,
+                ['payout_id' => $id]);
+
+            // This happens when reject request is received twice via WFS
+            // In that scenario, the payout is no longer in pending state
+            // Therefore we return HTTP 409
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_PAYOUT_INVALID_STATE)
+            {
+                $this->trace->count(Metric::PAYOUT_WORKFLOW_ACTION_DUPLICATE_REQUEST_TOTAL);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS,
+                    null,
+                    []);
+            }
+
+            $this->trace->count(Metric::PAYOUT_WORKFLOW_ACTION_FAILED_TOTAL);
+
+            list($publicError, $httpStatusCode) =
+                ApiResponse::getErrorResponseFields(ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE);
+
+            return ApiResponse::generateResponse($publicError, $httpStatusCode);
+        }
+    }
+
     public function bulkRejectFundAccountPayouts()
     {
         $response = $this->service()->bulkRejectFundAccountPayout($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function bulkRetryWorkflowOnPayout()
+    {
+        $response = $this->service()->bulkRetryWorkflowOnPayout($this->input);
 
         return ApiResponse::json($response);
     }

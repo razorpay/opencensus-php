@@ -4,19 +4,18 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Workflow\Service\Metric;
-use RZP\Models\Workflow\Client;
 use RZP\Models\Workflow\Service\StateMap\Service as StateMapService;
 use RZP\Models\Workflow\Service\Config\Service as WorkflowConfigService;
 
 class WorkflowServiceController extends Controller
 {
-    protected $service = Client::class;
-
     protected $workflowConfigService;
 
     protected $stateMapService;
@@ -77,15 +76,15 @@ class WorkflowServiceController extends Controller
             {
                 $this->trace->count(Metric::WORKFLOW_STATE_MAP_CREATE_DUPLICATE_REQUEST_TOTAL);
 
-                return ApiResponse::generateResponse($e, 409);
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS,
+                    null,
+                    []);
             }
-            else
-            {
-                list($publicError, $httpStatusCode) =
-                    ApiResponse::getErrorResponseFields(ErrorCode::BAD_REQUEST_WORKFLOW_STATE_CALLBACK_DUPLICATE);
 
-                return ApiResponse::generateResponse($publicError, $httpStatusCode);
-            }
+            $this->trace->count(Metric::WORKFLOW_STATE_MAP_CREATE_REQUEST_FAILED_TOTAL);
+
+            throw $e;
         }
 
         return response()->json($response);
@@ -107,21 +106,9 @@ class WorkflowServiceController extends Controller
                 TraceCode::STATE_MAP_UPDATE_VIA_WORKFLOW_SERVICE_FAILED,
                 ['id' => $id, 'input' => $input]);
 
-            // This happens when state callback request is received twice via WFS
-            // In that scenario, we won't take action and simply return HTTP 409
-            if ($e->getCode() === ErrorCode::BAD_REQUEST_WORKFLOW_STATE_CALLBACK_DUPLICATE)
-            {
-                $this->trace->count(Metric::WORKFLOW_STATE_MAP_UPDATE_DUPLICATE_REQUEST_TOTAL);
+            $this->trace->count(Metric::WORKFLOW_STATE_MAP_UPDATE_REQUEST_FAILED_TOTAL);
 
-                return ApiResponse::generateResponse($e, 409);
-            }
-            else
-            {
-                list($publicError, $httpStatusCode) =
-                    ApiResponse::getErrorResponseFields(ErrorCode::BAD_REQUEST_WORKFLOW_STATE_CALLBACK_DUPLICATE);
-
-                return ApiResponse::generateResponse($publicError, $httpStatusCode);
-            }
+            throw $e;
         }
 
         return response()->json($response);

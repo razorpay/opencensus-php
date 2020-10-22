@@ -1059,7 +1059,7 @@ class Route
         'payout_create_internal'                   => ['post',     'payouts_internal',                               'PayoutController@postFundAccountPayout'                            ],
         'payout_create_on_internal_contact'        => ['post',     'internalContactPayout',                          'PayoutController@postFundAccountOnInternalContact'                 ],
         'payout_bulk_create'                       => ['post',     'payouts/bulk',                                   'PayoutController@createPayoutBulk'                                 ],
-        'payout_bulk_approve'                      => ['post',     'payouts/bulk_approve',                           'PayoutController@approvePayoutBulk'                                 ],
+        'payout_bulk_approve'                      => ['post',     'payouts/bulk_approve',                           'PayoutController@approvePayoutBulk'                                ],
         'payout_create_with_otp'                   => ['post',     'payouts_with_otp',                               'PayoutController@postFundAccountPayoutWithOtp'                     ],
         'payout_approve_bulk'                      => ['post',     'payouts/approve/bulk',                           'PayoutController@bulkApproveFundAccountPayouts'                    ],
         'payout_reject_bulk'                       => ['post',     'payouts/reject/bulk',                            'PayoutController@bulkRejectFundAccountPayouts'                     ],
@@ -1079,10 +1079,22 @@ class Route
         // TODO : Remove this route. Has been kept here for backward compatibility
         'payouts_process_queued'                   => ['post',     'payouts/queued/process',                         'PayoutController@processDispatchForQueuedPayouts'                  ],
         'payouts_process_batch'                    => ['post',     'payouts/batch/process',                          'PayoutController@processInitiateForBatchSubmittedPayouts'          ],
-        'payouts_process_scheduled'                => ['post',     'payouts/scheduled/process',                      'PayoutController@processInitiateForScheduledPayouts'                          ],
+        'payouts_process_scheduled'                => ['post',     'payouts/scheduled/process',                      'PayoutController@processInitiateForScheduledPayouts'               ],
         'payouts_summary'                          => ['get',      'payouts/_meta/summary',                          'PayoutController@getSummary'                                       ],
         'payouts_workflow_summary'                 => ['get',      'payouts/_meta/workflows',                        'PayoutController@getWorkflowSummary'                               ],
         'payouts_scheduled_time_slots'             => ['get',      'payouts/schedule/timeslots',                     'PayoutController@getScheduleSlotsForPayouts'                       ],
+
+        // Payout Workflows
+        'payout_workflow_retry_admin_bulk'         => ['post',     'admin/payouts/workflow_retry',                   'PayoutController@bulkRetryWorkflowOnPayout'                        ],
+        'payout_approve_internal'                  => ['post',     'payouts_internal/{id}/approve',                  'PayoutController@postApproveFundAccountPayoutInternal'             ],
+        'payout_reject_internal'                   => ['post',     'payouts_internal/{id}/reject',                   'PayoutController@postRejectFundAccountPayoutInternal'              ],
+
+        //Routes related to workflows microservice
+        'wfs_config_create'                       => ['post',    'wf-service/configs',                               'WorkflowServiceController@createConfig'                            ],
+        'wfs_config_update'                       => ['patch',   'wf-service/configs',                               'WorkflowServiceController@updateConfig'                            ],
+        'wfs_config_get'                          => ['get',     'wf-service/configs/{id}',                          'WorkflowServiceController@getConfig'                               ],
+        'workflow_state_callback'                 => ['post',    'wf-service/state/callback',                        'WorkflowServiceController@createWorkflowStateMap'                  ],
+        'workflow_state_callback_update'          => ['patch',   'wf-service/state/{id}/callback',                   'WorkflowServiceController@updateWorkflowStateMap'                  ],
 
         //Vendor Payments
         'vendor_payment_execute_bulk'              => ['post',     'vendor-payments/bulk/execute',                   'VendorPaymentController@executeVendorPaymentBulk'                  ],
@@ -2007,15 +2019,6 @@ class Route
         'fetch_payout_downtimes_enabled'          => ['get',       'payouts/downtimes/enabled',                               'PayoutDowntimeController@fetchPayoutDowntimesEnabled'       ],
         'fetch_payout_downtimes'                  => ['get',       'payouts/downtimes',                                       'PayoutDowntimeController@fetchPayoutDowntimes'              ],
 
-
-        //Routes related to workflows microservice
-        'wfs_config_create'                       => ['post',    'wf-service/configs',                                     'WorkflowConfigServiceController@createConfig'                  ],
-        'wfs_config_update'                       => ['patch',   'wf-service/configs',                                     'WorkflowConfigServiceController@updateConfig'                  ],
-        'wfs_config_get'                          => ['get',     'wf-service/configs/{id}',                                'WorkflowConfigServiceController@getConfig'                     ],
-        'workflow_state_callback'                 => ['post',    'wf-service/state/callback',                              'WorkflowConfigServiceController@createWorkflowStateMap'        ],
-        'workflow_state_callback_update'          => ['patch',   'wf-service/state/{id}/callback',                         'WorkflowConfigServiceController@updateWorkflowStateMap'        ],
-
-
         // Routes related to payments rearch for fetching/writing data
         'api_entity_fetch'                        => ['get',     'entities/{entity}/{id}',                                 'CardPSController@FetchEntity'                                  ],
         'cps_backfill_entities'                   => ['get',     'cardps/backfill/{entity}/{column}',                      'CardPSController@BackfillRouteProxy'                           ],
@@ -2628,6 +2631,9 @@ class Route
         // Razorpay Capital
         // Financial Data Service
         'financial_data_service_perfios_webhook',
+
+        'payout_approve_internal',
+        'payout_reject_internal',
 
         'internal_merchant_fetch',
         'internal_merchant_checkout_preferences',
@@ -3797,9 +3803,10 @@ class Route
         'patch_internal_instrument_requests',
         'instrument_request_razorx_admin',
         'fetch_merchant_instrument_requests',
-
         'wfs_config_create',
         'wfs_config_update',
+        'wfs_config_get',
+        'payout_workflow_retry_admin_bulk',
 
         // gateway credentials
         'terminals_proxy_create_gateway_credential',
@@ -3869,6 +3876,7 @@ class Route
         'bulk_create_fund_accounts'                => Permission::CAPITAL_DEVELOPER,
         'add_ondemand_pricing_if_absent'           => Permission::CAPITAL_DEVELOPER,
         'payout_reject_admin_bulk'                 => Permission::REJECT_PAYOUT_BULK,
+        'payout_workflow_retry_admin_bulk'         => Permission::RETRY_PAYOUT_WORKFLOW_BULK,
         'pincode_get'                              => '*',
         'cities_get'                               => '*',
         'loc_service_admin'                        => Permission::LOC,
@@ -5973,6 +5981,16 @@ class Route
 
         'fund_transfer_attempt_process',
         'on_demand_settlement',
+
+        //workflow
+        'payout_workflow_retry_admin_bulk',
+        'payout_approve_internal',
+        'payout_reject_internal',
+        'workflow_state_callback',
+        'workflow_state_callback_update',
+        'wf_config_create',
+        'wf_config_update',
+        'wf_config_get',
 
         'tax_payments_pay',
         'tax_payments_bulk_pay',

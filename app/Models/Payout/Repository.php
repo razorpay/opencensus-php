@@ -132,11 +132,11 @@ class Repository extends Base\Repository
     }
 
     public function fetchUnlinkedPayoutsFromCmsRefNumberWithinTimeRangeForIFT(
-                                            $cmsRefNumber,
-                                            $txnDateTime,
-                                            $txnDateTimeBefore,
-                                            $amount,
-                                            $balanceId)
+        $cmsRefNumber,
+        $txnDateTime,
+        $txnDateTimeBefore,
+        $amount,
+        $balanceId)
     {
         $ftaTable           = $this->repo->fund_transfer_attempt->getTableName();
         $ftaSourceIdColumn  = $this->repo->fund_transfer_attempt->dbColumn(Attempt\Entity::SOURCE_ID);
@@ -273,13 +273,15 @@ class Repository extends Base\Repository
     /**
      * @param User\Entity $user
      * @param Merchant\Entity $merchant
-     * @param string          $balanceType
-     *
+     * @param $userRole
+     * @param string $balanceType
      * @return Base\Collection
      * @throws Exception\UserWorkflowNotApplicableException
+     * @throws \Exception
      */
     public function fetchPayoutsPendingOnUserRole(User\Entity $user,
                                                   Merchant\Entity $merchant,
+                                                  $userRole,
                                                   string $balanceType = Balance\Type::BANKING): Base\Collection
     {
         // select(payouts.*) because if we don't restrict to payouts table columns,
@@ -320,7 +322,41 @@ class Repository extends Base\Repository
 
         $query->where($balanceTypeColumn, '=', $balanceType);
 
-        return $query->get();
+        $payouts = $query->get();
+
+        // Since a merchant can have pending payouts in both old and new workflow system
+        // Therefore, we also fetch pending payouts processed via workflow service
+
+        /** @var BuilderEx $query */
+        $queryForPendingPayoutsViaWorkflowService = $this->newQuery()
+                                                         ->select($this->getTableName() . ".*");
+
+        $queryForPendingPayoutsViaWorkflowService->merchantId($merchant->getId());
+
+        // TODO: Update this to handle scale
+        // JIRA: https://razorpay.atlassian.net/browse/RX-420
+        $queryForPendingPayoutsViaWorkflowService->limit(self::PENDING_PAYOUTS_FETCH_LIMIT);
+
+        $queryForPendingPayoutsViaWorkflowService->with(['balance']);
+
+        $this->joinQueryBalance($queryForPendingPayoutsViaWorkflowService);
+
+        $balanceTypeColumn = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
+
+        $queryForPendingPayoutsViaWorkflowService->where($balanceTypeColumn, '=', $balanceType);
+
+        $this->addQueryParamPendingOnRolesViaWfs($queryForPendingPayoutsViaWorkflowService, [
+            Entity::PENDING_ON_ROLES_VIA_WFS => [$userRole]
+        ]);
+
+        $pendingPayoutsViaWorkflowService = $queryForPendingPayoutsViaWorkflowService->get();
+
+        foreach ($pendingPayoutsViaWorkflowService as $pendingPayout)
+        {
+            $payouts->add($pendingPayout);
+        }
+
+        return $payouts;
     }
 
     public function updateStatus(Base\PublicCollection $payouts, string $status)
@@ -653,6 +689,11 @@ class Repository extends Base\Repository
         $query->where($contactEmailColumn, $contactEmail);
     }
 
+    /**
+     * @param BuilderEx $query
+     * @param array $params
+     * @throws \Exception
+     */
     protected function addQueryParamPendingOnRoles(BuilderEx $query, array $params)
     {
         $pendingOnRoles = $params[Entity::PENDING_ON_ROLES];
@@ -668,6 +709,25 @@ class Repository extends Base\Repository
         $userIdsToFilter = array_pluck($merchantUsers->toArray(), 'user_id');
 
         $this->filterByRoleIds($query, $pendingRoleIds->pluck('id')->toArray(), $userIdsToFilter);
+    }
+
+    /**
+     * @param BuilderEx $query
+     * @param array $params
+     * @throws \Exception
+     */
+    protected function addQueryParamPendingOnRolesViaWfs(BuilderEx $query, array $params)
+    {
+        $pendingOnRoles = $params[Entity::PENDING_ON_ROLES_VIA_WFS];
+
+        $this->joinQueryWorkflowServiceEntities($query, $pendingOnRoles);
+
+        $statusColumn = $this->dbColumn(Entity::STATUS);
+
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $query->where($statusColumn, Status::PENDING)
+              ->where($merchantIdColumn, $this->merchant->getId());
     }
 
     protected function addQueryParamPendingOnMe(BuilderEx $query, array $params)
@@ -695,6 +755,42 @@ class Repository extends Base\Repository
         }
 
         $this->filterByRoleIds($query, $userRoleId);
+    }
+
+    // TODO: Confirm if this is ever used. Remove if not.
+    protected function addQueryParamPendingOnMeViaWfs(BuilderEx $query, array $params)
+    {
+        $pendingOnMe = (bool) ($params[Entity::PENDING_ON_ME_VIA_WFS] ?? false);
+
+        if ($pendingOnMe === false)
+        {
+            return;
+        }
+
+        $userRoleId = [];
+
+        try
+        {
+            // If the entity is a user(which implies the product is banking),
+            // then the role id for that user for the merchant in context
+            // will have to be fetched from the merchant_users table.
+            // This is because the role_map table doesn't have any merchant context.
+            $userRoleId = (new User\Core())->getUserRoleIdInMerchantForWorkflow($this->auth->getUser()->getId());
+        }
+        catch(Exception\UserWorkflowNotApplicableException $exception)
+        {
+            // If user role is not a workflow role
+            return;
+        }
+
+        $this->joinQueryWorkflowServiceEntities($query, $userRoleId);
+
+        $statusColumn = $this->dbColumn(Entity::STATUS);
+
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $query->where($statusColumn, Status::PENDING)
+              ->where($merchantIdColumn, $this->merchant->getId());
     }
 
     protected function filterByRoleIds(BuilderEx $query, array $roleIds, array $userId = null)
@@ -732,20 +828,20 @@ class Repository extends Base\Repository
         $query->leftJoin(
             $actionCheckerTable,
             function(JoinClause $join) use ($checkerId)
-                {
-                    $wfActionIdColumn = $this->repo->workflow_action->dbColumn(Step\Entity::ID);
-                    $wfStepIdColumn   = $this->repo->workflow_step->dbColumn(Step\Entity::ID);
+            {
+                $wfActionIdColumn = $this->repo->workflow_action->dbColumn(Step\Entity::ID);
+                $wfStepIdColumn   = $this->repo->workflow_step->dbColumn(Step\Entity::ID);
 
-                    $actionCheckerStepId    = $this->repo->action_checker->dbColumn(Checker\Entity::STEP_ID);
-                    $actionCheckerActionId  = $this->repo->action_checker->dbColumn(Checker\Entity::ACTION_ID);
-                    $actionCheckerCheckerId = $this->repo->action_checker->dbColumn(Checker\Entity::CHECKER_ID);
+                $actionCheckerStepId    = $this->repo->action_checker->dbColumn(Checker\Entity::STEP_ID);
+                $actionCheckerActionId  = $this->repo->action_checker->dbColumn(Checker\Entity::ACTION_ID);
+                $actionCheckerCheckerId = $this->repo->action_checker->dbColumn(Checker\Entity::CHECKER_ID);
 
-                    $join->on($wfActionIdColumn, '=', $actionCheckerActionId)
-                         ->on($wfStepIdColumn, '=', $actionCheckerStepId)
-                         ->whereIn($actionCheckerCheckerId, $checkerId);
+                $join->on($wfActionIdColumn, '=', $actionCheckerActionId)
+                     ->on($wfStepIdColumn, '=', $actionCheckerStepId)
+                     ->whereIn($actionCheckerCheckerId, $checkerId);
 
-                })
-              ->whereNull($actionCheckerId);
+            })
+            ->whereNull($actionCheckerId);
     }
 
     protected function joinQueryFundAccount(BuilderEx $query)
@@ -827,6 +923,66 @@ class Repository extends Base\Repository
             });
 
         $this->repo->workflow_action->joinQueryWorkflowStep($query);
+    }
+
+    /**
+     * Adds the below params(representative -- ignore the balance table)
+     *
+     * select `payouts`.* from `payouts`
+     * inner join `balance` on
+     *      `balance`.`id` = `payouts`.`balance_id`
+     * inner join `workflow_entity_map` on
+     *      `payouts`.`id` = `workflow_entity_map`.`entity_id`
+     *      and `workflow_entity_map`.`entity_type` = ?
+     * inner join `workflow_state_map` on
+     *      `workflow_entity_map`.`workflow_id` = `workflow_state_map`.`workflow_id`
+     *      and `workflow_state_map`.`status` = ? and `workflow_state_map`.`actor_type_value` in (?)
+     * where
+     *      `payouts`.`merchant_id` = ?
+     *      and `balance`.`type` = ?
+     *      and `payouts`.`status` = ?
+     *      and `payouts`.`merchant_id` = ?
+     *
+     * @param BuilderEx $query
+     * @param array $roleIds
+     */
+    protected function joinQueryWorkflowServiceEntities(BuilderEx $query, array $roleIds)
+    {
+        $entityMapTable         = $this->repo->workflow_entity_map->getTableName();
+        $workflowStateMapTable  = $this->repo->workflow_state_map->getTableName();
+
+        if ($query->hasJoin($entityMapTable) === true)
+        {
+            return;
+        }
+
+        $query->join(
+            $entityMapTable,
+            function(JoinClause $join)
+            {
+                $entityIdColumn   = $this->repo->workflow_entity_map->dbColumn(Workflow\Service\EntityMap\Entity::ENTITY_ID);
+                $entityNameColumn = $this->repo->workflow_entity_map->dbColumn(Workflow\Service\EntityMap\Entity::ENTITY_TYPE);
+
+                $idColumn = $this->dbColumn(Entity::ID);
+
+                $join->on($idColumn, $entityIdColumn)
+                     ->where($entityNameColumn, '=',E::PAYOUT);
+            });
+
+        $query->join(
+            $workflowStateMapTable,
+            function(JoinClause $join) use ($roleIds)
+            {
+                $entityMapWorkflowIdColumn = $this->repo->workflow_entity_map->dbColumn(Workflow\Service\EntityMap\Entity::WORKFLOW_ID);
+
+                $roleColumn = $this->repo->workflow_state_map->dbColumn(Workflow\Service\StateMap\Entity::ACTOR_TYPE_VALUE);
+                $statusColumn = $this->repo->workflow_state_map->dbColumn(Workflow\Service\StateMap\Entity::STATUS);
+                $workflowIdColumn = $this->repo->workflow_state_map->dbColumn(Workflow\Service\StateMap\Entity::WORKFLOW_ID);
+
+                $join->on($entityMapWorkflowIdColumn, $workflowIdColumn)
+                     ->where($statusColumn, '=', 'created')
+                     ->whereIn($roleColumn, $roleIds);
+            });
     }
 
     protected function joinQueryBalance(BuilderEx $query)
@@ -1241,5 +1397,26 @@ class Repository extends Base\Repository
                     ->where($balanceIdColumn, $balanceId)
                     ->where($createdAtColumn, '>=', $lastFetchTime )
                     ->count();
+    }
+
+    /**
+     * select COUNT(*)
+     * from `payouts`
+     * where `payouts`.`status` = ?
+     * and `payouts`.`merchant_id` = ?
+     *
+     * @param string $merchantId
+     * @return mixed
+     */
+    public function fetchCountOfPendingPayoutsForMerchant(string $merchantId)
+    {
+        $statusColumn     = $this->dbColumn(Entity::STATUS);
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $query = $this->newQuery()
+                      ->where($statusColumn, '=', Status::PENDING)
+                      ->where($merchantIdColumn, '=', $merchantId);
+
+        return $query->count();
     }
 }

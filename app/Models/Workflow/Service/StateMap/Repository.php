@@ -10,7 +10,7 @@ class Repository extends Base\Repository
 
     public function getByStateId($stateId)
     {
-        $stateIdColumn           = $this->dbColumn(Entity::STATE_ID);
+        $stateIdColumn = $this->dbColumn(Entity::STATE_ID);
 
         return $this->newQuery()
                     ->where($stateIdColumn, '=', $stateId)

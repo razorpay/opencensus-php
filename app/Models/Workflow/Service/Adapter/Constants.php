@@ -6,6 +6,11 @@ class Constants
 {
     const SERVICE_RX                    = 'rx_';
 
+    const WORKFLOW_TYPE                 = 'workflow_type';
+    const PAYOUT_APPROVAL_TYPE          = 'payout-approval';
+
+    const SUCCESS_STATUS_CODES          = 'success_status_codes';
+
     const MERCHANT                      = 'merchant';
     const USER                          = 'user';
     const ADMIN                         = 'admin';

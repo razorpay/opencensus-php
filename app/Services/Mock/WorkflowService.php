@@ -16,11 +16,15 @@ class WorkflowService extends \RZP\Services\WorkflowService
         // Just for tests!
         $pathArr = explode('/', $path);
 
-        if ($pathArr[count($pathArr)-1] == 'CreateWithEntityId' && $payload['action'] === 'approved')
+        if ($pathArr[count($pathArr) - 1] == 'CreateDirectOnWorkflow')
+        {
+            return $this->sendWFRejectMockResponse();
+        }
+        elseif ($pathArr[count($pathArr) - 1] == 'CreateWithEntityId' && $payload['action'] === 'approved')
         {
             return $this->sendWFApproveMockResponse();
         }
-        elseif ($pathArr[count($pathArr)-1] == 'CreateWithEntityId' && $payload['action'] === 'rejected')
+        elseif ($pathArr[count($pathArr) - 1] == 'CreateWithEntityId' && $payload['action'] === 'rejected')
         {
             return $this->sendWFRejectMockResponse();
         }
@@ -298,7 +302,7 @@ class WorkflowService extends \RZP\Services\WorkflowService
                                     "aa": "test context"
                                 },
                                 "enabled": "true",
-                                "service": "rx-live",
+                                "service": "rx_live",
                                 "org_id": "100000razorpay",
                                 "created_at": "1597317215"
                             }';
@@ -558,7 +562,7 @@ class WorkflowService extends \RZP\Services\WorkflowService
                                     "aa": "test context"
                                 },
                                 "enabled": "false",
-                                "service": "rx-live",
+                                "service": "rx_live",
                                 "org_id": "100000razorpay",
                                 "created_at": "1597317215"
                             }';

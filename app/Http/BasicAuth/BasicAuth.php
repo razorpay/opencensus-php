@@ -426,7 +426,7 @@ class BasicAuth
 
     public function setAccountId($accountId)
     {
-        $this->authCreds->creds[self::ACCOUNT_ID] = $payload[self::ACCOUNT_ID];
+        $this->authCreds->creds[self::ACCOUNT_ID] = $accountId;
     }
 
     protected function setKeyEntityFromKeyId()

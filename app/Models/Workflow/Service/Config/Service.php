@@ -6,7 +6,6 @@ use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Workflow\Service\Config;
-use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class Service extends Base\Service
 {
@@ -21,37 +20,36 @@ class Service extends Base\Service
     /**
      * @param array $input
      * @return array
-     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\BadRequestValidationFailureException|Exception\ServerErrorException
      */
     public function create(array $input)
     {
-        (new Validator)->setStrictFalse()
-            ->validateInput(Validator::CREATE, $input[Entity::CONFIG]);
+        $merchantId = $input[Entity::CONFIG][Entity::OWNER_ID];
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $org = $this->repo->org->findOrFailPublic($input[Entity::CONFIG][Entity::ORG_ID]);
+        $validator = new Validator;
+        $validator->validateInput(Validator::WORKFLOW_CONFIG_CREATE, $input[Entity::CONFIG]);
+        $validator->validateForNoPendingPayouts($merchant);
+        $validator->validateOrgId($input[Entity::CONFIG], $merchant);
 
-        /** @var MerchantEntity $merchant */
-        $merchant   = $this->repo->merchant->findOrFailPublic($input[Entity::CONFIG][Entity::OWNER_ID]);
-
-        $this->validateIfNoPendingPayouts($merchant->getMerchantId());
-
-        $configResponse = $this->core->create($input);
-
-        return $configResponse;
+        return $this->core->create($input);
     }
 
     /**
      * @param array $input
      * @return array
-     * @throws Exception\BadRequestValidationFailureException
      */
     public function update(array $input)
     {
-        (new Validator)->setStrictFalse()
-            ->validateInput(Validator::UPDATE, $input[Entity::CONFIG]);
+        $merchantId = $input[Entity::OWNER_ID];
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $validator = new Validator;
+        $validator->validateInput(Validator::WORKFLOW_CONFIG_UPDATE, $input);
+        $validator->validateForNoPendingPayouts($merchant);
 
         /** @var Entity $config */
-        $config = $this->repo->workflow_config->getByConfigId($input[Entity::CONFIG][Entity::ID]);
+        $config = $this->repo->workflow_config->getByConfigId($input[Entity::ID]);
 
         if ($config === null)
         {
@@ -62,13 +60,15 @@ class Service extends Base\Service
             );
         }
 
-        $this->validateIfNoPendingPayouts($config->getMerchantId());
-
-        $configResponse = $this->core->update($config, $input[Entity::CONFIG]);
-
-        return $configResponse;
+        return $this->core->update($config, $input);
     }
 
+    /**
+     * @param string $id
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\ServerErrorException
+     */
     public function get(string $id)
     {
         /** @var Entity $config */
@@ -83,50 +83,28 @@ class Service extends Base\Service
             );
         }
 
-        $configResponse = $this->core->get($id);
-
-        return $configResponse;
+        return $this->core->getViaWorkflowService($config->getConfigId());
     }
 
-    public function getPayoutConfig(string $merchantId)
+    /**
+     * @param string $configType
+     * @param string $merchantId
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\ServerErrorException
+     */
+    public function getConfigByType(string $configType, string $merchantId)
     {
-        /** @var Entity $config */
-        $config = $this->repo->workflow_config->getByConfigType('payout-approval', $merchantId);
+        $config = $this->repo->workflow_config->getByConfigTypeAndMerchantId($configType, $merchantId);
 
         if ($config === null)
         {
             throw new Exception\BadRequestValidationFailureException(
                 ErrorCode::BAD_REQUEST_WORKFLOW_CONFIG_ID_INVALID,
                 null,
-                ['merchant_id' => $merchantId]
-            );
+                ['merchant_id' => $merchantId, 'config_type' => $configType]);
         }
 
-        $configResponse = $this->core->get($config->getConfigId());
-
-        return $configResponse;
+        return $this->core->getViaWorkflowService($config->getConfigId());
     }
-
-    /**
-     * @param string $merchantId
-     * @throws Exception\BadRequestValidationFailureException
-     */
-    private function validateIfNoPendingPayouts(string $merchantId)
-    {
-
-        $payoutService = new \RZP\Models\Payout\Service;
-
-        $pendingPayouts = $payoutService->getPendingPayoutsForMerchant($merchantId);
-
-        if(empty($pendingPayouts) === false and $pendingPayouts > 0)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                ErrorCode::BAD_REQUEST_WORKFLOW_MERCHANT_WITH_PENDING_PAYOUTS,
-                null,
-                ['merchant_id' => $merchantId]
-            );
-        }
-
-    }
-
 }

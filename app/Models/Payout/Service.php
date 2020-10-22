@@ -21,12 +21,12 @@ use RZP\Models\FundAccount;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Permission;
-use RZP\Models\Merchant\Balance;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
 use RZP\Models\FundAccount\Service as FundAccountService;
 use RZP\Models\FundAccount\BatchHelper as FundAccountHelper;
+use RZP\Models\Workflow\Service\Config\Service as WorkflowConfigService;
 
 class Service extends Base\Service
 {
@@ -155,6 +155,21 @@ class Service extends Base\Service
         return $payout->toArrayPublic();
     }
 
+    public function processActionOnFundAccountPayoutInternal(string $id, bool $approved, array $input): array
+    {
+        $this->trace->info(TraceCode::PAYOUT_WORKFLOW_ACTION_REQUEST,
+            ['id' => $id, 'approved' => $approved, 'input' => $input]);
+
+        /** @var Entity $payout */
+        $payout = $this->repo->payout->findByPublicId($id);
+
+        $payout->getValidator()->validatePayoutStatusForApproveOrReject();
+
+        $payout = (new Core)->processActionOnPayout($approved, $payout, $input);
+
+        return $payout->toArrayPublic();
+    }
+
     public function bulkApproveFundAccountPayouts(array $input)
     {
         $this->trace->info(TraceCode::PAYOUT_BULK_APPROVE_REQUEST, ['input' => $input]);
@@ -167,6 +182,10 @@ class Service extends Base\Service
 
         $payouts = $this->repo->payout->findManyByPublicIdsAndMerchant($input[Entity::PAYOUT_IDS], $this->merchant);
 
+        $totalCount = count($input[Entity::PAYOUT_IDS]);
+
+        unset($input[Entity::PAYOUT_IDS]);
+
         foreach ($payouts as $payout)
         {
             $payout->getValidator()->validatePayoutStatusForApproveOrReject();
@@ -178,7 +197,7 @@ class Service extends Base\Service
         {
             try
             {
-                $payout = (new Core)->approvePayout($payout, $input);
+                (new Core)->approvePayout($payout, $input);
             }
             catch (\Throwable $e)
             {
@@ -193,7 +212,7 @@ class Service extends Base\Service
         }
 
         return [
-            'total_count' => count($input[Entity::PAYOUT_IDS]),
+            'total_count' => $totalCount,
             'failed_ids'  => $failedIds,
         ];
     }
@@ -251,10 +270,58 @@ class Service extends Base\Service
                     Trace::ERROR,
                     TraceCode::PAYOUT_APPROVE_REJECT_EXCEPTION,
                     [
-                        'payout_id' => $payout->getId(),
+                        'payout_id'         => $payout->getId(),
+                        'failure_reason'    => $e->getMessage(),
                     ]);
 
-                $failedIds[] = [$payout->getPublicId(), $e->getMessage()];
+                $failedIds[] = ["{$payout->getPublicId()} - {$e->getMessage()}"];
+            }
+        }
+
+        return [
+            'total_count' => count($input[Entity::PAYOUT_IDS]),
+            'failed_ids'  => $failedIds,
+        ];
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function bulkRetryWorkflowOnPayout(array $input)
+    {
+        $this->trace->info(TraceCode::WORKFLOW_SERVICE_TRACE_INFO, ['input' => $input]);
+
+        (new Validator)->validateInput('bulk_retry_workflow', $input);
+
+        if ($this->app['basicauth']->isAdminAuth() !== true)
+        {
+            throw new Exception\BadRequestValidationFailureException('route can be accessed by admins only');
+        }
+
+        /** @var Entity $payout */
+        $payouts = $this->repo->payout->findManyByPublicIds($input[Entity::PAYOUT_IDS]);
+
+        $failedIds = [];
+
+        foreach ($payouts as $payout)
+        {
+            try
+            {
+                $payout->getValidator()->validatePayoutStatusForApproveOrReject();
+
+                (new Core)->retryPayoutWorkflow($payout, $input);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::PAYOUT_WORKFLOW_SERVICE_WORKFLOW_CREATE_RETRY_FAILED,
+                    ['payout_id' => $payout->getId()]);
+
+                $failedIds[] = [$payout->getPublicId() . ' -> ' . $e->getMessage()];
             }
         }
 
@@ -279,7 +346,7 @@ class Service extends Base\Service
         (new User\Core)->verifyOtp($input + ['action' => 'create_payout'],
                                    $this->merchant,
                                    $this->user,
-                                   $this->mode === Constants\Mode::TEST);
+                             $this->mode === Constants\Mode::TEST);
 
         $payoutInput = array_except($input, ['otp', 'token']);
 
@@ -341,6 +408,12 @@ class Service extends Base\Service
         return $payout->toArrayPublic();
     }
 
+    /**
+     * @param array $input
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\InvalidArgumentException
+     */
     public function fetchMultiple(array $input): array
     {
         /** @var Merchant\Validator $merchantValidator */
@@ -349,6 +422,10 @@ class Service extends Base\Service
         $merchantValidator->validateAndTranslateToAccountNumberForBankingIfApplicable($input);
 
         $payouts = $this->repo->payout->fetch($input, $this->merchant->getId());
+
+        // Since pending payouts can be on both the api workflow system and workflow service
+        // therefore we need to fetch and merge payouts from both systems
+        $this->mergePendingPayoutsViaWorkflowService($input, $payouts);
 
         return $payouts->toArrayPublic();
     }
@@ -442,9 +519,15 @@ class Service extends Base\Service
      * Works ONLY for create_payout workflows right now.
      *
      * @return array
+     * @throws \Exception
      */
     public function getWorkflowSummary(): array
     {
+        if ($this->isWorkflowServiceEnabled() === true)
+        {
+            return (new WorkflowConfigService)->getConfigByType('payout-approval', $this->merchant->getId());
+        }
+
         $permissionId = $this->repo
                              ->permission
                              ->retrieveIdsByNamesAndOrg(Permission\Name::CREATE_PAYOUT, Org\Entity::RAZORPAY_ORG_ID)
@@ -469,6 +552,20 @@ class Service extends Base\Service
         }
 
         return $data;
+    }
+
+    /**
+     * @return bool
+     * @throws \Exception
+     */
+    public function isWorkflowServiceEnabled(): bool
+    {
+        $variant = $this->app['razorx']->getTreatment($this->merchant->getId(),
+            Merchant\RazorxTreatment::PROCESS_VIA_WORKFLOW_SERVICE,
+            $this->mode
+        );
+
+        return (strtolower($variant) === 'on');
     }
 
     public function getDashboardSummary(): array
@@ -637,8 +734,10 @@ class Service extends Base\Service
                     if ($result !== null)
                     {
                         $this->trace->info(TraceCode::PAYOUT_EXIST_WITH_SAME_IDEMPOTENCY_KEY,
-                                            ['input' => $result->toArrayPublic(),
-                                             Entity::IDEMPOTENCY_KEY => $item[Entity::IDEMPOTENCY_KEY]]);
+                            [
+                                'input' => $result->toArrayPublic(),
+                                Entity::IDEMPOTENCY_KEY => $item[Entity::IDEMPOTENCY_KEY],
+                            ]);
 
                         $payoutBatch->push($result->toArrayPublic() +
                             [Entity::IDEMPOTENCY_KEY => $result->getIdempotencyKey()]);
@@ -835,7 +934,7 @@ class Service extends Base\Service
         else
         {
             throw  new Exception\BadRequestValidationFailureException(
-               'Unknown update action '.$action.' found');
+                'Unknown update action '.$action.' found');
         }
 
     }
@@ -1031,7 +1130,7 @@ class Service extends Base\Service
     {
         $user = $this->auth->getUser();
 
-        $pending = $this->repo->payout->fetchPayoutsPendingOnUserRole($user, $this->merchant);
+        $pending = $this->repo->payout->fetchPayoutsPendingOnUserRole($user, $this->merchant, $this->auth->getUserRole());
 
         $groupedPendingPayouts = $pending->groupBy(Entity::BALANCE_ID);
 
@@ -1157,9 +1256,9 @@ class Service extends Base\Service
         $merchant = $this->merchant;
 
         $variant  = $this->app['razorx']->getTreatment($merchant->getId(),
-                                                       Merchant\RazorxTreatment::X_CONTACT_AND_FUND_ACCOUNT_CREATION,
-                                                       $this->mode,
-                                                       FundAccount\Entity::FUND_ACCOUNT_BULK_RX_RETRY_COUNT);
+            Merchant\RazorxTreatment::X_CONTACT_AND_FUND_ACCOUNT_CREATION,
+            $this->mode,
+            FundAccount\Entity::FUND_ACCOUNT_BULK_RX_RETRY_COUNT);
 
         $flag = ($variant === 'create_duplicate') ? true : false;
 
@@ -1381,5 +1480,45 @@ class Service extends Base\Service
         $response = $this->core->getFreePayoutsAttributes($balanceId);
 
         return $response;
+    }
+
+    /**
+     * @param array $input
+     * @param Base\PublicCollection $payouts
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\InvalidArgumentException
+     */
+    protected function mergePendingPayoutsViaWorkflowService(array $input, Base\PublicCollection $payouts)
+    {
+        $pendingPayoutsViaWfs = [];
+
+        if ((isset($input[Payout\Entity::PENDING_ON_ROLES])) ||
+            (isset($input[Entity::PENDING_ON_ME])))
+        {
+            // Here we unset PENDING_ON_ROLES and set PENDING_ON_ROLES_VIA_WFS
+            // Then we fetch again, this will use Payout\Fetch and Payout\Repository
+            // to fetch the payouts by joining with WFS related tables
+            if (isset($input[Payout\Entity::PENDING_ON_ROLES]))
+            {
+                $input[Entity::PENDING_ON_ROLES_VIA_WFS] = $input[Entity::PENDING_ON_ROLES];
+                unset($input[Entity::PENDING_ON_ROLES]);
+            }
+
+            if (isset($input[Entity::PENDING_ON_ME]))
+            {
+                $input[Entity::PENDING_ON_ME_VIA_WFS] = $input[Entity::PENDING_ON_ME];
+                unset($input[Entity::PENDING_ON_ME]);
+            }
+
+            $pendingPayoutsViaWfs = $this->repo->payout->fetch($input, $this->merchant->getId());
+        }
+
+        if (empty($pendingPayoutsViaWfs) === false)
+        {
+            foreach ($pendingPayoutsViaWfs as $payout)
+            {
+                $payouts->add($payout);
+            }
+        }
     }
 }

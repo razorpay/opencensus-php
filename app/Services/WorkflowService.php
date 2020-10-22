@@ -68,7 +68,7 @@ class WorkflowService
             // Common headers for requests.
             [
                 self::CONTENT_TYPE_HEADER           => 'application/json',
-                self::EMAIL_HEADER                  => $this->getUserEmailIfAvailable(),
+                self::EMAIL_HEADER                  => $this->getActorEmail(),
                 'timeout'                           => self::REQUEST_TIMEOUT,
                 'connect_timeout'                   => self::REQUEST_CONNECT_TIMEOUT,
             ],
@@ -127,15 +127,13 @@ class WorkflowService
         if (($exception !== null) or
             ($res->success !== true))
         {
-            $responseBodyInfo = empty($res) === false
+            $responseInfo = empty($res) === false
                 ? ['resp_status_code' => $res->status_code, 'resp_body' => $res->body]
                 : [];
 
-            $exceptionInfo = empty($exception) === false
-                ? $exception->getMessage()
-                : "";
+            $exceptionInfo = empty($exception) === false ? $exception->getMessage() : "";
 
-            $responseInfo = ['req_path' => $path, 'message' => $exceptionInfo] + $responseBodyInfo;
+            $responseInfo += ['req_path' => $path, 'message' => $exceptionInfo, 'payload' => $payload];
 
             $this->trace->error(
                 TraceCode::SERVER_ERROR_WORKFLOW_SERVICE_ERROR,
@@ -160,7 +158,7 @@ class WorkflowService
         return $res;
     }
 
-    private function getUserEmailIfAvailable()
+    private function getActorEmail()
     {
         $user = $this->ba->getUser();
 

@@ -1622,6 +1622,564 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
+    public function testApprovePayoutWithNewWorkflowService()
+    {
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'     => 'FVLeJYoM0GPWUb', // Should exist in the new WF service
+                'created_at'    => 1598967658
+            ]);
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'     => 'FVLeJYoM0GPWUc', // Should exist in the new WF service
+                'created_at'    => 1598967657
+            ]);
+
+        $payout = $this->createPayoutWithWorkflow([
+            'notes' => [
+                "random_key1" => "Hello",
+                "random_key2" => "Hi"
+            ]
+        ], 'rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'entity_id' =>substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+            ]);
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
+
+        $this->startTest();
+    }
+
+    public function testRejectPayoutWithNewWorkflowService()
+    {
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'     => 'FVLeJYoM0GPWUb',  // Should exist in the new WF service
+            ]);
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'entity_id' =>substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+            ]);
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
+
+        $this->startTest();
+    }
+
+    public function testApprovePayoutCallbackFromNWFS()
+    {
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'     => 'FVLeJYoM0GPWUb',
+            ]);
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts_internal/' . $payout["id"] . '/approve';
+
+        $this->startTest();
+    }
+
+    public function testRejectPayoutCallbackFromNWFS()
+    {
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'     => 'FVLeJYoM0GPWUb',
+            ]);
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts_internal/' . $payout["id"] . '/reject';
+
+        $this->startTest();
+    }
+
+    public function testGetWorkflowFromNWFS()
+    {
+        $this->markTestSkipped("No route");
+
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'     => 'FVLeJYoM0GPWUb',
+            ]);
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'entity_id' =>substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+            ]);
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/history';
+
+        $this->startTest();
+    }
+
+    public function testBulkRejectPayoutWithAdminWithNWFS()
+    {
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'     => 'FVLeJYoM0GPWUb',
+            ]);
+
+        $payout1 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+        $payout2 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'entity_id' =>substr($payout1["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+            ]);
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'entity_id' =>substr($payout2["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+            ]);
+
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
+
+        // Need to do this for test as well because in testing env,
+        // admin authentication is done on test mode, even if live creds
+        // have been passed.
+        $adminForTest = $this->prepareAdminForPayoutWorkflow('test');
+        $adminForLive = $this->prepareAdminForPayoutWorkflow('live');
+
+        $this->app['config']->set('database.default', 'live');
+
+        $adminToken = $this->fixtures->on('test')->create('admin_token', [
+            'admin_id'   => $adminForTest->getId(),
+            'token'      => Hash::make('ThisIsATokenForTest'),
+        ]);
+
+        $token = 'ThisIsATokenForTest' . $adminToken->getId();
+
+        $this->ba->adminAuth('live', $token);
+
+        $this->startTest();
+    }
+
+    public function testBulkRetryWorkflowOnPayout()
+    {
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'     => 'FVLeJYoM0GPWUb',
+            ]);
+
+        $payout1 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+        $payout2 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'entity_id' =>substr($payout1["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+            ]);
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'entity_id' =>substr($payout2["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+            ]);
+
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
+
+        // Need to do this for test as well because in testing env,
+        // admin authentication is done on test mode, even if live creds
+        // have been passed.
+        $adminForTest = $this->prepareAdminForPayoutWorkflow('test');
+        $adminForLive = $this->prepareAdminForPayoutWorkflow('live');
+
+        $this->app['config']->set('database.default', 'live');
+
+        $adminToken = $this->fixtures->on('test')->create('admin_token', [
+            'admin_id'   => $adminForLive->getId(),
+            'token'      => Hash::make('ThisIsATokenForTest'),
+        ]);
+
+        $token = 'ThisIsATokenForTest' . $adminToken->getId();
+
+        $this->ba->adminAuth('live', $token);
+
+        $this->startTest();
+    }
+
+    public function testBulkPayoutApprovalNWFS()
+    {
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'     => 'FVLeJYoM0GPWUb',
+            ]);
+
+        $payout1 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'entity_id' =>substr($payout1["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+            ]);
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $request = [
+            'method' => 'POST',
+            'url' => '/payouts/'.$payout1['id'].'/approve',
+            'content' => [
+                'token' => 'BUIj3m2Nx2VvVj',
+                'otp' => '0007',
+                'user_comment' => 'Approving',
+            ],
+        ];
+
+        $approvalResponse = $this->makeRequestAndGetContent($request);
+
+        $this->ba->batchAuth('rzp_live_10000000000000');
+
+        $headers = [
+            'HTTP_X_Batch_Id'          => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type'      => 'user',
+            'HTTP_X_Creator_Id'        => $this->finL3RoleUser->getId()
+        ];
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['server'] = $headers;
+        $testData['request']['content'][0]['payout']['id'] = $payout1['id'];
+        $testData['request']['content'][0]['fund']['id'] = $payout1['fund_account_id'];
+
+        $this->startTest();
+    }
+
+    public function testBulkPayoutWithSameFundAccountNWFS()
+    {
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'     => 'FVLeJYoM0GPWUb',
+            ]);
+
+        $this->ba->batchAuth('rzp_live_10000000000000');
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
+    public function testApprovePayoutWithNWFSWithQueuingDisabled()
+    {
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'     => 'FVLeJYoM0GPWUb', // Should exist in the new WF service
+                'created_at'    => 1598967658
+            ]);
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'     => 'FVLeJYoM0GPWUc', // Should exist in the new WF service
+                'created_at'    => 1598967657
+            ]);
+
+        $payout = $this->createPayoutWithWorkflow([
+            'notes' => [
+                "random_key1" => "Hello",
+                "random_key2" => "Hi"
+            ]
+        ], 'rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'entity_id' =>substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+            ]);
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
+
+        $this->startTest();
+    }
+
+    public function testApprovePayoutWithNWFSWithQueuingEnabled()
+    {
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'     => 'FVLeJYoM0GPWUb', // Should exist in the new WF service
+                'created_at'    => 1598967658
+            ]);
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'     => 'FVLeJYoM0GPWUc', // Should exist in the new WF service
+                'created_at'    => 1598967657
+            ]);
+
+        $payout = $this->createPayoutWithWorkflow([
+            'notes' => [
+                "random_key1" => "Hello",
+                "random_key2" => "Hi"
+            ]
+        ], 'rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'entity_id' =>substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+            ]);
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
+
+        $this->startTest();
+    }
+
+    public function testGetPayoutsForPendingOnRolesNWFS() {
+        //Given
+
+        //1. I have a Workflow
+        // Sets up Fund Account and Merchant User mapping that may be needed to setup on live
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'     => 'FVLeJYoM0GPWUb', // Should exist in the new WF service
+                'created_at'    => 1598967658
+            ]);
+
+        //2. I Create a Payout
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+        $expectedPayoutId = $payout["id"];
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'entity_id' =>substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+            ]);
+
+        $this->fixtures->on('live')->create(
+            'workflow_state_map');
+
+        //Then
+        //When I filter on pending on pending on L2 Role, I shouldn't get anything
+
+        //Assuming the role of merchant for maximum permissions
+        $merchantUser = $this->getDbEntity('merchant_user', ['role' => 'owner', 'product' => 'banking'], 'live')->toArray();
+        $this->ba->proxyAuth('rzp_live_10000000000000', $merchantUser['user_id']);
+
+        $request = [
+            'method'  => 'get',
+            'content' => [
+                'product'          => 'banking',
+                'expand'           => ['user'],
+                'pending_on_roles' => ['finance_l2']
+            ],
+            'url'     => '/payouts',
+        ];
+
+        $response = $this->sendRequest($request);
+        $payout = json_decode($response->getContent(), true);
+
+        $this->assertEmpty($payout["items"]);
+
+        // But when I filter by owner Role (Which is not approved), I should see the payouts
+
+        $request = [
+            'method'  => 'get',
+            'content' => [
+                'product'          => 'banking',
+                'expand'           => ['user'],
+                'pending_on_roles' => ['owner']
+            ],
+            'url'     => '/payouts',
+        ];
+
+        $response = $this->sendRequest($request);
+        $payout = json_decode($response->getContent(), false);
+
+        $this->assertEquals($expectedPayoutId, $payout->items[0]->id);
+
+        //2. I approve with the owner of workflow
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => "/payouts/{$expectedPayoutId}/approve",
+            'content' => [
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '0007',
+                'user_comment' => 'Approving',
+            ],
+        ];
+        $this->sendRequest($request);
+
+        $stateMap = $this->getLastEntity('workflow_state_map', true, 'live');
+        $this->fixtures->edit('workflow_state_map', $stateMap['id'], [
+            'status' => 'processed'
+        ]);
+
+        // Now when I filter by owner Role (Which is approved), I should not see the payout
+        $this->ba->proxyAuth('rzp_live_10000000000000', $merchantUser['user_id']);
+
+        $request = [
+            'method'  => 'get',
+            'content' => [
+                'product'          => 'banking',
+                'expand'           => ['user'],
+                'pending_on_roles' => ['owner']
+            ],
+            'url'     => '/payouts',
+        ];
+
+        $response = $this->sendRequest($request);
+        $payout = json_decode($response->getContent(), false);
+
+        $this->assertEmpty($payout->items);
+    }
+
+    private function setUpExperimentForNWFS()
+    {
+        $this->mockRazorxTreatment(
+            'yesbank',
+            'off',
+            'off',
+            'off',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'on' // just sey this on, leave everything as default
+        );
+    }
+
     public function testBulkApprovePayoutWithComment()
     {
         $this->liveSetUp();
@@ -4316,7 +4874,7 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
-    protected function prepareAdminForPayoutWorkflow($mode)
+    public function prepareAdminForPayoutWorkflow($mode)
     {
         $admin = $this->fixtures->on($mode)->create('admin', [
             'id' => 'poutRejtAdmnId',
@@ -4334,7 +4892,22 @@ class PayoutTest extends TestCase
             'name'   => 'reject_payout_bulk'
         ]);
 
+        $permission2 = $this->fixtures->on($mode)->create('permission',[
+            'name'   => 'retry_payout_workflow_bulk'
+        ]);
+
+        $permission3 = $this->fixtures->on($mode)->create('permission',[
+            'name'   => 'wfs_config_create'
+        ]);
+
+        $permission4 = $this->fixtures->on($mode)->create('permission',[
+            'name'   => 'wfs_config_update'
+        ]);
+
         $role->permissions()->attach($permission->getId());
+        $role->permissions()->attach($permission2->getId());
+        $role->permissions()->attach($permission3->getId());
+        $role->permissions()->attach($permission4->getId());
 
         $admin->roles()->attach($role);
 

@@ -546,6 +546,9 @@ class Error extends Support\Fluent
             case ErrorCode::BAD_REQUEST_RATE_LIMIT_EXCEEDED:
                 $httpStatusCode = 429;
                 break;
+            case ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS:
+                $httpStatusCode = 409;
+                break;
         }
 
         $this->setPublicErrorCode(PublicErrorCode::BAD_REQUEST_ERROR);

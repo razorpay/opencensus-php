@@ -319,6 +319,11 @@ trait PayoutTrait
             $content['scheduled_at'] = $attributes['scheduled_at'];
         }
 
+        if (isset($attributes['notes']))
+        {
+            $content['notes'] = $attributes['notes'];
+        }
+
         $request = [
             'method'  => 'POST',
             'url'     => '/payouts',

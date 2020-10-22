@@ -21,13 +21,13 @@ class CreateWorkflowEntityMappingTable extends Migration
             $table->engine = 'InnoDB';
 
             $table->char(WorkflowEntityMap::ID, WorkflowEntityMap::ID_LENGTH)
-                ->primary();
+                  ->primary();
 
             $table->char(WorkflowEntityMap::WORKFLOW_ID, WorkflowEntityMap::ID_LENGTH);
 
-            $table->char(WorkflowEntityMap::ENTITY_ID, WorkflowEntityMap::ID_LENGTH);
-
             $table->char(WorkflowEntityMap::CONFIG_ID, WorkflowEntityMap::ID_LENGTH);
+
+            $table->char(WorkflowEntityMap::ENTITY_ID, WorkflowEntityMap::ID_LENGTH);
 
             $table->string(WorkflowEntityMap::ENTITY_TYPE, 255);
 

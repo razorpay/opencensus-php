@@ -916,6 +916,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE                                   = 'An error occurred while creating the payout. Payout workflow could not be initiated';
     const BAD_REQUEST_PAYOUT_MODE_REQUIRED                                      = 'Mode is required for payout';
     const BAD_REQUEST_WORKFLOW_STATE_CALLBACK_DUPLICATE                         = 'A duplicate request to create state has come from the workflow service';
+    const BAD_REQUEST_WORKFLOW_STATE_CALLBACK                                   = 'An error occurred while processing state';
     const SERVER_ERROR_WORKFLOW_STATE_INVALID_ID                                = 'Invalid workflow state Id';
     const BAD_REQUEST_PAYOUT_INVALID_MODE                                       = 'Payout mode is invalid';
     const BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED                                 = 'Mode is unsupported';

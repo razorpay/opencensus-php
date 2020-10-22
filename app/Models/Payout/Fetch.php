@@ -42,12 +42,16 @@ class Fetch extends BaseFetch
             Entity::SORTED_ON         => 'sometimes|string|custom',
         ],
         AuthType::PROXY_AUTH => [
-            self::EXPAND_EACH               => 'filled|string|in:user,reversal,fund_account,fund_account.contact,transaction',
+            self::EXPAND_EACH                       => 'filled|string|in:user,reversal,fund_account,fund_account.contact,transaction',
             // Because, dashboard thinks there can be just one mode (live/test).
-            Entity::PAYOUT_MODE             => 'sometimes|string|custom',
-            Entity::PENDING_ON_ME           => 'sometimes|boolean',
-            Entity::PENDING_ON_ROLES        => 'sometimes|array',
-            Entity::PENDING_ON_ROLES . '.*' => 'filled|string|in:finance_l1,finance_l2,finance_l3,owner,admin',
+            Entity::PAYOUT_MODE                     => 'sometimes|string|custom',
+            Entity::PENDING_ON_ME                   => 'sometimes|boolean',
+            Entity::PENDING_ON_ROLES                => 'sometimes|array',
+            Entity::PENDING_ON_ROLES . '.*'         => 'filled|string|in:finance_l1,finance_l2,finance_l3,owner,admin',
+            // These are not expected from the dashboard, but are set internally via code.
+            Entity::PENDING_ON_ME_VIA_WFS           => 'sometimes|boolean',
+            Entity::PENDING_ON_ROLES_VIA_WFS        => 'sometimes|array',
+            Entity::PENDING_ON_ROLES_VIA_WFS . '.*' => 'filled|string|in:finance_l1,finance_l2,finance_l3,owner,admin',
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::PRODUCT           => 'sometimes|string',
@@ -83,6 +87,9 @@ class Fetch extends BaseFetch
             Entity::PENDING_ON_ME,
             Entity::PENDING_ON_ROLES,
             Entity::PENDING_ON_ROLES . '.*',
+            Entity::PENDING_ON_ME_VIA_WFS,
+            Entity::PENDING_ON_ROLES_VIA_WFS,
+            Entity::PENDING_ON_ROLES_VIA_WFS . '.*',
             Entity::REVERSED_FROM,
             Entity::REVERSED_TO,
             Entity::PRODUCT,

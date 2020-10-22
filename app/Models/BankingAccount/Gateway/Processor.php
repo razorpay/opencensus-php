@@ -58,7 +58,7 @@ abstract class Processor extends Base\Core
         return;
     }
 
-    public function validateStatusMapping(string $bankInternalStatus, string $status, string $substatus)
+    public function validateStatusMapping(string $bankInternalStatus, $status, $substatus)
     {
         return;
     }

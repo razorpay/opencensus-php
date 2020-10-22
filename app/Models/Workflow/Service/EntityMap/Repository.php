@@ -10,7 +10,7 @@ class Repository extends Base\Repository
 
     public function getByWorkflowId($workflowId) : Entity
     {
-        $workflowIdColumn           = $this->dbColumn(Entity::WORKFLOW_ID);
+        $workflowIdColumn = $this->dbColumn(Entity::WORKFLOW_ID);
 
         return $this->newQuery()
                     ->where($workflowIdColumn, '=', $workflowId)
@@ -30,7 +30,7 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function isPresent(string $entityType, string $entityId)
+    public function isPresent(string $entityType, string $entityId): bool
     {
         $workflowEntity = $this->findByEntityIdAndEntityType($entityType, $entityId);
 

@@ -404,6 +404,7 @@ class ErrorCode
     const BAD_REQUEST_FORBIDDEN                                                     = 'BAD_REQUEST_FORBIDDEN';
     const BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED                                       = 'BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED';
     const BAD_REQUEST_RATE_LIMIT_EXCEEDED                                           = 'BAD_REQUEST_RATE_LIMIT_EXCEEDED';
+    const BAD_REQUEST_CONFLICT_ALREADY_EXISTS                                       = 'BAD_REQUEST_CONFLICT_ALREADY_EXISTS';
     const BAD_REQUEST_ERROR                                                         = 'BAD_REQUEST_ERROR';
     const BAD_REQUEST_ERROR_OWNER_NOT_EXISTS                                        = 'BAD_REQUEST_ERROR_OWNER_NOT_EXISTS';
     const BAD_REQUEST_DUPLICATE_PAYOUT                                              = 'BAD_REQUEST_DUPLICATE_PAYOUT';
@@ -429,6 +430,7 @@ class ErrorCode
     const BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE                                       = 'BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE';
     const BAD_REQUEST_WORKFLOW_CONFIG_ID_INVALID                                    = 'BAD_REQUEST_WORKFLOW_CONFIG_ID_INVALID';
     const BAD_REQUEST_WORKFLOW_MERCHANT_WITH_PENDING_PAYOUTS                        = 'BAD_REQUEST_WORKFLOW_MERCHANT_WITH_PENDING_PAYOUTS';
+    const BAD_REQUEST_WORKFLOW_ORG_ID_IS_INCORRECT                                  = 'BAD_REQUEST_WORKFLOW_ORG_ID_IS_INCORRECT';
     const SERVER_ERROR_WORKFLOW_CONFIG_UPDATE_FAILED                                = 'SERVER_ERROR_WORKFLOW_CONFIG_UPDATE_FAILED';
     const SERVER_ERROR_WORKFLOW_CONFIG_CREATE_FAILED                                = 'SERVER_ERROR_WORKFLOW_CONFIG_CREATE_FAILED';
     const SERVER_ERROR_WORKFLOW_CONFIG_GET_FAILED                                   = 'SERVER_ERROR_WORKFLOW_CONFIG_GET_FAILED';
@@ -436,9 +438,11 @@ class ErrorCode
     const SERVER_ERROR_WORKFLOW_LIST_BY_IDS_FAILED                                  = 'SERVER_ERROR_WORKFLOW_LIST_BY_IDS_FAILED';
     const SERVER_ERROR_WORKFLOW_GET_FAILED                                          = 'SERVER_ERROR_WORKFLOW_GET_FAILED';
     const SERVER_ERROR_WORKFLOW_ACTION_CREATE_FAILED                                = 'SERVER_ERROR_WORKFLOW_ACTION_CREATE_FAILED';
+    const SERVER_ERROR_WORKFLOW_DIRECT_ACTION_CREATE_FAILED                         = 'SERVER_ERROR_WORKFLOW_DIRECT_ACTION_CREATE_FAILED';
     const SERVER_ERROR_WORKFLOW_STATE_ID_INVALID                                    = 'SERVER_ERROR_WORKFLOW_STATE_ID_INVALID';
     const BAD_REQUEST_WORKFLOW_STATE_CALLBACK                                       = 'BAD_REQUEST_WORKFLOW_STATE_CALLBACK';
     const BAD_REQUEST_WORKFLOW_STATE_CALLBACK_DUPLICATE                             = 'BAD_REQUEST_WORKFLOW_STATE_CALLBACK_DUPLICATE';
+    const BAD_REQUEST_WORKFLOW_SERVICE_ILLEGAL_ACCESS                               = 'BAD_REQUEST_WORKFLOW_SERVICE_ILLEGAL_ACCESS';
     const BAD_REQUEST_PAYOUT_MODE_REQUIRED                                          = 'BAD_REQUEST_PAYOUT_MODE_REQUIRED';
     const BAD_REQUEST_PAYOUT_INVALID_MODE                                           = 'BAD_REQUEST_PAYOUT_INVALID_MODE';
     const BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED                                     = 'BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED';

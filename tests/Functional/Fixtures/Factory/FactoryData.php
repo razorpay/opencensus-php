@@ -1478,6 +1478,41 @@ final class FactoryData
             ]
         );
 
+        $factory(\RZP\Models\Workflow\Service\Config\Entity::class, [
+                'id'            => $faker->uniqueid,
+                'config_id'     => 'con_qwertgfdsc',
+                'config_type'   => 'payout-approval',
+                'merchant_id'   => '10000000000000',
+                'org_id'        => '100000razorpay',
+                'enabled'       => true,
+            ]
+        );
+
+        $factory(\RZP\Models\Workflow\Service\EntityMap\Entity::class, [
+                'id'            => $faker->uniqueid,
+                'workflow_id'   => 'con_qwertgfdsc',
+                'entity_type'   => 'payout',
+                'merchant_id'   => '10000000000000',
+                'org_id'        => '100000razorpay',
+                'config_id'     => 'con_qwertgfdsc',
+            ]
+        );
+
+        $factory(\RZP\Models\Workflow\Service\StateMap\Entity::class, [
+                'id'                => $faker->uniqueid,
+                'workflow_id'       => 'con_qwertgfdsc',
+                'merchant_id'       => '10000000000000',
+                'org_id'            => '100000razorpay',
+                'actor_type_key'    => 'role',
+                'actor_type_value'   => 'owner',
+                'state_id'          => 'sta_qwertgfdsc',
+                'state_name'        => 'name',
+                'status'            => 'created',
+                'group_name'        => '123',
+                'type'              => 'type',
+            ]
+        );
+
         $factory(\RZP\Models\Merchant\BvsValidation\Entity::class,
                  [
                      'validation_id'     => $faker->uniqueid,

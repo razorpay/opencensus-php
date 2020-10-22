@@ -2,26 +2,37 @@
 
 namespace RZP\Tests\Functional\Workflow;
 
+use Hash;
+
 use Illuminate\Support\Facades\DB;
-use RZP\Tests\Functional\Fixtures\Entity\Workflow;
-use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
+
+use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Permission;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Fixtures\Entity\Workflow;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Permission as PermissionEntity;
 
 class WorkflowTest extends TestCase
 {
     use WorkflowTrait;
+    use PayoutTrait;
     use HeimdallTrait;
+    use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
+    use TestsBusinessBanking;
 
     protected $input = [];
     protected $authToken = null;
     protected $org = null;
     protected $workflowPermissionIds = [];
+    private $ownerRoleUser;
 
     public function setUp()
     {
@@ -237,5 +248,206 @@ class WorkflowTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content'] = $attributes;
 
         $this->startTest();
+    }
+
+    public function testWorkflowStateCallbackFromNWFS()
+    {
+//        $this->markTestSkipped();
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'workflow_id'     => 'FSYpen1s24sSbs',
+                'entity_id'       => 'Exag5ZpN5MWuBW',
+                'entity_type'     => 'payout',
+                'merchant_id'     => '10000000000000',
+                'org_id'          => '100000razorpay',
+            ]);
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/wf-service/state/callback';
+
+        $this->startTest();
+    }
+
+    public function testCreateWorkflowConfigNWFS()
+    {
+        $this->setUpExperimentForNWFS();
+
+        $admin = $this->prepareAdminForPayoutWorkflow('test');
+
+        $adminToken = $this->fixtures->on('test')->create('admin_token', [
+            'admin_id'   => $admin->getId(),
+            'token'      => Hash::make('ThisIsATokenForTest'),
+        ]);
+
+        $token = 'ThisIsATokenForTest' . $adminToken->getId();
+
+        $this->ba->adminAuth('test', $token);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/wf-service/configs/';
+
+        $this->startTest();
+
+        $workflowConfig = $this->getDbLastEntity('workflow_config', 'test');
+        $this->assertEquals(true, $workflowConfig['enabled']);
+    }
+
+    public function testCreateWorkflowConfigWithPendingPayoutNWFS()
+    {
+        $this->setUpExperimentForNWFS();
+
+        $admin = $this->prepareAdminForPayoutWorkflow('test');
+
+        $adminToken = $this->fixtures->on('test')->create('admin_token', [
+            'admin_id'   => $admin->getId(),
+            'token'      => Hash::make('ThisIsATokenForTest'),
+        ]);
+
+        $token = 'ThisIsATokenForTest' . $adminToken->getId();
+
+        $this->ba->adminAuth('test', $token);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/wf-service/configs/';
+
+        $payout = $this->fixtures->create('payout' , [
+            'status' => 'pending'
+        ]);
+
+        $this->expectExceptionMessage(ErrorCode::BAD_REQUEST_WORKFLOW_MERCHANT_WITH_PENDING_PAYOUTS);
+
+        $this->startTest();
+
+    }
+
+    public function testUpdateWorkflowConfigNWFS()
+    {
+        $this->setUpExperimentForNWFS();
+
+        $admin = $this->prepareAdminForPayoutWorkflow('test');
+
+        $adminToken = $this->fixtures->on('test')->create('admin_token', [
+            'admin_id'   => $admin->getId(),
+            'token'      => Hash::make('ThisIsATokenForTest'),
+        ]);
+
+        $token = 'ThisIsATokenForTest' . $adminToken->getId();
+
+        $this->ba->adminAuth('test', $token);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/wf-service/configs/';
+
+        $this->fixtures->on('test')->create(
+            'workflow_config',
+            [
+                'id'              => 'FQfRKbJwE4aWbp',
+                'config_id'       => 'FQE6Xw4ZpoM21X',
+                'config_type'     => 'payout-approval',
+                'enabled'         => true,
+                'merchant_id'     => '10000000000000',
+                'org_id'          => '100000razorpay',
+            ]);
+
+        $this->startTest();
+
+        $workflowConfig = $this->getDbLastEntity('workflow_config', 'test');
+        $this->assertEquals(false, $workflowConfig['enabled']);
+    }
+
+    public function testUpdateWorkflowConfigWithPendingPayoutsNWFS()
+    {
+        $this->setUpExperimentForNWFS();
+
+        $admin = $this->prepareAdminForPayoutWorkflow('test');
+
+        $adminToken = $this->fixtures->on('test')->create('admin_token', [
+            'admin_id'   => $admin->getId(),
+            'token'      => Hash::make('ThisIsATokenForTest'),
+        ]);
+
+        $token = 'ThisIsATokenForTest' . $adminToken->getId();
+
+        $this->ba->adminAuth('test', $token);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/wf-service/configs/';
+
+        $this->fixtures->on('test')->create(
+            'workflow_config',
+            [
+                'id'              => 'FQfRKbJwE4aWbp',
+                'config_id'       => 'FQE6Xw4ZpoM21X',
+                'config_type'     => 'payout-approval',
+                'enabled'         => true,
+                'merchant_id'     => '10000000000000',
+                'org_id'          => '100000razorpay',
+            ]);
+
+        $payout = $this->fixtures->create('payout' , [
+            'status' => 'pending'
+        ]);
+
+        $this->expectExceptionMessage(ErrorCode::BAD_REQUEST_WORKFLOW_MERCHANT_WITH_PENDING_PAYOUTS);
+
+        $this->startTest();
+
+    }
+
+    private function setUpExperimentForNWFS()
+    {
+        $this->mockRazorxTreatment(
+            'yesbank',
+            'off',
+            'off',
+            'off',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'on' // just set this on, leave everything as default
+        );
+    }
+
+    public function prepareAdminForPayoutWorkflow($mode)
+    {
+        $admin = $this->fixtures->on($mode)->create('admin', [
+            'id' => 'poutRejtAdmnId',
+            'org_id' => Org::RZP_ORG,
+            'name' => 'Payout Rejecting Admin'
+        ]);
+
+        $role = $this->fixtures->on($mode)->create('role', [
+            'id'     => 'wfsAdmin000001',
+            'org_id' => '100000razorpay',
+            'name'   => 'Workflow Service Admin',
+        ]);
+
+        $permission3 = $this->fixtures->on($mode)->create('permission',[
+            'name'   => 'wfs_config_create'
+        ]);
+
+        $permission4 = $this->fixtures->on($mode)->create('permission',[
+            'name'   => 'wfs_config_update'
+        ]);
+
+        $role->permissions()->attach($permission3->getId());
+        $role->permissions()->attach($permission4->getId());
+
+        $admin->roles()->attach($role);
+
+        return $admin;
     }
 }

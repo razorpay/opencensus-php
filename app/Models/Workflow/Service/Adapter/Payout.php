@@ -7,13 +7,13 @@ use RZP\Models\Payout\Entity;
 
 class Payout extends Base
 {
-    const APPROVED      = 'approved';
+    const APPROVED              = 'approved';
 
-    const REJECTED      = 'rejected';
+    const REJECTED              = 'rejected';
 
-    const MERCHANT      = 'merchant';
+    const MERCHANT              = 'merchant';
 
-    const SUCCESS_ERROR_CODES = [200, 201, 409];
+    const SUCCESS_ERROR_CODES   = [200, 201, 409];
 
     public function getCallBackDetails(array $entityArr, array $input)
     {
@@ -36,25 +36,25 @@ class Payout extends Base
                 'created' => [
                     'type'      => 'basic',
                     'method'    => 'post',
-                    'service'   => 'rx-live',
+                    'service'   => Constants::SERVICE_RX . $this->ba->getMode(),
                     'url_path'  => $stateCallBackCreatedPath,
                     'headers'   => $headers,
-                    'payload'   => $payload + ['type' => 'state_callbacks_created'],
+                    'payload'   => $payload,
                     'response_handler' => [
-                        'type'                  => 'success_status_codes',
-                        'success_status_codes'  => self::SUCCESS_ERROR_CODES
+                        'type'                           => Constants::SUCCESS_STATUS_CODES,
+                        Constants::SUCCESS_STATUS_CODES  => self::SUCCESS_ERROR_CODES
                     ]
                 ],
                 'processed' => [
                     'type'      => 'basic',
                     'method'    => 'patch',
-                    'service'   => 'rx-live',
+                    'service'   => Constants::SERVICE_RX . $this->ba->getMode(),
                     'url_path'  => $stateCallBackProcessedPath,
                     'headers'   => $headers,
-                    'payload'   => $payload + ['type' => 'state_callbacks_processed'],
+                    'payload'   => $payload,
                     'response_handler' => [
-                        'type'                  => 'success_status_codes',
-                        'success_status_codes'  => self::SUCCESS_ERROR_CODES
+                        'type'                           => Constants::SUCCESS_STATUS_CODES,
+                        Constants::SUCCESS_STATUS_CODES  => self::SUCCESS_ERROR_CODES
                     ]
                 ]
             ],
@@ -64,25 +64,25 @@ class Payout extends Base
                         'approved'  => [
                             'type'      => 'basic',
                             'method'    => 'post',
-                            'service'   => 'rx-live',
+                            'service'   => Constants::SERVICE_RX . $this->ba->getMode(),
                             'url_path'  => $workflowCallbackPath.'/approve',
                             'headers'   => $headers,
-                            'payload'   => $payload + ['type' => 'workflow_callbacks_approved'],
+                            'payload'   => $payload,
                             'response_handler' => [
-                                'type'                  => 'success_status_codes',
-                                'success_status_codes'  => self::SUCCESS_ERROR_CODES
+                                'type'                           => Constants::SUCCESS_STATUS_CODES,
+                                Constants::SUCCESS_STATUS_CODES  => self::SUCCESS_ERROR_CODES
                             ]
                         ],
                         'rejected' => [
                             'type'      => 'basic',
                             'method'    => 'post',
-                            'service'   => 'rx-live',
+                            'service'   => Constants::SERVICE_RX . $this->ba->getMode(),
                             'url_path'  => $workflowCallbackPath.'/reject',
                             'headers'   => $headers,
-                            'payload'   => $payload + ['type' => 'workflow_callbacks_rejected'],
+                            'payload'   => $payload,
                             'response_handler' => [
-                                'type'                  => 'success_status_codes',
-                                'success_status_codes'  => self::SUCCESS_ERROR_CODES
+                                'type'                           => Constants::SUCCESS_STATUS_CODES,
+                                Constants::SUCCESS_STATUS_CODES  => self::SUCCESS_ERROR_CODES
                             ]
                         ]
                     ]

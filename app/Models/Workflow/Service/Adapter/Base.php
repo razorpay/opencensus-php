@@ -5,6 +5,8 @@ namespace RZP\Models\Workflow\Service\Adapter;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Base\RepositoryManager;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\PublicEntity;
@@ -35,22 +37,22 @@ abstract class Base
      */
     public function getActionCreateOnEntityPayload(PublicEntity $entity, array $input = []): array
     {
-        $configId = $this->fetchWorkflowConfigIdForEntity($entity);
+        $configId = $this->getWorkflowEntityMap($entity)->getConfigId();
 
         $entityArr = $entity->toArray();
 
         $payload = [
             'config_id'     => $configId,
-            "entity_id"     => $entityArr[PublicEntity::ID],
-            "entity_type"   => $entity->getEntityName(),
-            "action"        => $input['action'],
+            'entity_id'     => $entityArr[PublicEntity::ID],
+            'entity_type'   => $entity->getEntityName(),
+            'action'        => $input['action'],
             'owner_id'      => $entity->getMerchantId(),
             'owner_type'    => Constants::MERCHANT,
-            "comment"       => $input['user_comment'] ?? "",
-            "data"          => $this->getCallBackDetails($entityArr, $input),
+            'comment'       => $input['user_comment'] ?? '',
+            'data'          => $this->getCallBackDetails($entityArr, $input),
         ];
 
-        $this->enrichUserFieldsForActions($payload);
+        $this->enrichActorFieldsForActions($payload);
 
         return $payload;
     }
@@ -60,18 +62,45 @@ abstract class Base
      * @param array $input
      * @return array
      */
+    public function getDirectActionCreatePayload(PublicEntity $entity, array $input = []): array
+    {
+        $workflowId = $this->fetchWorkflowIdForEntity($entity);
+
+        $payload = [
+            'workflow_id'   => $workflowId,
+            'action_type'   => $input['action'],
+            'comment'       => $input['user_comment'] ?? '',
+            'owner_id'      => $entity->getMerchantId(),
+            'owner_type'    => Constants::MERCHANT
+        ];
+
+        if (empty($input['data']) === false)
+        {
+            $payload += ['data' => $input['data']];
+        }
+
+        $this->enrichActorFieldsForDirectActions($payload);
+
+        return ['action' => $payload];
+    }
+
+    /**
+     * @param PublicEntity $entity
+     * @param array $input
+     * @return array
+     */
     public function getWorkflowCreatePayload(PublicEntity $entity, array $input = [])
     {
-        $configId = $this->fetchWorkflowConfigIdForEntity($entity);
+        $configId = $this->fetchConfigIdForEntity($entity, $input);
 
         $entityArr = $entity->toArray();
 
         $payload = [
-            "entity_id"         => $entityArr[PublicEntity::ID],
-            "entity_type"       => $entity->getEntityName(),
-            "title"             => $input['title'] ?? "",
-            "description"       => $input['description'] ?? "",
-            "callback_details"  => $this->getCallBackDetails($entityArr, $input),
+            'entity_id'         => $entityArr[PublicEntity::ID],
+            'entity_type'       => $entity->getEntityName(),
+            'title'             => $input['title'] ?? '',
+            'description'       => $input['description'] ?? '',
+            'callback_details'  => $this->getCallBackDetails($entityArr, $input),
             'config_id'         => $configId,
             'config_version'    => '1',
             'diff'              => $this->getDiffForWorkflow($entityArr),
@@ -86,32 +115,47 @@ abstract class Base
 
     abstract public function getDiffForWorkflow(array $entityArr);
 
-    /**
-     * @param array $content
-     * @return array
-     */
     public function transformActionResponse(array $content): array
     {
         if (empty($content) ||
             !isset($content['items']) ||
             !isset($content['items'][0]))
         {
-            throw new \Exception("Malformed response received");
+            $this->trace->error(TraceCode::SERVER_ERROR_WORKFLOW_SERVICE_RESPONSE_MALFORMED, $content);
+
+            throw new \Exception('Malformed response received');
         }
 
-        $payoutAction = $content['items'][0];
+        $action = $content['items'][0];
 
+        return $this->getActionResponse($action);
+    }
+
+    public function transformDirectActionResponse(array $content): array
+    {
+        if (empty($content) === true)
+        {
+            $this->trace->error(TraceCode::SERVER_ERROR_WORKFLOW_SERVICE_RESPONSE_MALFORMED, $content);
+
+            throw new \Exception('Malformed response received');
+        }
+
+        return $this->getActionResponse($content);
+    }
+
+    private function getActionResponse(array $action)
+    {
         return [
-            Constants::ID                      => $payoutAction[Constants::ID] ?? null,
-            Constants::WORKFLOW_ID             => $payoutAction[Constants::WORKFLOW_ID] ?? null,
-            Constants::STATE_ID                => $payoutAction[Constants::STATE_ID] ?? null,
-            Constants::ACTION_TYPE             => $payoutAction[Constants::ACTION_TYPE] ?? null,
-            Constants::COMMENT                 => $payoutAction[Constants::COMMENT] ?? null,
-            Constants::STATUS                  => $payoutAction[Constants::STATUS] ?? null,
-            Constants::ACTOR_ID                => $payoutAction[Constants::ACTOR_ID] ?? null,
-            Constants::ACTOR_TYPE              => $payoutAction[Constants::ACTOR_TYPE] ?? null,
-            Constants::ACTOR_PROPERTY_KEY      => $payoutAction[Constants::ACTOR_PROPERTY_KEY] ?? null,
-            Constants::ACTOR_PROPERTY_VALUE    => $payoutAction[Constants::ACTOR_PROPERTY_VALUE] ?? null,
+            Constants::ID                      => $action[Constants::ID] ?? null,
+            Constants::WORKFLOW_ID             => $action[Constants::WORKFLOW_ID] ?? null,
+            Constants::STATE_ID                => $action[Constants::STATE_ID] ?? null,
+            Constants::ACTION_TYPE             => $action[Constants::ACTION_TYPE] ?? null,
+            Constants::COMMENT                 => $action[Constants::COMMENT] ?? null,
+            Constants::STATUS                  => $action[Constants::STATUS] ?? null,
+            Constants::ACTOR_ID                => $action[Constants::ACTOR_ID] ?? null,
+            Constants::ACTOR_TYPE              => $action[Constants::ACTOR_TYPE] ?? null,
+            Constants::ACTOR_PROPERTY_KEY      => $action[Constants::ACTOR_PROPERTY_KEY] ?? null,
+            Constants::ACTOR_PROPERTY_VALUE    => $action[Constants::ACTOR_PROPERTY_VALUE] ?? null,
         ];
     }
 
@@ -147,21 +191,37 @@ abstract class Base
     /**
      * @param array $input
      */
-    protected function enrichUserFieldsForActions(array &$input)
+    protected function enrichActorFieldsForActions(array &$input)
     {
-        $actorInfo = self::getActorInfo();
+        $this->enrichActorAndServiceDetails($input);
 
         // todo: handle actor meta in case of admins
         $user = $this->ba->getUser();
-        $actorName                       = ($user !== null) ? $user->getName() : "";
-        $actorEmail                      = ($user !== null) ? $user->getEmail() : "";
+        $actorName                       = ($user !== null) ? $user->getName() : '';
+        $actorEmail                      = ($user !== null) ? $user->getEmail() : '';
+
+        $input['actor_meta']            = ['email' => $actorEmail, 'name' => $actorName];
+    }
+
+    /**
+     * @param array $input
+     */
+    protected function enrichActorFieldsForDirectActions(array &$input)
+    {
+        $this->enrichActorAndServiceDetails($input);
+    }
+
+    private function enrichActorAndServiceDetails(array &$input)
+    {
+        $actorInfo = self::getActorInfo();
 
         $input['actor_id']              = $actorInfo['actor_id'];
         $input['actor_type']            = $actorInfo['actor_type'];
         $input['actor_property_key']    = $actorInfo['actor_property_key'];
         $input['actor_property_value']  = $actorInfo['actor_property_value'];
+
+        // todo: make this generic
         $input['service']               = Constants::SERVICE_RX . $this->ba->getMode();
-        $input['actor_meta']            = ['email' => $actorEmail, 'name' => $actorName];
     }
 
     /**
@@ -170,9 +230,39 @@ abstract class Base
      * without affecting the existing workflows
      *
      * @param PublicEntity $entity
+     * @param array $input
      * @return mixed
      */
-    protected function fetchWorkflowConfigIdForEntity(PublicEntity $entity)
+    protected function fetchConfigIdForEntity(PublicEntity $entity, array $input)
+    {
+        $workflowType = $input[Constants::WORKFLOW_TYPE];
+        $merchantId = $entity->getMerchantId();
+
+        $config = $this->repo->workflow_config->getByConfigTypeAndMerchantId($workflowType, $merchantId);
+
+        return $config->getConfigId();
+    }
+
+    /**
+     * The approval/rejection workflow takes the config from the
+     * workflow_entity_map table. This let's the merchant update the config
+     * without affecting the existing entities.
+     *
+     * @param PublicEntity $entity
+     * @return mixed
+     */
+    protected function fetchWorkflowIdForEntity(PublicEntity $entity)
+    {
+        $workflowEntity = $this->getWorkflowEntityMap($entity);
+
+        return $workflowEntity->getWorkflowId();
+    }
+
+    /**
+     * @param PublicEntity $entity
+     * @return Entity
+     */
+    private function getWorkflowEntityMap(PublicEntity $entity)
     {
         /* @var $workflowEntity Entity  */
         $workflowEntity = $this->repo->workflow_entity_map->findByEntityIdAndEntityType(
@@ -180,22 +270,22 @@ abstract class Base
 
         if (empty($workflowEntity) === true)
         {
-            throw new \Exception("workflow was not processed via workflow service");
+            throw new \Exception('workflow was not processed via workflow service');
         }
 
-        return $workflowEntity->getConfigId();
+        return $workflowEntity;
     }
 
     /**
-     * Returns "internal"/service for cron auth,
+     * Returns 'internal'/service for cron auth,
      * Returns admin id/admin for admin auth
      * Returns user id or merchant id/user for proxy/private auth types
      *
-     * @param BasicAuth $ba
      * @return mixed|string
      */
     public static function getActorInfo()
     {
+        /** @var $ba BasicAuth */
         $ba = app('basicauth');
 
         $actorPropertyKey = Constants::ROLE;
@@ -215,7 +305,22 @@ abstract class Base
             $actorId = Constants::INTERNAL_ACTOR_NAME;
             $actorType = Constants::SERVICE;
             $actorPropertyKey = Constants::NAME;
-            $actorPropertyValue = Constants::SERVICE_RX . $ba->getMode();
+            $actorPropertyValue = Constants::SERVICE_RX . $ba->getMode(); // todo: make this generic
+        }
+        else if ($ba->isBatchApp() === true)
+        {
+            if (empty($user) === false)
+            {
+                $actorId = $user->getId();
+                $actorType = Constants::USER;
+                $actorPropertyValue = $ba->getUserRole();
+            }
+            else
+            {
+                $actorId = $merchant->getId();
+                $actorType = Constants::MERCHANT;
+                $actorPropertyValue = Constants::API;
+            }
         }
         else if ($ba->isStrictPrivateAuth() === true)
         {
@@ -223,7 +328,7 @@ abstract class Base
             $actorType = Constants::MERCHANT;
             $actorPropertyValue = Constants::API;
         }
-        else if ($ba->isProxyAuth() === true)
+        else if ($ba->isProxyOrPrivilegeAuth() === true)
         {
             $actorId = $user->getId();
             $actorType = Constants::USER;
@@ -231,7 +336,7 @@ abstract class Base
         }
         else
         {
-            throw new Exception\BadRequestException('illegal auth used to access workflow service');
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_WORKFLOW_SERVICE_ILLEGAL_ACCESS);
         }
 
         return [

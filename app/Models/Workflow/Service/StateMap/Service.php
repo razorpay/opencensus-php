@@ -3,10 +3,10 @@
 namespace RZP\Models\Workflow\Service\StateMap;
 
 use RZP\Models\Base;
-use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Workflow\Service\Metric;
 use RZP\Models\Workflow\Service\StateMap;
-use RZP\Models\Workflow\Service\StateMap\Validator;
 
 class Service extends Base\Service
 {
@@ -18,23 +18,56 @@ class Service extends Base\Service
         $this->core = new StateMap\Core;
     }
 
+    /**
+     * @param array $input
+     * @return array
+     * @throws BadRequestException
+     */
     public function create(array $input)
     {
-        (new Validator)->setStrictFalse()
-            ->validateInput(Validator::CREATE, $input);
+        (new Validator)->setStrictFalse()->validateInput(Validator::CREATE_STATE, $input);
 
-        $stateMapResponse = $this->core->create($input);
+        $stateId = $input[Entity::REQUEST_STATE_ID];
 
-        return $stateMapResponse;
+        $stateMap = $this->repo->workflow_state_map->getByStateId($stateId);
+
+        if ($stateMap !== null)
+        {
+            $this->trace->count(Metric::WORKFLOW_STATE_MAP_CREATE_DUPLICATE_REQUEST_TOTAL);
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_STATE_CALLBACK_DUPLICATE,
+                null,
+                ['state_id' => $stateId]);
+        }
+
+        $stateMap = $this->core->create($input);
+
+        return $stateMap->toArray();
     }
 
+    /**
+     * @param string $id
+     * @param array $input
+     * @return array
+     * @throws BadRequestException
+     */
     public function update(string $id, array $input)
     {
-        (new Validator)->setStrictFalse()
-            ->validateInput(Validator::UPDATE, $input);
+        (new Validator)->setStrictFalse()->validateInput(Validator::UPDATE_STATE, $input);
 
-        $stateMapResponse = $this->core->update($id, $input);
+        $stateMap = $this->repo->workflow_state_map->getByStateId($id);
 
-        return $stateMapResponse;
+        if ($stateMap === null)
+        {
+            throw new BadRequestException(
+                ErrorCode::SERVER_ERROR_WORKFLOW_STATE_ID_INVALID,
+                null,
+                ['id' => $id]);
+        }
+
+        $stateMap = $this->core->update($stateMap, $input);
+
+        return $stateMap->toArray();
     }
 }

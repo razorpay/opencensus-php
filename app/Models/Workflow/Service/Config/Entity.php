@@ -13,8 +13,6 @@ class Entity extends Base\PublicEntity
     protected $entity = EntityConstants::WORKFLOW_CONFIG;
     protected $table  = Table::WORKFLOW_CONFIG;
 
-    const ID                     = 'id';
-    const ID_LENGTH              = 14;
     const CONFIG_ID              = 'config_id';
     const CONFIG_TYPE            = 'config_type';
     const MERCHANT_ID            = 'merchant_id';
@@ -26,7 +24,7 @@ class Entity extends Base\PublicEntity
     const OWNER_TYPE             = 'owner_type';
     const TYPE                   = 'type';
 
-    const NAME_SPACE             = 'namespace';
+    const NAMESPACE              = 'namespace';
     const NAME                   = 'name';
     const TEMPLATE               = 'template';
     const VERSION                = 'version';
@@ -49,7 +47,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::ORG_ID,
         self::ENABLED,
-        self::NAME_SPACE,
+        self::NAMESPACE,
         self::NAME,
         self::TEMPLATE,
         self::VERSION,
@@ -64,7 +62,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::ORG_ID,
         self::ENABLED,
-        self::NAME_SPACE,
+        self::NAMESPACE,
         self::NAME,
         self::TEMPLATE,
         self::VERSION,
@@ -154,7 +152,7 @@ class Entity extends Base\PublicEntity
 
     public function setNameSpace($nameSpace)
     {
-        $this->setAttribute(self::NAME_SPACE, $nameSpace);
+        $this->setAttribute(self::NAMESPACE, $nameSpace);
     }
 
     public function setName($name)
@@ -183,20 +181,4 @@ class Entity extends Base\PublicEntity
     }
 
     // ============================= END SETTERS =============================
-
-    /**
-     * {@inheritDoc}
-     */
-    public function toArrayPublic()
-    {
-        return parent::toArrayPublic();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function toArray()
-    {
-        return parent::toArray();
-    }
 }
