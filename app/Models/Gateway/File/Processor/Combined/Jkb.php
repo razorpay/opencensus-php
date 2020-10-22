@@ -127,44 +127,44 @@ class Jkb extends Base
             if (isset($data['refunds']) === true)
             {
                 $refundsFile = $this->getFileData(FileStore\Type::JKB_NETBANKING_REFUND);
-            }
 
-            $fileInfo = [$refundsFile['name']];
+                $fileInfo = [$refundsFile['name']];
 
-            $bucketConfig = $this->getBucketConfig();
+                $bucketConfig = $this->getBucketConfig();
 
-            $beamData =  [
-                Service::BEAM_PUSH_FILES         => $fileInfo,
-                Service::BEAM_PUSH_JOBNAME       => BeamConstants::JKB_NB_REFUND_FILE_JOB_NAME,
-                Service::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
-                Service::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
+                $beamData =  [
+                    Service::BEAM_PUSH_FILES         => $fileInfo,
+                    Service::BEAM_PUSH_JOBNAME       => BeamConstants::JKB_NB_REFUND_FILE_JOB_NAME,
+                    Service::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
+                    Service::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
                 ];
 
-            $timelines = [];
+                $timelines = [];
 
-            $mailInfo = [
-                'fileInfo'  => $fileInfo,
-                'channel'   => 'tech_alerts',
-                'filetype'  => self::BEAM_FILE_TYPE,
-                'subject'   => 'J&K Refund File send failure',
-                'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::SETTLEMENT_ALERTS]
-            ];
+                $mailInfo = [
+                    'fileInfo'  => $fileInfo,
+                    'channel'   => 'tech_alerts',
+                    'filetype'  => self::BEAM_FILE_TYPE,
+                    'subject'   => 'J&K Refund File send failure',
+                    'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::SETTLEMENT_ALERTS]
+                ];
 
-            $beamResponse = $this->app['beam']->beamPush($beamData, $timelines, $mailInfo, true);
+                $beamResponse = $this->app['beam']->beamPush($beamData, $timelines, $mailInfo, true);
 
-            if ((isset($beamResponse['success']) === false) or
-                ($beamResponse['success'] === null))
-            {
-                throw new GatewayErrorException(
-                    ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-                    null,
-                    null,
-                    [
-                        'beam_response' => $beamResponse,
-                        'gateway_file'  => $this->gatewayFile->getId(),
-                        'gateway'       => 'netbanking_jkb',
-                    ]
-                );
+                if ((isset($beamResponse['success']) === false) or
+                    ($beamResponse['success'] === null))
+                {
+                    throw new GatewayErrorException(
+                        ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+                        null,
+                        null,
+                        [
+                            'beam_response' => $beamResponse,
+                            'gateway_file'  => $this->gatewayFile->getId(),
+                            'gateway'       => 'netbanking_jkb',
+                        ]
+                    );
+                }
             }
 
             Mail::send($dailyFileMail);
