@@ -6586,6 +6586,19 @@ return [
         ],
     ],
 
+    'testGetAutoDisabledMethodsForMerchant' => [
+        'request' => [
+            'url'      => '/internal/auto_disabled_methods/10000000000000',
+            'method'   => 'get',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'auto_disabled_methods' => ['emi']
+            ],
+        ],
+    ],
+
     'testTrimMerchantData' => [
         'request'  => [
             'method'  => 'PATCH',

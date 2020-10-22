@@ -53,6 +53,7 @@ class Route
         'merchant_methods_downtime'                => ['get',      'methods/downtime',                               'MerchantController@getPublicGatewayDowntimeData'                   ],
         'merchant_checkout_preferences'            => ['get',      'preferences',                                    'MerchantController@getCheckoutPreferences'                         ],
         'internal_merchant_checkout_preferences'   => ['get',      'internal/preferences/{merchant_id}',             'MerchantController@getInternalCheckoutPreferences'                 ],
+        'internal_merchant_auto_disabled_methods'  => ['get',      'internal/auto_disabled_methods/{merchant_id}',   'MerchantController@getAutoDisabledMethods'                         ],
         'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
         // @todo: Require feature S2S for payment_create_private route.
         'payment_create_private'                   => ['post',     'payments/create',                                'PaymentCreateController@postCreateS2SPayment'                      ],
@@ -2637,6 +2638,7 @@ class Route
 
         'internal_merchant_fetch',
         'internal_merchant_checkout_preferences',
+        'internal_merchant_auto_disabled_methods',
         'terminal_fetch_by_id_internal',
         'terminal_migrate_cron',
         'terminal_service_sync_delete',
@@ -5504,6 +5506,7 @@ class Route
             'merchant_methods_edit_internal',
             'terminal_fetch_by_id_internal',
             'internal_merchant_checkout_preferences',
+            'internal_merchant_auto_disabled_methods'
         ],
 
         'mozart' => [

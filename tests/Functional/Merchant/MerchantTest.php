@@ -8148,6 +8148,13 @@ class MerchantTest extends TestCase
 
     }
 
+    public function testGetAutoDisabledMethodsForMerchant()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function testTrimMerchantData()
     {
         $razorx = \Mockery::mock(RazorXClient::class)->makePartial();

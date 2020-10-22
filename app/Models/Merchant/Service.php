@@ -72,6 +72,7 @@ use RZP\Constants\{Mode, Entity as CE, Product};
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Models\PayoutLink\Service as PayoutLinkService;
+use RZP\Models\Merchant\Methods\DefaultMethodsForCategory;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
@@ -1531,6 +1532,17 @@ class Service extends Base\Service
        $this->app['basicauth']->setMerchant($this->merchant);
 
        return $this->getCheckoutPreferences([]);
+    }
+
+    public function getAutoDisabledMethods($merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $category = $merchant->getCategory();
+        
+        $category2 = $merchant->getCategory2();
+
+        return DefaultMethodsForCategory::getDefaultDisabledMethodsFromMerchantCategories($category, $category2);
     }
 
     public function getGSTDetails(): array

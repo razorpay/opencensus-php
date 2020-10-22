@@ -391,4 +391,9 @@ class DefaultMethodsForCategory
 
         return $methodData;
     }
+
+    public static function getDefaultDisabledMethodsFromMerchantCategories($category, $category2)
+    {
+        return self::CATEGORY_DEFAULT_PROHIBITED_METHODS_MAP[$category][$category2] ?? (self::CATEGORY_DEFAULT_PROHIBITED_METHODS_MAP[$category][Category::OTHERS] ?? null);
+    }
 }
