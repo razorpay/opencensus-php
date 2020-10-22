@@ -5073,6 +5073,7 @@ class Route
         'express' => [
             'payment_authorize_google_pay_cards',
             'payment_verify_google_pay_cards',
+            'merchant_secret',
             'webhook_fetch',
             'webhook_fetch_multiple',
             'payment_meta_search',
