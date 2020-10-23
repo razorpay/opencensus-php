@@ -3,6 +3,7 @@
 namespace RZP\Models\Order;
 
 use App;
+use Illuminate\Support\Arr;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Offer;
@@ -457,6 +458,12 @@ class Core extends Base\Core
         {
             foreach ($orderArray as &$key)
             {
+                if ((isset($key['notes']) === true) and
+                    (Arr::isAssoc($key['notes']) === false))
+                {
+                    $key['notes'] = array_combine($key['notes'], $key['notes']);
+                }
+
                 if ((isset($key['notes']) === false) or
                     (count($key['notes']) === 0))
                 {

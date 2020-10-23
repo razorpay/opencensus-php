@@ -3,6 +3,7 @@
 namespace RZP\Models\Order;
 
 use App;
+use Illuminate\Support\Arr;
 use RZP\Models\Base;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
@@ -119,6 +120,12 @@ class Repository extends Base\Repository
 
                             $data['updated_at'] = $entity->getUpdatedAt();
 
+                            if ((isset($data['notes']) === true) and
+                                (Arr::isAssoc($data['notes']) === false))
+                            {
+                                $data['notes'] = array_combine($data['notes'], $data['notes']);
+                            }
+
                             $core->dispatchUpdatedOrderToPGRouter($data);
                         }
                     }
@@ -129,6 +136,12 @@ class Repository extends Base\Repository
                         $data['mode'] = $mode;
 
                         unset($data['merchant'], $data['bank_account']);
+
+                        if ((isset($data['notes']) === true) and
+                            (Arr::isAssoc($data['notes']) === false))
+                        {
+                            $data['notes'] = array_combine($data['notes'], $data['notes']);
+                        }
 
                         $core->dispatchOrderToPGRouter($data);
 
