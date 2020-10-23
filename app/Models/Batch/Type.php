@@ -337,9 +337,9 @@ class Type
         self::TERMINAL_CREATION,
         self::NACH_MIGRATION,
         self::MPAN,
-        self::REFUND,
         self::ADJUSTMENT,
         self::PARTNER_SUBMERCHANT_INVITE,
+        self::REFUND
     ];
 
     /**
@@ -376,6 +376,7 @@ class Type
         self::SUBMERCHANT_LINK,
         self::RECURRING_CHARGE,
         self::AUTH_LINK,
+        self::REFUND,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data

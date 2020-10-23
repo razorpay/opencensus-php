@@ -350,8 +350,6 @@ class RefundTest extends TestCase
     // test with speed specified
     public function testBatchValidateWithSpeed()
     {
-        $this->mockRazorx();
-
         $entries = $this->getDefaultRefundFileEntries();
         $payment = $this->defaultAuthPayment();
         $entries[0][Header::SPEED] = 'OPTIMUM';
@@ -383,8 +381,6 @@ class RefundTest extends TestCase
     // test with one of the speed as nil
     public function testBatchValidateWithOneEmptySpeed()
     {
-        $this->mockRazorx();
-
         $entries = $this->getDefaultRefundFileEntries();
         $payment = $this->defaultAuthPayment();
         $entries[0][Header::SPEED] = ''; // empty speed
@@ -409,8 +405,6 @@ class RefundTest extends TestCase
     // test with merchant having instant refund disabled in their feature list
     public function testBatchWithDisableInstantRefundFeature()
     {
-        $this->mockRazorx();
-
         $this->fixtures->merchant->addFeatures('disable_instant_refunds');
 
         $entries = $this->getDefaultRefundFileEntries();
@@ -446,26 +440,5 @@ class RefundTest extends TestCase
         }
 
         return $entries;
-    }
-
-    protected function mockRazorx()
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                            ->setConstructorArgs([$this->app])
-                            ->setMethods(['getTreatment'])
-                            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                            ->will($this->returnCallback(
-                            function ($mid, $feature, $mode)
-                             {
-                                if ($feature === 'batch_service_refund_migration')
-                                {
-                                    return 'on';
-                                }
-                                return 'off';
-                             }));
     }
 }

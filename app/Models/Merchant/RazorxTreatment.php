@@ -155,8 +155,6 @@ final class RazorxTreatment
     // If the feature is mapped to a merchant, the routes will go to MicroService
     const RX_PAYOUT_LINK_MICROSERVICE = 'rx_payout_links_ms';
 
-    const BATCH_SERVICE_REFUND_MIGRATION     = 'batch_service_refund_migration';
-
     const CREDCASE_DUAL_WRITE_ENABLED = 'credcase_dual_write_enabled';
 
     // Check whether skip_workflow_payout_specific feature is allowed for merchant or not.
