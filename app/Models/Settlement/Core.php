@@ -503,18 +503,6 @@ class Core extends Base\Core
         {
             $merchant = $settlement->merchant;
 
-            // Get razorx treatment
-            $variant = $this->app->razorx->getTreatment(
-                $merchant->getId(),
-                MerchantModel\RazorxTreatment::SETTLEMENT_MAIL_RAMP,
-                $this->mode
-            );
-
-            if (strtolower($variant) !== 'on')
-            {
-                return;
-            }
-
             $bankAccountNumber = ($settlement->bankAccount !== null) ?
                 $settlement->bankAccount->getRedactedAccountNumber() : 'XXXX-XXXX-XXXX';
 
