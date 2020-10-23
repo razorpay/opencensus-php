@@ -7,7 +7,7 @@ const ReferenceId = (props) => (
   <Input
     name="reference_id"
     placeholder="123456"
-    label="Receipt No"
+    label="Reference Id"
     class="Input--vTop"
     required={props.required}
     disabled={props.disabled}

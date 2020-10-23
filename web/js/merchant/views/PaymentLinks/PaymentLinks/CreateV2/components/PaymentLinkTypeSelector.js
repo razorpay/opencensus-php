@@ -50,13 +50,16 @@ export default class PaymentLinkSelector extends React.PureComponent {
           <div class="heading">Pick a Payment Link Type</div>
         </div>
         <div class="TemplateCard-list">
-          {PAYMENT_LINK_TYPES.map((templateData) => (
-            <TemplateCard
-              {...templateData}
-              {...(props.isTestMode && TEST_MODE_TYPES[templateData.key])}
-              onClick={!props.isTestMode && this.handleTemplateSelection(templateData.key)}
-            />
-          ))}
+          {PAYMENT_LINK_TYPES.map((templateData) => {
+            const actionsDisabled = props.isTestMode && TEST_MODE_TYPES[templateData.key];
+            return (
+              <TemplateCard
+                {...templateData}
+                {...(props.isTestMode && TEST_MODE_TYPES[templateData.key])}
+                onClick={!actionsDisabled && this.handleTemplateSelection(templateData.key)}
+              />
+            );
+          })}
         </div>
       </div>
     );
@@ -92,7 +95,7 @@ class TemplateCard extends React.PureComponent {
     const { title, description, img, onClick, hoverText } = this.props;
 
     return (
-      <div class={`TemplateCard ${onClick && 'disabled'}`} onClick={onClick}>
+      <div class={`TemplateCard ${!onClick && 'disabled'}`} onClick={onClick}>
         <img src={this.state.isLoaded ? img : null} />
         <div class="TemplateCard-details">
           {title}
