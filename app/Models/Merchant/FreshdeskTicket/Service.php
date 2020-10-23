@@ -79,7 +79,21 @@ class Service extends Base\Service
         // Adding status filter if necessary
         if (empty($status) === false)
         {
-            $queryString .= ' AND status:' . $status;
+            $queryString .= ' AND (';
+
+            if (is_array($status) === true)
+            {
+                foreach ($status as $index => $value)
+                {
+                    $queryString .= ($index === 0) ? 'status:' . $value : ' OR status:' . $value;
+                }
+            }
+            else
+            {
+                $queryString .= 'status:' . $status;
+            }
+
+            $queryString .= ')';
         }
 
         $queryString .= '"';
