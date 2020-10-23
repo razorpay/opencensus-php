@@ -200,9 +200,9 @@ app
 
         // disable signup/login submission before captcha only in prod
         submissionDisabled: isProd,
-        isWhatsAppOptIn: false
+        isWhatsAppOptIn: false,
       };
-      
+
       // login state container
       $scope.login = {
         data: {
@@ -220,21 +220,21 @@ app
         },
       };
 
-      $scope.handleWhatsAppOpIn = function(){
+      $scope.handleWhatsAppOpIn = function () {
         $scope.signup.isWhatsAppOptIn = !$scope.signup.isWhatsAppOptIn;
       };
-      
-      const whatsAppOptIn = function(){
-          var payload = {
-            method: 'post',
-            url: '/user/whatsapp/opt_in',
-            data: {
-              source: 'pg.onboarding.presignup',
-            },
-          };
-          $http(payload);
+
+      const whatsAppOptIn = function () {
+        var payload = {
+          method: 'post',
+          url: '/user/whatsapp/opt_in',
+          data: {
+            source: 'pg.onboarding.presignup',
+          },
+        };
+        $http(payload);
       };
-      
+
       $scope.loadCaptcha = function (loadCheckbox = false) {
         if (!loadCheckbox && !isProd) return; //Disable invisible captcha for staging
         renderRecaptchaScript(loadCheckbox);
@@ -590,8 +590,8 @@ app
             'Content-Type': 'application/json',
           },
         };
-        
-        if($scope.signup.settings.partner_intent){
+
+        if ($scope.signup.settings.partner_intent) {
           payload.data.partner_intent = $scope.signup.settings.partner_intent;
         }
 
@@ -1134,10 +1134,10 @@ app
         request.success(function (data) {
           hideSpinner();
           if (data.success) {
-            if($scope.signup.isWhatsAppOptIn){
+            if ($scope.signup.isWhatsAppOptIn) {
               whatsAppOptIn();
             }
-            
+
             trackDrip('signup_flow_completed');
             pushToDrip();
             sendSignUpCompleteEvents();
@@ -1804,18 +1804,37 @@ app
          */
         if (window.parent.isTestEnv || window.isTestEnv || !isProd) {
           login('Faked');
-        } else if (isProd && window.grecaptcha.execute) {
+        } else if (isProd) {
           showSpinner();
-          grecaptcha.execute();
+          if (window.grecaptcha && window.grecaptcha.execute) {
+            grecaptcha.execute();
 
-          /**
-           * To hide the spinner if user clicks outside the captcha challenge box
-           * There is no captcha close callback to handle this
-           * So this is a work around :)
-           */
-          setTimeout(function () {
-            hideSpinner();
-          }, 5000);
+            /**
+             * To hide the spinner if user clicks outside the captcha challenge box
+             * There is no captcha close callback to handle this
+             * So this is a work around :)
+             */
+            setTimeout(function () {
+              hideSpinner();
+            }, 5000);
+          } else {
+            /**
+             * - For users where captcha script didnt load, we'll wait for 3sec for the
+             * script to load else call login with `Faked`.
+             * - For whitelisted merchants, the captcha script will be blocked on there end
+             * and login will happen with `Faked` value after 3 sec timeout.
+             * - For non-whitelisted merchants, if script loads between 3 sec else
+             * `Faked` val to Login api.
+             */
+            setTimeout(function () {
+              if (window.grecaptcha && window.grecaptcha.execute) {
+                grecaptcha.execute();
+              } else {
+                login('Faked');
+              }
+              hideSpinner();
+            }, 3000);
+          }
         }
       };
 
@@ -2696,7 +2715,7 @@ app
               mid: $scope.signup.mid,
               userid: $scope.signup.userid,
               version: 1,
-              isWhatsAppOptIn: $scope.signup.isWhatsAppOptIn
+              isWhatsAppOptIn: $scope.signup.isWhatsAppOptIn,
             }),
           );
 
