@@ -1249,4 +1249,5 @@ class PublicErrorDescription
 
     const BAD_REQUEST_PAYOUT_SOURCE_ALREADY_EXISTS                                  = 'A source with same source_id and source_type already exists.';
     const BAD_REQUEST_ANOTHER_PAYOUT_SOURCE_EXISTS_WITH_SAME_PRIORITY               = 'A source with same priority already exists.';
+    const BAD_REQUEST_PG_ROUTER_ONLY_LIVE_MODE_SUPPORTED                            = 'Only live mode orders are supported for sync';
 }

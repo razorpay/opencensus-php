@@ -69,6 +69,14 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function bulkUpdatePgRouterSynced(array $orderIds)
+    {
+        $data = $this->newQueryWithoutTimestamps()
+            ->whereIn('id', $orderIds);
+
+        return $data->update(['pg_router_synced' => true]);
+    }
+
     public function saveOrFail($entity, array $options = [])
     {
         $currentOrder = $this->newQuery()->where('id', '=', $entity->getId())->get();

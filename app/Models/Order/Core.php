@@ -436,7 +436,19 @@ class Core extends Base\Core
 
     public function fetchOrdersAndSync(array $input)
     {
-        $orders =  $this->repo->order->fetchMultipleOrdersBasedOnIds($input['order_ids']);
+        $mode = App::getFacadeRoot()['rzp.mode'];
+
+        if (isset($mode) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException("Mode is required");
+        }
+
+        if ($mode === 'test')
+        {
+            throw new Exception\BadRequestException( ErrorCode::BAD_REQUEST_PG_ROUTER_ONLY_LIVE_MODE_SUPPORTED);
+        }
+
+        $orders = $this->repo->order->fetchMultipleOrdersBasedOnIds($input['order_ids']);
 
         $orderArray = $orders->toArray();
 
@@ -453,14 +465,23 @@ class Core extends Base\Core
 
                 unset($key['merchant'], $key['bank_account']);
 
-                $key['id'] =  Entity::verifyIdAndSilentlyStripSign($key['id']);
+                $key['id'] = Entity::verifyIdAndSilentlyStripSign($key['id']);
             }
         }
 
         $data = ['orderBulkRequest' => $orderArray];
 
-        $response = App::getFacadeRoot()['pg_router']->syncBulkOrderToPgRouter($data, true);
+        $response = App::getFacadeRoot()['pg_router']->syncBulkOrderToPgRouter($data, false);
 
-        return $response['body'];
+        if ($response['code'] === 200)
+        {
+            $this->repo->order->bulkUpdatePgRouterSynced($response['body']['sync_success_ids']);
+
+            return $response['body'];
+        }
+        else
+        {
+            return ['sync_failure_ids' => $input['order_ids']];
+        }
     }
 }
