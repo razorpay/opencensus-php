@@ -10,6 +10,11 @@ finish() {
   fi
 }
 
+fix_permissions() {
+  echo "$(date) Fix permissions"
+  cd /app/ && chmod 777 -R storage
+}
+
 configure(){
   echo "casting alohomora - vault,env.php"
 
@@ -44,6 +49,7 @@ initialize(){
   # in case of container restart, this file might still exist.
   # this file is used to remove proxysql after this container's execution is completed.
   rm -f /container-share/sigterm-check.txt
+  fix_permissions
   configure
 }
 

@@ -21,8 +21,7 @@ RUN set -eu && \
     rm -rf /root/.composer && \
     composer clear-cache && \
     pear config-set php_ini /etc/php7/php.ini && \
-    mkdir -p public && echo "${GIT_COMMIT_HASH}" > public/commit.txt && \
-    mkdir -p storage && chmod 777 -R storage
+    mkdir -p public && echo "${GIT_COMMIT_HASH}" > public/commit.txt
 
 COPY --chown=apache:www-data . /app/
 
