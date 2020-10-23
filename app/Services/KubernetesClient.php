@@ -102,13 +102,13 @@ class KubernetesClient
         // Read the latest commit id from the environment variable
         if ($this->gitCommitHash !== false)
         {
-            $dockerImage .= ":".$this->gitCommitHash;
+            $dockerImage .= ":worker-".$this->gitCommitHash;
         }
         // in case environment variable not there make another attempt to read from commit.txt file
         else
         {
             if ($this->commitFilePath !== null && file_exists($this->commitFilePath)) {
-                $dockerImage .= ":".file_get_contents($this->commitFilePath);
+                $dockerImage .= ":worker-".file_get_contents($this->commitFilePath);
             }
         }
 
