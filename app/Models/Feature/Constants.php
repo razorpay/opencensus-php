@@ -87,6 +87,7 @@ class Constants
     const CARD_TRANSFER_REFUND            = 'card_transfer_refund';
     const NON_TPV_BT_REFUND               = 'non_tpv_bt_refund';
     const DISABLE_INSTANT_REFUNDS         = 'disable_instant_refunds';
+    const REFUND_AGED_PAYMENTS            = 'refund_aged_payments';
     const LOG_RESPONSE                    = 'log_response';
     const EXCESS_ORDER_AMOUNT             = 'excess_order_amount';
     const DISABLE_AMOUNT_CHECK            = 'disable_amount_check';
@@ -742,6 +743,7 @@ class Constants
         self::CHECKOUT_DISABLE_CARDSCAN       => true,
         self::RX_SHOW_PAYOUT_SOURCE           => true,
         self::PAYOUT_CREDITS_NEW_FLOW         => true,
+        self::REFUND_AGED_PAYMENTS            => true,
     ];
 
     // Entity type constants

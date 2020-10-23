@@ -1389,7 +1389,7 @@ trait Refund
     {
         $this->setPayment($payment);
 
-        $refund = (new Payment\Refund\Entity)->build($input, $payment);
+        $refund = (new RefundEntity)->build($input, $payment);
 
         $refund->merchant()->associate($this->merchant);
 
@@ -1398,8 +1398,40 @@ trait Refund
         $refund->setGatewayAmountCurrency();
 
         $refund->setSpeedRequested(RefundSpeed::NORMAL);
+
         $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
 
+        $this->calculateRefundSpeed($payment, $refund, $input);
+
+        // Speed could have changed to normal if mode is not supported
+        if ($refund->isRefundSpeedInstant() === true)
+        {
+            list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($refund);
+
+            $refund->setFee($fee);
+
+            $refund->setTax($tax);
+        }
+        else
+        {
+            $refund->setSpeedProcessed(RefundSpeed::NORMAL);
+        }
+
+        $this->refundBalanceChecks($refund);
+
+        //
+        // If the batch is created in batch service, api db will not have batch entity corresponding to batch_id.
+        // As a result we cant associate the refund to batch entity. So, only setting the batch_id here.
+        //
+        (empty($batchId) === false) ? $refund->setBatchId($batchId) : $refund->batch()->associate($batch);
+
+        $this->refund = $refund;
+
+        return $refund;
+    }
+
+    protected function calculateRefundSpeed(Payment\Entity $payment, RefundEntity &$refund, array &$input)
+    {
         $supportData = $this->getRefundCreateData($payment, $refund);
 
         if ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === false)
@@ -1450,6 +1482,16 @@ trait Refund
                 $refund->setSpeedDecisioned($refund->getSpeedRequested());
             }
         }
+        else
+        {
+            // For disable_instant_refunds feature enabled merchants,
+            // Set actual speed requested just for tracking purposes
+            // refund will still be decisioned and processed at normal speed
+            if (empty($input[RefundEntity::SPEED]) === false)
+            {
+                $refund->setSpeedRequested($input[RefundEntity::SPEED]);
+            }
+        }
 
         // Calculate final speed decisioned
         switch ($refund->getSpeedDecisioned())
@@ -1478,6 +1520,7 @@ trait Refund
             // if only gateway refund is supported, we will decision it to normal
             // else we just throw and exception stating refund creation is not supported
             case RefundSpeed::OPTIMUM:
+                // If instant refund is supported
                 if ((isset($supportData[RefundConstants::INSTANT_REFUND_SUPPORT]) === true) and
                     ($supportData[RefundConstants::INSTANT_REFUND_SUPPORT] === true))
                 {
@@ -1491,16 +1534,18 @@ trait Refund
                         $input[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND] = $supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND] ?? 180;
                     }
                 }
+                // If gateway refund is supported
                 else if ((isset($supportData[RefundConstants::GATEWAY_REFUND_SUPPORT]) === true) and
                          ($supportData[RefundConstants::GATEWAY_REFUND_SUPPORT] === true))
                 {
                     $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
                 }
+                // If neither instant/gateway refund is supported
                 else
                 {
                     // calculating dynamic error description
                     $desc = ((isset($supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]) === true) and
-                    (is_int($supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]) === false)) ?
+                             (is_int($supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]) === false)) ?
                         RefundConstants::getBlockRefundsMessage(0):
                         RefundConstants::getBlockRefundsMessage(0, $supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]);
 
@@ -1524,7 +1569,7 @@ trait Refund
                     {
                         // calculating dynamic error description
                         $errorMsg = ((isset($supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]) === true) and
-                            (is_int($supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]) === false)) ?
+                                     (is_int($supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]) === false)) ?
                             RefundConstants::getBlockRefundsMessage(1):
                             RefundConstants::getBlockRefundsMessage(1, $supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]);
 
@@ -1534,7 +1579,7 @@ trait Refund
                     {
                         // calculating dynamic error description
                         $errorMsg = ((isset($supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]) === true) and
-                            (is_int($supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]) === false)) ?
+                                     (is_int($supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]) === false)) ?
                             RefundConstants::getBlockRefundsMessage(0):
                             RefundConstants::getBlockRefundsMessage(0, $supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]);
 
@@ -1546,24 +1591,13 @@ trait Refund
 
                 break;
         }
+    }
 
-        // Speed could have changed to normal if mode is not supported
-        if ($refund->isRefundSpeedInstant() === true)
-        {
-            list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($refund);
-
-            $refund->setFee($fee);
-
-            $refund->setTax($tax);
-        }
-        else
-        {
-            $refund->setSpeedProcessed(RefundSpeed::NORMAL);
-        }
-
+    protected function refundBalanceChecks(RefundEntity &$refund)
+    {
         $refund->balance()->associate($refund->merchant->primaryBalance);
 
-        if ($this->payment->isCaptured() === true)
+        if ($refund->payment->isCaptured() === true)
         {
             //
             // Merchant balance / refund credits checks are not applicable in case of a normal refund on a
@@ -1582,22 +1616,6 @@ trait Refund
                 $this->validateMerchantBalance($refund, 'refund');
             }
         }
-        //
-        // If the batch is created in batch service, api db will not have batch entity corresponding to batch_id.
-        // As a result we cant associate the refund to batch entity. So, only setting the batch_id here.
-        //
-        if (empty($batchId) === false)
-        {
-            $refund->setBatchId($batchId);
-        }
-        else
-        {
-            $refund->batch()->associate($batch);
-        }
-
-        $this->refund = $refund;
-
-        return $refund;
     }
 
     private function  getLateAuthPaymentRefundSpeedIfApplicable($payment)
@@ -3495,7 +3513,16 @@ trait Refund
             }
         }
 
-        return $this->app['scrooge']->fetchRefundCreateData($queryParams);
+        $scroogeResponse = $this->app['scrooge']->fetchRefundCreateData($queryParams);
+
+        // For refund_aged_payments feature enabled merchants, we do not want to block refund creation
+        // so making gateway_refund_support true so that refund will be always created atleast with normal speed
+        if ($this->merchant->isFeatureEnabled(Feature::REFUND_AGED_PAYMENTS) === true)
+        {
+            $scroogeResponse[RefundConstants::GATEWAY_REFUND_SUPPORT] = true;
+        }
+
+        return $scroogeResponse;
     }
 
     public function fetchBankAccountDetailsForInstantRefund(Payment\Entity $payment) : array
