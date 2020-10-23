@@ -51,7 +51,11 @@ export const ReplyToConversation = (ticket_id, body) => {
 };
 
 export const FetchActiveTickets = () => {
-  return merchantFetch(`fd/tickets?status=2`).then((res) => res.data.results);
+  return merchantFetch(
+    `fd/tickets?${['2', '3', '6', '8', '9', '10', '11']
+      .map((s) => 'status[]=' + s + '&')
+      .join('')}`,
+  ).then((res) => res.data.results);
 };
 
 export const fetchFeaturesAjax = (currentUserId, mode) => {
@@ -364,7 +368,7 @@ export default function (state = initialState, action) {
         t.subject = t.subject.replace('[Merchant]', '');
         return t;
       });
-      window.rzpActiveTickets = ST.active;
+      window.rzpActiveTickets = ST.active.slice(0, 3);
       return merge(state, {
         support_tickets: ST,
       });

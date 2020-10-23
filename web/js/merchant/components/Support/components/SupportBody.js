@@ -92,7 +92,7 @@ export default class SupportBody extends Component {
                   });
                 }}
               >
-                Past Tickets
+                Track Tickets
                 <small class="help-block">View all tickets raised by you</small>
               </Link>
             </li>

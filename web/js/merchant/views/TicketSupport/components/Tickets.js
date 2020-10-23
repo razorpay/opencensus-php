@@ -90,7 +90,7 @@ export default class Tickets extends React.Component {
                   </div>
                 ) : null}
                 {no_tickets ? (
-                  <h2 class="no-tickets-f">No Tickets Found</h2>
+                  <h2 class="no-tickets-f">Please click on write to us for any queries</h2>
                 ) : (
                   <div>
                     {tickets.map((ticket, index) => {
