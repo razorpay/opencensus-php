@@ -14,11 +14,21 @@ const PAYMENT_LINK_TYPES = [
   {
     key: 'upi',
     title: 'UPI Payment Link',
-    description:
-      'Collect UPI payments from your customers, using UPI payment links, without knowing their UPI/VPA addresses.',
+    description: `Collect UPI payments from your customers, using UPI payment links, without knowing their UPI/VPA addresses.`,
     img: '/img/payment_links/upi.png',
   },
 ];
+
+const TEST_MODE_TYPES = {
+  upi: {
+    key: 'upi',
+    title: 'UPI Payment Link',
+    description: `Collect UPI payments from your customers, using UPI payment links, without knowing their UPI/VPA addresses.`,
+    hoverText:
+      'UPI Payment Links is not supported in Test Mode. Please experience the product in Live Mode.',
+    img: '/img/payment_links/upi.png',
+  },
+};
 
 export default class PaymentLinkSelector extends React.PureComponent {
   componentDidMount() {
@@ -43,7 +53,8 @@ export default class PaymentLinkSelector extends React.PureComponent {
           {PAYMENT_LINK_TYPES.map((templateData) => (
             <TemplateCard
               {...templateData}
-              onClick={this.handleTemplateSelection(templateData.key)}
+              {...(props.isTestMode && TEST_MODE_TYPES[templateData.key])}
+              onClick={!props.isTestMode && this.handleTemplateSelection(templateData.key)}
             />
           ))}
         </div>
@@ -78,19 +89,24 @@ class TemplateCard extends React.PureComponent {
   }
 
   render() {
-    const { title, description, img, onClick } = this.props;
+    const { title, description, img, onClick, hoverText } = this.props;
 
     return (
-      <div class="TemplateCard" onClick={onClick}>
+      <div class={`TemplateCard ${onClick && 'disabled'}`} onClick={onClick}>
         <img src={this.state.isLoaded ? img : null} />
         <div class="TemplateCard-details">
           {title}
-          <div class="TemplateCard-desc">{description}</div>
-
-          <div class="link">
-            <span>Create Now</span>
-            <i class="i i-arrow-forward" />
+          <div class="TemplateCard-desc">
+            {description}
+            {hoverText && <div class="hover-text">{hoverText}</div>}
           </div>
+
+          {onClick && (
+            <div class="link">
+              <span>Create Now</span>
+              <i class="i i-arrow-forward" />
+            </div>
+          )}
         </div>
       </div>
     );

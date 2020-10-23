@@ -27,6 +27,7 @@ const PAYMENT_LINK_FORMS = {
 @withRouter
 @connect(
   (state) => ({
+    isTestMode: state.session.mode === 'test',
     reminders: state.reminders,
     paymentLinkRemindersConfig: state.reminders.product_configs.payment_link,
   }),
@@ -333,7 +334,11 @@ export default class PaymentLinkCreateV2 extends React.Component {
     return (
       <div class="PaymentLinks--CreateV2">
         {showLinkTypeSelectionView && (
-          <PaymentLinkTypeSelector isModalView={isModalView} selectTemplate={this.selectTemplate} />
+          <PaymentLinkTypeSelector
+            isTestMode={props.isTestMode}
+            isModalView={isModalView}
+            selectTemplate={this.selectTemplate}
+          />
         )}
 
         {!showLinkTypeSelectionView && (
