@@ -8702,4 +8702,17 @@ class PayoutTest extends TestCase
 
         $this->assertArraySelectiveEquals($sourceDetails, $response);
     }
+
+    public function testCreatePayoutViaUpi()
+    {
+        $contact = $this->getDbLastEntity('contact');
+
+        $this->fixtures->create('fund_account:vpa', [
+            'id'            => '100000000003fa',
+            'source_type'   => 'contact',
+            'source_id'     => $contact->getId(),
+        ]);
+
+        $this->startTest();
+    }
 }
