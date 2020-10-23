@@ -498,15 +498,12 @@ class Repository extends Base\Repository
 
             if ($logging === true)
             {
-                $startTime = microtime(true);
-
                 $this->trace->info(TraceCode::SETTLEMENT_TXN_BATCH_UPDATED,
                     [
                         'merchant_id'       => $txns->first()->getMerchantId(),
                         'txn_batch_count'   => $expected,
                         'time_taken'        => microtime(true) - $startTime,
                     ]);
-
             }
 
             if ($count !== $expected)
