@@ -18,20 +18,15 @@ const THEMES = {
     primary: '#F04E00',
   },
   icic: {
-    navBg: '#363636',
+    navBg: '#163D6B',
     primary: '#0A3D6B',
-    actStatus: '#ff6600',
-    actText: '#ff6600',
-    actStatusBg: '#000',
     sidebarLinkActive: '#5697fc',
-    sideBarIconActive: '#fff',
-    sideBarIcon: '#ff6600',
-    sideBarColor: '#fff',
-    brandBg: '#666666',
+    brandBg: 'transparent',
+    borderColor: '#fff',
   },
 };
 
-export const applyTheme = org => {
+export const applyTheme = (org) => {
   var style = document.createElement('style');
   style.type = 'text/css';
   var rules = makeTheme(Object.assign(base, THEMES[org]));
@@ -43,7 +38,7 @@ export const applyTheme = org => {
   document.getElementsByTagName('head')[0].appendChild(style);
 };
 
-const makeTheme = it => `
+const makeTheme = (it) => `
 #react-root.bob .brand-logo img {
   width: 100%;
   height: 100%;
@@ -69,11 +64,7 @@ tabbed-container header a.active {
 }
 
 ${it.actStatus ? `.activation-status{color:${it.actStatus}  !important;}` : ''}
-${
-  it.actStatusBg
-    ? `.activation-status{background-color:${it.actStatusBg} !important;}`
-    : ''
-}
+${it.actStatusBg ? `.activation-status{background-color:${it.actStatusBg} !important;}` : ''}
 ${it.actText ? `.activation-bar-text{color:${it.actText}  !important;}` : ''}
 ${it.brandBg ? `.brand-logo{background:${it.brandBg}  !important;}` : ''}
 
@@ -82,7 +73,7 @@ ${it.brandBg ? `.brand-logo{background:${it.brandBg}  !important;}` : ''}
 }
 
 .sidebar .brand-logo::after {
-  border-color: ${it.transparent};
+  border-color: ${it.borderColor || it.transparent} !important;
 }
 
 .sidebar .nav > a {
@@ -96,29 +87,26 @@ ${it.brandBg ? `.brand-logo{background:${it.brandBg}  !important;}` : ''}
 
 .sidebar .nav > a:focus,
 .sidebar .nav > a.active {
-  background-color: ${it.sidebarLinkActive || it.transparentDark} !important;
   border-color: ${it.sidebarLinkActive || it.transparent} !important;
 }
 
-${
-  it.sideBarIcon
+${it.sideBarIcon
     ? `
 .sidebar .nav > a:focus,
 .sidebar .nav > a >i{
 color:${it.sideBarIcon};
 }`
     : ``
-}
+  }
 
-${
-  it.sideBarIconActive
+${it.sideBarIconActive
     ? `
 .sidebar .nav > a:focus,
 .sidebar .nav > a.active>i{
 color:${it.sideBarIconActive};
 }`
     : ``
-}
+  }
 
 .table-striped > tbody > tr:nth-child(odd) > td,
 .table-striped > tbody > tr:nth-child(odd) > th {
