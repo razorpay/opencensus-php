@@ -6,6 +6,8 @@ use Request;
 
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Gateway\Utility;
+use RZP\Trace\ApiTraceProcessor;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Illuminate\Support\Str;
@@ -625,6 +627,7 @@ class Gateway extends Mindgate\Gateway
         }
     }
 
+
     protected function parseGatewayResponse(
         $responseBody,
         $type = Action::PAYOUT,
@@ -641,7 +644,11 @@ class Gateway extends Mindgate\Gateway
 
         $response = $this->decryptResponse($responseBody);
 
-        $this->trace->info($traceCode, [$response]);
+        $scrubbedResponse = array($response);
+
+        Utility::scrubCardDetails($scrubbedResponse, $this->app);
+
+        $this->trace->info($traceCode, [$scrubbedResponse]);
 
         $type = strtoupper($type);
 
@@ -659,11 +666,11 @@ class Gateway extends Mindgate\Gateway
         $this->trace->info(
             $traceCode,
             [
-                'body'              => $responseBody,
-                'decrypted'         => $response,
-                'parsed'            => $result,
-                'gateway'           => $this->gateway,
-                'type'              => $type
+                'body'      => $responseBody,
+                'decrypted' => $scrubbedResponse,
+                'parsed'    => $result,
+                'gateway'   => $this->gateway,
+                'type'      => $type
             ]);
 
         return $result;

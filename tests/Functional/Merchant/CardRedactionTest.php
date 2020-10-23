@@ -9,6 +9,7 @@ use RZP\Http\BasicAuth\Type;
 use RZP\Trace\ApiTraceProcessor;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Tests\Functional\TestCase;
+use \RZP\Gateway\Utility as RZPUtility;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\PrivateMethodTrait;
@@ -118,6 +119,25 @@ class CardRedactionTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+    }
+
+    public function testScrubCardDetails()
+    {
+        $record = [
+            'context' => [
+                'cc_number' => '4012888888881881',
+            ]
+        ];
+
+        RZPUtility::scrubCardDetails($record, $this->app);
+
+        $expectedResponse = [
+            'context' => [
+                'cc_number' => "CARD_NUMBER_SCRUBBED(16)"
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $record);
     }
 
     public function testMasterCardRedaction()

@@ -2,8 +2,13 @@
 
 namespace RZP\Gateway;
 
+
 use RZP\Exception;
 use Requests_Exception;
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger;
+use RZP\Trace\ApiTraceProcessor;
+
 
 class Utility
 {
@@ -110,6 +115,44 @@ class Utility
                 throw new Exception\RuntimeException(
                     'Failed to convert json to array',
                     ['json' => $json]);
+        }
+    }
+
+    public static function scrubCardDetails(& $context, $app)
+    {
+        try
+        {
+            $cardRegex = $app['config']['trace']['regex']['card_regex'];
+
+            if (empty($cardRegex) === true)
+            {
+                $cardRegex = ApiTraceProcessor::CARD_REGEX;
+            }
+
+            array_walk_recursive($context, function(&$item) use ($cardRegex) {
+
+                if (is_string($item) === true)
+                {
+                    if (preg_match_all($cardRegex, $item, $matches) !== false)
+                    {
+
+                        $matches = $matches[0];
+
+                        foreach ($matches as $match)
+                        {
+                            $item = str_replace($match, 'CARD_NUMBER_SCRUBBED' . '(' . strlen($match) . ')', $item);
+                        }
+                    }
+                }
+            });
+        }
+        catch (\Exception $e)
+        {
+            $app['trace']->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::SENSITIVE_BANKING_DETAILS_REDACTION_FAILURE_EXCEPTION
+            );
         }
     }
 }
