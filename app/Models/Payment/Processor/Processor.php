@@ -3536,6 +3536,8 @@ class Processor
 
         $difference = $this->getTimeDifferenceInAuthorizeAndCreated($payment);
 
+        $this->setPaymentRefundAtForConfig($payment, $manualTimeoutDuration);
+
         if ($captureValue === 'automatic')
         {
             if ($difference < $autoTimeoutDuration)
@@ -3544,15 +3546,11 @@ class Processor
             }
             elseif ($difference > $manualTimeoutDuration)
             {
-                $this->setPaymentRefundAtForConfig($payment, $manualTimeoutDuration);
-
                 return false;
             }
         }
         elseif ($captureValue === 'manual')
         {
-            $this->setPaymentRefundAtForConfig($payment, $manualTimeoutDuration);
-
             if ($difference > $manualTimeoutDuration)
             {
                 return false;
