@@ -179,9 +179,9 @@ class Processor extends Base\Processor
         {
             case Device\Action::DEVICE_COOLDOWN_COMPLETED:
 
-                $device = (new Device\Core())->find($context[Device\Entity::ID], false);
-
                 $this->context()->setHandleAndMode($context[Device\Entity::HANDLE]);
+
+                $device = (new Device\Core())->find($context[Device\Entity::ID], false);
 
                 $this->context()->setMerchant($device->merchant);
 
