@@ -435,6 +435,10 @@ class Name
     const CREDITS_BATCH_UPLOAD                = 'credits_batch_upload';
     const UPDATE_MERCHANT_2FA_SETTING         = 'update_merchant_2fa_setting';
 
+    // merchant preferences
+    const UPDATE_MERCHANT_PREFERENCE          = 'update_merchant_preference';
+    const VIEW_MERCHANT_PREFERENCE            = 'view_merchant_preference';
+
     // tax payment settings
     const PAY_TAX_PAYMENTS                    = 'pay_tax_payment';
     const UPDATE_TAX_PAYMENT_SETTINGS         = 'update_tax_payment_settings';

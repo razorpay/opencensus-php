@@ -479,6 +479,8 @@ class Route
         'merchant_payout_mail'                     => ['post',     'merchant/payout/mail',                           'MerchantController@sendPayoutMail'                                 ],
         'merchants_update_onboarding_category_to_normal_cron'
                                                    => ['post',     'merchants/onboarding_category/normal',           'MerchantController@postUpdateSelfServeBankingMerchantsToNormal'    ],
+        'merchant_post_preferences'                => ['post',     'merchant/preferences/{group}',                   'MerchantController@postMerchantPreferences' ],
+        'merchant_get_preferences'                 => ['get',      'merchant/preferences/{group}/{type?}',           'MerchantController@getMerchantPreferences'],
         'fix_merchant_data_cron'                   => ['patch',    'merchants/trim_space',                           'MerchantController@trimSpacesForMerchant'                          ],
         'pricing_create_plan'                      => ['post',     'pricing',                                        'PricingController@postCreatePlan'                                  ],
         'pricing_get_plans'                        => ['get',      'pricing',                                        'PricingController@getPlans'                                        ],
@@ -2989,6 +2991,8 @@ class Route
         'merchant_fetch_methods',
         'on_demand_settlement',
         'on_demand_settlement_fees',
+        'merchant_get_preferences',
+        'merchant_post_preferences',
 
         // Only to be used via Subscriptions Service
         'payment_create_subscriptions',
@@ -4788,6 +4792,8 @@ class Route
         'merchant_document_delete'                     => Permission::DELETE_MERCHANT_DOCUMENT,
         'merchant_bank_account_change_status'          => Permission::UPDATE_MERCHANT_BANK_ACCOUNT_STATUS,
         'merchant_2fa_change_setting'                  => Permission::UPDATE_MERCHANT_2FA_SETTING,
+        'merchant_post_preferences'                    => Permission::UPDATE_MERCHANT_PREFERENCE,
+        'merchant_get_preferences'                     => Permission::VIEW_MERCHANT_PREFERENCE,
         'user_account_unlock'                          => Permission::UPDATE_MERCHANT_2FA_SETTING,
         'user_2fa_change_setting'                      => '*',
         'user_opt_in_whatsapp'                         => '*',

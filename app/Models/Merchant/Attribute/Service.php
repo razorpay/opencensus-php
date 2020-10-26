@@ -9,6 +9,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Services\DiagClient;
 use RZP\Services\SalesForceClient;
+use RZP\Models\Merchant\Attribute\Validator;
 
 class Service extends Base\Service
 {
@@ -33,6 +34,7 @@ class Service extends Base\Service
         $this->diag = $this->app['diag'];
 
         $this->salesforce = $this->app['salesforce'];
+
     }
 
     public function updateMerchantOnboardingCategoryAttributes(Base\PublicCollection $merchantAttributes, $newAttributeValue)
@@ -111,5 +113,71 @@ class Service extends Base\Service
         $this->updateMerchantOnboardingCategoryAttributes($merchantAttributesToUpdate, Entity::NORMAL);
 
         return [];
+    }
+
+    /**
+     * Group & Types - follows flat structure
+     * e.g. {"type":"business_category","value": "School"},
+     *   {"type":"monthly_payout_count","value": "1000"}
+     * Validates Group & Types - Refer to entity to find allowed values map
+     * Create or Update Group & Types at Merchant Product Level.
+     * At Product, Group & Type level matching happens to identify update entries.
+     * @param string $group
+     * @param array $input
+     * @return mixed
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function upsert(string $group, array $input)
+    {
+        //Validate input for group & type
+        $attributeInputValidator = new Validator();
+        foreach ($input as $item){
+            $attributeInputValidator->validateInput('upsert_input_validation', $item);
+
+            $item[Entity::GROUP] = $group;
+            $attributeInputValidator->validateGroupAndType($item);
+        }
+
+        $merchant = $this->merchant;
+        $product = $this->auth->getRequestOriginProduct();
+        $types = array_column($input, 'type');
+
+        $merchantAttributes =  $this->core->fetchKeyValues($merchant, $product, $group, $types);
+
+        //find existing keys
+        $merchantAttributesByKeys = $merchantAttributes->getDictionaryByAttribute(Entity::TYPE);
+        $existingKeys = array_keys($merchantAttributesByKeys);
+
+        // Do we need transaction? We don't need it. All entries can be saved independently
+        foreach ($input as $item){
+            $item[Entity::PRODUCT] = $product;
+            $item[Entity::GROUP] = $group;
+            
+            if (in_array($item['type'], $existingKeys)){
+                $this->core->update($merchantAttributesByKeys[$item['type']] , $item);
+            } else {
+                $this->core->create($item, $merchant);
+            }
+        }
+
+        return $this->core->fetchKeyValues($merchant, $product, $group, $types);
+    }
+
+    /**
+     * Get merchant preferences by group and type
+     * @param string $group
+     * @param string|null $type
+     * @return mixed
+     */
+    public function getPreferencesByGroupAndType(string $group, string $type = null)
+    {
+        $merchant = $this->merchant;
+        $product = $this->auth->getRequestOriginProduct();
+
+        if ($type != null) {
+            return $this->core->fetchKeyValues($merchant, $product, $group, [$type]);
+        } else {
+            return $this->core->fetchKeyValues($merchant, $product, $group);
+        }
     }
 }

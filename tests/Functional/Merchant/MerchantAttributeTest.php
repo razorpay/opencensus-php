@@ -326,4 +326,70 @@ class MerchantAttributeTest extends TestCase
 
         $this->testMerchantOnboardingCategoryCron('10000000000000', 'self_serve', 'self_serve', $time5DaysAgo);
     }
+
+    public function testMerchantAddingNewPreferences()
+    {
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testMerchantUpsertingPreferences()
+    {
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testMerchantPreferencesWithWrongGroup()
+    {
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testMerchantPreferencesWithWrongType()
+    {
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testMerchantPreferencesMissingType()
+    {
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testMerchantPreferencesMissingValue()
+    {
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testMerchantGetPreferencesByGroup()
+    {
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_preferences', 'business_category', 'School');
+
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testMerchantGetPreferencesByGroupAndType()
+    {
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_preferences', 'business_category', 'School');
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_preferences', 'monthly_payout_count', '1000');
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function createMerchantAttribute(string $merchant_id, string $product, string $group, string $type, string $value)
+    {
+        $this->fixtures->create('merchant_attribute',
+            [
+                'merchant_id'   => $merchant_id,
+                'product'       => $product,
+                'group'         => $group,
+                'type'          => $type,
+                'value'         => $value,
+                'updated_at'    => time(),
+                'created_at'    => time()
+            ]);
+    }
 }

@@ -1710,6 +1710,38 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    /**
+     * This API is to capture merchant preferences.
+     * Preferences are organized as Group(module), Type(key) & Value.
+     * This API does either create or update of preferences.
+     * Preferences are matched by group & type.
+     * E.g. Use cases: In X, merchant preferences are used for App suggestions
+     * Also it can help taking inputs required for lead scoring.
+     * @param string $group
+     * @return mixed
+     */
+    public function postMerchantPreferences(string $group)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_ATTRIBUTE)->upsert($group, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Get Merchant preferences by group & type
+     * @param string $group
+     * @param string|null $type
+     * @return mixed
+     */
+    public function getMerchantPreferences(string $group, string $type = null)
+    {
+        $response = $this->service(E::MERCHANT_ATTRIBUTE)->getPreferencesByGroupAndType($group, $type);
+
+        return ApiResponse::json($response);
+    }
+
     public function getPersonalisedMethods()
     {
         $input = Request::all();

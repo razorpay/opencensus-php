@@ -54,6 +54,12 @@ class Core extends Base\Core
                           ->getValue($merchant, $product, $group, $type);
     }
 
+    public function fetchKeyValues(Merchant\Entity $merchant, string $product, string $group, array $types = [])
+    {
+        return $this->repo->merchant_attribute
+                ->getKeyValues($merchant, $product, $group, $types);
+    }
+
     public function update(Entity $merchantAttribute, array $input): Entity
     {
         $merchantAttribute->edit($input);
