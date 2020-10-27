@@ -4550,14 +4550,15 @@ return [
         'response'  => [
             'content'     => [
                 'error' => [
-                    'description' => 'DB Query Failed',
-                ]
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FORBIDDEN,
+                ],
             ],
-            'status_code' => 400,
+            'status_code' => 403,
         ],
         'exception' => [
-            'class'   => Razorpay\OAuth\Exception\DBQueryException::class,
-            'message' => 'DB Query Failed',
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FORBIDDEN,
         ],
     ],
 

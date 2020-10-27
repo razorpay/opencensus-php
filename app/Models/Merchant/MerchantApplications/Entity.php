@@ -61,4 +61,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo(Merchant\Entity::class);
     }
+
+    public function getApplicationId()
+    {
+        return $this->getAttribute(self::APPLICATION_ID);
+    }
 }

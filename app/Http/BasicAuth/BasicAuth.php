@@ -1874,7 +1874,7 @@ class BasicAuth
 
         $partnerId = $this->getPartnerMerchantId();
 
-        if ((new Merchant\Core)->isMerchantMappedToNonPurePlatformPartner($merchantId, $partnerId) === false)
+        if ((new Merchant\Core)->isMerchantManagedByPartner($merchantId, $partnerId) === false)
         {
             return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER);
         }

@@ -1722,7 +1722,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID]);
 
-        $app = $this->fixtures->merchant->createDummyPartnerApp();
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller']);
 
         $this->fixtures->create('pricing:two_percent_pricing_plan', [
             'plan_id' => self::DEFAULT_MERCHANT_ID,

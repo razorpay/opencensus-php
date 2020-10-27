@@ -2085,7 +2085,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Trace code for OAuth and Authentication service
     const AUTH_SERVICE_REQUEST                                  = 'AUTH_SERVICE_REQUEST';
-    const AUTH_SERVICE_DATA_ERROR                               = 'AUTH_SERVICE_DATA_ERROR';
     const SEND_OAUTH_MAIL_REQUEST                               = 'SEND_OAUTH_MAIL_REQUEST';
     const OAUTH_TOKEN_INVALID                                   = 'OAUTH_TOKEN_INVALID';
     const APP_MERCHANT_ACCESS_MAP                               = 'APP_MERCHANT_ACCESS_MAP';

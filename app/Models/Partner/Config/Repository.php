@@ -62,6 +62,11 @@ class Repository extends Base\Repository
      */
     public function fetchAllConfigForApps(array $appIds)
     {
+        if (empty($appIds) === true)
+        {
+            return new Base\PublicCollection;
+        }
+
         $defaultConfig = function ($query) use ($appIds)
         {
             $query->whereIn(Entity::ENTITY_ID, $appIds)

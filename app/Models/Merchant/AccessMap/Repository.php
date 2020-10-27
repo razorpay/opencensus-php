@@ -40,6 +40,15 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findMerchantAccessMapOnEntityIds(string $merchantId, array $entityIds, string $entityType): Base\PublicCollection
+    {
+        return $this->newQuery()
+                    ->merchantId($merchantId)
+                    ->whereIn(Entity::ENTITY_ID, $entityIds)
+                    ->where(Entity::ENTITY_TYPE, $entityType)
+                    ->get();
+    }
+
     /**
      * Returns the access map that links the submerchantId with a non pure-platform partner.
      *

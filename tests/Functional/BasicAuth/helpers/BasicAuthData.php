@@ -448,14 +448,11 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'description' => 'DB Query Failed',
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER,
                 ]
             ],
             'status_code' => 400,
-        ],
-        'exception' => [
-            'class'   => Razorpay\OAuth\Exception\DBQueryException::class,
-            'message' => 'DB Query Failed',
         ],
     ],
 

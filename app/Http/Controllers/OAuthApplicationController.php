@@ -115,6 +115,8 @@ class OAuthApplicationController extends Controller
      * any other params as only one partner app is expected.
      *
      * @return mixed
+     * @throws \RZP\Exception\BadRequestException
+     * @throws \RZP\Exception\LogicException
      */
     public function getPartner()
     {
@@ -122,7 +124,9 @@ class OAuthApplicationController extends Controller
 
         $this->merchantValidator->validatePartnerWithSettingsAccess($merchant);
 
-        $data = $this->authservice->getPartnerApplication($merchant->getId());
+        $application = (new MerchantCore)->fetchDefaultPartnerApplication($merchant);
+
+        $data = $this->authservice->getApplication($application->getId(), $merchant->getId());
 
         $this->processPartnerClientCreds($data);
 
@@ -138,8 +142,6 @@ class OAuthApplicationController extends Controller
         //$this->merchantValidator->validateIsPartner($merchant);
 
         $data = $this->authservice->deleteApplication($id, $merchant->getId());
-
-        (new MerchantCore)->deleteMerchantApplication($id, Merchant\Constants::APPLICATION_ID);
 
         return ApiResponse::json($data);
     }

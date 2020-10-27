@@ -17,9 +17,10 @@ trait PartnerTrait
     public function setUpPartnerMerchantAppAndGetClient(
         string $env = 'dev',
         array $attributes = [],
-        string $partnerId = '10000000000000')
+        string $partnerId = '10000000000000',
+        string $partnerType = 'fully_managed')
     {
-        $attributes = array_merge($attributes, ['merchant_id' => $partnerId]);
+        $attributes = array_merge($attributes, ['merchant_id' => $partnerId, 'partner_type' => $partnerType]);
 
         $client = $this->createPartnerApplicationAndGetClientByEnv($env, $attributes);
 
@@ -35,14 +36,26 @@ trait PartnerTrait
         $merchantId = $partnerAttributes['id'] ?? 'DefaultPartner';
         unset($partnerAttributes['id']);
 
-        $defaultPartnerAttributes = ['partner_type' => 'aggregator'];
-        $partnerAttributes        = array_merge($defaultPartnerAttributes, $partnerAttributes);
+        if (empty($partnerAttributes['partner_type']) === true)
+        {
+            $defaultPartnerAttributes = ['partner_type' => 'aggregator'];
+
+            $partnerAttributes = array_merge($defaultPartnerAttributes, $partnerAttributes);
+
+            $partnerType = 'aggregator';
+        }
+        else
+        {
+            $partnerType = 'reseller';
+        }
 
         $partner = $this->fixtures->merchant->createMerchantWithDetails(Org::RZP_ORG, $merchantId, $partnerAttributes);
 
         $defaultAppAttributes = [
             'merchant_id' => $partner->getId(),
+            'partner_type'=> $partnerType,
         ];
+
         $appAttributes  = array_merge($defaultAppAttributes, $appAttributes);
 
         $app = $this->fixtures->merchant->createDummyPartnerApp($appAttributes);
@@ -131,6 +144,7 @@ trait PartnerTrait
                 'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
                 'id'          => Constants::DEFAULT_PLATFORM_APP_ID,
                 'type'        => 'partner',
+                'partner_type'=> $partnerType,
             ]
         );
 
@@ -172,6 +186,7 @@ trait PartnerTrait
             [
                 'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
                 'id'          => Constants::DEFAULT_PLATFORM_APP_ID,
+                'partner_type' => Merchant\Constants::PURE_PLATFORM,
             ]
         );
 
@@ -266,8 +281,6 @@ trait PartnerTrait
 
         $this->app->make(Factory::class)->load($factoryPath);
 
-        $client = $this->setUpPartnerMerchantAppAndGetClient();
-
         if ($activated === true)
         {
             $subMerchant = $this->fixtures->create('merchant', ['activated' => 1]);
@@ -280,6 +293,8 @@ trait PartnerTrait
         $subMerchantId = $subMerchant->getId();
 
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev', [], '10000000000000','aggregator');
 
         $merchantDetailAttribute = [
             "merchant_id"       => $subMerchantId,
@@ -310,9 +325,10 @@ trait PartnerTrait
         return $subMerchantId;
     }
 
+
     public function markMerchantAsNonPurePlatformPartner(string $merchantId, string $partnerType)
     {
-        $client = $this->setUpPartnerMerchantAppAndGetClient('dev', [], $merchantId);
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev', [], $merchantId, $partnerType);
 
         $this->fixtures->merchant->edit($merchantId, ['partner_type' => $partnerType]);
 

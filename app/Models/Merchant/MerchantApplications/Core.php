@@ -10,6 +10,12 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
+    /**
+     * @param Merchant\Entity $merchant
+     * @param array|null $input
+     *
+     * @return Entity
+     */
     public function create(
         Merchant\Entity $merchant,
         array $input = null)
@@ -25,7 +31,12 @@ class Core extends Base\Core
         return $merchantApplication;
     }
 
-    public function deleteMerchantApplication(string $entityId, string $entityType)
+    public function deleteByApplication(string $applicationId)
+    {
+        $this->delete($applicationId, Merchant\Constants::APPLICATION_ID);
+    }
+
+    protected function delete(string $entityId, string $entityType)
     {
         $merchantApplications  = $this->repo
                                       ->merchant_application
@@ -46,6 +57,11 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * @param Merchant\Entity $merchant
+     *
+     * @return string
+     */
     public function getDefaultAppTypeForPartner(Merchant\Entity $merchant): string
     {
         if ($merchant->isPurePlatformPartner() === true)
@@ -62,6 +78,11 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * @param string $appId
+     *
+     * @return bool
+     */
     public function isMerchantAppPresent(string $appId): bool
     {
         $response = $this->repo

@@ -305,7 +305,7 @@ class Core extends Base\Core
         elseif ($merchant->isPartner() === true)
         {
             // for partner, assign based on config defined on partner, if available
-            $application = $this->getInternalPartnerApp($merchant);
+            $application = $this->fetchDefaultPartnerApplication($merchant);
 
             $config      = (new PartnerConfig\Core)->fetch($application);
 
@@ -910,7 +910,7 @@ class Core extends Base\Core
             return false;
         }
 
-        $application = $this->getInternalPartnerApp($partner);
+        $application = $this->fetchDefaultPartnerApplication($partner);
 
         $config      = (new PartnerConfig\Core)->fetch($application, $submerchant);
 
@@ -1410,67 +1410,27 @@ class Core extends Base\Core
     }
 
     /**
-     * Returns the internal dummy app created for all non-pure-platform type partners.
-     * Since the app is not created for pure-platform type partners, they cannot access this feature.
-     *
-     * @param Entity $merchant
-     *
-     * @return OAuthApp\Entity
-     * @throws BadRequestException
-     * @throws Exception\LogicException
-     */
-    public function getInternalPartnerApp(Entity $merchant)
-    {
-        // For pure platforms, no internal partner app is created
-        (new Validator)->validateIsNonPurePlatformPartner($merchant);
-
-        try
-        {
-            $app = $this->getPartnerAppByMerchantId($merchant->getId());
-        }
-        catch (DBQueryException $ex)
-        {
-            throw new Exception\LogicException(
-                'Server error app not found',
-                ErrorCode::SERVER_ERROR_PARTNER_APP_NOT_FOUND,
-                [
-                    Entity::MERCHANT_ID => $merchant->getId(),
-                ]);
-        }
-
-        return $app;
-    }
-
-    /**
      * Returns an array of the partner's application ids.
      *
      * If the partner is -
      *      a pure platform partner, the result will be the list of all the ids of the apps created by the partner.
-     *      a non pure platform partner, the result will have just one element - id of the internal dummy app created.
+     *      a non pure platform partner, the result will have all the internal dummy apps created.
      *
      * @param Entity $merchant
      *
      * @return array
      * @throws BadRequestException
-     * @throws Exception\LogicException
      */
     public function getPartnerApplicationIds(Entity $merchant): array
     {
         (new Validator)->validateIsPartner($merchant);
 
-        if ($merchant->isPurePlatformPartner() === true)
-        {
-            // Fetch all the active applications that the pure platform has created
-            $apps = (new OAuthApp\Repository)->findActiveApplicationsByMerchantIdAndType($merchant->getId());
+        $appType = ($merchant->isPurePlatformPartner() === true) ? null : OAuthApp\Type::PARTNER;
 
-            $appIds = $apps->getIds();
-        }
-        else
-        {
-            $partnerAppId = $this->getInternalPartnerApp($merchant)->getId();
+        // Fetch all the active applications that the partner has created
+        $apps = (new OAuthApp\Repository)->findActiveApplicationsByMerchantIdAndType($merchant->getId(), $appType);
 
-            $appIds = [$partnerAppId];
-        }
+        $appIds = $apps->getIds();
 
         return $appIds;
     }
@@ -1516,6 +1476,13 @@ class Core extends Base\Core
         return $merchant;
     }
 
+    /**
+     * Creates a merchant_application for a given merchant
+     *
+     * @param Entity $merchant
+     * @param string $applicationId
+     * @param string $applicationType
+     */
     public function createMerchantApplication(Entity $merchant, string $applicationId, string $applicationType)
     {
         $appConfig = [
@@ -1582,18 +1549,13 @@ class Core extends Base\Core
         return $merchant;
     }
 
-    public function deleteMerchantApplication(string $entityId, string $entityType)
-    {
-        (new MerchantApplications\Core)->deleteMerchantApplication($entityId, $entityType);
-    }
-
     /**
      * Updates partner type on merchant's request
      *
      * @param Entity $merchant
      * @param String $partnerType
      *
-     * @return Entity
+     * @return array
      */
     public function updatePartnerType(Entity $merchant, string $partnerType): array
     {
@@ -1601,7 +1563,7 @@ class Core extends Base\Core
         {
             $partner = $this->markAsPartner($merchant, $partnerType);
 
-            $application = $this->getPartnerAppByMerchantId($merchant->getId());
+            $application = $this->fetchDefaultPartnerApplication($merchant);
 
             $config = [
                 PartnerConfig\Entity::DEFAULT_PLAN_ID       => Pricing\DefaultPlan::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS,
@@ -1704,7 +1666,8 @@ class Core extends Base\Core
             ]);
 
         $accessMap = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant) {
-            $partnerApp = $this->getInternalPartnerApp($partner);
+
+            $partnerApp = $this->fetchDefaultPartnerApplication($partner);
 
             $config = (new PartnerConfig\Core)->fetch($partnerApp);
 
@@ -1757,9 +1720,14 @@ class Core extends Base\Core
 
         $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant)
         {
-            $partnerApp = $this->getInternalPartnerApp($partner);
+            $appIds = $this->getPartnerApplicationIds($partner);
 
-            (new AccessMap\Core)->deleteMappingForOAuthApp($submerchant, $partnerApp->getId());
+            $accessMapCore = new AccessMap\Core;
+
+            foreach ($appIds as $appId)
+            {
+                $accessMapCore->deleteMappingForOAuthApp($submerchant, $appId);
+            }
 
             $this->removeSubMerchantReferralTag($submerchant, $partner->getId());
         });
@@ -1802,7 +1770,6 @@ class Core extends Base\Core
     /**
      * @param Entity $merchant
      *
-     * @return OAuthApp\Entity|void
      * @throws BadRequestException
      * @throws Exception\LogicException
      */
@@ -1818,12 +1785,13 @@ class Core extends Base\Core
             return;
         }
 
-        $app = $this->getInternalPartnerApp($merchant);
+        $appIds = $this->getPartnerApplicationIds($merchant);
 
-        // deletes the application and access mapping
-        $app = app('authservice')->deleteApplication($app->getId(), $merchant->getId());
-
-        return $app;
+        foreach ($appIds as $appId)
+        {
+            // deletes the application and access mapping
+            app('authservice')->deleteApplication($appId, $merchant->getId());
+        }
     }
 
     public function addSubMerchantReferral($aggregratorMerchant, $account)
@@ -2103,22 +2071,88 @@ class Core extends Base\Core
      */
     public function isMerchantMappedToNonPurePlatformPartner(string $merchantId, string $partnerId): bool
     {
-        $app = $this->getPartnerAppByMerchantId($partnerId);
+        $partner = $this->repo->merchant->find($partnerId);
+
+        $applications = (new OAuthApp\Repository)
+            ->findActiveApplicationsByMerchantIdAndType($partner->getId(), OAuthApp\Type::PARTNER);
+
+        $appIds = $applications->getIds();
+
+        if (empty($appIds) === true)
+        {
+            return false;
+        }
+
+        // there will be at most two appIds here
+        $mappings = (new AccessMap\Repository)
+            ->findMerchantAccessMapOnEntityIds($merchantId, $appIds, AccessMap\Entity::APPLICATION);
+
+        return ($mappings->isEmpty() === false);
+    }
+
+    public function isMerchantManagedByPartner(string $merchantId, string $partnerId): bool
+    {
+        $partner = $this->repo->merchant->find($partnerId);
+
+        (new Validator)->validateIsNonPurePlatformPartner($partner);
+
+        $merchantApps = $this->repo->merchant_application->fetchMerchantApplicationsByAppType($partnerId, MerchantApplications\Entity::MANAGED);
+
+        if ($merchantApps->isEmpty() === true)
+        {
+            return false;
+        }
+
+        $appId = $merchantApps->first()->getApplicationId();
 
         $mapping = (new AccessMap\Repository)
-            ->findMerchantAccessMapOnEntityId($merchantId, $app->getId(), AccessMap\Entity::APPLICATION);
+            ->findMerchantAccessMapOnEntityId($merchantId, $appId, AccessMap\Entity::APPLICATION);
 
         return (empty($mapping) === false);
     }
 
     /**
-     * @param string $merchantId
+     * @param Entity $merchant
      *
-     * @return OAuthApp\Entity|null
+     * @return OAuthApp\Entity
+     * @throws BadRequestException
+     * @throws Exception\LogicException
      */
-    public function getPartnerAppByMerchantId(string $merchantId)
+    public function fetchDefaultPartnerApplication(Entity $merchant)
     {
-        return (new OAuthApp\Repository)->findActivePartnerApplicationByMerchantId($merchantId);
+        (new Validator)->validateIsNonPurePlatformPartner($merchant);
+
+        $appType = (new MerchantApplications\Core)->getDefaultAppTypeForPartner($merchant);
+
+        $merchantApps = $this->repo->merchant_application->fetchMerchantApplicationsByAppType($merchant->getId(), $appType);
+
+        if ($merchantApps->isEmpty() === true)
+        {
+            throw new Exception\LogicException('merchant application not found for the partner');
+        }
+
+        // for aggregator and fully_managed partners, there can be two applications.
+        //  - one for referral and one for managed sub-merchants
+        // for other non-pure platform partners there will be only one application
+        // but there can be only one application for each type for non-pure platform partners
+        $appId = $merchantApps->first()->getApplicationId();
+
+        try
+        {
+            $app = (new OAuthApp\Repository)->findActiveApplicationByIdAndMerchantId($appId, $merchant->getId());
+        }
+        catch (DBQueryException $ex)
+        {
+            throw new Exception\LogicException(
+                'Server error app not found',
+                ErrorCode::SERVER_ERROR_PARTNER_APP_NOT_FOUND,
+                [
+                    Entity::MERCHANT_ID              => $merchant->getId(),
+                    AccessMap\Entity::APPLICATION_ID => $appId,
+                ]);
+        }
+
+        return $app;
     }
 
     /**
@@ -2170,7 +2204,6 @@ class Core extends Base\Core
      *
      * @return PublicCollection
      * @throws BadRequestException
-     * @throws Exception\LogicException
      */
     public function fetchActivatedSubMerchantsForPartner(Entity $partner): Base\PublicCollection
     {
@@ -2339,25 +2372,25 @@ class Core extends Base\Core
             return;
         }
 
+
         // Fetch partner app and then access maps
-        $partnerApp = $this->getInternalPartnerApp($partner);
-        $accessMaps = $this->repo
-                           ->merchant_access_map
-                           ->fetchMerchantAccessMapOnEntity(AccessMap\Entity::APPLICATION, $partnerApp->getId());
+        $appIds = $this->getPartnerApplicationIds($partner);
 
-        //
-        // Fetch subMerchants
-        // access maps will be deleted as part of delete application flow
-        //
-        $submerchantIds = $accessMaps->pluck(AccessMap\Entity::MERCHANT_ID)->toArray();
-        $submerchants   = $this->repo->merchant->findMany($submerchantIds);
+        foreach ($appIds as $appId)
+        {
+            $accessMaps = $this->repo->merchant_access_map->fetchMerchantAccessMapOnEntity(AccessMap\Entity::APPLICATION, $appId);
 
-        $this->deleteAllSubmerchantRefTags($submerchants, $partner);
+            //
+            // Fetch subMerchants
+            // access maps will be deleted as part of delete application flow
+            //
+            $submerchantIds = $accessMaps->pluck(AccessMap\Entity::MERCHANT_ID)->toArray();
+            $submerchants   = $this->repo->merchant->findMany($submerchantIds);
 
-        // delete entries from merchant applications table for given merchant id
-        $this->deleteMerchantApplication($partner->getId(), Constants::MERCHANT_ID);
+            $this->deleteAllSubmerchantRefTags($submerchants, $partner);
 
-        $this->deletePartnerDashboardAccessOnSubmerchants($partner, $submerchants);
+            $this->deletePartnerDashboardAccessOnSubmerchants($partner, $submerchants);
+        }
     }
 
     /**

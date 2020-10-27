@@ -22,24 +22,11 @@ class Repository extends Base\Repository
 
     /**
      * @param string $merchantId
-     * @param string $applicationId
-     * @return mixed
-     */
-    public function findMerchantApplicationByID(string $merchantId, string $applicationId)
-    {
-        return $this->newQuery()
-                    ->merchantId($merchantId)
-                    ->where(Entity::APPLICATION_ID, $applicationId)
-                    ->first();
-    }
-
-    /**
-     * @param string $merchantId
      * @param string $type
      *
      * @return Base\PublicCollection
      */
-    public function fetchMerchantApplicationsByApplicationType(string $merchantId, string $type) : Base\PublicCollection
+    public function fetchMerchantApplicationsByAppType(string $merchantId, string $type) : Base\PublicCollection
     {
         return $this->newQuery()
                     ->merchantId($merchantId)
@@ -51,7 +38,7 @@ class Repository extends Base\Repository
      * @param string $entityType
      * @param string $entityId
      *
-     * @return mixed
+     * @return Base\PublicCollection
      */
     public function fetchMerchantApplication(string $entityId, string $entityType) : Base\PublicCollection
     {

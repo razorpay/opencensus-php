@@ -92,6 +92,7 @@ trait VirtualAccountTrait
                 'type'        => 'partner',
                 'id'          => 'AwtIC8XQqM0Wet',
                 'merchant_id' => $partner->getId(),
+                'partner_type'=> 'aggregator',
             ]);
 
         $this->fixtures->edit('merchant', $partner->getId(), ['partner_type' => 'aggregator']);

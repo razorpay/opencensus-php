@@ -204,7 +204,7 @@ class OAuthApplicationTest extends TestCase
 
         if ($type !== 'pure_platform')
         {
-            $this->createOAuthApplication(['merchant_id' => $merchantId, 'type' => 'partner']);
+            $this->createOAuthApplication(['merchant_id' => $merchantId, 'type' => 'partner', 'partner_type' => $type]);
         }
     }
 }

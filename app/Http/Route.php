@@ -1605,7 +1605,6 @@ class Route
         'partner_referral_create'                  => ['post',     'merchant/referral',                              'MerchantController@createReferral'                                 ],
         'backfill_merchant_applications'           => ['post',     'merchant/backfill_merchant_apps',                'MerchantController@backFillMerchantApplications'                   ],
 
-
         'partner_config_create'                    => ['post',     'partner_configs',                                'PartnerConfigController@create'                                    ],
         'partner_config_fetch'                     => ['get',      'partner_configs',                                'PartnerConfigController@getConfig'                                 ],
         'partner_config_edit'                      => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],

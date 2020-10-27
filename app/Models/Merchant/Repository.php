@@ -686,6 +686,11 @@ class Repository extends Base\Repository
      */
     public function fetchSubmerchantsByAppIds(array $applicationIds, array $params = [], array $relations = []): Base\PublicCollection
     {
+        if (empty($applicationIds) === true)
+        {
+            return new Base\PublicCollection;
+        }
+
         $submerchantIds = $params[Entity::MERCHANT_ID] ?? [];
 
         unset($params[Entity::MERCHANT_ID]);

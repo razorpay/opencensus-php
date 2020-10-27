@@ -3618,7 +3618,7 @@ class Service extends Base\Service
             return;
         }
 
-        $app = $this->core()->getInternalPartnerApp($merchant);
+        $app = $this->core()->fetchDefaultPartnerApplication($merchant);
 
         $appId = $app->getId();
 
@@ -3651,7 +3651,7 @@ class Service extends Base\Service
 
         $isNonPurePlatformAggregator = $aggregatorMerchant->isNonPurePlatformPartner();
 
-        $isMapped = $this->core()->isMerchantMappedToNonPurePlatformPartner($subMerchant->getId(), $aggregatorMerchant->getId());
+        $isMapped = $this->core()->isMerchantManagedByPartner($subMerchant->getId(), $aggregatorMerchant->getId());
 
         if (($isNonPurePlatformAggregator === true) and ($isMapped === true))
         {

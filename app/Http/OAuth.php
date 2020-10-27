@@ -484,7 +484,7 @@ class OAuth
         // merchantId should now have been set to the sub-merchant account's ID
         $accountId = $this->ba->authCreds->getMerchant()->getId();
 
-        if ((new Merchant\Core)->isMerchantMappedToNonPurePlatformPartner($accountId, $partnerMid) === false)
+        if ((new Merchant\Core)->isMerchantManagedByPartner($accountId, $partnerMid) === false)
         {
             return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER);
         }

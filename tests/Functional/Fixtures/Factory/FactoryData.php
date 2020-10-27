@@ -1536,5 +1536,15 @@ final class FactoryData
             'created_at'  => $faker->timestamp,
             'updated_at'  => $faker->timestamp,
         ]);
+
+        $factory(\RZP\Models\Merchant\MerchantApplications\Entity::class, [
+            'id'             => $faker->uniqueid,
+            'merchant_id'    => '10000000000000',
+            'type'           => 'managed',
+            'application_id' => '10000000000App',
+            'created_at'     => $faker->timestamp,
+            'updated_at'     => $faker->timestamp,
+            'deleted_at'     => null,
+        ]);
     }
 }

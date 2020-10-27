@@ -228,13 +228,7 @@ class Core extends Base\Core
             return new Base\PublicCollection;
         }
 
-        // if the merchant is a partner, there will be at least one partner app
-        $appType         = $merchant->isPurePlatformPartner() ? null : Application\Type::PARTNER;
-
-        $applications    = (new Application\Repository)
-                                    ->findActiveApplicationsByMerchantIdAndType($merchant->getId(), $appType);
-
-        $appIds = $applications->getIds();
+        $appIds = (new Merchant\Core)->getPartnerApplicationIds($merchant);
 
         return $this->repo->partner_config->fetchAllConfigForApps($appIds);
     }

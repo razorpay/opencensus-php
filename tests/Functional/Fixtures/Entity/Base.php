@@ -46,6 +46,7 @@ class Base
         'dispute'               => \RZP\Models\Dispute\Entity::class,
         'customer'              => \RZP\Models\Customer\Entity::class,
         'merchant'              => \RZP\Models\Merchant\Entity::class,
+        'merchant_application'  => \RZP\Models\Merchant\MerchantApplications\Entity::class,
         'terminal'              => \RZP\Models\Terminal\Entity::class,
         'transfer'              => \RZP\Models\Transfer\Entity::class,
         'schedule'              => \RZP\Models\Schedule\Entity::class,
@@ -92,6 +93,7 @@ class Base
         'schedule',
         'feature',
         'user',
+        'merchant_application',
     ];
 
     public function create(array $attributes = [])

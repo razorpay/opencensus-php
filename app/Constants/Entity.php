@@ -855,6 +855,7 @@ class Entity
         self::PARTNER_CONFIG,
         self::MERCHANT_ACCESS_MAP,
         self::BVS_VALIDATION,
+        self::MERCHANT_APPLICATION,
     ];
 
     protected static $externalEntities = [

@@ -5129,9 +5129,10 @@ class MerchantTest extends TestCase
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
 
         $this->createOAuthApplication([
-            'id'         => '10000000000App',
-            'type'       => 'partner',
-            'deleted_at' => Carbon::now()->timestamp]);
+            'id'           => '10000000000App',
+            'type'         => 'partner',
+            'partner_type' => 'fully_managed',
+            'deleted_at'   => Carbon::now()->timestamp]);
 
         $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
 
@@ -5243,7 +5244,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
 
-        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
+        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner', 'partner_type'=> 'fully_managed']);
 
         $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
 
@@ -5280,7 +5281,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
 
-        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
+        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner', 'partner_type' => 'aggregator']);
 
         $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
 
@@ -5317,7 +5318,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
 
-        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
+        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner', 'partner_type' => 'fully_managed']);
 
         $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
 
@@ -5344,7 +5345,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
 
-        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
+        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner', 'partner_type' => 'aggregator']);
 
         $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
 
@@ -5366,7 +5367,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
 
-        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
+        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner', 'partner_type' => 'aggregator']);
 
         $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
 
@@ -5393,7 +5394,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
 
-        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
+        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner', 'partner_type' => 'aggregator']);
 
         $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
 
@@ -5433,7 +5434,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
 
-        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
+        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner', 'partner_type' => 'aggregator']);
 
         $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
 
@@ -5576,7 +5577,8 @@ class MerchantTest extends TestCase
         $this->createOAuthApplication([
             'id'            => '10000000000App',
             'merchant_id'   => 'parentaccount1',
-            'type'          => 'partner'
+            'type'          => 'partner',
+            'partner_type'  => 'aggregator',
         ]);
 
         $this->fixtures->create('merchant_access_map', [

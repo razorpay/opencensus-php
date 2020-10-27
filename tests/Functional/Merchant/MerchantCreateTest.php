@@ -519,7 +519,7 @@ class MerchantCreateTest extends TestCase
 
         $submerchant = $this->getLastEntity('merchant', true);
 
-        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], 'MerchantUser01');
+        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'],'MerchantUser01');
 
         $this->assertEquals(1, count($mapping));
 
@@ -1351,9 +1351,7 @@ class MerchantCreateTest extends TestCase
     {
         $this->fixtures->merchant->edit($merchantId, ['partner_type' => $type]);
 
-        $app = $this->createOAuthApplication(['merchant_id' => $merchantId, 'type' => 'partner']);
-
-        return $app;
+        return $this->createOAuthApplication(['merchant_id' => $merchantId, 'type' => 'partner', 'partner_type' => 'fully_managed']);
     }
 
     protected function verifyAccessMapEntries(OAuthApp $app, array $submerchant)

@@ -18,9 +18,27 @@ trait OAuthTrait
 {
     public function createOAuthApplication(array $attributes = [])
     {
+        $partnerType = 'null';
+
+        $deletedAt = null;
+
+        if (empty($attributes['partner_type']) === false)
+        {
+            $partnerType = $attributes['partner_type'];
+
+            unset($attributes['partner_type']);
+        }
+
+        if (empty($attributes['deleted_at']) === false)
+        {
+            $deletedAt = $attributes['deleted_at'];
+        }
+
         // Create Application
         $application = factory(Application\Entity::class)
                         ->create($attributes);
+
+        $this->createMerchantApplication($application->merchant_id, $partnerType, $application->getId(), $deletedAt);
 
         $clientAttributes = [
             Client\Entity::APPLICATION_ID => $application->id,
@@ -48,6 +66,34 @@ trait OAuthTrait
         $application = $this->createOAuthApplication();
 
         return $this->getAppClientByEnv($application, $env);
+    }
+
+    public function createMerchantApplication(string $merchantId, string $type, string $appId, $deletedAt = null)
+    {
+        if ($type === 'reseller')
+        {
+            $appType = 'referred';
+        }
+        else if ($type === 'pure_platform')
+        {
+            $appType = 'oauth';
+        }
+        else
+        {
+            $appType = 'managed';
+        }
+
+        //var_dump($deletedAt);
+
+        return $this->fixtures->create(
+            'merchant_application',
+            [
+                'merchant_id'       => $merchantId,
+                'type'              => $appType,
+                'application_id'    => $appId,
+                'deleted_at'        => $deletedAt,
+            ]
+        );
     }
 
     public function createPartnerApplicationAndGetClientByEnv(string $env = 'dev', array $attributes = [])

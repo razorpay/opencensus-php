@@ -161,7 +161,7 @@ class Core extends Merchant\Core
         {
             Entity::verifyIdAndStripSign($accountId);
 
-            $isMapped = $this->isMerchantMappedToNonPurePlatformPartner($accountId, $partner->getId());
+            $isMapped = $this->isMerchantManagedByPartner($accountId, $partner->getId());
 
             if ($isMapped === false)
             {
@@ -184,7 +184,6 @@ class Core extends Merchant\Core
      *
      * @return PublicCollection
      * @throws Exception\BadRequestException
-     * @throws Exception\LogicException
      */
     public function listAccounts(Merchant\Entity $partner, array $input): PublicCollection
     {
