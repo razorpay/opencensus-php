@@ -18,6 +18,10 @@ class Validator extends Base\Validator
         Entity::REVERSAL,
     ];
 
+    protected static $createFeeRecoveryRetryPayoutsRules = [
+        Entity::PREVIOUS_RECOVERY_PAYOUT_ID         => 'required|string|size:14'
+    ];
+
     protected static $editRules = [
         Entity::RECOVERY_PAYOUT_ID    => 'sometimes|nullable|string|size:14',
         Entity::DESCRIPTION           => 'sometimes|string',

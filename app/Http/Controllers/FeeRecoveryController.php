@@ -33,4 +33,13 @@ class FeeRecoveryController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function createRecoveryRetryPayoutManually()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createRecoveryRetryPayoutManually($input);
+
+        return ApiResponse::json($response);
+    }
 }

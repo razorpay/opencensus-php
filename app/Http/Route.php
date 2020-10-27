@@ -1184,6 +1184,7 @@ class Route
         'fee_recovery_payout_process'              => ['post',     'payouts/fee_recovery/process',                   'FeeRecoveryController@processRecoveryPayout'                       ],
         'fee_recovery_payout_schedule_task'        => ['post',     'schedules/tasks/fee_recovery',                   'ScheduleController@createFeeRecoveryScheduleTask'                  ],
         'fee_recovery_manual_update'               => ['post',     'payouts/fee_recovery/manual',                    'FeeRecoveryController@postManualRecovery'                          ],
+        'fee_recovery_payout_manual_retry'         => ['post',     'payouts/fee_recovery_retry/manual',              'FeeRecoveryController@createRecoveryRetryPayoutManually'                        ],
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
         'transfer_fetch_multiple'                  => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
 
@@ -3869,6 +3870,8 @@ class Route
 
         // subscriptions admin route
         'subscription_clear_feature',
+
+        'fee_recovery_payout_manual_retry',
     ];
 
     public static $routePermission = [
@@ -4653,6 +4656,8 @@ class Route
         'tax_payments_admin_auth_api'                 => Permission::TAX_PAYMENT_ADMIN_AUTH_EXECUTE,
         'salesforce_event'                            => '*',
         'salesforce_opportunity_details'              => '*',
+
+        'fee_recovery_payout_manual_retry'            => Permission::PROCESS_FEE_RECOVERY,
     ];
 
     public static $bankingRoutePermissions = [

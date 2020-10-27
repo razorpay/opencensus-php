@@ -171,7 +171,8 @@ return [
             ],
         ],
     ],
-    'testCreateManualRecovery' => [
+
+    'testCreateManualRecoveryAfterFiveRetryFail' => [
         'request'  => [
             'url'       => '/payouts/fee_recovery/manual',
             'method'    => 'POST',
@@ -240,6 +241,43 @@ return [
         'exception' => [
             'class'               => Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_FEE_RECOVERY_MANUAL_COLLECTION_FOR_PAYOUT_INVALID,
+        ],
+    ],
+
+    'testCreateFeeRecoveryRetryManualAfterThreeFailures' => [
+        'request'  => [
+            'url'    => '/payouts/fee_recovery_retry/manual',
+            'method' => 'POST',
+            'content' => [
+                'previous_recovery_payout_id'  => 'last_fee_recovery_payout_id',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 590,
+                'currency'        => 'INR',
+                'purpose'         => 'rzp_fees',
+                'status'          => 'processing',
+                'mode'            => 'IFT',
+                'tax'             => 0,
+                'fees'            => 0,
+            ],
+        ],
+    ],
+
+    'testCreateFeeRecoveryRetryManualFailAfterSuccess' => [
+        'request'  => [
+            'url'    => '/payouts/fee_recovery_retry/manual',
+            'method' => 'POST',
+            'content' => [
+                'previous_recovery_payout_id'  => 'last_fee_recovery_payout_id',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'Fee Recovery Retry failed'
+            ],
         ],
     ],
 ];

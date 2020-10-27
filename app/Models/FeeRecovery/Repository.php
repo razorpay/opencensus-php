@@ -103,24 +103,27 @@ class Repository extends Base\Repository
                     ->update($dataToUpdate);
     }
 
-    public function getFeeRecoveryByRecoveryPayoutId($recoveryPayoutId)
+    public function getFeeRecoveryByRecoveryPayoutId($recoveryPayoutId, $manualRetry = false)
     {
         $statusColumn           = $this->dbColumn(Entity::STATUS);
         $recoveryPayoutIdColumn = $this->dbColumn(Entity::RECOVERY_PAYOUT_ID);
         $attemptNumberColumn    = $this->dbColumn(Entity::ATTEMPT_NUMBER);
 
-        return $this->newQuery()
-                    ->where($recoveryPayoutIdColumn, '=', $recoveryPayoutId)
-                    ->where($statusColumn, Status::UNRECOVERED)
-                    ->where($attemptNumberColumn, '<', 3)
-                    ->get();
+        $query = $this->newQuery()
+                      ->where($recoveryPayoutIdColumn, '=', $recoveryPayoutId)
+                      ->where($statusColumn, Status::UNRECOVERED);
+
+        if ($manualRetry === false)
+        {
+            $query
+                ->where($attemptNumberColumn, '<', ($maxAttempts ?? Entity::AUTOMATIC_FEE_RECOVERY_MAX_ATTEMPT_NUMBER));
+
+        }
+
+        return $query->get();
     }
 
-    public function getFeeRecoveryEntityByEntityIdTypeAttemptNumberAndStatus($entityId,
-                                                                             $entityType,
-                                                                             $attemptNumber,
-                                                                             $status,
-                                                                             $type)
+    public function getLastUnrecoveredFeeRecoveryEntityByEntityIdType($entityId, $entityType, $type)
     {
         $typeColumn             = $this->dbColumn(Entity::TYPE);
         $statusColumn           = $this->dbColumn(Entity::STATUS);
@@ -131,8 +134,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where($entityIdColumn, '=', $entityId)
                     ->where($entityTypeColumn, '=', $entityType)
-                    ->where($attemptNumberColumn, '=', $attemptNumber)
-                    ->where($statusColumn, '=', $status)
+                    ->where($statusColumn, '=', Status::UNRECOVERED)
                     ->where($typeColumn, '=', $type)
                     ->first();
     }

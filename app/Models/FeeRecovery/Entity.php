@@ -72,7 +72,9 @@ class Entity extends Base\PublicEntity
         self::RECOVERY_PAYOUT_ID,
     ];
 
-    const PREVIOUS_RECOVERY_PAYOUT_ID  = 'previous_recovery_payout_id';
+    const PREVIOUS_RECOVERY_PAYOUT_ID   = 'previous_recovery_payout_id';
+
+    const AUTOMATIC_FEE_RECOVERY_MAX_ATTEMPT_NUMBER = 3;
 
     // --------------- Getters ---------------
 

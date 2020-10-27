@@ -184,10 +184,10 @@ class Core extends Base\Core
      * and makes a payout to a designated rzp_fees fund account with the calculated amount
      *
      * @param $previousRecoveryPayoutId
+     * @param bool $manualRetry
      * @return Payout\Entity
-     *
      */
-    public function recreateFeeRecoveryPayout($previousRecoveryPayoutId): Payout\Entity
+    public function recreateFeeRecoveryPayout($previousRecoveryPayoutId, $manualRetry = false)
     {
         $this->trace->info(
             TraceCode::FEE_RECOVERY_RETRY_INITIATED,
@@ -202,30 +202,39 @@ class Core extends Base\Core
 
         $amount = $previousRecoveryPayout->getAmount();
 
-        return $this->recreateFeeRecoveryEntityForSourceAndFeeRecoveryPayout($previousRecoveryPayout, $balance, $amount);
+        return $this->recreateFeeRecoveryEntityForSourceAndFeeRecoveryPayout($previousRecoveryPayout, $balance, $amount, $manualRetry);
     }
 
-    public function recreateFeeRecoveryEntityForSourceAndFeeRecoveryPayout(Payout\Entity $previousRecoveryPayout, $balance, $amount)
+    public function recreateFeeRecoveryEntityForSourceAndFeeRecoveryPayout(Payout\Entity $previousRecoveryPayout, $balance, $amount, $manualRetry = false)
     {
-        $previousFeeRecoveryEntities = $this->repo->fee_recovery->getFeeRecoveryByRecoveryPayoutId($previousRecoveryPayout->getId());
+        $previousFeeRecoveryEntities = $this->repo->fee_recovery->getFeeRecoveryByRecoveryPayoutId($previousRecoveryPayout->getId(), $manualRetry);
 
         if (count($previousFeeRecoveryEntities) === 0)
         {
-            $data = [
-                'fee_recovery_payout_id' => $previousRecoveryPayout->getId()
-            ];
-
-            $this->trace->info(
-                TraceCode::FEE_RECOVERY_RETRY_FAILED_PROCEED_MANUAL,
-                $data
-            );
-
             // This slack notification is required to notify for manual recovery alert.
             $operation = 'Fee Recovery Retry failed';
 
-            (new SlackNotification)->send($operation, $data, null, 1, 'rx_ca_rbl_alerts');
+            if ($manualRetry == false)
+            {
+                $data = [
+                    'fee_recovery_payout_id' => $previousRecoveryPayout->getId()
+                ];
 
-            return null;
+                $this->trace->info(
+                    TraceCode::FEE_RECOVERY_RETRY_FAILED_PROCEED_MANUAL,
+                    $data
+                );
+
+                (new SlackNotification)->send($operation, $data, null, 1, 'rx_ca_rbl_alerts');
+
+                return null;
+            }
+            else
+            {
+                return [
+                    'message' => $operation
+                ];
+            }
         }
 
         return $this->repo->transaction(
@@ -851,11 +860,9 @@ class Core extends Base\Core
             'fee_recovery_' . $entityId,
             function () use ($entityId, $entityType, $merchantId, $manualRecoveryData, $type)
         {
-            $feeRecovery = $this->repo->fee_recovery->getFeeRecoveryEntityByEntityIdTypeAttemptNumberAndStatus(
+            $feeRecovery = $this->repo->fee_recovery->getLastUnrecoveredFeeRecoveryEntityByEntityIdType(
                 $entityId,
                 $entityType,
-                3,
-                Status::UNRECOVERED,
                 $type
             );
 
@@ -876,7 +883,7 @@ class Core extends Base\Core
                 Entity::RECOVERY_PAYOUT_ID  => null,
                 Entity::REFERENCE_NUMBER    => $manualRecoveryData[Entity::REFERENCE_NUMBER],
                 Entity::DESCRIPTION         => $manualRecoveryData[Entity::DESCRIPTION],
-                Entity::ATTEMPT_NUMBER      => 1,
+                Entity::ATTEMPT_NUMBER      => $feeRecovery->getAttemptNumber() + 1,
             ];
 
             $newFeeRecovery->edit($dataToUpdate);
@@ -885,7 +892,7 @@ class Core extends Base\Core
 
             if ($entityType === Entity::PAYOUT)
             {
-                $sourceEntity = $this->repo->payout->findByIdAndMerchantId($entityId, $merchantId);
+                $sourceEntity = $feeRecovery->payout;
 
                 if ($sourceEntity->getPurpose() === Payout\Purpose::RZP_FEES)
                 {
@@ -900,7 +907,7 @@ class Core extends Base\Core
             }
             else if ($entityType === Entity::REVERSAL)
             {
-                $sourceEntity = $this->repo->reversal->findByIdAndMerchantId($entityId, $merchantId);
+                $sourceEntity = $feeRecovery->reversal;
             }
 
             $newFeeRecovery->entity()->associate($sourceEntity);
