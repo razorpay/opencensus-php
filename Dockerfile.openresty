@@ -1,4 +1,4 @@
-FROM razorpay/onggi:php-7.2-apache-api as php-builder
+FROM razorpay/onggi:php-7.2-api as php-builder
 
 ARG GIT_COMMIT_HASH
 ARG GIT_TOKEN
@@ -11,6 +11,7 @@ WORKDIR /app
 COPY  . /app/
 
 RUN set -eu && \
+    composer --version && \
     git config --global user.name ${GIT_USERNAME} && \
     composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
     composer config -g repos.packagist composer "https://packagist.rzp.io" && \

@@ -1,6 +1,6 @@
 FROM razorpay/armory:wkhtmltopdf-v182 as wkhtmltopdf
 
-FROM razorpay/onggi:php-7.2-apache-api
+FROM razorpay/onggi:php-7.2-api-web
 
 COPY --from=wkhtmltopdf /bin/wkhtmltopdf /usr/bin/wkhtmltopdf
 
