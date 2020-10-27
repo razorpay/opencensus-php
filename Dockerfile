@@ -10,10 +10,7 @@ COPY composer-auth.json /root/.composer/auth.json
 
 WORKDIR /app
 
-# A single character change in this command will trigger a new
-# composer install
-RUN composer global require hirak/prestissimo \
-    && composer install --no-dev --no-interaction --no-autoloader --no-scripts \
+RUN composer install --no-dev --no-interaction --no-autoloader --no-scripts \
     && rm -rf /root/.composer
 
 # This is the final production image
@@ -29,4 +26,5 @@ COPY --chown=nginx:nginx . /app/
 RUN composer dump-autoload && php artisan optimize
 
 EXPOSE 80
+
 ENTRYPOINT ["/app/dockerconf/entrypoint.sh"]
