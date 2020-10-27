@@ -470,7 +470,7 @@ class Core extends Base\Core
                     $key['notes'] = null;
                 }
 
-                unset($key['merchant'], $key['bank_account']);
+                unset($key['merchant'], $key['bank_account'], $key['offers']);
 
                 $key['id'] = Entity::verifyIdAndSilentlyStripSign($key['id']);
             }

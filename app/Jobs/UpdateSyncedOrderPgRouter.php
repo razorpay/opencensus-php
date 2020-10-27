@@ -57,7 +57,7 @@ class UpdateSyncedOrderPgRouter extends Job
 
         try
         {
-            $this->trace->count(Metric::PG_ROUTER_UPDATE_ORDER_SYNC_QUEUE_PUSH_COUNT, [$this->data['id']]);
+            $this->trace->count(Metric::PG_ROUTER_UPDATE_ORDER_SYNC_QUEUE_PUSH_COUNT, [$this->data['order_update_request']['id']]);
 
             App::getFacadeRoot()['pg_router']->updateSyncedOrderToPgRouter($this->data, true);
 
@@ -66,8 +66,8 @@ class UpdateSyncedOrderPgRouter extends Job
                     'data' => $this->data
                 ]
             );
-            
-            $this->trace->count(Metric::PG_ROUTER_UPDATE_ORDER_SYNC_QUEUE_CONSUME_COUNT, [$this->data['id']]);
+
+            $this->trace->count(Metric::PG_ROUTER_UPDATE_ORDER_SYNC_QUEUE_CONSUME_COUNT, [$this->data['order_update_request']['id']]);
 
             $this->delete();
         }
@@ -104,6 +104,6 @@ class UpdateSyncedOrderPgRouter extends Job
             Trace::ERROR,
             TraceCode::ORDER_UPDATE_DATA_SYNC_TO_PG_ROUTER_FAILURE,
             ['job_action' => $jobAction,
-                'order_id'=> $this->data['id']]);
+                'order_id'=> $this->data['order_update_request']['id']]);
     }
 }

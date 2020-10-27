@@ -109,16 +109,16 @@ class Repository extends Base\Repository
                         {
                             $updatedOrder = $entity->toArray();
 
-                            unset($updatedOrder['merchant'], $updatedOrder['bank_account']);
+                            unset($updatedOrder['merchant'], $updatedOrder['bank_account'], $updatedOrder['offers']);
 
                             $data = array_map('unserialize', array_diff_assoc(array_map('serialize', $updatedOrder),
                                 array_map('serialize', $currentOrder)));
 
                             $data['id'] = $entity->getId();
 
-                            $data['mode'] = $mode;
-
                             $data['updated_at'] = $entity->getUpdatedAt();
+
+                            unset($data['merchant'], $data['bank_account'], $data['offers']);
 
                             if ((isset($data['notes']) === true) and
                                 (Arr::isAssoc($data['notes']) === false))
@@ -126,7 +126,32 @@ class Repository extends Base\Repository
                                 $data['notes'] = array_combine($data['notes'], $data['notes']);
                             }
 
-                            $core->dispatchUpdatedOrderToPGRouter($data);
+                            if ((isset($updatedOrder['notes']) === true) and
+                                (Arr::isAssoc($updatedOrder['notes']) === false))
+                            {
+                                $updatedOrder['notes'] = array_combine($updatedOrder['notes'], $updatedOrder['notes']);
+                            }
+
+                            if ((isset($data['notes']) === false) or
+                                (count($data['notes']) === 0))
+                            {
+                                $data['notes'] = null;
+                            }
+
+                            if ((isset($updatedOrder['notes']) === false) or
+                                (count($updatedOrder['notes']) === 0))
+                            {
+                                $updatedOrder['notes'] = null;
+                            }
+
+                            $requestData = [
+                                'order_update_request' => $data,
+                                'order_sync_request'   => $updatedOrder
+                            ];
+
+                            $requestData['mode'] = $mode;
+
+                            $core->dispatchUpdatedOrderToPGRouter($requestData);
                         }
                     }
                     else
@@ -135,7 +160,7 @@ class Repository extends Base\Repository
 
                         $data['mode'] = $mode;
 
-                        unset($data['merchant'], $data['bank_account']);
+                        unset($data['merchant'], $data['bank_account'], $data['offers']);
 
                         if ((isset($data['notes']) === true) and
                             (Arr::isAssoc($data['notes']) === false))
