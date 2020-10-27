@@ -109,7 +109,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
         customerContact: '',
         configSmsNotify: '',
         configEmailNotify: '',
-        mandateMethod: '',
+        mandateMethod: null,
         bankName: '',
         beneficiaryName: '',
         bankAccountIFSC: '',
@@ -292,7 +292,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
           }));
         }
 
-        const mandateMethod = avlblMethods.length < 2 ? avlblMethods[0] : '';
+        const mandateMethod = avlblMethods.length < 2 ? avlblMethods[0] : null;
 
         this.setState({
           loading: false,
