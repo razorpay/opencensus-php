@@ -120,8 +120,6 @@ class MerchantTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_1X4hRFHFx4UiXt', $user->getId());
 
-        $this->enableRazorXTreatmentForCredcaseDualWrite();
-
         $res = $this->startTest();
         $this->assertRegexp('/rzp_test_\w{14}/', $res['id']);
         $this->assertRegexp('/\w{24}/', $res['secret']);
@@ -160,8 +158,6 @@ class MerchantTest extends TestCase
 
         $this->ba->proxyAuth('rzp_live_1X4hRFHFx4UiXt', $user['id']);
 
-        $this->enableRazorXTreatmentForCredcaseDualWrite();
-
         $this->startTest();
 
         // 1. Asserts NO dual write to credcase.
@@ -182,8 +178,6 @@ class MerchantTest extends TestCase
         $httpClient->addException(new \Exception('Failed to complete request to credcase'));
         // There exists a retry.
         $httpClient->addException(new \Exception('Failed to complete request to credcase'));
-
-        $this->enableRazorXTreatmentForCredcaseDualWrite();
 
         $this->startTest();
 
@@ -207,8 +201,6 @@ class MerchantTest extends TestCase
         $httpClient = $this->app['credcase_http_client'];
         // It will throw exception for the first time.
         $httpClient->addException(new \Exception('Failed to complete request to credcase'));
-
-        $this->enableRazorXTreatmentForCredcaseDualWrite();
 
         $res = $this->startTest();
         $this->assertRegexp('/rzp_test_\w{14}/', $res['id']);
@@ -319,8 +311,6 @@ class MerchantTest extends TestCase
     {
         $this->ba->proxyAuthTest();
 
-        $this->enableRazorXTreatmentForCredcaseDualWrite();
-
         $content = $this->startTest();
 
         $expired = time() + 1;
@@ -357,8 +347,6 @@ class MerchantTest extends TestCase
     {
         $this->ba->proxyAuthTest();
 
-        $this->enableRazorXTreatmentForCredcaseDualWrite();
-
         $content = $this->startTest();
 
         $expired = time() + 10;
@@ -391,8 +379,6 @@ class MerchantTest extends TestCase
         $httpClient->addException(new \Exception('Failed to complete request to credcase'));
         // There exists a retry.
         $httpClient->addException(new \Exception('Failed to complete request to credcase'));
-
-        $this->enableRazorXTreatmentForCredcaseDualWrite();
 
         $this->startTest();
 
@@ -437,8 +423,6 @@ class MerchantTest extends TestCase
                 'id' => '1DP5mmOlF5G5ag']);
 
         $this->ba->proxyAuthTest();
-
-        $this->enableRazorXTreatmentForCredcaseDualWrite();
 
         $this->startTest();
 
@@ -7571,24 +7555,6 @@ class MerchantTest extends TestCase
 
                                   return 'off';
                               }));
-    }
-
-    protected function enableRazorXTreatmentForCredcaseDualWrite()
-    {
-        $mock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $mock->method('getTreatment')
-            ->will(
-                $this->returnCallback(
-                    function (string $mid, string $feature, string $mode)
-                    {
-                        return $feature === Merchant\RazorxTreatment::CREDCASE_DUAL_WRITE_ENABLED ? 'on' : 'control';
-                    }));
-
-        $this->app->instance('razorx', $mock);
     }
 
     protected function enableRazorXTreatmentForFeature($featureUnderTest, $value = 'on')

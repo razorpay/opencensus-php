@@ -36,7 +36,7 @@ class MigrateTarget implements Target
         // Credcase's migrate api internally does upsert.
         if ($dryRun === false)
         {
-            $credcase->migrateWithoutRazorxCheck($sourceRecord->value, $mode);
+            $credcase->migrate($sourceRecord->value, $mode);
         }
 
         // Credcase's migrate api does not return the record, assuming same and returning source record itself.

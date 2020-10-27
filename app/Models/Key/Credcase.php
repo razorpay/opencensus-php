@@ -16,7 +16,6 @@ use Rzp\Credcase\Migrate\V1\MigrateApiKeyRequest;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\ServerErrorException;
-use RZP\Models\Merchant\RazorxTreatment;
 
 class Credcase
 {
@@ -30,9 +29,6 @@ class Credcase
      * @var boolean
      */
     protected $dualWriteEnabled = true;
-
-    /** @var \RZP\Services\RazorXClient */
-    protected $razorx;
 
     /** @var RetriableMigrateAPIClient */
     protected $migrateApiClient;
@@ -49,8 +45,6 @@ class Credcase
 
         $config = app('config')->get('services.credcase');
         $this->dualWriteEnabled = $config['dual_write_enabled'];
-
-        $this->razorx = app('razorx');
 
         $host = $config['host'];
         // Http client comes as injected service, making able to replace with mock http client for unit tests.
@@ -72,27 +66,11 @@ class Credcase
      */
     public function migrate(Entity $key, string $mode)
     {
-        // Razorx check would be removed, but the flag in config would still exist, refer comment above ^.
-        $dualWriteEnabledViaRazorx = $this->razorx->getTreatment(
-            $key->getMerchantId(), RazorxTreatment::CREDCASE_DUAL_WRITE_ENABLED, $mode) === 'on';
-        if (($this->dualWriteEnabled and $dualWriteEnabledViaRazorx) === false)
+        if ($this->dualWriteEnabled === false)
         {
             return;
         }
 
-        return $this->migrateWithoutRazorxCheck($key, $mode);
-    }
-
-    /**
-     * @see Credcase's migrate function. This is used with migration where we do not want to check for razorx.
-     *
-     * @param  Entity $key
-     * @param  string $mode
-     * @return void
-     * @throws \Twirp\Error
-     */
-    public function migrateWithoutRazorxCheck(Entity $key, string $mode)
-    {
         $this->trace->info(TraceCode::CREDCASE_REQUEST_MIGRATE, ['key_id' => $key->getId(), 'mode' => $mode]);
 
         $req = newMigrateApiKeyRequest($key, $mode);
@@ -109,10 +87,7 @@ class Credcase
      */
     public function rotate(Entity $oldKey, Entity $newKey, string $mode)
     {
-        // Razorx check would be removed, but the flag in config would still exist, refer comment above ^.
-        $dualWriteEnabledViaRazorx = $this->razorx->getTreatment(
-            $oldKey->getMerchantId(), RazorxTreatment::CREDCASE_DUAL_WRITE_ENABLED, $mode) === 'on';
-        if (($this->dualWriteEnabled and $dualWriteEnabledViaRazorx) === false)
+        if ($this->dualWriteEnabled === false)
         {
             return;
         }
