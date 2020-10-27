@@ -150,7 +150,7 @@ class SubscriptionProxy
         // maybe including basis route kind.
         //
         $jwt = $request->headers->get(Passport::PASSPORT_JWT_V1);
-        if (($this->isHostedPageUrl() === false) and
+        if (($this->ignoreHostedPageUrl() === false) and
             (empty($jwt) === false) and
             ($this->reqCtx->passportAttrsMismatch === false))
         {
@@ -325,6 +325,23 @@ class SubscriptionProxy
         if (($currentRoute === 'subscription_view_test') or
             ($currentRoute === 'subscription_view_live') or
             ($currentRoute === 'subscription_view_test_post') or
+            ($currentRoute === 'subscription_view_live_post'))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function ignoreHostedPageUrl(): bool
+    {
+        $currentRoute = $this->route->getCurrentRouteName();
+
+        if (($currentRoute === 'subscription_view_test') or
+            ($currentRoute === 'subscription_view_live') or
+            ($currentRoute === 'subscription_view_test_post') or
+            ($currentRoute === 'subscription_fetch_hosted_test') or
+            ($currentRoute === 'subscription_fetch_hosted_live') or
             ($currentRoute === 'subscription_view_live_post'))
         {
             return true;
