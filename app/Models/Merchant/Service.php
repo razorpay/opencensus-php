@@ -45,14 +45,11 @@ use RZP\Services\DiagClient;
 use RZP\Base\RuntimeManager;
 use RZP\Base\JitValidator;
 use RZP\Models\Pricing\Plan;
-
 use RZP\Models\Payment\Refund;
 use RZP\Services\HubspotClient;
 use RZP\Models\Workflow\Action;
 use RZP\Modules\Migrate\Migrate;
 use RZP\Exception\BaseException;
-
-
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Admin as MainAdmin;
 use RZP\Models\Admin\Org\Hostname;
@@ -71,6 +68,7 @@ use RZP\Mail\Merchant\CreateSubMerchantPartner;
 use RZP\Constants\{Mode, Entity as CE, Product};
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
+use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\PayoutLink\Service as PayoutLinkService;
 use RZP\Models\Merchant\Methods\DefaultMethodsForCategory;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
@@ -1271,6 +1269,24 @@ class Service extends Base\Service
         return $bankAccount->toArray();
     }
 
+    public function bankAccountUpdate(array $input)
+    {
+        $merchant = app('basicauth')->getMerchant();
+
+        $ba =  (new BankAccount\Core)->bankAccountUpdate($merchant, $input);
+
+        return $ba->toArray();
+    }
+
+    public function bankAccountUpdatePostPennyTestingWorkflow(array $input)
+    {
+        [$merchant, $merchantDetails] = (New Merchant\Detail\Core())->getMerchantAndSetBasicAuth($input[Constants::MERCHANT_ID]);
+
+        $ba =  (new BankAccount\Core)->bankAccountUpdatePostPennyTestingWorkflow($merchant, $input);
+
+        return $ba->toArray();
+    }
+
     /**
      * This function returns if there any open workflow actions associated with the current bank account entity of a
      * merchant. @todo: Replace this with a more generic approach based on primary entity
@@ -1281,9 +1297,8 @@ class Service extends Base\Service
      */
     public function getBankAccountChangeStatus($id)
     {
-        $type = Constants::BANK_DETAIL_UPDATE;
-
-        return $this->openWorkflowExists($type);
+        return (($this->getBankAccountChangeViaWorkflowStatus($id) === true) or
+                ($this->getBankAccountChangeViaPennyTestingStatus($id)));
     }
 
     public function getProductInternationalStatus() :array
@@ -1539,7 +1554,7 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
         $category = $merchant->getCategory();
-        
+
         $category2 = $merchant->getCategory2();
 
         return DefaultMethodsForCategory::getDefaultDisabledMethodsFromMerchantCategories($category, $category2);
@@ -5021,5 +5036,39 @@ class Service extends Base\Service
         }
 
         return $core->$function($partner, $subMerchant);
+    }
+
+
+    protected function getBankAccountChangeViaWorkflowStatus($id): bool
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $oldBankAccount = $this->repo->bank_account->getBankAccount($merchant);
+
+        if (empty($oldBankAccount) === true) {
+            return false;
+        }
+
+
+        $actions = (new Action\Core())->fetchOpenActionOnEntityOperation(
+            $oldBankAccount->getId(), $oldBankAccount->getEntity(), Permission::EDIT_MERCHANT_BANK_DETAIL);
+
+        $actions = $actions->toArray();
+
+        // If there are any action in progress
+        if (empty($actions) === false) {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function getBankAccountChangeViaPennyTestingStatus($id)
+    {
+        $bankAccountCore = (new BankAccount\Core);
+
+        $merchant = $this->repo->merchant->findOrFail($id);
+
+        return $bankAccountCore->isBankAccountUpdatePennyTestingInProgress($merchant);
     }
 }

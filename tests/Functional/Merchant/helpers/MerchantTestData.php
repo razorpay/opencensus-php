@@ -1602,6 +1602,76 @@ return [
         ]
     ],
 
+    'testUpdateBankAccountViaPennyTesting' => [
+        'request'  => [
+            'content' => [
+                'ifsc_code'        => 'ICIC0001206',
+                'account_number'   => '0000009999999999999',
+                'beneficiary_name' => 'Test R4zorpay:',
+            ],
+            'url'     => '/merchants/bank_account/update',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'ifsc_code'        => 'ICIC0001206',
+                'account_number'   => '0000009999999999999',
+                'beneficiary_name' => 'Test R4zorpay:',
+            ]
+        ]
+    ],
+
+    'testUpdateBankAccountViaPennyTestingWithoutExistingBankAccountFail' => [
+        'request'  => [
+            'content' => [
+                'ifsc_code'        => 'ICIC0001206',
+                'account_number'   => '0000009999999999999',
+                'beneficiary_name' => 'Test R4zorpay:',
+            ],
+            'url'     => '/merchants/bank_account/update',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'          => 'BAD_REQUEST_ERROR',
+                    'description'   => 'The merchant has not yet provided his bank account details',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'internal_error_code' => 'BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND',
+            'class'               => BadRequestException::class,
+        ]
+    ],
+
+    'testUpdateBankAccountViaPennyTestingAlreadyInProgressFail' => [
+        'request'  => [
+            'content' => [
+                'ifsc_code'        => 'ICIC0001206',
+                'account_number'   => '0000009999999999999',
+                'beneficiary_name' => 'Test R4zorpay:',
+            ],
+            'url'     => '/merchants/bank_account/update',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'          => 'BAD_REQUEST_ERROR',
+                    'description'   => 'A previous request to update your bank account is in progress. Please try after some time',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'internal_error_code' => 'BAD_REQUEST_MERCHANT_BANK_ACCOUNT_UPDATE_IN_PROGRESS',
+            'class'               => BadRequestException::class,
+        ]
+    ],
+
+
     'testAddBankAccountWithMerchantIdInURL' => [
         'request' => [
             'content' => [

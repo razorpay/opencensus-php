@@ -7,6 +7,7 @@ use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\lib\FuzzyMatcher;
+use RZP\Models\BankAccount;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
@@ -42,9 +43,9 @@ class PennyTesting extends Base\Core
      * @return FundAccountValidationEntity
      * @throws Throwable
      */
-    public function attempt(Entity $merchantDetails, Merchant\Entity $fromMerchant)
+    public function attempt(Entity $merchantDetails, Merchant\Entity $fromMerchant, $reason = Constants::PENNY_TESTING_REASON_ONBOARDING)
     {
-        $input = $this->getFundAccountPayload($merchantDetails);
+        $input = $this->getFundAccountPayload($merchantDetails, $reason);
 
         $fundAccountValidation = (new FundAccountValidationCore())->create($input, $fromMerchant);
 
@@ -60,7 +61,7 @@ class PennyTesting extends Base\Core
      *
      * @return array
      */
-    private function getFundAccountPayload(Entity $merchantDetails): array
+    private function getFundAccountPayload(Entity $merchantDetails, $reason = Constants::PENNY_TESTING_REASON_ONBOARDING): array
     {
         $ifsc = $merchantDetails->getIfsc();
 
@@ -79,7 +80,8 @@ class PennyTesting extends Base\Core
             ],
             FundAccountValidation::CURRENCY     => 'INR',
             FundAccountValidation::NOTES        => [
-                Entity::MERCHANT_ID => $merchantDetails->getMerchantId(),
+                Entity::MERCHANT_ID                 => $merchantDetails->getMerchantId(),
+                Constants::PENNY_TESTING_REASON     => $reason,
             ],
         ];
 
@@ -103,41 +105,57 @@ class PennyTesting extends Base\Core
 
         [$merchant, $merchantDetails] = (New Merchant\Detail\Core())->getMerchantAndSetBasicAuth($input[Constants::MERCHANT_ID]);
 
-        $this->mutex->acquireAndRelease(
+        return $this->mutex->acquireAndRelease(
             $merchant->getId(),
             function() use ($input, $merchant, $merchantDetails) {
-
                 $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetails, $input) {
 
-                    $this->repo->merchant_detail->lockForUpdateAndReload($merchantDetails);
+                    $reason =studly_case($input[Constants::PENNY_TESTING_REASON]);
 
-                    $this->repo->merchant->lockForUpdateAndReload($merchant);
+                    $handler = 'handlePennyTestingEventFor' . $reason;
 
-                    $shouldVerifyPennyTestingResult = $this->verifyPennyTestingResults($merchantDetails);
-
-                    if ($shouldVerifyPennyTestingResult === true)
-                    {
-                        $this->updateBankDetailVerificationStatus($input, $merchant, $merchantDetails);
-
-                        $isPennyTestingRetryRequired = $this->isPennyTestingRetryRequired($merchantDetails, $input);
-
-                        if ($isPennyTestingRetryRequired === true)
-                        {
-                            $this->retryPennyTesting($merchantDetails);
-                        }
-                        else
-                        {
-                            $this->updateMerchantContext($merchantDetails, $merchant);
-
-                            $this->repo->merchant->saveOrFail($merchant);
-                        }
-                    }
-
-                    $this->repo->merchant_detail->saveOrFail($merchantDetails);
+                    return $this->$handler($input, $merchant, $merchantDetails);
                 });
-            }
-        );
+            });
     }
+
+    protected function handlePennyTestingEventForOnboarding(array $input, Merchant\Entity $merchant, Entity $merchantDetails)
+    {
+        $this->repo->merchant_detail->lockForUpdateAndReload($merchantDetails);
+
+        $this->repo->merchant->lockForUpdateAndReload($merchant);
+
+        $shouldVerifyPennyTestingResult = $this->verifyPennyTestingResults($merchantDetails);
+
+        if ($shouldVerifyPennyTestingResult === true)
+        {
+            $this->updateAndReturnBankDetailVerificationStatus($input, $merchant, $merchantDetails);
+
+            $isPennyTestingRetryRequired = $this->isPennyTestingRetryRequired($merchantDetails, $input);
+
+            if ($isPennyTestingRetryRequired === true)
+            {
+                $this->retryPennyTesting($merchantDetails);
+            }
+            else
+            {
+                $this->updateMerchantContext($merchantDetails, $merchant);
+
+                $this->repo->merchant->saveOrFail($merchant);
+            }
+        }
+
+        $this->repo->merchant_detail->saveOrFail($merchantDetails);
+
+    }
+
+    protected function handlePennyTestingEventForBankAccountUpdate(array $input, Merchant\Entity $merchant, Entity $merchantDetails)
+    {
+        $status = $this->updateAndReturnBankDetailVerificationStatus($input, $merchant, $merchantDetails);
+
+        (new BankAccount\Core)->handlePennyTestingEventForBankAccountUpdate($input, $merchant, $status);
+    }
+
 
     /**
      * Updates bank detail verification status according to fuzzy match results
@@ -146,7 +164,7 @@ class PennyTesting extends Base\Core
      * @param Merchant\Entity $merchant
      * @param Entity          $merchantDetails
      */
-    protected function updateBankDetailVerificationStatus(array $input, Merchant\Entity $merchant, Entity $merchantDetails): void
+    protected function updateAndReturnBankDetailVerificationStatus(array $input, Merchant\Entity $merchant, Entity $merchantDetails)
     {
         try
         {
@@ -160,6 +178,8 @@ class PennyTesting extends Base\Core
                                                 $merchantDetails,
                                                 $nameValidationData,
                                                 $input);
+
+            return $bankAccountValidationStatus;
         }
         catch (Throwable $e)
         {
@@ -268,10 +288,19 @@ class PennyTesting extends Base\Core
             $merchantId = $validationEntityNotes[Entity::MERCHANT_ID];
         }
 
+
+        $pennyTestingReason = Constants::PENNY_TESTING_REASON_ONBOARDING;
+
+        if (isset($validationEntityNotes[Constants::PENNY_TESTING_REASON]) === true)
+        {
+            $pennyTestingReason = $validationEntityNotes[Constants::PENNY_TESTING_REASON];
+        }
+
         $payload = [
-            Constants::MERCHANT_ID     => $merchantId,
-            Constants::ACCOUNT_STATUS  => $validationEntity->getAccountStatus(),
-            Constants::REGISTERED_NAME => $validationEntity->getRegisteredName() ?? "",
+            Constants::MERCHANT_ID          => $merchantId,
+            Constants::ACCOUNT_STATUS       => $validationEntity->getAccountStatus(),
+            Constants::REGISTERED_NAME      => $validationEntity->getRegisteredName() ?? "",
+            Constants::PENNY_TESTING_REASON => $pennyTestingReason,
         ];
 
         return $payload;
@@ -439,7 +468,7 @@ class PennyTesting extends Base\Core
      *
      * @throws Throwable
      */
-    public function triggerPennyTesting(Entity $merchantDetails): void
+    public function triggerPennyTesting(Entity $merchantDetails, $reason = Constants::PENNY_TESTING_REASON_ONBOARDING): void
     {
         $fromMerchant = $this->repo->merchant->findOrFailPublic(Merchant\Preferences::MID_ONBOARDING_PENNY_TESTING);
 
@@ -453,7 +482,7 @@ class PennyTesting extends Base\Core
 
         $this->increasePennyTestingAttempt($merchantDetails);
 
-        $fundAccountValidation = (new PennyTesting)->attempt($merchantDetails, $fromMerchant);
+        $fundAccountValidation = (new PennyTesting)->attempt($merchantDetails, $fromMerchant, $reason);
 
         $merchantDetails->setFundAccountValidationId($fundAccountValidation->getId());
     }

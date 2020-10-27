@@ -35,6 +35,16 @@ class Service
 
     protected $permission;
 
+    protected $controller;
+
+    protected $routeName;
+
+    protected $routeParams;
+
+    protected $method;
+
+    protected $input;
+
     protected $diff = [];
 
     protected $originalData;
@@ -150,13 +160,15 @@ class Service
     */
     private function createDifferEntity($request, $entity, $entityId)
     {
-        $input = $request->input();
+        $this->setRequestParametersWhereApplicable();
 
-        $routeName = $this->router->currentRouteName();
+        $input = $this->getInput();
 
-        $controller = $this->router->currentRouteAction();
+        $routeName = $this->getRouteName();
 
-        $routeParams = $this->router->current()->parameters();
+        $controller = $this->getController();
+
+        $routeParams = $this->getRouteParams();
 
         $permission = $this->getPermission();
 
@@ -173,7 +185,7 @@ class Service
             Differ\Entity::TYPE         => Differ\Type::MAKER,
             Differ\Entity::URL          => $request->getUri(),
             Differ\Entity::ROUTE_PARAMS => $routeParams,
-            Differ\Entity::METHOD       => $request->getMethod(),
+            Differ\Entity::METHOD       => $this->getMethod(),
             Differ\Entity::PAYLOAD      => $input,
             Differ\Entity::STATE        => State\Name::OPEN,
             Differ\Entity::CONTROLLER   => $controller,
@@ -218,6 +230,54 @@ class Service
         return $this->permission;
     }
 
+    public function getController()
+    {
+        return $this->controller;
+    }
+
+    public function setController($controller)
+    {
+        $this->controller = $controller;
+
+        return $this;
+    }
+
+    public function getRouteName()
+    {
+        return $this->routeName;
+    }
+
+    public function setRouteName($routeName)
+    {
+        $this->routeName = $routeName;
+
+        return $this;
+    }
+
+    public function getRouteParams()
+    {
+        return $this->routeParams;
+    }
+
+    public function setRouteParams($routeParams)
+    {
+        $this->routeParams = $routeParams;
+
+        return $this;
+    }
+
+    public function getInput()
+    {
+        return $this->input;
+    }
+
+    public function setInput($input)
+    {
+        $this->input = $input;
+
+        return $this;
+    }
+
     public function setDiff($diff)
     {
         $this->diff = $diff;
@@ -250,6 +310,18 @@ class Service
     public function getDirty()
     {
         return $this->dirtyData;
+    }
+
+    public function getMethod()
+    {
+        return $this->method;
+    }
+
+    public function setMethod($method)
+    {
+        $this->method = $method;
+
+        return $this;
     }
 
     protected function permissionHasWorkflow()
@@ -524,5 +596,34 @@ class Service
         }
 
         return true;
+    }
+
+
+    protected function setRequestParametersWhereApplicable()
+    {
+        if ($this->getInput() === null)
+        {
+            $this->setInput($this->request->input());
+        }
+
+        if ($this->getMethod() === null)
+        {
+            $this->setMethod($this->request->getMethod());
+        }
+
+        if ($this->getRouteName() === null)
+        {
+            $this->setRouteName($this->router->currentRouteName());
+        }
+
+        if ($this->getController() === null)
+        {
+            $this->setController($this->router->currentRouteAction());
+        }
+
+        if ($this->getRouteParams() === null)
+        {
+            $this->setRouteParams($this->router->current()->parameters());
+        }
     }
 }

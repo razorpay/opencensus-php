@@ -71,6 +71,11 @@ class Constants
     const PENNY_TESTING_MAX_ATTEMPT                     = 2;
     const PENNY_TESTING_RETRY_PERIOD_IN_SEC             = 7200;
     const UNREGISTERED                                  = 'unregistered';
+    const PENNY_TESTING_REASON                          = 'penny_testing_reason';
+
+    // penny testing reasons
+    const PENNY_TESTING_REASON_ONBOARDING               = 'onboarding';
+    const PENNY_TESTING_REASON_BANK_ACCOUNT_UPDATE      = 'bank_account_update';
 
     // merchant verification
     const VERIFICATION    = 'verification';

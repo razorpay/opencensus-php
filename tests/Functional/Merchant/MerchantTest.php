@@ -9,14 +9,20 @@ use Event;
 use Redis;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Models\Base\EsDao;
 use Illuminate\Http\UploadedFile;
+use RZP\Jobs\FundAccountValidation;
 use Illuminate\Cache\Events\CacheHit;
+use RZP\Models\BankAccount\Repository;
+use RZP\Models\FundAccount\Validation;
+use RZP\Mail\Merchant as MerchantMail;
 use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Cache\Events\KeyForgotten;
 use Illuminate\Database\Eloquent\Factory;
 use Rzp\Credcase\Migrate\V1\RotateApiKeyRequest;
 use Rzp\Credcase\Migrate\V1\MigrateApiKeyRequest;
+use RZP\Models\Admin\Org\Repository as OrgRepository;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 use RZP\Models\Key;
@@ -97,6 +103,10 @@ class MerchantTest extends TestCase
                                                                     'agent',
                                                                     'operations'];
 
+    protected $esDao;
+
+    protected $esClient;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/MerchantTestData.php';
@@ -110,6 +120,10 @@ class MerchantTest extends TestCase
         $this->fixtures->create('org:hdfc_org');
 
         $this->app->make(Factory::class)->load($factoryPath);
+
+        $this->esDao = new EsDao();
+
+        $this->esClient =  $this->esDao->getEsClient()->getClient();
     }
 
     public function testCreateKey()
@@ -1880,8 +1894,7 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertQueued(BankAccountChangeMail::class, function ($mail)
-        {
+        Mail::assertQueued(BankAccountChangeMail::class, function ($mail) {
             $testData = $this->testData['testAddBankAccount']['response']['content'];
 
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
@@ -1910,6 +1923,32 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetBankAccountChangeStatus()
+    {
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
+
+        $this->assertFalse($this->getBankAccountChangeStatusForMerchant($merchantId));
+    }
+
+    public function testGetBankAccountChangeStatusWorkflowInProgress()
+    {
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
+
+        $this->setupWorkflowForBankAccountUpdate();
+
+        $this->makeRequestAndGetContent([
+            'content' => [
+                'ifsc_code'        => 'ICIC0001206',
+                'account_number'   => '0002020000304030434',
+                'beneficiary_name' => 'Test R4zorpay:',
+            ],
+            'url'     => '/merchants/bank_account',
+            'method'  => 'POST'
+        ]);
+
+        $this->assertTrue($this->getBankAccountChangeStatusForMerchant($merchantId));
+    }
+
     public function testUpdateBankAccountWithAddressProof()
     {
         $documentType = 'address_proof_url';
@@ -1924,6 +1963,319 @@ class MerchantTest extends TestCase
         $this->updateUploadDocumentData(__FUNCTION__, $documentType);
 
         $this->startTest();
+
+        $this->assertFalse($this->getBankAccountChangeStatusForMerchant('10000000000000'));
+    }
+
+    public function testUpdateBankAccountViaPennyTesting()
+    {
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
+
+        $beforeCount = $this->getBankAccountsCount($merchantId);
+
+        $this->startTest();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $this->assertNotNull($fav);
+
+        $this->assertEquals('bank_account_update', $fav['notes']['penny_testing_reason']);
+
+        $this->assertNull($fav['results']['account_status']);
+
+        $this->assertNull($fav['results']['registered_name']);
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertEquals('initiated', $merchantDetails->getBankDetailsVerificationStatus());
+
+        $this->assertEquals(Validation\Entity::stripDefaultSign($fav['id']), $merchantDetails->getFundAccountValidationId());
+
+        $this->assertBankAccountForMerchant($merchantId, [
+            'entity'            => 'bank_account',
+            'ifsc'              => 'RZPB0000000',
+            'account_number'    => '10010101011',
+        ]);
+
+        Mail::assertQueued(MerchantMail\AccountChangeRequest::class, function ($mail) {
+            return true;
+        });
+
+        $afterCount = $this->getBankAccountsCount($merchantId);
+
+        $this->assertEquals($beforeCount + 1, $afterCount);
+
+        $this->assertTrue($this->getBankAccountChangeStatusForMerchant($merchantId));
+    }
+
+    public function testUpdateBankAccountViaPennyTestingWithoutExistingBankAccountFail()
+    {
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, false);
+
+        $this->startTest();
+
+        Mail::assertNotQueued(MerchantMail\AccountChangeRequest::class, function ($mail) {
+            return true;
+        });
+
+        $this->assertFalse($this->getBankAccountChangeStatusForMerchant($merchantId));
+    }
+
+    public function testUpdateBankAccountViaPennyTestingAlreadyInProgressFail()
+    {
+        $this->testUpdateBankAccountViaPennyTesting(); // to trigger a bank account update request via penny testing
+
+        $this->startTest();
+    }
+
+    public function testUpdateBankAccountPennyTestingEvent()
+    {
+
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
+
+        $beforeCount = $this->getBankAccountsCount($merchantId);
+
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
+
+
+        $this->startTest();
+
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $this->fixtures->edit('fund_account_validation', $fav['id'], [
+           'status'             => 'processed',
+           'account_status'     => 'active',
+           'registered_name'    => 'testhello',
+
+        ]);
+
+        FundAccountValidation::dispatch('test', $fav['id']);
+
+        $this->assertBankAccountForMerchant($merchantId, [
+            'ifsc'             => 'ICIC0001206',
+            'account_number'   => '0000009999999999999',
+            'name'             => 'Test R4zorpay:',
+        ]);
+
+        Mail::assertQueued(MerchantMail\AccountChange::class, function ($mail) {
+            return true;
+        });
+
+        $afterCount = $this->getBankAccountsCount($merchantId);
+
+        $this->assertEquals($beforeCount, $afterCount);
+
+        $this->assertFalse($this->getBankAccountChangeStatusForMerchant($merchantId));
+    }
+
+    public function testUpdateBankAccountPennyTestingEventNameMismatch()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
+
+        $this->setupWorkflowForBankAccountUpdate();
+
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
+
+        $oldBankAccount = $this->getDbLastEntity('bank_account', 'test')->toArrayAdmin();
+
+
+
+        $this->startTest();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $this->fixtures->edit('fund_account_validation', $fav['id'], [
+            'status'            => 'processed',
+            'account_status'    => 'active',
+            'registered_name'   => 'invalid name',
+
+        ]);
+
+        $newBankAcccount =  $this->getDbEntity('bank_account', ['merchant_id' => $merchantId], 'test')->toArrayAdmin();
+
+
+        FundAccountValidation::dispatch('test', $fav['id']);
+
+        // as a workflow is created, assert bank account is not changed for the merchant still
+        $this->assertBankAccountForMerchant($merchantId, [
+            'entity'            => 'bank_account',
+            'ifsc'              => 'RZPB0000000',
+            'account_number'    => '10010101011',
+        ]);
+
+        Mail::assertNotQueued(MerchantMail\AccountChange::class, function ($mail) {
+            return true;
+        });
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->esClient->indices()->refresh();
+
+        $action = $this->esDao->searchByIndexTypeAndActionId('workflow_action_test_testing', 'action',
+            substr($workflowAction['id'], 9))[0]['_source'];
+
+
+
+        $this->assertEquals('open', $action['state']);
+        $this->assertEquals( 'POST', $action['method']);
+        $this->assertEquals('RZP\Http\Controllers\MerchantController@putBankAccountUpdatePostPennyTestingWorkflow', $action['controller']);
+        $this->assertEquals('merchant_bank_account_create', $action['route']);
+        $this->assertEquals('edit_merchant_bank_detail', $action['permission']);
+        $this->assertEquals( [
+            'input'        => [
+                'ifsc_code'         => 'ICIC0001206',
+                'account_number'    => '0000009999999999999',
+                'beneficiary_name'  => 'Test R4zorpay:',
+                'address_proof_url' => '1cXSLlUU8V9sXl',
+            ],
+            'merchant_id'           => $merchantId,
+            'new_bank_account_array'=> [
+                'id'               => $newBankAcccount['id'],
+                'entity'           => 'bank_account',
+                'ifsc'             => 'ICIC0001206',
+                'account_number'   => '0000009999999999999',
+                'name'             => 'Test R4zorpay:',
+                'bank_name'        => 'ICICI Bank',
+                'address_proof_url'=> '1cXSLlUU8V9sXl', // updateUploadDocumentData always creates a file with this value
+                'notes'            => [],
+            ],
+            'old_bank_account_array'=> [
+                'id'               => $oldBankAccount['id'],
+                'entity'           => 'bank_account',
+                'ifsc'             => 'RZPB0000000',
+                'name'             => $oldBankAccount['name'],
+                'bank_name'        => 'Razorpay',
+                'account_number'   => '10010101011',
+                'address_proof_url'=> 'old_address_proof_file_url',
+                'notes'            => [],
+
+            ],
+
+        ], $action['payload']);
+        $this->assertEquals([], $action['route_params']);
+
+
+        $this->assertEquals( [
+            'old' => [
+                'id'                    => $oldBankAccount['id'],
+                'ifsc'                  => 'RZPB0000000',
+                'name'                  => $oldBankAccount['name'],
+                'bank_name'             => 'Razorpay',
+                'account_number'        => '10010101011',
+                'address_proof_url'     => 'old_address_proof_file_url',
+            ],
+            'new' => [
+                'id'               => $newBankAcccount['id'],
+                'ifsc'             => 'ICIC0001206',
+                'account_number'   => '0000009999999999999',
+                'name'             => 'Test R4zorpay:',
+                'bank_name'        => 'ICICI Bank',
+                'address_proof_url'=> '1cXSLlUU8V9sXl', // updateUploadDocumentData always creates a file with this value
+            ],
+        ], $action['diff']);
+
+        $this->assertEquals('merchant_bank_account_create', $action['route']);
+
+        $this->assertTrue($this->getBankAccountChangeStatusForMerchant($merchantId));
+
+        Mail::assertQueued(MerchantMail\AccountChangePennyTestingFailure::class, function($mail) {
+            return true;
+        });
+
+    }
+
+    public function testUpdateBankAccountPennyTestingFailWorkflowApprove()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
+
+        $this->setupWorkflowForBankAccountUpdate();
+
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
+
+        $beforeCount = $this->getBankAccountsCount($merchantId);
+
+
+        $this->startTest();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $this->fixtures->edit('fund_account_validation', $fav['id'], [
+            'status'            => 'processed',
+            'account_status'    => 'active',
+            'registered_name'   => 'invalid name',
+
+        ]);
+
+        FundAccountValidation::dispatch('test', $fav['id']);
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->esClient->indices()->refresh();
+
+        $this->performWorkflowAction($workflowAction['id'], true);
+
+        $this->assertBankAccountForMerchant($merchantId, [
+            'ifsc'             => 'ICIC0001206',
+            'account_number'   => '0000009999999999999',
+            'name'             => 'Test R4zorpay:',
+        ]);
+
+        Mail::assertQueued(MerchantMail\AccountChange::class, function ($mail) {
+            return true;
+        });
+
+        $afterCount = $this->getBankAccountsCount($merchantId);
+
+        $this->assertEquals($beforeCount, $afterCount);
+
+        $this->assertFalse($this->getBankAccountChangeStatusForMerchant($merchantId));
+    }
+
+    public function testUpdateBankAccountPennyTestingFailWorkflowReject()
+    {
+        $this->setupWorkflowForBankAccountUpdate();
+
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
+
+        $beforeCount = $this->getBankAccountsCount($merchantId);
+
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
+
+        $this->startTest();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $this->fixtures->edit('fund_account_validation', $fav['id'], [
+            'status'            => 'processed',
+            'account_status'    => 'active',
+            'registered_name'   => 'invalid name',
+
+        ]);
+
+        FundAccountValidation::dispatch('test', $fav['id']);
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->esClient->indices()->refresh();
+
+        $this->performWorkflowAction($workflowAction['id'], false);
+
+        $this->assertBankAccountForMerchant($merchantId, [
+            'entity'            => 'bank_account',
+            'ifsc'              => 'RZPB0000000',
+            'account_number'    => '10010101011',
+        ]);
+
+        Mail::assertNotQueued(MerchantMail\AccountChange::class, function ($mail) {
+            return true;
+        });
+
+        $afterCount = $this->getBankAccountsCount($merchantId);
+
+        $this->assertEquals($beforeCount, $afterCount);
+
+        $this->assertFalse($this->getBankAccountChangeStatusForMerchant($merchantId));
     }
 
     public function updateUploadDocumentData(string $callee, string $documentType)
@@ -2808,7 +3160,7 @@ class MerchantTest extends TestCase
     public function testGetCheckoutPreferencesAfterFilterForMinimumAmount()
     {
         $this->markTestSkipped();
-        
+
         $this->fixtures->merchant->enablePayLater();
 
         $this->fixtures->create('terminal:paylater_icici_terminal');
@@ -8436,5 +8788,118 @@ class MerchantTest extends TestCase
             BadRequestException::class,
             'This code is already in use, please try another.'
         );
+    }
+
+    protected function setupMerchantForBankAccountUpdateTestViaPennyTesting($testcasename, $createBankAccount = true)
+    {
+        Mail::fake();
+
+        $this->updateUploadDocumentData($testcasename, 'address_proof_url');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantId = $merchant['id'];
+
+        $this->fixtures->create('merchant_detail:valid_fields', [
+            'merchant_id'           => $merchantId,
+            'address_proof_url'     => 'old_address_proof_file_url',
+        ]);
+
+        if ($createBankAccount === true)
+        {
+            $this->fixtures->merchant->createBankAccount(['merchant_id' => $merchantId, 'entity_id' => $merchantId]);
+        }
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        return $merchantId;
+    }
+
+    private function assertBankAccountForMerchant($merchantId, $expectedBankAccount)
+    {
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $merchant = (new Merchant\Repository)->findOrFail($merchantId);
+
+        $actualBankAccount = (new Repository)->getBankAccount($merchant)->toArrayPublic();
+
+        $this->assertArraySelectiveEquals($expectedBankAccount, $actualBankAccount);
+    }
+
+
+    private function performWorkflowAction($workflowActionId, bool $shouldApprove = true)
+    {
+
+        $this->ba->adminAuth('test');
+
+        $request = [
+            'method' => 'POST',
+            'url' => '/w-actions/' . $workflowActionId . '/checkers',
+            'content' => [
+                'approved' => $shouldApprove,
+            ],
+        ];
+
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    private function setupWorkflowForBankAccountUpdate(): void
+    {
+        $this->fixtures->on('live')->create('org:admin_for_razorpay_org');
+
+        $permission = $this->getDbEntity('permission', ['name' => 'edit_merchant_bank_detail'], 'live');
+
+        DB::connection('live')->table('permission_map')->insert(
+            [
+                'entity_id' => Org::RZP_ORG,
+                'entity_type' => 'org',
+                'permission_id' => $permission->getId(),
+            ]);
+
+        $org = (new OrgRepository)->getRazorpayOrg();
+
+        $this->fixtures->on('live')->create('org:workflow_users', ['org' => $org]);
+
+
+        $this->createWorkflow([
+            'org_id' => '100000razorpay',
+            'name' => 'merchant bank account update workflow',
+            'permissions' => ['edit_merchant_bank_detail'],
+            'levels' => [
+                [
+                    'level' => 1,
+                    'op_type' => 'or',
+                    'steps' => [
+                        [
+                            'reviewer_count' => 1,
+                            'role_id' => Org::ADMIN_ROLE,
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    private function getBankAccountsCount($merchantId)
+    {
+        $merchant = (new Merchant\Repository)->findOrFail($merchantId);
+
+        $bankAccounts = (new Repository)->getAllBankAccounts($merchant);
+
+        return $bankAccounts->count();
+    }
+
+    /**
+     * @param $merchantId
+     * @return mixed
+     */
+    protected function getBankAccountChangeStatusForMerchant($merchantId): bool
+    {
+        $merchant = (new Merchant\Repository)->findOrFail($merchantId);
+
+        $this->app['basicauth']->setOrgId($merchant->getOrgId());
+
+        return (new Merchant\Service())->getBankAccountChangeStatus($merchantId);
     }
 }

@@ -317,6 +317,25 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+
+    public function putBankAccountUpdatePostPennyTestingWorkflow()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->bankAccountUpdatePostPennyTestingWorkflow($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function putBankAccountUpdate()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->bankAccountUpdate($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function putBankAccount($id)
     {
         $input = Request::all();

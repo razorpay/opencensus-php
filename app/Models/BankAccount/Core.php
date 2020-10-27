@@ -9,12 +9,16 @@ use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Traits\TrimSpace;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Service;
+use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Settlement\Bucket;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Document\FileHandler;
 use RZP\Models\Settlement\OndemandFundAccount;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -25,7 +29,7 @@ class Core extends Base\Core
 {
     use TrimSpace;
 
-    public function createOrChangeBankAccount($input, $merchant)
+    public function createOrChangeBankAccount($input, $merchant, $isWorkflowRequired = true)
     {
         $oldBankAccount = $this->repo->bank_account->getBankAccount($merchant);
 
@@ -55,7 +59,7 @@ class Core extends Base\Core
             return $oldBankAccount;
         }
 
-        $ba = $this->changeBankAccount($input, $merchant, $oldBankAccount);
+        $ba = $this->changeBankAccount($input, $merchant, $oldBankAccount, $isWorkflowRequired);
 
         if ($this->settlementServiceRamp($ba->getMerchantId()) === true)
         {
@@ -165,7 +169,7 @@ class Core extends Base\Core
      * @return mixed
      * @throws Exception\ServerErrorException
      */
-    protected function changeBankAccount(array $input, MerchantEntity $merchant, BankAccount\Entity $oldBankAccount)
+    protected function changeBankAccount(array $input, MerchantEntity $merchant, BankAccount\Entity $oldBankAccount,  $isWorkflowRequired = true)
     {
         $detail = $this->formatBankAccountForMerchantDetail($input);
 
@@ -180,26 +184,10 @@ class Core extends Base\Core
 
         // add code for check of Bank File here and change the entities
         // Upload the file and get the file id
-        if (isset($input[Detail\Entity::ADDRESS_PROOF_URL]) === true)
-        {
-            // upload the file and then add the file id in the array
-            if (is_object($input[Detail\Entity::ADDRESS_PROOF_URL]) === true)
-            {
-                $input = $this->uploadAddressProof($merchant, $input);
-            }
-
-            $newBankAccountArray[Detail\Entity::ADDRESS_PROOF_URL] = $input[Detail\Entity::ADDRESS_PROOF_URL];
-
-            $oldBankAccountArray[Detail\Entity::ADDRESS_PROOF_URL] = (new Detail\Core())
-                ->getMerchantDetails($merchant)
-                ->getAddressProofFile();
-
-            // to replace the file with file id in request for workflow payload
-            $this->app['request']->replace($input);
-        }
+        $this->fillAddressProofUrl($input, $merchant, $newBankAccountArray, $oldBankAccountArray);
 
         return $this->repo->transaction(
-            function() use ($merchant, $oldBankAccountArray, $newBankAccountArray, $oldBankAccount, $input, $detail)
+            function() use ($merchant, $oldBankAccountArray, $newBankAccountArray, $oldBankAccount, $input, $detail, $isWorkflowRequired)
             {
                 //
                 // Creating a bank account entity to send email. This will be rolled back if workflow if enabled.
@@ -213,12 +201,16 @@ class Core extends Base\Core
                 //
                 if ($this->app['api.route']->isWorkflowExecuteOrApproveCall() === false)
                 {
-                    $this->sendBankAccountChangeEmail($ba, $merchant, true);
+                    $this->sendBankAccountChangeEmail($ba, $merchant, Constants::BANK_ACCOUNT_CHANGE_REQUEST_EMAIL);
                 }
 
-                $this->app['workflow']
-                     ->setEntityAndId($oldBankAccount->getEntity(), $oldBankAccount->getId())
-                     ->handle($oldBankAccountArray, $newBankAccountArray);
+                if ($isWorkflowRequired === true)
+                {
+                    $this->app['workflow']
+                         ->setEntityAndId($oldBankAccount->getEntity(), $oldBankAccount->getId())
+                         ->handle($oldBankAccountArray, $newBankAccountArray);
+                }
+
 
                 $this->repo->delete($oldBankAccount);
 
@@ -426,7 +418,7 @@ class Core extends Base\Core
         return $ba;
     }
 
-    protected function sendBankAccountChangeEmail($newBankAccount, $merchant, $request = false)
+    protected function sendBankAccountChangeEmail($newBankAccount, $merchant, $emailClass = Constants::BANK_ACCOUNT_CHANGED_EMAIL)
     {
         if ($this->shouldNotifyViaEmail($merchant) === false)
         {
@@ -439,14 +431,7 @@ class Core extends Base\Core
 
         $merchant = $merchant->toArray();
 
-        $class = 'RZP\Mail\Merchant\AccountChange';
-
-        if ($request === true)
-        {
-            $class = 'RZP\Mail\Merchant\AccountChangeRequest';
-        }
-
-        $bankAccountChangeMail = new $class($newBankAccount, $merchant, $recipients);
+        $bankAccountChangeMail = new $emailClass($newBankAccount, $merchant, $recipients);
 
         Mail::queue($bankAccountChangeMail);
     }
@@ -554,5 +539,181 @@ class Core extends Base\Core
                 'merchant_id' => $merchant->getId(),
                 'mode'        => $mode,
             ]);
+    }
+
+    public function bankAccountUpdate(MerchantEntity $merchant, array $input)
+    {
+        $this->validateBankAccountUpdatePennyTestingNotInProgress($merchant);
+
+        // if not found, this will throw an exception -> doesnt allow bank account update if it doesnt exist now
+        (new Service)->getOwnBankAccount();
+
+        $newBankAccount = $this->createBankAccount($input, $merchant, $this->mode);
+
+        (new Detail\PennyTesting())->triggerPennyTesting($merchant->merchantDetail, Detail\Constants::PENNY_TESTING_REASON_BANK_ACCOUNT_UPDATE);
+
+        $this->repo->merchant_detail->saveOrFail($merchant->merchantDetail);
+
+        $data = $this->makeBankAccountUpdatePennyTestingData($input, $newBankAccount);
+
+        $this->saveBankAccountUpdatePennyTestingData($merchant, $data);
+
+        $this->sendBankAccountChangeEmail($newBankAccount, $merchant, Constants::BANK_ACCOUNT_CHANGE_REQUEST_EMAIL);
+
+        $this->trace->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_INITIATED, []);
+
+        return $newBankAccount;
+    }
+
+    public function handlePennyTestingEventForBankAccountUpdate(array $favInput, MerchantEntity $merchant, string $status)
+    {
+        $data = $this->getBankAccountUpdatePennyTestingData($merchant);
+
+        $oldBankAccount = $this->repo->bank_account->getBankAccount($this->merchant);
+
+        $newBankAccountId = Entity::stripDefaultSign($data['new_bank_account_array']['id']);
+
+        $newBankAccount = $this->repo->bank_account->findOrFail($newBankAccountId);
+
+        $this->repo->bank_account->deleteOrFail($newBankAccount);
+
+        $cacheKey = $this->getBankAccountUpdatePennyTestingCacheKey($merchant);
+
+        $this->app['cache']->delete($cacheKey);
+
+
+        switch ($status)
+        {
+            case Detail\BankDetailsVerificationStatus::VERIFIED:
+            {
+                $this->createOrChangeBankAccount($data['input'], $merchant, false);
+
+                break;
+            }
+            default:
+            {
+                $newBankAccountArray = $data['new_bank_account_array'];
+                $oldBankAccountArray = $data['old_bank_account_array'];
+
+                $this->sendBankAccountChangeEmail($newBankAccount, $merchant, Constants::BANK_ACCOUNT_CHANGE_PENNY_TESTING_FAILURE_EMAIL);
+
+                try
+                {
+                    $this->app['workflow']
+                        ->setPermission(Permission\Name::EDIT_MERCHANT_BANK_DETAIL)
+                        ->setRouteName('merchant_bank_account_create')
+                        ->setRouteParams([])
+                        ->setInput($data)
+                        ->setController('RZP\Http\Controllers\MerchantController@putBankAccountUpdatePostPennyTestingWorkflow')
+                        ->setMethod('POST')
+                        ->setEntityAndId($oldBankAccount->getEntity(), $oldBankAccount->getId())
+                        ->handle($oldBankAccountArray, $newBankAccountArray);
+
+                }
+                catch (Exception\EarlyWorkflowResponse $exception)
+                {
+                    $this->app['trace']->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_WORKFLOW_CREATED, []);
+                }
+
+                $this->app['workflow']
+                    ->setInput(null)
+                    ->setPermission(null)
+                    ->setRouteName(null)
+                    ->setRouteParams(null)
+                    ->setController(null);
+                }
+        }
+    }
+
+    public function bankAccountUpdatePostPennyTestingWorkflow(MerchantEntity $merchant, array $input)
+    {
+        return $this->createOrChangeBankAccount($input['input'], $merchant, false);
+    }
+
+    public function isBankAccountUpdatePennyTestingInProgress(MerchantEntity $merchant)
+    {
+        $data = $this->getBankAccountUpdatePennyTestingData($merchant);
+
+        return ($data !== null);
+    }
+
+
+    protected function saveBankAccountUpdatePennyTestingData(MerchantEntity $merchant, array $data)
+    {
+        $cacheKey = $this->getBankAccountUpdatePennyTestingCacheKey($merchant);
+
+        $this->app->cache->put($cacheKey, $data, Constants::BANK_ACCOUNT_UPDATE_PENNY_TESTING_TTL);
+    }
+
+    protected function validateBankAccountUpdatePennyTestingNotInProgress(MerchantEntity $merchant)
+    {
+        if ($this->isBankAccountUpdatePennyTestingInProgress($merchant) === true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_BANK_ACCOUNT_UPDATE_IN_PROGRESS);
+        }
+    }
+
+
+
+    protected function getBankAccountUpdatePennyTestingData(MerchantEntity $merchant)
+    {
+        $cacheKey = $this->getBankAccountUpdatePennyTestingCacheKey($merchant);
+
+        $data = $this->app->cache->get($cacheKey);
+
+        return $data;
+    }
+
+    protected function getBankAccountUpdatePennyTestingCacheKey(MerchantEntity $merchant)
+    {
+        return sprintf(Constants::BANK_ACCOUNT_UPDATE_PENNY_TESTING_CACHE_KEY, $merchant->getId());
+    }
+
+
+    /**
+     * @param array $input
+     * @param MerchantEntity $merchant
+     * @param array $newBankAccountArray
+     * @param array $oldBankAccountArray
+     * @throws Exception\ServerErrorException
+     */
+    protected function fillAddressProofUrl(array &$input, MerchantEntity $merchant, array &$newBankAccountArray, array &$oldBankAccountArray): void
+    {
+        if (isset($input[Detail\Entity::ADDRESS_PROOF_URL]) === true)
+        {
+            // upload the file and then add the file id in the array
+            if (is_object($input[Detail\Entity::ADDRESS_PROOF_URL]) === true)
+            {
+                $input = $this->uploadAddressProof($merchant, $input);
+            }
+
+            $newBankAccountArray[Detail\Entity::ADDRESS_PROOF_URL] = $input[Detail\Entity::ADDRESS_PROOF_URL];
+
+            $oldBankAccountArray[Detail\Entity::ADDRESS_PROOF_URL] = (new Detail\Core())
+                ->getMerchantDetails($merchant)
+                ->getAddressProofFile();
+
+            // to replace the file with file id in request for workflow payload
+            $this->app['request']->replace($input);
+        }
+    }
+
+
+    protected function makeBankAccountUpdatePennyTestingData(array $input, BankAccount\Entity  $newBankAccount)
+    {
+        $oldBankAccountArray = (new Service())->getOwnBankAccount();
+
+        $newBankAccountArray = $newBankAccount->toArrayPublic();
+
+        $this->fillAddressProofUrl($input, $this->merchant, $newBankAccountArray, $oldBankAccountArray);
+
+        $data = [
+            'input'                     => $input,
+            'merchant_id'               => $newBankAccount->merchant->getId(),
+            'old_bank_account_array'    => $oldBankAccountArray,
+            'new_bank_account_array'    => $newBankAccountArray,
+        ];
+
+        return $data;
     }
 }
