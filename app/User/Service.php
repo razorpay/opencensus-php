@@ -46,11 +46,11 @@ class Service extends Base\Service
     const MERCHANT_ACTIVATED  = 'merchant_activated';
 
     const CAPTCHA_MODE_HEADER = 'X-RECAPTCHA-MODE';
-    
+
     const LOGIN_UNAUTHENTICATED = 'LOGIN_UNAUTHENTICATED';
-    
+
     const LOGIN_UNREGISTERED = 'LOGIN_UNREGISTERED';
-    
+
 
     // Users who signed up before this date
     // are not exposed to the pre signup flow
@@ -1370,6 +1370,7 @@ class Service extends Base\Service
             'low_balance_alert_frequency_30M',
             'rx_home_v2',
             'bank_account_update_merchant_dashboard',
+            'app_switcher',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

@@ -28,7 +28,6 @@ import logoutGoogleAccount from '../../../common/utils/logoutGoogle';
     return {
       ...state.session,
       ...state.config.config,
-      isMobileResolution: state.app.isMobileResolution,
       user: state.session.user,
     };
   },
@@ -99,30 +98,14 @@ export default class ProfileDropdown extends Component {
   };
 
   render() {
-    let {
-      user,
-      mode,
-      showMobileNav,
-      showGSTModal,
-      isMobileResolution,
-      analytics = () => {},
-    } = this.props;
+    let { user, mode, showMobileNav, showGSTModal, analytics = () => {} } = this.props;
     let merchant = user.merchants[user.current];
     const { showRazorpayxToolTip } = this.state;
 
     return (
       <Dropdown closeOnClick={false} onShow={this.handleShow} onHide={this.handleHide}>
         <DropdownTrigger class="dropdown-toggle">
-          {isMobileResolution ? (
-            <span className="merchant-logo-preview">
-              <Image src={user.logo_url}>
-                <img src="/dist/css/assets/business_thumbnail.svg" />
-              </Image>
-            </span>
-          ) : (
-            user.name || user.user.name
-          )}{' '}
-          <span class="caret" />
+          <i className="i i-profile" />
         </DropdownTrigger>
         <DropdownContent>
           <div class="dropdown-menu ProfileDropdown">

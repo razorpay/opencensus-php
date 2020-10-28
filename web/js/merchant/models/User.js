@@ -1,12 +1,11 @@
 import ajax from 'merchant/utils/ajax';
 import QueryString from 'query-string';
-import { filterBy } from 'common/utils/rzp-utils';
+import { filterBy, getURLQueryParams } from 'common/utils/rzp-utils';
 import { RZPFeatures } from 'merchant/helpers/data';
 
 import { fetchFeaturesAjax } from 'merchant/reducers/config';
 import { getOrg } from 'merchant/store';
 import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
-import { getURLQueryParams } from 'common/utils/rzp-utils';
 
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import {
@@ -18,7 +17,7 @@ import {
 
 // TODO: Rename fn. name
 export function setFeatures(features) {
-  let enabledFeatures = filterBy(features, 'value', true);
+  const enabledFeatures = filterBy(features, 'value', true);
 
   return enabledFeatures;
 }
@@ -38,7 +37,7 @@ export default class User {
   }
 
   fetch() {
-    let promise = new Promise((resolve, reject) => {
+    const promise = new Promise((resolve, reject) => {
       ajax({
         url: '/user',
         appendModeInURL: false,
@@ -49,7 +48,7 @@ export default class User {
           fetchFeaturesAjax(response.data.current)
             .catch((_) => _)
             .then((data) => {
-              let newUser = new User(response.data);
+              const newUser = new User(response.data);
               newUser.features = setFeatures(data.success ? data.data.features : []);
               response.data = newUser;
               resolve(response);
@@ -66,7 +65,7 @@ export default class User {
 
   get userRole() {
     if (this.current && Object.keys(this.merchants).length) {
-      var currentMerchant = this.merchants[this.current];
+      const currentMerchant = this.merchants[this.current];
       // check if its loaded from X dashboard
       // when X loads the dashboard for activation in an iframe, we pass merchant=x in queryParams
       const { merchant: product } = getURLQueryParams(window.location.search);
@@ -357,7 +356,7 @@ export default class User {
   }
 
   get enabledFeatures() {
-    let pluckKey = 'feature';
+    const pluckKey = 'feature';
 
     return (this.features || []).map((object) => {
       return object[pluckKey];
@@ -668,6 +667,10 @@ export default class User {
 
   get isPLBatchUploadEnabled() {
     return this.getExpStatus('enable_pl_batch_upload');
+  }
+
+  get isAppSwitcherEnabled() {
+    return this.getExpStatus('app_switcher');
   }
 
   // No experiment of disable-edit-<moduleName> => Module is not restricted

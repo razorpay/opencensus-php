@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link, withRouter } from 'react-router-dom';
+import RTracking from 'react-tracking';
 
 import NotificationsDropdown from 'common/ui/NotificationsDropdown';
 import { toggleMobileMenu } from 'merchant/reducers/app';
@@ -8,9 +9,10 @@ import { toggleMobileMenu } from 'merchant/reducers/app';
 import ShowWhen from 'merchant/components/ShowWhen';
 import NavFragment from './NavFragment';
 import ModesDropdown from './SwitchMode';
+import AppSwitcher from './AppSwitcher';
 import ProfileDropdown from './ProfileDropdown';
 
-const analytics = action => {
+const analytics = (action) => {
   window.rzpAnalytics({
     eventCategory: 'Dashboard - Header',
     eventAction: action,
@@ -21,12 +23,14 @@ function toggleDropdown() {
   document.querySelector('#profile-dropdown .dropdown-toggle').click();
 }
 
+@RTracking(() => window.rzpQ.component('HeaderNav'))
 @withRouter
 @connect(
-  state => ({
+  (state) => ({
     activePageName: state.app.activePageName,
+    user: state.session.user,
   }),
-  { toggleMobileMenu }
+  { toggleMobileMenu },
 )
 export default class HeaderNav extends Component {
   constructor(props) {
@@ -39,6 +43,15 @@ export default class HeaderNav extends Component {
     const hash = this.props.history.location.hash;
     if (hash === '#profile_dropdown') {
       toggleDropdown();
+    }
+
+    if (this.props.user.isAppSwitcherEnabled) {
+      this.props.tracking.trackEvent(
+        window.rzpQ.onbr().success('dashboard.display_appswitcher', {
+          menu_title: 'App Switcher',
+          session_id: window.session_id,
+        }),
+      );
     }
   }
 
@@ -82,21 +95,16 @@ export default class HeaderNav extends Component {
       <nav class="navbar navbar-default navbar-fixed-top">
         <div class="container-fluid">
           <div className="navbar-collapse" id="headerNav">
-            {!showMobileNav &&
-              !user.isOrgRZP && (
-                <img
-                  src="/img/branding/powered-by-razorpay-dashboard.png"
-                  class="rzp-branding-logo"
-                  alt="Powered by Razorpay"
-                />
-              )}
+            {!showMobileNav && !user.isOrgRZP && (
+              <img
+                src="/img/branding/powered-by-razorpay-dashboard.png"
+                class="rzp-branding-logo"
+                alt="Powered by Razorpay"
+              />
+            )}
             {showMobileNav && (
               <div className="pull-left navbar-toggle-container">
-                <button
-                  type="button"
-                  className="navbar-toggle"
-                  onClick={this.onToggleAppMenu}
-                >
+                <button type="button" className="navbar-toggle" onClick={this.onToggleAppMenu}>
                   <span class="i-bar" />
                   <span class="i-bar" />
                   <span class="i-bar" />
@@ -106,11 +114,7 @@ export default class HeaderNav extends Component {
             )}
             <ul className="nav navbar-nav navbar-right">
               {(!showMobileNav && (
-                <NavFragment
-                  analytics={analytics}
-                  {...fragmentSpecificProps}
-                  {...commonProps}
-                />
+                <NavFragment analytics={analytics} {...fragmentSpecificProps} {...commonProps} />
               )) || (
                 <li>
                   <ModesDropdown
@@ -121,9 +125,7 @@ export default class HeaderNav extends Component {
                 </li>
               )}
               <ShowWhen
-                additionalCondition={user =>
-                  user.isOrgAllowedFunctionality('external_links')
-                }
+                additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
               >
                 <li id="notifications-dropdown">
                   <NotificationsDropdown
@@ -131,6 +133,11 @@ export default class HeaderNav extends Component {
                     showMobileNav={showMobileNav}
                     {...commonProps}
                   />
+                </li>
+              </ShowWhen>
+              <ShowWhen additionalCondition={(user) => user.isAppSwitcherEnabled}>
+                <li id="app-switcher">
+                  <AppSwitcher analytics={analytics} {...commonProps} />
                 </li>
               </ShowWhen>
               <li id="profile-dropdown">
