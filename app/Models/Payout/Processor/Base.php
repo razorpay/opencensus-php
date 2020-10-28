@@ -150,7 +150,7 @@ class Base extends BaseCore
                 {
                     $this->processSourceDetails($sourceDetails, $payout);
                 }
-                
+
                 return $payout;
             }
 

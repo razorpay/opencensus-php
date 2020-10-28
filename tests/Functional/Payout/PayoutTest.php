@@ -7959,6 +7959,21 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetVendorPaymentPayoutWithOrigin()
+    {
+        $this->testApprovePayoutWithNewWorkflowService();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payouts_internal/' . $payout->getPublicId();
+
+        $this->ba->appAuthLive($this->config['applications.vendor_payments.secret']);
+
+        $this->startTest();
+    }
+
     public function testCreateVendorPaymentPayoutWithOrigin()
     {
         $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);

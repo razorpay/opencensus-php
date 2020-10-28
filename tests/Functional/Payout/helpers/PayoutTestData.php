@@ -9321,6 +9321,31 @@ return [
         ],
     ],
 
+    'testGetVendorPaymentPayoutWithOrigin' => [
+        'request'  => [
+            'method'  => 'GET',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'url'     => '/payouts_internal/{payout_id}',
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 10000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Test Merchant Fund Transfer',
+                'purpose'         => 'refund',
+                'status'          => 'pending',
+                'mode'            => 'NEFT',
+                'tax'             => 0,
+                'fees'            => 0,
+                'origin'          => 'api',
+            ],
+        ],
+    ],
+
     'testCreatePayoutForRequestSubmitted' => [
         'request'  => [
             'method'  => 'POST',

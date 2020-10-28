@@ -307,7 +307,13 @@ abstract class Base
             $actorPropertyKey = Constants::NAME;
             $actorPropertyValue = Constants::SERVICE_RX . $ba->getMode(); // todo: make this generic
         }
-        else if ($ba->isBatchApp() === true)
+        else if ($ba->isStrictPrivateAuth() === true)
+        {
+            $actorId = $merchant->getId();
+            $actorType = Constants::MERCHANT;
+            $actorPropertyValue = Constants::API;
+        }
+        else
         {
             if (empty($user) === false)
             {
@@ -319,24 +325,8 @@ abstract class Base
             {
                 $actorId = $merchant->getId();
                 $actorType = Constants::MERCHANT;
-                $actorPropertyValue = Constants::API;
+                $actorPropertyValue = $ba->getInternalApp();
             }
-        }
-        else if ($ba->isStrictPrivateAuth() === true)
-        {
-            $actorId = $merchant->getId();
-            $actorType = Constants::MERCHANT;
-            $actorPropertyValue = Constants::API;
-        }
-        else if ($ba->isProxyOrPrivilegeAuth() === true)
-        {
-            $actorId = $user->getId();
-            $actorType = Constants::USER;
-            $actorPropertyValue = $ba->getUserRole();
-        }
-        else
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_WORKFLOW_SERVICE_ILLEGAL_ACCESS);
         }
 
         return [

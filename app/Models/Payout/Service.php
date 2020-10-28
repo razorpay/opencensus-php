@@ -523,6 +523,13 @@ class Service extends Base\Service
      */
     public function getWorkflowSummary(): array
     {
+        // For test mode, we haven't enabled workflows yet
+        // therefore returning empty array
+        if ($this->mode === Constants\Mode::TEST)
+        {
+            return [];
+        }
+
         if ($this->isWorkflowServiceEnabled() === true)
         {
             return (new WorkflowConfigService)->getConfigByType('payout-approval', $this->merchant->getId());
