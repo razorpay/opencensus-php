@@ -1562,6 +1562,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MERCHANT_INTERNATIONAL_TOGGLE_REQUEST                 = 'MERCHANT_INTERNATIONAL_TOGGLE_REQUEST';
 
+    const MERCHANT_INVOICE_QUERY_RESULT                         = 'MERCHANT_INVOICE_QUERY_RESULT';
+
     // ES related trace codes
     const ES_DEBUG_RESPONSE                                     = 'ES_DEBUG_RESPONSE';
     const ES_DEBUG_FAILED                                       = 'ES_DEBUG_FAILED';
@@ -2082,7 +2084,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_INVOICE_REPORT_REQUEST                       = 'MERCHANT_INVOICE_REPORT_REQUEST';
     const MERCHANT_BANKING_INVOICE_REPORT_REQUEST               = 'MERCHANT_BANKING_INVOICE_REPORT_REQUEST';
     const MERCHANT_INVOICE_ENTITY_CREATION_REQUEST              = 'MERCHANT_INVOICE_ENTITY_CREATION_REQUEST';
-    const MERCHANT_INVOICE_QUERY_TIMEOUT                        = 'MERCHANT_INVOICE_QUERY_TIMEOUT';
     const MERCHANT_INVOICE_CREATION_SKIPPED                     = 'MERCHANT_INVOICE_CREATION_SKIPPED';
 
     const MERCHANT_EMAIL_ADD_REQUEST                            = 'MERCHANT_EMAIL_ADD_REQUEST';

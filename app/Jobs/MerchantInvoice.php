@@ -2,6 +2,7 @@
 
 namespace RZP\Jobs;
 
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Invoice\Processor;
@@ -15,6 +16,10 @@ class MerchantInvoice extends Job
     protected $year;
 
     public $timeout = 1800;
+
+    const MERCHANT_INVOICE_MUTEX_RESOURCE = 'MERCHANT_INVOICE_CREATE_%s_%s_%s';
+
+    const MUTEX_LOCK_TIMEOUT = 1800;
 
     public function __construct(
         string $merchantId,
@@ -39,7 +44,17 @@ class MerchantInvoice extends Job
         {
             $creator = new Processor($this->merchantId, $this->month, $this->year);
 
-            $creator->createInvoiceEntities();
+            $resource = sprintf(self::MERCHANT_INVOICE_MUTEX_RESOURCE, $this->merchantId, $this->month, $this->year);
+
+            $this->mutex->acquireAndRelease(
+                $resource,
+                function () use ($creator)
+                {
+                    $creator->createInvoiceEntities();
+                },
+                self::MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+                );
         }
         catch (\Throwable $e)
         {

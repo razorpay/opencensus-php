@@ -12,4 +12,6 @@ class Connection
     const MASTER_REPLICA_LIVE   = 'master-replica-live';
     const DATA_WAREHOUSE_LIVE   = 'data-warehouse-live';
     const DATA_WAREHOUSE_TEST   = 'data-warehouse-test';
+    const REPORTING_REPLICA_LIVE = 'reporting-replica-live';
+    const REPORTING_REPLICA_TEST = 'reporting-replica-test';
 }

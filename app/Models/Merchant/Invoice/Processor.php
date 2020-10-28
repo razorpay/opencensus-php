@@ -54,70 +54,70 @@ class Processor extends Base\Core
         $this->trace->info(
             TraceCode::MERCHANT_INVOICE_ENTITY_CREATION_REQUEST,
             [
-                'merchant_id'   => $this->merchantId,
-                'month'         => $this->month,
-                'year'          => $this->year,
+                'merchant_id' => $this->merchantId,
+                'month'       => $this->month,
+                'year'        => $this->year,
             ]);
 
-        try
+
+        foreach ($this->invoiceBreakup as $balanceId => & $details)
         {
-            $this->repo->transaction(function(){
-                foreach ($this->invoiceBreakup as $balanceId => & $details)
+            try
+            {
+                $existingInvoices = $this->checkInvoiceExists($this->merchantId, $balanceId);
+
+                if ($existingInvoices->count() > 0)
                 {
-                    $existingInvoices = $this->checkInvoiceExists($this->merchantId , $balanceId);
+                    $this->trace->info(
+                        TraceCode::MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED,
+                        [
+                            'merchant'    => $this->merchantId,
+                            'month'       => $this->month,
+                            'year'        => $this->year,
+                            'invoice_ids' => $existingInvoices->getIds(),
+                        ]);
 
-                    if ($existingInvoices->count() > 0)
-                    {
-                        $this->trace->info(
-                            TraceCode::MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED,
-                            [
-                                'merchant'      => $this->merchantId,
-                                'month'         => $this->month,
-                                'year'          => $this->year,
-                                'invoice_ids'   => $existingInvoices->getIds(),
-                            ]);
-
-                        continue;
-                    }
-
-                    // sum over fees & tax for different commission types
-
-                    /** @var Merchant\Balance\Entity $balance */
-                    $balance = $this->repo->balance->findByIdAndMerchantId($balanceId, $this->merchantId);
-
-                    if ($balance->isTypePrimary() === true)
-                    {
-                        // details passed by reference
-                        $this->calculateFeesForPrimaryBalance($details);
-                    }
-                    else if ($balance->isTypeBanking() === true)
-                    {
-                        // details passed by reference
-                        $this->calculateFeesForBankingBalance($balanceId, $details);
-                    }
-                    else
-                    {
-                        // We just simply return here so that in case a new balance type
-                        // is added, the merchant invoice generation does not fail.
-                        return;
-                    }
-
-                    // create entities
-                    $this->createInvoiceBreakup($balance, $details);
+                    continue;
                 }
-            });
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::CRITICAL,
-                TraceCode::MERCHANT_INVOICE_ENTITY_CREATION_FAILED,
-                [
-                    'merchant_id'   => $this->merchant->getId(),
-                    'month'         => $this->month,
-                    'year'          => $this->year,
-                ]);
+
+                // sum over fees & tax for different commission types
+
+                /** @var Merchant\Balance\Entity $balance */
+                $balance = $this->repo->balance->findByIdAndMerchantId($balanceId, $this->merchantId);
+
+                if ($balance->isTypePrimary() === true)
+                {
+                    // details passed by reference
+                    $this->calculateFeesForPrimaryBalance($balanceId, $details);
+                }
+                else if ($balance->isTypeBanking() === true)
+                {
+                    // details passed by reference
+                    $this->calculateFeesForBankingBalance($balanceId, $details);
+                }
+                else
+                {
+                    // We just simply return here so that in case a new balance type
+                    // is added, the merchant invoice generation does not fail.
+                    return;
+                }
+
+                // create entities
+                $this->createInvoiceBreakup($balance, $details);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::CRITICAL,
+                    TraceCode::MERCHANT_INVOICE_ENTITY_CREATION_FAILED,
+                    [
+                        'merchant_id' => $this->merchant->getId(),
+                        'month' => $this->month,
+                        'year' => $this->year,
+                        'balance_id' => $balanceId,
+                    ]);
+             }
         }
     }
 
@@ -128,42 +128,43 @@ class Processor extends Base\Core
 
     protected function createInvoiceBreakup(Merchant\Balance\Entity $balance, array $details)
     {
-        $feeBearer = $this->merchant->getFeeBearer();
+        $this->repo->transaction(function() use ($balance, $details){
 
-        foreach ($details as $type => $feeDetails)
-        {
-            $params = [
-                Entity::MONTH   => $this->month,
-                Entity::YEAR    => $this->year,
-                Entity::TYPE    => $type,
-                Entity::GSTIN   => $this->gstin,
-                Entity::AMOUNT  => $feeDetails[Entity::AMOUNT],
-                Entity::TAX     => $feeDetails[Entity::TAX],
-            ];
+            $feeBearer = $this->merchant->getFeeBearer();
 
-            if (($balance->isTypePrimary() === true) and
-                ($feeBearer === Merchant\FeeBearer::CUSTOMER))
-            {
-                unset($params[Entity::GSTIN]);
+            foreach ($details as $type => $feeDetails) {
+                $params = [
+                    Entity::MONTH  => $this->month,
+                    Entity::YEAR   => $this->year,
+                    Entity::TYPE   => $type,
+                    Entity::GSTIN  => $this->gstin,
+                    Entity::AMOUNT => $feeDetails[Entity::AMOUNT],
+                    Entity::TAX    => $feeDetails[Entity::TAX],
+                ];
 
-                $this->app['trace']->info(
-                    TraceCode::INVOICE_WITHOUT_GSTIN,
-                    [
-                        'gstin_no'     => $this->gstin,
-                        'Merchant_id'  => $this->merchantId,
-                    ]);
+                if (($balance->isTypePrimary() === true) and
+                    ($feeBearer === Merchant\FeeBearer::CUSTOMER)) {
+                    unset($params[Entity::GSTIN]);
+
+                    $this->app['trace']->info(
+                        TraceCode::INVOICE_WITHOUT_GSTIN,
+                        [
+                            'gstin_no' => $this->gstin,
+                            'Merchant_id' => $this->merchantId,
+                        ]);
+                }
+
+                (new Core)->create($params, $this->merchant, $balance);
             }
-
-           (new Core)->create($params, $this->merchant, $balance);
-        }
+        });
     }
 
-    protected function calculateFeesForPrimaryBalance(array & $details)
+    protected function calculateFeesForPrimaryBalance($balanceId, array & $details)
     {
         // sum over fees & tax for different commission types
         foreach ($details as $type => $values)
         {
-            $details[$type] = $this->calculateFeesForInvoiceByTypeForPrimary($type);
+            $details[$type] = $this->calculateFeesForInvoiceByTypeForPrimary($type, $balanceId);
         }
     }
 
@@ -196,6 +197,13 @@ class Processor extends Base\Core
                                                $this->endTimestamp
                                            );
 
+            $this->logMerchantInvoiceResult(
+                'banking_invoice_' . $type,
+                'banking_payout_fee_amount',
+                $bankingPayoutsFeeAmount,
+                $balanceId
+            );
+
             $bankingFailedPayoutsFeeAmount = $this->repo
                                                   ->payout
                                                   ->fetchFeesAndTaxForFailedPayoutsForGivenBalanceId(
@@ -204,6 +212,13 @@ class Processor extends Base\Core
                                                       $this->beginTimestamp,
                                                       $this->endTimestamp
                                                   );
+
+            $this->logMerchantInvoiceResult(
+                'banking_invoice_' . $type,
+                'banking_failed_payout_fee_amount',
+                $bankingFailedPayoutsFeeAmount,
+                $balanceId
+            );
 
             $bankingFAVsFeeAmount = $this->repo
                                          ->fund_account_validation
@@ -214,6 +229,13 @@ class Processor extends Base\Core
                                              $this->endTimestamp
                                          );
 
+            $this->logMerchantInvoiceResult(
+                'banking_invoice_' . $type,
+                'banking_FAV_fee_amount',
+                $bankingFAVsFeeAmount,
+                $balanceId
+            );
+
             $bankingReversalsFeeAmount = $this->repo
                                               ->reversal
                                               ->fetchSumOfFeesAndTaxForReversalPayoutsForGivenBalanceId(
@@ -221,6 +243,13 @@ class Processor extends Base\Core
                                                   $balanceId,
                                                   $this->beginTimestamp,
                                                   $this->endTimestamp);
+
+            $this->logMerchantInvoiceResult(
+                'banking_invoice_' . $type,
+                'banking_reversal_fee_amount',
+                $bankingReversalsFeeAmount,
+                $balanceId
+            );
 
             $formattedFeesForTypeAndBalance = $this->formatFeesForBankingInvoice($bankingPayoutsFeeAmount,
                                                                                  $bankingFailedPayoutsFeeAmount,
@@ -235,10 +264,11 @@ class Processor extends Base\Core
      * Populate the map of Type of Commission with its Amount and Tax values
      *
      * @param string $type
+     * @param $balanceId
      *
      * @return array
      */
-    public function calculateFeesForInvoiceByTypeForPrimary(string $type)
+    public function calculateFeesForInvoiceByTypeForPrimary(string $type, $balanceId)
     {
         $transactionFeeAmount = [];
 
@@ -260,6 +290,12 @@ class Processor extends Base\Core
                                          $this->endTimestamp,
                                          $type);
 
+            $this->logMerchantInvoiceResult(
+                'pg_invoice_' . $type,
+                'payment_fee_amount',
+                $paymentFeeAmount,
+                $balanceId);
+
         }
 
         $paymentAmounts = $this->formatFeesForInvoice($paymentFeeAmount);
@@ -272,6 +308,12 @@ class Processor extends Base\Core
                                             $this->merchantId,
                                             $this->beginTimestamp,
                                             $this->endTimestamp);
+
+            $this->logMerchantInvoiceResult(
+                'pg_invoice_' . $type,
+                'validation_fee_amount',
+                $validationFeeAmount,
+                $balanceId);
         }
 
         $validationAmounts = $this->formatFeesForInvoice($validationFeeAmount);
@@ -284,6 +326,12 @@ class Processor extends Base\Core
                                              $this->merchantId,
                                              $this->beginTimestamp,
                                              $this->endTimestamp);
+
+            $this->logMerchantInvoiceResult(
+                'pg_invoice_' . $type,
+                'transaction_fee_amount',
+                $transactionFeeAmount,
+                $balanceId);
         }
 
         $transactionAmounts = $this->formatFeesForInvoice($transactionFeeAmount);
@@ -296,6 +344,12 @@ class Processor extends Base\Core
                                         $this->merchantId,
                                         $this->beginTimestamp,
                                         $this->endTimestamp);
+
+            $this->logMerchantInvoiceResult(
+                'pg_invoice_' . $type,
+                'refund_fee_amount',
+                $refundFeeAmount,
+                $balanceId);
         }
 
         $refundFeeAmounts = $this->formatFeesForInvoice($refundFeeAmount);
@@ -311,6 +365,12 @@ class Processor extends Base\Core
                                                 $this->merchantId,
                                                 $this->beginTimestamp,
                                                 $this->endTimestamp);
+
+            $this->logMerchantInvoiceResult(
+                'pg_invoice_' . $type,
+                'refund_reversal_fee_amount',
+                $refundReversalFeeAmount,
+                $balanceId);
         }
 
         $refundReversalFeeAmounts = $this->formatFeesForInvoice($refundReversalFeeAmount);
@@ -338,6 +398,19 @@ class Processor extends Base\Core
         }
     }
 
+    protected function logMerchantInvoiceResult($type, $step, $result, $balanceId)
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_INVOICE_QUERY_RESULT,
+            [
+                'merchant_id' => $this->merchantId,
+                'type'        => $type,
+                'step'        => $step,
+                'balance_id'  => $balanceId,
+                'result'      => empty($result) === false ? $result->getAttributes() : $result,
+            ]);
+    }
+
     protected function isInvoiceTypeOfPayment(string $type)
     {
         return (in_array($type, [Type::CARD_GT_2K, Type::CARD_LTE_2K, Type::OTHERS], true) === true);
@@ -362,14 +435,6 @@ class Processor extends Base\Core
     {
         if (empty($feeDetails) === true)
         {
-            $this->trace->info(
-                TraceCode::MERCHANT_INVOICE_QUERY_TIMEOUT,
-                [
-                    'merchant_id' => $this->merchantId,
-                    'month'       => $this->month,
-                    'year'        => $this->year
-                ]);
-
             return [
                 Entity::TAX    => 0,
                 Entity::AMOUNT => 0,

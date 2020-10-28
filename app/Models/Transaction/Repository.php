@@ -198,7 +198,7 @@ class Repository extends Base\Repository
                    AND `transactions`.`merchant_id` = ?
             LIMIT  1
          */
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getReportingReplicaConnection())
             ->selectRaw('SUM(' . $this->dbColumn(Entity::TAX) . ') AS tax, SUM(' . $this->dbColumn(Entity::FEE) . ') AS fee')
             ->where($this->dbColumn(Entity::TYPE), '=', 'refund')
             ->whereBetween($this->dbColumn(Entity::CREATED_AT), [$start, $end]);
@@ -945,7 +945,7 @@ class Repository extends Base\Repository
         $transactionsTypeColumn             = $this->repo->transaction->dbColumn(Entity::TYPE);
         $balanceTypeColumn                  = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
                     ->selectRaw('SUM(' . Entity::TAX .') AS tax, SUM(' . Entity::FEE . ') AS fee')
                     ->join(Entity::BALANCE, $transactionsBalanceIDColumn, $balanceIDColumn)
                     ->whereBetween($transactionsCreatedATColumn, [$start, $end])
@@ -965,7 +965,7 @@ class Repository extends Base\Repository
         $transactionsTypeColumn      = $this->repo->transaction->dbColumn(Entity::TYPE);
         $balanceTypeColumn           = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
                     ->selectRaw('SUM(' . Entity::TAX . ') AS tax, SUM(' . Entity::FEE . ') AS fee')
                     ->join(Entity::BALANCE, $transactionsBalanceIDColumn, $balanceIDColumn)
                     ->whereBetween($transactionsCreatedATColumn, [$start, $end])

@@ -268,6 +268,36 @@ return array(
             'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
         ],
 
+        'reporting-replica-live' => [
+            'driver'    => env('REPORTING_DB_LIVE_DRIVER'),
+            'host'      => env('REPORTING_DB_LIVE_HOST'),
+            'port'      => env('REPORTING_DB_LIVE_PORT'),
+            'database'  => env('REPORTING_DB_LIVE_DATABASE'),
+            'username'  => env('REPORTING_DB_LIVE_USERNAME'),
+            'password'  => env('REPORTING_DB_LIVE_PASSWORD'),
+            'charset'   => 'utf8',
+            'collation' => 'utf8_bin',
+            'prefix'    => '',
+            'strict'    => true,
+            'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
+            'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
+        ],
+
+        'reporting-replica-test' => [
+            'driver'    => env('REPORTING_DB_TEST_DRIVER'),
+            'host'      => env('REPORTING_DB_TEST_HOST'),
+            'port'      => env('REPORTING_DB_TEST_PORT'),
+            'database'  => env('REPORTING_DB_TEST_DATABASE'),
+            'username'  => env('REPORTING_DB_TEST_USERNAME'),
+            'password'  => env('REPORTING_DB_TEST_PASSWORD'),
+            'charset'   => 'utf8',
+            'collation' => 'utf8_bin',
+            'prefix'    => '',
+            'strict'    => true,
+            'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
+            'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
+        ],
+
         'auth' => [
             'driver'    => env('DB_AUTH_DRIVER'),
             'host'      => env('DB_AUTH_HOST'),

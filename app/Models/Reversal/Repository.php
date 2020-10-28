@@ -92,7 +92,7 @@ class Repository extends Base\Repository
                    AND `reversals`.`merchant_id` = ?
             LIMIT  1
          */
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getReportingReplicaConnection())
             ->selectRaw('SUM(' . $this->dbColumn(Entity::TAX) . ') AS tax, SUM(' . $this->dbColumn(Entity::FEE) . ') AS fee')
             ->where($this->dbColumn(Entity::ENTITY_TYPE), '=', E::REFUND)
             ->whereBetween($this->dbColumn(Entity::CREATED_AT), [$start, $end]);
@@ -157,7 +157,7 @@ class Repository extends Base\Repository
         $columns = ' SUM(' . $payoutsTaxColumn . ') AS tax,
                      SUM(' . $payoutsFeeColumn . ') AS fee';
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
                     ->selectRaw($columns)
                     ->join(Table::PAYOUT, $reversalsEntityIDColumn, $payoutsIDColumn)
                     ->merchantID($merchantId)
