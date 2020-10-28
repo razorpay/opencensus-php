@@ -155,10 +155,12 @@ export default class InstantActivationAnnouncements extends Component {
           title = 'KYC Clarification';
           content = (
             <React.Fragment>
-              Your KYC details require further clarifications. Please check your registered email
-              inbox for a mail with{' '}
-              <span style={{ 'font-weight': 'bold' }}>"Razorpay: Activation form update" </span>as
-              subject and complete the requested steps for a quick resolution.
+              Your KYC details require further clarifications. For quick resolution, update required details
+              &nbsp;
+              <Link to="/activation" style={{ 'font-weight': 'bold' }}>
+                here
+              </Link>
+              .
             </React.Fragment>
           );
         }
