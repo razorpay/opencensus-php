@@ -29,7 +29,6 @@ class Lambda extends Base
         Base::VAS_AXIS,
         Base::UPI_AXIS,
         Base::BT_RBL,
-        Base::BT_ICICI,
         Base::NETBANKING_PNB,
         Base::CRED,
     ];

@@ -127,7 +127,6 @@ class Base extends Core
     const CRED                   = 'Cred';
 
     const BT_RBL                 = 'BtRbl';
-    const BT_ICICI               = 'BtIcici';
 
 
     /**
