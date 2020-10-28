@@ -6,21 +6,22 @@ const SLIDER_OPEN = 'SLIDER_OPEN';
 const SLIDER_CLOSE = 'SLIDER_CLOSE';
 const SETTELMENT_CONFIRMATION = 'SETTELMENT_CONFIRMATION';
 
-export const openModal = payload => {
+export const openModal = (payload) => {
   return {
     type: MODAL_OPEN,
     payload,
   };
 };
 
-export const closeModal = payload => {
+export const closeModal = (payload) => {
+  document.body.classList.remove('ReactModal__Body--open');
   return {
     type: MODAL_CLOSE,
     payload,
   };
 };
 
-export const openSlider = payload => {
+export const openSlider = (payload) => {
   if (payload.openURL) {
     location.hash = payload.openURL;
   }
@@ -34,7 +35,7 @@ export const openSlider = payload => {
   };
 };
 
-export const closeSlider = payload => {
+export const closeSlider = (payload) => {
   if (payload && payload.closeURL) {
     location.hash = payload.closeURL;
   }

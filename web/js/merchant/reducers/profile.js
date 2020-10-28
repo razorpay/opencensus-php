@@ -23,7 +23,7 @@ export const fetchBankAccount = () => {
 };
 
 // To accept invitation
-export const acceptInvitation = inviteId => {
+export const acceptInvitation = (inviteId) => {
   return () => {
     return ajax({
       url: `/settings/invitations/${inviteId}/accept`,
@@ -47,7 +47,7 @@ export const rejectInvitation = (inviteId, userId) => {
   };
 };
 
-export const upgradeAccount = data => {
+export const upgradeAccount = (data) => {
   return () => {
     return ajax({
       url: '/merchants/register',
@@ -58,7 +58,7 @@ export const upgradeAccount = data => {
   };
 };
 
-export const updatePassword = data => {
+export const updatePassword = (data) => {
   return () => {
     return ajax({
       url: '/password',
@@ -69,7 +69,7 @@ export const updatePassword = data => {
   };
 };
 
-export const updateDisplayName = data => {
+export const updateDisplayName = (data) => {
   return () => {
     return merchantFetch({
       url: 'account/config',
@@ -89,7 +89,7 @@ export const fetchGST = () => {
   };
 };
 
-export const saveGST = data => {
+export const saveGST = (data) => {
   return {
     type: GST_SAVE,
     payload: merchantFetch({
@@ -101,7 +101,7 @@ export const saveGST = data => {
   };
 };
 
-export const fetchBankAccountChangeStatus = merchantId => {
+export const fetchBankAccountChangeStatus = (merchantId) => {
   return {
     type: BANK_ACCOUNT_CHANGE_STATUS_FETCH,
     payload: merchantFetch({
@@ -126,6 +126,18 @@ export const saveBankAccountChanges = (merchantId, formdata) => {
     type: BANK_ACCOUNT_CHANGES_SAVE,
     payload: merchantFetch({
       url: `merchants/bank_account`,
+      method: 'post',
+      mode: 'live',
+      data: formdata,
+    }),
+  };
+};
+
+export const saveBankAccountChangesAutomate = (merchantId, formdata) => {
+  return {
+    type: BANK_ACCOUNT_CHANGES_SAVE,
+    payload: merchantFetch({
+      url: `merchants/bank_account/update`,
       method: 'post',
       mode: 'live',
       data: formdata,
@@ -221,7 +233,7 @@ let initialState = {
   },
 };
 
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   switch (action.type) {
     case `${BANK_ACCOUNT_FETCH}::SUCCESS`:
       return set(state, 'bankAccount', action.payload.data);

@@ -67,19 +67,27 @@ export default class TwoFaVerificationContextProvider extends React.Component {
       }),
     );
   })
-  criticalFlow = ({ onUserTwoFaVerified, onFlowTermination, modes = ['test', 'live'] }) => {
+  criticalFlow = ({
+    onUserTwoFaVerified,
+    onFlowTermination,
+    modes = ['test', 'live'],
+    onBankAccountUpdateReq = false,
+  }) => {
     this.onCloseCallback = onFlowTermination;
 
     const { user, twoFactorVerified, modeOfApp } = this.props;
 
-    if (user.isCriticalRouteExperimentEnabled && modes.includes(modeOfApp)) {
+    if (
+      (user.isCriticalRouteExperimentEnabled || onBankAccountUpdateReq) &&
+      modes.includes(modeOfApp)
+    ) {
       if (!user.isTwoFactorSetupDone) {
         return this.completeTwoFactorVerificationSetup({
           onContactMobileUpdated: this.onContactMobileUpdated({
             onUserTwoFaVerified,
           }),
         });
-      } else if (!twoFactorVerified) {
+      } else if (!twoFactorVerified || onBankAccountUpdateReq) {
         this.verifyUserViaTwoFactorOtp({ onUserTwoFaVerified });
       } else {
         onUserTwoFaVerified();

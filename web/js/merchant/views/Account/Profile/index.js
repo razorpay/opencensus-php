@@ -28,6 +28,8 @@ import SupportDetails from 'merchant/views/Account/Profile/components/SupportDet
 
 import User2FASettings from './components/User2FASettings';
 
+import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
+
 @connect(
   (state) => {
     return {
@@ -53,6 +55,8 @@ export default class Profile extends Component {
     isBankAccountChangeAllowed: null,
     isWebsiteInWorkflow: null,
   };
+
+  static contextType = TwoFactorVerificationContext;
 
   componentWillMount() {
     this.props.fetchUser().then((reponse) => {
@@ -222,15 +226,28 @@ export default class Profile extends Component {
 
   openChangeBankDetailsModal = () => {
     const { bankAccount } = this.props.profile;
+    const { user } = this.props;
 
-    this.props.openModal({
-      size: 'large',
-      component: (
-        <BankAccountDetailsChange
-          currentBankAccount={bankAccount}
-          onSave={this.saveBankAccountChanges}
-        />
-      ),
+    window.rzpAnalytics({
+      eventCategory: 'Bank Account',
+      eventAction: 'Bank account edit clicked',
+      eventLabel: `${user.id}`,
+    });
+
+    return this.context.criticalFlow({
+      modes: ['live'],
+      onUserTwoFaVerified: () => {
+        this.props.openModal({
+          size: 'large',
+          component: (
+            <BankAccountDetailsChange
+              currentBankAccount={bankAccount}
+              onSave={this.saveBankAccountChanges}
+            />
+          ),
+        });
+      },
+      onBankAccountUpdateReq: true,
     });
   };
 
@@ -250,6 +267,31 @@ export default class Profile extends Component {
       if (body.hasOwnProperty(prop)) {
         formdata.append(prop, body[prop]);
       }
+    }
+
+    window.rzpAnalytics({
+      eventCategory: 'Bank Account',
+      eventAction: 'Bank account save clicked',
+      eventLabel: `${user.id}`,
+    });
+
+    if (user.bankAccountAutoUpdateOrWorkflow()) {
+      return this.props
+        .saveBankAccountChangesAutomate(user.id, formdata) //user.id is merchant_id not user_id
+        .then((response) => {
+          this.props.closeModal();
+          this.props.showNotification({
+            type: 'success',
+            message: 'Bank Account change request updated succesfully. ',
+          });
+          this.setState({ isBankAccountChangeAllowed: false });
+        })
+        .catch(({ errors }) => {
+          this.props.showNotification({
+            type: 'error',
+            message: errors,
+          });
+        });
     }
 
     return this.props

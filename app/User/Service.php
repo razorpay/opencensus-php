@@ -1368,6 +1368,7 @@ class Service extends Base\Service
             'skip_workflow_payout_specific_feature',
             'low_balance_alert_frequency_30M',
             'rx_home_v2',
+            'bank_account_update_merchant_dashboard',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

@@ -15,9 +15,7 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { isWebkit } from 'common/utils/rzp-utils';
 
 const verifyAccountNumber = (value, allValues, props) => {
-  return value !== allValues.account_number
-    ? "Bank Number doesn't match"
-    : undefined;
+  return value !== allValues.account_number ? "Bank Number doesn't match" : undefined;
 };
 
 @connect(null, {
@@ -27,11 +25,11 @@ const verifyAccountNumber = (value, allValues, props) => {
 @reduxForm({
   form: 'changeBankAccountDetails',
 })
-export default class BandAccountDetailsChange extends Component {
+export default class BankAccountDetailsChange extends Component {
   state = {
     addressProof: null,
   };
-  handleFileChange = event => {
+  handleFileChange = (event) => {
     if (event) {
       this.setState({
         file: event.target.files[0],
@@ -39,7 +37,7 @@ export default class BandAccountDetailsChange extends Component {
     }
   };
 
-  handleSubmission = body => {
+  handleSubmission = (body) => {
     const { currentBankAccount } = this.props;
 
     if (!this.state.file) {
@@ -59,20 +57,12 @@ export default class BandAccountDetailsChange extends Component {
     const { isBankAccountChangeAllowed, handleSubmit } = this.props;
     return (
       <div class="bank-details-change">
-        <ModalHeader
-          title="Change Bank Account Details"
-          onCloseClick={this.props.closeModal}
-        />
+        <ModalHeader title="Change Bank Account Details" onCloseClick={this.props.closeModal} />
         <div class="modal-body bank-details-change-content">
-          <form
-            class="form-horizontal"
-            onSubmit={handleSubmit(this.handleSubmission)}
-          >
+          <form class="form-horizontal" onSubmit={handleSubmit(this.handleSubmission)}>
             <Fieldset>
               <div class="form-group">
-                <label class="col-md-3 control-label label-required">
-                  Branch IFSC Code
-                </label>
+                <label class="col-md-3 control-label label-required">Branch IFSC Code</label>
                 <div class="col-md-9">
                   <Field
                     name="ifsc_code"
@@ -86,9 +76,7 @@ export default class BandAccountDetailsChange extends Component {
               </div>
 
               <div class="form-group">
-                <label class="col-md-3 control-label label-required">
-                  Bank Account Number
-                </label>
+                <label class="col-md-3 control-label label-required">Bank Account Number</label>
                 <div class="col-md-9">
                   <Field
                     name="account_number"
@@ -118,9 +106,7 @@ export default class BandAccountDetailsChange extends Component {
               </div>
 
               <div class="form-group">
-                <label class="col-md-3 control-label label-required">
-                  Beneficiary Name
-                </label>
+                <label class="col-md-3 control-label label-required">Beneficiary Name</label>
                 <div class="col-md-9">
                   <Field
                     name="beneficiary_name"
@@ -145,9 +131,8 @@ export default class BandAccountDetailsChange extends Component {
                     Upload following:
                     <ul>
                       <li>
-                        Bank Account Statement (last three months or since
-                        opening of account) OR cancelled cheque issued in the
-                        name of the registered business
+                        Bank Account Statement (last three months or since opening of account) OR
+                        cancelled cheque issued in the name of the registered business
                       </li>
                     </ul>
                   </span>
@@ -155,7 +140,7 @@ export default class BandAccountDetailsChange extends Component {
                     accept="image/jpeg,image/png,application/pdf,application/x-pdf"
                     maxSize="8000000"
                     uploadedFileName={this.state.file}
-                    onChange={event => {
+                    onChange={(event) => {
                       this.handleFileChange(event);
                     }}
                   />

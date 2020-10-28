@@ -685,6 +685,11 @@ export default class User {
     return this.getExpStatus('instrument_request_merchant_dashboard');
   }
 
+  // Bank account auto update or old workflow with the approval from admin
+  bankAccountAutoUpdateOrWorkflow() {
+    return this.getExpStatus('bank_account_update_merchant_dashboard');
+  }
+
   // Setter Methods
   set secondFactorAuthOfCurrentMerchant(secondFactorAuth) {
     this.merchants[this.current].second_factor_auth = secondFactorAuth;
