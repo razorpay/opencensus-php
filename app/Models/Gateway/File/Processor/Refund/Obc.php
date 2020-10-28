@@ -9,6 +9,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Processor\FileHandler;
+use RZP\Services\NbPlus\Netbanking;
 
 class Obc extends Base
 {
@@ -53,7 +54,7 @@ class Obc extends Base
                 $row['payment']['id'],
                 $this->getRefundType($row['payment']['refund_status']),
                 $this->getFormattedAmount($row['refund']['amount']),
-                $row['gateway']['bank_payment_id'],
+                $this->getBankPaymentID($row),
                 $this->claimDate,
                 $this->getFormattedAmount($row['payment']['amount']),
                 $row['refund']['id'],
@@ -88,5 +89,15 @@ class Obc extends Base
     protected function getRefundType($refundType)
     {
         return (($refundType === Payment\RefundStatus::FULL) ? 'C' : 'R');
+    }
+
+    protected function getBankPaymentID($row)
+    {
+        if($row['payment']['cps_route'] == Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $row['gateway'][Netbanking::BANK_TRANSACTION_ID];
+        }
+
+        return $row['gateway']['bank_payment_id'];
     }
 }

@@ -3072,6 +3072,7 @@ class Gateway
             self::NETBANKING_FSB,
             self::PAYU,
             self::NETBANKING_IDFC,
+            self::NETBANKING_OBC,
             self::NETBANKING_DCB,
         ];
 
