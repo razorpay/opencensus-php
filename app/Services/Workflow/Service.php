@@ -51,6 +51,12 @@ class Service
 
     protected $dirtyData;
 
+    protected $tags = [];
+
+    private $workflowMaker;
+
+    private $workflowMakerType;
+
     /**
      * @var bool
      */
@@ -72,6 +78,65 @@ class Service
         $this->request = $this->app['request'];
 
         $this->ba = $this->app['basicauth'];
+
+        $this->routeName = $this->router->currentRouteName();
+
+        if(empty($this->router->current()) === false)
+        {
+            $this->routeParams = $this->router->current()->parameters();
+        }
+
+        $this->controller = $this->router->currentRouteAction();
+
+        $this->initWorkflowMaker();
+    }
+
+    public function getRouteParams()
+    {
+        return $this->routeParams;
+    }
+
+    public function setRouteParams($routeParams)
+    {
+        $this->routeParams = $routeParams;
+
+        return $this;
+    }
+
+    public function getRouteName()
+    {
+        return $this->routeName;
+    }
+
+    public function setRouteName($routeName)
+    {
+        $this->routeName = $routeName;
+
+        return $this;
+    }
+
+    public function getController()
+    {
+        return $this->controller;
+    }
+
+    public function setController($controller)
+    {
+        $this->controller = $controller;
+
+        return $this;
+    }
+
+    public function setTags(array $tags)
+    {
+        $this->tags = $tags;
+
+        return $this;
+    }
+
+    public function getTags()
+    {
+        return $this->tags;
     }
 
     public function setEntity($entity)
@@ -123,7 +188,7 @@ class Service
         // This block works for "edit" operations only
         if (empty($entityId) === true)
         {
-            $routeParams = $this->router->current()->parameters();
+            $routeParams = $this->getRouteParams();
             // Pick the `id` first, if not then the first value
             // First value is not entirely robust though
             $entityId = $routeParams['id'] ?? (array_values($routeParams)[0] ?? null);
@@ -143,6 +208,8 @@ class Service
         // It contains the diff entity to show on the UI + payload to trigger
         // the request on execute operation.
         $params = $this->createDifferEntity($this->request, $entity, $entityId);
+
+        $params[Action\Entity::TAGS] = $this->getTags();
 
         // returns Workflow\Action\Entity->toArrayPublic()
         $data = (new Action\Service)->create($params);
@@ -228,42 +295,6 @@ class Service
     public function getPermission()
     {
         return $this->permission;
-    }
-
-    public function getController()
-    {
-        return $this->controller;
-    }
-
-    public function setController($controller)
-    {
-        $this->controller = $controller;
-
-        return $this;
-    }
-
-    public function getRouteName()
-    {
-        return $this->routeName;
-    }
-
-    public function setRouteName($routeName)
-    {
-        $this->routeName = $routeName;
-
-        return $this;
-    }
-
-    public function getRouteParams()
-    {
-        return $this->routeParams;
-    }
-
-    public function setRouteParams($routeParams)
-    {
-        $this->routeParams = $routeParams;
-
-        return $this;
     }
 
     public function getInput()
@@ -519,7 +550,7 @@ class Service
         if ($count === 0)
         {
             // Let's re-try creating workflow action and relevant entities
-
+            $data['tags']= $this->getTags();
             $action = $core->create($data, $retry = true, $maker);
         }
         else
@@ -530,31 +561,47 @@ class Service
         return $action->toArrayPublic();
     }
 
-    public function getWorkflowMaker()
+    public function initWorkflowMaker()
     {
         // If admin auth then return Admin
         if ($this->ba->isAdminAuth() === true)
         {
-            return $this->ba->getAdmin();
+            $this->workflowMaker = $this->ba->getAdmin();
+            $this->workflowMakerType = MakerType::ADMIN;
         }
 
         // If any other auth but admin then return merchant
         if ($this->ba->getMerchant() !== null)
         {
-            return $this->ba->getMerchant();
+            $this->workflowMaker = $this->ba->getMerchant();
+            $this->workflowMakerType = MakerType::MERCHANT;
         }
+    }
 
-        return null;
+    public function getWorkflowMaker()
+    {
+        if(empty($this->workflowMaker) === true)
+        {
+            $this->initWorkflowMaker();
+        }
+        return $this->workflowMaker;
+    }
+
+    public function setWorkflowMaker($maker)
+    {
+        $this->workflowMaker = $maker;
+
+        return $this;
     }
 
     public function getWorkflowMakerType()
     {
-        if ($this->ba->isAdminAuth() === true)
+        if (empty($this->workflowMakerType) === true)
         {
-            return MakerType::ADMIN;
+            $this->initWorkflowMaker();
         }
 
-        return MakerType::MERCHANT;
+        return $this->workflowMakerType;
     }
 
     /**
@@ -597,7 +644,6 @@ class Service
 
         return true;
     }
-
 
     protected function setRequestParametersWhereApplicable()
     {

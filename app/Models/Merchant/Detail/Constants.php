@@ -179,5 +179,7 @@ class Constants
 
     const SEARCH_STRING = 'search_string';
 
+    const ACTIVATION_ROUTE_NAME     = 'merchant_activation_status';
+    const ACTIVATION_CONTROLLER     = 'RZP\Http\Controllers\MerchantController@updateActivationStatus';
 }
 

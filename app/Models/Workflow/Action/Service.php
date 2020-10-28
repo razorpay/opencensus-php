@@ -77,7 +77,7 @@ class Service extends Base\Service
      */
     public function getActionsCheckedByAdmin($input)
     {
-        $input[Constants::EXPAND] = [Entity::MAKER];
+        $input[Constants::EXPAND] = [Entity::MAKER, Entity::TAGGED, Entity::OWNER];
 
         $input[Constants::ACTIONS_CHECKED] = true;
 
@@ -210,7 +210,7 @@ class Service extends Base\Service
      */
     public function getActionsForChecker(array $input)
     {
-        $input[Constants::EXPAND] = [Entity::MAKER];
+        $input[Constants::EXPAND] = [Entity::MAKER, Entity::TAGGED, Entity::OWNER];
 
         $input[Constants::CHECKER_ACTIONS] = true;
 
@@ -232,7 +232,7 @@ class Service extends Base\Service
     {
         $input[Entity::ORG_ID] = $this->maker->getOrgId();
 
-        $input[Constants::EXPAND] = [Entity::MAKER];
+        $input[Constants::EXPAND] = [Entity::MAKER, Entity::TAGGED, Entity::OWNER];
 
         $input[Entity::PERMISSION] = true;
 
@@ -250,7 +250,7 @@ class Service extends Base\Service
     {
         $input[Entity::PERMISSION] = true;
 
-        $input[Constants::EXPAND] = [Entity::MAKER];
+        $input[Constants::EXPAND] = [Entity::MAKER, Entity::TAGGED, Entity::OWNER];
 
         $input[Constants::CLOSED_ACTIONS] = true;
 
@@ -268,7 +268,7 @@ class Service extends Base\Service
     {
         $input[Entity::PERMISSION] = true;
 
-        $input[Constants::EXPAND] = ['workflow', Entity::MAKER];
+        $input[Constants::EXPAND] = ['workflow', Entity::MAKER, Entity::TAGGED, Entity::OWNER];
 
         $input[Entity::ORG_ID] = $this->maker->getOrgId();
 

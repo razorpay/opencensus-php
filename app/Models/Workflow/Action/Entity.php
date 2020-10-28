@@ -6,6 +6,7 @@ use RZP\Models\State;
 use RZP\Models\Comment;
 use RZP\Models\Workflow;
 use RZP\Models\Admin\Org;
+use Conner\Tagging\Taggable;
 use RZP\Models\Workflow\Base;
 use RZP\Models\Admin\Permission;
 
@@ -19,6 +20,8 @@ use RZP\Models\Admin\Permission;
  */
 class Entity extends Base\Entity
 {
+    use Taggable;
+
     const ID                    = 'id';
     const ENTITY_ID             = 'entity_id';
     const ENTITY_NAME           = 'entity_name';
@@ -37,6 +40,10 @@ class Entity extends Base\Entity
     const STATE                 = 'state';
     const CURRENT_LEVEL         = 'current_level';
     const DIFFER                = 'differ';
+    const TAGS                  = 'tags';
+    const TAGGED                = 'tagged';
+    const OWNER_ID              = 'owner_id';
+    const OWNER                 = 'owner';
 
     // Relations
     const WORKFLOW      = 'workflow';
@@ -92,6 +99,9 @@ class Entity extends Base\Entity
         self::STATE_CHANGER_ID,
         self::STATE_CHANGER_TYPE,
         self::STATE_CHANGER_ROLE,
+        self::TAGGED,
+        self::OWNER_ID,
+        self::OWNER,
     ];
 
     protected $publicSetters = [
@@ -101,6 +111,8 @@ class Entity extends Base\Entity
         self::STATE_CHANGER_ID,
         self::MAKER_ID,
         self::ORG_ID,
+        self::TAGGED,
+        self::OWNER_ID,
     ];
 
     protected $public = [
@@ -119,6 +131,7 @@ class Entity extends Base\Entity
         self::MAKER,
         self::STATE_CHANGER,
         self::ORG_ID,
+        self::OWNER_ID,
         self::APPROVED,
         self::CURRENT_LEVEL,
         self::CREATED_AT,
@@ -128,6 +141,8 @@ class Entity extends Base\Entity
         self::STATE_CHANGER_ID,
         self::STATE_CHANGER_TYPE,
         self::STATE_CHANGER_ROLE,
+        self::TAGGED,
+        self::OWNER,
     ];
 
     protected $defaults = [
@@ -140,6 +155,22 @@ class Entity extends Base\Entity
         self::APPROVED      => 'boolean',
         self::CURRENT_LEVEL => 'integer',
     ];
+
+    protected $embeddedRelations = [
+        self::TAGGED
+    ];
+
+    public function setPublicTaggedAttribute(& $attributes)
+    {
+        if (empty($attributes[self::TAGGED]) == false)
+        {
+            $tags = $attributes[self::TAGGED]->toArray();
+
+            $tags = array_fetch($tags, 'tag_slug');
+
+            $attributes[self::TAGGED] = $tags;
+        }
+    }
 
     public function org()
     {
@@ -161,6 +192,11 @@ class Entity extends Base\Entity
         return $this->morphMany(Comment\Entity::class, 'entity');
     }
 
+    public function owner()
+    {
+        return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
+    }
+
     public function maker()
     {
         return $this->morphTo();
@@ -179,6 +215,11 @@ class Entity extends Base\Entity
     public function setCurrentLevel(int $level)
     {
         $this->setAttribute(self::CURRENT_LEVEL, $level);
+    }
+
+    public function getOwnerId() : string
+    {
+        return $this->getAttribute(self::OWNER_ID);
     }
 
     public function getCurrentLevel() : int

@@ -363,6 +363,8 @@ class WorkflowActionTest extends TestCase
 
         $this->esClient->indices()->refresh();
 
+        $this->app['workflow']->setWorkflowMaker(null);
+
         // Try to close as a different user
         $this->ba->adminAuth('test', Org::MAKER_ADMIN_TOKEN, Org::RZP_ORG_SIGNED);
 

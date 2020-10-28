@@ -86,6 +86,7 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
+
         $merchantDetails->getValidator()->validateIsNotLocked($merchant);
 
         $merchantDetails->getValidator()->blockInstantActivationCriticalFields($input);
@@ -115,6 +116,7 @@ class Core extends Base\Core
                     $this->repo->merchant_detail->lockForUpdate($merchantDetails->getId());
 
                     $merchantDetails = $this->editMerchantDetailFields($merchant, $input);
+                    $oldActivationStatus = $merchantDetails->getActivationStatus();
 
                     $response = $this->createResponse($merchantDetails);
 
@@ -124,18 +126,122 @@ class Core extends Base\Core
                         $merchantDetails->getValidator()->validateFullActivationForm($merchant);
 
                         $response = $this->submitActivationForm($merchant, $originProduct);
+
+                        // If activation status changes to under_review and previous activation status is
+                        // Needs Clarification, then it means merchant has responded to Needs Clarification.
+                        // If merchant is NC responded then we want to trigger activation workflow
+                        if($this->isNcResponded($oldActivationStatus, $merchantDetails->getActivationStatus()))
+                        {
+                            $this->triggerActivationWorkflow($merchant);
+                        }
                     }
                     else
                     {
                         $response = $this->updateActivationProgress($merchant);
                     }
-
                     return $response;
                 });
             },
             Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
             Constants::MERCHANT_MUTEX_RETRY_COUNT);
+    }
+
+    private function triggerActivationWorkflow($merchant)
+    {
+        $statusChangeLogs = (new Merchant\Core)->getActivationStatusChangeLog($merchant);
+
+        // agent who marked NC will be the maker of activation workflow
+        $maker = $this->getNcMarkedAgent($statusChangeLogs);
+
+        if(empty($maker))
+        {
+            return;
+        }
+
+        $tags = [
+            $this->getNcRespondedCountTag($statusChangeLogs),
+            $this->getNcMarkedAgentTag($maker)
+        ];
+        $input = [Entity::ACTIVATION_STATUS => Status::ACTIVATED];
+
+        // The reason routeName and Controller is set here because
+        // the workflow being triggered is associated with the different route.
+        $this->app['workflow']
+            ->setPermission(Permission\Name::EDIT_ACTIVATE_MERCHANT)
+            ->setRouteName(DetailConstants::ACTIVATION_ROUTE_NAME)
+            ->setController(DetailConstants::ACTIVATION_CONTROLLER)
+            ->setWorkflowMaker($maker)
+            ->setTags($tags)
+            ->setRouteParams([Entity::ID => $merchant->getId()])
+            ->setInput($input);
+
+        try
+        {
+            $this->updateActivationStatus($merchant, $input, $maker);
+        }
+        catch(Exception\EarlyWorkflowResponse $e)
+        {
+            // Catching exception because we do not want to abort the code flow
+            $workflowActionData = json_decode($e->getMessage(), true);
+            $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
+        }
+    }
+
+    protected function isNcResponded($oldActivationStatus, $newActivationStatus)
+    {
+        return (
+            $oldActivationStatus === Status::NEEDS_CLARIFICATION and
+            $newActivationStatus === Status::UNDER_REVIEW
+        );
+    }
+
+    protected function getNcRespondedCountTag($statusChangeLogs)
+    {
+        $count = 0;
+        $ncFound = false;
+        foreach ($statusChangeLogs as $statusData)
+        {
+            if($statusData[State\Entity::NAME] === Status::NEEDS_CLARIFICATION)
+            {
+                $ncFound = true;
+                continue;
+            }
+            if($statusData[State\Entity::NAME] === Status::UNDER_REVIEW and $ncFound)
+            {
+                $count++;
+                $ncFound = false;
+            }
+        }
+
+        if($count >= 3)
+        {
+            return "NCR3_greater";
+        }
+
+        return "NCR".$count;
+    }
+
+    protected function getNcMarkedAgent($statusChangeLogs)
+    {
+        $adminId = null;
+        foreach ($statusChangeLogs as $statusData)
+        {
+            if($statusData[State\Entity::NAME] === Status::NEEDS_CLARIFICATION){
+                $adminId = $statusData[State\Entity::ADMIN_ID];    // get the latest admin who marked NC
+            }
+        }
+
+        if(!empty($adminId))
+        {
+            return $this->repo->admin->findOrFailPublic($adminId);
+        }
+        return null;
+    }
+
+    protected function getNcMarkedAgentTag($maker)
+    {
+        return "NCR_".$maker->getName();
     }
 
     public function submitActivationForm(Merchant\Entity $merchant, string $originProduct = Product::PRIMARY)

@@ -10,6 +10,7 @@ use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
 use RZP\Models\Workflow\Base;
 use RZP\Models\Workflow\Step;
+use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Workflow\Constants;
 use RZP\Models\Workflow\Action\Checker;
@@ -24,13 +25,32 @@ class Repository extends Base\Repository
         Entity::MAKER_TYPE          => 'sometimes|string|max:11',
         Entity::WORKFLOW_ID         => 'sometimes|string|max:14',
         Entity::ORG_ID              => 'sometimes|string|max:14',
-        self::EXPAND . '.*'         => 'filled|string|in:workflow,maker,stateChanger',
+        self::EXPAND . '.*'         => 'filled|string|in:workflow,maker,stateChanger,tagged,owner',
+        Entity::OWNER_ID            => 'sometimes|string|max:14',
         Constants::TYPE             => 'sometimes|string|max:10',
         Entity::PERMISSION          => 'sometimes|boolean|in:0,1',
         Constants::CLOSED_ACTIONS   => 'sometimes|boolean|in:0,1',
         Constants::CHECKER_ACTIONS  => 'sometimes|boolean|in:0,1',
         Constants::ACTIONS_CHECKED  => 'sometimes|boolean|in:0,1',
+        Entity::TAGS                => 'sometimes|array',
+        Constants::CREATED_START    => 'required_with:created_end|integer',
+        Constants::CREATED_END      => 'required_with:created_start|integer',
+        Constants::ORDER            => 'sometimes|string|in:asc,desc',
     ];
+
+    public function addQueryParamTags($query, $params)
+    {
+        $tags = $params[Entity::TAGS];
+
+        $tags = array_unique(array_map('mb_strtolower', array_map('str_slug', $tags)));
+
+        $tagsTable = 'tagging_tagged';
+
+        $query->join($tagsTable, $tagsTable . '.taggable_id', 'workflow_actions.id')
+              ->where($tagsTable . '.taggable_type', '=', E::WORKFLOW_ACTION)
+              ->whereIn($tagsTable . '.tag_slug', $tags)
+              ->distinct();
+    }
 
     public function addQueryParamPermission($query, $params)
     {
@@ -64,9 +84,32 @@ class Repository extends Base\Repository
         }
     }
 
+    public function addQueryParamCreatedStart($query, $params)
+    {
+        if ((empty($params[Constants::CREATED_START]) === false) and
+            (empty($params[Constants::CREATED_END]) === false))
+        {
+            $query->where('workflow_actions.created_at' , '>=', $params[Constants::CREATED_START])
+                  ->where('workflow_actions.created_at', '<=', $params[Constants::CREATED_END]);
+        }
+    }
+
+    public function addQueryParamCreatedEnd($query, $params)
+    {
+        return;
+    }
+
     public function addQueryOrder($query)
     {
         $query->orderBy(Entity::CREATED_AT, 'desc');
+    }
+
+    public function addQueryParamOrder($query, $params)
+    {
+        if (empty($params[Constants::ORDER]) === false)
+        {
+            $query->orderBy(Entity::CREATED_AT, $params[Constants::ORDER]);
+        }
     }
 
     /**
@@ -299,6 +342,10 @@ class Repository extends Base\Repository
                 }
             },
             'stateChangerRole' => function ($query)
+            {
+                $query->withTrashed();
+            },
+            'owner' => function ($query)
             {
                 $query->withTrashed();
             },

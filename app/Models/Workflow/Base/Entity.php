@@ -30,6 +30,16 @@ class Entity extends BaseModel\PublicEntity
         }
     }
 
+    public function setPublicOwnerIdAttribute(array &$attributes)
+    {
+        $ownerId = $this->getAttribute(Action\Entity::OWNER_ID);
+
+        if (empty($ownerId) == false)
+        {
+            $attributes[Action\Entity::OWNER_ID] = Admin\Entity::getSignedId($ownerId);
+        }
+    }
+
     public function setPublicRoleIdAttribute(array &$attributes)
     {
         $roleId = $this->getAttribute(Step\Entity::ROLE_ID);

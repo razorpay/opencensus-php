@@ -46,6 +46,7 @@ class WorkflowRequestListingTest extends TestCase
         $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
 
         $this->startTest();
+        $this->app['workflow']->setWorkflowMaker(null);
 
         $this->ba->adminAuth('test', Org::CHECKER_ADMIN_TOKEN, 'org_' . Org::RZP_ORG);
 

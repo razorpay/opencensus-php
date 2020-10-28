@@ -1884,6 +1884,8 @@ class ErrorCode
 
     const BAD_REQUEST_INVALID_PERMISSION                                            = 'BAD_REQUEST_INVALID_PERMISSION';
 
+    const BAD_REQUEST_OWNER_ALREADY_ASSIGNED                                        = 'BAD_REQUEST_OWNER_ALREADY_ASSIGNED';
+
     const SERVER_ERROR_PAYMENT_LINK_SERVICE_FAILURE                                 = 'SERVER_ERROR_PAYMENT_LINK_SERVICE_FAILURE';
 
     const BAD_REQUEST_INVALID_WEBSITE                                               = 'BAD_REQUEST_INVALID_WEBSITE';

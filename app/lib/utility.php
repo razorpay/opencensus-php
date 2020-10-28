@@ -1064,6 +1064,33 @@ if (!function_exists('wrap_db_table'))
     }
 }
 
+if (!function_exists('array_fetch')) {
+    /**
+     * Fetch a flattened array of a nested array element.
+     *
+     * @param array $array
+     * @param string $key
+     * @param string $delimiter
+     * @return array
+     */
+    function array_fetch($array, $key, $delimiter='.')
+    {
+        $results = array();
+
+        foreach (explode($delimiter, $key) as $segment) {
+            foreach ($array as $value) {
+                if (array_key_exists($segment, (array)$value)) {
+                    $results[] = $value[$segment];
+                }
+            }
+
+            $array = $results;
+        }
+
+        return array_values($results);
+    }
+}
+
 if (!function_exists('get_Protobuf_Struct'))
 {
     /**

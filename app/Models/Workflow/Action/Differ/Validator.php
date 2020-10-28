@@ -4,8 +4,9 @@ namespace RZP\Models\Workflow\Action\Differ;
 
 use RZP\Base;
 use RZP\Error;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Models\Workflow\Action;
 
 class Validator extends Base\Validator
 {
@@ -27,6 +28,7 @@ class Validator extends Base\Validator
         Entity::PERMISSION      => 'required|string|max:50',
         Entity::DIFF            => 'sometimes|array',
         Entity::AUTH_DETAILS    => 'sometimes|array',
+        Action\Entity::TAGS     => 'sometimes|array',
     ];
 
     protected function validateType($attribute, $type)

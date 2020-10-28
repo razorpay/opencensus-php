@@ -41,6 +41,13 @@ class NeedsClarificationEmail extends Mailable
         {
             $this->from($this->org['from_email'], $this->org['display_name']);
         }
+        else
+        {
+            $senderEmail = Constants::MAIL_ADDRESSES[Constants::NOREPLY];
+            $senderName = Constants::HEADERS[Constants::NOREPLY];
+
+            $this->from($senderEmail, $senderName);
+        }
 
         return $this;
     }

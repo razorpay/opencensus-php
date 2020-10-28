@@ -227,12 +227,17 @@ class Core extends Base\Core
             $params = $this->buildParams($input);
         }
 
+        $params[Entity::TAGS] = $input[Entity::TAGS] ?? [];
+
         // $params has data for Action\Entity (Mysql) + Differ\Entity (ES)
 
         $this->repo->transactionOnLiveAndTest(function() use ($action, $params, $retry, $maker)
         {
             $differInput = $params[Entity::DIFFER] ?? null;
 
+            $tags = $params[Entity::TAGS] ?? [];
+
+            unset($params[Entity::TAGS]);
             unset($params[Entity::DIFFER]);
 
             $action->build($params);
@@ -250,6 +255,8 @@ class Core extends Base\Core
             $action->permission()->associate($permission);
 
             $action->org()->associate($org);
+
+            $action->tag($tags);
 
             $this->repo->saveOrFail($action);
 
@@ -556,6 +563,20 @@ class Core extends Base\Core
             $stateChangerRole = $this->repo->role->findOrFailPublic($input[Entity::STATE_CHANGER_ROLE_ID]);
 
             $action->stateChangerRole()->associate($stateChangerRole);
+        }
+
+        if (isset($input[Entity::OWNER_ID]) === true)
+        {
+            if (empty($action->getOwnerId()) === true)
+            {
+                $admin = $this->repo->admin->findOrFailPublic($input[Entity::OWNER_ID]);
+
+                $action->owner()->associate($admin);
+            }
+            else
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OWNER_ALREADY_ASSIGNED);
+            }
         }
 
         $this->repo->saveOrFail($action);

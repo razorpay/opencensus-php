@@ -6020,6 +6020,9 @@ ALTER TABLE merchant_details
 ALTER TABLE bvs_validation
     ADD COLUMN `validation_unit` enum('identifier','proof') DEFAULT NULL;
 
+ALTER TABLE workflow_actions
+    ADD COLUMN `owner_id` char(14) DEFAULT NULL AFTER `permission_id`;
+
 ALTER TABLE merchant_details
     ADD COLUMN bank_details_doc_verification_status varchar(30) DEFAULT NULL;
 
