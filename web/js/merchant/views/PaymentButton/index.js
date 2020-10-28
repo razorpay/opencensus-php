@@ -19,24 +19,19 @@ import OnBoarding, {
 import QuickGuide, { getPaymentButtonsQuickGuideIsClosed } from './QuickGuide';
 
 @connect(
-  state => {
+  (state) => {
     return {
       user: state.session.user,
       mode: state.session.mode,
       paymentbuttons: state.paymentbuttons,
-      paymentButtonsProductOnBoarding: getCurrentProductOnBoardingDetails(
-        state,
-        RZPFeatures.PB
-      ),
+      paymentButtonsProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PB),
     };
   },
-  { handleProductQuickGuide }
+  { handleProductQuickGuide },
 )
 export default class PaymentButtonsContainer extends React.Component {
   componentWillReceiveProps(nextProps) {
-    if (
-      nextProps.paymentbuttons.loading !== this.props.paymentbuttons.loading
-    ) {
+    if (nextProps.paymentbuttons.loading !== this.props.paymentbuttons.loading) {
       this.initPaymentButtonsOnboarding(nextProps);
     }
   }
@@ -69,9 +64,7 @@ export default class PaymentButtonsContainer extends React.Component {
     let showOnboarding = !isPaymentButtonsEnabled;
 
     if (isPaymentButtonsEnabled) {
-      showOnboarding = getIsAllowedResetPaymentButtonsOnBoarding(
-        data.paymentbuttons
-      );
+      showOnboarding = getIsAllowedResetPaymentButtonsOnBoarding(data.paymentbuttons);
     }
 
     this.props.handleProductQuickGuide({
@@ -82,10 +75,7 @@ export default class PaymentButtonsContainer extends React.Component {
   };
 
   render() {
-    const {
-      showOnboarding,
-      isQuickGuideOpen,
-    } = this.props.paymentButtonsProductOnBoarding;
+    const { showOnboarding, isQuickGuideOpen } = this.props.paymentButtonsProductOnBoarding;
 
     if (showOnboarding) {
       return <OnBoarding />;
@@ -93,9 +83,7 @@ export default class PaymentButtonsContainer extends React.Component {
 
     return (
       <tabbed-container>
-        {isQuickGuideOpen && (
-          <QuickGuide mid={this.props.user.current} mode={this.props.mode} />
-        )}
+        {isQuickGuideOpen && <QuickGuide mid={this.props.user.current} mode={this.props.mode} />}
 
         <header id="link-header">
           {this.props.user.isPaymentButtonEnabledByRazorX && (
@@ -106,7 +94,7 @@ export default class PaymentButtonsContainer extends React.Component {
 
           {this.props.user.isSubscriptionButtonEnabledByRazorX && (
             <NavLink exact to="/subscription_buttons">
-              Subscription Buttons
+              Subscription Buttons <span class="badge bg-success m-r">new</span>
             </NavLink>
           )}
         </header>
@@ -116,10 +104,7 @@ export default class PaymentButtonsContainer extends React.Component {
         <content>
           <Switch>
             <Route path="/paymentbuttons" component={PaymentButtonList} />
-            <Route
-              path="/subscription_buttons"
-              component={SubscriptionButtonList}
-            />
+            <Route path="/subscription_buttons" component={SubscriptionButtonList} />
           </Switch>
         </content>
       </tabbed-container>
