@@ -53,6 +53,22 @@ class MerchantController extends Controller
         return ApiResponse::json([]);
     }
 
+    public function getBillingLabelSuggestions()
+    {
+        $data = $this->service()->getBillingLabelSuggestions();
+
+        return ApiResponse::json($data);
+    }
+
+    public function patchMerchantBillingLabelAndDba()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->patchMerchantBillingLabelAndDba($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function putMerchant($id)
     {
         $input = Request::all();

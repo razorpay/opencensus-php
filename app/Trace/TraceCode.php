@@ -1295,6 +1295,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_TERMINALS                                    = 'MERCHANT_TERMINALS';
     const MERCHANT_CREATE                                       = 'MERCHANT_CREATE';
     const MERCHANT_EDIT                                         = 'MERCHANT_EDIT';
+    const MERCHANT_BILLING_LABEL_UPDATE_VALIDATION              = 'MERCHANT_BILLING_LABEL_UPDATE_VALIDATION';
+    const MERCHANT_BILLING_LABEL_UPDATE                         = 'MERCHANT_BILLING_LABEL_UPDATE';
     const MERCHANT_BULK_EDIT_INPUT                              = 'MERCHANT_BULK_EDIT_INPUT';
     const MERCHANT_EDIT_ACTION                                  = 'MERCHANT_EDIT_ACTION';
     const ACCOUNT_EDIT_ACTION                                   = 'ACCOUNT_EDIT_ACTION';

@@ -525,6 +525,200 @@ class Core extends Base\Core
             $id, $relations);
     }
 
+    /**
+     * updates billing label and dba to same value
+     * @param $merchant
+     * @param $input
+     * @throws \Throwable
+     */
+    public function editMerchantBillingLabelAndDba($merchant, $input)
+    {
+        $this->repo->transactionOnLiveAndTest(function () use($merchant, $input)
+        {
+            $merchant->edit($input, 'edit_billing_label');
+
+            $dba[Detail\Entity::BUSINESS_DBA] = $input[Entity::BILLING_LABEL];
+
+            $merchant->merchantDetail->edit($dba, 'edit');
+
+            $this->repo->merchant->saveOrFail($this->merchant);
+
+            $this->repo->merchant_detail->saveOrFail($this->merchant->merchantDetail);
+
+            $this->trace->info(
+                TraceCode::MERCHANT_BILLING_LABEL_UPDATE, [
+                    Entity::ID => $merchant->getId(),
+                    Entity::BILLING_LABEL => $merchant->getBillingLabel(),
+                    Detail\Entity::BUSINESS_DBA => $merchant->getDbaName(),
+                ]);
+        });
+    }
+
+    /**
+     * Generates suggestions for billing labels based on Business and website name
+     * @param $merchant
+     * @return array of suggestions
+     */
+    public function getBillingLabelSuggestions($merchant): array
+    {
+        $suggestionsByBusinessName = $this->getBillingLabelSuggestionsByBusinessName($merchant);
+
+        $suggestionsByWebsite = $this->getBillingLabelSuggestionsByWebsite($merchant);
+
+        return array_merge($suggestionsByBusinessName, $suggestionsByWebsite);
+    }
+
+    /**
+     * Generates suggestions for billing labels based on website name
+     * generate suggestions if website url follows http[s]://[www\.]\w+.tld pattern
+     * trailing '/' is allowed in website url
+     * @param $merchant
+     * @return array of suggestions, empty is url does not folow pattern or merchant has no website
+     */
+    protected function getBillingLabelSuggestionsByWebsite($merchant): array
+    {
+        $websiteUrl = $merchant->merchantDetail->getWebsite();
+
+        $suggestions = [];
+
+        if(isset($websiteUrl) === true)
+        {
+            // remove trailing '/' to match with pattern {http[s]://[www\.]\w+.tld}
+            $websiteUrl = rtrim($websiteUrl, '/');
+
+            $websiteName = $this->extractWebsiteNameFromUrlForBillingLabelUpdate($websiteUrl);
+
+            if($websiteName != "")
+            {
+                array_push($suggestions, $websiteUrl);
+
+                array_push($suggestions, $websiteName);
+
+                array_push($suggestions, strtoupper($websiteName));
+
+                array_push($suggestions, ucfirst($websiteName));
+
+                $domains = (new TLDExtract())->extract($websiteUrl);
+
+                if(count($domains) > 1)
+                {
+                    array_push($suggestions, $websiteName . '.' . $domains[1]);
+                }
+            }
+        }
+
+        return $suggestions;
+    }
+
+    /**
+     * Generates suggestions for billing labels based on business name
+     *
+     * @param $merchant
+     * @return array of suggestions, empty if merchant has no business name
+     */
+    protected function getBillingLabelSuggestionsByBusinessName($merchant): array
+    {
+        $businessName = $merchant->merchantDetail->getBusinessName();
+
+        $suggestions = [];
+
+        if (isset($businessName) === true)
+        {
+            $businessName = $this->preProcessStringForBillingLabelUpdate($businessName);
+
+            array_push($suggestions, ucwords($businessName));
+
+            array_push($suggestions, strtoupper($businessName));
+
+            $businessNameWithoutBType = $this->removeBusinessTypeFromBusinessNameForBillingLabelUpdate($businessName);
+
+            // if business name is not same after removing business type
+            if ($businessName != $businessNameWithoutBType)
+            {
+                array_push($suggestions, ucwords($businessNameWithoutBType));
+            }
+        }
+
+        return $suggestions;
+    }
+
+    /**
+     * Remove Pvt, Pvt., Ltd, Ltd., Private, Limited, liability,
+     * company, partnership words from business name
+     * @param string Business name
+     * @return string Business name without above words
+     */
+    protected function removeBusinessTypeFromBusinessNameForBillingLabelUpdate($businessName): string
+    {
+        $businessTypes = [
+            'pvt.',
+            'pvt',
+            'llc.',
+            'llc',
+            'ltd.',
+            'ltd',
+            'llp.',
+            'llp',
+            'private',
+            'limited',
+            'liability company',
+            'liability partnership'
+        ];
+
+        foreach ($businessTypes as $businessType)
+        {
+            $businessName = str_replace($businessType, '', $businessName);
+        }
+
+        $businessName = trim(preg_replace('/\s+/', ' ', $businessName));;
+
+        return $businessName;
+    }
+
+    /**
+     * extracts website name from url only if website url
+     * url should follow http[s]://[www\.]\w+.tld pattern
+     * @param $url
+     * @return string website name, empty string if url does not follow pattern
+     */
+    public function extractWebsiteNameFromUrlForBillingLabelUpdate($url) : string
+    {
+
+        //extract top and second level domains
+        $domains = (new TLDExtract())->extract($url);
+
+        $urlRegexPattern = '/^(https|http)\:\/\/w{3}\.[A-Za-z0-9\-]+$/D';
+
+        // if domains are extracted successfully
+        // and url follows pattern
+        if (
+            (count($domains) > 1)
+            and
+            (preg_match($urlRegexPattern, $domains[0]) === 1))
+        {
+
+            $secondLevelDomain = explode(".", $domains[0]);
+
+            if(count($secondLevelDomain) > 1)
+            {
+                return $secondLevelDomain[1];
+            }
+        }
+
+        return "";
+    }
+
+    /**
+     * trims a string and makes it lowercase
+     * @param $string
+     * @return string
+     */
+    public function preProcessStringForBillingLabelUpdate($string): string
+    {
+        $string =  trim($string);
+
+        return strtolower($string);
+    }
 
     /**
      * @param $merchant

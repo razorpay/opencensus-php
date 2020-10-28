@@ -244,6 +244,8 @@ class Route
         'merchant_fetch_config'                    => ['get',      'account/config',                                 'MerchantController@getAccountConfig'                               ],
         'merchant_fetch_config_internal'           => ['get',      'internal/account/config',                        'MerchantController@getAccountConfigInternal'                       ],
         'merchant_edit_email'                      => ['put',      'merchants/{id}/email',                           'MerchantController@putMerchantEmail'                               ],
+        'merchant_billing_label_suggestions'       => ['get',      'merchants/billing_label/suggestions',            'MerchantController@getBillingLabelSuggestions'                     ],
+        'merchant_billing_label_update'            => ['patch',    'merchants/billing_label/update',                 'MerchantController@patchMerchantBillingLabelAndDba'                ],
         // TODO : Remove this route after permanent fix is deployed.
         'correct_merchant_owners_products'         => ['put',      'merchants/{id}/correct_owner'   ,                'MerchantController@correctMerchantOwnerForBanking'                 ],
         'merchant_delete_additional_email'         => ['delete',   'merchants/{id}/additionalemail/{type}',          'MerchantEmailController@deleteMerchantEmails'                      ],
@@ -2881,6 +2883,8 @@ class Route
         'subscription_manual_retry',
         'subscription_test_charge',
         'subscription_fetch_due_addons',
+        'merchant_billing_label_suggestions',
+        'merchant_billing_label_update',
         'merchant_features_fetch',
         'merchant_features_update',
         'merchant_create_key',

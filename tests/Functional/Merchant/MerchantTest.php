@@ -1435,6 +1435,94 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetBillingLabelSuggestions()
+    {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'      =>  '10000000000000',
+            'business_name'    =>  'Test Name Private Limited ltd ltd. Liability partnership',
+            'business_website' =>  'https://www.test.in/'
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetBillingLabelSuggestionsWithoutWebsite()
+    {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => '10000000000000',
+            'business_name' => 'Test Name liability company pvt pvt. llp llp. llc llc. '
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetBillingLabelSuggestionsWebsiteNotInFormat()
+    {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'      =>  '10000000000000',
+            'business_name'    =>  'Test Private Limited Name',
+            'business_website' =>  'www.test.com'
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testBillingLabelUpdateInSuggestions()
+    {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'      =>  '10000000000000',
+            'business_name'    =>  'Test Name Private Limited',
+            'business_website' =>  'https://www.test.org'
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testBillingLabelUpdateMatchesWithWebsite()
+    {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'      =>  '10000000000000',
+            'business_website' =>  'https://www.test.com/'
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testBillingLabelUpdateMatchesWithBusinessName()
+    {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'      =>  '10000000000000',
+            'business_name'    =>  'make my trip'
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testBillingLabelUpdateInvalidValue()
+    {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'      =>  '10000000000000',
+            'business_name'    =>  'Test Name Private Limited',
+            'business_website' =>  'https://www.test.com'
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testAddCategory2()
     {
         $this->createMerchant();

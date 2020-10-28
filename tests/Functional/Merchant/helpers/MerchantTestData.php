@@ -1266,6 +1266,127 @@ return [
         ]
     ],
 
+    'testGetBillingLabelSuggestions' => [
+        'request'  => [
+            'url'     => '/merchants/billing_label/suggestions',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                    'Test Name Private Limited Ltd Ltd. Liability Partnership',
+                    'TEST NAME PRIVATE LIMITED LTD LTD. LIABILITY PARTNERSHIP',
+                    'Test Name',
+                    'https://www.test.in',
+                    'test',
+                    'TEST',
+                    'Test',
+                    'test.in',
+            ]
+        ]
+    ],
+
+    'testGetBillingLabelSuggestionsWithoutWebsite' => [
+        'request'  => [
+            'url'     => '/merchants/billing_label/suggestions',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                    'Test Name Liability Company Pvt Pvt. Llp Llp. Llc Llc.',
+                    'TEST NAME LIABILITY COMPANY PVT PVT. LLP LLP. LLC LLC.',
+                    'Test Name',
+            ]
+        ]
+    ],
+
+    'testGetBillingLabelSuggestionsWebsiteNotInFormat' => [
+        'request'  => [
+            'url'     => '/merchants/billing_label/suggestions',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                    'Test Private Limited Name',
+                    'TEST PRIVATE LIMITED NAME',
+                    'Test Name',
+            ]
+        ]
+    ],
+
+    'testBillingLabelUpdateInSuggestions' => [
+        'request'  => [
+            'content' => [
+                'billing_label' => 'test.org',
+            ],
+            'url'     => '/merchants/billing_label/update',
+            'method'  => 'patch',
+        ],
+        'response' => [
+            'content' => [
+                'id' => '10000000000000',
+                'billing_label' => 'test.org',
+                'business_dba' => 'test.org',
+            ]
+        ]
+    ],
+
+    'testBillingLabelUpdateMatchesWithWebsite' => [
+        'request'  => [
+            'content' => [
+                'billing_label' => 'Tests',
+            ],
+            'url'     => '/merchants/billing_label/update',
+            'method'  => 'patch',
+        ],
+        'response' => [
+            'content' => [
+                'id' => '10000000000000',
+                'billing_label' => 'Tests',
+                'business_dba' => 'Tests',
+            ]
+        ]
+    ],
+
+    'testBillingLabelUpdateMatchesWithBusinessName' => [
+        'request'  => [
+            'content' => [
+                'billing_label'         => 'make trip my',
+            ],
+            'url'     => '/merchants/billing_label/update',
+            'method'  => 'patch',
+        ],
+        'response' => [
+            'content' => [
+                'id' => '10000000000000',
+                'billing_label' => 'make trip my',
+                'business_dba'  => 'make trip my',
+            ]
+        ]
+    ],
+
+    'testBillingLabelUpdateInvalidValue' => [
+        'request' => [
+            'content' => [
+                'billing_label' => 'Random Value',
+            ],
+            'url' => '/merchants/billing_label/update',
+            'method' => 'patch',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid value, the brand name must be similar to business name or website name'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testStoreImageAndGetLogoUrl' => [
         'request' => [
             'content' => [],

@@ -332,6 +332,22 @@ class Service extends Base\Service
         return $result;
     }
 
+    public function getBillingLabelSuggestions(): array
+    {
+        return $this->core()->getBillingLabelSuggestions($this->merchant);
+    }
+
+    public function patchMerchantBillingLabelAndDba($input)
+    {
+        $this->core()->editMerchantBillingLabelAndDba($this->merchant, $input);
+
+        return [
+            Entity::ID => $this->merchant->getId(),
+            Entity::BILLING_LABEL => $this->merchant->getBillingLabel(),
+            Merchant\Detail\Entity::BUSINESS_DBA => $this->merchant->getDbaName()
+        ];
+    }
+
     public function edit(string $id, array $input): array
     {
         $this->trace->info(

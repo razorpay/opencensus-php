@@ -8,9 +8,11 @@ use Hash;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\User;
+use FuzzyWuzzy\Fuzz;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Models\Terminal;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
 use RZP\Models\Admin\Admin;
@@ -41,6 +43,29 @@ class Validator extends Base\Validator
     const BULK_SUBMERCHANT_ASSIGN           = 'Bulk Submerchant Assign';
     // Rate limit on items sending for bulk submerchant assign.
     const MAX_BULK_SUBMERCHANT_ASSIGN_LIMIT = 15;
+
+    // Thresholds for billing label validation
+    const THRESHOLD_FOR_WEBSITE_SIMILARITY = 80;
+
+    const THRESHOLD_FOR_BUSINESS_NAME_SIMILARITY = 80;
+
+    const NEW_BILLING_LABEL = 'new_billing_label';
+
+    const OLD_BILLING_LABEL = 'old_billing_label';
+
+    const IS_FROM_SUGGESTIONS =  'is_value_from_suggestions';
+
+    const SIMILARITY_WITH_WEBSITE = 'similarity_with_website';
+
+    const SIMILARITY_WITH_BUSINESS_NAME = 'similarity_with_business_name';
+
+    const VALIDATION_STATUS = 'validation_status';
+
+    const PASSED = 'passed';
+
+    const FAILED = 'failed';
+
+    const BILLING_LABEL_INVALID_MESSAGE = 'Invalid value, the brand name must be similar to business name or website name';
 
     const EXTENSIONMIMEMAP = [
         'jpeg'  => 'image/jpeg',
@@ -101,6 +126,10 @@ class Validator extends Base\Validator
         Entity::FEE_CREDITS_THRESHOLD                 => 'sometimes|integer|nullable',
         Entity::PARTNERSHIP_URL                       => 'sometimes|max:2000',
         'reset_methods'                               => 'sometimes|boolean',
+    ];
+
+    protected static $editBillingLabelRules = [
+        Entity::BILLING_LABEL            => 'sometimes|filled|string|min:3|max:255|custom:billing_label'
     ];
 
     protected static $uniqueEmailRules = [
@@ -501,6 +530,150 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_MERCHANT_LOGO_NOT_IMAGE
             );
         }
+    }
+
+    /**
+     * Validates if billing label value has similarity with business
+     * or website name or value belongs from suggestion
+     * It uses fuzzy logic to check similarity
+     * Threshold for website similarity is 70%
+     * Threshold for business name similarity is 80%
+     * @param $billingLabel : billing label value which need to be validated
+     * @param $attribute
+     * @return void
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateBillingLabel($attribute, $billingLabel)
+    {
+        $merchant = $this->entity;
+
+        $suggestions = (new core())->getBillingLabelSuggestions($merchant);
+
+        $billingLabel = (new core())->preProcessStringForBillingLabelUpdate($billingLabel);
+
+        $traceData = [
+            self::NEW_BILLING_LABEL => $billingLabel,
+            self::OLD_BILLING_LABEL => $merchant->getBillingLabel(),
+            self::IS_FROM_SUGGESTIONS => false
+        ];
+
+        if (in_array($billingLabel, $suggestions, true) === true)
+        {
+            $traceData[self::IS_FROM_SUGGESTIONS] = true;
+        }
+
+        $similarityWithWebsite = $this -> getSimilarityWithWebsiteForBillingLabelUpdate(
+            $billingLabel,
+            $merchant);
+
+        $traceData[self::SIMILARITY_WITH_WEBSITE] = $similarityWithWebsite;
+
+        $traceData[Detail\Entity::BUSINESS_WEBSITE] = $merchant->merchantDetail->getWebsite();;
+
+        $similarityWithBusinessName = $this -> getSimilarityWithBusinessNameForBillingLabelUpdate(
+            $billingLabel,
+            $merchant);
+
+        $traceData[self::SIMILARITY_WITH_BUSINESS_NAME] = $similarityWithBusinessName;
+
+        $traceData[Detail\Entity::BUSINESS_NAME] = $merchant->merchantDetail->getBusinessName();
+
+        if ((in_array($billingLabel, $suggestions, true) === true) or
+            ($similarityWithWebsite >= self::THRESHOLD_FOR_WEBSITE_SIMILARITY) or
+            ($similarityWithBusinessName >= self::THRESHOLD_FOR_BUSINESS_NAME_SIMILARITY))
+        {
+            $traceData[self::VALIDATION_STATUS] = self::PASSED;
+
+            $this->getTrace()->info(
+                TraceCode::MERCHANT_BILLING_LABEL_UPDATE,
+                $traceData
+            );
+
+            return;
+        }
+
+        $traceData[self::VALIDATION_STATUS] = self::FAILED;
+
+        $this->getTrace()->info(
+            TraceCode::MERCHANT_BILLING_LABEL_UPDATE_VALIDATION,
+            $traceData
+        );
+
+        throw new Exception\BadRequestValidationFailureException(
+            self::BILLING_LABEL_INVALID_MESSAGE);
+    }
+
+    /**
+     * Gives similarity of a string with website name
+     * website url should follow http[s]://[www\.]\w+.tld pattern
+     * It uses fuzzy logic to check similarity
+     * @param $value string
+     * @param $merchant \RZP\Models\Merchant\Entity
+     * @return int max of (fuzzy ratio, token_sort_ratio)
+     */
+    protected function getSimilarityWithWebsiteForBillingLabelUpdate($value, $merchant): int
+    {
+        $websiteUrl = $merchant->merchantDetail->getWebsite();
+
+        if(isset($websiteUrl) === false)
+        {
+            return 0;
+        }
+
+        $websiteUrl = (new core())->preProcessStringForBillingLabelUpdate($websiteUrl);
+
+        // if website url follows http[s]://[www\.]\w+.tld pattern but have trailing '/'
+        // then it should also be consider hence just remove trailing '/'
+        $websiteUrl = rtrim($websiteUrl, '/');
+
+        $websiteName = (new core())->extractWebsiteNameFromUrlForBillingLabelUpdate($websiteUrl);
+
+        // if website url does not follow pattern $websiteName will be empty
+        if ($websiteName != "")
+        {
+            return $this->getSimilarityOfStringsForBillingLabelUpdate($websiteName, $value);
+        }
+
+        return 0;
+    }
+
+    /**
+     * Gives similarity of a string with business name
+     * It uses fuzzy logic to check similarity
+     * @param $value
+     * @param $merchant
+     * @return int  max of (fuzzy ratio, token_sort_ratio)
+     */
+    protected function getSimilarityWithBusinessNameForBillingLabelUpdate($value, $merchant): int
+    {
+        $businessName = $merchant->merchantDetail->getBusinessName();
+
+        if(isset($businessName) === false)
+        {
+            return 0;
+        }
+
+        $businessName =  (new core())->preProcessStringForBillingLabelUpdate($businessName);
+
+        return $this->getSimilarityOfStringsForBillingLabelUpdate($businessName, $value);
+    }
+
+    /**
+     * Gives similarity percentage of two strings
+     * uses fuzzy logic to check similarity
+     * @param $string1
+     * @param $string2
+     * @return int percentage similarity between strings {max of (fuzzy ratio, token_sort_ratio)}
+     */
+    protected function getSimilarityOfStringsForBillingLabelUpdate($string1, $string2) : int
+    {
+        $fuzz = new Fuzz();
+
+        $percentageFromRatio = $fuzz->ratio($string1, $string2);
+
+        $percentageFromTokenSort = $fuzz->tokenSortRatio($string1, $string2);
+
+        return max($percentageFromRatio, $percentageFromTokenSort);
     }
 
     public function validateCategory2($attribute, $value)
