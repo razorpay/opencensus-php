@@ -16,7 +16,9 @@ export default class WidgetPreview extends React.Component {
     let amountToDisplay;
 
     if (amount) {
-      const _amount = field.plan_id ? paiseToRupees(Number(amount)).toFixed(2) : (Number(amount)).toFixed(2);
+      const _amount = field.plan_id
+        ? paiseToRupees(Number(amount)).toFixed(2)
+        : Number(amount).toFixed(2);
       const _amountToDisplay = _amount.split('.');
 
       amountToDisplay = (
@@ -38,11 +40,15 @@ export default class WidgetPreview extends React.Component {
           <div class="item-details">
             {amountToDisplay}
 
-            {
-              !showOneTimePayments && <div class="item-details-description">
-                Frequency: {getPeriodLabel(field.product_config.plan_details.period, field.product_config.plan_details.interval)}
+            {!showOneTimePayments && (
+              <div class="item-details-description">
+                Frequency:{' '}
+                {getPeriodLabel(
+                  field.product_config.plan_details.period,
+                  field.product_config.plan_details.interval,
+                )}
               </div>
-            }
+            )}
           </div>
         </div>
       </label>
@@ -57,8 +63,7 @@ export default class WidgetPreview extends React.Component {
 
     return (
       <div class="WidgetPreview">
-        {
-         !!currentTabFields.length && !!otherTabFields.length && (
+        {!!currentTabFields.length && !!otherTabFields.length && (
           <div class="billing-cycle-type-options">
             <label>
               <div class={classList('option', !showOneTimePayments && 'highlight')}>Recurring</div>
@@ -67,8 +72,7 @@ export default class WidgetPreview extends React.Component {
               <div class={classList('option', showOneTimePayments && 'highlight')}>OneTime</div>
             </label>
           </div>
-         )
-        }
+        )}
 
         <div>
           {currentTabFields && currentTabFields.length ? (
@@ -79,9 +83,9 @@ export default class WidgetPreview extends React.Component {
             <label class="item-label item-label--empty">
               <div class="item">
                 <div class="item-details">
-                  {
-                    showOneTimePayments ? 'Add one-time items to see their preview' : 'Add plans to see their preview'
-                  }
+                  {showOneTimePayments
+                    ? 'Add one-time items to see their preview'
+                    : 'Add plans to see their preview'}
                 </div>
               </div>
             </label>

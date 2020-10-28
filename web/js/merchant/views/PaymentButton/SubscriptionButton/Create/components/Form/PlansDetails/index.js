@@ -13,7 +13,7 @@ import { fetchPlans } from 'merchant/reducers/plans';
 
 @connect(
   (state) => ({
-    plans: state.plans
+    plans: state.plans,
   }),
   {
     updateStepReviewProgress,
@@ -28,9 +28,13 @@ export default class PlansDetails extends React.Component {
   }
 
   get plans() {
-    const {subscriptionButtonEntity, plans} = this.props;
+    const { subscriptionButtonEntity, plans } = this.props;
 
-    return plans.items.filter(plan => (!subscriptionButtonEntity.currency || plan.item.currency === subscriptionButtonEntity.currency));
+    return plans.items.filter(
+      (plan) =>
+        !subscriptionButtonEntity.currency ||
+        plan.item.currency === subscriptionButtonEntity.currency,
+    );
   }
 
   get planFields() {
@@ -38,7 +42,9 @@ export default class PlansDetails extends React.Component {
 
     const items = filterSubscriptionPaymentItems(paymentFields);
 
-    const cleanItems = items.filter(function () { return true });
+    const cleanItems = items.filter(function () {
+      return true;
+    });
 
     return { items, length: cleanItems.length };
   }

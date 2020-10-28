@@ -64,7 +64,6 @@ export default class Preview extends React.Component {
     head.appendChild(style);
   }
 
-
   get brandColor() {
     return this.props.config.config.brand_color;
   }
@@ -111,7 +110,11 @@ export default class Preview extends React.Component {
             </div>
           */}
 
-          <a class="doc-link" target="_blank" href="https://betasite.razorpay.com/docs/creating-subscription-buttons/payment-button/subscription-buttons">
+          <a
+            class="doc-link"
+            target="_blank"
+            href="https://betasite.razorpay.com/docs/creating-subscription-buttons/payment-button/subscription-buttons"
+          >
             Visit our Documentation <i class="i i-external-link" />
           </a>
         </div>

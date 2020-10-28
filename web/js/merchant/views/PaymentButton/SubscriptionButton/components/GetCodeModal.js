@@ -9,7 +9,7 @@ import CustomClipboard from 'common/ui/Clipboard/Custom';
 import { fetchPaymentPageEntity as fetchsubscriptionButtonEntity } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { setIsPaymentButtonCodeUsed } from '../../utils';
 
-@connect(state => ({
+@connect((state) => ({
   user: state.session.user,
   mode: state.session.mode,
 }))
@@ -32,7 +32,7 @@ export default class GetCodeModal extends React.Component {
       });
 
       fetchsubscriptionButtonEntity(paymentButton.id)
-        .then(resp => {
+        .then((resp) => {
           this.setState({
             paymentButton: resp.data,
             isLoading: false,
@@ -113,10 +113,7 @@ export default class GetCodeModal extends React.Component {
                   <div class="description">
                     Copy & Paste this HTML in your code
                     <CustomClipboard value={embedBtnCode}>
-                      <button
-                        onClick={this.onClickCopy}
-                        class="btn btn-xs copy-btn"
-                      >
+                      <button onClick={this.onClickCopy} class="btn btn-xs copy-btn">
                         <i class="i i-copy m-r" />
                         COPY CODE
                       </button>
@@ -127,7 +124,7 @@ export default class GetCodeModal extends React.Component {
               class="Input--vTop"
               value={embedBtnCode.trim()}
               readOnly
-              setRef={textarea => (this.textarea = textarea)}
+              setRef={(textarea) => (this.textarea = textarea)}
               onClick={this.onClickTextArea}
             />
 

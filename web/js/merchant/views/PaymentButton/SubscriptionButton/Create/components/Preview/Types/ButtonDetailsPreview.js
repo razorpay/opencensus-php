@@ -4,13 +4,7 @@ import { maxLengthForButtonLabel } from '../../Form/ButtonDetails';
 import { buttonThemes } from '../../../constants/buttonThemes';
 
 const rzpLogoWhite = (
-  <svg
-    width="18"
-    height="20"
-    viewBox="0 0 18 20"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
+  <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
       d="M7.077 6.476l-.988 3.569 5.65-3.589-3.695 13.54 3.752.004 5.457-20L7.077 6.476z"
       fill="#fff"
@@ -21,7 +15,7 @@ const rzpLogoWhite = (
 
 let isFontLoadedForButton = false;
 
-@connect(state => ({
+@connect((state) => ({
   config: state.config,
 }))
 export default class ButtonDetailsPreview extends React.Component {
@@ -76,7 +70,7 @@ export default class ButtonDetailsPreview extends React.Component {
 
     if (buttonText) {
       if (showOneTimePayments) {
-        const regEx = new RegExp('subscribe', "ig");
+        const regEx = new RegExp('subscribe', 'ig');
 
         displayButtonText = buttonText.replace(regEx, 'Pay');
       } else {
@@ -86,7 +80,6 @@ export default class ButtonDetailsPreview extends React.Component {
       displayButtonText = displayButtonText.substring(0, maxLengthForButtonLabel);
     }
 
-
     return (
       <div class="ButtonDetailsPreview ButtonDetailsPreview--subscriptionButton">
         <div
@@ -94,7 +87,7 @@ export default class ButtonDetailsPreview extends React.Component {
             'PaymentButton-Button',
             isRazorpayTheme && 'PaymentButton-Button--rzpTheme',
             `PaymentButton-Button--${isLightTheme ? 'light' : 'dark'}`,
-            isRazorpayTheme && `PaymentButton-Button--${buttonTheme}`
+            isRazorpayTheme && `PaymentButton-Button--${buttonTheme}`,
           )}
           style={{
             background: !isRazorpayTheme ? this.brandColor : '',
@@ -103,9 +96,7 @@ export default class ButtonDetailsPreview extends React.Component {
           {rzpLogoWhite}
 
           <div class="PaymentButton-Button-contents">
-            <span class="PaymentButton-Button-text">
-              {displayButtonText}
-            </span>
+            <span class="PaymentButton-Button-text">{displayButtonText}</span>
           </div>
         </div>
         <div class="PaymentButton-Button-rzpBranding">

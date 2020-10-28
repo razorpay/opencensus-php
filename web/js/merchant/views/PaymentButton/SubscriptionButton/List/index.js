@@ -280,7 +280,10 @@ const EmptyComponent = () => (
       <div>Create a Subscription Button to get Started</div>
       <br />
       Not sure where to start? See our getting{' '}
-      <a target="_blank" href="https://betasite.razorpay.com/docs/creating-subscription-buttons/payment-button/subscription-buttons">
+      <a
+        target="_blank"
+        href="https://betasite.razorpay.com/docs/creating-subscription-buttons/payment-button/subscription-buttons"
+      >
         started guide <i class="i i-external-link" />
       </a>
     </div>

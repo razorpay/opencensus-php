@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { titleCase } from 'common/utils/rzp-utils';
 
-
 /*
   Definition: Simple tabbed container.
   Example: See analytics on Home page
@@ -23,7 +22,7 @@ export default class TabsContainer extends Component {
     };
   }
 
-  goPrev = _ => {
+  goPrev = (_) => {
     const prevTabIdx = this.state.currentActiveIdx - 1;
 
     if (this.isInValidTab(prevTabIdx)) {
@@ -33,7 +32,7 @@ export default class TabsContainer extends Component {
     this.setState({ currentActiveIdx: prevTabIdx });
   };
 
-  goNext = _ => {
+  goNext = (_) => {
     const nextTabIdx = this.state.currentActiveIdx + 1;
     if (this.isInValidTab(nextTabIdx)) {
       return;
@@ -42,7 +41,7 @@ export default class TabsContainer extends Component {
     this.setState({ currentActiveIdx: nextTabIdx });
   };
 
-  goTo = index => {
+  goTo = (index) => {
     if (this.isInValidTab(index)) {
       return;
     }
@@ -106,15 +105,13 @@ export default class TabsContainer extends Component {
 const TabControl = ({ goPrev, goNext, currentActiveIdx, totalTabs }) => (
   <div class="tabs-control">
     <span
-      class={`m-l pill label-semi-muted prev ${currentActiveIdx === 0 &&
-        'hide'}`}
+      class={`m-l pill label-semi-muted prev ${currentActiveIdx === 0 && 'hide'}`}
       onClick={goPrev}
     >
       {'< Prev'}
     </span>
     <span
-      class={`m-r pill label-semi-muted next ${currentActiveIdx ===
-        totalTabs - 1 && 'hide'}`}
+      class={`m-r pill label-semi-muted next ${currentActiveIdx === totalTabs - 1 && 'hide'}`}
       onClick={goNext}
     >
       {'Next >'}

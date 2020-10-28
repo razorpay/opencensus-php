@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { getCurrency } from 'common/ui/Amount';
 
-@connect(state => ({
+@connect((state) => ({
   config: state.config,
   user: state.session.user,
 }))
@@ -11,9 +11,7 @@ export default class PreviewFormShell extends React.Component {
   };
 
   get textColor() {
-    const _textColor = this.props.config.isBrandColorDark
-      ? '#fff'
-      : 'rgba(0, 0, 0, 0.85)';
+    const _textColor = this.props.config.isBrandColorDark ? '#fff' : 'rgba(0, 0, 0, 0.85)';
 
     return _textColor;
   }
@@ -39,14 +37,7 @@ export default class PreviewFormShell extends React.Component {
   }
 
   render() {
-    const {
-      children,
-      buttonTitle,
-      shellTitle,
-      totalDots,
-      config,
-      user,
-    } = this.props;
+    const { children, buttonTitle, shellTitle, totalDots, config, user } = this.props;
 
     const merchantBillingLabel = user.billing_label,
       brandColor = config.config.brand_color,
@@ -54,10 +45,7 @@ export default class PreviewFormShell extends React.Component {
 
     return (
       <div class="PaymentButton-PreviewFormShell">
-        <div
-          class="PreviewFormShell-header"
-          style={{ backgroundColor: brandColor }}
-        >
+        <div class="PreviewFormShell-header" style={{ backgroundColor: brandColor }}>
           <div class="Preview-topbar" style={{ color: this.textColor }}>
             <div class="Preview-topbar-title">
               <span>{shellTitle}</span>
@@ -70,8 +58,7 @@ export default class PreviewFormShell extends React.Component {
                     key={index}
                     style={{
                       borderColor: this.textColor,
-                      backgroundColor:
-                        index <= this.activeDotIndex ? this.textColor : null,
+                      backgroundColor: index <= this.activeDotIndex ? this.textColor : null,
                     }}
                   />
                 ))}
@@ -92,13 +79,8 @@ export default class PreviewFormShell extends React.Component {
 
             <div class="PreviewFormShell-header-details">
               {this.textColor && (
-                <div
-                  class="header-details-merchant"
-                  style={{ color: this.textColor }}
-                >
-                  <div class="header-details-merchant-name">
-                    {merchantBillingLabel}
-                  </div>
+                <div class="header-details-merchant" style={{ color: this.textColor }}>
+                  <div class="header-details-merchant-name">{merchantBillingLabel}</div>
                   <div class="header-details-amount">
                     {this.currencySymbol} {this.displayAmountToPayByCustomer}
                   </div>

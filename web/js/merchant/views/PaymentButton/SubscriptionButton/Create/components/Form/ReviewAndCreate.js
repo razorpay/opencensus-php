@@ -17,11 +17,7 @@ export default class ReviewAndCreate extends React.Component {
         <div class="PaymentButtonForm-ReviewAndCreate Form-content">
           <WidgetPreview {...this.props} />
 
-          {
-            !!oneTimePaymentsFields.length && (
-              <WidgetPreview {...this.props} showOneTimePayments />
-            )
-          }
+          {!!oneTimePaymentsFields.length && <WidgetPreview {...this.props} showOneTimePayments />}
 
           <CustomerDetailsPreview {...this.props} />
         </div>

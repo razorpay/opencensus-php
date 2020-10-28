@@ -65,17 +65,15 @@ export default class PaymentButtonDetails extends React.Component {
     }
   }
 
-  sanitizesubscriptionButtonEntity = data => {
+  sanitizesubscriptionButtonEntity = (data) => {
     const subscriptionButtonEntity = data;
 
     let formItems;
     const udfSchema = JSON.parse(subscriptionButtonEntity.settings.udf_schema);
 
-    formItems = []
-      .concat(udfSchema)
-      .concat(subscriptionButtonEntity.payment_page_items);
+    formItems = [].concat(udfSchema).concat(subscriptionButtonEntity.payment_page_items);
 
-    formItems.sort(function(a, b) {
+    formItems.sort(function (a, b) {
       const positionA = a.settings.position;
       const positionB = b.settings.position;
 
@@ -85,12 +83,10 @@ export default class PaymentButtonDetails extends React.Component {
     // Currently, receipt settings are mixed with settings, and in scattered form, hence consolidating
     const receiptSettings = {
       enable_receipt: subscriptionButtonEntity.settings.enable_receipt || '1',
-      selected_udf_field:
-        subscriptionButtonEntity.settings.selected_udf_field || '',
+      selected_udf_field: subscriptionButtonEntity.settings.selected_udf_field || '',
       enable_custom_serial_number:
         subscriptionButtonEntity.settings.enable_custom_serial_number || '0',
-      enable_80g_details:
-        subscriptionButtonEntity.settings.enable_80g_details || '0',
+      enable_80g_details: subscriptionButtonEntity.settings.enable_80g_details || '0',
     };
 
     subscriptionButtonEntity.receipt = receiptSettings;
@@ -112,12 +108,11 @@ export default class PaymentButtonDetails extends React.Component {
     });
 
     return fetchsubscriptionButtonEntity(id)
-      .then(resp => {
+      .then((resp) => {
         if (resp) {
-          const {
-            subscriptionButtonEntity,
-            formItems,
-          } = this.sanitizesubscriptionButtonEntity(resp.data);
+          const { subscriptionButtonEntity, formItems } = this.sanitizesubscriptionButtonEntity(
+            resp.data,
+          );
           this.setState({
             subscriptionButtonEntity,
             formItems,
@@ -129,7 +124,7 @@ export default class PaymentButtonDetails extends React.Component {
 
         return resp;
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -141,7 +136,7 @@ export default class PaymentButtonDetails extends React.Component {
 
   fetchEntityPayments(id) {
     return fetchPaymentsListForPaymentButton(id)
-      .then(resp => {
+      .then((resp) => {
         if (resp) {
           this.setState({ subscriptionButtonPayments: resp.data.items });
         }
@@ -150,7 +145,7 @@ export default class PaymentButtonDetails extends React.Component {
 
         return resp;
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -171,8 +166,7 @@ export default class PaymentButtonDetails extends React.Component {
     const reactivationTimeGap = 15 * 60;
     const hasExpiredInCompletedState =
       this.state.subscriptionButtonEntity.expire_by &&
-      this.state.subscriptionButtonEntity.expire_by <
-        currentTimeStamp + reactivationTimeGap; // within 15 minutes
+      this.state.subscriptionButtonEntity.expire_by < currentTimeStamp + reactivationTimeGap; // within 15 minutes
 
     this.props.openModal({
       size: 'medium',
@@ -188,17 +182,11 @@ export default class PaymentButtonDetails extends React.Component {
           }
           isCompleted={isCompleted}
           handleClose={this.props.closeModal}
-          handleClick={data => {
-            return activatePaymentButton(
-              this.state.subscriptionButtonEntity.id,
-              data
-            )
-              .then(resp => {
+          handleClick={(data) => {
+            return activatePaymentButton(this.state.subscriptionButtonEntity.id, data)
+              .then((resp) => {
                 if (resp.data) {
-                  this.props.updateSubscriptionButtonInReduxList(
-                    resp.data,
-                    false
-                  );
+                  this.props.updateSubscriptionButtonInReduxList(resp.data, false);
 
                   this.setState({
                     subscriptionButtonEntity: resp.data,
@@ -221,7 +209,7 @@ export default class PaymentButtonDetails extends React.Component {
                   err = [];
 
                   errors.length &&
-                    errors.forEach(e => {
+                    errors.forEach((e) => {
                       if (e && e.toLowerCase().indexOf('status code') === -1) {
                         err.push(e);
                       }
@@ -250,16 +238,14 @@ export default class PaymentButtonDetails extends React.Component {
   editPaymentButton = (data, paymentButtonItemId) => {
     const isEntityPaymentButtonItem = !!paymentButtonItemId;
 
-    const _updateFn = isEntityPaymentButtonItem
-      ? editPaymentButtonItem
-      : editPaymentButton;
+    const _updateFn = isEntityPaymentButtonItem ? editPaymentButtonItem : editPaymentButton;
 
     const id = isEntityPaymentButtonItem
       ? paymentButtonItemId
       : this.state.subscriptionButtonEntity.id;
 
     return _updateFn(id, data)
-      .then(resp => {
+      .then((resp) => {
         if (resp.data) {
           const keys = { ...data };
 
@@ -270,8 +256,7 @@ export default class PaymentButtonDetails extends React.Component {
 
           let newsubscriptionButtonEntity;
           if (isEntityPaymentButtonItem) {
-            let paymentPageItems = this.state.subscriptionButtonEntity
-              .payment_page_items;
+            let paymentPageItems = this.state.subscriptionButtonEntity.payment_page_items;
             let itemIndexInArray;
 
             paymentPageItems.find((pi, ix) => {
@@ -287,7 +272,7 @@ export default class PaymentButtonDetails extends React.Component {
               newsubscriptionButtonEntity.payment_page_items = updateItem(
                 paymentPageItems,
                 itemIndexInArray,
-                resp.data
+                resp.data,
               );
             } else {
               throw 'Please Reload the page'; // index must index, so this Shouldn't happen though
@@ -308,10 +293,7 @@ export default class PaymentButtonDetails extends React.Component {
             }
           }
 
-          this.props.updateSubscriptionButtonInReduxList(
-            newsubscriptionButtonEntity,
-            false
-          );
+          this.props.updateSubscriptionButtonInReduxList(newsubscriptionButtonEntity, false);
           this.setState({
             subscriptionButtonEntity: newsubscriptionButtonEntity,
           });
@@ -328,7 +310,7 @@ export default class PaymentButtonDetails extends React.Component {
           err = [];
 
           errors.length &&
-            errors.forEach(e => {
+            errors.forEach((e) => {
               if (e && e.toLowerCase().indexOf('status code') === -1) {
                 err.push(e);
               }
@@ -348,7 +330,7 @@ export default class PaymentButtonDetails extends React.Component {
       });
   };
 
-  updatesubscriptionButtonEntity = newChanges => {
+  updatesubscriptionButtonEntity = (newChanges) => {
     this.setState({
       subscriptionButtonEntity: {
         ...this.state.subscriptionButtonEntity,

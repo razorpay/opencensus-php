@@ -3,9 +3,10 @@ import { connect } from 'react-redux';
 import ModalHeader from 'common/ui/ModalHeader';
 import { closeModal } from 'merchant_common/reducers/modals';
 import Button from 'common/new-ui/Button';
+import Input from 'common/new-ui/Input';
 import { CLOSE_OPTIONS } from 'merchant/views/Settlements/data';
 
-@connect(state => ({ user: state.session.user }), {
+@connect((state) => ({ user: state.session.user }), {
   closeModal,
 })
 export default class ModalCloseReasons extends Component {
@@ -13,27 +14,39 @@ export default class ModalCloseReasons extends Component {
     super(props);
     this.state = {
       closeReason: '',
+      brief: '',
     };
   }
 
-  handleReasonChange = e => {
+  handleReasonChange = (e) => {
     this.setState({ closeReason: e.target.value });
   };
 
+  handleBriefChange = (e) => {
+    this.setState({ brief: e.target.value });
+  };
+
   submitCloseReason = () => {
+    const { brief } = this.state;
     const analyticsPayload = {
       eventCategory: 'Dashboard - Early Settlement',
       eventAction: `Reasons - ${this.props.closeOrigin}`,
-      eventLabel: `Reason - ${this.state.closeReason} - ${
-        this.props.closeOrigin
-      }`,
+      eventLabel: `${this.state.closeReason} | ${brief}`,
+      eventValue: brief,
     };
-
     window.rzpAnalytics(analyticsPayload);
     this.props.closeModal();
   };
 
+  handleGoBackClick = (e) => {
+    const { showOndemandSettlementForm, closeModal } = this.props;
+    closeModal();
+    setTimeout(() => showOndemandSettlementForm(e), 0);
+  };
+
   render() {
+    const { showOndemandSettlementForm } = this.props;
+    const { brief } = this.state;
     return (
       <div class="reasons-close-modal">
         <ModalHeader
@@ -44,12 +57,9 @@ export default class ModalCloseReasons extends Component {
           }}
         />
         <div class="modal-body">
-          {CLOSE_OPTIONS.map(choice => {
+          {CLOSE_OPTIONS.map((choice) => {
             return (
-              <div
-                key={'parent-choice-' + choice.value}
-                class="es-close-choices"
-              >
+              <div key={'parent-choice-' + choice.value} class="es-close-choices">
                 <label key={'lab-' + choice.value}>
                   <input
                     type="radio"
@@ -64,13 +74,29 @@ export default class ModalCloseReasons extends Component {
             );
           })}
         </div>
-        <Button.Primary
-          onClick={this.submitCloseReason}
-          disabled={!this.state.closeReason}
-          class="pull-right confirm-close"
-        >
-          Confirm & Close
-        </Button.Primary>
+        <div class="flex Input-textarea-container">
+          <Input.Textarea
+            label="Write a brief"
+            size="small"
+            class="Input-description Input--vTop m-b p-b"
+            placeholder="Write a brief description"
+            value={brief}
+            onChange={this.handleBriefChange}
+          />
+        </div>
+
+        <div class="flex action-container">
+          <Button.Transparent onClick={this.handleGoBackClick} class="go-back">
+            Go Back
+          </Button.Transparent>
+          <Button.Primary
+            onClick={this.submitCloseReason}
+            disabled={!this.state.closeReason}
+            class="confirm-close"
+          >
+            Confirm & Close
+          </Button.Primary>
+        </div>
       </div>
     );
   }

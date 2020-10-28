@@ -7,31 +7,25 @@ import Amount from 'common/ui/Amount';
 import ListContainer from 'merchant/containers/ListContainer';
 import PaymentsListFilter from './PaymentsListFilter';
 
-import {
-  paymentId,
-  amount,
-  customer,
-  createdAtShort,
-  status,
-} from 'common/ui/item/pair';
+import { paymentId, amount, customer, createdAtShort, status } from 'common/ui/item/pair';
 
 import EntityTable from 'merchant/components/EntityTable';
 
-const PaymentsTable = props => {
+const PaymentsTable = (props) => {
   let paymentColumns = [paymentId, amount, customer, createdAtShort, status];
 
   return <EntityTable title="Payments" columns={paymentColumns} {...props} />;
 };
 
 @withRouter
-@connect(state => state.payments, { fetchAll })
+@connect((state) => state.payments, { fetchAll })
 export default class PaymentsList extends ListContainer {
   constructor(props) {
     super(props);
   }
 
   // Hook to modify fetchAll of ListContainer
-  fetchEntityList = params => {
+  fetchEntityList = (params) => {
     return this.props.fetchAll({
       ...params,
       payment_link_id: this.props.entity.id,
@@ -46,12 +40,7 @@ export default class PaymentsList extends ListContainer {
       },
       {
         title: 'Total revenue',
-        value: (
-          <Amount
-            value={entity.total_amount_paid}
-            currency={entity.currency}
-          />
-        ),
+        value: <Amount value={entity.total_amount_paid} currency={entity.currency} />,
       },
     ];
   }
@@ -76,7 +65,7 @@ export default class PaymentsList extends ListContainer {
               onClick={downloadReport}
               disabled={isExportInProgress}
             >
-              <i class="i i-download m-r"/>
+              <i class="i i-download m-r" />
               Export All (CSV)
             </Button>
           </div>

@@ -96,7 +96,7 @@ export default class InputDropdown extends React.Component {
       selectedOptionComponent,
       searchEnabled = false,
       disabled,
-      afterOptionsComponent
+      afterOptionsComponent,
     } = this.props;
 
     const { selectedOption } = this.state;

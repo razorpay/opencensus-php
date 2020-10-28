@@ -7,18 +7,14 @@
   }
 }
 
-.settle-list-filter {
-  display: -webkit-inline-box;
-}
-
 .settlement-actions-wrapper {
   display: flex;
   align-items: center;
 }
 
 .settlement-doc-btn {
-  padding-left: 3px;
-  padding-left: 5px;
+  padding-left: 0px;
+  padding-right: 0px;
 }
 
 .settle-current-icon {
@@ -32,6 +28,10 @@
 
 .schedule-enable-container {
   padding: 5px 0;
+  .enable-settlement-btn{
+    padding: 5px 4px;
+    font-weight: bold;
+  }
 }
 
 @media only screen and (max-width: 500px) {
@@ -43,9 +43,13 @@
 .reasons-close-modal {
   min-height: 280px;
 
+  .modal-header {
+    color: #0D2366;
+  }
+
   .modal-body {
     input[type='radio'] {
-      margin-right: 10px;
+      margin-right: 6px;
     }
 
     label {
@@ -57,8 +61,31 @@
     margin: 0 20px 0 20px;
   }
 
+  .go-back {
+    margin-left: 36px;
+    color: #7B8199;
+    font-weight: bold;
+  }
+
   .es-close-choices {
-    padding: 5px;
+    padding-bottom: 3px;
+    label {
+      color: #515978;
+    }
+  }
+
+  .action-container {
+    margin-top: 6px;
+    justify-content: space-around;
+    padding-bottom: 24px;
+  }
+
+  .Input-textarea-container {
+    justify-content: center;
+  }
+
+  .Input {
+    margin-top: 10px;
   }
 }
 
@@ -66,6 +93,7 @@
   border-left: 1.5px solid #cfdadd;
   display: inline-block;
   padding-left: 10px;
+  margin-left: 12px;
 }
 
 .scheduled-btn-act {
@@ -78,13 +106,19 @@
   margin-right: 10px;
 }
 
+.p-b-15 {
+  padding-bottom: 15px;
+}
+
 .settlement-balance-amount {
-  font-weight: bold;
-  vertical-align: middle;
-  padding: 0 5px;
-  padding-right: 0;
+  align-items: center;
   .help-content {
-    margin-right: 10px;
+    margin-right: 5px;
+  }
+  .amount-current-balance, .amount-settlement {
+    .rzp-currency, .rzp-whole, .rzp-paise {
+      font-weight: bold;
+    }
   }
 }
 
@@ -113,43 +147,41 @@
 }
 
 .container-scheduled-modal {
-  min-height: 300px;
-
-  .highlight-support {
-    color: #528FF0;
-    position: relative;
-    top: 5px;
-    font-weight: bolder;
-    font-size: 1.2em;
-  }
 
   .modal-header-success {
     padding-right: 10px;
   }
 
   .overflow-box {
-    margin: 10px -35px 20px -35px;
+    margin: 10px -48px 20px -48px;
     border: 1px solid rgba(173, 188, 201, 0.17);
-    padding: 20px;
+    padding: 24px;
     box-shadow: 0px 2px 6px rgba(62, 71, 84, 0.13);
     border-radius: 2px;
     background-color: #fff;
 
     .schedule-desc-container {
       display: inline-block;
-      width: 50%;
+      width: 64%;
       float: left;
     }
 
     .schedule-img-container {
-      display: inline-block;
-      width: 50%;
       position: relative;
-      top: 20px;
-
       img {
-        width: 150px;
+        position: absolute;
+        width: 282.06px;
+        height: 198px;
+        top: -68px;
+        opacity: 0.6;
+        clip: rect(13px, 175px, 200px, 0);
+        right: -132px;
       }
+    }
+
+    .schedule-desc-list-container{
+      display: flex;
+      align-items: baseline;
     }
 
     ul.schedule-desc {
@@ -172,7 +204,7 @@
     .Input-label {
       font-size: 16px;
       color: #515978;
-      margin-bottom: 6px;
+      margin-bottom: 12px;
     }
 
     .Input-el {
@@ -182,20 +214,58 @@
   }
 
   .border {
-    margin-top: 20px;
-    border-left: 3px solid #528FF0;
-    padding-left: 8px;
-    margin-bottom: 20px;
+    border-left: 1px solid #000000;
+    opacity: 0.21;
   }
+
+  .modal-title {
+    color: #0D2366;
+  }
+
+  .modal-body{
+    padding-top:8px;
+  }
+
+  div {
+    color: #515978;
+  }
+
+  .btn-link {
+    font-weight: bold;
+  }
+
+  .footer-container {
+    justify-content: space-around;
+    display: flex;
+  }
+
+  .submit-btn {
+    width: 100%;
+  }
+
+  .post-schedule-header {
+    font-size: 14px;
+    font-weight: bold;
+    padding-bottom: 6px;
+    display: flex;
+    align-items: center;
+  }
+
+  .post-schedule-description {
+    padding-bottom: 16px;
+  }
+
+  .fee-container {
+    margin: 12px 0 50px;
+  }
+
 }
 
 .onmdemand-modal {
   color: #58666E;
-  .schedule-enable-container {
-    margin-bottom: 20px;
-  }
 
   .breakup {
+    border-bottom: 1px solid rgba(173,188,201,0.17);
     margin-bottom: 5px;
     background-color: white;
 
@@ -205,10 +275,19 @@
         border: none;
       }
     }
+
+    .rzp-whole {
+      color: #515978;
+    }
   }
 
   p {
     display: inline;
+  }
+
+  .after-deduction {
+    font-size: 12px;
+    padding-right: 4px;
   }
 
   .float-right {
@@ -218,15 +297,11 @@
 
   .drop-button {
     float: right;
-    display: inline;
     background-color: transparent;
     color: #528FF0;
-    height: 20px;
-    margin-top: 2px;
-    margin-left: -4px;
     font-weight: bold;
-    font-size: 14px;
     padding: 0;
+    margin-right: 0px;
 
     .i {
       font-size: 20px;
@@ -237,9 +312,7 @@
     &:not(:disabled) {
       &:hover {
         background-color: transparent;
-        color: #528FF0;
-        font-weight: bold;
-        font-size: 15px;
+        color: #2371ec;
       }
     }
   }
@@ -259,8 +332,18 @@
   }
 
   .currency-big-1 {
-    font-size: 27px;
-    color: #0D2366;
+    .rzp-whole{
+      color: #0D2366;
+      font-weight: bold;
+      font-size:24px;
+    }
+    .rzp-paise{
+      font-weight: bold;
+      font-size: 18px;
+    }
+    .rzp-currency{
+      font-size: 18px;
+    }
   }
 
   .modal-header-success {
@@ -268,27 +351,38 @@
   }
 
   .success-breakup {
-    margin-top: -30px;
+    margin-top: -24px;
   }
 
   .fixed {
-    font-size: 12px;
+    font-size: 13px;
   }
 
   .dropdown-active, .dropdown {
-    padding: 7px;
-    display: block;
     color: #7B8199;
-    font-size: 15px;
-    line-height: 28px;
-    margin-top: 0;
+    font-size: 13px;
+    line-height: 20px;
     background-color: white;
-    border: 1px solid rgba(173, 188, 201, 0.17);
+    padding: 10px 12px;
+  }
+
+  .p-b-5 {
+    padding-bottom: 5px;
+  }
+
+  .dropdown-border{
+    border-top: 1px solid rgba(173, 188, 201, 0.17);
+    border-bottom: 1px solid rgba(173, 188, 201, 0.17);
+  }
+
+  .dropdown-active .amount-to-settle {
+    color: #515978;
   }
 
   .dropdown-1 {
     border-bottom: 1px solid rgba(173, 188, 201, 0.17);
     margin-top: 20px;
+    padding-bottom: 16px;
   }
 
   .dropdown-closed {
@@ -307,8 +401,8 @@
   }
 
   .grey-border {
-    border-left: 3px solid #ADBCC9;
-    margin-bottom: 5px;
+    border-left: 2px solid #ADBCC9;
+    margin-bottom: 16px;
     padding-left: 6px;
 
     .rzp-amount {
@@ -332,12 +426,13 @@
   }
 
   .overflow-box {
-    margin: 10px -45px 20px -45px;
+    margin: 18px -45px 20px -45px;
     border: 1px solid rgba(173, 188, 201, 0.17);
     padding-top: 0px;
-    padding-left: 20px;
-    padding-right: 20px;
-    padding-bottom: 20px;
+    padding-left: 24px;
+    padding-right: 24px;
+    padding-bottom: 24px;
+    padding:0px 24px 24px
     box-shadow: 0px 2px 6px rgba(62, 71, 84, 0.13);
     border-radius: 2px;
     background-color: white;
@@ -364,6 +459,30 @@
 
   .settlement-doc-btn, .fa-circle.interpunct {
     display: none;
+  }
+
+  .help-block {
+    color: #515978;
+    margin: 16px 0px;
+  }
+
+  .loader {
+    margin-bottom: 16px;
+  }
+
+  .error-message {
+    border-left: 2px solid #f05050;
+    margin: 8px 0px 16px;
+    padding: 0px 8px; 
+    color: #f05050;
+  }
+
+  .is-mature .is-invalid .Input-error, .is-mature.is-invalid .Input-error {
+    display: none;
+  }
+
+  .modal-body {
+    padding-top: 8px;
   }
 }
 
@@ -633,6 +752,12 @@ i.settle-now {
     font-size: 15px;
     padding-bottom: 0;
 
+  }
+}
+
+.bold-amount {
+  .rzp-currency, .rzp-whole, .rzp-paise {
+    font-weight: bold;
   }
 }
 

@@ -5,12 +5,12 @@ import { connect } from 'react-redux';
 import * as ModalActions from 'merchant_common/reducers/modals';
 
 @connect(
-  state => ({
+  (state) => ({
     user: state.session.user,
   }),
   {
     ...ModalActions,
-  }
+  },
 )
 export default class ScheduledBanner extends Component {
   constructor(props) {
@@ -19,12 +19,7 @@ export default class ScheduledBanner extends Component {
 
   openAutomatic = () => {
     this.props.openModal({
-      component: (
-        <ScheduledModal
-          fromWhere={this.props.fromWhere}
-          onExit={this.props.onExit}
-        />
-      ),
+      component: <ScheduledModal fromWhere={this.props.fromWhere} onExit={this.props.onExit} />,
       size: 'small',
       disableClose: true,
     });
@@ -48,15 +43,12 @@ export default class ScheduledBanner extends Component {
     if (this.props.user.isAutomaticSettlementEnabled) return null;
 
     return (
-      <div class="pull-right schedule-enable-container">
+      <div>
         <i class="i i-early-settlement scheduled-enable" />
-        Get your settlements on the same day, automatically
-        <Button.Secondary
-          class="scheduled-btn-act"
-          onClick={this.openAutomatic}
-        >
+        Get your settlements on the same day, automatically.
+        <Button.Transparent class="enable-settlement-btn" onClick={this.openAutomatic}>
           Enable Now
-        </Button.Secondary>
+        </Button.Transparent>
       </div>
     );
   }

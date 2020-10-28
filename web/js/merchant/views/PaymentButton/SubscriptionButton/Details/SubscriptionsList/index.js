@@ -6,36 +6,29 @@ import Amount from 'common/ui/Amount';
 import ListContainer from 'merchant/containers/ListContainer';
 import SubscriptionsListFilter from 'merchant/views/Subscriptions/Subscriptions/components/ListFilter';
 
-
-import {
-  subscriptionId,
-  planId,
-  nextDueOn,
-  createdAtShort,
-  status,
-} from 'common/ui/item/pair';
+import { subscriptionId, planId, nextDueOn, createdAtShort, status } from 'common/ui/item/pair';
 
 import EntityTable from 'merchant/components/EntityTable';
 
-const SubscriptionsTable = props => {
+const SubscriptionsTable = (props) => {
   let paymentColumns = [subscriptionId, planId, nextDueOn, createdAtShort, status];
 
   return <EntityTable title="Subscriptions" columns={paymentColumns} {...props} />;
 };
 
 @withRouter
-@connect(state => state.subscriptions, { fetchAll })
+@connect((state) => state.subscriptions, { fetchAll })
 export default class SubscriptionsList extends ListContainer {
   constructor(props) {
     super(props);
   }
 
   // Hook to modify fetchAll of ListContainer
-  fetchEntityList = params => {
+  fetchEntityList = (params) => {
     return this.props.fetchAll({
       ...params,
       source: 'subscription_button',
-      source_id: this.props.entity.id.substr(3)
+      source_id: this.props.entity.id.substr(3),
     });
   };
 
@@ -44,7 +37,7 @@ export default class SubscriptionsList extends ListContainer {
     const items = entity.payment_page_items;
 
     const totalSubscriptions = items.reduce((total, item) => {
-      if(item.plan_id) {
+      if (item.plan_id) {
         total += Number(item.quantity_sold);
       }
 
@@ -54,7 +47,7 @@ export default class SubscriptionsList extends ListContainer {
     return [
       {
         title: 'Total Subscriptions',
-        value: totalSubscriptions
+        value: totalSubscriptions,
       },
     ];
   }

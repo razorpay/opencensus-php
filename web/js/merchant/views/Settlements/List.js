@@ -188,12 +188,12 @@ export default class SettlementsListContainer extends ListContainer {
   showOndemandSettlementForm = (e) => {
     trackOndemand.trackSettleNow('Settlements');
     const balance = this.props.current_balance.data.balance;
-
     this.props.openModal({
       component: (
         <OndemandModal
           currentBalance={balance}
           fromWhere={e.clickOrigin ? 'Announcement' : 'Settlements'}
+          showOndemandSettlementForm={this.showOndemandSettlementForm}
         />
       ),
       size: 'small',
@@ -218,11 +218,11 @@ export default class SettlementsListContainer extends ListContainer {
     const { loading, items, error, current_balance, user, mode } = this.props;
     const { showInstantActivation, isSubmitted } = user;
     let balance = current_balance.data.balance || 0;
-    let negativeBalanceClassName = '';
+    let currentBalanceClassName = 'amount-current-balance';
 
     if (balance < 0) {
       balance = Math.abs(balance);
-      negativeBalanceClassName = 'negative-balance';
+      currentBalanceClassName += ' negative-balance';
     }
 
     const nextSettlement = this.props.settlement_amount.data.next_settlement_time;
@@ -331,35 +331,16 @@ export default class SettlementsListContainer extends ListContainer {
                     )}
                 </div>
               </HeaderAction>
-              <SettlementsListFilter
-                form="settlementsListFilter"
-                additionalClass="settle-list-filter"
-                count={this.state.count}
-                onSubmit={this.search}
-                onSearchAnalytics={this.onSearchAnalytics}
-                onClearAnalytics={this.onClearAnalytics}
-              />
 
               <div class="pull-right">
                 {this.props.user.isOrgAllowedFunctionality('current_balance') && (
-                  <div class="flex text-right">
+                  <div class="flex text-right settlement-balance-amount p-t p-b-15">
                     <div>
-                      <span class="settlement-balance-amount">
-                        Current Balance:{' '}
-                        <Amount value={balance} currency="INR" class={negativeBalanceClassName} />
-                        {this.props.user.isOndemandSettlementEnabled &&
-                          this.props.user.isAllowedView('early_settlement') && (
-                            <div class="box-left-pad10-inline">
-                              <Button.Primary
-                                class="settle-btn"
-                                onClick={this.showOndemandSettlementForm}
-                                disabled={current_balance.loading || balance < 100}
-                              >
-                                <i class="i i-early-settlement settle-now-early" />
-                                Settle Now
-                              </Button.Primary>
-                            </div>
-                          )}
+                      <div>
+                        <strong>
+                          Current Balance:{' '}
+                          <Amount value={balance} currency="INR" class={currentBalanceClassName} />
+                        </strong>
                         {this.props.user.isAutomaticSettlementEnabled && (
                           <i class="i i-early-settlement settle-current-icon">
                             <Popover align="left" theme="dark">
@@ -369,79 +350,103 @@ export default class SettlementsListContainer extends ListContainer {
                             </Popover>
                           </i>
                         )}
-                      </span>
-                      <br />
-                      {mode === 'live' &&
-                      no_settlement &&
-                      this.props.payments &&
-                      this.props.payments.items.length > 0 ? (
-                        <span style={{ fontSize: '13px' }}>
-                          {no_settlement.caption}
-                          {no_settlement.reason && (
-                            <>
-                              <i class="i i-info-circle" />
-                              <Popover theme="dark" align="left">
-                                <PopoverBody>
-                                  <div>{no_settlement.reason}</div>
-                                </PopoverBody>
-                              </Popover>
-                            </>
-                          )}
-                        </span>
-                      ) : null}
-                      {nextSettlement && !no_settlement && (
-                        <span style={{ fontSize: '13px' }}>
-                          <span>&nbsp;</span>
-                          <strong>
-                            <Amount
-                              value={this.props.settlement_amount.data.settlement_amount}
-                              currency="INR"
+                      </div>
+                      <div>
+                        {nextSettlement && !no_settlement && (
+                          <span style={{ fontSize: '13px' }}>
+                            <span>&nbsp;</span>
+                            <strong>
+                              <Amount
+                                value={this.props.settlement_amount.data.settlement_amount}
+                                currency="INR"
+                                class="amount-settlement"
+                              />
+                            </strong>
+                            will be settled on{' '}
+                            <Time
+                              value={this.props.settlement_amount.data.next_settlement_time}
+                              format="DD MMM YYYY, hh:mm:ss a"
                             />
-                          </strong>{' '}
-                          will be settled on{' '}
-                          <Time
-                            value={this.props.settlement_amount.data.next_settlement_time}
-                            format="DD MMM YYYY, hh:mm:ss a"
-                          />
-                          {this.props.settlement_amount.data.reason_for_delay && (
-                            <>
-                              <i class="i i-info-circle" />
-                              <Popover theme="dark" align="left">
-                                <PopoverBody>
-                                  <div>{this.props.settlement_amount.data.reason_for_delay}</div>
-                                </PopoverBody>
-                              </Popover>
-                            </>
-                          )}
-                          <span
-                            onClick={() => {
-                              this.props.openModal({
-                                size: 'medium',
-                                component: (
-                                  <SettlementDetail
-                                    user={user}
-                                    settlementAmount={this.props.settlement_amount.data}
-                                  />
-                                ),
-                              });
+                            {this.props.settlement_amount.data.reason_for_delay && (
+                              <>
+                                <i class="i i-info-circle" />
+                                <Popover theme="dark" align="left">
+                                  <PopoverBody>
+                                    <div>{this.props.settlement_amount.data.reason_for_delay}</div>
+                                  </PopoverBody>
+                                </Popover>
+                              </>
+                            )}
+                            <span
+                              onClick={() => {
+                                this.props.openModal({
+                                  size: 'medium',
+                                  component: (
+                                    <SettlementDetail
+                                      user={user}
+                                      settlementAmount={this.props.settlement_amount.data}
+                                    />
+                                  ),
+                                });
 
-                              window.rzpAnalytics({
-                                eventCategory: 'Settlement Revamp',
-                                eventAction: 'Know more - Next Settlement',
-                                eventLabel: `Settlements`,
-                              });
-                            }}
-                            class="btn-link pointer"
-                            style={{ marginLeft: '5px' }}
-                          >
-                            <b>Know More</b>
+                                window.rzpAnalytics({
+                                  eventCategory: 'Settlement Revamp',
+                                  eventAction: 'Know more - Next Settlement',
+                                  eventLabel: `Settlements`,
+                                });
+                              }}
+                              class="btn-link pointer"
+                              style={{ marginLeft: '5px' }}
+                            >
+                              <b>Know More</b>
+                            </span>
                           </span>
-                        </span>
-                      )}
+                        )}
+                      </div>
                     </div>
+                    {this.props.user.isOndemandSettlementEnabled &&
+                      this.props.user.isAllowedView('early_settlement') && (
+                        <div class="box-left-pad10-inline">
+                          <Button.Primary
+                            class="settle-btn"
+                            onClick={this.showOndemandSettlementForm}
+                            disabled={current_balance.loading || balance < 100}
+                          >
+                            <i class="i i-early-settlement settle-now-early" />
+                            Settle Now
+                          </Button.Primary>
+                        </div>
+                      )}
+                    <br />
+                    {mode === 'live' &&
+                    no_settlement &&
+                    this.props.payments &&
+                    this.props.payments.items.length > 0 ? (
+                      <span style={{ fontSize: '13px' }}>
+                        {no_settlement.caption}
+                        {no_settlement.reason && (
+                          <>
+                            <i class="i i-info-circle" />
+                            <Popover theme="dark" align="left">
+                              <PopoverBody>
+                                <div>{no_settlement.reason}</div>
+                              </PopoverBody>
+                            </Popover>
+                          </>
+                        )}
+                      </span>
+                    ) : null}
                   </div>
                 )}
               </div>
+
+              <SettlementsListFilter
+                form="settlementsListFilter"
+                count={this.state.count}
+                onSubmit={this.search}
+                onSearchAnalytics={this.onSearchAnalytics}
+                onClearAnalytics={this.onClearAnalytics}
+              />
 
               <div class="clearfix" />
 

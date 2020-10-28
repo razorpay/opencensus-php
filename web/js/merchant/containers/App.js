@@ -539,11 +539,9 @@ export default class App extends Component {
 
     return (
       <div className={classList('layout', this.orgCode, this.renderFullPageView && 'layout--fp')}>
-       <TwoFactorVerificationProvider merchantFetch={merchantFetch} ajax={ajax}>
-
-         {
-           !this.renderFullPageView && (
-             <React.Fragment>
+        <TwoFactorVerificationProvider merchantFetch={merchantFetch} ajax={ajax}>
+          {!this.renderFullPageView && (
+            <React.Fragment>
               <HeaderNav
                 user={user}
                 mode={mode}
@@ -559,17 +557,18 @@ export default class App extends Component {
                 config={config.config}
                 org_custom_code={org.custom_code}
               />
-             </React.Fragment>
-           )
-         }
+            </React.Fragment>
+          )}
 
-        <Content user={user} modeFormatted={modeFormatted} fullPageView={this.renderFullPageView}/>
+          <Content
+            user={user}
+            modeFormatted={modeFormatted}
+            fullPageView={this.renderFullPageView}
+          />
 
-         {
-           !this.renderFullPageView && (
-             <Footer showMobileNav={this.props.windowWidth < 950} user={user} />
-           )
-         }
+          {!this.renderFullPageView && (
+            <Footer showMobileNav={this.props.windowWidth < 950} user={user} />
+          )}
 
           {/* Creates Portal for the comp */}
           <ModalDialog />

@@ -169,6 +169,34 @@ export default class ScheduledModal extends Component {
     window.rzpAnalytics(eventPayload);
   };
 
+  renderFooterCTAEnablement = () => {
+    return (
+      <div class="footer-container">
+        <div>
+          <a
+            class="btn-link"
+            target="_blank"
+            href="https://razorpay.com/capital/#faqs"
+            onClick={() => {
+              this.fireGAEvent({
+                eventAction: `ES Modal`,
+                eventLabel: `FAQs | ES Modal`,
+              });
+            }}
+          >
+            Check FAQs
+          </a>
+        </div>
+        <div class="border"></div>
+        <div>
+          <a class="btn-link" onClick={this.openSupport}>
+            Contact Support
+          </a>
+        </div>
+      </div>
+    );
+  };
+
   renderPostEnablement = () => {
     return (
       <>
@@ -177,48 +205,39 @@ export default class ScheduledModal extends Component {
           onCloseClick={() => this.props.closeModal()}
         />
         <div class="modal-body">
-          Congratulations, Your Early Settlement feature has now been enabled. Never fall short of
-          cash now!
-          <div class="border">
-            <p>Early settlement applies to domestic settlements only. For International, please </p>
-            <a class="btn-link" onClick={this.openSupport}>
-              Contact support
-            </a>
+          <div class="overflow-box">
+            <div class="post-schedule-header">
+              <i class="i i-early-settlement scheduled-enable"></i>Scheduled Settlements
+            </div>
+            <div class="post-schedule-description">
+              Congratulations, Your Early Settlement feature has now been enabled, Never Fall short
+              of Cash Now!
+            </div>
+            <Button.Primary
+              class="submit-btn"
+              onClick={() => {
+                this.props.closeModal();
+              }}
+            >
+              Done
+            </Button.Primary>
           </div>
-          <a
-            target="_blank"
-            href="https://razorpay.com/capital/#faqs"
-            class="highlight-support"
-            onClick={() => {
-              this.fireGAEvent({
-                eventAction: `ES Modal`,
-                eventLabel: `FAQs | ES Modal`,
-              });
-            }}
-          >
-            Show FAQs
-          </a>
-          <Button.Primary
-            class="pull-right"
-            onClick={() => {
-              this.props.closeModal();
-            }}
-          >
-            Done
-          </Button.Primary>
+          {this.renderFooterCTAEnablement()}
         </div>
       </>
     );
   };
 
   renderPreEnablement = () => {
+    const { isLoading, fees, errors, feeBearer } = this.state;
+    const { closeModal } = this.props;
     return (
       <>
         <ModalHeader
-          title={'Enable Early Settlement'}
+          title="Enable Early Settlement"
           onCloseClick={() => {
-            if (this.state.errors) {
-              this.props.closeModal();
+            if (errors) {
+              closeModal();
             } else {
               this.setState({ modalClosed: true });
             }
@@ -232,65 +251,68 @@ export default class ScheduledModal extends Component {
               {` `}Learn more
             </a>
           </div>
-          {!this.state.errors ? (
+          {!errors ? (
             <div class="overflow-box">
               <div class="schedule-header">Here's how instantly it works:</div>
               <div class="schedule-desc-container">
-                <ul class="schedule-desc">
-                  <li>
-                    Everyday at <b>9AM</b> and <b>5PM</b> all your payments get settled
-                  </li>
-                  {!this.state.isLoading && (
+                <div>
+                  <div class="schedule-desc-list-container">
                     <div>
-                      {this.state.feeBearer === 'platform' ? (
-                        <li>
-                          A minimal fee of <b>{`${this.state.fees / 100}%`}</b> charged for each
-                          settlement
-                        </li>
-                      ) : (
-                        <li>
-                          A minimal fee of <b>{`${this.state.fees / 100}%`}</b> charged for each
-                          settlement, borne by your customers
-                        </li>
-                      )}
+                      <i class="i i-early-settlement scheduled-enable"></i>
                     </div>
-                  )}
-                </ul>
+                    <div>
+                      Everyday at <b>9AM</b> and <b>5PM</b> all your payments get settled
+                    </div>
+                  </div>
+                </div>
+                {!isLoading && (
+                  <div class="schedule-desc-list-container fee-container">
+                    <div>
+                      <i class="i i-early-settlement scheduled-enable"></i>
+                    </div>
+                    {feeBearer === 'platform' ? (
+                      <div>
+                        A minimal fee of <b>{`${fees / 100}%`}</b> charged for each settlement
+                      </div>
+                    ) : (
+                      <div>
+                        A minimal fee of <b>{`${fees / 100}%`}</b> charged for each settlement,
+                        borne by your customers
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <div class="schedule-img-container">
                 <img src={'/dist/css/assets/settlements-blue-box.png'} />
               </div>
               <div>
                 <AsyncBtn.Primary
-                  class={'enable-schedule-btn'}
+                  class="enable-schedule-btn"
                   pendingState="Enabling..."
                   onClick={this.onEnable}
-                  disabled={this.state.isLoading}
+                  disabled={isLoading}
                 >
                   Enable Early Settlement
                 </AsyncBtn.Primary>
               </div>
             </div>
           ) : (
-            <div style={{ color: 'red', marginTop: 20 }}>{this.state.errors}</div>
+            <div style={{ color: 'red', marginTop: 20 }}>{errors}</div>
           )}
-          <div class="border">
-            <p>Early settlement applies to domestic settlements only. For International, please </p>
-            <a class="btn-link" onClick={this.openSupport}>
-              Contact support
-            </a>
-          </div>
+          {this.renderFooterCTAEnablement()}
         </div>
       </>
     );
   };
 
   render() {
+    const { autoEnabled, modalClosed } = this.state;
     return (
       <div class="container-scheduled-modal">
-        {this.state.modalClosed ? (
+        {modalClosed ? (
           <ModalCloseReasons closeOrigin="Scheduled" />
-        ) : this.state.autoEnabled ? (
+        ) : autoEnabled ? (
           this.renderPostEnablement()
         ) : (
           this.renderPreEnablement()

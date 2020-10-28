@@ -38,7 +38,7 @@ let Label = ({ text, htmlFor, required }) => {
 };
 
 @connect(
-  state => {
+  (state) => {
     const { currency } = selector(state, 'item') || {};
     return {
       currency,
@@ -49,7 +49,7 @@ let Label = ({ text, htmlFor, required }) => {
     fetchPlan,
     savePlan,
     showNotification,
-  }
+  },
 )
 @reduxForm({
   form: 'newPlan',
@@ -81,7 +81,7 @@ export default class AddPlan extends Component {
   fetchIfIntentDuplicate() {
     const searchQuery = getURLQueryParams(this.props.location.search);
     if (searchQuery.duplicate_id) {
-      this.props.fetchPlan(searchQuery.duplicate_id).then(data => {
+      this.props.fetchPlan(searchQuery.duplicate_id).then((data) => {
         this.isIntentDuplicate = true;
 
         const newPlan = {};
@@ -96,7 +96,7 @@ export default class AddPlan extends Component {
         newPlan.interval = data.interval;
         newPlan.period = data.period;
 
-        newPlan.notes = Object.keys(data.notes).map(key => ({
+        newPlan.notes = Object.keys(data.notes).map((key) => ({
           key,
           value: data.notes[key],
         }));
@@ -126,14 +126,14 @@ export default class AddPlan extends Component {
       });
   }
 
-  save = props => {
+  save = (props) => {
     if (this.isIntentDuplicate) {
       trackSaveDuplicatePlan();
     }
 
     return this.props
       .savePlan(props)
-      .then(plan => {
+      .then((plan) => {
         const { closeUrl } = this.props,
           eventCategory = getEventCategoryFromPath(closeUrl);
         eventCategory &&
@@ -149,14 +149,14 @@ export default class AddPlan extends Component {
           message: 'Plan saved successfully',
         });
       })
-      .catch(err => {
+      .catch((err) => {
         this.setState({
           errors: err.errors,
         });
       });
   };
 
-  onCurrencyChange = option => {
+  onCurrencyChange = (option) => {
     trackSelectCurrency(option.name); // ISO format(INR)
 
     this.props.change('item[currency]', option.name);
@@ -175,8 +175,8 @@ export default class AddPlan extends Component {
           <div class="SliderPanel__Body">
             <form class="panel-body" onSubmit={handleSubmit(this.save)}>
               <FormItem
-                label={_ => <Label text="Plan Name" required />}
-                field={_ => (
+                label={(_) => <Label text="Plan Name" required />}
+                field={(_) => (
                   <Field
                     name="item[name]"
                     component={InputField}
@@ -188,8 +188,8 @@ export default class AddPlan extends Component {
                 )}
               />
               <FormItem
-                label={_ => <Label text="Plan Description" />}
-                field={_ => (
+                label={(_) => <Label text="Plan Description" />}
+                field={(_) => (
                   <div>
                     <Field
                       name="item[description]"
@@ -199,15 +199,15 @@ export default class AddPlan extends Component {
                     />
                     <span class="help-block label--secondary">
                       <i class="i i-info-outline" />
-                      The <b>Plan Name</b> and <b>Plan Description</b> will
-                      appear on the invoice as entered above
+                      The <b>Plan Name</b> and <b>Plan Description</b> will appear on the invoice as
+                      entered above
                     </span>
                   </div>
                 )}
               />
               <FormItem
-                label={_ => <Label text="Billing Frequency" required />}
-                field={_ => (
+                label={(_) => <Label text="Billing Frequency" required />}
+                field={(_) => (
                   <div class="billing-frequency">
                     <span>Every</span>
                     <Field
@@ -240,8 +240,8 @@ export default class AddPlan extends Component {
                     </Field>
 
                     <span class="help-block label--secondary">
-                      <i class="i i-info-outline" />You can set{' '}
-                      <b>billing cycle</b> (start date and end date) and{' '}
+                      <i class="i i-info-outline" />
+                      You can set <b>billing cycle</b> (start date and end date) and{' '}
                       <b>trial period</b> later while, creating a subscription.
                     </span>
                   </div>
@@ -249,8 +249,8 @@ export default class AddPlan extends Component {
               />
 
               <FormItem
-                label={_ => <Label text="Billing Amount" required />}
-                field={_ => (
+                label={(_) => <Label text="Billing Amount" required />}
+                field={(_) => (
                   <div class="Field-amount-wrapper">
                     <Input.CurrencySelect
                       name="currency"
@@ -267,22 +267,15 @@ export default class AddPlan extends Component {
                     />
                     <span class="help-block label--secondary">
                       <i class="i i-info-outline" />
-                      <b>Billing amount</b> and <b>billing frequency</b> can not
-                      be changed later.
+                      <b>Billing amount</b> and <b>billing frequency</b> can not be changed later.
                     </span>
                   </div>
                 )}
               />
 
               <FormItem
-                label={_ => <Label text="Internal Notes" />}
-                field={_ => (
-                  <FieldArray
-                    name="notes"
-                    component={NotesFieldArray}
-                    required
-                  />
-                )}
+                label={(_) => <Label text="Internal Notes" />}
+                field={(_) => <FieldArray name="notes" component={NotesFieldArray} required />}
               />
 
               <div>
@@ -308,10 +301,10 @@ export default class AddPlan extends Component {
                         affirmativeLabel: 'Leave',
                         abortLabel: 'Stay',
                         action: () => {
-                          if(this.props.baseLocation) {
-                            this.props.history.goBack()
+                          if (this.props.baseLocation) {
+                            this.props.history.goBack();
                           } else {
-                            this.props.history.push(`/plans`)
+                            this.props.history.push(`/plans`);
                           }
                         },
                       })

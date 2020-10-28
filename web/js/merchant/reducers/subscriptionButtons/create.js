@@ -20,7 +20,8 @@ const RESET_SUBSCRIPTION_BUTTON_DATA = 'RESET_SUBSCRIPTION_BUTTON_DATA';
 
 const UPDATE_PAYMENT_FIELD_SUBSCRIPTION = 'UPDATE_PAYMENT_FIELD_SUBSCRIPTION';
 const DELETE_PAYMENT_FIELD_SUBSCRIPTION = 'DELETE_PAYMENT_FIELD_SUBSCRIPTION';
-const DELETE_ALL_ONE_TIME_PAYMENTS_FIELD_SUBSCRIPTION = 'DELETE_ALL_ONE_TIME_PAYMENTS_FIELD_SUBSCRIPTION';
+const DELETE_ALL_ONE_TIME_PAYMENTS_FIELD_SUBSCRIPTION =
+  'DELETE_ALL_ONE_TIME_PAYMENTS_FIELD_SUBSCRIPTION';
 
 const UPDATE_UDF_FIELD_SUBSCRIPTION = 'UPDATE_UDF_FIELD_SUBSCRIPTION';
 const DELETE_UDF_FIELD_SUBSCRIPTION = 'DELETE_UDF_FIELD_SUBSCRIPTION';
@@ -30,7 +31,8 @@ const UPDATE_SUBSCRIPTION_BUTTON_RECEIPT_DETAILS = 'UPDATE_SUBSCRIPTION_BUTTON_R
 
 const UPDATE_STEP_REVIEW_PROGRESS_SUBSCRIPTION = 'UPDATE_STEP_REVIEW_PROGRESS_SUBSCRIPTION';
 
-const UPDATE_BUTTON_SETTINGS_HIGHLIGHTER_SUBSCRIPTION = 'UPDATE_BUTTON_SETTINGS_HIGHLIGHTER_SUBSCRIPTION';
+const UPDATE_BUTTON_SETTINGS_HIGHLIGHTER_SUBSCRIPTION =
+  'UPDATE_BUTTON_SETTINGS_HIGHLIGHTER_SUBSCRIPTION';
 
 export const fetchSubscriptionButtonDetails = (id, isIntentDuplicate) => {
   return {
@@ -175,7 +177,7 @@ export default function (state = initialState, action) {
 
         // Convert only for one-time payment items. It's bcoz while creation, plans are fetched in common reducer, hence they cannot be converted to rupees,
         // and since their amount is used just for the purpose of display and not manipulation, so for plans, paiseToRupees is done only for display purpose.
-        if(!pi.plan_id) {
+        if (!pi.plan_id) {
           pi.item.amount = paiseToRupees(pi.item.amount); // Convert in Rupees (or bigger unit)
         }
       });

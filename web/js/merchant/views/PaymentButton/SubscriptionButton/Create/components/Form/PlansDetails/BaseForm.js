@@ -172,7 +172,14 @@ export default class BaseForm extends React.Component {
             onChange={this.onChangePlan}
             autoFocus={!field}
             afterOptionsComponent={({ select }) => {
-              return <div class="create-plan-btn Button Button--transparent" onClick={() => this.handleAddNewPlan(select.actions.close)}><b>Add New Plan</b></div>
+              return (
+                <div
+                  class="create-plan-btn Button Button--transparent"
+                  onClick={() => this.handleAddNewPlan(select.actions.close)}
+                >
+                  <b>Add New Plan</b>
+                </div>
+              );
             }}
           />
 

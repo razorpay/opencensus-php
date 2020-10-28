@@ -5,9 +5,7 @@ import GetCodeModal from './GetCodeModal';
 @withRouter
 export default class SuccessModal extends React.Component {
   onClickButtonSettings = () => {
-    this.props.history.push(
-      `/subscription_buttons/${this.props.paymentButton.id}/payments`
-    );
+    this.props.history.push(`/subscription_buttons/${this.props.paymentButton.id}/payments`);
 
     this.props.updateHighlightButtonSettings(this.props.paymentButton.id);
 
@@ -17,9 +15,7 @@ export default class SuccessModal extends React.Component {
   render() {
     const { paymentButton, isEditExistingId, ...extraProps } = this.props;
 
-    const title = isEditExistingId
-      ? 'Button updated successfully'
-      : 'Button created successfully';
+    const title = isEditExistingId ? 'Button updated successfully' : 'Button created successfully';
 
     const description = (
       <>
@@ -56,9 +52,7 @@ export default class SuccessModal extends React.Component {
         {...extraProps}
       >
         <div class="receipt-description">
-          <div class="description-title">
-            Actions After a Successful Payment
-          </div>
+          <div class="description-title">Actions After a Successful Payment</div>
           <div class="description-list">
             <li> Show a custom message.</li>
             {/*<li> Send automated payment receipts.</li>*/}

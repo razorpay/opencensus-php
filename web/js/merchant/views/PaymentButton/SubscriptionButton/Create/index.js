@@ -520,7 +520,7 @@ export default class SubscriptionButtonCreate extends React.Component {
 
     const actionButtons = (
       <React.Fragment>
-      {/*
+        {/*
         {user.isPaymentPageReceiptsEnabled && (
           <Button.Transparent
             type="button"

@@ -28,7 +28,9 @@ export default class OneTimePaymentsDetails extends React.Component {
 
     const items = filterSubscriptionPaymentItems(paymentFields, true);
 
-    const cleanItems = items.filter(function () { return true });
+    const cleanItems = items.filter(function () {
+      return true;
+    });
 
     return { items, length: cleanItems.length };
   }

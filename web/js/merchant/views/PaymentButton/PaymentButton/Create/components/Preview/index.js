@@ -11,12 +11,12 @@ import { templateTypes } from 'merchant/views/PaymentButton/PaymentButton/Create
 import { updateBrandColorContrast } from 'merchant/reducers/config';
 
 @connect(
-  state => ({
+  (state) => ({
     config: state.config,
   }),
   {
     updateBrandColorContrast,
-  }
+  },
 )
 export default class Preview extends React.Component {
   totalTabs = this.isQuickPayTemplate ? 3 : 4;
@@ -24,14 +24,12 @@ export default class Preview extends React.Component {
   componentDidMount() {
     loadColorJs(
       () => this.updateBrandColorContrast(),
-      () => this.updateBrandColorContrast()
+      () => this.updateBrandColorContrast(),
     );
   }
 
   updateBrandColorContrast() {
-    const isBrandColorDark = window.colorLib
-      ? window.colorLib.isDark(this.brandColor)
-      : false;
+    const isBrandColorDark = window.colorLib ? window.colorLib.isDark(this.brandColor) : false;
 
     this.props.updateBrandColorContrast(isBrandColorDark);
   }
@@ -42,19 +40,13 @@ export default class Preview extends React.Component {
 
   get isQuickPayTemplate() {
     const { paymentButtonEntity } = this.props;
-    const templateType =
-      paymentButtonEntity.settings.payment_button_template_type;
+    const templateType = paymentButtonEntity.settings.payment_button_template_type;
 
     return templateType === templateTypes.quickPay.key;
   }
 
   render() {
-    const {
-      activeTabIndex,
-      paymentButtonEntity,
-      udfFields,
-      amountFields,
-    } = this.props;
+    const { activeTabIndex, paymentButtonEntity, udfFields, amountFields } = this.props;
     let content;
 
     if (activeTabIndex === 0) {
@@ -77,7 +69,7 @@ export default class Preview extends React.Component {
       <div
         class={classList(
           'PaymentButton-Create-Preview',
-          !content && 'PaymentButton-Create-Preview--hide'
+          !content && 'PaymentButton-Create-Preview--hide',
         )}
       >
         <div class="Preview-title">Preview</div>
@@ -97,11 +89,7 @@ export default class Preview extends React.Component {
             </div>
           */}
 
-          <a
-            class="doc-link"
-            target="_blank"
-            href="https://razorpay.com/docs/payment-button/"
-          >
+          <a class="doc-link" target="_blank" href="https://razorpay.com/docs/payment-button/">
             Visit our Documentation <i class="i i-external-link" />
           </a>
         </div>

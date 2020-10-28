@@ -18,10 +18,7 @@ import TabsContainer from 'common/ui/Tabs';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { addPollInstance, saveReportConfigs } from 'merchant/reducers/reports';
 import { updateHighlightButtonSettings } from 'merchant/reducers/subscriptionButtons/create';
-import {
-  setReceiptDetails,
-  exportReportCSV,
-} from 'merchant/views/PaymentPages/PaymentPages/model';
+import { setReceiptDetails, exportReportCSV } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 import PaymentsList from './PaymentsList';
@@ -43,7 +40,7 @@ const inActiveStatusReasonMap = {
 };
 
 @connect(
-  state => {
+  (state) => {
     return {
       user: state.session.user,
       isTestMode: state.session.mode === 'test',
@@ -59,7 +56,7 @@ const inActiveStatusReasonMap = {
     saveReportConfigs,
     addPollInstance,
     updateHighlightButtonSettings,
-  }
+  },
 )
 // @RTracking(() => window.rzpQ.component('subscriptionButtonEntity'))
 export default class subscriptionButtonEntity extends React.Component {
@@ -103,7 +100,7 @@ export default class subscriptionButtonEntity extends React.Component {
       user,
       subscriptionButtonEntity,
       configId,
-      this.saveLongPollInstances
+      this.saveLongPollInstances,
     );
 
     if (promise && promise.then) {
@@ -116,7 +113,7 @@ export default class subscriptionButtonEntity extends React.Component {
         message: 'Your report will download shortly',
       });
 
-      promise.then(data => {
+      promise.then((data) => {
         this.setState({
           isExportInProgress: false,
         });
@@ -181,19 +178,18 @@ export default class subscriptionButtonEntity extends React.Component {
       ),
     });
   };
-/*
+  /*
   togglePageReceiptModal = () => {
     if (this.state.isPageReceiptModalOpened) {
       // track.lj.trackSettingsReceiptConfigure();
     }
-
     this.setState({
       isPageReceiptModalOpened: !this.state.isPageReceiptModalOpened,
     });
   };
 */
 
-  handleSavePaymentReceipt = receipt => {
+  handleSavePaymentReceipt = (receipt) => {
     return setReceiptDetails(this.props.subscriptionButtonEntity.id, receipt)
       .then(() => {
         this.props.showNotification({
@@ -205,7 +201,7 @@ export default class subscriptionButtonEntity extends React.Component {
 
         this.props.updatesubscriptionButtonEntity({ receipt });
       })
-      .catch(errors => {
+      .catch((errors) => {
         this.props.showNotification({
           type: 'error',
           message: errors[1],
@@ -242,7 +238,7 @@ export default class subscriptionButtonEntity extends React.Component {
           class={classList(
             'content-sm txn-details Entity--paymentpage Entity--paymentpage-v2 Entity--paymentpage-v3',
             'Entity--paymentbutton',
-            this.state.detailsCollapse && 'Entity--paymentpage-collapse'
+            this.state.detailsCollapse && 'Entity--paymentpage-collapse',
           )}
         >
           <div class="content-header">
@@ -281,16 +277,13 @@ export default class subscriptionButtonEntity extends React.Component {
                     <i class="i i-chevron-down" />
                     {highlightButtonSettings && (
                       <Popover align="top" theme="dark" persistent={true}>
-                        <PopoverBody>
-                          Configure post payment message from options here.
-                        </PopoverBody>
+                        <PopoverBody>Configure post payment message from options here.</PopoverBody>
                       </Popover>
                     )}
                   </DropdownTrigger>
                   <DropdownContent>
                     <ul class="dropdown-menu nav nav-stacked">
-
-                    {/*
+                      {/*
                       <li onClick={this.togglePageReceiptModal}>
                         <i class="i i-document" /> Payment Receipts
                       </li>
@@ -303,26 +296,19 @@ export default class subscriptionButtonEntity extends React.Component {
                   </DropdownContent>
                 </Dropdown>
 
-                <Button.Primary onClick={this.openGetCodeModal}>
-                  Get Code
-                </Button.Primary>
+                <Button.Primary onClick={this.openGetCodeModal}>Get Code</Button.Primary>
               </div>
             </div>
 
             <div class="panel-body">
               <div class="entity-details">
-                <EntityDetailRow
-                  label="Button ID"
-                  value={subscriptionButtonEntity.id}
-                />
+                <EntityDetailRow label="Button ID" value={subscriptionButtonEntity.id} />
 
                 <EntityDetailRow
                   label="Button Status"
                   value={() => (
                     <div>
-                      <PaymentPagesStatusLabel
-                        status={subscriptionButtonEntity.status}
-                      />
+                      <PaymentPagesStatusLabel status={subscriptionButtonEntity.status} />
 
                       {!isActive && (
                         <Button.Transparent
@@ -335,11 +321,7 @@ export default class subscriptionButtonEntity extends React.Component {
                       )}
 
                       <div style={{ marginTop: 4, color: '#8991ae' }}>
-                        {
-                          inActiveStatusReasonMap[
-                            subscriptionButtonEntity.status_reason
-                          ]
-                        }
+                        {inActiveStatusReasonMap[subscriptionButtonEntity.status_reason]}
                       </div>
                     </div>
                   )}
@@ -347,9 +329,7 @@ export default class subscriptionButtonEntity extends React.Component {
 
                 <EntityDetailRow
                   label="Created On"
-                  value={() => (
-                    <Time value={subscriptionButtonEntity.created_at} />
-                  )}
+                  value={() => <Time value={subscriptionButtonEntity.created_at} />}
                 />
 
                 <EntityDetailRow label="Created by">
@@ -365,15 +345,12 @@ export default class subscriptionButtonEntity extends React.Component {
               </div>
 
               <ItemDetails subscriptionButtonEntity={subscriptionButtonEntity} />
-
             </div>
           </div>
           <button
             type="button"
             class="btn-primary btn-sm panel-collapser collapsable-btn"
-            onClick={_ =>
-              this.setState({ detailsCollapse: !this.state.detailsCollapse })
-            }
+            onClick={(_) => this.setState({ detailsCollapse: !this.state.detailsCollapse })}
           >
             {this.state.detailsCollapse ? (
               <span>
@@ -391,10 +368,7 @@ export default class subscriptionButtonEntity extends React.Component {
 
           <TabsContainer
             class="item-details"
-            tabNames={[
-              <b>Recurring Payments</b>,
-              <b>One-Time Payments</b>
-            ]}
+            tabNames={[<b>Recurring Payments</b>, <b>One-Time Payments</b>]}
           >
             <SubscriptionsList entity={subscriptionButtonEntity} />
 

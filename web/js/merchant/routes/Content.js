@@ -178,7 +178,6 @@ export default class Content extends Component {
       setActiveEntity(null);
       setSecActiveEntity(null);
 
-
       this.baseLocation = location;
       setBaseLocation(location);
     }

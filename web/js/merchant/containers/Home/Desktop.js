@@ -273,11 +273,11 @@ class AnalyticsDesktop extends Component {
                 <GroupItem>
                   <div style={{ textAlign: 'right' }}>
                     <span class="settlement-balance-amount">
-                      Current Balance:{' '}
+                      <strong>Current Balance: </strong>
                       {!current_balance.loading && (
                         <Amount
                           value={balance}
-                          currency={'INR'}
+                          currency="INR"
                           className={negativeBalanceClassName}
                         />
                       )}
@@ -303,10 +303,7 @@ class AnalyticsDesktop extends Component {
                     {!no_settlement && !nextSettlement ? (
                       <div class="text-right" style={{ width: '100%' }}>
                         <strong>
-                          <Amount
-                            value={settlement_amount.data.settlement_amount}
-                            currency={'INR'}
-                          />
+                          <Amount value={settlement_amount.data.settlement_amount} currency="INR" />
                         </strong>{' '}
                         will be settled on{' '}
                         <Time
@@ -327,7 +324,7 @@ class AnalyticsDesktop extends Component {
                         )}
                         <span
                           class="btn-link"
-                          style={{ marginLeft: '5px' }}
+                          style={{ marginLeft: '5px', fontWeight: 'bold' }}
                           onClick={() => {
                             this.props.openModal({
                               size: 'medium',
@@ -355,13 +352,13 @@ class AnalyticsDesktop extends Component {
               <GroupItem>
                 {this.props.user.isOndemandSettlementEnabled &&
                 this.props.user.isAllowedView('early_settlement') ? (
-                  <Button.Secondary
+                  <Button.Primary
                     class="settle-btn btn-outline"
                     onClick={this.showOndemandSettlementForm}
                     disabled={current_balance.loading || current_balance.data.balance < 100}
                   >
                     Settle Now
-                  </Button.Secondary>
+                  </Button.Primary>
                 ) : (
                   <Link className="pull-right" to="/settlements">
                     <span className="text-no-wrap" onClick={trackSettlementsClick}>
