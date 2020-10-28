@@ -37,4 +37,12 @@ class Repository extends Base\Repository
                     ->where(Entity::CODE, $code)
                     ->get();
     }
+
+    public function getReasonByNetworkAndGatewayCode(string $network, string $gatewayCode)
+    {
+        return $this->newQuery()
+            ->where(Entity::NETWORK, $network)
+            ->where(Entity::GATEWAY_CODE, $gatewayCode)
+            ->firstOrFail();
+    }
 }

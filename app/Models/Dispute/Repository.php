@@ -37,6 +37,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getOpenDisputeByPaymentId(string $paymentId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PAYMENT_ID, $paymentId)
+                    ->whereIn(Entity::STATUS, Status::getOpenStatuses())
+                    ->firstOrFail();
+    }
+
     public function getOpenDisputesForNotification()
     {
         $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();

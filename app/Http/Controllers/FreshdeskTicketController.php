@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 use RZP\Models\Merchant\FreshdeskTicket\Service as FreshdeskTicketService;
+use RZP\Models\Dispute\Customer\FreshdeskTicket\Service as CustomerDisputeFreshdeskTicketService;
 
 /**
  * Freshdesk TicketController to get the support tickets details for Frontend
@@ -93,5 +94,14 @@ class FreshdeskTicketController extends Controller
         $response = (new FreshdeskTicketService)->postTicketReply($ticketId, $input);
 
         return ApiResponse::json($response);
+    }
+
+    public function postCustomerDispute()
+    {
+        $input = Request::all();
+
+        $data = (new CustomerDisputeFreshdeskTicketService())->handleFreshdeskTicket($input);
+
+        return ApiResponse::json($data);
     }
 }

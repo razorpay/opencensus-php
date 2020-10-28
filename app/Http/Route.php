@@ -1432,6 +1432,7 @@ class Route
         'dispute_files_fetch'                      => ['get',      'disputes/{id}/files',                            'DisputeController@getFiles'                                        ],
         'dispute_poc_mails'                        => ['get',      'disputes/{merchantId}/poc-emails',               'DisputeController@getDefaultCreationEmails'                        ],
         'dispute_merchant_emails_initiate'         => ['post',     'disputes/merchant_emails/initiate',              'DisputeController@initiateMerchantEmails'                          ],
+        'fd_customer_dispute'                      => ['post',     'fd/disputes',                                    'FreshdeskTicketController@postCustomerDispute'                     ],
 
         // This is a different route from /payouts since we need a different auth (internal) for this
         // Hence, created two different routes - one for customer and another for merchant.
@@ -2707,6 +2708,7 @@ class Route
         'payment_get_authorization_entity',
         'gateway_payment_upi_data_cron',
         'dispute_merchant_emails_initiate',
+        'fd_customer_dispute',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -5541,6 +5543,10 @@ class Route
 
         'pg_router' => [
             'api_entity_fetch'
+        ],
+
+        'freshdesk_webhook' => [
+            'fd_customer_dispute',
         ]
     ];
 

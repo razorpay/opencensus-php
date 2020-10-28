@@ -319,6 +319,19 @@ return [
         'token2'        => env('FRESHDESK_TOKEN2'),
         'sandbox_token' => env('FRESHDESK_SANDBOX_TOKEN'),
         'mock'          => env('FRESHDESK_MOCK', false),
+
+        'customer' => [
+            'dispute' => [
+                'automation_agent_id'       => env('FRESHDESK_AUTOMATION_AGENT_ID'),
+                'automation_group_id'       => env('FRESHDESK_AUTOMATION_GROUP_ID'),
+                'dispute_group_id'          => env('FRESHDESK_DISPUTE_GROUP_ID'),
+                'customer_support_group_id' => env('FRESHDESK_CUSTOMER_SUPPORT_GROUP_ID'),
+            ],
+        ],
+    ],
+
+    'freshdesk_webhook' => [
+        'secret'  => env('FRESHDESK_WEBHOOK_SECRET'),
     ],
 
     'zoho' => [

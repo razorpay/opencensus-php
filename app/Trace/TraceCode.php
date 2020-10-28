@@ -1973,6 +1973,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DISPUTE_SAME_PARENT_LINKING                           = 'DISPUTE_SAME_PARENT_LINKING';
     const DISPUTE_FILE_CREATE                                   = 'DISPUTE_FILE_CREATE';
     const DISPUTE_FILES_UPLOAD                                  = 'DISPUTE_FILES_UPLOAD';
+
+    const FRESHDESK_DISPUTE_REQUEST                             = 'FRESHDESK_DISPUTE_REQUEST';
+    const FRESHDESK_DISPUTE_REQUEST_ERROR                       = 'FRESHDESK_DISPUTE_REQUEST_ERROR';
+    const FRESHDESK_DISPUTE_TICKET_ACTION                       = 'FRESHDESK_DISPUTE_TICKET_ACTION';
+    const FRESHDESK_TICKET_UPDATE_REQUEST                       = 'FRESHDESK_TICKET_UPDATE_REQUEST';
+    const FRESHDESK_TICKET_UPDATE_RESPONSE                      = 'FRESHDESK_TICKET_UPDATE_RESPONSE';
+    const FRESHDESK_DISPUTE_AUTOMATION_RAZORX_VARIANT           = 'FRESHDESK_DISPUTE_AUTOMATION_RAZORX_VARIANT';
+
     const DISPUTE_BULK_MAIL_CRON_START                          = 'DISPUTE_BULK_MAIL_CRON_START';
     const DISPUTE_BULK_MAIL_CRON_END                            = 'DISPUTE_BULK_MAIL_CRON_END';
     const DISPUTE_BULK_MAIL_QUEUED                              = 'DISPUTE_BULK_MAIL_QUEUED';

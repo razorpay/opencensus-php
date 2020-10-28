@@ -15,6 +15,7 @@ class FreshdeskTicketClient
 
     const HTTP_GET     = 'GET';
     const HTTP_POST    = 'POST';
+    const HTTP_PUT     = 'PUT';
 
     // Freshdesk API Endpoints
     const FETCH_TICKET        = 'tickets/%s';
@@ -55,6 +56,41 @@ class FreshdeskTicketClient
     }
 
     /**
+     * Update ticket for the given $ticketId and $content
+     *
+     * @param string $ticketId
+     * @return array $ticketDetails
+     */
+    public function updateTicket(string $ticketId, array $content) : array
+    {
+        $url = $this->getUrl('tickets/' . $ticketId);
+
+        $auth = $this->getAuth();
+
+        $request = $this->getRequest(self::HTTP_PUT, $url, $auth, $content);
+
+        $trace_request = $this->getRedactedRequest($request);
+
+        $this->trace->info(TraceCode::FRESHDESK_TICKET_UPDATE_REQUEST,
+            [
+                'request' => $trace_request
+            ]
+        );
+
+        $response = $this->getResponse($request);
+
+        $newResponse = [
+            'success'     => $response->success,
+            'status_code' => $response->status_code,
+            'body'        => json_decode($response->body, true),
+        ];
+
+        $this->trace->info(TraceCode::FRESHDESK_TICKET_UPDATE_RESPONSE, $newResponse);
+
+        return $newResponse;
+    }
+
+    /*
      * Get tickets for the given $merchantID
      *
      * @param array $queryParams
@@ -160,7 +196,7 @@ class FreshdeskTicketClient
         return trim($this->config[$urlKey]) . '/' . $route;
     }
 
-    protected function makeRequestAndGetStatus(string $method, string $url, string $auth, array $content)
+    private function getRequest(string $method, string $url, string $auth, array $content) : array
     {
         if (empty($content) === false)
         {
@@ -180,6 +216,26 @@ class FreshdeskTicketClient
             'url'                => $url,
         ];
 
+        return $request;
+    }
+
+    private function getResponse(array $request) : \Requests_Response
+    {
+        $response = Requests::request(
+            $request['url'],
+            $request['headers'],
+            $request['content'],
+            $request['method'],
+            $request['options']
+        );
+
+        return $response;
+    }
+
+    protected function makeRequestAndGetStatus(string $method, string $url, string $auth, array $content)
+    {
+        $request = $this->getRequest($method, $url, $auth, $content);
+
         $trace_request = $this->getRedactedRequest($request);
 
         $this->trace->info(TraceCode::SUPPORT_TICKET_STATUS_REQUEST,
@@ -188,13 +244,7 @@ class FreshdeskTicketClient
             ]
         );
 
-        $response = Requests::request(
-            $request['url'],
-            $request['headers'],
-            $request['content'],
-            $request['method'],
-            $request['options']
-        );
+        $response = $this->getResponse($request);
 
         $response = json_decode($response->body, true);
 

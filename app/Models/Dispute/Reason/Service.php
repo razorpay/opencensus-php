@@ -24,4 +24,11 @@ class Service extends Base\Service
 
         return $reasons;
     }
+
+    public function getReasonByNetworkAndGatewayCode(string $network, string $gatewayCode)
+    {
+        return $this->repo
+            ->dispute_reason
+            ->getReasonByNetworkAndGatewayCode($network, $gatewayCode);
+    }
 }
