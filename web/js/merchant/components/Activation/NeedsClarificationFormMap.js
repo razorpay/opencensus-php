@@ -26,20 +26,48 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
 
   const prepareField = (field, clarificationDetails, forceMap) => {
     let reasons = [];
+    let commentFromAdmin = [];
 
     const origKey = field;
     if (!allFieldsHash[field] || Boolean(forceMap)) {
       field = generateNewField(field, clarificationDetails[origKey], forceMap);
     }
     if (allFieldsHash[field]) {
-      for (let r of clarificationDetails[origKey]) {
-        if (r.reason_type === 'predefined') {
-          try {
-            reasons.push(
-              predefinedReasons[origKey].reasons[r.reason_code].description
-            );
-          } catch (error) {
-            console.log(error);
+      if (clarificationDetails[origKey].length > 1 ){
+        clarificationDetails[origKey].map((key) => {
+          if (key.from === "admin") {
+            commentFromAdmin.push(key)
+          }
+        })
+        const sortedComments = commentFromAdmin.sort(function(a, b){ 
+          return new Date(a.created_at) - new Date(b.created_at); 
+        }); 
+        try {
+          reasons.push(
+            sortedComments[sortedComments.length - 1].reason_code
+          );
+        } catch (error) {
+          console.log(error);
+        }
+      }else{
+        // support for old nc
+        for (let r of clarificationDetails[origKey]) {
+          if (r.reason_type === 'predefined'){
+            try {
+              reasons.push(
+                predefinedReasons[origKey].reasons[r.reason_code].description
+              );
+            } catch (error) {
+              console.log(error);
+            }
+          } else if (r.reason_type === 'custom') {
+            try {
+              reasons.push(
+                r.reason_code
+              );
+            } catch (error) {
+              console.log(error);
+            }
           }
         }
       }

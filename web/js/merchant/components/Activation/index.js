@@ -1550,6 +1550,11 @@ export default class ActivationWizard extends React.Component {
 
             <span className="device--desktop">{FORM_TABS[activeTab]}</span>
           </main-title>
+          {
+            FORM_TABS[activeTab] === 'Needs Clarification' && (
+              <span className="sub-text-nc">You can add comments in case you have any doubts or questions regarding any issue (max 200 chars)</span>
+            )
+          }
 
           {/* Alert: For linked account if activated */}
           {this.isLinkedAccountForm && isFormActivated && (

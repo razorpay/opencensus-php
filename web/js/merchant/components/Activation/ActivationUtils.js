@@ -295,6 +295,20 @@ function showSubcategory(activation) {
   return showSubcategory;
 }
 
+function removeArrayDuplicatesByProp(originalArray, prop) {
+  var newArray = [];
+  var uniqueObject  = {};
+
+  for(var i in originalArray) {
+    uniqueObject[originalArray[i][prop]] = originalArray[i];
+  }
+
+  for(i in uniqueObject) {
+      newArray.push(uniqueObject[i]);
+  }
+   return newArray;
+}
+
 export {
   differentAddress,
   isUnregisteredBusiness,
@@ -323,4 +337,5 @@ export {
   hasAPIL1Error,
   isRXV2Onboarding,
   showSubcategory,
+  removeArrayDuplicatesByProp,
 };

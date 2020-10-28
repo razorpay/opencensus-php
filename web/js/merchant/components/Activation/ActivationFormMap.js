@@ -39,6 +39,7 @@ import {
   isAdditonalDocRequired,
   isRXV2Onboarding,
   showSubcategory,
+  removeArrayDuplicatesByProp,
 } from './ActivationUtils';
 
 import { ADDITIONAL_DOCS_LABEL_VALUE_MAP } from './Constants';
@@ -112,6 +113,7 @@ const contactFields = [
 ];
 
 const RegisteredBusinessTypeOptions = [
+  { label: '--Select--', name: '' },
   { label: 'Private Limited', name: PRIVATE },
   { label: 'Proprietorship', name: PROPRIETORSHIP },
   { label: 'Partnership', name: PARTNERSHIP },
@@ -122,13 +124,16 @@ const RegisteredBusinessTypeOptions = [
   { label: 'NGO', name: NGO },
 ];
 
-const UnregisteredBusinessTypeOptions = [{ label: 'Not Registered', name: NOT_REGISTERED }];
-
-const DefaultBusinessTypeOptions = [
+const UnregisteredBusinessTypeOptions = [
   { label: '--Select--', name: '' },
+  { label: 'Not Registered', name: NOT_REGISTERED }
+];
+
+var DefaultBusinessTypeOptions = removeArrayDuplicatesByProp([
   ...RegisteredBusinessTypeOptions,
   ...UnregisteredBusinessTypeOptions,
-];
+], "label");
+
 
 const BlacklistedErr = () => (
   <div class="warning-svg red">
@@ -544,12 +549,7 @@ const bankAccountFields = [
       label: 'Account Number',
       info: getAccountNumberInfo,
       autoComplete: 'new-password',
-      type: 'password',
-      onFocus: (e) => {
-        document.getElementsByName('bank_account_number')[0].type = 'text';
-      },
       onBlur: function (e) {
-        document.getElementsByName('bank_account_number')[0].type = 'password';
 
         const bankAccountNumber = this.state.dirty.bank_account_number;
         const accountNo = this.state.account_no;
