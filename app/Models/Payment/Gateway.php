@@ -80,6 +80,7 @@ class Gateway
     const NETBANKING_JSB         = 'netbanking_jsb';
     const NETBANKING_IOB         = 'netbanking_iob';
     const NETBANKING_FSB         = 'netbanking_fsb';
+    const NETBANKING_DCB         = 'netbanking_dcb';
     const NACH_CITI              = 'nach_citi';
     const NACH_ICICI             = 'nach_icici';
     const PAYTM                  = 'paytm';
@@ -939,6 +940,7 @@ class Gateway
         Payment\Gateway::NETBANKING_CSB,
         Payment\Gateway::NETBANKING_SVC,
         Payment\Gateway::NETBANKING_IDBI,
+        Payment\Gateway::NETBANKING_DCB,
         Payment\Gateway::UPI_SBI,
         Payment\Gateway::NETBANKING_HDFC,
         Payment\Gateway::PAYSECURE,
@@ -1001,6 +1003,7 @@ class Gateway
         Payment\Gateway::NETBANKING_IOB         => 1578479400,
         Payment\Gateway::NETBANKING_FSB         => 1591900200,
         Payment\Gateway::NETBANKING_JKB         => 1593685800,
+        Payment\Gateway::NETBANKING_DCB         => 1593907200,
     ];
 
     public static $channels = [
@@ -1109,6 +1112,7 @@ class Gateway
             self::NETBANKING_JSB,
             self::NETBANKING_IOB,
             self::NETBANKING_FSB,
+            self::NETBANKING_DCB,
         ],
 
         //
@@ -2025,6 +2029,7 @@ class Gateway
         IFSC::SBTR         => Gateway::NETBANKING_SBI,
         IFSC::IOBA         => Gateway::NETBANKING_IOB,
         IFSC::FSFB         => Gateway::NETBANKING_FSB,
+        IFSC::DCBL         => Gateway::NETBANKING_DCB,
     ];
 
     /**
@@ -3030,6 +3035,7 @@ class Gateway
             self::NETBANKING_IOB,
             self::NETBANKING_FSB,
             self::PAYU,
+            self::NETBANKING_DCB,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -3066,6 +3072,7 @@ class Gateway
             self::NETBANKING_FSB,
             self::PAYU,
             self::NETBANKING_IDFC,
+            self::NETBANKING_DCB,
         ];
 
         return (in_array($gateway, $gateways, true));

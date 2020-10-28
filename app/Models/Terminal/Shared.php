@@ -74,6 +74,7 @@ class Shared
     const NETBANKING_KVB_TERMINAL            = '1000NbKvbTrmnl';
     const NETBANKING_KVB_TPV_TERMINAL        = '1000NbKvbTpvTl';
     const NETBANKING_SVC_TERMINAL            = '1000NbSvcTrmnl';
+    const NETBANKING_DCB_TERMINAL            = '1000NbDcbTrmnl';
     const OLAMONEY_RAZORPAY_TERMINAL         = '1000OlamoneyTl';
     const PAYTM_RAZORPAY_TERMINAL            = '1000PaytmTrmnl';
     const PAYZAPP_RAZORPAY_TERMINAL          = '100PayzappTmnl';
@@ -171,6 +172,7 @@ class Shared
         self::NETBANKING_SVC_TERMINAL,
         self::NETBANKING_IDBI_TERMINAL,
         self::NETBANKING_FSB_TERMINAL,
+        self::NETBANKING_DCB_TERMINAL,
         self::PAYZAPP_RAZORPAY_TERMINAL,
         self::PAYUMONEY_RAZORPAY_TERMINAL,
         self::FREECHARGE_RAZORPAY_TERMINAL,
@@ -239,6 +241,7 @@ class Shared
         self::NETBANKING_ESFB_TERMINAL           => Gateway::NETBANKING_EQUITAS,
         self::NETBANKING_KVB_TERMINAL            => Gateway::NETBANKING_KVB,
         self::NETBANKING_SVC_TERMINAL            => Gateway::NETBANKING_SVC,
+        self::NETBANKING_DCB_TERMINAL            => Gateway::NETBANKING_DCB,
         self::NETBANKING_JSB_TERMINAL            => Gateway::NETBANKING_JSB,
         self::NETBANKING_IDBI_TERMINAL           => Gateway::NETBANKING_IDBI,
         self::NETBANKING_IOB_TERMINAL            => Gateway::NETBANKING_IOB,

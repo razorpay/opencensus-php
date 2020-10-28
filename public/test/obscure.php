@@ -135,6 +135,7 @@ function disableEmptyInputs(form) {
                 <option value="JSFB">Jana Small Finance Bank</option>
                 <option value="IOBA">Indian Overseas Bank</option>
                 <option value="FSFB">Fincare Small Finance Bank</option>
+                <option value="DCBL">Development Credit Bank</option>
             </select>
         </td>
     </tr>

@@ -124,6 +124,7 @@ class Netbanking
         IFSC::JSFB,
         IFSC::IOBA,
         IFSC::FSFB,
+        IFSC::DCBL,
     ];
 
     protected static $selfCorp = [
@@ -688,7 +689,6 @@ class Netbanking
                 self::PUNB_C
             ]
         ],
-
         Gateway::NETBANKING_SBI => [
             'retail' => [
                 IFSC::SBIN,
@@ -702,7 +702,6 @@ class Netbanking
                 IFSC::SBIN
             ]
         ],
-
         Gateway::NETBANKING_ALLAHABAD => [
             'retail' => [
                 IFSC::ALLA,
@@ -711,7 +710,6 @@ class Netbanking
                 IFSC::ALLA,
             ],
         ],
-
         Gateway::NETBANKING_KVB =>  [
             'retail'    =>  [
                 IFSC::KVBL,
@@ -720,7 +718,6 @@ class Netbanking
                 IFSC::KVBL,
             ],
         ],
-
         Gateway::NETBANKING_SVC => [
             'retail' => [
                 IFSC::SVCB,
@@ -729,13 +726,11 @@ class Netbanking
                 IFSC::SVCB,
             ]
         ],
-
         Gateway::NETBANKING_JSB =>  [
             'retail'    =>  [
                 IFSC::JSFB,
             ]
         ],
-
         Gateway::NETBANKING_IOB => [
             'retail' =>  [
                 IFSC::IOBA
@@ -749,6 +744,11 @@ class Netbanking
                 IFSC::FSFB,
             ]
         ],
+        Gateway::NETBANKING_DCB => [
+            'retail' => [
+                IFSC::DCBL,
+            ]
+        ]
     ];
 
     protected static $defaultDisabled = [
