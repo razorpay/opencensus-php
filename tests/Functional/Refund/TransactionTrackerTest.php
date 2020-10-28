@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Refund;
 
 use RZP\Exception;
 use Carbon\Carbon;
+use RZP\Services\RazorXClient;
 use RZP\Services\Scrooge;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Method;
@@ -12,6 +13,7 @@ use RZP\Models\Merchant\Account;
 use RZP\Models\Base\PublicEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Holidays;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -549,6 +551,33 @@ class TransactionTrackerTest extends TestCase
         $rzpPayment['secondary_message'] = 'Your payment of ₹ 500'.
             ' was not successful since we did not receive the successful callback from the issuing bank. '.
             'The amount will be refunded back to your account in 5-7 business days.';
+
+        $this->setUpEsMockForPaymentNotes($rzpPaymentId);
+
+        $this->assertPaymentResponses(__FUNCTION__, $rzpPayment, $order, $merchantTransactionId);
+    }
+
+    public function testPaymentFetchDetailsForCustomerFromRazorpayIdPendingPaymentCase()
+    {
+        // Failed Payment
+        $this->enableRazorXTreatmentForFeature(
+            RazorxTreatment::PAYMENT_STATUS_PENDING_CALCULATION, 'on');
+
+        $this->testCreateOrder();
+        $order = $this->getLastEntity('order');
+
+        $rzpPayment = $this->createFailedPayment($order);
+
+        $this->resetMockServer();
+
+        $rzpPaymentId = PublicEntity::stripDefaultSign($rzpPayment['id']);
+        $merchantTransactionId = 'REZDELKJe2c92f0f46';
+
+        $this->fixtures->edit('payment', $rzpPaymentId, ['notes' => [
+            'order_id' => $merchantTransactionId
+        ]]);
+
+        $rzpPayment['secondary_message'] = 'We are awaiting confirmation on the status of your payment from our Banking partners.';
 
         $this->setUpEsMockForPaymentNotes($rzpPaymentId);
 
@@ -1555,5 +1584,24 @@ class TransactionTrackerTest extends TestCase
         $this->assertEquals('Your Refund has Failed', $response['payments'][0]['refunds'][0]['primary_message']);
         $this->assertEquals('The refund for the transaction of ₹ 34.71 has failed. Our banking partner does not support refund for this payment because it is more than 6 months old. The funds have been settled to Test Merchant, please contact Test Merchant to get it processed.',
             $response['payments'][0]['refunds'][0]['secondary_message']);
+    }
+
+    protected function enableRazorXTreatmentForFeature($featureUnderTest, $value = 'on')
+    {
+        $mock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $mock->method('getTreatment')
+            ->will(
+                $this->returnCallback(
+                    function (string $mid, string $feature, string $mode) use ($featureUnderTest, $value)
+                    {
+                        return $feature === $featureUnderTest ? $value : 'control';
+                    }));
+
+        $this->app->instance('razorx', $mock);
+
     }
 }

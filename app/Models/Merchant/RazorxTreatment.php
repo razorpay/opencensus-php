@@ -177,4 +177,6 @@ final class RazorxTreatment
 
     // experiment to enable webhooks on route gateway_payment_static_s2scallback_post/gateway_payment_static_s2scallback_get
     const ENABLE_WEBHOOKS = 'enable_webhooks';
+
+    const PAYMENT_STATUS_PENDING_CALCULATION = 'payment_status_pending_calculation';
 }

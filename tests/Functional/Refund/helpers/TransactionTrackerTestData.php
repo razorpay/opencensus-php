@@ -276,6 +276,35 @@ return [
         ]
     ],
 
+    'testPaymentFetchDetailsForCustomerFromRazorpayIdPendingPaymentCase' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/customer/refunds',
+            'content' => [
+                'captcha'    => 'dummy',
+                'mode'       => 'test',
+            ],
+        ],
+        'response' => [
+            'content' => ['payments' =>
+                [
+                    [
+                        'refunds' => [],
+                        'payment' => [
+                            'amount'            => 50000,
+                            'status'            => 'pending',
+                            'merchant_name'     => 'Test Merchant',
+                            'primary_message'   => 'Payment request has been initiated by Razorpay',
+                            'late_auth'         => false,
+                            'currency'          => 'INR',
+                            'tertiary_message'  => ''
+                        ],
+                    ]
+                ]
+            ]
+        ]
+    ],
+
     'testPaymentFetchDetailsForCustomerFromRazorpayIdCreatedPaymentCase' => [
         'request' => [
             'method'  => 'GET',

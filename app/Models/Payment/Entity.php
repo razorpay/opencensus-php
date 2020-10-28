@@ -4,11 +4,13 @@ namespace RZP\Models\Payment;
 
 use Carbon\Carbon;
 use Lib\PhoneBook;
+use RZP\Constants\Mode;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Constants\Procurer;
 use RZP\Mail\Payment\Failed;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\FeeBearer;
@@ -4126,6 +4128,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data[Refund\Constants::LATE_AUTH] = $this->isLateAuthorized();
         }
 
+        $data[self::STATUS] = $this->getCurrentPaymentStatus();
+
         return $data;
     }
 
@@ -4140,7 +4144,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $messageSlaDone = null;
         $messageVoidRefund = null;
         $messageEntity = Refund\Constants::PAYMENT;
-        $messageStatus = $this->getStatus();
+        $messageStatus = $this->getCurrentPaymentStatus();
+
         $messageLateAuth = ($this->isLateAuthorized() === true);
 
         $message = $transactionTrackerMessages->getMessage($messageEntity, $messageStatus, $messageType, $messageSlaDone, $messageLateAuth, $messageVoidRefund);
@@ -4211,5 +4216,29 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         return (($paymentMetaEntity->getGatewayCurrency() !== $this->getCurrency()) or
             ($paymentMetaEntity->getGatewayAmount() !== $this->getAmount()));
+    }
+
+    public function getCurrentPaymentStatus()
+    {
+        $currentPaymentStatus = $this->getStatus();
+
+        $app = \App::getFacadeRoot();
+
+        $mode = $app['rzp.mode'] ?? Mode::LIVE;
+
+        $experimentResult = $app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(), Merchant\RazorxTreatment::PAYMENT_STATUS_PENDING_CALCULATION, $mode);
+
+        $app['trace']->info(TraceCode::PAYMENT_PENDING_CALCULATION_RAZORX_TRACE,
+                            ['experiment_result' => $experimentResult, 'mode' => $mode]);
+
+        if ((isset($experimentResult) === true and $experimentResult === 'on') and
+            ($currentPaymentStatus === Payment\Status::FAILED) and
+            ($this->getVerifyAt() !== null) and
+            (($this->getVerifyBucket() !== null) and ($this->getVerifyBucket() < 9)))
+        {
+            $currentPaymentStatus = 'pending';
+        }
+
+        return $currentPaymentStatus;
     }
 }

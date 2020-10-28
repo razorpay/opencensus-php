@@ -80,6 +80,8 @@ class TransactionTrackerMessages
 
     const PRIMARY_PAYMENT_CREATED = 'Payment request has been initiated by Razorpay';
 
+    const PRIMARY_PAYMENT_PENDING = 'Payment request has been initiated by Razorpay';
+
     const SECONDARY_PAYMENT_CAPTURED = 'Your payment of '.self::MESSAGE_AMOUNT.' made towards ' .
     self::MESSAGE_MERCHANT_NAME.' has been successful. We request you to contact ' .
     self::MESSAGE_MERCHANT_NAME.
@@ -104,6 +106,8 @@ class TransactionTrackerMessages
     'refunded back to your account in 5-7 business days.';
 
     const SECONDARY_PAYMENT_CREATED = 'We are awaiting confirmation on the status of your payment from our Banking partners.';
+
+    const SECONDARY_PAYMENT_PENDING = 'We are awaiting confirmation on the status of your payment from our Banking partners.';
 
     const TERTIARY_PAYMENT_FAILED = 'If there is a delay in the auto-refund, ' .
     'you will have to escalate the issue with your issuing bank and your bank should be able to assist you on the ' .
