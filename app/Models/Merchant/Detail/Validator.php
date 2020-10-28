@@ -520,19 +520,18 @@ class Validator extends Base\Validator
         Entity::ADDITIONAL_DETAILS        => 'filled|array|custom:clarification_reasons',
     ];
 
-    protected static $clarificationReasonJsonValidationRules = [
-        Merchant\Constants::REASON_TYPE => ['required','string','in:custom,predefined'],
+    protected static $customClarificationReasonJsonValidationRules = [
+        Merchant\Constants::REASON_TYPE => "required|string|in:custom",
         Merchant\Constants::FIELD_VALUE => 'filled',
         Merchant\Constants::FIELD_TYPE  => ['filled', 'in:document,text'],
-        Merchant\Constants::REASON      => 'required_if:reason_type,custom|string|max:100',
-        Merchant\Constants::REASON_CODE => 'required_if:reason_type,predefined|custom',
+        Merchant\Constants::REASON_CODE => 'required|string|max:200',
     ];
 
-    protected static $predefinedClarificationReasonValuesRules = [
+    protected static $predefinedClarificationReasonJsonValidationRules = [
         Merchant\Constants::REASON_TYPE => "required|string|in:predefined",
         Merchant\Constants::FIELD_VALUE => 'filled',
         Merchant\Constants::FIELD_TYPE  => ['filled', 'in:document,text'],
-        Merchant\Constants::REASON_CODE => 'required|custom',
+        Merchant\Constants::REASON_CODE => 'required|string|custom',
     ];
 
     protected static $clarificationResponseRules = [
@@ -764,7 +763,6 @@ class Validator extends Base\Validator
     public function validateKYCClarificationReasons(string $attribute, $value)
     {
         (new Validator())->validateInput("kycClarificationReason", $value);
-
     }
 
     /**
@@ -786,11 +784,21 @@ class Validator extends Base\Validator
         {
             foreach ($values as $val)
             {
+                $isReasonTypeValid = false;
                 if ((is_array($val)) === true)
                 {
-                    (new Validator)->validateInput('clarificationReasonJsonValidation', $val);
+                    if($val['reason_type'] === 'custom')
+                    {
+                        $isReasonTypeValid = true;
+                        (new Validator)->validateInput('customClarificationReasonJsonValidation', $val);
+                    }
+                    if($val['reason_type'] === 'predefined')
+                    {
+                        $isReasonTypeValid = true;
+                        (new Validator)->validateInput('predefinedClarificationReasonJsonValidation', $val);
+                    }
                 }
-                else
+                if(!$isReasonTypeValid)
                 {
                     throw new Exception\BadRequestValidationFailureException(
                         self::INVALID_REASON_TYPE,

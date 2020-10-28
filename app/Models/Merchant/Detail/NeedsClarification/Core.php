@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Detail\NeedsClarification;
 
+use RZP\Constants\Entity;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Constants as MerchantConstant;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
@@ -74,18 +75,42 @@ class Core extends Base\Core
         {
             return [];
         }
-
         $requirements = [];
 
         $clarificationReasons = $kycClarificationReason[DetailEntity::CLARIFICATION_REASONS] ?? [];
 
         $additionalDetails = $kycClarificationReason[DetailEntity::ADDITIONAL_DETAILS] ?? [];
 
-        $requirements = $this->getFormattedOutput($clarificationReasons, $requirements);
+        $requirements = $this->getFormattedOutputForClarificationReasons($clarificationReasons, $requirements);
 
-        $requirements = $this->getFormattedOutput($additionalDetails, $requirements);
+        $requirements = $this->getFormattedOutputForAdditionalReasons($additionalDetails, $requirements);
 
         return $requirements;
+    }
+
+    protected function getLatestAdminCommentForField(array $reasons)
+    {
+        $lastReason = [];
+        $requirement = [];
+        foreach ($reasons as $reason)
+        {
+            $lastReason = $reason;
+        }
+
+        if(!empty($lastReason) and $lastReason[MerchantConstant::REASON_FROM] === Entity::ADMIN)
+        {
+            if ($lastReason[MerchantConstant::REASON_TYPE] === MerchantConstant::PREDEFINED_REASON_TYPE)
+            {
+                $requirement = $this->getRequirementForPreDefinedReason($requirement, $lastReason);
+            }
+            else
+            {
+                $requirement[Constants::REASON_CODE]        = NeedsClarificationMetaData::OTHERS;
+                $requirement[Constants::REASON_DESCRIPTION] = $lastReason[MerchantConstant::REASON_CODE];
+            }
+        }
+
+        return $requirement;
     }
 
     /**
@@ -94,7 +119,26 @@ class Core extends Base\Core
      *
      * @return mixed
      */
-    private function getFormattedOutput(array $clarificationReasons, array $requirements)
+    private function getFormattedOutputForClarificationReasons(array $clarificationReasons, array $requirements)
+    {
+        foreach ($clarificationReasons as $fieldName => $reasons)
+        {
+            $requirement = $this->getLatestAdminCommentForField($reasons);
+
+            if(!empty($requirement))
+            {
+                $requirement[Constants::DISPLAY_NAME] = ActivationFields::getFieldDisplayName($fieldName);
+
+                $group = (DocumentType::isValid($fieldName) === true) ? Constants::DOCUMENTS : Constants::FIELDS;
+
+                $requirements[$group][$fieldName][] = $requirement;
+            }
+        }
+
+        return $requirements;
+    }
+
+    private function getFormattedOutputForAdditionalReasons(array $clarificationReasons, array $requirements)
     {
         foreach ($clarificationReasons as $fieldName => $reasons)
         {
@@ -109,7 +153,7 @@ class Core extends Base\Core
                 else
                 {
                     $requirement[Constants::REASON_CODE]        = NeedsClarificationMetaData::OTHERS;
-                    $requirement[Constants::REASON_DESCRIPTION] = $reason[MerchantConstant::REASON];
+                    $requirement[Constants::REASON_DESCRIPTION] = $reason[MerchantConstant::REASON_CODE];
                 }
 
                 $requirement[Constants::DISPLAY_NAME] = ActivationFields::getFieldDisplayName($fieldName);

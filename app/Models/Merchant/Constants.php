@@ -120,6 +120,8 @@ final class Constants
     const CUSTOM_REASON_TYPE     = 'custom';
     const PREDEFINED_REASON_TYPE = 'predefined';
     const DOCUMENT               = 'document';
+    const REASON_FROM            = 'from';
+    const NC_COUNT               = 'nc_count';
 
     const  ADDITIONAL_WEBSITE       = 'additional_website';
     const  ENABLE_INTERNATIONAL     = 'enable_international';

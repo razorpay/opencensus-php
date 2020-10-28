@@ -1223,7 +1223,7 @@ return [
                         'field1' => [[
                             'reason_type' => 'custom',
                             'field_value' => 'adnakdad',
-                            'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                            'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
                         ]],
                         'field3' => [[
                             'reason_type' => 'predefined',
@@ -1235,7 +1235,7 @@ return [
                         'field3'               => [[
                             'reason_type' => 'custom',
                             'field_type'  => 'document',
-                            'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                            'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
                         ]],
                         'business_description' => [[
                             'reason_type' => 'predefined',
@@ -1254,7 +1254,7 @@ return [
                         'field1' => [[
                             'reason_type' => 'custom',
                             'field_value' => 'adnakdad',
-                            'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                            'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
                         ]],
                         'field3' => [[
                             'reason_type' => 'predefined',
@@ -1266,7 +1266,7 @@ return [
                         'field3'               => [[
                             'reason_type' => 'custom',
                             'field_type'  => 'document',
-                            'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                            'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
                         ],],
                         'business_description' => [[
                             'reason_type' => 'predefined',
@@ -1389,7 +1389,7 @@ return [
                 'field1' => [[
                     'reason_type' => 'custom',
                     'field_value' => 'adnakdad',
-                    'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                    'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
                 ]],
                 'field3' => [[
                     'reason_type' => 'predefined',
@@ -1401,7 +1401,7 @@ return [
                 'field3'               => [[
                     'reason_type' => 'custom',
                     'field_type'  => 'document',
-                    'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                    'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
                 ]],
                 'business_description' => [[
                     'reason_type' => 'predefined',

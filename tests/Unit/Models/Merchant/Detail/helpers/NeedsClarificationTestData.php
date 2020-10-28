@@ -12,13 +12,15 @@ return [
         'clarification_reasons' => [
             'contact_name'  => [
                 [
+                    'from'        => 'admin',
                     'reason_type' => 'custom',
                     'field_value' => 'adnakdad',
-                    'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                    'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
                 ]
             ],
             'contact_email' => [
                 [
+                    'from'        => 'admin',
                     'reason_type' => 'predefined',
                     'field_value' => 'adnakdad',
                     'reason_code' => 'provide_poc',
@@ -30,7 +32,7 @@ return [
                 [
                     'reason_type' => 'custom',
                     'field_type'  => 'document',
-                    'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                    'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
                 ]
             ],
             'business_description' => [
@@ -84,7 +86,7 @@ return [
                 [
                     'reason_type' => 'custom',
                     'field_value' => 'adnakdad',
-                    'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                    'reason_code'      => 'Lorem ipsum dolor sit amet consectetuer',
                 ]
             ],
         ],
@@ -93,7 +95,7 @@ return [
                 [
                     'reason_type' => 'custom',
                     'field_type'  => 'document',
-                    'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                    'reason_code'      => 'Lorem ipsum dolor sit amet consectetuer',
                 ]
             ],
         ],
@@ -103,13 +105,15 @@ return [
         'clarification_reasons' => [
             'contact_name'  => [
                 [
+                    'from'        => 'admin',
                     'reason_type' => 'custom',
                     'field_value' => 'adnakdad',
-                    'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                    'reason_code'      => 'Lorem ipsum dolor sit amet consectetuer',
                 ]
             ],
             'contact_email' => [
                 [
+                    'from'        => 'admin',
                     'reason_type' => 'predefined',
                     'field_value' => 'adnakdad',
                     'reason_code' => 'provide_poc',
@@ -119,7 +123,7 @@ return [
                 [
                     'reason_type' => 'custom',
                     'field_value' => 'adnakdad',
-                    'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                    'reason_code'      => 'Lorem ipsum dolor sit amet consectetuer',
                 ]
             ],
         ],
@@ -128,7 +132,7 @@ return [
                 [
                     'reason_type' => 'custom',
                     'field_type'  => 'document',
-                    'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                    'reason_code'      => 'Lorem ipsum dolor sit amet consectetuer',
                 ]
             ],
             'business_description' => [
@@ -142,7 +146,7 @@ return [
                 [
                     'reason_type' => 'custom',
                     'field_type'  => 'document',
-                    'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                    'reason_code'      => 'Lorem ipsum dolor sit amet consectetuer',
                 ]
             ],
         ],
