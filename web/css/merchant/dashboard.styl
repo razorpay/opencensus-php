@@ -1556,13 +1556,180 @@ $stepIndicatorSize = 36px;
 .onboarding-card-instant {
 
   position: relative;
-  height: 354px;
+  height: 100%;
   padding: 22px;
 
   .onboarding-step-switcher {
 
     display: none;
   }
+
+  .rx-ca-onboarding-card {
+    background-color: #fff;
+    width: 100%
+    height: 100%
+    margin-top: 22px;
+    position: relative;
+    border-radius: 2px;
+    overflow: hidden;
+    display: flex
+
+    .side {
+      position: absolute;
+      height: 4px;
+      background: linear-gradient(90deg, #58D4FF -41.68%, #025BD2 75.26%);
+      width: 192px;
+      top: 93px;
+      left: -94px;
+      transform: rotate(-90deg);
+
+      @media (max-width: 1095px) {
+          width: 252px;
+          top: 125px;
+          left: -124px;
+      }
+    }
+    
+    .cross {
+      position: absolute;
+      right: 16px;
+      top: 16px;
+      font-size: 24px;
+      color: rgba(22, 47, 86, 0.38);
+      cursor: pointer;
+    }
+    
+    .right-bottom-img {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      } 
+    
+    .left-container {
+      display: flex;
+      width: 50%;
+      padding: 30px
+      
+      .img-left {
+        margin-top: 4px;
+      }
+
+      .left-info {
+        margin-left: 12px;
+        
+        .learn-more {
+          margin-left: 22px  
+        }
+        
+        .i-external-link {
+          margin-left: 2px
+        }
+
+        .req-success {
+            display flex
+            img {
+              width: 16px;
+              height: 16px;
+              margin-right: 8px;
+            }
+            .req-info {
+              font-size: 14px
+              color: rgba(22, 47, 86, 0.87);
+              opacity: 0.5;
+              width: 80%
+          }
+        }
+        
+        .title {
+          font-weight: bold;
+          font-size: 20px;
+          color: #162F56;
+          margin-bottom: 12px
+          }
+
+        .subtext {
+          font-size: 14px
+          color: rgba(22, 47, 86, 0.87);
+          opacity: 0.5;
+          margin-bottom: 24px
+        }
+      }
+    }
+    .right-container {
+      background: rgba(11, 112, 231, 0.05);
+      padding: 39px 40px
+      width: 50%;
+      
+      .single-container {
+        display: flex;
+      }
+      .right-info {
+        margin-bottom: 24px;
+      }
+      img{
+        margin-right: 8px
+      }
+      .rx-benefits {
+        font-size: 14px
+        color: rgba(22, 47, 86, 0.38);
+      
+        .highlight {
+          font-weight: bold;
+          color: rgba(22, 47, 86, 0.74);
+        }
+        
+      }
+    }
+
+    @media (max-width: 640px) {
+      display: block;
+      margin-top: 40px;
+      
+      .left-container {
+        width: 100%;      
+        padding: 36px 12px 24px 12px;
+      }
+
+      .right-container {
+        width: 100%;
+        padding: 24px;
+      }
+      
+      .title{
+          font-size: 16px;
+      }
+
+      .subtext{
+        font-size: 14px;
+      }
+      
+      .rx-benefits{
+        font-size 12px;
+      }
+
+      .learn-more {
+        display: block;
+        margin-top: 20px
+      }
+      
+      .side {
+        transform: none
+        top: 0px
+        width: 100%
+        left: 0px
+      }
+
+      .req-info{
+        font-size: 12px
+      }
+
+      .right-bottom-img {
+        display: none;
+      }
+      
+    }
+  }
+  
 
   .onboarding-card-instant-content {
 
@@ -1778,15 +1945,13 @@ $stepIndicatorSize = 36px;
   }
 
   @media (max-width: 640px) {
-
-    height: 394px;
     padding-bottom: 40px;
 
     .onboarding-step-switcher {
 
       display: table;
       position: absolute;
-      top: 100%;
+      top: 354px;
       left: 50%;
       transform: translate(-50%, -100%);
       line-height: 8px;

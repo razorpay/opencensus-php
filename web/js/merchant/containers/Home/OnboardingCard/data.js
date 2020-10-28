@@ -16,3 +16,16 @@ export function onBoardingItems(user) {
     'Issue Refunds',
   ];
 }
+
+export const rxBenefits = [
+  <span className='rx-benefits'><span className='highlight'>Pricing reduced to 1.85%</span> for all payment methods on payment gateway</span>,
+  <span className='rx-benefits'><span className='highlight'>Setup & maintenance costs</span> waived off</span>,
+  <span className='rx-benefits'><span className='highlight'>500 free payouts per month </span> and reduced pricing for payouts on RazorpayX</span>,
+];
+
+export const rxCaFlag = 'rxCaFlag';
+export const rxKYCvisitedFlag = 'rxKYCvisitedFlag';
+export const rxHomevisitedFlag = 'rxHomevisitedFlag';
+export const rxCaSelectedFlag = 'rxCaSelectedFlag';
+export const caReqEventType = 'CURRENT_ACCOUNT_INTEREST';
+export const rxCaExp = 'rx_ca_experiment_1';

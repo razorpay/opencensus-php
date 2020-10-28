@@ -6,6 +6,7 @@ import { trackhubsContactUpdate } from 'common/utils/googleAnalytics';
 import TestModeCard from './TestMode';
 import ActivationStatusCard from './ActivationStatus';
 import LiveModeCard from './LiveMode';
+import RxCard from './RxCard';
 import RTracking from 'react-tracking';
 
 import { showAcceptPaymentsModal, hideAcceptPaymentsModal } from 'merchant/reducers/home';
@@ -149,7 +150,7 @@ export default class OnboardingCardInstant extends Component {
         isAccepted,
         isWebsiteInWorkflow,
       };
-
+    
     return (
       <div className="onboarding-card-instant">
         <div className="onboarding-card-instant-content" ref={(node) => (this.content = node)}>
@@ -197,6 +198,7 @@ export default class OnboardingCardInstant extends Component {
             />
           ))}
         </div>
+        <RxCard lsKey={`rx-ca-${user.current}`}/>
       </div>
     );
   }

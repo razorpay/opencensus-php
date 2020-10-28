@@ -2,7 +2,8 @@ import { Link, withRouter } from 'react-router-dom';
 import Form from 'common/new-ui/Form';
 import { connect } from 'react-redux';
 import Input from 'common/new-ui/Input';
-import Button, { AsyncBtn } from 'common/new-ui/Button';
+import Button from 'common/new-ui/Button';
+import { merchantFetch } from 'merchant/utils/ajax';
 import Alert from 'common/new-ui/Alert';
 import { ModalAsideNav } from 'common/new-ui/Wizard';
 import { autoPrefixUrls, isPresent, prevent, classList } from 'common/utils/rzp-utils';
@@ -23,6 +24,7 @@ import mainFormTabsContent, {
   mainFormFieldNamesMeta,
   getBusinessTypeOptions,
   tabToEventNames,
+  bankAccountTabName,
 } from './ActivationFormMap';
 import accountFormTabsContent, {
   accountFormTabs,
@@ -31,6 +33,7 @@ import accountFormTabsContent, {
 import BingDataObj from 'common/utils/bingDataObj';
 import RTracking from 'react-tracking';
 import { updateSession } from 'merchant/reducers/session';
+import { rxCaSelectedFlag, caReqEventType, rxCaExp, rxKYCvisitedFlag } from 'merchant/containers/Home/OnboardingCard/data';
 import {
   showInstantActivationSuccessModal,
   showKYCDetailsModal,
@@ -70,6 +73,7 @@ import QueryString from 'query-string';
 import { getNeedsClarificationTabsData } from './NeedsClarificationFormMap';
 import SubmitFormLayer from './components/SubmitFormLayer';
 import Footer from './components/Footer';
+import RxCaInterest from './components/RxCaInterest';
 import { LOADING, FOOTER_BUTTONS } from './Constants';
 /*
  *             Main-form        LA-form
@@ -121,7 +125,7 @@ export default class ActivationWizard extends React.Component {
     tabs: [],
     same_address:
       this.props.data &&
-      this.props.data.business_operation_pin == this.props.data.business_registered_pin
+        this.props.data.business_operation_pin == this.props.data.business_registered_pin
         ? '1'
         : '0', // '1' => checkbox ticked
     has_url: this.props.data && this.props.data.business_website === '' ? '1' : '0', // '0' => 0th radio button, value exists
@@ -157,6 +161,7 @@ export default class ActivationWizard extends React.Component {
       this.formDescription = 'Complete and submit the form to enable settlements.';
       this.trackingType = 'kyc';
     }
+
   }
   isNeedsClarificationMode() {
     return this.props.data.activation_status === 'needs_clarification';
@@ -311,6 +316,34 @@ export default class ActivationWizard extends React.Component {
 
     const query = QueryString.parse(this.props.location.search);
     this.handleActionBasedOnQuery(query);
+    this.addVisitedFlag()
+  }
+
+  addVisitedFlag = () => {
+    let activeTab = this.state.activeTab;
+    activeTab = activeTab < 0 || !activeTab ? 0 : activeTab;
+    const { user } = this.props;
+    const { settings } = user.user;
+    if (FORM_TABS[activeTab] === bankAccountTabName && !this.isSourceRX && this.isRxCaExpEnabled) { // condition to show RX-Ca interest card
+      if (!settings[rxKYCvisitedFlag] || settings[rxKYCvisitedFlag] === '0') {
+        const _settings = { ...settings };
+        _settings[rxKYCvisitedFlag] = '1';
+        merchantFetch({
+          url: 'users',
+          mode: 'live',
+          method: 'patch',
+          data: { settings: _settings },
+        })
+          .then(() => {
+            this.props.updateUser({ settings: _settings });
+          });
+
+        this.props.tracking.trackEvent(
+          window.rzpQ.onbr().initiated('rx_KYC_ca_visited'),
+        );
+
+      }
+    }
   }
 
   handleActionBasedOnQuery = (query) => {
@@ -397,7 +430,7 @@ export default class ActivationWizard extends React.Component {
       };
 
     if (!activationUtils.isL1Completed(this)) {
-      callBack = () => {};
+      callBack = () => { };
     }
 
     this.goto(null, callBack);
@@ -423,7 +456,7 @@ export default class ActivationWizard extends React.Component {
       };
 
     if (!activationUtils.isL1Completed(this)) {
-      callBack = () => {};
+      callBack = () => { };
     }
 
     this.goto(this.state.activeTab + 1, callBack);
@@ -443,7 +476,7 @@ export default class ActivationWizard extends React.Component {
       };
 
     if (!activationUtils.isL1Completed(this)) {
-      callBack = () => {};
+      callBack = () => { };
     }
 
     this.goto(this.state.activeTab - 1, callBack);
@@ -473,7 +506,7 @@ export default class ActivationWizard extends React.Component {
       };
 
     if (!activationUtils.isL1Completed(this)) {
-      callBack = () => {};
+      callBack = () => { };
     }
 
     this.goto(tabId, callBack);
@@ -492,7 +525,7 @@ export default class ActivationWizard extends React.Component {
           }),
         ),
       );
-    } catch (err) {}
+    } catch (err) { }
   };
   goto = async (newActiveTab, cb) => {
     if (this.state.showSubmitLayer) {
@@ -880,7 +913,7 @@ export default class ActivationWizard extends React.Component {
           ),
         );
       tracking.trackEvent(window.rzpQ.onbr().initiated('act.submit_form'));
-    } catch (e) {}
+    } catch (e) { }
   };
 
   submitL1 = async (currenActiveTab) => {
@@ -1341,6 +1374,17 @@ export default class ActivationWizard extends React.Component {
     }
   };
 
+  get isRxCaExpEnabled() {
+    const { experiments } = this.props.user;
+    return ((experiments || {})[rxCaExp] || {}).result === 'cohort-2';
+  }
+
+  get isSourceRX() {
+    const query = QueryString.parse(window.location.search);
+    const is_source_RX = !!(query && query.merchant && query.merchant === 'x');
+    return is_source_RX;
+  }
+
   get FooterButtons() {
     const footerButtons = [];
     const activeTab = this.state.activeTab;
@@ -1437,6 +1481,13 @@ export default class ActivationWizard extends React.Component {
         </li>,
       );
     }
+
+    let showRxCA = false;
+    // show the option on KYC form for PG users who've experiment enabled
+    if (FORM_TABS[activeTab] === bankAccountTabName && !this.isSourceRX && this.isRxCaExpEnabled) {
+      showRxCA = true;
+    }
+
     return (
       <div className="Activation--wizard Wizard">
         {/* Activation form tabs */}
@@ -1493,7 +1544,7 @@ export default class ActivationWizard extends React.Component {
             const showFormDisabledAlert =
               !this.isLinkedAccountForm && (isFormLocked || isFormSubmitted); // '|| isFormActivated' is redundant check. Always covered by isFormSubmitted;
 
-            const { data } = this.props;
+            const {data} = this.props;
             let Component = Alert.Info;
             let icon, msg;
 
@@ -1502,55 +1553,55 @@ export default class ActivationWizard extends React.Component {
 
             if (showFormDisabledAlert && !this.isOnKYCTab()) {
               if (isFormActivated && data.activation_status === 'activated') {
-                // **1. Alert: Account Activated
+            // **1. Alert: Account Activated
 
-                icon = 'i-done-all';
+            icon = 'i-done-all';
                 msg = 'Your account is activated.';
                 secondaryMsg = (
                   <React.Fragment>For any changes, please {ticketLink}.</React.Fragment>
                 );
               } else if (this.isNeedsClarificationMode()) {
-                // **2. Alert: Need clarification
-                icon = 'i-warning';
+            // **2. Alert: Need clarification
+            icon = 'i-warning';
                 Component = Alert.Warning;
                 msg = `There are issues with your activation form. Please check your mail and respond at the earliest.`;
                 secondaryMsg = (
                   <React.Fragment>In case of any queries, please {ticketLink}</React.Fragment>
                 );
               } else if (data.activation_status === 'rejected') {
-                // **3. Alert: Form Rejected
+            // **3. Alert: Form Rejected
 
-                icon = 'i-close';
+            icon = 'i-close';
                 Component = Alert.Error;
                 msg =
                   'Your activation form has been rejected by our partner banks. Hence, we would not be able support your business at this moment.';
                 secondaryMsg = 'We have sent you an email with the details.';
               } else if (isFormLocked && isFormSubmitted) {
-                // **4. Alert: Form is Locked (for reasons other than above)
-                // 'locked' status has more priority than 'submitted'
-                // If admins locked form before submiddion, then this alert is not shown
+            // **4. Alert: Form is Locked (for reasons other than above)
+            // 'locked' status has more priority than 'submitted'
+            // If admins locked form before submiddion, then this alert is not shown
 
-                icon = 'i-outline-lock';
+            icon = 'i-outline-lock';
                 msg =
                   'Your activation form is under review. We will let you know once your account gets activated.';
                 secondaryMsg = (
                   <React.Fragment>In case of any queries, please {ticketLink}</React.Fragment>
                 );
               } else if (isFormSubmitted) {
-                // **5. Alert: Form is Submitted
+            // **5. Alert: Form is Submitted
 
-                icon = 'i-check';
+            icon = 'i-check';
                 msg = 'Our team will review the form and submitted documents.';
                 secondaryMsg = 'We will reach out on your contact email for all updates.';
               }
 
               {
-                msg && (
-                  <Component iconBefore={icon}>
-                    {msg}
-                    <div className="side-description">{secondaryMsg}</div>
-                  </Component>
-                );
+            msg && (
+              <Component iconBefore={icon}>
+                {msg}
+                <div className="side-description">{secondaryMsg}</div>
+              </Component>
+            );
               }
             }
           }}
@@ -1562,6 +1613,9 @@ export default class ActivationWizard extends React.Component {
 
             {/* Document content is always in DOM */}
             <div style={{ display: content ? 'none' : 'inherit' }}>{documentContent}</div>
+            {
+              showRxCA && (<RxCaInterest disabled={isFormSubmitted} value={this.props.rxCaCheckboxSelect} onChange={this.props.handleRxCaCheckboxChange} />)
+            }
           </Form>
           <ShowWhen
             additionalCondition={(user) =>

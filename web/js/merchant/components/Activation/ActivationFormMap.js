@@ -837,12 +837,14 @@ export const ndcFields = [
   },
 ];
 
+export const bankAccountTabName = 'Bank Account';
+
 // Tabs name
 export const mainFormTabs = [
   'Contact Info',
   'Business Overview',
   'Business Details',
-  'Bank Account',
+  bankAccountTabName,
   'Documents Upload',
 ];
 

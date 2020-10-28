@@ -14,7 +14,9 @@ import Button from 'common/new-ui/Button';
 import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
 import { showKYCStatusModal } from 'merchant/reducers/home';
+import { rxCaSelectedFlag, caReqEventType, rxCaExp } from 'merchant/containers/Home/OnboardingCard/data';
 
+import RTracking from 'react-tracking';
 import { withRouter } from 'react-router-dom';
 import { trackLinkClick, trackGoToConfig } from './ga_new';
 
@@ -31,6 +33,7 @@ const successImg = '/img/activation/submit-success.svg';
  * @props {onClose, Function, optional}. Without this modal would not be opened. Also, this would be used to close the modal
  * @props {accountId, String, optional}. Needed if the ActivationWizard is opened for Linked Account
  * */
+@RTracking(() => window.rzpQ.component('ActivationContainer'))
 @withRouter
 @connect(
   state => ({
@@ -65,6 +68,7 @@ export default class ActivationContainer extends React.Component {
 
     this.state = {
       isFormTouched: someDetailsFilled,
+      rxCaCheckboxSelect: false // local checkbox state
     };
 
     this.activationFormName = user.showInstantActivation
@@ -83,6 +87,11 @@ export default class ActivationContainer extends React.Component {
       props.rpc.notifySupportPopupClose(reply => {
         this.onSupportClose = reply;
       });
+    }
+
+    const settings = props.user.user.settings;
+    if (!!settings[rxCaSelectedFlag] && settings[rxCaSelectedFlag] === '1') {
+      this.state.rxCaCheckboxSelect = true // make it checked if the rxCaSelectedFlag exist in Settings (persists post refresh)
     }
 
     window.addEventListener('modal-open', this.handleSupportModalOpen);
@@ -110,6 +119,39 @@ export default class ActivationContainer extends React.Component {
   preloadSuccessAsset() {
     const success = new Image();
     success.src = successImg;
+  }
+
+  sendRXcaDetailsToSF = () => {
+    if (!!this.state.rxCaCheckboxSelect) {
+      const { current } = this.props.user.user;
+      let payload = {
+        event_type: caReqEventType,
+        event_properties: {
+          interested_in_current_account: 1,
+          pin_code: null,
+          average_monthly_balance: null,
+          current_ca: null,
+          use_case: null,
+          product_name: 'Current_Account',
+          source: 'PG-KYC'
+        },
+      };
+
+      merchantFetch({
+        url: `merchant/${current}/salesforce_event`,
+        mode: 'test',
+        method: 'post',
+        data: payload,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(() => {
+          this.props.tracking.trackEvent(
+            window.rzpQ.onbr().initiated('rx_KYC_ca_requested'),
+          );
+        });
+    }
   }
 
   updateSession(data) {
@@ -259,7 +301,7 @@ export default class ActivationContainer extends React.Component {
       },
       accountId: this.props.accountId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
       data,
-    }).catch(() => {});
+    }).catch(() => { });
   };
 
   postSubmitStep(response) {
@@ -268,8 +310,8 @@ export default class ActivationContainer extends React.Component {
     } else {
       this.setState({ showSuccessScreen: true });
     }
-
     this.updateSession(response.data); // Updating % activation_progress (side bar)
+    this.sendRXcaDetailsToSF();
   }
 
   saveFile = (fieldName, file, progressTracker, uploadAs) => {
@@ -390,6 +432,31 @@ export default class ActivationContainer extends React.Component {
     );
   }
 
+  handleRxCaCheckboxChange = () => {
+    this.setState((state) => ({
+      rxCaCheckboxSelect: !state.rxCaCheckboxSelect // set local state
+    }), () => {
+      const _settings = { ...this.props.user.user.settings };
+      _settings[rxCaSelectedFlag] = '0';
+
+      if (!!this.state.rxCaCheckboxSelect) {
+        _settings[rxCaSelectedFlag] = '1';
+      }
+
+      // update the status to settings table so that it persists post refresh
+      merchantFetch({
+        url: 'users',
+        mode: 'live',
+        method: 'patch',
+        data: { settings: _settings },
+      })
+        .then(res => {
+          this.props.updateUser({ settings: _settings });
+        });
+
+    });
+  }
+
   componentWillUnmount() {
     this.handleSupportModalClose();
   }
@@ -450,6 +517,8 @@ export default class ActivationContainer extends React.Component {
           handleUIUpdate={this.handleUIUpdate}
           deleteFile={this.deleteFile}
           verifyData={this.verifyData}
+          rxCaCheckboxSelect={this.state.rxCaCheckboxSelect}
+          handleRxCaCheckboxChange={this.handleRxCaCheckboxChange}
         />
       );
     }

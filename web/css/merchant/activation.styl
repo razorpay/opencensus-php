@@ -20,6 +20,99 @@ $side-width = 240px
   background: #fafafa
   position: relative
 
+  .disable-ca-option
+    opacity: 0.35
+    cursor: not-allowed
+    
+  .rx-ca
+    width: 100%
+
+    .divider
+      height: 1px
+      width: 100%
+      background-color: rgba(22, 47, 86, 0.1);
+      margin: 30px auto
+      z-index: 2
+
+    .rx-ca-container
+      display: flex
+      font-size: 14px
+      color: #58666E
+      margin-bottom: -12px
+      
+      .left-container
+        text-align: right
+        margin-right: 17px
+        width: 26%
+        
+        .rx-logo
+          width: 93px
+          height: 19px
+          margin-bottom: 14px
+
+        .text-ca
+          font-weight: bold
+      
+      .right-container
+        width: 70%
+        
+        .Input-content
+          margin-left: 0px
+
+        .title
+          margin-bottom: 12px
+        .benefits
+          display: flex
+          flex-wrap: wrap
+          
+          .info:nth-child(odd) { 
+              flex: 0 43%
+              margin-bottom: 12px
+              width: 100px
+          }
+          
+          .info
+            margin-right: 20px
+            color: #838383
+            
+            .points-img
+              margin-right: 8px
+              width: 12px
+
+        .footer-info
+          color: #838383
+          font-size: 12px
+          margin-left: 24px
+          
+    @media (max-width: 640px) 
+      .rx-ca-container
+        display: block
+
+        .left-container
+          width: 100%
+          display: flex
+          text-align: left
+
+          .rx-logo
+            margin-right: 8px
+            margin-bottom: 12px
+        
+        .right-container
+          width: 100%
+
+          .title
+            margin-bottom: 16px
+          
+          .benefits
+            display: block
+
+            .info
+              margin-bottom: 12px
+              width: 100% !important
+
+          .ca-checkbox
+            margin-top: 32px
+
   .warning-svg
     svg
       width: 23px
