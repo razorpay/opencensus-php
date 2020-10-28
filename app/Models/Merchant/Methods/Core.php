@@ -512,7 +512,7 @@ class Core extends Base\Core
 
             return;
         }
-        
+
         foreach ($defaultMethods as $key => $value)
         {
             if ($key === Entity::EMI)

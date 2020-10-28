@@ -7,6 +7,7 @@ use Excel;
 use Cache;
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Models\Bank\IFSC;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Status;
@@ -51,14 +52,12 @@ class EnachRblGatewayTest extends TestCase
 
         $this->gateway = 'enach_rbl';
 
-        Cache::put('merchant_enach_configs', '{"auth_gateway":{"10000000000000": "esigner_digio"}}', 2);
-
-        $this->markTestSkipped();
+        Cache::put('merchant_enach_configs', '{"auth_gateway":{"10000000000000": "esigner_legaldesk"}}', 2);
     }
 
     public function testSuccessfulEsignGeneration()
     {
-        $payment                 = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment                 = $this->getEmandatePaymentArray('HDFC', 'aadhaar', 0);
         $payment['bank_account'] = [
             'account_number' => '914010009305862',
             'ifsc'           => 'utib0000123',
@@ -74,7 +73,7 @@ class EnachRblGatewayTest extends TestCase
         $enach = $this->getLastEntity('enach', true);
 
         $this->assertEquals('authorize', $enach['action']);
-        $this->assertEquals('UTIB', $enach['bank']);
+        $this->assertEquals('HDFC', $enach['bank']);
         $this->assertEquals('ratn', $enach['acquirer']);
         $this->assertEquals(0, $enach['amount']);
         $this->assertNotNull($enach['gateway_reference_id']);
@@ -138,7 +137,7 @@ class EnachRblGatewayTest extends TestCase
 
         Cache::put('config:merchant_enach_configs', $config, 2);
 
-        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment = $this->getEmandatePaymentArray('HDFC', 'aadhaar', 0);
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
@@ -186,7 +185,7 @@ class EnachRblGatewayTest extends TestCase
 
     public function testSuccessfulEsignGenerationWithVid()
     {
-        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment = $this->getEmandatePaymentArray('HDFC', 'aadhaar', 0);
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
 
@@ -201,7 +200,7 @@ class EnachRblGatewayTest extends TestCase
         $enach = $this->getLastEntity('enach', true);
 
         $this->assertEquals('authorize', $enach['action']);
-        $this->assertEquals('UTIB', $enach['bank']);
+        $this->assertEquals('HDFC', $enach['bank']);
         $this->assertEquals('ratn', $enach['acquirer']);
         $this->assertEquals(0, $enach['amount']);
         $this->assertNotNull($enach['gateway_reference_id']);
@@ -210,7 +209,7 @@ class EnachRblGatewayTest extends TestCase
 
     public function testSuccessfulEsignGenerationWithNeitherVidNorAadhaar()
     {
-        $payment                 = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment                 = $this->getEmandatePaymentArray('HDFC', 'aadhaar', 0);
 
         $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
@@ -222,7 +221,7 @@ class EnachRblGatewayTest extends TestCase
         $enach = $this->getLastEntity('enach', true);
 
         $this->assertEquals('authorize', $enach['action']);
-        $this->assertEquals('UTIB', $enach['bank']);
+        $this->assertEquals('HDFC', $enach['bank']);
         $this->assertEquals('ratn', $enach['acquirer']);
         $this->assertEquals(0, $enach['amount']);
         $this->assertNotNull($enach['gateway_reference_id']);
@@ -231,6 +230,8 @@ class EnachRblGatewayTest extends TestCase
 
     public function testAuthenticationFailed()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
 
         $payment['bank_account'] = [
@@ -258,7 +259,7 @@ class EnachRblGatewayTest extends TestCase
 
     public function testDigioVerify()
     {
-        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment = $this->getEmandatePaymentArray('HDFC', 'aadhaar', 0);
 
         $payment['bank_account'] = [
             'account_number' => '914010009305862',
@@ -289,6 +290,8 @@ class EnachRblGatewayTest extends TestCase
 
     public function testDigioAuthFailedVerifySuccess()
     {
+        $this->markTestSkipped();
+
         $this->setMockGatewayTrue();
 
         $this->mockAuthFailed();
@@ -332,6 +335,8 @@ class EnachRblGatewayTest extends TestCase
 
     public function testDigioCallbackFailedVerifySuccess()
     {
+        $this->markTestSkipped();
+
         $this->setMockGatewayTrue();
 
         $this->mockPaymentRequestTimeout();
@@ -375,6 +380,8 @@ class EnachRblGatewayTest extends TestCase
 
     public function testAuthorizeFailedPayment()
     {
+        $this->markTestSkipped();
+
         $this->setMockGatewayTrue();
 
         $this->mockPaymentRequestTimeout();
@@ -480,7 +487,7 @@ class EnachRblGatewayTest extends TestCase
 
         Carbon::setTestNow($dt);
 
-        $payment                 = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment                 = $this->getEmandatePaymentArray('HDFC', 'aadhaar', 0);
 
         $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
@@ -589,6 +596,8 @@ class EnachRblGatewayTest extends TestCase
 
     public function testRegistrationReconWithSharedMerchantProxyAuth()
     {
+        $this->markTestSkipped();
+
         $payment = $this->createAcknowledgedEnachPayment(false);
 
         $batchFile = $this->getBatchFileToUpload($payment);
@@ -690,7 +699,7 @@ class EnachRblGatewayTest extends TestCase
 
         $refund = $this->getDbLastEntityToArray('refund');
 
-        $this->assertEquals('processed', $refund['status']);
+        $this->assertEquals(Refund\Status::CREATED, $refund['status']);
         $this->assertEquals(0, $refund['amount']);
         $this->assertEquals(0, $payment['amount_refunded']);
 
@@ -701,10 +710,10 @@ class EnachRblGatewayTest extends TestCase
 
     public function testDebitFileGeneration()
     {
-        $payment                 = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment                 = $this->getEmandatePaymentArray('HDFC', 'aadhaar', 0);
         $payment['bank_account'] = [
             'account_number' => '914010009305862',
-            'ifsc'           => 'UTIB0000123',
+            'ifsc'           => 'HDFC0000123',
             'name'           => 'Test account',
         ];
 
@@ -723,12 +732,12 @@ class EnachRblGatewayTest extends TestCase
             'token',
             $tokenId,
             [
-                Token\Entity::GATEWAY_TOKEN    => 'UTIB6000000005844847',
+                Token\Entity::GATEWAY_TOKEN    => 'HDFC6000000005844847',
                 Token\Entity::RECURRING        => 1,
                 Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED,
             ]);
 
-        $payment             = $this->getEmandatePaymentArray('UTIB', null, 3000);
+        $payment             = $this->getEmandatePaymentArray('HDFC', null, 3000);
         $payment['token']    = $tokenId;
         $payment['order_id'] = $order->getPublicId();
 
@@ -778,7 +787,7 @@ class EnachRblGatewayTest extends TestCase
             [
                 'payment_id' => $paymentId,
                 'action'     => 'authorize',
-                'bank'       => 'UTIB',
+                'bank'       => 'HDFC',
                 'status'     => null,
             ],
             $enach
@@ -984,10 +993,10 @@ class EnachRblGatewayTest extends TestCase
     {
         $this->fixtures->terminal->disableTerminal($this->sharedTerminal->getId());
 
-        $payment                 = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment                 = $this->getEmandatePaymentArray('HDFC', 'aadhaar', 0);
         $payment['bank_account'] = [
             'account_number' => '914010009305862',
-            'ifsc'           => 'UTIB0000123',
+            'ifsc'           => 'HDFC0000123',
             'name'           => 'Test account',
         ];
 
@@ -1000,6 +1009,7 @@ class EnachRblGatewayTest extends TestCase
         }, \RZP\Exception\RuntimeException::class, 'Terminal should not be null');
     }
 
+    // enach_rbl refund migrated to scrooge
     public function testDebitFileReconciliationRefund()
     {
         $payment = $this->makeDebitPayment();
@@ -1024,7 +1034,8 @@ class EnachRblGatewayTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $response = $this->refundPayment('pay_' . $payment['id']);
+        //$response = $this->refundPayment('pay_' . $payment['id']);
+        $response = $this->refundPayment('pay_' . $payment['id'],null, ['is_fta' => true]);
 
         $refund  = $this->getLastEntity('refund', true);
 
@@ -1032,7 +1043,8 @@ class EnachRblGatewayTest extends TestCase
 
         $this->assertEquals('pay_' . $payment['id'], $refund['payment_id']);
 
-        $this->assertEquals('initiated', $refund['status']);
+        //$this->assertEquals('initiated', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
 
         $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
 
@@ -1044,7 +1056,7 @@ class EnachRblGatewayTest extends TestCase
 
         $bankAccount = $this->getLastEntity('bank_account', true);
 
-        $this->assertEquals('UTIB0000123', $bankAccount['ifsc_code']);
+        $this->assertEquals('HDFC0000123', $bankAccount['ifsc_code']);
 
         $this->assertEquals('test', $bankAccount['beneficiary_name']);
 
@@ -1083,7 +1095,7 @@ class EnachRblGatewayTest extends TestCase
 
         $refund  = $this->getLastEntity('refund', true);
 
-        $this->retryFailedRefund($refund['id']);
+        $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $refund  = $this->getLastEntity('refund', true);
 
@@ -1101,7 +1113,7 @@ class EnachRblGatewayTest extends TestCase
 
         $bankAccount = $this->getLastEntity('bank_account', true);
 
-        $this->assertEquals('UTIB0000123', $bankAccount['ifsc_code']);
+        $this->assertEquals('HDFC0000123', $bankAccount['ifsc_code']);
 
         $this->assertEquals('test', $bankAccount['beneficiary_name']);
 
@@ -1139,7 +1151,7 @@ class EnachRblGatewayTest extends TestCase
 
         $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed']);
 
-        $this->retryFailedRefund($refund['id']);
+        $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $refund  = $this->getLastEntity('refund', true);
 
@@ -1157,7 +1169,7 @@ class EnachRblGatewayTest extends TestCase
 
         $bankAccount = $this->getLastEntity('bank_account', true);
 
-        $this->assertEquals('UTIB0000123', $bankAccount['ifsc_code']);
+        $this->assertEquals('HDFC0000123', $bankAccount['ifsc_code']);
 
         $this->assertEquals('test', $bankAccount['beneficiary_name']);
 
@@ -1193,18 +1205,19 @@ class EnachRblGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
+        //$this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
+        $this->assertEquals(Refund\Status::INITIATED, $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
         $this->assertNotNull($attempt['utr']);
     }
 
     public function testTokenMaxExpire()
     {
-        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment = $this->getEmandatePaymentArray('HDFC', 'aadhaar', 0);
 
         $payment['bank_account'] = [
             'account_number' => '914010009305862',
-            'ifsc'           => 'UTIB0000123',
+            'ifsc'           => 'HDFC0000123',
             'name'           => 'Test account',
         ];
 
@@ -1225,12 +1238,43 @@ class EnachRblGatewayTest extends TestCase
         $this->assertEquals('authorized', $paymentEntity['status']);
     }
 
+    public function testPreferencesForRegisterDisabledBank()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::ESIGN]);
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
+
+        $this->ba->publicAuth();
+
+        $testData['request']['content'] = ['key_id' => $this->ba->getKey(), 'order_id' => $order->getPublicId()];
+
+        $content = $this->startTest($testData);
+
+        $banks = $content['methods']['recurring']['emandate'];
+
+        $authTypeBanks = array_values($banks);
+
+        $count = 0;
+
+        foreach($authTypeBanks as $value)
+        {
+            if (in_array('aadhaar', $value['auth_types']))
+            {
+                $count++;
+            }
+        }
+
+        $this->assertEquals(25, $count);
+
+        $this->assertArrayNotHasKey(IFSC::UTBI, $banks);
+    }
+
     protected function makeDebitPayment()
     {
-        $payment                 = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment                 = $this->getEmandatePaymentArray('HDFC', 'aadhaar', 0);
         $payment['bank_account'] = [
             'account_number' => '914010009305862',
-            'ifsc'           => 'UTIB0000123',
+            'ifsc'           => 'HDFC0000123',
             'name'           => 'Test account',
         ];
 
@@ -1249,12 +1293,12 @@ class EnachRblGatewayTest extends TestCase
             'token',
             $tokenId,
             [
-                Token\Entity::GATEWAY_TOKEN    => 'UTIB6000000005844847',
+                Token\Entity::GATEWAY_TOKEN    => 'HDFC6000000005844847',
                 Token\Entity::RECURRING        => 1,
                 Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED,
             ]);
 
-        $payment             = $this->getEmandatePaymentArray('UTIB', null, $order->getAmount());
+        $payment             = $this->getEmandatePaymentArray('HDFC', null, $order->getAmount());
         $payment['token']    = $tokenId;
         $payment['order_id'] = $order->getPublicId();
 
@@ -1272,7 +1316,7 @@ class EnachRblGatewayTest extends TestCase
             [
                 'payment_id' => $payment['id'],
                 'action'     => 'authorize',
-                'bank'       => 'UTIB',
+                'bank'       => 'HDFC',
                 'amount'     => $payment['amount'],
             ]
         );
@@ -1292,7 +1336,7 @@ class EnachRblGatewayTest extends TestCase
                         'CUSTOMER_NAME'      => 'User name',
                         'AMOUNT'             => $payment['amount'] / 100,
                         'REFNO'              => $payment['id'],
-                        'UMRN'               => 'UTIB6000000005844847',
+                        'UMRN'               => 'HDFC6000000005844847',
                         'UPLOAD_DATE'        => '',
                         'ACKUPD_DATE'        => '',
                         'RESPONSE_RECEIVED'  => '',
@@ -1363,7 +1407,13 @@ class EnachRblGatewayTest extends TestCase
                 $url, $method, $content);
         }
 
-        return $this->submitPaymentCallbackRequest($request);
+        $response = $this->sendRequest($request);
+
+        $data = array(
+            'url' => $response->headers->get('location'),
+            'method' => 'get');
+
+        return $this->submitPaymentCallbackRequest($data);
     }
 
     protected function createEmandatePayment($amount = 0, $recurringType = 'initial')
@@ -1383,7 +1433,7 @@ class EnachRblGatewayTest extends TestCase
             'amount'            => $order->getAmount(),
             'amount_authorized' => $order->getAmount(),
             'gateway'           => 'enach_rbl',
-            'bank'              => 'UTIB',
+            'bank'              => 'HDFC',
             'recurring'         => '1',
             'customer_id'       => $token->getCustomerId(),
             'token_id'          => $token->getId(),
@@ -1411,7 +1461,7 @@ class EnachRblGatewayTest extends TestCase
             'enach',
             $gatewayEntity['id'],
             [
-                'umrn'               => 'UTIB6000000005844847',
+                'umrn'               => 'HDFC6000000005844847',
                 'acknowledge_status' => 'true',
             ]);
 
@@ -1425,13 +1475,13 @@ class EnachRblGatewayTest extends TestCase
             'BATCH'        => 10,
             'IHNO'         => 6411,
             'MANDATE_TYPE' => 'NEW',
-            'UMRN'         => 'UTIB6000000005393968',
+            'UMRN'         => 'HDFC6000000005393968',
             'REF_1'        => $payment->getId(),
             'REF_2'        => '',
             'CUST_NAME'    => 'customer name',
-            'BANK'         => 'UTIB',
+            'BANK'         => 'HDFC',
             'BRANCH'       => 'branch',
-            'BANK_CODE'    => 'UTIB0000123',
+            'BANK_CODE'    => 'HDFC0000123',
             'AC_TYPE'      => 'SAVINGS',
             'ACNO'         => '914010009305862',
             'ACK_DATE'     => 'some date',
@@ -1502,14 +1552,14 @@ class EnachRblGatewayTest extends TestCase
                         'SRNO'            => '1',
                         'MANDATE_DATE'    => Carbon::today()->format('m/d/Y'),
                         'MANDATE_ID'      => 'NEW',
-                        'UMRN'            => 'UTIB6000000005844847',
+                        'UMRN'            => 'HDFC6000000005844847',
                         'CUST_REFNO'      => '',
                         'SCH_REFNO'       => '',
                         'REF_1'           => $payment->getId(),
                         'CUST_NAME'       => 'User name',
                         'BANK'            => '',
                         'BRANCH'          => '',
-                        'BANK_CODE'       => 'UTIB0000123',
+                        'BANK_CODE'       => 'HDFC0000123',
                         'AC_TYPE'         => 'SAVINGS',
                         'ACNO'            => '914010009305862',
                         'UPDATE_DATE'     => Carbon::now()->addDays(2)->format('m/d/Y'),
