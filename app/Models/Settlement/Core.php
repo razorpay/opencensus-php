@@ -8,6 +8,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -499,6 +500,12 @@ class Core extends Base\Core
      */
     public function triggerSettlementNotification(Entity $settlement, $redactedBaNumber = null, $sendFailureSms = false)
     {
+        // do not trigger notification in test mode
+        if ($this->mode === Mode::TEST)
+        {
+            return;
+        }
+
         try
         {
             $merchant = $settlement->merchant;
