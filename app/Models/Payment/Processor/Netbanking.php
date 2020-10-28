@@ -157,6 +157,7 @@ class Netbanking
         IFSC::JAKA,
         IFSC::IOBA,
         IFSC::ESFB,
+        IFSC::UBIN,
     ];
 
     protected static $defaultGatewayDisabledBanks = [
@@ -544,6 +545,9 @@ class Netbanking
         ],
         Gateway::NETBANKING_UBI => [
             'retail' => [
+                IFSC::UBIN,
+            ],
+            'tpv'   => [
                 IFSC::UBIN,
             ],
         ],
