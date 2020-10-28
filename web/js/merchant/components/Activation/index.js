@@ -1109,7 +1109,24 @@ export default class ActivationWizard extends React.Component {
     try {
       this.setState({ callingAPI: true });
       const response = await this.props.save(reqData);
-      if (response.success) {
+
+      if(response.data.activation_status === "needs_clarification" ) {
+        const poi_verification_status = response.data.poi_verification_status
+        const company_pan_verification_status = response.data.company_pan_verification_status
+        // remove errored field from state dirty to show API error
+        const newStateDirty = Object.assign({}, this.state.dirty)
+        if ( (poi_verification_status === 'incorrect_details' || poi_verification_status === 'not_matched')  && newStateDirty.hasOwnProperty('promoter_pan')){
+          delete newStateDirty.promoter_pan
+        }
+
+        if ( (company_pan_verification_status === 'incorrect_details' || company_pan_verification_status === 'not_matched') && newStateDirty.hasOwnProperty('company_pan')){
+          delete newStateDirty.company_pan
+        }
+         
+        this.setState({
+          dirty: newStateDirty,
+        });
+      } else if(response.success) {
         this.props.showKYCStatusModal({
           modalType: 'KYC_CLARIFICATION_SUBMIT_MODAL',
         });
