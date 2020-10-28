@@ -735,7 +735,6 @@ export default class RefundModal extends Component {
                       can only issue instant refund.
                       <a
                         href="https://razorpay.com/docs/payment-gateway/refunds/#handling-errors"
-                        href="https://razorpay.com/docs/payment-gateway/refunds/#handling-errors"
                         rel="noopener noreferrer"
                         target="_blank"
                       >
@@ -747,7 +746,13 @@ export default class RefundModal extends Component {
                       This payment was made more than{' '}
                       {this.getMonthsFromDays(payment_age_limit_for_gateway_refund)} months ago,
                       refund not supported
-                      <a>Learn more</a>
+                      <a
+                        href="https://razorpay.com/docs/payment-gateway/refunds/#handling-errors"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        Learn more
+                      </a>
                     </p>
                   )}
                 </div>
