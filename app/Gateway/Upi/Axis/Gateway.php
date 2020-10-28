@@ -1169,6 +1169,11 @@ class Gateway extends Base\Gateway
             'Content-Type' => 'application/json',
         ];
 
+        // Axis gateway firewall is not accepting any value for encoding
+        // And the default curl transport is forcing the encoding to be compressed
+        // thus we have overridden the transporter and suppress the encoding
+        $request['options']['transport'] = Curl::class;
+
         return $request;
     }
 
